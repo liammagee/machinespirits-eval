@@ -7,8 +7,8 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import type { StreamLog } from '../../../hooks/useEvalData';
-import haptics from '../../../utils/haptics';
+import type { StreamLog } from '../../hooks/useEvalData';
+import haptics from '../../utils/haptics';
 
 interface StreamingLogPanelProps {
   logs: StreamLog[];

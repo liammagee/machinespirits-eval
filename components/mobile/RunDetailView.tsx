@@ -6,11 +6,11 @@
  */
 
 import React, { useState } from 'react';
-import type { RunDetails } from '../../../hooks/useEvalData';
-import type { EvalQuickTestResult } from '../../../types';
+import type { RunDetails } from '../../hooks/useEvalData';
+import type { EvalQuickTestResult } from '../../types';
 import { DimensionBreakdown } from './DimensionBreakdown';
 import { ScoreRadial } from './ScoreRadial';
-import haptics from '../../../utils/haptics';
+import haptics from '../../utils/haptics';
 
 interface RunDetailViewProps {
   details: RunDetails;

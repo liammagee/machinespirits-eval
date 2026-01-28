@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import haptics from '../../../utils/haptics';
+import haptics from '../../utils/haptics';
 
 interface BottomSheetProps {
   isOpen: boolean;

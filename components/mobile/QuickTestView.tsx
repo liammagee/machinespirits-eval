@@ -12,12 +12,12 @@
  */
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import type { EvalProfile, EvalScenario, EvalQuickTestResult } from '../../../types';
-import type { StreamLog, MatrixResult } from '../../../hooks/useEvalData';
+import type { EvalProfile, EvalScenario, EvalQuickTestResult } from '../../types';
+import type { StreamLog, MatrixResult } from '../../hooks/useEvalData';
 import { ScoreRadial } from './ScoreRadial';
 import { DimensionBreakdown } from './DimensionBreakdown';
 import { StreamingLogPanel } from './StreamingLogPanel';
-import haptics from '../../../utils/haptics';
+import haptics from '../../utils/haptics';
 
 type TestMode = 'quick' | 'matrix';
 

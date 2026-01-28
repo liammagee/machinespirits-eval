@@ -6,8 +6,8 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import type { EvalDialogue, EvalDialogueEntry } from '../../../types';
-import haptics from '../../../utils/haptics';
+import type { EvalDialogue, EvalDialogueEntry } from '../../types';
+import haptics from '../../utils/haptics';
 
 interface LogsViewProps {
   logDates: string[];
