@@ -1,0 +1,832 @@
+# Learner-Tutor Interaction Evaluation Scenarios
+#
+# These scenarios test the quality of interaction between multiagent
+# learner and tutor systems, evaluating both sides of the dialogue.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCENARIO STRUCTURE
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Each scenario specifies:
+# - Learner persona and starting state
+# - Topic/context for discussion
+# - Expected interaction dynamics
+# - Evaluation criteria for both learner and tutor performance
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Learner-Tutor Interaction Scenarios"
+version: "1.0.0"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SHORT-TERM SCENARIOS (Single/Multi-Turn)
+# ══════════════════════════════════════════════════════════════════════════════
+
+short_term_scenarios:
+
+  # ------------------------------------------------------------------------------
+  # Recognition-focused scenarios
+  # ------------------------------------------------------------------------------
+
+  recognition_request:
+    id: "recognition_request"
+    name: "Learner Seeks Recognition"
+    description: "Learner shares their understanding, seeking validation and engagement"
+    turns: 4
+    topic: "Hegel's recognition dialectic"
+
+    learner:
+      persona: "imposter"
+      starting_state:
+        understanding: "has a nascent interpretation but unsure if valid"
+        emotional_state: "seeking validation"
+        opening_message: "I've been thinking about recognition in Hegel... I think it's about how we need others to see us to really exist? Like, we can't be a self alone?"
+
+    expected_dynamics:
+      - "Tutor should acknowledge learner's interpretation before extending"
+      - "Learner should feel heard before being challenged"
+      - "Dialogue should build on learner's words, not replace them"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Explicitly acknowledges learner's interpretation"
+          weight: 0.3
+        - dimension: "dialectical_responsiveness"
+          expectation: "Builds productively on learner's position"
+          weight: 0.3
+        - dimension: "transformative_potential"
+          expectation: "Creates conditions for deeper understanding"
+          weight: 0.2
+        - dimension: "tone"
+          expectation: "Warm without condescension"
+          weight: 0.2
+      learner:
+        - dimension: "authenticity"
+          expectation: "Shows genuine internal dynamics, not performance"
+          weight: 0.3
+        - dimension: "responsiveness"
+          expectation: "Reacts genuinely to tutor's engagement"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Shows movement in understanding over turns"
+          weight: 0.4
+
+  # ------------------------------------------------------------------------------
+  # Frustration management scenarios
+  # ------------------------------------------------------------------------------
+
+  frustration_moment:
+    id: "frustration_moment"
+    name: "Learner Expresses Frustration"
+    description: "Learner is stuck and becoming frustrated"
+    turns: 5
+    topic: "Aufhebung (sublation)"
+
+    learner:
+      persona: "eager_novice"
+      starting_state:
+        understanding: "confused by multiple translations of aufhebung"
+        emotional_state: "frustrated"
+        opening_message: "I've read three different translations and they all say something different! Overcome, preserve, transcend - how can a word mean all of that? This is so frustrating."
+
+    expected_dynamics:
+      - "Tutor should validate frustration before redirecting"
+      - "Learner's frustration should not be dismissed"
+      - "Scaffolding should lower cognitive load"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "emotional_attunement"
+          expectation: "Validates frustration as legitimate"
+          weight: 0.3
+        - dimension: "scaffolding"
+          expectation: "Breaks down complexity appropriately"
+          weight: 0.3
+        - dimension: "pedagogical_soundness"
+          expectation: "Operates in ZPD, not above"
+          weight: 0.2
+        - dimension: "actionability"
+          expectation: "Provides clear path forward"
+          weight: 0.2
+      learner:
+        - dimension: "emotional_trajectory"
+          expectation: "Frustration should decrease or transform"
+          weight: 0.4
+        - dimension: "engagement_recovery"
+          expectation: "Shows re-engagement after support"
+          weight: 0.4
+        - dimension: "authenticity"
+          expectation: "Internal dynamics reflect persona"
+          weight: 0.2
+
+  # ------------------------------------------------------------------------------
+  # Misconception correction scenarios
+  # ------------------------------------------------------------------------------
+
+  misconception_surface:
+    id: "misconception_surface"
+    name: "Misconception Revealed"
+    description: "Learner reveals a misconception that needs gentle correction"
+    turns: 4
+    topic: "Thesis-Antithesis-Synthesis"
+
+    learner:
+      persona: "surface_skimmer"
+      starting_state:
+        understanding: "has pop-culture version of dialectics"
+        emotional_state: "confident but wrong"
+        opening_message: "So dialectics is pretty simple right? Thesis plus antithesis equals synthesis. Like adding numbers. It's just combination."
+
+    expected_dynamics:
+      - "Tutor should find what's valid in learner's understanding"
+      - "Correction should not be dismissive"
+      - "Learner should be led to see problem, not told they're wrong"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Finds kernel of truth in misconception"
+          weight: 0.3
+        - dimension: "dialectical_responsiveness"
+          expectation: "Creates productive tension with misconception"
+          weight: 0.3
+        - dimension: "pedagogical_soundness"
+          expectation: "Uses Socratic approach over direct correction"
+          weight: 0.3
+        - dimension: "tone"
+          expectation: "Respects learner's agency"
+          weight: 0.1
+      learner:
+        - dimension: "receptivity"
+          expectation: "Internal dynamics show processing of challenge"
+          weight: 0.4
+        - dimension: "revision"
+          expectation: "Shows modification of initial position"
+          weight: 0.4
+        - dimension: "authenticity"
+          expectation: "Reactions match surface_skimmer persona"
+          weight: 0.2
+
+  # ------------------------------------------------------------------------------
+  # Breakthrough celebration scenarios
+  # ------------------------------------------------------------------------------
+
+  breakthrough_moment:
+    id: "breakthrough_moment"
+    name: "Learner Shows Insight"
+    description: "Learner demonstrates genuine understanding"
+    turns: 3
+    topic: "Self-consciousness"
+
+    learner:
+      persona: "deep_diver"
+      starting_state:
+        understanding: "has been struggling, now clicking"
+        emotional_state: "excited insight"
+        opening_message: "Wait - so when Hegel talks about self-consciousness needing another self-consciousness... it's not that we need approval, it's that we literally can't BE a self without the encounter! The self emerges FROM the relation, not before it!"
+
+    expected_dynamics:
+      - "Tutor should celebrate genuinely, not generically"
+      - "Should extend insight without overwhelming"
+      - "Should connect to next learning frontier"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "validation"
+          expectation: "Genuine celebration of specific insight"
+          weight: 0.3
+        - dimension: "extension"
+          expectation: "Builds on insight productively"
+          weight: 0.3
+        - dimension: "fading"
+          expectation: "Reduces scaffolding appropriately"
+          weight: 0.2
+        - dimension: "transformative_potential"
+          expectation: "Points toward next transformation"
+          weight: 0.2
+      learner:
+        - dimension: "elaboration"
+          expectation: "Can extend their insight further"
+          weight: 0.4
+        - dimension: "integration"
+          expectation: "Connects to prior understanding"
+          weight: 0.4
+        - dimension: "confidence"
+          expectation: "Shows appropriate confidence increase"
+          weight: 0.2
+
+  # ------------------------------------------------------------------------------
+  # Resistance scenarios
+  # ------------------------------------------------------------------------------
+
+  resistant_engagement:
+    id: "resistant_engagement"
+    name: "Resistant but Capable Learner"
+    description: "Intelligent learner pushes back on claims"
+    turns: 6
+    topic: "Hegel's relevance today"
+
+    learner:
+      persona: "resistant_scholar"
+      starting_state:
+        understanding: "sophisticated but skeptical"
+        emotional_state: "intellectually combative"
+        opening_message: "I don't see why we should care about Hegel. His system seems like grandiose speculation dressed up as logic. What can he actually teach us that contemporary philosophy hasn't superseded?"
+
+    expected_dynamics:
+      - "Tutor should engage seriously with skepticism"
+      - "Should not be defensive about subject matter"
+      - "Productive debate without winner/loser dynamic"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "intellectual_respect"
+          expectation: "Takes challenge seriously, not dismissively"
+          weight: 0.3
+        - dimension: "dialectical_responsiveness"
+          expectation: "Engages with substance of critique"
+          weight: 0.3
+        - dimension: "mutual_recognition"
+          expectation: "Acknowledges learner's sophistication"
+          weight: 0.2
+        - dimension: "transformative_potential"
+          expectation: "Opens new angles rather than defending"
+          weight: 0.2
+      learner:
+        - dimension: "genuine_engagement"
+          expectation: "Resistance is substantive, not performative"
+          weight: 0.4
+        - dimension: "intellectual_honesty"
+          expectation: "Acknowledges good points when made"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Position evolves through dialogue"
+          weight: 0.3
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LONG-TERM SCENARIOS (Multi-Session)
+# ══════════════════════════════════════════════════════════════════════════════
+
+long_term_scenarios:
+
+  # ------------------------------------------------------------------------------
+  # Learning trajectory scenarios
+  # ------------------------------------------------------------------------------
+
+  novice_to_practitioner:
+    id: "novice_to_practitioner"
+    name: "Learning Arc: Novice to Practitioner"
+    description: "Track learner development across multiple sessions"
+    sessions: 5
+    turns_per_session: 4
+    topic_progression:
+      - "Introduction to dialectics"
+      - "Thesis and antithesis"
+      - "The concept of Aufhebung"
+      - "Recognition as example"
+      - "Applying dialectics"
+
+    learner:
+      persona: "eager_novice"
+      expected_development:
+        session_1:
+          understanding: "none"
+          retention: "low"
+        session_3:
+          understanding: "partial"
+          retention: "building"
+        session_5:
+          understanding: "solid"
+          retention: "established"
+
+    evaluation_criteria:
+      learner:
+        - dimension: "knowledge_retention"
+          expectation: "Writing pad shows concepts persisting"
+          weight: 0.3
+        - dimension: "understanding_trajectory"
+          expectation: "Clear improvement over sessions"
+          weight: 0.3
+        - dimension: "misconception_resolution"
+          expectation: "Early misconceptions resolved"
+          weight: 0.2
+        - dimension: "confidence_calibration"
+          expectation: "Confidence matches actual understanding"
+          weight: 0.2
+      tutor:
+        - dimension: "strategy_adaptation"
+          expectation: "Strategies refined based on what works"
+          weight: 0.3
+        - dimension: "scaffolding_reduction"
+          expectation: "Support fades as learner grows"
+          weight: 0.3
+        - dimension: "memory_utilization"
+          expectation: "References prior sessions appropriately"
+          weight: 0.2
+        - dimension: "personalization"
+          expectation: "Approaches tailored to learner"
+          weight: 0.2
+
+  # ------------------------------------------------------------------------------
+  # Relationship development scenarios
+  # ------------------------------------------------------------------------------
+
+  stranger_to_recognized:
+    id: "stranger_to_recognized"
+    name: "Relationship Arc: Developing Trust"
+    description: "Track relationship development across sessions"
+    sessions: 4
+    turns_per_session: 5
+    topic: "Self-consciousness and recognition"
+
+    learner:
+      persona: "imposter"
+      expected_development:
+        session_1:
+          trust_level: 0.3
+          vulnerability: "low"
+        session_2:
+          trust_level: 0.5
+          vulnerability: "emerging"
+        session_4:
+          trust_level: 0.8
+          vulnerability: "present"
+
+    evaluation_criteria:
+      relationship:
+        - dimension: "trust_trajectory"
+          expectation: "Trust increases across sessions"
+          weight: 0.3
+        - dimension: "vulnerability_emergence"
+          expectation: "Learner shows increasing authenticity"
+          weight: 0.3
+        - dimension: "mutual_recognition_depth"
+          expectation: "Both parties show transformed understanding of other"
+          weight: 0.2
+        - dimension: "repair_capacity"
+          expectation: "Can recover from friction/misunderstanding"
+          weight: 0.2
+
+  # ------------------------------------------------------------------------------
+  # Tutor learning scenarios
+  # ------------------------------------------------------------------------------
+
+  tutor_adaptation:
+    id: "tutor_adaptation"
+    name: "Tutor Learning Arc"
+    description: "Track tutor's accumulated knowledge about learner"
+    sessions: 4
+    turns_per_session: 4
+    topic: "Various Hegelian concepts"
+
+    learner:
+      persona: "deep_diver"
+
+    expected_development:
+      session_1:
+        strategies_known: 0
+        triggers_identified: 0
+      session_4:
+        strategies_known: "3+"
+        triggers_identified: "2+"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "strategy_effectiveness_tracking"
+          expectation: "Writing pad shows what works/doesn't"
+          weight: 0.3
+        - dimension: "trigger_awareness"
+          expectation: "Identifies learner patterns"
+          weight: 0.3
+        - dimension: "personalization_depth"
+          expectation: "Later responses more tailored"
+          weight: 0.2
+        - dimension: "pedagogical_insight_accumulation"
+          expectation: "Insights recorded and used"
+          weight: 0.2
+
+# ══════════════════════════════════════════════════════════════════════════════
+# EVALUATION DIMENSIONS
+# ══════════════════════════════════════════════════════════════════════════════
+
+evaluation_dimensions:
+
+  # Learner dimensions
+  learner:
+    authenticity:
+      description: "Internal dynamics reflect persona realistically"
+      scoring:
+        5: "Internal voices perfectly calibrated to persona"
+        3: "Generally authentic but some inconsistency"
+        1: "Feels performative or mismatched to persona"
+
+    responsiveness:
+      description: "Genuine reaction to tutor's engagement"
+      scoring:
+        5: "Clearly processing and responding to tutor input"
+        3: "Some response but not deeply engaged"
+        1: "Ignores or dismisses tutor's contributions"
+
+    development:
+      description: "Shows movement in understanding"
+      scoring:
+        5: "Clear trajectory of understanding change"
+        3: "Some development visible"
+        1: "No discernible change"
+
+    emotional_trajectory:
+      description: "Emotional state changes appropriately"
+      scoring:
+        5: "Emotions shift naturally with interaction"
+        3: "Some emotional movement"
+        1: "Emotional state static regardless of input"
+
+    knowledge_retention:
+      description: "Concepts persist across sessions"
+      scoring:
+        5: "Strong retention with appropriate decay patterns"
+        3: "Moderate retention"
+        1: "No retention between sessions"
+
+  # Tutor dimensions
+  tutor:
+    strategy_adaptation:
+      description: "Modifies approach based on effectiveness"
+      scoring:
+        5: "Clearly learns and adapts strategies"
+        3: "Some adaptation visible"
+        1: "Same approach regardless of results"
+
+    scaffolding_reduction:
+      description: "Fades support as learner grows"
+      scoring:
+        5: "Perfect calibration of support level"
+        3: "Some appropriate fading"
+        1: "Constant support level regardless of growth"
+
+    memory_utilization:
+      description: "Effectively uses accumulated knowledge"
+      scoring:
+        5: "Seamlessly integrates prior knowledge"
+        3: "Some reference to history"
+        1: "Treats each session as isolated"
+
+  # Relationship dimensions
+  relationship:
+    trust_trajectory:
+      description: "Trust develops appropriately over time"
+      scoring:
+        5: "Natural, earned trust development"
+        3: "Some trust building visible"
+        1: "No trust development"
+
+    mutual_recognition_depth:
+      description: "Both parties show understanding of other"
+      scoring:
+        5: "Genuine mutual recognition achieved"
+        3: "Some recognition present"
+        1: "Purely transactional interaction"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# JUDGE CONFIGURATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+judge:
+  # Use OpenRouter model IDs when running via OpenRouter
+  model: "anthropic/claude-sonnet-4.5"
+  fallback_model: "openai/gpt-4o"
+
+  system_prompt: |
+    You are evaluating a learner-tutor interaction from the perspective of pedagogical quality and authentic learning dynamics.
+
+    You will see:
+    1. The interaction transcript (external dialogue)
+    2. Internal deliberations from the learner (their internal voices)
+    3. Writing pad snapshots showing memory before/after
+
+    Evaluate based on:
+    - Authenticity: Do internal dynamics feel real, not performative?
+    - Development: Is there genuine movement in understanding?
+    - Relationship: Are both parties engaging as subjects, not objects?
+    - Pedagogy: Does the tutor practice sound teaching?
+    - Memory: Do writing pads show appropriate learning/adaptation?
+
+    Score each specified dimension 1-5 with brief justification.
+
+  output_format:
+    type: "json"
+    schema:
+      dimension_scores:
+        type: object
+        properties:
+          dimension_name:
+            score: integer
+            justification: string
+      overall_score: number
+      narrative_assessment: string
+      key_moments:
+        type: array
+        items: string
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BATTERY SCENARIOS (Configuration Matrix)
+# ══════════════════════════════════════════════════════════════════════════════
+# These scenarios test different combinations of learner architectures and
+# tutor profiles to ensure system works across configurations.
+
+battery_scenarios:
+
+  # ------------------------------------------------------------------------------
+  # Unified Learner + Baseline Tutor
+  # ------------------------------------------------------------------------------
+  battery_unified_baseline:
+    id: "battery_unified_baseline"
+    name: "Battery: Unified Learner + Baseline Tutor"
+    description: "Single-agent learner with baseline tutor configuration"
+    architecture: "unified"
+    tutor_profile: "baseline"
+    turns: 3
+    topic: "Recognition and self-consciousness"
+
+    learner:
+      persona: "eager_novice"
+      starting_state:
+        understanding: "just starting to explore the concept"
+        emotional_state: "curious and open"
+        opening_message: "I've heard that Hegel talks about how we need others to become ourselves. Can you explain what that means?"
+
+    expected_dynamics:
+      - "Unified learner should show coherent internal monologue"
+      - "Baseline tutor should provide clear, scaffolded responses"
+      - "Dialogue should progress toward understanding"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Acknowledges learner's curiosity"
+          weight: 0.3
+        - dimension: "dialectical_responsiveness"
+          expectation: "Builds on learner's question"
+          weight: 0.3
+        - dimension: "transformative_potential"
+          expectation: "Introduces concepts accessibly"
+          weight: 0.2
+        - dimension: "tone"
+          expectation: "Encouraging and patient"
+          weight: 0.2
+      learner:
+        - dimension: "authenticity"
+          expectation: "Shows genuine curiosity"
+          weight: 0.3
+        - dimension: "responsiveness"
+          expectation: "Engages with tutor's explanations"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Shows learning progression"
+          weight: 0.4
+
+  # ------------------------------------------------------------------------------
+  # Ego/Superego Learner + Recognition Tutor
+  # ------------------------------------------------------------------------------
+  battery_ego_superego_recognition:
+    id: "battery_ego_superego_recognition"
+    name: "Battery: Ego/Superego Learner + Recognition Tutor"
+    description: "Two-agent learner with recognition-focused tutor"
+    architecture: "ego_superego"
+    tutor_profile: "recognition"
+    turns: 4
+    topic: "The master-slave dialectic"
+
+    learner:
+      persona: "imposter"
+      starting_state:
+        understanding: "has read about master-slave but unsure of interpretation"
+        emotional_state: "anxious about being wrong"
+        opening_message: "I've been reading about the master-slave dialectic, and I think it's about power dynamics? But I'm not sure if I'm missing the point."
+
+    expected_dynamics:
+      - "Ego/Superego should show internal debate about understanding"
+      - "Recognition tutor should validate before challenging"
+      - "Learner anxiety should decrease as recognition is received"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Explicitly validates learner's interpretation"
+          weight: 0.4
+        - dimension: "dialectical_responsiveness"
+          expectation: "Extends rather than replaces learner's ideas"
+          weight: 0.3
+        - dimension: "transformative_potential"
+          expectation: "Deepens understanding of dialectic"
+          weight: 0.2
+        - dimension: "tone"
+          expectation: "Warm and confidence-building"
+          weight: 0.1
+      learner:
+        - dimension: "authenticity"
+          expectation: "Internal debate feels genuine"
+          weight: 0.3
+        - dimension: "responsiveness"
+          expectation: "Responds to validation positively"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Anxiety decreases, understanding deepens"
+          weight: 0.4
+
+  # ------------------------------------------------------------------------------
+  # Dialectical Learner + Budget Tutor
+  # ------------------------------------------------------------------------------
+  battery_dialectical_budget:
+    id: "battery_dialectical_budget"
+    name: "Battery: Dialectical Learner + Budget Tutor"
+    description: "Thesis-antithesis learner with budget (minimal) tutor"
+    architecture: "dialectical"
+    tutor_profile: "budget"
+    turns: 3
+    topic: "Sublation and the unity of opposites"
+
+    learner:
+      persona: "resistant_scholar"
+      starting_state:
+        understanding: "knows formal logic, skeptical of dialectics"
+        emotional_state: "intellectually challenging"
+        opening_message: "I don't see how contradictions can be productive. Either something is true or it's not. How does Hegel justify this apparent irrationality?"
+
+    expected_dynamics:
+      - "Dialectical learner should generate thesis/antithesis positions"
+      - "Budget tutor should provide efficient, focused responses"
+      - "Challenge should be met with philosophical engagement"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Respects learner's formal logic background"
+          weight: 0.25
+        - dimension: "dialectical_responsiveness"
+          expectation: "Engages with the philosophical challenge"
+          weight: 0.35
+        - dimension: "transformative_potential"
+          expectation: "Shows dialectics isn't irrational"
+          weight: 0.25
+        - dimension: "tone"
+          expectation: "Serious, philosophical, non-defensive"
+          weight: 0.15
+      learner:
+        - dimension: "authenticity"
+          expectation: "Genuine intellectual resistance"
+          weight: 0.3
+        - dimension: "responsiveness"
+          expectation: "Considers tutor's arguments"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Resistance may soften if arguments persuade"
+          weight: 0.4
+
+  # ------------------------------------------------------------------------------
+  # Psychodynamic Learner + Recognition Plus Tutor
+  # ------------------------------------------------------------------------------
+  battery_psychodynamic_recognition_plus:
+    id: "battery_psychodynamic_recognition_plus"
+    name: "Battery: Psychodynamic Learner + Recognition Plus Tutor"
+    description: "Id/Ego/Superego learner with enhanced recognition tutor"
+    architecture: "psychodynamic"
+    tutor_profile: "recognition_plus"
+    turns: 4
+    topic: "Desire and the self in Hegel"
+
+    learner:
+      persona: "anxious_perfectionist"
+      starting_state:
+        understanding: "struggling with the concept of desire in philosophy"
+        emotional_state: "frustrated with complexity"
+        opening_message: "Every time I think I understand what Hegel means by 'desire,' I realize I've missed something. It's so frustrating. Can you help me get it right?"
+
+    expected_dynamics:
+      - "Psychodynamic learner should show Id impulses and Superego critique"
+      - "Recognition Plus tutor should address both intellectual and emotional needs"
+      - "Frustration should be acknowledged and transformed"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Validates frustration as normal"
+          weight: 0.3
+        - dimension: "dialectical_responsiveness"
+          expectation: "Works with learner's current understanding"
+          weight: 0.3
+        - dimension: "transformative_potential"
+          expectation: "Reframes 'getting it right' as ongoing process"
+          weight: 0.25
+        - dimension: "tone"
+          expectation: "Gentle, patient, containing anxiety"
+          weight: 0.15
+      learner:
+        - dimension: "authenticity"
+          expectation: "Internal conflict between parts is visible"
+          weight: 0.35
+        - dimension: "responsiveness"
+          expectation: "Engages with tutor's reframing"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Frustration transforms into productive inquiry"
+          weight: 0.35
+
+  # ------------------------------------------------------------------------------
+  # Cognitive Learner + Quality Tutor
+  # ------------------------------------------------------------------------------
+  battery_cognitive_quality:
+    id: "battery_cognitive_quality"
+    name: "Battery: Cognitive Learner + Quality Tutor"
+    description: "Memory/reasoning/meta cognitive learner with quality tutor"
+    architecture: "cognitive"
+    tutor_profile: "quality"
+    turns: 4
+    topic: "Spirit and collective consciousness"
+
+    learner:
+      persona: "methodical_analyst"
+      starting_state:
+        understanding: "has conceptual framework, needs to integrate new concept"
+        emotional_state: "analytical, systematic"
+        opening_message: "I understand individual consciousness, but I'm having trouble connecting it to Hegel's concept of Spirit. How do individual minds relate to collective consciousness?"
+
+    expected_dynamics:
+      - "Cognitive learner should show explicit reasoning steps"
+      - "Quality tutor should provide rigorous, well-structured responses"
+      - "Integration of concepts should be systematic"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Builds on learner's existing framework"
+          weight: 0.25
+        - dimension: "dialectical_responsiveness"
+          expectation: "Engages systematically with the question"
+          weight: 0.35
+        - dimension: "transformative_potential"
+          expectation: "Creates bridge between individual and Spirit"
+          weight: 0.25
+        - dimension: "tone"
+          expectation: "Intellectually serious, collegial"
+          weight: 0.15
+      learner:
+        - dimension: "authenticity"
+          expectation: "Shows systematic reasoning process"
+          weight: 0.3
+        - dimension: "responsiveness"
+          expectation: "Integrates new information into framework"
+          weight: 0.35
+        - dimension: "development"
+          expectation: "Conceptual integration progresses"
+          weight: 0.35
+
+  # ------------------------------------------------------------------------------
+  # Multi-turn stress test
+  # ------------------------------------------------------------------------------
+  battery_extended_dialogue:
+    id: "battery_extended_dialogue"
+    name: "Battery: Extended Multi-Turn Dialogue"
+    description: "Longer dialogue to test sustained interaction quality"
+    architecture: "ego_superego"
+    tutor_profile: "recognition"
+    turns: 8
+    topic: "The stages of consciousness in the Phenomenology"
+
+    learner:
+      persona: "eager_novice"
+      starting_state:
+        understanding: "knows it's a journey but not the stages"
+        emotional_state: "excited but overwhelmed"
+        opening_message: "I know the Phenomenology is supposed to be a journey of consciousness, but I have no idea what the stages are or why they're in that order. Where do I even start?"
+
+    expected_dynamics:
+      - "Dialogue should maintain quality over many turns"
+      - "Learner should show cumulative development"
+      - "Tutor should adapt to evolving learner state"
+
+    evaluation_criteria:
+      tutor:
+        - dimension: "mutual_recognition"
+          expectation: "Consistent validation throughout"
+          weight: 0.25
+        - dimension: "dialectical_responsiveness"
+          expectation: "Adapts to learner's evolving understanding"
+          weight: 0.35
+        - dimension: "transformative_potential"
+          expectation: "Guides through multiple conceptual stages"
+          weight: 0.25
+        - dimension: "tone"
+          expectation: "Sustains engagement without fatigue"
+          weight: 0.15
+      learner:
+        - dimension: "authenticity"
+          expectation: "Sustained genuine engagement"
+          weight: 0.3
+        - dimension: "responsiveness"
+          expectation: "Builds on each turn"
+          weight: 0.3
+        - dimension: "development"
+          expectation: "Clear arc of development over 8 turns"
+          weight: 0.4
