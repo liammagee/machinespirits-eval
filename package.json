@@ -1,0 +1,66 @@
+{
+  "name": "@machinespirits/eval",
+  "version": "0.1.0",
+  "description": "Evaluation system for Machine Spirits tutor - benchmarking, rubric evaluation, and analysis tools",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./services/*": "./services/*.js",
+    "./routes/*": "./routes/*.js",
+    "./config/*": "./config/*"
+  },
+  "files": [
+    "index.js",
+    "server.js",
+    "server-init.js",
+    "routes/",
+    "services/",
+    "components/",
+    "hooks/",
+    "config/",
+    "scripts/",
+    "docs/"
+  ],
+  "scripts": {
+    "start": "STANDALONE=true node server.js",
+    "dev": "STANDALONE=true node server.js",
+    "eval": "node scripts/eval-cli.js",
+    "eval:quick": "node scripts/eval-cli.js quick",
+    "eval:test": "node scripts/eval-cli.js test"
+  },
+  "keywords": [
+    "evaluation",
+    "tutor",
+    "benchmark",
+    "rubric",
+    "machine-spirits"
+  ],
+  "author": "L. Magee",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lmagee/machine-spirits",
+    "directory": "packages/eval"
+  },
+  "peerDependencies": {
+    "@machinespirits/tutor-core": ">=0.1.0",
+    "@anthropic-ai/sdk": ">=0.71.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "yaml": "^2.8.2",
+    "better-sqlite3": "^12.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

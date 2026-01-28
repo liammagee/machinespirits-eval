@@ -1,0 +1,61 @@
+# Machine Spirits Evaluation Extension
+# This manifest describes the eval system as a pluggable extension
+
+name: "@machinespirits/eval"
+version: "0.1.0"
+description: "Evaluation system for tutor benchmarking, rubric evaluation, and analysis"
+featureFlag: evaluation
+
+dependencies:
+  peerDependencies:
+    "@machinespirits/tutor-core": ">=0.1.0"
+
+# Server-side configuration
+server:
+  # Routes to mount
+  routes:
+    - path: "/api/eval"
+      module: "./routes/evalRoutes.js"
+
+  # Initialization hook
+  init: "./server-init.js"
+
+# Client-side configuration
+client:
+  # React components to expose
+  components:
+    - name: MobileEvalDashboard
+      module: "./components/MobileEvalDashboard.tsx"
+      route: "#/m/eval"
+
+    - name: QuickTestView
+      module: "./components/mobile/QuickTestView.tsx"
+
+    - name: RunHistoryView
+      module: "./components/mobile/RunHistoryView.tsx"
+
+    - name: LogsView
+      module: "./components/mobile/LogsView.tsx"
+
+    - name: DocsView
+      module: "./components/mobile/DocsView.tsx"
+
+  # Custom hooks
+  hooks:
+    - name: useEvalData
+      module: "./hooks/useEvalData.ts"
+
+# Data configuration
+data:
+  # SQLite database for evaluation results
+  database: "./data/evaluations.db"
+  isolatedDatabase: true
+
+# Documentation
+documentation:
+  directory: "./docs"
+  research: "./docs/research"
+
+# Assets that should be served statically
+assets:
+  static: "./components"
