@@ -7,8 +7,8 @@
  */
 
 import React from 'react';
-import type { EvalDimensionScores, EvalDimensionScore } from '../../../types';
-import haptics from '../../../utils/haptics';
+import type { EvalDimensionScores, EvalDimensionScore } from '../../types';
+import haptics from '../../utils/haptics';
 
 interface DimensionBreakdownProps {
   scores: EvalDimensionScores;

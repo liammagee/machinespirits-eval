@@ -8,7 +8,14 @@
     ".": "./index.js",
     "./services/*": "./services/*.js",
     "./routes/*": "./routes/*.js",
-    "./config/*": "./config/*"
+    "./config/*": "./config/*",
+    "./components/*": "./components/*.tsx",
+    "./components/mobile/*": "./components/mobile/*.tsx",
+    "./components/comparison": "./components/comparison/index.ts",
+    "./components/comparison/*": "./components/comparison/*.tsx",
+    "./hooks/*": "./hooks/*.ts",
+    "./types": "./types.ts",
+    "./utils/*": "./utils/*.ts"
   },
   "files": [
     "index.js",

@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import haptics from '../../../utils/haptics';
+import haptics from '../../utils/haptics';
 import { PsychodynamicQuadrant } from './PsychodynamicQuadrant';
 import { RecognitionTypeChart } from './RecognitionTypeChart';
 import { SynthesisStrategyChart } from './SynthesisStrategyChart';

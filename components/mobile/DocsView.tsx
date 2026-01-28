@@ -6,8 +6,8 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import type { EvalDoc } from '../../../types';
-import haptics from '../../../utils/haptics';
+import type { EvalDoc } from '../../types';
+import haptics from '../../utils/haptics';
 
 interface DocsViewProps {
   docs: EvalDoc[];

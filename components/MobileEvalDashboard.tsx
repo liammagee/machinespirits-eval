@@ -12,15 +12,15 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
-import { useEvalData } from '../../hooks/useEvalData';
-import haptics from '../../utils/haptics';
+import { useEvalData } from '../hooks/useEvalData';
+import haptics from '../utils/haptics';
 import { QuickTestView } from './mobile/QuickTestView';
 import { RunHistoryView } from './mobile/RunHistoryView';
 import { LogsView } from './mobile/LogsView';
 import { DocsView } from './mobile/DocsView';
 import { BottomSheet } from './mobile/BottomSheet';
 import { RunDetailView } from './mobile/RunDetailView';
-import type { RunDetails } from '../../hooks/useEvalData';
+import type { RunDetails } from '../hooks/useEvalData';
 
 // Tab configuration
 type ViewMode = 'test' | 'history' | 'logs' | 'docs';

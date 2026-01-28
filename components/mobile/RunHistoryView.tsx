@@ -6,8 +6,8 @@
  */
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import type { EvalRun } from '../../../types';
-import haptics from '../../../utils/haptics';
+import type { EvalRun } from '../../types';
+import haptics from '../../utils/haptics';
 
 interface RunHistoryViewProps {
   runs: EvalRun[];
