@@ -21,12 +21,14 @@
     "index.js",
     "server.js",
     "server-init.js",
+    "types.ts",
     "routes/",
     "services/",
     "components/",
     "hooks/",
     "config/",
     "scripts/",
+    "utils/",
     "docs/"
   ],
   "scripts": {
@@ -47,8 +49,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lmagee/machine-spirits",
-    "directory": "packages/eval"
+    "url": "https://github.com/liammagee/machinespirits-eval"
   },
   "peerDependencies": {
     "@machinespirits/tutor-core": ">=0.1.0",
