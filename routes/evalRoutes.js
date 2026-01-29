@@ -18,6 +18,7 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 // Import core tutor services from @machinespirits/tutor-core
 import {
   tutorApiService as tutorApi,
+  tutorConfigLoader,
   dialogueLogService,
   monitoringService,
   aiConfigService,
@@ -171,7 +172,7 @@ router.get('/scenarios/:id', (req, res) => {
  */
 router.get('/profiles', (req, res) => {
   try {
-    const profiles = tutorApi.listProfiles();
+    const profiles = tutorConfigLoader.listProfiles();
     res.json({ success: true, profiles });
   } catch (error) {
     console.error('[EvalRoutes] List profiles error:', error);
@@ -200,7 +201,7 @@ router.get('/learner-profiles', (req, res) => {
  */
 router.get('/configurations', (req, res) => {
   try {
-    const configurations = tutorApi.listConfigurations();
+    const configurations = evalConfigLoader.listConfigurations();
     res.json({ success: true, configurations });
   } catch (error) {
     console.error('[EvalRoutes] List configurations error:', error);
@@ -587,7 +588,7 @@ router.post('/matrix', async (req, res) => {
     let { profiles = [], scenarios = 'all', skipRubric = false } = req.body;
 
     // Default profiles if none specified
-    const allProfiles = tutorApi.listProfiles();
+    const allProfiles = tutorConfigLoader.listProfiles();
     if (profiles.length === 0) {
       profiles = ['budget', 'experimental', 'default', 'fast'].filter(p =>
         allProfiles.some(ap => ap.name === p)
@@ -782,7 +783,7 @@ router.get('/stream/matrix', async (req, res) => {
     const outputSize = req.query.outputSize || 'normal';
 
     // Get all available profiles
-    const allProfiles = tutorApi.listProfiles();
+    const allProfiles = tutorConfigLoader.listProfiles();
     if (profiles.length === 0) {
       profiles = ['budget', 'experimental', 'default', 'fast'].filter(p =>
         allProfiles.some(ap => ap.name === p)
@@ -2699,7 +2700,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
     const outputSize = req.query.outputSize || 'normal';
 
     // Validate profiles exist
-    const allProfiles = tutorApi.listProfiles();
+    const allProfiles = tutorConfigLoader.listProfiles();
     const validProfiles = profiles.filter(p => allProfiles.some(ap => ap.name === p));
 
     if (validProfiles.length !== 2) {
