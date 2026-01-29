@@ -16,7 +16,7 @@ function debugLog(...args) {
 }
 
 /**
- * Get available evaluator configuration, resolving model references via providers.yaml
+ * Get available judge configuration, resolving model references via providers.yaml
  * Tries primary model first, then fallback if primary is not configured
  *
  * @param {Object} [overrides] - Optional judge override
@@ -25,7 +25,7 @@ function debugLog(...args) {
  * @param {string} [overrides.judgeOverride.apiKeyEnv] - Env var name for API key
  * @param {Object} [overrides.judgeOverride.hyperparameters] - Override hyperparameters
  */
-function getAvailableEvaluator(overrides = {}) {
+function getAvailableJudge(overrides = {}) {
   const { judgeOverride } = overrides;
 
   // If a judge override is provided, resolve and return it directly
@@ -50,8 +50,7 @@ function getAvailableEvaluator(overrides = {}) {
   }
 
   const rubric = evalConfigLoader.loadRubric();
-  // Prefer 'judge' config, fall back to legacy 'evaluator' for backwards compatibility
-  const evalConfig = rubric?.judge || rubric?.evaluator;
+  const evalConfig = rubric?.judge;
 
   if (!evalConfig?.model) {
     console.warn('[rubricEvaluator] No judge config in evaluation-rubric.yaml, using defaults');
@@ -75,7 +74,7 @@ function getAvailableEvaluator(overrides = {}) {
       };
     }
   } catch (e) {
-    console.warn(`[rubricEvaluator] Failed to resolve primary evaluator: ${e.message}`);
+    console.warn(`[rubricEvaluator] Failed to resolve primary judge: ${e.message}`);
   }
 
   // Try fallback
@@ -83,7 +82,7 @@ function getAvailableEvaluator(overrides = {}) {
     try {
       const fallback = evalConfigLoader.resolveModel(evalConfig.fallback.model);
       if (fallback.isConfigured) {
-        debugLog(`[rubricEvaluator] Using fallback evaluator: ${fallback.provider}/${fallback.model}`);
+        debugLog(`[rubricEvaluator] Using fallback judge: ${fallback.provider}/${fallback.model}`);
         return {
           provider: fallback.provider,
           model: fallback.model,
@@ -93,7 +92,7 @@ function getAvailableEvaluator(overrides = {}) {
         };
       }
     } catch (e) {
-      console.warn(`[rubricEvaluator] Failed to resolve fallback evaluator: ${e.message}`);
+      console.warn(`[rubricEvaluator] Failed to resolve fallback judge: ${e.message}`);
     }
   }
 
@@ -107,12 +106,11 @@ function getAvailableEvaluator(overrides = {}) {
 }
 
 /**
- * Get the fallback evaluator config (if different from primary)
+ * Get the fallback judge config (if different from primary)
  */
-function getFallbackEvaluator() {
+function getFallbackJudge() {
   const rubric = evalConfigLoader.loadRubric();
-  // Prefer 'judge' config, fall back to legacy 'evaluator'
-  const evalConfig = rubric?.judge || rubric?.evaluator;
+  const evalConfig = rubric?.judge;
 
   if (!evalConfig?.fallback?.model) return null;
 
@@ -343,8 +341,8 @@ Respond with ONLY a JSON object in this exact format:
  * @param {Object} [overrides] - Optional overrides (passed to getAvailableEvaluator)
  */
 async function callJudgeModel(prompt, overrides = {}) {
-  const evaluator = getAvailableEvaluator(overrides);
-  const { provider, model, hyperparameters } = evaluator;
+  const judge = getAvailableJudge(overrides);
+  const { provider, model, hyperparameters } = judge;
   const temperature = hyperparameters?.temperature ?? 0.2;
   const maxTokens = hyperparameters?.max_tokens ?? 1500;
 
@@ -561,7 +559,7 @@ function parseJudgeResponse(responseText) {
  */
 export async function evaluateSuggestion(suggestion, scenario, context = {}, overrides = {}) {
   const startTime = Date.now();
-  const evaluator = getAvailableEvaluator(overrides);
+  const judge = getAvailableJudge(overrides);
 
   try {
     const prompt = buildEvaluationPrompt(suggestion, scenario, context);
@@ -573,7 +571,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
     // Handle empty response - try fallback model
     if (!responseText || responseText.trim() === '') {
       console.warn('[rubricEvaluator] Primary judge returned empty response, trying fallback...');
-      const fallbackConfig = getFallbackEvaluator();
+      const fallbackConfig = getFallbackJudge();
       if (fallbackConfig) {
         responseText = await callJudgeModelWithConfig(prompt, fallbackConfig);
         debugLog('[rubricEvaluator] Fallback response (first 300 chars):', responseText.slice(0, 300));
@@ -645,14 +643,14 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       requiredMissing: parsed.validation?.required_missing || [],
       forbiddenFound: parsed.validation?.forbidden_found || [],
       summary: parsed.summary,
-      evaluatorModel: `${evaluator.provider}/${evaluator.model}`,
+      judgeModel: `${judge.provider}/${judge.model}`,
       evaluationTimeMs: Date.now() - startTime,
     };
   } catch (error) {
     return {
       success: false,
       error: error.message,
-      evaluatorModel: `${evaluator.provider}/${evaluator.model}`,
+      judgeModel: `${judge.provider}/${judge.model}`,
       evaluationTimeMs: Date.now() - startTime,
     };
   }

@@ -1003,13 +1003,13 @@ export const QuickTestView: React.FC<QuickTestViewProps> = ({
             {/* Evaluator Reasoning */}
             {result.evaluationReasoning && (
               <div className="bg-gray-800/30 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-300 mb-2">Evaluator Reasoning</h4>
+                <h4 className="text-sm font-medium text-gray-300 mb-2">Judge Reasoning</h4>
                 <p className="text-xs text-gray-400 leading-relaxed">
                   {result.evaluationReasoning}
                 </p>
-                {result.evaluatorModel && (
+                {result.judgeModel && (
                   <p className="text-[10px] text-gray-600 mt-2">
-                    Model: {result.evaluatorModel}
+                    Model: {result.judgeModel}
                   </p>
                 )}
               </div>

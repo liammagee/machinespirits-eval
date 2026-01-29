@@ -3571,7 +3571,7 @@ configurations:
 # Judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
 # Using Gemini Flash for reliability - OpenRouter free tier models were returning empty responses
 judge:
-  model: openrouter.sonnet
+  model: openrouter.kimi-k2_5
   hyperparameters:
     temperature: 0.2
     max_tokens: 4000
@@ -3580,19 +3580,10 @@ judge:
 
 # Recommender: Analyzes failures and suggests prompt improvements (needs reasoning)
 recommender:
-  model: openrouter.sonnet
+  model: openrouter.kimi-k2_5
   hyperparameters:
     temperature: 0.4
     max_tokens: 6000
-  fallback:
-    model: openrouter.nemotron
-
-# Legacy: kept for backwards compatibility, points to judge
-evaluator:
-  model: openrouter.sonnet
-  hyperparameters:
-    temperature: 0.2
-    max_tokens: 4000
   fallback:
     model: openrouter.nemotron
 

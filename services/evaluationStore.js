@@ -22,6 +22,16 @@ const db = new Database(dbPath);
 // Enable WAL mode for better concurrent access
 db.pragma('journal_mode = WAL');
 
+// Migrate: rename evaluator_model → judge_model if the old column exists
+try {
+  const cols = db.prepare('PRAGMA table_info(evaluation_results)').all().map(c => c.name);
+  if (cols.includes('evaluator_model') && !cols.includes('judge_model')) {
+    db.exec('ALTER TABLE evaluation_results RENAME COLUMN evaluator_model TO judge_model');
+  }
+} catch (e) {
+  // Table may not exist yet (first run)
+}
+
 // Create tables
 db.exec(`
   -- Evaluation runs (batches of tests)
@@ -81,7 +91,7 @@ db.exec(`
 
     -- Metadata
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    evaluator_model TEXT,
+    judge_model TEXT,
     evaluation_reasoning TEXT,
     success BOOLEAN DEFAULT 1,
     error_message TEXT
@@ -261,7 +271,7 @@ export function storeResult(runId, result) {
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone, overall_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
-      evaluator_model, evaluation_reasoning, scores_with_reasoning, success, error_message
+      judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message
     ) VALUES (
       ?, ?, ?,
       ?, ?, ?, ?, ?,
@@ -303,7 +313,7 @@ export function storeResult(runId, result) {
     result.passesForbidden ? 1 : 0,
     JSON.stringify(result.requiredMissing || []),
     JSON.stringify(result.forbiddenFound || []),
-    result.evaluatorModel,
+    result.judgeModel,
     result.evaluationReasoning,
     result.scoresWithReasoning ? JSON.stringify(result.scoresWithReasoning) : null,
     result.success ? 1 : 0,
@@ -918,7 +928,7 @@ function parseResultRow(row) {
     passesForbidden: Boolean(row.passes_forbidden),
     requiredMissing: JSON.parse(row.required_missing || '[]'),
     forbiddenFound: JSON.parse(row.forbidden_found || '[]'),
-    evaluatorModel: row.evaluator_model,
+    judgeModel: row.judge_model,
     evaluationReasoning: row.evaluation_reasoning,
     success: Boolean(row.success),
     errorMessage: row.error_message,
