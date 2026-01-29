@@ -13,7 +13,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Anthropic from '@anthropic-ai/sdk';
-import { tutorConfigLoader as configLoader } from '@machinespirits/tutor-core';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -41,7 +40,7 @@ function getEvaluatorConfig() {
 
   // Try to resolve primary model
   try {
-    const resolved = configLoader.resolveModel(evalConfig.model);
+    const resolved = evalConfigLoader.resolveModel(evalConfig.model);
     if (resolved.isConfigured) {
       return {
         provider: resolved.provider,
@@ -58,7 +57,7 @@ function getEvaluatorConfig() {
   // Try fallback
   if (evalConfig.fallback?.model) {
     try {
-      const fallback = configLoader.resolveModel(evalConfig.fallback.model);
+      const fallback = evalConfigLoader.resolveModel(evalConfig.fallback.model);
       if (fallback.isConfigured) {
         console.log(`[promptRecommendation] Using fallback: ${fallback.provider}/${fallback.model}`);
         return {
@@ -75,7 +74,7 @@ function getEvaluatorConfig() {
   }
 
   // Return primary anyway - will fail with helpful error
-  const resolved = configLoader.resolveModel(evalConfig.model);
+  const resolved = evalConfigLoader.resolveModel(evalConfig.model);
   return {
     provider: resolved.provider,
     model: resolved.model,

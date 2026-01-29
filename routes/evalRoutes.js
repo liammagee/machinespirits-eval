@@ -219,15 +219,37 @@ router.get('/configurations', (req, res) => {
  * Body: {
  *   profile: "budget",           // Profile name or config string
  *   scenario: "new_user_first_visit",  // Scenario ID (optional)
- *   skipRubric: true            // Skip AI judge evaluation (optional)
+ *   skipRubric: true,            // Skip AI judge evaluation (optional)
+ *   judgeOverride: null,         // Override judge model (optional)
+ *   provider: null,              // Override tutor provider (optional)
+ *   model: null,                 // Override tutor model (optional)
+ *   egoModel: null,              // Override ego model (optional)
+ *   superegoStrategy: null,      // Superego intervention strategy (optional)
+ *   hyperparameters: null        // Override hyperparameters (optional)
  * }
  */
 router.post('/quick', async (req, res) => {
   try {
-    const { profile = 'budget', scenario = 'new_user_first_visit', skipRubric = false, judgeOverride = null } = req.body;
+    const {
+      profile = 'budget',
+      scenario = 'new_user_first_visit',
+      skipRubric = false,
+      judgeOverride = null,
+      provider,
+      model,
+      egoModel,
+      superegoStrategy,
+      hyperparameters,
+    } = req.body;
 
-    // Build config
-    const config = { profileName: profile };
+    // Build config with optional tutor overrides
+    const config = {
+      profileName: profile,
+      ...(provider && { provider }),
+      ...(model && { model }),
+      ...(egoModel && { egoModel }),
+      ...(hyperparameters && { hyperparameters }),
+    };
 
     // Get scenario name for description
     const scenarioDetails = evalConfigLoader.getScenario(scenario);
@@ -244,6 +266,10 @@ router.post('/quick', async (req, res) => {
         scenarios: [scenario],
         scenarioNames: [scenarioName],
         judgeOverride: judgeOverride || undefined,
+        ...(provider && { provider }),
+        ...(model && { model }),
+        ...(egoModel && { egoModel }),
+        ...(superegoStrategy && { superegoStrategy }),
       },
     });
 
@@ -252,6 +278,7 @@ router.post('/quick', async (req, res) => {
       skipRubricEval: skipRubric,
       verbose: false,
       judgeOverride,
+      superegoStrategy,
     });
 
     // Store result to history

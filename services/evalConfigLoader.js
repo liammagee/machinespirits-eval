@@ -15,9 +15,11 @@ import yaml from 'yaml';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.join(path.resolve(__dirname, '..'), 'config');
 
-// Mtime-based cache
+// Mtime-based caches
 let rubricCache = null;
 let rubricMtime = null;
+let providersCache = null;
+let providersMtime = null;
 
 /**
  * Load the evaluation rubric YAML from the eval repo's config directory.
@@ -49,6 +51,111 @@ export function loadRubric({ rubricPath, forceReload } = {}) {
     console.error('[evalConfigLoader] Failed to parse rubric:', err.message);
     return null;
   }
+}
+
+/**
+ * Load the providers YAML from the eval repo's config directory.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object|null} Parsed providers object, or null if file not found
+ */
+export function loadProviders({ forceReload } = {}) {
+  const effectivePath = path.join(EVAL_CONFIG_DIR, 'providers.yaml');
+
+  try {
+    const stats = fs.statSync(effectivePath);
+    if (!forceReload && providersCache && providersMtime === stats.mtimeMs) {
+      return providersCache;
+    }
+    providersMtime = stats.mtimeMs;
+  } catch (err) {
+    console.warn('[evalConfigLoader] Providers file not found:', err.message);
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(effectivePath, 'utf-8');
+    providersCache = yaml.parse(content);
+    return providersCache;
+  } catch (err) {
+    console.error('[evalConfigLoader] Failed to parse providers:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Get provider config with API key resolved from environment.
+ *
+ * @param {string} providerName - Provider key (e.g. 'anthropic', 'openrouter')
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object} Provider config with apiKey and isConfigured
+ */
+export function getProviderConfig(providerName, options = {}) {
+  const data = loadProviders(options);
+  const provider = data?.providers?.[providerName];
+
+  if (!provider) {
+    throw new Error(`Unknown provider: ${providerName}`);
+  }
+
+  const apiKey = provider.api_key_env ? (process.env[provider.api_key_env] || '') : '';
+  const isLocal = providerName === 'local';
+  const isConfigured = isLocal ? Boolean(provider.base_url) : Boolean(apiKey);
+
+  return {
+    ...provider,
+    apiKey,
+    isConfigured,
+  };
+}
+
+/**
+ * Resolve a model reference to full provider config.
+ *
+ * Accepts:
+ *   - String: "provider.alias" (e.g. "openrouter.sonnet")
+ *   - Object: { provider, model } (e.g. { provider: 'anthropic', model: 'sonnet' })
+ *
+ * @param {string|Object} ref - Model reference
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object} { provider, model, apiKey, isConfigured, baseUrl }
+ */
+export function resolveModel(ref, options = {}) {
+  let providerName, modelAlias;
+
+  if (typeof ref === 'string') {
+    const dotIndex = ref.indexOf('.');
+    if (dotIndex > 0 && dotIndex < ref.length - 1) {
+      providerName = ref.slice(0, dotIndex);
+      modelAlias = ref.slice(dotIndex + 1);
+    } else {
+      throw new Error(
+        `Invalid model reference: "${ref}". Use format "provider.model" (e.g., "openrouter.haiku", "anthropic.sonnet")`
+      );
+    }
+  } else if (typeof ref === 'object' && ref !== null) {
+    providerName = ref.provider;
+    modelAlias = ref.model;
+    if (!providerName || !modelAlias) {
+      throw new Error('Model reference object must have both "provider" and "model" properties');
+    }
+  } else {
+    throw new Error('Model reference must be a string or object');
+  }
+
+  const providerConfig = getProviderConfig(providerName, options);
+  const modelId = providerConfig.models?.[modelAlias] || modelAlias;
+
+  return {
+    provider: providerName,
+    model: modelId,
+    apiKey: providerConfig.apiKey,
+    isConfigured: providerConfig.isConfigured,
+    baseUrl: providerConfig.base_url,
+  };
 }
 
 /**
@@ -139,6 +246,9 @@ export function getBenchmarkSettings(options = {}) {
 
 export default {
   loadRubric,
+  loadProviders,
+  getProviderConfig,
+  resolveModel,
   getJudgeConfig,
   getRubricDimensions,
   getScenario,
