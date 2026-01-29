@@ -1,0 +1,183 @@
+# Local Tutor Agent Configuration (Eval Repo Override)
+#
+# This file overrides tutor-core's tutor-agents.yaml for evaluation purposes.
+# Only profiles that the eval repo wants to control need to be defined here.
+# Model aliases (e.g. "sonnet", "deepseek") are resolved through providers.yaml.
+
+active_profile: budget
+
+profiles:
+  # Budget: Single-agent with DeepSeek (free tier) on OpenRouter
+  budget:
+    description: "Budget-friendly single agent - DeepSeek (free) via OpenRouter, no dialogue"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: deepseek
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 1500
+
+    superego: null
+
+  # Default: Balanced quality with Sonnet
+  default:
+    description: "Sonnet-based dialogue for quality suggestions"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1000
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 600
+
+  # Fast: Cost-effective with Nemotron
+  fast:
+    description: "Fast Nemotron-based dialogue for cost-sensitive deployments"
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.8
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 800
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 500
+
+  # Quality: Higher quality with Sonnet for both agents
+  quality:
+    description: "Sonnet-based dialogue for higher quality suggestions"
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.85
+
+    ego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 1000
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.3
+        max_tokens: 800
+
+  # Single-agent: No dialogue, just Ego
+  single_agent:
+    description: "Single agent mode - no Superego review"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: openrouter
+      model: haiku
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 800
+
+    superego: null
+
+  # Experimental: Drama Machine-inspired differentiated ego/superego
+  experimental:
+    description: "Drama Machine-inspired ego/superego differentiation via OpenRouter"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-experimental.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 2500
+
+    superego:
+      provider: openrouter
+      model: sonnet
+      staging: back
+      prompt_file: tutor-superego-experimental.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 2500
+
+  # Budget Experimental: Drama Machine with free Nemotron
+  budget_experimental:
+    description: "Drama Machine-inspired dialogue with free Nemotron model"
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-experimental.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 3500
+
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-experimental.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 3500
+
+  # Local: For local LLM testing via LM Studio
+  local:
+    description: "Local LLM via LM Studio - for offline development"
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+    ego:
+      provider: local
+      model: default
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 1000
+
+    superego: null

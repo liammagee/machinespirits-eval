@@ -30,6 +30,21 @@ function resolveConfigModels(config) {
       resolved.egoProvider = r.provider;
     } catch (e) { /* pass through as-is */ }
   }
+
+  // When a profileName is provided but no explicit provider/model,
+  // look up the profile from the eval repo's local tutor-agents.yaml
+  // and extract the ego provider/model as explicit overrides.
+  if (resolved.profileName && !resolved.provider && !resolved.model) {
+    const profile = evalConfigLoader.getTutorProfile(resolved.profileName);
+    if (profile?.ego) {
+      resolved.provider = profile.ego.resolvedProvider || profile.ego.provider;
+      resolved.model = profile.ego.resolvedModel || profile.ego.model;
+      if (profile.ego.hyperparameters && !resolved.hyperparameters) {
+        resolved.hyperparameters = profile.ego.hyperparameters;
+      }
+    }
+  }
+
   return resolved;
 }
 
@@ -126,7 +141,7 @@ export async function runEvaluation(options = {}) {
   if (configurations === 'all') {
     targetConfigs = tutorApi.listConfigurations();
   } else if (configurations === 'profiles') {
-    const profiles = tutorApi.listProfiles();
+    const profiles = evalConfigLoader.listTutorProfiles();
     targetConfigs = profiles.map(p => ({
       provider: null,
       model: null,
@@ -661,7 +676,7 @@ export function listOptions() {
   return {
     scenarios: evalConfigLoader.listScenarios(),
     configurations: tutorApi.listConfigurations(),
-    profiles: tutorApi.listProfiles(),
+    profiles: evalConfigLoader.listTutorProfiles(),
   };
 }
 

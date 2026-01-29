@@ -52,9 +52,11 @@ async function main() {
           console.log(`  ${c.provider}/${c.model}`);
         }
         if (options.profiles?.length) {
-          console.log('\nAvailable Profiles:');
+          console.log('\nAvailable Profiles (local tutor-agents.yaml):');
           for (const p of options.profiles) {
-            console.log(`  ${p.id || p.name} - ${p.description || ''}`);
+            const ego = p.egoProvider && p.egoModel ? ` [${p.egoProvider}/${p.egoModel}]` : '';
+            const dialogue = p.dialogueEnabled ? ` (dialogue: ${p.maxRounds} rounds)` : ' (single-agent)';
+            console.log(`  ${p.name}${ego}${dialogue} - ${p.description || ''}`);
           }
         }
         break;

@@ -20,6 +20,8 @@ let rubricCache = null;
 let rubricMtime = null;
 let providersCache = null;
 let providersMtime = null;
+let tutorAgentsCache = null;
+let tutorAgentsMtime = null;
 
 /**
  * Load the evaluation rubric YAML from the eval repo's config directory.
@@ -167,7 +169,7 @@ export function resolveModel(ref, options = {}) {
  */
 export function getJudgeConfig(options = {}) {
   const rubric = loadRubric(options);
-  return rubric?.judge || rubric?.evaluator || null;
+  return rubric?.judge || null;
 }
 
 /**
@@ -244,6 +246,109 @@ export function getBenchmarkSettings(options = {}) {
   };
 }
 
+/**
+ * Load the tutor-agents YAML from the eval repo's config directory.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object|null} Parsed tutor-agents object, or null if file not found
+ */
+export function loadTutorAgents({ forceReload } = {}) {
+  const effectivePath = path.join(EVAL_CONFIG_DIR, 'tutor-agents.yaml');
+
+  try {
+    const stats = fs.statSync(effectivePath);
+    if (!forceReload && tutorAgentsCache && tutorAgentsMtime === stats.mtimeMs) {
+      return tutorAgentsCache;
+    }
+    tutorAgentsMtime = stats.mtimeMs;
+  } catch (err) {
+    console.warn('[evalConfigLoader] Tutor agents file not found:', err.message);
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(effectivePath, 'utf-8');
+    tutorAgentsCache = yaml.parse(content);
+    return tutorAgentsCache;
+  } catch (err) {
+    console.error('[evalConfigLoader] Failed to parse tutor agents:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Get a tutor profile's config with provider/model resolved through providers.yaml.
+ *
+ * @param {string} profileName - Profile key (e.g. 'budget', 'quality')
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object|null} Resolved profile with ego/superego provider/model IDs, or null
+ */
+export function getTutorProfile(profileName, options = {}) {
+  const data = loadTutorAgents(options);
+  const profile = data?.profiles?.[profileName];
+
+  if (!profile) {
+    return null;
+  }
+
+  const result = {
+    name: profileName,
+    description: profile.description,
+    dialogue: profile.dialogue,
+    ego: profile.ego ? { ...profile.ego } : null,
+    superego: profile.superego ? { ...profile.superego } : null,
+  };
+
+  // Resolve ego model through providers.yaml
+  if (result.ego?.provider && result.ego?.model) {
+    try {
+      const resolved = resolveModel(`${result.ego.provider}.${result.ego.model}`, options);
+      result.ego.resolvedProvider = resolved.provider;
+      result.ego.resolvedModel = resolved.model;
+    } catch (e) {
+      // Keep the raw values if resolution fails
+    }
+  }
+
+  // Resolve superego model through providers.yaml
+  if (result.superego?.provider && result.superego?.model) {
+    try {
+      const resolved = resolveModel(`${result.superego.provider}.${result.superego.model}`, options);
+      result.superego.resolvedProvider = resolved.provider;
+      result.superego.resolvedModel = resolved.model;
+    } catch (e) {
+      // Keep the raw values if resolution fails
+    }
+  }
+
+  return result;
+}
+
+/**
+ * List available tutor profiles from the local tutor-agents.yaml.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Array} Array of { name, description, dialogueEnabled, maxRounds, egoProvider, egoModel, superegoProvider, superegoModel }
+ */
+export function listTutorProfiles(options = {}) {
+  const data = loadTutorAgents(options);
+  const profiles = data?.profiles || {};
+
+  return Object.entries(profiles).map(([name, profile]) => ({
+    name,
+    description: profile.description || '',
+    dialogueEnabled: profile.dialogue?.enabled ?? true,
+    maxRounds: profile.dialogue?.max_rounds ?? 0,
+    egoProvider: profile.ego?.provider,
+    egoModel: profile.ego?.model,
+    superegoProvider: profile.superego?.provider,
+    superegoModel: profile.superego?.model,
+  }));
+}
+
 export default {
   loadRubric,
   loadProviders,
@@ -255,4 +360,7 @@ export default {
   listScenarios,
   isMultiTurnScenario,
   getBenchmarkSettings,
+  loadTutorAgents,
+  getTutorProfile,
+  listTutorProfiles,
 };
