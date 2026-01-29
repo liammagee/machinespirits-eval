@@ -18,6 +18,7 @@ import {
 const { resolveModel, loadConfig, getDialogueConfig } = tutorConfigLoader;
 import * as modulationEvaluator from './modulationEvaluator.js';
 import * as evaluationRunner from './evaluationRunner.js';
+import * as evalConfigLoader from './evalConfigLoader.js';
 
 // Default model configurations for benchmarking
 export const DEFAULT_BENCHMARK_MODELS = [
@@ -56,20 +57,7 @@ const BENCHMARK_SCENARIOS = {
  * Returns default values if not configured
  */
 function getBenchmarkSettings() {
-  try {
-    const rubric = tutorApi.loadRubric();
-    const settings = rubric?.settings?.benchmark || {};
-    return {
-      useAIJudge: settings.use_ai_judge ?? true,  // Default: use AI judge
-      forceAIJudgeDimensions: settings.force_ai_judge_dimensions || ['specificity'],
-    };
-  } catch (err) {
-    console.warn('[benchmarkService] Could not load benchmark settings, using defaults:', err.message);
-    return {
-      useAIJudge: true,
-      forceAIJudgeDimensions: ['specificity'],
-    };
-  }
+  return evalConfigLoader.getBenchmarkSettings();
 }
 
 /**

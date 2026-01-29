@@ -8,6 +8,7 @@
 import { tutorApiService as tutorApi, monitoringService } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
+import * as evalConfigLoader from './evalConfigLoader.js';
 
 // Rate limiting settings
 const DEFAULT_PARALLELISM = 2;
@@ -87,8 +88,8 @@ export async function runEvaluation(options = {}) {
 
   const log = verbose ? console.log : () => {};
 
-  // Resolve scenarios
-  const allScenarios = tutorApi.listScenarios();
+  // Resolve scenarios (loaded from eval repo's local rubric)
+  const allScenarios = evalConfigLoader.listScenarios();
   const targetScenarios = scenarios === 'all'
     ? allScenarios
     : allScenarios.filter(s => scenarios.includes(s.id));
@@ -229,7 +230,7 @@ export async function runEvaluation(options = {}) {
  * Handles both single-turn and multi-turn scenarios
  */
 async function runSingleTest(scenario, config, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, onLog, superegoStrategy = null } = options;
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, onLog, superegoStrategy = null, judgeOverride = null } = options;
 
   // Create a log function that calls both console and onLog callback
   const log = (message, level = 'info') => {
@@ -237,7 +238,7 @@ async function runSingleTest(scenario, config, options = {}) {
     if (onLog) onLog(message, level);
   };
 
-  const fullScenario = tutorApi.getScenario(scenario.id);
+  const fullScenario = evalConfigLoader.getScenario(scenario.id);
   if (!fullScenario) {
     throw new Error(`Scenario not found: ${scenario.id}`);
   }
@@ -245,22 +246,22 @@ async function runSingleTest(scenario, config, options = {}) {
   log(`Running scenario: ${scenario.name}`, 'info');
 
   // Check if this is a multi-turn scenario
-  const isMultiTurn = tutorApi.isMultiTurnScenario(scenario.id);
+  const isMultiTurn = evalConfigLoader.isMultiTurnScenario(scenario.id);
 
   if (isMultiTurn) {
     log('Detected multi-turn scenario', 'info');
-    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log });
+    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride });
   }
 
   // Single-turn evaluation (original logic)
-  return runSingleTurnTest(scenario, config, fullScenario, { ...options, log });
+  return runSingleTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride });
 }
 
 /**
  * Run a single-turn test
  */
 async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null } = options;
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null } = options;
 
   // Build context
   log('Building learner context...', 'info');
@@ -334,7 +335,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       learnerContext: fullScenario.learner_context,
       requiredElements: fullScenario.required_elements,
       forbiddenElements: fullScenario.forbidden_elements,
-    }, {});
+    }, {}, { judgeOverride });
 
     // Log rubric result summary
     if (rubricResult) {
@@ -415,7 +416,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
  * Evaluates each turn and aggregates scores
  */
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, verbose = false } = options;
+  const { skipRubricEval = false, verbose = false, judgeOverride = null } = options;
   const log = verbose ? console.log : () => {};
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -469,7 +470,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         learnerContext: turnResult.context,
         requiredElements: turnResult.requiredElements,
         forbiddenElements: turnResult.forbiddenElements,
-      }, {});
+      }, {}, { judgeOverride });
     }
 
     // Calculate turn score
@@ -612,14 +613,15 @@ export async function quickTest(config, options = {}) {
     outputSize = 'normal', // compact, normal, expanded
     onLog,
     superegoStrategy = null, // Superego intervention strategy
+    judgeOverride = null, // Override judge model for this run
   } = options;
 
-  const scenarios = [tutorApi.listScenarios().find(s => s.id === scenarioId)].filter(Boolean);
+  const scenarios = [evalConfigLoader.listScenarios().find(s => s.id === scenarioId)].filter(Boolean);
   if (scenarios.length === 0) {
     throw new Error(`Scenario not found: ${scenarioId}`);
   }
 
-  const result = await runSingleTest(scenarios[0], config, { verbose, skipRubricEval, outputSize, onLog, superegoStrategy });
+  const result = await runSingleTest(scenarios[0], config, { verbose, skipRubricEval, outputSize, onLog, superegoStrategy, judgeOverride });
   return result;
 }
 
@@ -628,7 +630,7 @@ export async function quickTest(config, options = {}) {
  */
 export function listOptions() {
   return {
-    scenarios: tutorApi.listScenarios(),
+    scenarios: evalConfigLoader.listScenarios(),
     configurations: tutorApi.listConfigurations(),
     profiles: tutorApi.listProfiles(),
   };

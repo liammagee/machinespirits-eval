@@ -6,7 +6,8 @@
  * Provider details are resolved from config/providers.yaml
  */
 
-import { tutorApiService as tutorApi, tutorConfigLoader as configLoader } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as configLoader } from '@machinespirits/tutor-core';
+import * as evalConfigLoader from './evalConfigLoader.js';
 
 // Debug logging helper - suppressed in transcript mode for clean output
 function debugLog(...args) {
@@ -18,9 +19,38 @@ function debugLog(...args) {
 /**
  * Get available evaluator configuration, resolving model references via providers.yaml
  * Tries primary model first, then fallback if primary is not configured
+ *
+ * @param {Object} [overrides] - Optional judge override
+ * @param {Object} [overrides.judgeOverride] - Override judge model config
+ * @param {string} [overrides.judgeOverride.model] - Model reference (e.g. 'anthropic/claude-opus-4.5')
+ * @param {string} [overrides.judgeOverride.apiKeyEnv] - Env var name for API key
+ * @param {Object} [overrides.judgeOverride.hyperparameters] - Override hyperparameters
  */
-function getAvailableEvaluator() {
-  const rubric = tutorApi.loadRubric();
+function getAvailableEvaluator(overrides = {}) {
+  const { judgeOverride } = overrides;
+
+  // If a judge override is provided, resolve and return it directly
+  if (judgeOverride?.model) {
+    try {
+      const resolved = configLoader.resolveModel(judgeOverride.model);
+      // Allow apiKeyEnv override
+      let apiKey = resolved.apiKey;
+      if (judgeOverride.apiKeyEnv) {
+        apiKey = process.env[judgeOverride.apiKeyEnv] || apiKey;
+      }
+      return {
+        provider: resolved.provider,
+        model: resolved.model,
+        apiKey,
+        baseUrl: resolved.baseUrl,
+        hyperparameters: judgeOverride.hyperparameters || {},
+      };
+    } catch (e) {
+      console.warn(`[rubricEvaluator] Failed to resolve judge override: ${e.message}, falling back to rubric config`);
+    }
+  }
+
+  const rubric = evalConfigLoader.loadRubric();
   // Prefer 'judge' config, fall back to legacy 'evaluator' for backwards compatibility
   const evalConfig = rubric?.judge || rubric?.evaluator;
 
@@ -81,7 +111,7 @@ function getAvailableEvaluator() {
  * Get the fallback evaluator config (if different from primary)
  */
 function getFallbackEvaluator() {
-  const rubric = tutorApi.loadRubric();
+  const rubric = evalConfigLoader.loadRubric();
   // Prefer 'judge' config, fall back to legacy 'evaluator'
   const evalConfig = rubric?.judge || rubric?.evaluator;
 
@@ -219,8 +249,7 @@ async function callJudgeModelWithConfig(prompt, config) {
  * Build the evaluation prompt for the judge model
  */
 function buildEvaluationPrompt(suggestion, scenario, context) {
-  const rubric = tutorApi.loadRubric();
-  const dimensions = rubric?.dimensions || {};
+  const dimensions = evalConfigLoader.getRubricDimensions();
 
   // Build dimension criteria text
   const dimensionCriteria = Object.entries(dimensions).map(([key, dim]) => {
@@ -310,9 +339,12 @@ Respond with ONLY a JSON object in this exact format:
 
 /**
  * Call the judge model (simple single-model approach)
+ *
+ * @param {string} prompt - The evaluation prompt
+ * @param {Object} [overrides] - Optional overrides (passed to getAvailableEvaluator)
  */
-async function callJudgeModel(prompt) {
-  const evaluator = getAvailableEvaluator();
+async function callJudgeModel(prompt, overrides = {}) {
+  const evaluator = getAvailableEvaluator(overrides);
   const { provider, model, hyperparameters } = evaluator;
   const temperature = hyperparameters?.temperature ?? 0.2;
   const maxTokens = hyperparameters?.max_tokens ?? 1500;
@@ -524,15 +556,17 @@ function parseJudgeResponse(responseText) {
  * @param {Object} suggestion - The suggestion to evaluate
  * @param {Object} scenario - The test scenario
  * @param {Object} context - Additional context
+ * @param {Object} [overrides] - Optional overrides
+ * @param {Object} [overrides.judgeOverride] - Override judge model config
  * @returns {Promise<Object>} Evaluation result
  */
-export async function evaluateSuggestion(suggestion, scenario, context = {}) {
+export async function evaluateSuggestion(suggestion, scenario, context = {}, overrides = {}) {
   const startTime = Date.now();
-  const evaluator = getAvailableEvaluator();
+  const evaluator = getAvailableEvaluator(overrides);
 
   try {
     const prompt = buildEvaluationPrompt(suggestion, scenario, context);
-    let responseText = await callJudgeModel(prompt);
+    let responseText = await callJudgeModel(prompt, overrides);
 
     // Log raw response for debugging
     debugLog('[rubricEvaluator] Judge raw response (first 300 chars):', responseText.slice(0, 300));
@@ -628,11 +662,11 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}) {
 /**
  * Evaluate multiple suggestions (batch)
  */
-export async function evaluateSuggestions(suggestions, scenario, context = {}) {
+export async function evaluateSuggestions(suggestions, scenario, context = {}, overrides = {}) {
   const results = [];
 
   for (const suggestion of suggestions) {
-    const result = await evaluateSuggestion(suggestion, scenario, context);
+    const result = await evaluateSuggestion(suggestion, scenario, context, overrides);
     results.push(result);
   }
 
@@ -730,8 +764,7 @@ export function quickValidate(suggestion, scenario) {
  * Calculate weighted overall score from dimension scores
  */
 export function calculateOverallScore(scores) {
-  const rubric = tutorApi.loadRubric();
-  const dimensions = rubric?.dimensions || {};
+  const dimensions = evalConfigLoader.getRubricDimensions();
 
   // Map rubric keys to normalized score keys (pedagogical_soundness -> pedagogical)
   const keyMap = {

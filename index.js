@@ -10,6 +10,7 @@ export * as evaluationRunner from './services/evaluationRunner.js';
 export * as evaluationStore from './services/evaluationStore.js';
 export * as rubricEvaluator from './services/rubricEvaluator.js';
 export * as benchmarkService from './services/benchmarkService.js';
+export * as evalConfigLoader from './services/evalConfigLoader.js';
 
 // Learner simulation services
 export * as learnerConfigLoader from './services/learnerConfigLoader.js';
