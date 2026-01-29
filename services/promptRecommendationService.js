@@ -2,10 +2,10 @@
  * Prompt Recommendation Service
  *
  * Analyzes evaluation results and generates recommendations to improve
- * tutor prompts. Uses a powerful evaluator model to analyze failures
+ * tutor prompts. Uses a powerful recommender model to analyze failures
  * and weaknesses from weaker tutor models.
  *
- * Evaluator configuration is loaded from config/evaluation-rubric.yaml
+ * Recommender configuration is loaded from config/evaluation-rubric.yaml
  * Provider details are resolved from config/providers.yaml
  */
 
@@ -22,12 +22,11 @@ const PROMPTS_DIR = path.join(ROOT_DIR, 'prompts');
 
 /**
  * Get recommender config, resolving model references via providers.yaml
- * Uses 'recommender' config from evaluation-rubric.yaml (falls back to 'evaluator')
+ * Uses 'recommender' config from evaluation-rubric.yaml
  */
-function getEvaluatorConfig() {
+function getRecommenderConfig() {
   const rubric = evalConfigLoader.loadRubric();
-  // Prefer 'recommender' for prompt analysis, fall back to legacy 'evaluator'
-  const evalConfig = rubric?.recommender || rubric?.evaluator;
+  const evalConfig = rubric?.recommender;
 
   if (!evalConfig?.model) {
     console.warn('[promptRecommendation] No recommender in evaluation-rubric.yaml, using defaults');
@@ -157,7 +156,7 @@ function analyzeResults(results) {
 }
 
 /**
- * Build the analysis prompt for the evaluator
+ * Build the analysis prompt for the recommender
  */
 function buildAnalysisPrompt(analysis, egoPrompt, superegoPrompt, profileName) {
   const sections = [];
@@ -273,14 +272,14 @@ Be specific and actionable. Quote exact text to change when possible.
 }
 
 /**
- * Call the evaluator model to generate recommendations
+ * Call the recommender model to generate recommendations
  * Uses config from evaluation-rubric.yaml
  */
-async function callEvaluator(prompt, options = {}) {
+async function callRecommender(prompt, options = {}) {
   const { budget = false } = options;
 
   // Get config from yaml (handles fallbacks automatically)
-  const config = getEvaluatorConfig();
+  const config = getRecommenderConfig();
   const { provider, model, hyperparameters } = config;
   const maxTokens = hyperparameters?.max_tokens ?? 4000;
   const temperature = hyperparameters?.temperature ?? 0.3;
@@ -377,9 +376,9 @@ async function callOpenRouterEvaluator(prompt, model, options = {}) {
  * @param {string} options.profileName - Profile that was evaluated
  * @param {string} options.egoPromptFile - Ego prompt file to analyze
  * @param {string} options.superegoPromptFile - Superego prompt file to analyze
- * @param {string} options.evaluatorModel - Model to use for analysis (default: claude-sonnet-4)
- * @param {string} options.evaluatorProvider - Provider: 'anthropic' or 'openrouter'
- * @param {boolean} options.budget - Use budget evaluator model
+ * @param {string} options.recommenderModel - Model to use for analysis (default: claude-sonnet-4)
+ * @param {string} options.recommenderProvider - Provider: 'anthropic' or 'openrouter'
+ * @param {boolean} options.budget - Use budget recommender model
  * @returns {Promise<Object>} Recommendations
  */
 export async function generateRecommendations(options = {}) {
@@ -388,8 +387,8 @@ export async function generateRecommendations(options = {}) {
     profileName = 'unknown',
     egoPromptFile = 'tutor-ego.md',
     superegoPromptFile = 'tutor-superego.md',
-    evaluatorModel = null,
-    evaluatorProvider = 'anthropic',
+    recommenderModel = null,
+    recommenderProvider = 'anthropic',
     budget = false,
   } = options;
 
@@ -421,18 +420,18 @@ export async function generateRecommendations(options = {}) {
   // Build analysis prompt
   const analysisPrompt = buildAnalysisPrompt(analysis, egoPrompt, superegoPrompt, profileName);
 
-  // Get evaluator config from yaml
-  const evalConfig = getEvaluatorConfig();
+  // Get recommender config from yaml
+  const evalConfig = getRecommenderConfig();
   console.log(`\nGenerating recommendations using ${evalConfig.provider}/${evalConfig.model}...`);
 
-  const evalResult = await callEvaluator(analysisPrompt);
+  const evalResult = await callRecommender(analysisPrompt);
 
   return {
     success: true,
     needsImprovement: true,
     analysis,
     recommendations: evalResult.content,
-    evaluatorModel: evalResult.model,
+    recommenderModel: evalResult.model,
     usage: {
       inputTokens: evalResult.inputTokens,
       outputTokens: evalResult.outputTokens,
@@ -479,7 +478,7 @@ export function formatRecommendations(result) {
   lines.push(result.recommendations);
   lines.push('');
   lines.push('─'.repeat(80));
-  lines.push(`Evaluator: ${result.evaluatorModel}`);
+  lines.push(`Recommender: ${result.recommenderModel}`);
   lines.push(`Tokens: ${result.usage.inputTokens} in / ${result.usage.outputTokens} out`);
   lines.push('═'.repeat(80));
 

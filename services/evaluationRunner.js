@@ -440,7 +440,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     passesForbidden: rubricResult?.passesForbidden ?? validation.passesForbidden,
     requiredMissing: rubricResult?.requiredMissing || validation.requiredMissing,
     forbiddenFound: rubricResult?.forbiddenFound || validation.forbiddenFound,
-    evaluatorModel: rubricResult?.evaluatorModel,
+    judgeModel: rubricResult?.judgeModel,
     evaluationReasoning: rubricResult?.summary,
     // Include dialogueResult for tension analysis
     dialogueResult: {

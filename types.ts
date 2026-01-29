@@ -83,7 +83,7 @@ export interface EvalQuickTestResult {
   apiCalls?: number;
   dialogueRounds?: number;
   evaluationReasoning?: string;
-  evaluatorModel?: string;
+  judgeModel?: string;
   scenarioContext?: {
     description: string;
     expectedBehavior?: string;

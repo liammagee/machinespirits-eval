@@ -318,9 +318,9 @@ router.post('/quick', async (req, res) => {
         totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
         apiCalls: result.apiCalls,
         dialogueRounds: result.dialogueRounds,
-        // Evaluator reasoning
+        // Judge reasoning
         evaluationReasoning: result.evaluationReasoning,
-        evaluatorModel: result.evaluatorModel,
+        judgeModel: result.judgeModel,
         // Scenario context for display (original user request)
         scenarioContext: scenarioDetails ? {
           description: scenarioDetails.description,
@@ -461,7 +461,7 @@ router.get('/stream/quick', async (req, res) => {
       dialogueId: result.dialogueId,
       // Evaluator reasoning
       evaluationReasoning: result.evaluationReasoning,
-      evaluatorModel: result.evaluatorModel,
+      judgeModel: result.judgeModel,
       // Scenario context for display (original user request)
       scenarioContext: scenarioDetails ? {
         description: scenarioDetails.description,
