@@ -36,7 +36,8 @@
     "dev": "STANDALONE=true node server.js",
     "eval": "node scripts/eval-cli.js",
     "eval:quick": "node scripts/eval-cli.js quick",
-    "eval:test": "node scripts/eval-cli.js test"
+    "eval:test": "node scripts/eval-cli.js test",
+    "test": "node --test 'services/__tests__/*.test.js'"
   },
   "keywords": [
     "evaluation",
@@ -52,8 +53,8 @@
     "url": "https://github.com/liammagee/machinespirits-eval"
   },
   "peerDependencies": {
-    "@machinespirits/tutor-core": ">=0.1.0",
-    "@anthropic-ai/sdk": ">=0.71.0"
+    "@anthropic-ai/sdk": "^0.71.2",
+    "@machinespirits/tutor-core": "^0.2.1"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {
@@ -61,9 +62,9 @@
     }
   },
   "dependencies": {
+    "better-sqlite3": "^12.5.0",
     "express": "^4.19.2",
-    "yaml": "^2.8.2",
-    "better-sqlite3": "^12.5.0"
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0"

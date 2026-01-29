@@ -10,6 +10,29 @@ import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
+/**
+ * Resolve provider/model references in a config object through eval's providers.yaml.
+ * This ensures eval controls which model IDs get sent to tutorApi.
+ */
+function resolveConfigModels(config) {
+  const resolved = { ...config };
+  if (config.provider && config.model) {
+    try {
+      const r = evalConfigLoader.resolveModel(`${config.provider}.${config.model}`);
+      resolved.provider = r.provider;
+      resolved.model = r.model;
+    } catch (e) { /* pass through as-is */ }
+  }
+  if (config.egoModel) {
+    try {
+      const r = evalConfigLoader.resolveModel(config.egoModel);
+      resolved.egoModel = r.model;
+      resolved.egoProvider = r.provider;
+    } catch (e) { /* pass through as-is */ }
+  }
+  return resolved;
+}
+
 // Rate limiting settings
 const DEFAULT_PARALLELISM = 2;
 const REQUEST_DELAY_MS = 500;
@@ -263,26 +286,29 @@ async function runSingleTest(scenario, config, options = {}) {
 async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null } = options;
 
+  // Resolve model aliases through eval's providers.yaml
+  const resolvedConfig = resolveConfigModels(config);
+
   // Build context
   log('Building learner context...', 'info');
   const context = tutorApi.buildContext(fullScenario.learner_context);
   context.isNewUser = fullScenario.is_new_user;
 
   // Generate suggestions
-  log(`Generating suggestions with profile: ${config.profileName}`, 'info');
-  log(`Provider: ${config.provider || 'from profile'}, Model: ${config.model || 'from profile'}`, 'info');
-  if (config.egoModel) {
-    log(`Ego model override: ${config.egoModel}`, 'info');
+  log(`Generating suggestions with profile: ${resolvedConfig.profileName}`, 'info');
+  log(`Provider: ${resolvedConfig.provider || 'from profile'}, Model: ${resolvedConfig.model || 'from profile'}`, 'info');
+  if (resolvedConfig.egoModel) {
+    log(`Ego model override: ${resolvedConfig.egoModel}`, 'info');
   }
 
   // Wrap API call with retry logic for rate limit handling
   const genResult = await retryWithBackoff(
     () => tutorApi.generateSuggestions(context, {
-      provider: config.provider,
-      model: config.model,
-      egoModel: config.egoModel, // Override ego model for benchmarking
-      profileName: config.profileName,
-      hyperparameters: config.hyperparameters || {},
+      provider: resolvedConfig.provider,
+      model: resolvedConfig.model,
+      egoModel: resolvedConfig.egoModel, // Override ego model for benchmarking
+      profileName: resolvedConfig.profileName,
+      hyperparameters: resolvedConfig.hyperparameters || {},
       trace: true, // Always capture trace for tension analysis
       superegoStrategy, // Pass through superego intervention strategy
       outputSize, // compact, normal, expanded - affects response length
@@ -421,6 +447,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
 
+  // Resolve model aliases through eval's providers.yaml
+  const resolvedConfig = resolveConfigModels(config);
+
   const turns = fullScenario.turns || [];
   const turnResults = [];
   let totalLatencyMs = 0;
@@ -432,10 +461,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   // Run the multi-turn scenario through tutorApi (with retry for rate limits)
   const multiTurnResult = await retryWithBackoff(
     () => tutorApi.runMultiTurnScenario(scenario.id, {
-      provider: config.provider,
-      model: config.model,
-      profileName: config.profileName,
-      hyperparameters: config.hyperparameters || {},
+      provider: resolvedConfig.provider,
+      model: resolvedConfig.model,
+      profileName: resolvedConfig.profileName,
+      hyperparameters: resolvedConfig.hyperparameters || {},
       trace: verbose,
     }),
     { log }

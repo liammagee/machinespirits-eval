@@ -6,7 +6,6 @@
  * Provider details are resolved from config/providers.yaml
  */
 
-import { tutorConfigLoader as configLoader } from '@machinespirits/tutor-core';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
 // Debug logging helper - suppressed in transcript mode for clean output
@@ -32,7 +31,7 @@ function getAvailableEvaluator(overrides = {}) {
   // If a judge override is provided, resolve and return it directly
   if (judgeOverride?.model) {
     try {
-      const resolved = configLoader.resolveModel(judgeOverride.model);
+      const resolved = evalConfigLoader.resolveModel(judgeOverride.model);
       // Allow apiKeyEnv override
       let apiKey = resolved.apiKey;
       if (judgeOverride.apiKeyEnv) {
@@ -65,7 +64,7 @@ function getAvailableEvaluator(overrides = {}) {
 
   // Try primary model
   try {
-    const resolved = configLoader.resolveModel(evalConfig.model);
+    const resolved = evalConfigLoader.resolveModel(evalConfig.model);
     if (resolved.isConfigured) {
       return {
         provider: resolved.provider,
@@ -82,7 +81,7 @@ function getAvailableEvaluator(overrides = {}) {
   // Try fallback
   if (evalConfig.fallback?.model) {
     try {
-      const fallback = configLoader.resolveModel(evalConfig.fallback.model);
+      const fallback = evalConfigLoader.resolveModel(evalConfig.fallback.model);
       if (fallback.isConfigured) {
         debugLog(`[rubricEvaluator] Using fallback evaluator: ${fallback.provider}/${fallback.model}`);
         return {
@@ -99,7 +98,7 @@ function getAvailableEvaluator(overrides = {}) {
   }
 
   // Return primary anyway - will fail with helpful error
-  const resolved = configLoader.resolveModel(evalConfig.model);
+  const resolved = evalConfigLoader.resolveModel(evalConfig.model);
   return {
     provider: resolved.provider,
     model: resolved.model,
@@ -118,7 +117,7 @@ function getFallbackEvaluator() {
   if (!evalConfig?.fallback?.model) return null;
 
   try {
-    const fallback = configLoader.resolveModel(evalConfig.fallback.model);
+    const fallback = evalConfigLoader.resolveModel(evalConfig.fallback.model);
     if (fallback.isConfigured) {
       return {
         provider: fallback.provider,
