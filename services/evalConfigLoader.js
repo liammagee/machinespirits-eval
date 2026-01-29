@@ -18,6 +18,8 @@ const EVAL_CONFIG_DIR = path.join(path.resolve(__dirname, '..'), 'config');
 // Mtime-based caches
 let rubricCache = null;
 let rubricMtime = null;
+let scenariosCache = null;
+let scenariosMtime = null;
 let providersCache = null;
 let providersMtime = null;
 let tutorAgentsCache = null;
@@ -51,6 +53,37 @@ export function loadRubric({ rubricPath, forceReload } = {}) {
     return rubricCache;
   } catch (err) {
     console.error('[evalConfigLoader] Failed to parse rubric:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Load suggestion scenarios from the dedicated scenarios YAML file.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object|null} Parsed scenarios object, or null if file not found
+ */
+export function loadSuggestionScenarios({ forceReload } = {}) {
+  const effectivePath = path.join(EVAL_CONFIG_DIR, 'suggestion-scenarios.yaml');
+
+  try {
+    const stats = fs.statSync(effectivePath);
+    if (!forceReload && scenariosCache && scenariosMtime === stats.mtimeMs) {
+      return scenariosCache;
+    }
+    scenariosMtime = stats.mtimeMs;
+  } catch (err) {
+    console.warn('[evalConfigLoader] Suggestion scenarios file not found:', err.message);
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(effectivePath, 'utf-8');
+    scenariosCache = yaml.parse(content);
+    return scenariosCache;
+  } catch (err) {
+    console.error('[evalConfigLoader] Failed to parse suggestion scenarios:', err.message);
     return null;
   }
 }
@@ -187,31 +220,64 @@ export function getRubricDimensions(options = {}) {
 /**
  * Get a single scenario by ID.
  *
+ * Tries the dedicated suggestion-scenarios.yaml first, then falls back
+ * to the rubric file for backward compatibility.
+ *
  * @param {string} scenarioId
  * @param {Object} [options]
  * @param {string} [options.rubricPath] - Override rubric path
  * @returns {Object|null} Scenario object or null
  */
 export function getScenario(scenarioId, options = {}) {
+  // Try new dedicated file first
+  const scenarios = loadSuggestionScenarios(options);
+  const scenario = scenarios?.scenarios?.[scenarioId];
+  if (scenario) {
+    return { ...scenario, type: scenario.type || 'suggestion', id: scenarioId };
+  }
+
+  // Fallback to rubric (backward compat)
   const rubric = loadRubric(options);
-  return rubric?.scenarios?.[scenarioId] || null;
+  const legacy = rubric?.scenarios?.[scenarioId];
+  if (legacy) {
+    console.warn(`[evalConfigLoader] Scenario '${scenarioId}' loaded from legacy rubric location`);
+    return { ...legacy, type: 'suggestion', id: scenarioId };
+  }
+
+  return null;
 }
 
 /**
  * List all scenarios with metadata.
  *
+ * Tries the dedicated suggestion-scenarios.yaml first, then falls back
+ * to the rubric file for backward compatibility.
+ *
  * @param {Object} [options]
  * @param {string} [options.rubricPath] - Override rubric path
- * @returns {Array} Array of { id, name, description, isNewUser, minAcceptableScore, turnCount, isMultiTurn }
+ * @returns {Array} Array of { id, name, description, type, isNewUser, minAcceptableScore, turnCount, isMultiTurn }
  */
 export function listScenarios(options = {}) {
-  const rubric = loadRubric(options);
-  if (!rubric?.scenarios) return [];
+  // Try new dedicated file first
+  const scenarioData = loadSuggestionScenarios(options);
+  let scenarioMap = scenarioData?.scenarios;
 
-  return Object.entries(rubric.scenarios).map(([id, scenario]) => ({
+  // Fallback to rubric
+  if (!scenarioMap) {
+    const rubric = loadRubric(options);
+    scenarioMap = rubric?.scenarios;
+    if (scenarioMap) {
+      console.warn('[evalConfigLoader] Scenarios loaded from legacy rubric location');
+    }
+  }
+
+  if (!scenarioMap) return [];
+
+  return Object.entries(scenarioMap).map(([id, scenario]) => ({
     id,
     name: scenario.name,
     description: scenario.description,
+    type: scenario.type || 'suggestion',
     isNewUser: scenario.is_new_user,
     minAcceptableScore: scenario.min_acceptable_score,
     turnCount: (scenario.turns?.length || 0) + 1,
@@ -349,8 +415,34 @@ export function listTutorProfiles(options = {}) {
   }));
 }
 
+/**
+ * List available provider/model configurations from eval's providers.yaml.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Array} Array of { provider, model, label }
+ */
+export function listConfigurations(options = {}) {
+  const data = loadProviders(options);
+  const providers = data?.providers || {};
+  const configs = [];
+
+  for (const [providerId, provider] of Object.entries(providers)) {
+    for (const [alias, modelId] of Object.entries(provider.models || {})) {
+      configs.push({
+        provider: providerId,
+        model: modelId,
+        label: `${providerId}/${alias}`,
+      });
+    }
+  }
+
+  return configs;
+}
+
 export default {
   loadRubric,
+  loadSuggestionScenarios,
   loadProviders,
   getProviderConfig,
   resolveModel,
@@ -363,4 +455,5 @@ export default {
   loadTutorAgents,
   getTutorProfile,
   listTutorProfiles,
+  listConfigurations,
 };

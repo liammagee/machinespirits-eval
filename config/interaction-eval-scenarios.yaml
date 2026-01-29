@@ -30,9 +30,10 @@ short_term_scenarios:
 
   recognition_request:
     id: "recognition_request"
+    type: interaction
     name: "Learner Seeks Recognition"
     description: "Learner shares their understanding, seeking validation and engagement"
-    turns: 4
+    turn_count: 4
     topic: "Hegel's recognition dialectic"
 
     learner:
@@ -78,9 +79,10 @@ short_term_scenarios:
 
   frustration_moment:
     id: "frustration_moment"
+    type: interaction
     name: "Learner Expresses Frustration"
     description: "Learner is stuck and becoming frustrated"
-    turns: 5
+    turn_count: 5
     topic: "Aufhebung (sublation)"
 
     learner:
@@ -126,9 +128,10 @@ short_term_scenarios:
 
   misconception_surface:
     id: "misconception_surface"
+    type: interaction
     name: "Misconception Revealed"
     description: "Learner reveals a misconception that needs gentle correction"
-    turns: 4
+    turn_count: 4
     topic: "Thesis-Antithesis-Synthesis"
 
     learner:
@@ -174,9 +177,10 @@ short_term_scenarios:
 
   breakthrough_moment:
     id: "breakthrough_moment"
+    type: interaction
     name: "Learner Shows Insight"
     description: "Learner demonstrates genuine understanding"
-    turns: 3
+    turn_count: 3
     topic: "Self-consciousness"
 
     learner:
@@ -222,9 +226,10 @@ short_term_scenarios:
 
   resistant_engagement:
     id: "resistant_engagement"
+    type: interaction
     name: "Resistant but Capable Learner"
     description: "Intelligent learner pushes back on claims"
-    turns: 6
+    turn_count: 6
     topic: "Hegel's relevance today"
 
     learner:
@@ -276,6 +281,7 @@ long_term_scenarios:
 
   novice_to_practitioner:
     id: "novice_to_practitioner"
+    type: interaction
     name: "Learning Arc: Novice to Practitioner"
     description: "Track learner development across multiple sessions"
     sessions: 5
@@ -334,6 +340,7 @@ long_term_scenarios:
 
   stranger_to_recognized:
     id: "stranger_to_recognized"
+    type: interaction
     name: "Relationship Arc: Developing Trust"
     description: "Track relationship development across sessions"
     sessions: 4
@@ -374,6 +381,7 @@ long_term_scenarios:
 
   tutor_adaptation:
     id: "tutor_adaptation"
+    type: interaction
     name: "Tutor Learning Arc"
     description: "Track tutor's accumulated knowledge about learner"
     sessions: 4
@@ -542,11 +550,12 @@ battery_scenarios:
   # ------------------------------------------------------------------------------
   battery_unified_baseline:
     id: "battery_unified_baseline"
+    type: interaction
     name: "Battery: Unified Learner + Baseline Tutor"
     description: "Single-agent learner with baseline tutor configuration"
     architecture: "unified"
     tutor_profile: "baseline"
-    turns: 3
+    turn_count: 3
     topic: "Recognition and self-consciousness"
 
     learner:
@@ -591,11 +600,12 @@ battery_scenarios:
   # ------------------------------------------------------------------------------
   battery_ego_superego_recognition:
     id: "battery_ego_superego_recognition"
+    type: interaction
     name: "Battery: Ego/Superego Learner + Recognition Tutor"
     description: "Two-agent learner with recognition-focused tutor"
     architecture: "ego_superego"
     tutor_profile: "recognition"
-    turns: 4
+    turn_count: 4
     topic: "The master-slave dialectic"
 
     learner:
@@ -640,11 +650,12 @@ battery_scenarios:
   # ------------------------------------------------------------------------------
   battery_dialectical_budget:
     id: "battery_dialectical_budget"
+    type: interaction
     name: "Battery: Dialectical Learner + Budget Tutor"
     description: "Thesis-antithesis learner with budget (minimal) tutor"
     architecture: "dialectical"
     tutor_profile: "budget"
-    turns: 3
+    turn_count: 3
     topic: "Sublation and the unity of opposites"
 
     learner:
@@ -689,11 +700,12 @@ battery_scenarios:
   # ------------------------------------------------------------------------------
   battery_psychodynamic_recognition_plus:
     id: "battery_psychodynamic_recognition_plus"
+    type: interaction
     name: "Battery: Psychodynamic Learner + Recognition Plus Tutor"
     description: "Id/Ego/Superego learner with enhanced recognition tutor"
     architecture: "psychodynamic"
     tutor_profile: "recognition_plus"
-    turns: 4
+    turn_count: 4
     topic: "Desire and the self in Hegel"
 
     learner:
@@ -738,11 +750,12 @@ battery_scenarios:
   # ------------------------------------------------------------------------------
   battery_cognitive_quality:
     id: "battery_cognitive_quality"
+    type: interaction
     name: "Battery: Cognitive Learner + Quality Tutor"
     description: "Memory/reasoning/meta cognitive learner with quality tutor"
     architecture: "cognitive"
     tutor_profile: "quality"
-    turns: 4
+    turn_count: 4
     topic: "Spirit and collective consciousness"
 
     learner:
@@ -787,11 +800,12 @@ battery_scenarios:
   # ------------------------------------------------------------------------------
   battery_extended_dialogue:
     id: "battery_extended_dialogue"
+    type: interaction
     name: "Battery: Extended Multi-Turn Dialogue"
     description: "Longer dialogue to test sustained interaction quality"
     architecture: "ego_superego"
     tutor_profile: "recognition"
-    turns: 8
+    turn_count: 8
     topic: "The stages of consciousness in the Phenomenology"
 
     learner:
