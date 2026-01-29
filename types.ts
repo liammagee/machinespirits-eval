@@ -19,6 +19,7 @@ export interface EvalScenario {
   id: string;
   name: string;
   description?: string;
+  type?: 'suggestion' | 'interaction';
   category?: string;
   turnCount?: number;
   isMultiTurn?: boolean;
@@ -68,6 +69,7 @@ export interface EvalValidation {
 export interface EvalQuickTestResult {
   scenarioId: string;
   scenarioName: string;
+  scenarioType?: 'suggestion' | 'interaction';
   profile: string;
   provider?: string;
   model?: string;

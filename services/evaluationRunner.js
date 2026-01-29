@@ -9,6 +9,7 @@ import { tutorApiService as tutorApi, monitoringService } from '@machinespirits/
 import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
+import * as multiTurnRunner from './multiTurnRunner.js';
 
 /**
  * Resolve provider/model references in a config object through eval's providers.yaml.
@@ -139,7 +140,7 @@ export async function runEvaluation(options = {}) {
   // Resolve configurations
   let targetConfigs = [];
   if (configurations === 'all') {
-    targetConfigs = tutorApi.listConfigurations();
+    targetConfigs = evalConfigLoader.listConfigurations();
   } else if (configurations === 'profiles') {
     const profiles = evalConfigLoader.listTutorProfiles();
     targetConfigs = profiles.map(p => ({
@@ -336,6 +337,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     return {
       scenarioId: scenario.id,
       scenarioName: scenario.name,
+      scenarioType: fullScenario.type || 'suggestion',
       provider: config.provider || genResult.metadata?.provider,
       model: config.model || genResult.metadata?.model,
       profileName: config.profileName,
@@ -410,6 +412,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   return {
     scenarioId: scenario.id,
     scenarioName: scenario.name,
+    scenarioType: fullScenario.type || 'suggestion',
     provider: config.provider || genResult.metadata?.provider,
     model: config.model || genResult.metadata?.model,
     profileName: config.profileName,
@@ -473,9 +476,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let totalApiCalls = 0;
   let totalCost = 0;
 
-  // Run the multi-turn scenario through tutorApi (with retry for rate limits)
+  // Run the multi-turn scenario through local multiTurnRunner (with retry for rate limits)
   const multiTurnResult = await retryWithBackoff(
-    () => tutorApi.runMultiTurnScenario(scenario.id, {
+    () => multiTurnRunner.runMultiTurnScenario(scenario.id, {
       provider: resolvedConfig.provider,
       model: resolvedConfig.model,
       profileName: resolvedConfig.profileName,
@@ -585,6 +588,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   return {
     scenarioId: scenario.id,
     scenarioName: scenario.name,
+    scenarioType: fullScenario.type || 'suggestion',
     isMultiTurn: true,
     totalTurns: turnResults.length,
     provider: config.provider || multiTurnResult.turnResults[0]?.metadata?.provider,
@@ -675,7 +679,7 @@ export async function quickTest(config, options = {}) {
 export function listOptions() {
   return {
     scenarios: evalConfigLoader.listScenarios(),
-    configurations: tutorApi.listConfigurations(),
+    configurations: evalConfigLoader.listConfigurations(),
     profiles: evalConfigLoader.listTutorProfiles(),
   };
 }

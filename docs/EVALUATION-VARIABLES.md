@@ -244,9 +244,11 @@ overall = Σ(dimension_score × weight) × 20    →  range 0–100
 
 ---
 
-## 7. Evaluation Scenarios
+## 7. Suggestion Scenarios
 
-**Source:** `config/evaluation-rubric.yaml` → `scenarios` section
+**Source:** `config/suggestion-scenarios.yaml` (previously in `evaluation-rubric.yaml`)
+
+Each scenario has a `type: suggestion` discriminator and an explicit `id` field.
 
 ### Single-Turn Scenarios
 
@@ -265,6 +267,8 @@ overall = Σ(dimension_score × weight) × 20    →  range 0–100
 ### Scenario Structure
 
 Each scenario defines:
+- `type` — Discriminator (`suggestion` for all scenarios in this file)
+- `id` — Explicit scenario ID (matches the YAML key)
 - `name` — Human-readable title
 - `description` — Situation context
 - `is_new_user` — Boolean
@@ -281,10 +285,12 @@ Each scenario defines:
 
 **Source:** `config/interaction-eval-scenarios.yaml`
 
+Each scenario has a `type: interaction` discriminator. The expected number of dialogue turns uses the `turn_count` field (not `turns`, which is reserved for scripted turn arrays in suggestion scenarios).
+
 ### Short-Term (Within-Session)
 
-| ID | Turns | Focus | Key Weights |
-|----|-------|-------|-------------|
+| ID | Turn Count | Focus | Key Weights |
+|----|------------|-------|-------------|
 | `recognition_request` | 4 | Learner seeks validation | mutual_recognition (0.3), dialectical_responsiveness (0.3) |
 | `frustration_moment` | 5 | Learner frustration | emotional_attunement (0.3), scaffolding (0.3) |
 | `misconception_surface` | 4 | Misconception revealed | mutual_recognition (0.3), dialectical_responsiveness (0.3) |
@@ -437,6 +443,7 @@ Only retries on 429 / rate limit errors, not other failures.
 | `id` | TEXT PK | Result ID |
 | `run_id` | TEXT FK | Parent run |
 | `scenario_id` | TEXT | Scenario tested |
+| `scenario_type` | TEXT | `suggestion` or `interaction` (default: `suggestion`) |
 | `provider` | TEXT | AI provider used |
 | `model` | TEXT | Model ID |
 | `profile_name` | TEXT | Tutor profile |
@@ -523,11 +530,12 @@ Only retries on 429 / rate limit errors, not other failures.
 
 | File | Location | Purpose |
 |------|----------|---------|
-| `evaluation-rubric.yaml` | `config/` | Rubric dimensions, scenarios, judge config |
-| `interaction-eval-scenarios.yaml` | `config/` | Learner-tutor interaction scenarios |
+| `evaluation-rubric.yaml` | `config/` | Rubric dimensions, judge config (scenarios moved out) |
+| `suggestion-scenarios.yaml` | `config/` | Suggestion evaluation scenarios (`type: suggestion`) |
+| `interaction-eval-scenarios.yaml` | `config/` | Learner-tutor interaction scenarios (`type: interaction`) |
 | `learner-agents.yaml` | `config/` | Learner architectures, personas |
 | `providers.yaml` | `node_modules/@machinespirits/tutor-core/config/` | Provider definitions and model aliases |
 | `tutor-agents.yaml` | `node_modules/@machinespirits/tutor-core/config/` | Tutor profiles, strategies, thresholds |
 | `evaluations.db` | `data/` | SQLite results database |
 
-**Note:** `providers.yaml` and `tutor-agents.yaml` live inside the `@machinespirits/tutor-core` package. There is currently no local override mechanism for these files — updating them requires updating the package.
+**Note:** `providers.yaml` and `tutor-agents.yaml` have local overrides in `config/` that take precedence over the `@machinespirits/tutor-core` package versions. `suggestion-scenarios.yaml` is loaded by `evalConfigLoader.loadSuggestionScenarios()` with mtime-based caching, with a backward-compatible fallback to `evaluation-rubric.yaml` if the new file is missing.

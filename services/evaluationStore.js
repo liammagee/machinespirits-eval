@@ -113,6 +113,13 @@ try {
 }
 db.exec(`CREATE INDEX IF NOT EXISTS idx_results_dialogue ON evaluation_results(dialogue_id)`);
 
+// Migration: Add scenario_type column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN scenario_type TEXT DEFAULT 'suggestion'`);
+} catch (e) {
+  // Column already exists, ignore
+}
+
 // Migration: Add scores_with_reasoning column if it doesn't exist
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN scores_with_reasoning TEXT`);
@@ -264,7 +271,7 @@ export function updateRun(runId, updates) {
 export function storeResult(runId, result) {
   const stmt = db.prepare(`
     INSERT INTO evaluation_results (
-      run_id, scenario_id, scenario_name,
+      run_id, scenario_id, scenario_name, scenario_type,
       provider, model, profile_name, hyperparameters, prompt_id,
       suggestions, raw_response,
       latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
@@ -273,7 +280,7 @@ export function storeResult(runId, result) {
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message
     ) VALUES (
-      ?, ?, ?,
+      ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?, ?, ?, ?,
@@ -288,6 +295,7 @@ export function storeResult(runId, result) {
     runId,
     result.scenarioId,
     result.scenarioName,
+    result.scenarioType || 'suggestion',
     result.provider,
     result.model,
     result.profileName,
@@ -909,6 +917,7 @@ function parseResultRow(row) {
     runId: row.run_id,
     scenarioId: row.scenario_id,
     scenarioName: row.scenario_name,
+    scenarioType: row.scenario_type || 'suggestion',
     provider: row.provider,
     model: row.model,
     profileName: row.profile_name,
