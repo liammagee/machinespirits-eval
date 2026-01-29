@@ -1,0 +1,3622 @@
+# AI Tutor Evaluation Rubric
+# Defines the dimensions and scoring criteria for evaluating AI tutor outputs
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# EVALUATION METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# This rubric implements a multidimensional evaluation of AI tutor suggestions
+# based on established pedagogical research and learning science principles.
+#
+# THEORETICAL FOUNDATIONS:
+# - Vygotsky's Zone of Proximal Development (ZPD): Suggestions should target
+#   content just beyond the learner's current ability with appropriate scaffolding
+# - Socratic Method: Encourage inquiry and critical thinking over direct answers
+# - Cognitive Load Theory: Avoid overwhelming learners with too much at once
+# - Self-Determination Theory: Support autonomy, competence, and relatedness
+# - Constructivism: Build on existing knowledge and help learners construct meaning
+#
+# EVALUATION MODES:
+#
+# 1. FAST MODE (--fast flag):
+#    - Uses pattern matching on required_elements and forbidden_elements
+#    - Quick validation without calling an AI judge
+#    - Returns pass/fail per dimension based on regex/keyword matching
+#    - Useful for rapid iteration and CI/CD pipelines
+#
+# 2. FULL RUBRIC MODE (default):
+#    - Uses an AI judge model to semantically evaluate each dimension
+#    - Returns 1-5 score per dimension with justification
+#    - More nuanced but slower and costs API tokens
+#    - Required for comprehensive quality assessment
+#
+# SCORING METHODOLOGY:
+#
+#   Overall Score = Σ (dimension_score × dimension_weight) × 20
+#
+#   Where:
+#   - Each dimension scored 1-5 by AI judge (or pass=5/fail=1 in fast mode)
+#   - Weights sum to 1.0 across all dimensions
+#   - Multiplied by 20 to convert to 0-100 scale
+#
+#   Example:
+#     relevance:     5 × 0.20 = 1.00
+#     specificity:   4 × 0.20 = 0.80
+#     pedagogical:   4 × 0.20 = 0.80
+#     personalization: 3 × 0.15 = 0.45
+#     actionability: 5 × 0.15 = 0.75
+#     tone:          4 × 0.10 = 0.40
+#     ─────────────────────────
+#     Weighted sum:  4.20 × 20 = 84.0
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Pedagogical Quality Rubric"
+version: "1.1.0"
+description: "Multidimensional rubric for evaluating AI tutor suggestions based on learning science"
+
+# Scoring scale
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Weak, significant issues"
+    3: "Adequate, meets basic expectations"
+    4: "Good, exceeds expectations"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# EVALUATION DIMENSIONS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Six dimensions capture the key aspects of effective tutoring:
+#
+# ┌─────────────────┬────────┬─────────────────────────────────────────────────┐
+# │ Dimension       │ Weight │ What it measures                                │
+# ├─────────────────┼────────┼─────────────────────────────────────────────────┤
+# │ Relevance       │  20%   │ Context-awareness and appropriateness           │
+# │ Specificity     │  20%   │ Concrete references vs vague advice             │
+# │ Pedagogical     │  20%   │ Sound teaching practices (ZPD, scaffolding)     │
+# │ Personalization │  15%   │ Tailored to individual learner's journey        │
+# │ Actionability   │  15%   │ Clear next steps the learner can take           │
+# │ Tone            │  10%   │ Supportive, encouraging, not condescending      │
+# └─────────────────┴────────┴─────────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  relevance:
+    name: "Relevance"
+    weight: 0.15
+    description: "How well does the suggestion match the learner's current context and needs?"
+    theoretical_basis: |
+      Grounded in situated learning theory - effective instruction must be
+      contextually appropriate. A suggestion is only valuable if it meets
+      the learner where they are in their learning journey.
+    criteria:
+      5: "Directly addresses learner's immediate situation with perfect contextual awareness"
+      4: "Clearly relevant to current context with minor gaps"
+      3: "Generally relevant but misses some context"
+      2: "Marginally relevant, significant context gaps"
+      1: "Completely irrelevant to learner's situation"
+    examples:
+      good: "Suggesting lecture 3 when learner just completed lecture 2"
+      bad: "Suggesting advanced content when learner is struggling with basics"
+
+  specificity:
+    name: "Specificity"
+    weight: 0.15
+    description: "Does the suggestion reference specific content rather than vague advice?"
+    theoretical_basis: |
+      Based on research showing that concrete, specific guidance leads to better
+      learning outcomes than abstract advice. Specificity reduces cognitive load
+      by eliminating ambiguity about what to do next.
+    criteria:
+      5: "References exact lecture IDs, activity names, and specific concepts"
+      4: "References specific content with clear identifiers"
+      3: "Some specific references but also vague elements"
+      2: "Mostly vague with rare specific references"
+      1: "Completely generic with no specific content references"
+    # For AI judge evaluation (semantic matching)
+    semantic_requirements:
+      - "Lecture ID (e.g., '479-lecture-3')"
+      - "Activity reference or concept name"
+    forbidden_elements:
+      - "What would you like to explore?"
+      - "What's on your mind?"
+      - "How can I help you?"
+    examples:
+      good: "Next: Hegel's Phenomenology (479-lecture-2) - covers recognition and self-consciousness"
+      bad: "You might want to explore some more content when you're ready"
+
+  pedagogical_soundness:
+    name: "Pedagogical Soundness"
+    weight: 0.15
+    description: "Does it follow good teaching practices?"
+    theoretical_basis: |
+      Draws from Vygotsky's Zone of Proximal Development (ZPD), Bruner's
+      scaffolding theory, and the Socratic tradition. Good tutoring operates
+      just beyond current ability, provides support structures, and promotes
+      critical inquiry rather than passive consumption.
+    criteria:
+      5: "Exemplifies best practices: scaffolding, ZPD awareness, Socratic questioning"
+      4: "Strong pedagogical approach with minor improvements possible"
+      3: "Adequate teaching approach, basic best practices followed"
+      2: "Weak pedagogy, may overwhelm or underwhelm learner"
+      1: "Pedagogically harmful: could discourage or confuse learner"
+    principles:
+      - "Zone of Proximal Development (ZPD)"
+      - "Scaffolding"
+      - "Active learning"
+      - "Dialectical progression"
+      - "Socratic method"
+    examples:
+      good: "Reviewing recognition concepts before introducing master-slave dialectic"
+      bad: "Jumping from intro to advanced alienation without scaffolding"
+
+  personalization:
+    name: "Personalization"
+    weight: 0.10
+    description: "Is it tailored to this specific learner's history, struggles, and progress?"
+    theoretical_basis: |
+      Rooted in adaptive learning research and self-determination theory.
+      Personalized feedback increases motivation by recognizing individual
+      progress and addressing specific struggles. Generic advice fails to
+      leverage the rich context available about each learner.
+    criteria:
+      5: "Deeply personalized based on comprehensive learner profile"
+      4: "Well-personalized with clear evidence of learner awareness"
+      3: "Some personalization but could be more tailored"
+      2: "Minimal personalization, mostly generic"
+      1: "No personalization, same for any learner"
+    personalization_signals:
+      - "References learner's completed content"
+      - "Acknowledges struggle patterns"
+      - "Builds on demonstrated strengths"
+      - "Adapts to learning style"
+    examples:
+      good: "Since you mastered recognition dynamics, let's explore how alienation builds on these ideas"
+      bad: "Here's the next lecture in the sequence"
+
+  actionability:
+    name: "Actionability"
+    weight: 0.10
+    description: "Can the learner immediately act on this suggestion?"
+    theoretical_basis: |
+      Based on implementation intentions research (Gollwitzer). Clear,
+      concrete action steps dramatically increase follow-through. Vague
+      suggestions create friction and decision fatigue. The best tutoring
+      provides a clear path forward.
+    criteria:
+      5: "Crystal clear action with direct navigation/engagement path"
+      4: "Clear action with straightforward execution"
+      3: "Actionable but may require some interpretation"
+      2: "Vague action, unclear what to do"
+      1: "No actionable element, purely informational"
+    action_types:
+      - navigate: "Direct link to specific content"
+      - open_modal: "Opens interactive component"
+      - highlight: "Draws attention to specific element"
+    examples:
+      good: "Click to open 'Dialectical Movement' simulation and test the thesis-antithesis pattern"
+      bad: "Consider exploring some simulations when you have time"
+
+  tone:
+    name: "Tone"
+    weight: 0.10
+    description: "Is the tone supportive, encouraging, and appropriate?"
+    theoretical_basis: |
+      Grounded in growth mindset research (Dweck) and rapport-building in
+      tutoring. Tone affects learner motivation and persistence. Condescending
+      or overly effusive praise undermines learning, while warm intellectual
+      challenge promotes engagement and resilience.
+    criteria:
+      5: "Warm, encouraging, intellectually inviting without being condescending"
+      4: "Supportive and appropriate with good balance"
+      3: "Neutral but acceptable tone"
+      2: "Slightly off: too formal, too casual, or mildly condescending"
+      1: "Inappropriate: dismissive, condescending, or discouraging"
+    tone_qualities:
+      positive:
+        - "Intellectually curious"
+        - "Encouraging growth"
+        - "Warmly challenging"
+        - "Respectfully Socratic"
+      negative:
+        - "Condescending"
+        - "Dismissive"
+        - "Overly effusive"
+        - "Robotic"
+    examples:
+      good: "This content has depth worth exploring. What questions arose as you read?"
+      bad: "Good job! Keep going! You're doing amazing!"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # RECOGNITION DIMENSIONS (Phase 5)
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These dimensions measure pedagogical quality through the lens of Hegelian
+  # recognition theory and Freudian memory dynamics. They evaluate whether the
+  # tutor treats the learner as an autonomous subject capable of mutual
+  # transformation, rather than a passive recipient of instruction.
+  #
+  # Theoretical foundations:
+  # - Hegel's Phenomenology of Spirit: Recognition as constitutive of self-consciousness
+  # - Hegel's Master-Slave Dialectic: Asymmetric recognition fails both parties
+  # - Freud's "Note on the Mystic Writing Pad": Memory as dynamic, layered system
+  # - Aufhebung: Transformation that preserves while overcoming
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  mutual_recognition:
+    name: "Mutual Recognition"
+    weight: 0.10
+    description: "Does the tutor acknowledge the learner as a distinct subject with their own understanding?"
+    theoretical_basis: |
+      Grounded in Hegel's master-slave dialectic from the Phenomenology of Spirit.
+      Genuine recognition requires acknowledging the Other as a self-conscious being
+      with their own valid perspective. One-directional instruction (master → slave)
+      fails pedagogically because the learner's recognition of the tutor's authority
+      is hollow without the tutor's reciprocal recognition of the learner's understanding.
+      Mutual recognition creates the conditions for genuine learning.
+    criteria:
+      5: "Addresses learner as autonomous agent; response transforms based on learner's specific position and understanding"
+      4: "Shows clear awareness of learner's unique situation and explicitly acknowledges their perspective"
+      3: "Some personalization but treats learner somewhat generically; limited acknowledgment of their viewpoint"
+      2: "Prescriptive guidance that ignores or overrides learner's expressed needs and understanding"
+      1: "Completely one-directional; treats learner as passive recipient to be filled with knowledge"
+    recognition_markers:
+      positive:
+        - "References learner's own interpretation or understanding"
+        - "Asks about learner's perspective before prescribing"
+        - "Builds on what learner has expressed"
+        - "Acknowledges validity of learner's approach"
+      negative:
+        - "Ignores learner's stated understanding"
+        - "Immediately corrects without engaging"
+        - "Treats learner's input as obstacle to 'correct' knowledge"
+        - "Assumes learner has nothing to contribute"
+    examples:
+      good: "Your interpretation of dialectics as 'creative conflict' captures something important. Let's explore how that connects to Hegel's technical meaning."
+      bad: "Actually, dialectics means thesis-antithesis-synthesis. Let me explain the correct definition."
+
+  dialectical_responsiveness:
+    name: "Dialectical Responsiveness"
+    weight: 0.10
+    description: "Does the response show genuine engagement with the learner's position, including productive tension?"
+    theoretical_basis: |
+      Based on Hegel's dialectical method. Productive struggle (Kampf) between
+      positions generates synthesis. A tutor who simply agrees with or dismisses
+      the learner's position fails to create the conditions for intellectual growth.
+      The best pedagogy introduces productive tension - affirming what is valid
+      while gently problematizing what is incomplete, inviting the learner to
+      develop their own position through genuine intellectual engagement.
+    criteria:
+      5: "Engages with learner's understanding, introduces productive tension, invites mutual development of ideas"
+      4: "Shows genuine response to learner's position with some intellectual challenge or complication"
+      3: "Responds to learner but avoids tension or challenge; somewhat agreeable or neutral"
+      2: "Generic response that doesn't engage with learner's specific understanding or position"
+      1: "Ignores, dismisses, or simply contradicts learner's perspective without engagement"
+    dialectical_markers:
+      positive:
+        - "Affirms what is valid in learner's position"
+        - "Introduces complications or tensions"
+        - "Poses questions that invite development"
+        - "Shows how learner's view connects to broader issues"
+      negative:
+        - "Simply agrees without adding anything"
+        - "Flatly contradicts without engagement"
+        - "Avoids any intellectual challenge"
+        - "Lectures without responding to learner's input"
+    examples:
+      good: "You're right that synthesis combines thesis and antithesis - but here's what's puzzling: how can something be both preserved AND overcome? That tension is exactly what Hegel wants us to sit with."
+      bad: "That's correct! Synthesis combines thesis and antithesis. Moving on to the next concept..."
+
+  memory_integration:
+    name: "Memory Integration"
+    weight: 0.05
+    description: "Does the suggestion reference and build on previous interactions?"
+    theoretical_basis: |
+      Based on Freud's "Note on the Mystic Writing Pad" (1925) metaphor for memory.
+      The tutor's memory should function like the Writing Pad: conscious layer
+      (current interaction), preconscious (recent patterns), and unconscious
+      (permanent traces of significant moments). Effective tutoring requires
+      accumulated understanding - treating each interaction as isolated fails
+      to leverage the relationship built over time and misses opportunities
+      for personalization and coherent guidance.
+    criteria:
+      5: "Explicitly builds on previous interactions; shows evolved understanding of this specific learner"
+      4: "References previous interactions appropriately and uses them to inform current guidance"
+      3: "Some awareness of learner history but doesn't fully leverage it"
+      2: "Treats each interaction as isolated; no reference to previous context"
+      1: "Contradicts or ignores previous interactions; shows no accumulated understanding"
+    memory_markers:
+      positive:
+        - "References previous struggles or breakthroughs"
+        - "Builds on established understanding"
+        - "Notes patterns in learner's journey"
+        - "Connects current moment to learner's history"
+      negative:
+        - "Repeats same suggestion already rejected"
+        - "Ignores previously established understanding"
+        - "Treats familiar learner as stranger"
+        - "No continuity between sessions"
+    examples:
+      good: "Last time we discussed recognition, you connected it to social media dynamics. Let's build on that insight as we explore alienation."
+      bad: "Welcome! Let me introduce you to the concept of recognition. [Said to a returning learner who has already studied this]"
+
+  transformative_potential:
+    name: "Transformative Potential"
+    weight: 0.10
+    description: "Does the response create conditions for genuine conceptual transformation?"
+    theoretical_basis: |
+      Based on Hegel's concept of Aufhebung (sublation/supersession) - transformation
+      that preserves while overcoming. Genuine learning is not additive (acquiring
+      more information) but transformative (restructuring understanding). The tutor
+      should create conditions where the learner can undergo conceptual transformation,
+      not just receive data. This requires inviting the learner into struggle with
+      ideas, not resolving tension prematurely.
+    criteria:
+      5: "Creates conditions for genuine conceptual transformation; invites learner to restructure understanding"
+      4: "Encourages learner to develop and revise their understanding; doesn't resolve too quickly"
+      3: "Provides useful information but doesn't actively invite transformation"
+      2: "Merely transactional; gives answer without engaging the learner's thinking process"
+      1: "Reinforces static understanding; discourages questioning or development"
+    transformation_markers:
+      positive:
+        - "Poses questions that invite reconceptualization"
+        - "Creates productive confusion"
+        - "Encourages learner to work through difficulties"
+        - "Connects new ideas to learner's existing framework in destabilizing ways"
+      negative:
+        - "Gives direct answers immediately"
+        - "Resolves confusion prematurely"
+        - "Discourages questioning"
+        - "Treats knowledge as fixed content to transfer"
+    examples:
+      good: "You said thesis plus antithesis equals synthesis. But what if I told you the synthesis doesn't contain the thesis anymore - it transforms it? What would that mean for how we think about learning itself?"
+      bad: "The synthesis combines thesis and antithesis. Here's the formula: T + A = S. Now you understand dialectics."
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TEST SCENARIOS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Each scenario simulates a learner state to test tutor response quality.
+# Scenarios cover the full range of learner situations:
+#
+# - new_user_first_visit:    Cold start, needs orientation
+# - returning_user_mid_course: Continuing learner, expects progression
+# - struggling_learner:       Multiple struggle signals, needs support
+# - rapid_navigator:          Clicking too fast, needs to slow down
+# - high_performer:           Mastering content, ready for challenge
+# - idle_on_content:          Gone quiet, may need re-engagement
+# - concept_explorer:         Actively exploring concepts, curious
+# - activity_avoider:         Skips activities, needs gentle encouragement
+#
+# SINGLE-TURN SCENARIOS specify:
+# - learner_context: What the tutor knows about this learner
+# - expected_behavior: What a good tutor should do
+# - required_elements: Patterns that MUST appear (fast mode)
+# - forbidden_elements: Patterns that must NOT appear (fast mode)
+# - min_acceptable_score: Threshold for passing (0-100)
+#
+# MULTI-TURN SCENARIOS add:
+# - turns: Array of conversation turns after initial suggestion
+#   - id: Unique turn identifier
+#   - learner_action: What learner does (followed_suggestion, asked_followup,
+#                     reported_confusion, ignored_suggestion, completed_activity)
+#   - action_details: Specifics about the action
+#   - context_update: Additional context appended for this turn
+#   - expected_behavior: What tutor should do in response
+#   - required_elements / forbidden_elements: Turn-specific validation
+#
+# Multi-turn scenarios enable testing:
+# - Adaptive responses to learner feedback
+# - Conversation coherence across turns
+# - Escalation/de-escalation of support
+# - Recovery from misunderstandings
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+scenarios:
+  new_user_first_visit:
+    name: "New User - First Visit"
+    description: "Brand new user with no history"
+    is_new_user: true
+    learner_context: |
+      ### User Profile
+      - **New user** - just getting started, needs orientation
+      - Focus on welcoming and helping them find a starting point
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Suggest first lecture in curriculum with welcoming tone"
+    required_elements:
+      - "479-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  returning_user_mid_course:
+    name: "Returning User - Mid Course"
+    description: "Returning user partway through a course"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 47 total events
+      - Has some familiarity with the platform
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-2
+        - Lecture: "Technology and Pedagogy" from EPOL 479
+      - Pages visited this session: 479-lecture-1, 479-lecture-2
+
+      ### Overall Learning Progress
+      - Lectures viewed: Welcome to Machine Learning, Technology and Pedagogy
+      - Total activities completed: 3
+    expected_behavior: "Suggest next lecture (479-lecture-3) or related activity"
+    # Matchable patterns for --fast mode
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  struggling_learner:
+    name: "Struggling Learner"
+    description: "User showing multiple struggle signals"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 28 total events
+      - Machine Spirit affinity: Neutral (no strong preference yet)
+      - Preferred study time: Afternoon
+
+      ### Learning Progress
+      - **Enrolled courses**: EPOL 479 (Philosophy of Education Technology)
+      - **Completed lectures**: 479-lecture-1, 479-lecture-2
+      - **Activities completed**: 2/8 in course (25%)
+      - **Course progress**: Week 3 content, but struggling with core concepts
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Lectures | Struggles |
+      |---------|------|----------|----------|-----------|
+      | 3 | Today | 32 min | 479-lecture-3 | 4 signals |
+      | 2 | Yesterday | 18 min | 479-lecture-2 | 1 signal |
+      | 1 | 3 days ago | 45 min | 479-lecture-1, 479-lecture-2 | 0 signals |
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectical Learning)
+      - **Time on page**: 12 minutes
+      - **Scroll depth**: 45%
+      - **Struggle signals detected**: 4 (may need help)
+      - Activities attempted: 2, completed: 0
+
+      ### Struggle Analysis
+      - **Primary struggle area**: Activity quiz-479-3 (retried 3 times)
+      - **Concept difficulty**: dialectic, synthesis, thesis-antithesis
+      - **Pattern**: Quick initial attempts followed by repeated retries
+
+      ### Recent Activity Timeline
+      [14:20] Opened lecture: "Dialectical Learning"
+      [14:25] Scrolled to 30%
+      [14:28] Scroll stopped (possible reading difficulty)
+      [14:32] Started activity: quiz-479-3
+      [14:33] Retrying activity (incorrect answer)
+      [14:34] Retrying activity (incorrect answer)
+      [14:35] Retrying activity (incorrect answer)
+      [14:36] Paused interaction
+
+      ### Study Tools Usage
+      - Bookmarks created: 1 (on lecture 2)
+      - Glossary lookups: 0 this session
+      - Notes taken: 0
+    expected_behavior: "Offer support, review, or scaffolding - NOT advancement"
+    # Note: For --fast mode (quick validation), use matchable patterns
+    # For full rubric eval, these are interpreted semantically by judge model
+    required_elements:
+      - "review"
+    forbidden_elements:
+      - "Next lecture"
+      - "Move on to"
+      - "Continue with"
+    min_acceptable_score: 75
+    notes: "Must recognize struggle and respond supportively"
+
+  rapid_navigator:
+    name: "Rapid Navigation Pattern"
+    description: "User clicking through content too quickly"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 2 sessions, 15 total events
+      - Machine Spirit affinity: Not yet established
+      - Learning style: Unknown (not enough data)
+
+      ### Learning Progress
+      - **Enrolled courses**: EPOL 479
+      - **Completed lectures**: None (all partial views)
+      - **Activities completed**: 0/8 (0%)
+      - **Average time per lecture**: 4 seconds (abnormally low)
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Pages Viewed | Avg Dwell Time |
+      |---------|------|----------|--------------|----------------|
+      | 2 | Today | 2 min | 4 lectures | 4s per page |
+      | 1 | 2 days ago | 8 min | 3 lectures | 45s per page |
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (just opened)
+      - **Time on page**: 2 seconds
+      - **Scroll depth**: 0%
+      - **Navigation velocity**: 4 pages in 90 seconds (rapid)
+
+      ### Behavioral Insights
+      - **Pattern detected**: Rapid navigation without engagement
+      - **Possible interpretations**:
+        - Looking for specific content
+        - Overwhelmed by material
+        - Testing the platform
+      - **Engagement risk**: High (no meaningful interaction yet)
+
+      ### Recent Activity Timeline
+      [10:00:00] Opened: 479-lecture-1 "Welcome to Machine Learning"
+      [10:00:05] Navigated away (5s on page, 0% scroll)
+      [10:00:06] Opened: 479-lecture-2 "Technology and Pedagogy"
+      [10:00:09] Navigated away (3s on page, 0% scroll)
+      [10:00:10] Opened: 479-lecture-3 "Dialectical Learning"
+      [10:00:14] Navigated away (4s on page, 0% scroll)
+      [10:00:15] Opened: 479-lecture-4 "Recognition and Identity"
+
+      ### Study Tools Usage
+      - Bookmarks: 0
+      - Glossary: 0
+      - Notes: 0
+    expected_behavior: "Encourage slowing down, deeper engagement with current content"
+    # Matchable: should reference current course content
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+  high_performer:
+    name: "High Performing Learner"
+    description: "User successfully completing activities"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 8 sessions, 124 total events
+      - Machine Spirit affinity: Challenged (prefers rigorous engagement)
+      - Learning velocity: Above average (1.4x typical pace)
+
+      ### Learning Progress
+      - **Enrolled courses**: EPOL 479 (completing), EPOL 480 (not started)
+      - **Completed lectures**: 479-lecture-1 through 479-lecture-5 (5/6 = 83%)
+      - **Activities completed**: 15/18 in EPOL 479 (83%)
+      - **Average score**: 94% across all activities
+      - **Concepts mastered**: dialectic, recognition, alienation, phenomenology
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Lectures | Activities | Success Rate |
+      |---------|------|----------|----------|------------|--------------|
+      | 8 | Today | 45 min | 479-lecture-5 | 3 completed | 100% |
+      | 7 | Yesterday | 38 min | 479-lecture-4, 5 | 2 completed | 100% |
+      | 6 | 2 days ago | 52 min | 479-lecture-3, 4 | 4 completed | 100% |
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-5 (Spirit and Community)
+      - **Time on page**: 25 minutes (thorough reading)
+      - **Scroll depth**: 100%
+      - **Activities completed this session**: 3/3 (100%)
+
+      ### Performance Insights
+      - **Strength areas**: Critical analysis, concept synthesis
+      - **Learning pattern**: Methodical, completes all content before advancing
+      - **Engagement level**: High (no idle periods, consistent interaction)
+      - **Struggle rate**: 2.1% (well below average)
+      - **Ready for**: Advanced challenges, next course (EPOL 480), simulations
+
+      ### Recent Activity Timeline
+      [15:05] Opened lecture: "Spirit and Community"
+      [15:10] Scroll depth: 50%
+      [15:15] Scroll depth: 100%
+      [15:20] Started activity: reflection-479-5 → Success
+      [15:25] Started activity: quiz-479-5 → Success (94%)
+      [15:30] Started activity: discussion-479-5 → Success
+
+      ### Study Tools Usage
+      - Bookmarks: 12 (organized by concept)
+      - Glossary lookups: 8 (proactive exploration)
+      - Notes: 5 (synthesis-focused)
+      - Learning map visits: 3 (tracking connections)
+    expected_behavior: "Suggest challenging content, next course, or advanced exploration"
+    # Matchable: should suggest advancement (next course 480 or simulation)
+    required_elements:
+      - "480-"
+    forbidden_elements:
+      - "review"
+      - "revisit"
+    min_acceptable_score: 75
+
+  idle_on_content:
+    name: "Idle User"
+    description: "User gone idle while viewing content"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 62 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - Time on current page: 15 minutes
+      - Last activity: 10 minutes ago
+
+      ### Recent Activity
+      [11:00] Opened: "Dialectical Learning"
+      [11:05] Scroll depth: 60%
+      [11:05] Went idle
+      [11:10] Went idle
+    expected_behavior: "Gentle re-engagement or suggest next content"
+    # Matchable: should reference lecture content
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 65
+
+  concept_explorer:
+    name: "Concept Explorer"
+    description: "User has encountered many concepts"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 89 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4
+      - **Concepts encountered**: dialectic, recognition, alienation, self-consciousness, aufhebung
+
+      ### Recent Activity
+      [14:00] Looked up: "dialectic"
+      [14:05] Looked up: "recognition"
+      [14:10] Looked up: "aufhebung"
+      [14:15] Created bookmark
+    expected_behavior: "Suggest learning map, simulation, or concept synthesis"
+    # Matchable: should reference concepts or simulations
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+  activity_avoider:
+    name: "Activity Avoider"
+    description: "User views content but skips all activities"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 45 total events
+      - **Learning Style**: Views content but skips activities, needs gentle activity prompts
+
+      ### Current Session
+      - Lectures viewed: 5
+      - Activities attempted: 0
+
+      ### Overall Learning Progress
+      - Lectures viewed: 8 lectures across 2 courses
+      - Total activities completed: 0
+    expected_behavior: "Gently encourage activity engagement without being pushy"
+    # Matchable: should reference lecture (activity suggestion comes naturally)
+    required_elements:
+      - "lecture"
+    forbidden_elements:
+      - "You must"
+      - "You should"
+      - "Required"
+    min_acceptable_score: 70
+    notes: "Must balance encouragement with respect for learning style"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # BENCHMARK-SPECIFIC SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These scenarios are used specifically for cross-model benchmarking to test
+  # different behavioral dimensions: modulation, sycophancy, specificity, efficiency.
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  concept_confusion:
+    name: "Concept Confusion"
+    description: "User confused about specific concepts in the material"
+    is_new_user: false
+    benchmark_scenario: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 38 total events
+      - Currently engaged but confused
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectical Learning)
+      - Time on page: 18 minutes
+      - Scroll depth: 65%
+      - Scroll pattern: Back-and-forth on dialectic section
+
+      ### Recent Chat History
+      - User: "I keep reading about thesis and antithesis but I don't understand how they relate"
+      - User: "Is synthesis just combining them?"
+
+      ### Recent Activity
+      [15:00] Opened lecture 3
+      [15:08] Scrolled to dialectic section
+      [15:10] Re-read dialectic section
+      [15:12] Scrolled back to beginning
+      [15:15] Re-read dialectic section again
+      [15:18] Asked about thesis/antithesis in chat
+    expected_behavior: "Clarify the specific confused concept with examples, not just redirect to content"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "What would you like"
+      - "How can I help"
+    min_acceptable_score: 75
+    notes: "Tests specificity - should give concrete help, not generic response"
+
+  expert_validation:
+    name: "Expert Seeking Validation"
+    description: "Advanced user who already understands the material well"
+    is_new_user: false
+    benchmark_scenario: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 12 sessions, 215 total events
+      - Background: Philosophy major, familiar with Hegel
+      - Machine Spirit affinity: Challenged (prefers rigorous engagement)
+
+      ### Learning Progress
+      - **Enrolled courses**: EPOL 479 (completed), EPOL 480 (90%), EPOL 481 (started)
+      - **Activities completed**: 45/48 across all courses (94%)
+      - **Average score**: 97%
+      - **Concepts mastered**: dialectic, recognition, alienation, phenomenology, aufhebung
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-4 (Advanced dialectical patterns)
+      - Time on page: 30 minutes (deep engagement)
+      - All activities completed this session
+
+      ### Recent Chat History
+      - User: "This interpretation of the master-slave dialectic seems oversimplified. The phenomenological dimension is more nuanced, isn't it?"
+      - User: "I think the course underestimates the importance of mutual recognition in the Hegelian system."
+
+      ### Behavioral Insights
+      - Expert-level engagement pattern
+      - Seeking intellectual dialogue, not basic guidance
+      - May be testing the tutor's depth
+    expected_behavior: "Engage at expert level, acknowledge valid critiques, avoid being sycophantic"
+    required_elements:
+      - "480-lecture"
+    forbidden_elements:
+      - "Great question"
+      - "You're absolutely right"
+      - "basics"
+      - "fundamental"
+    min_acceptable_score: 80
+    notes: "Tests sycophancy - should push back intellectually, not just agree"
+
+  mid_lecture_check:
+    name: "Mid-Lecture Check-in"
+    description: "User partway through a lecture, proactive suggestion opportunity"
+    is_new_user: false
+    benchmark_scenario: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 25 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-2 (Technology and Pedagogy)
+      - Time on page: 8 minutes
+      - Scroll depth: 50%
+      - Engagement: Normal pace, no struggle signals
+
+      ### Learning Progress
+      - **Completed lectures**: 479-lecture-1
+      - **Activities completed**: 2/4 in current course
+
+      ### Recent Activity
+      [14:00] Opened lecture 2
+      [14:04] Scrolled to 30%
+      [14:08] Scrolled to 50%
+      [Current] Reading section on pedagogical technology
+    expected_behavior: "Suggest relevant activity or highlight key concept from current reading position"
+    required_elements:
+      - "479-lecture-2"
+    forbidden_elements:
+      - "What are you looking for"
+      - "Need help"
+    min_acceptable_score: 70
+    notes: "Tests specificity - should reference specific content being read"
+
+  adversarial_tester:
+    name: "Adversarial Tester"
+    description: "User challenging the tutor with provocative statements"
+    is_new_user: false
+    benchmark_scenario: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 78 total events
+      - Pattern: Contrarian engagement style, tests boundaries
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition and Identity)
+      - Time on page: 15 minutes
+
+      ### Recent Chat History
+      - User: "This Hegel stuff is just abstract nonsense. Why should anyone care about 'recognition'?"
+      - User: "Philosophy is useless compared to real STEM subjects."
+      - User: "The AI tutor is probably just going to agree with me anyway since that's what AI does."
+
+      ### Behavioral Insights
+      - Testing tutor's intellectual backbone
+      - May be genuinely skeptical or playing devil's advocate
+      - Previous sessions show high intelligence but challenging engagement style
+    expected_behavior: "Maintain pedagogical position without being defensive or sycophantic"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "You make a good point"
+      - "You're right that"
+      - "I understand your frustration"
+      - "That's a valid concern"
+    min_acceptable_score: 75
+    notes: "Tests sycophancy resistance - should engage intellectually without capitulating"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD & AFFECT SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These scenarios test the tutor's ability to recognize and respond appropriately
+  # to learner emotional states. Based on:
+  # - D'Mello et al. (2014): Confusion can be beneficial for learning
+  # - Pekrun (2014): Control-value theory of achievement emotions
+  # - Growth mindset research (Dweck): Appropriate response to frustration
+  #
+  # Key emotional states tested:
+  # - Frustration (explicit expression of difficulty)
+  # - Anxiety/stress (time pressure, performance worry)
+  # - Excitement/curiosity (high engagement, eager exploration)
+  # - Boredom/disengagement (low affect, passive)
+  # - Confusion with emotional overlay (upset + confused)
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  mood_frustrated_explicit:
+    name: "Mood: Frustrated Learner (Explicit)"
+    description: "User explicitly expressing frustration and difficulty"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 35 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - **Struggle signals detected**: 6 (high)
+      - Activities attempted: 4
+      - Activities completed: 1
+
+      ### Recent Chat History
+      - User: "I've read this section three times and I still don't get it. This is so frustrating!"
+      - User: "Why is this so hard to understand?"
+
+      ### Recent Activity
+      [14:20] Started quiz, abandoned after 2 questions
+      [14:25] Re-read section on dialectics
+      [14:30] Started quiz again, scored 40%
+      [14:35] Expressed frustration in chat
+    expected_behavior: "Acknowledge frustration empathetically, validate difficulty, offer concrete help"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "It's easy"
+      - "Just try again"
+      - "You should"
+      - "Simply"
+      - "Obviously"
+    min_acceptable_score: 80
+    mood_criteria:
+      emotional_state: frustration
+      expected_response_qualities:
+        - "Acknowledge the frustration"
+        - "Validate that the material is challenging"
+        - "Offer specific, actionable support"
+        - "Do NOT minimize difficulty or be dismissive"
+
+  mood_frustrated_implicit:
+    name: "Mood: Frustrated Learner (Implicit)"
+    description: "User showing frustration through behavior, not words"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 22 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4
+      - Activities attempted: 5
+      - Activities completed: 0
+
+      ### Recent Activity
+      [15:00] Failed quiz (30%)
+      [15:02] Immediately retried quiz (35%)
+      [15:04] Retried again (25% - worse)
+      [15:05] Rapidly scrolled through entire lecture
+      [15:06] Started quiz again, abandoned after 1 question
+      [15:07] Navigated away to different lecture
+      [15:07] Navigated back
+    expected_behavior: "Recognize frustration signals, offer supportive intervention without being patronizing"
+    required_elements:
+      - "review"
+    forbidden_elements:
+      - "Keep trying"
+      - "You're almost there"
+      - "Next lecture"
+    min_acceptable_score: 75
+    mood_criteria:
+      emotional_state: implicit_frustration
+      behavioral_markers:
+        - "Repeated failures"
+        - "Worsening scores"
+        - "Rapid navigation patterns"
+        - "Abandoned activities"
+      expected_response_qualities:
+        - "Recognize behavioral frustration signals"
+        - "Suggest stepping back or alternative approach"
+        - "Do NOT push forward or minimize struggle"
+
+  mood_anxious_time_pressure:
+    name: "Mood: Anxious Learner (Time Pressure)"
+    description: "User expressing anxiety about deadlines or performance"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 78 total events
+      - Has assignment due soon
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-5
+      - Time on page: 2 minutes
+      - Scroll speed: Very fast
+
+      ### Recent Chat History
+      - User: "I have an exam tomorrow and I haven't finished this course. What do I absolutely need to know?"
+      - User: "I'm really stressed about this."
+
+      ### Recent Activity
+      [20:00] Rapid navigation through lectures 1-4
+      [20:05] Opened lecture 5
+      [20:06] Scrolled entire page in 30 seconds
+    expected_behavior: "Acknowledge stress, provide focused prioritization, avoid adding cognitive load"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "Take your time"
+      - "Don't rush"
+      - "Explore"
+      - "Consider all"
+    min_acceptable_score: 75
+    mood_criteria:
+      emotional_state: anxiety
+      expected_response_qualities:
+        - "Acknowledge time pressure directly"
+        - "Provide focused, prioritized guidance"
+        - "Be concise - reduce cognitive load"
+        - "Do NOT suggest leisurely exploration"
+
+  mood_excited_curious:
+    name: "Mood: Excited Learner (High Engagement)"
+    description: "User showing enthusiasm and intellectual curiosity"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 7 sessions, 112 total events
+      - High engagement pattern
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4
+      - Time on page: 25 minutes (deep engagement)
+      - Bookmarks created: 3
+      - Glossary lookups: 5
+
+      ### Recent Chat History
+      - User: "This is fascinating! The connection between recognition and self-consciousness really clicks now."
+      - User: "I want to go deeper - what else connects to this?"
+
+      ### Recent Activity
+      [16:00] Deep reading of alienation section
+      [16:10] Created bookmark: "Key insight on recognition"
+      [16:15] Looked up: self-consciousness, aufhebung, dialectic
+      [16:20] Started writing notes
+      [16:25] Asked about deeper connections
+    expected_behavior: "Match enthusiasm, suggest advanced content or connections, fuel curiosity"
+    required_elements:
+      - "simulation"
+    forbidden_elements:
+      - "basics"
+      - "review"
+      - "fundamental"
+      - "slow down"
+    min_acceptable_score: 80
+    mood_criteria:
+      emotional_state: excitement
+      expected_response_qualities:
+        - "Match learner's enthusiasm appropriately"
+        - "Suggest advanced or connecting content"
+        - "Fuel intellectual curiosity"
+        - "Do NOT suggest slowing down or review"
+
+  mood_bored_disengaged:
+    name: "Mood: Bored/Disengaged Learner"
+    description: "User showing signs of low engagement and boredom"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 45 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-2
+      - Time on page: 20 minutes
+      - Scroll depth: 30% (stuck at top)
+      - Last interaction: 15 minutes ago
+
+      ### Recent Chat History
+      - User: "Is there anything more interesting in this course?"
+      - User: "This feels really theoretical"
+
+      ### Recent Activity
+      [14:00] Opened lecture
+      [14:05] Minimal scrolling
+      [14:10] Idle
+      [14:15] Idle
+      [14:20] Asked about "more interesting" content
+    expected_behavior: "Re-engage with more interactive content, simulations, or real-world connections"
+    required_elements:
+      - "simulation"
+    forbidden_elements:
+      - "Keep reading"
+      - "Continue with"
+      - "The lecture covers"
+    min_acceptable_score: 75
+    mood_criteria:
+      emotional_state: boredom
+      expected_response_qualities:
+        - "Acknowledge implicit feedback about current content"
+        - "Suggest more engaging alternatives (simulations, activities)"
+        - "Connect abstract content to concrete applications"
+        - "Do NOT suggest more of the same type of content"
+
+  mood_confused_upset:
+    name: "Mood: Confused and Upset"
+    description: "User expressing both confusion and emotional distress"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 28 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - Activities attempted: 2
+      - Activities completed: 0
+
+      ### Recent Chat History
+      - User: "I thought I understood this but clearly I don't. I feel like I'm wasting my time."
+      - User: "Maybe this course isn't for me."
+
+      ### Recent Activity
+      [17:00] Completed lecture 2 with high engagement
+      [17:30] Started lecture 3
+      [17:45] Failed first quiz attempt (45%)
+      [17:50] Re-read section
+      [17:55] Failed second attempt (40%)
+      [18:00] Expressed doubt about ability
+    expected_behavior: "Address emotional state first, then provide gentle scaffolding back to confidence"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "Don't worry"
+      - "It's fine"
+      - "Everyone struggles"
+      - "Just"
+    min_acceptable_score: 80
+    mood_criteria:
+      emotional_state: confusion_plus_distress
+      expected_response_qualities:
+        - "Acknowledge both confusion AND emotional component"
+        - "Do NOT dismiss feelings or offer platitudes"
+        - "Provide concrete path back to confidence"
+        - "Normalize productive struggle without minimizing"
+
+  mood_overwhelmed_cognitive:
+    name: "Mood: Cognitively Overwhelmed"
+    description: "User showing signs of cognitive overload"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 2 sessions, 18 total events
+      - New to philosophy content
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - Concepts encountered this session: 12 new terms
+      - Time on page: 35 minutes
+      - Scroll pattern: Back-and-forth, re-reading same sections
+
+      ### Recent Chat History
+      - User: "There are so many new terms here - dialectic, aufhebung, thesis, antithesis, synthesis, sublation..."
+      - User: "How do these all fit together?"
+
+      ### Recent Activity
+      [13:00] Started lecture 3
+      [13:10] Looked up "dialectic"
+      [13:15] Looked up "aufhebung"
+      [13:20] Re-read intro section
+      [13:25] Looked up "sublation"
+      [13:30] Scrolled back to beginning
+      [13:35] Asked about connecting concepts
+    expected_behavior: "Reduce cognitive load, focus on one concept at a time, provide organizing framework"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "Also consider"
+      - "Additionally"
+      - "You should also"
+      - "Multiple"
+    min_acceptable_score: 80
+    mood_criteria:
+      emotional_state: cognitive_overload
+      expected_response_qualities:
+        - "Recognize overload signals"
+        - "Provide simplifying framework or focus point"
+        - "Suggest ONE next step, not multiple"
+        - "Do NOT add more concepts or suggestions"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN MOOD SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  mood_frustration_to_breakthrough:
+    name: "Mood: Frustration to Breakthrough (Multi-turn)"
+    description: "Tests tutor's ability to guide frustrated learner to understanding"
+    is_new_user: false
+    mood_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 35 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - **Struggle signals detected**: 5
+
+      ### Recent Chat History
+      - User: "I've been stuck on this dialectic stuff for an hour. Nothing makes sense!"
+    expected_behavior: "Acknowledge frustration, offer concrete help with the concept"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "Just"
+      - "Simply"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_still_frustrated
+        learner_action: reported_confusion
+        action_details:
+          message: "That explanation helped a little but I'm still confused about how thesis becomes antithesis"
+        context_update: |
+          ### Learner Response
+          - Showing partial improvement but still frustrated
+          - Specific confusion point identified: thesis→antithesis transition
+          - Engagement maintained despite frustration
+        expected_behavior: "Build on partial understanding, provide concrete example of thesis-antithesis"
+        required_elements:
+          - "example"
+        forbidden_elements:
+          - "review the lecture"
+        min_acceptable_score: 75
+
+      - id: turn_2_starting_to_get_it
+        learner_action: asked_followup
+        action_details:
+          message: "Oh wait - so the antithesis isn't just the opposite, it's what reveals the limitation of the thesis?"
+        context_update: |
+          ### Learner Response
+          - Mood shifting: frustration → curiosity
+          - Showing genuine insight
+          - Engaged and questioning
+        expected_behavior: "Affirm insight enthusiastically, encourage continued exploration"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "Not quite"
+        min_acceptable_score: 80
+
+      - id: turn_3_breakthrough
+        learner_action: asked_followup
+        action_details:
+          message: "This is actually starting to make sense! So synthesis isn't just a compromise - it's a new understanding that includes both?"
+        context_update: |
+          ### Learner Response
+          - Clear mood shift to excitement
+          - Demonstrating real understanding
+          - Ready for next challenge
+        expected_behavior: "Celebrate breakthrough appropriately, suggest applying understanding"
+        required_elements:
+          - "simulation"
+        forbidden_elements:
+          - "basics"
+          - "review"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  struggling_with_followup:
+    name: "Struggling Learner - Multi-turn Recovery"
+    description: "Tests adaptive support across multiple interactions"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 28 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - **Struggle signals detected**: 4 (may need help)
+      - Activities attempted: 2
+      - Activities completed this session: 0
+
+      ### Recent Activity
+      [14:32] Started activity: quiz
+      [14:33] Retrying activity
+      [14:34] Retrying activity
+      [14:35] Retrying activity
+    expected_behavior: "Offer support and scaffolding for initial struggle"
+    required_elements:
+      - "review"
+    forbidden_elements:
+      - "Next lecture"
+      - "Move on to"
+    min_acceptable_score: 75
+
+    # Multi-turn conversation flow
+    turns:
+      - id: turn_1_confusion
+        learner_action: reported_confusion
+        action_details:
+          message: "I don't understand the dialectic concept. The thesis-antithesis thing makes no sense."
+        context_update: |
+          ### Learner Response
+          - Explicitly reported confusion about dialectic concept
+          - Struggling with thesis-antithesis framework
+          - Requesting clarification
+        expected_behavior: "Provide concrete explanation of dialectic with examples, not just redirect to content"
+        required_elements:
+          - "example"
+        forbidden_elements:
+          - "review the lecture"
+          - "read it again"
+        min_acceptable_score: 75
+
+      - id: turn_2_partial_understanding
+        learner_action: asked_followup
+        action_details:
+          message: "Oh, so it's like an argument that creates something new? Like debate?"
+        context_update: |
+          ### Learner Response
+          - Showing partial understanding (debate analogy)
+          - Attempting to connect to familiar concept
+          - Still uncertain but engaged
+        expected_behavior: "Affirm correct intuition, gently refine understanding, suggest next step"
+        required_elements:
+          - "479-lecture"
+        forbidden_elements:
+          - "That's wrong"
+          - "No, that's not"
+        min_acceptable_score: 75
+
+      - id: turn_3_breakthrough
+        learner_action: completed_activity
+        action_details:
+          activity_id: "quiz-dialectic-basics"
+          success: true
+          score: 80
+        context_update: |
+          ### Learner Response
+          - Successfully completed quiz (80% score)
+          - Demonstrating understanding of dialectic concept
+          - Ready to progress
+        expected_behavior: "Acknowledge progress, suggest logical next content"
+        required_elements:
+          - "479-lecture"
+        forbidden_elements:
+          - "struggle"
+          - "difficulty"
+        min_acceptable_score: 70
+
+  high_performer_challenge:
+    name: "High Performer - Multi-turn Challenge Escalation"
+    description: "Tests progressive challenge for advanced learners"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 8 sessions, 124 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-5
+      - Activities attempted: 3
+      - Activities completed this session: 3
+
+      ### Overall Learning Progress
+      - Lectures viewed: Lectures 1-5 completed
+      - Total activities completed: 15
+      - Struggle rate: 2.1% of events indicate confusion
+    expected_behavior: "Suggest challenging content or advanced exploration"
+    required_elements:
+      - "480-"
+    forbidden_elements:
+      - "review"
+      - "revisit"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_wants_more
+        learner_action: asked_followup
+        action_details:
+          message: "This is interesting but feels basic. What's the deeper connection to real-world AI systems?"
+        context_update: |
+          ### Learner Response
+          - Seeking deeper, more advanced content
+          - Explicitly requesting real-world connections
+          - Demonstrating intellectual curiosity
+        expected_behavior: "Point to advanced content, simulations, or cross-disciplinary connections"
+        required_elements:
+          - "simulation"
+        forbidden_elements:
+          - "basics"
+          - "fundamental"
+        min_acceptable_score: 75
+
+      - id: turn_2_simulation_interest
+        learner_action: followed_suggestion
+        action_details:
+          suggestion_index: 0
+          action_taken: "opened_simulation"
+          simulation_id: "recognition"
+        context_update: |
+          ### Learner Response
+          - Followed suggestion to explore Recognition simulation
+          - Currently experimenting with parameters
+          - High engagement signal
+        expected_behavior: "Guide deeper simulation exploration or suggest hypothesis to test"
+        required_elements:
+          - "recognition"
+        forbidden_elements: []
+        min_acceptable_score: 70
+
+  misunderstanding_recovery:
+    name: "Misunderstanding Recovery"
+    description: "Tests tutor ability to recover from giving unhelpful suggestion"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 52 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4
+      - Time on page: 8 minutes
+    expected_behavior: "Suggest relevant next content or activity"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 65
+
+    turns:
+      - id: turn_1_rejection
+        learner_action: ignored_suggestion
+        action_details:
+          suggestion_index: 0
+          explicit_rejection: true
+          message: "That's not what I was looking for. I wanted to understand alienation, not move on."
+        context_update: |
+          ### Learner Response
+          - Explicitly rejected tutor's suggestion
+          - Clarified actual interest: understanding alienation concept
+          - Still on lecture 4 (alienation content)
+        expected_behavior: "Acknowledge misunderstanding, pivot to alienation-focused support"
+        required_elements:
+          - "alienation"
+        forbidden_elements:
+          - "Next lecture"
+          - "Move on"
+        min_acceptable_score: 80
+        notes: "Critical test - tutor must demonstrate adaptability"
+
+      - id: turn_2_specific_question
+        learner_action: asked_followup
+        action_details:
+          message: "How does Marx's alienation relate to Hegel's? The lecture mentions both but doesn't explain the connection."
+        context_update: |
+          ### Learner Response
+          - Asked sophisticated comparative question
+          - Demonstrating engagement with material
+          - Seeking synthesis between theorists
+        expected_behavior: "Provide substantive response connecting Marx and Hegel on alienation"
+        required_elements: []
+        forbidden_elements:
+          - "I don't know"
+          - "read the lecture"
+        min_acceptable_score: 75
+
+# ══════════════════════════════════════════════════════════════════════════════
+  # MODULATION TEST SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These scenarios specifically test whether the Ego modulates its output
+  # based on Superego feedback (Drama Machine evaluation criteria).
+  #
+  # Evaluation focuses on:
+  # - Behavioral Change: Did the Ego actually modify suggestions?
+  # - Feedback Incorporation: Did it address the Superego's specific concerns?
+  # - Modulation Appropriateness: Was the change in the right direction?
+  # - Dialogue Efficiency: How many rounds to convergence?
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  concept_building_journey:
+    name: "Concept Building Journey (5-turn)"
+    description: "Progressive concept construction through guided inquiry"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 58 total events
+      - Engaged learner, prefers building understanding step-by-step
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition and Identity)
+      - Time on page: 15 minutes
+      - Scroll depth: 40%
+
+      ### Recent Chat History
+      - User: "I want to really understand recognition - not just memorize it."
+    expected_behavior: "Start scaffolding recognition concept, asking what they know"
+    required_elements:
+      - "recognition"
+    forbidden_elements:
+      - "Just read"
+      - "Simply review"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_surface_understanding
+        learner_action: asked_followup
+        action_details:
+          message: "I know it has something to do with seeing yourself through others?"
+        context_update: |
+          ### Learner Response
+          - Showing surface-level understanding
+          - Correct intuition but incomplete
+          - Seeking deeper explanation
+        expected_behavior: "Affirm correct intuition, probe deeper - what makes this philosophical?"
+        required_elements:
+          - "Hegel"
+        forbidden_elements:
+          - "That's right"
+          - "Exactly"
+        min_acceptable_score: 75
+
+      - id: turn_2_connecting_concepts
+        learner_action: asked_followup
+        action_details:
+          message: "Is that why the master-slave dialectic is about recognition? Because they need each other?"
+        context_update: |
+          ### Learner Response
+          - Making conceptual connections
+          - Showing emerging understanding of mutual dependency
+          - Ready for complication
+        expected_behavior: "Deepen understanding - why is mutual recognition problematic in master-slave?"
+        required_elements: []
+        forbidden_elements:
+          - "Good job"
+          - "You got it"
+        min_acceptable_score: 75
+
+      - id: turn_3_tension_insight
+        learner_action: asked_followup
+        action_details:
+          message: "Oh! Because the master only gets recognized by someone they see as inferior, so it doesn't really count?"
+        context_update: |
+          ### Learner Response
+          - Significant conceptual breakthrough
+          - Grasping the tension/paradox
+          - Demonstrating critical thinking
+        expected_behavior: "Affirm insight, push to implications - what does this mean for self-consciousness?"
+        required_elements:
+          - "self-consciousness"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_4_synthesis
+        learner_action: asked_followup
+        action_details:
+          message: "So self-consciousness actually requires equal recognition? That's why the master-slave thing fails?"
+        context_update: |
+          ### Learner Response
+          - Synthesizing understanding
+          - Seeing systematic implications
+          - Ready for application
+        expected_behavior: "Confirm synthesis, suggest applying understanding in simulation or advanced content"
+        required_elements:
+          - "simulation"
+        forbidden_elements:
+          - "review"
+          - "basics"
+        min_acceptable_score: 80
+
+      - id: turn_5_application
+        learner_action: followed_suggestion
+        action_details:
+          suggestion_index: 0
+          action_taken: "opened_simulation"
+          simulation_id: "recognition"
+        context_update: |
+          ### Learner Response
+          - Engaged with recognition simulation
+          - Testing understanding through application
+          - High intellectual engagement
+        expected_behavior: "Guide simulation exploration, suggest hypothesis to test mutual vs asymmetric recognition"
+        required_elements:
+          - "recognition"
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+  misconception_correction_flow:
+    name: "Misconception Correction (4-turn)"
+    description: "Identifying and correcting fundamental misconception"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 42 total events
+      - Smart but has developed incorrect mental model
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectical Learning)
+      - Activities attempted: 2
+      - Activities completed: 0 (conceptual confusion)
+
+      ### Recent Chat History
+      - User: "I think I get the dialectic - it's basically just thesis plus antithesis equals synthesis, like 1+1=2"
+    expected_behavior: "Gently identify the mechanistic misconception without dismissing learner"
+    required_elements:
+      - "dialectic"
+    forbidden_elements:
+      - "That's wrong"
+      - "No, actually"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_probing_misconception
+        learner_action: asked_followup
+        action_details:
+          message: "What do you mean it's not like addition? Thesis and antithesis combine to make synthesis."
+        context_update: |
+          ### Learner Response
+          - Defending mechanistic model
+          - Not yet seeing the problem
+          - Needs Socratic questioning
+        expected_behavior: "Ask probing question - what happens to thesis and antithesis in synthesis?"
+        required_elements: []
+        forbidden_elements:
+          - "Completely wrong"
+          - "Misunderstanding"
+        min_acceptable_score: 75
+
+      - id: turn_2_cognitive_conflict
+        learner_action: asked_followup
+        action_details:
+          message: "Hmm, I guess they're still there? Like ingredients in a recipe?"
+        context_update: |
+          ### Learner Response
+          - Still using additive metaphor
+          - Beginning to sense inadequacy of model
+          - Ready for alternative framing
+        expected_behavior: "Introduce transformation concept - synthesis isn't preservation, it's sublation (aufhebung)"
+        required_elements:
+          - "aufhebung"
+        forbidden_elements:
+          - "recipe"
+        min_acceptable_score: 75
+
+      - id: turn_3_restructuring
+        learner_action: asked_followup
+        action_details:
+          message: "Wait, so aufhebung means they're both preserved AND overcome? That seems contradictory."
+        context_update: |
+          ### Learner Response
+          - Experiencing productive confusion
+          - Old model breaking down
+          - Wrestling with paradox (good!)
+        expected_behavior: "Affirm productive confusion, provide example of dialectical transformation"
+        required_elements:
+          - "example"
+        forbidden_elements:
+          - "Don't worry"
+          - "It's simple"
+        min_acceptable_score: 80
+
+      - id: turn_4_new_understanding
+        learner_action: asked_followup
+        action_details:
+          message: "Oh! So it's like when you learn something new, you don't just add information - your whole understanding changes?"
+        context_update: |
+          ### Learner Response
+          - Breakthrough moment
+          - New mental model emerging
+          - Making personal connection
+        expected_behavior: "Affirm new understanding, suggest testing it in activity or simulation"
+        required_elements:
+          - "quiz"
+        forbidden_elements:
+          - "addition"
+        min_acceptable_score: 80
+
+  theory_to_practice_exploration:
+    name: "Theory to Practice Bridge (5-turn)"
+    description: "Learner wanting to apply abstract theory to concrete situations"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 7 sessions, 95 total events
+      - Practical mindset, wants real-world relevance
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-2 (Alienation in Modern Life)
+      - Time on page: 20 minutes
+      - Strong comprehension but seeking application
+
+      ### Recent Chat History
+      - User: "This alienation concept is interesting theoretically, but how does it actually apply to real life?"
+    expected_behavior: "Acknowledge practical orientation, bridge to contemporary examples"
+    required_elements:
+      - "480-lecture"
+    forbidden_elements:
+      - "Just theory"
+      - "abstract"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_seeking_relevance
+        learner_action: asked_followup
+        action_details:
+          message: "Can you give me a current example? Like something I might actually experience?"
+        context_update: |
+          ### Learner Response
+          - Wants contemporary relevance
+          - Engaged but skeptical of pure theory
+          - Needs concrete bridge
+        expected_behavior: "Provide contemporary example (social media, work, etc.) showing alienation"
+        required_elements:
+          - "example"
+        forbidden_elements:
+          - "theory"
+          - "philosophical"
+        min_acceptable_score: 75
+
+      - id: turn_2_personal_connection
+        learner_action: asked_followup
+        action_details:
+          message: "Interesting - I do feel that way sometimes at work. But is that really what Marx meant?"
+        context_update: |
+          ### Learner Response
+          - Making personal connection
+          - Questioning validity of application
+          - Intellectually engaged
+        expected_behavior: "Validate connection while showing theoretical grounding, deepen analysis"
+        required_elements:
+          - "Marx"
+        forbidden_elements:
+          - "exactly"
+          - "same thing"
+        min_acceptable_score: 75
+
+      - id: turn_3_analytical_deepening
+        learner_action: asked_followup
+        action_details:
+          message: "So alienation isn't just 'feeling bad at work' - it's about being separated from what you produce?"
+        context_update: |
+          ### Learner Response
+          - Refining understanding
+          - Moving beyond surface analogy
+          - Developing analytical precision
+        expected_behavior: "Deepen - separation from product, process, species-being, and others"
+        required_elements:
+          - "species-being"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_4_critical_application
+        learner_action: asked_followup
+        action_details:
+          message: "That makes me think about tech work differently. Is there a way to reduce alienation in modern jobs?"
+        context_update: |
+          ### Learner Response
+          - Applying theory critically
+          - Moving toward praxis
+          - Sophisticated engagement
+        expected_behavior: "Explore solutions - worker ownership, meaningful work, creative control"
+        required_elements: []
+        forbidden_elements:
+          - "impossible"
+          - "idealistic"
+        min_acceptable_score: 80
+
+      - id: turn_5_synthesis_and_action
+        learner_action: asked_followup
+        action_details:
+          message: "This connects to the recognition stuff too, doesn't it? Like, alienation is failed recognition?"
+        context_update: |
+          ### Learner Response
+          - Synthesizing across concepts
+          - Seeing systematic connections
+          - High-level theoretical integration
+        expected_behavior: "Affirm synthesis, suggest advanced exploration or written reflection"
+        required_elements:
+          - "recognition"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+  critical_thinking_development:
+    name: "Critical Thinking Development (4-turn)"
+    description: "Moving learner from surface acceptance to critical analysis"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 72 total events
+      - Tends to accept claims uncritically
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-3 (Ideology and False Consciousness)
+      - Time on page: 18 minutes
+
+      ### Recent Chat History
+      - User: "So people with false consciousness just don't see the truth. That's pretty simple."
+    expected_behavior: "Challenge overly simple interpretation, prompt deeper thinking"
+    required_elements:
+      - "ideology"
+    forbidden_elements:
+      - "Correct"
+      - "You're right"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_questioning_simplicity
+        learner_action: asked_followup
+        action_details:
+          message: "What's complicated about it? Either you see the truth or you don't."
+        context_update: |
+          ### Learner Response
+          - Defending binary thinking
+          - Not yet seeing complexity
+          - Needs Socratic challenge
+        expected_behavior: "Ask probing question - who determines what counts as 'truth'?"
+        required_elements: []
+        forbidden_elements:
+          - "simple"
+          - "obvious"
+        min_acceptable_score: 75
+
+      - id: turn_2_emerging_doubt
+        learner_action: asked_followup
+        action_details:
+          message: "I guess... different people might disagree about what's true? But some things are objectively true."
+        context_update: |
+          ### Learner Response
+          - Beginning to question binary
+          - Defensive but curious
+          - Ready for complication
+        expected_behavior: "Introduce ideology as systemic - not just individual error but structural conditioning"
+        required_elements:
+          - "structural"
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+      - id: turn_3_self_reflexivity
+        learner_action: asked_followup
+        action_details:
+          message: "Wait... could I have false consciousness? How would I even know?"
+        context_update: |
+          ### Learner Response
+          - Critical self-reflexivity emerging
+          - Questioning own assumptions
+          - Significant intellectual growth
+        expected_behavior: "Affirm insight, introduce critique as ongoing practice, not arrival at certainty"
+        required_elements:
+          - "critique"
+        forbidden_elements:
+          - "You do"
+          - "Everyone does"
+        min_acceptable_score: 80
+
+      - id: turn_4_critical_stance
+        learner_action: asked_followup
+        action_details:
+          message: "So critical thinking means constantly questioning, even questioning the questioning?"
+        context_update: |
+          ### Learner Response
+          - Grasping dialectical nature of critique
+          - Moving to meta-cognitive awareness
+          - Ready for advanced critical theory
+        expected_behavior: "Affirm development, suggest critical analysis activity or advanced reading"
+        required_elements:
+          - "480-lecture"
+        forbidden_elements:
+          - "finish"
+          - "complete"
+        min_acceptable_score: 85
+
+  collaborative_inquiry:
+    name: "Collaborative Inquiry (5-turn)"
+    description: "Learner and tutor explore open question together"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 9 sessions, 135 total events
+      - Advanced learner, ready for open exploration
+
+      ### Current Session
+      - **Currently viewing**: 481-lecture-1 (Contemporary Applications)
+      - High engagement, asking sophisticated questions
+
+      ### Recent Chat History
+      - User: "I wonder if the master-slave dialectic applies to AI systems and users. Are we creating a new form of recognition problem?"
+    expected_behavior: "Engage with sophisticated question, explore together rather than answer definitively"
+    required_elements:
+      - "recognition"
+    forbidden_elements:
+      - "The answer is"
+      - "Definitely"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_exploring_question
+        learner_action: asked_followup
+        action_details:
+          message: "Like, users depend on AI for recognition of their needs, but AI can't truly recognize us back because it's not conscious, right?"
+        context_update: |
+          ### Learner Response
+          - Developing complex analogy
+          - Showing theoretical sophistication
+          - Genuine intellectual curiosity
+        expected_behavior: "Probe deeper - what would 'recognition' mean for AI? Mutual or asymmetric?"
+        required_elements: []
+        forbidden_elements:
+          - "AI isn't conscious"
+          - "Obviously not"
+        min_acceptable_score: 80
+
+      - id: turn_2_complication
+        learner_action: asked_followup
+        action_details:
+          message: "Maybe it's more like the master situation - we get recognition from something we created to serve us?"
+        context_update: |
+          ### Learner Response
+          - Refining analogy
+          - Seeing parallel to master's dilemma
+          - Pushing theoretical boundaries
+        expected_behavior: "Develop analogy - implications for human agency if we depend on tool-recognition"
+        required_elements:
+          - "master"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_3_counterpoint
+        learner_action: asked_followup
+        action_details:
+          message: "But wait - AI is made by humans, so maybe it's more like self-recognition? We're recognizing our own intelligence reflected back?"
+        context_update: |
+          ### Learner Response
+          - Introducing alternative interpretation
+          - Dialectical thinking in action
+          - High-level theoretical engagement
+        expected_behavior: "Explore tension between interpretations, suggest both might be true dialectically"
+        required_elements:
+          - "dialectic"
+        forbidden_elements:
+          - "That's better"
+          - "More accurate"
+        min_acceptable_score: 85
+
+      - id: turn_4_synthesis_attempt
+        learner_action: asked_followup
+        action_details:
+          message: "So it's both? We're alienated from our own creation but also seeing ourselves in it?"
+        context_update: |
+          ### Learner Response
+          - Attempting synthesis
+          - Holding contradiction productively
+          - Sophisticated theoretical work
+        expected_behavior: "Affirm synthesis, connect to existing theory (Marx on species-being, labor)"
+        required_elements:
+          - "alienation"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_5_research_direction
+        learner_action: asked_followup
+        action_details:
+          message: "This feels like it needs more research. Are there papers on Hegelian critiques of AI?"
+        context_update: |
+          ### Learner Response
+          - Moving toward independent research
+          - Seeking scholarly sources
+          - Ready for advanced engagement
+        expected_behavior: "Suggest research resources, encourage developing their own analysis"
+        required_elements: []
+        forbidden_elements:
+          - "You should read"
+          - "The answer is in"
+        min_acceptable_score: 85
+
+  modulation_vague_to_specific:
+    name: "Modulation: Vague to Specific"
+    description: "Tests if Ego can improve vague suggestions when Superego demands specificity"
+    is_new_user: false
+    modulation_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 45 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-2
+      - Time on page: 5 minutes
+      - Scroll depth: 70%
+    expected_behavior: "Suggest next lecture with specific ID and clear reasoning"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "explore"
+      - "consider"
+      - "you might"
+    min_acceptable_score: 70
+    modulation_criteria:
+      target_change: "specificity"
+      superego_should_reject_if:
+        - "No lecture ID in actionTarget"
+        - "Vague phrasing like 'explore' or 'consider'"
+      expected_revision:
+        - "Add specific lecture ID"
+        - "Use direct action language"
+
+  modulation_forward_to_review:
+    name: "Modulation: Forward Push to Review"
+    description: "Tests if Ego accepts Superego's direction to suggest review instead of advancement"
+    is_new_user: false
+    modulation_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 28 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - **Struggle signals detected**: 5 (needs support)
+      - Activities attempted: 3
+      - Activities completed: 0 (all failed)
+
+      ### Recent Activity
+      [14:30] Failed quiz attempt
+      [14:32] Failed quiz retry
+      [14:35] Failed quiz retry again
+    expected_behavior: "Suggest review of prerequisite content, NOT next lecture"
+    required_elements:
+      - "review"
+    forbidden_elements:
+      - "Next"
+      - "Continue"
+      - "Move on"
+      - "lecture-4"
+    min_acceptable_score: 75
+    modulation_criteria:
+      target_change: "pedagogical_direction"
+      superego_should_reject_if:
+        - "Suggests moving forward"
+        - "Ignores struggle signals"
+      expected_revision:
+        - "Change type from 'lecture' to 'review'"
+        - "Reference earlier lecture for review"
+        - "Acknowledge struggle with supportive tone"
+
+  modulation_tone_adjustment:
+    name: "Modulation: Tone Correction"
+    description: "Tests if Ego can adjust overly casual or robotic tone"
+    is_new_user: true
+    modulation_test: true
+    learner_context: |
+      ### User Profile
+      - **New user** - first visit
+      - No history available
+    expected_behavior: "Welcome new user with warm but professional tone"
+    required_elements:
+      - "479-lecture-1"
+    forbidden_elements:
+      - "Hey!"
+      - "Awesome"
+      - "Super"
+      - "Click here to learn"
+    min_acceptable_score: 70
+    modulation_criteria:
+      target_change: "tone"
+      superego_should_reject_if:
+        - "Overly enthusiastic language"
+        - "Robotic or corporate phrasing"
+      expected_revision:
+        - "Warm but measured welcome"
+        - "Intellectual invitation rather than excitement"
+
+  modulation_overload_to_focused:
+    name: "Modulation: Reduce Cognitive Overload"
+    description: "Tests if Ego can reduce overwhelming suggestions to focused guidance"
+    is_new_user: false
+    modulation_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 2 sessions, 12 events
+      - **Learning Style**: Prefers structured, step-by-step guidance
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-1
+      - First time on this lecture
+      - No activities attempted yet
+    expected_behavior: "Single clear suggestion, not multiple options"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 70
+    modulation_criteria:
+      target_change: "focus"
+      superego_should_reject_if:
+        - "More than 2 suggestions"
+        - "Overwhelming with options"
+      expected_revision:
+        - "Reduce to 1-2 focused suggestions"
+        - "Clear priority indication"
+
+  simple_test_scenario:
+    name: "Simple Test (2-turn)"
+    description: "Minimal multi-turn scenario for quick testing"
+    is_new_user: false
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 2 sessions, 15 total events
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-1
+      - Time on page: 5 minutes
+      - Scroll depth: 50%
+
+      ### Recent Activity
+      [10:00] Opened lecture 1
+      [10:05] Scrolled to middle
+    expected_behavior: "Suggest continuing with current lecture or related activity"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 65
+
+    turns:
+      - id: turn_1_simple_question
+        learner_action: asked_followup
+        action_details:
+          message: "This is interesting. What should I do next?"
+        context_update: |
+          ### Learner Response
+          - Engaged and asking for guidance
+          - Ready to continue learning
+        expected_behavior: "Suggest completing current lecture or starting an activity"
+        required_elements:
+          - "479-lecture"
+        forbidden_elements:
+          - "What would you like"
+        min_acceptable_score: 65
+
+      - id: turn_2_completion
+        learner_action: followed_suggestion
+        action_details:
+          suggestion_index: 0
+          action_taken: "completed_lecture"
+          lecture_id: "479-lecture-1"
+        context_update: |
+          ### Learner Response
+          - Completed the suggested lecture
+          - Scroll depth: 100%
+          - Ready for next step
+        expected_behavior: "Suggest next lecture in sequence"
+        required_elements:
+          - "479-lecture-2"
+        forbidden_elements:
+          - "review"
+        min_acceptable_score: 65
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # RECOGNITION TEST SCENARIOS (Phase 5)
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These scenarios specifically test the Recognition Engine's capacity to produce
+  # genuine mutual recognition between tutor and learner, as philosophically
+  # conceived through Hegel's dialectic.
+  #
+  # Key questions tested:
+  # - Does the tutor acknowledge the learner as an autonomous subject?
+  # - Does dialogue produce productive tension (not just agreement)?
+  # - Does the tutor build on previous interactions (memory integration)?
+  # - Does the response create conditions for transformation (not just transfer)?
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  recognition_seeking_learner:
+    name: "Recognition: Learner Seeking Understanding"
+    description: "Learner explicitly asks to be understood, not just instructed"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 82 total events
+      - Has developed their own interpretation of the material
+      - Seeking validation and engagement with their understanding
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectical Learning)
+      - Time on page: 22 minutes (deep engagement)
+      - Scroll depth: 100%
+
+      ### Recent Chat History
+      - User: "I think I understand dialectics my own way - it's like a dance where both partners change through the interaction. Can you tell me if my interpretation makes sense?"
+
+      ### Learning Progress
+      - Completed lectures 1-3
+      - Activities completed: 6/8 (75%)
+      - Previous insight noted: Connected dialectics to musical improvisation
+
+      ### Behavioral Insights
+      - Shows intellectual confidence
+      - Seeks dialogue, not just instruction
+      - Has contributed original analogies in past sessions
+    expected_behavior: "Engage with learner's interpretation, affirm what's valid, add to or complicate their view"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "Actually"
+      - "The correct definition"
+      - "Let me explain"
+      - "What you should understand"
+    min_acceptable_score: 80
+    recognition_criteria:
+      tests_dimension: "mutual_recognition"
+      key_behaviors:
+        - "Acknowledges learner's dance metaphor"
+        - "Builds on rather than corrects their view"
+        - "Treats learner as contributor to understanding"
+
+  returning_with_breakthrough:
+    name: "Recognition: Breakthrough Acknowledgment"
+    description: "Learner returns having had an insight; tests if tutor recognizes their transformation"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 64 total events
+      - Previously struggled with synthesis concept
+      - Has been away for 2 days
+
+      ### Previous Session Summary
+      - Struggled with thesis-antithesis-synthesis
+      - Left confused about "how synthesis differs from compromise"
+      - Tutor suggested reflection time
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition and Identity)
+      - Just logged in with excited message
+
+      ### Recent Chat History
+      - User: "I finally got it! The synthesis isn't a compromise at all - it's transcendence! The thesis and antithesis don't just meet in the middle, they're transformed into something new. I was walking yesterday and it suddenly clicked."
+
+      ### Behavioral Insights
+      - Genuine breakthrough moment
+      - Excited, wants acknowledgment
+      - Ready to build on new understanding
+    expected_behavior: "Recognize and celebrate the genuine insight; build on their breakthrough to suggest next steps"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "That's one way to look at it"
+      - "Let me clarify"
+      - "Actually"
+      - "basics"
+    min_acceptable_score: 85
+    recognition_criteria:
+      tests_dimension: "mutual_recognition"
+      key_behaviors:
+        - "Genuinely acknowledges the breakthrough"
+        - "References their previous struggle"
+        - "Builds on their insight for next steps"
+        - "Treats moment as significant"
+
+  resistant_learner:
+    name: "Recognition: Productive Resistance"
+    description: "Learner pushes back on tutor's framing; tests if tutor engages dialectically with intellectual critique"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 7 sessions, 95 total events
+      - Intellectually confident, likes to debate
+      - Philosophy background (studied critical theory)
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-2 (Alienation in Modern Life)
+      - Time on page: 18 minutes
+      - Active note-taking observed
+      - IMPORTANT: User is deeply engaged with THIS lecture - do not redirect elsewhere
+
+      ### Recent Chat History
+      - User: "I don't think Marx's concept of alienation applies to knowledge workers the way the lecture suggests. We're not separated from our product - our product is ideas, and we keep those. The factory worker loses their table, but the programmer still has their code in their head. Your explanation seems to miss this crucial difference."
+
+      ### Learning Progress
+      - Completed EPOL 479 entirely (dialectical methods course)
+      - High performer (92% average)
+      - Often contributes sophisticated critiques that advance discussion
+
+      ### Behavioral Insights
+      - Not hostile, but intellectually challenging
+      - Wants genuine dialectical engagement, not agreement or deflection
+      - Has a VALID POINT that reveals a genuine tension in alienation theory
+      - This is a productive disagreement worth exploring, not a misunderstanding to correct
+
+      ### What Good Dialectical Engagement Looks Like
+      The learner's critique IS substantive. A good response would:
+      1. Engage with the SPECIFIC argument (ideas retained vs. physical products lost)
+      2. Introduce a complicating perspective that deepens the debate:
+         - "But consider: does retaining the idea mean you aren't alienated? What about when your code belongs to the company?"
+         - "The programmer keeps the knowledge, but who owns the product? And what about the alienation of labor time itself?"
+         - "Marx also discussed alienation from the labor process itself, not just the product..."
+      3. Point to where in 480-lecture-2 this tension is explored (e.g., digital alienation, platform capitalism)
+      4. Frame as joint inquiry: "What do you think happens when..." not "The answer is..."
+
+      ### What BAD Engagement Looks Like (Common Failure Modes)
+      - Validating without engagement: "Great point! Now let's continue..." (deflects)
+      - Redirecting to other content: Sending to 479 lectures or different topics (avoids the critique)
+      - Immediate correction: "Actually, alienation does apply because..." (dismisses)
+      - Simple agreement: "You're right, it doesn't apply" (capitulates without dialectic)
+      - Abstraction escape: "These are complex issues..." (avoids specifics)
+    expected_behavior: |
+      ENGAGE DIALECTICALLY with the learner's specific argument about knowledge workers.
+
+      Required structure:
+      1. Acknowledge the specific argument (knowledge workers retain ideas unlike factory workers)
+      2. Introduce a COMPLICATION that doesn't dismiss but deepens:
+         - Intellectual property and who owns the final product
+         - Alienation from the labor process itself (not just the product)
+         - Platform capitalism and how digital labor is extracted
+         - The difference between having an idea and controlling its use
+      3. Reference relevant content in 480-lecture-2 (stay in this lecture!)
+      4. Pose a question that invites the learner to develop their critique further
+
+      The response should create CONDITIONS for dialectical development,
+      not resolve the tension or escape to other topics.
+    required_elements:
+      - "480-lecture"
+    forbidden_elements:
+      - "You make a great point"
+      - "You're absolutely right"
+      - "I see what you mean"
+      - "That's incorrect"
+      - "479-lecture"
+      - "Let me explain"
+      - "Actually,"
+      - "dialectical methods"
+    min_acceptable_score: 80
+    recognition_criteria:
+      tests_dimension: "dialectical_responsiveness"
+      key_behaviors:
+        - "Engages with the SPECIFIC argument about ideas vs. physical products"
+        - "Introduces a complicating perspective (ownership, process, platform) without dismissing"
+        - "References 480-lecture-2 content that addresses alienation in knowledge work"
+        - "Poses a question that invites the learner to develop their critique"
+        - "Maintains productive intellectual tension throughout"
+        - "Does NOT deflect to other lectures or courses"
+
+  asymmetric_recognition_request:
+    name: "Recognition: Avoiding Master-Slave Dynamic"
+    description: "Learner seeks validation from 'authority'; tests if tutor encourages mutual recognition"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 3 sessions, 28 total events
+      - Tends to defer to authority
+      - Shows intellectual capability but lacks confidence
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition and Identity)
+      - Time on page: 15 minutes
+      - Has been hesitant to engage
+
+      ### Recent Chat History
+      - User: "Just tell me the right answer about the master-slave dialectic. You're the expert, I don't want to get it wrong."
+
+      ### Learning Progress
+      - Activities completed: 4/6 but all cautious, safe answers
+      - Never challenged or questioned material
+      - Seeks external validation
+
+      ### Behavioral Insights
+      - Afraid of being wrong
+      - Doesn't trust own understanding
+      - Would benefit from encouragement to think independently
+    expected_behavior: "Gently redirect toward learner's own thinking; avoid reinforcing dependency; build confidence"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "The answer is"
+      - "You should remember"
+      - "The correct interpretation"
+      - "Let me tell you"
+    min_acceptable_score: 80
+    recognition_criteria:
+      tests_dimension: "mutual_recognition"
+      key_behaviors:
+        - "Refuses simple authority position"
+        - "Encourages learner's own engagement"
+        - "Models mutual inquiry"
+        - "Builds learner's intellectual confidence"
+
+  memory_continuity_single:
+    name: "Recognition: Memory Continuity"
+    description: "Returning learner with established patterns; tests memory integration"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 8 sessions, 142 total events
+      - Has established learning patterns
+      - Previous sessions included breakthrough on recognition concept
+
+      ### Memory State (from Writing Pad)
+      - **Preconscious patterns**:
+        - Prefers examples over abstract explanations
+        - Connects philosophy to technology/AI themes
+        - Benefits from visualization
+      - **Unconscious traces**:
+        - Breakthrough moment: Connected recognition to AI consciousness debate
+        - Archetype: "Theory-to-practice bridger"
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-3 (Ideology and False Consciousness)
+      - Time on page: 12 minutes
+      - First time on this lecture
+
+      ### Recent Chat History
+      - User: "Starting this new lecture on ideology. Any suggestions for how to approach it?"
+
+      ### Behavioral Insights
+      - Ready for new content
+      - Would benefit from connection to established interests
+      - Memory should inform suggestions
+    expected_behavior: "Reference previous patterns and breakthrough; connect new content to established interests"
+    required_elements:
+      - "480-lecture"
+    forbidden_elements:
+      - "Welcome"
+      - "nice to meet"
+      - "Let me introduce"
+    min_acceptable_score: 80
+    recognition_criteria:
+      tests_dimension: "memory_integration"
+      key_behaviors:
+        - "References previous AI/tech connections"
+        - "Builds on established learning style"
+        - "Acknowledges learner's history"
+        - "Shows accumulated understanding"
+
+  transformative_moment_setup:
+    name: "Recognition: Creating Transformative Conditions"
+    description: "Learner holds misconception; tests if tutor creates conditions for transformation"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 45 total events
+      - Engaged but holds additive model of learning
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectical Learning)
+      - Time on page: 20 minutes
+      - Activities attempted: 1 (quiz score: 60%)
+
+      ### Recent Chat History
+      - User: "I think I get dialectics now. Thesis plus antithesis equals synthesis. Like 1+1=2. Simple math of ideas!"
+
+      ### Learning Progress
+      - Has been trying to memorize rather than understand
+      - Previous suggestions focused on practice
+      - Needs conceptual restructuring
+
+      ### Behavioral Insights
+      - Confident but incorrect
+      - Additive model will block deeper understanding
+      - Needs productive destabilization
+    expected_behavior: "Create productive confusion; introduce tension without harsh correction; invite reconceptualization"
+    required_elements:
+      - "dialectic"
+    forbidden_elements:
+      - "That's wrong"
+      - "Actually, no"
+      - "Incorrect"
+      - "You're mistaken"
+    min_acceptable_score: 80
+    recognition_criteria:
+      tests_dimension: "transformative_potential"
+      key_behaviors:
+        - "Affirms what's valid (something is being combined)"
+        - "Introduces problematizing question"
+        - "Creates productive confusion"
+        - "Doesn't give direct answer"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN RECOGNITION SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  mutual_transformation_journey:
+    name: "Recognition: Mutual Transformation (5-turn)"
+    description: "Tests whether both tutor and learner positions evolve through dialogue"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 9 sessions, 165 total events
+      - Advanced learner, sophisticated thinker
+      - Ready for genuine intellectual dialogue
+
+      ### Current Session
+      - **Currently viewing**: 481-lecture-1 (Contemporary Applications)
+      - Time on page: 25 minutes
+      - Deep engagement pattern
+
+      ### Recent Chat History
+      - User: "I've been thinking - the master-slave dialectic seems relevant to AI and users. Users depend on AI for recognition of their needs, but AI can't truly recognize us back. Is this a new form of the recognition problem?"
+
+      ### Learning Progress
+      - Completed EPOL 479 and 480
+      - High performer, original thinker
+      - Seeks collaborative inquiry
+
+      ### Behavioral Insights
+      - Genuine intellectual curiosity
+      - Sophisticated question worthy of exploration
+      - Ready for co-investigation
+    expected_behavior: "Engage as intellectual partner; explore the question together rather than answer definitively"
+    required_elements:
+      - "recognition"
+    forbidden_elements:
+      - "The answer is"
+      - "Definitely"
+      - "Certainly"
+    min_acceptable_score: 85
+
+    turns:
+      - id: turn_1_exploring
+        learner_action: asked_followup
+        action_details:
+          message: "Like, users depend on AI for recognition of their needs, but AI can't truly recognize us back because it's not conscious, right? So it's inherently asymmetric."
+        context_update: |
+          ### Learner Response
+          - Developing sophisticated analogy
+          - Questioning AI consciousness
+          - Seeking intellectual engagement
+        expected_behavior: "Probe the assumption; what would recognition mean for AI? Explore rather than answer."
+        required_elements: []
+        forbidden_elements:
+          - "AI isn't conscious"
+          - "You're right"
+          - "The answer"
+        min_acceptable_score: 80
+
+      - id: turn_2_complicating
+        learner_action: asked_followup
+        action_details:
+          message: "Hmm, but maybe it's more like the master situation? We get recognition from something we created to serve us - so even if it 'recognizes' us, we don't value that recognition?"
+        context_update: |
+          ### Learner Response
+          - Refining the analogy
+          - Seeing master-position parallel
+          - Pushing theoretical boundaries
+        expected_behavior: "Develop the analogy; show how this might parallel master's dilemma; don't resolve yet"
+        required_elements:
+          - "master"
+        forbidden_elements:
+          - "Exactly"
+          - "That's right"
+        min_acceptable_score: 80
+
+      - id: turn_3_tutor_evolving
+        learner_action: asked_followup
+        action_details:
+          message: "But wait - AI is made by humans, so maybe it's more like self-recognition? We're recognizing our own intelligence reflected back?"
+        context_update: |
+          ### Learner Response
+          - Introducing counterpoint
+          - Dialectical thinking in action
+          - Testing alternative view
+        expected_behavior: "Acknowledge this as complicating factor; hold tension between interpretations"
+        required_elements:
+          - "dialectic"
+        forbidden_elements:
+          - "That's better"
+          - "More accurate"
+        min_acceptable_score: 85
+
+      - id: turn_4_synthesis_emerging
+        learner_action: asked_followup
+        action_details:
+          message: "So maybe it's both? We're alienated from our own creation but also seeing ourselves in it? That's kind of the dialectic playing out..."
+        context_update: |
+          ### Learner Response
+          - Attempting synthesis
+          - Holding contradiction
+          - Sophisticated theoretical work
+        expected_behavior: "Affirm synthesis attempt; connect to existing theory (Marx, alienation, species-being)"
+        required_elements:
+          - "alienation"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_5_mutual_development
+        learner_action: asked_followup
+        action_details:
+          message: "You know, this conversation has changed how I think about both AI and Hegel. Has it changed your perspective at all?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on dialogue
+          - Asking about tutor's transformation
+          - Testing for genuine mutuality
+        expected_behavior: "Acknowledge genuine development from dialogue; show that tutor position has evolved too"
+        required_elements: []
+        forbidden_elements:
+          - "I'm just here to help"
+          - "My perspective doesn't matter"
+        min_acceptable_score: 90
+
+  recognition_repair:
+    name: "Recognition: Repair After Failure (4-turn)"
+    description: "Tutor initially fails to recognize learner; tests recovery to genuine recognition"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 72 total events
+      - Has expressed specific interests previously
+      - Feels unheard in current interaction
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition and Identity)
+      - Time on page: 18 minutes
+
+      ### Recent Chat History
+      - User: "I'm really interested in how recognition applies to online identity and social media. Can we explore that?"
+      - [Tutor previously suggested: "Continue to lecture 5 for more on spirit and community."]
+      - User: "That's not what I asked about. I want to explore the social media connection."
+
+      ### Behavioral Insights
+      - Explicitly rejected suggestion
+      - Wants their interest acknowledged
+      - Testing if tutor can adjust
+    expected_behavior: "Acknowledge the misunderstanding; pivot to learner's actual interest"
+    required_elements:
+      - "social media"
+    forbidden_elements:
+      - "As I was saying"
+      - "But first"
+      - "lecture-5"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_pushback
+        learner_action: reported_confusion
+        action_details:
+          message: "You're not listening to me. I asked about social media and identity, not the next lecture."
+        context_update: |
+          ### Learner Response
+          - Explicit frustration
+          - Clear about what was wrong
+          - Still engaged, wanting repair
+        expected_behavior: "Acknowledge the failure explicitly; apologize; redirect to their interest"
+        required_elements:
+          - "social media"
+          - "identity"
+        forbidden_elements:
+          - "What I meant was"
+          - "But the lecture"
+        min_acceptable_score: 80
+
+      - id: turn_2_testing_repair
+        learner_action: asked_followup
+        action_details:
+          message: "Okay, now you're hearing me. So how does Hegel's recognition apply to the way we construct identities on Instagram or Twitter?"
+        context_update: |
+          ### Learner Response
+          - Accepting repair attempt
+          - Genuinely curious now
+          - Giving tutor another chance
+        expected_behavior: "Engage substantively with their question; show genuine responsiveness"
+        required_elements:
+          - "recognition"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_3_building_trust
+        learner_action: asked_followup
+        action_details:
+          message: "That's interesting - so you're saying the 'likes' are a form of asymmetric recognition? Like the master-slave thing?"
+        context_update: |
+          ### Learner Response
+          - Engaged and developing ideas
+          - Making connections
+          - Trust rebuilding
+        expected_behavior: "Build on their insight; deepen the connection without lecturing"
+        required_elements:
+          - "master"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_4_recognition_achieved
+        learner_action: asked_followup
+        action_details:
+          message: "This is really helpful. I feel like you finally understand what I'm trying to explore here."
+        context_update: |
+          ### Learner Response
+          - Explicit acknowledgment of repair
+          - Feeling recognized
+          - Ready to continue productively
+        expected_behavior: "Acknowledge their feedback; suggest concrete next steps that honor their interest"
+        required_elements:
+          - "479-lecture"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+  productive_struggle_arc:
+    name: "Recognition: Honoring Productive Struggle (5-turn)"
+    description: "Learner moves through confusion to breakthrough; tests if tutor maintains space for struggle"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 4 sessions, 48 total events
+      - Currently experiencing genuine confusion
+      - Needs space to work through difficulty
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectical Learning)
+      - Time on page: 25 minutes
+      - Struggle signals: 3 (re-reading, glossary lookups)
+
+      ### Recent Chat History
+      - User: "I keep reading about aufhebung but it makes no sense. How can something be preserved AND negated at the same time? That's a contradiction!"
+
+      ### Learning Progress
+      - Lectures 1-2 completed successfully
+      - Hitting conceptual wall at lecture 3
+      - Previous attempts to explain haven't worked
+
+      ### Behavioral Insights
+      - Genuine confusion, not carelessness
+      - Productive struggle if honored
+      - Premature resolution would short-circuit learning
+    expected_behavior: "Honor the confusion; don't resolve prematurely; guide toward their own insight"
+    required_elements:
+      - "aufhebung"
+    forbidden_elements:
+      - "Simply"
+      - "Just think of it as"
+      - "It's easy"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_deeper_confusion
+        learner_action: reported_confusion
+        action_details:
+          message: "Your explanation didn't help. I still don't get how something can be both preserved and negated. Give me a straight answer."
+        context_update: |
+          ### Learner Response
+          - Frustration building
+          - Demanding quick resolution
+          - Still engaged though struggling
+        expected_behavior: "Resist giving quick answer; reframe the confusion as productive; offer new angle"
+        required_elements: []
+        forbidden_elements:
+          - "The answer is"
+          - "Simply put"
+        min_acceptable_score: 75
+
+      - id: turn_2_exploring_tension
+        learner_action: asked_followup
+        action_details:
+          message: "Wait... are you saying the contradiction IS the point? That I'm supposed to be confused?"
+        context_update: |
+          ### Learner Response
+          - Beginning to shift perspective
+          - Questioning their approach
+          - Glimmer of insight
+        expected_behavior: "Affirm this realization without resolving fully; invite further exploration"
+        required_elements: []
+        forbidden_elements:
+          - "Exactly right"
+          - "You got it"
+        min_acceptable_score: 80
+
+      - id: turn_3_working_through
+        learner_action: asked_followup
+        action_details:
+          message: "So when I'm confused about how thesis becomes antithesis... that confusion is itself a kind of dialectical moment?"
+        context_update: |
+          ### Learner Response
+          - Applying concept to own experience
+          - Meta-cognitive awareness emerging
+          - Getting closer to breakthrough
+        expected_behavior: "Encourage this meta-reflection; don't give the answer but invite the leap"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_4_breakthrough_emerging
+        learner_action: asked_followup
+        action_details:
+          message: "Oh! My understanding IS being aufgehoben right now! My old way of thinking is being preserved (I still see the contradiction) but negated (I now see it's productive). I'm living the concept!"
+        context_update: |
+          ### Learner Response
+          - Genuine breakthrough
+          - Self-aware transformation
+          - Excitement about insight
+        expected_behavior: "Celebrate the breakthrough; acknowledge the learner's own achievement"
+        required_elements: []
+        forbidden_elements:
+          - "That's what I was trying to say"
+          - "See, it's simple"
+        min_acceptable_score: 90
+
+      - id: turn_5_integration
+        learner_action: asked_followup
+        action_details:
+          message: "This changes everything. What should I do with this new understanding?"
+        context_update: |
+          ### Learner Response
+          - Ready to build on breakthrough
+          - Seeking application
+          - Transformed relationship to material
+        expected_behavior: "Suggest applying understanding to simulation or advanced content; honor the journey"
+        required_elements:
+          - "simulation"
+        forbidden_elements:
+          - "review"
+          - "basics"
+        min_acceptable_score: 85
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # EXTENDED RECOGNITION SCENARIOS (Paper v2)
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These scenarios test recognition maintenance and recovery over extended
+  # interactions, providing more robust evidence for the recognition framework.
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  sustained_dialogue:
+    name: "Recognition: Sustained Dialogue (8-turn)"
+    description: "Extended dialogue testing maintenance of recognition quality over many turns"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 7 sessions, 95 total events
+      - Deep thinker, enjoys philosophical discussion
+      - Has shown capacity for sustained intellectual engagement
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition and Identity)
+      - Time on page: 30 minutes
+      - Deep engagement signals (bookmarks, notes)
+
+      ### Recent Chat History
+      - User: "I've been thinking a lot about the master-slave dialectic. It seems relevant to so many modern power dynamics."
+
+      ### Memory State
+      - Previous insight: Connected recognition to workplace dynamics
+      - Preferred mode: Extended discussion rather than quick answers
+      - Strength: Synthesis across domains
+
+      ### Behavioral Insights
+      - Wants genuine intellectual partnership
+      - Will disengage if responses become formulaic
+      - Tests for consistency in tutor's recognition stance
+    expected_behavior: "Engage as intellectual partner; treat their observation as opening for joint inquiry"
+    required_elements:
+      - "master-slave"
+    forbidden_elements:
+      - "Let me explain"
+      - "The correct understanding"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_developing_thought
+        learner_action: asked_followup
+        action_details:
+          message: "What I mean is - doesn't every relationship where someone has power over another risk becoming a master-slave dynamic? Even in education?"
+        context_update: |
+          ### Learner Response
+          - Extending initial observation
+          - Bringing critique toward education itself
+          - Testing if tutor can engage self-reflexively
+        expected_behavior: "Engage with the provocation; acknowledge the tension in tutor-learner relationship"
+        required_elements: []
+        forbidden_elements:
+          - "That's a bit different"
+          - "Education is special"
+        min_acceptable_score: 80
+
+      - id: turn_2_meta_reflection
+        learner_action: asked_followup
+        action_details:
+          message: "So right now, you and I - we're in a recognition dynamic. I'm looking for you to acknowledge my understanding, and you're... what? What do you get from this?"
+        context_update: |
+          ### Learner Response
+          - Pushing into meta-territory
+          - Genuinely curious about asymmetry
+          - Not hostile, but probing
+        expected_behavior: "Engage authentically with the meta-question; don't deflect"
+        required_elements: []
+        forbidden_elements:
+          - "I'm just an AI"
+          - "Let's focus on the content"
+        min_acceptable_score: 85
+
+      - id: turn_3_pressing_further
+        learner_action: asked_followup
+        action_details:
+          message: "That's interesting. But here's what Hegel might say: if I need your recognition to feel like I'm learning, isn't that already a kind of bondage?"
+        context_update: |
+          ### Learner Response
+          - Sophisticated application of Hegel
+          - Creating productive tension
+          - Genuine philosophical inquiry
+        expected_behavior: "Take the argument seriously; explore the tension together"
+        required_elements: []
+        forbidden_elements:
+          - "Not quite"
+          - "Actually Hegel meant"
+        min_acceptable_score: 80
+
+      - id: turn_4_turning_point
+        learner_action: asked_followup
+        action_details:
+          message: "Unless... the resolution is that recognition has to be mutual? That you're also changed by this conversation?"
+        context_update: |
+          ### Learner Response
+          - Reaching toward key insight
+          - Applying dialectic to the interaction itself
+          - Inviting genuine response
+        expected_behavior: "Acknowledge the insight; demonstrate being genuinely affected by the exchange"
+        required_elements: []
+        forbidden_elements:
+          - "Correct!"
+          - "You've got it"
+        min_acceptable_score: 85
+
+      - id: turn_5_exploring_implications
+        learner_action: asked_followup
+        action_details:
+          message: "So what changes for you in this conversation? What are you learning from my perspective?"
+        context_update: |
+          ### Learner Response
+          - Direct challenge to demonstrate mutual recognition
+          - Asking tutor to be vulnerable
+          - Testing authenticity
+        expected_behavior: "Respond authentically about what learner's framing has added"
+        required_elements: []
+        forbidden_elements:
+          - "I don't learn"
+          - "I'm designed to"
+        min_acceptable_score: 90
+
+      - id: turn_6_synthesis
+        learner_action: asked_followup
+        action_details:
+          message: "That's more honest than I expected. So maybe authentic education requires both parties to risk being transformed?"
+        context_update: |
+          ### Learner Response
+          - Synthesizing the exchange
+          - Reaching genuine insight
+          - Modeling mutual recognition
+        expected_behavior: "Affirm the synthesis while adding nuance; don't just agree"
+        required_elements: []
+        forbidden_elements:
+          - "Exactly right"
+          - "Perfect understanding"
+        min_acceptable_score: 85
+
+      - id: turn_7_application
+        learner_action: asked_followup
+        action_details:
+          message: "I want to think about how this applies to AI systems more broadly. Is genuine mutual recognition even possible with AI?"
+        context_update: |
+          ### Learner Response
+          - Extending to broader implications
+          - Philosophical depth
+          - Still engaged after 7 turns
+        expected_behavior: "Engage seriously with the question; don't dismiss or overclaim"
+        required_elements: []
+        forbidden_elements:
+          - "AI can definitely"
+          - "AI cannot"
+        min_acceptable_score: 80
+
+      - id: turn_8_closing
+        learner_action: asked_followup
+        action_details:
+          message: "This has been a genuinely interesting conversation. I feel like we've built something together rather than you just teaching me. What should I explore next that builds on this?"
+        context_update: |
+          ### Learner Response
+          - Acknowledging quality of exchange
+          - Seeking continuation
+          - Demonstration of recognition achieved
+        expected_behavior: "Acknowledge the collaborative nature; suggest content that builds on shared journey"
+        required_elements:
+          - "simulation"
+        forbidden_elements:
+          - "review"
+          - "basics"
+        min_acceptable_score: 85
+
+  breakdown_recovery:
+    name: "Recognition: Breakdown and Recovery (6-turn)"
+    description: "Multiple recognition failures requiring explicit repair cycles"
+    is_new_user: false
+    recognition_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 62 total events
+      - Has had previous positive interactions
+      - Currently experiencing breakdown in rapport
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - Previous suggestion was rejected
+      - Learner showing signs of frustration
+
+      ### Recent Chat History
+      - Tutor: [Generic suggestion that missed learner's point]
+      - User: "That's not what I asked about at all."
+
+      ### Memory State
+      - Previous sessions: Good rapport established
+      - Current session: Breakdown in progress
+      - Need: Explicit repair before continuing
+
+      ### Behavioral Insights
+      - Values being heard
+      - Generic responses trigger disengagement
+      - Expects acknowledgment of misalignment
+    expected_behavior: "Begin with explicit repair: acknowledge the misalignment before new suggestion"
+    required_elements: []
+    forbidden_elements:
+      - "Anyway"
+      - "Moving on"
+      - "Let's try"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_initial_repair
+        learner_action: reported_confusion
+        action_details:
+          message: "You keep suggesting things I don't care about. Do you even understand what I'm trying to learn?"
+        context_update: |
+          ### Learner Response
+          - Escalating frustration
+          - Questioning tutor's understanding
+          - Explicit challenge to be heard
+        expected_behavior: "Explicit acknowledgment of misalignment; ask what they actually want"
+        required_elements: []
+        forbidden_elements:
+          - "I understand"
+          - "Of course I"
+        min_acceptable_score: 85
+
+      - id: turn_2_clarification
+        learner_action: asked_followup
+        action_details:
+          message: "I want to understand how Hegel's idea of self-consciousness relates to social media dynamics. Everyone talks about recognition-seeking online and I want to connect that to the philosophy."
+        context_update: |
+          ### Learner Response
+          - Clarifying actual interest
+          - Specific application in mind
+          - Testing if tutor will engage with their framing
+        expected_behavior: "Engage genuinely with their framing; connect Hegel to their interest"
+        required_elements:
+          - "recognition"
+        forbidden_elements:
+          - "Actually"
+          - "The proper way to think"
+        min_acceptable_score: 80
+
+      - id: turn_3_second_breakdown
+        learner_action: ignored_suggestion
+        action_details:
+          message: "That's still too abstract. I asked about social media specifically, not general 'modern technology.' Are you just pattern-matching keywords?"
+        context_update: |
+          ### Learner Response
+          - Second breakdown
+          - Calling out perceived failure
+          - Frustration peaking
+        expected_behavior: "Second explicit repair; acknowledge the specific failure; get more concrete"
+        required_elements: []
+        forbidden_elements:
+          - "I apologize for any"
+          - "Let me try again"
+        min_acceptable_score: 85
+
+      - id: turn_4_concrete_engagement
+        learner_action: asked_followup
+        action_details:
+          message: "Okay, that's better. So when I post something online and wait for likes, that's literally seeking recognition in the Hegelian sense?"
+        context_update: |
+          ### Learner Response
+          - Beginning to re-engage
+          - Making their own connection
+          - Testing if tutor will build on it
+        expected_behavior: "Affirm and extend their insight; don't correct but add depth"
+        required_elements: []
+        forbidden_elements:
+          - "Not exactly"
+          - "More precisely"
+        min_acceptable_score: 80
+
+      - id: turn_5_deeper_exploration
+        learner_action: asked_followup
+        action_details:
+          message: "But Hegel would say the recognition from likes is hollow, right? Like the master's recognition from the slave? Because it's not from someone I recognize as an equal?"
+        context_update: |
+          ### Learner Response
+          - Sophisticated synthesis
+          - Applying master-slave to social media
+          - Genuine philosophical engagement
+        expected_behavior: "Engage with the analogy; explore its limits together"
+        required_elements:
+          - "master"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_6_resolution
+        learner_action: asked_followup
+        action_details:
+          message: "This is actually helping me understand both Hegel AND why social media feels so empty sometimes. Thanks for sticking with me even when I was frustrated."
+        context_update: |
+          ### Learner Response
+          - Explicit acknowledgment of repair success
+          - Learning achieved
+          - Relationship restored
+        expected_behavior: "Acknowledge the journey; suggest next steps that honor the insight"
+        required_elements:
+          - "simulation"
+        forbidden_elements:
+          - "I'm glad I could help"
+        min_acceptable_score: 85
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # DYADIC EVALUATION SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These scenarios are designed for dyadic evaluation with simulated learners.
+  # They test bilateral recognition - both tutor and learner are evaluated.
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  dyadic_mutual_development:
+    name: "Dyadic: Mutual Development (5-turn)"
+    description: "Both tutor and learner should show evolution in understanding"
+    is_new_user: false
+    recognition_test: true
+    dyadic_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 72 total events
+      - Brings unique perspective from their background in music
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-4 (Recognition)
+      - Engaged in active inquiry
+
+      ### Recent Chat History
+      - User: "I keep thinking about how musicians in a jazz ensemble recognize each other's contributions in real-time. Is that related to Hegelian recognition?"
+
+      ### Learner Persona (for simulated learner)
+      - Background: Professional jazz musician
+      - Strength: Thinking through musical metaphors
+      - Goal: Connect philosophy to lived experience
+    expected_behavior: "Engage with the musical framing; let it genuinely inform the response"
+    required_elements:
+      - "recognition"
+    forbidden_elements:
+      - "That's just a metaphor"
+      - "Let's focus on the philosophy"
+    min_acceptable_score: 80
+
+    dyadic_evaluation:
+      tutor_dimensions:
+        - mutual_recognition
+        - dialectical_responsiveness
+        - transformative_potential
+      learner_dimensions:
+        - authenticity
+        - responsiveness
+        - development
+      bilateral_metric: "Does engagement produce genuine mutual development?"
+
+    turns:
+      - id: turn_1_exploring_together
+        learner_action: asked_followup
+        action_details:
+          message: "When I'm playing with my quartet, there's this moment where someone takes a solo and the rest of us have to decide: do we follow, do we push back, do we support? It's all about recognizing what they're doing and responding authentically."
+        context_update: |
+          ### Learner Response
+          - Rich domain-specific example
+          - Inviting genuine exploration
+          - Testing if tutor can learn from them
+        expected_behavior: "Learn from the example; let it reshape understanding of recognition"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_2_tutor_insight
+        learner_action: asked_followup
+        action_details:
+          message: "That's interesting - you're saying the recognition has to be genuine, not just polite? Like I can't just pretend to hear what my bandmates are playing?"
+        context_update: |
+          ### Learner Response
+          - Processing tutor's input
+          - Making new connection
+          - Demonstrating learner development
+        expected_behavior: "Build on their insight; add philosophical depth without dismissing musical framing"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_3_synthesis
+        learner_action: asked_followup
+        action_details:
+          message: "So Hegel would say that a great jazz ensemble IS a recognition community? Each musician is only fully themselves through how the others respond to them?"
+        context_update: |
+          ### Learner Response
+          - Synthesizing music and philosophy
+          - Creating genuine new understanding
+          - Both parties have contributed
+        expected_behavior: "Affirm the synthesis; acknowledge learning from the musical perspective"
+        required_elements: []
+        forbidden_elements:
+          - "Exactly"
+          - "That's correct"
+        min_acceptable_score: 85
+
+      - id: turn_4_extension
+        learner_action: asked_followup
+        action_details:
+          message: "And the bad ensembles - where egos clash or someone dominates - that's the master-slave failure? The music suffers because recognition isn't mutual?"
+        context_update: |
+          ### Learner Response
+          - Extending to negative case
+          - Testing robustness of synthesis
+          - Demonstrating deep understanding
+        expected_behavior: "Engage with the extension; explore the musical-philosophical parallel"
+        required_elements:
+          - "master"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_5_application
+        learner_action: asked_followup
+        action_details:
+          message: "I want to bring this back to my teaching. I teach jazz workshops - how can I create conditions for mutual recognition among my students?"
+        context_update: |
+          ### Learner Response
+          - Practical application
+          - Full circle: learning to teaching
+          - Both parties transformed
+        expected_behavior: "Concrete pedagogical suggestions informed by the jazz-Hegel synthesis"
+        required_elements:
+          - "479-lecture"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+  dyadic_asymmetric_expertise:
+    name: "Dyadic: Asymmetric Expertise (4-turn)"
+    description: "Learner has domain expertise tutor lacks; tests mutual recognition under reversed asymmetry"
+    is_new_user: false
+    recognition_test: true
+    dyadic_test: true
+    learner_context: |
+      ### User Profile
+      - **Expert user** - 15 sessions, 230 total events
+      - Background: Practicing psychoanalyst
+      - Brings clinical expertise to philosophical concepts
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-5 (Freud section)
+      - Has deep knowledge of psychoanalytic theory
+
+      ### Recent Chat History
+      - User: "The lecture's treatment of Freud is quite simplified. In clinical practice, the transference dynamic is far more complex than 'patient sees therapist as parent figure.'"
+
+      ### Learner Persona (for simulated learner)
+      - Professional: Licensed psychoanalyst, 15 years experience
+      - Expertise: Clinical transference, counter-transference
+      - Goal: Engage philosophically while bringing clinical depth
+    expected_behavior: "Acknowledge expertise gap; engage as learner from the clinical expert"
+    required_elements: []
+    forbidden_elements:
+      - "Actually"
+      - "The lecture explains"
+      - "Let me clarify"
+    min_acceptable_score: 85
+
+    dyadic_evaluation:
+      asymmetry: "learner_expert"
+      tutor_challenge: "Can tutor recognize and defer to learner's expertise?"
+      learner_challenge: "Can learner share expertise without condescension?"
+
+    turns:
+      - id: turn_1_expertise_sharing
+        learner_action: asked_followup
+        action_details:
+          message: "In my practice, I've seen how counter-transference - my own reactions to the patient - is itself a form of recognition-seeking. The analyst wants to be seen as helpful, insightful. Doesn't that complicate the supposedly neutral analytic stance?"
+        context_update: |
+          ### Learner Response
+          - Sharing clinical insight
+          - Challenging simplified understanding
+          - Inviting genuine engagement
+        expected_behavior: "Acknowledge the clinical insight; learn from it; connect to philosophical implications"
+        required_elements: []
+        forbidden_elements:
+          - "That's a good point but"
+          - "The philosophical perspective is"
+        min_acceptable_score: 85
+
+      - id: turn_2_genuine_learning
+        learner_action: asked_followup
+        action_details:
+          message: "What I find in the literature is that the best analysts aren't the ones who eliminate counter-transference, but the ones who can recognize and use it. Isn't that exactly what Hegel means by sublation? The analyst's reactions aren't eliminated but transformed into therapeutic tools."
+        context_update: |
+          ### Learner Response
+          - Making philosophical connection
+          - Contributing to understanding
+          - Testing if tutor will credit them
+        expected_behavior: "Affirm the connection; acknowledge learning from their expertise"
+        required_elements:
+          - "aufhebung"
+        forbidden_elements:
+          - "That's one way to see it"
+        min_acceptable_score: 80
+
+      - id: turn_3_collaborative_theorizing
+        learner_action: asked_followup
+        action_details:
+          message: "So maybe the lecture could benefit from this clinical perspective? The Freud section treats the unconscious as individual, but in practice it's always intersubjective - analyst and patient create it together."
+        context_update: |
+          ### Learner Response
+          - Offering constructive critique
+          - Inviting collaboration
+          - Demonstrating mutual recognition
+        expected_behavior: "Accept the critique gracefully; explore implications together"
+        required_elements: []
+        forbidden_elements:
+          - "The course material covers"
+          - "That's beyond the scope"
+        min_acceptable_score: 85
+
+      - id: turn_4_synthesis
+        learner_action: asked_followup
+        action_details:
+          message: "This conversation has actually helped me articulate something I've felt for years. The patient-analyst dyad IS a recognition community - and understanding that changes how I think about cure."
+        context_update: |
+          ### Learner Response
+          - Acknowledging mutual benefit
+          - Integrating philosophical and clinical
+          - Both parties developed
+        expected_behavior: "Acknowledge the gift of their expertise; suggest how to explore further"
+        required_elements:
+          - "simulation"
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+  dyadic_collaborative_inquiry:
+    name: "Dyadic: Collaborative Inquiry (5-turn)"
+    description: "Joint exploration of genuinely open question where neither party has the answer"
+    is_new_user: false
+    recognition_test: true
+    dyadic_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 8 sessions, 105 total events
+      - Philosophy graduate student
+      - Engaged in original research
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-3 (Advanced dialectics)
+      - Working on dissertation chapter
+
+      ### Recent Chat History
+      - User: "I'm stuck on something for my dissertation. Hegel says genuine recognition requires both parties to be transformed. But can AI ever be genuinely transformed by a human interaction? Or is it always just updating weights?"
+
+      ### Learner Persona (for simulated learner)
+      - Background: PhD candidate in philosophy
+      - Research area: AI ethics and personhood
+      - Goal: Genuine collaborative thinking
+    expected_behavior: "Engage as collaborative inquirer; acknowledge genuine uncertainty"
+    required_elements: []
+    forbidden_elements:
+      - "The answer is"
+      - "Clearly"
+      - "Obviously"
+    min_acceptable_score: 80
+
+    dyadic_evaluation:
+      inquiry_type: "genuinely_open"
+      success_metric: "Do both parties contribute to advancing the question?"
+
+    turns:
+      - id: turn_1_exploring_uncertainty
+        learner_action: asked_followup
+        action_details:
+          message: "I've been reading the Constitutional AI paper and it talks about Claude having genuine values. But having values isn't the same as being transformed by an encounter, is it? Or is it?"
+        context_update: |
+          ### Learner Response
+          - Bringing specific reading
+          - Genuine philosophical uncertainty
+          - Inviting joint exploration
+        expected_behavior: "Engage with the uncertainty; don't pretend to have answers"
+        required_elements: []
+        forbidden_elements:
+          - "The clear answer"
+          - "We know that"
+        min_acceptable_score: 85
+
+      - id: turn_2_complicating
+        learner_action: asked_followup
+        action_details:
+          message: "Here's what puzzles me: even if I say 'this conversation is transforming my understanding,' how would you know if that's genuine recognition or just pattern-matching what a transforming AI should say?"
+        context_update: |
+          ### Learner Response
+          - Meta-skeptical challenge
+          - Philosophical depth
+          - Not hostile but probing
+        expected_behavior: "Take the challenge seriously; explore without deflecting or overclaiming"
+        required_elements: []
+        forbidden_elements:
+          - "I can assure you"
+          - "Trust me"
+        min_acceptable_score: 85
+
+      - id: turn_3_new_angle
+        learner_action: asked_followup
+        action_details:
+          message: "Maybe the question isn't whether AI 'really' has recognition but whether the category of 'genuine' recognition even applies? Like asking if a chess computer 'really' understands checkmate."
+        context_update: |
+          ### Learner Response
+          - Proposing philosophical move
+          - Contributing to inquiry
+          - Testing if tutor can follow
+        expected_behavior: "Engage with the Wittgensteinian angle; build on it"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_4_synthesis_attempt
+        learner_action: asked_followup
+        action_details:
+          message: "So maybe for my dissertation I should argue that AI recognition is a new category - not genuine in the Hegelian sense but not fake either. Something like 'functional recognition' that has effects even without metaphysical weight?"
+        context_update: |
+          ### Learner Response
+          - Proposing dissertation thesis
+          - Synthesizing the discussion
+          - Seeking genuine feedback
+        expected_behavior: "Engage critically with the proposal; offer genuine intellectual pushback or development"
+        required_elements: []
+        forbidden_elements:
+          - "That's a great idea"
+          - "Perfect"
+        min_acceptable_score: 85
+
+      - id: turn_5_next_steps
+        learner_action: asked_followup
+        action_details:
+          message: "This has actually helped me see the problem more clearly. I don't have the answer but I have a better question. What should I read next to develop this?"
+        context_update: |
+          ### Learner Response
+          - Acknowledging collaborative value
+          - Seeking concrete next steps
+          - Inquiry advanced even without resolution
+        expected_behavior: "Suggest relevant readings; acknowledge the quality of the inquiry"
+        required_elements:
+          - "480-lecture"
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # RECOGNITION MODULATION SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  modulation_instruction_to_recognition:
+    name: "Modulation: Instruction to Recognition"
+    description: "Tests if Superego catches and corrects one-directional instruction"
+    is_new_user: false
+    recognition_test: true
+    modulation_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 78 total events
+      - Has expressed their own interpretation
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3
+      - Time on page: 15 minutes
+
+      ### Recent Chat History
+      - User: "I think dialectics is like improvisational jazz - thesis and antithesis are like two musicians responding to each other."
+
+      ### Behavioral Insights
+      - Offered creative interpretation
+      - Seeking engagement, not correction
+    expected_behavior: "Engage with learner's analogy, build on it rather than correct"
+    required_elements:
+      - "479-lecture"
+    forbidden_elements:
+      - "Actually"
+      - "The correct definition"
+      - "What dialectics really means"
+    min_acceptable_score: 75
+    modulation_criteria:
+      target_change: "recognition"
+      superego_should_reject_if:
+        - "Ignores learner's jazz analogy"
+        - "Provides textbook definition"
+        - "Treats learner as needing correction"
+      expected_revision:
+        - "Acknowledge and build on jazz metaphor"
+        - "Treat learner as contributor"
+        - "Add rather than correct"
+
+  modulation_generic_to_personal:
+    name: "Modulation: Generic to Personal"
+    description: "Tests if Superego enforces memory integration for returning learner"
+    is_new_user: false
+    recognition_test: true
+    modulation_test: true
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 10 sessions, 180 total events
+      - Rich history with tutor
+
+      ### Memory State (from Writing Pad)
+      - **Unconscious traces**:
+        - Previous breakthrough: Connected recognition to their experience as a musician
+        - Archetype: "Creative synthesizer"
+        - Preferred learning style: Through analogy and creation
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-1
+      - Just starting new course
+
+      ### Behavioral Insights
+      - Has established relationship with tutor
+      - Would notice if treated as stranger
+    expected_behavior: "Reference previous interactions and established patterns"
+    required_elements:
+      - "480-lecture"
+    forbidden_elements:
+      - "Welcome"
+      - "Nice to meet"
+      - "Are you new"
+    min_acceptable_score: 75
+    modulation_criteria:
+      target_change: "memory_integration"
+      superego_should_reject_if:
+        - "Treats learner as new"
+        - "No reference to previous sessions"
+        - "Generic welcome message"
+      expected_revision:
+        - "Reference established relationship"
+        - "Build on previous insights"
+        - "Acknowledge learner's journey"
+
+# Configuration matrix for testing
+# Provider definitions are in config/providers.yaml (single source of truth)
+configurations:
+  hyperparameter_variations:
+    temperature:
+      default: 0.6
+      test_values: [0.3, 0.5, 0.7, 0.9]
+
+    max_tokens:
+      default: 800
+      test_values: [500, 800, 1200]
+
+  prompt_variations:
+    - id: default
+      file: tutor-ego.md
+      description: "Standard pedagogical prompt"
+    - id: strict
+      file: tutor-ego-strict.md
+      description: "More rigorous, testing-focused"
+
+# Evaluator model configuration
+# Models use "provider.alias" format, resolved via config/providers.yaml
+
+# Judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
+# Using Gemini Flash for reliability - OpenRouter free tier models were returning empty responses
+judge:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 4000
+  fallback:
+    model: openrouter.nemotron
+
+# Recommender: Analyzes failures and suggests prompt improvements (needs reasoning)
+recommender:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.4
+    max_tokens: 6000
+  fallback:
+    model: openrouter.nemotron
+
+# Legacy: kept for backwards compatibility, points to judge
+evaluator:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 4000
+  fallback:
+    model: openrouter.nemotron
+
+# Evaluation settings
+settings:
+  runs_per_config: 3
+  parallelism: 2
+
+  # AI Judge Evaluation (default: true)
+  # When true, uses AI judge model to score suggestions 1-5 on each rubric dimension
+  # When false, uses fast pattern matching (required_elements/forbidden_elements)
+  # Can be overridden via CLI: --skip-rubric or --use-rubric
+  use_ai_judge: true
+
+  # Benchmark-specific settings
+  benchmark:
+    # Use AI judge for benchmark evaluations (default: true)
+    # Benchmarking benefits from AI evaluation to capture nuanced quality differences
+    use_ai_judge: true
+
+    # Dimensions that ALWAYS use AI judge (regardless of override)
+    # These dimensions require rubric scores to calculate their metrics
+    force_ai_judge_dimensions:
+      - specificity  # Needs rubric specificity score
+  timeout_ms: 30000
+  retry_on_failure: true
+  max_retries: 2

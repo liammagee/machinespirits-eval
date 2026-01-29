@@ -13,7 +13,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Anthropic from '@anthropic-ai/sdk';
-import { tutorApiService as tutorApi, tutorConfigLoader as configLoader } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as configLoader } from '@machinespirits/tutor-core';
+import * as evalConfigLoader from './evalConfigLoader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,7 @@ const PROMPTS_DIR = path.join(ROOT_DIR, 'prompts');
  * Uses 'recommender' config from evaluation-rubric.yaml (falls back to 'evaluator')
  */
 function getEvaluatorConfig() {
-  const rubric = tutorApi.loadRubric();
+  const rubric = evalConfigLoader.loadRubric();
   // Prefer 'recommender' for prompt analysis, fall back to legacy 'evaluator'
   const evalConfig = rubric?.recommender || rubric?.evaluator;
 

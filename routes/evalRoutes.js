@@ -14,6 +14,7 @@ import * as evaluationStore from '../services/evaluationStore.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as promptRecommendationService from '../services/promptRecommendationService.js';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
+import * as evalConfigLoader from '../services/evalConfigLoader.js';
 // Import core tutor services from @machinespirits/tutor-core
 import {
   tutorApiService as tutorApi,
@@ -139,7 +140,7 @@ const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
  */
 router.get('/scenarios', (req, res) => {
   try {
-    const scenarios = tutorApi.listScenarios();
+    const scenarios = evalConfigLoader.listScenarios();
     res.json({ success: true, scenarios });
   } catch (error) {
     console.error('[EvalRoutes] List scenarios error:', error);
@@ -153,7 +154,7 @@ router.get('/scenarios', (req, res) => {
  */
 router.get('/scenarios/:id', (req, res) => {
   try {
-    const scenario = tutorApi.getScenario(req.params.id);
+    const scenario = evalConfigLoader.getScenario(req.params.id);
     if (!scenario) {
       return res.status(404).json({ error: 'Scenario not found' });
     }
@@ -223,13 +224,13 @@ router.get('/configurations', (req, res) => {
  */
 router.post('/quick', async (req, res) => {
   try {
-    const { profile = 'budget', scenario = 'new_user_first_visit', skipRubric = false } = req.body;
+    const { profile = 'budget', scenario = 'new_user_first_visit', skipRubric = false, judgeOverride = null } = req.body;
 
     // Build config
     const config = { profileName: profile };
 
     // Get scenario name for description
-    const scenarioDetails = tutorApi.getScenario(scenario);
+    const scenarioDetails = evalConfigLoader.getScenario(scenario);
     const scenarioName = scenarioDetails?.name || scenario;
 
     // Create a run to persist result to history
@@ -242,6 +243,7 @@ router.post('/quick', async (req, res) => {
         profiles: [profile],
         scenarios: [scenario],
         scenarioNames: [scenarioName],
+        judgeOverride: judgeOverride || undefined,
       },
     });
 
@@ -249,6 +251,7 @@ router.post('/quick', async (req, res) => {
       scenarioId: scenario,
       skipRubricEval: skipRubric,
       verbose: false,
+      judgeOverride,
     });
 
     // Store result to history
@@ -344,7 +347,7 @@ router.get('/stream/quick', async (req, res) => {
     const outputSize = req.query.outputSize || 'normal'; // compact, normal, expanded
 
     // Get scenario name for description
-    const scenarioDetails = tutorApi.getScenario(scenario);
+    const scenarioDetails = evalConfigLoader.getScenario(scenario);
     const scenarioName = scenarioDetails?.name || scenario;
 
     // Create a run to persist result to history (status: 'running')
@@ -576,7 +579,7 @@ router.post('/matrix', async (req, res) => {
     }
 
     // Get scenarios
-    const allScenarios = tutorApi.listScenarios();
+    const allScenarios = evalConfigLoader.listScenarios();
     const scenariosToRun = scenarios === 'all'
       ? allScenarios
       : allScenarios.filter(s => scenarios.includes(s.id));
@@ -767,7 +770,7 @@ router.get('/stream/matrix', async (req, res) => {
     }
 
     // Get scenarios
-    const allScenarios = tutorApi.listScenarios();
+    const allScenarios = evalConfigLoader.listScenarios();
     const scenariosToRun = scenarios === 'all'
       ? allScenarios
       : allScenarios.filter(s => scenarios.includes(s.id));
@@ -1852,7 +1855,7 @@ router.post('/prompts/recommend', async (req, res) => {
       profileName = runResults[0]?.profileName || profileName;
     } else if (profile) {
       // Run fresh evaluations
-      const allScenarios = tutorApi.listScenarios();
+      const allScenarios = evalConfigLoader.listScenarios();
       const scenariosToRun = scenarios === 'all'
         ? allScenarios
         : allScenarios.filter(s => scenarios.includes(s.id));
@@ -1944,7 +1947,7 @@ router.get('/stream/run', async (req, res) => {
     const outputSize = req.query.outputSize || 'normal';
 
     // Get all scenarios to run
-    const allScenarios = tutorApi.listScenarios();
+    const allScenarios = evalConfigLoader.listScenarios();
     const scenariosToRun = scenarios === 'all'
       ? allScenarios
       : allScenarios.filter(s => scenarios.includes(s.id));
@@ -2513,7 +2516,7 @@ router.get('/runs/:runId/resume-status', (req, res) => {
     }
 
     // Get scenarios
-    const allScenarios = tutorApi.listScenarios();
+    const allScenarios = evalConfigLoader.listScenarios();
     const scenarios = scenariosParam === 'all'
       ? allScenarios
       : allScenarios.filter(s => scenariosParam.includes(s.id));
@@ -2682,7 +2685,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
     }
 
     // Get only recognition_test scenarios
-    const allScenarios = tutorApi.listScenarios();
+    const allScenarios = evalConfigLoader.listScenarios();
     const recognitionScenarios = allScenarios.filter(s => s.recognition_test === true);
 
     if (recognitionScenarios.length === 0) {
