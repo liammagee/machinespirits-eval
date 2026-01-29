@@ -109,29 +109,30 @@ Complete inventory of all configuration variables, parameters, and moving parts 
 
 ## 4. Tutor Profiles
 
-**Source:** `node_modules/@machinespirits/tutor-core/config/tutor-agents.yaml`
+**Source:** `config/tutor-agents.yaml` (local override of tutor-core)
 
-**Active profile:** `budget` (set on line 13, overridable via `TUTOR_PROFILE` env var)
+**Active profile:** `budget` (overridable via `TUTOR_PROFILE` env var)
+
+### 2×2×2 Factorial Design
+
+Three independent variables, each with two levels:
+- **Factor A: Recognition** — standard prompts vs recognition-enhanced prompts + memory
+- **Factor B: Architecture** — single agent (ego only) vs multi-agent (ego + superego)
+- **Factor C: Model Tier** — free (nemotron) vs paid (sonnet)
 
 ### Profile Summary
 
-| Profile | Ego Model | Superego Model | Dialogue | Max Rounds | Description |
-|---------|-----------|----------------|----------|------------|-------------|
-| `budget` | deepseek | — (disabled) | No | 0 | Single-agent, free tier |
-| `default` | nemotron | sonnet | Yes | 2 | Balanced quality |
-| `fast` | nemotron | — | No | 0 | Speed-optimised |
-| `quality` | sonnet | sonnet | Yes | 3 | Premium quality |
-| `experimental` | nemotron | sonnet | Yes | 3 | Drama Machine-inspired |
-| `budget_experimental` | nemotron | nemotron | Yes | 3 | Drama Machine free tier |
-| `local` | local/default | local/default | Yes | 2 | LM Studio offline |
-| `baseline` | nemotron | nemotron | Yes | 2 | Recognition A/B control |
-| `recognition` | nemotron | nemotron | Yes | 2 | Phase 4, full memory |
-| `recognition_plus` | sonnet | sonnet | Yes | 2 | Recognition + better models |
-| `recognition_prompts_only` | nemotron | nemotron | Yes | 2 | Recognition prompts, no memory |
-| `single_baseline` | nemotron | — (null) | No | 0 | 2x2 factorial control |
-| `single_recognition` | nemotron | — (null) | No | 0 | 2x2 factorial recognition |
-| `asymmetric` | haiku | sonnet | Yes | 2 | Cost/benefit analysis |
-| `strict_pedagogy` | haiku | sonnet | Yes | 2 | Strict superego review |
+| Profile | Recognition | Architecture | Model | Dialogue | Description |
+|---------|------------|-------------|-------|----------|-------------|
+| `budget` | — | Single | deepseek | No | Dev workhorse (not in factorial) |
+| `single_baseline` | No | Single | nemotron | No | Cell 1: control |
+| `single_baseline_paid` | No | Single | sonnet | No | Cell 2: model quality only |
+| `baseline` | No | Ego+Superego | nemotron | Yes (2) | Cell 3: architecture only |
+| `baseline_paid` | No | Ego+Superego | sonnet | Yes (2) | Cell 4: architecture + model |
+| `single_recognition` | Yes | Single | nemotron | No | Cell 5: recognition only |
+| `single_recognition_paid` | Yes | Single | sonnet | No | Cell 6: recognition + model |
+| `recognition` | Yes | Ego+Superego | nemotron | Yes (2) | Cell 7: recognition + architecture |
+| `recognition_paid` | Yes | Ego+Superego | sonnet | Yes (2) | Cell 8: all three factors |
 
 ### Hyperparameters per Agent Role
 
