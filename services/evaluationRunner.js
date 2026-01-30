@@ -43,11 +43,10 @@ function resolveConfigModels(config) {
     if (profile?.ego) {
       resolved.provider = profile.ego.resolvedProvider || profile.ego.provider;
       resolved.model = profile.ego.resolvedModel || profile.ego.model;
-      // Set egoModel as "provider.model" format — tutor-core's resolveModel()
-      // requires this format to resolve the alias through providers.yaml
-      const egoProvider = profile.ego.resolvedProvider || profile.ego.provider;
-      const egoAlias = profile.ego.resolvedModel || profile.ego.model;
-      resolved.egoModel = `${egoProvider}.${egoAlias}`;
+      // Pass egoModel as object { provider, model } — tutor-core's resolveModel()
+      // supports both string ("provider.model") and object formats, but aliases
+      // containing dots (e.g., "kimi-k2.5") break the string format's split('.').
+      resolved.egoModel = { provider: profile.ego.provider, model: profile.ego.model };
       if (profile.ego.hyperparameters && !resolved.hyperparameters) {
         resolved.hyperparameters = profile.ego.hyperparameters;
       }
@@ -345,7 +344,10 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   log(`Generating suggestions with profile: ${resolvedConfig.profileName}`, 'info');
   log(`Provider: ${resolvedConfig.provider || 'from profile'}, Model: ${resolvedConfig.model || 'from profile'}`, 'info');
   if (resolvedConfig.egoModel) {
-    log(`Ego model override: ${resolvedConfig.egoModel}`, 'info');
+    const egoLabel = typeof resolvedConfig.egoModel === 'object'
+      ? `${resolvedConfig.egoModel.provider}.${resolvedConfig.egoModel.model}`
+      : resolvedConfig.egoModel;
+    log(`Ego model override: ${egoLabel}`, 'info');
   }
 
   // Wrap API call with retry logic for rate limit handling
