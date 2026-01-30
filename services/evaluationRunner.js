@@ -11,6 +11,8 @@ import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import * as multiTurnRunner from './multiTurnRunner.js';
 import * as contentResolver from './contentResolver.js';
+import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
+import { StreamingReporter } from './streamingReporter.js';
 
 /**
  * Resolve provider/model references in a config object through eval's providers.yaml.
@@ -51,14 +53,20 @@ function resolveConfigModels(config) {
         resolved.hyperparameters = profile.ego.hyperparameters;
       }
     }
+    if (profile?.superego) {
+      resolved.superegoModel = { provider: profile.superego.provider, model: profile.superego.model };
+      if (profile.superego.hyperparameters && !resolved.superegoHyperparameters) {
+        resolved.superegoHyperparameters = profile.superego.hyperparameters;
+      }
+    }
   }
 
   return resolved;
 }
 
 // Rate limiting settings
-const DEFAULT_PARALLELISM = 2;
-const REQUEST_DELAY_MS = 500;
+const DEFAULT_PARALLELISM = 3;
+const REQUEST_DELAY_MS = 200;
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 2000; // Start with 2 seconds
 
@@ -196,7 +204,32 @@ export async function runEvaluation(options = {}) {
     },
   });
 
-  log(`\nRun ID: ${run.id}\n`);
+  const totalTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
+  const profileNames = targetConfigs.map(c => c.label || c.profileName || `${c.provider}/${c.model}`);
+  const scenarioNames = targetScenarios.map(s => s.name || s.id);
+
+  // Print run ID + progress log path immediately so users can `watch`
+  const progressLogPath = getProgressLogPath(run.id);
+  console.log(`\nRun ID: ${run.id} (use 'watch ${run.id}' to monitor)`);
+  console.log(`Progress log: ${progressLogPath}\n`);
+
+  // Instantiate progress logger and streaming reporter
+  const progressLogger = new ProgressLogger(run.id);
+  const reporter = new StreamingReporter({
+    totalTests,
+    totalScenarios: targetScenarios.length,
+    profiles: profileNames,
+    scenarios: scenarioNames,
+  });
+
+  progressLogger.runStart({
+    totalTests,
+    totalScenarios: targetScenarios.length,
+    totalConfigurations: targetConfigs.length,
+    scenarios: scenarioNames,
+    profiles: profileNames,
+    description: description || run.description,
+  });
 
   // Register with monitoring service for realtime tracking
   monitoringService.startSession(run.id, {
@@ -207,54 +240,193 @@ export async function runEvaluation(options = {}) {
 
   const results = [];
   let completedTests = 0;
-  const totalTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
 
-  // Run evaluations
-  for (const config of targetConfigs) {
-    log(`\nConfiguration: ${config.label || `${config.provider}/${config.model}`}`);
-    log('='.repeat(60));
-
-    for (const scenario of targetScenarios) {
+  // Build flat list of all tests — SCENARIO-FIRST ordering
+  // All profiles for scenario 1 complete before scenario 2 starts.
+  const allTests = [];
+  for (const scenario of targetScenarios) {
+    for (const config of targetConfigs) {
       for (let runNum = 0; runNum < runsPerConfig; runNum++) {
-        try {
-          const result = await runSingleTest(scenario, config, {
-            skipRubricEval,
-            verbose,
-          });
-
-          // Store result
-          evaluationStore.storeResult(run.id, result);
-          results.push(result);
-
-          completedTests++;
-          log(`  [${completedTests}/${totalTests}] ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`);
-
-          // Update monitoring session with progress
-          monitoringService.recordEvent(run.id, {
-            type: 'evaluation_test',
-            inputTokens: result.inputTokens || 0,
-            outputTokens: result.outputTokens || 0,
-            latencyMs: result.latencyMs || 0,
-            round: completedTests,
-            approved: result.success,
-          });
-
-          // Rate limiting
-          await sleep(REQUEST_DELAY_MS);
-        } catch (error) {
-          log(`  [${completedTests}/${totalTests}] ${scenario.id}: ERROR - ${error.message}`);
-          completedTests++;
-
-          // Record error in monitoring
-          monitoringService.recordEvent(run.id, {
-            type: 'evaluation_error',
-            round: completedTests,
-            error: error.message,
-          });
-        }
+        allTests.push({ config, scenario, runNum });
       }
     }
   }
+
+  // Scenario completion tracking
+  const scenarioProgress = new Map();
+  for (const scenario of targetScenarios) {
+    scenarioProgress.set(scenario.id, {
+      total: targetConfigs.length * runsPerConfig,
+      completed: 0,
+      scores: [],
+      scenarioName: scenario.name || scenario.id,
+    });
+  }
+  let completedScenarios = 0;
+
+  // Parallel worker pool
+  async function processQueue(queue, workerCount, processItem) {
+    const items = [...queue];
+    let index = 0;
+
+    async function worker() {
+      while (index < items.length) {
+        const i = index++;
+        await processItem(items[i]);
+        await sleep(REQUEST_DELAY_MS);
+      }
+    }
+
+    const workers = Array.from(
+      { length: Math.min(workerCount, items.length) },
+      () => worker()
+    );
+    await Promise.all(workers);
+  }
+
+  log(`\nRunning ${allTests.length} tests with parallelism=${parallelism}...\n`);
+
+  const runStartTime = Date.now();
+
+  await processQueue(allTests, parallelism, async ({ config, scenario }) => {
+    const profileLabel = config.label || config.profileName || '';
+
+    // Emit test_start
+    progressLogger.testStart({
+      scenarioId: scenario.id,
+      scenarioName: scenario.name || scenario.id,
+      profileName: profileLabel,
+    });
+
+    try {
+      const result = await runSingleTest(scenario, config, {
+        skipRubricEval,
+        verbose,
+      });
+
+      // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
+      evaluationStore.storeResult(run.id, result);
+      results.push(result);
+
+      completedTests++;
+
+      // Emit test_complete event
+      progressLogger.testComplete({
+        scenarioId: scenario.id,
+        scenarioName: scenario.name || scenario.id,
+        profileName: profileLabel,
+        success: result.success,
+        overallScore: result.overallScore,
+        baseScore: result.baseScore ?? null,
+        recognitionScore: result.recognitionScore ?? null,
+        latencyMs: result.latencyMs,
+        completedCount: completedTests,
+        totalTests,
+      });
+
+      // Streaming reporter line
+      reporter.onTestComplete({
+        ...result,
+        profileName: profileLabel,
+        scenarioName: scenario.name || scenario.id,
+      });
+
+      log(`  [${completedTests}/${totalTests}] ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`);
+
+      // Update monitoring session with progress
+      monitoringService.recordEvent(run.id, {
+        type: 'evaluation_test',
+        inputTokens: result.inputTokens || 0,
+        outputTokens: result.outputTokens || 0,
+        latencyMs: result.latencyMs || 0,
+        round: completedTests,
+        approved: result.success,
+      });
+
+      // Track scenario completion
+      const sp = scenarioProgress.get(scenario.id);
+      sp.completed++;
+      if (result.overallScore != null) sp.scores.push(result.overallScore);
+      if (sp.completed >= sp.total) {
+        completedScenarios++;
+        const avgScore = sp.scores.length > 0
+          ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length
+          : null;
+        progressLogger.scenarioComplete({
+          scenarioId: scenario.id,
+          scenarioName: sp.scenarioName,
+          profileNames,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+        reporter.onScenarioComplete({
+          scenarioName: sp.scenarioName,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+      }
+    } catch (error) {
+      completedTests++;
+      log(`  [${completedTests}/${totalTests}] ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
+
+      // Emit test_error event
+      progressLogger.testError({
+        scenarioId: scenario.id,
+        scenarioName: scenario.name || scenario.id,
+        profileName: profileLabel,
+        errorMessage: error.message,
+        completedCount: completedTests,
+        totalTests,
+      });
+
+      reporter.onTestError({
+        scenarioName: scenario.name || scenario.id,
+        profileName: profileLabel,
+        errorMessage: error.message,
+      });
+
+      // Record error in monitoring
+      monitoringService.recordEvent(run.id, {
+        type: 'evaluation_error',
+        round: completedTests,
+        error: error.message,
+      });
+
+      // Track scenario completion even on error
+      const sp = scenarioProgress.get(scenario.id);
+      sp.completed++;
+      if (sp.completed >= sp.total) {
+        completedScenarios++;
+        const avgScore = sp.scores.length > 0
+          ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length
+          : null;
+        progressLogger.scenarioComplete({
+          scenarioId: scenario.id,
+          scenarioName: sp.scenarioName,
+          profileNames,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+        reporter.onScenarioComplete({
+          scenarioName: sp.scenarioName,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+      }
+    }
+  });
+
+  const durationMs = Date.now() - runStartTime;
+  const successfulTests = results.filter(r => r.success).length;
+  const failedTests = completedTests - successfulTests;
+
+  // Emit run_complete
+  progressLogger.runComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
+  reporter.onRunComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
 
   // Update run status
   evaluationStore.updateRun(run.id, {
@@ -270,19 +442,13 @@ export async function runEvaluation(options = {}) {
   const stats = evaluationStore.getRunStats(run.id);
   const scenarioStats = evaluationStore.getScenarioStats(run.id);
 
-  log('\n' + '='.repeat(60));
-  log('EVALUATION COMPLETE');
-  log('='.repeat(60));
-  log(`Run ID: ${run.id}`);
-  log(`Total tests: ${results.length}`);
-  log(`Successful: ${results.filter(r => r.success).length}`);
-
   return {
     runId: run.id,
     totalTests: results.length,
-    successfulTests: results.filter(r => r.success).length,
+    successfulTests,
     stats,
     scenarioStats,
+    progressLogPath,
   };
 }
 
@@ -356,6 +522,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       provider: resolvedConfig.provider,
       model: resolvedConfig.model,
       egoModel: resolvedConfig.egoModel, // Override ego model for benchmarking
+      superegoModel: resolvedConfig.superegoModel || null, // Override superego model for benchmarking
       profileName: resolvedConfig.profileName,
       hyperparameters: resolvedConfig.hyperparameters || {},
       trace: true, // Always capture trace for tension analysis
@@ -371,9 +538,15 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       scenarioId: scenario.id,
       scenarioName: scenario.name,
       scenarioType: fullScenario.type || 'suggestion',
-      provider: config.provider || genResult.metadata?.provider,
-      model: config.model || genResult.metadata?.model,
+      provider: resolvedConfig.provider || genResult.metadata?.provider,
+      model: resolvedConfig.model || genResult.metadata?.model,
       profileName: config.profileName,
+      egoModel: resolvedConfig.egoModel
+        ? `${resolvedConfig.egoModel.provider}.${resolvedConfig.egoModel.model}`
+        : null,
+      superegoModel: resolvedConfig.superegoModel
+        ? `${resolvedConfig.superegoModel.provider}.${resolvedConfig.superegoModel.model}`
+        : null,
       success: false,
       errorMessage: genResult.error,
       latencyMs: genResult.metadata?.latencyMs,
@@ -446,9 +619,15 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     scenarioId: scenario.id,
     scenarioName: scenario.name,
     scenarioType: fullScenario.type || 'suggestion',
-    provider: config.provider || genResult.metadata?.provider,
-    model: config.model || genResult.metadata?.model,
+    provider: resolvedConfig.provider || genResult.metadata?.provider,
+    model: resolvedConfig.model || genResult.metadata?.model,
     profileName: config.profileName,
+    egoModel: resolvedConfig.egoModel
+      ? `${resolvedConfig.egoModel.provider}.${resolvedConfig.egoModel.model}`
+      : null,
+    superegoModel: resolvedConfig.superegoModel
+      ? `${resolvedConfig.superegoModel.provider}.${resolvedConfig.superegoModel.model}`
+      : null,
     hyperparameters: config.hyperparameters,
     suggestions: genResult.suggestions,
     success: true,
@@ -638,9 +817,15 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     scenarioType: fullScenario.type || 'suggestion',
     isMultiTurn: true,
     totalTurns: turnResults.length,
-    provider: config.provider || multiTurnResult.turnResults[0]?.metadata?.provider,
-    model: config.model || multiTurnResult.turnResults[0]?.metadata?.model,
+    provider: resolvedConfig.provider || multiTurnResult.turnResults[0]?.metadata?.provider,
+    model: resolvedConfig.model || multiTurnResult.turnResults[0]?.metadata?.model,
     profileName: config.profileName,
+    egoModel: resolvedConfig.egoModel
+      ? `${resolvedConfig.egoModel.provider}.${resolvedConfig.egoModel.model}`
+      : null,
+    superegoModel: resolvedConfig.superegoModel
+      ? `${resolvedConfig.superegoModel.provider}.${resolvedConfig.superegoModel.model}`
+      : null,
     hyperparameters: config.hyperparameters,
     suggestions: multiTurnResult.turnResults.map(t => t.suggestions?.[0]).filter(Boolean),
     success: true,
