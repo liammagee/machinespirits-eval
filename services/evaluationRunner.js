@@ -36,11 +36,15 @@ function resolveConfigModels(config) {
   // When a profileName is provided but no explicit provider/model,
   // look up the profile from the eval repo's local tutor-agents.yaml
   // and extract the ego provider/model as explicit overrides.
+  // Uses egoModel (not model) because tutor-core's generateSuggestions
+  // uses profileName to load its own config — egoModel is the override.
   if (resolved.profileName && !resolved.provider && !resolved.model) {
     const profile = evalConfigLoader.getTutorProfile(resolved.profileName);
     if (profile?.ego) {
       resolved.provider = profile.ego.resolvedProvider || profile.ego.provider;
       resolved.model = profile.ego.resolvedModel || profile.ego.model;
+      // Set egoModel so tutor-core overrides its own profile's ego model
+      resolved.egoModel = profile.ego.resolvedModel || profile.ego.model;
       if (profile.ego.hyperparameters && !resolved.hyperparameters) {
         resolved.hyperparameters = profile.ego.hyperparameters;
       }
