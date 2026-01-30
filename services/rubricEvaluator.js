@@ -7,6 +7,7 @@
  */
 
 import * as evalConfigLoader from './evalConfigLoader.js';
+import { jsonrepair } from 'jsonrepair';
 
 // Debug logging helper - suppressed in transcript mode for clean output
 function debugLog(...args) {
@@ -162,6 +163,7 @@ async function callJudgeModelWithConfig(prompt, config) {
             model,
             max_tokens: maxTokens,
             temperature,
+            include_reasoning: false,
             messages: [{ role: 'user', content: prompt }],
           }),
           signal: controller.signal,
@@ -416,6 +418,7 @@ async function callJudgeModel(prompt, overrides = {}) {
           model,
           max_tokens: maxTokens,
           temperature,
+          include_reasoning: false,
           messages: [{ role: 'user', content: prompt }],
         }),
         signal: controller.signal,
@@ -623,7 +626,14 @@ function parseJudgeResponse(responseText) {
         const repaired = repairUnescapedQuotes(cleaned);
         return JSON.parse(repaired);
       } catch (e3) {
-        throw new Error(`Could not parse judge response as JSON: ${e.message}`);
+        // Final fallback: use jsonrepair library which handles many more edge cases
+        debugLog('[rubricEvaluator] Attempting jsonrepair library fallback...');
+        try {
+          const robustRepaired = jsonrepair(jsonStr);
+          return JSON.parse(robustRepaired);
+        } catch (e4) {
+          throw new Error(`Could not parse judge response as JSON: initial=${e.message}, repair=${e3.message}, jsonrepair=${e4.message}`);
+        }
       }
     }
   }
@@ -671,9 +681,20 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       console.warn(`[rubricEvaluator] Parse failed (${parseError.message}), retrying with fallback...`);
       const fallbackConfig = getFallbackJudge();
       if (fallbackConfig) {
-        const retryText = await callJudgeModelWithConfig(prompt, fallbackConfig);
+        let retryText = await callJudgeModelWithConfig(prompt, fallbackConfig);
         if (retryText && retryText.trim()) {
-          parsed = parseJudgeResponse(retryText);
+          try {
+            parsed = parseJudgeResponse(retryText);
+          } catch (retryParseError) {
+            // Second attempt: models are non-deterministic, retry once more
+            console.warn(`[rubricEvaluator] Fallback parse also failed (${retryParseError.message}), retrying once more...`);
+            retryText = await callJudgeModelWithConfig(prompt, fallbackConfig);
+            if (retryText && retryText.trim()) {
+              parsed = parseJudgeResponse(retryText);
+            } else {
+              throw retryParseError;
+            }
+          }
         } else {
           throw parseError;
         }

@@ -506,6 +506,22 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   const context = tutorApi.buildContext(fullScenario.learner_context, curriculumContext);
   context.isNewUser = fullScenario.is_new_user;
 
+  // Map eval-only profile names to tutor-core base profiles.
+  // Eval profiles like 'single_baseline_paid' don't exist in tutor-core's tutor-agents.yaml,
+  // causing "Profile not found" warnings. The explicit egoModel/superegoModel overrides
+  // already force the correct model, so we just need a valid base profile for tutor-core.
+  if (resolvedConfig.profileName) {
+    const evalOnlyProfiles = [
+      'single_baseline', 'single_baseline_paid',
+      'single_recognition', 'single_recognition_paid',
+      'baseline', 'baseline_paid',
+      'recognition', 'recognition_paid',
+    ];
+    if (evalOnlyProfiles.includes(resolvedConfig.profileName)) {
+      resolvedConfig.profileName = 'budget';
+    }
+  }
+
   // Generate suggestions
   log(`Generating suggestions with profile: ${resolvedConfig.profileName}`, 'info');
   log(`Provider: ${resolvedConfig.provider || 'from profile'}, Model: ${resolvedConfig.model || 'from profile'}`, 'info');

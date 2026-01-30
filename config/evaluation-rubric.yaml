@@ -412,17 +412,17 @@ configurations:
 
 # Suggestion judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
 judge:
-  model: openrouter.kimi-k2.5
+  model: openrouter.sonnet
   hyperparameters:
     temperature: 0.2
-    max_tokens: 4000
+    max_tokens: 8000
   fallback:
     model: openrouter.nemotron
 
 # Interaction judge: evaluates learner-tutor dialogues
 # Uses same model as suggestion judge for consistency
 interaction_judge:
-  model: openrouter.kimi-k2.5
+  model: openrouter.sonnet
   hyperparameters:
     temperature: 0.2
     max_tokens: 6000
@@ -431,7 +431,7 @@ interaction_judge:
 
 # Recommender: Analyzes failures and suggests prompt improvements (needs reasoning)
 recommender:
-  model: openrouter.kimi-k2.5
+  model: openrouter.sonnet
   hyperparameters:
     temperature: 0.4
     max_tokens: 6000
