@@ -146,6 +146,18 @@ try {
   // Column already exists, ignore
 }
 
+// Migration: Add ego_model and superego_model columns
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN ego_model TEXT`);
+} catch (e) {
+  // Column already exists, ignore
+}
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN superego_model TEXT`);
+} catch (e) {
+  // Column already exists, ignore
+}
+
 // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
 try {
   const revertRuns = db.prepare(`
@@ -285,6 +297,7 @@ export function storeResult(runId, result) {
     INSERT INTO evaluation_results (
       run_id, scenario_id, scenario_name, scenario_type,
       provider, model, profile_name, hyperparameters, prompt_id,
+      ego_model, superego_model,
       suggestions, raw_response,
       latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
       score_relevance, score_specificity, score_pedagogical,
@@ -295,6 +308,7 @@ export function storeResult(runId, result) {
     ) VALUES (
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
+      ?, ?,
       ?, ?,
       ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
@@ -315,6 +329,8 @@ export function storeResult(runId, result) {
     result.profileName,
     JSON.stringify(result.hyperparameters || {}),
     result.promptId,
+    result.egoModel || null,
+    result.superegoModel || null,
     JSON.stringify(result.suggestions || []),
     result.rawResponse,
     result.latencyMs,
@@ -941,6 +957,8 @@ function parseResultRow(row) {
     provider: row.provider,
     model: row.model,
     profileName: row.profile_name,
+    egoModel: row.ego_model,
+    superegoModel: row.superego_model,
     hyperparameters: JSON.parse(row.hyperparameters || '{}'),
     promptId: row.prompt_id,
     suggestions: JSON.parse(row.suggestions || '[]'),
