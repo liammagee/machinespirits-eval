@@ -55,7 +55,7 @@
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
-    "@machinespirits/tutor-core": "^0.3.0"
+    "@machinespirits/tutor-core": "^0.3.1"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {
