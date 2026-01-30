@@ -544,7 +544,21 @@ function parseJudgeResponse(responseText) {
   }
 
   const jsonStr = jsonMatch[1] || jsonMatch[0];
-  return JSON.parse(jsonStr);
+
+  try {
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    // Try to fix common JSON issues: trailing commas, unescaped newlines in strings
+    const cleaned = jsonStr
+      .replace(/,\s*([}\]])/g, '$1')           // trailing commas
+      .replace(/[\x00-\x1f]/g, m =>            // control chars in strings
+        m === '\n' ? '\\n' : m === '\t' ? '\\t' : m === '\r' ? '\\r' : '');
+    try {
+      return JSON.parse(cleaned);
+    } catch (e2) {
+      throw new Error(`Could not parse judge response as JSON: ${e.message}`);
+    }
+  }
 }
 
 /**
@@ -581,7 +595,24 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       }
     }
 
-    const parsed = parseJudgeResponse(responseText);
+    let parsed;
+    try {
+      parsed = parseJudgeResponse(responseText);
+    } catch (parseError) {
+      // JSON parse failed — retry with fallback model before giving up
+      console.warn(`[rubricEvaluator] Parse failed (${parseError.message}), retrying with fallback...`);
+      const fallbackConfig = getFallbackJudge();
+      if (fallbackConfig) {
+        const retryText = await callJudgeModelWithConfig(prompt, fallbackConfig);
+        if (retryText && retryText.trim()) {
+          parsed = parseJudgeResponse(retryText);
+        } else {
+          throw parseError;
+        }
+      } else {
+        throw parseError;
+      }
+    }
 
     // Debug: log what was parsed
     debugLog('[rubricEvaluator] Parsed keys:', Object.keys(parsed));
@@ -651,6 +682,10 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
   } catch (error) {
     return {
       success: false,
+      scores: {},
+      overallScore: null,
+      baseScore: null,
+      recognitionScore: null,
       error: error.message,
       judgeModel: `${judge.provider}/${judge.model}`,
       evaluationTimeMs: Date.now() - startTime,
