@@ -90,7 +90,7 @@ async function main() {
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
         const description = getOption('description');
         const scenarios = getOption('scenario') ? [getOption('scenario')] : 'all';
-        const configurations = getOption('config') || getOption('profile') ? undefined : 'all';
+        const configurations = getOption('config') || getOption('profile') || 'profiles';
 
         console.log('\nStarting full evaluation run...\n');
         const result = await evaluationRunner.runEvaluation({
