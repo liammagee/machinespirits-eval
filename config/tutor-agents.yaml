@@ -89,7 +89,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi_2-5
+      model: kimi-k2.5
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
@@ -137,7 +137,7 @@ profiles:
       convergence_threshold: 0.8
     ego:
       provider: openrouter
-      model: kimi_2-5
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego.md
       hyperparameters:
@@ -145,7 +145,7 @@ profiles:
         max_tokens: 2500
     superego:
       provider: openrouter
-      model: kimi_2-5
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego.md
       hyperparameters:
@@ -183,7 +183,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi_2-5
+      model: kimi-k2.5
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
@@ -235,7 +235,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: kimi_2-5
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
@@ -243,7 +243,7 @@ profiles:
         max_tokens: 2500
     superego:
       provider: openrouter
-      model: kimi_2-5
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego-recognition.md
       hyperparameters:
