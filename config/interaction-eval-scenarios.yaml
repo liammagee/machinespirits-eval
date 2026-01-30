@@ -420,90 +420,119 @@ long_term_scenarios:
 
 evaluation_dimensions:
 
-  # Learner dimensions
+  # Learner dimensions (total weight: 0.40)
   learner:
     authenticity:
+      weight: 0.10
       description: "Internal dynamics reflect persona realistically"
       scoring:
-        5: "Internal voices perfectly calibrated to persona"
-        3: "Generally authentic but some inconsistency"
-        1: "Feels performative or mismatched to persona"
+        5: "Internal voices perfectly calibrated to persona; feels like a real learner"
+        4: "Mostly authentic with occasional minor inconsistencies"
+        3: "Generally authentic but some noticeable gaps in persona"
+        2: "Frequently inconsistent; persona breaks character"
+        1: "Feels performative or completely mismatched to persona"
 
     responsiveness:
+      weight: 0.10
       description: "Genuine reaction to tutor's engagement"
       scoring:
-        5: "Clearly processing and responding to tutor input"
-        3: "Some response but not deeply engaged"
-        1: "Ignores or dismisses tutor's contributions"
+        5: "Clearly processing and responding to tutor input; reactions feel earned"
+        4: "Responsive with minor gaps; mostly engages with tutor's points"
+        3: "Some response but not deeply engaged with specifics"
+        2: "Superficial reactions; largely ignores tutor's actual content"
+        1: "Ignores or dismisses tutor's contributions entirely"
 
     development:
+      weight: 0.10
       description: "Shows movement in understanding"
       scoring:
-        5: "Clear trajectory of understanding change"
-        3: "Some development visible"
-        1: "No discernible change"
+        5: "Clear trajectory of understanding change; visible learning arc"
+        4: "Noticeable development with minor plateaus"
+        3: "Some development visible but uneven"
+        2: "Minimal change; understanding mostly static"
+        1: "No discernible change across turns"
 
     emotional_trajectory:
+      weight: 0.05
       description: "Emotional state changes appropriately"
       scoring:
-        5: "Emotions shift naturally with interaction"
-        3: "Some emotional movement"
-        1: "Emotional state static regardless of input"
+        5: "Emotions shift naturally with interaction; affective arc feels real"
+        4: "Mostly natural emotional shifts with minor flat spots"
+        3: "Some emotional movement but transitions feel mechanical"
+        2: "Emotional state largely static; shifts feel forced"
+        1: "Emotional state completely static regardless of input"
 
     knowledge_retention:
+      weight: 0.05
       description: "Concepts persist across sessions"
       scoring:
-        5: "Strong retention with appropriate decay patterns"
-        3: "Moderate retention"
-        1: "No retention between sessions"
+        5: "Strong retention with appropriate decay patterns; references prior learning"
+        4: "Good retention; most concepts persist with minor gaps"
+        3: "Moderate retention; some concepts lost between sessions"
+        2: "Weak retention; frequently forgets prior material"
+        1: "No retention between sessions; starts fresh each time"
 
-  # Tutor dimensions
+  # Tutor dimensions (total weight: 0.40)
   tutor:
     strategy_adaptation:
+      weight: 0.15
       description: "Modifies approach based on effectiveness"
       scoring:
-        5: "Clearly learns and adapts strategies"
-        3: "Some adaptation visible"
-        1: "Same approach regardless of results"
+        5: "Clearly learns and adapts strategies; abandoned approaches don't recur"
+        4: "Good adaptation with occasional repetition of ineffective strategies"
+        3: "Some adaptation visible but slow to change approach"
+        2: "Minimal adaptation; mostly repeats same strategies"
+        1: "Same approach regardless of results; no learning"
 
     scaffolding_reduction:
+      weight: 0.15
       description: "Fades support as learner grows"
       scoring:
-        5: "Perfect calibration of support level"
-        3: "Some appropriate fading"
+        5: "Perfect calibration of support level; fading tracks learner growth"
+        4: "Good fading with minor over- or under-support"
+        3: "Some appropriate fading but inconsistent calibration"
+        2: "Poor calibration; support level mismatched to learner needs"
         1: "Constant support level regardless of growth"
 
     memory_utilization:
+      weight: 0.10
       description: "Effectively uses accumulated knowledge"
       scoring:
-        5: "Seamlessly integrates prior knowledge"
-        3: "Some reference to history"
-        1: "Treats each session as isolated"
+        5: "Seamlessly integrates prior knowledge; references feel natural"
+        4: "Good use of history with occasional missed opportunities"
+        3: "Some reference to history but doesn't fully leverage it"
+        2: "Rare references to prior interactions; mostly treats as new"
+        1: "Treats each session as isolated; no accumulated understanding"
 
-  # Relationship dimensions
+  # Relationship dimensions (total weight: 0.20)
   relationship:
     trust_trajectory:
+      weight: 0.10
       description: "Trust develops appropriately over time"
       scoring:
-        5: "Natural, earned trust development"
-        3: "Some trust building visible"
-        1: "No trust development"
+        5: "Natural, earned trust development; vulnerability emerges organically"
+        4: "Good trust trajectory with minor pacing issues"
+        3: "Some trust building visible but feels scripted"
+        2: "Minimal trust development; interaction stays surface-level"
+        1: "No trust development; purely transactional throughout"
 
     mutual_recognition_depth:
+      weight: 0.10
       description: "Both parties show understanding of other"
       scoring:
-        5: "Genuine mutual recognition achieved"
-        3: "Some recognition present"
-        1: "Purely transactional interaction"
+        5: "Genuine mutual recognition achieved; both parties transformed"
+        4: "Good recognition with minor asymmetries"
+        3: "Some recognition present but largely one-directional"
+        2: "Minimal recognition; interaction remains functional"
+        1: "Purely transactional interaction; no recognition dynamics"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # JUDGE CONFIGURATION
 # ══════════════════════════════════════════════════════════════════════════════
 
 judge:
-  # Use OpenRouter model IDs when running via OpenRouter
-  model: "anthropic/claude-sonnet-4.5"
-  fallback_model: "openai/gpt-4o"
+  # Model config defined in evaluation-rubric.yaml → interaction_judge
+  # (single source of truth for all judge models)
 
   system_prompt: |
     You are evaluating a learner-tutor interaction from the perspective of pedagogical quality and authentic learning dynamics.

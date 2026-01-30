@@ -278,6 +278,7 @@ export function listScenarios(options = {}) {
     name: scenario.name,
     description: scenario.description,
     type: scenario.type || 'suggestion',
+    category: scenario.category || 'core',
     isNewUser: scenario.is_new_user,
     minAcceptableScore: scenario.min_acceptable_score,
     turnCount: (scenario.turns?.length || 0) + 1,
@@ -440,6 +441,32 @@ export function listConfigurations(options = {}) {
   return configs;
 }
 
+/**
+ * List scenarios filtered by category.
+ *
+ * @param {string} category - Category to filter by (e.g. 'core', 'recognition', 'multi_turn')
+ * @param {Object} [options]
+ * @returns {Array} Filtered scenario list
+ */
+export function listScenariosByCategory(category, options = {}) {
+  return listScenarios(options).filter(s => s.category === category);
+}
+
+/**
+ * Get interaction judge model configuration from rubric.
+ *
+ * Returns the `interaction_judge` section from evaluation-rubric.yaml,
+ * falling back to the suggestion `judge` section if not defined.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.rubricPath] - Override rubric path
+ * @returns {Object|null} Judge config ({ model, fallback, hyperparameters }) or null
+ */
+export function getInteractionJudgeConfig(options = {}) {
+  const rubric = loadRubric(options);
+  return rubric?.interaction_judge || rubric?.judge || null;
+}
+
 export default {
   loadRubric,
   loadSuggestionScenarios,
@@ -447,9 +474,11 @@ export default {
   getProviderConfig,
   resolveModel,
   getJudgeConfig,
+  getInteractionJudgeConfig,
   getRubricDimensions,
   getScenario,
   listScenarios,
+  listScenariosByCategory,
   isMultiTurnScenario,
   getBenchmarkSettings,
   loadTutorAgents,

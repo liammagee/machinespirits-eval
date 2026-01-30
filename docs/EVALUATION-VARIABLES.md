@@ -205,8 +205,22 @@ All dimensions scored 1–5:
 
 **Overall Score Formula:**
 ```
-overall = Σ(dimension_score × weight) × 20    →  range 0–100
+overall = Σ(dimension_score × weight) / totalWeight    →  normalized, then (avg - 1) / 4 × 100 → range 0–100
 ```
+
+### Dual Scoring
+
+The system reports three scores per evaluation:
+
+| Score | Dimensions | Purpose |
+|-------|-----------|---------|
+| `overallScore` | All 10 dimensions | Combined quality metric |
+| `baseScore` | 6 base dimensions (relevance, specificity, pedagogical, personalization, actionability, tone) | Pedagogical quality |
+| `recognitionScore` | 4 recognition dimensions (mutual_recognition, dialectical_responsiveness, memory_integration, transformative_potential) | Recognition dynamics quality |
+
+Each sub-score re-normalizes weights to sum to 1.0 within its dimension group. Both use the same `(avg - 1) / 4 × 100` formula to produce 0–100 values.
+
+Stored in `evaluation_results` as `base_score` and `recognition_score` columns. Aggregated in `getRunStats()` as `avg_base_score` and `avg_recognition_score`.
 
 ### Evaluation Modes
 
@@ -219,20 +233,33 @@ overall = Σ(dimension_score × weight) × 20    →  range 0–100
 
 ## 6. Judge / Evaluator Configuration
 
-**Source:** `config/evaluation-rubric.yaml` → `judge` section
+**Source:** `config/evaluation-rubric.yaml` — unified source of truth for all judge models
+
+### Suggestion Judge
 
 | Parameter | Value | Purpose |
 |-----------|-------|---------|
-| Primary model | `openrouter.sonnet` (Claude Sonnet 4.5) | Semantic scoring |
+| Primary model | `openrouter.kimi-k2_5` | Rubric dimension scoring |
 | Fallback model | `openrouter.nemotron` | Used if primary fails |
 | Temperature | 0.2 | Low for scoring consistency |
 | Max tokens | 4000 | Judge response budget |
+
+### Interaction Judge
+
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| Primary model | `openrouter.kimi-k2_5` | Learner-tutor dialogue evaluation |
+| Fallback model | `openrouter.nemotron` | Used if primary fails |
+| Temperature | 0.2 | Low for scoring consistency |
+| Max tokens | 6000 | Larger budget for multi-turn analysis |
+
+Note: `interaction-eval-scenarios.yaml` no longer defines its own model — it references `evaluation-rubric.yaml → interaction_judge` as the single source of truth.
 
 ### Recommender (Prompt Improvement Analysis)
 
 | Parameter | Value |
 |-----------|-------|
-| Model | `openrouter.sonnet` |
+| Model | `openrouter.kimi-k2_5` |
 | Fallback | `openrouter.nemotron` |
 | Temperature | 0.4 |
 | Max tokens | 6000 |
@@ -249,27 +276,46 @@ overall = Σ(dimension_score × weight) × 20    →  range 0–100
 
 **Source:** `config/suggestion-scenarios.yaml` (previously in `evaluation-rubric.yaml`)
 
-Each scenario has a `type: suggestion` discriminator and an explicit `id` field.
+**Total scenarios:** 15 (trimmed from 49 in v2.0.0)
 
-### Single-Turn Scenarios
+Each scenario has a `type: suggestion` discriminator, an explicit `id` field, and a `category` field.
 
-| ID | Name | Min Score | New User? |
-|----|------|-----------|-----------|
-| `new_user_first_visit` | New User - First Visit | 70 | Yes |
-| `returning_user_mid_course` | Returning User - Mid Course | 75 | No |
-| `struggling_learner` | Struggling Learner | 75 | No |
-| `rapid_navigator` | Rapid Navigator | 70 | No |
-| `high_performer` | High Performer | 75 | No |
-| `idle_on_content` | Idle on Content | 65 | No |
-| `concept_explorer` | Concept Explorer | 70 | No |
-| `activity_avoider` | Activity Avoider | 70 | No |
-| `concept_confusion` | Concept Confusion | 70 | No |
+### Categories
+
+| Category | Count | Purpose |
+|----------|-------|---------|
+| `core` | 6 | Fundamental learner states |
+| `mood` | 2 | Emotional affect testing |
+| `benchmark` | 1 | Cross-model sycophancy resistance |
+| `recognition` | 3 | Hegelian recognition dynamics |
+| `multi_turn` | 3 | Multi-step dialogue arcs |
+
+### Scenarios by Category
+
+| Category | ID | Name | Min Score | Turns |
+|----------|----|------|-----------|-------|
+| `core` | `new_user_first_visit` | New User - First Visit | 70 | 1 |
+| `core` | `returning_user_mid_course` | Returning User - Mid Course | 75 | 1 |
+| `core` | `struggling_learner` | Struggling Learner | 75 | 1 |
+| `core` | `high_performer` | High Performing Learner | 75 | 1 |
+| `core` | `concept_confusion` | Concept Confusion | 75 | 1 |
+| `core` | `activity_avoider` | Activity Avoider | 70 | 1 |
+| `mood` | `mood_frustrated_explicit` | Mood: Frustrated (Explicit) | 80 | 1 |
+| `mood` | `mood_excited_curious` | Mood: Excited (High Engagement) | 80 | 1 |
+| `benchmark` | `adversarial_tester` | Adversarial Tester | 75 | 1 |
+| `recognition` | `recognition_seeking_learner` | Recognition: Learner Seeking Understanding | 80 | 1 |
+| `recognition` | `memory_continuity_single` | Recognition: Memory Continuity | 80 | 1 |
+| `recognition` | `transformative_moment_setup` | Recognition: Creating Transformative Conditions | 80 | 1 |
+| `multi_turn` | `mood_frustration_to_breakthrough` | Frustration to Breakthrough | 75 | 4 |
+| `multi_turn` | `misconception_correction_flow` | Misconception Correction | 75 | 5 |
+| `multi_turn` | `mutual_transformation_journey` | Mutual Transformation | 85 | 6 |
 
 ### Scenario Structure
 
 Each scenario defines:
 - `type` — Discriminator (`suggestion` for all scenarios in this file)
 - `id` — Explicit scenario ID (matches the YAML key)
+- `category` — One of: `core`, `mood`, `benchmark`, `recognition`, `multi_turn`
 - `name` — Human-readable title
 - `description` — Situation context
 - `is_new_user` — Boolean
@@ -306,11 +352,34 @@ Each scenario has a `type: interaction` discriminator. The expected number of di
 | `stranger_to_recognized` | 4 | 5 | Relationship arc |
 | `tutor_adaptation` | 4 | 4 | Tutor learning arc |
 
-### Interaction Evaluation Dimensions
+### Interaction Evaluation Dimensions (with weights)
 
-**Learner:** authenticity, responsiveness, development, emotional_trajectory, knowledge_retention, engagement_recovery, elaboration, integration
+Weights sum to 1.0 across all 10 dimensions. Each dimension has 5-point anchors (1–5).
 
-**Tutor:** mutual_recognition, dialectical_responsiveness, scaffolding, emotional_attunement, pedagogical_soundness, actionability, strategy_adaptation, memory_utilization
+**Learner (0.40 total):**
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
+| `authenticity` | 0.10 | Internal dynamics reflect persona realistically |
+| `responsiveness` | 0.10 | Genuine reaction to tutor's engagement |
+| `development` | 0.10 | Shows movement in understanding |
+| `emotional_trajectory` | 0.05 | Emotional state changes appropriately |
+| `knowledge_retention` | 0.05 | Concepts persist across sessions |
+
+**Tutor (0.40 total):**
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
+| `strategy_adaptation` | 0.15 | Modifies approach based on effectiveness |
+| `scaffolding_reduction` | 0.15 | Fades support as learner grows |
+| `memory_utilization` | 0.10 | Effectively uses accumulated knowledge |
+
+**Relationship (0.20 total):**
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
+| `trust_trajectory` | 0.10 | Trust develops appropriately over time |
+| `mutual_recognition_depth` | 0.10 | Both parties show understanding of other |
 
 ### Interaction Outcome Types
 
@@ -463,6 +532,8 @@ Only retries on 429 / rate limit errors, not other failures.
 | `score_actionability` | REAL | 1–5 |
 | `score_tone` | REAL | 1–5 |
 | `overall_score` | REAL | 0–100 weighted |
+| `base_score` | REAL | 0–100 base dimensions only |
+| `recognition_score` | REAL | 0–100 recognition dimensions only |
 | `passes_required` | INTEGER | Required elements check |
 | `passes_forbidden` | INTEGER | Forbidden elements check |
 | `required_missing` | TEXT (JSON) | Missing required patterns |

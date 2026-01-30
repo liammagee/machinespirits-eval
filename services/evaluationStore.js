@@ -134,6 +134,18 @@ try {
   // Column already exists, ignore
 }
 
+// Migration: Add dual scoring columns if they don't exist
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN base_score REAL`);
+} catch (e) {
+  // Column already exists, ignore
+}
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN recognition_score REAL`);
+} catch (e) {
+  // Column already exists, ignore
+}
+
 // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
 try {
   const revertRuns = db.prepare(`
@@ -277,6 +289,7 @@ export function storeResult(runId, result) {
       latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone, overall_score,
+      base_score, recognition_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message
     ) VALUES (
@@ -286,6 +299,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
       ?, ?, ?, ?,
+      ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?
     )
@@ -317,6 +331,8 @@ export function storeResult(runId, result) {
     result.scores?.actionability,
     result.scores?.tone,
     result.overallScore,
+    result.baseScore,
+    result.recognitionScore,
     result.passesRequired ? 1 : 0,
     result.passesForbidden ? 1 : 0,
     JSON.stringify(result.requiredMissing || []),
@@ -447,6 +463,8 @@ export function getRunStats(runId) {
       AVG(score_personalization) as avg_personalization,
       AVG(score_actionability) as avg_actionability,
       AVG(score_tone) as avg_tone,
+      AVG(base_score) as avg_base_score,
+      AVG(recognition_score) as avg_recognition_score,
       AVG(latency_ms) as avg_latency,
       SUM(input_tokens) as total_input_tokens,
       SUM(output_tokens) as total_output_tokens,
@@ -467,6 +485,8 @@ export function getRunStats(runId) {
     successfulTests: row.successful_tests,
     successRate: row.total_tests > 0 ? row.successful_tests / row.total_tests : 0,
     avgScore: row.avg_score,
+    avgBaseScore: row.avg_base_score,
+    avgRecognitionScore: row.avg_recognition_score,
     dimensions: {
       relevance: row.avg_relevance,
       specificity: row.avg_specificity,
@@ -933,6 +953,8 @@ function parseResultRow(row) {
     dialogueId: row.dialogue_id,
     scores,
     overallScore: row.overall_score,
+    baseScore: row.base_score,
+    recognitionScore: row.recognition_score,
     passesRequired: Boolean(row.passes_required),
     passesForbidden: Boolean(row.passes_forbidden),
     requiredMissing: JSON.parse(row.required_missing || '[]'),

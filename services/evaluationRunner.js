@@ -439,6 +439,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       ? rubricResult.scores
       : null,
     overallScore,
+    baseScore: rubricResult?.baseScore ?? null,
+    recognitionScore: rubricResult?.recognitionScore ?? null,
     passesRequired: rubricResult?.passesRequired ?? validation.passesRequired,
     passesForbidden: rubricResult?.passesForbidden ?? validation.passesForbidden,
     requiredMissing: rubricResult?.requiredMissing || validation.requiredMissing,
@@ -566,8 +568,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // Aggregate dimension scores
   const aggregateDimensions = {};
-  const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-  for (const dim of dims) {
+  const baseDims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+  const recognitionDims = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential'];
+  const allDims = [...baseDims, ...recognitionDims];
+  for (const dim of allDims) {
     const dimScores = turnResults
       .filter(t => t.scores?.[dim] !== undefined)
       .map(t => t.scores[dim]);
@@ -575,6 +579,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       aggregateDimensions[dim] = dimScores.reduce((sum, s) => sum + s, 0) / dimScores.length;
     }
   }
+
+  // Calculate dual scores from aggregate dimensions
+  const baseScoreValues = baseDims.filter(d => aggregateDimensions[d] !== undefined).map(d => aggregateDimensions[d]);
+  const recognitionScoreValues = recognitionDims.filter(d => aggregateDimensions[d] !== undefined).map(d => aggregateDimensions[d]);
+  const baseScore = baseScoreValues.length > 0
+    ? ((baseScoreValues.reduce((s, v) => s + v, 0) / baseScoreValues.length - 1) / 4) * 100
+    : null;
+  const recognitionScore = recognitionScoreValues.length > 0
+    ? ((recognitionScoreValues.reduce((s, v) => s + v, 0) / recognitionScoreValues.length - 1) / 4) * 100
+    : null;
 
   // Check if all turns pass their thresholds
   const allTurnsPassed = turnResults.every(t => {
@@ -606,6 +620,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueRounds: multiTurnResult.turnResults.reduce((sum, t) => sum + (t.metadata?.dialogueRounds || 0), 0), // Total across all turns
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     overallScore,
+    baseScore,
+    recognitionScore,
     turnResults,
     allTurnsPassed,
     passesRequired: turnResults.every(t => t.passesRequired),
