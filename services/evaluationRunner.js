@@ -43,8 +43,11 @@ function resolveConfigModels(config) {
     if (profile?.ego) {
       resolved.provider = profile.ego.resolvedProvider || profile.ego.provider;
       resolved.model = profile.ego.resolvedModel || profile.ego.model;
-      // Set egoModel so tutor-core overrides its own profile's ego model
-      resolved.egoModel = profile.ego.resolvedModel || profile.ego.model;
+      // Set egoModel as "provider.model" format — tutor-core's resolveModel()
+      // requires this format to resolve the alias through providers.yaml
+      const egoProvider = profile.ego.resolvedProvider || profile.ego.provider;
+      const egoAlias = profile.ego.resolvedModel || profile.ego.model;
+      resolved.egoModel = `${egoProvider}.${egoAlias}`;
       if (profile.ego.hyperparameters && !resolved.hyperparameters) {
         resolved.hyperparameters = profile.ego.hyperparameters;
       }
