@@ -17,6 +17,7 @@ import {
   tutorConfigLoader as configLoader,
 } from '@machinespirits/tutor-core';
 import * as evalConfigLoader from './evalConfigLoader.js';
+import * as contentResolver from './contentResolver.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -248,8 +249,15 @@ export async function runMultiTurnScenario(scenarioId, config = {}) {
     dialogueId, // Single dialogue ID for all turns
   };
 
+  // Resolve curriculum context once for all turns
+  const curriculumContext = contentResolver.isConfigured()
+    ? contentResolver.buildCurriculumContext(
+        contentResolver.resolveScenarioContent(scenario)
+      )
+    : null;
+
   // Run initial turn (turn 0)
-  const initialContext = tutorApi.buildContext(scenario.learner_context);
+  const initialContext = tutorApi.buildContext(scenario.learner_context, curriculumContext);
   initialContext.isNewUser = scenario.is_new_user;
 
   const initialResult = await tutorApi.generateSuggestions(initialContext, {
@@ -308,7 +316,7 @@ export async function runMultiTurnScenario(scenarioId, config = {}) {
       previousSuggestion,
     });
 
-    const turnContext = tutorApi.buildContext(updatedContextStr);
+    const turnContext = tutorApi.buildContext(updatedContextStr, curriculumContext);
     turnContext.isNewUser = false; // Multi-turn implies returning user
 
     // Generate suggestions for this turn - CONTINUE THE SAME DIALOGUE
