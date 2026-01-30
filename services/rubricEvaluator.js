@@ -307,20 +307,25 @@ For each dimension, include:
 - **reasoning**: Brief explanation of why this score was given
 - **quote**: A short direct quote from the suggestion (title, message, or actionTarget) that exemplifies this dimension's score. Use "N/A" if no relevant quote exists.
 
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+- Keep "quote" values under 15 words.
+
 Respond with ONLY a JSON object in this exact format:
 \`\`\`json
 {
   "scores": {
-    "relevance": {"score": 4, "reasoning": "Matches learner's idle state", "quote": "Take your time with this concept"},
+    "relevance": {"score": 4, "reasoning": "Matches idle state well", "quote": "Take your time"},
     "specificity": {"score": 5, "reasoning": "Names exact lecture", "quote": "479-lecture-3"},
-    "pedagogical_soundness": {"score": 4, "reasoning": "Uses scaffolding", "quote": "Start with the basics before..."},
+    "pedagogical_soundness": {"score": 4, "reasoning": "Uses scaffolding", "quote": "Start with basics"},
     "personalization": {"score": 3, "reasoning": "Generic advice", "quote": "N/A"},
-    "actionability": {"score": 5, "reasoning": "Clear next step", "quote": "Click to continue to..."},
-    "tone": {"score": 4, "reasoning": "Encouraging", "quote": "You're making great progress"},
-    "mutual_recognition": {"score": 4, "reasoning": "Acknowledges learner's interpretation", "quote": "Your metaphor captures..."},
-    "dialectical_responsiveness": {"score": 3, "reasoning": "Responds but doesn't create tension", "quote": "N/A"},
-    "memory_integration": {"score": 4, "reasoning": "References previous session", "quote": "Building on your insight..."},
-    "transformative_potential": {"score": 3, "reasoning": "Informative but not transformative", "quote": "N/A"}
+    "actionability": {"score": 5, "reasoning": "Clear next step", "quote": "Click to continue"},
+    "tone": {"score": 4, "reasoning": "Encouraging tone", "quote": "Great progress"},
+    "mutual_recognition": {"score": 4, "reasoning": "Acknowledges interpretation", "quote": "Your metaphor captures"},
+    "dialectical_responsiveness": {"score": 3, "reasoning": "Responds without tension", "quote": "N/A"},
+    "memory_integration": {"score": 4, "reasoning": "References prior session", "quote": "Building on insight"},
+    "transformative_potential": {"score": 3, "reasoning": "Informative not transformative", "quote": "N/A"}
   },
   "validation": {
     "passes_required": true,
@@ -532,6 +537,61 @@ async function callJudgeModel(prompt, overrides = {}) {
 }
 
 /**
+ * Repair unescaped double quotes inside JSON string values.
+ * Targets patterns like: "key": "text with "inner" quotes"
+ * Replaces inner unescaped quotes with single quotes.
+ */
+function repairUnescapedQuotes(jsonStr) {
+  // Strategy: walk through the string tracking whether we're inside a JSON string value.
+  // When we find a quote that isn't at a key/value boundary, replace it with a single quote.
+  let result = '';
+  let i = 0;
+  const len = jsonStr.length;
+
+  while (i < len) {
+    const ch = jsonStr[i];
+
+    if (ch === '"') {
+      // Find the matching close quote for this JSON string
+      result += '"';
+      i++;
+      // Scan for the true end of this string value
+      while (i < len) {
+        const c = jsonStr[i];
+        if (c === '\\') {
+          // Escaped character — pass through both chars
+          result += jsonStr[i] + (jsonStr[i + 1] || '');
+          i += 2;
+          continue;
+        }
+        if (c === '"') {
+          // Is this the real end of the string? Look ahead for JSON structure chars
+          const after = jsonStr.slice(i + 1).trimStart();
+          if (after[0] === ':' || after[0] === ',' || after[0] === '}' || after[0] === ']' || after.length === 0) {
+            // This is a real closing quote
+            result += '"';
+            i++;
+            break;
+          } else {
+            // This is an unescaped inner quote — replace with single quote
+            result += "'";
+            i++;
+            continue;
+          }
+        }
+        result += c;
+        i++;
+      }
+    } else {
+      result += ch;
+      i++;
+    }
+  }
+
+  return result;
+}
+
+/**
  * Parse the judge model's JSON response
  */
 function parseJudgeResponse(responseText) {
@@ -556,7 +616,15 @@ function parseJudgeResponse(responseText) {
     try {
       return JSON.parse(cleaned);
     } catch (e2) {
-      throw new Error(`Could not parse judge response as JSON: ${e.message}`);
+      // Attempt JSON repair: fix unescaped double quotes inside string values
+      // Pattern: "key": "text with "inner" quotes" → "key": "text with 'inner' quotes"
+      debugLog('[rubricEvaluator] Attempting JSON repair for unescaped quotes...');
+      try {
+        const repaired = repairUnescapedQuotes(cleaned);
+        return JSON.parse(repaired);
+      } catch (e3) {
+        throw new Error(`Could not parse judge response as JSON: ${e.message}`);
+      }
     }
   }
 }
