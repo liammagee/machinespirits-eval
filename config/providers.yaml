@@ -30,7 +30,7 @@ providers:
       nemotron: nvidia/nemotron-3-nano-30b-a3b:free
       glm47: z-ai/glm-4.7
       kimi-k2: moonshotai/kimi-k2-thinking
-      kimi-k2_5: moonshotai/kimi-k2.5
+      "kimi-k2.5": moonshotai/kimi-k2.5
       deepseek: deepseek/deepseek-v3.2
       minimax: minimax/minimax-m2.1ate
       haiku: anthropic/claude-haiku-4.5
