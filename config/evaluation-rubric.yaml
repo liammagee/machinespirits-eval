@@ -410,13 +410,22 @@ configurations:
 # Evaluator model configuration
 # Models use "provider.alias" format, resolved via config/providers.yaml
 
-# Judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
-# Using Gemini Flash for reliability - OpenRouter free tier models were returning empty responses
+# Suggestion judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
 judge:
   model: openrouter.kimi-k2_5
   hyperparameters:
     temperature: 0.2
     max_tokens: 4000
+  fallback:
+    model: openrouter.nemotron
+
+# Interaction judge: evaluates learner-tutor dialogues
+# Uses same model as suggestion judge for consistency
+interaction_judge:
+  model: openrouter.kimi-k2_5
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 6000
   fallback:
     model: openrouter.nemotron
 

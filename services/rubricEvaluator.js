@@ -638,6 +638,8 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       success: true,
       scores,
       overallScore,
+      baseScore: calculateBaseScore(scores),
+      recognitionScore: calculateRecognitionScore(scores),
       passesRequired: parsed.validation?.passes_required ?? true,
       passesForbidden: parsed.validation?.passes_forbidden ?? true,
       requiredMissing: parsed.validation?.required_missing || [],
@@ -757,6 +759,72 @@ export function quickValidate(suggestion, scenario) {
   return result;
 }
 
+// Dimension groups for dual scoring
+const BASE_DIMENSIONS = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+const RECOGNITION_DIMENSIONS = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential'];
+
+/**
+ * Calculate base score from the 6 core pedagogical dimensions.
+ * Weights are re-normalized to sum to 1.0 across only the base dimensions.
+ *
+ * @param {Object} scores - Scores object from evaluation
+ * @returns {number} 0-100 score
+ */
+export function calculateBaseScore(scores) {
+  const dimensions = evalConfigLoader.getRubricDimensions();
+  const keyMap = { pedagogical_soundness: 'pedagogical' };
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dimensions)) {
+    const normalizedKey = keyMap[key] || key;
+    if (!BASE_DIMENSIONS.includes(normalizedKey)) continue;
+
+    const scoreData = scores[normalizedKey] || scores[key];
+    const score = scoreData?.score ?? scoreData;
+
+    if (typeof score === 'number') {
+      weightedSum += score * (dim.weight || 0);
+      totalWeight += dim.weight || 0;
+    }
+  }
+
+  if (totalWeight === 0) return 0;
+  const avgScore = weightedSum / totalWeight;
+  return ((avgScore - 1) / 4) * 100;
+}
+
+/**
+ * Calculate recognition score from the 4 recognition dimensions.
+ * Weights are re-normalized to sum to 1.0 across only the recognition dimensions.
+ *
+ * @param {Object} scores - Scores object from evaluation
+ * @returns {number} 0-100 score
+ */
+export function calculateRecognitionScore(scores) {
+  const dimensions = evalConfigLoader.getRubricDimensions();
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dimensions)) {
+    if (!RECOGNITION_DIMENSIONS.includes(key)) continue;
+
+    const scoreData = scores[key];
+    const score = scoreData?.score ?? scoreData;
+
+    if (typeof score === 'number') {
+      weightedSum += score * (dim.weight || 0);
+      totalWeight += dim.weight || 0;
+    }
+  }
+
+  if (totalWeight === 0) return 0;
+  const avgScore = weightedSum / totalWeight;
+  return ((avgScore - 1) / 4) * 100;
+}
+
 /**
  * Calculate weighted overall score from dimension scores
  */
@@ -852,5 +920,7 @@ export default {
   evaluateSuggestions,
   quickValidate,
   calculateOverallScore,
+  calculateBaseScore,
+  calculateRecognitionScore,
   calculateRecognitionMetrics,
 };
