@@ -10,6 +10,7 @@ import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import * as multiTurnRunner from './multiTurnRunner.js';
+import * as contentResolver from './contentResolver.js';
 
 /**
  * Resolve provider/model references in a config object through eval's providers.yaml.
@@ -126,6 +127,21 @@ export async function runEvaluation(options = {}) {
   } = options;
 
   const log = verbose ? console.log : () => {};
+
+  // Initialize content resolver from eval settings (opt-in)
+  const contentConfig = evalConfigLoader.getContentConfig();
+  if (contentConfig?.content_package_path) {
+    contentResolver.configure({
+      contentPackagePath: contentConfig.content_package_path,
+      maxLectureChars: contentConfig.max_lecture_chars,
+      includeSpeakerNotes: contentConfig.include_speaker_notes,
+    });
+    if (contentResolver.isConfigured()) {
+      log('[evaluationRunner] Content resolver configured:', contentConfig.content_package_path);
+    } else {
+      log('[evaluationRunner] Content path set but directory not found — using fallback curriculum');
+    }
+  }
 
   // Resolve scenarios (loaded from eval repo's local rubric)
   const allScenarios = evalConfigLoader.listScenarios();
@@ -305,9 +321,17 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   // Resolve model aliases through eval's providers.yaml
   const resolvedConfig = resolveConfigModels(config);
 
-  // Build context
+  // Build context with optional curriculum content
   log('Building learner context...', 'info');
-  const context = tutorApi.buildContext(fullScenario.learner_context);
+  const curriculumContext = contentResolver.isConfigured()
+    ? contentResolver.buildCurriculumContext(
+        contentResolver.resolveScenarioContent(fullScenario)
+      )
+    : null;
+  if (curriculumContext) {
+    log(`Curriculum context loaded (${curriculumContext.length} chars)`, 'info');
+  }
+  const context = tutorApi.buildContext(fullScenario.learner_context, curriculumContext);
   context.isNewUser = fullScenario.is_new_user;
 
   // Generate suggestions

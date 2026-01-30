@@ -37,7 +37,8 @@
     "eval": "node scripts/eval-cli.js",
     "eval:quick": "node scripts/eval-cli.js quick",
     "eval:test": "node scripts/eval-cli.js test",
-    "test": "node --test 'services/__tests__/*.test.js'"
+    "test": "node --test 'services/__tests__/*.test.js'",
+    "content:validate": "node scripts/validate-content.js"
   },
   "keywords": [
     "evaluation",

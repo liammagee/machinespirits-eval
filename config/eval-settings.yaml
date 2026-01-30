@@ -1,0 +1,16 @@
+# Eval Settings
+#
+# Configuration for the evaluation framework, including
+# content integration with the course content package.
+
+content:
+  # Path to the machinespirits-content-philosophy repo.
+  # Relative paths are resolved from the eval repo root.
+  content_package_path: "../machinespirits-content-philosophy"
+
+  # Maximum characters to include from a lecture file.
+  # Safety valve for token budget in large lectures.
+  max_lecture_chars: 50000
+
+  # Include ```notes``` speaker-note blocks from lecture markdown.
+  include_speaker_notes: true

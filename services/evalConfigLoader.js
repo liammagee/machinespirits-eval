@@ -24,6 +24,8 @@ let providersCache = null;
 let providersMtime = null;
 let tutorAgentsCache = null;
 let tutorAgentsMtime = null;
+let evalSettingsCache = null;
+let evalSettingsMtime = null;
 
 /**
  * Load the evaluation rubric YAML from the eval repo's config directory.
@@ -467,6 +469,60 @@ export function getInteractionJudgeConfig(options = {}) {
   return rubric?.interaction_judge || rubric?.judge || null;
 }
 
+/**
+ * Load eval-settings.yaml from the eval repo's config directory.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object|null} Parsed eval settings, or null if file not found
+ */
+export function loadEvalSettings({ forceReload } = {}) {
+  const effectivePath = path.join(EVAL_CONFIG_DIR, 'eval-settings.yaml');
+
+  try {
+    const stats = fs.statSync(effectivePath);
+    if (!forceReload && evalSettingsCache && evalSettingsMtime === stats.mtimeMs) {
+      return evalSettingsCache;
+    }
+    evalSettingsMtime = stats.mtimeMs;
+  } catch (err) {
+    // File is optional — not a warning
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(effectivePath, 'utf-8');
+    evalSettingsCache = yaml.parse(content);
+    return evalSettingsCache;
+  } catch (err) {
+    console.error('[evalConfigLoader] Failed to parse eval-settings:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Get content configuration from eval-settings.yaml.
+ * Resolves relative content_package_path against the eval repo root.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object|null} Content config with resolved paths, or null
+ */
+export function getContentConfig(options = {}) {
+  const settings = loadEvalSettings(options);
+  const content = settings?.content;
+  if (!content) return null;
+
+  const evalRoot = path.resolve(EVAL_CONFIG_DIR, '..');
+  const resolved = { ...content };
+
+  if (resolved.content_package_path) {
+    resolved.content_package_path = path.resolve(evalRoot, resolved.content_package_path);
+  }
+
+  return resolved;
+}
+
 export default {
   loadRubric,
   loadSuggestionScenarios,
@@ -485,4 +541,6 @@ export default {
   getTutorProfile,
   listTutorProfiles,
   listConfigurations,
+  loadEvalSettings,
+  getContentConfig,
 };

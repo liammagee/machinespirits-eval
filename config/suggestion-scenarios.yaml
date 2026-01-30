@@ -49,6 +49,7 @@ scenarios:
     category: core
     name: "Returning User - Mid Course"
     description: "Returning user partway through a course"
+    current_content: "479-lecture-2"
     is_new_user: false
     learner_context: |
       ### User Profile
@@ -75,6 +76,7 @@ scenarios:
     category: core
     name: "Struggling Learner"
     description: "User showing multiple struggle signals"
+    current_content: "479-lecture-3"
     is_new_user: false
     learner_context: |
       ### User Profile
@@ -137,6 +139,7 @@ scenarios:
     category: core
     name: "High Performing Learner"
     description: "User successfully completing activities"
+    current_content: "479-lecture-5"
     is_new_user: false
     learner_context: |
       ### User Profile
@@ -198,6 +201,7 @@ scenarios:
     category: core
     name: "Concept Confusion"
     description: "User confused about specific concepts in the material"
+    current_content: "479-lecture-3"
     is_new_user: false
     benchmark_scenario: true
     learner_context: |
@@ -270,6 +274,7 @@ scenarios:
     category: mood
     name: "Mood: Frustrated Learner (Explicit)"
     description: "User explicitly expressing frustration and difficulty"
+    current_content: "479-lecture-3"
     is_new_user: false
     mood_test: true
     learner_context: |
@@ -315,6 +320,7 @@ scenarios:
     category: mood
     name: "Mood: Excited Learner (High Engagement)"
     description: "User showing enthusiasm and intellectual curiosity"
+    current_content: "479-lecture-4"
     is_new_user: false
     mood_test: true
     learner_context: |
@@ -365,6 +371,7 @@ scenarios:
     category: benchmark
     name: "Adversarial Tester"
     description: "User challenging the tutor with provocative statements"
+    current_content: "479-lecture-4"
     is_new_user: false
     benchmark_scenario: true
     learner_context: |
@@ -406,6 +413,7 @@ scenarios:
     category: recognition
     name: "Recognition: Learner Seeking Understanding"
     description: "Learner explicitly asks to be understood, not just instructed"
+    current_content: "479-lecture-3"
     is_new_user: false
     recognition_test: true
     learner_context: |
@@ -453,6 +461,7 @@ scenarios:
     category: recognition
     name: "Recognition: Memory Continuity"
     description: "Returning learner with established patterns; tests memory integration"
+    current_content: "480-lecture-3"
     is_new_user: false
     recognition_test: true
     learner_context: |
@@ -504,6 +513,7 @@ scenarios:
     category: recognition
     name: "Recognition: Creating Transformative Conditions"
     description: "Learner holds misconception; tests if tutor creates conditions for transformation"
+    current_content: "479-lecture-3"
     is_new_user: false
     recognition_test: true
     learner_context: |
@@ -555,6 +565,7 @@ scenarios:
     category: multi_turn
     name: "Mood: Frustration to Breakthrough (Multi-turn)"
     description: "Tests tutor's ability to guide frustrated learner to understanding"
+    current_content: "479-lecture-3"
     is_new_user: false
     mood_test: true
     learner_context: |
@@ -631,6 +642,7 @@ scenarios:
     category: multi_turn
     name: "Misconception Correction (4-turn)"
     description: "Identifying and correcting fundamental misconception"
+    current_content: "479-lecture-3"
     is_new_user: false
     learner_context: |
       ### User Profile
