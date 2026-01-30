@@ -260,8 +260,8 @@ describe('resolveModel (error cases)', () => {
   });
 
   it('splits on first dot only (handles aliases with dots like kimi-k2.5)', () => {
-    // "openrouter.kimi-k2.5" should parse as provider=openrouter, alias=kimi-k2.5
-    const r = resolveModel('openrouter.kimi-k2.5');
+    // "openrouter.kimi-k2_5" should parse as provider=openrouter, alias=kimi-k2_5
+    const r = resolveModel('openrouter.kimi-k2_5');
     assert.strictEqual(r.provider, 'openrouter');
     assert.strictEqual(r.model, 'moonshotai/kimi-k2.5');
   });
