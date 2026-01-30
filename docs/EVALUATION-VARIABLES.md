@@ -239,7 +239,7 @@ Stored in `evaluation_results` as `base_score` and `recognition_score` columns. 
 
 | Parameter | Value | Purpose |
 |-----------|-------|---------|
-| Primary model | `openrouter.kimi-k2_5` | Rubric dimension scoring |
+| Primary model | `openrouter.kimi-k2.5` | Rubric dimension scoring |
 | Fallback model | `openrouter.nemotron` | Used if primary fails |
 | Temperature | 0.2 | Low for scoring consistency |
 | Max tokens | 4000 | Judge response budget |
@@ -248,7 +248,7 @@ Stored in `evaluation_results` as `base_score` and `recognition_score` columns. 
 
 | Parameter | Value | Purpose |
 |-----------|-------|---------|
-| Primary model | `openrouter.kimi-k2_5` | Learner-tutor dialogue evaluation |
+| Primary model | `openrouter.kimi-k2.5` | Learner-tutor dialogue evaluation |
 | Fallback model | `openrouter.nemotron` | Used if primary fails |
 | Temperature | 0.2 | Low for scoring consistency |
 | Max tokens | 6000 | Larger budget for multi-turn analysis |
@@ -259,7 +259,7 @@ Note: `interaction-eval-scenarios.yaml` no longer defines its own model — it r
 
 | Parameter | Value |
 |-----------|-------|
-| Model | `openrouter.kimi-k2_5` |
+| Model | `openrouter.kimi-k2.5` |
 | Fallback | `openrouter.nemotron` |
 | Temperature | 0.4 |
 | Max tokens | 6000 |
