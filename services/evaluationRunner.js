@@ -5,15 +5,21 @@
  * test scenarios with rubric-based scoring.
  */
 
-import { tutorApiService as tutorApi, monitoringService } from '@machinespirits/tutor-core';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { tutorApiService as tutorApi, monitoringService, tutorDialogueEngine as dialogueEngine } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
-import * as multiTurnRunner from './multiTurnRunner.js';
 import * as contentResolver from './contentResolver.js';
 import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
 import { StreamingReporter } from './streamingReporter.js';
 import * as anovaStats from './anovaStats.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const EVAL_ROOT = path.resolve(__dirname, '..');
+const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
 
 /**
  * Eval-only profile names that need remapping to tutor-core profiles.
@@ -185,6 +191,318 @@ async function retryWithBackoff(fn, context = {}, maxRetries = MAX_RETRIES) {
 
   // Should never reach here, but throw last error just in case
   throw lastError;
+}
+
+// ---------------------------------------------------------------------------
+// Multi-turn context-building utilities (moved from multiTurnRunner.js)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build updated context for a follow-up turn in a multi-turn scenario
+ */
+function buildMultiTurnContext(options) {
+  const {
+    originalContext,
+    conversationHistory = [],
+    currentTurn,
+    previousSuggestion,
+  } = options;
+
+  const contextParts = [originalContext];
+
+  if (conversationHistory.length > 0) {
+    contextParts.push('\n### Conversation History');
+    for (const turn of conversationHistory) {
+      contextParts.push(formatTurnForContext(turn));
+    }
+  }
+
+  if (previousSuggestion) {
+    contextParts.push('\n### Previous Tutor Suggestion');
+    contextParts.push(formatSuggestionForContext(previousSuggestion));
+  }
+
+  if (currentTurn?.learner_action) {
+    contextParts.push('\n### Learner Action');
+    contextParts.push(formatLearnerAction(currentTurn));
+  }
+
+  if (currentTurn?.context_update) {
+    contextParts.push('\n' + currentTurn.context_update.trim());
+  }
+
+  return contextParts.join('\n');
+}
+
+/**
+ * Format a previous turn for inclusion in context
+ */
+function formatTurnForContext(turn) {
+  const lines = [];
+  lines.push(`\n**Turn ${turn.turnIndex + 1}** (${turn.turnId})`);
+
+  if (turn.suggestion) {
+    lines.push(`- Tutor suggested: "${turn.suggestion.title || turn.suggestion.message?.substring(0, 100)}..."`);
+    if (turn.suggestion.actionTarget) {
+      lines.push(`  - Action: ${turn.suggestion.action} → ${turn.suggestion.actionTarget}`);
+    }
+  }
+
+  if (turn.learnerAction) {
+    lines.push(`- Learner response: ${turn.learnerAction}`);
+    if (turn.learnerMessage) {
+      lines.push(`  - Message: "${turn.learnerMessage}"`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Format a suggestion for inclusion in conversation context
+ */
+function formatSuggestionForContext(suggestion) {
+  const lines = [];
+
+  if (suggestion.title) {
+    lines.push(`**Title**: ${suggestion.title}`);
+  }
+  if (suggestion.message) {
+    lines.push(`**Message**: ${suggestion.message}`);
+  }
+  if (suggestion.action && suggestion.actionTarget) {
+    lines.push(`**Suggested Action**: ${suggestion.action} → ${suggestion.actionTarget}`);
+  }
+  if (suggestion.reasoning) {
+    lines.push(`**Reasoning**: ${suggestion.reasoning}`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Format learner action for context
+ */
+function formatLearnerAction(turn) {
+  const action = turn.learner_action;
+  const details = turn.action_details || {};
+  const lines = [];
+
+  switch (action) {
+    case 'followed_suggestion':
+      lines.push(`Learner **followed** the suggestion`);
+      if (details.action_taken) {
+        lines.push(`- Action: ${details.action_taken}`);
+      }
+      break;
+
+    case 'ignored_suggestion':
+      lines.push(`Learner **did not follow** the suggestion`);
+      if (details.explicit_rejection) {
+        lines.push(`- Explicitly rejected`);
+      }
+      break;
+
+    case 'asked_followup':
+      lines.push(`Learner **asked a follow-up question**`);
+      break;
+
+    case 'reported_confusion':
+      lines.push(`Learner **reported confusion**`);
+      break;
+
+    case 'completed_activity':
+      lines.push(`Learner **completed an activity**`);
+      if (details.activity_id) {
+        lines.push(`- Activity: ${details.activity_id}`);
+      }
+      if (details.success !== undefined) {
+        lines.push(`- Success: ${details.success}`);
+      }
+      if (details.score !== undefined) {
+        lines.push(`- Score: ${details.score}%`);
+      }
+      break;
+
+    default:
+      lines.push(`Learner action: ${action}`);
+  }
+
+  if (details.message) {
+    lines.push(`\n**Learner said**: "${details.message}"`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Format learner action for transcript display (cleaner format for CLI)
+ */
+function formatLearnerActionForTranscript(turn) {
+  const action = turn.learner_action;
+  const details = turn.action_details || {};
+  const lines = [];
+
+  const actionLabels = {
+    'followed_suggestion': '✓ Followed suggestion',
+    'ignored_suggestion': '✗ Ignored suggestion',
+    'asked_followup': '❓ Asked follow-up question',
+    'reported_confusion': '😕 Reported confusion',
+    'completed_activity': '✅ Completed activity',
+    'navigated_away': '🔄 Navigated away',
+    'requested_hint': '💡 Requested hint',
+  };
+
+  lines.push(actionLabels[action] || `Action: ${action}`);
+
+  if (details.action_taken) {
+    lines.push(`  → ${details.action_taken}`);
+  }
+  if (details.activity_id) {
+    lines.push(`  Activity: ${details.activity_id}`);
+  }
+  if (details.success !== undefined) {
+    lines.push(`  Success: ${details.success ? 'Yes' : 'No'}`);
+  }
+  if (details.score !== undefined) {
+    lines.push(`  Score: ${details.score}%`);
+  }
+
+  if (details.message) {
+    lines.push(`\n  "${details.message}"`);
+  }
+
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Shared generation + evaluation helper
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate a tutor suggestion and evaluate it with the rubric.
+ *
+ * This is the single code path used by BOTH single-turn and multi-turn
+ * evaluations. It encapsulates:
+ *   1. retryWithBackoff → tutorApi.generateSuggestions
+ *   2. rubricEvaluator.quickValidate
+ *   3. rubricEvaluator.evaluateSuggestion (unless skipped)
+ *
+ * @param {Object} context - The learner context object (from tutorApi.buildContext)
+ * @param {Object} resolvedConfig - Resolved config with provider, model, egoModel, etc.
+ * @param {Object} turnMeta - Turn-level metadata for evaluation
+ * @param {string} turnMeta.scenarioName - Human-readable scenario name
+ * @param {string} turnMeta.description - Description for the rubric judge
+ * @param {string} turnMeta.expectedBehavior - Expected tutor behavior
+ * @param {string} turnMeta.learnerContext - Raw learner context string (for rubric)
+ * @param {string[]} turnMeta.requiredElements - Required elements for validation
+ * @param {string[]} turnMeta.forbiddenElements - Forbidden elements for validation
+ * @param {Object} options - Evaluation options
+ * @param {boolean} options.skipRubricEval
+ * @param {string} options.outputSize
+ * @param {string} options.superegoStrategy
+ * @param {string} options.judgeOverride
+ * @param {boolean} options.useDialogue
+ * @param {number} options.maxRounds
+ * @param {Function} options.log
+ * @param {string} options.scenarioId - Used for debug logging
+ * @returns {Promise<Object>} { genResult, suggestion, validation, rubricResult, turnScore }
+ */
+async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, options = {}) {
+  const {
+    skipRubricEval = false,
+    outputSize = 'normal',
+    superegoStrategy = null,
+    judgeOverride = null,
+    useDialogue = false,
+    maxRounds = 0,
+    log = () => {},
+    scenarioId = '',
+  } = options;
+
+  // Generate suggestions via tutor API with retry logic
+  const genResult = await retryWithBackoff(
+    () => tutorApi.generateSuggestions(context, {
+      provider: resolvedConfig.provider,
+      model: resolvedConfig.model,
+      egoModel: resolvedConfig.egoModel,
+      superegoModel: resolvedConfig.superegoModel || null,
+      profileName: resolvedConfig.profileName,
+      hyperparameters: resolvedConfig.hyperparameters || {},
+      trace: true,
+      superegoStrategy,
+      outputSize,
+      useDialogue,
+      maxRounds,
+    }),
+    { log }
+  );
+
+  if (!genResult.success) {
+    log(`Generation failed: ${genResult.error}`, 'error');
+    return { genResult, suggestion: null, validation: null, rubricResult: null, turnScore: null };
+  }
+
+  const suggestionCount = genResult.suggestions?.length || 0;
+  log(`Generated ${suggestionCount} suggestion(s) in ${genResult.metadata?.latencyMs}ms`, 'success');
+
+  if (genResult.metadata?.dialogueRounds) {
+    log(`Dialogue rounds: ${genResult.metadata.dialogueRounds}`, 'info');
+  }
+
+  // Quick validation (rule-based)
+  log('Running validation checks...', 'info');
+  const suggestion = genResult.suggestions?.[0];
+  const validation = suggestion
+    ? rubricEvaluator.quickValidate(suggestion, {
+        requiredElements: turnMeta.requiredElements,
+        forbiddenElements: turnMeta.forbiddenElements,
+      })
+    : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
+
+  log(`Validation: required=${validation.passesRequired ? 'PASS' : 'FAIL'}, forbidden=${validation.passesForbidden ? 'PASS' : 'FAIL'}`, validation.passesRequired && validation.passesForbidden ? 'success' : 'warning');
+
+  let rubricResult = null;
+  if (!skipRubricEval && suggestion) {
+    log('Running AI rubric evaluation...', 'info');
+    debugLog(`[evaluationRunner] Running rubric evaluation for ${scenarioId}...`);
+    rubricResult = await rubricEvaluator.evaluateSuggestion(suggestion, {
+      name: turnMeta.scenarioName,
+      description: turnMeta.description,
+      expectedBehavior: turnMeta.expectedBehavior,
+      learnerContext: turnMeta.learnerContext,
+      requiredElements: turnMeta.requiredElements,
+      forbiddenElements: turnMeta.forbiddenElements,
+    }, {}, { judgeOverride });
+
+    if (rubricResult) {
+      debugLog(`[evaluationRunner] Rubric result: success=${rubricResult.success}, ` +
+        `overallScore=${rubricResult.overallScore}, ` +
+        `scoresCount=${Object.keys(rubricResult.scores || {}).length}, ` +
+        `error=${rubricResult.error || 'none'}`);
+      if (rubricResult.success) {
+        log(`Rubric evaluation complete: score=${rubricResult.overallScore?.toFixed(1)}`, 'success');
+      } else {
+        log(`Rubric evaluation failed: ${rubricResult.error || 'unknown error'}`, 'error');
+      }
+    }
+  } else if (skipRubricEval) {
+    debugLog(`[evaluationRunner] Skipping rubric evaluation (--fast mode)`);
+    log('Skipping AI rubric evaluation (fast mode)', 'info');
+  } else if (!suggestion) {
+    debugLog(`[evaluationRunner] Skipping rubric evaluation (no suggestion generated)`);
+    log('Skipping rubric evaluation (no suggestion generated)', 'warning');
+  }
+
+  // Calculate turn score
+  let turnScore = null;
+  if (rubricResult?.success) {
+    turnScore = rubricResult.overallScore;
+  } else if (suggestion) {
+    turnScore = (validation.passesRequired ? 50 : 0) + (validation.passesForbidden ? 50 : 0);
+  }
+
+  return { genResult, suggestion, validation, rubricResult, turnScore };
 }
 
 /**
@@ -598,7 +916,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   const { useDialogue, maxRounds, recognitionMode } = profileResolution;
   resolvedConfig.profileName = profileResolution.resolvedProfileName;
 
-  // Generate suggestions
+  // Log config info
   log(`Generating suggestions with profile: ${resolvedConfig.profileName} (dialogue=${useDialogue}, rounds=${maxRounds}, recognition=${recognitionMode})`, 'info');
   log(`Provider: ${resolvedConfig.provider || 'from profile'}, Model: ${resolvedConfig.model || 'from profile'}`, 'info');
   if (resolvedConfig.egoModel) {
@@ -608,26 +926,21 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     log(`Ego model override: ${egoLabel}`, 'info');
   }
 
-  // Wrap API call with retry logic for rate limit handling
-  const genResult = await retryWithBackoff(
-    () => tutorApi.generateSuggestions(context, {
-      provider: resolvedConfig.provider,
-      model: resolvedConfig.model,
-      egoModel: resolvedConfig.egoModel, // Override ego model for benchmarking
-      superegoModel: resolvedConfig.superegoModel || null, // Override superego model for benchmarking
-      profileName: resolvedConfig.profileName,
-      hyperparameters: resolvedConfig.hyperparameters || {},
-      trace: true, // Always capture trace for tension analysis
-      superegoStrategy, // Pass through superego intervention strategy
-      outputSize, // compact, normal, expanded - affects response length
-      useDialogue, // Explicit dialogue setting from eval profile
-      maxRounds, // Explicit max rounds from eval profile
-    }),
-    { log }
+  // Use shared generation + evaluation helper
+  const { genResult, suggestion, validation, rubricResult, turnScore: overallScore } = await generateAndEvaluateTurn(
+    context, resolvedConfig,
+    {
+      scenarioName: fullScenario.name,
+      description: fullScenario.description,
+      expectedBehavior: fullScenario.expected_behavior,
+      learnerContext: fullScenario.learner_context,
+      requiredElements: fullScenario.required_elements,
+      forbiddenElements: fullScenario.forbidden_elements,
+    },
+    { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id }
   );
 
   if (!genResult.success) {
-    log(`Generation failed: ${genResult.error}`, 'error');
     return {
       scenarioId: scenario.id,
       scenarioName: scenario.name,
@@ -645,68 +958,6 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       errorMessage: genResult.error,
       latencyMs: genResult.metadata?.latencyMs,
     };
-  }
-
-  const suggestionCount = genResult.suggestions?.length || 0;
-  log(`Generated ${suggestionCount} suggestion(s) in ${genResult.metadata?.latencyMs}ms`, 'success');
-
-  if (genResult.metadata?.dialogueRounds) {
-    log(`Dialogue rounds: ${genResult.metadata.dialogueRounds}`, 'info');
-  }
-
-  // Quick validation (rule-based)
-  log('Running validation checks...', 'info');
-  const suggestion = genResult.suggestions?.[0];
-  const validation = suggestion
-    ? rubricEvaluator.quickValidate(suggestion, {
-        requiredElements: fullScenario.required_elements,
-        forbiddenElements: fullScenario.forbidden_elements,
-      })
-    : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
-
-  log(`Validation: required=${validation.passesRequired ? 'PASS' : 'FAIL'}, forbidden=${validation.passesForbidden ? 'PASS' : 'FAIL'}`, validation.passesRequired && validation.passesForbidden ? 'success' : 'warning');
-
-  let rubricResult = null;
-  if (!skipRubricEval && suggestion) {
-    // Full rubric evaluation with AI judge
-    log('Running AI rubric evaluation...', 'info');
-    debugLog(`[evaluationRunner] Running rubric evaluation for ${scenario.id}...`);
-    rubricResult = await rubricEvaluator.evaluateSuggestion(suggestion, {
-      name: fullScenario.name,
-      description: fullScenario.description,
-      expectedBehavior: fullScenario.expected_behavior,
-      learnerContext: fullScenario.learner_context,
-      requiredElements: fullScenario.required_elements,
-      forbiddenElements: fullScenario.forbidden_elements,
-    }, {}, { judgeOverride });
-
-    // Log rubric result summary
-    if (rubricResult) {
-      debugLog(`[evaluationRunner] Rubric result: success=${rubricResult.success}, ` +
-        `overallScore=${rubricResult.overallScore}, ` +
-        `scoresCount=${Object.keys(rubricResult.scores || {}).length}, ` +
-        `error=${rubricResult.error || 'none'}`);
-      if (rubricResult.success) {
-        log(`Rubric evaluation complete: score=${rubricResult.overallScore?.toFixed(1)}`, 'success');
-      } else {
-        log(`Rubric evaluation failed: ${rubricResult.error || 'unknown error'}`, 'error');
-      }
-    }
-  } else if (skipRubricEval) {
-    debugLog(`[evaluationRunner] Skipping rubric evaluation (--fast mode)`);
-    log('Skipping AI rubric evaluation (fast mode)', 'info');
-  } else if (!suggestion) {
-    debugLog(`[evaluationRunner] Skipping rubric evaluation (no suggestion generated)`);
-    log('Skipping rubric evaluation (no suggestion generated)', 'warning');
-  }
-
-  // Calculate overall score
-  let overallScore = null;
-  if (rubricResult?.success) {
-    overallScore = rubricResult.overallScore;
-  } else if (suggestion) {
-    // Fallback: simple validation-based score
-    overallScore = (validation.passesRequired ? 50 : 0) + (validation.passesForbidden ? 50 : 0);
   }
 
   return {
@@ -730,8 +981,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     outputTokens: genResult.metadata?.outputTokens,
     dialogueRounds: genResult.metadata?.dialogueRounds,
     apiCalls: genResult.metadata?.apiCalls,
-    cost: genResult.metadata?.totalCost, // OpenRouter API cost in USD
-    dialogueId: genResult.metadata?.dialogueId, // For linking to logs
+    cost: genResult.metadata?.totalCost,
+    dialogueId: genResult.metadata?.dialogueId,
     scores: rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? {
       relevance: rubricResult.scores.relevance?.score,
       specificity: rubricResult.scores.specificity?.score,
@@ -740,7 +991,6 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       actionability: rubricResult.scores.actionability?.score,
       tone: rubricResult.scores.tone?.score,
     } : null,
-    // Include full scores with reasoning for detailed analysis
     scoresWithReasoning: rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
       ? rubricResult.scores
       : null,
@@ -753,10 +1003,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     forbiddenFound: rubricResult?.forbiddenFound || validation.forbiddenFound,
     judgeModel: rubricResult?.judgeModel,
     evaluationReasoning: rubricResult?.summary,
-    // Factorial design metadata
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
-    // Include dialogueResult for tension analysis
     dialogueResult: {
       dialogueTrace: genResult.dialogueTrace,
       dialogueRounds: genResult.metadata?.dialogueRounds,
@@ -767,17 +1015,33 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
 }
 
 /**
- * Run a multi-turn test
- * Evaluates each turn and aggregates scores
+ * Run a multi-turn test as an iterative loop.
+ *
+ * Each turn goes through the SAME generateAndEvaluateTurn() code path as
+ * single-turn, with accumulated conversation context between turns.
+ * This eliminates the separate multiTurnRunner orchestration.
  */
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, verbose = false, judgeOverride = null } = options;
-  const log = verbose ? console.log : () => {};
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
 
-  // Resolve model aliases through eval's providers.yaml
+  // 1. Resolve config (models, profile) — same as single-turn
   const resolvedConfig = resolveConfigModels(config);
+  const profileResolution = resolveEvalProfile(resolvedConfig.profileName);
+  const { useDialogue, maxRounds } = profileResolution;
+  resolvedConfig.profileName = profileResolution.resolvedProfileName;
+
+  // 2. Build curriculum context — same as single-turn
+  const curriculumContext = contentResolver.isConfigured()
+    ? contentResolver.buildCurriculumContext(
+        contentResolver.resolveScenarioContent(fullScenario)
+      )
+    : null;
+
+  // 3. Generate dialogue ID for the session
+  const dialogueId = `dialogue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  dialogueEngine.setCurrentDialogueId(dialogueId);
 
   const turns = fullScenario.turns || [];
   const turnResults = [];
@@ -786,66 +1050,123 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let totalOutputTokens = 0;
   let totalApiCalls = 0;
   let totalCost = 0;
+  let totalDialogueRounds = 0;
 
-  // Run the multi-turn scenario through local multiTurnRunner (with retry for rate limits)
-  const multiTurnResult = await retryWithBackoff(
-    () => multiTurnRunner.runMultiTurnScenario(scenario.id, {
-      provider: resolvedConfig.provider,
-      model: resolvedConfig.model,
-      profileName: resolvedConfig.profileName,
-      hyperparameters: resolvedConfig.hyperparameters || {},
-      trace: verbose,
-      learnerArchitecture: resolvedConfig.learnerArchitecture || null,
-    }),
-    { log }
-  );
+  let conversationHistory = [];
+  let previousSuggestion = null;
+  const consolidatedTrace = [];
 
-  // Validate that we got results
-  if (!multiTurnResult.turnResults || multiTurnResult.turnResults.length === 0) {
-    const errorMsg = `Multi-turn scenario returned no results (expected ${fullScenario.turns?.length + 1 || 1} turns)`;
-    log(errorMsg, 'error');
-    throw new Error(errorMsg);
-  }
+  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id };
 
-  // Evaluate each turn
-  for (const turnResult of multiTurnResult.turnResults) {
-    const suggestion = turnResult.suggestions?.[0];
+  // 4. Loop through turns (initial turn 0 + follow-up turns)
+  const totalTurnCount = 1 + turns.length;
+  for (let turnIdx = 0; turnIdx < totalTurnCount; turnIdx++) {
+    const isInitialTurn = turnIdx === 0;
+    const turnDef = isInitialTurn ? null : turns[turnIdx - 1];
 
-    // Quick validation for this turn
-    const validation = suggestion
-      ? rubricEvaluator.quickValidate(suggestion, {
-          requiredElements: turnResult.requiredElements,
-          forbiddenElements: turnResult.forbiddenElements,
-        })
-      : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
+    log(`[evaluationRunner] Turn ${turnIdx}/${totalTurnCount - 1}${isInitialTurn ? ' (initial)' : ` (${turnDef.id})`}`, 'info');
 
-    let rubricResult = null;
-    if (!skipRubricEval && suggestion) {
-      log(`[evaluationRunner] Running rubric evaluation for turn ${turnResult.turnIndex}...`);
-      rubricResult = await rubricEvaluator.evaluateSuggestion(suggestion, {
-        name: `${fullScenario.name} - Turn ${turnResult.turnIndex}`,
-        description: turnResult.turnId === 'initial' ? fullScenario.description : `Turn: ${turnResult.learnerAction}`,
-        expectedBehavior: turnResult.expectedBehavior,
-        learnerContext: turnResult.context,
-        requiredElements: turnResult.requiredElements,
-        forbiddenElements: turnResult.forbiddenElements,
-      }, {}, { judgeOverride });
+    // Show learner action in transcript mode (for follow-up turns)
+    if (!isInitialTurn && dialogueEngine.isTranscriptMode()) {
+      dialogueEngine.transcript('LEARNER ACTION', formatLearnerActionForTranscript(turnDef));
     }
 
-    // Calculate turn score
-    let turnScore = null;
-    if (rubricResult?.success) {
-      turnScore = rubricResult.overallScore;
-    } else if (suggestion) {
-      turnScore = (validation.passesRequired ? 50 : 0) + (validation.passesForbidden ? 50 : 0);
+    // Build context for this turn
+    let contextStr;
+    if (isInitialTurn) {
+      contextStr = fullScenario.learner_context;
+    } else {
+      // Add previous turn to conversation history
+      conversationHistory.push({
+        turnIndex: turnIdx - 1,
+        turnId: turnIdx === 1 ? 'initial' : turns[turnIdx - 2]?.id,
+        suggestion: previousSuggestion,
+        learnerAction: turnDef.learner_action,
+        learnerMessage: turnDef.action_details?.message,
+      });
+
+      contextStr = buildMultiTurnContext({
+        originalContext: fullScenario.learner_context,
+        conversationHistory,
+        currentTurn: turnDef,
+        previousSuggestion,
+      });
     }
 
+    const context = tutorApi.buildContext(contextStr, curriculumContext);
+    context.isNewUser = isInitialTurn ? fullScenario.is_new_user : false;
+
+    // Build turn-specific rubric metadata
+    const turnMeta = {
+      scenarioName: isInitialTurn
+        ? fullScenario.name
+        : `${fullScenario.name} - Turn ${turnIdx}`,
+      description: isInitialTurn
+        ? fullScenario.description
+        : `Turn: ${turnDef.learner_action}`,
+      expectedBehavior: isInitialTurn
+        ? fullScenario.expected_behavior
+        : turnDef.expected_behavior,
+      learnerContext: contextStr,
+      requiredElements: isInitialTurn
+        ? (fullScenario.required_elements || [])
+        : (turnDef.required_elements || []),
+      forbiddenElements: isInitialTurn
+        ? (fullScenario.forbidden_elements || [])
+        : (turnDef.forbidden_elements || []),
+    };
+
+    // Call the SAME generation+evaluation code path as single-turn
+    const { genResult, suggestion, validation, rubricResult, turnScore } =
+      await generateAndEvaluateTurn(context, resolvedConfig, turnMeta, sharedTurnOptions);
+
+    if (!genResult.success) {
+      const turnId = isInitialTurn ? 'initial' : turnDef.id;
+      throw new Error(`Multi-turn scenario ${scenario.id}: Turn ${turnIdx} (${turnId}) failed to generate suggestions`);
+    }
+
+    // Accumulate dialogue traces
+    if (genResult.dialogueTrace && genResult.dialogueTrace.length > 0) {
+      // Insert user turn action entry before each turn (except initial)
+      if (!isInitialTurn) {
+        const histEntry = conversationHistory[conversationHistory.length - 1];
+        consolidatedTrace.push({
+          agent: 'user',
+          action: 'turn_action',
+          turnIndex: turnIdx,
+          contextSummary: histEntry?.learnerMessage || `${histEntry?.learnerAction || 'Action'}`,
+          detail: `Learner: ${histEntry?.learnerAction}`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      consolidatedTrace.push(...genResult.dialogueTrace);
+
+      // Add final delivery to user for multi-agent mode
+      const hasSuperego = genResult.dialogueTrace.some(entry => entry.agent === 'superego');
+      if (hasSuperego) {
+        const suggCount = genResult.suggestions?.length || 0;
+        consolidatedTrace.push({
+          agent: 'user',
+          action: 'final_output',
+          turnIndex: turnIdx,
+          from: 'ego',
+          to: 'user',
+          direction: 'response',
+          suggestionCount: suggCount,
+          contextSummary: `Delivered ${suggCount} suggestion${suggCount !== 1 ? 's' : ''}`,
+          detail: `Turn ${turnIdx + 1} complete`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+
+    // Collect per-turn result
     turnResults.push({
-      turnIndex: turnResult.turnIndex,
-      turnId: turnResult.turnId,
-      learnerAction: turnResult.learnerAction,
-      expectedBehavior: turnResult.expectedBehavior,
-      suggestion: suggestion,
+      turnIndex: turnIdx,
+      turnId: isInitialTurn ? 'initial' : turnDef.id,
+      learnerAction: isInitialTurn ? undefined : turnDef.learner_action,
+      expectedBehavior: turnMeta.expectedBehavior,
+      suggestion,
       scores: rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? {
         relevance: rubricResult.scores.relevance?.score,
         specificity: rubricResult.scores.specificity?.score,
@@ -859,24 +1180,27 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       passesForbidden: rubricResult?.passesForbidden ?? validation.passesForbidden,
       requiredMissing: validation.requiredMissing,
       forbiddenFound: validation.forbiddenFound,
-      minAcceptableScore: turnResult.minAcceptableScore || fullScenario.min_acceptable_score,
+      minAcceptableScore: (!isInitialTurn ? turnDef.min_acceptable_score : null) || fullScenario.min_acceptable_score,
     });
 
     // Aggregate metrics
-    totalLatencyMs += turnResult.metadata?.latencyMs || 0;
-    totalInputTokens += turnResult.metadata?.inputTokens || 0;
-    totalOutputTokens += turnResult.metadata?.outputTokens || 0;
-    totalApiCalls += turnResult.metadata?.apiCalls || 0;
-    totalCost += turnResult.metadata?.totalCost || 0;
+    totalLatencyMs += genResult.metadata?.latencyMs || 0;
+    totalInputTokens += genResult.metadata?.inputTokens || 0;
+    totalOutputTokens += genResult.metadata?.outputTokens || 0;
+    totalApiCalls += genResult.metadata?.apiCalls || 0;
+    totalCost += genResult.metadata?.totalCost || 0;
+    totalDialogueRounds += genResult.metadata?.dialogueRounds || 0;
+
+    // Update for next iteration
+    previousSuggestion = suggestion;
   }
 
-  // Calculate aggregate scores
+  // 5. Aggregate scores across turns
   const validTurnScores = turnResults.filter(t => t.turnScore !== null).map(t => t.turnScore);
   const overallScore = validTurnScores.length > 0
     ? validTurnScores.reduce((sum, s) => sum + s, 0) / validTurnScores.length
     : null;
 
-  // Aggregate dimension scores
   const aggregateDimensions = {};
   const baseDims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
   const recognitionDims = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential'];
@@ -890,7 +1214,6 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
   }
 
-  // Calculate dual scores from aggregate dimensions
   const baseScoreValues = baseDims.filter(d => aggregateDimensions[d] !== undefined).map(d => aggregateDimensions[d]);
   const recognitionScoreValues = recognitionDims.filter(d => aggregateDimensions[d] !== undefined).map(d => aggregateDimensions[d]);
   const baseScore = baseScoreValues.length > 0
@@ -900,23 +1223,57 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     ? ((recognitionScoreValues.reduce((s, v) => s + v, 0) / recognitionScoreValues.length - 1) / 4) * 100
     : null;
 
-  // Check if all turns pass their thresholds
   const allTurnsPassed = turnResults.every(t => {
     if (t.turnScore === null) return false;
     const threshold = t.minAcceptableScore || fullScenario.min_acceptable_score || 0;
     return t.turnScore >= threshold;
   });
 
+  // 6. Write consolidated dialogue log
+  const consolidatedDialogue = {
+    suggestions: turnResults[turnResults.length - 1]?.suggestion ? [turnResults[turnResults.length - 1].suggestion] : [],
+    dialogueTrace: consolidatedTrace,
+    converged: false,
+    rounds: totalDialogueRounds,
+    metrics: {
+      totalLatencyMs,
+      totalInputTokens,
+      totalOutputTokens,
+      totalCost,
+      apiCalls: totalApiCalls,
+    },
+    dialogueId,
+    profileName: resolvedConfig.profileName,
+    provider: resolvedConfig.provider,
+    model: resolvedConfig.model,
+    learnerContext: fullScenario.learner_context,
+    isMultiTurn: true,
+    learnerArchitecture: resolvedConfig.learnerArchitecture || 'unified',
+    totalTurns: turnResults.length,
+    turnResults: turnResults.map(t => ({
+      turnIndex: t.turnIndex,
+      turnId: t.turnId,
+      suggestions: t.suggestion ? [t.suggestion] : [],
+    })),
+  };
+
+  if (!fs.existsSync(LOGS_DIR)) {
+    fs.mkdirSync(LOGS_DIR, { recursive: true });
+  }
+  const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
+  fs.writeFileSync(logPath, JSON.stringify(consolidatedDialogue, null, 2));
+
   log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${overallScore?.toFixed(1)}`);
 
+  // 7. Return result
   return {
     scenarioId: scenario.id,
     scenarioName: scenario.name,
     scenarioType: fullScenario.type || 'suggestion',
     isMultiTurn: true,
     totalTurns: turnResults.length,
-    provider: resolvedConfig.provider || multiTurnResult.turnResults[0]?.metadata?.provider,
-    model: resolvedConfig.model || multiTurnResult.turnResults[0]?.metadata?.model,
+    provider: resolvedConfig.provider,
+    model: resolvedConfig.model,
     profileName: config.profileName,
     egoModel: resolvedConfig.egoModel
       ? `${resolvedConfig.egoModel.provider}.${resolvedConfig.egoModel.model}`
@@ -925,15 +1282,15 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       ? `${resolvedConfig.superegoModel.provider}.${resolvedConfig.superegoModel.model}`
       : null,
     hyperparameters: config.hyperparameters,
-    suggestions: multiTurnResult.turnResults.map(t => t.suggestions?.[0]).filter(Boolean),
+    suggestions: turnResults.map(t => t.suggestion).filter(Boolean),
     success: true,
     latencyMs: totalLatencyMs,
     inputTokens: totalInputTokens,
     outputTokens: totalOutputTokens,
     apiCalls: totalApiCalls,
-    cost: totalCost, // OpenRouter API cost in USD
-    dialogueId: multiTurnResult.dialogueId, // Single continuous dialogue ID for all turns
-    dialogueRounds: multiTurnResult.turnResults.reduce((sum, t) => sum + (t.metadata?.dialogueRounds || 0), 0), // Total across all turns
+    cost: totalCost,
+    dialogueId,
+    dialogueRounds: totalDialogueRounds,
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     overallScore,
     baseScore,
@@ -942,7 +1299,6 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     allTurnsPassed,
     passesRequired: turnResults.every(t => t.passesRequired),
     passesForbidden: turnResults.every(t => t.passesForbidden),
-    // Factorial design metadata
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
   };
