@@ -260,8 +260,11 @@ export async function runMultiTurnScenario(scenarioId, config = {}) {
   const initialContext = tutorApi.buildContext(scenario.learner_context, curriculumContext);
   initialContext.isNewUser = scenario.is_new_user;
 
+  // Extract learnerArchitecture from config (not passed to tutor API, used for eval metadata)
+  const { learnerArchitecture, ...tutorConfig } = config;
+
   const initialResult = await tutorApi.generateSuggestions(initialContext, {
-    ...config,
+    ...tutorConfig,
     trace: true,
     _dialogueId: dialogueId, // Pass dialogue ID to continue same session
     _skipLogging: true, // Skip logging - we'll consolidate all turns at the end
@@ -321,7 +324,7 @@ export async function runMultiTurnScenario(scenarioId, config = {}) {
 
     // Generate suggestions for this turn - CONTINUE THE SAME DIALOGUE
     const turnResult = await tutorApi.generateSuggestions(turnContext, {
-      ...config,
+      ...tutorConfig,
       trace: true,
       _dialogueId: dialogueId, // Continue same dialogue session
       _skipLogging: true, // Skip logging - we'll consolidate all turns at the end
@@ -436,6 +439,7 @@ export async function runMultiTurnScenario(scenarioId, config = {}) {
     model: getEffectiveModel(profileName),
     learnerContext: scenario.learner_context,
     isMultiTurn: true,
+    learnerArchitecture: learnerArchitecture || 'unified',
     totalTurns: results.totalTurns,
     turnResults: results.turnResults.map(t => ({
       turnIndex: t.turnIndex,

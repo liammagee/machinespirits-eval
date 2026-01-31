@@ -13,6 +13,7 @@ import * as multiTurnRunner from './multiTurnRunner.js';
 import * as contentResolver from './contentResolver.js';
 import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
 import { StreamingReporter } from './streamingReporter.js';
+import * as anovaStats from './anovaStats.js';
 
 /**
  * Resolve provider/model references in a config object through eval's providers.yaml.
@@ -59,9 +60,35 @@ function resolveConfigModels(config) {
         resolved.superegoHyperparameters = profile.superego.hyperparameters;
       }
     }
+
+    // Extract factorial factor tags and learner architecture from profile
+    const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[resolved.profileName];
+    if (rawProfile?.factors) {
+      resolved.factors = rawProfile.factors;
+    }
+    if (rawProfile?.learner_architecture) {
+      resolved.learnerArchitecture = rawProfile.learner_architecture;
+    }
   }
 
   return resolved;
+}
+
+/**
+ * Filter scenarios by cluster name(s).
+ * Supported clusters: 'single-turn', 'multi-turn', or category names (core, mood, benchmark, recognition, multi_turn).
+ * Comma-separated values are OR'd together.
+ */
+function applyScenarioFilter(scenarios, filter) {
+  const clusters = filter.split(',').map(s => s.trim().toLowerCase());
+  return scenarios.filter(s => {
+    for (const c of clusters) {
+      if (c === 'single-turn' && !s.isMultiTurn) return true;
+      if (c === 'multi-turn' && s.isMultiTurn) return true;
+      if (s.category === c) return true;
+    }
+    return false;
+  });
 }
 
 // Rate limiting settings
@@ -138,6 +165,7 @@ export async function runEvaluation(options = {}) {
     skipRubricEval = false,     // Skip AI-based rubric evaluation (faster)
     description = null,
     verbose = false,
+    scenarioFilter = null,      // Cluster filter: 'single-turn', 'multi-turn', or category names
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -159,9 +187,14 @@ export async function runEvaluation(options = {}) {
 
   // Resolve scenarios (loaded from eval repo's local rubric)
   const allScenarios = evalConfigLoader.listScenarios();
-  const targetScenarios = scenarios === 'all'
+  let targetScenarios = scenarios === 'all'
     ? allScenarios
     : allScenarios.filter(s => scenarios.includes(s.id));
+
+  // Apply cluster filter if specified
+  if (scenarioFilter) {
+    targetScenarios = applyScenarioFilter(targetScenarios, scenarioFilter);
+  }
 
   if (targetScenarios.length === 0) {
     throw new Error('No scenarios to run');
@@ -171,6 +204,19 @@ export async function runEvaluation(options = {}) {
   let targetConfigs = [];
   if (configurations === 'all') {
     targetConfigs = evalConfigLoader.listConfigurations();
+  } else if (configurations === 'factorial') {
+    const FACTORIAL_CELLS = [
+      'cell_1_base_single_unified', 'cell_2_base_single_psycho',
+      'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
+      'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
+      'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
+    ];
+    targetConfigs = FACTORIAL_CELLS.map(name => ({
+      provider: null,
+      model: null,
+      profileName: name,
+      label: name,
+    }));
   } else if (configurations === 'profiles') {
     const profiles = evalConfigLoader.listTutorProfiles();
     targetConfigs = profiles.map(p => ({
@@ -205,6 +251,10 @@ export async function runEvaluation(options = {}) {
   });
 
   const totalTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
+
+  // Store total_tests upfront so progress can be tracked for in-progress runs
+  evaluationStore.updateRun(run.id, { status: 'running', totalTests });
+
   const profileNames = targetConfigs.map(c => c.label || c.profileName || `${c.provider}/${c.model}`);
   const scenarioNames = targetScenarios.map(s => s.name || s.id);
 
@@ -506,24 +556,38 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   const context = tutorApi.buildContext(fullScenario.learner_context, curriculumContext);
   context.isNewUser = fullScenario.is_new_user;
 
+  // Extract dialogue settings from the eval profile BEFORE remapping.
+  // The eval profiles (cell_*, recognition, etc.) carry the authoritative dialogue config,
+  // but tutor-core doesn't know about them — so we must pass settings explicitly.
+  const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[resolvedConfig.profileName];
+  const useDialogue = evalProfile?.dialogue?.enabled ?? false;
+  const maxRounds = evalProfile?.dialogue?.max_rounds ?? 0;
+  const recognitionMode = evalProfile?.recognition_mode ?? false;
+
   // Map eval-only profile names to tutor-core base profiles.
-  // Eval profiles like 'single_baseline_paid' don't exist in tutor-core's tutor-agents.yaml,
-  // causing "Profile not found" warnings. The explicit egoModel/superegoModel overrides
-  // already force the correct model, so we just need a valid base profile for tutor-core.
+  // Eval profiles like 'cell_7_recog_multi_unified' don't exist in tutor-core's tutor-agents.yaml.
+  // The explicit egoModel/superegoModel overrides force the correct model; useDialogue/maxRounds
+  // are passed explicitly above; we just need a valid base profile for tutor-core's prompt loading.
   if (resolvedConfig.profileName) {
     const evalOnlyProfiles = [
       'single_baseline', 'single_baseline_paid',
       'single_recognition', 'single_recognition_paid',
       'baseline', 'baseline_paid',
       'recognition', 'recognition_paid',
+      'cell_1_base_single_unified', 'cell_2_base_single_psycho',
+      'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
+      'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
+      'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
     ];
     if (evalOnlyProfiles.includes(resolvedConfig.profileName)) {
-      resolvedConfig.profileName = 'budget';
+      // Map to a tutor-core profile that matches the recognition mode.
+      // 'recognition' profile uses recognition-enhanced prompts; 'budget' uses standard.
+      resolvedConfig.profileName = recognitionMode ? 'recognition' : 'budget';
     }
   }
 
   // Generate suggestions
-  log(`Generating suggestions with profile: ${resolvedConfig.profileName}`, 'info');
+  log(`Generating suggestions with profile: ${resolvedConfig.profileName} (dialogue=${useDialogue}, rounds=${maxRounds}, recognition=${recognitionMode})`, 'info');
   log(`Provider: ${resolvedConfig.provider || 'from profile'}, Model: ${resolvedConfig.model || 'from profile'}`, 'info');
   if (resolvedConfig.egoModel) {
     const egoLabel = typeof resolvedConfig.egoModel === 'object'
@@ -544,6 +608,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       trace: true, // Always capture trace for tension analysis
       superegoStrategy, // Pass through superego intervention strategy
       outputSize, // compact, normal, expanded - affects response length
+      useDialogue, // Explicit dialogue setting from eval profile
+      maxRounds, // Explicit max rounds from eval profile
     }),
     { log }
   );
@@ -675,6 +741,9 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     forbiddenFound: rubricResult?.forbiddenFound || validation.forbiddenFound,
     judgeModel: rubricResult?.judgeModel,
     evaluationReasoning: rubricResult?.summary,
+    // Factorial design metadata
+    factors: resolvedConfig.factors || null,
+    learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     // Include dialogueResult for tension analysis
     dialogueResult: {
       dialogueTrace: genResult.dialogueTrace,
@@ -714,6 +783,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       profileName: resolvedConfig.profileName,
       hyperparameters: resolvedConfig.hyperparameters || {},
       trace: verbose,
+      learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     }),
     { log }
   );
@@ -860,6 +930,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     allTurnsPassed,
     passesRequired: turnResults.every(t => t.passesRequired),
     passesForbidden: turnResults.every(t => t.passesForbidden),
+    // Factorial design metadata
+    factors: resolvedConfig.factors || null,
+    learnerArchitecture: resolvedConfig.learnerArchitecture || null,
   };
 }
 
@@ -890,7 +963,12 @@ export async function compareConfigurations(configs, options = {}) {
       rank: i + 1,
       provider: stat.provider,
       model: stat.model,
+      profileName: stat.profileName,
+      egoModel: stat.egoModel,
+      superegoModel: stat.superegoModel,
       avgScore: stat.avgScore,
+      avgBaseScore: stat.avgBaseScore,
+      avgRecognitionScore: stat.avgRecognitionScore,
       successRate: stat.successRate,
       avgLatencyMs: stat.avgLatencyMs,
     })),
@@ -977,16 +1055,19 @@ export function generateReport(runId) {
 
   // Rankings table
   lines.push('CONFIGURATION RANKINGS (by average score)');
-  lines.push('-'.repeat(80));
-  lines.push('| Rank | Configuration                    | Avg Score | Latency | Pass Rate |');
-  lines.push('|------|----------------------------------|-----------|---------|-----------|');
+  lines.push('-'.repeat(105));
+  lines.push('| Rank | Profile                          | Model                   | Overall |  Base  | Recog  | Latency | Pass |');
+  lines.push('|------|----------------------------------|-------------------------|---------|--------|--------|---------|------|');
 
   stats.forEach((stat, i) => {
-    const label = `${stat.provider}/${stat.model}`.substring(0, 32).padEnd(32);
-    const score = stat.avgScore ? stat.avgScore.toFixed(1).padStart(9) : '     N/A';
+    const profile = (stat.profileName || 'N/A').substring(0, 32).padEnd(32);
+    const model = (stat.model || '').substring(0, 23).padEnd(23);
+    const score = stat.avgScore ? stat.avgScore.toFixed(1).padStart(7) : '    N/A';
+    const base = stat.avgBaseScore ? stat.avgBaseScore.toFixed(1).padStart(6) : '   N/A';
+    const recog = stat.avgRecognitionScore ? stat.avgRecognitionScore.toFixed(1).padStart(6) : '   N/A';
     const latency = stat.avgLatencyMs ? `${stat.avgLatencyMs.toFixed(0)}ms`.padStart(7) : '    N/A';
-    const passRate = `${(stat.validationPassRate * 100).toFixed(0)}%`.padStart(9);
-    lines.push(`| ${(i + 1).toString().padStart(4)} | ${label} | ${score} | ${latency} | ${passRate} |`);
+    const passRate = `${(stat.validationPassRate * 100).toFixed(0)}%`.padStart(4);
+    lines.push(`| ${(i + 1).toString().padStart(4)} | ${profile} | ${model} | ${score} | ${base} | ${recog} | ${latency} | ${passRate} |`);
   });
 
   lines.push('');
@@ -997,7 +1078,7 @@ export function generateReport(runId) {
     lines.push('-'.repeat(80));
 
     const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-    const header = '| Dimension       |' + stats.map(s => ` ${s.model.substring(0, 12).padEnd(12)} |`).join('');
+    const header = '| Dimension       |' + stats.map(s => ` ${(s.profileName || s.model).substring(0, 12).padEnd(12)} |`).join('');
     lines.push(header);
     lines.push('|-----------------|' + stats.map(() => '--------------|').join(''));
 
@@ -1019,11 +1100,54 @@ export function generateReport(runId) {
     lines.push(`\n${scenario.scenarioName} (${scenario.scenarioId})`);
     for (const config of scenario.configurations) {
       const status = config.passesValidation ? 'PASS' : 'FAIL';
-      lines.push(`  ${config.provider}/${config.model}: ${config.avgScore?.toFixed(1) || 'N/A'} [${status}]`);
+      const profile = config.profileName || `${config.provider}/${config.model}`;
+      const base = config.avgBaseScore != null ? `base=${config.avgBaseScore.toFixed(1)}` : '';
+      const recog = config.avgRecognitionScore != null ? `recog=${config.avgRecognitionScore.toFixed(1)}` : '';
+      const scores = [base, recog].filter(Boolean).join(', ');
+      lines.push(`  ${profile}: ${config.avgScore?.toFixed(1) || 'N/A'} (${scores}) [${status}]`);
     }
   }
 
   lines.push('');
+
+  // ANOVA analysis — if factorial data is available, run for each score type
+  const scoreTypes = [
+    { column: 'overall_score', label: 'Overall Score' },
+    { column: 'base_score', label: 'Base Score' },
+    { column: 'recognition_score', label: 'Recognition Score' },
+  ];
+
+  for (const { column, label } of scoreTypes) {
+    const cellData = evaluationStore.getFactorialCellData(runId, { scoreColumn: column });
+    const cellKeys = Object.keys(cellData);
+    if (cellKeys.length === 0) continue;
+
+    const totalSamples = Object.values(cellData).reduce((sum, arr) => sum + arr.length, 0);
+    lines.push(`FACTORIAL ANOVA — ${label.toUpperCase()} (2x2x2)`);
+    lines.push('-'.repeat(80));
+    lines.push(`Cells with data: ${cellKeys.length}/8  |  Total samples: ${totalSamples}`);
+    lines.push('');
+
+    // Cell means summary
+    for (const key of cellKeys.sort()) {
+      const scores = cellData[key];
+      const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+      const cellLabel = key.replace(/r(\d)_t(\d)_l(\d)/, (_, r, t, l) =>
+        `Recog=${r === '1' ? 'Y' : 'N'} Tutor=${t === '1' ? 'Multi' : 'Single'} Learner=${l === '1' ? 'Psycho' : 'Unified'}`
+      );
+      lines.push(`  ${cellLabel}: mean=${mean.toFixed(1)} (n=${scores.length})`);
+    }
+    lines.push('');
+
+    if (totalSamples > 8) {
+      const anovaResult = anovaStats.runThreeWayANOVA(cellData);
+      lines.push(anovaStats.formatANOVAReport(anovaResult, { scoreLabel: label }));
+    } else {
+      lines.push('  (Need > 8 total samples for ANOVA — increase --runs)');
+    }
+    lines.push('');
+  }
+
   lines.push('='.repeat(80));
 
   return lines.join('\n');

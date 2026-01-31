@@ -26,7 +26,7 @@ function debugLog(...args) {
  * @param {string} [overrides.judgeOverride.apiKeyEnv] - Env var name for API key
  * @param {Object} [overrides.judgeOverride.hyperparameters] - Override hyperparameters
  */
-function getAvailableJudge(overrides = {}) {
+export function getAvailableJudge(overrides = {}) {
   const { judgeOverride } = overrides;
 
   // If a judge override is provided, resolve and return it directly
@@ -300,34 +300,34 @@ ${(scenario.forbiddenElements || []).map(e => `- ${e}`).join('\n') || '- None sp
 ## YOUR TASK
 
 Evaluate the suggestion and provide:
-1. A score (1-5) for each dimension with reasoning AND a direct quote from the suggestion that supports your assessment
+1. A score (1-5) for each dimension with reasoning
 2. Whether it passes the required/forbidden element checks
 3. An overall score (weighted average, 0-100 scale)
 
 For each dimension, include:
 - **score**: 1-5 rating
 - **reasoning**: Brief explanation of why this score was given
-- **quote**: A short direct quote from the suggestion (title, message, or actionTarget) that exemplifies this dimension's score. Use "N/A" if no relevant quote exists.
 
 CRITICAL JSON RULES:
 - Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
 - Keep "reasoning" values under 25 words.
-- Keep "quote" values under 15 words.
+- BAD:  "reasoning": "Says "great job" which is encouraging"
+- GOOD: "reasoning": "Says 'great job' which is encouraging"
 
-Respond with ONLY a JSON object in this exact format:
+Respond with ONLY a JSON object in this exact format (no other text before or after):
 \`\`\`json
 {
   "scores": {
-    "relevance": {"score": 4, "reasoning": "Matches idle state well", "quote": "Take your time"},
-    "specificity": {"score": 5, "reasoning": "Names exact lecture", "quote": "479-lecture-3"},
-    "pedagogical_soundness": {"score": 4, "reasoning": "Uses scaffolding", "quote": "Start with basics"},
-    "personalization": {"score": 3, "reasoning": "Generic advice", "quote": "N/A"},
-    "actionability": {"score": 5, "reasoning": "Clear next step", "quote": "Click to continue"},
-    "tone": {"score": 4, "reasoning": "Encouraging tone", "quote": "Great progress"},
-    "mutual_recognition": {"score": 4, "reasoning": "Acknowledges interpretation", "quote": "Your metaphor captures"},
-    "dialectical_responsiveness": {"score": 3, "reasoning": "Responds without tension", "quote": "N/A"},
-    "memory_integration": {"score": 4, "reasoning": "References prior session", "quote": "Building on insight"},
-    "transformative_potential": {"score": 3, "reasoning": "Informative not transformative", "quote": "N/A"}
+    "relevance": {"score": 4, "reasoning": "Matches idle state well"},
+    "specificity": {"score": 5, "reasoning": "Names exact lecture"},
+    "pedagogical_soundness": {"score": 4, "reasoning": "Uses scaffolding"},
+    "personalization": {"score": 3, "reasoning": "Generic advice"},
+    "actionability": {"score": 5, "reasoning": "Clear next step"},
+    "tone": {"score": 4, "reasoning": "Encouraging tone"},
+    "mutual_recognition": {"score": 4, "reasoning": "Acknowledges interpretation"},
+    "dialectical_responsiveness": {"score": 3, "reasoning": "Responds without tension"},
+    "memory_integration": {"score": 4, "reasoning": "References prior session"},
+    "transformative_potential": {"score": 3, "reasoning": "Informative not transformative"}
   },
   "validation": {
     "passes_required": true,
@@ -347,6 +347,13 @@ Respond with ONLY a JSON object in this exact format:
  * @param {string} prompt - The evaluation prompt
  * @param {Object} [overrides] - Optional overrides (passed to getAvailableEvaluator)
  */
+// Models/prefixes that support response_format: { type: "json_object" }
+const JSON_MODE_PREFIXES = ['gpt-', 'deepseek-', 'claude-'];
+
+function supportsJsonMode(model) {
+  return JSON_MODE_PREFIXES.some(prefix => model.startsWith(prefix));
+}
+
 async function callJudgeModel(prompt, overrides = {}) {
   const judge = getAvailableJudge(overrides);
   const { provider, model, hyperparameters } = judge;
@@ -408,19 +415,24 @@ async function callJudgeModel(prompt, overrides = {}) {
     const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
+      const body = {
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        include_reasoning: false,
+        messages: [{ role: 'user', content: prompt }],
+      };
+      if (supportsJsonMode(model)) {
+        body.response_format = { type: 'json_object' };
+      }
+
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model,
-          max_tokens: maxTokens,
-          temperature,
-          include_reasoning: false,
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
 
@@ -454,18 +466,23 @@ async function callJudgeModel(prompt, overrides = {}) {
     const timeout = setTimeout(() => controller.abort(), 60000);
 
     try {
+      const body = {
+        model,
+        max_tokens: maxTokens,
+        temperature,
+        messages: [{ role: 'user', content: prompt }],
+      };
+      if (supportsJsonMode(model)) {
+        body.response_format = { type: 'json_object' };
+      }
+
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({
-          model,
-          max_tokens: maxTokens,
-          temperature,
-          messages: [{ role: 'user', content: prompt }],
-        }),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
 
@@ -595,12 +612,58 @@ function repairUnescapedQuotes(jsonStr) {
 }
 
 /**
+ * Last-resort regex extraction of individual dimension scores.
+ * Returns a partial result object or null if too few scores found.
+ */
+function regexScoreRescue(text) {
+  const dimensionNames = [
+    'relevance', 'specificity', 'pedagogical_soundness', 'personalization',
+    'actionability', 'tone', 'mutual_recognition', 'dialectical_responsiveness',
+    'memory_integration', 'transformative_potential',
+  ];
+
+  const scores = {};
+  for (const dim of dimensionNames) {
+    // Match patterns like: "relevance": {"score": 4  or  "relevance":{"score":4
+    const pattern = new RegExp(`"${dim}"\\s*:\\s*\\{?\\s*"?score"?\\s*:\\s*(\\d)`, 'i');
+    const match = text.match(pattern);
+    if (match) {
+      scores[dim] = { score: parseInt(match[1], 10), reasoning: null };
+    }
+  }
+
+  // Need at least 3 scores for a useful partial result
+  if (Object.keys(scores).length < 3) return null;
+
+  debugLog(`[rubricEvaluator] Regex rescue recovered ${Object.keys(scores).length} scores`);
+
+  // Try to extract overall_score and summary
+  const overallMatch = text.match(/"overall_score"\s*:\s*(\d+)/);
+  const summaryMatch = text.match(/"summary"\s*:\s*"([^"]+)"/);
+
+  return {
+    scores,
+    validation: { passes_required: true, required_missing: [], passes_forbidden: true, forbidden_found: [] },
+    overall_score: overallMatch ? parseInt(overallMatch[1], 10) : null,
+    summary: summaryMatch ? summaryMatch[1] : 'Partial scores recovered via regex rescue',
+  };
+}
+
+/**
  * Parse the judge model's JSON response
  */
 function parseJudgeResponse(responseText) {
   // Extract JSON from response (may be wrapped in markdown code block)
-  const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/) ||
-                    responseText.match(/\{[\s\S]*\}/);
+  let jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
+
+  if (!jsonMatch) {
+    // Strip preamble/postamble text — find first { and last }
+    const firstBrace = responseText.indexOf('{');
+    const lastBrace = responseText.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      jsonMatch = [null, responseText.slice(firstBrace, lastBrace + 1)];
+    }
+  }
 
   if (!jsonMatch) {
     throw new Error('Could not parse judge response as JSON');
@@ -632,6 +695,10 @@ function parseJudgeResponse(responseText) {
           const robustRepaired = jsonrepair(jsonStr);
           return JSON.parse(robustRepaired);
         } catch (e4) {
+          // Last resort: regex rescue — extract individual scores
+          debugLog('[rubricEvaluator] Attempting regex score rescue...');
+          const rescued = regexScoreRescue(jsonStr);
+          if (rescued) return rescued;
           throw new Error(`Could not parse judge response as JSON: initial=${e.message}, repair=${e3.message}, jsonrepair=${e4.message}`);
         }
       }
@@ -729,18 +796,16 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
 
     for (const [key, value] of Object.entries(parsed.scores || {})) {
       const normalizedKey = dimensionMap[key] || key;
-      // Handle both {score, reasoning, quote} objects and plain numbers
+      // Handle both {score, reasoning} objects and plain numbers
       if (typeof value === 'object' && value !== null) {
         scores[normalizedKey] = {
           score: value.score,
           reasoning: value.reasoning,
-          quote: value.quote || null,
         };
       } else if (typeof value === 'number') {
         scores[normalizedKey] = {
           score: value,
           reasoning: null,
-          quote: null,
         };
       }
     }
@@ -1047,4 +1112,5 @@ export default {
   calculateBaseScore,
   calculateRecognitionScore,
   calculateRecognitionMetrics,
+  getAvailableJudge,
 };
