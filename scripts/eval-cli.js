@@ -20,6 +20,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js cleanup          # Preview stale runs (dry-run by default)
  *   node scripts/eval-cli.js cleanup --force # Actually mark stale runs as completed
  *   node scripts/eval-cli.js revert <runId>  # Revert a completed/failed run to 'running'
+ *   node scripts/eval-cli.js rejudge <runId> # Re-run AI judge on existing transcripts
  *   node scripts/eval-cli.js chat            # AI conversational interface
  *
  * Options:
@@ -1219,9 +1220,48 @@ async function main() {
         break;
       }
 
+      case 'rejudge': {
+        const runId = args.find(a => !a.startsWith('--') && a !== 'rejudge');
+        if (!runId) {
+          console.error('Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose]');
+          process.exit(1);
+        }
+
+        const verbose = getFlag('verbose');
+        const judgeOverride = getOption('judge') || null;
+        const scenarioFilter = getOption('scenario') || null;
+
+        console.log(`\nRejudging run: ${runId}`);
+        if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
+        if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
+        console.log('');
+
+        const summary = await evaluationRunner.rejudgeRun(runId, {
+          judgeOverride,
+          verbose,
+          scenarioFilter,
+        });
+
+        console.log('\n' + '='.repeat(60));
+        console.log('  REJUDGE SUMMARY');
+        console.log('='.repeat(60));
+        console.log(`  Run:       ${summary.runId}`);
+        console.log(`  Total:     ${summary.total}`);
+        console.log(`  Succeeded: ${summary.succeeded}`);
+        console.log(`  Failed:    ${summary.failed}`);
+        console.log(`  Old avg:   ${summary.oldAvgScore?.toFixed(2) ?? 'N/A'}`);
+        console.log(`  New avg:   ${summary.newAvgScore?.toFixed(2) ?? 'N/A'}`);
+        if (summary.scoreDelta != null) {
+          const sign = summary.scoreDelta >= 0 ? '+' : '';
+          console.log(`  Delta:     ${sign}${summary.scoreDelta.toFixed(2)}`);
+        }
+        console.log('');
+        break;
+      }
+
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, cleanup, revert, chat');
+        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, cleanup, revert, rejudge, chat');
         process.exit(1);
     }
   } catch (error) {

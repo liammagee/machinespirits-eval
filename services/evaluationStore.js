@@ -1261,10 +1261,58 @@ export function getFactorialCellData(runId, options = {}) {
   return cells;
 }
 
+/**
+ * Update score columns for an existing result row (for rejudging)
+ */
+export function updateResultScores(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      score_relevance = ?,
+      score_specificity = ?,
+      score_pedagogical = ?,
+      score_personalization = ?,
+      score_actionability = ?,
+      score_tone = ?,
+      overall_score = ?,
+      base_score = ?,
+      recognition_score = ?,
+      passes_required = ?,
+      passes_forbidden = ?,
+      required_missing = ?,
+      forbidden_found = ?,
+      judge_model = ?,
+      evaluation_reasoning = ?,
+      scores_with_reasoning = ?
+    WHERE id = ?
+  `);
+
+  const scores = evaluation.scores || {};
+  stmt.run(
+    scores.relevance?.score ?? scores.relevance ?? null,
+    scores.specificity?.score ?? scores.specificity ?? null,
+    scores.pedagogical?.score ?? scores.pedagogical ?? null,
+    scores.personalization?.score ?? scores.personalization ?? null,
+    scores.actionability?.score ?? scores.actionability ?? null,
+    scores.tone?.score ?? scores.tone ?? null,
+    evaluation.overallScore ?? null,
+    evaluation.baseScore ?? null,
+    evaluation.recognitionScore ?? null,
+    evaluation.passesRequired ? 1 : 0,
+    evaluation.passesForbidden ? 1 : 0,
+    JSON.stringify(evaluation.requiredMissing || []),
+    JSON.stringify(evaluation.forbiddenFound || []),
+    evaluation.judgeModel || null,
+    evaluation.summary || null,
+    evaluation.scores ? JSON.stringify(evaluation.scores) : null,
+    resultId
+  );
+}
+
 export default {
   createRun,
   updateRun,
   storeResult,
+  updateResultScores,
   getRun,
   listRuns,
   getResults,
