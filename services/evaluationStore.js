@@ -158,6 +158,20 @@ try {
   // Column already exists, ignore
 }
 
+// Migration: Add factorial factor columns
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_recognition BOOLEAN`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_tutor BOOLEAN`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_learner BOOLEAN`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`);
+} catch (e) { /* Column already exists */ }
+
 // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
 try {
   const revertRuns = db.prepare(`
@@ -246,13 +260,14 @@ export function createRun(options = {}) {
   } = options;
 
   const id = generateRunId();
+  const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO evaluation_runs (id, description, total_scenarios, total_configurations, metadata)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, metadata)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, description, totalScenarios, totalConfigurations, JSON.stringify(metadata));
+  stmt.run(id, now, description, totalScenarios, totalConfigurations, JSON.stringify(metadata));
 
   return {
     id,
@@ -277,6 +292,11 @@ export function updateRun(runId, updates) {
       WHERE id = ?
     `);
     stmt.run(status, totalTests || 0, completedAt || new Date().toISOString(), runId);
+  } else if (totalTests != null) {
+    const stmt = db.prepare(`
+      UPDATE evaluation_runs SET status = ?, total_tests = ? WHERE id = ?
+    `);
+    stmt.run(status, totalTests, runId);
   } else {
     const stmt = db.prepare(`
       UPDATE evaluation_runs SET status = ? WHERE id = ?
@@ -304,7 +324,9 @@ export function storeResult(runId, result) {
       score_personalization, score_actionability, score_tone, overall_score,
       base_score, recognition_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
-      judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message
+      judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
+      factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
+      created_at
     ) VALUES (
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
@@ -315,7 +337,9 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?,
-      ?, ?, ?, ?, ?
+      ?, ?, ?, ?, ?,
+      ?, ?, ?, ?,
+      ?
     )
   `);
 
@@ -357,7 +381,12 @@ export function storeResult(runId, result) {
     result.evaluationReasoning,
     result.scoresWithReasoning ? JSON.stringify(result.scoresWithReasoning) : null,
     result.success ? 1 : 0,
-    result.errorMessage
+    result.errorMessage,
+    result.factors?.recognition != null ? (result.factors.recognition ? 1 : 0) : null,
+    result.factors?.multi_agent_tutor != null ? (result.factors.multi_agent_tutor ? 1 : 0) : null,
+    result.factors?.multi_agent_learner != null ? (result.factors.multi_agent_learner ? 1 : 0) : null,
+    result.learnerArchitecture || null,
+    new Date().toISOString()
   );
 
   return info.lastInsertRowid;
@@ -411,9 +440,22 @@ export function listRuns(options = {}) {
     ORDER BY scenario_name
   `);
 
+  // Count completed results per run
+  const resultCountStmt = db.prepare(`
+    SELECT COUNT(*) as completed,
+           SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
+           AVG(overall_score) as avg_score
+    FROM evaluation_results WHERE run_id = ?
+  `);
+
   return rows.map(row => {
     const scenarioRows = scenarioStmt.all(row.id);
     const scenarioNames = scenarioRows.map(s => s.scenario_name).filter(Boolean);
+    const counts = resultCountStmt.get(row.id);
+
+    const completedResults = counts?.completed || 0;
+    const totalTests = row.total_tests || 0;
+    const progressPct = totalTests > 0 ? Math.min(100, Math.round((completedResults / totalTests) * 100)) : null;
 
     return {
       id: row.id,
@@ -421,7 +463,11 @@ export function listRuns(options = {}) {
       description: row.description,
       totalScenarios: row.total_scenarios,
       totalConfigurations: row.total_configurations,
-      totalTests: row.total_tests,
+      totalTests,
+      completedResults,
+      successfulResults: counts?.successful || 0,
+      avgScore: counts?.avg_score || null,
+      progressPct,
       status: row.status,
       completedAt: row.completed_at,
       scenarioNames, // Scenario names from results
@@ -470,6 +516,9 @@ export function getRunStats(runId) {
     SELECT
       provider,
       model,
+      profile_name,
+      ego_model,
+      superego_model,
       COUNT(*) as total_tests,
       SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful_tests,
       AVG(overall_score) as avg_score,
@@ -488,7 +537,7 @@ export function getRunStats(runId) {
       SUM(CASE WHEN passes_forbidden = 1 THEN 1 ELSE 0 END) as passes_forbidden
     FROM evaluation_results
     WHERE run_id = ?
-    GROUP BY provider, model
+    GROUP BY provider, model, profile_name
     ORDER BY avg_score DESC
   `);
 
@@ -497,6 +546,9 @@ export function getRunStats(runId) {
   return rows.map(row => ({
     provider: row.provider,
     model: row.model,
+    profileName: row.profile_name,
+    egoModel: row.ego_model,
+    superegoModel: row.superego_model,
     totalTests: row.total_tests,
     successfulTests: row.successful_tests,
     successRate: row.total_tests > 0 ? row.successful_tests / row.total_tests : 0,
@@ -532,13 +584,18 @@ export function getScenarioStats(runId) {
       scenario_name,
       provider,
       model,
+      profile_name,
+      ego_model,
+      superego_model,
       AVG(overall_score) as avg_score,
+      AVG(base_score) as avg_base_score,
+      AVG(recognition_score) as avg_recognition_score,
       AVG(latency_ms) as avg_latency,
       SUM(CASE WHEN passes_required = 1 AND passes_forbidden = 1 THEN 1 ELSE 0 END) as passes_validation,
       COUNT(*) as runs
     FROM evaluation_results
     WHERE run_id = ?
-    GROUP BY scenario_id, provider, model
+    GROUP BY scenario_id, provider, model, profile_name
     ORDER BY scenario_id, avg_score DESC
   `);
 
@@ -557,7 +614,12 @@ export function getScenarioStats(runId) {
     grouped[row.scenario_id].configurations.push({
       provider: row.provider,
       model: row.model,
+      profileName: row.profile_name,
+      egoModel: row.ego_model,
+      superegoModel: row.superego_model,
       avgScore: row.avg_score,
+      avgBaseScore: row.avg_base_score,
+      avgRecognitionScore: row.avg_recognition_score,
       avgLatencyMs: row.avg_latency,
       passesValidation: row.passes_validation === row.runs,
       runs: row.runs,
@@ -982,6 +1044,14 @@ function parseResultRow(row) {
     success: Boolean(row.success),
     errorMessage: row.error_message,
     createdAt: row.created_at,
+    factors: (row.factor_recognition != null || row.factor_multi_agent_tutor != null || row.factor_multi_agent_learner != null)
+      ? {
+          recognition: Boolean(row.factor_recognition),
+          multi_agent_tutor: Boolean(row.factor_multi_agent_tutor),
+          multi_agent_learner: Boolean(row.factor_multi_agent_learner),
+        }
+      : null,
+    learnerArchitecture: row.learner_architecture || null,
   };
 }
 
@@ -1155,6 +1225,42 @@ export function getInteractionEvalByRunId(runId) {
   };
 }
 
+/**
+ * Get factorial cell data for ANOVA analysis.
+ *
+ * Returns scores grouped by cell key ("r0_t0_l0", etc.)
+ * Only includes results that have factor tags stored.
+ *
+ * @param {string} runId - The run ID
+ * @param {Object} [options] - Options
+ * @param {string} [options.scoreColumn='overall_score'] - Which score to use
+ * @returns {Object} Map of cellKey → [score, ...]
+ */
+export function getFactorialCellData(runId, options = {}) {
+  const { scoreColumn = 'overall_score' } = options;
+
+  // Whitelist valid score columns to prevent SQL injection
+  const validColumns = ['overall_score', 'base_score', 'recognition_score'];
+  const col = validColumns.includes(scoreColumn) ? scoreColumn : 'overall_score';
+
+  const stmt = db.prepare(`
+    SELECT factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, ${col} as score
+    FROM evaluation_results
+    WHERE run_id = ? AND factor_recognition IS NOT NULL AND ${col} IS NOT NULL AND success = 1
+  `);
+
+  const rows = stmt.all(runId);
+  const cells = {};
+
+  for (const row of rows) {
+    const key = `r${row.factor_recognition}_t${row.factor_multi_agent_tutor}_l${row.factor_multi_agent_learner}`;
+    if (!cells[key]) cells[key] = [];
+    cells[key].push(row.score);
+  }
+
+  return cells;
+}
+
 export default {
   createRun,
   updateRun,
@@ -1172,6 +1278,7 @@ export default {
   findIncompleteRuns,
   autoCompleteStaleRuns,
   getIncompleteTests,
+  getFactorialCellData,
   // Interaction evaluations
   storeInteractionEval,
   listInteractionEvals,

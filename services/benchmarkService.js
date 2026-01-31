@@ -1576,8 +1576,16 @@ function runThreeWayANOVA(data) {
 
 /**
  * Run full 2×2×2 ablation study
+ *
+ * @deprecated Use `node scripts/eval-cli.js run --factorial` instead.
+ * The main evaluation pipeline now supports the full 2×2×2 factorial design
+ * with factor tags stored in the database and automatic ANOVA analysis.
  */
 export async function runAblationStudy(options = {}) {
+  console.warn(
+    '[DEPRECATED] runAblationStudy is deprecated. Use `node scripts/eval-cli.js run --factorial` instead.\n' +
+    'The main pipeline now supports the full 2×2×2 design with ANOVA analysis.'
+  );
   const {
     samplesPerCell = 3,
     scenarios = ABLATION_SCENARIOS,

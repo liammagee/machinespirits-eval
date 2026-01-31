@@ -55,7 +55,7 @@ profiles:
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
-        max_tokens: 3500
+        max_tokens: 8000
     superego: null
 
   # ===========================================================================
@@ -74,7 +74,7 @@ profiles:
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
-        max_tokens: 3500
+        max_tokens: 8000
     superego: null
 
   # ===========================================================================
@@ -114,7 +114,7 @@ profiles:
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
-        max_tokens: 3500
+        max_tokens: 8000
     superego:
       provider: openrouter
       model: nemotron
@@ -122,7 +122,7 @@ profiles:
       prompt_file: tutor-superego.md
       hyperparameters:
         temperature: 0.4
-        max_tokens: 3500
+        max_tokens: 8000
 
   # ===========================================================================
   # FACTORIAL CELL 4: No Recognition × Ego+Superego × Paid
@@ -168,7 +168,7 @@ profiles:
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
-        max_tokens: 3500
+        max_tokens: 8000
     superego: null
 
   # ===========================================================================
@@ -208,7 +208,7 @@ profiles:
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
-        max_tokens: 3500
+        max_tokens: 8000
     superego:
       provider: openrouter
       model: nemotron
@@ -216,7 +216,7 @@ profiles:
       prompt_file: tutor-superego-recognition.md
       hyperparameters:
         temperature: 0.4
-        max_tokens: 3500
+        max_tokens: 8000
     intervention_strategies:
       enforce_mutual_recognition: true
       require_memory_integration: true
@@ -244,6 +244,233 @@ profiles:
     superego:
       provider: openrouter
       model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # ===========================================================================
+  # 2×2×2 FACTORIAL CELLS (Recognition × Multi-Agent Tutor × Multi-Agent Learner)
+  # ===========================================================================
+  # These 8 profiles support the unified factorial evaluation pipeline.
+  # Use: node scripts/eval-cli.js run --factorial --runs 3
+  # All use nemotron (free tier) to isolate architectural effects from model cost.
+
+  # Cell 1: No Recognition × Single Agent × Unified Learner
+  cell_1_base_single_unified:
+    description: "Factorial cell 1: baseline single-agent tutor, unified learner"
+    factors:
+      recognition: false
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 2: No Recognition × Single Agent × Psychodynamic Learner
+  cell_2_base_single_psycho:
+    description: "Factorial cell 2: baseline single-agent tutor, psychodynamic learner"
+    factors:
+      recognition: false
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: psychodynamic
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 3: No Recognition × Multi-Agent Tutor × Unified Learner
+  cell_3_base_multi_unified:
+    description: "Factorial cell 3: ego+superego tutor, unified learner"
+    factors:
+      recognition: false
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 8000
+
+  # Cell 4: No Recognition × Multi-Agent Tutor × Psychodynamic Learner
+  cell_4_base_multi_psycho:
+    description: "Factorial cell 4: ego+superego tutor, psychodynamic learner"
+    factors:
+      recognition: false
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: psychodynamic
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 8000
+
+  # Cell 5: Recognition × Single Agent × Unified Learner
+  cell_5_recog_single_unified:
+    description: "Factorial cell 5: recognition single-agent tutor, unified learner"
+    factors:
+      recognition: true
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 6: Recognition × Single Agent × Psychodynamic Learner
+  cell_6_recog_single_psycho:
+    description: "Factorial cell 6: recognition single-agent tutor, psychodynamic learner"
+    factors:
+      recognition: true
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: psychodynamic
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 7: Recognition × Multi-Agent Tutor × Unified Learner
+  cell_7_recog_multi_unified:
+    description: "Factorial cell 7: recognition ego+superego tutor, unified learner"
+    factors:
+      recognition: true
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: nemotron
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.4
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 8: Recognition × Multi-Agent Tutor × Psychodynamic Learner
+  cell_8_recog_multi_psycho:
+    description: "Factorial cell 8: recognition ego+superego tutor, psychodynamic learner"
+    factors:
+      recognition: true
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: psychodynamic
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: nemotron
       staging: back
       prompt_file: tutor-superego-recognition.md
       hyperparameters:
