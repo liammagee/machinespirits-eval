@@ -276,21 +276,21 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
         max_tokens: 8000
     superego: null
 
-  # Cell 2: No Recognition × Single Agent × Psychodynamic Learner
+  # Cell 2: No Recognition × Single Agent × Ego/Superego Learner
   cell_2_base_single_psycho:
-    description: "Factorial cell 2: baseline single-agent tutor, psychodynamic learner"
+    description: "Factorial cell 2: baseline single-agent tutor, ego/superego learner"
     factors:
       recognition: false
       multi_agent_tutor: false
       multi_agent_learner: true
-    learner_architecture: psychodynamic
+    learner_architecture: ego_superego
     recognition_mode: false
     memory_enabled: false
     dialogue:
@@ -298,7 +298,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
@@ -321,7 +321,7 @@ profiles:
       convergence_threshold: 0.8
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego.md
       hyperparameters:
@@ -329,21 +329,21 @@ profiles:
         max_tokens: 8000
     superego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego.md
       hyperparameters:
         temperature: 0.4
         max_tokens: 8000
 
-  # Cell 4: No Recognition × Multi-Agent Tutor × Psychodynamic Learner
+  # Cell 4: No Recognition × Multi-Agent Tutor × Ego/Superego Learner
   cell_4_base_multi_psycho:
-    description: "Factorial cell 4: ego+superego tutor, psychodynamic learner"
+    description: "Factorial cell 4: ego+superego tutor, ego/superego learner"
     factors:
       recognition: false
       multi_agent_tutor: true
       multi_agent_learner: true
-    learner_architecture: psychodynamic
+    learner_architecture: ego_superego
     recognition_mode: false
     memory_enabled: false
     dialogue:
@@ -352,7 +352,7 @@ profiles:
       convergence_threshold: 0.8
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego.md
       hyperparameters:
@@ -360,7 +360,7 @@ profiles:
         max_tokens: 8000
     superego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego.md
       hyperparameters:
@@ -382,21 +382,21 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
         max_tokens: 8000
     superego: null
 
-  # Cell 6: Recognition × Single Agent × Psychodynamic Learner
+  # Cell 6: Recognition × Single Agent × Ego/Superego Learner
   cell_6_recog_single_psycho:
-    description: "Factorial cell 6: recognition single-agent tutor, psychodynamic learner"
+    description: "Factorial cell 6: recognition single-agent tutor, ego/superego learner"
     factors:
       recognition: true
       multi_agent_tutor: false
       multi_agent_learner: true
-    learner_architecture: psychodynamic
+    learner_architecture: ego_superego
     recognition_mode: true
     memory_enabled: true
     dialogue:
@@ -404,7 +404,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
@@ -427,7 +427,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
@@ -446,14 +446,14 @@ profiles:
       require_memory_integration: true
       assess_transformative_potential: true
 
-  # Cell 8: Recognition × Multi-Agent Tutor × Psychodynamic Learner
+  # Cell 8: Recognition × Multi-Agent Tutor × Ego/Superego Learner
   cell_8_recog_multi_psycho:
-    description: "Factorial cell 8: recognition ego+superego tutor, psychodynamic learner"
+    description: "Factorial cell 8: recognition ego+superego tutor, ego/superego learner"
     factors:
       recognition: true
       multi_agent_tutor: true
       multi_agent_learner: true
-    learner_architecture: psychodynamic
+    learner_architecture: ego_superego
     recognition_mode: true
     memory_enabled: true
     dialogue:
@@ -462,7 +462,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
@@ -470,7 +470,7 @@ profiles:
         max_tokens: 8000
     superego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego-recognition.md
       hyperparameters:

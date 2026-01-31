@@ -7,9 +7,18 @@
  * Uses shared configLoaderBase.js for common loading patterns.
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import yaml from 'yaml';
 import { configLoaderBase, modelResolver } from '@machinespirits/tutor-core';
 const { loadProviders, createConfigLoader, createPromptLoader } = configLoaderBase;
 const { createBoundResolver } = modelResolver;
+
+// Local eval-repo config directory (for learner-agents.yaml override)
+const __filename_local = fileURLToPath(import.meta.url);
+const __dirname_local = path.dirname(__filename_local);
+const LOCAL_CONFIG_DIR = path.join(path.resolve(__dirname_local, '..'), 'config');
 
 // ============================================================================
 // Default Configurations
@@ -95,6 +104,8 @@ function getDefaultPrompt(filename) {
 
   const defaults = {
     'unified': `You are simulating a learner's internal experience. Respond authentically to the tutor's message, showing genuine reactions including confusion, insight, frustration, or understanding.`,
+    'ego': `You represent the EGO dimension of the learner. Draft an authentic learner response based on the conversation so far — express what the learner would naturally say, including confusion, partial understanding, questions, and emotional reactions.`,
+    'superego': `You represent the SUPEREGO dimension of the learner. Critique the ego's draft response: Is it realistic for this learner's level? Does it engage meaningfully with the tutor's message? Should the learner push back, ask for clarification, or show more/less understanding?`,
     'desire': `You represent the DESIRE dimension of a learner. Express immediate wants, frustrations, and emotional reactions.`,
     'intellect': `You represent the INTELLECT dimension of a learner. Process information rationally, identify what makes sense and what doesn't.`,
     'aspiration': `You represent the ASPIRATION dimension of a learner. Express goals, standards, and desire for mastery.`,
@@ -114,12 +125,55 @@ function getDefaultPrompt(filename) {
 // Create Base Loaders
 // ============================================================================
 
-const configLoader = createConfigLoader('learner-agents.yaml', getDefaultConfig);
+// Load from eval repo's local config/ directory first, fall back to tutor-core's createConfigLoader
+let localConfigCache = null;
+let localConfigMtime = null;
+
+function loadLocalConfig(forceReload = false) {
+  const localPath = path.join(LOCAL_CONFIG_DIR, 'learner-agents.yaml');
+  try {
+    const stats = fs.statSync(localPath);
+    if (!forceReload && localConfigCache && localConfigMtime === stats.mtimeMs) {
+      return localConfigCache;
+    }
+    const content = fs.readFileSync(localPath, 'utf-8');
+    localConfigCache = yaml.parse(content);
+    localConfigMtime = stats.mtimeMs;
+
+    // Merge shared providers (providers.yaml)
+    const sharedProviders = loadProviders(forceReload);
+    if (sharedProviders) {
+      localConfigCache.providers = { ...localConfigCache.providers, ...sharedProviders };
+    }
+
+    return localConfigCache;
+  } catch {
+    // Fall through to tutor-core's loader / defaults
+    return null;
+  }
+}
+
+const coreConfigLoader = createConfigLoader('learner-agents.yaml', getDefaultConfig);
 const promptLoader = createPromptLoader(getDefaultPrompt);
 
-// Re-export loadConfig and getProviderConfig from the base loader
-export const loadConfig = configLoader.loadConfig;
-export const getProviderConfig = configLoader.getProviderConfig;
+// loadConfig: prefer local eval-repo config, fall back to tutor-core / defaults
+export function loadConfig(forceReload = false) {
+  return loadLocalConfig(forceReload) || coreConfigLoader.loadConfig(forceReload);
+}
+
+// getProviderConfig needs to use the locally-loaded config's providers
+export function getProviderConfig(providerName) {
+  const config = loadConfig();
+  const provider = config.providers?.[providerName];
+  if (!provider) {
+    // Fall back to tutor-core's resolver
+    return coreConfigLoader.getProviderConfig(providerName);
+  }
+  const apiKey = provider.api_key_env ? (process.env[provider.api_key_env] || '') : '';
+  const isLocal = providerName === 'local';
+  const isConfigured = isLocal ? Boolean(provider.base_url) : Boolean(apiKey);
+  return { ...provider, apiKey, isConfigured };
+}
 
 // Re-export loadProviders from base
 export { loadProviders };

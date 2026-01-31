@@ -2,212 +2,112 @@
 # Defines how the simulated learner generates responses during evaluation
 #
 # ============================================================================
-# LEARNER ARCHITECTURES
+# LEARNER PROFILES
 # ============================================================================
 #
-# The learner architecture determines whether the simulated learner has
+# The learner profile determines whether the simulated learner has
 # internal deliberation before generating responses. This enables testing
 # whether multi-agent learner simulation improves evaluation validity.
 #
-# Architectures:
+# Profiles:
 # 1. unified: Single learner agent (no internal dialogue)
-# 2. psychodynamic: Freudian desire/intellect/aspiration deliberation
-# 3. dialectical: Hegelian thesis/antithesis/synthesis process
+# 2. ego_superego: Two-agent ego/superego deliberation (mirrors tutor architecture)
+# 3. psychodynamic: Legacy alias → resolves to ego_superego
 #
 # ============================================================================
 
-# Active architecture (can be overridden by tutor profile)
+# Active profile (can be overridden by tutor profile's learner_architecture)
 active_architecture: unified
 
 # ============================================================================
-# ARCHITECTURE DEFINITIONS
+# PROFILES
 # ============================================================================
 
-architectures:
-  # Unified: Single agent with no internal deliberation
-  # Simple, fast, good for baseline comparisons
+profiles:
+  # Single-agent: no internal deliberation
   unified:
-    name: "Unified Learner"
-    description: "Single learner agent without internal deliberation"
-    deliberation:
-      enabled: false
-      max_rounds: 0
-
-    agent:
+    description: "Single unified learner agent"
+    architecture: unified
+    unified_learner:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       prompt_file: learner-unified.md
       hyperparameters:
         temperature: 0.7
         max_tokens: 500
+    dialogue:
+      enabled: false
+      max_rounds: 0
 
-  # Psychodynamic: Freudian-inspired desire/intellect/aspiration
-  # Internal deliberation between:
-  # - Desire (Id-like): What the learner wants emotionally
-  # - Intellect (Ego-like): Rational analysis of the situation
-  # - Aspiration (Superego-like): Idealized learning goals
+  # Two-agent: mirrors tutor ego/superego pattern
+  ego_superego:
+    description: "Ego/superego learner — mirrors tutor architecture"
+    architecture: ego_superego
+    ego:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 400
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-superego.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 400
+    synthesis:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-synthesis.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 500
+    dialogue:
+      enabled: true
+      max_rounds: 2
+
+  # Legacy alias so existing 'psychodynamic' references resolve to ego_superego
   psychodynamic:
-    name: "Psychodynamic Learner"
-    description: "Freudian-inspired internal deliberation between desire, intellect, and aspiration"
-    deliberation:
+    description: "Legacy alias — uses ego/superego architecture"
+    architecture: ego_superego
+    ego:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-ego.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 400
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-superego.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 400
+    synthesis:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-synthesis.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 500
+    dialogue:
       enabled: true
       max_rounds: 2
-      convergence_threshold: 0.7
-
-    agents:
-      desire:
-        role: "id"
-        description: "Emotional/affective responses - what the learner WANTS"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-desire.md
-        hyperparameters:
-          temperature: 0.8  # Higher temp for more emotional/varied responses
-          max_tokens: 400
-
-      intellect:
-        role: "ego"
-        description: "Rational analysis - what the learner THINKS"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-intellect.md
-        hyperparameters:
-          temperature: 0.5  # Lower temp for more analytical responses
-          max_tokens: 400
-
-      aspiration:
-        role: "superego"
-        description: "Idealized goals - what the learner SHOULD want"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-aspiration.md
-        hyperparameters:
-          temperature: 0.6
-          max_tokens: 400
-
-      synthesizer:
-        description: "Integrates the three voices into a coherent response"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-synthesizer.md
-        hyperparameters:
-          temperature: 0.6
-          max_tokens: 500
-
-    deliberation_process: |
-      The psychodynamic learner simulates internal conflict:
-
-      1. DESIRE (Id): "I want to skip ahead / I'm bored / This is frustrating"
-         - Immediate emotional reactions
-         - Avoidance tendencies
-         - Curiosity and excitement
-
-      2. INTELLECT (Ego): "This doesn't make sense yet / I need more examples"
-         - Rational assessment of understanding
-         - Strategic thinking about learning path
-         - Reality testing
-
-      3. ASPIRATION (Superego): "I should master this / I want to be an expert"
-         - Long-term learning goals
-         - Internalized expectations
-         - Self-improvement drives
-
-      4. SYNTHESIS: Integration into coherent learner response
-         - Balances immediate desires with long-term goals
-         - Produces realistic learner behavior
-
-  # Dialectical: Hegelian thesis/antithesis/synthesis
-  # Internal deliberation where:
-  # - Thesis: Initial position/understanding
-  # - Antithesis: Challenge/complication to that position
-  # - Synthesis: New integrated understanding
-  dialectical:
-    name: "Dialectical Learner"
-    description: "Hegelian-inspired internal dialectic between thesis, antithesis, and synthesis"
-    deliberation:
-      enabled: true
-      max_rounds: 2
-      convergence_threshold: 0.7
-
-    agents:
-      thesis:
-        role: "thesis"
-        description: "Initial understanding or position"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-thesis.md
-        hyperparameters:
-          temperature: 0.6
-          max_tokens: 400
-
-      antithesis:
-        role: "antithesis"
-        description: "Challenge or complication to the thesis"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-antithesis.md
-        hyperparameters:
-          temperature: 0.7
-          max_tokens: 400
-
-      synthesis:
-        role: "synthesis"
-        description: "Integration that preserves and overcomes the tension"
-        provider: openrouter
-        model: nemotron
-        prompt_file: learner-synthesis.md
-        hyperparameters:
-          temperature: 0.6
-          max_tokens: 500
-
-    deliberation_process: |
-      The dialectical learner simulates Hegelian movement:
-
-      1. THESIS: "I understand X as..."
-         - Initial grasp of the concept
-         - Current mental model
-         - Working hypothesis
-
-      2. ANTITHESIS: "But wait, what about Y? That complicates things..."
-         - Internal contradiction discovered
-         - New information that doesn't fit
-         - Productive confusion
-
-      3. SYNTHESIS: "So actually, X and Y together mean..."
-         - New understanding that integrates both
-         - Aufhebung: preserves while overcoming
-         - Readiness for next dialectical cycle
 
 # ============================================================================
 # PERSONA MODIFIERS
 # ============================================================================
-# These modifiers adjust the base architecture based on learner persona
+# These modifiers adjust learner behavior based on persona
 
 persona_modifiers:
-  confused_novice:
-    desire_weight: 0.4      # Strong emotional reactions to confusion
-    intellect_weight: 0.3   # Struggles with analysis
-    aspiration_weight: 0.3  # Wants to succeed but uncertain
-
-  eager_explorer:
-    desire_weight: 0.5      # Curiosity-driven
-    intellect_weight: 0.3   # Quick but sometimes shallow analysis
-    aspiration_weight: 0.2  # Less concerned with "should"
-
-  focused_achiever:
-    desire_weight: 0.2      # Controlled emotional reactions
-    intellect_weight: 0.4   # Strong analytical focus
-    aspiration_weight: 0.4  # Clear goals
-
-  struggling_anxious:
-    desire_weight: 0.5      # Strong anxiety-driven responses
-    intellect_weight: 0.2   # Anxiety impairs analysis
-    aspiration_weight: 0.3  # High expectations create pressure
-
-  adversarial_tester:
-    desire_weight: 0.3      # Enjoys challenging
-    intellect_weight: 0.4   # Analytical about finding weaknesses
-    aspiration_weight: 0.3  # Wants to be thorough
+  confused_novice: {}
+  eager_explorer: {}
+  focused_achiever: {}
+  struggling_anxious: {}
+  adversarial_tester: {}
 
 # ============================================================================
 # EVALUATION SETTINGS
@@ -222,27 +122,4 @@ evaluation:
   metrics:
     - deliberation_rounds
     - internal_coherence
-    - desire_intellect_tension
-    - aspiration_alignment
     - response_authenticity
-
-# ============================================================================
-# ABLATION STUDY SUPPORT
-# ============================================================================
-
-ablation:
-  # Mapping of ablation profiles to learner architectures
-  profile_architectures:
-    ablation_baseline_unified: unified
-    ablation_baseline_multilearner: psychodynamic
-    ablation_multiagent_unified: unified
-    ablation_multiagent_multilearner: psychodynamic
-    ablation_recognition_unified: unified
-    ablation_recognition_multilearner: psychodynamic
-    ablation_recognition_multiagent_unified: unified
-    ablation_recognition_multiagent_multilearner: psychodynamic
-
-  # Which architectures to compare in ablation studies
-  architectures_to_compare:
-    - unified
-    - psychodynamic
