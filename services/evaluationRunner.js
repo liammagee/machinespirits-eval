@@ -16,6 +16,43 @@ import { StreamingReporter } from './streamingReporter.js';
 import * as anovaStats from './anovaStats.js';
 
 /**
+ * Eval-only profile names that need remapping to tutor-core profiles.
+ */
+const EVAL_ONLY_PROFILES = [
+  'single_baseline', 'single_baseline_paid',
+  'single_recognition', 'single_recognition_paid',
+  'baseline', 'baseline_paid',
+  'recognition', 'recognition_paid',
+  'cell_1_base_single_unified', 'cell_2_base_single_psycho',
+  'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
+  'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
+  'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
+];
+
+/**
+ * Resolve an eval profile name into dialogue settings and a tutor-core profile.
+ *
+ * Eval profiles (cell_*, recognition, etc.) carry dialogue/recognition config that
+ * tutor-core doesn't know about. This function extracts those settings and maps the
+ * profile name to a tutor-core equivalent ('budget' or 'recognition').
+ *
+ * Exported for unit testing.
+ */
+export function resolveEvalProfile(profileName) {
+  const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[profileName];
+  const useDialogue = evalProfile?.dialogue?.enabled ?? false;
+  const maxRounds = evalProfile?.dialogue?.max_rounds ?? 0;
+  const recognitionMode = evalProfile?.recognition_mode ?? false;
+
+  let resolvedProfileName = profileName;
+  if (profileName && EVAL_ONLY_PROFILES.includes(profileName)) {
+    resolvedProfileName = recognitionMode ? 'recognition' : 'budget';
+  }
+
+  return { useDialogue, maxRounds, recognitionMode, resolvedProfileName };
+}
+
+/**
  * Resolve provider/model references in a config object through eval's providers.yaml.
  * This ensures eval controls which model IDs get sent to tutorApi.
  */
@@ -556,35 +593,10 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   const context = tutorApi.buildContext(fullScenario.learner_context, curriculumContext);
   context.isNewUser = fullScenario.is_new_user;
 
-  // Extract dialogue settings from the eval profile BEFORE remapping.
-  // The eval profiles (cell_*, recognition, etc.) carry the authoritative dialogue config,
-  // but tutor-core doesn't know about them — so we must pass settings explicitly.
-  const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[resolvedConfig.profileName];
-  const useDialogue = evalProfile?.dialogue?.enabled ?? false;
-  const maxRounds = evalProfile?.dialogue?.max_rounds ?? 0;
-  const recognitionMode = evalProfile?.recognition_mode ?? false;
-
-  // Map eval-only profile names to tutor-core base profiles.
-  // Eval profiles like 'cell_7_recog_multi_unified' don't exist in tutor-core's tutor-agents.yaml.
-  // The explicit egoModel/superegoModel overrides force the correct model; useDialogue/maxRounds
-  // are passed explicitly above; we just need a valid base profile for tutor-core's prompt loading.
-  if (resolvedConfig.profileName) {
-    const evalOnlyProfiles = [
-      'single_baseline', 'single_baseline_paid',
-      'single_recognition', 'single_recognition_paid',
-      'baseline', 'baseline_paid',
-      'recognition', 'recognition_paid',
-      'cell_1_base_single_unified', 'cell_2_base_single_psycho',
-      'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
-      'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
-      'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
-    ];
-    if (evalOnlyProfiles.includes(resolvedConfig.profileName)) {
-      // Map to a tutor-core profile that matches the recognition mode.
-      // 'recognition' profile uses recognition-enhanced prompts; 'budget' uses standard.
-      resolvedConfig.profileName = recognitionMode ? 'recognition' : 'budget';
-    }
-  }
+  // Resolve profile: extract dialogue/recognition settings and remap to tutor-core profile.
+  const profileResolution = resolveEvalProfile(resolvedConfig.profileName);
+  const { useDialogue, maxRounds, recognitionMode } = profileResolution;
+  resolvedConfig.profileName = profileResolution.resolvedProfileName;
 
   // Generate suggestions
   log(`Generating suggestions with profile: ${resolvedConfig.profileName} (dialogue=${useDialogue}, rounds=${maxRounds}, recognition=${recognitionMode})`, 'info');
@@ -1153,6 +1165,128 @@ export function generateReport(runId) {
   return lines.join('\n');
 }
 
+/**
+ * Re-judge all results in an existing run without regenerating tutor responses.
+ *
+ * @param {string} runId - The run to rejudge
+ * @param {Object} options
+ * @param {string} [options.judgeOverride] - Override judge model (e.g. 'openrouter.nemotron')
+ * @param {boolean} [options.verbose] - Show per-result progress
+ * @param {string} [options.scenarioFilter] - Only rejudge results for this scenario ID
+ * @param {number} [options.parallelism] - Concurrent judge calls (default 3)
+ * @returns {Promise<Object>} Summary stats
+ */
+export async function rejudgeRun(runId, options = {}) {
+  const {
+    judgeOverride = null,
+    verbose = false,
+    scenarioFilter = null,
+    parallelism = DEFAULT_PARALLELISM,
+  } = options;
+
+  const log = verbose ? console.log : () => {};
+
+  const run = evaluationStore.getRun(runId);
+  if (!run) throw new Error(`Run not found: ${runId}`);
+
+  let results = evaluationStore.getResults(runId, {
+    scenarioId: scenarioFilter || null,
+  });
+
+  // Skip results that have no suggestions (errors / failed generation)
+  results = results.filter(r => r.success && r.suggestions?.length > 0);
+
+  if (results.length === 0) {
+    throw new Error('No successful results with suggestions found to rejudge');
+  }
+
+  log(`\nRejudging ${results.length} results from run ${runId}`);
+  if (judgeOverride) log(`  Judge override: ${judgeOverride}`);
+  if (scenarioFilter) log(`  Scenario filter: ${scenarioFilter}`);
+
+  // Capture old scores for before/after comparison
+  const oldScores = results.map(r => r.overallScore).filter(s => s != null);
+  const oldAvg = oldScores.length > 0
+    ? oldScores.reduce((a, b) => a + b, 0) / oldScores.length
+    : null;
+
+  let completed = 0;
+  let succeeded = 0;
+  let failed = 0;
+  const newScores = [];
+
+  // Build judge override object if provided
+  const judgeOverrideObj = judgeOverride ? { judgeOverride } : {};
+
+  // Parallel worker pool (same pattern as main eval loop)
+  const items = [...results];
+  let index = 0;
+
+  async function worker() {
+    while (index < items.length) {
+      const i = index++;
+      const result = items[i];
+
+      try {
+        const fullScenario = evalConfigLoader.getScenario(result.scenarioId);
+        if (!fullScenario) {
+          throw new Error(`Scenario not found: ${result.scenarioId}`);
+        }
+
+        const suggestion = result.suggestions[0];
+
+        const evaluation = await retryWithBackoff(
+          () => rubricEvaluator.evaluateSuggestion(suggestion, {
+            name: fullScenario.name,
+            description: fullScenario.description,
+            expectedBehavior: fullScenario.expected_behavior,
+            learnerContext: fullScenario.learner_context,
+            requiredElements: fullScenario.required_elements,
+            forbiddenElements: fullScenario.forbidden_elements,
+          }, {}, judgeOverrideObj),
+          {}
+        );
+
+        if (evaluation.success) {
+          evaluationStore.updateResultScores(result.id, evaluation);
+          succeeded++;
+          if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
+          log(`  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (was ${result.overallScore?.toFixed(1) ?? '--'})`);
+        } else {
+          failed++;
+          log(`  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: JUDGE FAILED - ${evaluation.error}`);
+        }
+      } catch (error) {
+        failed++;
+        log(`  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ERROR - ${error.message}`);
+      }
+
+      completed++;
+      await sleep(REQUEST_DELAY_MS);
+    }
+  }
+
+  const workers = Array.from(
+    { length: Math.min(parallelism, items.length) },
+    () => worker()
+  );
+  await Promise.all(workers);
+
+  const newAvg = newScores.length > 0
+    ? newScores.reduce((a, b) => a + b, 0) / newScores.length
+    : null;
+
+  return {
+    runId,
+    total: results.length,
+    succeeded,
+    failed,
+    oldAvgScore: oldAvg,
+    newAvgScore: newAvg,
+    scoreDelta: oldAvg != null && newAvg != null ? newAvg - oldAvg : null,
+  };
+}
+
 export default {
   runEvaluation,
   compareConfigurations,
@@ -1160,4 +1294,5 @@ export default {
   listOptions,
   getRunResults,
   generateReport,
+  rejudgeRun,
 };
