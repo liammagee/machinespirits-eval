@@ -20,10 +20,11 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const pkg = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8081;
@@ -44,7 +45,7 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     package: '@machinespirits/eval',
-    version: '0.1.0',
+    version: pkg.version,
     mode: isStandalone ? 'standalone' : 'mounted',
   });
 });

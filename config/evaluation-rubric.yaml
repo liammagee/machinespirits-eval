@@ -379,14 +379,6 @@ dimensions:
       bad: "The synthesis combines thesis and antithesis. Here's the formula: T + A = S. Now you understand dialectics."
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# TEST SCENARIOS
-# ══════════════════════════════════════════════════════════════════════════════
-#
-# Scenarios have moved to config/suggestion-scenarios.yaml
-#
-# ══════════════════════════════════════════════════════════════════════════════
-
 # Configuration matrix for testing
 # Provider definitions are in config/providers.yaml (single source of truth)
 configurations:
@@ -412,7 +404,7 @@ configurations:
 
 # Suggestion judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
 judge:
-  model: openrouter.kimi-k2.5
+  model: openrouter.sonnet
   hyperparameters:
     temperature: 0.2
     max_tokens: 8000
@@ -422,7 +414,7 @@ judge:
 # Interaction judge: evaluates learner-tutor dialogues
 # Uses same model as suggestion judge for consistency
 interaction_judge:
-  model: openrouter.kimi-k2.5
+  model: openrouter.sonnet
   hyperparameters:
     temperature: 0.2
     max_tokens: 6000
@@ -431,7 +423,7 @@ interaction_judge:
 
 # Recommender: Analyzes failures and suggests prompt improvements (needs reasoning)
 recommender:
-  model: openrouter.kimi-k2.5
+  model: openrouter.sonnet
   hyperparameters:
     temperature: 0.4
     max_tokens: 6000

@@ -172,6 +172,14 @@ try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`);
 } catch (e) { /* Column already exists */ }
 
+// Migration: Add reproducibility metadata columns to evaluation_runs
+try {
+  db.exec(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`);
+} catch (e) { /* Column already exists */ }
+
 // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
 try {
   const revertRuns = db.prepare(`
@@ -263,11 +271,11 @@ export function createRun(options = {}) {
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, metadata)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, metadata, git_commit, package_version)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, now, description, totalScenarios, totalConfigurations, JSON.stringify(metadata));
+  stmt.run(id, now, description, totalScenarios, totalConfigurations, JSON.stringify(metadata), metadata.gitCommit || null, metadata.packageVersion || null);
 
   return {
     id,
@@ -410,6 +418,8 @@ export function getRun(runId) {
     status: row.status,
     completedAt: row.completed_at,
     metadata: JSON.parse(row.metadata || '{}'),
+    gitCommit: row.git_commit,
+    packageVersion: row.package_version,
   };
 }
 

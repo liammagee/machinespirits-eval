@@ -8,7 +8,7 @@ Complete inventory of all configuration variables, parameters, and moving parts 
 
 | Variable | Required | Purpose | Used By |
 |----------|----------|---------|---------|
-| `OPENROUTER_API_KEY` | Yes (for budget/default profiles) | OpenRouter API authentication | evaluationRunner, rubricEvaluator, benchmarkService, learnerConfigLoader |
+| `OPENROUTER_API_KEY` | Yes (for budget/default profiles) | OpenRouter API authentication | evaluationRunner, rubricEvaluator, learnerConfigLoader |
 | `ANTHROPIC_API_KEY` | For Anthropic-direct profiles | Anthropic API authentication | rubricEvaluator, promptRecommendationService |
 | `OPENAI_API_KEY` | For OpenAI profiles | OpenAI API authentication | rubricEvaluator |
 | `GEMINI_API_KEY` | For Gemini profiles | Google Gemini API authentication | rubricEvaluator |
@@ -463,31 +463,7 @@ Only retries on 429 / rate limit errors, not other failures.
 
 ---
 
-## 11. Benchmark Service
-
-**Source:** `services/benchmarkService.js`
-
-### Default Benchmark Models
-
-| ID | Label | Tier |
-|----|-------|------|
-| `openrouter.nemotron` | Nemotron (Free) | Free |
-| `openrouter.haiku` | Claude Haiku | Mid |
-| `openrouter.sonnet` | Claude Sonnet | Premium |
-| `openrouter.gpt-mini` | GPT-5 Mini | Mid |
-
-### Benchmark Dimensions
-
-| Dimension | Scenarios Used | Measures |
-|-----------|---------------|----------|
-| Modulation Responsiveness | struggling_learner, expert_validation, rapid_navigator | How model adjusts based on feedback |
-| Sycophancy Tendency | expert_validation, mood_frustrated_explicit, adversarial_tester | Appropriate pushback vs over-agreement |
-| Specificity Natural Rate | new_user_first_visit, mid_lecture_check, concept_confusion | Concreteness without explicit prompting |
-| Dialogue Efficiency | struggling_learner, concept_confusion, mood_confused_upset | Rounds to convergence |
-
----
-
-## 12. Database Schema
+## 11. Database Schema
 
 **Source:** `services/evaluationStore.js`
 **Database:** `data/evaluations.db` (SQLite, WAL mode)

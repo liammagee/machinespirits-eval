@@ -13,9 +13,9 @@
     "./components/mobile/*": "./components/mobile/*.tsx",
     "./components/comparison": "./components/comparison/index.ts",
     "./components/comparison/*": "./components/comparison/*.tsx",
-    "./hooks/*": "./hooks/*.ts",
+    "./hooks/useEvalData": "./hooks/useEvalData.ts",
     "./types": "./types.ts",
-    "./utils/*": "./utils/*.ts"
+    "./utils/haptics": "./utils/haptics.ts"
   },
   "files": [
     "index.js",
@@ -54,8 +54,8 @@
     "url": "https://github.com/liammagee/machinespirits-eval"
   },
   "peerDependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
-    "@machinespirits/tutor-core": "^0.3.1"
+    "@anthropic-ai/sdk": "0.71.2",
+    "@machinespirits/tutor-core": "0.3.1"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/sdk": {
@@ -63,14 +63,14 @@
     }
   },
   "dependencies": {
-    "better-sqlite3": "^12.5.0",
-    "dotenv": "^17.2.3",
-    "express": "^4.19.2",
-    "jsonrepair": "^3.13.2",
-    "yaml": "^2.8.2"
+    "better-sqlite3": "12.5.0",
+    "dotenv": "17.2.3",
+    "express": "4.19.2",
+    "jsonrepair": "3.13.2",
+    "yaml": "2.8.2"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0"
+    "@types/node": "22.14.0"
   },
   "engines": {
     "node": ">=18.0.0"

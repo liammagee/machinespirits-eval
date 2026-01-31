@@ -8,6 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { tutorApiService as tutorApi, monitoringService, tutorDialogueEngine as dialogueEngine } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
@@ -20,6 +21,20 @@ import * as anovaStats from './anovaStats.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
 const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
+
+// Read package version once at import time
+const pkg = JSON.parse(fs.readFileSync(path.join(EVAL_ROOT, 'package.json'), 'utf-8'));
+
+/**
+ * Get the current git commit hash, or 'unknown' if not in a git repo.
+ */
+function getGitCommitHash() {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: EVAL_ROOT, encoding: 'utf-8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
 
 /**
  * Eval-only profile names that need remapping to tutor-core profiles.
@@ -69,14 +84,14 @@ function resolveConfigModels(config) {
       const r = evalConfigLoader.resolveModel(`${config.provider}.${config.model}`);
       resolved.provider = r.provider;
       resolved.model = r.model;
-    } catch (e) { /* pass through as-is */ }
+    } catch (e) { console.debug(`[evaluationRunner] resolveModel failed for ${config.provider}.${config.model}:`, e.message); }
   }
   if (config.egoModel) {
     try {
       const r = evalConfigLoader.resolveModel(config.egoModel);
       resolved.egoModel = r.model;
       resolved.egoProvider = r.provider;
-    } catch (e) { /* pass through as-is */ }
+    } catch (e) { console.debug(`[evaluationRunner] resolveModel failed for egoModel ${config.egoModel}:`, e.message); }
   }
 
   // When a profileName is provided but no explicit provider/model,
@@ -594,7 +609,7 @@ export async function runEvaluation(options = {}) {
   log(`  Runs per config: ${runsPerConfig}`);
   log(`  Total tests: ${targetScenarios.length * targetConfigs.length * runsPerConfig}`);
 
-  // Create evaluation run record
+  // Create evaluation run record with reproducibility metadata
   const run = evaluationStore.createRun({
     description: description || `Evaluation: ${targetConfigs.length} configs x ${targetScenarios.length} scenarios`,
     totalScenarios: targetScenarios.length,
@@ -602,6 +617,8 @@ export async function runEvaluation(options = {}) {
     metadata: {
       runsPerConfig,
       skipRubricEval,
+      packageVersion: pkg.version,
+      gitCommit: getGitCommitHash(),
     },
   });
 
