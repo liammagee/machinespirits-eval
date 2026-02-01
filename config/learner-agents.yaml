@@ -68,6 +68,50 @@ profiles:
       enabled: true
       max_rounds: 2
 
+  # Recognition-enhanced: single unified learner with recognition prompts
+  unified_recognition:
+    description: "Single unified learner with recognition-aware prompt"
+    architecture: unified
+    unified_learner:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-unified.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 600
+    dialogue:
+      enabled: false
+      max_rounds: 0
+
+  # Recognition-enhanced: ego/superego with recognition-specific prompts
+  ego_superego_recognition:
+    description: "Ego/superego learner with recognition-aware prompts and memory"
+    architecture: ego_superego
+    ego:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-ego-recognition.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 600
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-superego-recognition.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 600
+    synthesis:
+      provider: openrouter
+      model: kimi-k2.5
+      prompt_file: learner-synthesis-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 700
+    dialogue:
+      enabled: true
+      max_rounds: 2
+
   # Legacy alias so existing 'psychodynamic' references resolve to ego_superego
   psychodynamic:
     description: "Legacy alias — uses ego/superego architecture"
