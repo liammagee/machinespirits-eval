@@ -209,6 +209,123 @@ async function retryWithBackoff(fn, context = {}, maxRetries = MAX_RETRIES) {
 }
 
 // ---------------------------------------------------------------------------
+// Structured context extraction — parse markdown learner context into
+// labeled fields so the model can't miss key signals.
+// See notes/baseline-prompt-v2-2026-02-02.md for rationale.
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract key signals from markdown learner context and prepend a
+ * structured summary block. The original context is preserved below.
+ */
+function structureLearnerContext(rawContext) {
+  if (!rawContext || typeof rawContext !== 'string') return rawContext;
+
+  const fields = {};
+
+  // User type
+  if (/\bnew user\b/i.test(rawContext)) {
+    fields['Learner Type'] = 'New user (no prior history)';
+  } else {
+    const sessionMatch = rawContext.match(/(\d+)\s+sessions?/i);
+    const eventMatch = rawContext.match(/(\d+)\s+total events?/i);
+    fields['Learner Type'] = 'Returning user' +
+      (sessionMatch ? `, ${sessionMatch[1]} sessions` : '') +
+      (eventMatch ? `, ${eventMatch[1]} events` : '');
+  }
+
+  // Current content
+  const viewingMatch = rawContext.match(/\*\*Currently viewing\*\*:\s*(.+)/);
+  if (viewingMatch) {
+    fields['Current Content'] = viewingMatch[1].trim();
+  }
+
+  // Struggle signals
+  const struggleMatch = rawContext.match(/\*\*Struggle signals? detected\*\*:\s*(\d+)/i);
+  if (struggleMatch) {
+    fields['Struggle Signals'] = `${struggleMatch[1]} detected`;
+  }
+
+  // Quiz/activity retries
+  const retryMatch = rawContext.match(/retried?\s+(\d+)\s+times?/i);
+  if (retryMatch) {
+    fields['Activity Retries'] = `${retryMatch[1]} retries`;
+  }
+  // Also check for "Retrying activity" lines
+  const retryLines = (rawContext.match(/Retrying activity/gi) || []).length;
+  if (retryLines > 0 && !retryMatch) {
+    fields['Activity Retries'] = `${retryLines} retries in timeline`;
+  }
+
+  // Primary struggle area
+  const struggleAreaMatch = rawContext.match(/\*\*Primary struggle area\*\*:\s*(.+)/);
+  if (struggleAreaMatch) {
+    fields['Primary Struggle'] = struggleAreaMatch[1].trim();
+  }
+
+  // Concept difficulty
+  const conceptMatch = rawContext.match(/\*\*Concept difficulty\*\*:\s*(.+)/);
+  if (conceptMatch) {
+    fields['Difficult Concepts'] = conceptMatch[1].trim();
+  }
+
+  // Mood / emotional signals from chat history
+  const chatLines = [];
+  const chatPattern = /- User:\s*"([^"]+)"/g;
+  let m;
+  while ((m = chatPattern.exec(rawContext)) !== null) {
+    chatLines.push(m[1]);
+  }
+  if (chatLines.length > 0) {
+    fields['Learner Messages'] = chatLines.join(' | ');
+  }
+
+  // Completed lectures
+  const completedMatch = rawContext.match(/\*\*Completed lectures?\*\*:\s*(.+)/);
+  if (completedMatch) {
+    fields['Completed Lectures'] = completedMatch[1].trim();
+  }
+
+  // Time on page
+  const timeMatch = rawContext.match(/\*\*Time on page\*\*:\s*(.+)/);
+  if (timeMatch) {
+    fields['Time on Page'] = timeMatch[1].trim();
+  }
+
+  // Scroll depth
+  const scrollMatch = rawContext.match(/\*\*Scroll depth\*\*:\s*(.+)/);
+  if (scrollMatch) {
+    fields['Scroll Depth'] = scrollMatch[1].trim();
+  }
+
+  // Performance / success rate
+  const avgScoreMatch = rawContext.match(/\*\*Average score\*\*:\s*(.+)/);
+  if (avgScoreMatch) {
+    fields['Average Score'] = avgScoreMatch[1].trim();
+  }
+
+  // Activities completion
+  const actCompMatch = rawContext.match(/\*\*Activities completed\*\*:\s*(.+)/);
+  if (actCompMatch) {
+    fields['Activities Completed'] = actCompMatch[1].trim();
+  }
+
+  // If no meaningful fields extracted, return original unchanged
+  const fieldKeys = Object.keys(fields);
+  if (fieldKeys.length <= 1) return rawContext; // only learner type
+
+  // Build structured summary block
+  const lines = ['<structured_context_summary>'];
+  for (const [key, value] of Object.entries(fields)) {
+    lines.push(`${key}: ${value}`);
+  }
+  lines.push('</structured_context_summary>');
+  lines.push('');
+
+  return lines.join('\n') + rawContext;
+}
+
+// ---------------------------------------------------------------------------
 // Multi-turn context-building utilities (moved from multiTurnRunner.js)
 // ---------------------------------------------------------------------------
 
@@ -925,7 +1042,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   if (curriculumContext) {
     log(`Curriculum context loaded (${curriculumContext.length} chars)`, 'info');
   }
-  const context = tutorApi.buildContext(fullScenario.learner_context, curriculumContext);
+  const structuredLearnerContext = structureLearnerContext(fullScenario.learner_context);
+  const context = tutorApi.buildContext(structuredLearnerContext, curriculumContext);
   context.isNewUser = fullScenario.is_new_user;
 
   // Resolve profile: extract dialogue/recognition settings and remap to tutor-core profile.
@@ -1110,7 +1228,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       });
     }
 
-    const context = tutorApi.buildContext(contextStr, curriculumContext);
+    const structuredContextStr = structureLearnerContext(contextStr);
+    const context = tutorApi.buildContext(structuredContextStr, curriculumContext);
     context.isNewUser = isInitialTurn ? fullScenario.is_new_user : false;
 
     // Build turn-specific rubric metadata
@@ -1659,6 +1778,9 @@ export async function rejudgeRun(runId, options = {}) {
     scoreDelta: oldAvg != null && newAvg != null ? newAvg - oldAvg : null,
   };
 }
+
+// Named exports for unit testing (these are internal helpers not part of the public API)
+export { structureLearnerContext, resolveConfigModels };
 
 export default {
   runEvaluation,
