@@ -9,30 +9,28 @@
 #
 # Three independent variables, each with two levels:
 #
-#   Factor A: Recognition    — standard prompts vs recognition-enhanced prompts
-#   Factor B: Architecture   — single agent (ego only) vs multi-agent (ego + superego)
-#   Factor C: Model Tier     — free (nemotron) vs paid (sonnet)
+#   Factor A: Recognition          — standard vs recognition-enhanced prompts
+#   Factor B: Tutor Architecture   — single ego vs ego+superego dialogue
+#   Factor C: Learner Architecture — unified vs ego_superego
 #
-# Design Matrix (8 conditions):
+# All cells use kimi-k2.5 to isolate architectural effects from model quality.
+#
+# Design Matrix (8 cells):
 #
 #   ┌────────────────────┬──────────────────────────┬──────────────────────────┐
-#   │                    │     Free (nemotron)       │     Paid (sonnet)        │
+#   │                    │   Unified Learner         │   Ego/Superego Learner   │
 #   ├────────────────────┼──────────────┬───────────┼──────────────┬───────────┤
-#   │                    │ Single Agent │ Ego+Super │ Single Agent │ Ego+Super │
+#   │                    │ Single Tutor │ E+S Tutor │ Single Tutor │ E+S Tutor │
 #   ├────────────────────┼──────────────┼───────────┼──────────────┼───────────┤
-#   │ No Recognition     │ single_      │ baseline  │ single_      │ baseline_ │
-#   │                    │ baseline     │           │ baseline_    │ paid      │
-#   │                    │              │           │ paid         │           │
+#   │ No Recognition     │ cell_1       │ cell_3    │ cell_2       │ cell_4    │
 #   ├────────────────────┼──────────────┼───────────┼──────────────┼───────────┤
-#   │ Recognition        │ single_      │ recogni-  │ single_      │ recogni-  │
-#   │                    │ recognition  │ tion      │ recognition_ │ tion_     │
-#   │                    │              │           │ paid         │ paid      │
+#   │ Recognition        │ cell_5       │ cell_7    │ cell_6       │ cell_8    │
 #   └────────────────────┴──────────────┴───────────┴──────────────┴───────────┘
 #
 # This allows analyzing:
 #   - Main effect of recognition (standard vs recognition-enhanced prompts)
-#   - Main effect of architecture (single agent vs ego + superego dialogue)
-#   - Main effect of model quality (free vs paid tier)
+#   - Main effect of tutor architecture (single agent vs ego + superego dialogue)
+#   - Main effect of learner architecture (unified vs ego_superego)
 #   - All two-way and three-way interactions
 #
 # ============================================================================
@@ -59,203 +57,7 @@ profiles:
     superego: null
 
   # ===========================================================================
-  # FACTORIAL CELL 1: No Recognition × Single Agent × Free
-  # ===========================================================================
-  single_baseline:
-    description: "Single agent, standard prompts, free model (nemotron)"
-    recognition_mode: false
-    memory_enabled: false
-    dialogue:
-      enabled: false
-      max_rounds: 0
-    ego:
-      provider: openrouter
-      model: nemotron
-      prompt_file: tutor-ego.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego: null
-
-  # ===========================================================================
-  # FACTORIAL CELL 2: No Recognition × Single Agent × Paid
-  # ===========================================================================
-  single_baseline_paid:
-    description: "Single agent, standard prompts, paid model (sonnet)"
-    recognition_mode: false
-    memory_enabled: false
-    dialogue:
-      enabled: false
-      max_rounds: 0
-    ego:
-      provider: openrouter
-      model: kimi-k2.5
-      prompt_file: tutor-ego.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego: null
-
-  # ===========================================================================
-  # FACTORIAL CELL 3: No Recognition × Ego+Superego × Free
-  # ===========================================================================
-  baseline:
-    description: "Ego+superego dialogue, standard prompts, free model (nemotron)"
-    recognition_mode: false
-    memory_enabled: false
-    dialogue:
-      enabled: true
-      max_rounds: 2
-      convergence_threshold: 0.8
-    ego:
-      provider: openrouter
-      model: nemotron
-      staging: front
-      prompt_file: tutor-ego.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego:
-      provider: openrouter
-      model: nemotron
-      staging: back
-      prompt_file: tutor-superego.md
-      hyperparameters:
-        temperature: 0.4
-        max_tokens: 8000
-
-  # ===========================================================================
-  # FACTORIAL CELL 4: No Recognition × Ego+Superego × Paid
-  # ===========================================================================
-  baseline_paid:
-    description: "Ego+superego dialogue, standard prompts, paid model (sonnet)"
-    recognition_mode: false
-    memory_enabled: false
-    dialogue:
-      enabled: true
-      max_rounds: 2
-      convergence_threshold: 0.8
-    ego:
-      provider: openrouter
-      model: kimi-k2.5
-      staging: front
-      prompt_file: tutor-ego.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego:
-      provider: openrouter
-      model: kimi-k2.5
-      staging: back
-      prompt_file: tutor-superego.md
-      hyperparameters:
-        temperature: 0.4
-        max_tokens: 8000
-
-  # ===========================================================================
-  # FACTORIAL CELL 5: Recognition × Single Agent × Free
-  # ===========================================================================
-  single_recognition:
-    description: "Single agent, recognition prompts + memory, free model (nemotron)"
-    recognition_mode: true
-    memory_enabled: true
-    dialogue:
-      enabled: false
-      max_rounds: 0
-    ego:
-      provider: openrouter
-      model: nemotron
-      prompt_file: tutor-ego-recognition.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego: null
-
-  # ===========================================================================
-  # FACTORIAL CELL 6: Recognition × Single Agent × Paid
-  # ===========================================================================
-  single_recognition_paid:
-    description: "Single agent, recognition prompts + memory, paid model (sonnet)"
-    recognition_mode: true
-    memory_enabled: true
-    dialogue:
-      enabled: false
-      max_rounds: 0
-    ego:
-      provider: openrouter
-      model: kimi-k2.5
-      prompt_file: tutor-ego-recognition.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego: null
-
-  # ===========================================================================
-  # FACTORIAL CELL 7: Recognition × Ego+Superego × Free
-  # ===========================================================================
-  recognition:
-    description: "Ego+superego dialogue, recognition prompts + memory, free model (nemotron)"
-    recognition_mode: true
-    memory_enabled: true
-    dialogue:
-      enabled: true
-      max_rounds: 2
-      convergence_threshold: 0.7
-    ego:
-      provider: openrouter
-      model: nemotron
-      staging: front
-      prompt_file: tutor-ego-recognition.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego:
-      provider: openrouter
-      model: nemotron
-      staging: back
-      prompt_file: tutor-superego-recognition.md
-      hyperparameters:
-        temperature: 0.4
-        max_tokens: 8000
-    intervention_strategies:
-      enforce_mutual_recognition: true
-      require_memory_integration: true
-      assess_transformative_potential: true
-
-  # ===========================================================================
-  # FACTORIAL CELL 8: Recognition × Ego+Superego × Paid
-  # ===========================================================================
-  recognition_paid:
-    description: "Ego+superego dialogue, recognition prompts + memory, paid model (sonnet)"
-    recognition_mode: true
-    memory_enabled: true
-    dialogue:
-      enabled: true
-      max_rounds: 2
-      convergence_threshold: 0.7
-    ego:
-      provider: openrouter
-      model: kimi-k2.5
-      staging: front
-      prompt_file: tutor-ego-recognition.md
-      hyperparameters:
-        temperature: 0.6
-        max_tokens: 8000
-    superego:
-      provider: openrouter
-      model: kimi-k2.5
-      staging: back
-      prompt_file: tutor-superego-recognition.md
-      hyperparameters:
-        temperature: 0.4
-        max_tokens: 8000
-    intervention_strategies:
-      enforce_mutual_recognition: true
-      require_memory_integration: true
-      assess_transformative_potential: true
-
-  # ===========================================================================
-  # 2×2×2 FACTORIAL CELLS (Recognition × Multi-Agent Tutor × Multi-Agent Learner)
+  # 2×2×2 FACTORIAL CELLS (Recognition × Tutor Architecture × Learner Architecture)
   # ===========================================================================
   # These 8 profiles support the unified factorial evaluation pipeline.
   # Use: node scripts/eval-cli.js run --factorial --runs 3
