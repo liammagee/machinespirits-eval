@@ -1104,6 +1104,8 @@ export function calculateRecognitionMetrics(scores) {
   return metrics;
 }
 
+export { buildEvaluationPrompt };
+
 export default {
   evaluateSuggestion,
   evaluateSuggestions,
@@ -1113,4 +1115,5 @@ export default {
   calculateRecognitionScore,
   calculateRecognitionMetrics,
   getAvailableJudge,
+  buildEvaluationPrompt,
 };

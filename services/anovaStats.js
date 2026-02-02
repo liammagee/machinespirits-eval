@@ -7,7 +7,7 @@
  * Factors:
  *   A: Recognition (standard vs recognition-enhanced prompts)
  *   B: Multi-agent tutor (single vs ego+superego dialogue)
- *   C: Multi-agent learner (unified vs psychodynamic)
+ *   C: Multi-agent learner (unified vs ego_superego)
  */
 
 /**
@@ -227,7 +227,7 @@ export function runThreeWayANOVA(data) {
     marginalMeans: {
       recognition: { standard: meanR0, recognition: meanR1 },
       tutor: { single: meanT0, multi: meanT1 },
-      learner: { unified: meanL0, psychodynamic: meanL1 },
+      learner: { unified: meanL0, ego_superego: meanL1 },
     },
     mainEffects: {
       recognition: { SS: SS_R, df: df_R, MS: MS_R, F: F_R, p: getP(F_R), etaSq: etaSq(SS_R) },
@@ -292,7 +292,7 @@ export function formatANOVAReport(anovaResults, options = {}) {
   lines.push('-'.repeat(70));
   lines.push(`  Recognition:   Standard = ${mm.recognition.standard.toFixed(2)},  Recognition = ${mm.recognition.recognition.toFixed(2)}`);
   lines.push(`  Tutor:         Single = ${mm.tutor.single.toFixed(2)},  Multi-Agent = ${mm.tutor.multi.toFixed(2)}`);
-  lines.push(`  Learner:       Unified = ${mm.learner.unified.toFixed(2)},  Psychodynamic = ${mm.learner.psychodynamic.toFixed(2)}`);
+  lines.push(`  Learner:       Unified = ${mm.learner.unified.toFixed(2)},  Ego/Superego = ${mm.learner.ego_superego.toFixed(2)}`);
   lines.push('');
 
   // ANOVA table
@@ -354,7 +354,7 @@ export function formatANOVAReport(anovaResults, options = {}) {
   }
 
   if (me.learner.p < 0.05) {
-    const effect = mm.learner.psychodynamic - mm.learner.unified;
+    const effect = mm.learner.ego_superego - mm.learner.unified;
     lines.push(`  * Multi-agent learner: SIGNIFICANT (F = ${me.learner.F.toFixed(2)}, p < .05)`);
     lines.push(`    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.learner.etaSq.toFixed(3)}`);
   } else {

@@ -211,7 +211,7 @@ export function getActiveProfile(profileName = null) {
 
 /**
  * Get architecture configuration
- * @param {string} architectureName - Architecture name (unified, psychodynamic, dialectical, cognitive)
+ * @param {string} architectureName - Architecture name (unified, ego_superego)
  * @returns {Object} Architecture configuration with agents
  */
 export function getArchitecture(architectureName) {

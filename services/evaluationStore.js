@@ -427,7 +427,7 @@ export function getRun(runId) {
  * List all runs with scenario names
  */
 export function listRuns(options = {}) {
-  const { limit = 20, status = null } = options;
+  const { limit = null, status = null } = options;
 
   let query = 'SELECT * FROM evaluation_runs';
   const params = [];
@@ -437,8 +437,11 @@ export function listRuns(options = {}) {
     params.push(status);
   }
 
-  query += ' ORDER BY created_at DESC LIMIT ?';
-  params.push(limit);
+  query += ' ORDER BY created_at ASC';
+  if (limit) {
+    query += ' LIMIT ?';
+    params.push(limit);
+  }
 
   const stmt = db.prepare(query);
   const rows = stmt.all(...params);
@@ -490,7 +493,7 @@ export function listRuns(options = {}) {
  * Get results for a run
  */
 export function getResults(runId, options = {}) {
-  const { scenarioId = null, provider = null, model = null } = options;
+  const { scenarioId = null, provider = null, model = null, profileName = null } = options;
 
   let query = 'SELECT * FROM evaluation_results WHERE run_id = ?';
   const params = [runId];
@@ -508,6 +511,11 @@ export function getResults(runId, options = {}) {
   if (model) {
     query += ' AND model = ?';
     params.push(model);
+  }
+
+  if (profileName) {
+    query += ' AND profile_name = ?';
+    params.push(profileName);
   }
 
   query += ' ORDER BY created_at';

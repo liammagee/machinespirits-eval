@@ -725,14 +725,14 @@ battery_scenarios:
           weight: 0.4
 
   # ------------------------------------------------------------------------------
-  # Psychodynamic Learner + Recognition Plus Tutor
+  # Ego/Superego Learner + Recognition Plus Tutor
   # ------------------------------------------------------------------------------
   battery_psychodynamic_recognition_plus:
     id: "battery_psychodynamic_recognition_plus"
     type: interaction
-    name: "Battery: Psychodynamic Learner + Recognition Plus Tutor"
-    description: "Id/Ego/Superego learner with enhanced recognition tutor"
-    architecture: "psychodynamic"
+    name: "Battery: Ego/Superego Learner + Recognition Plus Tutor"
+    description: "Ego/superego learner with enhanced recognition tutor"
+    architecture: "ego_superego"
     tutor_profile: "recognition_plus"
     turn_count: 4
     topic: "Desire and the self in Hegel"
