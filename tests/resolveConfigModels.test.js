@@ -77,9 +77,9 @@ const singleAgentCells = [
 
 describe('resolveConfigModels — all 8 cells egoModel', () => {
   for (const cell of allCells) {
-    it(`${cell} resolves egoModel as { provider: 'openrouter', model: 'kimi-k2.5' }`, () => {
+    it(`${cell} resolves egoModel as { provider: 'openrouter', model: 'nemotron' }`, () => {
       const resolved = resolveConfigModels({ profileName: cell });
-      assert.deepStrictEqual(resolved.egoModel, { provider: 'openrouter', model: 'kimi-k2.5' });
+      assert.deepStrictEqual(resolved.egoModel, { provider: 'openrouter', model: 'nemotron' });
     });
   }
 });
