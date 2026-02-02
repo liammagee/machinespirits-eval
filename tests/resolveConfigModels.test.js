@@ -48,3 +48,168 @@ describe('resolveConfigModels — model object format', () => {
     assert.ok(resolved.egoModel.model, 'egoModel should have model');
   });
 });
+
+// All 8 cell profile names
+const allCells = [
+  'cell_1_base_single_unified',
+  'cell_2_base_single_psycho',
+  'cell_3_base_multi_unified',
+  'cell_4_base_multi_psycho',
+  'cell_5_recog_single_unified',
+  'cell_6_recog_single_psycho',
+  'cell_7_recog_multi_unified',
+  'cell_8_recog_multi_psycho',
+];
+
+const multiAgentCells = [
+  'cell_3_base_multi_unified',
+  'cell_4_base_multi_psycho',
+  'cell_7_recog_multi_unified',
+  'cell_8_recog_multi_psycho',
+];
+
+const singleAgentCells = [
+  'cell_1_base_single_unified',
+  'cell_2_base_single_psycho',
+  'cell_5_recog_single_unified',
+  'cell_6_recog_single_psycho',
+];
+
+describe('resolveConfigModels — all 8 cells egoModel', () => {
+  for (const cell of allCells) {
+    it(`${cell} resolves egoModel as { provider: 'openrouter', model: 'kimi-k2.5' }`, () => {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.deepStrictEqual(resolved.egoModel, { provider: 'openrouter', model: 'kimi-k2.5' });
+    });
+  }
+});
+
+describe('resolveConfigModels — superegoModel presence matches multi-agent factor', () => {
+  for (const cell of multiAgentCells) {
+    it(`${cell} (multi-agent) has superegoModel`, () => {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.ok(resolved.superegoModel, `${cell} should have superegoModel`);
+      assert.strictEqual(typeof resolved.superegoModel.provider, 'string');
+      assert.strictEqual(typeof resolved.superegoModel.model, 'string');
+    });
+  }
+
+  for (const cell of singleAgentCells) {
+    it(`${cell} (single-agent) has no superegoModel`, () => {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.strictEqual(resolved.superegoModel, undefined);
+    });
+  }
+});
+
+describe('resolveConfigModels — factors extraction', () => {
+  const expectedFactors = {
+    cell_1_base_single_unified:  { recognition: false, multi_agent_tutor: false, multi_agent_learner: false },
+    cell_2_base_single_psycho:   { recognition: false, multi_agent_tutor: false, multi_agent_learner: true },
+    cell_3_base_multi_unified:   { recognition: false, multi_agent_tutor: true,  multi_agent_learner: false },
+    cell_4_base_multi_psycho:    { recognition: false, multi_agent_tutor: true,  multi_agent_learner: true },
+    cell_5_recog_single_unified: { recognition: true,  multi_agent_tutor: false, multi_agent_learner: false },
+    cell_6_recog_single_psycho:  { recognition: true,  multi_agent_tutor: false, multi_agent_learner: true },
+    cell_7_recog_multi_unified:  { recognition: true,  multi_agent_tutor: true,  multi_agent_learner: false },
+    cell_8_recog_multi_psycho:   { recognition: true,  multi_agent_tutor: true,  multi_agent_learner: true },
+  };
+
+  for (const cell of allCells) {
+    it(`${cell} extracts correct factors`, () => {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.deepStrictEqual(resolved.factors, expectedFactors[cell]);
+    });
+  }
+});
+
+describe('resolveConfigModels — learnerArchitecture extraction', () => {
+  const expectedArch = {
+    cell_1_base_single_unified:  'unified',
+    cell_2_base_single_psycho:   'ego_superego',
+    cell_3_base_multi_unified:   'unified',
+    cell_4_base_multi_psycho:    'ego_superego',
+    cell_5_recog_single_unified: 'unified_recognition',
+    cell_6_recog_single_psycho:  'ego_superego_recognition',
+    cell_7_recog_multi_unified:  'unified_recognition',
+    cell_8_recog_multi_psycho:   'ego_superego_recognition',
+  };
+
+  for (const cell of allCells) {
+    it(`${cell} extracts learnerArchitecture = "${expectedArch[cell]}"`, () => {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.strictEqual(resolved.learnerArchitecture, expectedArch[cell]);
+    });
+  }
+});
+
+describe('resolveConfigModels — modelOverride', () => {
+  it('overrides ego model for a single-agent cell', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_1_base_single_unified',
+      modelOverride: 'openrouter.nemotron',
+    });
+    // resolveModel returns the full model ID from providers.yaml, not the alias
+    assert.strictEqual(resolved.egoModel.provider, 'openrouter');
+    assert.ok(resolved.egoModel.model.includes('nemotron'), `egoModel.model should contain "nemotron", got: ${resolved.egoModel.model}`);
+    assert.strictEqual(resolved.provider, 'openrouter');
+    assert.strictEqual(resolved.model, resolved.egoModel.model);
+  });
+
+  it('overrides both ego and superego models for a multi-agent cell', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_3_base_multi_unified',
+      modelOverride: 'openrouter.nemotron',
+    });
+    assert.strictEqual(resolved.egoModel.provider, 'openrouter');
+    assert.ok(resolved.egoModel.model.includes('nemotron'));
+    assert.ok(resolved.superegoModel, 'multi-agent cell should still have superegoModel');
+    assert.strictEqual(resolved.superegoModel.provider, 'openrouter');
+    assert.strictEqual(resolved.superegoModel.model, resolved.egoModel.model);
+  });
+
+  it('preserves factors and learnerArchitecture when modelOverride is set', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_4_base_multi_psycho',
+      modelOverride: 'openrouter.nemotron',
+    });
+    assert.deepStrictEqual(resolved.factors, {
+      recognition: false, multi_agent_tutor: true, multi_agent_learner: true,
+    });
+    assert.strictEqual(resolved.learnerArchitecture, 'ego_superego');
+  });
+
+  it('does not add superegoModel to single-agent cells', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_5_recog_single_unified',
+      modelOverride: 'openrouter.nemotron',
+    });
+    assert.strictEqual(resolved.superegoModel, undefined);
+  });
+
+  it('throws on invalid modelOverride', () => {
+    assert.throws(() => {
+      resolveConfigModels({
+        profileName: 'cell_1_base_single_unified',
+        modelOverride: 'nonexistent.model',
+      });
+    }, /Invalid --model override/);
+  });
+});
+
+describe('resolveConfigModels — hyperparameters extraction', () => {
+  it('multi-agent cells extract ego hyperparameters with temperature 0.6', () => {
+    for (const cell of multiAgentCells) {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.ok(resolved.hyperparameters, `${cell} should have hyperparameters`);
+      assert.strictEqual(resolved.hyperparameters.temperature, 0.6, `${cell} ego temperature`);
+    }
+  });
+
+  it('multi-agent cells extract superego hyperparameters with temperature 0.4', () => {
+    for (const cell of multiAgentCells) {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.ok(resolved.superegoHyperparameters, `${cell} should have superegoHyperparameters`);
+      assert.strictEqual(resolved.superegoHyperparameters.temperature, 0.4, `${cell} superego temperature`);
+    }
+  });
+});
