@@ -73,6 +73,22 @@ Single-agent: one-shot generation, no review. Generic fallbacks ship unchecked.
 Multi-agent: superego pre-analyzes learner signals, reviews ego output, rejects
 generic suggestions and forces revision. Acts as quality gate.
 
+### Caveat: Learner architecture factor (C) was not exercised
+
+All scenarios in this run were single-turn. The learner ego_superego architecture
+(factor C) is only triggered during multi-turn scenarios — it generates LLM learner
+responses between turns via `generateLearnerResponse()` (evaluationRunner.js:1381).
+
+In single-turn tests, the learner architecture config is stored in the DB
+(`learner_architecture` column) but has zero operational effect. The ANOVA finding
+of F=0.86 for factor C is therefore meaningless — it reflects random noise across
+a dormant factor, not evidence that learner architecture doesn't matter.
+
+**Implication:** To properly test whether a strong superego model improves
+performance in the learner role (as it does in the tutor role), multi-turn
+scenarios must be included in factorial runs. The current data cannot answer
+this question.
+
 ### Potential improvements to investigate
 
 1. Add specificity instructions to base prompt (cheapest fix)

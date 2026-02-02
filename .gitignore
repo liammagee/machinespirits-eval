@@ -26,6 +26,8 @@ build/
 # IDE
 .idea/
 .vscode/
+.claude/
+*.code-workspace
 *.swp
 *.swo
 *~
