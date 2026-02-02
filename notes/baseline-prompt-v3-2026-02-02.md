@@ -147,3 +147,40 @@ Compare against 894a4308:
 2. Within-cell SD for base cells (target: <20, was 27-32)
 3. Absence of placeholder text in suggestions
 4. Presence of specific learner signals referenced in suggestions
+
+## Addendum: v3.1 — Task block fix in tutorDialogueEngine.js
+
+**File**: `node_modules/@machinespirits/tutor-core/services/tutorDialogueEngine.js`
+
+**Problem discovered**: Runs c4e9ddc3 and db7b79e5 showed the v3 prompt changes had
+no effect. Base cells still produced hallucinated content ("Python Basics",
+"Data Science", "Diagnostic Assessment") with fabricated IDs ("101-lecture-1",
+"learner-001"). The model was ignoring the structured context entirely.
+
+**Root cause**: The `egoGenerateSuggestions()` function appends a "Your Task" block
+AFTER the learner context and curriculum. This block contained:
+- `"Have a title like 'Start: [Lecture Title]'"` — teaching the model to produce
+  the exact template patterns we were trying to eliminate
+- `"Have a message explaining what the lecture covers"` — encouraging generic
+  content descriptions instead of learner-specific responses
+- `"This is a RETURNING USER - suggest the next lecture they haven't completed"` —
+  overriding the Struggle Stop-Rule with a blanket "advance" instruction
+
+Because this task block appears LAST in the prompt (after all context), it has
+the highest salience for instruction-following models. The v3 context-grounding
+mandate at the TOP of tutor-ego.md was being overridden by these contradictory
+instructions at the BOTTOM.
+
+**Fix**: Replaced the generic task template with context-aware instructions:
+- For returning users: requires referencing specific learner data, following
+  decision heuristics, and using exact curriculum IDs
+- Added CRITICAL CONSTRAINTS block forbidding invented IDs, off-curriculum content,
+  and "Start:/Continue:" titles when struggle signals are present
+- Removed the template patterns ("Start: [Lecture Title]") that were being
+  reproduced verbatim by the model
+- Preserved new-user path unchanged (first lecture suggestion is correct there)
+
+**Why this should work**: The fix removes the conflicting instruction that was
+overriding all upstream prompt changes. The model now receives consistent
+instructions: top-of-prompt mandate says "reference learner signals", end-of-prompt
+task says "reference learner signals" — no contradiction.

@@ -135,7 +135,7 @@ profiles:
       staging: back
       prompt_file: tutor-superego.md
       hyperparameters:
-        temperature: 0.4
+        temperature: 0.2
         max_tokens: 8000
 
   # Cell 4: No Recognition × Multi-Agent Tutor × Ego/Superego Learner
@@ -166,7 +166,7 @@ profiles:
       staging: back
       prompt_file: tutor-superego.md
       hyperparameters:
-        temperature: 0.4
+        temperature: 0.2
         max_tokens: 8000
 
   # Cell 5: Recognition × Single Agent × Unified Learner
@@ -237,11 +237,11 @@ profiles:
         max_tokens: 8000
     superego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego-recognition.md
       hyperparameters:
-        temperature: 0.4
+        temperature: 0.2
         max_tokens: 8000
     intervention_strategies:
       enforce_mutual_recognition: true
@@ -272,11 +272,11 @@ profiles:
         max_tokens: 8000
     superego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego-recognition.md
       hyperparameters:
-        temperature: 0.4
+        temperature: 0.2
         max_tokens: 8000
     intervention_strategies:
       enforce_mutual_recognition: true
