@@ -461,28 +461,51 @@ export function listRuns(options = {}) {
     FROM evaluation_results WHERE run_id = ?
   `);
 
-  // Get distinct ego models for each run
+  // Get distinct ego + superego models for each run
   const modelStmt = db.prepare(`
     SELECT DISTINCT ego_model FROM evaluation_results
     WHERE run_id = ? AND ego_model IS NOT NULL
     ORDER BY ego_model
+  `);
+  const superegoModelStmt = db.prepare(`
+    SELECT DISTINCT superego_model FROM evaluation_results
+    WHERE run_id = ? AND superego_model IS NOT NULL
+    ORDER BY superego_model
   `);
 
   return rows.map(row => {
     const scenarioRows = scenarioStmt.all(row.id);
     const scenarioNames = scenarioRows.map(s => s.scenario_name).filter(Boolean);
     const counts = resultCountStmt.get(row.id);
-    const modelRows = modelStmt.all(row.id);
-    const models = modelRows.map(m => {
-      // ego_model is "provider.vendor/model-name" — extract "vendor/model-name"
-      const raw = m.ego_model;
+
+    const extractAlias = (raw) => {
+      if (!raw) return null;
       const dotIdx = raw.indexOf('.');
       return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
-    });
+    };
+
+    const modelRows = modelStmt.all(row.id);
+    const superegoRows = superegoModelStmt.all(row.id);
+    const models = [...new Set([
+      ...modelRows.map(m => extractAlias(m.ego_model)),
+      ...superegoRows.map(m => extractAlias(m.superego_model)),
+    ].filter(Boolean))];
 
     const completedResults = counts?.completed || 0;
     const totalTests = row.total_tests || 0;
     const progressPct = totalTests > 0 ? Math.min(100, Math.round((completedResults / totalTests) * 100)) : null;
+
+    // Compute duration: for completed runs use completed_at - created_at;
+    // for running runs compute elapsed from now.
+    let durationMs = null;
+    if (row.created_at) {
+      const start = new Date(row.created_at).getTime();
+      if (row.completed_at) {
+        durationMs = new Date(row.completed_at).getTime() - start;
+      } else if (row.status === 'running') {
+        durationMs = Date.now() - start;
+      }
+    }
 
     return {
       id: row.id,
@@ -495,6 +518,7 @@ export function listRuns(options = {}) {
       successfulResults: counts?.successful || 0,
       avgScore: counts?.avg_score || null,
       progressPct,
+      durationMs,
       status: row.status,
       completedAt: row.completed_at,
       scenarioNames, // Scenario names from results

@@ -45,7 +45,7 @@ profiles:
     architecture: ego_superego
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: learner-ego.md
       hyperparameters:
         temperature: 0.7
@@ -89,7 +89,7 @@ profiles:
     architecture: ego_superego
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: learner-ego-recognition.md
       hyperparameters:
         temperature: 0.7
@@ -118,7 +118,7 @@ profiles:
     architecture: ego_superego
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: learner-ego.md
       hyperparameters:
         temperature: 0.7

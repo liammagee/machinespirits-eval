@@ -186,6 +186,23 @@ function sleep(ms) {
 }
 
 /**
+ * Format a progress tag with percentage and elapsed time.
+ * @param {number} completed - Completed tests
+ * @param {number} total - Total tests
+ * @param {number} startTime - Start timestamp (Date.now())
+ * @returns {string} e.g. "[3/10] (30%) 1m 23s"
+ */
+function formatProgress(completed, total, startTime) {
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const elapsedMs = Date.now() - startTime;
+  const elapsedSec = Math.round(elapsedMs / 1000);
+  const min = Math.floor(elapsedSec / 60);
+  const sec = elapsedSec % 60;
+  const elapsed = min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+  return `[${completed}/${total}] (${pct}%) ${elapsed}`;
+}
+
+/**
  * Retry wrapper for API calls with exponential backoff
  * Handles 429 rate limit errors from OpenRouter free tier
  */
@@ -759,6 +776,7 @@ export async function runEvaluation(options = {}) {
     metadata: {
       runsPerConfig,
       skipRubricEval,
+      modelOverride: modelOverride || null,
       packageVersion: pkg.version,
       gitCommit: getGitCommitHash(),
     },
@@ -895,7 +913,7 @@ export async function runEvaluation(options = {}) {
         scenarioName: scenario.name || scenario.id,
       });
 
-      log(`  [${completedTests}/${totalTests}] ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`);
+      log(`  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`);
 
       // Update monitoring session with progress
       monitoringService.recordEvent(run.id, {
@@ -933,7 +951,7 @@ export async function runEvaluation(options = {}) {
       }
     } catch (error) {
       completedTests++;
-      log(`  [${completedTests}/${totalTests}] ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
+      log(`  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
 
       // Emit test_error event
       progressLogger.testError({
@@ -1523,6 +1541,370 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 }
 
 /**
+ * Resume an incomplete evaluation run, re-running only the missing tests.
+ *
+ * @param {Object} options
+ * @param {string} options.runId - The run ID to resume
+ * @param {number} [options.parallelism] - Parallel worker count
+ * @param {boolean} [options.verbose] - Enable verbose output
+ * @returns {Promise<Object>} Evaluation results (same shape as runEvaluation)
+ */
+export async function resumeEvaluation(options = {}) {
+  const {
+    runId,
+    parallelism = DEFAULT_PARALLELISM,
+    verbose = false,
+  } = options;
+
+  const log = verbose ? console.log : () => {};
+
+  // 1. Load the run and validate it exists
+  const run = evaluationStore.getRun(runId);
+  if (!run) {
+    throw new Error(`Run not found: ${runId}`);
+  }
+
+  // 2. Extract metadata
+  const metadata = run.metadata || {};
+  const runsPerConfig = metadata.runsPerConfig || 1;
+  const skipRubricEval = metadata.skipRubricEval || false;
+  const modelOverride = metadata.modelOverride || null;
+
+  // 3. Reconstruct scenarios from all eval scenarios
+  const allScenarios = evalConfigLoader.listScenarios();
+
+  // 4. Reconstruct configs from distinct profile names in existing results
+  const existingResults = evaluationStore.getResults(runId);
+  const profileNames = [...new Set(existingResults.map(r => r.profileName).filter(Boolean))];
+
+  if (profileNames.length === 0) {
+    throw new Error(`No results found for run ${runId} — cannot determine profiles to resume`);
+  }
+
+  let targetConfigs = profileNames.map(name => ({
+    provider: null,
+    model: null,
+    profileName: name,
+    label: name,
+  }));
+
+  // 5. Re-apply modelOverride if present in metadata
+  if (modelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride }));
+  }
+
+  // Determine which scenarios were used in this run
+  const scenarioIds = [...new Set(existingResults.map(r => r.scenarioId).filter(Boolean))];
+  const targetScenarios = allScenarios.filter(s => scenarioIds.includes(s.id));
+
+  if (targetScenarios.length === 0) {
+    throw new Error(`No matching scenarios found for run ${runId}`);
+  }
+
+  // 6. Call getIncompleteTests to get remaining pairs
+  const incomplete = evaluationStore.getIncompleteTests(runId, profileNames, targetScenarios);
+
+  if (incomplete.remaining === 0) {
+    console.log(`\nRun ${runId}: all ${incomplete.totalExpected} tests already completed. Nothing to resume.`);
+    return {
+      runId,
+      totalTests: 0,
+      successfulTests: 0,
+      stats: evaluationStore.getRunStats(runId),
+      scenarioStats: evaluationStore.getScenarioStats(runId),
+      progressLogPath: getProgressLogPath(runId),
+      resumed: true,
+      alreadyComplete: true,
+    };
+  }
+
+  // Note: getIncompleteTests only tracks single replications per (profile, scenario).
+  // For runsPerConfig > 1, we need to count how many results exist per combo and
+  // fill up to runsPerConfig.
+  const completedCounts = {};
+  for (const result of existingResults) {
+    const key = `${result.profileName}:${result.scenarioId}`;
+    completedCounts[key] = (completedCounts[key] || 0) + 1;
+  }
+
+  // Build flat list of remaining tests
+  const remainingTests = [];
+  for (const scenario of targetScenarios) {
+    for (const config of targetConfigs) {
+      const key = `${config.profileName}:${scenario.id}`;
+      const done = completedCounts[key] || 0;
+      const needed = runsPerConfig - done;
+      for (let i = 0; i < needed; i++) {
+        remainingTests.push({ config, scenario, runNum: done + i });
+      }
+    }
+  }
+
+  if (remainingTests.length === 0) {
+    console.log(`\nRun ${runId}: all tests completed (${runsPerConfig} reps each). Nothing to resume.`);
+    return {
+      runId,
+      totalTests: 0,
+      successfulTests: 0,
+      stats: evaluationStore.getRunStats(runId),
+      scenarioStats: evaluationStore.getScenarioStats(runId),
+      progressLogPath: getProgressLogPath(runId),
+      resumed: true,
+      alreadyComplete: true,
+    };
+  }
+
+  // 7. Set run status to 'running' if it was completed/failed
+  if (run.status !== 'running') {
+    evaluationStore.updateRun(runId, { status: 'running' });
+  }
+
+  const totalRemainingTests = remainingTests.length;
+  const totalExpectedTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
+
+  console.log(`\nResuming run: ${runId}`);
+  console.log(`  Previously completed: ${existingResults.length} tests`);
+  console.log(`  Remaining: ${totalRemainingTests} tests`);
+  console.log(`  Profiles: ${profileNames.join(', ')}`);
+  console.log(`  Scenarios: ${targetScenarios.length}`);
+  if (modelOverride) console.log(`  Model override: ${modelOverride}`);
+
+  // Initialize content resolver (same as runEvaluation)
+  const contentConfig = evalConfigLoader.getContentConfig();
+  if (contentConfig?.content_package_path) {
+    contentResolver.configure({
+      contentPackagePath: contentConfig.content_package_path,
+      maxLectureChars: contentConfig.max_lecture_chars,
+      includeSpeakerNotes: contentConfig.include_speaker_notes,
+    });
+  }
+
+  // 8. Set up progress logger and streaming reporter (appends to existing JSONL)
+  const progressLogPath = getProgressLogPath(runId);
+  console.log(`Progress log: ${progressLogPath}\n`);
+
+  const progressLogger = new ProgressLogger(runId);
+  const scenarioNames = targetScenarios.map(s => s.name || s.id);
+  const reporter = new StreamingReporter({
+    totalTests: totalRemainingTests,
+    totalScenarios: targetScenarios.length,
+    profiles: profileNames,
+    scenarios: scenarioNames,
+  });
+
+  progressLogger.runStart({
+    totalTests: totalRemainingTests,
+    totalScenarios: targetScenarios.length,
+    totalConfigurations: targetConfigs.length,
+    scenarios: scenarioNames,
+    profiles: profileNames,
+    description: `Resumed: ${totalRemainingTests} remaining tests`,
+  });
+
+  // Register with monitoring
+  monitoringService.startSession(runId, {
+    userId: 'eval-runner-resume',
+    profileName: `${targetConfigs.length} configs`,
+    modelId: 'evaluation-batch',
+  });
+
+  const results = [];
+  let completedTests = 0;
+
+  // Scenario completion tracking
+  const scenarioProgress = new Map();
+  for (const scenario of targetScenarios) {
+    const testsForScenario = remainingTests.filter(t => t.scenario.id === scenario.id).length;
+    scenarioProgress.set(scenario.id, {
+      total: testsForScenario,
+      completed: 0,
+      scores: [],
+      scenarioName: scenario.name || scenario.id,
+    });
+  }
+  let completedScenarios = 0;
+
+  // 9. Reuse the same parallel worker pool pattern
+  async function processQueue(queue, workerCount, processItem) {
+    const items = [...queue];
+    let index = 0;
+
+    async function worker() {
+      while (index < items.length) {
+        const i = index++;
+        await processItem(items[i]);
+        await sleep(REQUEST_DELAY_MS);
+      }
+    }
+
+    const workers = Array.from(
+      { length: Math.min(workerCount, items.length) },
+      () => worker()
+    );
+    await Promise.all(workers);
+  }
+
+  log(`\nRunning ${totalRemainingTests} remaining tests with parallelism=${parallelism}...\n`);
+
+  const runStartTime = Date.now();
+
+  await processQueue(remainingTests, parallelism, async ({ config, scenario }) => {
+    const profileLabel = config.label || config.profileName || '';
+
+    progressLogger.testStart({
+      scenarioId: scenario.id,
+      scenarioName: scenario.name || scenario.id,
+      profileName: profileLabel,
+    });
+
+    try {
+      const result = await runSingleTest(scenario, config, {
+        skipRubricEval,
+        verbose,
+      });
+
+      evaluationStore.storeResult(runId, result);
+      results.push(result);
+      completedTests++;
+
+      progressLogger.testComplete({
+        scenarioId: scenario.id,
+        scenarioName: scenario.name || scenario.id,
+        profileName: profileLabel,
+        success: result.success,
+        overallScore: result.overallScore,
+        baseScore: result.baseScore ?? null,
+        recognitionScore: result.recognitionScore ?? null,
+        latencyMs: result.latencyMs,
+        completedCount: completedTests,
+        totalTests: totalRemainingTests,
+      });
+
+      reporter.onTestComplete({
+        ...result,
+        profileName: profileLabel,
+        scenarioName: scenario.name || scenario.id,
+      });
+
+      log(`  ${formatProgress(completedTests, totalRemainingTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`);
+
+      monitoringService.recordEvent(runId, {
+        type: 'evaluation_test',
+        inputTokens: result.inputTokens || 0,
+        outputTokens: result.outputTokens || 0,
+        latencyMs: result.latencyMs || 0,
+        round: completedTests,
+        approved: result.success,
+      });
+
+      // Track scenario completion
+      const sp = scenarioProgress.get(scenario.id);
+      sp.completed++;
+      if (result.overallScore != null) sp.scores.push(result.overallScore);
+      if (sp.completed >= sp.total) {
+        completedScenarios++;
+        const avgScore = sp.scores.length > 0
+          ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length
+          : null;
+        progressLogger.scenarioComplete({
+          scenarioId: scenario.id,
+          scenarioName: sp.scenarioName,
+          profileNames,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+        reporter.onScenarioComplete({
+          scenarioName: sp.scenarioName,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+      }
+    } catch (error) {
+      completedTests++;
+      log(`  ${formatProgress(completedTests, totalRemainingTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
+
+      progressLogger.testError({
+        scenarioId: scenario.id,
+        scenarioName: scenario.name || scenario.id,
+        profileName: profileLabel,
+        errorMessage: error.message,
+        completedCount: completedTests,
+        totalTests: totalRemainingTests,
+      });
+
+      reporter.onTestError({
+        scenarioName: scenario.name || scenario.id,
+        profileName: profileLabel,
+        errorMessage: error.message,
+      });
+
+      monitoringService.recordEvent(runId, {
+        type: 'evaluation_error',
+        round: completedTests,
+        error: error.message,
+      });
+
+      // Track scenario completion even on error
+      const sp = scenarioProgress.get(scenario.id);
+      sp.completed++;
+      if (sp.completed >= sp.total) {
+        completedScenarios++;
+        const avgScore = sp.scores.length > 0
+          ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length
+          : null;
+        progressLogger.scenarioComplete({
+          scenarioId: scenario.id,
+          scenarioName: sp.scenarioName,
+          profileNames,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+        reporter.onScenarioComplete({
+          scenarioName: sp.scenarioName,
+          avgScore,
+          completedScenarios,
+          totalScenarios: targetScenarios.length,
+        });
+      }
+    }
+  });
+
+  const durationMs = Date.now() - runStartTime;
+  const successfulTests = results.filter(r => r.success).length;
+  const failedTests = completedTests - successfulTests;
+
+  progressLogger.runComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
+  reporter.onRunComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
+
+  // 10. Mark run as completed with updated totalTests (all results, old + new)
+  const allResults = evaluationStore.getResults(runId);
+  evaluationStore.updateRun(runId, {
+    status: 'completed',
+    totalTests: allResults.length,
+    completedAt: new Date().toISOString(),
+  });
+
+  monitoringService.endSession(runId);
+
+  const stats = evaluationStore.getRunStats(runId);
+  const scenarioStats = evaluationStore.getScenarioStats(runId);
+
+  return {
+    runId,
+    totalTests: allResults.length,
+    successfulTests,
+    resumedTests: totalRemainingTests,
+    stats,
+    scenarioStats,
+    progressLogPath,
+    resumed: true,
+  };
+}
+
+/**
  * Compare two or more configurations
  */
 export async function compareConfigurations(configs, options = {}) {
@@ -1866,6 +2248,7 @@ export { structureLearnerContext, resolveConfigModels };
 
 export default {
   runEvaluation,
+  resumeEvaluation,
   compareConfigurations,
   quickTest,
   listOptions,

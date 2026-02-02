@@ -78,7 +78,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
@@ -100,7 +100,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: tutor-ego.md
       hyperparameters:
         temperature: 0.6
@@ -123,7 +123,7 @@ profiles:
       convergence_threshold: 0.8
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       staging: front
       prompt_file: tutor-ego.md
       hyperparameters:
@@ -154,7 +154,7 @@ profiles:
       convergence_threshold: 0.8
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       staging: front
       prompt_file: tutor-ego.md
       hyperparameters:
@@ -184,7 +184,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
@@ -206,7 +206,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
@@ -229,7 +229,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
@@ -264,7 +264,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
