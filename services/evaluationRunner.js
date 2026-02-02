@@ -314,12 +314,16 @@ function structureLearnerContext(rawContext) {
   const fieldKeys = Object.keys(fields);
   if (fieldKeys.length <= 1) return rawContext; // only learner type
 
-  // Build structured summary block
-  const lines = ['<structured_context_summary>'];
+  // Build structured summary block with explicit instruction header
+  const lines = [
+    '⚠️ YOU MUST REFERENCE AT LEAST ONE OF THESE SIGNALS BY NAME IN YOUR SUGGESTION:',
+    '<structured_context_summary>',
+  ];
   for (const [key, value] of Object.entries(fields)) {
     lines.push(`${key}: ${value}`);
   }
   lines.push('</structured_context_summary>');
+  lines.push('Your suggestion MUST mention specific data from the summary above. Generic responses are WRONG.');
   lines.push('');
 
   return lines.join('\n') + rawContext;
