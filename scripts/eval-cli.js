@@ -20,6 +20,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js export <runId>   # Export results to file for offline review
  *   node scripts/eval-cli.js cleanup          # Preview stale runs (dry-run by default)
  *   node scripts/eval-cli.js cleanup --force # Actually mark stale runs as completed
+ *   node scripts/eval-cli.js resume <runId>   # Resume an incomplete run (re-run missing tests)
  *   node scripts/eval-cli.js revert <runId>  # Revert a completed/failed run to 'running'
  *   node scripts/eval-cli.js rejudge <runId> # Re-run AI judge on existing transcripts
  *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
@@ -772,15 +773,17 @@ async function main() {
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
         });
-        // Extract unique model aliases used across all configs
+        // Extract unique model aliases used across all configs (ego + superego)
+        const extractAlias = (raw) => {
+          if (!raw) return null;
+          const dotIdx = raw.indexOf('.');
+          return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
+        };
         const modelAliases = [...new Set(
-          (result.stats || []).map(s => {
-            const raw = s.egoModel || s.model;
-            if (!raw) return null;
-            // egoModel is "provider.vendor/model-name" — extract "vendor/model-name"
-            const dotIdx = raw.indexOf('.');
-            return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
-          }).filter(Boolean)
+          (result.stats || []).flatMap(s => [
+            extractAlias(s.egoModel || s.model),
+            extractAlias(s.superegoModel),
+          ]).filter(Boolean)
         )];
 
         console.log('\nEvaluation complete.');
@@ -849,10 +852,11 @@ async function main() {
           'Status'.padEnd(12) +
           'Progress'.padEnd(18) +
           'Avg'.padEnd(7) +
+          'Duration'.padEnd(10) +
           'Created'.padEnd(24) +
           'Description'
         );
-        console.log('  ' + '-'.repeat(120));
+        console.log('  ' + '-'.repeat(130));
 
         for (const run of runs) {
           const created = run.createdAt
@@ -867,6 +871,14 @@ async function main() {
             progress = `${run.completedResults} done`;
           }
           const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
+          // Duration formatting
+          let duration = '--';
+          if (run.durationMs != null) {
+            const totalSec = Math.round(run.durationMs / 1000);
+            const m = Math.floor(totalSec / 60);
+            const s = totalSec % 60;
+            duration = m > 0 ? `${m}m ${s}s` : `${s}s`;
+          }
           const desc = run.description || '';
           const models = (run.models && run.models.length > 0) ? run.models.join(', ') : '--';
           console.log(
@@ -875,6 +887,7 @@ async function main() {
             (run.status || '--').padEnd(12) +
             progress.padEnd(18) +
             avg.padEnd(7) +
+            duration.padEnd(10) +
             created.padEnd(24) +
             desc
           );
@@ -1218,6 +1231,90 @@ async function main() {
         }
 
         console.log('');
+        break;
+      }
+
+      case 'resume': {
+        const runId = args.find(a => !a.startsWith('--') && a !== 'resume');
+        if (!runId) {
+          console.error('Usage: eval-cli.js resume <runId> [--parallelism N] [--verbose]');
+          process.exit(1);
+        }
+
+        const verbose = getFlag('verbose');
+        const parallelism = parseInt(getOption('parallelism', '2'), 10);
+
+        const result = await evaluationRunner.resumeEvaluation({
+          runId,
+          parallelism,
+          verbose,
+        });
+
+        if (result.alreadyComplete) {
+          break;
+        }
+
+        // Extract unique model aliases (same as `run` command)
+        const extractAlias = (raw) => {
+          if (!raw) return null;
+          const dotIdx = raw.indexOf('.');
+          return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
+        };
+        const modelAliases = [...new Set(
+          (result.stats || []).flatMap(s => [
+            extractAlias(s.egoModel || s.model),
+            extractAlias(s.superegoModel),
+          ]).filter(Boolean)
+        )];
+
+        console.log('\nResume complete.');
+        if (modelAliases.length > 0) {
+          console.log(`Models: ${modelAliases.join(', ')}`);
+        }
+        console.log(`  Total tests (all): ${result.totalTests}`);
+        console.log(`  Resumed tests: ${result.resumedTests}`);
+        console.log(`  Successful (this run): ${result.successfulTests}`);
+        console.log(JSON.stringify(result, null, 2));
+
+        // Factorial post-analysis (same as `run` command)
+        if (result.runId) {
+          const scoreTypes = [
+            { column: 'overall_score', label: 'Overall Score' },
+            { column: 'base_score', label: 'Base Score' },
+            { column: 'recognition_score', label: 'Recognition Score' },
+          ];
+
+          for (const { column, label } of scoreTypes) {
+            const cellData = evaluationStore.getFactorialCellData(result.runId, { scoreColumn: column });
+            const cellKeys = Object.keys(cellData);
+            const totalSamples = cellKeys.reduce((sum, k) => sum + cellData[k].length, 0);
+
+            if (totalSamples === 0) continue;
+
+            console.log('\n' + '='.repeat(70));
+            console.log(`  FACTORIAL ANALYSIS: ${label.toUpperCase()}`);
+            console.log('='.repeat(70));
+
+            for (const key of cellKeys.sort()) {
+              const scores = cellData[key];
+              const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+              const sd = scores.length > 1
+                ? Math.sqrt(scores.reduce((acc, s) => acc + (s - mean) ** 2, 0) / (scores.length - 1))
+                : 0;
+              const cellLabel = key.replace(/r(\d)_t(\d)_l(\d)/, (_, r, t, l) =>
+                `Recog=${r === '1' ? 'Y' : 'N'}  Tutor=${t === '1' ? 'Multi' : 'Single'}  Learner=${l === '1' ? 'Psycho' : 'Unified'}`
+              );
+              console.log(`  ${cellLabel.padEnd(52)} mean=${mean.toFixed(1)}  sd=${sd.toFixed(1)}  n=${scores.length}`);
+            }
+
+            if (totalSamples > 8) {
+              const anovaResult = anovaStats.runThreeWayANOVA(cellData);
+              console.log(anovaStats.formatANOVAReport(anovaResult, { scoreLabel: label }));
+            } else {
+              console.log(`\n  Need > 8 total samples for ANOVA (have ${totalSamples}). Increase --runs.`);
+            }
+          }
+        }
         break;
       }
 
@@ -1823,7 +1920,7 @@ async function main() {
 
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, revert, rejudge, evaluate, chat');
+        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, chat');
         process.exit(1);
     }
   } catch (error) {
