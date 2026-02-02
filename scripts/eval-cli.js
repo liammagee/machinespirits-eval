@@ -17,10 +17,13 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js transcript <runId> # Show full transcripts for a run
  *   node scripts/eval-cli.js status <runId>   # Quick snapshot of a run's state
  *   node scripts/eval-cli.js watch <runId>    # Live-updating progress table
+ *   node scripts/eval-cli.js export <runId>   # Export results to file for offline review
  *   node scripts/eval-cli.js cleanup          # Preview stale runs (dry-run by default)
  *   node scripts/eval-cli.js cleanup --force # Actually mark stale runs as completed
  *   node scripts/eval-cli.js revert <runId>  # Revert a completed/failed run to 'running'
  *   node scripts/eval-cli.js rejudge <runId> # Re-run AI judge on existing transcripts
+ *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
+ *   node scripts/eval-cli.js evaluate <runId> --follow  # Poll & judge results as they appear
  *   node scripts/eval-cli.js chat            # AI conversational interface
  *
  * Options:
@@ -34,14 +37,15 @@ import 'dotenv/config';
  *   --parallelism <n>      Parallel test count (for 'run' command, default: 2)
  *   --description <text>   Description for the evaluation run
  *   --db                   Use SQLite instead of JSONL for 'watch' (slower but persistent)
- *   --refresh <ms>         Refresh interval for 'watch' (default: 2000)
+ *   --follow               Poll for new results in 'evaluate' (live follow mode)
+ *   --refresh <ms>         Refresh interval for 'watch' (default: 2000) or 'evaluate --follow' (default: 5000)
  *   --force                Actually complete stale runs (for 'cleanup'; dry-run without it)
  *   --older-than <min>     Staleness threshold in minutes (for 'cleanup', default: 30)
  *
  * The default `run` uses the 2x2x2 factorial design:
  *   Factor A: Recognition prompts (off / on)
  *   Factor B: Multi-agent tutor  (single / ego+superego)
- *   Factor C: Multi-agent learner (unified / psychodynamic)
+ *   Factor C: Multi-agent learner (unified / ego_superego)
  *   = 8 cells, all nemotron (free tier) to isolate architecture effects.
  *
  * Examples:
@@ -56,8 +60,10 @@ import 'dotenv/config';
 import * as evaluationRunner from '../services/evaluationRunner.js';
 import * as anovaStats from '../services/anovaStats.js';
 import * as evaluationStore from '../services/evaluationStore.js';
-import { getAvailableJudge } from '../services/rubricEvaluator.js';
+import { getAvailableJudge, buildEvaluationPrompt, calculateOverallScore, calculateBaseScore, calculateRecognitionScore } from '../services/rubricEvaluator.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
+import { getScenario } from '../services/evalConfigLoader.js';
+import { spawn } from 'child_process';
 import readline from 'readline';
 import fs from 'fs';
 import path from 'path';
@@ -742,7 +748,7 @@ async function main() {
           console.log('\n2x2x2 Factorial Design');
           console.log(`  Factor A: Recognition      (off / on)`);
           console.log(`  Factor B: Tutor arch.      (single / ego+superego)`);
-          console.log(`  Factor C: Learner arch.    (unified / psychodynamic)`);
+          console.log(`  Factor C: Learner arch.    (unified / ego_superego)`);
           console.log(`  Cells: ${cellCount}  |  Runs/cell: ${runsPerConfig}  |  Per scenario: ${cellCount * runsPerConfig}`);
           console.log('');
         }
@@ -807,7 +813,8 @@ async function main() {
       }
 
       case 'runs': {
-        const limit = parseInt(getOption('limit', '20'), 10);
+        const limitOpt = getOption('limit');
+        const limit = limitOpt ? parseInt(limitOpt, 10) : null;
         const statusFilter = getOption('status') || null;
         const runs = evaluationStore.listRuns({ limit, status: statusFilter });
 
@@ -816,7 +823,7 @@ async function main() {
           break;
         }
 
-        console.log(`\nEvaluation runs (${runs.length} most recent):\n`);
+        console.log(`\nEvaluation runs (${runs.length} total):\n`);
         console.log(
           '  ' +
           'ID'.padEnd(40) +
@@ -1259,9 +1266,541 @@ async function main() {
         break;
       }
 
+      case 'export': {
+        const runId = args.find(a => !a.startsWith('--') && a !== 'export');
+        if (!runId) {
+          console.error('Usage: eval-cli.js export <runId> [--scenario <id>] [--profile <name>] [--output <path>]');
+          process.exit(1);
+        }
+
+        const scenarioFilter = getOption('scenario') || null;
+        const profileFilter = getOption('profile') || null;
+        const outputOption = getOption('output') || null;
+
+        const results = evaluationStore.getResults(runId, {
+          scenarioId: scenarioFilter,
+          profileName: profileFilter,
+        });
+
+        if (results.length === 0) {
+          console.log(`\nNo results found for run: ${runId}`);
+          break;
+        }
+
+        // Build output
+        const lines = [];
+        lines.push(`# Evaluation Export — Run ${runId}`);
+        lines.push(`# ${results.length} result(s)`);
+        if (scenarioFilter) lines.push(`# Scenario filter: ${scenarioFilter}`);
+        if (profileFilter) lines.push(`# Profile filter: ${profileFilter}`);
+        lines.push('');
+
+        for (const result of results) {
+          const scenario = getScenario(result.scenarioId);
+
+          lines.push('='.repeat(80));
+          lines.push(`Scenario: ${result.scenarioName || result.scenarioId}`);
+          lines.push(`Profile:  ${result.profileName || `${result.provider}/${result.model}`}`);
+          lines.push(`Provider: ${result.provider}  Model: ${result.model}`);
+          if (result.egoModel || result.superegoModel) {
+            lines.push(`Ego: ${result.egoModel || 'N/A'}  Superego: ${result.superegoModel || 'N/A'}`);
+          }
+          lines.push(`Score:    ${result.overallScore != null ? result.overallScore.toFixed(1) : 'NOT EVALUATED'}`);
+          lines.push('='.repeat(80));
+          lines.push('');
+
+          if (scenario) {
+            if (scenario.learner_context) {
+              lines.push('### Scenario Context');
+              lines.push(scenario.learner_context.trim());
+              lines.push('');
+            }
+            if (scenario.expected_behavior) {
+              lines.push('### Expected Behavior');
+              lines.push(scenario.expected_behavior);
+              lines.push('');
+            }
+            if (scenario.required_elements?.length > 0) {
+              lines.push('### Required Elements');
+              for (const el of scenario.required_elements) lines.push(`- ${el}`);
+              lines.push('');
+            }
+            if (scenario.forbidden_elements?.length > 0) {
+              lines.push('### Forbidden Elements');
+              for (const el of scenario.forbidden_elements) lines.push(`- ${el}`);
+              lines.push('');
+            }
+          }
+
+          // Tutor suggestion(s)
+          if (result.suggestions?.length > 0) {
+            lines.push('### Tutor Suggestion');
+            for (const s of result.suggestions) {
+              if (typeof s === 'string') {
+                lines.push(s);
+              } else {
+                if (s.title) lines.push(`Title: ${s.title}`);
+                if (s.message || s.text || s.content) lines.push(`Message: ${s.message || s.text || s.content}`);
+                if (s.action) lines.push(`Action: ${s.action}${s.actionTarget ? ' → ' + s.actionTarget : ''}`);
+                if (s.reasoning) lines.push(`Reasoning: ${s.reasoning}`);
+              }
+            }
+            lines.push('');
+          }
+
+          // Dialogue trace
+          if (result.dialogueId) {
+            const files = fs.existsSync(LOGS_DIR)
+              ? fs.readdirSync(LOGS_DIR).filter(f => f.includes(result.dialogueId))
+              : [];
+
+            if (files.length > 0) {
+              try {
+                const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
+                const trace = dialogue.dialogueTrace || [];
+                if (trace.length > 0) {
+                  lines.push('### Dialogue Trace');
+                  for (const entry of trace) {
+                    const role = (entry.role || entry.speaker || 'unknown').toUpperCase();
+                    const content = entry.content || entry.message || entry.text || '';
+                    lines.push(`[${role}] ${content}`);
+                  }
+                  lines.push('');
+                }
+              } catch (e) {
+                // skip
+              }
+            }
+          }
+
+          if (result.errorMessage) {
+            lines.push(`### Error`);
+            lines.push(result.errorMessage);
+            lines.push('');
+          }
+
+          lines.push('');
+        }
+
+        // Determine output path
+        let outputPath = outputOption;
+        if (!outputPath) {
+          const exportsDir = path.resolve(__dirname, '..', 'exports');
+          if (!fs.existsSync(exportsDir)) fs.mkdirSync(exportsDir, { recursive: true });
+          let filename = `eval-${runId}`;
+          if (scenarioFilter) filename += `-${scenarioFilter}`;
+          if (profileFilter) filename += `-${profileFilter}`;
+          filename += '.md';
+          outputPath = path.join(exportsDir, filename);
+        }
+
+        fs.writeFileSync(outputPath, lines.join('\n'), 'utf-8');
+        console.log(`\nExported ${results.length} result(s) to: ${outputPath}`);
+        break;
+      }
+
+      case 'evaluate': {
+        const runId = args.find(a => !a.startsWith('--') && a !== 'evaluate');
+        if (!runId) {
+          console.error('Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--force] [--follow] [--review] [--refresh <ms>] [--verbose]');
+          process.exit(1);
+        }
+
+        const verbose = getFlag('verbose');
+        const force = getFlag('force');
+        const follow = getFlag('follow');
+        const review = getFlag('review');
+        const refreshMs = parseInt(getOption('refresh', '5000'), 10);
+        const scenarioFilter = getOption('scenario') || null;
+        const profileFilter = getOption('profile') || null;
+        const modelOverride = getOption('model') || null;
+
+        // Helper: evaluate a single result via claude CLI
+        async function evaluateOneResult(result, tag) {
+          const scenarioId = result.scenarioId;
+          const profileName = result.profileName || `${result.provider}/${result.model}`;
+
+          const scenario = getScenario(scenarioId);
+          if (!scenario) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (scenario not found)`);
+            return null;
+          }
+
+          const suggestion = result.suggestions?.[0];
+          if (!suggestion) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (no suggestion)`);
+            return null;
+          }
+
+          const prompt = buildEvaluationPrompt(suggestion, {
+            name: scenario.name,
+            description: scenario.description,
+            expectedBehavior: scenario.expected_behavior,
+            learnerContext: scenario.learner_context,
+            requiredElements: scenario.required_elements,
+            forbiddenElements: scenario.forbidden_elements,
+          }, {});
+
+          const claudeArgs = ['-p', '-', '--output-format', 'text'];
+          if (modelOverride) {
+            claudeArgs.push('--model', modelOverride);
+          }
+
+          if (verbose) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... calling claude`);
+          }
+
+          const stdout = await new Promise((resolve, reject) => {
+            const env = { ...process.env };
+            delete env.ANTHROPIC_API_KEY;
+            const child = spawn('claude', claudeArgs, {
+              stdio: ['pipe', 'pipe', 'pipe'],
+              env,
+            });
+            let out = '';
+            let err = '';
+            child.stdout.on('data', d => { out += d; });
+            child.stderr.on('data', d => { err += d; });
+            child.on('error', reject);
+            child.on('close', code => {
+              if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+              else resolve(out);
+            });
+            child.stdin.write(prompt);
+            child.stdin.end();
+          });
+
+          let jsonStr = stdout.trim();
+          const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+          if (fenceMatch) {
+            jsonStr = fenceMatch[1].trim();
+          } else {
+            const firstBrace = jsonStr.indexOf('{');
+            const lastBrace = jsonStr.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+              jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+            }
+          }
+
+          const parsed = JSON.parse(jsonStr);
+
+          const dimensionMap = {
+            relevance: 'relevance',
+            specificity: 'specificity',
+            pedagogical_soundness: 'pedagogical',
+            pedagogical: 'pedagogical',
+            personalization: 'personalization',
+            actionability: 'actionability',
+            tone: 'tone',
+          };
+
+          const normalizedScores = {};
+          for (const [key, value] of Object.entries(parsed.scores || {})) {
+            const normalizedKey = dimensionMap[key] || key;
+            if (typeof value === 'object' && value !== null) {
+              normalizedScores[normalizedKey] = { score: value.score, reasoning: value.reasoning };
+            } else if (typeof value === 'number') {
+              normalizedScores[normalizedKey] = { score: value, reasoning: null };
+            }
+          }
+
+          const overallScore = Object.keys(normalizedScores).length > 0
+            ? calculateOverallScore(normalizedScores)
+            : parsed.overall_score;
+          const baseScore = calculateBaseScore(normalizedScores);
+          const recognitionScore = calculateRecognitionScore(normalizedScores);
+
+          const evaluation = {
+            scores: normalizedScores,
+            overallScore,
+            baseScore,
+            recognitionScore,
+            passesRequired: parsed.validation?.passes_required ?? true,
+            passesForbidden: parsed.validation?.passes_forbidden ?? true,
+            requiredMissing: parsed.validation?.required_missing || [],
+            forbiddenFound: parsed.validation?.forbidden_found || [],
+            summary: parsed.summary,
+            judgeModel: modelOverride || 'claude-code',
+          };
+
+          evaluationStore.updateResultScores(result.id, evaluation);
+
+          // Score line
+          const dimScores = Object.entries(normalizedScores)
+            .map(([k, v]) => `${k}=${v.score}`)
+            .join(' ');
+          console.log(`${tag} ${scenarioId} / ${profileName} ... ${overallScore.toFixed(1)}  (${dimScores})`);
+
+          if (verbose) {
+            // Truncated suggestion excerpt
+            const suggText = typeof suggestion === 'string'
+              ? suggestion
+              : (suggestion.message || suggestion.text || suggestion.content || JSON.stringify(suggestion));
+            const truncSugg = suggText.length > 200
+              ? suggText.slice(0, 200).replace(/\n/g, ' ') + '...'
+              : suggText.replace(/\n/g, ' ');
+            console.log(`     Suggestion: ${truncSugg}`);
+
+            // Judge summary
+            if (parsed.summary) {
+              const truncSummary = parsed.summary.length > 300
+                ? parsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                : parsed.summary.replace(/\n/g, ' ');
+              console.log(`     Judge: ${truncSummary}`);
+            }
+            console.log('');
+          }
+
+          return overallScore;
+        }
+
+        // Helper: print summary
+        function printEvaluateSummary(succeeded, failed, totalAttempted, scores) {
+          const avgScore = scores.length > 0
+            ? scores.reduce((a, b) => a + b, 0) / scores.length
+            : 0;
+
+          console.log('\n' + '='.repeat(50));
+          console.log('  EVALUATE SUMMARY');
+          console.log('='.repeat(50));
+          console.log(`  Total:     ${totalAttempted}`);
+          console.log(`  Succeeded: ${succeeded}`);
+          console.log(`  Failed:    ${failed}`);
+          if (scores.length > 0) {
+            console.log(`  Avg score: ${avgScore.toFixed(1)}`);
+          }
+          console.log('');
+        }
+
+        // ── Review mode: show stored reasoning without re-evaluating ──
+        if (review) {
+          const results = evaluationStore.getResults(runId, {
+            scenarioId: scenarioFilter,
+            profileName: profileFilter,
+          });
+
+          if (results.length === 0) {
+            console.error(`No results found for run: ${runId}`);
+            process.exit(1);
+          }
+
+          const evaluated = results.filter(r => r.baseScore != null);
+          if (evaluated.length === 0) {
+            console.log('No evaluated results to review. Run evaluate first.');
+            break;
+          }
+
+          console.log(`\nReviewing ${evaluated.length} evaluated result(s) for run: ${runId}\n`);
+
+          for (let i = 0; i < evaluated.length; i++) {
+            const r = evaluated[i];
+            const profileName = r.profileName || `${r.provider}/${r.model}`;
+
+            // Dimension scores on one line
+            const dimScores = Object.entries(r.scores || {})
+              .filter(([, v]) => v != null)
+              .map(([k, v]) => {
+                const score = typeof v === 'object' ? v.score : v;
+                return `${k}=${score}`;
+              })
+              .join(' ');
+
+            console.log(`[${i + 1}/${evaluated.length}] ${r.scenarioId} / ${profileName} ... ${r.overallScore?.toFixed(1) ?? '--'}  (${dimScores})`);
+
+            // Suggestion excerpt
+            const suggestion = r.suggestions?.[0];
+            if (suggestion) {
+              const suggText = typeof suggestion === 'string'
+                ? suggestion
+                : (suggestion.message || suggestion.text || suggestion.content || JSON.stringify(suggestion));
+              const truncSugg = suggText.length > 200
+                ? suggText.slice(0, 200).replace(/\n/g, ' ') + '...'
+                : suggText.replace(/\n/g, ' ');
+              console.log(`     Suggestion: ${truncSugg}`);
+            }
+
+            // Judge summary
+            if (r.evaluationReasoning) {
+              const truncReasoning = r.evaluationReasoning.length > 300
+                ? r.evaluationReasoning.slice(0, 300).replace(/\n/g, ' ') + '...'
+                : r.evaluationReasoning.replace(/\n/g, ' ');
+              console.log(`     Judge: ${truncReasoning}`);
+            }
+
+            // Per-dimension reasoning (verbose only)
+            if (verbose && r.scores) {
+              for (const [dim, val] of Object.entries(r.scores)) {
+                if (typeof val === 'object' && val?.reasoning) {
+                  const truncDim = val.reasoning.length > 150
+                    ? val.reasoning.slice(0, 150).replace(/\n/g, ' ') + '...'
+                    : val.reasoning.replace(/\n/g, ' ');
+                  console.log(`       ${dim} (${val.score}): ${truncDim}`);
+                }
+              }
+            }
+            console.log('');
+          }
+
+          // Quick stats
+          const reviewScores = evaluated.map(r => r.overallScore).filter(s => s != null);
+          if (reviewScores.length > 0) {
+            const avg = reviewScores.reduce((a, b) => a + b, 0) / reviewScores.length;
+            const sd = Math.sqrt(reviewScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (reviewScores.length - 1));
+            console.log(`Reviewed ${evaluated.length} results: avg=${avg.toFixed(1)} sd=${sd.toFixed(1)}`);
+          }
+          break;
+        }
+
+        let succeeded = 0;
+        let failed = 0;
+        const scores = [];
+
+        if (follow) {
+          // ── Follow mode: poll for new unevaluated results ──
+          console.log(`\nFollowing run: ${runId} (polling every ${refreshMs}ms)`);
+          if (modelOverride) console.log(`  Model: ${modelOverride}`);
+          console.log('');
+
+          const processedIds = new Set();
+          let evalCounter = 0;
+          let interrupted = false;
+
+          // SIGINT handler: print summary so far and exit
+          const sigintHandler = () => {
+            interrupted = true;
+            console.log('\n\nInterrupted by user.');
+            printEvaluateSummary(succeeded, failed, succeeded + failed, scores);
+            process.exit(0);
+          };
+          process.on('SIGINT', sigintHandler);
+
+          const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+          while (!interrupted) {
+            // Fetch results that have a suggestion but no rubric evaluation
+            const results = evaluationStore.getResults(runId, {
+              scenarioId: scenarioFilter,
+              profileName: profileFilter,
+            });
+
+            const unevaluated = results.filter(r =>
+              r.baseScore == null && r.success && !processedIds.has(r.id)
+            );
+
+            // Total results available so far (for progress display)
+            const totalResults = results.filter(r => r.success).length;
+
+            // Process each new unevaluated result
+            for (const result of unevaluated) {
+              if (interrupted) break;
+              processedIds.add(result.id);
+              evalCounter++;
+              const tag = `[${evalCounter}/${totalResults}]`;
+
+              try {
+                const score = await evaluateOneResult(result, tag);
+                if (score != null) {
+                  scores.push(score);
+                  succeeded++;
+                } else {
+                  failed++;
+                }
+              } catch (err) {
+                failed++;
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                const profileName = result.profileName || `${result.provider}/${result.model}`;
+                console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+              }
+            }
+
+            // Check if run is done and no unevaluated results remain
+            const run = evaluationStore.getRun(runId);
+            const runStatus = run?.status || 'unknown';
+
+            if (runStatus !== 'running' && unevaluated.length === 0) {
+              // Re-check one more time to avoid race condition
+              const finalResults = evaluationStore.getResults(runId, {
+                scenarioId: scenarioFilter,
+                profileName: profileFilter,
+              });
+              const finalUnevaluated = finalResults.filter(r =>
+                r.baseScore == null && r.success && !processedIds.has(r.id)
+              );
+              if (finalUnevaluated.length === 0) {
+                console.log(`\nRun ${runStatus}. All results evaluated.`);
+                break;
+              }
+            }
+
+            // Status line while waiting
+            const evaluatedCount = results.filter(r => r.baseScore != null).length;
+            console.log(`Waiting for new results... (${evaluatedCount} evaluated of ${totalResults} total, run ${runStatus})`);
+
+            await sleep(refreshMs);
+          }
+
+          process.removeListener('SIGINT', sigintHandler);
+          printEvaluateSummary(succeeded, failed, succeeded + failed, scores);
+
+        } else {
+          // ── One-shot mode (existing behavior) ──
+
+          // Load results for this run
+          const results = evaluationStore.getResults(runId, {
+            scenarioId: scenarioFilter,
+            profileName: profileFilter,
+          });
+
+          if (results.length === 0) {
+            console.error(`No results found for run: ${runId}`);
+            process.exit(1);
+          }
+
+          // Filter to unevaluated results unless --force
+          // Use baseScore == null to detect skip-rubric results (overallScore=100 but no rubric dims)
+          const toEvaluate = force
+            ? results
+            : results.filter(r => r.baseScore == null && r.success);
+
+          if (toEvaluate.length === 0) {
+            console.log('All results already have rubric scores. Use --review to inspect reasoning, or --force to re-evaluate.');
+            break;
+          }
+
+          console.log(`\nEvaluating ${toEvaluate.length} result(s) for run: ${runId}`);
+          if (modelOverride) console.log(`  Model: ${modelOverride}`);
+          console.log('');
+
+          for (let i = 0; i < toEvaluate.length; i++) {
+            const result = toEvaluate[i];
+            const tag = `[${i + 1}/${toEvaluate.length}]`;
+
+            try {
+              const score = await evaluateOneResult(result, tag);
+              if (score != null) {
+                scores.push(score);
+                succeeded++;
+              } else {
+                failed++;
+              }
+            } catch (err) {
+              failed++;
+              const profileName = result.profileName || `${result.provider}/${result.model}`;
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+          }
+
+          printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
+        }
+        break;
+      }
+
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, cleanup, revert, rejudge, chat');
+        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, revert, rejudge, evaluate, chat');
         process.exit(1);
     }
   } catch (error) {
