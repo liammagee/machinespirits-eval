@@ -772,7 +772,21 @@ async function main() {
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
         });
+        // Extract unique model aliases used across all configs
+        const modelAliases = [...new Set(
+          (result.stats || []).map(s => {
+            const raw = s.egoModel || s.model;
+            if (!raw) return null;
+            // egoModel is "provider.vendor/model-name" — extract "vendor/model-name"
+            const dotIdx = raw.indexOf('.');
+            return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
+          }).filter(Boolean)
+        )];
+
         console.log('\nEvaluation complete.');
+        if (modelAliases.length > 0) {
+          console.log(`Models: ${modelAliases.join(', ')}`);
+        }
         console.log(JSON.stringify(result, null, 2));
 
         // Factorial post-analysis: print cell means and ANOVA for each score type
@@ -854,6 +868,7 @@ async function main() {
           }
           const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
           const desc = run.description || '';
+          const models = (run.models && run.models.length > 0) ? run.models.join(', ') : '--';
           console.log(
             '  ' +
             run.id.padEnd(40) +
@@ -863,6 +878,9 @@ async function main() {
             created.padEnd(24) +
             desc
           );
+          if (models !== '--') {
+            console.log('  ' + `  Models: ${models}`);
+          }
         }
         console.log('');
         break;
