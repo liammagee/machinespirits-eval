@@ -386,10 +386,8 @@ function buildMultiTurnContext(options) {
     }
   }
 
-  if (previousSuggestion) {
-    contextParts.push('\n### Previous Tutor Suggestion');
-    contextParts.push(formatSuggestionForContext(previousSuggestion));
-  }
+  // Note: "Previous Tutor Suggestion" block removed — it duplicated the last
+  // entry already present in conversation history above.
 
   if (currentTurn?.learner_action) {
     contextParts.push('\n### Learner Action');
@@ -442,9 +440,9 @@ function formatSuggestionForContext(suggestion) {
   if (suggestion.action && suggestion.actionTarget) {
     lines.push(`**Suggested Action**: ${suggestion.action} → ${suggestion.actionTarget}`);
   }
-  if (suggestion.reasoning) {
-    lines.push(`**Reasoning**: ${suggestion.reasoning}`);
-  }
+  // Note: reasoning intentionally excluded — it's internal justification that
+  // inflates context without helping the model generate the next suggestion.
+  // Title + message + action are sufficient for conversational continuity.
 
   return lines.join('\n');
 }
@@ -952,6 +950,27 @@ export async function runEvaluation(options = {}) {
     } catch (error) {
       completedTests++;
       log(`  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
+
+      // Store failed result so it shows up in the database instead of silently disappearing
+      const failedResult = {
+        scenarioId: scenario.id,
+        scenarioName: scenario.name || scenario.id,
+        profileName: config.profileName,
+        provider: config.provider || null,
+        model: config.model || null,
+        egoModel: config.egoModel || null,
+        superegoModel: config.superegoModel || null,
+        factors: config.factors || null,
+        learnerArchitecture: config.learnerArchitecture || null,
+        success: false,
+        errorMessage: error.message,
+      };
+      try {
+        evaluationStore.storeResult(run.id, failedResult);
+        results.push(failedResult);
+      } catch (storeErr) {
+        log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+      }
 
       // Emit test_error event
       progressLogger.testError({
@@ -1601,28 +1620,12 @@ export async function resumeEvaluation(options = {}) {
     throw new Error(`No matching scenarios found for run ${runId}`);
   }
 
-  // 6. Call getIncompleteTests to get remaining pairs
-  const incomplete = evaluationStore.getIncompleteTests(runId, profileNames, targetScenarios);
-
-  if (incomplete.remaining === 0) {
-    console.log(`\nRun ${runId}: all ${incomplete.totalExpected} tests already completed. Nothing to resume.`);
-    return {
-      runId,
-      totalTests: 0,
-      successfulTests: 0,
-      stats: evaluationStore.getRunStats(runId),
-      scenarioStats: evaluationStore.getScenarioStats(runId),
-      progressLogPath: getProgressLogPath(runId),
-      resumed: true,
-      alreadyComplete: true,
-    };
-  }
-
-  // Note: getIncompleteTests only tracks single replications per (profile, scenario).
-  // For runsPerConfig > 1, we need to count how many results exist per combo and
-  // fill up to runsPerConfig.
+  // 6. Count successful results per (profile, scenario) combo and fill up to runsPerConfig.
+  //    Failed results are excluded so they get retried.
   const completedCounts = {};
   for (const result of existingResults) {
+    // Only count successful results — failed ones should be retried
+    if (result.success === false || result.success === 0) continue;
     const key = `${result.profileName}:${result.scenarioId}`;
     completedCounts[key] = (completedCounts[key] || 0) + 1;
   }
