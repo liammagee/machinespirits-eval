@@ -848,10 +848,319 @@ function calculateMemoryDelta(before, after) {
 }
 
 // ============================================================================
+// Standalone Learner Response (for evaluation pipeline)
+// ============================================================================
+
+// Retry delays for 429 rate limits (matches evaluationRunner pattern)
+const LEARNER_RETRY_DELAYS = [2000, 4000, 8000];
+
+/**
+ * Call the LLM for a learner agent using the same raw fetch layer as
+ * tutorDialogueEngine.callAI — same headers, error handling, and response
+ * parsing per provider. This ensures learner and tutor calls go through
+ * identical network code paths.
+ *
+ * Includes built-in retry with exponential backoff for 429 rate limits.
+ *
+ * @param {Object} agentConfig - From learnerConfig.getAgentConfig()
+ * @param {string} prompt - Combined prompt (system context + user trigger)
+ * @param {string} agentRole - For logging (e.g. 'ego', 'superego', 'synthesis')
+ * @returns {Promise<Object>} { content, usage: { inputTokens, outputTokens }, latencyMs }
+ */
+async function callLearnerAI(agentConfig, prompt, agentRole = 'learner') {
+  let lastError;
+  for (let attempt = 0; attempt <= LEARNER_RETRY_DELAYS.length; attempt++) {
+    try {
+      return await _callLearnerAIOnce(agentConfig, prompt, agentRole);
+    } catch (error) {
+      lastError = error;
+      const is429 = error?.message?.includes('429') ||
+                    error?.message?.toLowerCase()?.includes('rate limit');
+      if (!is429 || attempt >= LEARNER_RETRY_DELAYS.length) throw error;
+      const delay = LEARNER_RETRY_DELAYS[attempt];
+      console.warn(`[${agentRole}] Rate limit hit, retrying in ${delay}ms (attempt ${attempt + 1}/${LEARNER_RETRY_DELAYS.length})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * Single-attempt LLM call. Mirrors tutorDialogueEngine.callAI per-provider
+ * fetch logic: same headers, same body format, same error parsing.
+ */
+async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
+  const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
+  const { temperature = 0.7, max_tokens = 300, top_p } = hyperparameters;
+
+  if (!providerConfig?.isConfigured) {
+    throw new Error(`Learner provider ${provider} not configured (missing API key)`);
+  }
+
+  const startTime = Date.now();
+
+  // --- Anthropic ---
+  if (provider === 'anthropic') {
+    const bodyParams = {
+      model,
+      max_tokens,
+      temperature,
+      messages: [{ role: 'user', content: prompt }],
+    };
+    if (top_p !== undefined) {
+      delete bodyParams.temperature;
+      bodyParams.top_p = top_p;
+    }
+
+    const res = await fetch(providerConfig.base_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': providerConfig.apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify(bodyParams),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(`Anthropic API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await res.json();
+    return {
+      content: data?.content?.[0]?.text?.trim() || '',
+      usage: {
+        inputTokens: data?.usage?.input_tokens || 0,
+        outputTokens: data?.usage?.output_tokens || 0,
+      },
+      latencyMs: Date.now() - startTime,
+    };
+  }
+
+  // --- OpenAI ---
+  if (provider === 'openai') {
+    const res = await fetch(providerConfig.base_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${providerConfig.apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature,
+        max_tokens,
+        top_p,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(`OpenAI API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await res.json();
+    return {
+      content: data?.choices?.[0]?.message?.content?.trim() || '',
+      usage: {
+        inputTokens: data?.usage?.prompt_tokens || 0,
+        outputTokens: data?.usage?.completion_tokens || 0,
+      },
+      latencyMs: Date.now() - startTime,
+    };
+  }
+
+  // --- OpenRouter ---
+  if (provider === 'openrouter') {
+    const res = await fetch(providerConfig.base_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${providerConfig.apiKey}`,
+        'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
+        'X-Title': 'Machine Spirits Tutor',
+      },
+      body: JSON.stringify({
+        model,
+        temperature,
+        max_tokens,
+        top_p,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content?.trim() || '';
+
+    if (!content) {
+      console.warn(`[${agentRole}] OpenRouter returned empty content. Model: ${model}, finish_reason: ${data?.choices?.[0]?.finish_reason}`);
+    }
+
+    return {
+      content,
+      usage: {
+        inputTokens: data?.usage?.prompt_tokens || 0,
+        outputTokens: data?.usage?.completion_tokens || 0,
+      },
+      latencyMs: Date.now() - startTime,
+    };
+  }
+
+  // --- Gemini ---
+  if (provider === 'gemini') {
+    const { GoogleGenAI } = await import('@google/genai');
+    const gemini = new GoogleGenAI({ apiKey: providerConfig.apiKey });
+
+    const result = await gemini.models.generateContent({
+      model,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: { temperature, maxOutputTokens: max_tokens, topP: top_p },
+    });
+
+    const content = result?.text?.() || result?.response?.text?.() || '';
+    return {
+      content,
+      usage: { inputTokens: 0, outputTokens: 0 },
+      latencyMs: Date.now() - startTime,
+    };
+  }
+
+  // --- Local (LM Studio / Ollama / llama.cpp) ---
+  if (provider === 'local') {
+    const res = await fetch(providerConfig.base_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        temperature,
+        max_tokens,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(`Local LLM error: ${res.status} - ${data?.error?.message || 'Is LM Studio running?'}`);
+    }
+
+    const data = await res.json();
+    return {
+      content: data?.choices?.[0]?.message?.content?.trim() || '',
+      usage: {
+        inputTokens: data?.usage?.prompt_tokens || 0,
+        outputTokens: data?.usage?.completion_tokens || 0,
+      },
+      latencyMs: Date.now() - startTime,
+    };
+  }
+
+  throw new Error(`Unsupported learner provider: ${provider}`);
+}
+
+/**
+ * Generate a single learner response for use by the evaluation pipeline.
+ * Runs ego→superego→synthesis if profile is multi-agent, or single call if unified.
+ *
+ * Uses callLearnerAI internally — the same raw fetch layer as the tutor's
+ * tutorDialogueEngine.callAI — so learner and tutor LLM calls go through
+ * identical provider code paths with identical retry logic.
+ *
+ * @param {Object} options
+ * @param {string} options.tutorMessage - The tutor's message to respond to
+ * @param {string} options.topic - Current topic
+ * @param {Array}  options.conversationHistory - [{role, content}, ...]
+ * @param {string} options.learnerProfile - Profile name ('ego_superego' or 'unified')
+ * @param {string} options.personaId - Persona identifier (default: 'eager_novice')
+ * @returns {Promise<Object>} { message, internalDeliberation, emotionalState, understandingLevel, tokenUsage }
+ */
+export async function generateLearnerResponse(options) {
+  const {
+    tutorMessage,
+    topic,
+    conversationHistory = [],
+    learnerProfile = 'unified',
+    personaId = 'eager_novice',
+  } = options;
+
+  const persona = learnerConfig.getPersona(personaId);
+  const profile = learnerConfig.getActiveProfile(learnerProfile);
+  const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
+  const internalDeliberation = [];
+  const tokenUsage = { inputTokens: 0, outputTokens: 0, apiCalls: 0 };
+
+  // Build conversation context string from history
+  const conversationContext = conversationHistory
+    .slice(-6)
+    .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+    .join('\n\n');
+
+  // Run internal deliberation for each agent role
+  for (const role of agentRoles) {
+    const agentConfig = learnerConfig.getAgentConfig(role, profile.name);
+    if (!agentConfig) continue;
+
+    let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+
+    if (role === 'superego' && internalDeliberation.length > 0) {
+      const prior = internalDeliberation
+        .map(d => `${d.role.toUpperCase()}: ${d.content}`)
+        .join('\n\n');
+      roleContext += `\n\nThe EGO's initial reaction was:\n${prior}\n\nReview the EGO's response. Is it accurate? What's being missed?`;
+    } else {
+      roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
+    }
+
+    // Combine system prompt + user trigger into a single prompt, matching
+    // tutorDialogueEngine.callAI's single-message format
+    const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
+    const userTrigger = role === 'superego' ? "Critique the EGO's reaction." : "React to the tutor's message.";
+    const combinedPrompt = `${systemPrompt}\n\n${userTrigger}`;
+
+    const response = await callLearnerAI(agentConfig, combinedPrompt, `learner_${role}`);
+
+    internalDeliberation.push({ role, content: response.content });
+    tokenUsage.inputTokens += response.usage?.inputTokens || 0;
+    tokenUsage.outputTokens += response.usage?.outputTokens || 0;
+    tokenUsage.apiCalls++;
+  }
+
+  // Synthesize external message
+  const synthesisConfig = learnerConfig.getSynthesisConfig(profile.name);
+  const synthesisPrompt = `You are simulating a ${persona.name || personaId} learner with these internal reactions:\n\n${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}\n\nThe tutor just said: "${tutorMessage}"\n\nSynthesize into a realistic response (1-4 sentences). Be authentic.\n\nGenerate the learner's response.`;
+
+  // Use synthesis agent config if available, otherwise fall back to first agent's config
+  const synthAgentConfig = synthesisConfig || (agentRoles.length > 0 ? learnerConfig.getAgentConfig(agentRoles[0], profile.name) : null);
+  if (!synthAgentConfig) {
+    throw new Error(`No synthesis or agent config available for profile ${profile.name}`);
+  }
+
+  const synthResponse = await callLearnerAI(synthAgentConfig, synthesisPrompt, 'learner_synthesis');
+
+  tokenUsage.inputTokens += synthResponse.usage?.inputTokens || 0;
+  tokenUsage.outputTokens += synthResponse.usage?.outputTokens || 0;
+  tokenUsage.apiCalls++;
+
+  return {
+    message: synthResponse.content,
+    internalDeliberation,
+    emotionalState: detectEmotionalState(internalDeliberation),
+    understandingLevel: detectUnderstandingLevel(internalDeliberation),
+    tokenUsage,
+  };
+}
+
+// ============================================================================
 // Exports
 // ============================================================================
 
 export default {
   runInteraction,
+  generateLearnerResponse,
   INTERACTION_OUTCOMES,
 };

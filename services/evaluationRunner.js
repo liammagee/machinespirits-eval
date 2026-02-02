@@ -17,6 +17,7 @@ import * as contentResolver from './contentResolver.js';
 import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
 import { StreamingReporter } from './streamingReporter.js';
 import * as anovaStats from './anovaStats.js';
+import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -1307,6 +1308,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       learnerAction: isInitialTurn ? undefined : turnDef.learner_action,
       expectedBehavior: turnMeta.expectedBehavior,
       suggestion,
+      learnerDeliberation: turnDef?._learnerDeliberation || null,
+      learnerEmotionalState: turnDef?._learnerEmotionalState || null,
+      learnerMessageGenerated: !!turnDef?._learnerDeliberation,
+      learnerOriginalMessage: turnDef?._originalMessage || null,
       scores: rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? {
         relevance: rubricResult.scores.relevance?.score,
         specificity: rubricResult.scores.specificity?.score,
@@ -1333,6 +1338,59 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     // Update for next iteration
     previousSuggestion = suggestion;
+
+    // Generate LLM learner response for next turn if ego_superego architecture
+    if (resolvedConfig.learnerArchitecture === 'ego_superego' && turnIdx < totalTurnCount - 1) {
+      const nextTurnDef = turns[turnIdx]; // turnIdx is 0-based into the loop; turns[turnIdx] is the next follow-up turn
+      if (nextTurnDef) {
+        const learnerResponse = await generateLearnerResponse({
+          tutorMessage: suggestion?.message || suggestion?.title || '',
+          topic: fullScenario.topic || fullScenario.name || '',
+          conversationHistory: conversationHistory.map(h => ({
+            role: h.learnerMessage ? 'learner' : 'tutor',
+            content: h.learnerMessage || h.suggestion?.message || '',
+          })),
+          learnerProfile: resolvedConfig.learnerArchitecture,
+          personaId: fullScenario.learner_persona || 'eager_novice',
+        });
+
+        // Override scripted message with LLM-generated one
+        nextTurnDef._originalMessage = nextTurnDef.action_details?.message;
+        nextTurnDef.action_details = nextTurnDef.action_details || {};
+        nextTurnDef.action_details.message = learnerResponse.message;
+        nextTurnDef._learnerDeliberation = learnerResponse.internalDeliberation;
+        nextTurnDef._learnerEmotionalState = learnerResponse.emotionalState;
+
+        // Track learner LLM costs
+        totalInputTokens += learnerResponse.tokenUsage?.inputTokens || 0;
+        totalOutputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
+        totalApiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
+
+        // Add learner deliberation to consolidated trace
+        if (learnerResponse.internalDeliberation?.length > 0) {
+          for (const delib of learnerResponse.internalDeliberation) {
+            consolidatedTrace.push({
+              agent: `learner_${delib.role}`,
+              action: 'deliberation',
+              turnIndex: turnIdx + 1,
+              contextSummary: delib.content.substring(0, 100),
+              detail: delib.content,
+              timestamp: new Date().toISOString(),
+            });
+          }
+          consolidatedTrace.push({
+            agent: 'learner_synthesis',
+            action: 'response',
+            turnIndex: turnIdx + 1,
+            contextSummary: learnerResponse.message.substring(0, 100),
+            detail: learnerResponse.message,
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        log(`[evaluationRunner] Generated LLM learner response (ego_superego): "${learnerResponse.message.substring(0, 80)}..."`, 'info');
+      }
+    }
   }
 
   // 5. Aggregate scores across turns
