@@ -205,11 +205,11 @@ describe('resolveConfigModels — hyperparameters extraction', () => {
     }
   });
 
-  it('multi-agent cells extract superego hyperparameters with temperature 0.4', () => {
+  it('multi-agent cells extract superego hyperparameters with temperature 0.2', () => {
     for (const cell of multiAgentCells) {
       const resolved = resolveConfigModels({ profileName: cell });
       assert.ok(resolved.superegoHyperparameters, `${cell} should have superegoHyperparameters`);
-      assert.strictEqual(resolved.superegoHyperparameters.temperature, 0.4, `${cell} superego temperature`);
+      assert.strictEqual(resolved.superegoHyperparameters.temperature, 0.2, `${cell} superego temperature`);
     }
   });
 
