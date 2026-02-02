@@ -126,10 +126,10 @@ describe('factorial design — prompt file assignment', () => {
 // ============================================================================
 
 describe('factorial design — model consistency', () => {
-  it('all 8 cells use kimi-k2.5 as ego model on openrouter', () => {
+  it('all 8 cells use nemotron as ego model on openrouter', () => {
     for (const [name, profile] of Object.entries(cells)) {
       assert.strictEqual(profile.ego.provider, 'openrouter', `${name} ego provider`);
-      assert.strictEqual(profile.ego.model, 'kimi-k2.5', `${name} ego model`);
+      assert.strictEqual(profile.ego.model, 'nemotron', `${name} ego model`);
     }
   });
 
