@@ -212,4 +212,28 @@ describe('resolveConfigModels — hyperparameters extraction', () => {
       assert.strictEqual(resolved.superegoHyperparameters.temperature, 0.4, `${cell} superego temperature`);
     }
   });
+
+  it('all cells have max_tokens >= 8000 (sufficient for reasoning models)', () => {
+    for (const cell of allCells) {
+      const resolved = resolveConfigModels({ profileName: cell });
+      assert.ok(resolved.hyperparameters, `${cell} should have hyperparameters`);
+      assert.ok(
+        resolved.hyperparameters.max_tokens >= 8000,
+        `${cell} max_tokens should be >= 8000 for reasoning models, got ${resolved.hyperparameters.max_tokens}`
+      );
+    }
+  });
+
+  it('modelOverride preserves hyperparameters from profile', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_3_base_multi_unified',
+      modelOverride: 'openrouter.nemotron',
+    });
+    assert.ok(resolved.hyperparameters, 'should preserve hyperparameters');
+    assert.strictEqual(resolved.hyperparameters.temperature, 0.6, 'temperature preserved');
+    assert.ok(
+      resolved.hyperparameters.max_tokens >= 8000,
+      `max_tokens should be >= 8000, got ${resolved.hyperparameters.max_tokens}`
+    );
+  });
 });
