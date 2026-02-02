@@ -705,6 +705,7 @@ async function main() {
         const clusterOpt = getOption('cluster');
         const scenarioOpt = getOption('scenario');
         const allProfiles = getFlag('all-profiles');
+        const modelOverride = getOption('model');
 
         // --cluster and --scenario are mutually exclusive
         if (clusterOpt && scenarioOpt) {
@@ -750,6 +751,9 @@ async function main() {
           console.log(`  Factor B: Tutor arch.      (single / ego+superego)`);
           console.log(`  Factor C: Learner arch.    (unified / ego_superego)`);
           console.log(`  Cells: ${cellCount}  |  Runs/cell: ${runsPerConfig}  |  Per scenario: ${cellCount * runsPerConfig}`);
+          if (modelOverride) {
+            console.log(`  Model override: ${modelOverride}`);
+          }
           console.log('');
         }
 
@@ -766,6 +770,7 @@ async function main() {
           description: description || (isFactorial ? '2x2x2 Factorial Evaluation' : null),
           verbose,
           scenarioFilter: clusterOpt || null,
+          modelOverride: modelOverride || null,
         });
         console.log('\nEvaluation complete.');
         console.log(JSON.stringify(result, null, 2));

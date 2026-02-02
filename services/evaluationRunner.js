@@ -130,6 +130,21 @@ function resolveConfigModels(config) {
     }
   }
 
+  // Apply CLI --model override (replaces ego and superego models, preserves factorial metadata)
+  if (config.modelOverride) {
+    try {
+      const r = evalConfigLoader.resolveModel(config.modelOverride);
+      resolved.provider = r.provider;
+      resolved.model = r.model;
+      resolved.egoModel = { provider: r.provider, model: r.model };
+      if (resolved.superegoModel) {
+        resolved.superegoModel = { provider: r.provider, model: r.model };
+      }
+    } catch (e) {
+      throw new Error(`Invalid --model override "${config.modelOverride}": ${e.message}`);
+    }
+  }
+
   return resolved;
 }
 
@@ -658,6 +673,7 @@ export async function runEvaluation(options = {}) {
     description = null,
     verbose = false,
     scenarioFilter = null,      // Cluster filter: 'single-turn', 'multi-turn', or category names
+    modelOverride = null,       // CLI --model override (e.g. "openrouter.nemotron")
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -719,6 +735,10 @@ export async function runEvaluation(options = {}) {
     }));
   } else if (Array.isArray(configurations)) {
     targetConfigs = configurations;
+  }
+
+  if (modelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride }));
   }
 
   if (targetConfigs.length === 0) {
