@@ -1000,8 +1000,9 @@ export function getIncompleteTests(runId, profiles, scenarios) {
   const results = getResults(runId);
   const completedSet = new Set();
 
-  // Build set of completed (profile, scenarioId) pairs
+  // Build set of completed (profile, scenarioId) pairs — only count successes
   for (const result of results) {
+    if (result.success === false || result.success === 0) continue;
     const key = `${result.profileName}:${result.scenarioId}`;
     completedSet.add(key);
   }
