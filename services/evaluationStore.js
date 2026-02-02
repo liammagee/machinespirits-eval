@@ -461,10 +461,24 @@ export function listRuns(options = {}) {
     FROM evaluation_results WHERE run_id = ?
   `);
 
+  // Get distinct ego models for each run
+  const modelStmt = db.prepare(`
+    SELECT DISTINCT ego_model FROM evaluation_results
+    WHERE run_id = ? AND ego_model IS NOT NULL
+    ORDER BY ego_model
+  `);
+
   return rows.map(row => {
     const scenarioRows = scenarioStmt.all(row.id);
     const scenarioNames = scenarioRows.map(s => s.scenario_name).filter(Boolean);
     const counts = resultCountStmt.get(row.id);
+    const modelRows = modelStmt.all(row.id);
+    const models = modelRows.map(m => {
+      // ego_model is "provider.vendor/model-name" — extract "vendor/model-name"
+      const raw = m.ego_model;
+      const dotIdx = raw.indexOf('.');
+      return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
+    });
 
     const completedResults = counts?.completed || 0;
     const totalTests = row.total_tests || 0;
@@ -484,6 +498,7 @@ export function listRuns(options = {}) {
       status: row.status,
       completedAt: row.completed_at,
       scenarioNames, // Scenario names from results
+      models, // Distinct ego model aliases used
       metadata: JSON.parse(row.metadata || '{}'), // Structured metadata
     };
   });
