@@ -12,7 +12,6 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Anthropic from '@anthropic-ai/sdk';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -295,6 +294,13 @@ async function callRecommender(prompt, options = {}) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY not set');
+  }
+
+  let Anthropic;
+  try {
+    Anthropic = (await import('@anthropic-ai/sdk')).default;
+  } catch {
+    throw new Error('@anthropic-ai/sdk is not installed. Install it to use the Anthropic provider for recommendations.');
   }
 
   const client = new Anthropic({ apiKey });
