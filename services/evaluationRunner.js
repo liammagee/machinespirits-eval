@@ -64,7 +64,7 @@ export function resolveEvalProfile(profileName) {
   const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[profileName];
   const useDialogue = evalProfile?.dialogue?.enabled ?? false;
   const maxRounds = evalProfile?.dialogue?.max_rounds ?? 0;
-  const recognitionMode = evalProfile?.recognition_mode ?? false;
+  const recognitionMode = evalProfile?.recognition_mode ?? profileName?.includes('recognition') ?? false;
 
   let resolvedProfileName = profileName;
   if (profileName && EVAL_ONLY_PROFILES.includes(profileName)) {
