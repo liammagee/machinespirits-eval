@@ -952,14 +952,19 @@ export async function runEvaluation(options = {}) {
       log(`  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
 
       // Store failed result so it shows up in the database instead of silently disappearing
+      // Extract provider/model from nested ego config if not at top level (profile-based configs)
       const failedResult = {
         scenarioId: scenario.id,
         scenarioName: scenario.name || scenario.id,
         profileName: config.profileName,
-        provider: config.provider || null,
-        model: config.model || null,
-        egoModel: config.egoModel || null,
-        superegoModel: config.superegoModel || null,
+        provider: config.provider || config.ego?.provider || 'unknown',
+        model: config.model || config.ego?.model || 'unknown',
+        egoModel: config.egoModel
+          ? `${config.egoModel.provider}.${config.egoModel.model}`
+          : config.ego ? `${config.ego.provider}.${config.ego.model}` : null,
+        superegoModel: config.superegoModel
+          ? `${config.superegoModel.provider}.${config.superegoModel.model}`
+          : config.superego ? `${config.superego.provider}.${config.superego.model}` : null,
         factors: config.factors || null,
         learnerArchitecture: config.learnerArchitecture || null,
         success: false,
@@ -1029,10 +1034,9 @@ export async function runEvaluation(options = {}) {
   progressLogger.runComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
   reporter.onRunComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
 
-  // Update run status
+  // Update run status (keep original totalTests to show expected vs actual)
   evaluationStore.updateRun(run.id, {
     status: 'completed',
-    totalTests: results.length,
     completedAt: new Date().toISOString(),
   });
 
@@ -1045,8 +1049,9 @@ export async function runEvaluation(options = {}) {
 
   return {
     runId: run.id,
-    totalTests: results.length,
+    totalTests,
     successfulTests,
+    failedTests,
     stats,
     scenarioStats,
     progressLogPath,
@@ -1835,6 +1840,31 @@ export async function resumeEvaluation(options = {}) {
       completedTests++;
       log(`  ${formatProgress(completedTests, totalRemainingTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
 
+      // Store failed result so it shows up in the database
+      const failedResult = {
+        scenarioId: scenario.id,
+        scenarioName: scenario.name || scenario.id,
+        profileName: config.profileName,
+        provider: config.provider || config.ego?.provider || 'unknown',
+        model: config.model || config.ego?.model || 'unknown',
+        egoModel: config.egoModel
+          ? `${config.egoModel.provider}.${config.egoModel.model}`
+          : config.ego ? `${config.ego.provider}.${config.ego.model}` : null,
+        superegoModel: config.superegoModel
+          ? `${config.superegoModel.provider}.${config.superegoModel.model}`
+          : config.superego ? `${config.superego.provider}.${config.superego.model}` : null,
+        factors: config.factors || null,
+        learnerArchitecture: config.learnerArchitecture || null,
+        success: false,
+        errorMessage: error.message,
+      };
+      try {
+        evaluationStore.storeResult(runId, failedResult);
+        results.push(failedResult);
+      } catch (storeErr) {
+        log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+      }
+
       progressLogger.testError({
         scenarioId: scenario.id,
         scenarioName: scenario.name || scenario.id,
@@ -1889,11 +1919,10 @@ export async function resumeEvaluation(options = {}) {
   progressLogger.runComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
   reporter.onRunComplete({ totalTests: completedTests, successfulTests, failedTests, durationMs });
 
-  // 10. Mark run as completed with updated totalTests (all results, old + new)
+  // 10. Mark run as completed (keep original totalTests to show expected vs actual)
   const allResults = evaluationStore.getResults(runId);
   evaluationStore.updateRun(runId, {
     status: 'completed',
-    totalTests: allResults.length,
     completedAt: new Date().toISOString(),
   });
 
@@ -1904,8 +1933,10 @@ export async function resumeEvaluation(options = {}) {
 
   return {
     runId,
-    totalTests: allResults.length,
+    totalTests: run.totalTests,
+    completedTests: allResults.length,
     successfulTests,
+    failedTests: allResults.filter(r => !r.success).length,
     resumedTests: totalRemainingTests,
     stats,
     scenarioStats,
