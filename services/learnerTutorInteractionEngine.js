@@ -863,15 +863,16 @@ const LEARNER_RETRY_DELAYS = [2000, 4000, 8000];
  * Includes built-in retry with exponential backoff for 429 rate limits.
  *
  * @param {Object} agentConfig - From learnerConfig.getAgentConfig()
- * @param {string} prompt - Combined prompt (system context + user trigger)
+ * @param {string} systemPrompt - Static system/persona prompt (cacheable)
+ * @param {string} userPrompt - Dynamic per-call user content
  * @param {string} agentRole - For logging (e.g. 'ego', 'superego', 'synthesis')
  * @returns {Promise<Object>} { content, usage: { inputTokens, outputTokens }, latencyMs }
  */
-async function callLearnerAI(agentConfig, prompt, agentRole = 'learner') {
+async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner') {
   let lastError;
   for (let attempt = 0; attempt <= LEARNER_RETRY_DELAYS.length; attempt++) {
     try {
-      return await _callLearnerAIOnce(agentConfig, prompt, agentRole);
+      return await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole);
     } catch (error) {
       lastError = error;
       const is429 = error?.message?.includes('429') ||
@@ -888,8 +889,9 @@ async function callLearnerAI(agentConfig, prompt, agentRole = 'learner') {
 /**
  * Single-attempt LLM call. Mirrors tutorDialogueEngine.callAI per-provider
  * fetch logic: same headers, same body format, same error parsing.
+ * Accepts system and user prompts separately for provider-level caching.
  */
-async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
+async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
   const { temperature = 0.7, max_tokens = 300, top_p } = hyperparameters;
 
@@ -905,7 +907,8 @@ async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
       model,
       max_tokens,
       temperature,
-      messages: [{ role: 'user', content: prompt }],
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
     };
     if (top_p !== undefined) {
       delete bodyParams.temperature;
@@ -951,7 +954,10 @@ async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
         temperature,
         max_tokens,
         top_p,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
       }),
     });
 
@@ -986,7 +992,10 @@ async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
         temperature,
         max_tokens,
         top_p,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
       }),
     });
 
@@ -1019,7 +1028,8 @@ async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
 
     const result = await gemini.models.generateContent({
       model,
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      systemInstruction: systemPrompt,
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       config: { temperature, maxOutputTokens: max_tokens, topP: top_p },
     });
 
@@ -1040,7 +1050,10 @@ async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
         model,
         temperature,
         max_tokens,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
       }),
     });
 
@@ -1077,6 +1090,7 @@ async function _callLearnerAIOnce(agentConfig, prompt, agentRole) {
  * @param {Array}  options.conversationHistory - [{role, content}, ...]
  * @param {string} options.learnerProfile - Profile name ('ego_superego' or 'unified')
  * @param {string} options.personaId - Persona identifier (default: 'eager_novice')
+ * @param {string|Object} [options.modelOverride] - Optional model override (e.g. 'openrouter.nemotron') applied to all learner agents
  * @returns {Promise<Object>} { message, internalDeliberation, emotionalState, understandingLevel, tokenUsage }
  */
 export async function generateLearnerResponse(options) {
@@ -1086,7 +1100,22 @@ export async function generateLearnerResponse(options) {
     conversationHistory = [],
     learnerProfile = 'unified',
     personaId = 'eager_novice',
+    modelOverride,
   } = options;
+
+  // Resolve model override once (if provided) so all learner agents use the same model
+  let resolvedOverride = null;
+  if (modelOverride) {
+    const r = learnerConfig.resolveModel(modelOverride);
+    const providerConfig = learnerConfig.getProviderConfig(r.provider);
+    const modelFullId = providerConfig.models?.[r.model] || r.model;
+    resolvedOverride = { provider: r.provider, providerConfig, model: modelFullId, modelAlias: r.model };
+  }
+
+  const applyOverride = (cfg) => {
+    if (!resolvedOverride || !cfg) return cfg;
+    return { ...cfg, provider: resolvedOverride.provider, providerConfig: resolvedOverride.providerConfig, model: resolvedOverride.model, modelAlias: resolvedOverride.modelAlias };
+  };
 
   const persona = learnerConfig.getPersona(personaId);
   const profile = learnerConfig.getActiveProfile(learnerProfile);
@@ -1102,7 +1131,7 @@ export async function generateLearnerResponse(options) {
 
   // Run internal deliberation for each agent role
   for (const role of agentRoles) {
-    const agentConfig = learnerConfig.getAgentConfig(role, profile.name);
+    const agentConfig = applyOverride(learnerConfig.getAgentConfig(role, profile.name));
     if (!agentConfig) continue;
 
     let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
@@ -1116,13 +1145,10 @@ export async function generateLearnerResponse(options) {
       roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
     }
 
-    // Combine system prompt + user trigger into a single prompt, matching
-    // tutorDialogueEngine.callAI's single-message format
     const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
     const userTrigger = role === 'superego' ? "Critique the EGO's reaction." : "React to the tutor's message.";
-    const combinedPrompt = `${systemPrompt}\n\n${userTrigger}`;
 
-    const response = await callLearnerAI(agentConfig, combinedPrompt, `learner_${role}`);
+    const response = await callLearnerAI(agentConfig, systemPrompt, userTrigger, `learner_${role}`);
 
     internalDeliberation.push({ role, content: response.content });
     tokenUsage.inputTokens += response.usage?.inputTokens || 0;
@@ -1132,15 +1158,16 @@ export async function generateLearnerResponse(options) {
 
   // Synthesize external message
   const synthesisConfig = learnerConfig.getSynthesisConfig(profile.name);
-  const synthesisPrompt = `You are simulating a ${persona.name || personaId} learner with these internal reactions:\n\n${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}\n\nThe tutor just said: "${tutorMessage}"\n\nSynthesize into a realistic response (1-4 sentences). Be authentic.\n\nGenerate the learner's response.`;
+  const synthSystemPrompt = `You are simulating a ${persona.name || personaId} learner with these internal reactions:\n\n${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}`;
+  const synthUserPrompt = `The tutor just said: "${tutorMessage}"\n\nSynthesize into a realistic response (1-4 sentences). Be authentic.\n\nGenerate the learner's response.`;
 
   // Use synthesis agent config if available, otherwise fall back to first agent's config
-  const synthAgentConfig = synthesisConfig || (agentRoles.length > 0 ? learnerConfig.getAgentConfig(agentRoles[0], profile.name) : null);
+  const synthAgentConfig = applyOverride(synthesisConfig || (agentRoles.length > 0 ? learnerConfig.getAgentConfig(agentRoles[0], profile.name) : null));
   if (!synthAgentConfig) {
     throw new Error(`No synthesis or agent config available for profile ${profile.name}`);
   }
 
-  const synthResponse = await callLearnerAI(synthAgentConfig, synthesisPrompt, 'learner_synthesis');
+  const synthResponse = await callLearnerAI(synthAgentConfig, synthSystemPrompt, synthUserPrompt, 'learner_synthesis');
 
   tokenUsage.inputTokens += synthResponse.usage?.inputTokens || 0;
   tokenUsage.outputTokens += synthResponse.usage?.outputTokens || 0;

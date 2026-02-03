@@ -1409,6 +1409,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           })),
           learnerProfile: resolvedConfig.learnerArchitecture,
           personaId: fullScenario.learner_persona || 'eager_novice',
+          modelOverride: config.modelOverride || null,
         });
 
         // Override scripted message with LLM-generated one
