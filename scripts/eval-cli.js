@@ -88,6 +88,19 @@ function getOption(name, defaultValue = undefined) {
 
 // ── watch / status helpers ────────────────────────────────────────
 
+/**
+ * Check if a process with given PID is still running.
+ */
+function isPidAlive(pid) {
+  if (!pid) return null; // Unknown
+  try {
+    process.kill(pid, 0); // Signal 0 = check existence without killing
+    return true;
+  } catch (e) {
+    return e.code === 'EPERM' ? true : false; // EPERM means process exists but we can't signal it
+  }
+}
+
 function formatMs(ms) {
   if (ms < 1000) return `${ms}ms`;
   if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
@@ -924,8 +937,21 @@ async function main() {
           const { scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs } = buildGridFromEvents(events);
           const pct = totalTests > 0 ? Math.round((completedTests / totalTests) * 100) : 0;
 
+          // Check if process is still alive (for running runs)
+          let statusLabel = runDone ? 'completed' : 'running';
+          const runData = evaluationRunner.getRunResults(runId);
+          const pid = runData?.run?.metadata?.pid;
+          if (!runDone && pid) {
+            const alive = isPidAlive(pid);
+            if (!alive) {
+              statusLabel = `STALE (pid ${pid} dead)`;
+            } else {
+              statusLabel = `running (pid ${pid})`;
+            }
+          }
+
           console.log(`\nRun: ${runId}`);
-          console.log(`Status: ${runDone ? 'completed' : 'running'}`);
+          console.log(`Status: ${statusLabel}`);
           console.log(`Progress: ${completedTests}/${totalTests} tests (${pct}%)`);
           if (durationMs) console.log(`Duration: ${formatMs(durationMs)}`);
           console.log(`Scenarios: ${scenarios.length} | Profiles: ${profiles.length}`);
