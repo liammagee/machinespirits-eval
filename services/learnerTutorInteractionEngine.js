@@ -893,7 +893,14 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
  */
 async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
-  const { temperature = 0.7, max_tokens = 300, top_p } = hyperparameters;
+  let { temperature = 0.7, max_tokens = 300, top_p } = hyperparameters;
+
+  // Thinking models (kimi-k2.5, deepseek-r1, etc.) use reasoning tokens that consume
+  // the max_tokens budget. Increase significantly to allow for both reasoning and output.
+  const isThinkingModel = model?.includes('kimi-k2') || model?.includes('deepseek-r1');
+  if (isThinkingModel && max_tokens < 2000) {
+    max_tokens = 2000;
+  }
 
   if (!providerConfig?.isConfigured) {
     throw new Error(`Learner provider ${provider} not configured (missing API key)`);
