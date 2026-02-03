@@ -10,6 +10,23 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { randomBytes } from 'crypto';
 
+/**
+ * Check if a process with the given PID is still running
+ * @param {number} pid - Process ID to check
+ * @returns {boolean} True if process is running, false otherwise
+ */
+function isProcessRunning(pid) {
+  if (!pid || typeof pid !== 'number') return false;
+  try {
+    // Sending signal 0 doesn't kill the process, just checks if it exists
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    // ESRCH = no such process, EPERM = process exists but no permission
+    return e.code === 'EPERM';
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -915,6 +932,8 @@ export function findIncompleteRuns(options = {}) {
   return rows.map(row => {
     const resultsStmt = db.prepare('SELECT COUNT(*) as count FROM evaluation_results WHERE run_id = ?');
     const resultsCount = resultsStmt.get(row.id).count;
+    const metadata = JSON.parse(row.metadata || '{}');
+    const pid = metadata?.pid;
 
     return {
       id: row.id,
@@ -925,7 +944,9 @@ export function findIncompleteRuns(options = {}) {
       expectedTests: row.total_scenarios * row.total_configurations,
       resultsFound: resultsCount,
       ageMinutes: Math.round((Date.now() - new Date(row.created_at).getTime()) / 60000),
-      metadata: JSON.parse(row.metadata || '{}'),
+      metadata,
+      pid,
+      pidAlive: isProcessRunning(pid),
     };
   });
 }
@@ -943,16 +964,28 @@ export function autoCompleteStaleRuns(options = {}) {
 
   const incompleteRuns = findIncompleteRuns({ olderThanMinutes });
 
+  // Filter out runs whose PID is still alive
+  const staleRuns = incompleteRuns.filter(run => {
+    const pid = run.metadata?.pid;
+    const isAlive = isProcessRunning(pid);
+    if (isAlive) {
+      console.log(`  Skipping ${run.id}: pid ${pid} still running`);
+    }
+    return !isAlive;
+  });
+
   if (dryRun) {
     return {
       dryRun: true,
       found: incompleteRuns.length,
-      runs: incompleteRuns,
+      stale: staleRuns.length,
+      skippedAlive: incompleteRuns.length - staleRuns.length,
+      runs: staleRuns,
     };
   }
 
   const completed = [];
-  for (const run of incompleteRuns) {
+  for (const run of staleRuns) {
     try {
       const result = completeRun(run.id);
       completed.push(result);
@@ -967,6 +1000,8 @@ export function autoCompleteStaleRuns(options = {}) {
 
   return {
     found: incompleteRuns.length,
+    stale: staleRuns.length,
+    skippedAlive: incompleteRuns.length - staleRuns.length,
     completed: completed.length,
     runs: completed,
   };
