@@ -1521,6 +1521,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${overallScore?.toFixed(1)}`);
 
+  // Aggregate requiredMissing/forbiddenFound from all turns
+  const requiredMissing = [...new Set(turnResults.flatMap(t => t.requiredMissing || []))];
+  const forbiddenFound = [...new Set(turnResults.flatMap(t => t.forbiddenFound || []))];
+
   // 7. Return result
   return {
     scenarioId: scenario.id,
@@ -1555,6 +1559,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     allTurnsPassed,
     passesRequired: turnResults.every(t => t.passesRequired),
     passesForbidden: turnResults.every(t => t.passesForbidden),
+    requiredMissing,
+    forbiddenFound,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
   };
