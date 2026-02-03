@@ -1169,6 +1169,19 @@ export async function generateLearnerResponse(options) {
     tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
+
+    // Log deliberation for debugging/analysis
+    if (process.env.LEARNER_DEBUG) {
+      console.log('\n┌─────────────────────────────────────────────────────────────');
+      console.log('│ LEARNER DELIBERATION (ego→superego→ego_revision)');
+      console.log('├─────────────────────────────────────────────────────────────');
+      console.log(`│ EGO INITIAL: ${egoInitialResponse.content.substring(0, 200)}...`);
+      console.log('├─────────────────────────────────────────────────────────────');
+      console.log(`│ SUPEREGO: ${superegoResponse.content.substring(0, 200)}...`);
+      console.log('├─────────────────────────────────────────────────────────────');
+      console.log(`│ EGO REVISION (FINAL): ${egoFinalResponse.content.substring(0, 200)}...`);
+      console.log('└─────────────────────────────────────────────────────────────\n');
+    }
   } else {
     // Single-agent (unified) flow — run each role sequentially as before
     for (const role of agentRoles) {
