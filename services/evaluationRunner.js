@@ -1403,7 +1403,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     previousSuggestion = suggestion;
 
     // Generate LLM learner response for next turn if ego_superego architecture
-    if (resolvedConfig.learnerArchitecture === 'ego_superego' && turnIdx < totalTurnCount - 1) {
+    // Note: check includes() to handle both 'ego_superego' and 'ego_superego_recognition'
+    if (resolvedConfig.learnerArchitecture?.includes('ego_superego') && turnIdx < totalTurnCount - 1) {
       const nextTurnDef = turns[turnIdx]; // turnIdx is 0-based into the loop; turns[turnIdx] is the next follow-up turn
       if (nextTurnDef) {
         const learnerResponse = await generateLearnerResponse({
