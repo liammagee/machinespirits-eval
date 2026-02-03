@@ -4,31 +4,43 @@
 # Model aliases (e.g. "sonnet", "nemotron") are resolved through providers.yaml.
 #
 # ============================================================================
-# 2×2×2 FACTORIAL EVALUATION DESIGN
+# 3×2×2 FACTORIAL EVALUATION DESIGN
 # ============================================================================
 #
-# Three independent variables, each with two levels:
+# Three independent variables:
 #
-#   Factor A: Recognition          — standard vs recognition-enhanced prompts
-#   Factor B: Tutor Architecture   — single ego vs ego+superego dialogue
-#   Factor C: Learner Architecture — unified vs ego_superego
+#   Factor A: Prompt Type          — base / enhanced / recognition (3 levels)
+#   Factor B: Tutor Architecture   — single ego vs ego+superego dialogue (2 levels)
+#   Factor C: Learner Architecture — unified vs ego_superego (2 levels)
 #
-# All cells use kimi-k2.5 to isolate architectural effects from model quality.
+# Factor A levels:
+#   - base:        Original Claude-generated prompts (default LLM tutoring)
+#   - enhanced:    Matches recognition specificity without recognition theory
+#   - recognition: Full recognition-enhanced prompts with Hegelian theory
 #
-# Design Matrix (8 cells):
+# This design enables isolating:
+#   - Base vs Enhanced      = prompt engineering effect
+#   - Enhanced vs Recognition = isolated recognition theory effect
+#   - Base vs Recognition   = combined effect (original comparison)
+#
+# All cells use nemotron (free tier) to isolate architectural effects from model cost.
+#
+# Design Matrix (12 cells):
 #
 #   ┌────────────────────┬──────────────────────────┬──────────────────────────┐
 #   │                    │   Unified Learner         │   Ego/Superego Learner   │
 #   ├────────────────────┼──────────────┬───────────┼──────────────┬───────────┤
 #   │                    │ Single Tutor │ E+S Tutor │ Single Tutor │ E+S Tutor │
 #   ├────────────────────┼──────────────┼───────────┼──────────────┼───────────┤
-#   │ No Recognition     │ cell_1       │ cell_3    │ cell_2       │ cell_4    │
+#   │ Base               │ cell_1       │ cell_3    │ cell_2       │ cell_4    │
+#   ├────────────────────┼──────────────┼───────────┼──────────────┼───────────┤
+#   │ Enhanced           │ cell_9       │ cell_11   │ cell_10      │ cell_12   │
 #   ├────────────────────┼──────────────┼───────────┼──────────────┼───────────┤
 #   │ Recognition        │ cell_5       │ cell_7    │ cell_6       │ cell_8    │
 #   └────────────────────┴──────────────┴───────────┴──────────────┴───────────┘
 #
 # This allows analyzing:
-#   - Main effect of recognition (standard vs recognition-enhanced prompts)
+#   - Main effect of prompt type (base vs enhanced vs recognition)
 #   - Main effect of tutor architecture (single agent vs ego + superego dialogue)
 #   - Main effect of learner architecture (unified vs ego_superego)
 #   - All two-way and three-way interactions
@@ -63,11 +75,11 @@ profiles:
   # Use: node scripts/eval-cli.js run --factorial --runs 3
   # All use nemotron (free tier) to isolate architectural effects from model cost.
 
-  # Cell 1: No Recognition × Single Agent × Unified Learner
+  # Cell 1: Base × Single Agent × Unified Learner
   cell_1_base_single_unified:
     description: "Factorial cell 1: baseline single-agent tutor, unified learner"
     factors:
-      recognition: false
+      prompt_type: base
       multi_agent_tutor: false
       multi_agent_learner: false
     learner_architecture: unified
@@ -85,11 +97,11 @@ profiles:
         max_tokens: 8000
     superego: null
 
-  # Cell 2: No Recognition × Single Agent × Ego/Superego Learner
+  # Cell 2: Base × Single Agent × Ego/Superego Learner
   cell_2_base_single_psycho:
     description: "Factorial cell 2: baseline single-agent tutor, ego/superego learner"
     factors:
-      recognition: false
+      prompt_type: base
       multi_agent_tutor: false
       multi_agent_learner: true
     learner_architecture: ego_superego
@@ -107,11 +119,11 @@ profiles:
         max_tokens: 8000
     superego: null
 
-  # Cell 3: No Recognition × Multi-Agent Tutor × Unified Learner
+  # Cell 3: Base × Multi-Agent Tutor × Unified Learner
   cell_3_base_multi_unified:
     description: "Factorial cell 3: ego+superego tutor, unified learner"
     factors:
-      recognition: false
+      prompt_type: base
       multi_agent_tutor: true
       multi_agent_learner: false
     learner_architecture: unified
@@ -138,11 +150,11 @@ profiles:
         temperature: 0.2
         max_tokens: 8000
 
-  # Cell 4: No Recognition × Multi-Agent Tutor × Ego/Superego Learner
+  # Cell 4: Base × Multi-Agent Tutor × Ego/Superego Learner
   cell_4_base_multi_psycho:
     description: "Factorial cell 4: ego+superego tutor, ego/superego learner"
     factors:
-      recognition: false
+      prompt_type: base
       multi_agent_tutor: true
       multi_agent_learner: true
     learner_architecture: ego_superego
@@ -173,7 +185,7 @@ profiles:
   cell_5_recog_single_unified:
     description: "Factorial cell 5: recognition single-agent tutor, unified learner"
     factors:
-      recognition: true
+      prompt_type: recognition
       multi_agent_tutor: false
       multi_agent_learner: false
     learner_architecture: unified_recognition
@@ -195,7 +207,7 @@ profiles:
   cell_6_recog_single_psycho:
     description: "Factorial cell 6: recognition single-agent tutor, ego/superego learner"
     factors:
-      recognition: true
+      prompt_type: recognition
       multi_agent_tutor: false
       multi_agent_learner: true
     learner_architecture: ego_superego_recognition
@@ -217,7 +229,7 @@ profiles:
   cell_7_recog_multi_unified:
     description: "Factorial cell 7: recognition ego+superego tutor, unified learner"
     factors:
-      recognition: true
+      prompt_type: recognition
       multi_agent_tutor: true
       multi_agent_learner: false
     learner_architecture: unified_recognition
@@ -252,7 +264,7 @@ profiles:
   cell_8_recog_multi_psycho:
     description: "Factorial cell 8: recognition ego+superego tutor, ego/superego learner"
     factors:
-      recognition: true
+      prompt_type: recognition
       multi_agent_tutor: true
       multi_agent_learner: true
     learner_architecture: ego_superego_recognition
@@ -282,3 +294,119 @@ profiles:
       enforce_mutual_recognition: true
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # ===========================================================================
+  # ENHANCED CELLS (9-12): Better prompting WITHOUT recognition theory
+  # ===========================================================================
+  # These cells use tutor-ego-enhanced.md and tutor-superego-enhanced.md which
+  # match the recognition prompts' specificity (8 rules, 10 examples, checklists)
+  # but WITHOUT Hegelian recognition theory language.
+  #
+  # Comparing Enhanced vs Recognition isolates the recognition theory effect.
+  # Comparing Base vs Enhanced isolates the prompt engineering effect.
+
+  # Cell 9: Enhanced × Single Agent × Unified Learner
+  cell_9_enhanced_single_unified:
+    description: "Factorial cell 9: enhanced single-agent tutor, unified learner"
+    factors:
+      prompt_type: enhanced
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 10: Enhanced × Single Agent × Ego/Superego Learner
+  cell_10_enhanced_single_psycho:
+    description: "Factorial cell 10: enhanced single-agent tutor, ego/superego learner"
+    factors:
+      prompt_type: enhanced
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 11: Enhanced × Multi-Agent Tutor × Unified Learner
+  cell_11_enhanced_multi_unified:
+    description: "Factorial cell 11: enhanced ego+superego tutor, unified learner"
+    factors:
+      prompt_type: enhanced
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-enhanced.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 12: Enhanced × Multi-Agent Tutor × Ego/Superego Learner
+  cell_12_enhanced_multi_psycho:
+    description: "Factorial cell 12: enhanced ego+superego tutor, ego/superego learner"
+    factors:
+      prompt_type: enhanced
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-enhanced.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-enhanced.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
