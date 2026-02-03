@@ -291,21 +291,29 @@ export function createRun(options = {}) {
  * Update a run's status
  */
 export function updateRun(runId, updates) {
-  const { status, totalTests, completedAt } = updates;
+  const { status, totalTests, completedAt, metadata } = updates;
+
+  // If metadata provided, merge with existing
+  if (metadata) {
+    const existing = getRun(runId);
+    const mergedMetadata = { ...(existing?.metadata || {}), ...metadata };
+    const stmt = db.prepare(`UPDATE evaluation_runs SET metadata = ? WHERE id = ?`);
+    stmt.run(JSON.stringify(mergedMetadata), runId);
+  }
 
   if (status === 'completed') {
     const stmt = db.prepare(`
       UPDATE evaluation_runs
-      SET status = ?, total_tests = ?, completed_at = ?
+      SET status = ?, completed_at = ?
       WHERE id = ?
     `);
-    stmt.run(status, totalTests || 0, completedAt || new Date().toISOString(), runId);
-  } else if (totalTests != null) {
+    stmt.run(status, completedAt || new Date().toISOString(), runId);
+  } else if (status && totalTests != null) {
     const stmt = db.prepare(`
       UPDATE evaluation_runs SET status = ?, total_tests = ? WHERE id = ?
     `);
     stmt.run(status, totalTests, runId);
-  } else {
+  } else if (status) {
     const stmt = db.prepare(`
       UPDATE evaluation_runs SET status = ? WHERE id = ?
     `);

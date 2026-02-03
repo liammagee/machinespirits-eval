@@ -777,6 +777,7 @@ export async function runEvaluation(options = {}) {
       modelOverride: modelOverride || null,
       packageVersion: pkg.version,
       gitCommit: getGitCommitHash(),
+      pid: process.pid,
     },
   });
 
@@ -1669,10 +1670,8 @@ export async function resumeEvaluation(options = {}) {
     };
   }
 
-  // 7. Set run status to 'running' if it was completed/failed
-  if (run.status !== 'running') {
-    evaluationStore.updateRun(runId, { status: 'running' });
-  }
+  // 7. Set run status to 'running' and update PID
+  evaluationStore.updateRun(runId, { status: 'running', metadata: { pid: process.pid } });
 
   const totalRemainingTests = remainingTests.length;
   const totalExpectedTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
