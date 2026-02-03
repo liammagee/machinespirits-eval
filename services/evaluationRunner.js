@@ -43,12 +43,17 @@ function getGitCommitHash() {
 const EVAL_ONLY_PROFILES = [
   'single_baseline', 'single_baseline_paid',
   'single_recognition', 'single_recognition_paid',
+  'single_enhanced',
   'baseline', 'baseline_paid',
   'recognition', 'recognition_paid',
+  'enhanced',
   'cell_1_base_single_unified', 'cell_2_base_single_psycho',
   'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
   'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
   'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
+  'cell_9_enhanced_single_unified', 'cell_10_enhanced_single_psycho',
+  'cell_11_enhanced_multi_unified', 'cell_12_enhanced_multi_psycho',
+  'cell_13_hardwired_single_unified', 'cell_14_hardwired_single_psycho',
 ];
 
 /**
@@ -68,7 +73,17 @@ export function resolveEvalProfile(profileName) {
 
   let resolvedProfileName = profileName;
   if (profileName && EVAL_ONLY_PROFILES.includes(profileName)) {
-    resolvedProfileName = recognitionMode ? 'recognition' : 'budget';
+    // Map eval profile to tutor-core profile based on prompt_type
+    const promptType = evalProfile?.factors?.prompt_type;
+    if (promptType === 'enhanced') {
+      resolvedProfileName = 'enhanced';
+    } else if (promptType === 'hardwired') {
+      resolvedProfileName = 'budget';  // hardwired uses budget profile with prompt override
+    } else if (recognitionMode) {
+      resolvedProfileName = 'recognition';
+    } else {
+      resolvedProfileName = 'budget';
+    }
   }
 
   return { useDialogue, maxRounds, recognitionMode, resolvedProfileName };
