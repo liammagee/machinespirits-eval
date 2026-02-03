@@ -1129,52 +1129,71 @@ export async function generateLearnerResponse(options) {
     .map(m => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
 
-  // Run internal deliberation for each agent role
-  for (const role of agentRoles) {
-    const agentConfig = applyOverride(learnerConfig.getAgentConfig(role, profile.name));
-    if (!agentConfig) continue;
+  // Psychodynamic flow: Ego (initial) → Superego (critique) → Ego (revision/final)
+  // This mirrors the tutor architecture where the ego has final authority over output,
+  // accepting, rejecting, or modifying the superego's suggestions.
 
-    let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+  const hasMultiAgent = agentRoles.includes('ego') && agentRoles.includes('superego');
 
-    if (role === 'superego' && internalDeliberation.length > 0) {
-      const prior = internalDeliberation
-        .map(d => `${d.role.toUpperCase()}: ${d.content}`)
-        .join('\n\n');
-      roleContext += `\n\nThe EGO's initial reaction was:\n${prior}\n\nReview the EGO's response. Is it accurate? What's being missed?`;
-    } else {
-      roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
-    }
+  if (hasMultiAgent) {
+    // === STEP 1: Ego initial reaction ===
+    const egoConfig = applyOverride(learnerConfig.getAgentConfig('ego', profile.name));
+    const egoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nGenerate your initial internal reaction as the learner's ego.`;
+    const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
 
-    const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
-    const userTrigger = role === 'superego' ? "Critique the EGO's reaction." : "React to the tutor's message.";
-
-    const response = await callLearnerAI(agentConfig, systemPrompt, userTrigger, `learner_${role}`);
-
-    internalDeliberation.push({ role, content: response.content });
-    tokenUsage.inputTokens += response.usage?.inputTokens || 0;
-    tokenUsage.outputTokens += response.usage?.outputTokens || 0;
+    const egoInitialResponse = await callLearnerAI(egoConfig, egoSystemPrompt, "React to the tutor's message.", 'learner_ego_initial');
+    internalDeliberation.push({ role: 'ego_initial', content: egoInitialResponse.content });
+    tokenUsage.inputTokens += egoInitialResponse.usage?.inputTokens || 0;
+    tokenUsage.outputTokens += egoInitialResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
+
+    // === STEP 2: Superego critique ===
+    const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name));
+    const superegoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?`;
+    const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
+
+    const superegoResponse = await callLearnerAI(superegoConfig, superegoSystemPrompt, "Critique the EGO's reaction.", 'learner_superego');
+    internalDeliberation.push({ role: 'superego', content: superegoResponse.content });
+    tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
+    tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
+    tokenUsage.apiCalls++;
+
+    // === STEP 3: Ego revision (final authority) ===
+    // The ego considers the superego's feedback and decides what to actually say.
+    // It may accept, reject, or modify the superego's suggestions.
+    const egoRevisionContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nYour initial reaction was:\n"${egoInitialResponse.content}"\n\nThe SUPEREGO's critique:\n"${superegoResponse.content}"\n\nConsider the superego's feedback. You have final authority — accept, reject, or modify its suggestions as you see fit. Then produce a realistic external response (1-4 sentences) that the learner would actually say to the tutor.`;
+    const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
+
+    const egoFinalResponse = await callLearnerAI(egoConfig, egoRevisionSystemPrompt, "Produce your final response to the tutor.", 'learner_ego_revision');
+    internalDeliberation.push({ role: 'ego_revision', content: egoFinalResponse.content });
+    tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
+    tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
+    tokenUsage.apiCalls++;
+  } else {
+    // Single-agent (unified) flow — run each role sequentially as before
+    for (const role of agentRoles) {
+      const agentConfig = applyOverride(learnerConfig.getAgentConfig(role, profile.name));
+      if (!agentConfig) continue;
+
+      let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+      roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
+
+      const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
+      const response = await callLearnerAI(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
+
+      internalDeliberation.push({ role, content: response.content });
+      tokenUsage.inputTokens += response.usage?.inputTokens || 0;
+      tokenUsage.outputTokens += response.usage?.outputTokens || 0;
+      tokenUsage.apiCalls++;
+    }
   }
 
-  // Synthesize external message
-  const synthesisConfig = learnerConfig.getSynthesisConfig(profile.name);
-  const synthSystemPrompt = `You are simulating a ${persona.name || personaId} learner with these internal reactions:\n\n${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}`;
-  const synthUserPrompt = `The tutor just said: "${tutorMessage}"\n\nSynthesize into a realistic response (1-4 sentences). Be authentic.\n\nGenerate the learner's response.`;
-
-  // Use synthesis agent config if available, otherwise fall back to first agent's config
-  const synthAgentConfig = applyOverride(synthesisConfig || (agentRoles.length > 0 ? learnerConfig.getAgentConfig(agentRoles[0], profile.name) : null));
-  if (!synthAgentConfig) {
-    throw new Error(`No synthesis or agent config available for profile ${profile.name}`);
-  }
-
-  const synthResponse = await callLearnerAI(synthAgentConfig, synthSystemPrompt, synthUserPrompt, 'learner_synthesis');
-
-  tokenUsage.inputTokens += synthResponse.usage?.inputTokens || 0;
-  tokenUsage.outputTokens += synthResponse.usage?.outputTokens || 0;
-  tokenUsage.apiCalls++;
+  // Get final message from the last deliberation step
+  // For multi-agent: ego_revision. For unified: the single agent's output.
+  const finalDeliberation = internalDeliberation[internalDeliberation.length - 1];
 
   return {
-    message: synthResponse.content,
+    message: finalDeliberation.content,
     internalDeliberation,
     emotionalState: detectEmotionalState(internalDeliberation),
     understandingLevel: detectUnderstandingLevel(internalDeliberation),
