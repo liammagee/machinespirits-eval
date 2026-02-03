@@ -4,7 +4,7 @@
 # Model aliases (e.g. "sonnet", "nemotron") are resolved through providers.yaml.
 #
 # ============================================================================
-# 3×2×2 FACTORIAL EVALUATION DESIGN
+# FACTORIAL EVALUATION DESIGN
 # ============================================================================
 #
 # Three independent variables:
@@ -17,6 +17,7 @@
 #   - base:        Original Claude-generated prompts (default LLM tutoring)
 #   - enhanced:    Matches recognition specificity without recognition theory
 #   - recognition: Full recognition-enhanced prompts with Hegelian theory
+#   - hardwired:   Base + 5 superego-derived rules (no live superego) [ABLATION]
 #
 # This design enables isolating:
 #   - Base vs Enhanced      = prompt engineering effect
@@ -25,7 +26,7 @@
 #
 # All cells use nemotron (free tier) to isolate architectural effects from model cost.
 #
-# Design Matrix (12 cells):
+# Design Matrix (12 main cells + 2 ablation cells):
 #
 #   ┌────────────────────┬──────────────────────────┬──────────────────────────┐
 #   │                    │   Unified Learner         │   Ego/Superego Learner   │
@@ -39,11 +40,21 @@
 #   │ Recognition        │ cell_5       │ cell_7    │ cell_6       │ cell_8    │
 #   └────────────────────┴──────────────┴───────────┴──────────────┴───────────┘
 #
+#   ABLATION (hardwired = superego rules in ego prompt, no live superego):
+#   ┌────────────────────┬──────────────┬──────────────┐
+#   │ Hardwired          │ cell_13      │ cell_14      │
+#   └────────────────────┴──────────────┴──────────────┘
+#
+# Ablation comparisons:
+#   - cell_1/2 vs cell_13/14 = Do hardwired rules improve single-agent?
+#   - cell_3/4 vs cell_13/14 = Can hardwired rules replace live superego?
+#
 # This allows analyzing:
 #   - Main effect of prompt type (base vs enhanced vs recognition)
 #   - Main effect of tutor architecture (single agent vs ego + superego dialogue)
 #   - Main effect of learner architecture (unified vs ego_superego)
 #   - All two-way and three-way interactions
+#   - Superego architecture ablation (rules vs dynamic dialogue)
 #
 # ============================================================================
 
@@ -410,3 +421,63 @@ profiles:
       hyperparameters:
         temperature: 0.2
         max_tokens: 8000
+
+  # ===========================================================================
+  # HARDWIRED CELLS (13-14): Superego-derived rules, NO live superego
+  # ===========================================================================
+  # These cells test whether the superego's value is in the rules it enforces
+  # or in the dynamic dialogue itself.
+  #
+  # Uses tutor-ego-hardwired.md which embeds 5 rules derived from analyzing
+  # 186 superego rejections (engagement, specificity, memory, level-matching,
+  # absolute struggle stop).
+  #
+  # Comparison:
+  #   cell_1/2 (base, no superego) vs cell_13/14 (hardwired, no superego)
+  #     → Does hardwiring superego rules improve single-agent performance?
+  #   cell_3/4 (base + superego) vs cell_13/14 (hardwired, no superego)
+  #     → Can hardwired rules replace live superego dialogue?
+
+  # Cell 13: Hardwired × Single Agent × Unified Learner
+  cell_13_hardwired_single_unified:
+    description: "Factorial cell 13: hardwired single-agent tutor (superego rules embedded), unified learner"
+    factors:
+      prompt_type: hardwired
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-hardwired.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 14: Hardwired × Single Agent × Ego/Superego Learner
+  cell_14_hardwired_single_psycho:
+    description: "Factorial cell 14: hardwired single-agent tutor (superego rules embedded), ego/superego learner"
+    factors:
+      prompt_type: hardwired
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-hardwired.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
