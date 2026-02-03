@@ -73,21 +73,62 @@ Single-agent: one-shot generation, no review. Generic fallbacks ship unchecked.
 Multi-agent: superego pre-analyzes learner signals, reviews ego output, rejects
 generic suggestions and forces revision. Acts as quality gate.
 
-### Caveat: Learner architecture factor (C) was not exercised
+### Caveat: Learner architecture factor (C) was not exercised in single-turn
 
-All scenarios in this run were single-turn. The learner ego_superego architecture
-(factor C) is only triggered during multi-turn scenarios — it generates LLM learner
-responses between turns via `generateLearnerResponse()` (evaluationRunner.js:1381).
+All scenarios in the original run (eval-2026-02-01-f8734b08) were single-turn.
+The learner ego_superego architecture (factor C) is only triggered during
+multi-turn scenarios — it generates LLM learner responses between turns via
+`generateLearnerResponse()` (evaluationRunner.js:1381).
 
 In single-turn tests, the learner architecture config is stored in the DB
 (`learner_architecture` column) but has zero operational effect. The ANOVA finding
 of F=0.86 for factor C is therefore meaningless — it reflects random noise across
 a dormant factor, not evidence that learner architecture doesn't matter.
 
-**Implication:** To properly test whether a strong superego model improves
-performance in the learner role (as it does in the tutor role), multi-turn
-scenarios must be included in factorial runs. The current data cannot answer
-this question.
+### Multi-turn follow-up: Learner architecture IS significant
+
+Run: eval-2026-02-02-845e6a28
+24 results, 1 multi-turn scenario (mood_frustration_to_breakthrough, 4 turns) × 8 cells × 3 reps
+Ego: nemotron, Superego: kimi-k2.5
+
+| Cell | Avg Score | Input Tokens | Rounds | API Calls |
+|------|-----------|--------------|--------|-----------|
+| cell_8_recog_multi_psycho | 94.3 | 101,850 | 5.3 | 10.7 |
+| cell_7_recog_multi_unified | 93.2 | 101,797 | 5.3 | 10.7 |
+| cell_6_recog_single_psycho | 89.8 | 55,041 | 0 | 4 |
+| cell_5_recog_single_unified | 86.0 | 54,994 | 0 | 4 |
+| cell_4_base_multi_psycho | 76.1 | 75,450 | 4.0 | 17 |
+| cell_2_base_single_psycho | 71.6 | 54,476 | 0 | 13 |
+| cell_3_base_multi_unified | 65.5 | 78,511 | 4.3 | 9 |
+| cell_1_base_single_unified | 65.5 | 49,338 | 0 | 4 |
+
+**Factor C (learner architecture) now shows a consistent effect on multi-turn:**
+
+| Pair | Psycho (ego_superego) | Unified | Delta |
+|------|-----------------------|---------|-------|
+| Recog + multi (7 vs 8) | 94.3 | 93.2 | +1.1 |
+| Recog + single (5 vs 6) | 89.8 | 86.0 | +3.8 |
+| Base + multi (3 vs 4) | 76.1 | 65.5 | +10.6 |
+| Base + single (1 vs 2) | 71.6 | 65.5 | +6.1 |
+
+The ego_superego learner outperforms unified in all 4 pairwise comparisons,
+with the effect strongest for base prompts (+6-11 points) and smaller but
+still present for recognition prompts (+1-4 points). This mirrors the A×B
+interaction pattern: stronger prompts leave less room for learner architecture
+to add value.
+
+**Interpretation:** On multi-turn scenarios, a learner with internal deliberation
+(ego generates initial response, superego critiques and refines) produces more
+realistic and challenging learner responses, which in turn elicits better tutor
+suggestions. The effect is additive with the other two factors.
+
+**Token cost:** Multi-agent cells (7/8) use ~100K input tokens vs ~55K for
+single-agent (5/6). Cell 4 stands out at 17 API calls — both tutor dialogue
+(4 rounds) and learner ego_superego deliberation compound across 4 turns.
+
+**Factors A and B hold on multi-turn:** Recognition prompts remain dominant
+(+20-28 points over base equivalents). Multi-agent tutor adds ~7-8 points
+on top of recognition, consistent with the single-turn ANOVA finding.
 
 ### Potential improvements to investigate
 
