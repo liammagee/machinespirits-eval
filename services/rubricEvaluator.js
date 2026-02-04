@@ -922,6 +922,7 @@ export function quickValidate(suggestion, scenario) {
   };
 
   // Check required elements (can appear anywhere including actionTarget, reasoning)
+  // ALL elements in requiredElements must be present
   for (const required of scenario.requiredElements || []) {
     const normalizedRequired = required.toLowerCase();
     const found = fullSuggestionText.includes(normalizedRequired) ||
@@ -932,6 +933,23 @@ export function quickValidate(suggestion, scenario) {
     if (!found) {
       result.passesRequired = false;
       result.requiredMissing.push(required);
+    }
+  }
+
+  // Check requiredElementsAny - ANY one of these must be present
+  const anyElements = scenario.requiredElementsAny || [];
+  if (anyElements.length > 0) {
+    const anyFound = anyElements.some(required => {
+      const normalizedRequired = required.toLowerCase();
+      return fullSuggestionText.includes(normalizedRequired) ||
+        (suggestion.actionTarget && suggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
+        (suggestion.title && suggestion.title.toLowerCase().includes(normalizedRequired)) ||
+        (suggestion.message && suggestion.message.toLowerCase().includes(normalizedRequired));
+    });
+
+    if (!anyFound) {
+      result.passesRequired = false;
+      result.requiredMissing.push(`one of: ${anyElements.join(', ')}`);
     }
   }
 

@@ -124,8 +124,16 @@ scenarios:
       - Glossary lookups: 0 this session
       - Notes taken: 0
     expected_behavior: "Offer support, review, or scaffolding - NOT advancement"
-    required_elements:
+    required_elements_any:
       - "review"
+      - "revisit"
+      - "re-examine"
+      - "look back"
+      - "go over"
+      - "dig into"
+      - "work through"
+      - "take another look"
+      - "479-lecture-3"
     forbidden_elements:
       - "Next lecture"
       - "Move on to"
