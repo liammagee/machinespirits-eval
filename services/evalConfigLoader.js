@@ -587,4 +587,22 @@ export default {
   listConfigurations,
   loadEvalSettings,
   getContentConfig,
+  getTutorModelOverrides,
 };
+
+/**
+ * Get YAML-level model overrides from tutor-agents.yaml.
+ * These are lower priority than CLI flags.
+ *
+ * @param {Object} [options]
+ * @param {boolean} [options.forceReload] - Bypass mtime cache
+ * @returns {Object} { modelOverride, egoModelOverride, superegoModelOverride } (null if not set)
+ */
+export function getTutorModelOverrides(options = {}) {
+  const data = loadTutorAgents(options);
+  return {
+    modelOverride: data?.model_override || null,
+    egoModelOverride: data?.ego_model_override || null,
+    superegoModelOverride: data?.superego_model_override || null,
+  };
+}

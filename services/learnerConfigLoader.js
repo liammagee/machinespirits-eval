@@ -418,6 +418,21 @@ export function getEvaluationConfig() {
  */
 export const resolveModel = createBoundResolver(getProviderConfig);
 
+/**
+ * Get YAML-level model overrides from learner-agents.yaml.
+ * These are lower priority than CLI flags.
+ *
+ * @returns {Object} { modelOverride, egoModelOverride, superegoModelOverride } (null if not set)
+ */
+export function getLearnerModelOverrides() {
+  const config = loadConfig();
+  return {
+    modelOverride: config?.model_override || null,
+    egoModelOverride: config?.ego_model_override || null,
+    superegoModelOverride: config?.superego_model_override || null,
+  };
+}
+
 export default {
   loadConfig,
   loadProviders,
@@ -436,4 +451,5 @@ export default {
   listArchitectures,
   getLoggingConfig,
   getEvaluationConfig,
+  getLearnerModelOverrides,
 };
