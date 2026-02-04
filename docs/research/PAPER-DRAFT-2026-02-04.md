@@ -9,7 +9,7 @@ bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. A robust evaluation (N=3,000+) isolating recognition theory from prompt engineering reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect), with the remaining 57% attributable to prompt engineering improvements. Crucially, the multi-agent synergy effect (+9.2 points) is specific to recognition prompts—enhanced prompts without recognition theory show zero benefit from multi-agent architecture, suggesting recognition creates the conditions for productive internal dialogue. Domain generalizability testing reveals factor effects invert by content type: philosophy content shows recognition dominance (+13.9 pts) while elementary math shows architecture dominance (+9.9 pts), with multi-agent architecture serving as critical error correction when models hallucinate trained content on new domains. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
+  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. A robust evaluation framework (N=2,700+ scored responses across 49 evaluation runs) isolating recognition theory from prompt engineering reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect), with the remaining 57% attributable to prompt engineering improvements. Crucially, the multi-agent synergy effect (+9.2 points) is specific to recognition prompts—enhanced prompts without recognition theory show zero benefit from multi-agent architecture, suggesting recognition creates the conditions for productive internal dialogue. Domain generalizability testing reveals factor effects invert by content type: philosophy content shows recognition dominance (+13.9 pts) while elementary math shows architecture dominance (+9.9 pts), with multi-agent architecture serving as critical error correction when models hallucinate trained content on new domains. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, intersubjectivity, multi-agent systems, educational technology, productive struggle]
 ---
 
@@ -32,7 +32,7 @@ We operationalize this framework through:
 3. **New evaluation dimensions** that measure recognition quality alongside traditional pedagogical metrics
 4. **Test scenarios** specifically designed to probe recognition behaviors
 
-In controlled evaluations using a robust factorial design (N=3,000+ evaluations across multiple models and content domains), we isolate the unique contribution of recognition theory from prompt engineering effects. A three-way comparison (base vs enhanced vs recognition) reveals that recognition provides +8.7 points of unique value beyond better instructions—43% of the total recognition effect is attributable to the theoretical framework itself, not merely to better prompting.
+In controlled evaluations using a robust factorial design (N=435 primary evaluations; N=2,700+ across all development runs), we isolate the unique contribution of recognition theory from prompt engineering effects. A three-way comparison (base vs enhanced vs recognition) reveals that recognition provides +8.7 points of unique value beyond better instructions—43% of the total recognition effect is attributable to the theoretical framework itself, not merely to better prompting.
 
 More significantly, we discover that the multi-agent synergy effect (+9.2 points) is *specific to recognition prompts*. Enhanced prompts without recognition theory show zero benefit from multi-agent architecture. This suggests recognition creates the deliberative conditions where internal Ego-Superego dialogue adds value—the architecture matters only when paired with recognition framing.
 
@@ -453,6 +453,24 @@ Responses were evaluated by an LLM judge (Claude Sonnet 4.5) using the extended 
 
 Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0.2-0.5 small, 0.5-0.8 medium, > 0.8 large.
 
+### 5.6 Sample Size Reconciliation
+
+**Unit of analysis**: Each evaluation produces one scored response, representing a tutor's suggestion to a learner in a specific scenario. Multi-turn scenarios produce one aggregate score per scenario (not per turn).
+
+**Table 1a: Evaluation Sample Summary**
+
+| Evaluation | Run ID | Section | Total Attempts | Scored | Unit |
+|------------|--------|---------|----------------|--------|------|
+| Recognition validation | eval-2026-02-03-86b159cd | 6.1 | 36 | 36 | response |
+| Full factorial (Kimi) | eval-2026-02-03-f5d4dd93 | 6.2 | 402 | 342 | response |
+| A×B interaction | eval-2026-02-04-948e04b3 | 6.3 | 18 | 17 | response |
+| Domain generalizability | eval-2026-02-04-79b633ca | 6.4 | 40 | 40 | response |
+| **Paper totals** | — | — | **496** | **435** | — |
+
+**Total evaluation database**: The complete database contains 3,528 evaluation attempts across 49 runs, with 2,735 successfully scored. This paper reports primarily on the four key runs above (N=435 scored), supplemented by historical data for ablation analyses.
+
+**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation) refer to scored responses in that analysis. The "N=2,700+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the four key runs above (N=435).
+
 ---
 
 ## 6. Results
@@ -800,6 +818,38 @@ Two systems with identical "helpful" and "warm" dispositions could differ radica
 
 If mutual recognition produces better outcomes, and if mutual recognition requires the AI to be genuinely shaped by human input, then aligned AI might need to be constitutionally open to transformation—not just trained to simulate openness.
 
+### 7.7 Cost-Benefit Analysis: When is Multi-Agent Architecture Worth It?
+
+The domain generalizability findings raise a practical question: when is the additional cost of multi-agent architecture justified?
+
+**Table 10: Cost-Benefit by Domain and Architecture**
+
+| Domain | Architecture | Avg Score | Latency (s) | Δ Score | Latency Multiple |
+|--------|-------------|-----------|-------------|---------|------------------|
+| Philosophy | Single-agent | 85.6 | 84.6 | — | — |
+| Philosophy | Multi-agent | 86.1 | 231.0 | **+0.5** | 2.7× |
+| Elementary | Single-agent | 63.1 | 23.6 | — | — |
+| Elementary | Multi-agent | 73.0 | 111.9 | **+9.9** | 4.7× |
+
+**Cost-benefit summary:**
+
+| Use Case | Multi-agent Benefit | Cost Increase | Recommendation |
+|----------|---------------------|---------------|----------------|
+| Well-trained domain (philosophy) | +0.5 pts | 2.7× latency | Skip multi-agent |
+| New/untrained domain (elementary) | +9.9 pts | 4.7× latency | Use multi-agent |
+| Domain transfer scenarios | Essential for error correction | — | Always use multi-agent |
+| Production at scale | Marginal quality gain | Significant cost | Use recognition prompts only |
+
+**Practical recommendations:**
+
+1. **For domains well-represented in training data**: Recognition prompts alone provide most of the benefit. Multi-agent architecture adds only +0.5 points while nearly tripling latency. Skip the Superego.
+
+2. **For new domains or domain transfer**: Multi-agent architecture is essential. The Superego catches hallucinated content from training—without it, the tutor may suggest philosophy lectures to elementary students. The +9.9 point improvement justifies the latency cost.
+
+3. **For production deployments**: Consider a hybrid approach—route requests through a domain classifier, using multi-agent only when domain mismatch risk is high.
+
+This analysis addresses the concern that multi-agent overhead provides modest gains. The gains are indeed modest for well-trained domains, but substantial and potentially essential for domain transfer.
+
 ---
 
 ## 8. Limitations and Future Work
@@ -834,7 +884,7 @@ If mutual recognition produces better outcomes, and if mutual recognition requir
 
 We have proposed and evaluated a framework for AI tutoring grounded in Hegel's theory of mutual recognition. Rather than treating learners as knowledge deficits to be filled, recognition-oriented tutoring acknowledges learners as autonomous subjects whose understanding has intrinsic validity.
 
-A robust evaluation (N=3,000+) demonstrates that recognition theory provides unique value:
+A robust evaluation (N=435 primary; N=2,700+ total) demonstrates that recognition theory provides unique value:
 
 1. **43% unique contribution**: Recognition adds +8.7 points beyond what better prompt engineering alone achieves—the theoretical framework has measurable empirical footprint.
 
