@@ -40,6 +40,21 @@ function getGitCommitHash() {
 }
 
 /**
+ * Check if a process with the given PID is still alive.
+ * @param {number} pid - Process ID to check
+ * @returns {boolean} true if alive, false if dead, null if unknown
+ */
+function isPidAlive(pid) {
+  if (!pid) return null;
+  try {
+    process.kill(pid, 0); // Signal 0 = check existence without killing
+    return true;
+  } catch (e) {
+    return e.code === 'EPERM' ? true : false; // EPERM means process exists but we can't signal it
+  }
+}
+
+/**
  * Eval-only profile names that need remapping to tutor-core profiles.
  */
 const EVAL_ONLY_PROFILES = [
