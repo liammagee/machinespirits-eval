@@ -35,6 +35,34 @@ When reporting factor effects:
 - Different judges have different "grading curves" (up to 23 points apart)
 - Relative comparisons within same judge remain valid
 
+## Core Architecture
+
+### Bilateral Ego-Superego Architecture
+
+**CRITICAL**: Both tutor AND learner have dynamic LLM-powered ego-superego architectures:
+
+**Tutor (services in @machinespirits/tutor-core):**
+- Ego generates initial response
+- Superego critiques for pedagogical soundness
+- Ego revises based on feedback (final authority)
+
+**Learner (services/learnerTutorInteractionEngine.js):**
+- Ego generates initial reaction to tutor
+- Superego critiques (is it too superficial? what's being missed?)
+- Ego revision produces final external message
+
+**Key point**: The learner is NOT scripted - it's a full LLM agent with its own deliberation. Multi-turn scenarios in `config/suggestion-scenarios.yaml` define initial prompts, but actual learner responses are LLM-generated via `generateLearnerResponse()`.
+
+**Bilateral transformation measurement** tracks evolution of BOTH sides:
+- `adaptationIndex`: How much tutor approach changes between turns
+- `learnerGrowthIndex`: How much learner messages evolve (complexity, revision markers)
+- `bilateralTransformationIndex`: Combined measure of mutual change
+
+Related services:
+- `services/turnComparisonAnalyzer.js` - Turn-over-turn evolution tracking
+- `services/dialogueTraceAnalyzer.js` - Superego feedback incorporation analysis
+- `services/learnerConfigLoader.js` - Learner personas and profiles
+
 ## Configuration
 
 ### Tutor Agent Cells (config/tutor-agents.yaml)
