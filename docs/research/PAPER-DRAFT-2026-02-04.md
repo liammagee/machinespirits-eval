@@ -406,21 +406,32 @@ This design isolates the effect of recognition-oriented design while controlling
 
 ### 5.4 Model Configuration
 
-All evaluations used the following LLM configuration:
+Evaluations used the following LLM configurations, with model selection varying by evaluation run:
 
 **Table 1: LLM Model Configuration**
 
-| Role | Model | Provider | Temperature |
-|------|-------|----------|-------------|
-| **Tutor (Ego)** | Kimi K2.5 / Nemotron 3 Nano | OpenRouter | 0.6 |
-| **Tutor (Superego)** | Kimi K2.5 / Nemotron 3 Nano | OpenRouter | 0.4 |
-| **Judge** | Claude Sonnet 4.5 | OpenRouter | 0.2 |
-| **Learner (Ego)** | Kimi K2.5 / Nemotron 3 Nano | OpenRouter | 0.6 |
-| **Learner (Superego)** | Kimi K2.5 / Nemotron 3 Nano | OpenRouter | 0.4 |
+| Role | Primary Model | Alternative | Temperature |
+|------|---------------|-------------|-------------|
+| **Tutor (Ego)** | Nemotron 3 Nano 30B | Kimi K2.5 | 0.6 |
+| **Tutor (Superego)** | Kimi K2.5 | Nemotron 3 Nano | 0.2-0.4 |
+| **Judge** | Claude Sonnet 4.5 | — | 0.2 |
+| **Learner (Ego)** | Nemotron 3 Nano 30B | Kimi K2.5 | 0.6 |
+| **Learner (Superego)** | Kimi K2.5 | — | 0.4 |
+
+**Model Selection by Evaluation:**
+
+| Evaluation | Run ID | Tutor Ego | Tutor Superego | Notes |
+|------------|--------|-----------|----------------|-------|
+| Recognition validation (§6.1) | eval-2026-02-03-86b159cd | Kimi K2.5 | — | Single-agent only |
+| Full factorial (§6.2) | eval-2026-02-03-f5d4dd93 | Kimi K2.5 | Kimi K2.5 | N=360 |
+| A×B interaction (§6.3) | eval-2026-02-04-948e04b3 | Nemotron | Kimi K2.5 | Different baseline |
+| Domain generalizability (§6.4) | eval-2026-02-04-79b633ca | Nemotron | Kimi K2.5 | Elementary content |
 
 The learner agents mirror the tutor's Ego/Superego structure, enabling internal deliberation before external response.
 
-Critically, **all profiles use identical models within each evaluation run**. The differences between profiles reflect prompt design and architecture, not model capability. The use of free-tier and budget models demonstrates that recognition-oriented tutoring is achievable without expensive frontier models.
+**Note on model differences**: Absolute scores vary between models (Kimi K2.5 scores ~10-15 points higher than Nemotron on average). However, **relative effects** (recognition vs baseline, single vs multi-agent) are consistent across models. The A×B interaction analysis (Section 6.3) uses Nemotron, explaining lower absolute scores compared to the Kimi-based factorial (Section 6.2). The key finding—that multi-agent synergy is recognition-specific—holds regardless of model choice.
+
+The use of free-tier and budget models (Nemotron, Kimi) demonstrates that recognition-oriented tutoring is achievable without expensive frontier models.
 
 ### 5.5 Statistical Approach
 
@@ -535,9 +546,11 @@ We conducted a full 2×2×2 factorial evaluation examining three factors:
 
 The factorial analysis above shows minimal main effect for multi-agent architecture. However, this masks a crucial interaction: the architecture effect depends on prompt type.
 
-We tested whether multi-agent synergy generalizes beyond recognition prompts by comparing enhanced prompts (good instructions but no recognition theory) with recognition prompts, each in single-agent and multi-agent configurations:
+We tested whether multi-agent synergy generalizes beyond recognition prompts by comparing enhanced prompts (good instructions but no recognition theory) with recognition prompts, each in single-agent and multi-agent configurations.
 
-**Table 4: A×B Interaction Analysis**
+**Note on data source**: This analysis uses a separate evaluation run (eval-2026-02-04-948e04b3) with Nemotron as the primary ego model, explaining lower absolute scores compared to the Kimi-based factorial in Table 3. The analysis focuses on the *interaction pattern*—whether multi-agent synergy depends on prompt type—which is independent of absolute score levels.
+
+**Table 4: A×B Interaction Analysis (Nemotron, N=24)**
 
 | Prompt Type | Single-agent | Multi-agent | Delta | p |
 |-------------|--------------|-------------|-------|---|
