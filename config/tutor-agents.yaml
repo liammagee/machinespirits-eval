@@ -491,3 +491,121 @@ profiles:
         temperature: 0.6
         max_tokens: 8000
     superego: null
+
+  # ===========================================================================
+  # PLACEBO CELLS (15-18): Length-matched prompts WITHOUT recognition theory
+  # ===========================================================================
+  # These cells control for prompt length/complexity vs recognition theory content.
+  # Placebo prompts match recognition prompt length but use only pedagogical
+  # best practices without Hegelian concepts (mutual recognition, autonomous
+  # subject, productive struggle as transformation).
+  #
+  # Comparison:
+  #   cell_9/10 (enhanced) vs cell_15/16 (placebo) vs cell_5/6 (recognition)
+  #     → Isolates recognition theory value from prompt length/complexity
+
+  # Cell 15: Placebo × Single Agent × Unified Learner
+  cell_15_placebo_single_unified:
+    description: "Factorial cell 15: placebo single-agent tutor (length-matched, no recognition theory), unified learner"
+    factors:
+      prompt_type: placebo
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 16: Placebo × Single Agent × Ego/Superego Learner
+  cell_16_placebo_single_psycho:
+    description: "Factorial cell 16: placebo single-agent tutor (length-matched, no recognition theory), ego/superego learner"
+    factors:
+      prompt_type: placebo
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 17: Placebo × Multi-Agent Tutor × Unified Learner
+  cell_17_placebo_multi_unified:
+    description: "Factorial cell 17: placebo ego+superego tutor (length-matched, no recognition theory), unified learner"
+    factors:
+      prompt_type: placebo
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-placebo.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 18: Placebo × Multi-Agent Tutor × Ego/Superego Learner
+  cell_18_placebo_multi_psycho:
+    description: "Factorial cell 18: placebo ego+superego tutor (length-matched, no recognition theory), ego/superego learner"
+    factors:
+      prompt_type: placebo
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-placebo.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-placebo.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
