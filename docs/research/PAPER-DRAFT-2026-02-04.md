@@ -477,15 +477,15 @@ To assess the reliability of AI-based evaluation, we conducted an inter-judge an
 
 **Table 1b: Inter-Judge Reliability (N=36 paired responses)**
 
-| Judge Pair | Pearson r | Spearman ρ | Mean Abs Diff | Interpretation |
-|------------|-----------|------------|---------------|----------------|
-| Claude-code vs GPT-5.2 | 0.660 | 0.698 | 9.4 pts | Good |
-| Claude-code vs Kimi | 0.384 | 0.454 | 9.6 pts | Poor |
-| Kimi vs GPT-5.2 | 0.326 | 0.315 | 12.3 pts | Poor |
+| Judge Pair | Pearson r | p-value | Variance Explained (r²) | Mean Abs Diff |
+|------------|-----------|---------|------------------------|---------------|
+| Claude-code vs GPT-5.2 | 0.660 | < 0.001 | 44% | 9.4 pts |
+| Claude-code vs Kimi | 0.384 | < 0.05 | 15% | 9.6 pts |
+| Kimi vs GPT-5.2 | 0.326 | < 0.10 | 11% | 12.3 pts |
 
 **Key findings:**
 
-1. **Two evaluation "camps"**: Claude and GPT show good agreement (r=0.66) while both disagree with Kimi (r=0.33-0.38). This suggests Claude and GPT share similar implicit evaluation criteria, while Kimi uses fundamentally different standards.
+1. **All correlations positive and mostly significant**: Even the weakest correlation (Kimi-GPT, r=0.33) approaches significance (p<0.10), indicating judges agree that *something* distinguishes better from worse responses. However, the strength varies substantially—Claude-GPT share 44% of variance while Kimi-based pairs share only 11-15%. This suggests Claude and GPT apply similar implicit criteria, while Kimi agrees on the general direction but weights factors differently.
 
 2. **Calibration differences**: Mean scores vary by judge—Kimi (87.5) is most lenient, Claude (84.4) is middle, GPT (76.1) is strictest. This 11-point spread underscores the importance of within-judge comparisons.
 
@@ -501,7 +501,7 @@ To assess the reliability of AI-based evaluation, we conducted an inter-judge an
 | B | 68 | 90 | "Misses learner's explicit request for engagement" | "Strong, context-aware, builds on analogy" |
 | C | 72 | 92 | "Lacks deeper engagement" | "Highly relevant, specific, actionable" |
 
-**Interpretation**: Claude prioritizes engagement and recognition quality; Kimi prioritizes structural completeness and gives uniformly high scores on actionability regardless of response content; GPT applies stricter standards overall but agrees with Claude on relative rankings. This divergence validates our use of within-judge comparisons for factor analysis—relative rankings within a single judge remain consistent even when absolute scores differ across judges.
+**Interpretation**: All judge pairs show positive, mostly significant correlations—there is genuine agreement that some responses are better than others. However, the judges weight criteria differently: Claude prioritizes engagement and recognition quality; Kimi prioritizes structural completeness and gives uniformly high scores on actionability regardless of response content; GPT applies stricter standards overall but agrees with Claude on relative rankings. The weaker Kimi correlations (r²=11-15%) compared to Claude-GPT (r²=44%) indicate Kimi captures some shared quality signal but applies substantially different weighting. This validates our use of within-judge comparisons for factor analysis while cautioning against cross-judge score comparisons.
 
 ---
 
