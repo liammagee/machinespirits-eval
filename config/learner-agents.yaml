@@ -2,6 +2,16 @@
 # Defines how the simulated learner generates responses during evaluation
 #
 # ============================================================================
+# MODEL OVERRIDES (optional)
+# ============================================================================
+# These override ALL profile models when uncommented. Useful for quick testing.
+# CLI flags (--model, --ego-model, --superego-model) take precedence over these.
+#
+# model_override: openrouter.haiku        # Override ALL models (ego + superego + synthesis)
+# ego_model_override: openrouter.nemotron # Override only ego model
+# superego_model_override: openrouter.kimi-k2.5  # Override only superego model
+#
+# ============================================================================
 # LEARNER PROFILES
 # ============================================================================
 #

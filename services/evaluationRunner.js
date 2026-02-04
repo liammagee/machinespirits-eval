@@ -160,6 +160,29 @@ function resolveConfigModels(config) {
     }
   }
 
+  // Apply CLI --ego-model override (replaces only ego model)
+  if (config.egoModelOverride) {
+    try {
+      const r = evalConfigLoader.resolveModel(config.egoModelOverride);
+      resolved.egoModel = { provider: r.provider, model: r.model };
+      // Also update top-level provider/model for compatibility
+      resolved.provider = r.provider;
+      resolved.model = r.model;
+    } catch (e) {
+      throw new Error(`Invalid --ego-model override "${config.egoModelOverride}": ${e.message}`);
+    }
+  }
+
+  // Apply CLI --superego-model override (replaces only superego model)
+  if (config.superegoModelOverride && resolved.superegoModel) {
+    try {
+      const r = evalConfigLoader.resolveModel(config.superegoModelOverride);
+      resolved.superegoModel = { provider: r.provider, model: r.model };
+    } catch (e) {
+      throw new Error(`Invalid --superego-model override "${config.superegoModelOverride}": ${e.message}`);
+    }
+  }
+
   return resolved;
 }
 
@@ -705,6 +728,8 @@ export async function runEvaluation(options = {}) {
     verbose = false,
     scenarioFilter = null,      // Cluster filter: 'single-turn', 'multi-turn', or category names
     modelOverride = null,       // CLI --model override (e.g. "openrouter.nemotron")
+    egoModelOverride = null,    // CLI --ego-model override (replaces only ego model)
+    superegoModelOverride = null, // CLI --superego-model override (replaces only superego model)
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -768,8 +793,22 @@ export async function runEvaluation(options = {}) {
     targetConfigs = configurations;
   }
 
-  if (modelOverride) {
-    targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride }));
+  // Apply model overrides: CLI flags take precedence over YAML-level config
+  const yamlOverrides = evalConfigLoader.getTutorModelOverrides();
+
+  // Effective overrides: CLI > YAML > none
+  const effectiveModelOverride = modelOverride || yamlOverrides.modelOverride;
+  const effectiveEgoModelOverride = egoModelOverride || yamlOverrides.egoModelOverride;
+  const effectiveSuperegoModelOverride = superegoModelOverride || yamlOverrides.superegoModelOverride;
+
+  if (effectiveModelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride: effectiveModelOverride }));
+  }
+  if (effectiveEgoModelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, egoModelOverride: effectiveEgoModelOverride }));
+  }
+  if (effectiveSuperegoModelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, superegoModelOverride: effectiveSuperegoModelOverride }));
   }
 
   if (targetConfigs.length === 0) {
@@ -790,7 +829,9 @@ export async function runEvaluation(options = {}) {
     metadata: {
       runsPerConfig,
       skipRubricEval,
-      modelOverride: modelOverride || null,
+      modelOverride: effectiveModelOverride || null,
+      egoModelOverride: effectiveEgoModelOverride || null,
+      superegoModelOverride: effectiveSuperegoModelOverride || null,
       packageVersion: pkg.version,
       gitCommit: getGitCommitHash(),
       pid: process.pid,

@@ -727,6 +727,8 @@ async function main() {
         const scenarioOpt = getOption('scenario');
         const allProfiles = getFlag('all-profiles');
         const modelOverride = getOption('model');
+        const egoModelOverride = getOption('ego-model');
+        const superegoModelOverride = getOption('superego-model');
 
         // --cluster and --scenario are mutually exclusive
         if (clusterOpt && scenarioOpt) {
@@ -774,6 +776,9 @@ async function main() {
           console.log(`  Cells: ${cellCount}  |  Runs/cell: ${runsPerConfig}  |  Per scenario: ${cellCount * runsPerConfig}`);
           if (modelOverride) {
             console.log(`  Model override: ${modelOverride}`);
+          } else if (egoModelOverride || superegoModelOverride) {
+            if (egoModelOverride) console.log(`  Ego model override: ${egoModelOverride}`);
+            if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
           }
           console.log('');
         }
@@ -792,6 +797,8 @@ async function main() {
           verbose,
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
+          egoModelOverride: egoModelOverride || null,
+          superegoModelOverride: superegoModelOverride || null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
