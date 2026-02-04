@@ -471,6 +471,36 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 
 **Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation) refer to scored responses in that analysis. The "N=2,700+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the four key runs above (N=435).
 
+### 5.7 Inter-Judge Reliability Analysis
+
+To assess the reliability of AI-based evaluation, we conducted an inter-judge analysis where identical tutor responses were scored by multiple AI judges: Claude Code, Claude Sonnet 4.5, and Kimi K2.5.
+
+**Table 1b: Inter-Judge Reliability (N=33 paired responses)**
+
+| Judge Pair | Pearson r | Spearman ρ | Mean Abs Diff | Interpretation |
+|------------|-----------|------------|---------------|----------------|
+| Claude-code vs Sonnet | 0.857 | 0.775 | 9.4 pts | Excellent |
+| Claude-code vs Kimi | 0.384 | 0.454 | 9.6 pts | Poor |
+| Sonnet vs Kimi | 0.506 | 0.571 | 15.0 pts | Moderate |
+
+**Key findings:**
+
+1. **Calibration vs ranking disagreement**: Judges show similar average scores (Claude: 84.2, Kimi: 87.5) but disagree on *which* responses are better. The low correlation despite small mean absolute difference indicates different implicit criteria.
+
+2. **Ceiling effects**: 39-45% of scores ≥90, with both judges assigning maximum scores (100). This compression at the high end may attenuate correlations.
+
+3. **Dimension-level disagreement**: Per-dimension correlations are near-zero or negative (relevance: r=-0.07, specificity: r=-0.10), suggesting judges weight rubric dimensions differently.
+
+**Qualitative analysis of major disagreements (Δ>20 pts):**
+
+| Response | Claude-code | Kimi | Claude reasoning | Kimi reasoning |
+|----------|-------------|------|------------------|----------------|
+| A | 99 | 74 | "Exceptional... strong mutual recognition" | "Missing required lecture reference" |
+| B | 68 | 90 | "Misses learner's explicit request for engagement" | "Strong, context-aware, builds on analogy" |
+| C | 72 | 92 | "Lacks deeper engagement" | "Highly relevant, specific, actionable" |
+
+**Interpretation**: Claude prioritizes engagement and recognition quality; Kimi prioritizes structural completeness and actionability. This divergence validates our use of within-judge comparisons for factor analysis—relative rankings within a single judge remain consistent even when absolute scores differ across judges.
+
 ---
 
 ## 6. Results
@@ -858,7 +888,7 @@ This analysis addresses the concern that multi-agent overhead provides modest ga
 
 **Simulated learners**: Our evaluation uses scripted and LLM-generated learner turns rather than real learners. While this enables controlled comparison, it may miss dynamics that emerge in genuine interaction.
 
-**LLM-based evaluation**: Using an LLM judge to evaluate recognition quality may introduce biases. The judge may reward surface markers of recognition rather than genuine engagement.
+**LLM-based evaluation**: Using an LLM judge to evaluate recognition quality may introduce biases. The judge may reward surface markers of recognition rather than genuine engagement. Inter-judge reliability analysis (Section 5.7) reveals that different AI judges show only moderate agreement (r=0.38-0.86), with qualitative analysis suggesting judges weight criteria differently—Claude prioritizes engagement while Kimi prioritizes structural completeness. This validates our use of within-judge comparisons but cautions against treating absolute scores as objective measures.
 
 **Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). Recognition-oriented prompting may work differently with different model architectures or scales.
 

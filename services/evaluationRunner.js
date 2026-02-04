@@ -2299,7 +2299,22 @@ export async function rejudgeRun(runId, options = {}) {
     throw new Error('No successful results with suggestions found to rejudge');
   }
 
-  log(`\nRejudging ${results.length} results from run ${runId}`);
+  // Deduplicate: only rejudge unique responses (by suggestions content)
+  // This prevents cascading rejudgments when running multiple times
+  const seenSuggestions = new Set();
+  const uniqueResults = [];
+  for (const r of results) {
+    const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
+    if (!seenSuggestions.has(suggKey)) {
+      seenSuggestions.add(suggKey);
+      uniqueResults.push(r);
+    }
+  }
+
+  const skipped = results.length - uniqueResults.length;
+  results = uniqueResults;
+
+  log(`\nRejudging ${results.length} unique results from run ${runId}${skipped > 0 ? ` (skipping ${skipped} duplicates)` : ''}`);
   if (judgeOverride) log(`  Judge override: ${judgeOverride}`);
   if (scenarioFilter) log(`  Scenario filter: ${scenarioFilter}`);
 
