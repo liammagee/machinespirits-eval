@@ -2,16 +2,25 @@
 /**
  * Inter-Judge Reliability Analysis
  *
- * Calculates agreement metrics between AI judges that scored the same responses.
+ * Calculates agreement metrics between AI judges that scored the SAME responses.
+ *
+ * IMPORTANT: This requires paired data where identical responses were scored by
+ * multiple judges. Generate this by rejudging an existing run:
+ *
+ *   node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5
+ *   node scripts/eval-cli.js rejudge <runId> --judge openrouter/moonshotai/kimi-k2.5
+ *
+ * The script matches responses by their `suggestions` content (MD5 hash) to find
+ * cases where the exact same tutor output was scored by different judges.
+ *
  * Reports:
  *   - Pearson correlation (linear agreement)
  *   - Spearman rank correlation (ordinal agreement)
  *   - Mean absolute difference (calibration)
  *   - Per-dimension agreement
- *   - Cronbach's alpha (internal consistency across dimensions)
  *
  * Usage:
- *   node scripts/analyze-judge-reliability.js                # All runs
+ *   node scripts/analyze-judge-reliability.js                # All data
  *   node scripts/analyze-judge-reliability.js --run <runId>  # Specific run
  *   node scripts/analyze-judge-reliability.js --verbose      # Show disagreements
  */
@@ -120,6 +129,18 @@ function cronbachAlpha(items) {
   return (k / (k - 1)) * (1 - sumItemVariances / totalVariance);
 }
 
+// Simple hash for grouping identical responses
+function simpleHash(str) {
+  if (!str) return null;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString(16);
+}
+
 // Main analysis
 function analyzeJudgeReliability() {
   const db = new Database(DB_PATH, { readonly: true });
@@ -138,17 +159,16 @@ function analyzeJudgeReliability() {
   console.log(`Judges found: ${judges.join(', ')}`);
   console.log('');
 
-  // Find paired judgments (same scenario + profile, different judges)
-  // We need to match on the actual response content (raw_response) or at minimum
-  // scenario_id + profile_name + run context
-
-  let whereClause = 'WHERE judge_model IS NOT NULL AND overall_score IS NOT NULL';
+  // Find paired judgments - must be SAME response content judged by different models
+  // Match on suggestions content (the actual tutor response), not just scenario/profile
+  let whereClause = 'WHERE judge_model IS NOT NULL AND overall_score IS NOT NULL AND suggestions IS NOT NULL';
   if (runIdFilter) {
     whereClause += ` AND run_id = '${runIdFilter}'`;
   }
 
   const pairedQuery = `
     SELECT
+      run_id,
       scenario_id,
       profile_name,
       judge_model,
@@ -159,26 +179,60 @@ function analyzeJudgeReliability() {
       score_personalization,
       score_actionability,
       score_tone,
-      raw_response
+      suggestions
     FROM evaluation_results
     ${whereClause}
-    ORDER BY scenario_id, profile_name, raw_response
+    ORDER BY suggestions, judge_model
   `;
 
   const results = db.prepare(pairedQuery).all();
 
-  // Group by response content (or scenario+profile as proxy)
-  // Build pairs for each judge combination
+  // Group by RESPONSE CONTENT (suggestions hash) - not scenario/profile
+  // This ensures we only compare when the exact same response was judged multiple times
   const responseGroups = new Map();
 
   for (const r of results) {
-    // Use raw_response hash or scenario+profile as grouping key
-    const key = `${r.scenario_id}|${r.profile_name}`;
+    // Use suggestions content hash as grouping key
+    const contentHash = simpleHash(r.suggestions);
+    if (!contentHash) continue;
+
+    const key = contentHash;
     if (!responseGroups.has(key)) {
       responseGroups.set(key, []);
     }
     responseGroups.get(key).push(r);
   }
+
+  // Count how many responses have multiple judgments
+  let responsesWithMultipleJudges = 0;
+  for (const [key, group] of responseGroups) {
+    const uniqueJudges = new Set(group.map(r => r.judge_model));
+    if (uniqueJudges.size > 1) {
+      responsesWithMultipleJudges++;
+    }
+  }
+
+  if (responsesWithMultipleJudges === 0) {
+    console.log('⚠️  No paired judgments found!');
+    console.log('');
+    console.log('To analyze inter-judge reliability, you need the SAME response');
+    console.log('scored by multiple judges. Generate this data by rejudging a run:');
+    console.log('');
+    console.log('  # First, pick a completed run:');
+    console.log('  node scripts/eval-cli.js list');
+    console.log('');
+    console.log('  # Then rejudge with different models:');
+    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5');
+    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter/moonshotai/kimi-k2.5');
+    console.log('');
+    console.log('  # Then run this analysis again');
+    console.log('');
+    db.close();
+    return;
+  }
+
+  console.log(`Responses with multiple judges: ${responsesWithMultipleJudges}`);
+  console.log('');
 
   // Find groups with multiple judges
   const pairsData = [];
@@ -222,8 +276,8 @@ function analyzeJudgeReliability() {
               actionability: [s1.score_actionability, s2.score_actionability],
               tone: [s1.score_tone, s2.score_tone]
             },
-            scenario: key.split('|')[0],
-            profile: key.split('|')[1]
+            scenario: s1.scenario_id,
+            profile: s1.profile_name
           });
         }
       }
