@@ -849,6 +849,9 @@ export async function runEvaluation(options = {}) {
       modelOverride: effectiveModelOverride || null,
       egoModelOverride: effectiveEgoModelOverride || null,
       superegoModelOverride: effectiveSuperegoModelOverride || null,
+      // Store scenario IDs and profile names for accurate resume
+      scenarioIds: targetScenarios.map(s => s.id),
+      profileNames: targetConfigs.map(c => c.profileName).filter(Boolean),
       packageVersion: pkg.version,
       gitCommit: getGitCommitHash(),
       pid: process.pid,
@@ -1728,15 +1731,37 @@ export async function resumeEvaluation(options = {}) {
   const skipRubricEval = metadata.skipRubricEval || false;
   const modelOverride = metadata.modelOverride || null;
 
-  // 3. Reconstruct scenarios from all eval scenarios
-  const allScenarios = evalConfigLoader.listScenarios();
-
-  // 4. Reconstruct configs from distinct profile names in existing results
+  // 3. Get existing results for completion checking
   const existingResults = evaluationStore.getResults(runId);
-  const profileNames = [...new Set(existingResults.map(r => r.profileName).filter(Boolean))];
+
+  // 4. Reconstruct scenarios - prefer metadata (complete list), fall back to inferring from results
+  const allScenarios = evalConfigLoader.listScenarios();
+  let scenarioIds;
+  if (metadata.scenarioIds && metadata.scenarioIds.length > 0) {
+    // Use stored scenario list (includes scenarios that haven't started yet)
+    scenarioIds = metadata.scenarioIds;
+  } else {
+    // Legacy: infer from existing results (may miss unstarted scenarios)
+    scenarioIds = [...new Set(existingResults.map(r => r.scenarioId).filter(Boolean))];
+  }
+  const targetScenarios = allScenarios.filter(s => scenarioIds.includes(s.id));
+
+  if (targetScenarios.length === 0) {
+    throw new Error(`No matching scenarios found for run ${runId}`);
+  }
+
+  // 5. Reconstruct profiles - prefer metadata, fall back to inferring from results
+  let profileNames;
+  if (metadata.profileNames && metadata.profileNames.length > 0) {
+    // Use stored profile list
+    profileNames = metadata.profileNames;
+  } else {
+    // Legacy: infer from existing results
+    profileNames = [...new Set(existingResults.map(r => r.profileName).filter(Boolean))];
+  }
 
   if (profileNames.length === 0) {
-    throw new Error(`No results found for run ${runId} — cannot determine profiles to resume`);
+    throw new Error(`No profiles found for run ${runId} — cannot determine what to resume`);
   }
 
   let targetConfigs = profileNames.map(name => ({
@@ -1746,17 +1771,9 @@ export async function resumeEvaluation(options = {}) {
     label: name,
   }));
 
-  // 5. Re-apply modelOverride if present in metadata
+  // 6. Re-apply modelOverride if present in metadata
   if (modelOverride) {
     targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride }));
-  }
-
-  // Determine which scenarios were used in this run
-  const scenarioIds = [...new Set(existingResults.map(r => r.scenarioId).filter(Boolean))];
-  const targetScenarios = allScenarios.filter(s => scenarioIds.includes(s.id));
-
-  if (targetScenarios.length === 0) {
-    throw new Error(`No matching scenarios found for run ${runId}`);
   }
 
   // 6. Count successful results per (profile, scenario) combo and fill up to runsPerConfig.

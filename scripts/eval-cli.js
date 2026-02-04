@@ -1315,17 +1315,19 @@ async function main() {
       case 'resume': {
         const runId = args.find(a => !a.startsWith('--') && a !== 'resume');
         if (!runId) {
-          console.error('Usage: eval-cli.js resume <runId> [--parallelism N] [--verbose]');
+          console.error('Usage: eval-cli.js resume <runId> [--parallelism N] [--verbose] [--force]');
           process.exit(1);
         }
 
         const verbose = getFlag('verbose');
+        const force = getFlag('force');
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
 
         const result = await evaluationRunner.resumeEvaluation({
           runId,
           parallelism,
           verbose,
+          force,
         });
 
         if (result.alreadyComplete) {
