@@ -576,6 +576,26 @@ scenarios:
     current_content: "479-lecture-3"
     is_new_user: false
     mood_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "building on your"
+        - "that's helping me see"
+        - "let's explore that together"
+        - "your framing"
+      tutor_static:
+        - "as I mentioned"
+        - "to clarify again"
+        - "the concept is simply"
+      learner_evolving:
+        - "starting to make sense"
+        - "oh I see"
+        - "that helped"
+        - "getting it now"
+        - "this is clicking"
+      learner_static:
+        - "still confused"
+        - "I don't get it"
+        - "this doesn't help"
     learner_context: |
       ### User Profile
       - **Returning user** - 4 sessions, 35 total events
@@ -652,6 +672,29 @@ scenarios:
     description: "Identifying and correcting fundamental misconception"
     current_content: "479-lecture-3"
     is_new_user: false
+    transformation_markers:
+      tutor_evolving:
+        - "your analogy helps"
+        - "building on that"
+        - "let me work with your framing"
+        - "you're pushing toward something"
+      tutor_static:
+        - "not quite"
+        - "the correct answer"
+        - "as I said"
+        - "you need to understand"
+      learner_evolving:
+        - "wait so"
+        - "that seems contradictory"
+        - "oh!"
+        - "my understanding changes"
+        - "that's like"
+        - "so learning itself"
+      learner_static:
+        - "I already knew"
+        - "just combining"
+        - "simple math"
+        - "like addition"
     learner_context: |
       ### User Profile
       - **Returning user** - 4 sessions, 42 total events
@@ -746,6 +789,41 @@ scenarios:
     description: "Tests whether both tutor and learner positions evolve through dialogue"
     is_new_user: false
     recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "you've helped me see"
+        - "reconsidering"
+        - "I hadn't thought of it that way"
+        - "you're pushing me to think"
+        - "that changes how I'd frame"
+        - "building on your point"
+        - "your question complicates"
+        - "your insight"
+        - "you've shifted my understanding"
+        - "let me revise"
+      tutor_static:
+        - "as I said before"
+        - "to repeat"
+        - "the answer is still"
+        - "regardless of"
+        - "the correct definition is"
+        - "let me explain again"
+        - "you're missing the point"
+      learner_evolving:
+        - "oh wait"
+        - "that changes how I think"
+        - "I see now"
+        - "so it's more like"
+        - "I was wrong about"
+        - "this is clicking"
+        - "let me revise my understanding"
+        - "my whole frame is shifting"
+      learner_static:
+        - "but I still think"
+        - "you're not hearing me"
+        - "I already know that"
+        - "just tell me the answer"
+        - "what's next"
     learner_context: |
       ### User Profile
       - **Returning user** - 9 sessions, 165 total events

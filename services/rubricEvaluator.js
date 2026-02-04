@@ -919,6 +919,14 @@ export function quickValidate(suggestion, scenario) {
     passesForbidden: true,
     requiredMissing: [],
     forbiddenFound: [],
+    // Transformation marker analysis (for multi-turn scenarios)
+    transformationMarkersFound: [],
+    staticMarkersFound: [],
+    learnerGrowthMarkersFound: [],
+    learnerStaticMarkersFound: [],
+    transformationScore: null,
+    learnerGrowthScore: null,
+    bilateralTransformationScore: null,
   };
 
   // Check required elements (can appear anywhere including actionTarget, reasoning)
@@ -963,12 +971,53 @@ export function quickValidate(suggestion, scenario) {
     }
   }
 
+  // Check transformation markers (for multi-turn scenarios)
+  const markers = scenario.transformationMarkers || scenario.transformation_markers;
+  if (markers) {
+    // Tutor evolving markers (in tutor response)
+    const tutorEvolving = markers.tutor_evolving || markers.tutorEvolving || [];
+    for (const marker of tutorEvolving) {
+      if (userFacingText.includes(marker.toLowerCase())) {
+        result.transformationMarkersFound.push(marker);
+      }
+    }
+
+    // Tutor static markers (in tutor response)
+    const tutorStatic = markers.tutor_static || markers.tutorStatic || [];
+    for (const marker of tutorStatic) {
+      if (userFacingText.includes(marker.toLowerCase())) {
+        result.staticMarkersFound.push(marker);
+      }
+    }
+
+    // Calculate tutor transformation score
+    const tutorEvolvingCount = result.transformationMarkersFound.length;
+    const tutorStaticCount = result.staticMarkersFound.length;
+    const tutorTotal = tutorEvolvingCount + tutorStaticCount;
+    if (tutorTotal > 0) {
+      result.transformationScore = tutorEvolvingCount / tutorTotal;
+    }
+
+    // Learner growth markers (these will typically be found in context/history, not suggestion)
+    // Included for completeness when analyzing full dialogue
+    const learnerEvolving = markers.learner_evolving || markers.learnerEvolving || [];
+    const learnerStatic = markers.learner_static || markers.learnerStatic || [];
+
+    // Store marker definitions for use by turn analysis
+    result._markerDefinitions = {
+      tutorEvolving,
+      tutorStatic,
+      learnerEvolving,
+      learnerStatic,
+    };
+  }
+
   return result;
 }
 
 // Dimension groups for dual scoring
 const BASE_DIMENSIONS = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-const RECOGNITION_DIMENSIONS = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential'];
+const RECOGNITION_DIMENSIONS = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential', 'tutor_adaptation', 'learner_growth'];
 
 /**
  * Calculate base score from the 6 core pedagogical dimensions.
@@ -1078,6 +1127,8 @@ export function calculateRecognitionMetrics(scores) {
     'dialectical_responsiveness',
     'memory_integration',
     'transformative_potential',
+    'tutor_adaptation',
+    'learner_growth',
   ];
 
   const metrics = {
@@ -1085,6 +1136,9 @@ export function calculateRecognitionMetrics(scores) {
     transformationRate: false,
     memoryUtilization: false,
     mutualAcknowledgment: false,
+    tutorAdaptation: false,
+    learnerGrowth: false,
+    bilateralTransformation: false,
     dimensionScores: {},
     hasRecognitionData: false,
   };
@@ -1111,8 +1165,17 @@ export function calculateRecognitionMetrics(scores) {
       if (dim === 'mutual_recognition' && score >= 4) {
         metrics.mutualAcknowledgment = true;
       }
+      if (dim === 'tutor_adaptation' && score >= 4) {
+        metrics.tutorAdaptation = true;
+      }
+      if (dim === 'learner_growth' && score >= 4) {
+        metrics.learnerGrowth = true;
+      }
     }
   }
+
+  // Bilateral transformation: both tutor and learner show adaptation
+  metrics.bilateralTransformation = metrics.tutorAdaptation && metrics.learnerGrowth;
 
   if (scoredCount > 0) {
     metrics.recognitionScore = totalScore / scoredCount;
