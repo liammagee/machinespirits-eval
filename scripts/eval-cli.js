@@ -116,19 +116,26 @@ function formatMs(ms) {
 function buildGridFromEvents(events) {
   let scenarios = [];
   let profiles = [];
-  let totalTests = 0;
+  let originalTotalTests = 0;  // From first run_start (original plan)
   let completedTests = 0;
   let runDone = false;
   let durationMs = null;
+  let isResumed = false;
   const grid = {}; // grid[scenarioName][profileName] = { score, success, ... }
 
   for (const ev of events) {
     if (ev.eventType === 'run_start') {
       scenarios = ev.scenarios || [];
       profiles = ev.profiles || [];
-      totalTests = ev.totalTests || 0;
+      // Keep the FIRST run_start's totalTests (original plan), ignore resume's smaller count
+      if (originalTotalTests === 0) {
+        originalTotalTests = ev.totalTests || 0;
+      } else {
+        isResumed = true;  // This is a resume
+      }
     } else if (ev.eventType === 'test_complete') {
-      completedTests = ev.completedCount || completedTests + 1;
+      // Count actual events instead of relying on per-event completedCount
+      completedTests++;
       const sName = ev.scenarioName || ev.scenarioId;
       const pName = ev.profileName || '?';
       if (!grid[sName]) grid[sName] = {};
@@ -138,7 +145,7 @@ function buildGridFromEvents(events) {
         latencyMs: ev.latencyMs,
       };
     } else if (ev.eventType === 'test_error') {
-      completedTests = ev.completedCount || completedTests + 1;
+      completedTests++;
       const sName = ev.scenarioName || ev.scenarioId;
       const pName = ev.profileName || '?';
       if (!grid[sName]) grid[sName] = {};
@@ -153,7 +160,7 @@ function buildGridFromEvents(events) {
     }
   }
 
-  return { scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs };
+  return { scenarios, profiles, grid, completedTests, totalTests: originalTotalTests, runDone, durationMs };
 }
 
 /**
@@ -935,7 +942,9 @@ async function main() {
         const events = readProgressLog(runId);
         if (events.length > 0) {
           const { scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs } = buildGridFromEvents(events);
-          const pct = totalTests > 0 ? Math.round((completedTests / totalTests) * 100) : 0;
+          // For resumed runs, completed can exceed total - cap display at total
+          const displayCompleted = Math.min(completedTests, totalTests);
+          const pct = totalTests > 0 ? Math.min(100, Math.round((displayCompleted / totalTests) * 100)) : 0;
 
           // Check if process is still alive (for running runs)
           let statusLabel = runDone ? 'completed' : 'running';
@@ -952,7 +961,7 @@ async function main() {
 
           console.log(`\nRun: ${runId}`);
           console.log(`Status: ${statusLabel}`);
-          console.log(`Progress: ${completedTests}/${totalTests} tests (${pct}%)`);
+          console.log(`Progress: ${displayCompleted}/${totalTests} tests (${pct}%)${completedTests > totalTests ? ` [${completedTests - totalTests} retried]` : ''}`);
           if (durationMs) console.log(`Duration: ${formatMs(durationMs)}`);
           console.log(`Scenarios: ${scenarios.length} | Profiles: ${profiles.length}`);
 
