@@ -2226,12 +2226,16 @@ export function generateReport(runId) {
 /**
  * Re-judge all results in an existing run without regenerating tutor responses.
  *
+ * By default, creates NEW rows preserving judgment history (for inter-judge reliability).
+ * Use --overwrite to replace existing scores instead.
+ *
  * @param {string} runId - The run to rejudge
  * @param {Object} options
  * @param {string} [options.judgeOverride] - Override judge model (e.g. 'openrouter.nemotron')
  * @param {boolean} [options.verbose] - Show per-result progress
  * @param {string} [options.scenarioFilter] - Only rejudge results for this scenario ID
  * @param {number} [options.parallelism] - Concurrent judge calls (default 3)
+ * @param {boolean} [options.overwrite] - If true, update existing rows instead of creating new ones
  * @returns {Promise<Object>} Summary stats
  */
 export async function rejudgeRun(runId, options = {}) {
@@ -2240,6 +2244,7 @@ export async function rejudgeRun(runId, options = {}) {
     verbose = false,
     scenarioFilter = null,
     parallelism = DEFAULT_PARALLELISM,
+    overwrite = false,
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -2306,10 +2311,17 @@ export async function rejudgeRun(runId, options = {}) {
         );
 
         if (evaluation.success) {
-          evaluationStore.updateResultScores(result.id, evaluation);
+          if (overwrite) {
+            // Old behavior: update in place (loses history)
+            evaluationStore.updateResultScores(result.id, evaluation);
+          } else {
+            // New behavior: create new row (preserves history for reliability analysis)
+            evaluationStore.storeRejudgment(result, evaluation);
+          }
           succeeded++;
           if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
-          log(`  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (was ${result.overallScore?.toFixed(1) ?? '--'})`);
+          const modeLabel = overwrite ? 'replaced' : 'added';
+          log(`  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.overallScore?.toFixed(1) ?? '--'})`);
         } else {
           failed++;
           log(`  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: JUDGE FAILED - ${evaluation.error}`);
