@@ -751,6 +751,13 @@ export async function runEvaluation(options = {}) {
 
   const log = verbose ? console.log : () => {};
 
+  // Log domain override env vars (always visible, not gated on verbose)
+  if (process.env.EVAL_CONTENT_PATH || process.env.EVAL_SCENARIOS_FILE) {
+    console.log('[evaluationRunner] Domain overrides detected:');
+    if (process.env.EVAL_CONTENT_PATH) console.log(`  EVAL_CONTENT_PATH = ${process.env.EVAL_CONTENT_PATH}`);
+    if (process.env.EVAL_SCENARIOS_FILE) console.log(`  EVAL_SCENARIOS_FILE = ${process.env.EVAL_SCENARIOS_FILE}`);
+  }
+
   // Initialize content resolver from eval settings (opt-in)
   const contentConfig = evalConfigLoader.getContentConfig();
   if (contentConfig?.content_package_path) {
@@ -760,9 +767,9 @@ export async function runEvaluation(options = {}) {
       includeSpeakerNotes: contentConfig.include_speaker_notes,
     });
     if (contentResolver.isConfigured()) {
-      log('[evaluationRunner] Content resolver configured:', contentConfig.content_package_path);
+      console.log(`[evaluationRunner] Content: ${contentConfig.content_package_path}`);
     } else {
-      log('[evaluationRunner] Content path set but directory not found — using fallback curriculum');
+      console.warn('[evaluationRunner] Content path set but directory not found — using fallback curriculum');
     }
   }
 
@@ -852,6 +859,9 @@ export async function runEvaluation(options = {}) {
       // Store scenario IDs and profile names for accurate resume
       scenarioIds: targetScenarios.map(s => s.id),
       profileNames: targetConfigs.map(c => c.profileName).filter(Boolean),
+      // Store env overrides so evaluate/rejudge can re-apply them
+      scenariosFile: process.env.EVAL_SCENARIOS_FILE || null,
+      contentPath: process.env.EVAL_CONTENT_PATH || null,
       packageVersion: pkg.version,
       gitCommit: getGitCommitHash(),
       pid: process.pid,
