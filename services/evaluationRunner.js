@@ -18,6 +18,8 @@ import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
 import { StreamingReporter } from './streamingReporter.js';
 import * as anovaStats from './anovaStats.js';
 import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
+import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
+import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -1527,7 +1529,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   const aggregateDimensions = {};
   const baseDims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-  const recognitionDims = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential'];
+  const recognitionDims = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential', 'tutor_adaptation', 'learner_growth'];
   const allDims = [...baseDims, ...recognitionDims];
   for (const dim of allDims) {
     const dimScores = turnResults
@@ -1552,6 +1554,22 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     const threshold = t.minAcceptableScore || fullScenario.min_acceptable_score || 0;
     return t.turnScore >= threshold;
   });
+
+  // 5b. Analyze bilateral transformation (tutor + learner evolution)
+  const turnProgressionAnalysis = turnComparisonAnalyzer.analyzeTurnProgression(turnResults);
+  const markerDefinitions = fullScenario.transformation_markers || fullScenario.transformationMarkers || null;
+  const transformationMarkerAnalysis = markerDefinitions
+    ? turnComparisonAnalyzer.analyzeTransformationMarkers(turnResults, markerDefinitions)
+    : null;
+  const dialogueTraceReport = dialogueTraceAnalyzer.generateTransformationReport(consolidatedTrace, turnResults);
+
+  log(`[evaluationRunner] Bilateral transformation analysis:`, 'info');
+  log(`  - Tutor adaptation index: ${turnProgressionAnalysis.adaptationIndex?.toFixed(2) ?? 'N/A'}`, 'info');
+  log(`  - Learner growth index: ${turnProgressionAnalysis.learnerGrowthIndex?.toFixed(2) ?? 'N/A'}`, 'info');
+  log(`  - Bilateral balance: ${dialogueTraceReport.bilateralMetrics.bilateralBalance?.toFixed(2) ?? 'N/A'}`, 'info');
+  if (dialogueTraceReport.bilateralMetrics.summary) {
+    log(`  - ${dialogueTraceReport.bilateralMetrics.summary}`, 'info');
+  }
 
   // 6. Write consolidated dialogue log
   const consolidatedDialogue = {
@@ -1579,6 +1597,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       turnId: t.turnId,
       suggestions: t.suggestion ? [t.suggestion] : [],
     })),
+    // Bilateral transformation analysis
+    transformationAnalysis: {
+      turnProgression: turnProgressionAnalysis,
+      markerAnalysis: transformationMarkerAnalysis,
+      dialogueTraceReport: dialogueTraceReport,
+    },
   };
 
   if (!fs.existsSync(LOGS_DIR)) {
@@ -1631,6 +1655,18 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     forbiddenFound,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    // Bilateral transformation metrics
+    transformationMetrics: {
+      tutorAdaptationIndex: turnProgressionAnalysis.adaptationIndex,
+      learnerGrowthIndex: turnProgressionAnalysis.learnerGrowthIndex,
+      bilateralTransformationIndex: turnProgressionAnalysis.bilateralTransformationIndex,
+      framingEvolution: turnProgressionAnalysis.framingEvolution,
+      dimensionConvergence: turnProgressionAnalysis.dimensionConvergence,
+      markerAnalysis: transformationMarkerAnalysis,
+      bilateralMetrics: dialogueTraceReport.bilateralMetrics,
+      superegoMetrics: dialogueTraceReport.superegoMetrics,
+      transformationQuality: dialogueTraceReport.overallAssessment?.transformationQuality ?? null,
+    },
   };
 }
 
@@ -2279,7 +2315,8 @@ export async function rejudgeRun(runId, options = {}) {
   const newScores = [];
 
   // Build judge override object if provided
-  const judgeOverrideObj = judgeOverride ? { judgeOverride } : {};
+  // rubricEvaluator expects { judgeOverride: { model: "..." } }
+  const judgeOverrideObj = judgeOverride ? { judgeOverride: { model: judgeOverride } } : {};
 
   // Parallel worker pool (same pattern as main eval loop)
   const items = [...results];
