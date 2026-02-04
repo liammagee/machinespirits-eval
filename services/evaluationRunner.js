@@ -1450,6 +1450,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       turnIndex: turnIdx,
       turnId: isInitialTurn ? 'initial' : turnDef.id,
       learnerAction: isInitialTurn ? undefined : turnDef.learner_action,
+      learnerMessage: isInitialTurn ? undefined : turnDef.action_details?.message,  // Include generated learner message for growth tracking
       expectedBehavior: turnMeta.expectedBehavior,
       suggestion,
       learnerDeliberation: turnDef?._learnerDeliberation || null,
