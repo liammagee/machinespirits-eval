@@ -62,12 +62,25 @@ export function loadRubric({ rubricPath, forceReload } = {}) {
 /**
  * Load suggestion scenarios from the dedicated scenarios YAML file.
  *
+ * Environment variable overrides:
+ * - EVAL_SCENARIOS_FILE: Override the scenarios file path (for testing different content domains)
+ *
  * @param {Object} [options]
  * @param {boolean} [options.forceReload] - Bypass mtime cache
  * @returns {Object|null} Parsed scenarios object, or null if file not found
  */
 export function loadSuggestionScenarios({ forceReload } = {}) {
-  const effectivePath = path.join(EVAL_CONFIG_DIR, 'suggestion-scenarios.yaml');
+  // Allow environment variable override for scenarios file (domain generalizability testing)
+  const envScenariosFile = process.env.EVAL_SCENARIOS_FILE;
+  let effectivePath;
+
+  if (envScenariosFile) {
+    const evalRoot = path.resolve(EVAL_CONFIG_DIR, '..');
+    effectivePath = path.resolve(evalRoot, envScenariosFile);
+    console.log(`[evalConfigLoader] Using EVAL_SCENARIOS_FILE override: ${effectivePath}`);
+  } else {
+    effectivePath = path.join(EVAL_CONFIG_DIR, 'suggestion-scenarios.yaml');
+  }
 
   try {
     const stats = fs.statSync(effectivePath);
@@ -504,6 +517,9 @@ export function loadEvalSettings({ forceReload } = {}) {
  * Get content configuration from eval-settings.yaml.
  * Resolves relative content_package_path against the eval repo root.
  *
+ * Environment variable overrides:
+ * - EVAL_CONTENT_PATH: Override content_package_path (for testing different content domains)
+ *
  * @param {Object} [options]
  * @param {boolean} [options.forceReload] - Bypass mtime cache
  * @returns {Object|null} Content config with resolved paths, or null
@@ -516,16 +532,44 @@ export function getContentConfig(options = {}) {
   const evalRoot = path.resolve(EVAL_CONFIG_DIR, '..');
   const resolved = { ...content };
 
-  if (resolved.content_package_path) {
+  // Allow environment variable override for content path (domain generalizability testing)
+  const envContentPath = process.env.EVAL_CONTENT_PATH;
+  if (envContentPath) {
+    resolved.content_package_path = path.resolve(evalRoot, envContentPath);
+    console.log(`[evalConfigLoader] Using EVAL_CONTENT_PATH override: ${resolved.content_package_path}`);
+  } else if (resolved.content_package_path) {
     resolved.content_package_path = path.resolve(evalRoot, resolved.content_package_path);
   }
 
   return resolved;
 }
 
+/**
+ * Load scenarios from a custom file path.
+ * Used for testing domain generalizability with alternate content.
+ *
+ * @param {string} scenariosPath - Path to scenarios YAML file
+ * @returns {Object|null} Parsed scenarios object, or null if file not found
+ */
+export function loadCustomScenarios(scenariosPath) {
+  const evalRoot = path.resolve(EVAL_CONFIG_DIR, '..');
+  const resolvedPath = path.resolve(evalRoot, scenariosPath);
+
+  try {
+    const content = fs.readFileSync(resolvedPath, 'utf-8');
+    const scenarios = yaml.parse(content);
+    console.log(`[evalConfigLoader] Loaded custom scenarios from: ${resolvedPath}`);
+    return scenarios;
+  } catch (err) {
+    console.error(`[evalConfigLoader] Failed to load custom scenarios from ${resolvedPath}:`, err.message);
+    return null;
+  }
+}
+
 export default {
   loadRubric,
   loadSuggestionScenarios,
+  loadCustomScenarios,
   loadProviders,
   getProviderConfig,
   resolveModel,
