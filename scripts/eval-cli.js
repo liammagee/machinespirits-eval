@@ -1863,8 +1863,20 @@ async function main() {
 
         if (follow) {
           // ── Follow mode: poll for new unevaluated results ──
-          console.log(`\nFollowing run: ${runId} (polling every ${refreshMs}ms)`);
+          // Show initial status
+          const initialResults = evaluationStore.getResults(runId, {
+            scenarioId: scenarioFilter,
+            profileName: profileFilter,
+          });
+          const initialTotal = initialResults.filter(r => r.success).length;
+          const initialUnevaluated = initialResults.filter(r => r.baseScore == null && r.success).length;
+          const initialEvaluated = initialTotal - initialUnevaluated;
+
+          console.log(`\nFollowing run: ${runId}`);
+          console.log(`  Already scored: ${initialEvaluated}/${initialTotal}`);
+          console.log(`  Need scoring: ${initialUnevaluated}`);
           if (modelOverride) console.log(`  Model: ${modelOverride}`);
+          console.log(`  Polling every ${refreshMs}ms for new results...`);
           console.log('');
 
           const processedIds = new Set();
@@ -1895,13 +1907,18 @@ async function main() {
 
             // Total results available so far (for progress display)
             const totalResults = results.filter(r => r.success).length;
+            const alreadyEvaluated = results.filter(r => r.baseScore != null && r.success).length;
 
             // Process each new unevaluated result
+            let batchIndex = 0;
+            const batchSize = unevaluated.length;
             for (const result of unevaluated) {
               if (interrupted) break;
               processedIds.add(result.id);
               evalCounter++;
-              const tag = `[${evalCounter}/${totalResults}]`;
+              batchIndex++;
+              // Show: [batch progress] (overall: evaluated/total)
+              const tag = `[${batchIndex}/${batchSize}] (${alreadyEvaluated + batchIndex}/${totalResults} scored)`;
 
               try {
                 const score = await evaluateOneResult(result, tag);
