@@ -161,6 +161,20 @@ function buildGridFromEvents(events) {
     }
   }
 
+  // If no run_start was found, infer scenarios and profiles from the grid
+  if (scenarios.length === 0) {
+    scenarios = Object.keys(grid);
+  }
+  if (profiles.length === 0) {
+    const profileSet = new Set();
+    for (const scenarioData of Object.values(grid)) {
+      for (const profile of Object.keys(scenarioData)) {
+        profileSet.add(profile);
+      }
+    }
+    profiles = [...profileSet];
+  }
+
   return { scenarios, profiles, grid, completedTests, totalTests: originalTotalTests, runDone, durationMs };
 }
 
@@ -949,15 +963,21 @@ async function main() {
         // Try JSONL first for in-progress runs
         const events = readProgressLog(runId);
         if (events.length > 0) {
-          const { scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs } = buildGridFromEvents(events);
-          // For resumed runs, completed can exceed total - cap display at total
-          const displayCompleted = Math.min(completedTests, totalTests);
-          const pct = totalTests > 0 ? Math.min(100, Math.round((displayCompleted / totalTests) * 100)) : 0;
+          let { scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs } = buildGridFromEvents(events);
 
           // Check if process is still alive (for running runs)
           let statusLabel = runDone ? 'completed' : 'running';
           const runData = evaluationRunner.getRunResults(runId);
           const pid = runData?.run?.metadata?.pid;
+
+          // If JSONL has no run_start (totalTests=0), fall back to DB for the total
+          if (totalTests === 0 && runData?.run) {
+            totalTests = (runData.run.totalScenarios || scenarios.length) * (runData.run.totalConfigurations || profiles.length);
+          }
+
+          // For resumed runs, completed can exceed total - cap display at total
+          const displayCompleted = Math.min(completedTests, totalTests);
+          const pct = totalTests > 0 ? Math.min(100, Math.round((displayCompleted / totalTests) * 100)) : 0;
           if (!runDone && pid) {
             const alive = isPidAlive(pid);
             if (!alive) {
@@ -1022,7 +1042,9 @@ async function main() {
             : '--';
           console.log(`Created: ${createdLocal}`);
           console.log(`Description: ${runData.run.description || 'N/A'}`);
-          console.log(`Tests: ${runData.run.totalTests || runData.results.length}`);
+          // Count unique (scenario, profile) pairs to handle rejudge duplicates
+          const uniqueTests = new Set(runData.results.map(r => `${r.scenarioId}:${r.profileName}`)).size;
+          console.log(`Tests: ${runData.run.totalTests || uniqueTests}`);
 
           if (runData.stats.length > 0) {
             console.log('\nTop performers:');
@@ -1058,6 +1080,17 @@ async function main() {
             return { output: 'Waiting for progress data...', done: false };
           }
           const data = buildGridFromEvents(events);
+          // If JSONL has no run_start (totalTests=0), fall back to DB for the total
+          if (data.totalTests === 0) {
+            try {
+              const runData = evaluationRunner.getRunResults(runId);
+              const run = runData.run;
+              data.totalTests = (run.totalScenarios || 1) * (run.totalConfigurations || 1);
+            } catch {
+              // If DB lookup fails, infer from grid
+              data.totalTests = data.scenarios.length * data.profiles.length || data.completedTests;
+            }
+          }
           return { output: renderGrid(data), done: data.runDone };
         };
 
@@ -1081,8 +1114,10 @@ async function main() {
             }
             const totalTests = (runData.run.totalScenarios || scenarios.length) * (runData.run.totalConfigurations || profiles.length);
             const done = runData.run.status === 'completed';
+            // Count unique (scenario, profile) pairs instead of total rows (handles rejudge duplicates)
+            const uniqueCompleted = new Set(results.map(r => `${r.scenarioId}:${r.profileName}`)).size;
             return {
-              output: renderGrid({ scenarios, profiles, grid, completedTests: results.length, totalTests, runDone: done, durationMs: null }),
+              output: renderGrid({ scenarios, profiles, grid, completedTests: uniqueCompleted, totalTests, runDone: done, durationMs: null }),
               done,
             };
           } catch (e) {
