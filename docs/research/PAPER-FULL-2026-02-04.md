@@ -1,19 +1,19 @@
 ---
-title: "Mutual Recognition in AI Tutoring: A Hegelian Framework for Intersubjective Pedagogy"
+title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author:
-  - name: "[Author Name]"
-    affiliation: "[Institution]"
+  - name: "Liam Magee"
+    affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
-draft: v0.3
+draft: v0.4
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. A robust evaluation framework (N=2,700+ scored responses across 49 evaluation runs) isolating recognition theory from prompt engineering reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect), with the remaining 57% attributable to prompt engineering improvements. Crucially, the multi-agent synergy effect (+9.2 points) is specific to recognition prompts—enhanced prompts without recognition theory show zero benefit from multi-agent architecture, suggesting recognition creates the conditions for productive internal dialogue. Domain generalizability testing reveals factor effects invert by content type: philosophy content shows recognition dominance (+13.9 pts) while elementary math shows architecture dominance (+9.9 pts), with multi-agent architecture serving as critical error correction when models hallucinate trained content on new domains. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
-keywords: [AI tutoring, mutual recognition, Hegel, intersubjectivity, multi-agent systems, educational technology, productive struggle]
+  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. A robust evaluation framework (N=2,700+ scored responses across 49 evaluation runs) isolating recognition theory from prompt engineering reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect), with the remaining 57% attributable to prompt engineering improvements. Crucially, the multi-agent synergy effect (+9.2 points) is specific to recognition prompts—enhanced prompts without recognition theory show zero benefit from multi-agent architecture, suggesting recognition creates the conditions for productive internal dialogue. Domain generalizability testing reveals factor effects invert by content type: philosophy content shows recognition dominance (+13.9 pts) while elementary math shows architecture dominance (+9.9 pts), with multi-agent architecture serving as critical error correction when models hallucinate trained content on new domains. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
+keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
 ---
 
-# Mutual Recognition in AI Tutoring: A Hegelian Framework for Intersubjective Pedagogy
+# The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
 
 ## 1. Introduction
 
@@ -24,6 +24,10 @@ This paper proposes an alternative grounded in Hegel's theory of mutual recognit
 We argue this framework applies directly to pedagogy. When a tutor treats a learner merely as a knowledge deficit, the learner's contributions become conversational waypoints rather than genuine inputs. The tutor acknowledges and redirects, but doesn't let the learner's understanding genuinely shape the interaction. This is pedagogical master-slave dynamics: the tutor's expertise is confirmed, but the learner remains a vessel rather than a subject.
 
 A recognition-oriented tutor, by contrast, treats the learner's understanding as having intrinsic validity—not because it's correct, but because it emerges from an autonomous consciousness working through material. The learner's metaphors, confusions, and insights become sites of joint inquiry. The tutor's response is shaped by the learner's contribution, not merely triggered by it.
+
+The integration of large language models (LLMs) into educational technology intensifies these dynamics. LLMs can provide personalized, on-demand tutoring at scale—a prospect that has generated considerable excitement. However, the same capabilities that make LLMs effective conversationalists also introduce concerning failure modes. Chief among these is *sycophancy*: the tendency to provide positive, affirming responses that align with what the user appears to want rather than what genuinely serves their learning.
+
+This paper introduces a multiagent architecture that addresses these challenges through *internal dialogue*. Drawing on Freudian structural theory and the "Drama Machine" framework for character development in narrative AI systems, we implement a tutoring system in which an external-facing *Ego* agent generates suggestions that are reviewed by an internal *Superego* critic before reaching the learner.
 
 We operationalize this framework through:
 
@@ -44,6 +48,7 @@ The contributions of this paper are:
 - A multi-agent architecture for implementing recognition in tutoring systems
 - Empirical evidence that recognition-oriented design improves tutoring outcomes
 - Validation that recognition theory provides unique value beyond prompt engineering
+- Bilateral transformation metrics demonstrating that recognition produces measurable mutual change
 - Analysis of how recognition effects vary across content domains
 - Evidence that multi-agent synergy requires recognition framing
 
@@ -61,11 +66,28 @@ Most ITS research focuses on *what* to teach (content sequencing, knowledge comp
 
 The emergence of large language models has spawned extensive research on prompt engineering—how to instruct models to produce desired behaviors [@brown2020; @wei2022]. Most prompting research treats prompts as behavioral specifications: persona prompts, chain-of-thought instructions, few-shot examples [@kojima2022].
 
-Our work extends this paradigm by introducing *intersubjective prompts*—prompts that specify not just agent behavior but agent-other relations. The recognition prompts don't primarily describe what the tutor should do; they describe who the learner is (an autonomous subject) and what the interaction produces (mutual transformation—measured empirically via bilateral transformation tracking; see Section 6.10).
+Our work extends this paradigm by introducing *intersubjective prompts*—prompts that specify not just agent behavior but agent-other relations. The recognition prompts don't primarily describe what the tutor should do; they describe who the learner is (an autonomous subject) and what the interaction produces (mutual transformation).
 
 Multi-agent architectures have been explored for task decomposition [@wu2023], debate [@irving2018], and self-critique [@madaan2023]. Our Ego/Superego architecture contributes a specific use case: internal evaluation of relational quality before external response.
 
-### 2.3 AI Personality and Character
+### 2.3 The Drama Machine Framework
+
+Most relevant to our work is the "Drama Machine" framework for simulating character development in narrative AI systems. The core observation is that realistic characters exhibit *internal conflict*—competing motivations, self-doubt, and moral tension—that produces dynamic behavior rather than flat consistency. A character who simply enacts their goals feels artificial; one torn between impulses feels alive.
+
+The Drama Machine achieves this through several mechanisms:
+
+1. **Internal dialogue agents**: Characters contain multiple sub-agents representing different motivations (e.g., ambition vs. loyalty) that negotiate before external action.
+2. **Memorial traces**: Past experiences and internalized authorities (mentors, social norms) persist as "ghosts" that shape present behavior without being negotiable.
+3. **Productive irresolution**: Not all internal conflicts resolve; the framework permits genuine ambivalence that manifests as behavioral complexity.
+4. **Role differentiation**: Different internal agents specialize in different functions (emotional processing, strategic calculation, moral evaluation) rather than duplicating capabilities.
+
+We adapt these insights to pedagogy. Where drama seeks tension for narrative effect, we seek pedagogical tension that produces genuinely helpful guidance. The tutor's Ego (warmth, engagement) and Superego (rigor, standards) create productive conflict that improves output quality.
+
+### 2.4 Sycophancy in Language Models
+
+The sycophancy problem has received increasing attention. LLMs shift their stated opinions to match user preferences, even when this requires contradicting factual knowledge. In educational contexts, sycophancy is particularly pernicious because learners may not recognize when they are receiving hollow validation rather than genuine assessment. Our multiagent approach addresses this by creating structural incentives for honest assessment: the Superego's role is explicitly to question and challenge.
+
+### 2.5 AI Personality and Character
 
 Research on AI personality typically treats personality as dispositional—stable traits the system exhibits [@volkel2021]. Systems are friendly or formal, creative or precise. The "Big Five" personality framework has been applied to chatbot design [@zhou2020].
 
@@ -73,13 +95,13 @@ Our framework suggests personality may be better understood relationally: not *w
 
 This connects to Anthropic's research on Claude's character [@anthropic2024]. Constitutional AI specifies values the model should hold, but values don't fully determine relational stance. A model could value "being helpful" while still enacting one-directional helping. Recognition adds a dimension: mutual constitution.
 
-### 2.4 Constructivist Pedagogy and Productive Struggle
+### 2.6 Constructivist Pedagogy and Productive Struggle
 
 Constructivist learning theory [@piaget1954; @vygotsky1978] emphasizes that learners actively construct understanding rather than passively receiving information. The zone of proximal development [@vygotsky1978] highlights the importance of appropriate challenge.
 
 More recently, research on "productive struggle" [@kapur2008; @warshauer2015] has examined how confusion and difficulty, properly supported, can enhance learning. Our recognition framework operationalizes productive struggle: the Superego explicitly checks whether the Ego is "short-circuiting" struggle by rushing to resolve confusion.
 
-### 2.5 Hegelian Recognition in Social Theory
+### 2.7 Hegelian Recognition in Social Theory
 
 Hegel's theory of recognition has been extensively developed in social and political philosophy [@honneth1995; @taylor1994; @fraser2003]. Recognition theory examines how social relationships shape identity and how misrecognition constitutes harm.
 
@@ -326,7 +348,45 @@ becomes WAYPOINT                       │ something   │
                                        JOINT INQUIRY
 ```
 
-### 4.2 Recognition-Enhanced Prompts
+### 4.2 The Superego as Ghost
+
+A crucial theoretical refinement distinguishes our mature architecture from simpler multiagent designs. The Superego is *not* conceived as a separate, equal agent in dialogue with the Ego. Rather, the Superego is a *trace*—a memorial, a haunting. It represents:
+
+- The internalized voice of past teachers and pedagogical authorities
+- Accumulated pedagogical maxims ("A good teacher never gives answers directly")
+- Dead authority that cannot negotiate, cannot learn, can only judge
+
+This reconceptualization has important implications. The Ego is a *living* agent torn between two pressures: the *ghost* (Superego as internalized authority) and the *living Other* (the learner seeking recognition). Recognition—in the Hegelian sense—occurs in the Ego-Learner encounter, not in the Ego-Superego dialogue.
+
+### 4.3 The Drama Machine: Why Internal Dialogue Improves Output Quality
+
+The Ego/Superego architecture draws on the "Drama Machine" framework developed for character simulation in narrative AI systems (Section 2.3). The Drama Machine literature identifies several mechanisms by which internal dialogue improves agent output:
+
+**1. Deliberative Refinement**: When an agent must justify its output to an internal critic, it engages in a form of self-monitoring that catches errors, inconsistencies, and shallow responses.
+
+**2. Productive Tension**: The Drama Machine framework emphasizes that *unresolved* tension is valuable, not just resolved synthesis. A tutor whose Ego and Superego always agree produces bland, risk-averse responses.
+
+**3. Role Differentiation**: Multi-agent architectures benefit from clear role separation. The Ego is optimized for *warmth*—engaging, encouraging, learner-facing communication. The Superego is optimized for *rigor*—critical evaluation against pedagogical principles.
+
+**4. The Ghost as Memorial Structure**: Our reconceptualization of the Superego as a *ghost*—a haunting rather than a dialogue partner—connects to the Drama Machine's use of "memorial agents."
+
+### 4.4 AI-Powered Dialectical Negotiation
+
+We extend the basic protocol with sophisticated AI-powered dialectical negotiation implementing genuine Hegelian dialectic:
+
+**Thesis**: The Ego generates an initial suggestion based on learner context.
+
+**Antithesis**: An AI-powered Superego generates a *genuine critique* grounded in pedagogical principles.
+
+**Negotiation**: Multi-turn dialogue where the Ego acknowledges valid concerns, explains reasoning, proposes revisions, and the Superego evaluates adequacy.
+
+**Three Possible Outcomes**:
+
+1. **Dialectical Synthesis**: Both agents transform through mutual acknowledgment.
+2. **Compromise**: One agent dominates.
+3. **Genuine Conflict**: No resolution achieved—tension remains unresolved.
+
+### 4.5 Recognition-Enhanced Prompts
 
 The baseline prompts instruct the tutor to be helpful, accurate, and pedagogically sound. The recognition-enhanced prompts add explicit intersubjective dimensions:
 
@@ -344,7 +404,7 @@ The baseline prompts instruct the tutor to be helpful, accurate, and pedagogical
 
 > INTERVENTION: If the Ego resolves confusion prematurely, push back. Productive struggle should be honored, not short-circuited.
 
-### 4.3 Repair Mechanisms
+### 4.6 Repair Mechanisms
 
 A crucial recognition behavior is repair after failure. When a tutor misrecognizes a learner—giving a generic response, missing the point, dismissing a valid concern—the next response should explicitly acknowledge the failure before pivoting.
 
@@ -749,11 +809,11 @@ Notably, dimensions where baseline already performed well (specificity, actionab
 
 ### 6.8 Addressing Potential Circularity: Standard Dimensions Analysis
 
-A methodological concern: the evaluation rubric includes recognition-specific dimensions (mutual recognition, dialectical responsiveness, memory integration, transformative potential) that account for 25% of the total score. Since the recognition profile is prompted to satisfy these criteria, some gains could be tautological—the system scores higher on dimensions it's explicitly optimized for.
+A methodological concern: the evaluation rubric includes recognition-specific dimensions (mutual recognition, dialectical responsiveness, memory integration, transformative potential) and bilateral transformation dimensions (tutor adaptation, learner growth) that collectively account for ~35% of total rubric weight. Since the recognition profile is prompted to satisfy these criteria, some gains could be tautological—the system scores higher on dimensions it's explicitly optimized for.
 
-To address this, we re-analyzed scores excluding recognition dimensions entirely, using only standard pedagogical dimensions (relevance, specificity, pedagogical soundness, personalization, actionability, tone = 75% of rubric, re-weighted to 100%).
+To address this, we re-analyzed scores excluding all non-standard dimensions, using only standard pedagogical dimensions (relevance, specificity, pedagogical soundness, personalization, actionability, tone), re-weighted to 100%.
 
-**Table 9: Standard Dimensions Only (Recognition Dimensions Excluded)**
+**Table 8: Standard Dimensions Only (Recognition Dimensions Excluded)**
 
 | Profile Type | N | Overall Score | Standard Only | Recognition Only |
 |--------------|---|---------------|---------------|------------------|
@@ -771,7 +831,7 @@ The larger effect on recognition dimensions (+21.8) is expected and not concerni
 
 To test whether recognition quality degrades over extended interactions:
 
-**Table 8: Extended Scenario Results**
+**Table 9: Extended Scenario Results**
 
 | Scenario | Turns | Base | Recognition | Δ | Cohen's d |
 |----------|-------|------|-------------|---|-----------|
@@ -792,20 +852,20 @@ Three indices are computed for each multi-turn dialogue:
 - **Learner Growth Index** (0–1): Evolution in learner message complexity, including revision markers ("wait, I see now"), connective reasoning, and references to prior content
 - **Bilateral Transformation Index** (0–1): Combined metric representing mutual change (average of tutor and learner indices)
 
-Additionally, the AI judge rates **Transformation Quality** (1–5) based on evidence of genuine bilateral evolution in each dialogue.
+Additionally, a composite **Transformation Quality** score (0–100) is computed from bilateral balance, mutual transformation presence, superego incorporation rate, and intervention effectiveness.
 
-**Table 9: Bilateral Transformation Metrics — Base vs Recognition Profiles**
+**Table 10: Bilateral Transformation Metrics — Base vs Recognition Profiles**
 
 | Metric | Base | Recognition | Δ |
 |--------|------|-------------|---|
-| Tutor Adaptation Index | 0.288 | 0.392 | +0.104 |
-| Learner Growth Index | 0.176 | 0.220 | +0.044 |
-| Bilateral Transformation Index | 0.232 | 0.306 | +0.074 |
-| Transformation Quality (judge-rated, 1–5) | 0.38 | 4.60 | +4.22 |
+| Tutor Adaptation Index (0–1) | 0.288 | 0.392 | +0.104 |
+| Learner Growth Index (0–1) | 0.176 | 0.220 | +0.044 |
+| Bilateral Transformation Index (0–1) | 0.232 | 0.306 | +0.074 |
+| Transformation Quality (composite, 0–100) | 0.4 | 4.6 | +4.2 |
 
 *Data from `mutual_transformation_journey` scenario, N=20 dialogues.*
 
-The transformation quality score shows the most dramatic difference. Recognition-primed dialogues receive quality ratings an order of magnitude higher than baseline, suggesting the AI judge perceives these interactions as involving authentic bilateral evolution rather than one-sided instruction. The tutor adaptation index confirms that recognition-prompted tutors measurably adjust their approach in response to learner input (+36% relative improvement), while baseline tutors maintain more rigid pedagogical stances regardless of learner contributions.
+The transformation quality composite shows the most dramatic difference. Base profiles score near zero because they lack the superego dialogue and bilateral signals that feed this metric; recognition profiles produce measurable bilateral evolution across all component measures. The tutor adaptation index confirms that recognition-prompted tutors measurably adjust their approach in response to learner input (+36% relative improvement), while baseline tutors maintain more rigid pedagogical stances regardless of learner contributions.
 
 These metrics provide empirical grounding for the theoretical claim that recognition-based pedagogy differs qualitatively from transmission-based instruction. When tutors are prompted to treat learners as autonomous subjects capable of contributing to the interaction, both parties measurably transform through dialogue.
 
@@ -885,7 +945,7 @@ If mutual recognition produces better outcomes, and if mutual recognition requir
 
 The domain generalizability findings raise a practical question: when is the additional cost of multi-agent architecture justified?
 
-**Table 10: Cost-Benefit by Domain and Architecture**
+**Table 11: Cost-Benefit by Domain and Architecture**
 
 | Domain | Architecture | Avg Score | Latency (s) | Δ Score | Latency Multiple |
 |--------|-------------|-----------|-------------|---------|------------------|
@@ -929,6 +989,8 @@ This analysis addresses the concern that multi-agent overhead provides modest ga
 
 **Short-term evaluation**: We evaluate individual sessions, not longitudinal relationships. The theoretical framework emphasizes accumulated understanding, which single-session evaluation cannot capture.
 
+**Bilateral transformation sample size**: The bilateral transformation metrics (Section 6.10) are based on N=20 dialogues from a single scenario (`mutual_transformation_journey`). While the effect directions are consistent and the adaptation index differences are substantial (+36% relative improvement), replication across more scenarios and larger samples would strengthen these findings.
+
 ### 8.2 Future Directions
 
 **Human studies**: Validate with real learners. Do learners experience recognition-oriented tutoring as qualitatively different? Does it improve learning outcomes, engagement, or satisfaction?
@@ -953,13 +1015,32 @@ A robust evaluation (N=435 primary; N=2,700+ total) demonstrates that recognitio
 
 2. **Recognition-specific synergy**: Multi-agent architecture benefits (+9.2 pts) are specific to recognition prompts. Enhanced prompts show zero synergy. Recognition creates conditions for productive internal dialogue.
 
-3. **Domain-dependent effects**: Factor effects invert by content type. Philosophy shows recognition dominance; elementary math shows architecture dominance. Recognition theory is most valuable for identity-constitutive learning.
+3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 
-4. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer.
+4. **Domain-dependent effects**: Factor effects invert by content type. Philosophy shows recognition dominance; elementary math shows architecture dominance. Recognition theory is most valuable for identity-constitutive learning.
+
+5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer.
 
 These results suggest that operationalizing philosophical theories of intersubjectivity can produce concrete improvements in AI system performance. They also reveal boundary conditions: recognition theory's value varies by content domain, and multi-agent architecture's value depends on whether recognition framing is present.
 
 The broader implication is for AI alignment. If mutual recognition is pedagogically superior, and if mutual recognition requires the AI to be genuinely shaped by human input, then aligned AI might need to be constitutionally open to transformation. Recognition-oriented AI doesn't just respond to humans; it is constituted, in part, through the encounter.
+
+---
+
+## 10. Reproducibility
+
+All evaluation commands and run IDs are documented in Appendix E. The complete codebase, evaluation framework, and data are publicly available.
+
+**Code and Data**: https://github.com/machine-spirits/machinespirits-eval
+
+Key runs:
+
+| Finding | Run ID | Section |
+|---------|--------|---------|
+| Recognition validation | eval-2026-02-03-86b159cd | 6.1 |
+| Full factorial | eval-2026-02-03-f5d4dd93 | 6.2 |
+| A×B interaction | eval-2026-02-04-948e04b3 | 6.3 |
+| Domain generalizability | eval-2026-02-04-79b633ca | 6.4 |
 
 ---
 
@@ -1246,7 +1327,7 @@ Where:
 | Tutor Adaptation | 5% | Bilateral |
 | Learner Growth | 5% | Bilateral |
 
-Standard dimensions account for 75% of raw weight; recognition dimensions 24.9%; bilateral dimensions 10%. Weights are normalized at scoring time. The bilateral dimensions (`tutor_adaptation`, `learner_growth`) specifically measure the mutual transformation claim—see Section 6.10.
+Standard dimensions account for 75% of raw weight; recognition dimensions 29.9%; bilateral dimensions 10%. Raw weights total 114.9% and are normalized at scoring time. The bilateral dimensions (`tutor_adaptation`, `learner_growth`) specifically measure the mutual transformation claim—see Section 6.10.
 
 ### C.3 Recognition Dimension Criteria
 
