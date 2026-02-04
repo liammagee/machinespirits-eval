@@ -27,12 +27,12 @@ content-test-elementary/
 Use environment variables to switch content domains:
 
 ```bash
-# Run with elementary content
+# Run with elementary content (note: --profile and --scenario are singular)
 EVAL_CONTENT_PATH=./content-test-elementary \
 EVAL_SCENARIOS_FILE=./content-test-elementary/scenarios-elementary.yaml \
 node scripts/eval-cli.js run \
-  --profiles cell_5_recog_single_unified,cell_7_recog_multi_unified \
-  --scenarios struggling_student,concept_confusion,frustrated_student \
+  --profile cell_5_recog_single_unified,cell_7_recog_multi_unified \
+  --scenario struggling_student,concept_confusion,frustrated_student \
   --runs 3
 ```
 

@@ -1,13 +1,22 @@
 /**
  * Factorial Design Integrity Tests
  *
- * Verifies that the YAML config and profile resolution form a valid, complete
- * 2×2×2 factorial design. Tests act as a safety net: changes to config that
- * violate the factorial design contract will break these tests.
+ * Verifies that the YAML config and profile resolution form a valid factorial
+ * design. Tests act as a safety net: changes to config that violate the
+ * factorial design contract will break these tests.
+ *
+ * The design uses 3 factors:
+ *   - prompt_type: base | recognition | enhanced | hardwired | placebo
+ *   - multi_agent_tutor: boolean
+ *   - multi_agent_learner: boolean
+ *
+ * Core 8 cells (1-8): base × {single,multi} × {unified,psycho}
+ *                      recognition × {single,multi} × {unified,psycho}
+ * Extended cells (9+): enhanced, hardwired, placebo conditions
  *
  * Covers:
- *   - Config integrity (all 8 cells, orthogonal factors, naming convention)
- *   - Prompt file assignment (base vs recognition ego/superego prompts)
+ *   - Config integrity (factor structure, naming convention)
+ *   - Prompt file assignment (prompt_type → ego/superego prompt files)
  *   - Model consistency (ego model, superego presence, hyperparameters)
  *   - Learner architecture wiring (learner_architecture → learner-agents.yaml)
  */
@@ -25,57 +34,68 @@ const configDir = path.join(__dirname, '..', 'config');
 const tutorConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'tutor-agents.yaml'), 'utf8'));
 const learnerConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'learner-agents.yaml'), 'utf8'));
 
-// Extract just the 8 factorial cell profiles (cell_1 through cell_8)
+// All cell profiles (cell_1 through cell_N)
 const cellNames = Object.keys(tutorConfig.profiles).filter(name => /^cell_\d/.test(name));
 const cells = Object.fromEntries(cellNames.map(name => [name, tutorConfig.profiles[name]]));
+
+// Core 8 factorial cells (base + recognition)
+const coreCellNames = cellNames.filter(n => /^cell_[1-8]_/.test(n));
+const coreCells = Object.fromEntries(coreCellNames.map(name => [name, cells[name]]));
+
+// Valid prompt types
+const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo'];
 
 // ============================================================================
 // CONFIG INTEGRITY
 // ============================================================================
 
 describe('factorial design — config integrity', () => {
-  it('tutor-agents.yaml has exactly 8 factorial cell profiles', () => {
-    assert.strictEqual(cellNames.length, 8, `Expected 8 cell profiles, got ${cellNames.length}: ${cellNames.join(', ')}`);
+  it('tutor-agents.yaml has at least 8 factorial cell profiles', () => {
+    assert.ok(cellNames.length >= 8, `Expected ≥8 cell profiles, got ${cellNames.length}`);
   });
 
-  it('each cell has a factors block with exactly 3 boolean keys', () => {
-    const expectedKeys = ['recognition', 'multi_agent_tutor', 'multi_agent_learner'];
+  it('core cells 1-8 exist', () => {
+    assert.strictEqual(coreCellNames.length, 8, `Expected 8 core cells, got ${coreCellNames.length}: ${coreCellNames.join(', ')}`);
+  });
+
+  it('each cell has a factors block with prompt_type, multi_agent_tutor, multi_agent_learner', () => {
+    const expectedKeys = ['multi_agent_learner', 'multi_agent_tutor', 'prompt_type'];
     for (const [name, profile] of Object.entries(cells)) {
       assert.ok(profile.factors, `${name} missing factors block`);
       const keys = Object.keys(profile.factors).sort();
-      assert.deepStrictEqual(keys, expectedKeys.sort(), `${name} factors keys mismatch`);
-      for (const key of expectedKeys) {
-        assert.strictEqual(typeof profile.factors[key], 'boolean', `${name}.factors.${key} should be boolean`);
-      }
+      assert.deepStrictEqual(keys, expectedKeys, `${name} factors keys mismatch`);
+      assert.ok(VALID_PROMPT_TYPES.includes(profile.factors.prompt_type),
+        `${name} prompt_type "${profile.factors.prompt_type}" not in ${VALID_PROMPT_TYPES.join(',')}`);
+      assert.strictEqual(typeof profile.factors.multi_agent_tutor, 'boolean', `${name}.factors.multi_agent_tutor should be boolean`);
+      assert.strictEqual(typeof profile.factors.multi_agent_learner, 'boolean', `${name}.factors.multi_agent_learner should be boolean`);
     }
   });
 
-  it('8 cells produce all 8 unique factor combinations (full factorial)', () => {
+  it('core 8 cells cover all base/recognition × tutor × learner combinations', () => {
     const combos = new Set();
-    for (const [name, profile] of Object.entries(cells)) {
-      const { recognition, multi_agent_tutor, multi_agent_learner } = profile.factors;
-      const key = `r${+recognition}_t${+multi_agent_tutor}_l${+multi_agent_learner}`;
-      combos.add(key);
+    for (const [name, profile] of Object.entries(coreCells)) {
+      const { prompt_type, multi_agent_tutor, multi_agent_learner } = profile.factors;
+      assert.ok(['base', 'recognition'].includes(prompt_type),
+        `Core cell ${name} should have prompt_type base or recognition, got ${prompt_type}`);
+      combos.add(`${prompt_type}_t${+multi_agent_tutor}_l${+multi_agent_learner}`);
     }
-    assert.strictEqual(combos.size, 8, `Expected 8 unique factor combos, got ${combos.size}`);
-    // Verify every combination is present
-    for (const r of [0, 1]) {
-      for (const t of [0, 1]) {
-        for (const l of [0, 1]) {
-          assert.ok(combos.has(`r${r}_t${t}_l${l}`), `Missing factor combo r${r}_t${t}_l${l}`);
-        }
-      }
-    }
+    assert.strictEqual(combos.size, 8, `Expected 8 unique core factor combos, got ${combos.size}`);
   });
 
   it('cell naming convention matches factors', () => {
+    const namePatterns = {
+      base: 'base',
+      recognition: 'recog',
+      enhanced: 'enhanced',
+      hardwired: 'hardwired',
+      placebo: 'placebo',
+    };
+
     for (const [name, profile] of Object.entries(cells)) {
-      const { recognition, multi_agent_tutor, multi_agent_learner } = profile.factors;
-      if (recognition) {
-        assert.ok(name.includes('recog'), `${name} has recognition=true but name lacks "recog"`);
-      } else {
-        assert.ok(name.includes('base'), `${name} has recognition=false but name lacks "base"`);
-      }
+      const { prompt_type, multi_agent_tutor } = profile.factors;
+      const expectedSubstr = namePatterns[prompt_type];
+      assert.ok(name.includes(expectedSubstr),
+        `${name} has prompt_type=${prompt_type} but name lacks "${expectedSubstr}"`);
       if (multi_agent_tutor) {
         assert.ok(name.includes('multi'), `${name} has multi_agent_tutor=true but name lacks "multi"`);
       } else {
@@ -90,33 +110,35 @@ describe('factorial design — config integrity', () => {
 // ============================================================================
 
 describe('factorial design — prompt file assignment', () => {
-  const baseCells = cellNames.filter(n => cells[n].factors.recognition === false);
-  const recogCells = cellNames.filter(n => cells[n].factors.recognition === true);
-  const multiTutorCells = cellNames.filter(n => cells[n].factors.multi_agent_tutor === true);
+  // Expected ego prompt file for each prompt_type
+  const egoPromptFiles = {
+    base: 'tutor-ego.md',
+    recognition: 'tutor-ego-recognition.md',
+    enhanced: 'tutor-ego-enhanced.md',
+    hardwired: 'tutor-ego-hardwired.md',
+    placebo: 'tutor-ego-placebo.md',
+  };
 
-  it('base cells (recognition=false) use tutor-ego.md for ego prompt', () => {
-    for (const name of baseCells) {
-      assert.strictEqual(cells[name].ego.prompt_file, 'tutor-ego.md', `${name} ego prompt_file`);
+  // Expected superego prompt file for each prompt_type
+  const superegoPromptFiles = {
+    base: 'tutor-superego.md',
+    recognition: 'tutor-superego-recognition.md',
+    enhanced: 'tutor-superego-enhanced.md',
+    placebo: 'tutor-superego-placebo.md',
+  };
+
+  it('each cell uses the correct ego prompt file for its prompt_type', () => {
+    for (const [name, profile] of Object.entries(cells)) {
+      const expected = egoPromptFiles[profile.factors.prompt_type];
+      assert.strictEqual(profile.ego.prompt_file, expected, `${name} ego prompt_file`);
     }
   });
 
-  it('recognition cells use tutor-ego-recognition.md for ego prompt', () => {
-    for (const name of recogCells) {
-      assert.strictEqual(cells[name].ego.prompt_file, 'tutor-ego-recognition.md', `${name} ego prompt_file`);
-    }
-  });
-
-  it('multi-agent base cells use tutor-superego.md', () => {
-    const baseMulti = multiTutorCells.filter(n => cells[n].factors.recognition === false);
-    for (const name of baseMulti) {
-      assert.strictEqual(cells[name].superego.prompt_file, 'tutor-superego.md', `${name} superego prompt_file`);
-    }
-  });
-
-  it('multi-agent recognition cells use tutor-superego-recognition.md', () => {
-    const recogMulti = multiTutorCells.filter(n => cells[n].factors.recognition === true);
-    for (const name of recogMulti) {
-      assert.strictEqual(cells[name].superego.prompt_file, 'tutor-superego-recognition.md', `${name} superego prompt_file`);
+  it('multi-agent cells use the correct superego prompt file for their prompt_type', () => {
+    const multiCells = cellNames.filter(n => cells[n].factors.multi_agent_tutor);
+    for (const name of multiCells) {
+      const expected = superegoPromptFiles[cells[name].factors.prompt_type];
+      assert.strictEqual(cells[name].superego.prompt_file, expected, `${name} superego prompt_file`);
     }
   });
 });
@@ -126,7 +148,7 @@ describe('factorial design — prompt file assignment', () => {
 // ============================================================================
 
 describe('factorial design — model consistency', () => {
-  it('all 8 cells use nemotron as ego model on openrouter', () => {
+  it('all cells use nemotron as ego model on openrouter', () => {
     for (const [name, profile] of Object.entries(cells)) {
       assert.strictEqual(profile.ego.provider, 'openrouter', `${name} ego provider`);
       assert.strictEqual(profile.ego.model, 'nemotron', `${name} ego model`);
@@ -180,28 +202,32 @@ describe('factorial design — learner architecture wiring', () => {
   });
 
   it('base+unified cells use "unified" learner architecture', () => {
-    const matching = cellNames.filter(n => !cells[n].factors.recognition && !cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(n =>
+      cells[n].factors.prompt_type === 'base' && !cells[n].factors.multi_agent_learner);
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'unified', `${name} learner_architecture`);
     }
   });
 
   it('base+psycho cells use "ego_superego" learner architecture', () => {
-    const matching = cellNames.filter(n => !cells[n].factors.recognition && cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(n =>
+      cells[n].factors.prompt_type === 'base' && cells[n].factors.multi_agent_learner);
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'ego_superego', `${name} learner_architecture`);
     }
   });
 
   it('recognition+unified cells use "unified_recognition" learner architecture', () => {
-    const matching = cellNames.filter(n => cells[n].factors.recognition && !cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(n =>
+      cells[n].factors.prompt_type === 'recognition' && !cells[n].factors.multi_agent_learner);
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'unified_recognition', `${name} learner_architecture`);
     }
   });
 
   it('recognition+psycho cells use "ego_superego_recognition" learner architecture', () => {
-    const matching = cellNames.filter(n => cells[n].factors.recognition && cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(n =>
+      cells[n].factors.prompt_type === 'recognition' && cells[n].factors.multi_agent_learner);
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'ego_superego_recognition', `${name} learner_architecture`);
     }

@@ -739,7 +739,7 @@ async function main() {
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
         const description = getOption('description');
         const clusterOpt = getOption('cluster');
-        const scenarioOpt = getOption('scenario');
+        const scenarioOpt = getOption('scenario') || getOption('scenarios');
         const allProfiles = getFlag('all-profiles');
         const modelOverride = getOption('model');
         const egoModelOverride = getOption('ego-model');
@@ -757,7 +757,7 @@ async function main() {
 
         // Determine configurations: explicit --profile overrides everything,
         // --all-profiles loads every profile, default is the 8 factorial cells.
-        const profileOpt = getOption('config') || getOption('profile');
+        const profileOpt = getOption('config') || getOption('profile') || getOption('profiles');
         let configurations;
         let isFactorial = false;
 
@@ -1437,6 +1437,20 @@ async function main() {
           process.exit(1);
         }
 
+        // Restore env overrides from run metadata
+        {
+          const runData = evaluationStore.getRun(runId);
+          const meta = typeof runData?.metadata === 'string' ? JSON.parse(runData.metadata) : runData?.metadata;
+          if (meta?.scenariosFile && !process.env.EVAL_SCENARIOS_FILE) {
+            process.env.EVAL_SCENARIOS_FILE = meta.scenariosFile;
+            console.log(`[rejudge] Restored EVAL_SCENARIOS_FILE from run metadata: ${meta.scenariosFile}`);
+          }
+          if (meta?.contentPath && !process.env.EVAL_CONTENT_PATH) {
+            process.env.EVAL_CONTENT_PATH = meta.contentPath;
+            console.log(`[rejudge] Restored EVAL_CONTENT_PATH from run metadata: ${meta.contentPath}`);
+          }
+        }
+
         const verbose = getFlag('verbose');
         const overwrite = getFlag('overwrite');
         const judgeOverride = getOption('judge') || null;
@@ -1617,9 +1631,23 @@ async function main() {
         const follow = getFlag('follow');
         const review = getFlag('review');
         const refreshMs = parseInt(getOption('refresh', '5000'), 10);
-        const scenarioFilter = getOption('scenario') || null;
-        const profileFilter = getOption('profile') || null;
+        const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
+        const profileFilter = getOption('profile') || getOption('profiles') || null;
         const modelOverride = getOption('model') || null;
+
+        // Restore env overrides from run metadata (e.g. EVAL_SCENARIOS_FILE for domain generalizability runs)
+        {
+          const runData = evaluationStore.getRun(runId);
+          const meta = typeof runData?.metadata === 'string' ? JSON.parse(runData.metadata) : runData?.metadata;
+          if (meta?.scenariosFile && !process.env.EVAL_SCENARIOS_FILE) {
+            process.env.EVAL_SCENARIOS_FILE = meta.scenariosFile;
+            console.log(`[evaluate] Restored EVAL_SCENARIOS_FILE from run metadata: ${meta.scenariosFile}`);
+          }
+          if (meta?.contentPath && !process.env.EVAL_CONTENT_PATH) {
+            process.env.EVAL_CONTENT_PATH = meta.contentPath;
+            console.log(`[evaluate] Restored EVAL_CONTENT_PATH from run metadata: ${meta.contentPath}`);
+          }
+        }
 
         // Helper: evaluate a single result via claude CLI
         async function evaluateOneResult(result, tag) {
