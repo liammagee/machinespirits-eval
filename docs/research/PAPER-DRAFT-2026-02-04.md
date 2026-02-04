@@ -473,23 +473,25 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 
 ### 5.7 Inter-Judge Reliability Analysis
 
-To assess the reliability of AI-based evaluation, we conducted an inter-judge analysis where identical tutor responses were scored by multiple AI judges: Claude Code, Claude Sonnet 4.5, and Kimi K2.5.
+To assess the reliability of AI-based evaluation, we conducted an inter-judge analysis where identical tutor responses were scored by multiple AI judges: Claude Code, Kimi K2.5, and GPT-5.2.
 
-**Table 1b: Inter-Judge Reliability (N=33 paired responses)**
+**Table 1b: Inter-Judge Reliability (N=36 paired responses)**
 
 | Judge Pair | Pearson r | Spearman ρ | Mean Abs Diff | Interpretation |
 |------------|-----------|------------|---------------|----------------|
-| Claude-code vs Sonnet | 0.857 | 0.775 | 9.4 pts | Excellent |
+| Claude-code vs GPT-5.2 | 0.660 | 0.698 | 9.4 pts | Good |
 | Claude-code vs Kimi | 0.384 | 0.454 | 9.6 pts | Poor |
-| Sonnet vs Kimi | 0.506 | 0.571 | 15.0 pts | Moderate |
+| Kimi vs GPT-5.2 | 0.326 | 0.315 | 12.3 pts | Poor |
 
 **Key findings:**
 
-1. **Calibration vs ranking disagreement**: Judges show similar average scores (Claude: 84.2, Kimi: 87.5) but disagree on *which* responses are better. The low correlation despite small mean absolute difference indicates different implicit criteria.
+1. **Two evaluation "camps"**: Claude and GPT show good agreement (r=0.66) while both disagree with Kimi (r=0.33-0.38). This suggests Claude and GPT share similar implicit evaluation criteria, while Kimi uses fundamentally different standards.
 
-2. **Ceiling effects**: 39-45% of scores ≥90, with both judges assigning maximum scores (100). This compression at the high end may attenuate correlations.
+2. **Calibration differences**: Mean scores vary by judge—Kimi (87.5) is most lenient, Claude (84.4) is middle, GPT (76.1) is strictest. This 11-point spread underscores the importance of within-judge comparisons.
 
-3. **Dimension-level disagreement**: Per-dimension correlations are near-zero or negative (relevance: r=-0.07, specificity: r=-0.10), suggesting judges weight rubric dimensions differently.
+3. **Ceiling effects and discriminability**: 39-45% of scores ≥90 across judges. Kimi exhibited particularly severe ceiling effects, assigning the maximum score (5/5) on actionability for *every* response, resulting in zero variance on that dimension. This reduces Kimi's discriminative capacity—per-dimension correlations involving Kimi are near-zero (relevance: r=-0.07, personalization: r=0.00) or undefined (actionability: N/A due to zero variance).
+
+4. **Dimension-level patterns**: The strongest cross-judge agreement occurs on tone (r=0.36-0.65) and specificity (r=0.45-0.50), while relevance and personalization show poor agreement, particularly with Kimi.
 
 **Qualitative analysis of major disagreements (Δ>20 pts):**
 
@@ -499,7 +501,7 @@ To assess the reliability of AI-based evaluation, we conducted an inter-judge an
 | B | 68 | 90 | "Misses learner's explicit request for engagement" | "Strong, context-aware, builds on analogy" |
 | C | 72 | 92 | "Lacks deeper engagement" | "Highly relevant, specific, actionable" |
 
-**Interpretation**: Claude prioritizes engagement and recognition quality; Kimi prioritizes structural completeness and actionability. This divergence validates our use of within-judge comparisons for factor analysis—relative rankings within a single judge remain consistent even when absolute scores differ across judges.
+**Interpretation**: Claude prioritizes engagement and recognition quality; Kimi prioritizes structural completeness and gives uniformly high scores on actionability regardless of response content; GPT applies stricter standards overall but agrees with Claude on relative rankings. This divergence validates our use of within-judge comparisons for factor analysis—relative rankings within a single judge remain consistent even when absolute scores differ across judges.
 
 ---
 
