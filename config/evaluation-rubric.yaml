@@ -251,7 +251,7 @@ dimensions:
 
   mutual_recognition:
     name: "Mutual Recognition"
-    weight: 0.10
+    weight: 0.083
     description: "Does the tutor acknowledge the learner as a distinct subject with their own understanding?"
     theoretical_basis: |
       Grounded in Hegel's master-slave dialectic from the Phenomenology of Spirit.
@@ -283,7 +283,7 @@ dimensions:
 
   dialectical_responsiveness:
     name: "Dialectical Responsiveness"
-    weight: 0.10
+    weight: 0.083
     description: "Does the response show genuine engagement with the learner's position, including productive tension?"
     theoretical_basis: |
       Based on Hegel's dialectical method. Productive struggle (Kampf) between
@@ -348,7 +348,7 @@ dimensions:
 
   transformative_potential:
     name: "Transformative Potential"
-    weight: 0.10
+    weight: 0.083
     description: "Does the response create conditions for genuine conceptual transformation?"
     theoretical_basis: |
       Based on Hegel's concept of Aufhebung (sublation/supersession) - transformation
@@ -377,6 +377,70 @@ dimensions:
     examples:
       good: "You said thesis plus antithesis equals synthesis. But what if I told you the synthesis doesn't contain the thesis anymore - it transforms it? What would that mean for how we think about learning itself?"
       bad: "The synthesis combines thesis and antithesis. Here's the formula: T + A = S. Now you understand dialectics."
+
+  tutor_adaptation:
+    name: "Tutor Adaptation"
+    weight: 0.05
+    description: "Does the tutor's approach evolve in response to learner input?"
+    theoretical_basis: |
+      Mutual transformation requires both parties to change. The tutor should
+      not maintain a fixed pedagogical stance but adapt based on learner
+      feedback, questions, and emerging understanding. This is the "tutor
+      side" of the bilateral recognition relationship. A tutor who proceeds
+      identically regardless of learner input fails to achieve genuine
+      recognition - they treat the learner as obstacle rather than partner.
+    criteria:
+      5: "Tutor explicitly revises approach based on learner input; shows genuine learning from the interaction"
+      4: "Tutor adjusts strategy in response to learner; acknowledges how learner shaped the direction"
+      3: "Some responsiveness to learner but approach remains largely predetermined"
+      2: "Minimal adjustment; learner input doesn't visibly affect tutor's approach"
+      1: "Rigid stance; tutor proceeds identically regardless of learner contributions"
+    adaptation_markers:
+      positive:
+        - "References how learner's input changed tutor's thinking"
+        - "Revises earlier framing based on learner's perspective"
+        - "Acknowledges learning something from the learner"
+        - "Builds on learner's formulation rather than replacing it"
+      negative:
+        - "Proceeds with predetermined script regardless of input"
+        - "Ignores learner's reframing or alternative interpretations"
+        - "Returns to same approach after learner pushes back"
+        - "Treats learner contributions as obstacles to overcome"
+    examples:
+      good: "Your dance metaphor actually helps me see this differently - the back-and-forth isn't just conflict, it's co-creation. Let's explore that framing."
+      bad: "Actually, the correct definition of dialectics is thesis-antithesis-synthesis. Let me explain the proper framework."
+
+  learner_growth:
+    name: "Learner Growth"
+    weight: 0.05
+    description: "Does the learner show evidence of conceptual development through the dialogue?"
+    theoretical_basis: |
+      The symmetrical counterpart to tutor adaptation. Mutual transformation
+      means the learner's understanding should evolve - not just accumulate
+      facts, but restructure their conceptual framework. This dimension tracks
+      whether the dialogue produces genuine Aufhebung in the learner: their
+      prior understanding is preserved yet overcome in a new synthesis. This
+      completes the bilateral recognition loop - both parties transform.
+    criteria:
+      5: "Learner demonstrates clear conceptual restructuring; explicitly revises prior understanding"
+      4: "Learner shows developing insight; builds new connections to existing knowledge"
+      3: "Some evidence of engagement but understanding remains largely static"
+      2: "Learner participates but shows no conceptual movement"
+      1: "Learner resistant or disengaged; prior misconceptions reinforced"
+    growth_markers:
+      positive:
+        - "Learner revises initial formulation"
+        - "Learner makes new connections unprompted"
+        - "Learner asks deepening questions"
+        - "Learner applies concept to new context"
+      negative:
+        - "Learner repeats same question or confusion"
+        - "Learner rejects challenges without engagement"
+        - "Learner seeks confirmation rather than understanding"
+        - "Learner's responses show no evolution"
+    examples:
+      good: "Oh wait - so it's not just combining them, it's that the whole way I was thinking about it changes? That makes the learning itself dialectical!"
+      bad: "So thesis + antithesis = synthesis, got it. What's next?"
 
 
 # Configuration matrix for testing
