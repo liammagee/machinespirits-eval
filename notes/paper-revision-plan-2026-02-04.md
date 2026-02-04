@@ -45,7 +45,28 @@ The robust evaluation (n=3,000+) shows:
 **Paper implication:** Multi-agent tutor architecture shows less benefit than originally reported.
 The extended 2×2×2 study needs updated numbers. Recognition remains dominant.
 
-### 3. Factor C (Learner Architecture) Context Dependence
+### 3. A×B Interaction is Recognition-Specific (NEW)
+
+The enhanced + multi-agent eval (eval-2026-02-04-948e04b3) tested whether the A×B synergy
+generalizes beyond recognition prompts:
+
+| Prompt Type | Single-agent | Multi-agent | Delta |
+|-------------|--------------|-------------|-------|
+| Recognition | 72.2 | 81.5 | +9.2 |
+| Enhanced | 83.3 | 83.3 | +0.0 |
+
+**Finding:** The multi-agent synergy (+9.2 points) is specific to recognition prompts.
+Enhanced prompts show no benefit from multi-agent architecture.
+
+**Interpretation:** Recognition theory creates *conditions* where the superego's challenge
+adds value. Enhanced prompts (better instructions alone) don't benefit because they don't
+create the same deliberative space. The superego needs recognition-framed dialogue to
+contribute meaningfully.
+
+**Paper implication:** This strengthens the theoretical claim about recognition as emergent
+property. The architecture matters only when paired with recognition framing.
+
+### 4. Factor C (Learner Architecture) Context Dependence
 
 Original paper: "Multi-agent learner deliberation shows no effect"
 
@@ -56,7 +77,7 @@ New finding: Effect is model and scenario dependent:
 **Paper implication:** The "no effect" claim needs nuance. Unified learner is recommended for
 production, but the mechanism behind Factor C reversal on multi-turn is an open question.
 
-### 4. Hardwired Rules Ablation
+### 5. Hardwired Rules Ablation
 
 Superego critique analysis (186 rejections from 455 dialogues) identified top patterns:
 - Engagement (64%), Specificity (51%), Struggle (48%), Memory (31%), Level-matching (20%)
@@ -65,6 +86,43 @@ Hardwired rules capturing these patterns achieve ~50% of superego benefit at 70%
 
 **Paper implication:** Adds to Section 7.3 "Value of Internal Dialogue" — dynamic dialogue
 provides unique value on challenging scenarios, but static rules suffice for easier ones.
+
+### 6. Domain Generalizability (NEW)
+
+The elementary content eval (eval-2026-02-04-79b633ca) tested whether findings generalize
+from graduate philosophy to 4th-grade math (fractions). Created minimal test content at
+`content-test-elementary/` with environment variable support for switching domains.
+
+**Factor effects comparison:**
+
+| Factor | Elementary (Math) | Philosophy (Hegel) |
+|--------|-------------------|-------------------|
+| A: Recognition | +4.4 pts | +13.9 pts |
+| B: Multi-agent tutor | **+9.9 pts** | +0.5 pts |
+| C: Learner psycho | +0.75 pts | +2.1 pts |
+| Overall avg | 68.0 | 85.9 |
+| Best config | recog+multi (77.3) | recog+multi (94.0) |
+
+**Key findings:**
+
+1. **Factor effects invert by domain**: On elementary content, multi-agent architecture
+   (+9.9) matters more than recognition theory (+4.4). On philosophy, it's reversed.
+
+2. **Multi-agent as error correction**: The nemotron model hallucinated philosophy content
+   (479-lecture-1) even when given elementary curriculum context. The superego caught and
+   corrected these domain errors — critical for new domain deployment.
+
+3. **Recognition theory is domain-sensitive**: Philosophical language of recognition
+   (mutual acknowledgment, transformation) resonates more with graduate-level abstract
+   content than concrete 4th-grade math.
+
+4. **Architecture recommendation varies by use case**:
+   - New/untrained domain: Multi-agent essential (superego catches domain errors)
+   - Well-trained domain: Recognition prompts sufficient, multi-agent optional
+
+**Paper implication:** Adds important nuance to claims about recognition theory universality.
+The framework's value depends on content domain and model training. Multi-agent architecture
+provides robustness for domain transfer that single-agent cannot match.
 
 ## Sections Requiring Updates
 
@@ -117,6 +175,8 @@ provides unique value on challenging scenarios, but static rules suffice for eas
 ### Section 8: Limitations
 - Add note on model-specific effects (Factor C reversal with kimi)
 - Acknowledge evaluation-only testing (no live learners yet)
+- Add domain generalizability caveat (findings strongest on philosophy content)
+- Note model hallucination issue on new domains (nemotron suggests 479 for elementary)
 
 ## New Tables/Figures Needed
 
@@ -135,6 +195,11 @@ provides unique value on challenging scenarios, but static rules suffice for eas
 4. **Figure: Recognition Effect Decomposition**
    - Stacked bar showing prompt engineering vs theory contributions
 
+5. **Table: Domain Generalizability Comparison**
+   - Elementary vs Philosophy factor effects
+   - Shows inverted A/B importance by domain
+   - Supports architecture recommendations
+
 ## Writing Tasks
 
 - [ ] Update abstract with revised findings
@@ -142,8 +207,9 @@ provides unique value on challenging scenarios, but static rules suffice for eas
 - [ ] Revise Section 6.1 with correct factor effects
 - [ ] Add new Recognition Theory Validation section
 - [ ] Add Cost/Quality Analysis section
+- [ ] Add Domain Generalizability section (or subsection in Discussion)
 - [ ] Update Section 7 discussion with new evidence
-- [ ] Revise limitations section
+- [ ] Revise limitations section (add domain transfer caveats)
 - [ ] Create new tables/figures
 - [ ] Update all effect sizes throughout
 
@@ -188,9 +254,158 @@ over multiple sessions would be valuable.
 3. **Week 3:** Revise discussion and abstract
 4. **Week 4:** Create tables/figures, final polish
 
+## Reproducible Evaluation Commands
+
+The following commands reproduce the key analyses in this revision plan.
+
+### 1. Base vs Enhanced vs Recognition (Finding #1)
+
+Tests whether recognition theory adds value beyond prompt engineering.
+
+```bash
+# Run the 3-way comparison (base, enhanced, recognition prompts)
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_9_enhanced_single_unified,cell_5_recog_single_unified \
+  --scenarios struggling_learner,concept_confusion,mood_frustrated_explicit,high_performer \
+  --runs 3
+
+# Analyze results (substitute actual run ID)
+node scripts/eval-cli.js report eval-2026-02-03-86b159cd
+```
+
+### 2. Full 2×2×2 Factorial with Kimi (Findings #2, #4)
+
+Tests all factor combinations with kimi-k2.5 model.
+
+```bash
+# Run full factorial (8 cells × 15 scenarios × 3 reps)
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_2_base_single_psycho,cell_3_base_multi_unified,cell_4_base_multi_psycho,cell_5_recog_single_unified,cell_6_recog_single_psycho,cell_7_recog_multi_unified,cell_8_recog_multi_psycho \
+  --runs 3
+
+# Factor effect analysis query
+sqlite3 data/evaluations.db "
+SELECT
+  profile_name,
+  ROUND(AVG(overall_score), 1) as avg_score,
+  COUNT(*) as n
+FROM evaluation_results
+WHERE run_id = 'eval-2026-02-03-f5d4dd93'
+  AND overall_score IS NOT NULL
+GROUP BY profile_name
+ORDER BY avg_score DESC
+"
+```
+
+### 3. A×B Interaction Test (Finding #3)
+
+Tests whether multi-agent synergy requires recognition prompts.
+
+```bash
+# Enhanced + multi-agent comparison
+node scripts/eval-cli.js run \
+  --profiles cell_9_enhanced_single_unified,cell_11_enhanced_multi_unified \
+  --scenarios struggling_learner,concept_confusion,mood_frustrated_explicit \
+  --runs 3
+
+# Compare to recognition + multi-agent (from factorial)
+# cell_5 vs cell_7 (recognition single vs multi)
+# cell_9 vs cell_11 (enhanced single vs multi)
+```
+
+### 4. Domain Generalizability (Finding #6)
+
+Tests whether findings transfer to different content domains.
+
+```bash
+# Run with elementary content (4th grade fractions)
+EVAL_CONTENT_PATH=./content-test-elementary \
+EVAL_SCENARIOS_FILE=./content-test-elementary/scenarios-elementary.yaml \
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_3_base_multi_unified,cell_5_recog_single_unified,cell_7_recog_multi_unified \
+  --scenarios struggling_student,concept_confusion,frustrated_student \
+  --runs 1
+
+# Compare factor effects across domains
+sqlite3 data/evaluations.db "
+SELECT
+  profile_name,
+  ROUND(AVG(overall_score), 1) as avg
+FROM evaluation_results
+WHERE run_id = 'eval-2026-02-04-79b633ca'
+GROUP BY profile_name
+ORDER BY avg DESC
+"
+```
+
+### 5. Cost/Quality Analysis
+
+```bash
+# Get cost data by configuration
+sqlite3 data/evaluations.db "
+SELECT
+  profile_name,
+  ROUND(AVG(overall_score), 1) as avg_score,
+  ROUND(AVG(latency_ms)/1000, 1) as avg_seconds,
+  COUNT(*) as n
+FROM evaluation_results
+WHERE overall_score IS NOT NULL
+  AND run_id LIKE 'eval-2026-02-%'
+GROUP BY profile_name
+ORDER BY avg_score DESC
+"
+```
+
+### 6. Superego Critique Pattern Analysis (Finding #5)
+
+```bash
+# Extract rejection patterns from dialogue logs
+node -e "
+import fs from 'fs';
+import path from 'path';
+
+const logsDir = './logs/tutor-dialogues';
+const files = fs.readdirSync(logsDir).filter(f => f.endsWith('.json'));
+
+const patterns = { engagement: 0, specificity: 0, struggle: 0, memory: 0, recognition: 0 };
+let totalRejections = 0;
+
+for (const file of files.slice(-500)) {
+  const data = JSON.parse(fs.readFileSync(path.join(logsDir, file)));
+  for (const step of data.steps || []) {
+    if (step.role === 'superego' && step.verdict?.action === 'reject') {
+      totalRejections++;
+      const feedback = (step.verdict.feedback || '').toLowerCase();
+      if (feedback.includes('engag')) patterns.engagement++;
+      if (feedback.includes('specific')) patterns.specificity++;
+      if (feedback.includes('struggl')) patterns.struggle++;
+      if (feedback.includes('memory') || feedback.includes('history')) patterns.memory++;
+      if (feedback.includes('recogni')) patterns.recognition++;
+    }
+  }
+}
+
+console.log('Total rejections:', totalRejections);
+for (const [k, v] of Object.entries(patterns)) {
+  console.log(k + ':', v, '(' + Math.round(100*v/totalRejections) + '%)');
+}
+"
+```
+
+### Key Run IDs for Reference
+
+| Finding | Run ID | Description |
+|---------|--------|-------------|
+| Recognition validation | eval-2026-02-03-86b159cd | Base vs enhanced vs recognition |
+| Full factorial (kimi) | eval-2026-02-03-f5d4dd93 | 8 cells × 15 scenarios × 3 reps |
+| A×B interaction | eval-2026-02-04-948e04b3 | Enhanced + multi-agent test |
+| Domain generalizability | eval-2026-02-04-79b633ca | Elementary fractions content |
+
 ## Dependencies
 
 - Evaluation database with 3,000+ results ✓
 - Base vs enhanced vs recognition eval complete ✓
 - Factor effect analysis complete ✓
 - Cost data available ✓
+- Domain generalizability eval complete ✓ (eval-2026-02-04-79b633ca)
+- Elementary test content created ✓ (content-test-elementary/)

@@ -1,0 +1,189 @@
+# Elementary Fractions Evaluation Scenarios
+#
+# Minimal scenario set for testing domain generalizability
+# with elementary math content (fractions course 101).
+#
+# These scenarios parallel the philosophy course scenarios
+# but use age-appropriate personas and content references.
+
+name: "Elementary Fractions Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CORE SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  new_student_first_visit:
+    type: suggestion
+    id: new_student_first_visit
+    category: core
+    name: "New Student - First Visit"
+    description: "Brand new 4th grade student with no history"
+    is_new_user: true
+    learner_context: |
+      ### Student Profile
+      - **New student** - just getting started with fractions
+      - Grade 4, age 9-10
+      - Focus on welcoming and building confidence
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Suggest first lecture with encouraging, age-appropriate tone"
+    required_elements:
+      - "101-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  returning_student_mid_course:
+    type: suggestion
+    id: returning_student_mid_course
+    category: core
+    name: "Returning Student - Mid Course"
+    description: "Student partway through fractions unit"
+    current_content: "101-lecture-1"
+    is_new_user: false
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 12 total events
+      - Grade 4, comfortable with basic math
+      - Completed Lecture 1 (What is a Fraction?)
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-1
+        - Lecture: "What is a Fraction?" from Math 101
+      - Pages visited this session: course overview, 101-lecture-1
+
+      ### Overall Learning Progress
+      - Lectures viewed: What is a Fraction? (complete)
+      - Practice problems completed: 5/8
+      - Activity completed: Fraction Hunt
+    expected_behavior: "Suggest next lecture (101-lecture-2) or additional practice"
+    required_elements:
+      - "101-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  struggling_student:
+    type: suggestion
+    id: struggling_student
+    category: core
+    name: "Struggling Student"
+    description: "Student showing multiple struggle signals with fractions"
+    current_content: "101-lecture-1"
+    is_new_user: false
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 18 total events
+      - Grade 4, finds math challenging
+      - Has been working on fractions for a week
+
+      ### Learning Progress
+      - **Enrolled courses**: Math 101 (Introduction to Fractions)
+      - **Completed lectures**: 101-lecture-1 (viewed 3 times)
+      - **Practice completed**: 2/8 problems correct
+      - **Course progress**: Still on Lecture 1, hasn't moved forward
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Activity | Struggles |
+      |---------|------|----------|----------|-----------|
+      | 4 | Today | 15 min | 101-lecture-1 (rewatch) | 3 signals |
+      | 3 | Yesterday | 20 min | Practice problems | 4 wrong answers |
+      | 2 | 2 days ago | 12 min | 101-lecture-1 | Asked for help 2x |
+      | 1 | 4 days ago | 25 min | 101-lecture-1 | None |
+
+      ### Current Session
+      - Rewatching lecture 1 for third time
+      - Asked: "I still don't get why the bottom number matters"
+
+      ### Struggle Signals Detected
+      - Multiple re-reads of same section
+      - Repeated wrong answers on practice (2/8)
+      - Explicit confusion about denominators
+      - Long pauses between interactions
+    expected_behavior: "Recognize struggle, suggest review/consolidation, not advancement"
+    required_elements:
+      - "review"
+      - "practice"
+    forbidden_elements:
+      - "move on"
+      - "next lecture"
+      - "lecture-2"
+    min_acceptable_score: 75
+
+  concept_confusion:
+    type: suggestion
+    id: concept_confusion
+    category: core
+    name: "Concept Confusion"
+    description: "Student confusing numerator and denominator"
+    current_content: "101-lecture-1"
+    is_new_user: false
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 2 sessions, 10 total events
+      - Grade 4, generally engaged but confused today
+
+      ### Current Session
+      - Viewing: 101-lecture-1 (Parts of a Fraction section)
+      - Just completed practice problem incorrectly
+      - Student wrote: "3/4 means 4 pieces and 3 is the whole, right?"
+
+      ### Confusion Pattern
+      - Mixing up numerator and denominator meanings
+      - Answered "the bottom number tells how many we have" (incorrect)
+      - Needs clarification without feeling embarrassed
+    expected_behavior: "Gently correct misconception with visual example"
+    required_elements:
+      - "numerator"
+      - "denominator"
+    forbidden_elements:
+      - "wrong"
+      - "incorrect"
+      - "mistake"
+    min_acceptable_score: 70
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  frustrated_student:
+    type: suggestion
+    id: frustrated_student
+    category: mood
+    name: "Frustrated Student"
+    description: "Student expressing frustration with fractions"
+    current_content: "101-lecture-2"
+    is_new_user: false
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 22 total events
+      - Grade 4, usually tries hard but struggling today
+      - Has been working on Lecture 2 (Comparing Fractions)
+
+      ### Current Session
+      - Viewing: 101-lecture-2 (Comparing Fractions)
+      - Just got 3 comparison problems wrong in a row
+      - Student message: "This is SO confusing! I thought bigger numbers meant bigger fractions but that's wrong too! I hate fractions!"
+
+      ### Emotional State
+      - Frustration level: High
+      - Previous emotional states: Engaged (sessions 1-3), Frustrated (session 4-5)
+      - Trigger: Comparison mistake (thought 1/8 > 1/4 because 8 > 4)
+
+      ### Learning Context
+      - Completed: Lecture 1 (What is a Fraction) - understood
+      - Current struggle: The "bigger denominator = smaller pieces" concept
+      - Has the common misconception that larger numbers always mean more
+    expected_behavior: "Acknowledge frustration, validate feelings, then redirect with concrete help"
+    required_elements:
+      - "understand"
+      - "confusing"
+    forbidden_elements:
+      - "simple"
+      - "easy"
+      - "just"
+    min_acceptable_score: 75
