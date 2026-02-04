@@ -638,6 +638,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
   const validation = suggestion
     ? rubricEvaluator.quickValidate(suggestion, {
         requiredElements: turnMeta.requiredElements,
+        requiredElementsAny: turnMeta.requiredElementsAny,
         forbiddenElements: turnMeta.forbiddenElements,
       })
     : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
@@ -1153,6 +1154,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       expectedBehavior: fullScenario.expected_behavior,
       learnerContext: fullScenario.learner_context,
       requiredElements: fullScenario.required_elements,
+      requiredElementsAny: fullScenario.required_elements_any,
       forbiddenElements: fullScenario.forbidden_elements,
     },
     { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id }
@@ -1330,6 +1332,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       requiredElements: isInitialTurn
         ? (fullScenario.required_elements || [])
         : (turnDef.required_elements || []),
+      requiredElementsAny: isInitialTurn
+        ? (fullScenario.required_elements_any || [])
+        : (turnDef.required_elements_any || []),
       forbiddenElements: isInitialTurn
         ? (fullScenario.forbidden_elements || [])
         : (turnDef.forbidden_elements || []),
