@@ -22,7 +22,8 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js cleanup --force # Actually mark stale runs as completed
  *   node scripts/eval-cli.js resume <runId>   # Resume an incomplete run (re-run missing tests)
  *   node scripts/eval-cli.js revert <runId>  # Revert a completed/failed run to 'running'
- *   node scripts/eval-cli.js rejudge <runId> # Re-run AI judge on existing transcripts
+ *   node scripts/eval-cli.js rejudge <runId> # Re-run AI judge (adds new rows for reliability)
+ *   node scripts/eval-cli.js rejudge <runId> --overwrite  # Re-run AI judge (replaces existing)
  *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
  *   node scripts/eval-cli.js evaluate <runId> --follow  # Poll & judge results as they appear
  *   node scripts/eval-cli.js chat            # AI conversational interface
@@ -1392,23 +1393,29 @@ async function main() {
       case 'rejudge': {
         const runId = args.find(a => !a.startsWith('--') && a !== 'rejudge');
         if (!runId) {
-          console.error('Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose]');
+          console.error('Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose] [--overwrite]');
+          console.error('');
+          console.error('By default, creates new rows (preserves history for inter-judge reliability).');
+          console.error('Use --overwrite to replace existing scores instead.');
           process.exit(1);
         }
 
         const verbose = getFlag('verbose');
+        const overwrite = getFlag('overwrite');
         const judgeOverride = getOption('judge') || null;
         const scenarioFilter = getOption('scenario') || null;
 
         console.log(`\nRejudging run: ${runId}`);
         if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
         if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
+        console.log(`  Mode: ${overwrite ? 'overwrite (replace existing)' : 'preserve history (add new rows)'}`);
         console.log('');
 
         const summary = await evaluationRunner.rejudgeRun(runId, {
           judgeOverride,
           verbose,
           scenarioFilter,
+          overwrite,
         });
 
         console.log('\n' + '='.repeat(60));

@@ -1363,7 +1363,104 @@ export function getFactorialCellData(runId, options = {}) {
 }
 
 /**
- * Update score columns for an existing result row (for rejudging)
+ * Store a new judgment row for an existing result (preserves judgment history).
+ * Copies the original result's response data but adds new scores from a different judge.
+ * This enables inter-judge reliability analysis.
+ *
+ * @param {Object} originalResult - The original result row (from getResults)
+ * @param {Object} evaluation - The new evaluation scores
+ * @returns {number} The new row ID
+ */
+export function storeRejudgment(originalResult, evaluation) {
+  const stmt = db.prepare(`
+    INSERT INTO evaluation_results (
+      run_id, scenario_id, scenario_name, scenario_type,
+      provider, model, profile_name, hyperparameters, prompt_id,
+      ego_model, superego_model,
+      suggestions, raw_response,
+      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
+      score_relevance, score_specificity, score_pedagogical,
+      score_personalization, score_actionability, score_tone, overall_score,
+      base_score, recognition_score,
+      passes_required, passes_forbidden, required_missing, forbidden_found,
+      judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
+      factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
+      created_at
+    ) VALUES (
+      ?, ?, ?, ?,
+      ?, ?, ?, ?, ?,
+      ?, ?,
+      ?, ?,
+      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?,
+      ?, ?, ?, ?,
+      ?, ?,
+      ?, ?, ?, ?,
+      ?, ?, ?, ?, ?,
+      ?, ?, ?, ?,
+      ?
+    )
+  `);
+
+  const scores = evaluation.scores || {};
+
+  const info = stmt.run(
+    originalResult.runId,
+    originalResult.scenarioId,
+    originalResult.scenarioName,
+    originalResult.scenarioType || 'suggestion',
+    originalResult.provider,
+    originalResult.model,
+    originalResult.profileName,
+    typeof originalResult.hyperparameters === 'string'
+      ? originalResult.hyperparameters
+      : JSON.stringify(originalResult.hyperparameters || {}),
+    originalResult.promptId,
+    originalResult.egoModel || null,
+    originalResult.superegoModel || null,
+    typeof originalResult.suggestions === 'string'
+      ? originalResult.suggestions
+      : JSON.stringify(originalResult.suggestions || []),
+    originalResult.rawResponse,
+    originalResult.latencyMs,
+    originalResult.inputTokens,
+    originalResult.outputTokens,
+    originalResult.cost,
+    originalResult.dialogueRounds,
+    originalResult.apiCalls,
+    originalResult.dialogueId,
+    // New scores from the new judge
+    scores.relevance?.score ?? scores.relevance ?? null,
+    scores.specificity?.score ?? scores.specificity ?? null,
+    scores.pedagogical?.score ?? scores.pedagogical ?? null,
+    scores.personalization?.score ?? scores.personalization ?? null,
+    scores.actionability?.score ?? scores.actionability ?? null,
+    scores.tone?.score ?? scores.tone ?? null,
+    evaluation.overallScore ?? null,
+    evaluation.baseScore ?? null,
+    evaluation.recognitionScore ?? null,
+    evaluation.passesRequired ? 1 : 0,
+    evaluation.passesForbidden ? 1 : 0,
+    JSON.stringify(evaluation.requiredMissing || []),
+    JSON.stringify(evaluation.forbiddenFound || []),
+    evaluation.judgeModel || null,
+    evaluation.summary || null,
+    evaluation.scores ? JSON.stringify(evaluation.scores) : null,
+    1, // success
+    null, // error_message
+    originalResult.factorRecognition ?? null,
+    originalResult.factorMultiAgentTutor ?? null,
+    originalResult.factorMultiAgentLearner ?? null,
+    originalResult.learnerArchitecture || null,
+    new Date().toISOString()
+  );
+
+  return info.lastInsertRowid;
+}
+
+/**
+ * Update score columns for an existing result row (for rejudging - overwrites history)
+ * @deprecated Use storeRejudgment() to preserve judgment history for reliability analysis
  */
 export function updateResultScores(resultId, evaluation) {
   const stmt = db.prepare(`
@@ -1413,6 +1510,7 @@ export default {
   createRun,
   updateRun,
   storeResult,
+  storeRejudgment,
   updateResultScores,
   getRun,
   listRuns,
