@@ -1684,6 +1684,7 @@ export async function resumeEvaluation(options = {}) {
     runId,
     parallelism = DEFAULT_PARALLELISM,
     verbose = false,
+    force = false,  // Skip the "already running" check
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -1692,6 +1693,18 @@ export async function resumeEvaluation(options = {}) {
   const run = evaluationStore.getRun(runId);
   if (!run) {
     throw new Error(`Run not found: ${runId}`);
+  }
+
+  // 1b. Check if another process is already running this evaluation
+  const existingPid = run.metadata?.pid;
+  if (existingPid && existingPid !== process.pid && !force) {
+    const isAlive = isPidAlive(existingPid);
+    if (isAlive) {
+      throw new Error(
+        `Run ${runId} is already being processed by pid ${existingPid}. ` +
+        `Use --force to override (may cause duplicates).`
+      );
+    }
   }
 
   // 2. Extract metadata
