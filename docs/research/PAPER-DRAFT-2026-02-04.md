@@ -693,7 +693,27 @@ The largest effect sizes are in personalization (d = 1.82), pedagogical soundnes
 
 Notably, dimensions where baseline already performed well (specificity, actionability) show smaller but still positive gains. Recognition orientation doesn't trade off against factual quality.
 
-### 6.8 Extended Multi-Turn Scenarios
+### 6.8 Addressing Potential Circularity: Standard Dimensions Analysis
+
+A methodological concern: the evaluation rubric includes recognition-specific dimensions (mutual recognition, dialectical responsiveness, memory integration, transformative potential) that account for 25% of the total score. Since the recognition profile is prompted to satisfy these criteria, some gains could be tautological—the system scores higher on dimensions it's explicitly optimized for.
+
+To address this, we re-analyzed scores excluding recognition dimensions entirely, using only standard pedagogical dimensions (relevance, specificity, pedagogical soundness, personalization, actionability, tone = 75% of rubric, re-weighted to 100%).
+
+**Table 9: Standard Dimensions Only (Recognition Dimensions Excluded)**
+
+| Profile Type | N | Overall Score | Standard Only | Recognition Only |
+|--------------|---|---------------|---------------|------------------|
+| Recognition (cells 5-8) | 170 | 92.8 | 95.4 | 91.7 |
+| Base (cells 1-4) | 172 | 78.9 | 89.3 | 69.9 |
+| **Difference** | — | **+13.9** | **+6.1** | **+21.8** |
+
+**Key finding**: Recognition profiles outperform base profiles by +6.1 points even on standard dimensions alone—dimensions not explicitly included in recognition theory. The effect is smaller than the overall difference (+13.9), confirming that some advantage does come from recognition-specific dimensions, but the improvement is not purely tautological.
+
+**Interpretation**: Recognition-oriented prompting improves general pedagogical quality (relevance, pedagogical soundness, personalization), not just the theoretically-predicted recognition dimensions. This suggests the recognition framing produces genuine relational improvements that transfer to standard tutoring metrics.
+
+The larger effect on recognition dimensions (+21.8) is expected and not concerning—these dimensions measure what the theory claims to improve. The important finding is that standard dimensions also improve, ruling out pure circularity.
+
+### 6.9 Extended Multi-Turn Scenarios
 
 To test whether recognition quality degrades over extended interactions:
 
