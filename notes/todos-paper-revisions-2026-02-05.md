@@ -127,6 +127,48 @@ Two new evaluation runs incorporated into paper:
 - [x] Section 10 + Appendix D: Run ID tables updated with 6 runs
 - [x] Version bumped v0.5 → v0.6
 
+## Consistency Fixes Applied (v0.6 follow-up)
+
+Based on second-pass review. Quick fixes applied directly:
+
+- [x] **Model-selection table N=360** — Line 496: Changed to "N=342 scored of 402" to match
+      Section 6.2 (Table 5) and Section 5.5 item 2.
+- [x] **Domain Generalizability bullet N=40** — Line 518: Updated to "N=47 Nemotron + N=60
+      Kimi replication" to match Table 2.
+- [x] **Sample-size narrative "four key runs"** — Lines 544/546: Updated to "six key runs"
+      and N=562 to match Table 2 which lists six runs totaling 562 scored.
+- [x] **Duplicate Table 8** — Lines 759/792: Renumbered second Table 8 (Superego Rejection
+      Patterns) to Table 9. All subsequent tables bumped: 9→10, 10→11, 11→12, 12→13, 13→14.
+
+## Introduction / Contributions Rewrite Needed
+
+- [x] **Intro paragraph (lines 39-43) out of sync with replication results** — The intro
+      still presents findings as settled that the body now qualifies:
+      - Line 39: Says "N=435 primary evaluations" — should be N=562
+      - Line 41: Presents multi-agent synergy (+9.2 pts) as a firm discovery ("we discover
+        that the multi-agent synergy effect is *specific to recognition prompts*") — but §6.3
+        now documents non-replication (Kimi factorial F=0.04, Kimi A×B replication +1.35 pts).
+        Needs hedging: present as exploratory/model-specific.
+      - Line 43: Presents domain factor inversion as clean finding — but §6.4 now shows the
+        architecture dominance on elementary is partly model-dependent (Kimi shows recognition
+        dominance). Needs qualification.
+      - Line 53: Contributions list includes "Evidence that multi-agent synergy requires
+        recognition framing" — should be downgraded to "Exploratory evidence..." or removed
+        and folded into architecture contribution.
+      **DONE**: Updated intro to six-run evidence (N=562). Synergy hedged as exploratory/
+      model-specific. Domain inversion qualified with Kimi replication. Contributions list
+      updated: synergy bullet reframed as error correction + model-dependent interaction;
+      domain bullet expanded to include scenario difficulty.
+
+## Residual Risks (documented, no action needed)
+
+- **Memory confound**: Recognition profiles bundle memory integration; causal isolation
+  requires a memory factor. Disclosed in §5.3 and §8.1. Tracked under "Memory Confound
+  Isolation" in Medium Priority above.
+- **A×B synergy underpowered and model-specific**: Nemotron N=17 finding did not replicate
+  on Kimi (N=342 factorial, N=60 dedicated). Documented in §6.3, §7.2. No further action
+  unless new model data becomes available.
+
 ## Minor Remaining Paper Issues
 
 - [x] **Scenario naming inconsistency** — FIXED. Section 5.2 updated to use actual scenario
