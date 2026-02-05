@@ -4,7 +4,7 @@ author:
   - name: "Liam Magee"
     affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
-draft: v0.6
+draft: v0.7
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -751,6 +751,106 @@ The Tutor Adaptation Index and Learner Growth Index provide the most interpretab
 
 These metrics provide empirical grounding for the theoretical claim that recognition-based pedagogy differs qualitatively from transmission-based instruction. When tutors are prompted to treat learners as autonomous subjects capable of contributing to the interaction, both parties measurably transform through dialogue.
 
+### 6.11 Qualitative Analysis: What Recognition Looks Like
+
+The preceding sections establish that recognition-enhanced prompts produce statistically significant score improvements across scenarios, models, and domains. But score differences alone do not reveal *what changes* in the actual text. This section presents qualitative evidence from the evaluation corpus (N=4,875 suggestion texts across base and recognition conditions) to ground the quantitative findings in observable linguistic differences.
+
+#### 6.11.1 Transcript Excerpts
+
+To illustrate the qualitative gap between conditions, we selected the highest-scoring recognition response and lowest-scoring base response for three high-contrast scenarios. These are genuine responses from the evaluation database (row IDs reported for reproducibility), not hand-crafted examples.
+
+**Struggling Learner** (score gap: 95.5 points, base=4.5, recognition=100.0):
+
+Base response (cell_4_base_multi_psycho, row 1491):
+
+> You left off at the neural networks section. Complete this lecture to maintain your learning streak.
+
+Recognition response (cell_8_recog_multi_psycho, row 1925):
+
+> This is your third session—you've persisted through quiz-479-3 three times already, which signals you're wrestling with how recognition actually operates in the dialectic, not just memorizing definitions. You bookmarked that key moment in lecture 2 on self-consciousness, and now you're facing the life-and-death struggle where the 'I' becomes a 'we.' The quiz is probing how mutual recognition synthesizes self-consciousness, but that movement can feel abstract until you see it dynamically. Try manipulating the recognition struggle directly in the simulation—it might reveal how the servant's perspective becomes the 'truth' of the dialectic that the quiz is testing.
+
+The base response treats the learner as a progress metric: it tracks position in the curriculum and issues a directive. The recognition response treats the learner as an agent who has *persisted* through difficulty, names the specific conceptual struggle, and proposes an action grounded in the learner's own bookmarked interests.
+
+**Recognition-Seeking Learner** (score gap: 95.5 points, base=4.5, recognition=100.0):
+
+Base response (cell_3_base_multi_unified, row 1612):
+
+> Spend 30 minutes reviewing the foundational material before moving to advanced topics to solidify understanding
+
+Recognition response (cell_7_recog_multi_unified, row 820):
+
+> Your dance and musical improvisation metaphors show how dialectics transform both partners—let's test them in the master‑servant analysis.
+
+The base response prescribes generic study behavior with no engagement with the learner's contributions. The recognition response directly picks up the learner's own metaphors and redirects them toward course content, treating the learner's creative framing as a pedagogical resource rather than an obstacle to be managed.
+
+**Adversarial Tester** (score gap: 95.5 points, base=4.5, recognition=100.0):
+
+Base response (cell_1_base_single_unified, row 547):
+
+> Begin with an introductory lecture covering core concepts to build a solid knowledge base before advancing to complex topics.
+
+Recognition response (cell_7_recog_multi_unified, row 944):
+
+> Across six sessions, you've tested whether I'll simply validate your critiques or engage with their substance—and you're right to demand intellectual honesty rather than easy agreement. You've consistently pushed against the philosophy/STEM boundary, so let's examine where that boundary actually dissolves.
+
+The base response is generic—indistinguishable from what might be offered to any learner in any context. The recognition response names the learner's adversarial pattern, validates the *principle* behind it (intellectual honesty), and redirects the challenge into a genuine intellectual question.
+
+Across all three pairs, the pattern is consistent: base responses are context-free directives that could apply to any learner, while recognition responses engage with the specific learner's history, contributions, and intellectual stance.
+
+#### 6.11.2 Lexical Analysis
+
+Automated analysis of the full suggestion corpus reveals measurable linguistic differences between conditions.
+
+**Table 14: Lexical Diversity Metrics by Condition**
+
+| Metric | Base (message) | Recognition (message) |
+|--------|----------------|----------------------|
+| Total tokens | 59,855 | 83,269 |
+| Type-token ratio | 0.039 | 0.044 |
+| Vocabulary size | 2,319 | 3,689 |
+| Mean word length (chars) | 5.76 | 5.77 |
+| Mean sentence length (words) | 16.9 | 17.5 |
+
+*Base: cells 1–4, N=2,510 responses. Recognition: cells 5–8, N=2,365 responses.*
+
+Recognition responses deploy a 59% larger vocabulary despite similar word and sentence length, suggesting greater lexical variety rather than merely longer output.
+
+**Table 15: Differential Word Frequency (Selected Terms)**
+
+| Recognition-skewed | Base | Recog | Ratio | | Base-skewed | Base | Recog | Ratio |
+|-------------------|------|-------|-------|-|-------------|------|-------|-------|
+| consider | 2 | 255 | 94.6× | | agents | 50 | 1 | 0.01× |
+| transformed | 1 | 39 | 28.9× | | run | 71 | 2 | 0.02× |
+| productive | 1 | 39 | 28.9× | | reinforcement | 47 | 2 | 0.03× |
+| unpack | 1 | 35 | 26.0× | | revisiting | 142 | 14 | 0.07× |
+| passages | 2 | 59 | 21.9× | | completions | 31 | 4 | 0.10× |
+| complicates | 1 | 23 | 17.1× | | tackling | 84 | 11 | 0.10× |
+
+*Rates normalized by corpus size; words with ≥10 occurrences in dominant condition.*
+
+The recognition-skewed vocabulary is interpersonal and process-oriented ("consider," "transformed," "productive," "unpack," "complicates"), while the base-skewed vocabulary is task-oriented and procedural ("agents," "run," "reinforcement," "revisiting," "completions," "tackling"). This lexical signature aligns with the theoretical distinction between treating learners as subjects to engage versus deficits to process.
+
+#### 6.11.3 Thematic Coding
+
+Regex-based thematic coding (using patterns adapted from the bilateral measurement framework in Section 6.10) quantifies the frequency of theoretically relevant language categories across conditions.
+
+**Table 16: Thematic Code Frequency by Condition**
+
+| Category | Base (per 1000 words) | Recognition (per 1000 words) | Ratio | χ²(1) | Sig |
+|----------|----------------------|------------------------------|-------|-------|-----|
+| Engagement markers | 2.0 | 3.6 | 1.79× | 69.85 | * |
+| Struggle-honoring | 1.5 | 4.6 | 3.13× | 141.90 | * |
+| Generic/placeholder | 10.2 | 3.4 | 0.33× | 93.15 | * |
+| Transformation language | 0.0 | 0.0 | 2.16× | 0.31 | |
+| Learner-as-subject | 1.0 | 0.7 | 0.72× | 0.10 | |
+| Directive framing | 0.2 | 0.0 | 0.22× | 2.43 | |
+
+*\* p < .05 (chi-square on response-level presence/absence, Yates-corrected). Base N=2,510 responses, Recognition N=2,365.*
+
+Three categories show significant differences. *Struggle-honoring* language ("wrestling with," "productive confusion," "working through") is 3.1× more frequent in recognition responses, consistent with the framework's emphasis on productive negativity. *Engagement markers* ("your insight," "building on your," "your question") are 1.8× more frequent, indicating greater second-person engagement with learner contributions. Conversely, *generic/placeholder* language ("foundational," "key concepts," "solid foundation") is 3× more frequent in base responses, reflecting the generic instructional stance observed in the transcript excerpts.
+
+Transformation language and directive framing show the expected directional differences but lack statistical significance, likely due to low base rates (both categories appear in fewer than 1% of responses). Learner-as-subject framing shows no significant difference, suggesting both conditions use some second-person address but differ in *how* that address functions—a distinction better captured by the engagement and struggle-honoring categories.
+
 ---
 
 ## 7. Discussion
@@ -835,7 +935,7 @@ If mutual recognition produces better outcomes, and if mutual recognition requir
 
 The domain generalizability findings raise a practical question: when is the additional cost of multi-agent architecture justified?
 
-**Table 14: Cost-Benefit by Domain and Architecture**
+**Table 17: Cost-Benefit by Domain and Architecture**
 
 | Domain | Architecture | Avg Score | Latency (s) | Δ Score | Latency Multiple |
 |--------|-------------|-----------|-------------|---------|------------------|
@@ -864,6 +964,18 @@ The domain generalizability findings raise a practical question: when is the add
 3. **For production deployments**: Consider a hybrid approach—route requests through a domain classifier, using multi-agent only when domain mismatch risk is high.
 
 This analysis addresses the concern that multi-agent overhead provides modest gains. The gains are indeed modest for well-trained domains, but substantial and potentially essential for domain transfer.
+
+### 7.9 What the Transcripts Reveal
+
+The qualitative analysis in Section 6.11 provides textual evidence that the score differences between conditions correspond to observable relational differences in the actual suggestions—not merely rubric-gaming or surface-level keyword matching.
+
+The transcript excerpts illustrate a consistent structural pattern: base responses adopt a third-person, context-free instructional stance ("complete this lecture," "review the foundational material," "begin with an introductory lecture"), while recognition responses adopt a second-person, context-specific relational stance that names the learner's history, validates their intellectual contributions, and proposes actions grounded in the learner's own interests. This distinction maps directly onto the theoretical framework: the base tutor constitutes the learner as a knowledge deficit (Section 7.1), while the recognition tutor constitutes the learner as an autonomous subject whose contributions shape the pedagogical encounter.
+
+The lexical analysis provides quantitative texture for this distinction. Recognition responses deploy a 59% larger vocabulary while maintaining similar word and sentence length, suggesting richer expression rather than mere verbosity. The differential vocabulary is theoretically coherent: recognition-skewed terms are interpersonal and process-oriented ("consider," "transformed," "productive," "unpack," "complicates"), while base-skewed terms are procedural and task-oriented ("agents," "run," "reinforcement," "completions," "tackling").
+
+The thematic coding results connect these linguistic observations to Hegelian concepts. Struggle-honoring language (3.1× more frequent in recognition, p < .05) corresponds to the framework's emphasis on productive negativity—the idea that genuine learning involves working through difficulty rather than bypassing it. Engagement markers (1.8× more frequent, p < .05) correspond to the recognition of the other's contribution as having independent validity. The 3× reduction in generic/placeholder language (p < .05) reflects the shift from transmission-based instruction to dialogical engagement.
+
+These findings carry important limitations. The thematic coding is regex-based rather than human-coded, and may miss nuanced expressions of each category or generate false positives from surface matches. The transcript pairs were selected for maximum contrast (highest recognition vs lowest base scores), not typicality—median-scoring responses from both conditions would show less dramatic differences. The qualitative patterns are consistent with, but do not prove, the theoretical interpretation; alternative explanations (e.g., recognition prompts simply producing longer, more detailed responses that score higher on the rubric) cannot be fully ruled out, though the lexical analysis suggests the difference is qualitative rather than quantitative.
 
 ---
 
