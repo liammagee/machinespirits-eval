@@ -20,19 +20,13 @@ Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with ze
 
 ## Experimental Changes Needed
 
-### HIGH PRIORITY
+### HIGH PRIORITY — DONE
 
-- [ ] **A×B Interaction Replication** — The multi-agent synergy finding (+9.2 pts, N=17,
-      Nemotron) was not replicated in the Kimi factorial (N=342). Run with Kimi + larger N:
-      ```bash
-      node scripts/eval-cli.js run \
-        --profiles cell_5_recog_single_unified,cell_7_recog_multi_unified,cell_9_enhanced_single_unified,cell_11_enhanced_multi_unified \
-        --scenarios struggling_learner,concept_confusion,mood_frustrated_explicit \
-        --ego-model openrouter.kimi-k2.5 \
-        --runs 5
-      ```
-      **Why it matters**: This is the paper's most provocative claim. Either confirms or
-      forces further downgrade. Currently framed as "exploratory" in the text.
+- [x] **A×B Interaction Replication** — Run eval-2026-02-05-10b344fb (N=60, Kimi K2.5).
+      Result: A×B interaction = +1.35 pts (vs Nemotron's +9.2). Non-replication confirmed.
+      Recognition cells score ~90.6 regardless of architecture; enhanced cells ~80.6.
+      Paper updated: Section 6.3 adds replication data, Section 7.2 updated, Section 9
+      conclusion revised to "not confirmed". Finding remains hypothesis-generating only.
 
 ### MEDIUM PRIORITY
 
@@ -42,16 +36,12 @@ Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with ze
       **Why it matters**: Cleanly separates memory contribution from recognition theory.
       Currently acknowledged as limitation in Sections 5.3 and 8.1.
 
-- [ ] **Domain Generalizability Model Confound** — Elementary uses Nemotron, philosophy uses
-      Kimi. Re-run elementary with Kimi for consistent comparison:
-      ```bash
-      EVAL_CONTENT_PATH=./content-test-elementary \
-      EVAL_SCENARIOS_FILE=./content-test-elementary/scenarios-elementary.yaml \
-      node scripts/eval-cli.js run \
-        --profiles cell_1_base_single_unified,cell_3_base_multi_unified,cell_5_recog_single_unified,cell_7_recog_multi_unified \
-        --ego-model openrouter.kimi-k2.5 \
-        --runs 3
-      ```
+- [x] **Domain Generalizability Model Confound** — Run eval-2026-02-05-e87f452d (N=60,
+      Kimi K2.5, elementary content). Result: recognition main effect +9.9 pts (d ≈ 0.61),
+      replicating across model and domain. Effects scenario-dependent: +23.8 for frustrated
+      learners, ~0 for neutral scenarios. Factor inversion partly model-dependent — Kimi
+      shows recognition dominance on elementary (not architecture dominance as with Nemotron).
+      Paper updated: Section 6.4 adds Table 8 with replication, Sections 7.3, 8.1, 9 updated.
 
 ### LOW PRIORITY
 
@@ -118,6 +108,24 @@ Backported in commit 32e8f1a (v2.1):
 - [x] Section 7.7: AI Alignment discussion updated with bilateral metrics reference
 - [x] Section 9 (Conclusion): finding #3 added
 - [x] Section 8 (Limitations): item #8 (N=20 sample size)
+
+## Replication Runs Incorporated (v0.6) — DONE
+
+Two new evaluation runs incorporated into paper:
+
+- [x] eval-2026-02-05-10b344fb: A×B replication (Kimi, N=60) — non-replication confirmed
+- [x] eval-2026-02-05-e87f452d: Domain gen. replication (Kimi elementary, N=60) — recognition replicates
+- [x] Abstract updated: N=562, replication results summarized
+- [x] Table 1 (Model Config): two new runs added
+- [x] Table 2 (Sample Summary): two new runs, totals updated to 623/562
+- [x] Section 6.3: Kimi replication data added, non-replication strengthened
+- [x] Section 6.4: Table 8 (Kimi elementary replication), model confound discussion
+- [x] Section 7.2: A×B discussion updated with triple non-replication
+- [x] Section 7.3: Domain limits revised with scenario-dependent finding
+- [x] Section 8.1: Model dependence and domain sampling limitations updated
+- [x] Section 9: Conclusion findings revised (finding #2 non-confirmed, #4 strengthened)
+- [x] Section 10 + Appendix D: Run ID tables updated with 6 runs
+- [x] Version bumped v0.5 → v0.6
 
 ## Minor Remaining Paper Issues
 
