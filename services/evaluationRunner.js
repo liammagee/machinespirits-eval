@@ -437,16 +437,12 @@ function buildMultiTurnContext(options) {
     conversationHistory = [],
     currentTurn,
     previousSuggestion,
-    sessionEvolution,
   } = options;
 
   const contextParts = [];
 
-  // Prepend session evolution directives at high-attention position
-  if (sessionEvolution) {
-    contextParts.push(sessionEvolution);
-    contextParts.push('');
-  }
+  // sessionEvolution is now injected into the system prompt (not user context).
+  // See systemPromptExtension threading through generateAndEvaluateTurn → tutor-core.
 
   contextParts.push(originalContext);
 
@@ -656,6 +652,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     maxRounds = 0,
     log = () => {},
     scenarioId = '',
+    systemPromptExtension = null,
   } = options;
 
   // Generate suggestions via tutor API with retry logic
@@ -672,6 +669,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
       outputSize,
       useDialogue,
       maxRounds,
+      systemPromptExtension,
     }),
     { log }
   );
@@ -1402,7 +1400,6 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         conversationHistory,
         currentTurn: turnDef,
         previousSuggestion,
-        sessionEvolution,
       });
     }
 
@@ -1434,8 +1431,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     };
 
     // Call the SAME generation+evaluation code path as single-turn
+    const turnOptions = sessionEvolution
+      ? { ...sharedTurnOptions, systemPromptExtension: sessionEvolution }
+      : sharedTurnOptions;
     const { genResult, suggestion, validation, rubricResult, turnScore } =
-      await generateAndEvaluateTurn(context, resolvedConfig, turnMeta, sharedTurnOptions);
+      await generateAndEvaluateTurn(context, resolvedConfig, turnMeta, turnOptions);
 
     if (!genResult.success) {
       const turnId = isInitialTurn ? 'initial' : turnDef.id;
