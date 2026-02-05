@@ -223,3 +223,24 @@ Synced PAPER-SHORT-2026-02-04.md with PAPER-FULL-2026-02-04.md:
       former Table 14 (Cost-Benefit) renumbered to Table 17
 - [x] Version bumped v0.6 → v0.7
 - [x] Script outputs: `exports/qualitative-analysis.json`, `exports/qualitative-analysis.md`
+
+## Vocabulary Contamination Check & Cleanup — DONE
+
+Investigated whether base-skewed terms ("agents," "run," "reinforcement") in Section 6.11.2
+represented evaluation framework leakage into tutor transcripts. Verified from database
+transcripts that all three are course-domain language:
+- "agents" = simulation agents in courseware activities
+- "run" = imperative to launch simulations
+- "reinforcement" = pedagogical concept review
+
+- [x] Section 6.11.2: clarifying note added with in-context examples from transcripts
+- [x] PowerPoint slide 12: grey annotation noting course-domain provenance
+- [x] Both PDFs regenerated (long paper + short paper)
+- [x] Stale `PAPER-FULL-2026-02-05.pdf` removed
+
+## Database & Run Cleanup — DONE
+
+- [x] 11 stale evaluation runs marked as failed/completed (dead processes, mostly 0 results)
+- [x] 5 empty database stub files removed (`evaluation.db`, `evaluation-results.db`,
+      `evaluation_results.db`, `eval-results.db`, `eval.sqlite`)
+- [x] 2 live runs (PIDs 71463, 74183) left untouched — memory confound isolation experiment
