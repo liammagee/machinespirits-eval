@@ -609,3 +609,101 @@ profiles:
       hyperparameters:
         temperature: 0.2
         max_tokens: 8000
+
+  # ===========================================================================
+  # MEMORY CONFOUND ISOLATION CELLS (19-20)
+  # ===========================================================================
+  # 2×2 Memory × Recognition design (single-agent, unified learner held constant).
+  # Reuses cell_1 (base) and cell_5 (full recognition) to complete the 2×2.
+  #
+  #              Memory OFF          Memory ON
+  #  Recog OFF   cell_1 (exists)     cell_19 (NEW)
+  #  Recog ON    cell_20 (NEW)       cell_5 (exists)
+
+  # Cell 19: Memory-Only × Single Agent × Unified Learner
+  cell_19_memory_single_unified:
+    description: "Memory isolation: base + memory integration, no recognition theory"
+    factors:
+      prompt_type: memory
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-memory.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 20: Recognition-No-Memory × Single Agent × Unified Learner
+  cell_20_recog_nomem_single_unified:
+    description: "Memory isolation: recognition theory without memory integration"
+    factors:
+      prompt_type: recognition_nomem
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: true
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition-nomem.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # ===========================================================================
+  # DYNAMIC PROMPT REWRITING CELL (21)
+  # ===========================================================================
+  # Tests whether feeding deliberation insights back as directives
+  # improves multi-turn tutoring outcomes. Compare against cell_7 (static).
+
+  cell_21_recog_multi_unified_rewrite:
+    description: "Prompt rewriting: recognition multi-agent with dynamic directive injection"
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      dynamic_rewriting: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    prompt_rewriting:
+      enabled: true
+      strategy: template
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true

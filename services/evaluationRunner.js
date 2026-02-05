@@ -20,6 +20,7 @@ import * as anovaStats from './anovaStats.js';
 import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
 import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
+import * as promptRewriter from './promptRewriter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -71,6 +72,8 @@ const EVAL_ONLY_PROFILES = [
   'cell_9_enhanced_single_unified', 'cell_10_enhanced_single_psycho',
   'cell_11_enhanced_multi_unified', 'cell_12_enhanced_multi_psycho',
   'cell_13_hardwired_single_unified', 'cell_14_hardwired_single_psycho',
+  'cell_19_memory_single_unified', 'cell_20_recog_nomem_single_unified',
+  'cell_21_recog_multi_unified_rewrite',
 ];
 
 /**
@@ -96,6 +99,10 @@ export function resolveEvalProfile(profileName) {
       resolvedProfileName = 'enhanced';
     } else if (promptType === 'hardwired') {
       resolvedProfileName = 'budget';  // hardwired uses budget profile with prompt override
+    } else if (promptType === 'memory') {
+      resolvedProfileName = 'budget';  // memory-only uses budget profile with prompt override
+    } else if (promptType === 'recognition_nomem') {
+      resolvedProfileName = 'budget';  // recognition without memory uses budget profile
     } else if (recognitionMode) {
       resolvedProfileName = 'recognition';
     } else {
@@ -430,9 +437,18 @@ function buildMultiTurnContext(options) {
     conversationHistory = [],
     currentTurn,
     previousSuggestion,
+    sessionEvolution,
   } = options;
 
-  const contextParts = [originalContext];
+  const contextParts = [];
+
+  // Prepend session evolution directives at high-attention position
+  if (sessionEvolution) {
+    contextParts.push(sessionEvolution);
+    contextParts.push('');
+  }
+
+  contextParts.push(originalContext);
 
   if (conversationHistory.length > 0) {
     contextParts.push('\n### Conversation History');
@@ -1349,6 +1365,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id };
 
+  // Check if prompt rewriting is enabled for this profile
+  const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
+  const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
+  let sessionEvolution = null;
+
   // 4. Loop through turns (initial turn 0 + follow-up turns)
   const totalTurnCount = 1 + turns.length;
   for (let turnIdx = 0; turnIdx < totalTurnCount; turnIdx++) {
@@ -1381,6 +1402,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         conversationHistory,
         currentTurn: turnDef,
         previousSuggestion,
+        sessionEvolution,
       });
     }
 
@@ -1493,6 +1515,18 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     // Update for next iteration
     previousSuggestion = suggestion;
+
+    // Synthesize prompt rewriting directives for next turn (if enabled)
+    if (promptRewritingEnabled && turnIdx < totalTurnCount - 1) {
+      sessionEvolution = promptRewriter.synthesizeDirectives({
+        turnResults,
+        consolidatedTrace,
+        conversationHistory,
+      });
+      if (sessionEvolution) {
+        log(`[evaluationRunner] Prompt rewriter generated ${sessionEvolution.split('\n').length - 2} directives for turn ${turnIdx + 1}`, 'info');
+      }
+    }
 
     // Generate LLM learner response for next turn if ego_superego architecture
     // Note: check includes() to handle both 'ego_superego' and 'ego_superego_recognition'
