@@ -4,7 +4,7 @@ author:
   - name: "Liam Magee"
     affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
-draft: v2.0
+draft: v2.1
 bibliography: ../references.bib
 csl: apa.csl
 link-citations: true
@@ -15,7 +15,7 @@ abstract: |
 
   A robust evaluation framework (N=3,000+) isolating recognition theory from prompt engineering effects reveals that recognition-enhanced prompting accounts for **+9 to +20 points** improvement depending on scenario, with **43% of this effect attributable to recognition theory itself** beyond general prompt engineering improvements. The multi-agent tutor architecture contributes **+0.5 to +10 points** depending on content domain—minimal on well-trained content but critical for domain transfer where it catches model hallucinations.
 
-  Three key findings emerge: (1) Recognition theory provides measurable value beyond prompt engineering, validated through a base vs. enhanced vs. recognition comparison; (2) The recognition × multi-agent synergy is specific to recognition-framed prompts—enhanced prompts without recognition theory show no benefit from multi-agent architecture; (3) Factor effects invert across content domains—on elementary math content, multi-agent architecture (+9.9 pts) matters more than recognition (+4.4 pts), the reverse of philosophy content, because the superego catches domain-inappropriate suggestions.
+  Three key findings emerge: (1) Recognition theory provides measurable value beyond prompt engineering, validated through a base vs. enhanced vs. recognition comparison; (2) The recognition × multi-agent synergy is specific to recognition-framed prompts—enhanced prompts without recognition theory show no benefit from multi-agent architecture; (3) Factor effects invert across content domains—on elementary math content, multi-agent architecture (+9.9 pts) matters more than recognition (+4.4 pts), the reverse of philosophy content, because the superego catches domain-inappropriate suggestions. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change.
 
   These findings suggest that recognition theory's value is domain-sensitive, multi-agent architecture provides essential error correction for domain transfer, and optimal deployment configurations depend on content characteristics.
 
@@ -55,7 +55,9 @@ We make the following contributions:
 
 6. **Hardwired Rules Ablation**: Analysis of superego critique patterns identifying that static rules can capture ~50% of superego benefit at 70% cost savings, clarifying when dynamic dialogue adds unique value.
 
-7. **Reproducible Evaluation Framework**: Complete documentation of evaluation commands and run IDs enabling independent replication of all findings.
+7. **Bilateral Transformation Metrics**: Empirical evidence that recognition-prompted tutors measurably adapt their approach in response to learner input, providing empirical grounding for the theoretical claim that recognition produces mutual change.
+
+8. **Reproducible Evaluation Framework**: Complete documentation of evaluation commands and run IDs enabling independent replication of all findings.
 
 ---
 
@@ -232,18 +234,24 @@ We extend the standard tutoring evaluation rubric with recognition-specific dime
 
 | Dimension | Weight | Description |
 |-----------|--------|-------------|
-| **Relevance** | 20% | Does the suggestion match the learner's current context? |
-| **Specificity** | 20% | Does it reference concrete content by ID? |
-| **Pedagogical Soundness** | 20% | Does it advance genuine learning (ZPD-appropriate)? |
-| **Personalization** | 15% | Does it acknowledge the learner as individual? |
-| **Actionability** | 15% | Is the suggested action clear and achievable? |
+| **Relevance** | 15% | Does the suggestion match the learner's current context? |
+| **Specificity** | 15% | Does it reference concrete content by ID? |
+| **Pedagogical Soundness** | 15% | Does it advance genuine learning (ZPD-appropriate)? |
+| **Personalization** | 10% | Does it acknowledge the learner as individual? |
+| **Actionability** | 10% | Is the suggested action clear and achievable? |
 | **Tone** | 10% | Is the tone authentically helpful? |
 
 Plus four recognition-specific dimensions:
-| **Mutual Recognition** | 10% | Does the tutor acknowledge the learner as an autonomous subject? |
-| **Dialectical Responsiveness** | 10% | Does the response engage with the learner's position? |
+| **Mutual Recognition** | 8.3% | Does the tutor acknowledge the learner as an autonomous subject? |
+| **Dialectical Responsiveness** | 8.3% | Does the response engage with the learner's position? |
 | **Memory Integration** | 5% | Does the suggestion reference previous interactions? |
-| **Transformative Potential** | 10% | Does it create conditions for conceptual transformation? |
+| **Transformative Potential** | 8.3% | Does it create conditions for conceptual transformation? |
+
+Plus two bilateral transformation dimensions:
+| **Tutor Adaptation** | 5% | Does the tutor's approach evolve in response to learner input? |
+| **Learner Growth** | 5% | Does the learner show evidence of conceptual development? |
+
+The first four recognition dimensions evaluate the tutor's relational stance. The last two—Tutor Adaptation and Learner Growth—specifically measure the bilateral transformation that recognition theory predicts: both parties should change through genuine dialogue (results in Section 6.7).
 
 ### 5.2 Three-Way Prompt Comparison Design
 
@@ -452,7 +460,26 @@ Testing on elementary mathematics content (4th grade fractions) reveals inverted
 
 **Interpretation**: Multi-agent architecture provides **robustness for domain transfer**. When deploying to new content domains where the model may hallucinate trained-on content, the superego provides essential error correction. Recognition theory's value depends on content characteristics—more valuable for abstract, relational content than concrete procedural content.
 
-### 6.7 Cost/Quality Analysis
+### 6.7 Bilateral Transformation Metrics
+
+A central claim of recognition theory is that genuine pedagogical encounters involve *mutual* transformation—both tutor and learner change through dialogue. To test this empirically, the evaluation framework includes two dedicated rubric dimensions (`tutor_adaptation` and `learner_growth`) and turn-over-turn tracking of how both parties evolve across multi-turn scenarios.
+
+**Table: Bilateral Transformation Metrics — Base vs Recognition**
+
+| Metric | Base | Recognition | Δ |
+|--------|------|-------------|---|
+| Tutor Adaptation Index (0–1) | 0.288 | 0.392 | +0.104 |
+| Learner Growth Index (0–1) | 0.176 | 0.220 | +0.044 |
+| Bilateral Transformation Index (0–1) | 0.232 | 0.306 | +0.074 |
+| Transformation Quality (composite, 0–100) | 0.4 | 4.6 | +4.2 |
+
+*Data from `mutual_transformation_journey` scenario, N=20 dialogues.*
+
+The tutor adaptation index confirms that recognition-prompted tutors measurably adjust their approach in response to learner input (+36% relative improvement), while baseline tutors maintain more rigid pedagogical stances. The transformation quality composite shows the most dramatic difference: base profiles score near zero because they lack the superego dialogue and bilateral signals that feed this metric.
+
+These metrics provide empirical grounding for the theoretical claim that recognition-based pedagogy differs qualitatively from transmission-based instruction.
+
+### 6.8 Cost/Quality Analysis
 
 | Configuration | Avg Score | Relative Cost | Recommendation |
 |---------------|-----------|---------------|----------------|
@@ -529,11 +556,17 @@ On straightforward scenarios (new user, mid-course), static rules capture most o
 
 **Interpretation**: The superego's value is partially *procedural* (enforcing known rules) and partially *contextual* (recognizing edge cases). Hardwired rules encode the procedural component; dynamic dialogue handles the contextual component.
 
-### 7.6 Implications for AI Alignment
+### 7.6 Bilateral Transformation as Empirical Evidence
+
+The bilateral transformation metrics (Section 6.7) provide the most direct empirical test of recognition theory's central claim: that genuine pedagogy involves mutual change. Recognition-prompted tutors show measurably higher adaptation indices (+36% relative improvement), confirming that recognition framing produces tutors who adjust their approach based on learner input rather than maintaining rigid stances.
+
+This finding connects recognition theory to observable behavior. The theoretical claim that recognition produces "mutual transformation" is not merely philosophical aspiration—it corresponds to measurable differences in how tutors and learners evolve across dialogue turns.
+
+### 7.7 Implications for AI Alignment
 
 If mutual recognition produces better outcomes, and if mutual recognition requires the AI to be genuinely shaped by human input, then aligned AI might need to be constitutionally open to transformation—not just trained to simulate openness.
 
-Recognition-oriented AI doesn't just respond to humans; it is constituted, in part, through the encounter. This has implications for how we think about AI character and values: perhaps genuine alignment requires the capacity for mutual recognition, not just behavioral specification.
+Recognition-oriented AI doesn't just respond to humans; it is constituted, in part, through the encounter. The bilateral transformation metrics (Section 6.7) provide empirical evidence for this: recognition-prompted tutors measurably adapt based on learner input, while baseline tutors maintain more rigid stances. This has implications for how we think about AI character and values: perhaps genuine alignment requires the capacity for mutual recognition, not just behavioral specification.
 
 ---
 
@@ -553,6 +586,8 @@ Recognition-oriented AI doesn't just respond to humans; it is constituted, in pa
 
 7. **Recognition Measurement**: Measuring "recognition" through rubric dimensions is an imperfect operationalization of a rich philosophical concept. The dimensions capture functional aspects but may miss deeper relational qualities.
 
+8. **Bilateral Transformation Sample Size**: The bilateral transformation metrics (Section 6.7) are based on N=20 dialogues from a single scenario (`mutual_transformation_journey`). While effect directions are consistent and the adaptation index differences are substantial (+36% relative improvement), replication across more scenarios and larger samples would strengthen these findings.
+
 ---
 
 ## 9. Conclusion
@@ -565,11 +600,13 @@ Our central findings are:
 
 2. **Multi-agent architecture serves multiple functions**: modest quality improvement on trained content (+0.5 pts), substantial error correction on new content (+9.9 pts), and synergy with recognition framing (+9.2 pts interaction).
 
-3. **Factor effects are domain-sensitive**: Recognition dominates on abstract philosophical content; multi-agent error correction dominates on new content domains.
+3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 
-4. **The recognition × multi-agent synergy is recognition-specific**: Enhanced prompts without recognition theory show no benefit from multi-agent architecture.
+4. **Factor effects are domain-sensitive**: Recognition dominates on abstract philosophical content; multi-agent error correction dominates on new content domains.
 
-5. **Optimal configuration is context-dependent**: For well-trained content, recognition prompts with single-agent may suffice. For new domains, multi-agent architecture is essential.
+5. **The recognition × multi-agent synergy is recognition-specific**: Enhanced prompts without recognition theory show no benefit from multi-agent architecture.
+
+6. **Optimal configuration is context-dependent**: For well-trained content, recognition prompts with single-agent may suffice. For new domains, multi-agent architecture is essential.
 
 These findings have practical implications for AI tutoring deployment: the "right" architecture depends on content characteristics and deployment context. They also have theoretical implications: recognition emerges from quality engagement under appropriate conditions, and multi-agent architecture supports recognition specifically because it creates space for the deliberation that recognition requires.
 
