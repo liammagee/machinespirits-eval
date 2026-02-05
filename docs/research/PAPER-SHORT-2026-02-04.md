@@ -4,7 +4,7 @@ author:
   - name: "Liam Magee"
     affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
-draft: v2.2
+draft: v2.3
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -494,6 +494,18 @@ These metrics provide empirical grounding for the theoretical claim that recogni
 - For **new content domains**: Recognition + multi-agent is essential for error correction
 - For **budget deployments**: Enhanced prompts with hardwired rules provide reasonable quality
 
+### 6.9 Qualitative Analysis: What Recognition Looks Like
+
+The preceding sections establish score differences; this section examines what those differences look like in actual suggestion text. Automated analysis of the full evaluation corpus (base cells 1–4: N=2,510 responses; recognition cells 5–8: N=2,365 responses) reveals consistent linguistic patterns.
+
+**Transcript excerpts.** High-contrast pairs (highest recognition vs lowest base score on the same scenario) illustrate a recurring structural pattern. For the *struggling learner* scenario (score gap: 95.5 points), the base response directs: "You left off at the neural networks section. Complete this lecture to maintain your learning streak." The recognition response names the learner's persistence, identifies the specific conceptual struggle, and proposes an action grounded in the learner's own bookmarked interests. For the *adversarial tester* (score gap: 95.5 points), the base response offers a generic directive ("Begin with an introductory lecture covering core concepts"), while the recognition response names the learner's adversarial pattern across six sessions and redirects the challenge into a genuine intellectual question. Across all pairs, base responses are context-free directives; recognition responses engage with the specific learner's history and intellectual stance.
+
+**Lexical analysis.** Recognition responses deploy a 59% larger vocabulary (3,689 vs 2,319 types) with similar word and sentence length (5.77 vs 5.76 chars/word; 17.5 vs 16.9 words/sentence), suggesting richer expression rather than mere verbosity. The differential vocabulary is theoretically coherent: recognition-skewed terms are interpersonal and process-oriented ("consider" 94.6×, "transformed" 28.9×, "productive" 28.9×, "unpack" 26.0×), while base-skewed terms are procedural ("agents" 0.01×, "revisiting" 0.07×, "tackling" 0.10×).
+
+**Thematic coding.** Regex-based coding reveals three significant differences (chi-square, p < .05): *struggle-honoring* language ("wrestling with," "productive confusion") is 3.1× more frequent in recognition responses (χ²=141.9); *engagement markers* ("your insight," "building on your") are 1.8× more frequent (χ²=69.9); and *generic/placeholder* language ("foundational," "key concepts," "solid foundation") is 3.0× more frequent in base responses (χ²=93.2). These patterns are consistent with the theoretical framework: recognition tutors honor productive difficulty and engage with learner contributions, while base tutors default to generic instructional language.
+
+*Limitations: Regex-based coding, not human coders. Pairs selected for maximum contrast, not typicality. Full analysis in the long paper (Section 6.11) with reproducible script.*
+
 ---
 
 ## 7. Discussion
@@ -560,6 +572,10 @@ This finding connects recognition theory to observable behavior. The theoretical
 If mutual recognition produces better outcomes, and if mutual recognition requires the AI to be genuinely shaped by human input, then aligned AI might need to be constitutionally open to transformation—not just trained to simulate openness.
 
 Recognition-oriented AI doesn't just respond to humans; it is constituted, in part, through the encounter. The bilateral transformation metrics (Section 6.7) provide empirical evidence for this: recognition-prompted tutors measurably adapt based on learner input, while baseline tutors maintain more rigid stances. This has implications for how we think about AI character and values: perhaps genuine alignment requires the capacity for mutual recognition, not just behavioral specification.
+
+### 7.8 What the Transcripts Reveal
+
+The qualitative analysis (Section 6.9) provides textual evidence that score differences correspond to observable relational differences—not merely rubric-gaming. The lexical signature is theoretically coherent: recognition-skewed vocabulary is interpersonal and process-oriented, while base-skewed vocabulary is procedural and task-oriented. The thematic coding maps to Hegelian concepts: struggle-honoring (3.1×) corresponds to productive negativity, engagement markers (1.8×) to recognition of the other, and the reduction in generic language (3.0× less) reflects the shift from transmission to dialogue. These patterns are consistent with, but do not prove, the theoretical interpretation; the coding is regex-based rather than human-coded, and the transcript pairs were selected for contrast rather than typicality.
 
 ---
 
