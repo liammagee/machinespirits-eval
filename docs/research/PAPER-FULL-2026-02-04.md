@@ -4,12 +4,12 @@ author:
   - name: "Liam Magee"
     affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
-draft: v0.5
+draft: v0.6
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=442 primary scored responses across four key evaluation runs; N=2,700+ across the full 49-run development database) comparing recognition-enhanced configurations against baselines reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect, N=36), with the remaining 57% attributable to prompt engineering improvements. Note that recognition-enhanced profiles bundle memory integration with recognition prompts; the relative contribution of each component remains an open question (Section 5.3). An exploratory analysis of multi-agent synergy (+9.2 points, N=17) suggests this effect may be specific to recognition prompts, though this finding is model-dependent and requires replication (Section 6.3). Domain generalizability testing reveals factor effects invert by content type: philosophy content shows recognition dominance (+13.9 pts) while elementary math shows architecture dominance (+9.9 pts), with multi-agent architecture serving as critical error correction when models hallucinate trained content on new domains. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
+  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=562 primary scored responses across six key evaluation runs; N=2,700+ across the full development database) comparing recognition-enhanced configurations against baselines reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect, N=36), with the remaining 57% attributable to prompt engineering improvements. Note that recognition-enhanced profiles bundle memory integration with recognition prompts; the relative contribution of each component remains an open question (Section 5.3). An exploratory analysis of multi-agent synergy (+9.2 points, N=17, Nemotron) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon (Section 6.3). Domain generalizability testing across both models and content domains confirms recognition advantage replicates: elementary math with Kimi shows +9.9 pts (d ≈ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent—Kimi shows recognition dominance on elementary content, revising the Nemotron-only finding. Multi-agent architecture serves as critical error correction when models hallucinate trained content on new domains. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
 ---
 
@@ -495,7 +495,9 @@ Evaluations used the following LLM configurations, with model selection varying 
 | Recognition validation (§6.1) | eval-2026-02-03-86b159cd | Kimi K2.5 | — | Single-agent only |
 | Full factorial (§6.2) | eval-2026-02-03-f5d4dd93 | Kimi K2.5 | Kimi K2.5 | N=360 |
 | A×B interaction (§6.3) | eval-2026-02-04-948e04b3 | Nemotron | Kimi K2.5 | Different baseline |
+| A×B replication (§6.3) | eval-2026-02-05-10b344fb | Kimi K2.5 | Kimi K2.5 | N=60, replication |
 | Domain generalizability (§6.4) | eval-2026-02-04-79b633ca | Nemotron | Kimi K2.5 | Elementary content |
+| Domain gen. replication (§6.4) | eval-2026-02-05-e87f452d | Kimi K2.5 | — | Elementary, Kimi |
 
 The learner agents mirror the tutor's Ego/Superego structure, enabling internal deliberation before external response.
 
@@ -533,9 +535,11 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 |------------|--------|---------|----------------|--------|------|
 | Recognition validation | eval-2026-02-03-86b159cd | 6.1 | 36 | 36 | response |
 | Full factorial (Kimi) | eval-2026-02-03-f5d4dd93 | 6.2 | 402 | 342 | response |
-| A×B interaction | eval-2026-02-04-948e04b3 | 6.3 | 18 | 17 | response |
-| Domain generalizability (elementary) | eval-2026-02-04-79b633ca | 6.4 | 47 | 47 | response |
-| **Paper totals** | — | — | **503** | **442** | — |
+| A×B interaction (Nemotron) | eval-2026-02-04-948e04b3 | 6.3 | 18 | 17 | response |
+| A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 | 60 | 60 | response |
+| Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 | 47 | 47 | response |
+| Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 | 60 | 60 | response |
+| **Paper totals** | — | — | **623** | **562** | — |
 
 **Total evaluation database**: The complete database contains 3,528 evaluation attempts across 49 runs, with 2,735 successfully scored. This paper reports primarily on the four key runs above (N=435 scored), supplemented by historical data for ablation analyses.
 
@@ -692,13 +696,16 @@ Enhanced ───────────┤     83.3      │     83.3    │ 
     ★★ = Significant synergy effect (p < .05)
 ```
 
-**Exploratory Finding**: The multi-agent synergy (+9.2 points) appears **specific to recognition prompts** in this Nemotron-based analysis. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in the larger Kimi-based factorial (Section 6.2, F=0.04, p=.845, N=342), where multi-agent architecture showed no differential effect by prompt type. The small sample (N=17) and model-specificity mean this finding should be treated as hypothesis-generating rather than confirmatory.
+**Exploratory Finding**: The multi-agent synergy (+9.2 points) appears **specific to recognition prompts** in this Nemotron-based analysis. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in two independent tests:
 
-**Theoretical Interpretation**: Recognition theory creates a *deliberative space* that the Freudian architecture (Ego/Superego) can meaningfully engage with. The Superego's role is to enforce recognition standards—but when recognition standards aren't in the prompts (enhanced condition), the Superego has nothing distinctive to enforce. The internal dialogue becomes superfluous.
+1. **Kimi factorial** (Section 6.2, F=0.04, p=.845, N=342): Multi-agent architecture showed no differential effect by prompt type.
+2. **Kimi A×B replication** (eval-2026-02-05-10b344fb, N=60): A dedicated replication with the same four cells (5, 7, 9, 11) on Kimi K2.5 found recognition cells scoring ~90.6 regardless of architecture (single=90.58, multi=90.60), while enhanced cells scored ~80.6 with a trivial architecture effect (single=79.92, multi=81.29). The A×B interaction was +1.35 points—negligible compared to Nemotron's +9.2.
 
-This finding strengthens the theoretical claim about recognition as an emergent property. Recognition isn't just a prompt feature that could be evaluated by any quality-control mechanism. It requires the specific relational framing that creates conditions for the Superego's recognition-oriented critique to add value.
+The non-replication across both the larger factorial and this dedicated replication strongly suggests the Nemotron finding (N=17) was model-specific. This finding should be treated as hypothesis-generating only.
 
-**Practical Implication**: For systems using recognition-oriented design, multi-agent architecture provides meaningful additional benefit. For systems using only improved instructions (enhanced), multi-agent architecture is unnecessary overhead.
+**Theoretical Interpretation**: Recognition theory creates a *deliberative space* that the Freudian architecture (Ego/Superego) can meaningfully engage with. The Superego's role is to enforce recognition standards—but when recognition standards aren't in the prompts (enhanced condition), the Superego has nothing distinctive to enforce. The internal dialogue becomes superfluous. However, this mechanism appears model-dependent: Kimi's higher baseline quality may leave less room for the Superego to add value, regardless of prompt type.
+
+**Practical Implication**: The multi-agent synergy for recognition prompts remains a plausible hypothesis but should not inform design decisions until replicated. For systems using only improved instructions (enhanced), multi-agent architecture is unnecessary overhead across all models tested.
 
 ### 6.4 Domain Generalizability: Factor Effects Invert by Content Type
 
@@ -706,7 +713,7 @@ A critical question for any pedagogical framework: Do findings generalize across
 
 **Data sources**: Elementary math results come from a dedicated domain-transfer run (eval-2026-02-04-79b633ca, N=47 scored, 8 cells × 5 elementary scenarios, Nemotron ego). Philosophy results use the subset of the Kimi-based factorial (Section 6.2) matched on the same 4 factor-level combinations (cells 1, 3, 5, 7). Because these use different ego models, the comparison focuses on *relative factor effects within each domain* rather than absolute score differences between domains.
 
-**Table 7: Factor Effects by Domain**
+**Table 7: Factor Effects by Domain (Nemotron Elementary vs Kimi Philosophy)**
 
 | Factor | Elementary (Math) | Philosophy (Hegel) |
 |--------|-------------------|-------------------|
@@ -747,9 +754,22 @@ C: Learner ─────────│██ +2.1            │▌ +0.75
    - **New/untrained domain**: Multi-agent essential (Superego catches domain hallucinations)
    - **Well-trained domain**: Recognition prompts sufficient, multi-agent optional
 
-**Theoretical Interpretation**: Recognition's value depends on content characteristics. Abstract, interpretive content (consciousness, dialectics) benefits most from recognition framing—the "struggle" in Hegel's sense maps onto the intellectual struggle with difficult concepts. Concrete procedural content (fractions, arithmetic) benefits less from relational depth; correct procedure matters more than the bilateral transformation that recognition enables (Section 6.10).
+**Kimi Replication (Addressing Model Confound)**: A follow-up run (eval-2026-02-05-e87f452d, N=60) tested elementary content with Kimi K2.5 to address the model confound in Table 7. With base and recognition cells (1, 3, 5, 7) on the same 5 elementary scenarios:
 
-This suggests limits to recognition-theoretic pedagogy. Not all learning encounters are equally amenable to the mutual transformation Honneth describes. The "struggle for recognition" may be most relevant where the learning itself involves identity-constitutive understanding—where grasping the material changes who the learner is, not just what they know.
+**Table 8: Elementary Domain — Kimi Replication**
+
+| Condition | N | Mean | Δ |
+|-----------|---|------|---|
+| Base (cells 1, 3) | 30 | 67.2 | — |
+| Recognition (cells 5, 7) | 30 | 77.1 | **+9.9** |
+
+The recognition main effect (+9.9 pts, d ≈ 0.61) replicates on Kimi, confirming that recognition advantage in elementary content is not an artifact of the Nemotron model. Notably, the effect is scenario-dependent: challenging scenarios (frustrated_student: +23.8, concept_confusion: +13.6, struggling_student: +11.8) show substantial recognition advantage, while neutral scenarios (new_student_first_visit: +0.2, returning_student_mid_course: +0.1) show none. This pattern is consistent with recognition theory—recognition behaviors matter most when the learner needs to be acknowledged as a struggling subject, not for routine interactions.
+
+The Kimi replication also revises the architecture dominance finding from Table 7. With Nemotron, architecture (+9.9) dominated recognition (+4.4) on elementary content. With Kimi, recognition (+9.9) is the primary effect, while architecture shows a smaller advantage (multi=73.7, single=70.6, Δ=+3.0). The factor inversion appears to be partly model-dependent: Nemotron's higher hallucination rate on elementary content inflated the architecture effect (Superego error correction), while Kimi's lower hallucination rate reveals the underlying recognition advantage.
+
+**Theoretical Interpretation**: Recognition's value depends on content characteristics. Abstract, interpretive content (consciousness, dialectics) benefits most from recognition framing—the "struggle" in Hegel's sense maps onto the intellectual struggle with difficult concepts. Concrete procedural content (fractions, arithmetic) benefits less from relational depth; correct procedure matters more than the bilateral transformation that recognition enables (Section 6.10). However, the Kimi replication shows that even in concrete domains, recognition provides meaningful improvement for challenging scenarios—suggesting recognition's value is modulated by both content type and scenario difficulty, not content type alone.
+
+This suggests limits to recognition-theoretic pedagogy. Not all learning encounters are equally amenable to the mutual transformation Honneth describes. The "struggle for recognition" may be most relevant where the learning itself involves identity-constitutive understanding—where grasping the material changes who the learner is, not just what they know—or where the learner faces emotional or cognitive challenge that benefits from being acknowledged.
 
 ### 6.5 Multi-Agent as Reality Testing: The Superego's Error Correction Role
 
@@ -896,11 +916,11 @@ This maps directly onto Hegel's master-slave analysis. The baseline tutor achiev
 
 ### 7.2 Recognition as Emergent Property: The A×B Interaction
 
-The A×B interaction finding (Section 6.3) provides suggestive evidence for recognition as an emergent property rather than a behavioral specification, though this finding requires important caveats.
+The A×B interaction finding (Section 6.3) provides suggestive evidence for recognition as an emergent property rather than a behavioral specification, though this finding was not confirmed in replication attempts.
 
-In the Nemotron-based analysis (N=17), enhanced prompts (good instructions) show zero benefit from multi-agent architecture, while recognition prompts show +9.2 points of synergy. If replicated, this would suggest recognition creates qualitatively different conditions for productive internal dialogue—the Superego isn't just checking for "good tutoring" but evaluating whether genuine engagement has occurred, whether the learner has been acknowledged as subject, whether conditions for transformation have been created.
+In the Nemotron-based analysis (N=17), enhanced prompts (good instructions) show zero benefit from multi-agent architecture, while recognition prompts show +9.2 points of synergy. This suggested recognition creates qualitatively different conditions for productive internal dialogue—the Superego evaluating whether genuine engagement has occurred, whether the learner has been acknowledged as subject, whether conditions for transformation have been created.
 
-However, the larger Kimi-based factorial (N=342) did not replicate this interaction (Section 6.2). The discrepancy may reflect model-specific dynamics: Nemotron's higher error rate on complex scenarios may create more opportunities for the Superego to add value. This finding should therefore be treated as a hypothesis for future investigation rather than an established result. If confirmed with larger samples across multiple models, the implication for AI design would be that recognition-oriented systems may require architectural features (like multi-agent deliberation) that aren't necessary for merely improved instruction-following systems.
+However, three independent tests failed to replicate this interaction: the larger Kimi factorial (N=342, Section 6.2), and a dedicated Kimi replication (N=60, eval-2026-02-05-10b344fb) that found an A×B interaction of only +1.35 points (vs Nemotron's +9.2). The pattern is clear: on Kimi, recognition cells score consistently high (~90.6) regardless of architecture, while enhanced cells score lower (~80.6) regardless of architecture. The discrepancy likely reflects model-specific dynamics: Nemotron's higher error rate on complex scenarios created more opportunities for the Superego to add value selectively. This finding should be treated as a hypothesis for future investigation rather than an established result.
 
 ### 7.3 Domain Limits of Recognition-Theoretic Pedagogy
 
@@ -916,7 +936,7 @@ This suggests a nuanced deployment strategy:
 - **Moderate recognition value**: Science concepts, historical understanding
 - **Lower recognition value**: Procedural skills, rote learning, basic arithmetic
 
-Recognition-oriented design isn't wrong for procedural content—it still provides some benefit (+4.4 pts for elementary)—but other factors (error correction, curriculum grounding) become relatively more important.
+Recognition-oriented design isn't wrong for procedural content—it provides meaningful benefit when learners face challenge (+9.9 pts on Kimi elementary, with scenario-dependent effects up to +23.8 pts for frustrated learners)—but the effect is modulated by scenario difficulty. The Kimi elementary replication (Section 6.4) clarifies this: recognition's value in concrete domains depends less on content type per se and more on whether the learner is in a state that benefits from being acknowledged as a struggling subject.
 
 ### 7.4 The Superego as Reality Principle
 
@@ -1006,9 +1026,9 @@ This analysis addresses the concern that multi-agent overhead provides modest ga
 
 **Memory confound**: Recognition-enhanced profiles bundle memory integration (enabled) with recognition prompts. The current design cannot separate the contribution of memory from recognition theory. The +8.7 recognition-unique effect (Section 6.1) and related findings are more precisely *recognition-plus-memory* effects. A 2×2×2×2 factorial adding memory as a fourth factor would be needed to fully isolate these components.
 
-**Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). Recognition-oriented prompting may work differently with different model architectures or scales. Notably, the A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (Section 6.3) but not in the larger Kimi factorial (Section 6.2), suggesting model-specific dynamics that require further investigation.
+**Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17, Section 6.3) but failed to replicate on Kimi in both the larger factorial (N=342) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models and domains.
 
-**Domain sampling**: We tested two domains (philosophy, elementary math). The domain comparison uses different ego models (Kimi for philosophy, Nemotron for elementary), which confounds model effects with domain effects. Broader domain sampling with consistent model choice would strengthen generalizability claims.
+**Domain sampling**: We tested two domains (philosophy, elementary math). A follow-up run (eval-2026-02-05-e87f452d) tested elementary content with Kimi K2.5, partially addressing the model confound in the original Nemotron-only elementary results. The recognition main effect replicated (+9.9 pts, d ≈ 0.61), though the factor inversion pattern from Table 7 (architecture dominance on elementary) was partly model-dependent: Kimi showed recognition dominance on elementary content, while Nemotron showed architecture dominance. Broader domain sampling beyond two content areas would further strengthen generalizability claims.
 
 **Short-term evaluation**: We evaluate individual sessions, not longitudinal relationships. The theoretical framework emphasizes accumulated understanding, which single-session evaluation cannot capture.
 
@@ -1032,17 +1052,17 @@ This analysis addresses the concern that multi-agent overhead provides modest ga
 
 We have proposed and evaluated a framework for AI tutoring grounded in Hegel's theory of mutual recognition. Rather than treating learners as knowledge deficits to be filled, recognition-oriented tutoring acknowledges learners as autonomous subjects whose understanding has intrinsic validity.
 
-An evaluation framework (N=442 primary scored; N=2,700+ total) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
+An evaluation framework (N=562 primary scored across six key runs; N=2,700+ across the full development database) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
 
 1. **43% unique contribution**: Recognition adds +8.7 points beyond what better prompt engineering alone achieves (N=36)—the theoretical framework has measurable empirical footprint, though this effect is confounded with memory integration.
 
-2. **Possible recognition-specific synergy**: An exploratory analysis (N=17) suggests multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, though this was not replicated in the larger factorial (N=342). If confirmed, this would suggest recognition creates conditions for productive internal dialogue.
+2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=342) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific and remains a hypothesis for future investigation.
 
 3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 
-4. **Domain-dependent effects**: Factor effects invert by content type. Philosophy shows recognition dominance; elementary math shows architecture dominance. Recognition theory is most valuable for identity-constitutive learning.
+4. **Domain generalizability confirmed**: Recognition advantage replicates across both philosophy and elementary math, and across both Kimi and Nemotron models. On elementary content with Kimi (N=60), recognition provides +9.9 pts (d ≈ 0.61), with effects concentrated in challenging scenarios (up to +23.8 pts for frustrated learners). The factor inversion (architecture dominance on elementary) from the Nemotron analysis is partly model-dependent.
 
-5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer.
+5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer, particularly with models prone to domain confusion.
 
 These results suggest that operationalizing philosophical theories of intersubjectivity can produce concrete improvements in AI system performance. They also reveal boundary conditions: recognition theory's value varies by content domain, and multi-agent architecture's value depends on whether recognition framing is present.
 
@@ -1062,8 +1082,10 @@ Key runs:
 |---------|--------|---------|
 | Recognition validation | eval-2026-02-03-86b159cd | 6.1 |
 | Full factorial | eval-2026-02-03-f5d4dd93 | 6.2 |
-| A×B interaction | eval-2026-02-04-948e04b3 | 6.3 |
-| Domain generalizability | eval-2026-02-04-79b633ca | 6.4 |
+| A×B interaction (Nemotron) | eval-2026-02-04-948e04b3 | 6.3 |
+| A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 |
+| Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 |
+| Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 |
 
 ---
 
@@ -1424,5 +1446,7 @@ See Section 10 for the primary run ID table. The four key runs are reproduced he
 |---------|--------|---------|
 | Recognition validation | eval-2026-02-03-86b159cd | 6.1 |
 | Full factorial (Kimi) | eval-2026-02-03-f5d4dd93 | 6.2 |
-| A×B interaction | eval-2026-02-04-948e04b3 | 6.3 |
-| Domain generalizability | eval-2026-02-04-79b633ca | 6.4 |
+| A×B interaction (Nemotron) | eval-2026-02-04-948e04b3 | 6.3 |
+| A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 |
+| Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 |
+| Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 |
