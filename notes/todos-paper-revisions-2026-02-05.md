@@ -208,3 +208,18 @@ Synced PAPER-SHORT-2026-02-04.md with PAPER-FULL-2026-02-04.md:
 - [x] **references.bib location** — FIXED. Bib file copied to `docs/research/references.bib`.
       Short paper path corrected. Duplicates removed. All 29 citations resolve with
       `pandoc --citeproc`.
+
+## Qualitative Analysis Added (v0.7)
+
+- [x] Created `scripts/qualitative-analysis.js` — extracts transcript pairs, word frequency,
+      lexical diversity, and thematic coding from evaluation database
+- [x] Section 6.11: "Qualitative Analysis: What Recognition Looks Like" — transcript excerpts
+      (3 paired base/recognition responses with row IDs), lexical diversity table, differential
+      word frequency table, thematic coding with chi-square significance
+- [x] Section 7.9: "What the Transcripts Reveal" — interpretive discussion connecting
+      qualitative findings to Hegelian concepts (productive negativity, recognition of other,
+      learner-as-subject framing), with limitations noted
+- [x] Tables 14–16 added (lexical diversity, differential word frequency, thematic coding);
+      former Table 14 (Cost-Benefit) renumbered to Table 17
+- [x] Version bumped v0.6 → v0.7
+- [x] Script outputs: `exports/qualitative-analysis.json`, `exports/qualitative-analysis.md`
