@@ -449,17 +449,17 @@ Each dimension is scored on a 1-5 scale with detailed rubric criteria (see Appen
 
 ### 5.2 Test Scenarios
 
-We developed test scenarios specifically designed to probe recognition behaviors:
+We developed test scenarios specifically designed to probe recognition behaviors. The full evaluation uses 15 scenarios from the core scenario set (`config/suggestion-scenarios.yaml`); we highlight those most relevant to recognition below.
 
 **Single-turn scenarios:**
 - `recognition_seeking_learner`: Learner offers interpretation, seeks engagement
-- `returning_with_breakthrough`: Learner had insight, expects acknowledgment
-- `resistant_learner`: Learner pushes back on tutor's framing
+- `transformative_moment_setup`: Learner had insight, expects acknowledgment
+- `memory_continuity_single`: Returning learner; tests whether tutor references prior interactions
 
-**Multi-turn scenarios (4-5 turns each):**
-- `mutual_transformation_journey`: Tests whether both tutor and learner positions evolve
-- `recognition_repair`: Tutor initially fails to recognize learner; tests recovery
-- `productive_struggle_arc`: Learner moves through confusion to breakthrough; tests honoring struggle
+**Multi-turn scenarios (3-5 dialogue rounds):**
+- `mutual_transformation_journey`: Tests whether both tutor and learner positions evolve (avg 4.1 rounds)
+- `misconception_correction_flow`: Learner holds misconception that must be addressed without dismissal (avg 3.2 rounds)
+- `mood_frustration_to_breakthrough`: Learner moves from frustration through confusion to breakthrough; tests honoring struggle (avg 3.0 rounds)
 
 ### 5.3 Agent Profiles
 
@@ -837,20 +837,19 @@ To address this, we re-analyzed scores excluding all non-standard dimensions, us
 
 The larger effect on recognition dimensions (+21.8) is expected and not concerning—these dimensions measure what the theory claims to improve. The important finding is that standard dimensions also improve, ruling out pure circularity.
 
-### 6.9 Extended Multi-Turn Scenarios
+### 6.9 Multi-Turn Scenario Results
 
-To test whether recognition quality degrades over extended interactions:
+To test whether recognition quality is maintained over extended interactions, we examine results from the three multi-turn scenarios (3–5 dialogue rounds each). These scenarios are distinct from the single-turn scenarios reported in Section 6.2; they require sustained engagement across multiple exchanges.
 
-**Table 11: Extended Scenario Results**
+**Table 11: Multi-Turn Scenario Results**
 
-| Scenario | Turns | Base | Recognition | Δ | Cohen's d |
-|----------|-------|------|-------------|---|-----------|
-| `sustained_dialogue` | 8 | 46.3 | 61.0 | +14.7 | 3.60 |
-| `breakdown_recovery` | 6 | 57.5 | 71.3 | +13.8 | 2.23 |
-| `productive_struggle` | 5 | 46.5 | 73.2 | +26.7 | 3.32 |
-| `mutual_transformation` | 5 | 45.1 | 64.3 | +19.1 | 2.89 |
+| Scenario | N | Avg Rounds | Base | Recognition | Δ | Cohen's d |
+|----------|---|------------|------|-------------|---|-----------|
+| `misconception_correction_flow` | 161 | 3.2 | 50.5 | 71.8 | +21.3 | 0.85 |
+| `mood_frustration_to_breakthrough` | 277 | 3.0 | 57.3 | 70.5 | +13.2 | 0.59 |
+| `mutual_transformation_journey` | 165 | 4.1 | 42.6 | 61.5 | +18.9 | 0.78 |
 
-All extended scenarios show large effect sizes (d > 2.0), though the small per-scenario sample (N=3 per condition per scenario) means these should be interpreted as indicative of direction and magnitude rather than precise estimates. Recognition quality is maintained over longer interactions, with average improvement of +18.6 points. Confidence intervals are wide at this sample size; the key finding is the consistent direction across all scenarios rather than precise point estimates.
+All three multi-turn scenarios show medium-to-large effect sizes (d = 0.59–0.85), with an average improvement of +17.8 points. Recognition quality is maintained over longer interactions. The `misconception_correction_flow` scenario shows the largest effect (d = 0.85), suggesting that recognition-informed tutors handle misconceptions with particular skill—addressing errors without dismissing the learner's reasoning. The `mood_frustration_to_breakthrough` scenario shows the smallest but still meaningful effect (d = 0.59), consistent with the single-turn finding that emotionally complex scenarios benefit from recognition but present more variance.
 
 ### 6.10 Bilateral Transformation Metrics
 
