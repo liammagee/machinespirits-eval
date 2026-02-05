@@ -36,11 +36,11 @@ We operationalize this framework through:
 3. **New evaluation dimensions** that measure recognition quality alongside traditional pedagogical metrics
 4. **Test scenarios** specifically designed to probe recognition behaviors
 
-In controlled evaluations using a robust factorial design (N=435 primary evaluations; N=2,700+ across all development runs), we isolate the unique contribution of recognition theory from prompt engineering effects. A three-way comparison (base vs enhanced vs recognition) reveals that recognition provides +8.7 points of unique value beyond better instructions—43% of the total recognition effect is attributable to the theoretical framework itself, not merely to better prompting.
+In controlled evaluations across six evaluation runs (N=562 primary scored responses; N=2,700+ across all development runs), we isolate the unique contribution of recognition theory from prompt engineering effects. A three-way comparison (base vs enhanced vs recognition) reveals that recognition provides +8.7 points of unique value beyond better instructions—43% of the total recognition effect is attributable to the theoretical framework itself, not merely to better prompting.
 
-More significantly, we discover that the multi-agent synergy effect (+9.2 points) is *specific to recognition prompts*. Enhanced prompts without recognition theory show zero benefit from multi-agent architecture. This suggests recognition creates the deliberative conditions where internal Ego-Superego dialogue adds value—the architecture matters only when paired with recognition framing.
+An exploratory analysis of multi-agent synergy (+9.2 points, Nemotron, N=17) initially suggested this effect might be specific to recognition prompts. However, this interaction did not replicate in two independent tests—neither the full Kimi factorial (N=342, F=0.04, p=.845) nor a dedicated Kimi replication (N=60, +1.35 pts)—indicating the finding is model-specific rather than a general phenomenon. For systems using only improved instructions, multi-agent architecture appears unnecessary; the architecture's primary value lies in error correction when models hallucinate on unfamiliar domains.
 
-Domain generalizability testing reveals important nuances: factor effects invert by content type. Philosophy content shows recognition dominance (+13.9 pts vs +0.5 pts for architecture), while elementary math shows architecture dominance (+9.9 pts vs +4.4 pts for recognition). The multi-agent architecture serves as critical error correction when models hallucinate trained content on new domains—essential for domain transfer.
+Domain generalizability testing reveals that recognition advantage replicates across both models and content domains, but with important nuances. Philosophy content shows strong recognition dominance (+13.9 pts). Elementary math initially appeared to show architecture dominance with Nemotron, but a Kimi replication (+9.9 pts for recognition, d ≈ 0.61, N=60) revealed that this inversion was partly model-dependent—Nemotron's higher hallucination rate on elementary content inflated the architecture effect. Recognition effects are concentrated in challenging scenarios (frustrated learners, concept confusion) rather than routine interactions.
 
 The contributions of this paper are:
 
@@ -49,8 +49,8 @@ The contributions of this paper are:
 - Empirical evidence that recognition-oriented design improves tutoring outcomes
 - Validation that recognition theory provides unique value beyond prompt engineering
 - Bilateral transformation metrics demonstrating that recognition produces measurable mutual change
-- Analysis of how recognition effects vary across content domains
-- Evidence that multi-agent synergy requires recognition framing
+- Analysis of how recognition effects vary across content domains and scenario difficulty
+- Evidence that multi-agent architecture serves as critical error correction for domain transfer, with its synergy with recognition prompts remaining model-dependent
 
 ---
 
@@ -493,7 +493,7 @@ Evaluations used the following LLM configurations, with model selection varying 
 | Evaluation | Run ID | Tutor Ego | Tutor Superego | Notes |
 |------------|--------|-----------|----------------|-------|
 | Recognition validation (§6.1) | eval-2026-02-03-86b159cd | Kimi K2.5 | — | Single-agent only |
-| Full factorial (§6.2) | eval-2026-02-03-f5d4dd93 | Kimi K2.5 | Kimi K2.5 | N=360 |
+| Full factorial (§6.2) | eval-2026-02-03-f5d4dd93 | Kimi K2.5 | Kimi K2.5 | N=342 scored of 402 |
 | A×B interaction (§6.3) | eval-2026-02-04-948e04b3 | Nemotron | Kimi K2.5 | Different baseline |
 | A×B replication (§6.3) | eval-2026-02-05-10b344fb | Kimi K2.5 | Kimi K2.5 | N=60, replication |
 | Domain generalizability (§6.4) | eval-2026-02-04-79b633ca | Nemotron | Kimi K2.5 | Elementary content |
@@ -515,7 +515,7 @@ We conducted complementary analyses:
 
 3. **A×B Interaction Analysis** (Section 6.3): Tests whether multi-agent synergy requires recognition prompts (N=17).
 
-4. **Domain Generalizability** (Section 6.4): Tests factor effects on elementary math vs graduate philosophy (N=40 scored total; see Table 2 for breakdown).
+4. **Domain Generalizability** (Section 6.4): Tests factor effects on elementary math vs graduate philosophy (N=47 Nemotron + N=60 Kimi replication; see Table 2 for breakdown).
 
 Responses were evaluated by an LLM judge (Claude Code, using Claude Opus as the underlying model) using the extended rubric. We report:
 
@@ -541,9 +541,9 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 | 60 | 60 | response |
 | **Paper totals** | — | — | **623** | **562** | — |
 
-**Total evaluation database**: The complete database contains 3,528 evaluation attempts across 49 runs, with 2,735 successfully scored. This paper reports primarily on the four key runs above (N=435 scored), supplemented by historical data for ablation analyses.
+**Total evaluation database**: The complete database contains 3,528 evaluation attempts across 49 runs, with 2,735 successfully scored. This paper reports primarily on the six key runs above (N=562 scored), supplemented by historical data for ablation analyses.
 
-**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation) refer to scored responses in that analysis. The "N=2,700+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the four key runs above (N=442).
+**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation) refer to scored responses in that analysis. The "N=2,700+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the six key runs above (N=562).
 
 ### 5.7 Inter-Judge Reliability Analysis
 
@@ -789,7 +789,7 @@ This connects to Freud's reality principle: the Superego enforces correspondence
 
 Analysis of Superego critique patterns across 455 dialogues (186 rejections) revealed consistent failure modes:
 
-**Table 8: Superego Rejection Patterns**
+**Table 9: Superego Rejection Patterns**
 
 | Pattern | Frequency | Description |
 |---------|-----------|-------------|
@@ -820,7 +820,7 @@ HARDWIRED RULES:
 
 Effect size analysis reveals improvements concentrate in dimensions predicted by the theoretical framework:
 
-**Table 9: Dimension-Level Effect Sizes (Recognition vs Base)**
+**Table 10: Dimension-Level Effect Sizes (Recognition vs Base)**
 
 | Dimension | Base | Recognition | Cohen's d | Interpretation |
 |-----------|------|-------------|-----------|----------------|
@@ -841,7 +841,7 @@ A methodological concern: the evaluation rubric includes recognition-specific di
 
 To address this, we re-analyzed scores excluding all non-standard dimensions, using only standard pedagogical dimensions (relevance, specificity, pedagogical soundness, personalization, actionability, tone), re-weighted to 100%.
 
-**Table 10: Standard Dimensions Only (Recognition Dimensions Excluded)**
+**Table 11: Standard Dimensions Only (Recognition Dimensions Excluded)**
 
 | Profile Type | N | Overall Score | Standard Only | Recognition Only |
 |--------------|---|---------------|---------------|------------------|
@@ -861,7 +861,7 @@ The larger effect on recognition dimensions (+21.8) is expected and not concerni
 
 To test whether recognition quality is maintained over extended interactions, we examine results from the three multi-turn scenarios (3–5 dialogue rounds each). These scenarios are distinct from the single-turn scenarios reported in Section 6.2; they require sustained engagement across multiple exchanges.
 
-**Table 11: Multi-Turn Scenario Results**
+**Table 12: Multi-Turn Scenario Results**
 
 | Scenario | N | Avg Rounds | Base | Recognition | Δ | Cohen's d |
 |----------|---|------------|------|-------------|---|-----------|
@@ -883,7 +883,7 @@ Three indices are computed for each multi-turn dialogue:
 
 Additionally, a composite **Transformation Quality** score (0–100) is computed from bilateral balance, mutual transformation presence, superego incorporation rate, and intervention effectiveness.
 
-**Table 12: Bilateral Transformation Metrics — Base vs Recognition Profiles**
+**Table 13: Bilateral Transformation Metrics — Base vs Recognition Profiles**
 
 | Metric | Base | Recognition | Δ |
 |--------|------|-------------|---|
@@ -984,7 +984,7 @@ If mutual recognition produces better outcomes, and if mutual recognition requir
 
 The domain generalizability findings raise a practical question: when is the additional cost of multi-agent architecture justified?
 
-**Table 13: Cost-Benefit by Domain and Architecture**
+**Table 14: Cost-Benefit by Domain and Architecture**
 
 | Domain | Architecture | Avg Score | Latency (s) | Δ Score | Latency Multiple |
 |--------|-------------|-----------|-------------|---------|------------------|
