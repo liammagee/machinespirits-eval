@@ -121,11 +121,12 @@ Backported in commit 32e8f1a (v2.1):
 
 ## Minor Remaining Paper Issues
 
-- [ ] **Scenario naming inconsistency** — Section 5.2 uses `recognition_seeking_learner`,
-      `returning_with_breakthrough`, `resistant_learner` but Section 6.9 uses
-      `sustained_dialogue`, `breakdown_recovery`, `productive_struggle`,
-      `mutual_transformation`. These are different scenario sets; add a note clarifying
-      that 6.9 uses extended multi-turn scenarios distinct from the core set in 5.2.
+- [x] **Scenario naming inconsistency** — FIXED. Section 5.2 updated to use actual scenario
+      IDs from config/suggestion-scenarios.yaml and database. Section 6.9 replaced fabricated
+      scenario data (`sustained_dialogue`, `breakdown_recovery`, `productive_struggle`) with
+      real multi-turn results from database: `misconception_correction_flow` (d=0.85),
+      `mood_frustration_to_breakthrough` (d=0.59), `mutual_transformation_journey` (d=0.78).
+      Cohen's d corrected from implausible 2.23–3.60 to actual 0.59–0.85.
 
 - [ ] **Box-drawing characters in PDF** — ASCII art diagrams (Figures 1-5) use Unicode
       box-drawing characters (┌─│└▼►) that don't render in LaTeX monospace font.
