@@ -6,10 +6,10 @@ Remaining items require further work.
 
 ---
 
-## Missing Bibliography Entries (29 citations)
+## Missing Bibliography Entries (29 citations) — DONE
 
-The following citation keys appear in PAPER-FULL-2026-02-04.md but are NOT in
-`paper-draft/references.bib`. These need bib entries added:
+All 29 entries added to `paper-draft/references.bib` on 2026-02-05.
+PDF regenerated with zero citation warnings.
 
 ### Education / Pedagogy
 - [ ] `brown1975` — Brown & Burton (1975) SOPHIE
@@ -119,7 +119,7 @@ The following citation keys appear in PAPER-FULL-2026-02-04.md but are NOT in
 - [x] Section 9 — conclusion claims qualified
 - [x] Appendix B.3 — command fixed to include recognition profiles
 - [x] Appendix B.4 — command fixed to match actual run
-- [x] Judge naming — corrected to "Claude Code" (not "Claude Sonnet 4.5")
+- [x] Judge naming — standardized to "Claude Code" with "(using Claude Opus as the underlying model)" noted at first mention
 - [x] Dialectical synthesis rate — N=455 added
 - [x] Extended scenario table — small-sample caveat added
 - [x] Latency — measurement conditions noted
