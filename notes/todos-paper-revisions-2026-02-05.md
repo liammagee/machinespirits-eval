@@ -9,51 +9,12 @@ Remaining items require further work.
 ## Missing Bibliography Entries (29 citations) — DONE
 
 All 29 entries added to `paper-draft/references.bib` on 2026-02-05.
-PDF regenerated with zero citation warnings.
+Bib file copied to `docs/research/references.bib` (where both papers expect it).
+Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with zero warnings.
 
-### Education / Pedagogy
-- [ ] `brown1975` — Brown & Burton (1975) SOPHIE
-- [ ] `carbonell1970` — Carbonell (1970) early ITS
-- [ ] `corbett1995` — Corbett & Anderson (1995) knowledge tracing
-- [ ] `kapur2008` — Kapur (2008) productive failure
-- [ ] `piaget1954` — Piaget (1954) construction of reality
-- [ ] `vygotsky1978` — Vygotsky (1978) mind in society / ZPD
-- [ ] `warshauer2015` — Warshauer (2015) productive struggle in math
-
-### AI / LLM
-- [ ] `anthropic2024` — Anthropic (2024) — unclear which paper; likely Claude 3 system card or similar
-- [ ] `brown2020` — Brown et al. (2020) GPT-3 / language models are few-shot learners
-- [ ] `irving2018` — Irving et al. (2018) AI safety via debate
-- [ ] `kasneci2023` — Kasneci et al. (2023) ChatGPT for good? On opportunities and challenges of LLMs for education
-- [ ] `kojima2022` — Kojima et al. (2022) LLMs are zero-shot reasoners
-- [ ] `madaan2023` — Madaan et al. (2023) self-refine
-- [ ] `perez2022` — Perez et al. (2022) red teaming language models
-- [ ] `sharma2023` — Sharma et al. (2023) — likely AI tutoring related
-- [ ] `wei2022` — Wei et al. (2022) chain-of-thought prompting
-- [ ] `wu2023` — Wu et al. (2023) — likely multi-agent or auto-gen related
-- [ ] `zhou2020` — Zhou et al. (2020) — context unclear
-
-### Philosophy / Recognition Theory
-- [ ] `honneth1995` — Honneth (1995) Struggle for Recognition (NOTE: bib has `Honneth1996StruggleRecognition` — may just need key alias or paper key updated)
-- [ ] `taylor1994` — Taylor (1994) politics of recognition
-- [ ] `stojanov2018` — Stojanov (2018) education and recognition
-- [ ] `huttunen2007` — Huttunen (2007) Hegel's recognition theory in education
-- [ ] `freud1925` — Freud (1925) negation (NOTE: bib has `freud2022negation` — may need key alias)
-
-### HCI / Social Presence
-- [ ] `biocca2003` — Biocca et al. (2003) social presence
-- [ ] `dmello2012` — D'Mello (2012) affect in tutoring
-- [ ] `fraser2003` — Fraser (2003) — likely recognition/redistribution
-- [ ] `volkel2021` — Völkel et al. (2021) personality in conversational agents
-- [ ] `zhao2014` — Zhao et al. (2014) rapport in human-agent interaction
-
-### Drama Machine
-- [ ] `magee2024drama` — Magee (2024) Drama Machine (NOTE: bib has `MageeAroraGollingsLamSaw2024DramaMachine` — key mismatch)
-
-### Near-matches already in bib (fix citation key in paper OR add alias)
-- `honneth1995` → `Honneth1996StruggleRecognition` (in bib)
-- `freud1925` → `freud2022negation` (in bib, different edition)
-- `magee2024drama` → `MageeAroraGollingsLamSaw2024DramaMachine` (in bib)
+- [x] All 29 citation keys present and resolving
+- [x] Key aliases added for near-matches (`honneth1995`, `freud1925`, `magee2024drama`)
+- [x] Short paper bibliography path fixed (`../references.bib` → `references.bib`)
 
 ---
 
@@ -127,6 +88,37 @@ PDF regenerated with zero citation warnings.
 
 ---
 
+## Paper Review Fixes (v0.5) — DONE
+
+14 issues identified in thorough review and fixed in commit 476ce63:
+
+- [x] Appendix C.3 header percentages (10% → 8.3%) for mutual_recognition, dialectical_responsiveness, transformative_potential
+- [x] Section 10 broken reference to "Appendix E" → Appendix B and D
+- [x] Limitations inter-judge r-range corrected (0.38–0.86 → 0.33–0.66)
+- [x] A×B interaction N mismatch reconciled (N=24 → N=17, matching Table 2)
+- [x] Table numbering: 1/1a/1b → sequential Tables 1–13
+- [x] Appendix D deduplication (now references Section 10)
+- [x] Drama Machine citation added (`@magee2024drama`)
+- [x] Abstract N-count: leads with N=435 primary, notes N=2,700+ total
+- [x] Section 2.4 (Sycophancy) expanded from 1 to 3 paragraphs
+- [x] Section 4.4 (Dialectical Negotiation) expanded with concrete details and cross-refs
+- [x] Section 6.2→6.3 ANOVA bridging sentence added
+- [x] Section 7.5 Factor C analysis added (new section)
+- [x] Discussion renumbered 7.5–7.8
+
+## Bilateral Transformation Backport to Short Paper — DONE
+
+Backported in commit 32e8f1a (v2.1):
+
+- [x] Abstract: bilateral transformation sentence added
+- [x] Contributions: item #7 (bilateral transformation metrics)
+- [x] Section 5.1: tutor_adaptation (5%) and learner_growth (5%) added; recognition weights corrected to 8.3%; standard weights corrected to 75%
+- [x] Section 6.7 (new): Bilateral Transformation Metrics with table
+- [x] Section 7.6 (new): Discussion of bilateral transformation as empirical evidence
+- [x] Section 7.7: AI Alignment discussion updated with bilateral metrics reference
+- [x] Section 9 (Conclusion): finding #3 added
+- [x] Section 8 (Limitations): item #8 (N=20 sample size)
+
 ## Minor Remaining Paper Issues
 
 - [ ] **Scenario naming inconsistency** — Section 5.2 uses `recognition_seeking_learner`,
@@ -135,10 +127,12 @@ PDF regenerated with zero citation warnings.
       `mutual_transformation`. These are different scenario sets; add a note clarifying
       that 6.9 uses extended multi-turn scenarios distinct from the core set in 5.2.
 
-- [ ] **Box-drawing characters in PDF** — ASCII art diagrams (Figures 3-5) use box-drawing
-      characters that don't render in the monospace font. Consider replacing with simpler
-      ASCII or converting to actual figures.
+- [ ] **Box-drawing characters in PDF** — ASCII art diagrams (Figures 1-5) use Unicode
+      box-drawing characters (┌─│└▼►) that don't render in LaTeX monospace font.
+      Options: (a) use `--pdf-engine=lualatex` with a Unicode monospace font,
+      (b) replace ASCII art with proper figure images, or (c) replace box-drawing
+      with plain ASCII characters (+, -, |).
 
-- [ ] **references.bib location** — The bib file is in `paper-draft/` but PAPER-FULL says
-      `bibliography: references.bib`. Pandoc needs `--bibliography paper-draft/references.bib`
-      or the bib should be copied/symlinked to the same directory.
+- [x] **references.bib location** — FIXED. Bib file copied to `docs/research/references.bib`.
+      Short paper path corrected. Duplicates removed. All 29 citations resolve with
+      `pandoc --citeproc`.
