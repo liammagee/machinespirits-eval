@@ -1,12 +1,17 @@
 /**
  * Prompt Rewriter Service
  *
- * Template-based directive synthesizer for dynamic prompt rewriting.
- * Analyzes turn results, dialogue traces, and conversation history to
- * generate session-specific directives that are prepended to context.
+ * Synthesizes session evolution directives for dynamic prompt rewriting.
+ * Two strategies available:
  *
- * No extra LLM calls — fully deterministic and cheap.
+ * 1. Template-based (synthesizeDirectives): Deterministic, cheap, pattern-matching
+ * 2. LLM-based (synthesizeDirectivesLLM): Uses superego model for rich, contextual directives
+ *
+ * Both analyze turn results, dialogue traces, and conversation history to
+ * generate session-specific directives that are prepended to ego's system prompt.
  */
+
+import { unifiedAIProvider } from '@machinespirits/tutor-core';
 
 /**
  * Synthesize directives from accumulated turn data.
@@ -262,4 +267,161 @@ function findWorstDimension(turnResult) {
     }
   }
   return worst;
+}
+
+// ============================================================================
+// LLM-Based Directive Synthesis
+// ============================================================================
+
+/**
+ * Synthesize directives using an LLM for contextually rich evolution guidance.
+ *
+ * Unlike the template-based approach, this uses the superego model to analyze
+ * the full dialogue context and generate targeted, non-generic directives.
+ *
+ * @param {Object} options
+ * @param {Array} options.turnResults - Results from previous turns
+ * @param {Array} options.consolidatedTrace - Full dialogue trace so far
+ * @param {Array} options.conversationHistory - Conversation history entries
+ * @param {Object} options.config - Profile config containing model info
+ * @returns {Promise<string|null>} XML directive block to prepend, or null if synthesis fails
+ */
+export async function synthesizeDirectivesLLM({
+  turnResults = [],
+  consolidatedTrace = [],
+  conversationHistory = [],
+  config = {},
+}) {
+  if (turnResults.length === 0) return null;
+
+  // Build context summary for the LLM
+  const contextSummary = buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationHistory);
+
+  // Determine model to use (superego model from profile, or fallback)
+  const superegoModel = config.superego?.model || 'moonshotai/kimi-k2.5';
+  const provider = config.superego?.provider || 'openrouter';
+
+  const systemPrompt = `You are a pedagogical analyst reviewing an ongoing tutoring dialogue. Your task is to synthesize 2-5 specific, actionable directives that will help the tutor improve in the next turn.
+
+CRITICAL RULES:
+- Directives must be SPECIFIC to this dialogue — reference actual learner statements, scores, and patterns
+- Avoid generic advice like "be more engaging" or "personalize responses"
+- Each directive should address a concrete issue or opportunity observed in the data
+- Directives should build on what's working, not just fix problems
+- If the dialogue is going well, focus on deepening rather than correcting
+
+OUTPUT FORMAT:
+Return ONLY a numbered list of 2-5 directives, one per line. No preamble, no explanation after.
+
+Example output:
+1. The learner's analogy comparing dialectics to "debugging code" in turn 2 shows technical framing — extend this metaphor when introducing Aufhebung.
+2. Score trajectory shows personalization dropping (87→71). The last response addressed "students" generally — use the learner's name and reference their earlier question about AI ethics.
+3. Superego flagged lack of curriculum grounding. The learner is exploring emergence — connect to 479-lecture-5 which covers complexity and emergent properties.`;
+
+  const userMessage = `Analyze this tutoring dialogue and generate evolution directives:
+
+${contextSummary}
+
+Generate 2-5 specific directives for the next turn:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: superegoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.3, // Lower temp for focused analysis
+        maxTokens: 500,
+      },
+    });
+
+    const directives = response.content?.trim();
+    if (!directives || directives.length < 20) {
+      console.log('[promptRewriter] LLM returned empty or too-short directives');
+      return null;
+    }
+
+    // Wrap in session_evolution XML block
+    return `<session_evolution>
+Based on analysis of the dialogue so far, prioritize the following in your next response:
+
+${directives}
+</session_evolution>`;
+  } catch (error) {
+    console.error('[promptRewriter] LLM directive synthesis failed:', error.message);
+    // Fallback to template-based directives
+    return synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
+  }
+}
+
+/**
+ * Build a structured context summary for the LLM to analyze.
+ */
+function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationHistory) {
+  const parts = [];
+
+  // 1. Score trajectory
+  const scores = turnResults
+    .filter(t => t.turnScore !== null && t.turnScore !== undefined)
+    .map((t, i) => `Turn ${i + 1}: ${t.turnScore.toFixed(1)}`);
+  if (scores.length > 0) {
+    parts.push(`## Score Trajectory\n${scores.join(' → ')}`);
+  }
+
+  // 2. Dimension breakdown for last turn
+  const lastTurn = turnResults[turnResults.length - 1];
+  if (lastTurn?.scores) {
+    const dimScores = Object.entries(lastTurn.scores)
+      .filter(([_, v]) => v != null)
+      .map(([k, v]) => `  - ${k}: ${v}`)
+      .join('\n');
+    if (dimScores) {
+      parts.push(`## Last Turn Dimension Scores\n${dimScores}`);
+    }
+  }
+
+  // 3. Superego feedback from trace
+  const superegoFeedback = consolidatedTrace
+    .filter(e => e.agent === 'superego')
+    .slice(-3) // Last 3 superego entries
+    .map(e => {
+      const summary = e.contextSummary || '';
+      const detail = e.detail || '';
+      // Extract key feedback
+      const feedbackMatch = detail.match(/"feedback"\s*:\s*"([^"]+)"/);
+      return feedbackMatch ? feedbackMatch[1].substring(0, 200) : summary.substring(0, 200);
+    })
+    .filter(Boolean);
+  if (superegoFeedback.length > 0) {
+    parts.push(`## Recent Superego Feedback\n${superegoFeedback.map((f, i) => `${i + 1}. ${f}`).join('\n')}`);
+  }
+
+  // 4. Conversation history (learner messages)
+  const learnerMsgs = conversationHistory
+    .filter(h => h.learnerMessage)
+    .slice(-3) // Last 3 learner messages
+    .map((h, i) => `Turn ${h.turnIndex + 1}: "${h.learnerMessage.substring(0, 150)}${h.learnerMessage.length > 150 ? '...' : ''}"`);
+  if (learnerMsgs.length > 0) {
+    parts.push(`## Recent Learner Messages\n${learnerMsgs.join('\n')}`);
+  }
+
+  // 5. Tutor suggestion types
+  const suggTypes = turnResults
+    .filter(t => t.suggestion?.type)
+    .map((t, i) => `Turn ${i + 1}: ${t.suggestion.type}${t.suggestion.actionTarget ? ` (${t.suggestion.actionTarget})` : ''}`);
+  if (suggTypes.length > 0) {
+    parts.push(`## Tutor Suggestion Types\n${suggTypes.join('\n')}`);
+  }
+
+  // 6. Learner emotional state if available
+  const emotionalStates = turnResults
+    .filter(t => t.learnerEmotionalState)
+    .map((t, i) => `Turn ${i + 1}: ${t.learnerEmotionalState}`);
+  if (emotionalStates.length > 0) {
+    parts.push(`## Learner Emotional States\n${emotionalStates.join('\n')}`);
+  }
+
+  return parts.join('\n\n');
 }

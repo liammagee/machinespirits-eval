@@ -653,6 +653,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     log = () => {},
     scenarioId = '',
     systemPromptExtension = null,
+    learnerId = null, // For Writing Pad memory persistence
   } = options;
 
   // Generate suggestions via tutor API with retry logic
@@ -670,6 +671,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
       useDialogue,
       maxRounds,
       systemPromptExtension,
+      learnerId, // Activates Writing Pad three-layer memory
     }),
     { log }
   );
@@ -1348,6 +1350,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const dialogueId = `dialogue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   dialogueEngine.setCurrentDialogueId(dialogueId);
 
+  // Generate synthetic learnerId for Writing Pad persistence across turns
+  const learnerId = `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
+  log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
+
   const turns = fullScenario.turns || [];
   const turnResults = [];
   let totalLatencyMs = 0;
@@ -1361,11 +1367,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let previousSuggestion = null;
   const consolidatedTrace = [];
 
-  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id };
+  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId };
 
   // Check if prompt rewriting is enabled for this profile
   const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
+  const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
   let sessionEvolution = null;
 
   // 4. Loop through turns (initial turn 0 + follow-up turns)
@@ -1518,13 +1525,36 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     // Synthesize prompt rewriting directives for next turn (if enabled)
     if (promptRewritingEnabled && turnIdx < totalTurnCount - 1) {
-      sessionEvolution = promptRewriter.synthesizeDirectives({
-        turnResults,
-        consolidatedTrace,
-        conversationHistory,
-      });
+      if (promptRewritingStrategy === 'llm') {
+        // LLM-based directive synthesis using superego model
+        try {
+          sessionEvolution = await promptRewriter.synthesizeDirectivesLLM({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+            config: rawProfile,
+          });
+          if (sessionEvolution) {
+            log(`[evaluationRunner] LLM rewriter generated directives for turn ${turnIdx + 1}`, 'info');
+          }
+        } catch (error) {
+          log(`[evaluationRunner] LLM rewriter failed, falling back to template: ${error.message}`, 'warn');
+          sessionEvolution = promptRewriter.synthesizeDirectives({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+          });
+        }
+      } else {
+        // Template-based directive synthesis (deterministic, no LLM call)
+        sessionEvolution = promptRewriter.synthesizeDirectives({
+          turnResults,
+          consolidatedTrace,
+          conversationHistory,
+        });
+      }
       if (sessionEvolution) {
-        log(`[evaluationRunner] Prompt rewriter generated ${sessionEvolution.split('\n').length - 2} directives for turn ${turnIdx + 1}`, 'info');
+        log(`[evaluationRunner] Prompt rewriter (${promptRewritingStrategy}) generated ${sessionEvolution.split('\n').length - 2} directives for turn ${turnIdx + 1}`, 'info');
       }
     }
 

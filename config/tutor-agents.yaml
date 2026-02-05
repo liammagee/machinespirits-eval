@@ -665,13 +665,18 @@ profiles:
     superego: null
 
   # ===========================================================================
-  # DYNAMIC PROMPT REWRITING CELL (21)
+  # DYNAMIC PROMPT REWRITING CELL (21) - v2
   # ===========================================================================
   # Tests whether feeding deliberation insights back as directives
   # improves multi-turn tutoring outcomes. Compare against cell_7 (static).
+  #
+  # v2 improvements:
+  # - LLM-based directive synthesis (uses superego model for rich context analysis)
+  # - Writing Pad memory activated via learnerId threading
+  # - Dialectical negotiation enabled (memory surfaces in prompts)
 
   cell_21_recog_multi_unified_rewrite:
-    description: "Prompt rewriting: recognition multi-agent with dynamic directive injection"
+    description: "Prompt rewriting v2: LLM directives + active Writing Pad"
     factors:
       prompt_type: recognition
       multi_agent_tutor: true
@@ -680,9 +685,11 @@ profiles:
     learner_architecture: unified_recognition
     recognition_mode: true
     memory_enabled: true
+    writing_pad_enabled: true        # Explicitly enable Writing Pad
+    dialectical_negotiation: true    # Memory surfaces in prompts
     prompt_rewriting:
       enabled: true
-      strategy: template
+      strategy: llm                  # LLM-based synthesis (vs 'template')
     dialogue:
       enabled: true
       max_rounds: 2
