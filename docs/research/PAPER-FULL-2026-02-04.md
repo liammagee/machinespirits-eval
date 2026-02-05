@@ -242,115 +242,9 @@ Two agents collaborate to produce each tutoring response:
 
 The Superego can accept, modify, or reject suggestions. This creates an internal dialogue—proposal, evaluation, revision—that mirrors the external tutor-learner dialogue we're trying to produce.
 
-**Figure 1: Ego/Superego Architecture**
+![Figure 1: Ego/Superego Architecture](figures/figure1.png)
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           TUTOR SYSTEM                                      │
-│                                                                             │
-│  ┌───────────────────┐                                                      │
-│  │   WRITING PAD     │ ◄─────────────────────────────────────────────┐      │
-│  │   (Memory)        │                                               │      │
-│  │                   │    Accumulated traces shape future encounters │      │
-│  │ • Previous turns  │                                               │      │
-│  │ • Learner patterns│                                               │      │
-│  │ • Repair history  │                                               │      │
-│  └────────┬──────────┘                                               │      │
-│           │                                                          │      │
-│           ▼                                                          │      │
-│  ┌────────────────────────────────────────────────┐                  │      │
-│  │                    EGO                         │                  │      │
-│  │                                                │                  │      │
-│  │  Generates pedagogical suggestions using:     │                  │      │
-│  │  • Recognition principles                      │                  │      │
-│  │  • Memory context                              │                  │      │
-│  │  • Decision heuristics                         │                  │      │
-│  │  • Repair rules                                │                  │      │
-│  └────────────────────┬───────────────────────────┘                  │      │
-│                       │                                              │      │
-│                       │ Proposal                                     │      │
-│                       ▼                                              │      │
-│  ┌────────────────────────────────────────────────┐                  │      │
-│  │                 SUPEREGO                       │                  │      │
-│  │                                                │                  │      │
-│  │  Evaluates for recognition quality:           │                  │      │
-│  │  • Genuine engagement vs. mere mention?        │                  │      │
-│  │  • Transformation vs. transfer?                │                  │      │
-│  │  • Honors struggle vs. short-circuits?         │                  │      │
-│  │  • Repairs explicitly vs. silent pivot?        │                  │      │
-│  │                                                │                  │      │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐        │                  │      │
-│  │  │ ACCEPT  │  │ MODIFY  │  │ REJECT  │        │                  │      │
-│  │  └────┬────┘  └────┬────┘  └────┬────┘        │                  │      │
-│  └───────┼────────────┼────────────┼─────────────┘                  │      │
-│          │            │            │                                 │      │
-│          │            │            └──────► Back to Ego ─────────────┘      │
-│          │            │                    (with feedback)                  │
-│          ▼            ▼                                                     │
-│  ┌────────────────────────────────────────────────┐                         │
-│  │            FINAL SUGGESTION                    │                         │
-│  │                                                │                         │
-│  │  Recognition-quality assured response          │                         │
-│  │  ready for delivery to learner                 │                         │
-│  └────────────────────┬───────────────────────────┘                         │
-│                       │                                                     │
-└───────────────────────┼─────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌───────────────────────────────────────────────────┐
-│                    LEARNER                        │
-│                                                   │
-│  Receives suggestion that:                        │
-│  • Engages with their contributions               │
-│  • Creates conditions for transformation          │
-│  • Honors productive struggle                     │
-│  • Repairs previous misalignments                 │
-└───────────────────────────────────────────────────┘
-```
-
-**Figure 2: Recognition vs. Baseline Response Flow**
-
-```
-BASELINE FLOW                           RECOGNITION FLOW
-─────────────────                       ──────────────────
-
-Learner: "I think                       Learner: "I think
-dialectics is like                      dialectics is like
-a spiral..."                            a spiral..."
-     │                                       │
-     ▼                                       ▼
-┌─────────────┐                        ┌─────────────┐
-│ Acknowledge │                        │   Engage    │
-│ "That's     │                        │ "A spiral—  │
-│ interesting"│                        │ what does   │
-└──────┬──────┘                        │ the upward  │
-       │                               │ motion mean │
-       ▼                               │ to you?"    │
-┌─────────────┐                        └──────┬──────┘
-│  Redirect   │                               │
-│ "But the    │                               ▼
-│ key point   │                        ┌─────────────┐
-│ is..."      │                        │   Explore   │
-└──────┬──────┘                        │ "Does it    │
-       │                               │ double back │
-       ▼                               │ or progress │
-┌─────────────┐                        │ strictly?"  │
-│  Instruct   │                        └──────┬──────┘
-│ [delivers   │                               │
-│ predetermined                               ▼
-│ content]    │                        ┌─────────────┐
-└─────────────┘                        │ Synthesize  │
-                                       │ "Your spiral│
-Learner contribution                   │ captures    │
-becomes WAYPOINT                       │ something   │
-                                       │ about       │
-                                       │ aufhebung..."│
-                                       └─────────────┘
-
-                                       Learner contribution
-                                       becomes SITE OF
-                                       JOINT INQUIRY
-```
+![Figure 2: Recognition vs. Baseline Response Flow](figures/figure2.png)
 
 ### 4.2 The Superego as Ghost
 
@@ -605,20 +499,7 @@ A critical question for any recognition-based framework: Does recognition theory
 
 **Statistical Test**: One-way ANOVA F(2,33) = 9.84, p < .001
 
-**Figure 3: Recognition Effect Decomposition**
-
-```
-                0        5        10       15       20
-                │        │        │        │        │
-Total Effect    │████████████████████████████████████│ +20.1 pts
-(recog - base)  │        │        │        │        │
-                │        │        │        │        │
-                │◄─────────────────┤◄───────────────►│
-                │  Prompt Eng.     │  Recognition    │
-                │  +11.4 (57%)     │  +8.7 (43%)     │
-                │        │        │        │        │
-                └────────┴────────┴────────┴────────┘
-```
+![Figure 3: Recognition Effect Decomposition](figures/figure3.png)
 
 **Interpretation**: Recognition theory provides nearly half (43%) of the total improvement beyond what better prompt engineering alone achieves. This validates the theoretical framework—the Hegelian concepts of mutual acknowledgment, productive struggle, and learner-as-subject have measurable value beyond simply writing better instructions.
 
@@ -681,20 +562,7 @@ We tested whether multi-agent synergy generalizes beyond recognition prompts by 
 | Recognition | 72.2 | 81.5 | **+9.2** | <.05 |
 | Enhanced | 83.3 | 83.3 | **+0.0** | n.s. |
 
-**Figure 4: Multi-Agent Synergy by Prompt Type**
-
-```
-                Single-Agent    Multi-Agent     Delta
-                    │               │             │
-Recognition ────────┤     72.2      │     81.5    │  +9.2 ★★
-                    │               │             │
-Enhanced ───────────┤     83.3      │     83.3    │  +0.0
-                    │               │             │
-                    └───────────────┴─────────────┴──────────
-                         60     70     80     90    100
-
-    ★★ = Significant synergy effect (p < .05)
-```
+![Figure 4: Multi-Agent Synergy by Prompt Type](figures/figure4.png)
 
 **Exploratory Finding**: The multi-agent synergy (+9.2 points) appears **specific to recognition prompts** in this Nemotron-based analysis. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in two independent tests:
 
@@ -723,24 +591,7 @@ A critical question for any pedagogical framework: Do findings generalize across
 | Overall avg | 68.0 | 85.9 |
 | Best config | recog+multi (77.3) | recog+multi (94.0) |
 
-**Figure 5: Factor Effects Invert by Domain**
-
-```
-                Philosophy          Elementary
-                (Hegel)            (Fractions)
-                    │                   │
-A: Recognition ─────│█████████████ +13.9│████ +4.4
-                    │                   │
-B: Multi-agent ─────│▌ +0.5             │██████████ +9.9
-                    │                   │
-C: Learner ─────────│██ +2.1            │▌ +0.75
-                    │                   │
-                    └───────────────────┴───────────────
-                    0      5     10     15
-
-    Factor A dominates for abstract/interpretive content
-    Factor B dominates for concrete/procedural content
-```
+![Figure 5: Factor Effects Invert by Domain](figures/figure5.png)
 
 **Key Findings:**
 
@@ -1440,7 +1291,7 @@ Standard dimensions account for 75% of raw weight; recognition dimensions 29.9%;
 
 ## Appendix D: Key Evaluation Run IDs
 
-See Section 10 for the primary run ID table. The four key runs are reproduced here for reference:
+See Section 10 for the primary run ID table. The six key runs are reproduced here for reference:
 
 | Finding | Run ID | Section |
 |---------|--------|---------|
