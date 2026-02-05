@@ -160,6 +160,28 @@ Based on second-pass review. Quick fixes applied directly:
       updated: synergy bullet reframed as error correction + model-dependent interaction;
       domain bullet expanded to include scenario difficulty.
 
+## Short Paper Consistency Update (v2.2) — DONE
+
+Synced PAPER-SHORT-2026-02-04.md with PAPER-FULL-2026-02-04.md:
+
+- [x] Abstract: N=3,000+ → N=562 primary / N=2,700+ total; synergy hedged; domain inversion qualified; memory confound noted
+- [x] Contributions: N=3,000+ → N=562; A×B contribution reframed as exploratory/model-specific; domain gen. notes cross-model replication
+- [x] Section 5.5: Judge "Kimi K2.5" → "Claude Code (Claude Opus)"
+- [x] Section 5.6: N=360→342; N=40→47+60; added replication runs; total 3,000+→562 primary
+- [x] Section 6.2: Cell means and main effects updated to match long paper Table 5 (+13.9/η²=.208 → +10.4/η²=.109)
+- [x] Section 6.3: Added non-replication data (Kimi factorial + dedicated replication); "Key Finding"→"Exploratory Finding"
+- [x] Section 6.6: Added Kimi replication table (+9.9 pts, d≈0.61); noted model-dependence of factor inversion; removed profile performance table (Nemotron-specific)
+- [x] Section 7.2: Updated with Kimi replication data; noted scenario-dependency
+- [x] Section 7.4: Rewritten as "Model-Dependent Interaction" with non-replication evidence
+- [x] Section 8: Added memory confound (item 6); expanded model dependence (item 2); renumbered items
+- [x] Section 9: Conclusion rewritten to match long paper findings (synergy not confirmed, domain gen confirmed, memory confound noted)
+- [x] Section 10: Added replication run IDs
+- [x] Version bumped v2.1 → v2.2
+
+## Long Paper Appendix D Fix — DONE
+
+- [x] "four key runs" → "six key runs" in Appendix D (line 1443)
+
 ## Residual Risks (documented, no action needed)
 
 - **Memory confound**: Recognition profiles bundle memory integration; causal isolation
@@ -178,11 +200,10 @@ Based on second-pass review. Quick fixes applied directly:
       `mood_frustration_to_breakthrough` (d=0.59), `mutual_transformation_journey` (d=0.78).
       Cohen's d corrected from implausible 2.23–3.60 to actual 0.59–0.85.
 
-- [ ] **Box-drawing characters in PDF** — ASCII art diagrams (Figures 1-5) use Unicode
-      box-drawing characters (┌─│└▼►) that don't render in LaTeX monospace font.
-      Options: (a) use `--pdf-engine=lualatex` with a Unicode monospace font,
-      (b) replace ASCII art with proper figure images, or (c) replace box-drawing
-      with plain ASCII characters (+, -, |).
+- [x] **Box-drawing characters in PDF** — FIXED. All 5 ASCII art diagrams (Figures 1-5)
+      replaced with proper PNG images in `docs/research/figures/`. Markdown references
+      updated to `![Figure N](figures/figureN.png)`. No remaining Unicode box-drawing
+      characters in the paper.
 
 - [x] **references.bib location** — FIXED. Bib file copied to `docs/research/references.bib`.
       Short paper path corrected. Duplicates removed. All 29 citations resolve with
