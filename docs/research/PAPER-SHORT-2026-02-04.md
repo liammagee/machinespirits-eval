@@ -5,7 +5,7 @@ author:
     affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
 draft: v2.1
-bibliography: ../references.bib
+bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
