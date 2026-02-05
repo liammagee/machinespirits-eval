@@ -43,7 +43,7 @@ const coreCellNames = cellNames.filter(n => /^cell_[1-8]_/.test(n));
 const coreCells = Object.fromEntries(coreCellNames.map(name => [name, cells[name]]));
 
 // Valid prompt types
-const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo'];
+const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo', 'memory', 'recognition_nomem'];
 
 // ============================================================================
 // CONFIG INTEGRITY
@@ -59,11 +59,13 @@ describe('factorial design — config integrity', () => {
   });
 
   it('each cell has a factors block with prompt_type, multi_agent_tutor, multi_agent_learner', () => {
-    const expectedKeys = ['multi_agent_learner', 'multi_agent_tutor', 'prompt_type'];
+    const requiredKeys = ['multi_agent_learner', 'multi_agent_tutor', 'prompt_type'];
     for (const [name, profile] of Object.entries(cells)) {
       assert.ok(profile.factors, `${name} missing factors block`);
       const keys = Object.keys(profile.factors).sort();
-      assert.deepStrictEqual(keys, expectedKeys, `${name} factors keys mismatch`);
+      for (const k of requiredKeys) {
+        assert.ok(keys.includes(k), `${name} missing required factor key: ${k}`);
+      }
       assert.ok(VALID_PROMPT_TYPES.includes(profile.factors.prompt_type),
         `${name} prompt_type "${profile.factors.prompt_type}" not in ${VALID_PROMPT_TYPES.join(',')}`);
       assert.strictEqual(typeof profile.factors.multi_agent_tutor, 'boolean', `${name}.factors.multi_agent_tutor should be boolean`);
@@ -89,6 +91,8 @@ describe('factorial design — config integrity', () => {
       enhanced: 'enhanced',
       hardwired: 'hardwired',
       placebo: 'placebo',
+      memory: 'memory',
+      recognition_nomem: 'recog',
     };
 
     for (const [name, profile] of Object.entries(cells)) {
@@ -117,6 +121,8 @@ describe('factorial design — prompt file assignment', () => {
     enhanced: 'tutor-ego-enhanced.md',
     hardwired: 'tutor-ego-hardwired.md',
     placebo: 'tutor-ego-placebo.md',
+    memory: 'tutor-ego-memory.md',
+    recognition_nomem: 'tutor-ego-recognition-nomem.md',
   };
 
   // Expected superego prompt file for each prompt_type
