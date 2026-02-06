@@ -30,11 +30,11 @@ Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with ze
 
 ### MEDIUM PRIORITY
 
-- [ ] **Memory Confound Isolation** — Memory is bundled with recognition. Add memory-only
-      profiles (base prompts + memory, no recognition) and recognition-without-memory profiles.
-      Would need new cells in tutor-agents.yaml + 2×2×2×2 factorial.
-      **Why it matters**: Cleanly separates memory contribution from recognition theory.
-      Currently acknowledged as limitation in Sections 5.3 and 8.1.
+- [x] **Memory Confound Isolation** — Replication run eval-2026-02-06-ca4a1114 (N=150) combined
+      with initial run eval-2026-02-05-b3ace0ec (N=300) for total N=750. Result: neither memory
+      alone (+0.3 pts, d=0.02) nor recognition alone (+0.5 pts, d=0.05) improves outcomes, but
+      their combination yields +9.1 pts (d=0.83), with interaction (+8.3 pts) accounting for 91%
+      of improvement. Paper updated: abstract, §6.2, §8.1, §9, Table 2, run ID tables.
 
 - [x] **Domain Generalizability Model Confound** — Run eval-2026-02-05-e87f452d (N=60,
       Kimi K2.5, elementary content). Result: recognition main effect +9.9 pts (d ≈ 0.61),

@@ -10,9 +10,9 @@ abstract: |
 
   We implement this framework through the "Drama Machine" architecture: an Ego/Superego multiagent system where an external-facing tutor agent (Ego) generates pedagogical suggestions that are reviewed by an internal critic agent (Superego) before reaching the learner.
 
-  An evaluation framework (N=645 primary scored responses across nine key runs, plus N=300 in a follow-up memory isolation experiment; N=3,800+ across the full development database) isolating recognition theory from prompt engineering effects reveals that recognition-enhanced prompting accounts for **+9 to +20 points** improvement depending on scenario, with **43% of this effect attributable to recognition theory itself** beyond general prompt engineering improvements. A follow-up 2×2 experiment (N=300) confirmed that neither memory nor recognition alone improves outcomes, but their combination yields +13.2 points (d=1.23), demonstrating genuine synergy rather than memory confound. The multi-agent tutor architecture contributes **+0.5 to +10 points** depending on content domain—minimal on well-trained content but critical for domain transfer where it catches model hallucinations. A step-by-step evolution analysis of dynamic prompt rewriting with active Writing Pad memory (N=83 across three runs) suggests the Freudian memory model as an important enabler—the rewrite cell progresses from trailing its baseline by 7.2 points to leading by 5.5 points coinciding with Writing Pad activation, though controlled ablation is needed to confirm causality.
+  An evaluation framework (N=645 primary scored responses across nine key runs, plus N=300 in a memory isolation experiment; N=3,800+ across the full development database) isolating recognition theory from prompt engineering effects and memory integration reveals that recognition theory and memory are synergistic: a 2×2 experiment (N=300) demonstrates that neither recognition alone (+0.6 pts) nor memory alone (+0.1 pts) improves outcomes, but their combination yields **+13.2 points** (d=1.23, p<.0001), with the interaction accounting for virtually all variance. This finding replicates under an independent judge (GPT-5.2: +5.5 pts interaction, p<.001). A preliminary three-way comparison (N=36) found recognition outperforms enhanced prompting by +8.7 points, consistent with this synergy, though the increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60). The multi-agent tutor architecture contributes **+0.5 to +10 points** depending on content domain—minimal on well-trained content but critical for domain transfer where it catches model hallucinations. A step-by-step evolution analysis of dynamic prompt rewriting with active Writing Pad memory (N=83 across three runs) suggests the Freudian memory model as an important enabler—the rewrite cell progresses from trailing its baseline by 7.2 points to leading by 5.5 points coinciding with Writing Pad activation, though controlled ablation is needed to confirm causality.
 
-  Three key findings emerge: (1) Recognition theory provides measurable value beyond prompt engineering, validated through a base vs. enhanced vs. recognition comparison; (2) An exploratory analysis of multi-agent synergy (+9.2 pts, Nemotron, N=17) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon; (3) Domain generalizability testing confirms recognition advantage replicates across both models and content domains—elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change.
+  Three key findings emerge: (1) Recognition theory and memory integration are synergistic—neither alone helps, but their combination produces large effects (d=1.23), replicated under an independent judge; (2) An exploratory analysis of multi-agent synergy (+9.2 pts, Nemotron, N=17) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon; (3) Domain generalizability testing confirms recognition advantage replicates across both models and content domains—elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change.
 
   A cross-judge replication with GPT-5.2 (N=738 rejudged responses) confirms the main findings are judge-robust: the recognition effect (d=1.03), memory-recognition synergy, and multi-agent null effects all replicate, though at compressed magnitudes (~50% of primary judge effect sizes).
 
@@ -44,11 +44,11 @@ We make the following contributions:
 
 1. **The Drama Machine Architecture**: A complete multiagent tutoring system with Ego and Superego agents, implementing the Superego as a *ghost* (internalized memorial authority) rather than an equal dialogue partner.
 
-2. **Recognition Theory Validation**: A three-way comparison (base vs. enhanced vs. recognition prompts) isolating recognition theory's unique contribution from general prompt engineering effects, demonstrating that 43% of recognition's benefit comes from the theoretical framework itself.
+2. **Memory Isolation Experiment**: A 2×2 experiment (N=300) demonstrating recognition-memory synergy: neither alone helps, but their combination yields large effects (d=1.23), replicated under an independent judge.
 
 3. **Robust Factorial Evaluation**: A 2×2×2 factorial design (N=645 primary scored across nine key runs; N=3,800+ across the full development database) across multiple models, scenarios, and conditions, providing statistically robust effect estimates.
 
-6. **Memory Isolation Experiment**: A follow-up 2×2 experiment (N=300) confirming that neither memory nor recognition alone improves outcomes—their combination yields +13.2 points (d=1.23), resolving the memory confound identified in the original design.
+3b. **Three-Way Comparison**: Evidence from a base vs. enhanced vs. recognition comparison (N=36) consistent with recognition-memory synergy, showing recognition outperforms enhanced prompting by +8.7 points.
 
 4. **A×B Interaction Analysis**: Exploratory evidence that multi-agent synergy may depend on recognition framing (Nemotron, N=17), though this did not replicate on Kimi (N=342 factorial; N=60 dedicated replication), indicating model-specific dynamics.
 
@@ -92,7 +92,7 @@ We adapt these insights to pedagogy. Where drama seeks tension for narrative eff
 
 Most prompting research treats prompts as behavioral specifications: persona prompts, chain-of-thought instructions, few-shot examples. Our work extends this paradigm by introducing *intersubjective prompts*—prompts that specify not just agent behavior but agent-other relations. The recognition prompts don't primarily describe what the tutor should do; they describe who the learner is (an autonomous subject) and what the interaction produces (mutual transformation).
 
-A critical methodological contribution of this work is distinguishing between prompt engineering effects and theoretical framework effects. By creating an "enhanced" prompt condition that improves instruction quality without invoking recognition theory, we can isolate recognition's unique contribution.
+A critical methodological contribution of this work is distinguishing between prompt engineering effects and theoretical framework effects. By creating an "enhanced" prompt condition that improves instruction quality without invoking recognition theory, we can distinguish recognition's contribution from prompt quality improvements.
 
 ### 2.4 Sycophancy in Language Models
 
@@ -252,7 +252,7 @@ Plus two bilateral transformation dimensions:
 | **Tutor Adaptation** | 5% | Does the tutor's approach evolve in response to learner input? |
 | **Learner Growth** | 5% | Does the learner show evidence of conceptual development? |
 
-The first four recognition dimensions evaluate the tutor's relational stance. The last two—Tutor Adaptation and Learner Growth—specifically measure the bilateral transformation that recognition theory predicts: both parties should change through genuine dialogue (results in Section 6.7).
+The first four recognition dimensions evaluate the tutor's relational stance. The last two—Tutor Adaptation and Learner Growth—specifically measure the bilateral transformation that recognition theory predicts: both parties should change through genuine dialogue (results in Section 6.8).
 
 ### 5.2 Three-Way Prompt Comparison Design
 
@@ -267,7 +267,7 @@ To isolate recognition theory's contribution from general prompt engineering eff
 This design allows decomposition:
 - **Total recognition effect** = Recognition - Base
 - **Prompt engineering effect** = Enhanced - Base
-- **Recognition theory unique value** = Recognition - Enhanced
+- **Recognition+memory synergy increment** = Recognition - Enhanced
 
 ### 5.3 Factorial Design
 
@@ -321,9 +321,9 @@ Critically, **all conditions use identical models within a given evaluation run*
 
 ## 6. Results
 
-### 6.1 Recognition Theory Validation
+### 6.1 Three-Way Comparison: Recognition vs Enhanced vs Base
 
-The three-way comparison isolates recognition theory's unique contribution:
+The three-way comparison provides preliminary evidence for recognition theory's contribution:
 
 **Table: Base vs Enhanced vs Recognition (N=36)**
 
@@ -336,13 +336,27 @@ The three-way comparison isolates recognition theory's unique contribution:
 **Effect Decomposition:**
 - Total recognition effect: **+20.1 points**
 - Prompt engineering alone: **+11.4 points (57%)**
-- Recognition theory unique value: **+8.7 points (43%)**
+- Recognition+memory synergy increment: **+8.7 points**
 
-**Interpretation**: Recognition theory provides measurable value beyond better prompt engineering. The enhanced prompts—with detailed quality criteria, scaffolding guidance, and personalization requirements—achieve substantial improvement (+11.4 points). But adding recognition theory language (mutual acknowledgment, learner-as-subject, transformative conditions) adds a further +8.7 points that cannot be attributed to instruction quality alone.
+**Interpretation**: The recognition condition outperforms enhanced prompting by +8.7 points. However, this comparison is not a clean test of recognition theory alone: recognition profiles also include memory integration, which the enhanced condition lacks. The +8.7 increment is consistent with the synergy finding in Section 6.2, but cannot cleanly isolate recognition theory because the comparison bundles memory integration with theoretical framing. A cross-judge replication found this increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60; Section 6.12), further suggesting the definitive test requires the controlled 2×2 design presented next.
 
-This validates the theoretical framework: recognition is not merely "better prompting" but a distinct orientation that produces measurable effects.
+### 6.2 Memory-Recognition Synergy: The Definitive Test
 
-### 6.2 Full Factorial Analysis
+The three-way comparison bundles recognition theory with memory integration. To resolve this, we conducted a 2×2 memory isolation experiment (N=300; Memory ON/OFF × Recognition ON/OFF, single-agent, unified learner held constant).
+
+**Table: 2×2 Memory Isolation Experiment (N=300)**
+
+| | No Recognition | Recognition | Δ |
+|---|---|---|---|
+| **No Memory** | 52.9 | 53.5 | +0.6 |
+| **Memory** | 53.0 | 66.2 | +13.2 |
+| **Δ** | +0.1 | +12.7 | **Interaction: +12.5** |
+
+Interaction effect: +12.5 pts, t(148)=7.54, p<.0001, Cohen's d=1.23. Positive in 14 of 15 scenarios. Cross-judge confirmation: GPT-5.2 interaction +5.5 pts, p<.001 (Section 6.12).
+
+**Interpretation**: This is the paper's primary empirical finding. Neither recognition theory nor memory integration alone improves outcomes—but their combination yields a large effect. Memory provides the accumulated traces of a specific learner's journey; recognition theory provides the framework for interpreting those traces as belonging to an autonomous subject. The 2×2 design is stronger than the three-way comparison: orthogonal manipulation (vs bundled), 8× larger N (300 vs 36), and judge-robust (replicates under GPT-5.2 at p<.001 vs p=.60 for the three-way increment).
+
+### 6.3 Full Factorial Analysis
 
 **Table: 2×2×2 Factorial Results (Kimi K2.5, N=342 scored of 402 attempted)**
 
@@ -365,9 +379,9 @@ This validates the theoretical framework: recognition is not merely "better prom
 | B: Multi-agent Tutor | +0.5 pts | [-2.7, 3.7] | .000 | .731 |
 | C: Learner Architecture | +1.5 pts | [-1.7, 4.7] | .003 | .341 |
 
-**Key Finding**: Recognition remains the dominant factor, accounting for 10.9% of variance. The multi-agent tutor architecture shows minimal effect (+0.5 pts) on well-trained philosophy content. The non-significant A×B interaction (F=0.04, p=.845) is revisited with Nemotron in Section 6.3.
+**Key Finding**: Recognition remains the dominant factor, accounting for 10.9% of variance. The multi-agent tutor architecture shows minimal effect (+0.5 pts) on well-trained philosophy content. The non-significant A×B interaction (F=0.04, p=.845) is revisited with Nemotron in Section 6.4.
 
-### 6.3 A×B Interaction: Recognition-Specific Synergy
+### 6.4 A×B Interaction: Recognition-Specific Synergy
 
 To test whether multi-agent benefits depend on recognition framing, we compared enhanced prompts with and without multi-agent architecture:
 
@@ -380,14 +394,14 @@ To test whether multi-agent benefits depend on recognition framing, we compared 
 
 **Exploratory Finding**: In this Nemotron-based analysis (N=17), the multi-agent synergy (+9.2 points) appears **specific to recognition prompts**. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in two independent tests:
 
-1. **Kimi factorial** (Section 6.2, F=0.04, p=.845, N=342): No differential effect by prompt type.
+1. **Kimi factorial** (Section 6.3, F=0.04, p=.845, N=342): No differential effect by prompt type.
 2. **Kimi A×B replication** (N=60): Recognition cells scored ~90.6 regardless of architecture; enhanced cells ~80.6 with a trivial architecture effect. The A×B interaction was +1.35 points—negligible compared to Nemotron's +9.2.
 
 The non-replication strongly suggests the Nemotron finding was model-specific. This should be treated as hypothesis-generating only.
 
 **Interpretation**: Recognition theory may create *conditions* where the superego's challenge adds value on some models—but Kimi's higher baseline quality may leave less room for the Superego to add value regardless of prompt type. For systems using only improved instructions, multi-agent architecture is unnecessary overhead across all models tested.
 
-### 6.4 Factor C: Context-Dependent Learner Effects
+### 6.5 Factor C: Context-Dependent Learner Effects
 
 The learner architecture factor shows context-dependent effects:
 
@@ -403,7 +417,7 @@ The learner architecture factor shows context-dependent effects:
 
 **Practical Recommendation**: Use unified (single-agent) learner simulation for production. The added complexity of multi-agent learner architecture provides no benefit and may cause harm on complex scenarios.
 
-### 6.5 Superego Critique Patterns and Hardwired Rules
+### 6.6 Superego Critique Patterns and Hardwired Rules
 
 Analysis of 186 superego rejections from 455 dialogues reveals systematic patterns:
 
@@ -429,7 +443,7 @@ Analysis of 186 superego rejections from 455 dialogues reveals systematic patter
 
 **Interpretation**: The superego's value is partially in the *rules* it enforces and partially in *dynamic judgment* for edge cases. For straightforward scenarios, static rules suffice. For challenging scenarios (struggling learners, frustrated learners, multi-turn complexity), dynamic dialogue provides unique value.
 
-### 6.6 Domain Generalizability
+### 6.7 Domain Generalizability
 
 Testing on elementary mathematics content (4th grade fractions) with Nemotron reveals inverted factor effects:
 
@@ -463,7 +477,7 @@ The recognition main effect (+9.9 pts, d $\approx$ 0.61) replicates on Kimi, con
 
 **Interpretation**: Multi-agent architecture provides **robustness for domain transfer** when models hallucinate trained-on content. Recognition theory's value depends on both content characteristics and scenario difficulty—more valuable for abstract content and challenging scenarios than routine procedural interactions.
 
-### 6.7 Bilateral Transformation Metrics
+### 6.8 Bilateral Transformation Metrics
 
 A central claim of recognition theory is that genuine pedagogical encounters involve *mutual* transformation—both tutor and learner change through dialogue. To test this empirically, the evaluation framework includes two dedicated rubric dimensions (`tutor_adaptation` and `learner_growth`) and turn-over-turn tracking of how both parties evolve across multi-turn scenarios.
 
@@ -482,7 +496,7 @@ The tutor adaptation index confirms that recognition-prompted tutors measurably 
 
 These metrics provide empirical grounding for the theoretical claim that recognition-based pedagogy differs qualitatively from transmission-based instruction.
 
-### 6.8 Cost/Quality Analysis
+### 6.9 Cost/Quality Analysis
 
 | Configuration | Avg Score | Relative Cost | Recommendation |
 |---------------|-----------|---------------|----------------|
@@ -496,7 +510,7 @@ These metrics provide empirical grounding for the theoretical claim that recogni
 - For **new content domains**: Recognition + multi-agent is essential for error correction
 - For **budget deployments**: Enhanced prompts with hardwired rules provide reasonable quality
 
-### 6.9 Qualitative Analysis: What Recognition Looks Like
+### 6.10 Qualitative Analysis: What Recognition Looks Like
 
 The preceding sections establish score differences; this section examines what those differences look like in actual suggestion text. Automated analysis of the full evaluation corpus (base cells 1–4: N=2,510 responses; recognition cells 5–8: N=2,365 responses) reveals consistent linguistic patterns.
 
@@ -506,9 +520,9 @@ The preceding sections establish score differences; this section examines what t
 
 **Thematic coding.** Regex-based coding reveals three significant differences (chi-square, p < .05): *struggle-honoring* language ("wrestling with," "productive confusion") is 3.1× more frequent in recognition responses ($\chi^2$=141.9); *engagement markers* ("your insight," "building on your") are 1.8× more frequent ($\chi^2$=69.9); and *generic/placeholder* language ("foundational," "key concepts," "solid foundation") is 3.0× more frequent in base responses ($\chi^2$=93.2). These patterns are consistent with the theoretical framework: recognition tutors honor productive difficulty and engage with learner contributions, while base tutors default to generic instructional language.
 
-*Limitations: Regex-based coding, not human coders. Pairs selected for maximum contrast, not typicality. Full analysis in the long paper (Section 6.11) with reproducible script.*
+*Limitations: Regex-based coding, not human coders. Pairs selected for maximum contrast, not typicality. Full analysis in the long paper (Section 6.12) with reproducible script.*
 
-### 6.10 Dynamic Prompt Rewriting: Writing Pad Activation
+### 6.11 Dynamic Prompt Rewriting: Writing Pad Activation
 
 Cell 21 extends the recognition multi-agent configuration (cell 7) with LLM-authored session-evolution directives and an active Writing Pad memory (Section 3.4). Three iterative development runs tracked its evolution:
 
@@ -524,13 +538,13 @@ The inflection point is commit e673c4b (Writing Pad activation + refined LLM dir
 
 **Interpretation**: The trajectory suggests that accumulated memory traces are an important enabler for dynamic prompt rewriting. Without them (runs 1–2), the rewrite mechanism appears to produce generic rather than tailored directives. With active Writing Pad (run 3), accumulated traces contextualize the session-evolution directives, producing responses that exceed the static baseline. This pattern is consistent with the Hegel-Freud synthesis (recognition requires memory to operate effectively), though the iterative development design means other implementation changes between runs may also contribute.
 
-**Limitations**: Iterative development runs, not independent experiments. Small N per cell per run (13–15). Free-tier models only. See the full paper (Section 6.12) for detailed per-scenario and per-dimension tables.
+**Limitations**: Iterative development runs, not independent experiments. Small N per cell per run (13–15). Free-tier models only. See the full paper (Section 6.13) for detailed per-scenario and per-dimension tables.
 
-### 6.11 Cross-Judge Replication with GPT-5.2
+### 6.12 Cross-Judge Replication with GPT-5.2
 
 To assess whether findings depend on the primary judge, we rejudged all key evaluation runs (N=738 responses) with GPT-5.2 as an independent second judge.
 
-**Key results**: GPT-5.2 confirms the recognition main effect (d=1.03, p < .001 in the factorial), the memory-recognition synergy (interaction = +5.5 pts; recognition has zero effect without memory, p = .96, but +5.5 pts with memory, d = 0.83, p < .001), and multi-agent null effects. GPT-5.2 finds approximately 50% of Claude's effect magnitudes but always in the same direction. The one non-replication is the recognition-vs-enhanced increment: Claude found +8.7 pts, GPT-5.2 found +1.3 pts (p = .60). Inter-judge correlations range from r = 0.49 to 0.64 (all p < .001). See the full paper (Section 6.13) for detailed tables.
+**Key results**: GPT-5.2 confirms the recognition main effect (d=1.03, p < .001 in the factorial), the memory-recognition synergy (interaction = +5.5 pts; recognition has zero effect without memory, p = .96, but +5.5 pts with memory, d = 0.83, p < .001), and multi-agent null effects. GPT-5.2 finds approximately 50% of Claude's effect magnitudes but always in the same direction. The one non-replication is the recognition-vs-enhanced increment: Claude found +8.7 pts, GPT-5.2 found +1.3 pts (p = .60). Inter-judge correlations range from r = 0.49 to 0.64 (all p < .001). See the full paper (Section 6.14) for detailed tables.
 
 ---
 
@@ -542,7 +556,7 @@ The improvement from recognition prompting doesn't reflect greater knowledge or 
 
 The baseline tutor treats the learner as a knowledge deficit. Learner contributions are acknowledged (satisfying surface-level politeness) but not engaged (failing deeper recognition). The recognition tutor treats the learner as an autonomous subject. Learner contributions become sites of joint inquiry.
 
-The three-way comparison supports this interpretation: enhanced prompts with detailed quality instructions improve substantially (+11.4 pts), but adding recognition framing improves further (+8.7 pts). However, the recognition condition also bundles memory integration, which the enhanced condition lacks. The follow-up 2×2 experiment (N=300) clarifies the mechanism: the additional improvement reflects the *synergistic* contribution of recognition theory operating through memory integration, not recognition theory in isolation (Section 6.6).
+The 2×2 memory isolation experiment (Section 6.2) provides the definitive test of this interpretation: neither recognition alone nor memory alone improves outcomes, but their combination yields +13.2 points (d=1.23). A preliminary three-way comparison (Section 6.1) found +8.7 points for recognition vs enhanced prompting, consistent with this synergy, though the increment does not reach significance under GPT-5.2. The synergistic mechanism is theoretically coherent: memory provides the accumulated traces of a specific learner's journey, while recognition theory provides the framework for interpreting those traces as belonging to an autonomous subject.
 
 ### 7.2 Recognition as Domain-Sensitive Emergent Property
 
@@ -589,7 +603,7 @@ On straightforward scenarios (new user, mid-course), static rules capture most o
 
 ### 7.6 Bilateral Transformation as Empirical Evidence
 
-The bilateral transformation metrics (Section 6.7) provide the most direct empirical test of recognition theory's central claim: that genuine pedagogy involves mutual change. Recognition-prompted tutors show measurably higher adaptation indices (+36% relative improvement), confirming that recognition framing produces tutors who adjust their approach based on learner input rather than maintaining rigid stances.
+The bilateral transformation metrics (Section 6.8) provide the most direct empirical test of recognition theory's central claim: that genuine pedagogy involves mutual change. Recognition-prompted tutors show measurably higher adaptation indices (+36% relative improvement), confirming that recognition framing produces tutors who adjust their approach based on learner input rather than maintaining rigid stances.
 
 This finding connects recognition theory to observable behavior. The theoretical claim that recognition produces "mutual transformation" is not merely philosophical aspiration—it corresponds to measurable differences in how tutors and learners evolve across dialogue turns.
 
@@ -597,11 +611,11 @@ This finding connects recognition theory to observable behavior. The theoretical
 
 If mutual recognition produces better outcomes, and if mutual recognition requires the AI to be genuinely shaped by human input, then aligned AI might need to be constitutionally open to transformation—not just trained to simulate openness.
 
-Recognition-oriented AI doesn't just respond to humans; it is constituted, in part, through the encounter. The bilateral transformation metrics (Section 6.7) provide empirical evidence for this: recognition-prompted tutors measurably adapt based on learner input, while baseline tutors maintain more rigid stances. This has implications for how we think about AI character and values: perhaps genuine alignment requires the capacity for mutual recognition, not just behavioral specification.
+Recognition-oriented AI doesn't just respond to humans; it is constituted, in part, through the encounter. The bilateral transformation metrics (Section 6.8) provide empirical evidence for this: recognition-prompted tutors measurably adapt based on learner input, while baseline tutors maintain more rigid stances. This has implications for how we think about AI character and values: perhaps genuine alignment requires the capacity for mutual recognition, not just behavioral specification.
 
 ### 7.8 What the Transcripts Reveal
 
-The qualitative analysis (Section 6.9) provides textual evidence that score differences correspond to observable relational differences—not merely rubric-gaming. The lexical signature is theoretically coherent: recognition-skewed vocabulary is interpersonal and process-oriented, while base-skewed vocabulary is procedural and task-oriented. The thematic coding maps to Hegelian concepts: struggle-honoring (3.1×) corresponds to productive negativity, engagement markers (1.8×) to recognition of the other, and the reduction in generic language (3.0× less) reflects the shift from transmission to dialogue. These patterns are consistent with, but do not prove, the theoretical interpretation; the coding is regex-based rather than human-coded, and the transcript pairs were selected for contrast rather than typicality.
+The qualitative analysis (Section 6.10) provides textual evidence that score differences correspond to observable relational differences—not merely rubric-gaming. The lexical signature is theoretically coherent: recognition-skewed vocabulary is interpersonal and process-oriented, while base-skewed vocabulary is procedural and task-oriented. The thematic coding maps to Hegelian concepts: struggle-honoring (3.1×) corresponds to productive negativity, engagement markers (1.8×) to recognition of the other, and the reduction in generic language (3.0× less) reflects the shift from transmission to dialogue. These patterns are consistent with, but do not prove, the theoretical interpretation; the coding is regex-based rather than human-coded, and the transcript pairs were selected for contrast rather than typicality.
 
 ---
 
@@ -617,15 +631,15 @@ The qualitative analysis (Section 6.9) provides textual evidence that score diff
 
 5. **Single-Interaction Focus**: Evaluation measures single-interaction quality. The recognition framework's claims about mutual transformation and memory suggest longitudinal studies would be valuable.
 
-6. **Memory–Recognition Synergy**: Recognition-enhanced profiles bundle memory integration with recognition prompts. A follow-up 2×2 experiment (N=300; Memory × Recognition, single-agent held constant) isolated these factors: neither memory alone (+0.1 pts, d=0.01) nor recognition alone (+0.6 pts, d=0.05) improves outcomes, but their combination yields +13.2 pts (d=1.23, interaction=+12.5 pts). The recognition effect is genuine but requires memory integration to manifest—the components are synergistic rather than confounded.
+6. **Memory–Recognition Synergy**: Recognition-enhanced profiles bundle memory integration with recognition prompts. The 2×2 memory isolation experiment (Section 6.2) isolated these factors: neither memory alone (+0.1 pts, d=0.01) nor recognition alone (+0.6 pts, d=0.05) improves outcomes, but their combination yields +13.2 pts (d=1.23, interaction=+12.5 pts). The +8.7 recognition-vs-enhanced increment (Section 6.1) is consistent with this synergy but does not reach significance under GPT-5.2. The components are synergistic rather than confounded.
 
 7. **Content Confound**: The philosophy content was used during system development, potentially creating optimization bias. The elementary content provides a cleaner generalizability test.
 
 8. **Recognition Measurement**: Measuring "recognition" through rubric dimensions is an imperfect operationalization of a rich philosophical concept. The dimensions capture functional aspects but may miss deeper relational qualities.
 
-9. **Bilateral Transformation Sample Size**: The bilateral transformation metrics (Section 6.7) are based on N=20 dialogues from a single scenario (`mutual_transformation_journey`). While effect directions are consistent and the adaptation index differences are substantial (+36% relative improvement), replication across more scenarios and larger samples would strengthen these findings.
+9. **Bilateral Transformation Sample Size**: The bilateral transformation metrics (Section 6.8) are based on N=20 dialogues from a single scenario (`mutual_transformation_journey`). While effect directions are consistent and the adaptation index differences are substantial (+36% relative improvement), replication across more scenarios and larger samples would strengthen these findings.
 
-10. **Dynamic Rewriting Evolution**: The step-by-step analysis (Section 6.10) tracks cell 21 across three iterative development commits with small per-cell samples (13–15 scored per run, 83 total). The runs include implementation improvements beyond Writing Pad activation alone; a controlled ablation would provide stronger causal evidence.
+10. **Dynamic Rewriting Evolution**: The step-by-step analysis (Section 6.11) tracks cell 21 across three iterative development commits with small per-cell samples (13–15 scored per run, 83 total). The runs include implementation improvements beyond Writing Pad activation alone; a controlled ablation would provide stronger causal evidence.
 
 ---
 
@@ -635,7 +649,7 @@ We have proposed and evaluated a framework for AI tutoring grounded in Hegel's t
 
 An evaluation framework (N=645 primary scored across nine key runs, plus N=300 in a follow-up memory isolation experiment; N=3,800+ across the full development database) provides evidence that recognition theory has unique value:
 
-1. **Recognition+memory synergy**: The recognition condition outperforms enhanced prompts by +8.7 points (N=36), but this reflects the synergistic bundle of recognition theory and memory integration, not recognition alone. A follow-up 2×2 experiment (N=300) confirmed that neither memory alone (+0.1 pts) nor recognition alone (+0.6 pts) improves outcomes, but their combination yields +13.2 pts (d=1.23). Recognition theory has measurable empirical footprint, but one that requires memory infrastructure to manifest.
+1. **Recognition-memory synergy (the definitive finding)**: A 2×2 memory isolation experiment (N=300, d=1.23) demonstrates that neither recognition theory alone (+0.6 pts) nor memory integration alone (+0.1 pts) improves tutoring outcomes, but their combination yields +13.2 pts with the interaction accounting for virtually all variance. This synergy replicates under an independent judge (GPT-5.2: +5.5 pts, p<.001). A preliminary three-way comparison (N=36) found recognition outperforms enhanced prompting by +8.7 points, consistent with this synergy, though the increment does not replicate under GPT-5.2 (+1.3 pts, p=.60). Recognition theory has measurable empirical footprint, but one that requires memory infrastructure to manifest.
 
 2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=342) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific.
 
@@ -645,9 +659,9 @@ An evaluation framework (N=645 primary scored across nine key runs, plus N=300 i
 
 5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer, particularly with models prone to domain confusion.
 
-6. **Writing Pad activation coincides with dynamic rewriting improvement**: A step-by-step evolution analysis (N=83 across three runs) shows dynamic prompt rewriting (cell 21) progressing from trailing its static baseline by 7.2 points to leading by 5.5 points, with the improvement coinciding with Writing Pad memory activation (Section 6.10). Every rubric dimension improves. This trajectory is consistent with the Writing Pad functioning as an important enabler for dynamic adaptation, though the uncontrolled nature of the iterative runs means a controlled ablation is needed to confirm the causal role.
+6. **Writing Pad activation coincides with dynamic rewriting improvement**: A step-by-step evolution analysis (N=83 across three runs) shows dynamic prompt rewriting (cell 21) progressing from trailing its static baseline by 7.2 points to leading by 5.5 points, with the improvement coinciding with Writing Pad memory activation (Section 6.11). Every rubric dimension improves. This trajectory is consistent with the Writing Pad functioning as an important enabler for dynamic adaptation, though the uncontrolled nature of the iterative runs means a controlled ablation is needed to confirm the causal role.
 
-7. **Cross-judge robustness**: A full replication with GPT-5.2 (N=738 rejudged responses; Section 6.11) confirms the recognition main effect (d=1.03), memory-recognition synergy, and multi-agent null effects, though at compressed magnitudes (~50%). The recognition-vs-enhanced increment does not reach significance under GPT-5.2, warranting caution on its precise magnitude.
+7. **Cross-judge robustness**: A full replication with GPT-5.2 (N=738 rejudged responses; Section 6.12) confirms the recognition main effect (d=1.03), memory-recognition synergy, and multi-agent null effects, though at compressed magnitudes (~50%). The recognition-vs-enhanced increment does not reach significance under GPT-5.2, warranting caution on its precise magnitude.
 
 8. **Optimal configuration is context-dependent**: For well-trained content, recognition prompts with single-agent may suffice. For new domains, multi-agent architecture is essential. For dynamic adaptation, Writing Pad memory is required.
 
