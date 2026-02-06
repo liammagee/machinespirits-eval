@@ -274,6 +274,50 @@ Critical review identified 6 issues; 5 fixed, 1 residual.
       rounded to 0.0 but had nonzero sub-decimal rates. Changed to 0.04 and 0.09 (per 1000 words),
       making the 2.16× ratio visually consistent.
 
+## ChatGPT Review #2 Fixes (2026-02-06)
+
+8 issues reviewed; 6 addressed as text fixes, 2 deferred to future runs.
+
+### Text fixes applied
+
+- [x] **[CRITICAL] +8.7 unique value over-attributed** — FIXED. Section 6.1 interpretation (full)
+      and Section 7.1 (short) softened to acknowledge memory bundling. Conclusion finding #1 in
+      both papers reframed as "Recognition+memory synergy" rather than "43% unique contribution."
+
+- [x] **[HIGH] Writing Pad causal claim too strong** — FIXED. Section 6.12 (full) and 6.10 (short)
+      softened from "critical enabler" / "validates" to "important enabler" / "suggests" / "coincides
+      with." Conclusion finding #6 in both papers adds ablation caveat. Abstract (short) softened.
+
+- [x] **[HIGH] Missing attrition analysis** — FIXED. Section 5.5 item 2 (full) now notes
+      exclusions are evenly distributed across cells (39–45 scored per cell), with no differential
+      attrition between conditions. Data verified from database.
+
+- [x] **[MEDIUM] Multi-turn table provenance** — FIXED. Section 6.9 (full) now notes N=161/277/165
+      are pooled across the full development database (not a single run), with interpretation caveat.
+
+- [x] **[MEDIUM] Generalizability language overstated** — FIXED. Conclusion finding #4 in both
+      papers changed from "Domain generalizability confirmed" to "Domain generalizability" with
+      qualifier that broader domain coverage is needed.
+
+- [x] **[MEDIUM] Quant presentation issues** — Already fixed in prior round (Unicode, Table 16).
+
+### Already addressed in prior rounds
+
+- [x] **[CRITICAL] Freud source mismatch** — Already fixed: @freud1925 now points to Mystic
+      Writing Pad (SE XIX, pp. 227–232), not Die Verneinung.
+
+### Deferred to future evaluation runs
+
+- [ ] **[HIGH] Single LLM judge** — Already discussed extensively in Section 5.7 (full paper).
+      Inter-judge reliability data exists (Section 5.7). To strengthen: run key results (factorial,
+      recognition validation) with a second primary judge model and compare. Not a text fix.
+
+### Open questions (require strategic decision, not text fix)
+
+- [ ] **Venue targeting**: Empirical ML/EdTech venue (needs stronger statistical rigor, more
+      controlled designs) vs theory-forward interdisciplinary venue (can foreground conceptual
+      contribution). Decision affects which criticisms to prioritize.
+
 ### Residual: 2 xelatex ≥ warnings
 
 Two `Missing character: ≥` warnings remain in the full paper PDF build. These do NOT come from

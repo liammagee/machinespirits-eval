@@ -402,7 +402,7 @@ We conducted complementary analyses:
 
 1. **Recognition Theory Validation** (Section 6.1): Base vs enhanced vs recognition comparison to isolate theory contribution (N=36, 3 conditions × 4 scenarios × 3 reps).
 
-2. **Full 2×2×2 Factorial** (Section 6.2): Three factors (Recognition × Architecture × Learner) across 15 scenarios with 3 replications per cell (N=342 scored of 402 attempted; 60 responses excluded due to model failures or empty content).
+2. **Full 2×2×2 Factorial** (Section 6.2): Three factors (Recognition × Architecture × Learner) across 15 scenarios with 3 replications per cell (N=342 scored of 402 attempted; 60 responses excluded due to model failures or empty content). Exclusions are evenly distributed across cells (39–45 scored per cell), with no differential attrition between recognition and base conditions.
 
 3. **A×B Interaction Analysis** (Section 6.3): Tests whether multi-agent synergy requires recognition prompts (N=17).
 
@@ -501,9 +501,9 @@ A critical question for any recognition-based framework: Does recognition theory
 
 ![Recognition Effect Decomposition](figures/figure3.png)
 
-**Interpretation**: Recognition theory provides nearly half (43%) of the total improvement beyond what better prompt engineering alone achieves. This validates the theoretical framework—the Hegelian concepts of mutual acknowledgment, productive struggle, and learner-as-subject have measurable value beyond simply writing better instructions.
+**Interpretation**: The recognition condition outperforms the enhanced condition by +8.7 points—nearly half (43%) of the total improvement. However, this comparison is not a clean test of recognition theory alone: recognition profiles also include memory integration, which the enhanced condition lacks (see Section 5.3). The follow-up 2×2 memory isolation experiment (N=300) clarifies the mechanism: neither memory alone (+0.1 pts) nor recognition alone (+0.6 pts) improves outcomes, but their combination yields +13.2 pts (d=1.23). The +8.7 therefore reflects the *synergistic* contribution of recognition theory operating through memory integration, not recognition theory in isolation.
 
-This directly addresses a common objection: that any benefit from recognition prompts is merely "better prompting" rather than genuine theoretical contribution. The enhanced condition controls for prompt quality improvements while lacking the recognition-theoretic framing. Recognition's unique contribution—the +8.7 points beyond enhanced—represents the theory's empirical footprint.
+This nuance is important: the Hegelian concepts of mutual acknowledgment, productive struggle, and learner-as-subject produce measurable effects, but only when paired with the memory infrastructure that makes recognition of a *specific* learner possible. The enhanced condition controls for instruction quality but lacks both the theoretical framing and the memory substrate. Recognition theory's empirical footprint is real but inherently relational—it requires the accumulated traces (Section 3.4) that transform generic tutoring into recognition of a particular subject.
 
 ### 6.2 Full Factorial Analysis: 2×2×2 Design
 
@@ -710,7 +710,7 @@ The larger effect on recognition dimensions (+21.8) is expected and not concerni
 
 ### 6.9 Multi-Turn Scenario Results
 
-To test whether recognition quality is maintained over extended interactions, we examine results from the three multi-turn scenarios (3–5 dialogue rounds each). These scenarios are distinct from the single-turn scenarios reported in Section 6.2; they require sustained engagement across multiple exchanges.
+To test whether recognition quality is maintained over extended interactions, we examine results from the three multi-turn scenarios (3–5 dialogue rounds each). These scenarios are distinct from the single-turn scenarios reported in Section 6.2; they require sustained engagement across multiple exchanges. The sample sizes below (N=161, 277, 165) are pooled across the full development database (all runs containing these scenarios), not from a single evaluation run. They therefore include responses generated under varying model configurations and implementation stages. The pooled analysis maximizes statistical power but means the results should be interpreted as describing the *average* effect across development iterations.
 
 **Table 12: Multi-Turn Scenario Results**
 
@@ -893,9 +893,9 @@ Cell 21 improves on every scenario across the three runs, with the largest gain 
 
 Every rubric dimension improves from run 1 to run 3, with the largest gains in specificity (+0.87) and relevance (+0.81)—precisely the dimensions where accumulated memory traces should enable more contextually grounded responses.
 
-**Interpretation**: The Writing Pad memory model is not merely a theoretical construct—it is the critical operational enabler for dynamic prompt rewriting. Without accumulated memory traces (runs 1–2), the rewrite mechanism lacks the contextual material needed to generate useful session-evolution directives. The LLM-authored directives effectively become generic rather than tailored. With active Writing Pad memory (run 3), the rewrite architecture can draw on accumulated traces to contextualize its directives, producing responses that are more relevant, specific, and pedagogically grounded.
+**Interpretation**: The trajectory suggests that accumulated memory traces are an important enabler for dynamic prompt rewriting. Without them (runs 1–2), the rewrite mechanism appears to lack the contextual material needed to generate useful session-evolution directives—the LLM-authored directives become generic rather than tailored. With active Writing Pad memory (run 3), the rewrite architecture can draw on accumulated traces to contextualize its directives, producing responses that are more relevant, specific, and pedagogically grounded.
 
-This finding validates the Hegel-Freud synthesis described in Section 3.5: recognition requires memory (the wax base of accumulated traces) to operate effectively. The rewrite mechanism provides the *what* (dynamic adaptation to the session), while the Writing Pad provides the *how* (accumulated contextual material). Neither component is sufficient alone—runs 1–2 demonstrate that the rewrite mechanism without effective memory integration produces results indistinguishable from or worse than the static baseline.
+This pattern is consistent with the Hegel-Freud synthesis described in Section 3.5: recognition requires memory (the wax base of accumulated traces) to operate effectively. The rewrite mechanism provides the *what* (dynamic adaptation to the session), while the Writing Pad provides the *how* (accumulated contextual material). Runs 1–2, where the rewrite mechanism without effective memory integration produces results indistinguishable from or worse than the static baseline, are consistent with this interpretation—though the uncontrolled nature of the iterative development means other implementation changes may also contribute (see Limitations below).
 
 **Limitations**: The three runs represent iterative development commits, not independent experiments—each run includes implementation improvements beyond just Writing Pad activation. The sample size per cell per run is small (13–15 scored responses). Both cells use a free-tier model (Nemotron) with Kimi K2.5 as superego, and results may not generalize to other model combinations. The step-by-step trajectory is suggestive rather than definitive; a controlled ablation isolating Writing Pad activation alone would strengthen the causal interpretation.
 
@@ -1067,17 +1067,17 @@ We have proposed and evaluated a framework for AI tutoring grounded in Hegel's t
 
 An evaluation framework (N=645 primary scored across nine key runs, plus N=300 in a follow-up memory isolation experiment; N=3,800+ across the full development database) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
 
-1. **43% unique contribution**: Recognition adds +8.7 points beyond what better prompt engineering alone achieves (N=36)—the theoretical framework has measurable empirical footprint. A follow-up memory isolation experiment (N=300) confirmed this is not a memory artefact: neither memory nor recognition alone improves outcomes, but their combination yields +13.2 pts (d=1.23), demonstrating genuine synergy between theoretical framework and memory integration.
+1. **Recognition+memory synergy**: The recognition condition outperforms enhanced prompts by +8.7 points (N=36), but this reflects the synergistic bundle of recognition theory and memory integration, not recognition alone. A follow-up 2×2 experiment (N=300) confirmed that neither memory alone (+0.1 pts) nor recognition alone (+0.6 pts) improves outcomes, but their combination yields +13.2 pts (d=1.23). Recognition theory has measurable empirical footprint, but one that requires memory infrastructure to manifest.
 
 2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=342) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific and remains a hypothesis for future investigation.
 
 3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 
-4. **Domain generalizability confirmed**: Recognition advantage replicates across both philosophy and elementary math, and across both Kimi and Nemotron models. On elementary content with Kimi (N=60), recognition provides +9.9 pts (d $\approx$ 0.61), with effects concentrated in challenging scenarios (up to +23.8 pts for frustrated learners). The factor inversion (architecture dominance on elementary) from the Nemotron analysis is partly model-dependent.
+4. **Domain generalizability**: Recognition advantage replicates across both philosophy and elementary math, and across both Kimi and Nemotron models, though with only two content domains tested. On elementary content with Kimi (N=60), recognition provides +9.9 pts (d $\approx$ 0.61), with effects concentrated in challenging scenarios (up to +23.8 pts for frustrated learners). The factor inversion (architecture dominance on elementary) from the Nemotron analysis is partly model-dependent. Broader domain coverage (technical STEM, creative writing, social-emotional content) is needed before generalizability can be considered established.
 
 5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer, particularly with models prone to domain confusion.
 
-6. **Writing Pad activation enables dynamic rewriting**: A step-by-step evolution analysis (N=83 across three runs) shows that dynamic prompt rewriting (cell 21) progresses from trailing its static baseline by 7.2 points to leading by 5.5 points once Writing Pad memory is activated (Section 6.12). Every rubric dimension improves. The Freudian Mystic Writing Pad (Section 3.4) is not merely a theoretical construct but the critical enabler for dynamic adaptation—memory provides the material that makes session-evolution directives contextually meaningful.
+6. **Writing Pad activation coincides with dynamic rewriting improvement**: A step-by-step evolution analysis (N=83 across three iterative development runs) shows that dynamic prompt rewriting (cell 21) progresses from trailing its static baseline by 7.2 points to leading by 5.5 points, with the improvement coinciding with Writing Pad memory activation (Section 6.12). Every rubric dimension improves. This trajectory is consistent with the Freudian Mystic Writing Pad (Section 3.4) functioning as an important enabler for dynamic adaptation, though the uncontrolled nature of the iterative runs means a controlled ablation is needed to confirm the causal role.
 
 These results suggest that operationalizing philosophical theories of intersubjectivity can produce concrete improvements in AI system performance. They also reveal boundary conditions: recognition theory's value varies by content domain, and multi-agent architecture's value depends on whether recognition framing is present.
 
