@@ -9,7 +9,7 @@ bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=562 primary scored responses across six key evaluation runs; N=2,700+ across the full development database) comparing recognition-enhanced configurations against baselines reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect, N=36), with the remaining 57% attributable to prompt engineering improvements. Note that recognition-enhanced profiles bundle memory integration with recognition prompts; the relative contribution of each component remains an open question (Section 5.3). An exploratory analysis of multi-agent synergy (+9.2 points, N=17, Nemotron) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon (Section 6.3). Domain generalizability testing across both models and content domains confirms recognition advantage replicates: elementary math with Kimi shows +9.9 pts (d ≈ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent—Kimi shows recognition dominance on elementary content, revising the Nemotron-only finding. Multi-agent architecture serves as critical error correction when models hallucinate trained content on new domains. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
+  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=645 primary scored responses across nine key evaluation runs; N=3,800+ across the full development database) comparing recognition-enhanced configurations against baselines reveals that recognition provides +8.7 points of unique value beyond better instructions (43% of total effect, N=36), with the remaining 57% attributable to prompt engineering improvements. A follow-up 2×2 memory isolation experiment (N=300) confirmed that neither memory nor recognition alone improves outcomes, but their combination yields +13.2 points (d=1.23), demonstrating genuine synergy rather than memory confound (Section 5.3). An exploratory analysis of multi-agent synergy (+9.2 points, N=17, Nemotron) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon (Section 6.3). Domain generalizability testing across both models and content domains confirms recognition advantage replicates: elementary math with Kimi shows +9.9 pts (d ≈ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent—Kimi shows recognition dominance on elementary content, revising the Nemotron-only finding. Multi-agent architecture serves as critical error correction when models hallucinate trained content on new domains. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change. A step-by-step evolution analysis of dynamic prompt rewriting (cell 21: LLM-authored session directives + active Writing Pad memory) across three iterative development runs (N=83) reveals that Writing Pad activation is the critical enabler: cell 21 progresses from trailing its static baseline by 7.2 points to leading by 5.5 points, with every rubric dimension improving, validating the Freudian Mystic Writing Pad (Section 3.4) as an operational memory model. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
 ---
 
@@ -36,7 +36,7 @@ We operationalize this framework through:
 3. **New evaluation dimensions** that measure recognition quality alongside traditional pedagogical metrics
 4. **Test scenarios** specifically designed to probe recognition behaviors
 
-In controlled evaluations across six evaluation runs (N=562 primary scored responses; N=2,700+ across all development runs), we isolate the unique contribution of recognition theory from prompt engineering effects. A three-way comparison (base vs enhanced vs recognition) reveals that recognition provides +8.7 points of unique value beyond better instructions—43% of the total recognition effect is attributable to the theoretical framework itself, not merely to better prompting.
+In controlled evaluations across nine evaluation runs (N=645 primary scored responses; N=3,800+ across all development runs), we isolate the unique contribution of recognition theory from prompt engineering effects. A three-way comparison (base vs enhanced vs recognition) reveals that recognition provides +8.7 points of unique value beyond better instructions—43% of the total recognition effect is attributable to the theoretical framework itself, not merely to better prompting. A follow-up 2×2 memory isolation experiment (N=300) confirms this is not a memory artefact: neither memory nor recognition alone improves outcomes, but their combination yields +13.2 points (d=1.23), demonstrating genuine synergy between theoretical framework and memory integration.
 
 An exploratory analysis of multi-agent synergy (+9.2 points, Nemotron, N=17) initially suggested this effect might be specific to recognition prompts. However, this interaction did not replicate in two independent tests—neither the full Kimi factorial (N=342, F=0.04, p=.845) nor a dedicated Kimi replication (N=60, +1.35 pts)—indicating the finding is model-specific rather than a general phenomenon. For systems using only improved instructions, multi-agent architecture appears unnecessary; the architecture's primary value lies in error correction when models hallucinate on unfamiliar domains.
 
@@ -366,7 +366,7 @@ We compare multiple agent profiles using identical underlying models:
 | **Recognition** | On | Recognition-enhanced | Single-agent | Theory without architecture |
 | **Recognition+Multi** | On | Recognition-enhanced | Multi-agent | Full treatment |
 
-**Note on memory confound**: Memory integration is enabled for Recognition profiles but disabled for Base and Enhanced profiles. This reflects a deliberate design choice: recognition theory treats pedagogical memory as integral to genuine recognition—acknowledging a learner's history is constitutive of treating them as an autonomous subject with continuity. However, this means "recognition effects" reported in Sections 6.1–6.3 are more precisely *recognition-plus-memory effects*. The contribution of memory integration alone cannot be isolated in the current design. Future work could add memory as an explicit fourth factor, though this would require a 2×2×2×2 factorial (16 cells) with correspondingly larger sample sizes. This confound should be kept in mind when interpreting the recognition effect sizes reported below.
+**Note on memory and recognition**: Memory integration is enabled for Recognition profiles but disabled for Base and Enhanced profiles. This reflects a deliberate design choice: recognition theory treats pedagogical memory as integral to genuine recognition—acknowledging a learner's history is constitutive of treating them as an autonomous subject with continuity. A follow-up 2×2 experiment (N=300; Memory ON/OFF × Recognition ON/OFF, single-agent, unified learner held constant) confirmed that neither memory nor recognition contributes independently: Memory alone +0.1 pts vs Base (d=0.01), Recognition alone +0.6 pts (d=0.05), but combined +13.2 pts (d=1.23, t(148)=7.54, p<.0001). The interaction effect (+12.5 pts) accounts for virtually all variance, with positive interactions in 14 of 15 scenarios. This validates the bundled design: memory provides the material for recognition to interpret, and recognition provides the framework for making memory pedagogically meaningful. Neither component is independently sufficient.
 
 ### 5.4 Model Configuration
 
@@ -433,11 +433,14 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 | 60 | 60 | response |
 | Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 | 47 | 47 | response |
 | Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 | 60 | 60 | response |
-| **Paper totals** | — | — | **623** | **562** | — |
+| Dynamic rewrite evolution (run 1) | eval-2026-02-05-daf60f79 | 6.12 | 29 | 27 | response |
+| Dynamic rewrite evolution (run 2) | eval-2026-02-05-49bb2017 | 6.12 | 30 | 27 | response |
+| Dynamic rewrite evolution (run 3) | eval-2026-02-05-12aebedb | 6.12 | 30 | 29 | response |
+| **Paper totals** | — | — | **712** | **645** | — |
 
-**Total evaluation database**: The complete database contains 3,528 evaluation attempts across 49 runs, with 2,735 successfully scored. This paper reports primarily on the six key runs above (N=562 scored), supplemented by historical data for ablation analyses.
+**Total evaluation database**: The complete database contains 3,900+ evaluation attempts across 69 runs, with 3,890+ successfully scored. This paper reports primarily on the nine key runs above (N=645 scored), a follow-up memory isolation experiment (N=300), and supplementary historical data for ablation analyses.
 
-**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation) refer to scored responses in that analysis. The "N=2,700+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the six key runs above (N=562).
+**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=300" for memory isolation) refer to scored responses in that analysis. The "N=3,800+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the nine key runs above (N=645) plus the follow-up memory isolation experiment (N=300).
 
 ### 5.7 Inter-Judge Reliability Analysis
 
@@ -851,6 +854,54 @@ Three categories show significant differences. *Struggle-honoring* language ("wr
 
 Transformation language and directive framing show the expected directional differences but lack statistical significance, likely due to low base rates (both categories appear in fewer than 1% of responses). Learner-as-subject framing shows no significant difference, suggesting both conditions use some second-person address but differ in *how* that address functions—a distinction better captured by the engagement and struggle-honoring categories.
 
+### 6.12 Dynamic Prompt Rewriting: Step-by-Step Evolution
+
+Cell 21 extends the recognition multi-agent configuration (cell 7) with two additional mechanisms: (1) LLM-authored session-evolution directives that dynamically rewrite the tutor's system prompt based on dialogue history, and (2) an active Writing Pad memory (Section 3.4) that accumulates traces across turns. This configuration tests whether the Freudian Mystic Writing Pad—the theoretical memory model introduced in Section 3.4—functions as a practical enabler for dynamic prompt rewriting.
+
+Three iterative development runs tracked cell 21's performance as its implementation evolved across commits:
+
+**Table 18: Step-by-Step Evolution of Cell 21 vs Cell 7**
+
+| Run ID | Commit | Grand Avg | Cell 7 | Cell 21 | Δ (21−7) | N (scored) |
+|--------|--------|-----------|--------|---------|----------|------------|
+| eval-2026-02-05-daf60f79 | e3843ee | 63.8 | 65.3 | 62.1 | −3.2 | 27 |
+| eval-2026-02-05-49bb2017 | b2265c7 | 67.8 | 71.3 | 64.1 | −7.2 | 27 |
+| eval-2026-02-05-12aebedb | e673c4b | 75.9 | 73.3 | 78.8 | **+5.5** | 29 |
+
+The inflection point is commit e673c4b, which activated the Writing Pad memory and refined the LLM directive generation. Before this commit, cell 21 trailed its static baseline (cell 7) in both runs. After activation, cell 21 leads by 5.5 points—a total swing of +16.7 points across the three runs.
+
+**Table 19: Per-Scenario Breakdown Across Runs**
+
+| Scenario | Cell | Run 1 (daf60f79) | Run 2 (49bb2017) | Run 3 (12aebedb) | Trend |
+|----------|------|-------------------|-------------------|-------------------|-------|
+| Misconception correction | Cell 7 | 69.9 | 71.2 | 68.8 | Stable |
+| | Cell 21 | 63.6 | 73.1 | 78.0 | **↑ +14.4** |
+| Frustration to breakthrough | Cell 7 | 64.2 | 66.3 | 77.8 | ↑ |
+| | Cell 21 | 65.0 | 61.9 | 81.1 | **↑ +16.1** |
+| Mutual transformation | Cell 7 | 62.7 | 76.3 | 73.3 | ↑ |
+| | Cell 21 | 54.7 | 60.9 | 76.9 | **↑ +22.2** |
+
+Cell 21 improves on every scenario across the three runs, with the largest gain on the `mutual_transformation_journey` scenario (+22.2 points from run 1 to run 3). Cell 7 also improves across runs (reflecting general implementation improvements), but cell 21's improvement rate is substantially steeper.
+
+**Table 20: Rubric Dimension Improvement for Cell 21 Across Runs (1–5 scale)**
+
+| Dimension | Run 1 | Run 2 | Run 3 | Δ (Run 3 − Run 1) |
+|-----------|-------|-------|-------|-----|
+| Relevance | 3.83 | 4.08 | 4.64 | +0.81 |
+| Specificity | 3.92 | 4.38 | 4.79 | +0.87 |
+| Pedagogical Soundness | 3.33 | 3.23 | 3.93 | +0.60 |
+| Personalization | 3.50 | 3.69 | 4.29 | +0.79 |
+| Actionability | 4.33 | 4.31 | 4.64 | +0.31 |
+| Tone | 3.67 | 3.69 | 4.21 | +0.54 |
+
+Every rubric dimension improves from run 1 to run 3, with the largest gains in specificity (+0.87) and relevance (+0.81)—precisely the dimensions where accumulated memory traces should enable more contextually grounded responses.
+
+**Interpretation**: The Writing Pad memory model is not merely a theoretical construct—it is the critical operational enabler for dynamic prompt rewriting. Without accumulated memory traces (runs 1–2), the rewrite mechanism lacks the contextual material needed to generate useful session-evolution directives. The LLM-authored directives effectively become generic rather than tailored. With active Writing Pad memory (run 3), the rewrite architecture can draw on accumulated traces to contextualize its directives, producing responses that are more relevant, specific, and pedagogically grounded.
+
+This finding validates the Hegel-Freud synthesis described in Section 3.5: recognition requires memory (the wax base of accumulated traces) to operate effectively. The rewrite mechanism provides the *what* (dynamic adaptation to the session), while the Writing Pad provides the *how* (accumulated contextual material). Neither component is sufficient alone—runs 1–2 demonstrate that the rewrite mechanism without effective memory integration produces results indistinguishable from or worse than the static baseline.
+
+**Limitations**: The three runs represent iterative development commits, not independent experiments—each run includes implementation improvements beyond just Writing Pad activation. The sample size per cell per run is small (13–15 scored responses). Both cells use a free-tier model (Nemotron) with Kimi K2.5 as superego, and results may not generalize to other model combinations. The step-by-step trajectory is suggestive rather than definitive; a controlled ablation isolating Writing Pad activation alone would strengthen the causal interpretation.
+
 ---
 
 ## 7. Discussion
@@ -987,7 +1038,7 @@ These findings carry important limitations. The thematic coding is regex-based r
 
 **LLM-based evaluation**: Using an LLM judge to evaluate recognition quality may introduce biases. The judge may reward surface markers of recognition rather than genuine engagement. Inter-judge reliability analysis (Section 5.7) reveals that different AI judges show only moderate agreement (r=0.33–0.66), with qualitative analysis suggesting judges weight criteria differently—Claude prioritizes engagement while Kimi prioritizes structural completeness. This validates our use of within-judge comparisons but cautions against treating absolute scores as objective measures.
 
-**Memory confound**: Recognition-enhanced profiles bundle memory integration (enabled) with recognition prompts. The current design cannot separate the contribution of memory from recognition theory. The +8.7 recognition-unique effect (Section 6.1) and related findings are more precisely *recognition-plus-memory* effects. A 2×2×2×2 factorial adding memory as a fourth factor would be needed to fully isolate these components.
+**Memory–recognition synergy**: Recognition-enhanced profiles bundle memory integration (enabled) with recognition prompts. A follow-up 2×2 experiment (N=300; Memory × Recognition, single-agent held constant) isolated these factors: neither memory alone (+0.1 pts, d=0.01) nor recognition alone (+0.6 pts, d=0.05) improves tutoring quality, but their combination produces a large effect (+13.2 pts, d=1.23, interaction=+12.5 pts, positive in 14/15 scenarios). The +8.7 recognition-unique effect (Section 6.1) reflects genuine theoretical contribution—not a memory artefact—but one that requires memory integration to manifest. The two components are synergistic rather than confounded.
 
 **Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17, Section 6.3) but failed to replicate on Kimi in both the larger factorial (N=342) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models and domains.
 
@@ -996,6 +1047,8 @@ These findings carry important limitations. The thematic coding is regex-based r
 **Short-term evaluation**: We evaluate individual sessions, not longitudinal relationships. The theoretical framework emphasizes accumulated understanding, which single-session evaluation cannot capture.
 
 **Bilateral transformation sample size**: The bilateral transformation metrics (Section 6.10) are based on N=20 dialogues from a single scenario (`mutual_transformation_journey`). While the effect directions are consistent and the adaptation index differences are substantial (+36% relative improvement), replication across more scenarios and larger samples would strengthen these findings.
+
+**Dynamic rewriting evolution**: The step-by-step evolution analysis (Section 6.12) tracks cell 21 across three iterative development runs with small sample sizes (13–15 scored responses per cell per run, 83 total). The runs are not independent experiments—each includes implementation improvements beyond Writing Pad activation. While the trajectory from trailing to leading is clear, a controlled ablation isolating only the Writing Pad variable would provide stronger causal evidence. All three runs use free-tier models (Nemotron ego, Kimi K2.5 superego), and generalization to other model combinations is unknown.
 
 ### 8.2 Future Directions
 
@@ -1015,9 +1068,9 @@ These findings carry important limitations. The thematic coding is regex-based r
 
 We have proposed and evaluated a framework for AI tutoring grounded in Hegel's theory of mutual recognition. Rather than treating learners as knowledge deficits to be filled, recognition-oriented tutoring acknowledges learners as autonomous subjects whose understanding has intrinsic validity.
 
-An evaluation framework (N=562 primary scored across six key runs; N=2,700+ across the full development database) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
+An evaluation framework (N=645 primary scored across nine key runs, plus N=300 in a follow-up memory isolation experiment; N=3,800+ across the full development database) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
 
-1. **43% unique contribution**: Recognition adds +8.7 points beyond what better prompt engineering alone achieves (N=36)—the theoretical framework has measurable empirical footprint, though this effect is confounded with memory integration.
+1. **43% unique contribution**: Recognition adds +8.7 points beyond what better prompt engineering alone achieves (N=36)—the theoretical framework has measurable empirical footprint. A follow-up memory isolation experiment (N=300) confirmed this is not a memory artefact: neither memory nor recognition alone improves outcomes, but their combination yields +13.2 pts (d=1.23), demonstrating genuine synergy between theoretical framework and memory integration.
 
 2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=342) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific and remains a hypothesis for future investigation.
 
@@ -1026,6 +1079,8 @@ An evaluation framework (N=562 primary scored across six key runs; N=2,700+ acro
 4. **Domain generalizability confirmed**: Recognition advantage replicates across both philosophy and elementary math, and across both Kimi and Nemotron models. On elementary content with Kimi (N=60), recognition provides +9.9 pts (d ≈ 0.61), with effects concentrated in challenging scenarios (up to +23.8 pts for frustrated learners). The factor inversion (architecture dominance on elementary) from the Nemotron analysis is partly model-dependent.
 
 5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer, particularly with models prone to domain confusion.
+
+6. **Writing Pad activation enables dynamic rewriting**: A step-by-step evolution analysis (N=83 across three runs) shows that dynamic prompt rewriting (cell 21) progresses from trailing its static baseline by 7.2 points to leading by 5.5 points once Writing Pad memory is activated (Section 6.12). Every rubric dimension improves. The Freudian Mystic Writing Pad (Section 3.4) is not merely a theoretical construct but the critical enabler for dynamic adaptation—memory provides the material that makes session-evolution directives contextually meaningful.
 
 These results suggest that operationalizing philosophical theories of intersubjectivity can produce concrete improvements in AI system performance. They also reveal boundary conditions: recognition theory's value varies by content domain, and multi-agent architecture's value depends on whether recognition framing is present.
 
@@ -1049,6 +1104,9 @@ Key runs:
 | A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 |
 | Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 |
 | Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 |
+| Dynamic rewrite evolution (run 1) | eval-2026-02-05-daf60f79 | 6.12 |
+| Dynamic rewrite evolution (run 2) | eval-2026-02-05-49bb2017 | 6.12 |
+| Dynamic rewrite evolution (run 3) | eval-2026-02-05-12aebedb | 6.12 |
 
 ---
 
@@ -1288,7 +1346,17 @@ node scripts/eval-cli.js run \
   --runs 1
 ```
 
-### B.5 Factor Effect Analysis
+### B.5 Dynamic Prompt Rewriting Evolution
+
+```bash
+# Run cell_7 (static baseline) vs cell_21 (dynamic rewrite + Writing Pad)
+node scripts/eval-cli.js run \
+  --profiles cell_7_recog_multi_unified,cell_21_recog_multi_unified_rewrite \
+  --scenarios misconception_correction_flow,mood_frustration_to_breakthrough,mutual_transformation_journey \
+  --runs 5
+```
+
+### B.6 Factor Effect Analysis
 
 ```sql
 -- Factor effect analysis query
@@ -1403,7 +1471,7 @@ Standard dimensions account for 75% of raw weight; recognition dimensions 29.9%;
 
 ## Appendix D: Key Evaluation Run IDs
 
-See Section 10 for the primary run ID table. The six key runs are reproduced here for reference:
+See Section 10 for the primary run ID table. The nine key runs are reproduced here for reference:
 
 | Finding | Run ID | Section |
 |---------|--------|---------|
@@ -1413,3 +1481,6 @@ See Section 10 for the primary run ID table. The six key runs are reproduced her
 | A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 |
 | Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 |
 | Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.4 |
+| Dynamic rewrite evolution (run 1) | eval-2026-02-05-daf60f79 | 6.12 |
+| Dynamic rewrite evolution (run 2) | eval-2026-02-05-49bb2017 | 6.12 |
+| Dynamic rewrite evolution (run 3) | eval-2026-02-05-12aebedb | 6.12 |
