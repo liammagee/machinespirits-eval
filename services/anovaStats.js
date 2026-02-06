@@ -10,6 +10,123 @@
  *   C: Multi-agent learner (unified vs ego_superego)
  */
 
+// ---- F-distribution p-value via regularized incomplete beta function ----
+
+/**
+ * Log-gamma function using Lanczos approximation (g=7, n=9 coefficients).
+ * Accurate to ~15 decimal digits for positive real arguments.
+ * Uses the reflection formula for z < 0.5.
+ */
+function lnGamma(z) {
+  if (z <= 0) return Infinity;
+
+  // Reflection formula: Gamma(z)*Gamma(1-z) = pi/sin(pi*z)
+  if (z < 0.5) {
+    return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+  }
+
+  const g = 7;
+  const c = [
+    0.99999999999980993,
+    676.5203681218851,
+    -1259.1392167224028,
+    771.32342877765313,
+    -176.61502916214059,
+    12.507343278686905,
+    -0.13857109526572012,
+    9.9843695780195716e-6,
+    1.5056327351493116e-7,
+  ];
+
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) {
+    x += c[i] / (z + i);
+  }
+  const t = z + g + 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+}
+
+/**
+ * Regularized incomplete beta function I_x(a, b) via the continued fraction
+ * representation from Numerical Recipes (betacf). Uses modified Lentz's method.
+ *
+ * The continued fraction is:
+ *   I_x(a,b) = prefactor * (1/1+) (d1/1+) (d2/1+) (d3/1+) ...
+ * where d_{2m+1} = -(a+m)(a+b+m)x / ((a+2m)(a+2m+1))
+ *       d_{2m}   = m(b-m)x / ((a+2m-1)(a+2m))
+ */
+function regularizedBeta(x, a, b) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+
+  // Use the symmetry relation when x > (a+1)/(a+b+2) for better convergence
+  if (x > (a + 1) / (a + b + 2)) {
+    return 1 - regularizedBeta(1 - x, b, a);
+  }
+
+  // Compute the prefactor: x^a * (1-x)^b / (a * Beta(a,b))
+  const lnPrefactor = a * Math.log(x) + b * Math.log(1 - x)
+    - Math.log(a) - lnGamma(a) - lnGamma(b) + lnGamma(a + b);
+  const prefactor = Math.exp(lnPrefactor);
+
+  // Evaluate the continued fraction using modified Lentz's method
+  // Following Numerical Recipes "betacf" algorithm
+  const maxIter = 200;
+  const eps = 3e-14;
+  const fpmin = 1e-30;
+
+  let qab = a + b;
+  let qap = a + 1;
+  let qam = a - 1;
+  let c = 1;
+  let d = 1 - qab * x / qap;
+  if (Math.abs(d) < fpmin) d = fpmin;
+  d = 1 / d;
+  let h = d;
+
+  for (let m = 1; m <= maxIter; m++) {
+    // Even step: d_{2m}
+    let aa = m * (b - m) * x / ((qam + 2 * m) * (a + 2 * m));
+    d = 1 + aa * d;
+    if (Math.abs(d) < fpmin) d = fpmin;
+    c = 1 + aa / c;
+    if (Math.abs(c) < fpmin) c = fpmin;
+    d = 1 / d;
+    h *= d * c;
+
+    // Odd step: d_{2m+1}
+    aa = -(a + m) * (qab + m) * x / ((a + 2 * m) * (qap + 2 * m));
+    d = 1 + aa * d;
+    if (Math.abs(d) < fpmin) d = fpmin;
+    c = 1 + aa / c;
+    if (Math.abs(c) < fpmin) c = fpmin;
+    d = 1 / d;
+    const del = d * c;
+    h *= del;
+
+    if (Math.abs(del - 1) < eps) break;
+  }
+
+  return prefactor * h;
+}
+
+/**
+ * Compute p-value for the F-distribution: P(F > x | d1, d2).
+ *
+ * @param {number} F - The F-statistic
+ * @param {number} d1 - Numerator degrees of freedom
+ * @param {number} d2 - Denominator degrees of freedom
+ * @returns {number} p-value (upper tail probability)
+ */
+function fDistPValue(F, d1, d2) {
+  if (F <= 0 || d1 <= 0 || d2 <= 0) return 1;
+  if (!isFinite(F)) return 0;
+
+  const x = d1 * F / (d1 * F + d2);
+  return 1 - regularizedBeta(x, d1 / 2, d2 / 2);
+}
+
 /**
  * Run a three-way ANOVA on factorial cell data.
  *
@@ -208,16 +325,8 @@ export function runThreeWayANOVA(data) {
   const F_TL = MS_TL / MS_E;
   const F_RTL = MS_RTL / MS_E;
 
-  // Approximate p-values (F distribution critical values for df1=1)
-  const getP = (F) => {
-    if (F > 15) return 0.001;
-    if (F > 10) return 0.005;
-    if (F > 7) return 0.01;
-    if (F > 5) return 0.025;
-    if (F > 4) return 0.05;
-    if (F > 3) return 0.1;
-    return 0.25;
-  };
+  // Compute p-values from the F distribution CDF
+  const getP = (F, df1, df2) => fDistPValue(F, df1, df2);
 
   const etaSq = (SS) => SST > 0 ? SS / SST : 0;
 
@@ -230,15 +339,15 @@ export function runThreeWayANOVA(data) {
       learner: { unified: meanL0, ego_superego: meanL1 },
     },
     mainEffects: {
-      recognition: { SS: SS_R, df: df_R, MS: MS_R, F: F_R, p: getP(F_R), etaSq: etaSq(SS_R) },
-      tutor: { SS: SS_T, df: df_T, MS: MS_T, F: F_T, p: getP(F_T), etaSq: etaSq(SS_T) },
-      learner: { SS: SS_L, df: df_L, MS: MS_L, F: F_L, p: getP(F_L), etaSq: etaSq(SS_L) },
+      recognition: { SS: SS_R, df: df_R, MS: MS_R, F: F_R, p: getP(F_R, df_R, df_E), etaSq: etaSq(SS_R) },
+      tutor: { SS: SS_T, df: df_T, MS: MS_T, F: F_T, p: getP(F_T, df_T, df_E), etaSq: etaSq(SS_T) },
+      learner: { SS: SS_L, df: df_L, MS: MS_L, F: F_L, p: getP(F_L, df_L, df_E), etaSq: etaSq(SS_L) },
     },
     interactions: {
-      recognition_x_tutor: { SS: SS_RT, df: df_RT, MS: MS_RT, F: F_RT, p: getP(F_RT), etaSq: etaSq(SS_RT) },
-      recognition_x_learner: { SS: SS_RL, df: df_RL, MS: MS_RL, F: F_RL, p: getP(F_RL), etaSq: etaSq(SS_RL) },
-      tutor_x_learner: { SS: SS_TL, df: df_TL, MS: MS_TL, F: F_TL, p: getP(F_TL), etaSq: etaSq(SS_TL) },
-      three_way: { SS: SS_RTL, df: df_RTL, MS: MS_RTL, F: F_RTL, p: getP(F_RTL), etaSq: etaSq(SS_RTL) },
+      recognition_x_tutor: { SS: SS_RT, df: df_RT, MS: MS_RT, F: F_RT, p: getP(F_RT, df_RT, df_E), etaSq: etaSq(SS_RT) },
+      recognition_x_learner: { SS: SS_RL, df: df_RL, MS: MS_RL, F: F_RL, p: getP(F_RL, df_RL, df_E), etaSq: etaSq(SS_RL) },
+      tutor_x_learner: { SS: SS_TL, df: df_TL, MS: MS_TL, F: F_TL, p: getP(F_TL, df_TL, df_E), etaSq: etaSq(SS_TL) },
+      three_way: { SS: SS_RTL, df: df_RTL, MS: MS_RTL, F: F_RTL, p: getP(F_RTL, df_RTL, df_E), etaSq: etaSq(SS_RTL) },
     },
     error: { SS: SS_E, df: df_E, MS: MS_E },
     total: { SS: SST, df: df_T_total },
@@ -337,28 +446,30 @@ export function formatANOVAReport(anovaResults, options = {}) {
   lines.push('  INTERPRETATION');
   lines.push('-'.repeat(70));
 
+  const formatP = (p) => p < 0.001 ? '< .001' : `= .${p.toFixed(3).slice(2)}`;
+
   if (me.recognition.p < 0.05) {
     const effect = mm.recognition.recognition - mm.recognition.standard;
-    lines.push(`  * Recognition prompts: SIGNIFICANT (F = ${me.recognition.F.toFixed(2)}, p < .05)`);
+    lines.push(`  * Recognition prompts: SIGNIFICANT (F = ${me.recognition.F.toFixed(2)}, p ${formatP(me.recognition.p)})`);
     lines.push(`    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.recognition.etaSq.toFixed(3)}`);
   } else {
-    lines.push(`  - Recognition prompts: not significant (F = ${me.recognition.F.toFixed(2)}, p = ${me.recognition.p.toFixed(3)})`);
+    lines.push(`  - Recognition prompts: not significant (F = ${me.recognition.F.toFixed(2)}, p ${formatP(me.recognition.p)})`);
   }
 
   if (me.tutor.p < 0.05) {
     const effect = mm.tutor.multi - mm.tutor.single;
-    lines.push(`  * Multi-agent tutor: SIGNIFICANT (F = ${me.tutor.F.toFixed(2)}, p < .05)`);
+    lines.push(`  * Multi-agent tutor: SIGNIFICANT (F = ${me.tutor.F.toFixed(2)}, p ${formatP(me.tutor.p)})`);
     lines.push(`    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.tutor.etaSq.toFixed(3)}`);
   } else {
-    lines.push(`  - Multi-agent tutor: not significant (F = ${me.tutor.F.toFixed(2)}, p = ${me.tutor.p.toFixed(3)})`);
+    lines.push(`  - Multi-agent tutor: not significant (F = ${me.tutor.F.toFixed(2)}, p ${formatP(me.tutor.p)})`);
   }
 
   if (me.learner.p < 0.05) {
     const effect = mm.learner.ego_superego - mm.learner.unified;
-    lines.push(`  * Multi-agent learner: SIGNIFICANT (F = ${me.learner.F.toFixed(2)}, p < .05)`);
+    lines.push(`  * Multi-agent learner: SIGNIFICANT (F = ${me.learner.F.toFixed(2)}, p ${formatP(me.learner.p)})`);
     lines.push(`    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.learner.etaSq.toFixed(3)}`);
   } else {
-    lines.push(`  - Multi-agent learner: not significant (F = ${me.learner.F.toFixed(2)}, p = ${me.learner.p.toFixed(3)})`);
+    lines.push(`  - Multi-agent learner: not significant (F = ${me.learner.F.toFixed(2)}, p ${formatP(me.learner.p)})`);
   }
 
   // Interactions
@@ -371,7 +482,7 @@ export function formatANOVAReport(anovaResults, options = {}) {
   ];
   for (const { key, label } of interactions) {
     if (ia[key].p < 0.05) {
-      lines.push(`  * ${label} interaction: SIGNIFICANT (F = ${ia[key].F.toFixed(2)})`);
+      lines.push(`  * ${label} interaction: SIGNIFICANT (F = ${ia[key].F.toFixed(2)}, p ${formatP(ia[key].p)})`);
     }
   }
 

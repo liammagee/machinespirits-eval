@@ -327,7 +327,9 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
     "mutual_recognition": {"score": 4, "reasoning": "Acknowledges interpretation"},
     "dialectical_responsiveness": {"score": 3, "reasoning": "Responds without tension"},
     "memory_integration": {"score": 4, "reasoning": "References prior session"},
-    "transformative_potential": {"score": 3, "reasoning": "Informative not transformative"}
+    "transformative_potential": {"score": 3, "reasoning": "Informative not transformative"},
+    "tutor_adaptation": {"score": 3, "reasoning": "Some adjustment to input"},
+    "learner_growth": {"score": 4, "reasoning": "Shows conceptual development"}
   },
   "validation": {
     "passes_required": true,

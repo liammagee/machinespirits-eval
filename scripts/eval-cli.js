@@ -87,20 +87,9 @@ function getOption(name, defaultValue = undefined) {
   return args[idx + 1];
 }
 
-// ── watch / status helpers ────────────────────────────────────────
+import { isPidAlive } from '../services/processUtils.js';
 
-/**
- * Check if a process with given PID is still running.
- */
-function isPidAlive(pid) {
-  if (!pid) return null; // Unknown
-  try {
-    process.kill(pid, 0); // Signal 0 = check existence without killing
-    return true;
-  } catch (e) {
-    return e.code === 'EPERM' ? true : false; // EPERM means process exists but we can't signal it
-  }
-}
+// ── watch / status helpers ────────────────────────────────────────
 
 function formatMs(ms) {
   if (ms < 1000) return `${ms}ms`;

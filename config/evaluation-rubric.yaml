@@ -32,22 +32,23 @@
 #
 # SCORING METHODOLOGY:
 #
-#   Overall Score = Σ (dimension_score × dimension_weight) × 20
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
 #
 #   Where:
 #   - Each dimension scored 1-5 by AI judge (or pass=5/fail=1 in fast mode)
-#   - Weights sum to 1.0 across all dimensions
-#   - Multiplied by 20 to convert to 0-100 scale
+#   - weighted_avg = Σ(dimension_score × dimension_weight) / Σ(weights)
+#   - The (avg - 1) / 4 maps the 1-5 scale to 0-100
 #
-#   Example:
-#     relevance:     5 × 0.20 = 1.00
-#     specificity:   4 × 0.20 = 0.80
-#     pedagogical:   4 × 0.20 = 0.80
-#     personalization: 3 × 0.15 = 0.45
-#     actionability: 5 × 0.15 = 0.75
+#   Example (base dimensions only):
+#     relevance:     5 × 0.15 = 0.75
+#     specificity:   4 × 0.15 = 0.60
+#     pedagogical:   4 × 0.15 = 0.60
+#     personalization: 3 × 0.10 = 0.30
+#     actionability: 5 × 0.10 = 0.50
 #     tone:          4 × 0.10 = 0.40
 #     ─────────────────────────
-#     Weighted sum:  4.20 × 20 = 84.0
+#     Weighted sum:  3.15 / 0.75 = 4.20
+#     Overall: ((4.20 - 1) / 4) × 100 = 80.0
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -75,11 +76,11 @@ scale:
 # ┌─────────────────┬────────┬─────────────────────────────────────────────────┐
 # │ Dimension       │ Weight │ What it measures                                │
 # ├─────────────────┼────────┼─────────────────────────────────────────────────┤
-# │ Relevance       │  20%   │ Context-awareness and appropriateness           │
-# │ Specificity     │  20%   │ Concrete references vs vague advice             │
-# │ Pedagogical     │  20%   │ Sound teaching practices (ZPD, scaffolding)     │
-# │ Personalization │  15%   │ Tailored to individual learner's journey        │
-# │ Actionability   │  15%   │ Clear next steps the learner can take           │
+# │ Relevance       │  15%   │ Context-awareness and appropriateness           │
+# │ Specificity     │  15%   │ Concrete references vs vague advice             │
+# │ Pedagogical     │  15%   │ Sound teaching practices (ZPD, scaffolding)     │
+# │ Personalization │  10%   │ Tailored to individual learner's journey        │
+# │ Actionability   │  10%   │ Clear next steps the learner can take           │
 # │ Tone            │  10%   │ Supportive, encouraging, not condescending      │
 # └─────────────────┴────────┴─────────────────────────────────────────────────┘
 #
