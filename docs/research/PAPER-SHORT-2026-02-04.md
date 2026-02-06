@@ -14,6 +14,8 @@ abstract: |
 
   Three key findings emerge: (1) Recognition theory provides measurable value beyond prompt engineering, validated through a base vs. enhanced vs. recognition comparison; (2) An exploratory analysis of multi-agent synergy (+9.2 pts, Nemotron, N=17) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon; (3) Domain generalizability testing confirms recognition advantage replicates across both models and content domains—elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change.
 
+  A cross-judge replication with GPT-5.2 (N=738 rejudged responses) confirms the main findings are judge-robust: the recognition effect (d=1.03), memory-recognition synergy, and multi-agent null effects all replicate, though at compressed magnitudes (~50% of primary judge effect sizes).
+
   These findings suggest that recognition theory's value is domain-sensitive, multi-agent architecture provides essential error correction for domain transfer, and optimal deployment configurations depend on content characteristics.
 
   The system is deployed in an open-source learning management system with all code, evaluation data, and reproducible analysis commands publicly available.
@@ -296,7 +298,7 @@ Environment variable support (`EVAL_CONTENT_PATH`, `EVAL_SCENARIOS_FILE`) enable
 |------|-------|----------|-------------|
 | **Tutor (Ego)** | Kimi K2.5 / Nemotron 3 Nano | OpenRouter | 0.6 |
 | **Tutor (Superego)** | Kimi K2.5 | OpenRouter | 0.4 |
-| **Judge** | Claude Code (Claude Opus) | Anthropic | 0.2 |
+| **Judge** | Claude Code (Claude Opus) | Anthropic / OpenRouter | 0.2 |
 
 Critically, **all conditions use identical models within a given evaluation run**. The only experimental manipulation is the prompt content and architecture.
 
@@ -524,6 +526,12 @@ The inflection point is commit e673c4b (Writing Pad activation + refined LLM dir
 
 **Limitations**: Iterative development runs, not independent experiments. Small N per cell per run (13–15). Free-tier models only. See the full paper (Section 6.12) for detailed per-scenario and per-dimension tables.
 
+### 6.11 Cross-Judge Replication with GPT-5.2
+
+To assess whether findings depend on the primary judge, we rejudged all key evaluation runs (N=738 responses) with GPT-5.2 as an independent second judge.
+
+**Key results**: GPT-5.2 confirms the recognition main effect (d=1.03, p < .001 in the factorial), the memory-recognition synergy (interaction = +5.5 pts; recognition has zero effect without memory, p = .96, but +5.5 pts with memory, d = 0.83, p < .001), and multi-agent null effects. GPT-5.2 finds approximately 50% of Claude's effect magnitudes but always in the same direction. The one non-replication is the recognition-vs-enhanced increment: Claude found +8.7 pts, GPT-5.2 found +1.3 pts (p = .60). Inter-judge correlations range from r = 0.49 to 0.64 (all p < .001). See the full paper (Section 6.13) for detailed tables.
+
 ---
 
 ## 7. Discussion
@@ -639,7 +647,9 @@ An evaluation framework (N=645 primary scored across nine key runs, plus N=300 i
 
 6. **Writing Pad activation coincides with dynamic rewriting improvement**: A step-by-step evolution analysis (N=83 across three runs) shows dynamic prompt rewriting (cell 21) progressing from trailing its static baseline by 7.2 points to leading by 5.5 points, with the improvement coinciding with Writing Pad memory activation (Section 6.10). Every rubric dimension improves. This trajectory is consistent with the Writing Pad functioning as an important enabler for dynamic adaptation, though the uncontrolled nature of the iterative runs means a controlled ablation is needed to confirm the causal role.
 
-7. **Optimal configuration is context-dependent**: For well-trained content, recognition prompts with single-agent may suffice. For new domains, multi-agent architecture is essential. For dynamic adaptation, Writing Pad memory is required.
+7. **Cross-judge robustness**: A full replication with GPT-5.2 (N=738 rejudged responses; Section 6.11) confirms the recognition main effect (d=1.03), memory-recognition synergy, and multi-agent null effects, though at compressed magnitudes (~50%). The recognition-vs-enhanced increment does not reach significance under GPT-5.2, warranting caution on its precise magnitude.
+
+8. **Optimal configuration is context-dependent**: For well-trained content, recognition prompts with single-agent may suffice. For new domains, multi-agent architecture is essential. For dynamic adaptation, Writing Pad memory is required.
 
 These findings have practical implications for AI tutoring deployment: the "right" architecture depends on content characteristics and deployment context. They also have theoretical implications: recognition emerges from quality engagement under appropriate conditions, and the boundary conditions of its effectiveness reveal something about the nature of pedagogical recognition itself.
 
