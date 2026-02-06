@@ -64,7 +64,8 @@ import * as anovaStats from '../services/anovaStats.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import { getAvailableJudge, buildEvaluationPrompt, calculateOverallScore, calculateBaseScore, calculateRecognitionScore } from '../services/rubricEvaluator.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
-import { getScenario } from '../services/evalConfigLoader.js';
+import * as evalConfigLoader from '../services/evalConfigLoader.js';
+const { getScenario } = evalConfigLoader;
 import { spawn } from 'child_process';
 import readline from 'readline';
 import fs from 'fs';
@@ -764,7 +765,8 @@ async function main() {
         const scenarioId = getOption('scenario', 'new_user_first_visit');
         const profile = getOption('profile', 'budget');
         const verbose = getFlag('verbose');
-        const skipRubricEval = getFlag('skip-rubric');
+        const evalSettingsQt = evalConfigLoader.getEvalSettings();
+        const skipRubricEval = getFlag('skip-rubric') || !evalSettingsQt.useAIJudge;
         const config = { profileName: profile };
 
         console.log(`\nRunning quick test (profile: ${profile}, scenario: ${scenarioId})...\n`);
@@ -780,7 +782,9 @@ async function main() {
 
       case 'run': {
         const verbose = getFlag('verbose');
-        const skipRubricEval = getFlag('skip-rubric');
+        // CLI --use-rubric forces rubric on; --skip-rubric forces off; otherwise use config default
+        const evalSettings = evalConfigLoader.getEvalSettings();
+        const skipRubricEval = getFlag('use-rubric') ? false : (getFlag('skip-rubric') || !evalSettings.useAIJudge);
         const runsPerConfig = parseInt(getOption('runs', '1'), 10);
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
         const description = getOption('description');
@@ -1708,6 +1712,35 @@ async function main() {
             return null;
           }
 
+          // Load dialogue log for multi-turn context (if available)
+          let dialogueContext = null;
+          const dialogueId = result.dialogueId;
+          if (dialogueId) {
+            const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
+            try {
+              if (fs.existsSync(logPath)) {
+                const dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+                if (dialogueLog.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
+                  dialogueContext = {
+                    consolidatedTrace: dialogueLog.dialogueTrace,
+                    conversationHistory: (dialogueLog.turnResults || []).map((t, i) => ({
+                      turnIndex: i,
+                      turnId: t.turnId,
+                      suggestion: t.suggestions?.[0],
+                      learnerAction: t.learnerAction,
+                      learnerMessage: t.learnerMessage,
+                    })),
+                  };
+                  if (verbose) {
+                    console.log(`${tag}   loaded dialogue transcript (${dialogueLog.dialogueTrace.length} trace entries)`);
+                  }
+                }
+              }
+            } catch (e) {
+              if (verbose) console.log(`${tag}   could not load dialogue log: ${e.message}`);
+            }
+          }
+
           const prompt = buildEvaluationPrompt(suggestion, {
             name: scenario.name,
             description: scenario.description,
@@ -1715,7 +1748,7 @@ async function main() {
             learnerContext: scenario.learner_context,
             requiredElements: scenario.required_elements,
             forbiddenElements: scenario.forbidden_elements,
-          }, {});
+          }, { dialogueContext });
 
           const claudeArgs = ['-p', '-', '--output-format', 'text'];
           if (modelOverride) {
@@ -1796,7 +1829,7 @@ async function main() {
             requiredMissing: parsed.validation?.required_missing || [],
             forbiddenFound: parsed.validation?.forbidden_found || [],
             summary: parsed.summary,
-            judgeModel: modelOverride || 'claude-code',
+            judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-code/opus',
           };
 
           evaluationStore.updateResultScores(result.id, evaluation);

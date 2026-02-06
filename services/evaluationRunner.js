@@ -699,6 +699,16 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
   if (!skipRubricEval && suggestion) {
     log('Running AI rubric evaluation...', 'info');
     debugLog(`[evaluationRunner] Running rubric evaluation for ${scenarioId}...`);
+
+    // Build dialogue context for the judge (if available from multi-turn)
+    const dialogueContext = (options.conversationHistory || options.dialogueTrace || options.consolidatedTrace)
+      ? {
+          conversationHistory: options.conversationHistory || null,
+          dialogueTrace: options.dialogueTrace || null,
+          consolidatedTrace: options.consolidatedTrace || null,
+        }
+      : null;
+
     rubricResult = await rubricEvaluator.evaluateSuggestion(suggestion, {
       name: turnMeta.scenarioName,
       description: turnMeta.description,
@@ -706,7 +716,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
       learnerContext: turnMeta.learnerContext,
       requiredElements: turnMeta.requiredElements,
       forbiddenElements: turnMeta.forbiddenElements,
-    }, {}, { judgeOverride });
+    }, { dialogueContext }, { judgeOverride });
 
     if (rubricResult) {
       debugLog(`[evaluationRunner] Rubric result: success=${rubricResult.success}, ` +
@@ -1444,9 +1454,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     };
 
     // Call the SAME generation+evaluation code path as single-turn
-    const turnOptions = sessionEvolution
-      ? { ...sharedTurnOptions, systemPromptExtension: sessionEvolution }
-      : sharedTurnOptions;
+    // Pass dialogue context so the judge can see the full exchange
+    const turnOptions = {
+      ...sharedTurnOptions,
+      ...(sessionEvolution ? { systemPromptExtension: sessionEvolution } : {}),
+      conversationHistory: conversationHistory.length > 0 ? conversationHistory : null,
+      consolidatedTrace: consolidatedTrace.length > 0 ? consolidatedTrace : null,
+    };
     const { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } =
       await generateAndEvaluateTurn(context, resolvedConfig, turnMeta, turnOptions);
 
@@ -1628,7 +1642,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     : null;
 
   const aggregateDimensions = {};
-  const baseDims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+  const baseDims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'productive_struggle', 'epistemic_honesty'];
   const recognitionDims = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential', 'tutor_adaptation', 'learner_growth'];
   const allDims = [...baseDims, ...recognitionDims];
   for (const dim of allDims) {
@@ -1655,7 +1669,48 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     return t.turnScore >= threshold;
   });
 
-  // 5b. Analyze bilateral transformation (tutor + learner evolution)
+  // 5b. Holistic dialogue evaluation — score the full transcript as a single unit
+  let holisticDialogueScore = null;
+  if (!skipRubricEval && consolidatedTrace.length > 0 && turnResults.length > 1) {
+    log('[evaluationRunner] Running holistic dialogue evaluation on full transcript...', 'info');
+    try {
+      // Use the last turn's suggestion as the focal point, with full dialogue context
+      const lastSuggestion = turnResults[turnResults.length - 1]?.suggestion;
+      if (lastSuggestion) {
+        const holisticResult = await rubricEvaluator.evaluateSuggestion(lastSuggestion, {
+          name: `${fullScenario.name} (holistic dialogue)`,
+          description: `Holistic evaluation of ${turnResults.length}-turn dialogue. Score the overall quality of the tutoring interaction, not just this final response.`,
+          expectedBehavior: fullScenario.expected_behavior,
+          learnerContext: fullScenario.learner_context,
+          requiredElements: fullScenario.required_elements || [],
+          forbiddenElements: fullScenario.forbidden_elements || [],
+        }, {
+          dialogueContext: {
+            conversationHistory,
+            consolidatedTrace,
+          },
+        }, { judgeOverride });
+
+        if (holisticResult?.success) {
+          holisticDialogueScore = {
+            overallScore: holisticResult.overallScore,
+            baseScore: holisticResult.baseScore,
+            recognitionScore: holisticResult.recognitionScore,
+            scores: holisticResult.scores,
+            summary: holisticResult.summary,
+            judgeModel: holisticResult.judgeModel,
+          };
+          log(`[evaluationRunner] Holistic dialogue score: ${holisticResult.overallScore?.toFixed(1)}`, 'success');
+        } else {
+          log(`[evaluationRunner] Holistic dialogue evaluation failed: ${holisticResult?.error || 'unknown'}`, 'warning');
+        }
+      }
+    } catch (error) {
+      log(`[evaluationRunner] Holistic dialogue evaluation error: ${error.message}`, 'warning');
+    }
+  }
+
+  // 5c. Analyze bilateral transformation (tutor + learner evolution)
   const turnProgressionAnalysis = turnComparisonAnalyzer.analyzeTurnProgression(turnResults);
   const markerDefinitions = fullScenario.transformation_markers || fullScenario.transformationMarkers || null;
   const transformationMarkerAnalysis = markerDefinitions
@@ -1697,6 +1752,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       turnId: t.turnId,
       suggestions: t.suggestion ? [t.suggestion] : [],
     })),
+    // Holistic dialogue evaluation
+    holisticDialogueScore,
     // Bilateral transformation analysis
     transformationAnalysis: {
       turnProgression: turnProgressionAnalysis,
@@ -1758,6 +1815,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     forbiddenFound,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    // Holistic dialogue evaluation (full transcript scored as single unit)
+    holisticDialogueScore,
     // Bilateral transformation metrics
     transformationMetrics: {
       tutorAdaptationIndex: turnProgressionAnalysis.adaptationIndex,

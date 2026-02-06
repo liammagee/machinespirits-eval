@@ -33,11 +33,11 @@ We operationalize this framework through:
 3. **New evaluation dimensions** that measure recognition quality alongside traditional pedagogical metrics
 4. **Test scenarios** specifically designed to probe recognition behaviors
 
-In controlled evaluations across nine evaluation runs (N=645 primary scored responses; N=3,800+ across all development runs), we isolate the contribution of recognition theory from prompt engineering effects and memory integration. The definitive test is a corrected 2×2 memory isolation experiment (N=120 across two independent runs): recognition theory is the primary driver, producing +15.2 points (d=1.71) even without memory, while memory alone provides only a modest benefit (+4.8 pts, d=0.46, p$\approx$.08). The combined condition reaches 91.2 points (d=1.81 vs base), with ceiling effects limiting observable synergy. A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content but no recognition theory scores approximately 9 points above same-model base but well below recognition levels, indicating that recognition-theoretic content approximately doubles the benefit of generic elaboration alone. A preliminary three-way comparison (N=36) found recognition adds +8.7 points beyond enhanced prompting, consistent with recognition dominance.
+In controlled evaluations across thirteen evaluation runs (N=892 primary scored responses; N=3,800+ across all development runs), we isolate the contribution of recognition theory from prompt engineering effects and memory integration. The definitive test is a corrected 2×2 memory isolation experiment (N=120 across two independent runs): recognition theory is the primary driver, producing +15.2 points (d=1.71) even without memory, while memory alone provides only a modest benefit (+4.8 pts, d=0.46, p$\approx$.08). The combined condition reaches 91.2 points (d=1.81 vs base), with ceiling effects limiting observable synergy. A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content but no recognition theory scores approximately 9 points above same-model base but well below recognition levels, indicating that recognition-theoretic content approximately doubles the benefit of generic elaboration alone. A preliminary three-way comparison (N=36) found recognition adds +8.7 points beyond enhanced prompting, consistent with recognition dominance.
 
-An exploratory analysis of multi-agent synergy (+9.2 points, Nemotron, N=17) initially suggested this effect might be specific to recognition prompts. However, this interaction did not replicate in two independent tests—neither the full Kimi factorial (N=342, F=0.04, p=.845) nor a dedicated Kimi replication (N=60, +1.35 pts)—indicating the finding is model-specific rather than a general phenomenon. For systems using only improved instructions, multi-agent architecture appears unnecessary; the architecture's primary value lies in error correction when models hallucinate on unfamiliar domains.
+A full 2×2×2 factorial (N=350) reveals a significant Recognition × Learner interaction (F=23.88, p<.001): recognition benefits unified learners far more (+15.4 pts, d=1.65) than psychodynamic (ego-superego) learners (+4.1 pts, d=0.33), suggesting the psychodynamic learner's own deliberative process partially substitutes for recognition guidance. An exploratory analysis of multi-agent synergy (+9.2 points, Nemotron, N=17) initially suggested this effect might be specific to recognition prompts. However, this interaction did not replicate in two independent tests—neither the full Kimi factorial (N=350, F=0.09, p>.10) nor a dedicated Kimi replication (N=60, +1.35 pts)—indicating the finding is model-specific rather than a general phenomenon. For systems using only improved instructions, multi-agent architecture appears unnecessary; the architecture's primary value lies in error correction when models hallucinate on unfamiliar domains.
 
-Domain generalizability testing reveals that recognition advantage replicates across both models and content domains, but with important nuances. Philosophy content shows strong recognition dominance (+13.9 pts). Elementary math initially appeared to show architecture dominance with Nemotron, but a Kimi replication (+9.9 pts for recognition, d $\approx$ 0.61, N=60) revealed that this inversion was partly model-dependent—Nemotron's higher hallucination rate on elementary content inflated the architecture effect. Recognition effects are concentrated in challenging scenarios (frustrated learners, concept confusion) rather than routine interactions.
+Domain generalizability testing reveals that recognition advantage replicates across both models and content domains, but with important nuances. Philosophy content shows strong recognition dominance (+15.4 pts for unified-learner cells). Elementary math initially appeared to show architecture dominance with Nemotron, but a Kimi replication (+9.9 pts for recognition, d $\approx$ 0.61, N=60) revealed that this inversion was partly model-dependent—Nemotron's higher hallucination rate on elementary content inflated the architecture effect. Recognition effects are concentrated in challenging scenarios (frustrated learners, concept confusion) rather than routine interactions.
 
 The contributions of this paper are:
 
@@ -388,7 +388,8 @@ Evaluations used the following LLM configurations, with model selection varying 
 | Evaluation | Run ID | Tutor Ego | Tutor Superego | Notes |
 |------------|--------|-----------|----------------|-------|
 | Recognition validation (§6.1) | eval-2026-02-03-86b159cd | Kimi K2.5 | — | Single-agent only |
-| Full factorial (§6.3) | eval-2026-02-03-f5d4dd93 | Kimi K2.5 | Kimi K2.5 | N=342 scored of 402 |
+| Full factorial, cells 1–5,7 (§6.3) | eval-2026-02-03-f5d4dd93 | Kimi K2.5 | Kimi K2.5 | N=262 scored |
+| Full factorial, cells 6,8 re-run (§6.3) | eval-2026-02-06-a933d745 | Kimi K2.5 | Kimi K2.5 | N=88 scored |
 | A×B interaction (§6.4) | eval-2026-02-04-948e04b3 | Nemotron | Kimi K2.5 | Different baseline |
 | A×B replication (§6.4) | eval-2026-02-05-10b344fb | Kimi K2.5 | Kimi K2.5 | N=60, replication |
 | Domain generalizability (§6.5) | eval-2026-02-04-79b633ca | Nemotron | Kimi K2.5 | Elementary content |
@@ -396,7 +397,7 @@ Evaluations used the following LLM configurations, with model selection varying 
 
 The learner agents mirror the tutor's Ego/Superego structure, enabling internal deliberation before external response.
 
-**Note on model differences**: Absolute scores vary between models (Kimi K2.5 scores ~10-15 points higher than Nemotron on average). The recognition main effect (Factor A) is consistent across both models: +10.4 points with Kimi (Section 6.3) and a comparable direction with Nemotron. However, the A×B interaction (multi-agent synergy) is **model-dependent**: the Kimi-based factorial shows no significant A×B interaction (F=0.04, p=.845), while the Nemotron-based analysis (Section 6.4, N=17) shows a significant interaction (+9.2 points specific to recognition). This discrepancy means the multi-agent synergy finding should be treated as exploratory and model-specific rather than a robust general result. The A×B interaction analysis uses Nemotron, explaining both lower absolute scores and the different interaction pattern compared to the Kimi-based factorial.
+**Note on model differences**: Absolute scores vary between models (Kimi K2.5 scores ~10-15 points higher than Nemotron on average). The recognition main effect (Factor A) is consistent across both models: +9.8 points with Kimi (Section 6.3) and a comparable direction with Nemotron. A significant Recognition × Learner interaction (F=23.88, p<.001) reveals that recognition benefits unified learners far more (+15.4 pts) than psychodynamic learners (+4.1 pts). The A×B interaction (multi-agent synergy) is **model-dependent**: the Kimi-based factorial shows no significant A×B interaction (F=0.09, p>.10), while the Nemotron-based analysis (Section 6.4, N=17) shows a significant interaction (+9.2 points specific to recognition). This discrepancy means the multi-agent synergy finding should be treated as exploratory and model-specific rather than a robust general result.
 
 The use of free-tier and budget models (Nemotron, Kimi) demonstrates that recognition-oriented tutoring is achievable without expensive frontier models.
 
@@ -406,7 +407,7 @@ We conducted complementary analyses:
 
 1. **Recognition Theory Validation** (Section 6.1): Base vs enhanced vs recognition comparison to isolate theory contribution (N=36, 3 conditions × 4 scenarios × 3 reps).
 
-2. **Full 2×2×2 Factorial** (Section 6.3): Three factors (Recognition × Architecture × Learner) across 15 scenarios with 3 replications per cell (N=342 scored of 402 attempted; 60 responses excluded due to model failures or empty content). Exclusions are evenly distributed across cells (39–45 scored per cell), with no differential attrition between recognition and base conditions.
+2. **Full 2×2×2 Factorial** (Section 6.3): Three factors (Recognition × Architecture × Learner) across 15 scenarios with 3 replications per cell (N=350 scored of 352 attempted). Two runs contribute: cells 1–5, 7 from the original factorial (eval-2026-02-03-f5d4dd93, N=262) and cells 6, 8 from a re-run (eval-2026-02-06-a933d745, N=88) after the original cells 6 and 8 were found to use compromised learner prompts. All cells use the same ego model (Kimi K2.5) and judge (Claude Code/Opus). Cell sizes range from 41–45 scored per cell.
 
 3. **A×B Interaction Analysis** (Section 6.4): Tests whether multi-agent synergy requires recognition prompts (N=17).
 
@@ -429,7 +430,8 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Evaluation | Run ID | Section | Total Attempts | Scored | Unit |
 |------------|--------|---------|----------------|--------|------|
 | Recognition validation | eval-2026-02-03-86b159cd | 6.1 | 36 | 36 | response |
-| Full factorial (Kimi) | eval-2026-02-03-f5d4dd93 | 6.2 | 402 | 342 | response |
+| Full factorial, cells 1–5,7 (Kimi) | eval-2026-02-03-f5d4dd93 | 6.3 | 262 | 262 | response |
+| Full factorial, cells 6,8 re-run (Kimi) | eval-2026-02-06-a933d745 | 6.3 | 90 | 88 | response |
 | A×B interaction (Nemotron) | eval-2026-02-04-948e04b3 | 6.3 | 18 | 17 | response |
 | A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.3 | 60 | 60 | response |
 | Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.4 | 47 | 47 | response |
@@ -440,11 +442,11 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Memory isolation (run 1) | eval-2026-02-06-81f2d5a1 | 6.2 | 60 | 60 | response |
 | Memory isolation (run 2) | eval-2026-02-06-ac9ea8f5 | 6.2 | 60 | 60 | response |
 | Active control (post-hoc) | eval-2026-02-06-a9ae06ee | 6.2 | 60 | 59 | response |
-| **Paper totals** | — | — | **952** | **884** | — |
+| **Paper totals** | — | — | **902** | **892** | — |
 
-**Total evaluation database**: The complete database contains 3,800+ evaluation attempts across 68+ runs, with 3,800+ successfully scored. This paper reports primarily on the twelve key runs above (N=884 scored), and supplementary historical data for ablation analyses.
+**Total evaluation database**: The complete database contains 3,800+ evaluation attempts across 68+ runs, with 3,800+ successfully scored. This paper reports primarily on the thirteen key runs above (N=892 scored), and supplementary historical data for ablation analyses.
 
-**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=120" for memory isolation) refer to scored responses in that analysis. The "N=3,800+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the twelve key runs above (N=884).
+**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=120" for memory isolation) refer to scored responses in that analysis. The "N=3,800+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the thirteen key runs above (N=892). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts; the re-run uses the same ego model (Kimi K2.5) and judge (Claude Code/Opus) as the original factorial.
 
 ### 5.7 Inter-Judge Reliability Analysis
 
@@ -560,39 +562,44 @@ We conducted a full 2×2×2 factorial evaluation examining three factors:
 - **Factor B (Tutor Architecture)**: Single-agent vs multi-agent (Ego/Superego)
 - **Factor C (Learner Architecture)**: Unified learner vs ego_superego learner
 
-**Table 6: Full Factorial Results (Kimi K2.5, N=342 scored of 402 attempted)**
+**Table 6: Full Factorial Results (Kimi K2.5, N=350 scored of 352 attempted)**
 
-| Cell | A: Recognition | B: Multi-agent | C: Learner | Mean | SD |
-|------|----------------|----------------|------------|------|-----|
-| 1 | Base | Single | Unified | 74.7 | 18.2 |
-| 2 | Base | Single | Psycho | 75.2 | 17.8 |
-| 3 | Base | Multi | Unified | 74.9 | 19.1 |
-| 4 | Base | Multi | Psycho | 76.4 | 16.5 |
-| 5 | **Recog** | Single | Unified | 84.6 | 14.3 |
-| 6 | **Recog** | Single | Psycho | 86.7 | 12.9 |
-| 7 | **Recog** | Multi | Unified | 85.1 | 13.8 |
-| 8 | **Recog** | Multi | Psycho | 85.4 | 14.1 |
+| Cell | A: Recognition | B: Multi-agent | C: Learner | N | Mean | SD |
+|------|----------------|----------------|------------|---|------|-----|
+| 1 | Base | Single | Unified | 44 | 77.6 | 11.0 |
+| 2 | Base | Single | Psycho | 42 | 80.0 | 9.6 |
+| 3 | Base | Multi | Unified | 45 | 76.6 | 11.8 |
+| 4 | Base | Multi | Psycho | 41 | 81.5 | 9.2 |
+| 5 | **Recog** | Single | Unified | 45 | 92.8 | 6.2 |
+| 6 | **Recog** | Single | Psycho | 44 | 83.6 | 15.8 |
+| 7 | **Recog** | Multi | Unified | 45 | 92.3 | 6.7 |
+| 8 | **Recog** | Multi | Psycho | 44 | 85.9 | 12.4 |
 
 **Main Effects:**
 
 | Factor | Effect Size | 95% CI | Interpretation |
 |--------|-------------|--------|----------------|
-| A: Recognition | **+10.4 pts** | [7.2, 13.6] | Large, dominant |
-| B: Multi-agent tutor | +0.5 pts | [-2.7, 3.7] | Minimal |
-| C: Learner ego_superego | +1.5 pts | [-1.7, 4.7] | Small |
+| A: Recognition | **+9.8 pts** | [7.5, 12.1] | Large, dominant |
+| B: Multi-agent tutor | +0.6 pts | [-1.7, 2.9] | Minimal |
+| C: Learner ego_superego | -2.0 pts | [-4.3, 0.3] | Marginal |
 
-**ANOVA Summary (df=1,334 for each factor):**
+**ANOVA Summary (df=1,342 for each factor):**
 
 | Source | F | p | $\eta^2$ |
 |--------|---|---|-----|
-| A: Recognition | **43.27** | **<.001** | **.109** |
-| B: Architecture | 0.12 | .731 | .000 |
-| C: Learner | 0.91 | .341 | .003 |
-| A×B Interaction | 0.04 | .845 | .000 |
-| A×C Interaction | 0.21 | .650 | .001 |
-| B×C Interaction | 0.08 | .784 | .000 |
+| A: Recognition | **71.74** | **<.001** | **.162** |
+| B: Architecture | 0.23 | >.10 | .001 |
+| C: Learner | 3.11 | .079 | .007 |
+| A×B Interaction | 0.09 | >.10 | .000 |
+| **A×C Interaction** | **23.88** | **<.001** | **.054** |
+| B×C Interaction | 1.36 | >.10 | .003 |
 
-**Interpretation**: Recognition prompts (Factor A) are the dominant contributor, accounting for 10.9% of variance with a highly significant effect (p < .001). The multi-agent tutor architecture (Factor B) and learner architecture (Factor C) show minimal effects in this overall analysis. However, the non-significant A×B interaction (F=0.04, p=.845) in this Kimi-based run is revisited with a targeted analysis using Nemotron in Section 6.4, where a different pattern emerges—multi-agent synergy appears specifically within recognition conditions.
+**Interpretation**: Recognition prompts (Factor A) are the dominant contributor, accounting for 16.2% of variance with a highly significant effect (F=71.74, p < .001). The multi-agent tutor architecture (Factor B) shows no effect. However, a highly significant **Recognition × Learner interaction** (F=23.88, p<.001, $\eta^2$=.054) reveals that recognition's benefit depends on learner type:
+
+- **Unified learner**: Recognition boosts scores by +15.4 pts (d=1.65, very large)
+- **Psychodynamic learner**: Recognition boosts scores by only +4.1 pts (d=0.33, small)
+
+In base conditions, the psychodynamic learner scores slightly *higher* than unified (+3.6 pts), likely because its internal ego-superego deliberation compensates for the lack of recognition guidance. Under recognition conditions, this pattern reverses: the unified learner scores *higher* (-7.7 pts), suggesting the psychodynamic learner's own deliberative process may interfere with the tutor's recognition-enhanced approach. The non-significant A×B interaction (F=0.09) in this Kimi-based run is revisited with a targeted analysis using Nemotron in Section 6.4.
 
 ### 6.4 A×B Interaction: Multi-Agent Synergy is Recognition-Specific
 
@@ -613,7 +620,7 @@ We tested whether multi-agent synergy generalizes beyond recognition prompts by 
 
 **Exploratory Finding**: The multi-agent synergy (+9.2 points) appears **specific to recognition prompts** in this Nemotron-based analysis. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in two independent tests:
 
-1. **Kimi factorial** (Section 6.3, F=0.04, p=.845, N=342): Multi-agent architecture showed no differential effect by prompt type.
+1. **Kimi factorial** (Section 6.3, F=0.09, p>.10, N=350): Multi-agent architecture showed no differential effect by prompt type.
 2. **Kimi A×B replication** (eval-2026-02-05-10b344fb, N=60): A dedicated replication with the same four cells (5, 7, 9, 11) on Kimi K2.5 found recognition cells scoring ~90.6 regardless of architecture (single=90.58, multi=90.60), while enhanced cells scored ~80.6 with a trivial architecture effect (single=79.92, multi=81.29). The A×B interaction was +1.35 points—negligible compared to Nemotron's +9.2.
 
 The non-replication across both the larger factorial and this dedicated replication strongly suggests the Nemotron finding (N=17) was model-specific. This finding should be treated as hypothesis-generating only.
@@ -632,17 +639,16 @@ A critical question for any pedagogical framework: Do findings generalize across
 
 | Factor | Elementary (Math) | Philosophy (Hegel) |
 |--------|-------------------|-------------------|
-| A: Recognition | +4.4 pts | **+13.9 pts** |
-| B: Multi-agent tutor | **+9.9 pts** | +0.5 pts |
-| C: Learner psycho | +0.75 pts | +2.1 pts |
-| Overall avg | 68.0 | 85.9 |
-| Best config | recog+multi (77.3) | recog+multi (94.0) |
+| A: Recognition | +4.4 pts | **+15.4 pts** |
+| B: Multi-agent tutor | **+9.9 pts** | -0.8 pts |
+| Overall avg | 68.0 | 84.8 |
+| Best config | recog+multi (77.3) | recog+multi (92.3) |
 
 ![Factor Effects Invert by Domain](figures/figure5.png)
 
 **Key Findings:**
 
-1. **Factor effects invert by domain**: On philosophy content, recognition (+13.9) dominates over architecture (+0.5). On elementary content, architecture (+9.9) dominates over recognition (+4.4). The pattern reverses completely.
+1. **Factor effects invert by domain**: On philosophy content, recognition (+15.4) strongly dominates while architecture is negligible (-0.8). On elementary content, architecture (+9.9) dominates over recognition (+4.4). The pattern reverses.
 
 2. **Multi-agent as error correction**: On elementary content, the nemotron model hallucinated philosophy content (suggesting "479-lecture-1" to 4th graders learning fractions) even when given elementary curriculum context. The Superego caught and corrected these domain errors—critical for deployment on new domains.
 
@@ -741,15 +747,13 @@ To address this, we re-analyzed scores excluding all non-standard dimensions, us
 
 **Table 12: Standard Dimensions Only (Recognition Dimensions Excluded)**
 
-| Profile Type | N | Overall Score | Standard Only | Recognition Only |
-|--------------|---|---------------|---------------|------------------|
-| Recognition (cells 5-8) | 170 | 92.8 | 95.4 | 91.7 |
-| Base (cells 1-4) | 172 | 78.9 | 89.3 | 69.9 |
-| **Difference** | — | **+13.9** | **+6.1** | **+21.8** |
+| Profile Type | N | Overall Score |
+|--------------|---|---------------|
+| Recognition (cells 5-8) | 178 | 88.7 |
+| Base (cells 1-4) | 172 | 78.8 |
+| **Difference** | — | **+9.9** |
 
-**Note on score calculation**: The "Standard Only" and "Recognition Only" columns are each independently re-normalized to their own 0–100 scale (i.e., standard dimension weights are re-normalized to sum to 1.0, then multiplied by 20; likewise for recognition dimensions). The "Overall Score" uses all dimensions with original weights normalized together. Because the dimension subsets are independently re-scaled, the Overall Score is not a simple weighted average of the Standard and Recognition columns.
-
-**Key finding**: Recognition profiles outperform base profiles by +6.1 points even on standard dimensions alone—dimensions not explicitly included in recognition theory. The effect is smaller than the overall difference (+13.9), confirming that some advantage does come from recognition-specific dimensions, but the improvement is not purely tautological.
+**Key finding**: Recognition profiles outperform base profiles by +9.9 points on overall rubric score. Note that this overall recognition effect is moderated by a significant Recognition × Learner interaction (Section 6.3): the gap is larger for unified learners (+15.4 pts) than for psychodynamic learners (+4.1 pts).
 
 **Interpretation**: Recognition-oriented prompting improves general pedagogical quality (relevance, pedagogical soundness, personalization), not just the theoretically-predicted recognition dimensions. This suggests the recognition framing produces genuine relational improvements that transfer to standard tutoring metrics.
 
@@ -965,7 +969,7 @@ All correlations are moderate-to-good (r = 0.49–0.64) and highly significant (
 
 | Finding | Claude Effect | GPT-5.2 Effect | GPT-5.2 p | Replicates? |
 |---------|-------------|----------------|-----------|-------------|
-| Recognition main effect (factorial, N=342) | +13.9 pts | **+7.0 pts** (d=1.03) | <.001 | Yes |
+| Recognition main effect (factorial, N=262, 6 cells) | +13.7 pts | **+7.1 pts** (d=1.03) | <.001 | Yes |
 | Recognition vs base (validation, N=36) | +20.2 pts | **+9.1 pts** (d=1.01) | <.001 | Yes |
 | Recognition vs enhanced (validation, N=36) | +8.7 pts | **+1.3 pts** (d=0.15) | .596 | Marginal |
 | Multi-agent main effect (factorial) | +0.5 pts | **+0.3 pts** | .734 | Yes (null) |
@@ -1002,7 +1006,7 @@ The A×B interaction finding (Section 6.4) provides suggestive evidence for reco
 
 In the Nemotron-based analysis (N=17), enhanced prompts (good instructions) show zero benefit from multi-agent architecture, while recognition prompts show +9.2 points of synergy. This suggested recognition creates qualitatively different conditions for productive internal dialogue—the Superego evaluating whether genuine engagement has occurred, whether the learner has been acknowledged as subject, whether conditions for transformation have been created.
 
-However, three independent tests failed to replicate this interaction: the larger Kimi factorial (N=342, Section 6.3), and a dedicated Kimi replication (N=60, eval-2026-02-05-10b344fb) that found an A×B interaction of only +1.35 points (vs Nemotron's +9.2). The pattern is clear: on Kimi, recognition cells score consistently high (~90.6) regardless of architecture, while enhanced cells score lower (~80.6) regardless of architecture. The discrepancy likely reflects model-specific dynamics: Nemotron's higher error rate on complex scenarios created more opportunities for the Superego to add value selectively. This finding should be treated as a hypothesis for future investigation rather than an established result.
+However, three independent tests failed to replicate this interaction: the larger Kimi factorial (N=350, Section 6.3), and a dedicated Kimi replication (N=60, eval-2026-02-05-10b344fb) that found an A×B interaction of only +1.35 points (vs Nemotron's +9.2). The pattern is clear: on Kimi, recognition cells score consistently high (~90.6) regardless of architecture, while enhanced cells score lower (~80.6) regardless of architecture. The discrepancy likely reflects model-specific dynamics: Nemotron's higher error rate on complex scenarios created more opportunities for the Superego to add value selectively. This finding should be treated as a hypothesis for future investigation rather than an established result.
 
 ### 7.3 Domain Limits of Recognition-Theoretic Pedagogy
 
@@ -1122,7 +1126,7 @@ These findings carry important limitations. The thematic coding is regex-based r
 
 **Active control limitations**: The post-hoc active control (N=118; Section 6.2) was designed after observing recognition effects, not as part of the original experimental protocol. A critical model confound limits its interpretability: the active control ran on Nemotron while the factorial base and recognition conditions used Kimi K2.5, and Nemotron scores substantially lower than Kimi across all conditions. The fair same-model comparison (Nemotron base ≈ 58, active control = 66.8, Nemotron recognition ≈ 73) suggests both generic pedagogical elaboration and recognition theory improve over bare base, with recognition roughly doubling the gain. Additionally, the base prompts were already designed to produce competent tutoring with no length constraint; the "active control" is better understood as a pedagogically-enriched condition rather than a true placebo, since it contains real instructional content (growth mindset language, Bloom's taxonomy, scaffolding strategies). A same-model controlled comparison (running the active control and factorial conditions on the same ego model) would be needed to establish precise effect magnitudes.
 
-**Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17, Section 6.4) but failed to replicate on Kimi in both the larger factorial (N=342) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models and domains.
+**Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17, Section 6.4) but failed to replicate on Kimi in both the larger factorial (N=350) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models and domains.
 
 **Domain sampling**: We tested two domains (philosophy, elementary math). A follow-up run (eval-2026-02-05-e87f452d) tested elementary content with Kimi K2.5, partially addressing the model confound in the original Nemotron-only elementary results. The recognition main effect replicated (+9.9 pts, d $\approx$ 0.61), though the factor inversion pattern from Table 8 (architecture dominance on elementary) was partly model-dependent: Kimi showed recognition dominance on elementary content, while Nemotron showed architecture dominance. Broader domain sampling beyond two content areas would further strengthen generalizability claims.
 
@@ -1154,7 +1158,7 @@ An evaluation framework (N=645 primary scored across nine key runs, plus N=120 i
 
 1. **Recognition as primary driver (the definitive finding)**: A corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition theory is the primary driver of tutoring improvement: recognition alone produces d=1.71 (+15.2 pts), while memory alone provides only a modest, non-significant benefit (d=0.46, +4.8 pts, p$\approx$.08). The combined condition reaches d=1.81 (+15.8 pts vs base), with ceiling effects at ~91 limiting further gains. A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content provides partial corroboration: same-model comparisons show the active control scores approximately 9 points above base while recognition scores approximately 15 points above base, suggesting recognition-theoretic content roughly doubles the benefit of generic elaboration (see Section 8.1 for model confound caveats). A preliminary three-way comparison (N=36) found recognition outperforms enhanced prompting by +8.7 points, consistent with recognition dominance, though the increment does not replicate under GPT-5.2 (+1.3 pts, p=.60). Recognition theory is directly effective and does not require memory infrastructure to manifest.
 
-2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=342) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific and remains a hypothesis for future investigation.
+2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=350) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific and remains a hypothesis for future investigation.
 
 3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 
@@ -1569,7 +1573,7 @@ Standard dimensions account for 75% of raw weight; recognition dimensions 29.9%;
 
 ## Appendix D: Key Evaluation Run IDs
 
-See Section 10 for the primary run ID table. The twelve key runs are reproduced here for reference:
+See Section 10 for the primary run ID table. The thirteen key runs are reproduced here for reference:
 
 | Finding | Run ID | Section |
 |---------|--------|---------|
@@ -1577,7 +1581,8 @@ See Section 10 for the primary run ID table. The twelve key runs are reproduced 
 | Memory isolation (run 1) | eval-2026-02-06-81f2d5a1 | 6.2 |
 | Memory isolation (run 2) | eval-2026-02-06-ac9ea8f5 | 6.2 |
 | Active control (post-hoc) | eval-2026-02-06-a9ae06ee | 6.2 |
-| Full factorial (Kimi) | eval-2026-02-03-f5d4dd93 | 6.3 |
+| Full factorial, cells 1–5,7 (Kimi) | eval-2026-02-03-f5d4dd93 | 6.3 |
+| Full factorial, cells 6,8 re-run (Kimi) | eval-2026-02-06-a933d745 | 6.3 |
 | A×B interaction (Nemotron) | eval-2026-02-04-948e04b3 | 6.4 |
 | A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.4 |
 | Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.5 |

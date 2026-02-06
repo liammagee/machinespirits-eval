@@ -314,6 +314,22 @@ export function isMultiTurnScenario(scenarioId, options = {}) {
 }
 
 /**
+ * Get evaluation settings from rubric.
+ *
+ * @param {Object} [options]
+ * @returns {Object} { useAIJudge, runsPerConfig, parallelism }
+ */
+export function getEvalSettings(options = {}) {
+  const rubric = loadRubric(options);
+  const settings = rubric?.settings || {};
+  return {
+    useAIJudge: settings.use_ai_judge ?? true,
+    runsPerConfig: settings.runs_per_config ?? 3,
+    parallelism: settings.parallelism ?? 2,
+  };
+}
+
+/**
  * Get benchmark settings from rubric.
  *
  * @param {Object} [options]
@@ -580,6 +596,7 @@ export default {
   listScenarios,
   listScenariosByCategory,
   isMultiTurnScenario,
+  getEvalSettings,
   getBenchmarkSettings,
   loadTutorAgents,
   getTutorProfile,

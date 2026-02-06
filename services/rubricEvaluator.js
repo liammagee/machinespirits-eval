@@ -245,6 +245,89 @@ async function callJudgeModelWithConfig(prompt, config) {
 }
 
 /**
+ * Format a dialogue transcript for the judge prompt.
+ * Renders the conversation history and internal deliberation traces as
+ * a readable exchange so the judge can evaluate the suggestion in context.
+ *
+ * @param {Object} dialogueContext - Dialogue context from the evaluation runner
+ * @param {Array} dialogueContext.conversationHistory - Array of turn objects
+ * @param {Array} dialogueContext.dialogueTrace - Current turn's dialogue trace
+ * @param {Array} dialogueContext.consolidatedTrace - Full multi-turn consolidated trace
+ * @returns {string|null} Formatted transcript section, or null if no dialogue data
+ */
+function formatDialogueTranscript(dialogueContext) {
+  if (!dialogueContext) return null;
+
+  const { conversationHistory, dialogueTrace, consolidatedTrace } = dialogueContext;
+
+  // Use consolidatedTrace if available (richest source), otherwise fall back to conversationHistory
+  const trace = consolidatedTrace?.length > 0 ? consolidatedTrace : null;
+  const history = conversationHistory?.length > 0 ? conversationHistory : null;
+
+  if (!trace && !history) return null;
+
+  const lines = [];
+
+  if (trace) {
+    // Format from consolidated trace (includes internal deliberation)
+    let currentTurnIdx = -1;
+    for (const entry of trace) {
+      // Turn separator
+      if (entry.turnIndex !== undefined && entry.turnIndex !== currentTurnIdx) {
+        currentTurnIdx = entry.turnIndex;
+        lines.push(`\n--- Turn ${currentTurnIdx} ---`);
+      }
+
+      if (entry.agent === 'user' && entry.action === 'turn_action') {
+        lines.push(`[Learner Action] ${entry.detail || entry.contextSummary}`);
+      } else if (entry.agent === 'learner_ego') {
+        lines.push(`  (Learner Ego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
+      } else if (entry.agent === 'learner_superego') {
+        lines.push(`  (Learner Superego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
+      } else if (entry.agent === 'learner_synthesis') {
+        lines.push(`[Learner] "${truncate(entry.detail || entry.contextSummary, 300)}"`);
+      } else if (entry.agent === 'ego' && entry.action === 'initial_draft') {
+        lines.push(`  (Tutor Ego draft: ${truncate(entry.contextSummary || '', 150)})`);
+      } else if (entry.agent === 'superego') {
+        lines.push(`  (Tutor Superego: ${truncate(entry.contextSummary || '', 150)})`);
+      } else if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'final_revision')) {
+        lines.push(`[Tutor] (revised after superego feedback)`);
+      } else if (entry.agent === 'user' && entry.action === 'final_output') {
+        lines.push(`[Tutor → Learner] Delivered ${entry.suggestionCount} suggestion(s)`);
+      } else if (entry.agent === 'ego') {
+        // Single-agent tutor response
+        lines.push(`[Tutor] ${truncate(entry.contextSummary || '', 200)}`);
+      }
+    }
+  } else if (history) {
+    // Format from conversation history (less detail, no internal deliberation)
+    for (const turn of history) {
+      lines.push(`\n--- Turn ${turn.turnIndex} ---`);
+      if (turn.learnerMessage) {
+        lines.push(`[Learner] "${truncate(turn.learnerMessage, 300)}"`);
+      } else if (turn.learnerAction) {
+        lines.push(`[Learner Action] ${turn.learnerAction}`);
+      }
+      if (turn.suggestion) {
+        const msg = turn.suggestion.message || turn.suggestion.title || '';
+        lines.push(`[Tutor] "${truncate(msg, 300)}"`);
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Truncate a string to maxLen characters, adding ellipsis if needed.
+ */
+function truncate(str, maxLen) {
+  if (!str) return '';
+  if (str.length <= maxLen) return str;
+  return str.slice(0, maxLen - 3) + '...';
+}
+
+/**
  * Build the evaluation prompt for the judge model
  */
 function buildEvaluationPrompt(suggestion, scenario, context) {
@@ -261,7 +344,18 @@ Criteria:
 ${criteriaText}`;
   }).join('\n\n');
 
-  return `You are an expert evaluator of AI tutoring systems. Evaluate the following AI tutor suggestion against the pedagogical rubric.
+  // Build optional dialogue transcript section
+  const dialogueTranscript = formatDialogueTranscript(context.dialogueContext);
+  const dialogueSection = dialogueTranscript
+    ? `\n## DIALOGUE TRANSCRIPT
+
+The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner's actual engagement, struggle, and development.
+
+${dialogueTranscript}
+`
+    : '';
+
+  return `You are an expert evaluator of AI tutoring systems. Evaluate the following AI tutor suggestion against the pedagogical rubric.${dialogueTranscript ? ' The suggestion was produced in the context of a multi-turn dialogue — evaluate it in that context, considering how the tutor responds to the learner\'s actual engagement and development.' : ''}
 
 ## EVALUATION RUBRIC
 
@@ -282,7 +376,7 @@ ${dimensionCriteria}
 
 **Learner Context**:
 ${scenario.learnerContext || context.learnerContext || 'No context provided'}
-
+${dialogueSection}
 ## SUGGESTION TO EVALUATE
 
 \`\`\`json
@@ -299,14 +393,14 @@ ${(scenario.forbiddenElements || []).map(e => `- ${e}`).join('\n') || '- None sp
 
 ## YOUR TASK
 
-Evaluate the suggestion and provide:
+Evaluate the suggestion${dialogueTranscript ? ' in the context of the dialogue above' : ''} and provide:
 1. A score (1-5) for each dimension with reasoning
 2. Whether it passes the required/forbidden element checks
 3. An overall score (weighted average, 0-100 scale)
 
 For each dimension, include:
 - **score**: 1-5 rating
-- **reasoning**: Brief explanation of why this score was given
+- **reasoning**: Brief explanation of why this score was given${dialogueTranscript ? '. For recognition dimensions, consider how the tutor engaged with the learner\'s actual responses and development.' : ''}
 
 CRITICAL JSON RULES:
 - Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
@@ -329,7 +423,9 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
     "memory_integration": {"score": 4, "reasoning": "References prior session"},
     "transformative_potential": {"score": 3, "reasoning": "Informative not transformative"},
     "tutor_adaptation": {"score": 3, "reasoning": "Some adjustment to input"},
-    "learner_growth": {"score": 4, "reasoning": "Shows conceptual development"}
+    "learner_growth": {"score": 4, "reasoning": "Shows conceptual development"},
+    "productive_struggle": {"score": 4, "reasoning": "Sustains appropriate tension"},
+    "epistemic_honesty": {"score": 4, "reasoning": "Represents complexity fairly"}
   },
   "validation": {
     "passes_required": true,
@@ -621,7 +717,8 @@ function regexScoreRescue(text) {
   const dimensionNames = [
     'relevance', 'specificity', 'pedagogical_soundness', 'personalization',
     'actionability', 'tone', 'mutual_recognition', 'dialectical_responsiveness',
-    'memory_integration', 'transformative_potential',
+    'memory_integration', 'transformative_potential', 'tutor_adaptation',
+    'learner_growth', 'productive_struggle', 'epistemic_honesty',
   ];
 
   const scores = {};
@@ -863,7 +960,7 @@ export async function evaluateSuggestions(suggestions, scenario, context = {}, o
   // Aggregate scores if multiple suggestions
   if (results.length > 0 && results[0].success) {
     const avgScores = {};
-    const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+    const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'productive_struggle', 'epistemic_honesty'];
 
     for (const dim of dimensions) {
       const scores = results
@@ -1018,7 +1115,7 @@ export function quickValidate(suggestion, scenario) {
 }
 
 // Dimension groups for dual scoring
-const BASE_DIMENSIONS = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
+const BASE_DIMENSIONS = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'productive_struggle', 'epistemic_honesty'];
 const RECOGNITION_DIMENSIONS = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential', 'tutor_adaptation', 'learner_growth'];
 
 /**
