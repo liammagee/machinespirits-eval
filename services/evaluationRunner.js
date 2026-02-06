@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import { tutorApiService as tutorApi, monitoringService, tutorDialogueEngine as dialogueEngine } from '@machinespirits/tutor-core';
+import { tutorApiService as tutorApi, monitoringService, tutorDialogueEngine as dialogueEngine, setLogDir } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
@@ -25,6 +25,9 @@ import * as promptRewriter from './promptRewriter.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
 const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
+
+// Redirect tutor-core logs to this repo's logs/ directory
+setLogDir(path.join(EVAL_ROOT, 'logs'));
 
 // Read package version once at import time
 const pkg = JSON.parse(fs.readFileSync(path.join(EVAL_ROOT, 'package.json'), 'utf-8'));
