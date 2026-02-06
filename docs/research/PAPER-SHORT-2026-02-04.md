@@ -46,11 +46,11 @@ We make the following contributions:
 
 2. **Memory Isolation Experiment**: A corrected 2×2 experiment (N=120 across two independent runs) demonstrating recognition as the primary driver (d=1.71), with memory providing a modest secondary benefit (d=0.46) and ceiling effects limiting observable synergy. A post-hoc active control (N=118) suggests recognition-theoretic content roughly doubles the benefit of generic pedagogical elaboration.
 
-3. **Robust Factorial Evaluation**: A 2×2×2 factorial design (N=645 primary scored across nine key runs, plus N=120 in the memory isolation experiment and N=118 in an active control; N=3,800+ across the full development database) across multiple models, scenarios, and conditions, providing statistically robust effect estimates.
+3. **Robust Factorial Evaluation**: A 2×2×2 factorial design (N=951 primary scored across thirteen key runs; N=3,800+ across the full development database) across multiple models, scenarios, and conditions, providing statistically robust effect estimates. A significant Recognition × Learner interaction (F=23.88, p<.001) reveals that recognition benefits unified learners far more (+15.4 pts, d=1.65) than psychodynamic learners (+4.1 pts, d=0.33).
 
 3b. **Three-Way Comparison**: Evidence from a base vs. enhanced vs. recognition comparison (N=36) consistent with recognition dominance, showing recognition outperforms enhanced prompting by +8.7 points.
 
-4. **A×B Interaction Analysis**: Exploratory evidence that multi-agent synergy may depend on recognition framing (Nemotron, N=17), though this did not replicate on Kimi (N=342 factorial; N=60 dedicated replication), indicating model-specific dynamics.
+4. **A×B Interaction Analysis**: Exploratory evidence that multi-agent synergy may depend on recognition framing (Nemotron, N=17), though this did not replicate on Kimi (N=350 factorial; N=60 dedicated replication), indicating model-specific dynamics.
 
 5. **Domain Generalizability Testing**: Evaluation on elementary mathematics content across two models confirming recognition advantage replicates, with multi-agent architecture providing critical error correction for domain transfer.
 
@@ -307,7 +307,7 @@ Critically, **all conditions use identical models within a given evaluation run*
 | Evaluation | N (scored) | Scenarios | Configurations |
 |------------|------------|-----------|----------------|
 | Base vs Enhanced vs Recognition | 36 | 4 | 3 × 3 reps |
-| Full 2×2×2 Factorial (Kimi) | 342 of 402 | 15 | 8 × 3 reps |
+| Full 2×2×2 Factorial (Kimi, 2 runs) | 350 of 352 | 15 | 8 × 3 reps |
 | A×B Interaction (Nemotron) | 17 of 18 | 3 | 2 × 3 reps |
 | A×B Replication (Kimi) | 60 | 5 | 4 × 3 reps |
 | Domain Generalizability (Nemotron) | 47 | 5 | 8 × 1 rep |
@@ -315,9 +315,9 @@ Critically, **all conditions use identical models within a given evaluation run*
 | Dynamic rewrite evolution (3 runs) | 83 | 3 | 2 × 5 reps × 3 runs |
 | Memory isolation (2 runs) | 120 | 5 | 4 × varied reps |
 | Active control (post-hoc, 1 run) | 118 | 5 | 4 × varied reps |
-| **Paper totals** | **943** | — | — |
+| **Paper totals** | **951** | — | — |
 
-**Total evaluation database**: N=3,800+ across the full development database (69 runs). This paper reports primarily on the nine key runs above, plus N=120 in a corrected memory isolation experiment (two runs) and N=118 in a post-hoc active control run.
+**Total evaluation database**: N=3,800+ across the full development database (69 runs). This paper reports primarily on the thirteen key runs above (N=951 scored). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts.
 
 ---
 
@@ -360,28 +360,29 @@ Recognition effect: +15.2 pts without memory, d=1.71, t(45)=6.62, p<.0001. Memor
 
 ### 6.3 Full Factorial Analysis
 
-**Table: 2×2×2 Factorial Results (Kimi K2.5, N=342 scored of 402 attempted)**
+**Table: 2×2×2 Factorial Results (Kimi K2.5, N=350 scored of 352 attempted)**
 
-| Cell | Recognition | Tutor | Learner | Mean | SD |
-|------|-------------|-------|---------|------|-----|
-| 8 | Yes | Multi | Psycho | 85.4 | 14.1 |
-| 6 | Yes | Single | Psycho | 86.7 | 12.9 |
-| 7 | Yes | Multi | Unified | 85.1 | 13.8 |
-| 5 | Yes | Single | Unified | 84.6 | 14.3 |
-| 4 | No | Multi | Psycho | 76.4 | 16.5 |
-| 2 | No | Single | Psycho | 75.2 | 17.8 |
-| 1 | No | Single | Unified | 74.7 | 18.2 |
-| 3 | No | Multi | Unified | 74.9 | 19.1 |
+| Cell | Recognition | Tutor | Learner | N | Mean | SD |
+|------|-------------|-------|---------|---|------|-----|
+| 5 | Yes | Single | Unified | 45 | 92.8 | 6.2 |
+| 7 | Yes | Multi | Unified | 45 | 92.3 | 6.7 |
+| 8 | Yes | Multi | Psycho | 44 | 85.9 | 12.4 |
+| 6 | Yes | Single | Psycho | 44 | 83.6 | 15.8 |
+| 4 | No | Multi | Psycho | 41 | 81.5 | 9.2 |
+| 2 | No | Single | Psycho | 42 | 80.0 | 9.6 |
+| 1 | No | Single | Unified | 44 | 77.6 | 11.0 |
+| 3 | No | Multi | Unified | 45 | 76.6 | 11.8 |
 
-**Main Effects:**
+**Main Effects and Key Interaction:**
 
 | Factor | Effect Size | 95% CI | $\eta^2$ | p |
 |--------|-------------|--------|-----|---|
-| A: Recognition | **+10.4 pts** | [7.2, 13.6] | .109 | <.001 |
-| B: Multi-agent Tutor | +0.5 pts | [-2.7, 3.7] | .000 | .731 |
-| C: Learner Architecture | +1.5 pts | [-1.7, 4.7] | .003 | .341 |
+| A: Recognition | **+9.8 pts** | [7.5, 12.1] | .162 | <.001 |
+| B: Multi-agent Tutor | +0.6 pts | [-1.7, 2.9] | .001 | >.10 |
+| C: Learner Architecture | -2.0 pts | [-4.3, 0.3] | .007 | .079 |
+| **A×C Interaction** | — | — | **.054** | **<.001** |
 
-**Key Finding**: Recognition remains the dominant factor, accounting for 10.9% of variance. The multi-agent tutor architecture shows minimal effect (+0.5 pts) on well-trained philosophy content. The non-significant A×B interaction (F=0.04, p=.845) is revisited with Nemotron in Section 6.4.
+**Key Findings**: Recognition remains the dominant factor (F=71.74, $\eta^2$=.162). A significant Recognition × Learner interaction (F=23.88, p<.001) shows recognition benefits unified learners far more (+15.4 pts, d=1.65) than psychodynamic learners (+4.1 pts, d=0.33). The psychodynamic learner's internal ego-superego deliberation may partially substitute for recognition guidance in base conditions but interfere with recognition-enhanced tutoring. The non-significant A×B interaction (F=0.09) is revisited with Nemotron in Section 6.4.
 
 ### 6.4 A×B Interaction: Recognition-Specific Synergy
 
@@ -396,7 +397,7 @@ To test whether multi-agent benefits depend on recognition framing, we compared 
 
 **Exploratory Finding**: In this Nemotron-based analysis (N=17), the multi-agent synergy (+9.2 points) appears **specific to recognition prompts**. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in two independent tests:
 
-1. **Kimi factorial** (Section 6.3, F=0.04, p=.845, N=342): No differential effect by prompt type.
+1. **Kimi factorial** (Section 6.3, F=0.09, p>.10, N=350): No differential effect by prompt type.
 2. **Kimi A×B replication** (N=60): Recognition cells scored ~90.6 regardless of architecture; enhanced cells ~80.6 with a trivial architecture effect. The A×B interaction was +1.35 points—negligible compared to Nemotron's +9.2.
 
 The non-replication strongly suggests the Nemotron finding was model-specific. This should be treated as hypothesis-generating only.
@@ -584,7 +585,7 @@ Without multi-agent architecture, these domain-inappropriate suggestions would r
 
 ### 7.4 The A×B Synergy: Model-Dependent Interaction
 
-The Nemotron-based analysis (N=17) suggested recognition × multi-agent interaction: enhanced prompts showed zero benefit from multi-agent architecture, while recognition prompts showed +9.2 pts benefit. However, this did not replicate on Kimi in either the larger factorial (N=342, F=0.04, p=.845) or a dedicated replication (N=60, interaction = +1.35 pts).
+The Nemotron-based analysis (N=17) suggested recognition × multi-agent interaction: enhanced prompts showed zero benefit from multi-agent architecture, while recognition prompts showed +9.2 pts benefit. However, this did not replicate on Kimi in either the larger factorial (N=350, F=0.09, p>.10) or a dedicated replication (N=60, interaction = +1.35 pts).
 
 **Interpretation**: Recognition theory may create a *deliberative space* that multi-agent architecture can engage with on some models—but this mechanism appears model-dependent. Kimi's higher baseline quality may leave less room for the Superego to add value, regardless of prompt type. The finding remains a plausible hypothesis but should not inform design decisions until replicated across additional models.
 
@@ -625,7 +626,7 @@ The qualitative analysis (Section 6.10) provides textual evidence that score dif
 
 1. **Domain Coverage**: While we tested generalizability on elementary mathematics, findings may not extend to all content domains. Technical STEM content, creative writing, and social-emotional learning may show different patterns.
 
-2. **Model Dependence**: Results were obtained primarily with Kimi K2.5 and Nemotron. The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17) but failed to replicate on Kimi in both the larger factorial (N=342) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models.
+2. **Model Dependence**: Results were obtained primarily with Kimi K2.5 and Nemotron. The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17) but failed to replicate on Kimi in both the larger factorial (N=350) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models.
 
 3. **Simulated Learners**: All evaluation uses LLM-generated learner simulations. Real learners may behave differently, particularly in how they respond to recognition-oriented tutoring.
 
@@ -655,7 +656,7 @@ An evaluation framework (N=645 primary scored across nine key runs, plus N=120 i
 
 1. **Recognition as primary driver (the definitive finding)**: A corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition theory is the primary driver of tutoring improvement: recognition alone produces d=1.71 (+15.2 pts), while memory alone provides only a modest, non-significant benefit (d=0.46, +4.8 pts, p$\approx$.08). The combined condition reaches d=1.81 (+15.8 pts vs base), with ceiling effects at ~91 limiting further gains. A post-hoc active control (N=118) using generic pedagogical content provides partial corroboration: same-model comparisons show the active control scores approximately 9 points above base while recognition scores approximately 15 points above base, suggesting recognition-theoretic content roughly doubles the benefit of generic elaboration (see Section 8.1 for model confound caveats). A preliminary three-way comparison (N=36) found recognition outperforms enhanced prompting by +8.7 points, consistent with recognition dominance, though the increment does not replicate under GPT-5.2 (+1.3 pts, p=.60). Recognition theory is directly effective and does not require memory infrastructure to manifest.
 
-2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=342) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific.
+2. **Recognition-specific synergy not confirmed**: An exploratory analysis on Nemotron (N=17) suggested multi-agent architecture benefits (+9.2 pts) may be specific to recognition prompts, but this did not replicate on Kimi in either the larger factorial (N=350) or a dedicated replication (N=60, interaction = +1.35 pts). The finding appears model-specific.
 
 3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 

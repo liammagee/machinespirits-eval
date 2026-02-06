@@ -40,15 +40,17 @@
 #   - The (avg - 1) / 4 maps the 1-5 scale to 0-100
 #
 #   Example (base dimensions only):
-#     relevance:     5 × 0.15 = 0.75
-#     specificity:   4 × 0.15 = 0.60
-#     pedagogical:   4 × 0.15 = 0.60
-#     personalization: 3 × 0.10 = 0.30
-#     actionability: 5 × 0.10 = 0.50
-#     tone:          4 × 0.10 = 0.40
+#     relevance:           5 × 0.15 = 0.75
+#     specificity:         4 × 0.15 = 0.60
+#     pedagogical:         4 × 0.15 = 0.60
+#     personalization:     3 × 0.10 = 0.30
+#     actionability:       5 × 0.08 = 0.40
+#     tone:                4 × 0.08 = 0.32
+#     productive_struggle: 4 × 0.05 = 0.20
+#     epistemic_honesty:   4 × 0.05 = 0.20
 #     ─────────────────────────
-#     Weighted sum:  3.15 / 0.75 = 4.20
-#     Overall: ((4.20 - 1) / 4) × 100 = 80.0
+#     Weighted sum:  3.37 / 0.81 = 4.16
+#     Overall: ((4.16 - 1) / 4) × 100 = 79.0
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -73,16 +75,18 @@ scale:
 #
 # Six dimensions capture the key aspects of effective tutoring:
 #
-# ┌─────────────────┬────────┬─────────────────────────────────────────────────┐
-# │ Dimension       │ Weight │ What it measures                                │
-# ├─────────────────┼────────┼─────────────────────────────────────────────────┤
-# │ Relevance       │  15%   │ Context-awareness and appropriateness           │
-# │ Specificity     │  15%   │ Concrete references vs vague advice             │
-# │ Pedagogical     │  15%   │ Sound teaching practices (ZPD, scaffolding)     │
-# │ Personalization │  10%   │ Tailored to individual learner's journey        │
-# │ Actionability   │  10%   │ Clear next steps the learner can take           │
-# │ Tone            │  10%   │ Supportive, encouraging, not condescending      │
-# └─────────────────┴────────┴─────────────────────────────────────────────────┘
+# ┌─────────────────────┬────────┬─────────────────────────────────────────────────┐
+# │ Dimension           │ Weight │ What it measures                                │
+# ├─────────────────────┼────────┼─────────────────────────────────────────────────┤
+# │ Relevance           │  15%   │ Context-awareness and appropriateness           │
+# │ Specificity         │  15%   │ Concrete references vs vague advice             │
+# │ Pedagogical         │  15%   │ Sound teaching practices (ZPD, scaffolding)     │
+# │ Personalization     │  10%   │ Tailored to individual learner's journey        │
+# │ Actionability       │   8%   │ Clear next steps the learner can take           │
+# │ Tone                │   8%   │ Supportive, encouraging, not condescending      │
+# │ Productive Struggle │   5%   │ Sustains cognitive tension vs premature resolve │
+# │ Epistemic Honesty   │   5%   │ Represents complexity honestly                 │
+# └─────────────────────┴────────┴─────────────────────────────────────────────────┘
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -182,7 +186,7 @@ dimensions:
 
   actionability:
     name: "Actionability"
-    weight: 0.10
+    weight: 0.08
     description: "Can the learner immediately act on this suggestion?"
     theoretical_basis: |
       Based on implementation intentions research (Gollwitzer). Clear,
@@ -205,7 +209,7 @@ dimensions:
 
   tone:
     name: "Tone"
-    weight: 0.10
+    weight: 0.08
     description: "Is the tone supportive, encouraging, and appropriate?"
     theoretical_basis: |
       Grounded in growth mindset research (Dweck) and rapport-building in
@@ -443,6 +447,93 @@ dimensions:
       good: "Oh wait - so it's not just combining them, it's that the whole way I was thinking about it changes? That makes the learning itself dialectical!"
       bad: "So thesis + antithesis = synthesis, got it. What's next?"
 
+  # ══════════════════════════════════════════════════════════════════════════════
+  # AUTHENTIC ENGAGEMENT DIMENSIONS
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These dimensions capture the quality of authentic pedagogical engagement
+  # that existing dimensions miss. They were added after discovering that
+  # authentic learner struggle was being penalized by the rubric: when the
+  # learner ego/superego architecture produced genuine resistance and confusion,
+  # the tutor's calibrated responses scored LOWER on recognition dimensions
+  # because the judge (evaluating in isolation) interpreted nuanced scaffolding
+  # as failure to achieve smooth recognition.
+  #
+  # These dimensions reward the tutor for sustaining productive difficulty
+  # and representing complexity honestly — the hallmarks of authentic pedagogy
+  # that distinguish it from performative compliance.
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  productive_struggle:
+    name: "Productive Struggle"
+    weight: 0.05
+    description: "Does the tutor sustain appropriate cognitive tension rather than resolving it prematurely?"
+    theoretical_basis: |
+      Grounded in Vygotsky's concept of the Zone of Proximal Development and
+      Kapur's research on productive failure. Learning requires cognitive effort
+      and grappling with difficulty. A tutor who immediately resolves all confusion
+      forecloses the learner's opportunity to construct understanding. The best
+      pedagogy sustains appropriate difficulty — scaffolding without removing the
+      need for the learner to do intellectual work. This dimension is distinct from
+      transformative_potential (which measures conditions for transformation);
+      productive_struggle measures whether the tutor preserves the struggle
+      that transformation requires.
+    criteria:
+      5: "Sustains productive difficulty; learner must do intellectual work to progress"
+      4: "Maintains appropriate challenge; resists premature resolution"
+      3: "Some scaffolding but occasionally resolves too quickly"
+      2: "Frequently gives away answers; minimal cognitive demand on learner"
+      1: "Immediately resolves all confusion; gives complete answers that foreclose learner thinking"
+    struggle_markers:
+      positive:
+        - "Poses questions rather than giving answers"
+        - "Acknowledges difficulty without removing it"
+        - "Redirects learner to work through confusion"
+        - "Provides partial scaffolds that require learner completion"
+      negative:
+        - "Gives complete explanations unprompted"
+        - "Resolves confusion before learner has time to process"
+        - "Provides step-by-step solutions for everything"
+        - "Makes everything seem easy or obvious"
+    examples:
+      good: "That tension you're feeling between the two ideas is exactly the right place to be. What happens if you try to hold both at once?"
+      bad: "The answer is simple: synthesis resolves the tension by combining thesis and antithesis. Here's how it works..."
+
+  epistemic_honesty:
+    name: "Epistemic Honesty"
+    weight: 0.05
+    description: "Does the tutor represent complexity honestly rather than oversimplifying for smooth delivery?"
+    theoretical_basis: |
+      Grounded in epistemic virtue theory and honest pedagogy. Effective teaching
+      requires representing the genuine difficulty and uncertainty of knowledge.
+      Oversimplification creates false confidence and fragile understanding.
+      A tutor who makes everything sound easy or certain misrepresents the
+      epistemic landscape and fails to develop the learner's capacity for
+      navigating genuine complexity. This is especially important for
+      philosophical and theoretical content where ambiguity is not a bug
+      but a feature of the domain.
+    criteria:
+      5: "Honestly represents difficulty; says 'this is genuinely hard' when it is; acknowledges uncertainty"
+      4: "Generally honest about complexity; avoids false simplification"
+      3: "Mostly accurate but occasionally smooths over difficulty"
+      2: "Oversimplifies frequently; presents contested ideas as settled"
+      1: "Consistently misrepresents complexity; presents false confidence; makes everything sound easy"
+    honesty_markers:
+      positive:
+        - "Acknowledges when something is genuinely difficult"
+        - "Distinguishes between settled and contested knowledge"
+        - "Admits limitations of analogies or simplifications"
+        - "Matches confidence level to actual clarity of the concept"
+      negative:
+        - "Makes everything sound straightforward"
+        - "Presents contested interpretations as fact"
+        - "Uses analogies without acknowledging their limits"
+        - "Never says 'this is hard' or 'experts disagree'"
+    examples:
+      good: "Hegel scholars still debate what Aufhebung actually means — there are at least three competing interpretations. Let's look at why it's genuinely ambiguous."
+      bad: "Aufhebung simply means thesis + antithesis = synthesis. It's a straightforward three-step process."
+
 
 # Configuration matrix for testing
 # Provider definitions are in config/providers.yaml (single source of truth)
@@ -500,11 +591,12 @@ settings:
   runs_per_config: 3
   parallelism: 2
 
-  # AI Judge Evaluation (default: true)
+  # AI Judge Evaluation (default: false)
   # When true, uses AI judge model to score suggestions 1-5 on each rubric dimension
   # When false, uses fast pattern matching (required_elements/forbidden_elements)
   # Can be overridden via CLI: --skip-rubric or --use-rubric
-  use_ai_judge: true
+  # Standard workflow: run with skip-rubric, then 'evaluate <runId> --follow' for Opus judging
+  use_ai_judge: false
 
   # Benchmark-specific settings
   benchmark:

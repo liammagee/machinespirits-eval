@@ -239,7 +239,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
@@ -297,7 +297,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: nemotron
+      model: kimi-k2.5
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
