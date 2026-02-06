@@ -1,10 +1,7 @@
 ---
 title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
-author:
-  - name: "Liam Magee"
-    affiliation: "Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
+author: "Liam Magee --- Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
 date: "February 2026"
-draft: v2.3
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -15,7 +12,7 @@ abstract: |
 
   An evaluation framework (N=645 primary scored responses across nine key runs, plus N=300 in a follow-up memory isolation experiment; N=3,800+ across the full development database) isolating recognition theory from prompt engineering effects reveals that recognition-enhanced prompting accounts for **+9 to +20 points** improvement depending on scenario, with **43% of this effect attributable to recognition theory itself** beyond general prompt engineering improvements. A follow-up 2×2 experiment (N=300) confirmed that neither memory nor recognition alone improves outcomes, but their combination yields +13.2 points (d=1.23), demonstrating genuine synergy rather than memory confound. The multi-agent tutor architecture contributes **+0.5 to +10 points** depending on content domain—minimal on well-trained content but critical for domain transfer where it catches model hallucinations. A step-by-step evolution analysis of dynamic prompt rewriting with active Writing Pad memory (N=83 across three runs) validates the Freudian memory model as the critical enabler—the rewrite cell progresses from trailing its baseline by 7.2 points to leading by 5.5 points once Writing Pad traces accumulate.
 
-  Three key findings emerge: (1) Recognition theory provides measurable value beyond prompt engineering, validated through a base vs. enhanced vs. recognition comparison; (2) An exploratory analysis of multi-agent synergy (+9.2 pts, Nemotron, N=17) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon; (3) Domain generalizability testing confirms recognition advantage replicates across both models and content domains—elementary math with Kimi shows +9.9 pts (d ≈ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change.
+  Three key findings emerge: (1) Recognition theory provides measurable value beyond prompt engineering, validated through a base vs. enhanced vs. recognition comparison; (2) An exploratory analysis of multi-agent synergy (+9.2 pts, Nemotron, N=17) suggested this effect may be specific to recognition prompts, but a dedicated Kimi replication (N=60) found negligible interaction (+1.35 pts), indicating this is model-specific rather than a general phenomenon; (3) Domain generalizability testing confirms recognition advantage replicates across both models and content domains—elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent. Bilateral transformation tracking confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+36% relative improvement in adaptation index), providing empirical grounding for the theoretical claim that recognition produces mutual change.
 
   These findings suggest that recognition theory's value is domain-sensitive, multi-agent architecture provides essential error correction for domain transfer, and optimal deployment configurations depend on content characteristics.
 
@@ -360,7 +357,7 @@ This validates the theoretical framework: recognition is not merely "better prom
 
 **Main Effects:**
 
-| Factor | Effect Size | 95% CI | η² | p |
+| Factor | Effect Size | 95% CI | $\eta^2$ | p |
 |--------|-------------|--------|-----|---|
 | A: Recognition | **+10.4 pts** | [7.2, 13.6] | .109 | <.001 |
 | B: Multi-agent Tutor | +0.5 pts | [-2.7, 3.7] | .000 | .731 |
@@ -450,7 +447,7 @@ Testing on elementary mathematics content (4th grade fractions) with Nemotron re
 | Base (cells 1, 3) | 30 | 67.2 | — |
 | Recognition (cells 5, 7) | 30 | 77.1 | **+9.9** |
 
-The recognition main effect (+9.9 pts, d ≈ 0.61) replicates on Kimi, confirming recognition advantage is not a Nemotron artifact. Effects are scenario-dependent: challenging scenarios (frustrated_student: +23.8, concept_confusion: +13.6) show substantial advantage, while neutral scenarios show none.
+The recognition main effect (+9.9 pts, d $\approx$ 0.61) replicates on Kimi, confirming recognition advantage is not a Nemotron artifact. Effects are scenario-dependent: challenging scenarios (frustrated_student: +23.8, concept_confusion: +13.6) show substantial advantage, while neutral scenarios show none.
 
 **Key Findings:**
 
@@ -505,7 +502,7 @@ The preceding sections establish score differences; this section examines what t
 
 **Lexical analysis.** Recognition responses deploy a 59% larger vocabulary (3,689 vs 2,319 types) with similar word and sentence length (5.77 vs 5.76 chars/word; 17.5 vs 16.9 words/sentence), suggesting richer expression rather than mere verbosity. The differential vocabulary is theoretically coherent: recognition-skewed terms are interpersonal and process-oriented ("consider" 94.6×, "transformed" 28.9×, "productive" 28.9×, "unpack" 26.0×), while base-skewed terms are procedural ("agents" 0.01×, "revisiting" 0.07×, "tackling" 0.10×).
 
-**Thematic coding.** Regex-based coding reveals three significant differences (chi-square, p < .05): *struggle-honoring* language ("wrestling with," "productive confusion") is 3.1× more frequent in recognition responses (χ²=141.9); *engagement markers* ("your insight," "building on your") are 1.8× more frequent (χ²=69.9); and *generic/placeholder* language ("foundational," "key concepts," "solid foundation") is 3.0× more frequent in base responses (χ²=93.2). These patterns are consistent with the theoretical framework: recognition tutors honor productive difficulty and engage with learner contributions, while base tutors default to generic instructional language.
+**Thematic coding.** Regex-based coding reveals three significant differences (chi-square, p < .05): *struggle-honoring* language ("wrestling with," "productive confusion") is 3.1× more frequent in recognition responses ($\chi^2$=141.9); *engagement markers* ("your insight," "building on your") are 1.8× more frequent ($\chi^2$=69.9); and *generic/placeholder* language ("foundational," "key concepts," "solid foundation") is 3.0× more frequent in base responses ($\chi^2$=93.2). These patterns are consistent with the theoretical framework: recognition tutors honor productive difficulty and engage with learner contributions, while base tutors default to generic instructional language.
 
 *Limitations: Regex-based coding, not human coders. Pairs selected for maximum contrast, not typicality. Full analysis in the long paper (Section 6.11) with reproducible script.*
 
@@ -543,7 +540,7 @@ The three-way comparison validates this interpretation: enhanced prompts with de
 
 Recognition theory's value varies by content domain. On graduate philosophy content (+13.9 pts in the domain comparison), recognition dominates. On elementary math content, the picture is more nuanced and partly model-dependent.
 
-With Nemotron, elementary content showed architecture dominance (+9.9 pts) over recognition (+4.4 pts). But the Kimi replication reversed this pattern: recognition (+9.9 pts, d ≈ 0.61) was the primary effect, with architecture contributing only +3.0 pts. The original factor inversion was partly an artifact of Nemotron's higher hallucination rate on elementary content, which inflated the architecture effect (Superego error correction).
+With Nemotron, elementary content showed architecture dominance (+9.9 pts) over recognition (+4.4 pts). But the Kimi replication reversed this pattern: recognition (+9.9 pts, d $\approx$ 0.61) was the primary effect, with architecture contributing only +3.0 pts. The original factor inversion was partly an artifact of Nemotron's higher hallucination rate on elementary content, which inflated the architecture effect (Superego error correction).
 
 Recognition effects are also scenario-dependent: challenging scenarios (frustrated learners, concept confusion) show substantial advantage (+13 to +24 pts), while neutral scenarios show near-zero effect. This is consistent with recognition theory—recognition behaviors matter most when the learner needs to be acknowledged as a struggling subject.
 
@@ -636,7 +633,7 @@ An evaluation framework (N=645 primary scored across nine key runs, plus N=300 i
 
 3. **Bilateral transformation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +36% higher than baseline), providing empirical grounding for the theoretical claim that recognition produces mutual change rather than one-directional instruction.
 
-4. **Domain generalizability confirmed**: Recognition advantage replicates across both philosophy and elementary math, and across both Kimi and Nemotron models. On elementary content with Kimi (N=60), recognition provides +9.9 pts (d ≈ 0.61), with effects concentrated in challenging scenarios. The factor inversion (architecture dominance on elementary) from the Nemotron analysis is partly model-dependent.
+4. **Domain generalizability confirmed**: Recognition advantage replicates across both philosophy and elementary math, and across both Kimi and Nemotron models. On elementary content with Kimi (N=60), recognition provides +9.9 pts (d $\approx$ 0.61), with effects concentrated in challenging scenarios. The factor inversion (architecture dominance on elementary) from the Nemotron analysis is partly model-dependent.
 
 5. **Multi-agent as reality testing**: On new domains, the Superego catches hallucinated content—essential for domain transfer, particularly with models prone to domain confusion.
 
