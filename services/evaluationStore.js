@@ -9,31 +9,15 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { randomBytes } from 'crypto';
-
-/**
- * Check if a process with the given PID is still running
- * @param {number} pid - Process ID to check
- * @returns {boolean} True if process is running, false otherwise
- */
-function isProcessRunning(pid) {
-  if (!pid || typeof pid !== 'number') return false;
-  try {
-    // Sending signal 0 doesn't kill the process, just checks if it exists
-    process.kill(pid, 0);
-    return true;
-  } catch (e) {
-    // ESRCH = no such process, EPERM = process exists but no permission
-    return e.code === 'EPERM';
-  }
-}
+import { isPidAlive } from './processUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 
-// Initialize database
-const dbPath = path.join(DATA_DIR, 'evaluations.db');
+// Initialize database — override with EVAL_DB_PATH env var for test isolation
+const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
 const db = new Database(dbPath);
 
 // Enable WAL mode for better concurrent access
@@ -187,6 +171,9 @@ try {
 } catch (e) { /* Column already exists */ }
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`);
 } catch (e) { /* Column already exists */ }
 
 // Migration: Add reproducibility metadata columns to evaluation_runs
@@ -359,6 +346,7 @@ export function storeResult(runId, result) {
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
+      scoring_method,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -372,6 +360,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?
     )
   `);
@@ -419,6 +408,7 @@ export function storeResult(runId, result) {
     result.factors?.multi_agent_tutor != null ? (result.factors.multi_agent_tutor ? 1 : 0) : null,
     result.factors?.multi_agent_learner != null ? (result.factors.multi_agent_learner ? 1 : 0) : null,
     result.learnerArchitecture || null,
+    result.scoringMethod || null,
     new Date().toISOString()
   );
 
@@ -821,7 +811,16 @@ export function exportToCsv(runId) {
     r.success ? 1 : 0,
   ]);
 
-  return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+  const escapeCsvField = (value) => {
+    if (value == null) return '';
+    const str = String(value);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  };
+
+  return [headers.join(','), ...rows.map(row => row.map(escapeCsvField).join(','))].join('\n');
 }
 
 /**
@@ -946,7 +945,7 @@ export function findIncompleteRuns(options = {}) {
       ageMinutes: Math.round((Date.now() - new Date(row.created_at).getTime()) / 60000),
       metadata,
       pid,
-      pidAlive: isProcessRunning(pid),
+      pidAlive: isPidAlive(pid),
     };
   });
 }
@@ -967,7 +966,7 @@ export function autoCompleteStaleRuns(options = {}) {
   // Filter out runs whose PID is still alive
   const staleRuns = incompleteRuns.filter(run => {
     const pid = run.metadata?.pid;
-    const isAlive = isProcessRunning(pid);
+    const isAlive = isPidAlive(pid);
     if (isAlive) {
       console.log(`  Skipping ${run.id}: pid ${pid} still running`);
     }
@@ -1134,6 +1133,7 @@ function parseResultRow(row) {
     dialogueId: row.dialogue_id,
     scores,
     overallScore: row.overall_score,
+    scoringMethod: row.scoring_method || null,
     baseScore: row.base_score,
     recognitionScore: row.recognition_score,
     passesRequired: Boolean(row.passes_required),
@@ -1385,6 +1385,7 @@ export function storeRejudgment(originalResult, evaluation) {
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
+      scoring_method,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -1398,6 +1399,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?
     )
   `);
@@ -1452,6 +1454,7 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.factorMultiAgentTutor ?? null,
     originalResult.factorMultiAgentLearner ?? null,
     originalResult.learnerArchitecture || null,
+    'rubric',  // Rejudgments only store successful rubric evaluations
     new Date().toISOString()
   );
 
@@ -1480,7 +1483,8 @@ export function updateResultScores(resultId, evaluation) {
       forbidden_found = ?,
       judge_model = ?,
       evaluation_reasoning = ?,
-      scores_with_reasoning = ?
+      scores_with_reasoning = ?,
+      scoring_method = ?
     WHERE id = ?
   `);
 
@@ -1502,6 +1506,7 @@ export function updateResultScores(resultId, evaluation) {
     evaluation.judgeModel || null,
     evaluation.summary || null,
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
+    'rubric',  // Only called on successful evaluations
     resultId
   );
 }

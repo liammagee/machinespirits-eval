@@ -43,20 +43,7 @@ function getGitCommitHash() {
   }
 }
 
-/**
- * Check if a process with the given PID is still alive.
- * @param {number} pid - Process ID to check
- * @returns {boolean} true if alive, false if dead, null if unknown
- */
-function isPidAlive(pid) {
-  if (!pid) return null;
-  try {
-    process.kill(pid, 0); // Signal 0 = check existence without killing
-    return true;
-  } catch (e) {
-    return e.code === 'EPERM' ? true : false; // EPERM means process exists but we can't signal it
-  }
-}
+import { isPidAlive } from './processUtils.js';
 
 /**
  * Eval-only profile names that need remapping to tutor-core profiles.
@@ -75,6 +62,8 @@ const EVAL_ONLY_PROFILES = [
   'cell_9_enhanced_single_unified', 'cell_10_enhanced_single_psycho',
   'cell_11_enhanced_multi_unified', 'cell_12_enhanced_multi_psycho',
   'cell_13_hardwired_single_unified', 'cell_14_hardwired_single_psycho',
+  'cell_15_placebo_single_unified', 'cell_16_placebo_single_psycho',
+  'cell_17_placebo_multi_unified', 'cell_18_placebo_multi_psycho',
   'cell_19_memory_single_unified', 'cell_20_recog_nomem_single_unified',
   'cell_21_recog_multi_unified_rewrite',
 ];
@@ -100,12 +89,14 @@ export function resolveEvalProfile(profileName) {
     const promptType = evalProfile?.factors?.prompt_type;
     if (promptType === 'enhanced') {
       resolvedProfileName = 'enhanced';
+    } else if (promptType === 'placebo') {
+      resolvedProfileName = 'placebo';
     } else if (promptType === 'hardwired') {
       resolvedProfileName = 'budget';  // hardwired uses budget profile with prompt override
     } else if (promptType === 'memory') {
-      resolvedProfileName = 'budget';  // memory-only uses budget profile with prompt override
+      resolvedProfileName = 'memory';
     } else if (promptType === 'recognition_nomem') {
-      resolvedProfileName = 'budget';  // recognition without memory uses budget profile
+      resolvedProfileName = 'recognition_nomem';
     } else if (recognitionMode) {
       resolvedProfileName = 'recognition';
     } else {
@@ -738,13 +729,23 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
 
   // Calculate turn score
   let turnScore = null;
+  let scoringMethod = null;
   if (rubricResult?.success) {
     turnScore = rubricResult.overallScore;
-  } else if (suggestion) {
-    turnScore = (validation.passesRequired ? 50 : 0) + (validation.passesForbidden ? 50 : 0);
+    scoringMethod = 'rubric';
+  } else if (suggestion && rubricResult && !rubricResult.success) {
+    // Judge API failed — do NOT silently produce a synthetic score.
+    // Store null so downstream aggregation excludes this data point.
+    turnScore = null;
+    scoringMethod = 'judge_failed';
+    log(`WARNING: Judge evaluation failed for ${scenarioId}; score stored as null (was: ${(validation.passesRequired ? 50 : 0) + (validation.passesForbidden ? 50 : 0)} from keyword fallback). Error: ${rubricResult.error || 'unknown'}`, 'warning');
+  } else if (suggestion && !rubricResult) {
+    // Rubric evaluation was skipped (skipRubricEval=true) — no score available
+    turnScore = null;
+    scoringMethod = 'skipped';
   }
 
-  return { genResult, suggestion, validation, rubricResult, turnScore };
+  return { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod };
 }
 
 /**
@@ -1236,7 +1237,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   // Use shared generation + evaluation helper
-  const { genResult, suggestion, validation, rubricResult, turnScore: overallScore } = await generateAndEvaluateTurn(
+  const { genResult, suggestion, validation, rubricResult, turnScore: overallScore, scoringMethod } = await generateAndEvaluateTurn(
     context, resolvedConfig,
     {
       scenarioName: fullScenario.name,
@@ -1305,6 +1306,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       ? rubricResult.scores
       : null,
     overallScore,
+    scoringMethod,
     baseScore: rubricResult?.baseScore ?? null,
     recognitionScore: rubricResult?.recognitionScore ?? null,
     passesRequired: rubricResult?.passesRequired ?? validation.passesRequired,
@@ -1357,7 +1359,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const learnerId = `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
   log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
 
-  const turns = fullScenario.turns || [];
+  // Deep-clone turns to prevent mutation of shared scenario objects across profiles
+  const turns = JSON.parse(JSON.stringify(fullScenario.turns || []));
   const turnResults = [];
   let totalLatencyMs = 0;
   let totalInputTokens = 0;
@@ -1444,7 +1447,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     const turnOptions = sessionEvolution
       ? { ...sharedTurnOptions, systemPromptExtension: sessionEvolution }
       : sharedTurnOptions;
-    const { genResult, suggestion, validation, rubricResult, turnScore } =
+    const { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } =
       await generateAndEvaluateTurn(context, resolvedConfig, turnMeta, turnOptions);
 
     if (!genResult.success) {
@@ -1508,6 +1511,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         tone: rubricResult.scores.tone?.score,
       } : null,
       turnScore,
+      scoringMethod,
       passesRequired: rubricResult?.passesRequired ?? validation.passesRequired,
       passesForbidden: rubricResult?.passesForbidden ?? validation.passesForbidden,
       requiredMissing: validation.requiredMissing,
@@ -1741,6 +1745,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueRounds: totalDialogueRounds,
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     overallScore,
+    scoringMethod: turnResults.some(t => t.scoringMethod === 'judge_failed')
+      ? 'partial_judge_failure'
+      : turnResults.every(t => t.scoringMethod === 'rubric') ? 'rubric' : 'mixed',
     baseScore,
     recognitionScore,
     turnResults,
