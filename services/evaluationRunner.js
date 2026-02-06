@@ -2539,6 +2539,31 @@ export async function rejudgeRun(runId, options = {}) {
 
         const suggestion = result.suggestions[0];
 
+        // Load dialogue context for multi-turn results
+        let dialogueContext = null;
+        if (result.dialogueId) {
+          const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
+          try {
+            if (fs.existsSync(logPath)) {
+              const dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+              if (dialogueLog.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
+                dialogueContext = {
+                  consolidatedTrace: dialogueLog.dialogueTrace,
+                  conversationHistory: (dialogueLog.turnResults || []).map((t, ti) => ({
+                    turnIndex: ti,
+                    turnId: t.turnId,
+                    suggestion: t.suggestions?.[0],
+                    learnerAction: t.learnerAction,
+                    learnerMessage: t.learnerMessage,
+                  })),
+                };
+              }
+            }
+          } catch (e) {
+            log(`  Warning: could not load dialogue log for ${result.dialogueId}: ${e.message}`);
+          }
+        }
+
         const evaluation = await retryWithBackoff(
           () => rubricEvaluator.evaluateSuggestion(suggestion, {
             name: fullScenario.name,
@@ -2547,7 +2572,7 @@ export async function rejudgeRun(runId, options = {}) {
             learnerContext: fullScenario.learner_context,
             requiredElements: fullScenario.required_elements,
             forbiddenElements: fullScenario.forbidden_elements,
-          }, {}, judgeOverrideObj),
+          }, { dialogueContext }, judgeOverrideObj),
           {}
         );
 
