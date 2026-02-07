@@ -1,6 +1,6 @@
 ---
 title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
-author: "Liam Magee --- Education Policy, Organization and Leadership, University of Illinois Urbana-Champaign"
+author: "Liam Magee \\\\ Education Policy, Organization and Leadership \\\\ University of Illinois Urbana-Champaign"
 date: "February 2026"
 bibliography: references.bib
 csl: apa.csl
