@@ -441,6 +441,8 @@ The learner architecture factor shows context-dependent effects:
 
 **Practical Recommendation**: Use single-agent learner simulation for production. The added complexity of multi-agent learner architecture provides no benefit and may cause harm on complex scenarios.
 
+**Measurement caveat**: The rubric includes bilateral dimensions (`tutor_adaptation`, `learner_growth`, 10% combined weight), but these are most meaningful in multi-turn scenarios. The primary factorial data (N=350) is single-turn, where Factor C's effect on learner output quality is captured only indirectly through the tutor's response. Factor C's contribution may therefore be underestimated; the bilateral transformation analysis (Section 6.8, N=118) provides more direct measurement.
+
 ### 6.6 Superego Critique Patterns and Hardwired Rules
 
 Analysis of 186 superego rejections from 455 dialogues reveals systematic patterns:
