@@ -317,9 +317,11 @@ Critically, **all conditions use identical models within a given evaluation run*
 | Domain Generalizability (Nemotron) | 47 | 5 | 8 × 1 rep |
 | Domain Gen. Replication (Kimi) | 60 | 5 | 4 × 3 reps |
 | Dynamic rewrite evolution (3 runs) | 82 | 3 | 2 × 5 reps × 3 runs |
-| Memory isolation (2 runs) | 122 | 5 | 4 × varied reps |
+| Memory isolation (2 runs)^a^ | 122 | 5 | 4 × varied reps |
 | Active control (post-hoc, 1 run) | 118 | 5 | 4 × varied reps |
 | **Paper totals** | **892** | — | — |
+
+^a^ 122 scored responses total (N=60 + N=62 across two runs); analysis uses N=120 balanced to 30 per cell.
 
 **Total evaluation database**: N=3,800+ across the full development database (76 runs). This paper reports primarily on the thirteen key runs above (N=892 scored). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts.
 
