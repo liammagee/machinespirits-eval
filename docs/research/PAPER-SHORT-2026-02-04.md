@@ -231,9 +231,11 @@ We extend the basic protocol with sophisticated AI-powered dialectical negotiati
 
 ## 5. Evaluation Methodology
 
-### 5.1 Recognition Evaluation Dimensions
+### 5.1 Evaluation Rubric Design
 
-We extend the standard tutoring evaluation rubric with recognition-specific dimensions:
+The evaluation rubric comprises 14 dimensions across three categories, each scored on a 1–5 scale by an LLM judge.
+
+**Standard pedagogical dimensions** (8 dimensions, 81% of raw weight) evaluate the tutor's response as a standalone pedagogical intervention, drawing on established ITS evaluation criteria [@corbett1995; @kasneci2023]:
 
 | Dimension | Weight | Description |
 |-----------|--------|-------------|
@@ -243,20 +245,26 @@ We extend the standard tutoring evaluation rubric with recognition-specific dime
 | **Personalization** | 10% | Does it acknowledge the learner as individual? |
 | **Actionability** | 8% | Is the suggested action clear and achievable? |
 | **Tone** | 8% | Is the tone authentically helpful? |
-| **Productive Struggle** | 5% | Does the tutor sustain appropriate cognitive tension? |
-| **Epistemic Honesty** | 5% | Does the tutor represent complexity honestly? |
+| **Productive Struggle**† | 5% | Does the tutor sustain appropriate cognitive tension? |
+| **Epistemic Honesty**† | 5% | Does the tutor represent complexity honestly? |
 
-Plus four recognition-specific dimensions:
+**Recognition dimensions** (4 dimensions, 29.9% of raw weight) operationalize Hegelian recognition as measurable tutoring behaviors—the paper's primary methodological contribution:
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
 | **Mutual Recognition** | 8.3% | Does the tutor acknowledge the learner as an autonomous subject? |
 | **Dialectical Responsiveness** | 8.3% | Does the response engage with the learner's position? |
 | **Memory Integration** | 5% | Does the suggestion reference previous interactions? |
 | **Transformative Potential** | 8.3% | Does it create conditions for conceptual transformation? |
 
-Plus two bilateral transformation dimensions:
+**Bilateral transformation dimensions** (2 dimensions, 10% of raw weight) measure the mutual change that recognition theory distinctively predicts—both parties should be transformed through genuine dialogue (results in Section 6.8):
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
 | **Tutor Adaptation** | 5% | Does the tutor's approach evolve in response to learner input? |
 | **Learner Growth** | 5% | Does the learner show evidence of conceptual development? |
 
-The first four recognition dimensions evaluate the tutor's relational stance. The last two—Tutor Adaptation and Learner Growth—specifically measure the bilateral transformation that recognition theory predicts: both parties should change through genuine dialogue (results in Section 6.8).
+Raw weights total 120.9% and are normalized to 1.0 at scoring time; non-standard dimensions account for ~33% of normalized weight.
 
 **Rubric iteration.** After discovering that corrected learner ego/superego prompts produced more authentic engagement but lower judged scores, we identified a measurement paradox: the judge evaluated tutor responses in isolation, penalizing calibrated responses to authentic struggle. The judge now receives the full dialogue transcript (including learner internal deliberation), and two new dimensions—*Productive Struggle* and *Epistemic Honesty*—were added with corresponding reductions to Actionability and Tone (10% → 8% each). Multi-turn dialogues also receive a holistic evaluation scoring the entire transcript as a single unit. Re-scoring identical responses (N=88) produced minimal score changes (+0.5 to +0.6 points), confirming calibration was preserved. A cross-judge replication (GPT-5.2, r=0.55, N=88) confirmed effects in the same direction.
 

@@ -319,9 +319,26 @@ The Superego watches for "silent pivots"—responses that change direction witho
 
 ## 5. Evaluation Methodology
 
-### 5.1 Recognition Evaluation Dimensions
+### 5.1 Evaluation Rubric Design
 
-We extend the standard tutoring evaluation rubric with four recognition-specific dimensions and two bilateral transformation dimensions. Standard dimensions (relevance, specificity, pedagogical soundness, personalization, actionability, tone, productive struggle, epistemic honesty) account for 81% of raw weight; recognition dimensions account for 29.9%; bilateral dimensions account for 10%. Raw weights total 120.9% and are normalized to sum to 1.0 at scoring time (see Appendix C.2 for the full weight table and normalization formula). After normalization, non-standard dimensions account for approximately 33.0% of total weight:
+The evaluation rubric comprises 14 dimensions across three categories, each scored on a 1–5 scale by an LLM judge (see Appendix C.3 for full scoring criteria).
+
+**Standard pedagogical dimensions** (6 dimensions, 81% of raw weight) evaluate the tutor's response as a standalone pedagogical intervention:
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
+| **Relevance** | 15% | Does the suggestion address the learner's current learning context? |
+| **Specificity** | 15% | Does it provide concrete, actionable guidance rather than vague encouragement? |
+| **Pedagogical Soundness** | 15% | Does the response reflect sound teaching practice (scaffolding, appropriate challenge)? |
+| **Personalization** | 10% | Is the suggestion tailored to the individual learner's situation? |
+| **Actionability** | 8% | Can the learner act on the suggestion immediately? |
+| **Tone** | 8% | Is the tone appropriate—encouraging without being sycophantic? |
+| **Productive Struggle**† | 5% | Does the tutor sustain appropriate cognitive tension rather than resolving it prematurely? |
+| **Epistemic Honesty**† | 5% | Does the tutor represent complexity honestly rather than oversimplifying? |
+
+These dimensions draw on established pedagogical evaluation criteria: relevance, specificity, and pedagogical soundness are standard in ITS evaluation [@corbett1995]; personalization reflects adaptive tutoring research [@kasneci2023]; tone addresses the sycophancy problem discussed in Section 2.4. †Productive Struggle and Epistemic Honesty were added in a rubric iteration described below.
+
+**Recognition dimensions** (4 dimensions, 29.9% of raw weight) are the paper's primary methodological contribution—they operationalize Hegelian recognition as measurable tutoring behaviors:
 
 | Dimension | Weight | Description |
 |-----------|--------|-------------|
@@ -329,10 +346,17 @@ We extend the standard tutoring evaluation rubric with four recognition-specific
 | **Dialectical Responsiveness** | 8.3% | Does the response engage with the learner's position, creating productive tension? |
 | **Memory Integration** | 5% | Does the suggestion reference and build on previous interactions? |
 | **Transformative Potential** | 8.3% | Does the response create conditions for conceptual transformation? |
+
+These dimensions translate the theoretical framework of Section 3 into evaluation criteria. Mutual Recognition and Dialectical Responsiveness directly measure the relational stance Hegel describes; Memory Integration captures continuity of recognition across encounters; Transformative Potential assesses whether the tutor creates conditions for the conceptual restructuring that recognition theory predicts.
+
+**Bilateral transformation dimensions** (2 dimensions, 10% of raw weight) measure the mutual change that is recognition theory's distinctive empirical prediction—that both parties, not just the learner, should be transformed through genuine dialogue:
+
+| Dimension | Weight | Description |
+|-----------|--------|-------------|
 | **Tutor Adaptation** | 5% | Does the tutor's approach evolve in response to learner input? |
 | **Learner Growth** | 5% | Does the learner show evidence of conceptual development through the dialogue? |
 
-The first four dimensions evaluate the tutor's relational stance. The last two—Tutor Adaptation and Learner Growth—specifically measure the bilateral transformation that recognition theory predicts: both parties should change through genuine dialogue (results in Section 6.11).
+Results for these dimensions are reported in Section 6.11. Raw weights total 120.9% across the 14 dimensions and are normalized to sum to 1.0 at scoring time (see Appendix C.2 for the full weight table and normalization formula). After normalization, non-standard dimensions account for approximately 33.0% of total weight.
 
 **Rubric iteration: Authentic engagement dimensions.** After discovering that corrected learner ego/superego prompts produced more authentic engagement but *lower* judged scores (recognition dimensions dropped ~18 points while base scores barely moved), we identified a measurement paradox: the judge evaluated tutor responses in isolation, penalizing calibrated responses to authentic struggle. Three changes addressed this: (1) the judge now receives the full dialogue transcript, including learner internal deliberation, so it can evaluate the tutor's response in context; (2) two new base-adjacent dimensions were added—*Productive Struggle* (5%, does the tutor sustain appropriate cognitive tension?) and *Epistemic Honesty* (5%, does the tutor represent complexity honestly?)—with corresponding weight reductions to Actionability and Tone (10% → 8% each); (3) multi-turn dialogues receive a holistic evaluation scoring the entire transcript as a single unit, capturing emergent qualities (bilateral transformation, learner growth arc) that per-turn evaluation misses. Re-scoring the identical cells 6 and 8 responses (N=88) with the updated 14-dimension rubric produced minimal score changes (+0.5 and +0.6 points respectively), confirming the rubric iteration preserved calibration while improving validity. A cross-judge replication with GPT-5.2 on the same responses (r=0.55, N=88) confirmed effects in the same direction at compressed magnitudes (GPT/Opus ratio=0.87). See the measurement paradox analysis in the project repository for full details.
 
