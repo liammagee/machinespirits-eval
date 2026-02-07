@@ -539,7 +539,7 @@ Cell 21 extends the recognition multi-agent configuration (cell 7) with LLM-auth
 
 | Run | Grand Avg | Cell 7 | Cell 21 | Δ (21−7) | N |
 |-----|-----------|--------|---------|----------|---|
-| eval-...-daf60f79 (commit e3843ee) | 63.8 | 65.3 | 62.1 | −3.2 | 27 |
+| eval-...-daf60f79 (commit e3843ee) | 63.8 | 65.3 | 62.1 | −3.2 | 26 |
 | eval-...-49bb2017 (commit b2265c7) | 67.8 | 71.3 | 64.1 | −7.2 | 27 |
 | eval-...-12aebedb (commit e673c4b) | 75.9 | 73.3 | 78.8 | **+5.5** | 29 |
 
@@ -650,7 +650,7 @@ The qualitative analysis (Section 6.10) provides textual evidence that score dif
 
 10. **Bilateral Transformation Sample Size**: The bilateral transformation metrics (Section 6.8) are based on N=20 dialogues from a single scenario (`mutual_transformation_journey`). While effect directions are consistent and the adaptation index differences are substantial (+36% relative improvement), replication across more scenarios and larger samples would strengthen these findings.
 
-11. **Dynamic Rewriting Evolution**: The step-by-step analysis (Section 6.11) tracks cell 21 across three iterative development commits with small per-cell samples (13–15 scored per run, 83 total). The runs include implementation improvements beyond Writing Pad activation alone; a controlled ablation would provide stronger causal evidence.
+11. **Dynamic Rewriting Evolution**: The step-by-step analysis (Section 6.11) tracks cell 21 across three iterative development commits with small per-cell samples (13–15 scored per run, 82 total). The runs include implementation improvements beyond Writing Pad activation alone; a controlled ablation would provide stronger causal evidence.
 
 ---
 
