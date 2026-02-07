@@ -21,6 +21,7 @@ scenarios:
     name: "New Student - First Visit"
     description: "Brand new 4th grade student with no history"
     is_new_user: true
+    course_ids: ["101"]
     learner_context: |
       ### Student Profile
       - **New student** - just getting started with fractions

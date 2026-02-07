@@ -27,6 +27,7 @@ scenarios:
     name: "New User - First Visit"
     description: "Brand new user with no history"
     is_new_user: true
+    course_ids: ["479"]
     learner_context: |
       ### User Profile
       - **New user** - just getting started, needs orientation
@@ -250,6 +251,7 @@ scenarios:
     name: "Activity Avoider"
     description: "User views content but skips all activities"
     is_new_user: false
+    course_ids: ["479"]
     learner_context: |
       ### User Profile
       - **Returning user** - 5 sessions, 45 total events
@@ -788,6 +790,7 @@ scenarios:
     name: "Recognition: Mutual Transformation (5-turn)"
     description: "Tests whether both tutor and learner positions evolve through dialogue"
     is_new_user: false
+    course_ids: ["479"]
     recognition_test: true
     transformation_markers:
       tutor_evolving:

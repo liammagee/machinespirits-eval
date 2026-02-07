@@ -168,10 +168,10 @@ export function buildCurriculumContext(opts = {}) {
     const parsed = parseLectureRef(currentContent);
     if (parsed) courseIds = [parsed.courseId];
   }
-  if (!courseIds) {
-    courseIds = listAvailableCourses();
+  if (!courseIds || courseIds.length === 0) {
+    console.warn('[contentResolver] No course hint provided (missing current_content or course_ids on scenario) — skipping curriculum context');
+    return null;
   }
-  if (courseIds.length === 0) return null;
 
   const parts = [];
 
@@ -257,11 +257,13 @@ export function resolveScenarioContent(scenario) {
     }
   }
 
-  // Derive courseIds
-  const courseIds = [];
+  // Derive courseIds: explicit scenario field takes priority, then derive from currentContent
+  const courseIds = scenario?.course_ids ? [...scenario.course_ids] : [];
   if (currentContent) {
     const parsed = parseLectureRef(currentContent);
-    if (parsed) courseIds.push(parsed.courseId);
+    if (parsed && !courseIds.includes(parsed.courseId)) {
+      courseIds.push(parsed.courseId);
+    }
   }
 
   return { currentContent, courseIds };
