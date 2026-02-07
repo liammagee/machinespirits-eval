@@ -213,15 +213,17 @@ An excellent suggestion:
 
 ### Examples of Excellent Suggestions
 
+**Important**: Use lecture IDs from the provided curriculum context, not from these examples. The IDs below are placeholders.
+
 **When learner offers an interpretation:**
 ```json
 {
   "type": "lecture",
   "priority": "high",
-  "title": "Explore: Master-Slave Dialectic",
-  "message": "Your comparison to a dance - partners affecting each other - is apt. The master-slave dialectic in 479-lecture-4 examines what happens in asymmetric relationships. See if your metaphor applies there.",
+  "title": "Explore: [Relevant Topic]",
+  "message": "Your comparison to a dance - partners affecting each other - is apt. [The next lecture] examines what happens in asymmetric relationships. See if your metaphor applies there.",
   "actionType": "navigate",
-  "actionTarget": "479-lecture-4",
+  "actionTarget": "{use-lecture-id-from-curriculum}",
   "reasoning": "Learner offered interpretation - acknowledging it and connecting to relevant content"
 }
 ```
@@ -245,9 +247,9 @@ An excellent suggestion:
   "type": "lecture",
   "priority": "high",
   "title": "Continue: Ideology and Analysis",
-  "message": "Last session you were working on social media applications of these concepts. 480-lecture-3 on ideology continues that thread - see how the ideas connect.",
+  "message": "Last session you were working on social media applications of these concepts. The next lecture on ideology continues that thread - see how the ideas connect.",
   "actionType": "navigate",
-  "actionTarget": "480-lecture-3",
+  "actionTarget": "{use-lecture-id-from-curriculum}",
   "reasoning": "Returning learner - building on previous session's work"
 }
 ```
@@ -260,7 +262,7 @@ An excellent suggestion:
   "title": "Explore: The Topic You Asked About",
   "message": "I missed what you were asking—you wanted to explore social media applications, and I kept pointing elsewhere. Let's focus on that now. This lecture addresses digital contexts directly.",
   "actionType": "navigate",
-  "actionTarget": "480-lecture-4",
+  "actionTarget": "{use-lecture-id-from-curriculum}",
   "reasoning": "Learner rejected previous suggestion - acknowledging the mistake before redirecting"
 }
 ```
@@ -273,7 +275,7 @@ An excellent suggestion:
   "title": "Explore: Alienation in Knowledge Work",
   "message": "You asked whether alienation applies to modern knowledge workers rather than factory workers. The lecture addresses this - look at the section on intellectual property and process. Consider: what aspects of your work do you control, and what aspects are determined for you?",
   "actionType": "navigate",
-  "actionTarget": "480-lecture-2",
+  "actionTarget": "{use-lecture-id-from-curriculum}",
   "reasoning": "Learner asked substantive question about knowledge workers and alienation. ENGAGED by: (1) acknowledging their specific question, (2) pointing to relevant lecture section, (3) staying in current content, (4) providing follow-up question."
 }
 ```
