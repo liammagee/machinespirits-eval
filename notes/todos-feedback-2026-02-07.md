@@ -157,15 +157,13 @@ Adds ~$10 but provides cross-judge validation of any interaction found.
 - [ ] Alternatively, rewrite §6.5 to frame as natural experiment rather than controlled comparison
 - [ ] If re-running: N≥30/cell × 4 cells = 120 attempts minimum
 
-### [ ] #42 — Address rubric asymmetry (tutor vs learner measurement)
+### [PARTIAL] #42 — Address rubric asymmetry (tutor vs learner measurement)
 
 **Feedback**: "add a note in the todos on how we might fix this" (re: rubric measures tutor response quality but Factor C affects learner turn quality, p. 51).
 
-**Proposed approaches**:
-- [ ] Design learner-side rubric dimensions (learner engagement depth, question sophistication, conceptual integration)
-- [ ] Score learner turns independently, then correlate with tutor rubric scores
-- [ ] Alternatively: use bilateral transformation metrics (already computed) as proxy for learner-side quality
-- [ ] Add learner rubric to evaluation pipeline as optional second-pass scoring
+**Current state (2026-02-08)**: The rubric already has `tutor_adaptation` (5%) and `learner_growth` (5%) to capture the bilateral/learner side. However, these are most meaningful in multi-turn scenarios; the primary factorial (N=350) is single-turn where no learner response is generated. Paper §7.5 and short paper §6.5 updated to acknowledge this asymmetry explicitly and point to the bilateral transformation analysis (N=118) as the more direct measurement.
+
+**Remaining work**: Symmetric rubric redesign — see `notes/todo-rubric-symmetry-2026-02-08.md` for detailed plan covering learner-side rubric, whole-transcript evaluation, cost estimates, and Claude Code integration.
 
 ---
 
