@@ -20,6 +20,7 @@ abstract: |
 
   The system is deployed in an open-source learning management system with all code, evaluation data, and reproducible analysis commands publicly available.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
+fontsize: 12pt
 geometry: margin=1in
 header-includes: |
   \usepackage{float}

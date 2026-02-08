@@ -8,6 +8,7 @@ link-citations: true
 abstract: |
   Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=1,628 primary scored responses across twenty key evaluation runs; N=3,800+ across the full development database) comparing recognition-enhanced configurations against baselines reveals that recognition theory is the primary driver of tutoring improvement: a corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition produces large effects with or without memory (+15.2 pts without memory, d=1.71; +11.0 pts with memory), while memory alone provides only a modest, non-significant benefit (+4.8 pts, d=0.46, $p \approx .08$). The combined condition yields the highest scores (91.2, d=1.81 vs base), with a small negative interaction (-4.2 pts) suggesting ceiling effects rather than synergy. A post-hoc active control (N=118), using length-matched prompts with generic pedagogical best practices but no recognition theory, scores 66.5—approximately 9 points above same-model base (${\approx}58$) but well below recognition levels (${\approx}73$), with recognition gains (~+15 pts above same-model base) substantially exceeding active-control gains (~+9 pts). (The active control ran on a different ego model than the factorial, precluding direct cross-condition comparison; same-model historical data provides the fair baseline.) A preliminary three-way comparison (N=36) found that recognition outperforms enhanced prompting by +8.7 points, consistent with recognition dominance, though the increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60). A multi-model probe of multi-agent synergy across five ego models (N=826; Section 6.4) confirms that architecture and recognition contribute additively: the A$\times$B interaction ranges from -5.7 to -0.7 across all models (mean -2.2), definitively refuting an earlier exploratory finding (+9.2 on N=17) as sampling noise. Domain generalizability testing across both models and content domains confirms recognition advantage replicates: elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent—Kimi shows recognition dominance on elementary content, revising the Nemotron-only finding. Multi-agent architecture serves as critical error correction when content isolation failures introduce wrong-domain references. Bilateral transformation tracking across three multi-turn scenarios (N=118) confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+26% relative improvement in adaptation index), though learner-side growth is not higher under recognition, suggesting the effect is tutor-side responsiveness rather than symmetric mutual transformation. A step-by-step evolution analysis of dynamic prompt rewriting (cell 21: LLM-authored session directives + active Writing Pad memory) across three iterative development runs (N=82) suggests the Writing Pad as an important enabler: cell 21 progresses from trailing its static baseline by 7.2 points to leading by 5.5 points, with every rubric dimension improving. A cross-judge replication with GPT-5.2 confirms the main findings are judge-robust: the recognition main effect (d=1.03), recognition dominance in the memory isolation experiment (d=0.99), and multi-agent null effects all replicate, though at compressed magnitudes (~58% of primary judge effect sizes). The memory isolation condition ordering is identical under both judges with no rank reversals (inter-judge r=0.63, N=120). These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
+fontsize: 12pt
 geometry: margin=1in
 header-includes: |
   \usepackage{float}
@@ -1493,57 +1494,6 @@ The broader implication is for AI alignment. If mutual recognition is pedagogica
 
 In summary, this paper has connected Hegelian recognition theory to AI pedagogy (Section 3), implemented that theory through a multiagent architecture grounded in Freudian structural theory (Section 4), and tested it empirically across twenty evaluation runs (Section 6). The central finding—that recognition-enhanced prompting is the dominant driver of tutoring improvement—was established through memory isolation (Section 6.2), confirmed in a full factorial (Section 6.3), partially corroborated by active control (Section 6.2), validated by an independent GPT-5.2 judge (Section 6.15), and further sharpened by a dialectical impasse test with resolution strategy coding (Section 6.16) showing that base tutors withdraw from dialectical encounter while recognition tutors hold and reframe contradiction—and a symmetric learner-side evaluation (Section 6.12) showing that recognition provides external self-regulation more effectively than internal ego/superego deliberation. The theoretical framework, empirical methodology, and practical implications together suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems.
 
----
-
-## 10. Reproducibility
-
-Evaluation commands are documented in Appendix B; key run IDs in Appendix D. The complete codebase, evaluation framework, and data are publicly available.
-
-**Code and Data**: https://github.com/machine-spirits/machinespirits-eval
-
-Key runs:
-
-| Finding | Run ID | Section |
-|---------|--------|---------|
-| Recognition validation | eval-2026-02-03-86b159cd | 6.1 |
-| Memory isolation (run 1) | eval-2026-02-06-81f2d5a1 | 6.2 |
-| Memory isolation (run 2) | eval-2026-02-06-ac9ea8f5 | 6.2 |
-| Active control (post-hoc) | eval-2026-02-06-a9ae06ee | 6.2 |
-| Full factorial, cells 1–5,7 | eval-2026-02-03-f5d4dd93 | 6.3 |
-| Full factorial, cells 6,8 re-run | eval-2026-02-06-a933d745 | 6.3 |
-| A×B interaction (Nemotron, original) | eval-2026-02-04-948e04b3 | 6.4 |
-| A×B replication (Kimi) | eval-2026-02-05-10b344fb | 6.4 |
-| A×B probe: Nemotron | eval-2026-02-07-722087ac | 6.4 |
-| A×B probe: DeepSeek V3.2 | eval-2026-02-07-70ef73a3 | 6.4 |
-| A×B probe: GLM-4.7 | eval-2026-02-07-6b3e6565 | 6.4 |
-| A×B probe: Claude Haiku 4.5 | eval-2026-02-07-6ead24c7 | 6.4 |
-| Domain generalizability (Nemotron) | eval-2026-02-04-79b633ca | 6.5 |
-| Domain gen. replication (Kimi) | eval-2026-02-05-e87f452d | 6.5 |
-| Dynamic rewrite evolution (run 1) | eval-2026-02-05-daf60f79 | 6.13 |
-| Dynamic rewrite evolution (run 2) | eval-2026-02-05-49bb2017 | 6.13 |
-| Dynamic rewrite evolution (run 3) | eval-2026-02-05-12aebedb | 6.13 |
-| Bilateral transformation (multi-turn) | eval-2026-02-07-b6d75e87 | 6.11 |
-| Learner-side evaluation (symmetric) | eval-2026-02-07-b6d75e87 | 6.12 |
-| Dialectical impasse test | eval-2026-02-08-f896275d | 6.16 |
-
----
-
-## Appendix E: Revision History
-
-| Date | Version | Changes |
-|------|---------|---------|
-| 2026-02-04 | v1.0 | Initial draft with 2×2×2 factorial design, memory isolation, three-way comparison |
-| 2026-02-06 | v1.1 | Added corrected memory isolation experiment (N=120), active control (N=118), cells 6&8 re-run, cross-judge GPT-5.2 analysis. Corrected GPT-5.2 effect sizes (d=1.15→0.99, d=0.50→0.29) after deduplication of rejudge rows. Dropped dead partial run (e617e757). |
-| 2026-02-06 | v1.2 | **Critical correction**: Reframed "placebo control" as "post-hoc active control." The original v1.1 analysis compared the active control (Nemotron, M=66.5) to factorial base (Kimi K2.5, M=78.8) and reported d=-1.03, but this compared different ego models. Same-model historical data shows Nemotron base $\approx$ 58, making the active control $\approx$ +9 pts above base (not below). Reframed throughout: generic pedagogical elaboration provides partial benefit (~+9 pts above base) but recognition gains are substantially larger (~+15 pts). Acknowledged post-hoc design and active (not inert) control content. |
-| 2026-02-06 | v1.3–v1.4 | Intermediate revisions: corrected factorial with re-run cells 6, 8 (a933d745); updated A×C interaction values; qualitative analysis additions; production quality fixes. Superseded by v1.5. |
-| 2026-02-07 | v1.5 | **Rubric iteration**: Updated to 14-dimension rubric with dialogue transcript context, Productive Struggle (5%), and Epistemic Honesty (5%) dimensions (Actionability/Tone reduced 10%→8%). Re-scored cells 6, 8 (N=88) with identical responses: minimal change (+0.5, +0.6 pts), confirming calibration preserved. Added holistic dialogue evaluation for multi-turn transcripts. Cross-judge replication on updated rubric (r=0.55, N=88, GPT/Opus ratio=0.87). Updated Table 6, main effects, A×C interaction values, Appendix C.2 weight table, and Section 6.14 cross-judge tables. Corrected subsection numbering, weight accounting (120.9% total), and added missing run ID (a933d745) to Reproducibility. |
-| 2026-02-08 | v1.6 | **Content isolation fix**: Identified and fixed two bugs causing cross-domain content leakage in elementary scenarios: (a) `buildCurriculumContext()` fallback that scanned all courses when no content hint was provided, serving philosophy listings to elementary scenarios; (b) hardcoded `479-lecture-*` IDs in tutor ego prompt examples that the model copied when no curriculum anchor was present. Updated Sections 6.5, 6.6, 7.4, 7.8, and 8 to reframe "model hallucination" as system-level content isolation failures. Noted that the +9.9 pt architecture effect on elementary content (Nemotron) was partly inflated by these bugs; Kimi replication (+3.0 pts) is more representative. |
-| 2026-02-08 | v1.8 | **Dialectical impasse test**: Added Section 6.16 with three 5-turn impasse scenarios (epistemic resistance, affective shutdown, productive deadlock; N=24, eval-2026-02-08-f896275d, Opus judge). Recognition produces +43 pts on epistemic and +29 pts on interpretive impasses but $\Delta$=$-$1.1 on affective shutdown—sharpening the theoretical claim to epistemological rather than affective recognition. Updated §7.1 discussion, §9 conclusion (finding #8), Tables 2/D run lists, and paper totals. |
-| 2026-02-08 | v1.9 | **Learner superego paradox**: Added symmetric learner-side evaluation (Section 6.12) scoring N=118 bilateral dialogues with 6-dimension learner rubric (eval-2026-02-07-b6d75e87, Opus judge). Multi-agent learner architecture hurts learner quality (d=1.43, F=68.28, p<.001)—the largest effect in the study. Recognition partially rescues multi-agent learners (d=0.79, p=.004) but not single-agent (n.s.), forming a mirror-image interaction with the tutor-side factorial. Deliberation depth uniformly poor (2.7/5), unaffected by recognition. Added learner rubric description to §5.1, new §6.12 with Tables 14b-14d, rewrote §7.5 with results, added finding #9 to §9, learner superego redesign to §8.2. Renumbered §6.12→6.13, §6.13→6.14, §6.14→6.15, §6.15→6.16. Updated cross-references, Table 2, paper totals (N=1,628 across 20 key runs). |
-| 2026-02-08 | v2.0 | **Resolution strategy coding**: Post-hoc qualitative coding of all 24 dialectical impasse dialogues (eval-2026-02-08-f896275d) into five Hegelian resolution strategies (mutual recognition, domination, capitulation, withdrawal, scaffolded reframing). Perfect separation: 12/12 base tutors withdraw (bypass impasse entirely), 10/12 recognition tutors use scaffolded reframing (Aufhebung pattern), 1 mutual recognition, 1 domination. $\chi^2(3)=24.00$, $p<.001$, $V=1.000$. Architecture has no effect on strategy ($p=.576$). Cross-judge validation with GPT-5.2: $\kappa=0.84$, 100% agreement on engagement-vs-withdrawal binary. Added Tables 26–28, per-turn strategy evolution analysis, cross-judge validation, and extended analysis to §6.16; substantially revised §7.1 discussion with mechanistic evidence. Strategy coding tool: `scripts/code-impasse-strategies.js`. |
-
----
-
 ## References
 
 ::: {#refs}
@@ -1914,9 +1864,9 @@ Standard dimensions (including Productive Struggle and Epistemic Honesty) accoun
 
 ---
 
-## Appendix D: Key Evaluation Run IDs
+## Appendix D: Reproducibility and Key Evaluation Run IDs
 
-See Section 10 for the primary run ID table. The twenty key runs are reproduced here for reference:
+Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/machine-spirits/machinespirits-eval. The twenty key runs are listed below:
 
 | Finding | Run ID | Section |
 |---------|--------|---------|
@@ -1939,3 +1889,20 @@ See Section 10 for the primary run ID table. The twenty key runs are reproduced 
 | Dynamic rewrite evolution (run 3) | eval-2026-02-05-12aebedb | 6.13 |
 | Bilateral transformation (multi-turn) | eval-2026-02-07-b6d75e87 | 6.11 |
 | Dialectical impasse test | eval-2026-02-08-f896275d | 6.16 |
+
+---
+
+## Appendix E: Revision History
+
+| Date | Version | Changes |
+|------|---------|---------|
+| 2026-02-04 | v1.0 | Initial draft with 2×2×2 factorial design, memory isolation, three-way comparison |
+| 2026-02-06 | v1.1 | Added corrected memory isolation experiment (N=120), active control (N=118), cells 6&8 re-run, cross-judge GPT-5.2 analysis. Corrected GPT-5.2 effect sizes (d=1.15→0.99, d=0.50→0.29) after deduplication of rejudge rows. Dropped dead partial run (e617e757). |
+| 2026-02-06 | v1.2 | **Critical correction**: Reframed "placebo control" as "post-hoc active control." The original v1.1 analysis compared the active control (Nemotron, M=66.5) to factorial base (Kimi K2.5, M=78.8) and reported d=-1.03, but this compared different ego models. Same-model historical data shows Nemotron base $\approx$ 58, making the active control $\approx$ +9 pts above base (not below). Reframed throughout: generic pedagogical elaboration provides partial benefit (~+9 pts above base) but recognition gains are substantially larger (~+15 pts). Acknowledged post-hoc design and active (not inert) control content. |
+| 2026-02-06 | v1.3–v1.4 | Intermediate revisions: corrected factorial with re-run cells 6, 8 (a933d745); updated A×C interaction values; qualitative analysis additions; production quality fixes. Superseded by v1.5. |
+| 2026-02-07 | v1.5 | **Rubric iteration**: Updated to 14-dimension rubric with dialogue transcript context, Productive Struggle (5%), and Epistemic Honesty (5%) dimensions (Actionability/Tone reduced 10%→8%). Re-scored cells 6, 8 (N=88) with identical responses: minimal change (+0.5, +0.6 pts), confirming calibration preserved. Added holistic dialogue evaluation for multi-turn transcripts. Cross-judge replication on updated rubric (r=0.55, N=88, GPT/Opus ratio=0.87). Updated Table 6, main effects, A×C interaction values, Appendix C.2 weight table, and Section 6.14 cross-judge tables. Corrected subsection numbering, weight accounting (120.9% total), and added missing run ID (a933d745) to Reproducibility. |
+| 2026-02-08 | v1.6 | **Content isolation fix**: Identified and fixed two bugs causing cross-domain content leakage in elementary scenarios: (a) `buildCurriculumContext()` fallback that scanned all courses when no content hint was provided, serving philosophy listings to elementary scenarios; (b) hardcoded `479-lecture-*` IDs in tutor ego prompt examples that the model copied when no curriculum anchor was present. Updated Sections 6.5, 6.6, 7.4, 7.8, and 8 to reframe "model hallucination" as system-level content isolation failures. Noted that the +9.9 pt architecture effect on elementary content (Nemotron) was partly inflated by these bugs; Kimi replication (+3.0 pts) is more representative. |
+| 2026-02-08 | v1.8 | **Dialectical impasse test**: Added Section 6.16 with three 5-turn impasse scenarios (epistemic resistance, affective shutdown, productive deadlock; N=24, eval-2026-02-08-f896275d, Opus judge). Recognition produces +43 pts on epistemic and +29 pts on interpretive impasses but $\Delta$=$-$1.1 on affective shutdown—sharpening the theoretical claim to epistemological rather than affective recognition. Updated §7.1 discussion, §9 conclusion (finding #8), Tables 2/D run lists, and paper totals. |
+| 2026-02-08 | v1.9 | **Learner superego paradox**: Added symmetric learner-side evaluation (Section 6.12) scoring N=118 bilateral dialogues with 6-dimension learner rubric (eval-2026-02-07-b6d75e87, Opus judge). Multi-agent learner architecture hurts learner quality (d=1.43, F=68.28, p<.001)—the largest effect in the study. Recognition partially rescues multi-agent learners (d=0.79, p=.004) but not single-agent (n.s.), forming a mirror-image interaction with the tutor-side factorial. Deliberation depth uniformly poor (2.7/5), unaffected by recognition. Added learner rubric description to §5.1, new §6.12 with Tables 14b-14d, rewrote §7.5 with results, added finding #9 to §9, learner superego redesign to §8.2. Renumbered §6.12→6.13, §6.13→6.14, §6.14→6.15, §6.15→6.16. Updated cross-references, Table 2, paper totals (N=1,628 across 20 key runs). |
+| 2026-02-08 | v2.0 | **Resolution strategy coding**: Post-hoc qualitative coding of all 24 dialectical impasse dialogues (eval-2026-02-08-f896275d) into five Hegelian resolution strategies (mutual recognition, domination, capitulation, withdrawal, scaffolded reframing). Perfect separation: 12/12 base tutors withdraw (bypass impasse entirely), 10/12 recognition tutors use scaffolded reframing (Aufhebung pattern), 1 mutual recognition, 1 domination. $\chi^2(3)=24.00$, $p<.001$, $V=1.000$. Architecture has no effect on strategy ($p=.576$). Cross-judge validation with GPT-5.2: $\kappa=0.84$, 100% agreement on engagement-vs-withdrawal binary. Added Tables 26–28, per-turn strategy evolution analysis, cross-judge validation, and extended analysis to §6.16; substantially revised §7.1 discussion with mechanistic evidence. Strategy coding tool: `scripts/code-impasse-strategies.js`. |
+| 2026-02-08 | v2.1 | **AI theme discovery & figure regeneration**: Added §6.13.4 AI-assisted theme discovery (N=300, Claude Opus coder) showing near-perfect bimodal separation — base 84% directive/93% transmissive, recognition 60% dialogical-facilitative/84% dialectical-constructivist. Added Figure 6 (word clouds). Regenerated all figures from Python with corrected data and larger text. Removed standalone §10 Reproducibility (merged into Appendix D). Moved Appendix E after other appendices. Increased font to 12pt. |
