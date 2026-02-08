@@ -1083,6 +1083,8 @@ The theme landscape is almost perfectly bimodal: of the 15 themes with frequency
 
 The stance and orientation distributions are even more sharply separated than the emergent themes. Base responses are 84% directive and 93% transmissive; recognition responses are 60% facilitative/dialogical/collaborative and 84% dialectical/constructivist. The AI coder independently discovers the theoretical distinction the recognition framework was designed to produce: the shift from treating learning as transmission (tutor possesses knowledge, learner receives it) to treating it as dialectical encounter (both parties transform through engagement).
 
+![Emergent Theme Word Clouds](figures/figure6.png){width=100%}
+
 **Methodological note**: AI-assisted theme discovery risks circular validation if the coding model recognizes the prompt engineering that produced the responses. Two factors mitigate this concern: (1) the coder received only the tutor's suggestion text, not the system prompt or condition label; and (2) the near-perfect theme separation itself is the finding—whether or not the coder "recognizes" the framework, the fact that emergent themes partition cleanly by condition demonstrates that the two conditions produce qualitatively distinct pedagogical texts, not merely quantitatively different scores.
 
 ### 6.14 Dynamic Prompt Rewriting: Step-by-Step Evolution
