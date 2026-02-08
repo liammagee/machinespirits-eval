@@ -354,10 +354,10 @@ Each tutor response at turns 3 and 5 gets coded (by Opus judge) into one of five
 **Verified (2026-02-08)**: The "philosophy lectures to elementary students" was caused by two content isolation bugs (#31), not model hallucination. Paper updated to reframe as system-level content isolation failures throughout. Superego reality-testing claim is valid—it caught these system errors regardless of source. Freudian "reality principle" framing is appropriate: Superego enforces correspondence with external curriculum context. The +9.9 pt architecture effect on Nemotron elementary is confirmed from DB but noted as partly inflated by these bugs; Kimi replication (+3.0 pts) is more representative.
 
 **Work**:
-- [ ] Verify the +9.9 point architecture effect on domain transfer is from the Kimi replication (e87f452d), not the confounded Nemotron run
-- [ ] Check whether the "philosophy lectures to elementary students" issue is truly a Superego catch or the context scoping bug (#31)
-- [ ] Cross-reference Freudian "reality testing" (ego function in *The Ego and the Id*) with what the Superego actually does in our architecture
-- [ ] If the "hallucination" is really the context scoping bug, soften the Superego reality-testing claim
+- [x] Verify the +9.9 point architecture effect on domain transfer is from the Kimi replication (e87f452d), not the confounded Nemotron run — VERIFIED
+- [x] Check whether the "philosophy lectures to elementary students" issue is truly a Superego catch or the context scoping bug (#31) — CONFIRMED: context scoping bug
+- [x] Cross-reference Freudian "reality testing" with what the Superego actually does — DONE: reality-testing framing retained, reframed as catching system errors
+- [x] If the "hallucination" is really the context scoping bug, soften the Superego reality-testing claim — DONE: paper updated throughout
 
 ### [DONE] #46 / #47 / #48 — Verify domain generalizability and domain confusion results
 

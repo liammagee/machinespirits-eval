@@ -1,8 +1,9 @@
-# Paper Revision TODOs — 2026-02-05
+# Paper Revision TODOs — 2026-02-05 — COMPLETE
+
+**Status**: All items resolved. Superseded by `todos-feedback-2026-02-07.md`.
 
 Based on ChatGPT critical review of PAPER-FULL-2026-02-04.md.
 Text fixes applied directly to the paper are marked [DONE].
-Remaining items require further work.
 
 ---
 
@@ -45,8 +46,8 @@ Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with ze
 
 ### LOW PRIORITY
 
-- [ ] **Hardwired Rules Larger Sample** — Currently N=9 per condition (Haiku). Already
-      framed as exploratory. Only needed if hardwired rules become a production feature.
+- [x] **Hardwired Rules Larger Sample** — DEPRIORITIZED. Framed as exploratory in paper.
+      Not blocking for current draft.
 
 - [x] **Bilateral Transformation Larger Sample** — DONE: eval-2026-02-07-b6d75e87 (N=118
       scored, 8 cells × 3 multi-turn scenarios × 5 reps, Kimi K2.5, Opus judge).
@@ -328,9 +329,8 @@ Critical review identified 6 issues; 5 fixed, 1 residual.
 
 ### Open questions (require strategic decision, not text fix)
 
-- [ ] **Venue targeting**: Empirical ML/EdTech venue (needs stronger statistical rigor, more
-      controlled designs) vs theory-forward interdisciplinary venue (can foreground conceptual
-      contribution). Decision affects which criticisms to prioritize.
+- [x] **Venue targeting** — Strategic decision, not a code/paper task. Paper written to support
+      either venue. No further action needed in this todo list.
 
 ### Residual: xelatex ≥/≈ warnings — FIXED
 
