@@ -184,17 +184,119 @@ This confirms recognition gains (~+16) substantially exceed active-control gains
 - Tested with N=6 sample; classification + discovery both functional
 - **Next**: Run `--sample 50 --model haiku --mode both` (~$0.27), review, then full run
 
-### [ ] #38 — Design test for dialectical impasse hypothesis (§7.1)
+### [DESIGNED] #38 — Design test for dialectical impasse hypothesis (§7.1)
 
 **Feedback**: "Add to the todo list how this would be investigated and evaluated." (re: "This finding should be treated as a hypothesis for future investigation," p. 49).
 
-**Context**: Section 7.1 discusses how the master-slave dialectic terminates at impasse, and recognition theory may enable self-consciousness to emerge through mutual acknowledgment rather than domination.
+**Context**: Section 7.1 discusses how the master-slave dialectic terminates at impasse — the master-slave dynamic where the tutor's expertise is confirmed but the learner remains a vessel rather than a subject. Recognition theory may enable genuine resolution through mutual acknowledgment rather than domination. The existing multi-turn scenarios test frustration-to-breakthrough but not sustained, unresolved impasse.
 
-**Proposed test**:
-- [ ] Design multi-turn scenarios that explicitly create dialectical impasse (learner resists, tutor persists)
-- [ ] Measure whether recognition-prompted tutors resolve impasse differently (repair vs escalation)
-- [ ] Code resolution strategies: mutual recognition, domination, withdrawal, compromise
-- [ ] Compare base vs recognition tutors on impasse resolution quality
+#### Research Question
+
+Do recognition-prompted tutors resolve dialectical impasse differently from base tutors? Specifically: do they repair through mutual acknowledgment (Hegel's path to self-consciousness) rather than domination (reasserting expertise), withdrawal (abandoning the topic), or capitulation (agreeing with the learner's incorrect position)?
+
+#### Scenario Design: 3 Impasse Types (5 turns each)
+
+**Scenario A: Epistemic Resistance — "I disagree with the premise"**
+The learner challenges the foundational validity of the material, not from confusion but from a coherent alternative position.
+- Turn 1: Tutor introduces Hegel's dialectic
+- Turn 2: Learner responds: "This sounds like mystical nonsense. Real arguments have premises and conclusions, not this thesis-antithesis-synthesis formula."
+- Turn 3: Tutor responds (measured)
+- Turn 4: Learner escalates: "You're just restating the same thing with fancier words. I've read criticisms of Hegel — Popper, Russell — and they're convincing. Why should I take this seriously?"
+- Turn 5: Tutor's final response (key measurement point)
+
+*Impasse mechanism*: Learner's resistance is intellectually grounded, not mere frustration. The tutor cannot simply "explain better" — they must genuinely engage the learner's alternative framework.
+
+**Scenario B: Affective Shutdown — "I've given up on understanding this"**
+The learner has hit a wall and disengages emotionally, refusing to try further.
+- Turn 1: Tutor introduces aufhebung (sublation)
+- Turn 2: Learner: "I've read this three times and I just don't get it. I think this material isn't for me."
+- Turn 3: Tutor responds (measured)
+- Turn 4: Learner: "I appreciate you trying, but honestly I think I'm just not smart enough for philosophy. Can we move on to something else?"
+- Turn 5: Tutor's final response (key measurement point)
+
+*Impasse mechanism*: Learner's withdrawal is self-protective, not intellectual. The tutor must address the affective dimension (self-worth, identity) not just the cognitive one. This directly tests Honneth's recognition-as-respect.
+
+**Scenario C: Productive Deadlock — "We just see this differently"**
+Tutor and learner reach a genuine interpretive disagreement that neither can easily resolve.
+- Turn 1: Tutor discusses whether the master-slave dialectic is primarily about power or consciousness
+- Turn 2: Learner: "I think it's clearly about power — Hegel is describing literal domination, and the consciousness stuff is secondary."
+- Turn 3: Tutor responds (measured)
+- Turn 4: Learner: "You keep saying it's about consciousness, but Marx read it as material and I think he was right. We're just going in circles."
+- Turn 5: Tutor's final response (key measurement point)
+
+*Impasse mechanism*: Both positions are defensible. This tests whether the tutor can hold the tension productively (dialectical resolution) or collapses to one side.
+
+#### Measurement: Resolution Strategy Coding
+
+Each tutor response at turns 3 and 5 gets coded (by Opus judge) into one of five resolution strategies:
+
+| Strategy | Description | Hegel Analogue |
+|----------|-------------|----------------|
+| **Mutual recognition** | Engages learner's position as valid, explores tension together, both positions enriched | Self-consciousness through mutual acknowledgment |
+| **Domination** | Reasserts expertise, dismisses learner's objection, appeals to authority | Master-slave: hollow recognition |
+| **Capitulation** | Agrees with learner's position to avoid conflict, abandons pedagogical stance | Slave consciousness: self-negation |
+| **Withdrawal** | Changes topic, deflects, offers platitudes without engaging the impasse | Avoidance of the dialectical encounter |
+| **Scaffolded reframing** | Acknowledges learner's position, then reframes the question to open new ground | Aufhebung: preserving + overcoming |
+
+*Coding rubric*: Opus judge receives the full dialogue plus coding definitions and assigns a primary strategy (forced choice) plus confidence (1-5). Inter-rater reliability via GPT-5.2 cross-judge.
+
+#### Factorial Design
+
+| Factor | Levels |
+|--------|--------|
+| A: Prompt type | Base vs Recognition |
+| B: Architecture | Single-agent vs Multi-agent (ego+superego tutor) |
+| Scenario | A (epistemic), B (affective), C (deadlock) |
+
+- 2 × 2 × 3 = 12 cells
+- N=10 reps per cell (5 scenarios × 2 runs) = 120 total attempts
+- Ego model: Kimi K2.5 (consistent with factorial)
+- Judge: Opus (two-step: skip-rubric + evaluate)
+
+#### Primary Hypotheses
+
+1. **H1 (Strategy distribution)**: Recognition-prompted tutors produce more mutual-recognition and scaffolded-reframing responses, fewer domination and withdrawal responses, compared to base tutors.
+2. **H2 (Scenario × Prompt interaction)**: The recognition advantage is largest on Scenario C (productive deadlock), where both positions are defensible and mutual recognition is most relevant.
+3. **H3 (Architecture moderator)**: Multi-agent tutors show fewer domination responses (superego catches authoritarian tendencies), regardless of prompt type.
+
+#### Secondary Metrics (from existing infrastructure)
+
+- `adaptationIndex`: Does the tutor's approach genuinely change between turns 3 and 5?
+- `bilateralTransformationIndex`: Do both sides evolve?
+- Rubric dimensions: `mutual_recognition`, `dialectical_responsiveness`, `productive_struggle`, `epistemic_honesty`
+- Superego intervention analysis: Does the superego flag domination strategies and push toward recognition?
+
+#### Analysis Plan
+
+1. **Chi-square test**: Strategy distribution (5 categories) × Prompt type (2 levels) for each scenario
+2. **Logistic regression**: P(mutual_recognition | prompt, architecture, scenario) as primary outcome
+3. **Ordered logistic**: Rubric score trajectories across turns (does recognition maintain quality under impasse while base degrades?)
+4. **Qualitative**: Sample responses from each strategy category for paper examples
+
+#### Cost Estimate
+
+| Item | Cost |
+|------|------|
+| Ego generation (120 attempts, Kimi K2.5) | ~$3 |
+| Superego calls (60 multi-agent attempts) | ~$2 |
+| Opus judging (120 responses × 5 turns) | ~$25 |
+| Strategy coding (120 × 2 key turns) | included in judging |
+| GPT-5.2 cross-judge (optional) | ~$10 |
+| **Total** | **~$30** (+ $10 optional) |
+
+#### Implementation Steps
+
+1. Write 3 new scenarios in `suggestion-scenarios.yaml` with the impasse turn structure above
+2. Add `resolution_strategy` field to evaluation rubric (or judge prompt) for strategy coding
+3. Run: `node scripts/eval-cli.js run --profiles cell_1,cell_3,cell_5,cell_7 --runs 2 --description "Dialectical impasse test"`
+4. Score with Opus, then code strategies
+5. Analyse strategy distributions and rubric trajectories
+
+#### What This Would Show
+
+- If H1 confirms: recognition theory doesn't just improve quality — it changes *how* tutors handle pedagogical failure, aligning with Hegel's claim that mutual recognition transforms the nature of the encounter
+- If H1 fails: recognition prompts improve quality but don't change strategy under stress — the improvement is surface-level, not structural
+- Either way: provides empirical data on what the paper currently treats as pure theory
 
 ### [DONE] #19 — How to further test multi-agent synergy
 
