@@ -146,16 +146,16 @@ node scripts/eval-cli.js rejudge <haiku-run-id> --judge openrouter.gpt
 ```
 Adds ~$10 but provides cross-judge validation of any interaction found.
 
-### [ ] #26 — Address model confound (Nemotron vs Kimi) more thoroughly
+### [DONE] #26 — Address model confound (Nemotron vs Kimi) more thoroughly
 
 **Feedback**: "Can we explain this better to sound less defensive? Or do we actually need more tests?" (p. 27, model confound and fair comparison).
 
-**Current state**: Active control used Nemotron (M≈58 base), factorial used Kimi (M≈78.8 base). Same-model comparison narrows but doesn't eliminate the gap.
+**Resolved (2026-02-08)**: The 5-model A×B synergy probe (#30) provides Nemotron baseline data at N=119, enabling a clean same-model comparison with no cross-model confound:
+- Nemotron base: 57.1 (avg cells 1,3)
+- Active control (Nemotron): 66.5 (+9.4 above base)
+- Nemotron recognition: 73.1 (avg cells 5,7; +16.0 above base)
 
-**Options**:
-- [ ] Re-run active control cells (15-18) on Kimi K2.5 to get same-model comparison (cleanest fix)
-- [ ] Alternatively, rewrite §6.5 to frame as natural experiment rather than controlled comparison
-- [ ] If re-running: N≥30/cell × 4 cells = 120 attempts minimum
+This confirms recognition gains (~+16) substantially exceed active-control gains (~+9) within the same model. The paper already reports this same-model analysis in §8.
 
 ### [PARTIAL] #42 — Address rubric asymmetry (tutor vs learner measurement)
 
@@ -169,17 +169,20 @@ Adds ~$10 but provides cross-judge validation of any interaction found.
 
 ## MEDIUM PRIORITY
 
-### [ ] #33 / #45 — Use Claude Code (AI) for thematic analysis
+### [DONE] #33 / #45 — Use Claude Code (AI) for thematic analysis
 
 **Feedback**: "Can we instead use Claude Code rather than or as well as regex to do thematic analysis? Add this to todos." (p. 42, §6.11). Also repeated at #45 (p. 54).
 
 **Current state**: `scripts/qualitative-analysis.js` uses regex-based thematic coding. Results in paper Tables 15-16.
 
-**Proposed work**:
-- [ ] Add LLM-based thematic coding pass (Claude via API) alongside existing regex
-- [ ] Compare AI-identified themes vs regex themes for convergent validity
-- [ ] AI coding may catch nuanced themes regex misses (e.g., implicit recognition, hedged struggle)
-- [ ] Report inter-method agreement (regex vs AI) as methodological contribution
+**Script built**: `scripts/qualitative-analysis-ai.js` — supports both modes:
+- **Option 1 (classify)**: Scores each response against existing 6 thematic categories with AI, compares to regex results (Cohen's κ inter-method agreement)
+- **Option 2 (discover)**: Open-ended theme discovery — AI identifies 3-5 emergent themes per response, plus pedagogical stance and epistemic orientation
+- Models: `--model haiku` (~$9/full run), `--model sonnet` (~$28), `--model opus` (~$134)
+- Supports `--sample N` for cost-controlled testing, `--mode both` for both modes
+- Outputs JSON + markdown to exports/
+- Tested with N=6 sample; classification + discovery both functional
+- **Next**: Run `--sample 50 --model haiku --mode both` (~$0.27), review, then full run
 
 ### [ ] #38 — Design test for dialectical impasse hypothesis (§7.1)
 
@@ -193,11 +196,11 @@ Adds ~$10 but provides cross-judge validation of any interaction found.
 - [ ] Code resolution strategies: mutual recognition, domination, withdrawal, compromise
 - [ ] Compare base vs recognition tutors on impasse resolution quality
 
-### [ ] #19 — How to further test multi-agent synergy
+### [DONE] #19 — How to further test multi-agent synergy
 
 **Feedback**: "how would we test this further?" (re: "This discrepancy means the multi-agent synergy finding should be treated as exploratory and model-specific," p. 21).
 
-**Note**: Overlaps with #30 above. The key addition here is testing across more ego models and potentially with different learner configurations. See #30 for detailed design.
+**Resolved (2026-02-08)**: Fully addressed by the 5-model A×B synergy probe (#30). Tested across 5 ego models (N=826 total), all showing negative or near-zero interaction (mean −2.2). The finding is definitively noise, not model-specific dynamics. See `notes/todo-axb-synergy-probe-2026-02-08.md`.
 
 ### [DONE] #29 — Verify cells 6,8 re-scored values with latest evals
 
