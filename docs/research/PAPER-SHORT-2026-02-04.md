@@ -20,6 +20,10 @@ abstract: |
 
   The system is deployed in an open-source learning management system with all code, evaluation data, and reproducible analysis commands publicly available.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
+geometry: margin=1in
+header-includes: |
+  \usepackage{float}
+  \floatplacement{figure}{H}
 ---
 
 # The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
@@ -188,6 +192,10 @@ We implement recognition through a multiagent architecture drawing on Freud's st
 - Does this create conditions for transformation or just transfer information?
 - Does this honor productive struggle or rush to resolve confusion?
 - If there was a previous failure, does this acknowledge and repair it?
+
+![Ego/Superego Architecture](figures/figure1.png){width=100%}
+
+![Recognition vs. Baseline Response Flow](figures/figure2.png){width=100%}
 
 ### 4.2 The Superego as Ghost
 
@@ -365,6 +373,8 @@ The three-way comparison provides preliminary evidence for recognition theory's 
 - Recognition increment: **+8.7 points**
 
 **Interpretation**: The recognition condition outperforms enhanced prompting by +8.7 points. This comparison bundles recognition theory with memory integration (which the enhanced condition lacks). The +8.7 increment is consistent with the recognition dominance finding in Section 6.2, where recognition alone produces d=1.71 even without memory. A cross-judge replication found this increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60; Section 6.12). The controlled 2×2 design presented next provides the definitive test of recognition's contribution.
+
+![Recognition Effect Decomposition](figures/figure3.png){width=100%}
 
 ### 6.2 Memory Isolation: Disentangling Recognition and Memory
 

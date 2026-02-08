@@ -8,6 +8,10 @@ link-citations: true
 abstract: |
   Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=1,486 primary scored responses across eighteen key evaluation runs; N=3,800+ across the full development database) comparing recognition-enhanced configurations against baselines reveals that recognition theory is the primary driver of tutoring improvement: a corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition produces large effects with or without memory (+15.2 pts without memory, d=1.71; +11.0 pts with memory), while memory alone provides only a modest, non-significant benefit (+4.8 pts, d=0.46, $p \approx .08$). The combined condition yields the highest scores (91.2, d=1.81 vs base), with a small negative interaction (-4.2 pts) suggesting ceiling effects rather than synergy. A post-hoc active control (N=118), using length-matched prompts with generic pedagogical best practices but no recognition theory, scores 66.5—approximately 9 points above same-model base (${\approx}58$) but well below recognition levels (${\approx}73$), with recognition gains (~+15 pts above same-model base) substantially exceeding active-control gains (~+9 pts). (The active control ran on a different ego model than the factorial, precluding direct cross-condition comparison; same-model historical data provides the fair baseline.) A preliminary three-way comparison (N=36) found that recognition outperforms enhanced prompting by +8.7 points, consistent with recognition dominance, though the increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60). A multi-model probe of multi-agent synergy across five ego models (N=826; Section 6.4) confirms that architecture and recognition contribute additively: the A$\times$B interaction ranges from -5.7 to -0.7 across all models (mean -2.2), definitively refuting an earlier exploratory finding (+9.2 on N=17) as sampling noise. Domain generalizability testing across both models and content domains confirms recognition advantage replicates: elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent—Kimi shows recognition dominance on elementary content, revising the Nemotron-only finding. Multi-agent architecture serves as critical error correction when content isolation failures introduce wrong-domain references. Bilateral transformation tracking across three multi-turn scenarios (N=118) confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+26% relative improvement in adaptation index), though learner-side growth is not higher under recognition, suggesting the effect is tutor-side responsiveness rather than symmetric mutual transformation. A step-by-step evolution analysis of dynamic prompt rewriting (cell 21: LLM-authored session directives + active Writing Pad memory) across three iterative development runs (N=82) suggests the Writing Pad as an important enabler: cell 21 progresses from trailing its static baseline by 7.2 points to leading by 5.5 points, with every rubric dimension improving. A cross-judge replication with GPT-5.2 confirms the main findings are judge-robust: the recognition main effect (d=1.03), recognition dominance in the memory isolation experiment (d=0.99), and multi-agent null effects all replicate, though at compressed magnitudes (~58% of primary judge effect sizes). The memory isolation condition ordering is identical under both judges with no rank reversals (inter-judge r=0.63, N=120). These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
+geometry: margin=1in
+header-includes: |
+  \usepackage{float}
+  \floatplacement{figure}{H}
 ---
 
 # The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
@@ -250,9 +254,9 @@ Two agents collaborate to produce each tutoring response:
 
 The Superego can accept, modify, or reject suggestions. This creates an internal dialogue—proposal, evaluation, revision—that mirrors the external tutor-learner dialogue we are trying to produce.
 
-![Ego/Superego Architecture](figures/figure1.png){width=90%}
+![Ego/Superego Architecture](figures/figure1.png){width=100%}
 
-![Recognition vs. Baseline Response Flow](figures/figure2.png){width=90%}
+![Recognition vs. Baseline Response Flow](figures/figure2.png){width=100%}
 
 ### 4.2 The Superego as Ghost
 
@@ -561,7 +565,7 @@ A critical question for any recognition-based framework: Does recognition theory
 
 **Statistical Test**: One-way ANOVA F(2,33) = 9.84, p < .001
 
-![Recognition Effect Decomposition](figures/figure3.png){width=90%}
+![Recognition Effect Decomposition](figures/figure3.png){width=100%}
 
 **Interpretation**: The recognition condition outperforms the enhanced condition by +8.7 points. This comparison bundles recognition theory with memory integration (which the enhanced condition lacks; see Section 5.3). The +8.7 increment is consistent with the recognition dominance finding in Section 6.2, where recognition alone produces d=1.71 even without memory. A cross-judge replication found this increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60; Section 6.14). The controlled 2×2 design presented next provides the definitive test of recognition's contribution.
 
@@ -669,7 +673,7 @@ We tested whether multi-agent synergy generalizes beyond recognition prompts by 
 | Recognition | 72.2 | 81.5 | **+9.2** | <.05 |
 | Enhanced | 83.3 | 83.3 | **+0.0** | n.s. |
 
-![Multi-Agent Synergy by Prompt Type](figures/figure4.png){width=90%}
+![Multi-Agent Synergy by Prompt Type](figures/figure4.png){width=100%}
 
 **Exploratory Finding**: The multi-agent synergy (+9.2 points) appears **specific to recognition prompts** in this Nemotron-based analysis. Enhanced prompts show zero benefit from multi-agent architecture. However, this interaction was not replicated in two independent tests:
 
@@ -707,7 +711,7 @@ A critical question for any pedagogical framework: Do findings generalize across
 | Overall avg | 68.0 | 84.8 |
 | Best config | recog+multi (77.3) | recog+multi (92.3) |
 
-![Factor Effects Invert by Domain](figures/figure5.png){width=90%}
+![Factor Effects Invert by Domain](figures/figure5.png){width=100%}
 
 **Key Findings:**
 
