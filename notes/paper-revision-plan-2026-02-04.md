@@ -1,7 +1,8 @@
-# PAPER-UNIFIED.md Revision Plan
+# PAPER-UNIFIED.md Revision Plan — COMPLETE
 
 **Date:** 2026-02-04
-**Status:** Planning
+**Status:** Complete — all findings incorporated into PAPER-FULL and PAPER-SHORT.
+Superseded by `todos-feedback-2026-02-07.md`.
 
 ## Overview
 
@@ -202,16 +203,16 @@ provides robustness for domain transfer that single-agent cannot match.
 
 ## Writing Tasks
 
-- [ ] Update abstract with revised findings
-- [ ] Add enhanced prompt condition to methodology
-- [ ] Revise Section 6.1 with correct factor effects
-- [ ] Add new Recognition Theory Validation section
-- [ ] Add Cost/Quality Analysis section
-- [ ] Add Domain Generalizability section (or subsection in Discussion)
-- [ ] Update Section 7 discussion with new evidence
-- [ ] Revise limitations section (add domain transfer caveats)
-- [ ] Create new tables/figures
-- [ ] Update all effect sizes throughout
+- [x] Update abstract with revised findings
+- [x] Add enhanced prompt condition to methodology
+- [x] Revise Section 6.1 with correct factor effects
+- [x] Add new Recognition Theory Validation section
+- [x] Add Cost/Quality Analysis section
+- [x] Add Domain Generalizability section (or subsection in Discussion)
+- [x] Update Section 7 discussion with new evidence
+- [x] Revise limitations section (add domain transfer caveats)
+- [x] Create new tables/figures
+- [x] Update all effect sizes throughout
 
 ## Notes for Further Work
 

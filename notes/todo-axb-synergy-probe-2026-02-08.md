@@ -65,7 +65,9 @@ Interaction = (Cell7 - Cell5) - (Cell3 - Cell1)
 
 ## Phase 3: Cross-Judge (Optional, +~$10)
 
-### [ ] GPT-5.2 rejudge
+### [DEPRIORITIZED] GPT-5.2 rejudge
+
+Optional cross-judge validation. Main finding (A×B is noise) is definitive from Opus alone across 5 models.
 
 ```bash
 node scripts/eval-cli.js rejudge eval-2026-02-07-722087ac --judge openrouter.gpt
