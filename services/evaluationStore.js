@@ -1175,6 +1175,9 @@ function parseResultRow(row) {
         }
       : null,
     learnerArchitecture: row.learner_architecture || null,
+    learnerScores: row.learner_scores ? JSON.parse(row.learner_scores) : null,
+    learnerOverallScore: row.learner_overall_score != null ? row.learner_overall_score : null,
+    learnerJudgeModel: row.learner_judge_model || null,
   };
 }
 

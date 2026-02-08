@@ -92,7 +92,7 @@ export function resolveEvalProfile(profileName) {
     } else if (promptType === 'placebo') {
       resolvedProfileName = 'placebo';
     } else if (promptType === 'hardwired') {
-      resolvedProfileName = 'budget';  // hardwired uses budget profile with prompt override
+      resolvedProfileName = 'hardwired';
     } else if (promptType === 'memory') {
       resolvedProfileName = 'memory';
     } else if (promptType === 'recognition_nomem') {

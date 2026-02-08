@@ -65,7 +65,6 @@ import * as anovaStats from '../services/anovaStats.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import { getAvailableJudge, buildEvaluationPrompt, calculateOverallScore, calculateBaseScore, calculateRecognitionScore } from '../services/rubricEvaluator.js';
 import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
-import * as learnerConfig from '../services/learnerConfigLoader.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
@@ -2313,9 +2312,10 @@ async function main() {
 
         const runId = args.find(a => !a.startsWith('--') && a !== 'evaluate-learner');
         if (!runId) {
-          console.error('Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose]');
+          console.error('Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>]');
           console.error('  Scores learner turns from dialogue logs using the learner rubric.');
           console.error('  Only works on multi-turn runs with learner turns (e.g., bilateral transformation).');
+          console.error('  --arch filters by learner_architecture (e.g., ego_superego_recognition)');
           process.exit(1);
         }
 
@@ -2323,10 +2323,14 @@ async function main() {
         const force = getFlag('force');
         const modelOverride = getOption('model') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
+        const archFilter = getOption('arch') || null;
 
         // Load results with dialogue IDs (multi-turn data)
         const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
-        const dialogueResults = allResults.filter(r => r.dialogueId && r.success);
+        let dialogueResults = allResults.filter(r => r.dialogueId && r.success);
+        if (archFilter) {
+          dialogueResults = dialogueResults.filter(r => r.learnerArchitecture === archFilter);
+        }
 
         if (dialogueResults.length === 0) {
           console.error(`No multi-turn dialogue results found for run: ${runId}`);
@@ -2381,7 +2385,7 @@ async function main() {
 
           const trace = dialogueLog.dialogueTrace || [];
           const learnerArch = dialogueLog.learnerArchitecture || 'unified';
-          const isMultiAgent = learnerArch === 'ego_superego' || learnerArch === 'multi_agent' || learnerArch === 'psychodynamic';
+          const isMultiAgent = learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
 
           // Extract learner turns from dialogue trace.
           // Each learner turn consists of:
@@ -2468,13 +2472,8 @@ async function main() {
           const scenario = getScenario(result.scenarioId);
           const scenarioName = scenario?.name || result.scenarioId;
 
-          // Get persona description
-          let personaDescription = 'No persona description available';
-          try {
-            // Profile name encodes persona info (e.g., cell_2_base_single_psycho)
-            const persona = learnerConfig.getPersona('productive_struggler');
-            personaDescription = persona?.description || personaDescription;
-          } catch (e) { /* use default */ }
+          // Use learnerContext from the dialogue log as persona description
+          const personaDescription = dialogueLog.learnerContext || 'No persona description available';
 
           const turnScores = {};
           let turnSucceeded = 0;
@@ -2494,7 +2493,7 @@ async function main() {
               const prompt = buildLearnerEvaluationPrompt({
                 turns: reconstructedTurns,
                 targetTurnIndex: targetIdx,
-                personaId: profileName.includes('psycho') ? 'psychodynamic_learner' : 'productive_struggler',
+                personaId: profileName,
                 personaDescription,
                 learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
                 scenarioName,
