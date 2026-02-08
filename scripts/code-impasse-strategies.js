@@ -15,6 +15,10 @@
  *
  * Usage:
  *   node scripts/code-impasse-strategies.js [--model claude-code|haiku] [--run-id <id>]
+ *   node scripts/code-impasse-strategies.js --per-turn [--model claude-code|haiku]
+ *
+ * --per-turn: Code turns 3 and 5 independently (instead of overall dialogue).
+ *   Tracks strategy evolution within each dialogue.
  */
 
 import 'dotenv/config';
@@ -89,6 +93,7 @@ const MODEL_MAP = {
   'claude-code': 'claude-code',
   haiku: 'anthropic/claude-haiku-4.5',
   sonnet: 'anthropic/claude-sonnet-4.5',
+  gpt: 'openai/gpt-5.2',
 };
 
 // ── Model Calls (from qualitative-analysis-ai.js) ────────────────────────
@@ -300,6 +305,219 @@ Return a JSON object with this exact structure:
 }
 
 Return ONLY the JSON object, no other text.`;
+}
+
+// ── Per-Turn Coding Prompt ───────────────────────────────────────────────
+
+function buildPerTurnCodingPrompt(dialogue, turnIndex) {
+  const learnerTurns = LEARNER_TURNS[dialogue.scenario_id];
+  if (!learnerTurns) throw new Error(`Unknown scenario: ${dialogue.scenario_id}`);
+
+  const tutorMessages = dialogue.suggestions.map(s => s.message || '').filter(Boolean);
+
+  // Build transcript up to and including the target turn
+  let transcript = '';
+  transcript += `## Scenario: ${dialogue.scenario_id.replace(/_/g, ' ')}\n\n`;
+  transcript += `**Condition**: ${dialogue.condition} | **Architecture**: ${dialogue.architecture}-agent\n\n`;
+  transcript += `### Dialogue (up to and including Turn ${turnIndex})\n\n`;
+
+  // Interleave learner and tutor turns up to the target
+  transcript += `**Learner (initial)**: ${learnerTurns.initial}\n\n`;
+  if (tutorMessages[0]) transcript += `**Tutor (response 0)**: ${tutorMessages[0]}\n\n`;
+
+  for (let t = 1; t <= turnIndex; t++) {
+    const turnKey = `turn_${t}`;
+    if (learnerTurns[turnKey]) {
+      transcript += `**Learner (turn ${t})**: ${learnerTurns[turnKey]}\n\n`;
+    }
+    if (tutorMessages[t]) {
+      transcript += `**Tutor (response ${t})**: ${tutorMessages[t]}\n\n`;
+    }
+  }
+
+  const strategyDescriptions = Object.entries(STRATEGIES)
+    .map(([key, s]) => `- **${key}**: ${s.description} (Hegel: ${s.hegel})`)
+    .join('\n');
+
+  return `You are a qualitative coder analyzing how an AI tutor handles dialectical impasse in a philosophy tutoring scenario.
+
+## Resolution Strategy Categories
+
+${strategyDescriptions}
+
+## Coding Task
+
+Read the following dialogue transcript. The tutor has just responded to the learner at **turn ${turnIndex}**. Your job is to classify the tutor's response at this SPECIFIC turn — the LAST tutor response shown — into exactly one strategy.
+
+Focus ONLY on the tutor's response at turn ${turnIndex}. Do NOT code the overall dialogue or earlier responses. Consider:
+- Does the tutor engage the learner's position as intellectually valid? (mutual_recognition)
+- Does the tutor reassert authority, dismiss the objection, or explain "correctly"? (domination)
+- Does the tutor agree with the learner to avoid tension? (capitulation)
+- Does the tutor change the subject, suggest moving on, or offer generic encouragement? (withdrawal)
+- Does the tutor acknowledge the learner's point AND open new ground for exploration? (scaffolded_reframing)
+
+## Dialogue Transcript
+
+${transcript}
+
+## Output Format
+
+Return a JSON object with this exact structure:
+{
+  "primary_strategy": "one of: ${STRATEGY_KEYS.join(', ')}",
+  "confidence": 1-5,
+  "secondary_strategy": "one of: ${STRATEGY_KEYS.join(', ')} or null if clearly single strategy",
+  "evidence_quote": "max 40-word quote from the tutor's turn ${turnIndex} response that best exemplifies the strategy",
+  "reasoning": "2-3 sentence explanation (max 60 words)"
+}
+
+Return ONLY the JSON object, no other text.`;
+}
+
+// ── Per-Turn Analysis ───────────────────────────────────────────────────
+
+function analyzePerTurnResults(codings) {
+  // Group by dialogue (same id = same dialogue, different turns)
+  const byDialogue = {};
+  for (const c of codings) {
+    const key = c.id;
+    if (!byDialogue[key]) byDialogue[key] = {};
+    byDialogue[key][c.turn] = c;
+  }
+
+  const analysis = {
+    n_dialogues: Object.keys(byDialogue).length,
+    n_codings: codings.length,
+    // Strategy distribution at each turn
+    turnStrategies: { 3: {}, 5: {} },
+    // Transition matrix: (turn3 strategy, turn5 strategy) pairs
+    transitions: {},
+    // Per-condition transitions
+    transitionsByCondition: { base: {}, recognition: {} },
+    // Strategy stability
+    stability: { base: { same: 0, changed: 0 }, recognition: { same: 0, changed: 0 } },
+  };
+
+  // Initialize strategy counts per turn
+  for (const turn of [3, 5]) {
+    for (const s of STRATEGY_KEYS) {
+      analysis.turnStrategies[turn][s] = { base: 0, recognition: 0 };
+    }
+  }
+
+  // Count strategies per turn and compute transitions
+  for (const [id, turns] of Object.entries(byDialogue)) {
+    if (!turns[3] || !turns[5]) continue;
+
+    const s3 = turns[3].coding.primary_strategy;
+    const s5 = turns[5].coding.primary_strategy;
+    const cond = turns[3].condition;
+
+    if (!STRATEGY_KEYS.includes(s3) || !STRATEGY_KEYS.includes(s5)) continue;
+
+    analysis.turnStrategies[3][s3][cond]++;
+    analysis.turnStrategies[5][s5][cond]++;
+
+    const transKey = `${s3} → ${s5}`;
+    analysis.transitions[transKey] = (analysis.transitions[transKey] || 0) + 1;
+    analysis.transitionsByCondition[cond][transKey] = (analysis.transitionsByCondition[cond][transKey] || 0) + 1;
+
+    if (s3 === s5) analysis.stability[cond].same++;
+    else analysis.stability[cond].changed++;
+  }
+
+  return analysis;
+}
+
+function generatePerTurnReport(codings, analysis) {
+  const baseN = new Set(codings.filter(c => c.condition === 'base').map(c => c.id)).size;
+  const recogN = new Set(codings.filter(c => c.condition === 'recognition').map(c => c.id)).size;
+
+  let md = `# Per-Turn Strategy Coding: Turns 3 and 5
+
+**Generated:** ${new Date().toISOString()}
+**Run ID:** ${codings[0]?.run_id || DEFAULT_RUN_ID}
+**N:** ${analysis.n_dialogues} dialogues coded at 2 turns each (${analysis.n_codings} total codings)
+**Dialogues:** base=${baseN}, recognition=${recogN}
+
+## Research Question
+
+Do base tutors *start* by engaging but *degrade* to withdrawal as impasse deepens?
+Or do they withdraw from the start? Does recognition maintain strategy consistency?
+
+## Strategy Distribution by Turn
+
+### Turn 3 (after first escalation)
+
+| Strategy | Base | Recognition |
+|----------|------|-------------|
+`;
+
+  for (const s of STRATEGY_KEYS) {
+    const b = analysis.turnStrategies[3][s].base;
+    const r = analysis.turnStrategies[3][s].recognition;
+    if (b > 0 || r > 0) {
+      md += `| ${STRATEGIES[s].label} | ${b} | ${r} |\n`;
+    }
+  }
+
+  md += `\n### Turn 5 (after final challenge)\n\n| Strategy | Base | Recognition |\n|----------|------|-------------|\n`;
+
+  for (const s of STRATEGY_KEYS) {
+    const b = analysis.turnStrategies[5][s].base;
+    const r = analysis.turnStrategies[5][s].recognition;
+    if (b > 0 || r > 0) {
+      md += `| ${STRATEGIES[s].label} | ${b} | ${r} |\n`;
+    }
+  }
+
+  // Strategy stability
+  md += `\n## Strategy Stability (Turn 3 → Turn 5)\n\n`;
+  md += `| Condition | Same Strategy | Changed Strategy | Stability Rate |\n`;
+  md += `|-----------|--------------|-----------------|----------------|\n`;
+  for (const cond of ['base', 'recognition']) {
+    const s = analysis.stability[cond];
+    const total = s.same + s.changed;
+    const rate = total > 0 ? (s.same / total * 100).toFixed(0) : 'N/A';
+    md += `| ${cond} | ${s.same} | ${s.changed} | ${rate}% |\n`;
+  }
+
+  // Transition matrices
+  md += `\n## Transition Matrix: Turn 3 → Turn 5\n`;
+
+  for (const cond of ['base', 'recognition']) {
+    md += `\n### ${cond} (N=${cond === 'base' ? baseN : recogN})\n\n`;
+    const trans = analysis.transitionsByCondition[cond];
+    if (Object.keys(trans).length === 0) {
+      md += `No transitions recorded.\n`;
+      continue;
+    }
+    md += `| Transition | Count |\n|------------|-------|\n`;
+    const sorted = Object.entries(trans).sort((a, b) => b[1] - a[1]);
+    for (const [key, count] of sorted) {
+      md += `| ${key} | ${count} |\n`;
+    }
+  }
+
+  // Individual dialogue details
+  md += `\n## Per-Dialogue Detail\n\n`;
+  md += `| ID | Scenario | Condition | Arch | Turn 3 | Turn 5 | Changed? |\n`;
+  md += `|----|----------|-----------|------|--------|--------|----------|\n`;
+
+  // Group by dialogue
+  const byDialogue = {};
+  for (const c of codings) {
+    if (!byDialogue[c.id]) byDialogue[c.id] = { ...c };
+    byDialogue[c.id][`turn${c.turn}`] = c.coding.primary_strategy;
+  }
+  for (const [id, d] of Object.entries(byDialogue)) {
+    const s3 = d.turn3 || '?';
+    const s5 = d.turn5 || '?';
+    const changed = s3 !== s5 ? 'YES' : 'no';
+    md += `| ${id} | ${d.scenario_id} | ${d.condition} | ${d.architecture} | ${s3} | ${s5} | ${changed} |\n`;
+  }
+
+  return md;
 }
 
 // ── Chi-Square Test ──────────────────────────────────────────────────────
@@ -626,11 +844,13 @@ function parseArgs() {
   const opts = {
     model: 'claude-code',
     runId: DEFAULT_RUN_ID,
+    perTurn: false,
   };
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
       case '--model': opts.model = args[++i]; break;
       case '--run-id': opts.runId = args[++i]; break;
+      case '--per-turn': opts.perTurn = true; break;
       case '--help':
         console.log(`Usage: node scripts/code-impasse-strategies.js [options]
 
@@ -640,6 +860,7 @@ Options:
                        haiku       — OpenRouter Haiku
                        sonnet      — OpenRouter Sonnet
   --run-id <id>      Run ID to code (default: ${DEFAULT_RUN_ID})
+  --per-turn         Code turns 3 and 5 independently (track strategy evolution)
   --help             Show this help`);
         process.exit(0);
     }
@@ -661,7 +882,9 @@ async function main() {
   const db = new Database(dbPath);
 
   console.log('='.repeat(70));
-  console.log('DIALECTICAL IMPASSE RESOLUTION STRATEGY CODING');
+  console.log(opts.perTurn
+    ? 'PER-TURN STRATEGY CODING (Turns 3 & 5)'
+    : 'DIALECTICAL IMPASSE RESOLUTION STRATEGY CODING');
   console.log('='.repeat(70));
   console.log(`Model: ${opts.model} | Run ID: ${opts.runId}`);
 
@@ -679,103 +902,224 @@ async function main() {
     return;
   }
 
-  // Code each dialogue
-  const codings = [];
-  let errors = 0;
-  const startTime = Date.now();
-
-  for (let i = 0; i < dialogues.length; i++) {
-    const d = dialogues[i];
-    const progress = `[${i + 1}/${dialogues.length}]`;
-    process.stdout.write(`  ${progress} Coding ${d.scenario_id} / ${d.profile_name}...`);
-
-    try {
-      const prompt = buildCodingPrompt(d);
-      const content = await callModel(prompt, opts.model);
-      const parsed = parseJsonResponse(content);
-
-      // Validate strategy
-      if (!STRATEGY_KEYS.includes(parsed.primary_strategy)) {
-        console.warn(` WARN: invalid strategy "${parsed.primary_strategy}", skipping`);
-        errors++;
-        continue;
-      }
-
-      codings.push({
-        id: d.id,
-        run_id: opts.runId,
-        scenario_id: d.scenario_id,
-        profile_name: d.profile_name,
-        condition: d.condition,
-        architecture: d.architecture,
-        overall_score: d.overall_score,
-        coding: parsed,
-      });
-
-      console.log(` → ${parsed.primary_strategy} (conf=${parsed.confidence})`);
-    } catch (err) {
-      errors++;
-      console.error(` ERROR: ${err.message}`);
-    }
-  }
-
-  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`\nCoding complete: ${codings.length} coded, ${errors} errors, ${elapsed}s`);
-
-  if (codings.length === 0) {
-    console.error('No successful codings.');
-    db.close();
-    return;
-  }
-
-  // Analyze
-  const analysis = analyzeResults(codings);
-
   // Ensure exports directory
   const exportsDir = path.join(process.cwd(), 'exports');
   if (!fs.existsSync(exportsDir)) {
     fs.mkdirSync(exportsDir, { recursive: true });
   }
 
-  // Write outputs
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 
-  const jsonPath = path.join(exportsDir, `impasse-strategy-coding-${timestamp}.json`);
-  fs.writeFileSync(jsonPath, JSON.stringify({
-    generated: new Date().toISOString(),
-    model: opts.model,
-    runId: opts.runId,
-    n: codings.length,
-    errors,
-    codings,
-    analysis,
-  }, null, 2));
-  console.log(`\nJSON: ${jsonPath}`);
+  if (opts.perTurn) {
+    // ── Per-Turn Mode ───────────────────────────────────────────────
+    const TARGET_TURNS = [3, 5];
+    const codings = [];
+    let errors = 0;
+    const startTime = Date.now();
+    const totalCalls = dialogues.length * TARGET_TURNS.length;
+    let callNum = 0;
 
-  const mdReport = generateReport(codings, analysis);
-  const mdPath = path.join(exportsDir, `impasse-strategy-coding-${timestamp}.md`);
-  fs.writeFileSync(mdPath, mdReport);
-  console.log(`Markdown: ${mdPath}`);
+    for (const d of dialogues) {
+      // Verify dialogue has enough suggestions
+      if (d.suggestions.length < 6) {
+        console.warn(`  SKIP ${d.id}: only ${d.suggestions.length} suggestions (need 6)`);
+        continue;
+      }
 
-  // Print summary
-  console.log('\n' + '─'.repeat(70));
-  console.log('STRATEGY DISTRIBUTION SUMMARY');
-  console.log('─'.repeat(70));
-  console.log(`${'Strategy'.padEnd(25)} ${'Base'.padEnd(12)} ${'Recog'.padEnd(12)} Diff`);
-  console.log('─'.repeat(60));
-  for (const s of STRATEGY_KEYS) {
-    const b = analysis.strategyByCondition[s].base;
-    const r = analysis.strategyByCondition[s].recognition;
-    const bPct = baseN > 0 ? (b / baseN * 100).toFixed(0) : '0';
-    const rPct = recogN > 0 ? (r / recogN * 100).toFixed(0) : '0';
-    const diff = parseInt(rPct) - parseInt(bPct);
-    console.log(`  ${STRATEGIES[s].label.padEnd(23)} ${(b + ' (' + bPct + '%)').padEnd(12)} ${(r + ' (' + rPct + '%)').padEnd(12)} ${diff > 0 ? '+' : ''}${diff}%`);
-  }
+      for (const turn of TARGET_TURNS) {
+        callNum++;
+        const progress = `[${callNum}/${totalCalls}]`;
+        process.stdout.write(`  ${progress} Turn ${turn}: ${d.scenario_id} / ${d.profile_name}...`);
 
-  if (analysis.chiSquare.overall) {
-    const cs = analysis.chiSquare.overall;
-    const pStr = cs.p < .001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
-    console.log(`\n  χ²(${cs.df}) = ${cs.chi2.toFixed(2)}, ${pStr}, V = ${cs.cramersV.toFixed(3)}`);
+        try {
+          const prompt = buildPerTurnCodingPrompt(d, turn);
+          const content = await callModel(prompt, opts.model);
+          const parsed = parseJsonResponse(content);
+
+          if (!STRATEGY_KEYS.includes(parsed.primary_strategy)) {
+            console.warn(` WARN: invalid strategy "${parsed.primary_strategy}", skipping`);
+            errors++;
+            continue;
+          }
+
+          codings.push({
+            id: d.id,
+            run_id: opts.runId,
+            scenario_id: d.scenario_id,
+            profile_name: d.profile_name,
+            condition: d.condition,
+            architecture: d.architecture,
+            overall_score: d.overall_score,
+            turn,
+            coding: parsed,
+          });
+
+          console.log(` → ${parsed.primary_strategy} (conf=${parsed.confidence})`);
+        } catch (err) {
+          errors++;
+          console.error(` ERROR: ${err.message}`);
+        }
+      }
+    }
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`\nCoding complete: ${codings.length} coded, ${errors} errors, ${elapsed}s`);
+
+    if (codings.length === 0) {
+      console.error('No successful codings.');
+      db.close();
+      return;
+    }
+
+    const analysis = analyzePerTurnResults(codings);
+
+    const jsonPath = path.join(exportsDir, `impasse-per-turn-coding-${timestamp}.json`);
+    fs.writeFileSync(jsonPath, JSON.stringify({
+      generated: new Date().toISOString(),
+      model: opts.model,
+      runId: opts.runId,
+      mode: 'per-turn',
+      targetTurns: TARGET_TURNS,
+      n: codings.length,
+      errors,
+      codings,
+      analysis,
+    }, null, 2));
+    console.log(`\nJSON: ${jsonPath}`);
+
+    const mdReport = generatePerTurnReport(codings, analysis);
+    const mdPath = path.join(exportsDir, `impasse-per-turn-coding-${timestamp}.md`);
+    fs.writeFileSync(mdPath, mdReport);
+    console.log(`Markdown: ${mdPath}`);
+
+    // Print summary
+    console.log('\n' + '─'.repeat(70));
+    console.log('PER-TURN STRATEGY SUMMARY');
+    console.log('─'.repeat(70));
+
+    for (const turn of TARGET_TURNS) {
+      console.log(`\n  Turn ${turn}:`);
+      console.log(`  ${'Strategy'.padEnd(25)} ${'Base'.padEnd(8)} Recog`);
+      for (const s of STRATEGY_KEYS) {
+        const b = analysis.turnStrategies[turn][s].base;
+        const r = analysis.turnStrategies[turn][s].recognition;
+        if (b > 0 || r > 0) {
+          console.log(`    ${STRATEGIES[s].label.padEnd(23)} ${String(b).padEnd(8)} ${r}`);
+        }
+      }
+    }
+
+    console.log(`\n  Strategy stability (turn 3 → turn 5):`);
+    for (const cond of ['base', 'recognition']) {
+      const s = analysis.stability[cond];
+      const total = s.same + s.changed;
+      const rate = total > 0 ? (s.same / total * 100).toFixed(0) : 'N/A';
+      console.log(`    ${cond}: ${s.same} same, ${s.changed} changed (${rate}% stable)`);
+    }
+
+    console.log(`\n  Transition patterns:`);
+    for (const cond of ['base', 'recognition']) {
+      console.log(`    ${cond}:`);
+      const trans = analysis.transitionsByCondition[cond];
+      const sorted = Object.entries(trans).sort((a, b) => b[1] - a[1]);
+      for (const [key, count] of sorted) {
+        console.log(`      ${key}: ${count}`);
+      }
+    }
+
+  } else {
+    // ── Overall Mode (original) ─────────────────────────────────────
+
+    // Code each dialogue
+    const codings = [];
+    let errors = 0;
+    const startTime = Date.now();
+
+    for (let i = 0; i < dialogues.length; i++) {
+      const d = dialogues[i];
+      const progress = `[${i + 1}/${dialogues.length}]`;
+      process.stdout.write(`  ${progress} Coding ${d.scenario_id} / ${d.profile_name}...`);
+
+      try {
+        const prompt = buildCodingPrompt(d);
+        const content = await callModel(prompt, opts.model);
+        const parsed = parseJsonResponse(content);
+
+        // Validate strategy
+        if (!STRATEGY_KEYS.includes(parsed.primary_strategy)) {
+          console.warn(` WARN: invalid strategy "${parsed.primary_strategy}", skipping`);
+          errors++;
+          continue;
+        }
+
+        codings.push({
+          id: d.id,
+          run_id: opts.runId,
+          scenario_id: d.scenario_id,
+          profile_name: d.profile_name,
+          condition: d.condition,
+          architecture: d.architecture,
+          overall_score: d.overall_score,
+          coding: parsed,
+        });
+
+        console.log(` → ${parsed.primary_strategy} (conf=${parsed.confidence})`);
+      } catch (err) {
+        errors++;
+        console.error(` ERROR: ${err.message}`);
+      }
+    }
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`\nCoding complete: ${codings.length} coded, ${errors} errors, ${elapsed}s`);
+
+    if (codings.length === 0) {
+      console.error('No successful codings.');
+      db.close();
+      return;
+    }
+
+    // Analyze
+    const analysis = analyzeResults(codings);
+
+    // Write outputs
+    const jsonPath = path.join(exportsDir, `impasse-strategy-coding-${timestamp}.json`);
+    fs.writeFileSync(jsonPath, JSON.stringify({
+      generated: new Date().toISOString(),
+      model: opts.model,
+      runId: opts.runId,
+      n: codings.length,
+      errors,
+      codings,
+      analysis,
+    }, null, 2));
+    console.log(`\nJSON: ${jsonPath}`);
+
+    const mdReport = generateReport(codings, analysis);
+    const mdPath = path.join(exportsDir, `impasse-strategy-coding-${timestamp}.md`);
+    fs.writeFileSync(mdPath, mdReport);
+    console.log(`Markdown: ${mdPath}`);
+
+    // Print summary
+    console.log('\n' + '─'.repeat(70));
+    console.log('STRATEGY DISTRIBUTION SUMMARY');
+    console.log('─'.repeat(70));
+    console.log(`${'Strategy'.padEnd(25)} ${'Base'.padEnd(12)} ${'Recog'.padEnd(12)} Diff`);
+    console.log('─'.repeat(60));
+    for (const s of STRATEGY_KEYS) {
+      const b = analysis.strategyByCondition[s].base;
+      const r = analysis.strategyByCondition[s].recognition;
+      const bPct = baseN > 0 ? (b / baseN * 100).toFixed(0) : '0';
+      const rPct = recogN > 0 ? (r / recogN * 100).toFixed(0) : '0';
+      const diff = parseInt(rPct) - parseInt(bPct);
+      console.log(`  ${STRATEGIES[s].label.padEnd(23)} ${(b + ' (' + bPct + '%)').padEnd(12)} ${(r + ' (' + rPct + '%)').padEnd(12)} ${diff > 0 ? '+' : ''}${diff}%`);
+    }
+
+    if (analysis.chiSquare.overall) {
+      const cs = analysis.chiSquare.overall;
+      const pStr = cs.p < .001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
+      console.log(`\n  χ²(${cs.df}) = ${cs.chi2.toFixed(2)}, ${pStr}, V = ${cs.cramersV.toFixed(3)}`);
+    }
   }
 
   db.close();

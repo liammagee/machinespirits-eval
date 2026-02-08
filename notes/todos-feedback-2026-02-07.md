@@ -323,15 +323,18 @@ Each tutor response at turns 3 and 5 gets coded (by Opus judge) into one of five
 - [ ] If kappa > 0.6, report as inter-rater reliability; if lower, investigate disagreements
 - [ ] Update paper §6.16 limitations and add cross-judge row to Table 26
 
-### #38b — Per-turn strategy coding (turns 3 and 5)
+### [DONE] #38b — Per-turn strategy coding (turns 3 and 5)
 
-**Context**: The original #38 design specified coding turns 3 and 5 separately to track whether strategy evolves within a dialogue. The current implementation codes the overall dialogue strategy. Per-turn coding would show whether base tutors shift from engagement to withdrawal as impasse deepens, or whether they withdraw from the start.
+**Context**: The original #38 design specified coding turns 3 and 5 separately to track whether strategy evolves within a dialogue.
 
-**Work**:
-- [ ] Modify `scripts/code-impasse-strategies.js` to extract per-turn suggestion mappings (requires understanding which of the 6 suggestions corresponds to which turn — may need to reconstruct from scenario YAML turn count)
-- [ ] Code turns 3 and 5 independently for each of the 24 dialogues
-- [ ] Analyse: does strategy change between turns? (e.g., base tutors attempt engagement at turn 3 but withdraw by turn 5?)
-- [ ] If interesting, add turn-level table to paper
+**Resolved (2026-02-08)**:
+- Added `--per-turn` flag to `scripts/code-impasse-strategies.js`
+- Coded turns 3 (after first escalation) and 5 (after final challenge) independently for all 24 dialogues (48 codings, Opus judge)
+- **Key finding**: At the turn level, both conditions are dominated by withdrawal (base 12/12, recognition 10/12 at both turns). But overall dialogue coding found 10/12 recognition = scaffolded reframing. The *unit of analysis matters*: scaffolded reframing emerges from the cumulative trajectory across turns, not from any single response.
+- Base: 100% strategy stability (withdrawal → withdrawal, all 12)
+- Recognition: 67% stability (8 same, 4 changed). Transitions: 2 scaffolded_reframing→withdrawal, 1 withdrawal→scaffolded_reframing, 1 withdrawal→domination
+- Paper updated: Tables 27-28 and "Per-Turn Strategy Evolution" subsection in §6.16, plus brief reference in §7.1
+- Output: `exports/impasse-per-turn-coding-2026-02-08T08-09-21.json` and `.md`
 
 ### [DONE] #19 — How to further test multi-agent synergy
 

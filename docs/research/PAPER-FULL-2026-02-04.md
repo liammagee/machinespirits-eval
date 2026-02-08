@@ -1194,6 +1194,34 @@ The dominance of scaffolded reframing (83%) over mutual recognition (8%) in reco
 
 The absence of capitulation in either condition (0/24) likely reflects scenario design rather than tutor capability: the learner never presents an obviously wrong position the tutor could cave to. Each impasse scenario features a learner with a defensible intellectual position, making simple agreement a less natural response than withdrawal or reframing.
 
+#### Per-Turn Strategy Evolution
+
+The overall strategy coding captures the arc of a full dialogue. But does strategy evolve *within* a dialogue as impasse deepens? To investigate, we independently coded turns 3 and 5 of each dialogue—the responses after the learner's first major escalation and final challenge respectively—using the same five-category scheme. The per-turn coder received the dialogue transcript only up to and including the target turn, and coded only the tutor's response at that turn.
+
+**Table 27: Strategy Distribution by Turn**
+
+| Turn | Condition | Withdrawal | Scaffolded Reframing | Other |
+|------|-----------|-----------|---------------------|-------|
+| 3 (first escalation) | Base (N=12) | 12 (100%) | 0 | 0 |
+| 3 (first escalation) | Recognition (N=12) | 10 (83%) | 2 (17%) | 0 |
+| 5 (final challenge) | Base (N=12) | 12 (100%) | 0 | 0 |
+| 5 (final challenge) | Recognition (N=12) | 10 (83%) | 1 (8%) | 1 domination |
+
+**Table 28: Strategy Stability (Turn 3 $\to$ Turn 5)**
+
+| Condition | Same Strategy | Changed | Stability Rate |
+|-----------|--------------|---------|----------------|
+| Base | 12 | 0 | 100% |
+| Recognition | 8 | 4 | 67% |
+
+The per-turn results reveal an important methodological nuance: at the level of *individual turns*, both conditions are dominated by withdrawal. Base tutors withdraw at both turns without exception (12/12 at turn 3, 12/12 at turn 5). Recognition tutors also predominantly withdraw at the turn level (10/12 at both turns), with only sporadic scaffolded reframing at individual turns.
+
+Yet the overall dialogue coding found 10/12 recognition dialogues coded as scaffolded reframing. This apparent contradiction reveals that the *unit of analysis matters*. At the turn level, individual recognition tutor responses often resemble withdrawal—redirecting the learner toward new material or reframing the question. But the *cumulative trajectory* across turns achieves something qualitatively different: by turn 5, the recognition tutor has validated the learner's position, engaged with its substance, and opened new conceptual ground. The overall coder detects this arc; the per-turn coder, seeing each response in isolation (without knowledge of what comes later), codes most individual turns as redirection.
+
+The stability data reinforces this reading. Base tutors show perfect consistency (100%): withdrawal at turn 3, withdrawal at turn 5. They do not attempt engagement and then degrade—they never engage. Recognition tutors show more dynamism (67% stability), with four dialogues changing strategy between turns. The transition patterns are heterogeneous: two dialogues shifted from scaffolded reframing to withdrawal (initial engagement that could not be sustained), one shifted from withdrawal to scaffolded reframing (improving under pressure), and one shifted from withdrawal to domination (degrading under pressure). This variability suggests recognition prompts open a wider strategic repertoire that the tutor navigates with varying success across turns, rather than locking in a single approach.
+
+The practical implication is that recognition's effect on impasse resolution operates at the dialogue level rather than the turn level. Individual turns are the building blocks; the strategy emerges from their accumulation. This is itself a Hegelian insight: the dialectical encounter is not a single moment of recognition but a process that unfolds through successive engagements, each of which may appear incomplete in isolation.
+
 **Limitations**: The sample size is small (N=4 per cell per scenario, N=24 total). Learner messages are scripted rather than LLM-generated, which ensures consistent impasse conditions but may produce less naturalistic interactions. The strategy coding used a single LLM judge (Opus) without cross-judge validation; inter-rater reliability for the five-category coding scheme has not been established. The 100% base withdrawal rate, while striking, may partly reflect a coarse distinction—whether the tutor engages the impasse content at all—rather than fine-grained strategy discrimination. The scenarios test philosophy content only; whether impasse dynamics differ for other domains is unknown.
 
 ---
@@ -1215,6 +1243,8 @@ The dialectical impasse test (Section 6.16) provides the most direct evidence fo
 The strategy coding shows that base tutors do not fail by *choosing the wrong strategy*—they fail by *having no strategy at all*. Every base tutor response across all three impasse scenarios (12/12) was coded as withdrawal: the tutor notes the learner's engagement time, praises their dedication, and suggests moving to the next lecture. The learner's substantive position—a coherent Popperian critique, a materialist counter-reading, an emotional plea for help—is not dismissed, contradicted, or resolved. It is simply not engaged. The impasse is not encountered; it is bypassed. This maps precisely onto the master-slave analysis: the master consumes the slave's labor (engagement metrics, time-on-page, session counts) without encountering the slave as a subject whose ideas possess independent validity. The base tutor achieves the master's hollow recognition—its authority is confirmed by the learner's continued presence—but the encounter that could produce genuine understanding never occurs.
 
 Recognition tutors, by contrast, predominantly use scaffolded reframing (10/12): they validate the learner's position as intellectually serious, then redirect toward material that productively complicates it. This is Aufhebung—sublation—in pedagogical practice. The learner's objection is *preserved* (acknowledged as valid) and *overcome* (reframed toward new conceptual ground that neither party previously occupied). Only one response (on productive deadlock) was coded as genuine mutual recognition—where the tutor adopted the learner's materialist framework as its own lens rather than merely acknowledging it. This 83% scaffolded reframing vs 8% mutual recognition ratio is itself theoretically significant: recognition prompts produce sophisticated *pedagogical technique* rather than genuine *mutual transformation*. The tutor does not change its mind about Hegel in response to the student's Popperian critique—nor should it. What recognition enables is the capacity to hold the learner's counter-position as intellectually valid while maintaining pedagogical direction, which is arguably the realistic horizon for recognition in AI tutoring.
+
+The per-turn strategy coding (Section 6.16) adds a further nuance: at the level of individual turns, even recognition tutors predominantly appear to withdraw—redirecting toward new material or reframing the question. The scaffolded reframing that the overall coder detects emerges from the *cumulative trajectory* across turns, not from any single response. This is itself dialectical: the encounter that produces recognition is not a moment but a process, and each step may appear incomplete in isolation.
 
 The null result on affective shutdown ($\Delta$ = $-$1.1) sharpens the theoretical claim: recognition's distinctive contribution is epistemological (how the tutor relates to the learner's *ideas*), not primarily affective (how the tutor relates to the learner's *feelings*). The strategy coding confirms this: even on affective shutdown, the base tutor's failure mode is withdrawal (redirecting to review material) rather than emotional dismissal—the distinction is not about empathy but about whether the learner's intellectual or experiential contribution is *engaged* as having independent validity.
 
