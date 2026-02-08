@@ -157,13 +157,17 @@ Adds ~$10 but provides cross-judge validation of any interaction found.
 
 This confirms recognition gains (~+16) substantially exceed active-control gains (~+9) within the same model. The paper already reports this same-model analysis in §8.
 
-### [PARTIAL] #42 — Address rubric asymmetry (tutor vs learner measurement)
+### [DONE] #42 — Address rubric asymmetry (tutor vs learner measurement)
 
 **Feedback**: "add a note in the todos on how we might fix this" (re: rubric measures tutor response quality but Factor C affects learner turn quality, p. 51).
 
-**Current state (2026-02-08)**: The rubric already has `tutor_adaptation` (5%) and `learner_growth` (5%) to capture the bilateral/learner side. However, these are most meaningful in multi-turn scenarios; the primary factorial (N=350) is single-turn where no learner response is generated. Paper §7.5 and short paper §6.5 updated to acknowledge this asymmetry explicitly and point to the bilateral transformation analysis (N=118) as the more direct measurement.
-
-**Remaining work**: Symmetric rubric redesign — see `notes/todo-rubric-symmetry-2026-02-08.md` for detailed plan covering learner-side rubric, whole-transcript evaluation, cost estimates, and Claude Code integration.
+**Resolved (2026-02-08)**: Built and ran symmetric learner-side evaluation:
+- New rubric: `config/evaluation-rubric-learner.yaml` (6 dimensions: learner_authenticity, question_quality, conceptual_engagement, revision_signals, deliberation_depth, persona_consistency)
+- New CLI command: `node scripts/eval-cli.js evaluate-learner <runId> [--arch <architecture>] [--force]`
+- Scored N=118 bilateral dialogues (eval-2026-02-07-b6d75e87) with Opus judge
+- **Key finding — Learner Superego Paradox**: ego/superego architecture *hurts* learner quality (d=1.43, F=68.28, p<.001). Recognition partially rescues ego_superego (d=0.79, p=.004) but not unified (d=-0.46, n.s.). Mirror-image interaction with tutor-side rubric.
+- Paper updated to v1.9: new §6.12 (Tables 14b–14d), rewritten §7.5, updated abstract/intro/conclusion
+- See `notes/finding-learner-superego-paradox-2026-02-08.md` for full analysis
 
 ---
 
@@ -297,6 +301,37 @@ Each tutor response at turns 3 and 5 gets coded (by Opus judge) into one of five
 - If H1 confirms: recognition theory doesn't just improve quality — it changes *how* tutors handle pedagogical failure, aligning with Hegel's claim that mutual recognition transforms the nature of the encounter
 - If H1 fails: recognition prompts improve quality but don't change strategy under stress — the improvement is surface-level, not structural
 - Either way: provides empirical data on what the paper currently treats as pure theory
+
+**Resolution strategy coding completed (2026-02-08)**:
+- Script: `scripts/code-impasse-strategies.js`
+- Results: 12/12 base=withdrawal, 10/12 recognition=scaffolded_reframing, 1 mutual_recognition, 1 domination
+- χ²(3)=24.00, p<.001, V=1.000 (perfect separation)
+- Architecture has no effect (p=.576)
+- H1 confirmed (recognition changes strategy, not just quality); H2 not confirmed (effect uniform across scenarios); H3 not confirmed (architecture doesn't moderate)
+- Paper updated to v2.0: Table 26, §6.16 extended, §7.1 rewritten, §9 finding #8 updated
+- Output: `exports/impasse-strategy-coding-2026-02-08T06-15-07.json` and `.md`
+
+#### Follow-up items (from #38)
+
+### #38a — GPT-5.2 cross-judge reliability for strategy coding
+
+**Context**: The original #38 design specified "Inter-rater reliability via GPT-5.2 cross-judge." The current strategy coding uses a single Opus judge. Cross-judge validation would establish whether the 5-category coding scheme produces consistent results across judges, or whether the perfect separation is an artifact of judge calibration.
+
+**Work**:
+- [ ] Run `node scripts/code-impasse-strategies.js --model haiku` (or sonnet) as a second coder on the same 24 dialogues
+- [ ] Compute Cohen's kappa between the two judges on the 5-category forced choice
+- [ ] If kappa > 0.6, report as inter-rater reliability; if lower, investigate disagreements
+- [ ] Update paper §6.16 limitations and add cross-judge row to Table 26
+
+### #38b — Per-turn strategy coding (turns 3 and 5)
+
+**Context**: The original #38 design specified coding turns 3 and 5 separately to track whether strategy evolves within a dialogue. The current implementation codes the overall dialogue strategy. Per-turn coding would show whether base tutors shift from engagement to withdrawal as impasse deepens, or whether they withdraw from the start.
+
+**Work**:
+- [ ] Modify `scripts/code-impasse-strategies.js` to extract per-turn suggestion mappings (requires understanding which of the 6 suggestions corresponds to which turn — may need to reconstruct from scenario YAML turn count)
+- [ ] Code turns 3 and 5 independently for each of the 24 dialogues
+- [ ] Analyse: does strategy change between turns? (e.g., base tutors attempt engagement at turn 3 but withdraw by turn 5?)
+- [ ] If interesting, add turn-level table to paper
 
 ### [DONE] #19 — How to further test multi-agent synergy
 

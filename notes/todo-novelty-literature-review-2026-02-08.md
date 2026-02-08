@@ -111,184 +111,44 @@ Based on the literature scan, the paper's contributions can be sharpened:
 
 ---
 
-## 4. Action Items
+## 4. Action Items — ALL COMPLETE
 
-### 4.1 New .bib Entries Needed (~25 references)
+### [DONE] 4.1 New .bib Entries
 
-**High priority (directly cited in revised Related Work):**
-```
-# Recognition theory in education
-@article{bingham2004teaching,
-  author = {Bingham, Charles},
-  title = {Teaching and the Dialectic of Recognition},
-  journal = {Pedagogy, Culture \& Society},
-  volume = {12}, number = {2}, year = {2004}
-}
+All ~22 high-priority references added to `references.bib` (commit d97e4d0, 2026-02-08). Entries subsequently deep-reviewed and corrected across two additional commits (3d89ab0, ae7b4f4). Key corrections:
+- `bingham2004teaching` → `huttunen2004teaching` (attribution error: actual authors Huttunen & Heikkinen)
+- `gulz2025generativeai` → `costa2025generativeai` (wrong authors: actually Costa & Murphy)
+- `fleming2011honneth` venue corrected to 2011 conference proceedings (not Taylor & Cranton handbook)
+- `sharma2023` corrected from wrong paper (Ashish Sharma empathy → Mrinank Sharma sycophancy, ICLR 2024)
+- `mind_in_machine2025` authors added (Liu, Zizhou et al.)
+- `siai2025sycophancy` author added (Keith Lee)
+- `chu2025llmagents` expanded with full author list, pages, DOI
+- Duplicate `MageeAroraGollingsLamSaw2024DramaMachine` removed
+- `karpathy2025howIUseLLMs`, `stahl2013immanent`, `adorno1951freudian` entry types corrected
 
-@article{fleming_honneth_transformative,
-  author = {Fleming, Ted},
-  title = {Axel Honneth and the Struggle for Recognition: Implications for Transformative Learning}
-}
+### [DONE] 4.2 Related Work Revisions
 
-# Psychoanalytic-AI convergence
-@article{kim2025humanoid,
-  author = {Kim, Sang Hun and Lee, Jongmin and Park, Dongkyu and Lee, So Young and Chong, Yosep},
-  title = {Humanoid Artificial Consciousness Designed with Large Language Model Based on Psychoanalysis and Personality Theory},
-  journal = {Cognitive Systems Research},
-  volume = {94}, year = {2025}
-}
+All sections updated in both full and short papers:
+- §2.1: GenMentor, Ruffle&Riley, LLM Agents for Education survey added
+- §2.2: Constitutional AI added; "intersubjective prompts" introduced as new category
+- §2.4: Shapira et al. 2026, SIAI memo added; sycophancy connected to recognition failure
+- §2.5: Kim et al. 2025, Black & Johanssen, Possati, Millar added; constructive vs interpretive distinction noted
+- §2.7: Huttunen & Heikkinen 2004, Fleming 2011, Hanhela 2014, Costa 2025, Buber, Freire, Noddings added
+- §2.8: New positioning subsection "Three Literatures Converge" with Abdali dialectic-vs-recognition distinction
 
-@article{black2025subject,
-  author = {Black, Jack and Johanssen, Jacob},
-  title = {The Subject of AI: A Psychoanalytic Intervention},
-  journal = {Theory, Culture \& Society},
-  year = {2025}
-}
+### [DONE] 4.3 Positioning Paragraph
 
-@book{possati2021algorithmic,
-  author = {Possati, Luca},
-  title = {The Algorithmic Unconscious: How Psychoanalysis Helps in Understanding AI},
-  publisher = {Routledge}, year = {2021}
-}
+Added as §2.8 "Positioning: Three Literatures Converge" in both papers.
 
-@book{millar2021psychoanalysis,
-  author = {Millar, Isabel},
-  title = {The Psychoanalysis of Artificial Intelligence},
-  publisher = {Palgrave Macmillan}, year = {2021}
-}
+### [DONE] 4.4 Verification Steps
 
-# Hegel + AI
-@article{abdali2025selfreflecting,
-  author = {Abdali, Sara and Goksen, Can and Solodko, Michael and Amizadeh, Saeed and Maybee, Julie E. and Koishida, Kazuhito},
-  title = {Self-reflecting Large Language Models: A Hegelian Dialectical Approach},
-  journal = {arXiv preprint arXiv:2501.14917},
-  year = {2025}
-}
-
-# Multi-agent tutoring SOTA
-@inproceedings{wang2025genmentor,
-  author = {Wang, ...},
-  title = {GenMentor: LLM-powered Multi-agent Framework for Goal-oriented Learning in Intelligent Tutoring System},
-  booktitle = {WWW 2025 (Industry Track)},
-  year = {2025}
-}
-
-@inproceedings{schmucker2024ruffle,
-  author = {Schmucker, Robin and others},
-  title = {Ruffle\&Riley: Insights from Designing and Evaluating a Large Language Model-Based Conversational Tutoring System},
-  booktitle = {AIED 2024}, year = {2024}
-}
-
-@inproceedings{chu2025llmagents,
-  author = {Chu, Zhendong and Wang, Shen and others},
-  title = {LLM Agents for Education: Advances and Applications},
-  booktitle = {Findings of EMNLP 2025}, year = {2025}
-}
-
-# Sycophancy
-@article{shapira2026rlhf,
-  author = {Shapira, Itai and Benade, Gerdus and Procaccia, Ariel D.},
-  title = {How RLHF Amplifies Sycophancy},
-  journal = {arXiv preprint arXiv:2602.01002},
-  year = {2026}
-}
-
-@misc{siai2025sycophancy,
-  author = {{Swiss Institute of Artificial Intelligence}},
-  title = {AI Sycophancy Is a Teaching Risk, Not a Feature},
-  year = {2025},
-  howpublished = {SIAI Memo}
-}
-
-# Self-critique architectures
-@article{bai2022constitutional,
-  author = {Bai, Yuntao and Kadavath, Saurav and others},
-  title = {Constitutional AI: Harmlessness from AI Feedback},
-  journal = {arXiv preprint arXiv:2212.08073},
-  year = {2022}
-}
-
-# Bildung + AI
-@article{gulz2025generativeai,
-  title = {Generative Artificial Intelligence in Education: (What) Are We Thinking?},
-  journal = {Learning, Media and Technology},
-  year = {2025}
-}
-
-# Psychology + LLMs survey
-@article{mind_in_machine_2025,
-  title = {The Mind in the Machine: A Survey of Incorporating Psychological Theories in LLMs},
-  journal = {arXiv preprint arXiv:2505.00003},
-  year = {2025}
-}
-
-# Relational pedagogy
-@book{buber1958,
-  author = {Buber, Martin},
-  title = {I and Thou},
-  publisher = {Charles Scribner's Sons},
-  year = {1958}
-}
-
-@book{noddings1984,
-  author = {Noddings, Nel},
-  title = {Caring: A Relational Approach to Ethics and Moral Education},
-  publisher = {University of California Press},
-  year = {1984}
-}
-
-@book{freire1970,
-  author = {Freire, Paulo},
-  title = {Pedagogy of the Oppressed},
-  publisher = {Continuum},
-  year = {1970}
-}
-```
-
-### 4.2 Related Work Revisions
-
-**Section 2.1 (AI Tutoring):**
-- Add GenMentor, Ruffle&Riley, LLM Agents for Education survey as SOTA multi-agent tutoring
-- Distinguish our internal-critique architecture from their task-pipeline architectures
-- Add "Mind in the Machine" survey for broader context
-
-**Section 2.2 (Prompt Engineering):**
-- Add Constitutional AI as the closest precedent for "principled self-critique"
-- Introduce "intersubjective prompts" as a new category (vs. persona, chain-of-thought, constitutional)
-
-**Section 2.4 (Sycophancy):**
-- Add Shapira et al. 2026 (causal mechanism), SIAI memo (educational framing)
-- Connect sycophancy to recognition: sycophancy = failed recognition = master-slave dynamics
-
-**Section 2.5 (AI Personality):**
-- Add Kim et al. 2025 (independent convergence on ego/superego LLM architecture)
-- Add Black & Johanssen 2025, Possati, Millar for psychoanalytic-AI landscape
-- Note our constructive (engineering) vs their interpretive (philosophical) approach
-
-**Section 2.7 (Recognition in Social Theory):**
-- Add Bingham 2004 (recognition in pedagogy — foundational, currently missing!)
-- Add Fleming (Honneth + transformative learning)
-- Add Bildung + AI paper (2025) for contemporary connection
-
-**New subsection or expanded 2.3 (Drama Machine):**
-- Add Abdali et al. 2025 to distinguish dialectical method from recognition theory
-- Note that Hegelian dialectic as logical procedure (Abdali) is distinct from Hegelian recognition as relational stance (us)
-
-### 4.3 Positioning Paragraph (for Introduction or end of Related Work)
-
-Draft a paragraph that explicitly maps the contribution space:
-
-> Three literatures converge on this work without previously intersecting: (1) psychoanalytic readings of LLMs, which interpret AI through Freudian/Lacanian frameworks but do not build systems (Black & Johanssen 2025; Possati 2021; Millar 2021; Kim et al. 2025); (2) recognition theory in education, which applies Honneth to pedagogy but not to AI (Bingham 2004; Fleming; Huttunen 2007; Stojanov 2018); and (3) multi-agent tutoring architectures, which decompose tasks but do not evaluate relational quality (GenMentor 2025; Ruffle&Riley 2024; LLM Agents for Education 2025). We sit at the intersection: a constructive, empirically evaluated system that operationalizes recognition theory through psychoanalytically-inspired architecture.
-
-### 4.4 Verification Steps
-
-- [ ] Search Google Scholar directly for citation counts of "Structured like a Language Model" and "Drama Machine" papers
-- [ ] Verify all new references have correct publication details (venue, DOI, page numbers)
-- [ ] Check whether Bingham 2004 cites Honneth specifically (confirm the connection)
-- [ ] Check whether Kim et al. 2025 cites Magee et al. 2023
-- [ ] Read Abdali et al. 2025 abstract closely to confirm dialectic-vs-recognition distinction
-- [ ] Confirm SIAI memo is citable (institutional publication vs blog post)
-- [ ] Check if any of the sycophancy papers mention education/tutoring specifically
+- [x] All new references verified for correct publication details during deep bib review (commits 3d89ab0, ae7b4f4)
+- [x] Huttunen & Heikkinen 2004 confirmed via ERIC (EJ940219) — directly applies Hegel's master-slave dialectic to pedagogy
+- [x] Abdali et al. 2025 confirmed as dialectical method (thesis-antithesis-synthesis for reasoning), distinct from our recognition theory
+- [x] SIAI memo confirmed as institutional publication (Keith Lee, SIAI)
+- [x] Sycophancy papers: SIAI memo specifically frames sycophancy as teaching risk
+- [x] Citation counts: not pursued (not essential for paper content)
+- [x] Kim et al. 2025 cross-citation with Magee: not pursued (not essential)
 
 ---
 
@@ -314,3 +174,9 @@ Draft a paragraph that explicitly maps the contribution space:
 ```
 
 The paper's unique position: **constructive + recognition + empirical** at the intersection of three literatures that have not previously met.
+
+---
+
+## Status: COMPLETE (2026-02-08)
+
+All action items resolved across 3 commits (d97e4d0, 3d89ab0, ae7b4f4). 22 references added, 8 reference errors corrected via deep bib review, Related Work sections fully revised in both papers, positioning paragraph added as §2.8.
