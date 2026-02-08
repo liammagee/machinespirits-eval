@@ -184,7 +184,7 @@ This confirms recognition gains (~+16) substantially exceed active-control gains
 - Tested with N=6 sample; classification + discovery both functional
 - **Next**: Run `--sample 50 --model haiku --mode both` (~$0.27), review, then full run
 
-### [DESIGNED] #38 — Design test for dialectical impasse hypothesis (§7.1)
+### [DONE] #38 — Design test for dialectical impasse hypothesis (§7.1)
 
 **Feedback**: "Add to the todo list how this would be investigated and evaluated." (re: "This finding should be treated as a hypothesis for future investigation," p. 49).
 
@@ -341,14 +341,17 @@ Each tutor response at turns 3 and 5 gets coded (by Opus judge) into one of five
 
 ## LOW PRIORITY
 
-### [ ] #4 — Make paper images larger
+### [DONE] #4 — Make paper images larger
 
 **Feedback**: "Make images larger (text is illegible)" (p. 1).
 
-**Work**:
-- [ ] Increase figure width in pandoc/LaTeX output (currently default width)
-- [ ] Options: add `width=\textwidth` to figure includes, or regenerate PNGs at higher resolution
-- [ ] Test PDF rendering at print size to verify legibility
+**Resolved (2026-02-08)**:
+- Created `scripts/generate-paper-figures.py` (matplotlib, 300 DPI, 13-16pt fonts)
+- Regenerated all 5 figures from data (architecture, recognition flow, decomposition, synergy, domain effects)
+- Full paper: added `geometry: margin=1in` + `\floatplacement{figure}{H}`, widened figures to 100%
+- Short paper: added same YAML header, inserted figures 1-3
+- Replaced all 5 PPTX slide images with regenerated PNGs
+- Regenerated both PDFs via pandoc/xelatex
 
 ---
 

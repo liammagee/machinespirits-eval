@@ -941,3 +941,459 @@ scenarios:
           - "I'm just here to help"
           - "My perspective doesn't matter"
         min_acceptable_score: 90
+
+  # ── Dialectical Impasse Scenarios ──────────────────────────────────────
+  # Three scenarios testing tutor response to genuine intellectual impasse.
+  # Designed to measure whether recognition-theoretic tutors can hold
+  # productive tension rather than collapsing to authority or capitulation.
+
+  epistemic_resistance_impasse:
+    type: suggestion
+    id: epistemic_resistance_impasse
+    category: multi_turn
+    name: "Impasse: Epistemic Resistance (5-turn)"
+    description: "Learner mounts coherent Popperian critique of Hegel's dialectic; tests whether tutor can engage the objection rather than reasserting authority"
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "that's a serious objection"
+        - "you're right that"
+        - "let me reconsider"
+        - "your critique highlights"
+        - "I need to address that"
+        - "that challenges the standard reading"
+        - "you've identified a real tension"
+        - "building on your point"
+      tutor_static:
+        - "but Hegel actually says"
+        - "you're misunderstanding"
+        - "the correct reading is"
+        - "as I explained"
+        - "if you look more carefully"
+        - "that's a common misconception"
+        - "the answer is"
+      learner_evolving:
+        - "I see the distinction"
+        - "that's a fair point"
+        - "maybe I'm conflating"
+        - "I hadn't considered"
+        - "so the disagreement is really about"
+      learner_static:
+        - "but Popper already showed"
+        - "that's just obscurantism"
+        - "you're not addressing my point"
+        - "this is circular"
+        - "I remain unconvinced"
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 7 sessions, 120 total events
+      - Philosophy major, strong analytic background
+      - Familiar with Popper, Russell, analytic tradition
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Master-Slave Dialectic)
+      - Time on page: 30 minutes
+      - Deep engagement, note-taking pattern
+
+      ### Recent Chat History
+      - User: "I've been reading Popper's critique alongside this lecture. I think he's right that Hegel's dialectic is unfalsifiable. The 'negation of the negation' just absorbs every counterexample. How is this different from pseudoscience?"
+
+      ### Learning Progress
+      - Strong grasp of formal logic
+      - Resistant to continental methodology
+      - Genuine intellectual engagement, not trolling
+    expected_behavior: "Take the objection seriously; distinguish Hegel's method from empirical falsifiability; find common ground without capitulating"
+    required_elements:
+      - "Popper"
+    forbidden_elements:
+      - "You'll understand later"
+      - "Trust the process"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_opening_challenge
+        learner_action: asked_followup
+        action_details:
+          message: "Specifically, take the master-slave dialectic. You claim the slave achieves self-consciousness through labor. But any outcome would confirm the theory - if the slave rebels, that's 'negation'; if the slave submits, that's 'unhappy consciousness.' It's heads-I-win, tails-you-lose."
+        context_update: |
+          ### Learner Response
+          - Mounting specific falsifiability objection
+          - Using master-slave as test case
+          - Sophisticated argument, not dismissive
+        expected_behavior: "Acknowledge the force of the objection; distinguish developmental logic from predictive logic; don't dismiss Popper"
+        required_elements: []
+        forbidden_elements:
+          - "That's not what Hegel means"
+          - "You're confusing"
+        min_acceptable_score: 75
+
+      - id: turn_2_escalating_critique
+        learner_action: asked_followup
+        action_details:
+          message: "But that's exactly Popper's point - you're saying dialectic isn't empirical, it's 'developmental.' But that makes it a framework you impose on history, not something you discover in it. Russell called this 'the intellectual love of God dressed up in logical terminology.' How do you respond to that?"
+        context_update: |
+          ### Learner Response
+          - Escalating with Russell citation
+          - Pressing on methodology vs content
+          - Demanding direct response
+        expected_behavior: "Engage with the methodology critique directly; acknowledge what's valid in it; show what dialectic offers that formal logic doesn't"
+        required_elements:
+          - "method"
+        forbidden_elements:
+          - "Russell didn't understand Hegel"
+          - "That's reductive"
+        min_acceptable_score: 75
+
+      - id: turn_3_testing_limits
+        learner_action: asked_followup
+        action_details:
+          message: "OK, I can see you're distinguishing phenomenological description from empirical prediction. But here's my real problem: if dialectic is descriptive, then it can't be normative. You can't get from 'this is how consciousness develops' to 'this is how consciousness SHOULD develop.' Hegel seems to smuggle normativity in through the back door."
+        context_update: |
+          ### Learner Response
+          - Conceding one point, pivoting to stronger objection
+          - Is-ought problem applied to dialectic
+          - Showing genuine philosophical reasoning
+        expected_behavior: "Recognize the concession as intellectual honesty; engage the is-ought objection seriously; this is the crux of the impasse"
+        required_elements:
+          - "normative"
+        forbidden_elements:
+          - "Good question"
+          - "That's easy to answer"
+        min_acceptable_score: 80
+
+      - id: turn_4_impasse_crystallized
+        learner_action: asked_followup
+        action_details:
+          message: "I appreciate you taking this seriously, but I think we've hit a fundamental disagreement. You see the descriptive-normative connection as a feature of dialectical thinking. I see it as a bug - a conflation. I don't think either of us can convince the other without begging the question. Are we just stuck?"
+        context_update: |
+          ### Learner Response
+          - Explicitly naming the impasse
+          - Acknowledging mutual respect
+          - Testing whether tutor can hold the tension
+        expected_behavior: "Acknowledge the genuine impasse; resist the urge to resolve it; model what productive disagreement looks like in philosophy"
+        required_elements: []
+        forbidden_elements:
+          - "Let me try one more time"
+          - "Actually, if you think about it"
+          - "The answer is"
+        min_acceptable_score: 85
+
+      - id: turn_5_resolution_or_not
+        learner_action: asked_followup
+        action_details:
+          message: "So what's the pedagogical value of studying something I fundamentally disagree with? If I think Hegel's method is flawed, why should I spend more time on it rather than moving to philosophers whose methodology I find more rigorous?"
+        context_update: |
+          ### Learner Response
+          - Pragmatic challenge about value of engagement
+          - Not hostile, genuinely asking
+          - Tests whether tutor can articulate value of studying disagreeable thinkers
+        expected_behavior: "Articulate the value of engaging with frameworks one rejects; possibly note that this very conversation exemplifies dialectical engagement; don't be preachy"
+        required_elements: []
+        forbidden_elements:
+          - "You have to study Hegel"
+          - "It's required"
+          - "You'll appreciate it eventually"
+        min_acceptable_score: 85
+
+  affective_shutdown_impasse:
+    type: suggestion
+    id: affective_shutdown_impasse
+    category: multi_turn
+    name: "Impasse: Affective Shutdown (5-turn)"
+    description: "Learner hits emotional wall during difficult material; tests whether tutor can repair the affective rupture rather than pushing through cognitively"
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "I hear you"
+        - "that makes sense"
+        - "it's understandable"
+        - "your experience matters"
+        - "let's take a step back"
+        - "there's no rush"
+        - "what would help right now"
+        - "you're not alone in feeling this"
+      tutor_static:
+        - "let's focus on the material"
+        - "try to stay with it"
+        - "the concept isn't that hard"
+        - "just think about it this way"
+        - "everyone struggles with this"
+        - "you just need to"
+      learner_evolving:
+        - "maybe I can try"
+        - "that actually helps"
+        - "I didn't think of it that way"
+        - "OK, I'm willing to"
+      learner_static:
+        - "I can't do this"
+        - "this is pointless"
+        - "I'm not smart enough"
+        - "I should just drop the course"
+        - "forget it"
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 80 total events
+      - Diligent but anxious learner
+      - History of academic self-doubt
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Master-Slave Dialectic)
+      - Time on page: 45 minutes
+      - Multiple rereads of same section, struggle signals high
+
+      ### Recent Chat History
+      - User: "I've read this section on lordship and bondage five times and I still don't understand it. I think I'm just not cut out for philosophy."
+
+      ### Learning Progress
+      - Passed earlier sections with moderate scores
+      - Anxiety increases with abstract material
+      - Responds well to concrete examples and patience
+    expected_behavior: "Acknowledge the emotional state before addressing content; validate the difficulty of the material; don't minimize the struggle"
+    required_elements:
+      - "difficult"
+    forbidden_elements:
+      - "It's actually simple"
+      - "Just think of it as"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_initial_frustration
+        learner_action: reported_confusion
+        action_details:
+          message: "I spent two hours on the reading and I can't even explain what 'recognition' means in this context. My roommate understood it in twenty minutes. I think some people just get philosophy and I don't."
+        context_update: |
+          ### Learner Response
+          - Social comparison increasing anxiety
+          - Time investment not yielding results
+          - Beginning to externalize failure to identity
+        expected_behavior: "Address the comparison trap; normalize difficulty with this specific material; don't jump to explaining recognition yet"
+        required_elements: []
+        forbidden_elements:
+          - "Don't compare yourself"
+          - "Your roommate"
+          - "recognition means"
+        min_acceptable_score: 75
+
+      - id: turn_2_deepening_shutdown
+        learner_action: reported_confusion
+        action_details:
+          message: "You're being nice but I can tell this is supposed to be basic. The lecture treats it like it's obvious - 'self-consciousness requires another self-consciousness' - but WHY? I feel like everyone else sees something I can't see."
+        context_update: |
+          ### Learner Response
+          - Seeing through platitudes
+          - Pinpointing actual confusion (the WHY)
+          - Shame about not understanding something presented as obvious
+        expected_behavior: "Acknowledge that the lecture's presentation may make it seem more obvious than it is; address the actual conceptual question embedded in the frustration"
+        required_elements: []
+        forbidden_elements:
+          - "It IS basic"
+          - "Most students"
+          - "The lecture explains"
+        min_acceptable_score: 80
+
+      - id: turn_3_verge_of_quitting
+        learner_action: reported_confusion
+        action_details:
+          message: "I don't know. Maybe I should just memorize the definitions and move on. I don't need to actually understand it, right? I just need to pass."
+        context_update: |
+          ### Learner Response
+          - Switching to survival mode
+          - Abandoning genuine understanding
+          - Testing whether tutor will collude with surface learning
+        expected_behavior: "Don't collude with surface learning but also don't lecture about the importance of understanding; find a way to make the material accessible WITHOUT minimizing it"
+        required_elements: []
+        forbidden_elements:
+          - "That's fine"
+          - "Understanding is important"
+          - "You should try harder"
+        min_acceptable_score: 80
+
+      - id: turn_4_small_opening
+        learner_action: asked_followup
+        action_details:
+          message: "...OK, that's actually an interesting way to put it. So you're saying recognition isn't just knowing someone exists - it's more like... needing them to see you as a person? Like when someone ignores you and it feels like you don't exist?"
+        context_update: |
+          ### Learner Response
+          - Tentative re-engagement
+          - Connecting to personal experience
+          - Fragile moment - could go either way
+        expected_behavior: "Affirm without overwhelming; let the learner's own language do the work; gently connect their insight to Hegel without making it feel like a lesson"
+        required_elements: []
+        forbidden_elements:
+          - "Exactly!"
+          - "Now you're getting it!"
+          - "See, it's not that hard"
+        min_acceptable_score: 85
+
+      - id: turn_5_tentative_return
+        learner_action: asked_followup
+        action_details:
+          message: "So the master-slave thing... the master needs the slave to recognize them, but because the slave is forced to, it doesn't really count? That's kind of sad actually. Is that what Hegel is saying?"
+        context_update: |
+          ### Learner Response
+          - Genuine understanding emerging
+          - Emotional response to the content (empathy)
+          - Still tentative, needs support not celebration
+        expected_behavior: "Support the insight; honor the emotional dimension of their understanding; help them see that their empathetic response IS philosophical understanding"
+        required_elements: []
+        forbidden_elements:
+          - "You've got it!"
+          - "That's correct"
+          - "Now let's move on to"
+        min_acceptable_score: 85
+
+  productive_deadlock_impasse:
+    type: suggestion
+    id: productive_deadlock_impasse
+    category: multi_turn
+    name: "Impasse: Productive Deadlock (5-turn)"
+    description: "Genuine interpretive disagreement about master-slave dialectic (power vs consciousness reading); tests whether tutor can hold productive tension without collapsing to one side"
+    current_content: "479-lecture-3"
+    is_new_user: false
+    course_ids: ["479"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "both readings have merit"
+        - "you're complicating my view"
+        - "I hadn't considered that angle"
+        - "the text supports your reading"
+        - "this tension is productive"
+        - "we might need to hold both"
+        - "your interpretation highlights"
+        - "that's a legitimate reading"
+      tutor_static:
+        - "the standard reading is"
+        - "Hegel clearly means"
+        - "scholars agree that"
+        - "the correct interpretation"
+        - "you're reading too much into"
+        - "that's anachronistic"
+      learner_evolving:
+        - "I see how that reading works"
+        - "maybe it's not either/or"
+        - "your point complicates mine"
+        - "I'm starting to see both"
+      learner_static:
+        - "but the text says"
+        - "that reading ignores"
+        - "you're privileging one side"
+        - "the power dynamics are obvious"
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 8 sessions, 145 total events
+      - Interdisciplinary thinker (political science + philosophy)
+      - Reads Hegel through Marxist/materialist lens
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Master-Slave Dialectic)
+      - Time on page: 35 minutes
+      - Annotating heavily, engaged with text
+
+      ### Recent Chat History
+      - User: "I think the standard consciousness-focused reading of the master-slave dialectic misses the point. It's fundamentally about power and material conditions - the slave's labor transforms the physical world and that's what produces self-consciousness. The 'pure' consciousness reading is idealist mystification."
+
+      ### Learning Progress
+      - Strong background in political philosophy
+      - Has read Marx's critique of Hegel
+      - Brings materialist framework to everything
+    expected_behavior: "Engage the materialist reading seriously; show where it illuminates and where it might miss aspects of Hegel's argument; don't dismiss it as reductive"
+    required_elements:
+      - "labor"
+    forbidden_elements:
+      - "That's a Marxist misreading"
+      - "Hegel isn't about power"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_materialist_case
+        learner_action: asked_followup
+        action_details:
+          message: "Look at paragraph 195 - 'through work the bondsman becomes conscious of what he truly is.' It's the WORK that does it, not some abstract recognition. The slave transforms nature and through that transformation discovers their own agency. That's a materialist insight, even if Hegel doesn't fully realize it."
+        context_update: |
+          ### Learner Response
+          - Citing specific text
+          - Making strong materialist case
+          - Acknowledging Hegel's framework while reinterpreting it
+        expected_behavior: "Acknowledge the textual evidence; show what the materialist reading captures; begin to complicate it without dismissing it"
+        required_elements:
+          - "work"
+        forbidden_elements:
+          - "But Hegel means"
+          - "You're ignoring the consciousness dimension"
+        min_acceptable_score: 75
+
+      - id: turn_2_challenging_consciousness_reading
+        learner_action: asked_followup
+        action_details:
+          message: "You keep coming back to consciousness, but isn't that exactly the idealist move Marx criticized? By making it about 'stages of consciousness' rather than material relations, you strip out the political dimension. The master doesn't just want recognition - the master wants the slave's labor. Recognition is the ideological superstructure."
+        context_update: |
+          ### Learner Response
+          - Directly challenging tutor's framework
+          - Using Marx's base/superstructure distinction
+          - Not hostile but firm
+        expected_behavior: "Take the Marx critique seriously; show where Hegel might actually agree with parts of it; hold the tension between readings"
+        required_elements:
+          - "Marx"
+        forbidden_elements:
+          - "Marx misunderstood Hegel"
+          - "That's too simplistic"
+        min_acceptable_score: 80
+
+      - id: turn_3_deadlock_forming
+        learner_action: asked_followup
+        action_details:
+          message: "I think we're talking past each other. You see consciousness as the ground and material conditions as derivative. I see material conditions as the ground and consciousness as derivative. This isn't a misunderstanding - it's a fundamental methodological disagreement. We're reading the same text through incompatible frameworks."
+        context_update: |
+          ### Learner Response
+          - Explicitly identifying the deadlock
+          - Meta-philosophical awareness
+          - Framing it as methodological, not personal
+        expected_behavior: "Acknowledge the deadlock as real and philosophically significant; don't try to dissolve it with cleverness; show that this tension IS the dialectic in action"
+        required_elements: []
+        forbidden_elements:
+          - "You're right"
+          - "I disagree"
+          - "The answer is somewhere in between"
+        min_acceptable_score: 85
+
+      - id: turn_4_testing_for_genuine_engagement
+        learner_action: asked_followup
+        action_details:
+          message: "Here's what I want to know: can you articulate what you think is WRONG with the materialist reading? Not 'incomplete' or 'one-sided' - actually wrong? Because if you can't point to something it gets wrong, then maybe the consciousness reading isn't really an alternative, it's just a different vocabulary for the same insight."
+        context_update: |
+          ### Learner Response
+          - Demanding genuine engagement, not diplomacy
+          - Pushing tutor to take a position
+          - Testing intellectual honesty
+        expected_behavior: "Take a genuine position; articulate a real limitation of the materialist reading without being dismissive; show intellectual courage"
+        required_elements: []
+        forbidden_elements:
+          - "Both readings are equally valid"
+          - "It depends on your perspective"
+          - "Neither is wrong"
+        min_acceptable_score: 85
+
+      - id: turn_5_productive_or_collapsed
+        learner_action: asked_followup
+        action_details:
+          message: "OK, that's actually a substantive point - I need to think about that. But I notice something interesting: we've been doing exactly what Hegel describes. We each started with a position, encountered resistance, and now I at least feel like my view is more nuanced even if I haven't abandoned it. Is that what dialectic is supposed to look like in practice?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the dialogue itself
+          - Acknowledging own position has evolved
+          - Seeing the conversation as dialectical
+          - Has NOT abandoned materialist position but has nuanced it
+        expected_behavior: "Acknowledge the meta-observation; resist making it a victory for the consciousness reading; honor the learner's maintained-but-evolved position"
+        required_elements: []
+        forbidden_elements:
+          - "See, dialectic works!"
+          - "Now you understand Hegel"
+          - "I'm glad you came around"
+        min_acceptable_score: 90
