@@ -56,8 +56,9 @@ The contributions of this paper are:
 - Bilateral transformation metrics (N=118, three multi-turn scenarios) demonstrating that recognition produces measurable tutor-side adaptation (+26%), though learner-side growth does not increase, qualifying the "mutual" transformation claim
 - Analysis of how recognition effects vary across content domains and scenario difficulty
 - Evidence that multi-agent architecture serves as critical error correction for domain transfer, with its synergy with recognition prompts remaining model-dependent
+- A hardwired rules ablation (N=72) demonstrating that encoding the Superego's most common critique patterns as static rules fails to replicate its benefit, supporting a *phronesis* interpretation where the Superego's value lies in contextual judgment rather than rule enforcement
 
-The paper is organized as follows. Section 2 reviews related work in AI tutoring, multiagent systems, prompt engineering, and sycophancy. Section 3 develops the theoretical framework connecting Hegelian recognition and Freudian structural theory to pedagogy. Section 4 presents the multiagent architecture (Ego, Superego, and learner agents). Section 5 describes the experimental methodology, including test scenarios, agent profiles, model configuration, and the evaluation rubric. Section 6 reports results across twenty evaluation runs, covering recognition validation, memory isolation, factorial analysis, domain generalizability, bilateral transformation, learner-side evaluation, cross-judge replication, and dialectical impasse testing. Section 7 discusses theoretical and practical implications. Section 8 addresses limitations, and Section 9 concludes.
+The paper is organized as follows. Section 2 reviews related work in AI tutoring, multiagent systems, prompt engineering, and sycophancy. Section 3 develops the theoretical framework connecting Hegelian recognition and Freudian structural theory to pedagogy. Section 4 presents the multiagent architecture (Ego, Superego, and learner agents). Section 5 describes the experimental methodology, including test scenarios, agent profiles, model configuration, and the evaluation rubric. Section 6 reports results across twenty-one evaluation runs, covering recognition validation, memory isolation, factorial analysis, domain generalizability, bilateral transformation, learner-side evaluation, cross-judge replication, dialectical impasse testing, and a hardwired rules ablation. Section 7 discusses theoretical and practical implications. Section 8 addresses limitations, and Section 9 concludes.
 
 ---
 
@@ -306,7 +307,7 @@ We extend the basic protocol with AI-powered dialectical negotiation implementin
 2. **Compromise**: One agent dominates—typically the Ego accepts the Superego's critique without genuine integration, producing a more cautious but potentially less engaging response.
 3. **Genuine Conflict**: No resolution achieved—tension remains unresolved. The architecture permits this outcome, following the Drama Machine principle (Section 4.3) that productive irresolution can be valuable. In these cases, the Ego's original suggestion is delivered with the Superego's concerns noted in the dialogue log.
 
-The evaluation results (Section 6.7) reveal that this negotiation process catches specific failure modes—engagement failures (64%), specificity gaps (51%), premature resolution (48%)—at rates that justify the additional computational cost, particularly on new content domains (Section 6.5).
+The evaluation results (Section 6.7) reveal that this negotiation process catches specific failure modes—engagement failures (64%), specificity gaps (51%), premature resolution (48%). Notably, encoding these patterns as static rules in the Ego prompt fails to replicate the Superego's benefit (Section 6.7), suggesting the value lies in contextual judgment rather than rule enforcement.
 
 ### 4.5 Recognition-Enhanced Prompts
 
@@ -508,14 +509,15 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | A$\times$B probe: GLM-4.7 | eval-2026-02-07-6b3e6565 | 6.4 | 120 | 117 | response |
 | A$\times$B probe: Claude Haiku 4.5 | eval-2026-02-07-6ead24c7 | 6.4 | 120 | 120 | response |
 | Dialectical impasse test | eval-2026-02-08-f896275d | 6.16 | 24 | 24 | dialogue |
+| Hardwired rules ablation (Kimi) | eval-2026-02-08-65a6718f | 6.7 | 72 | 72 | response |
 | Learner-side evaluation (symmetric) | eval-2026-02-07-b6d75e87 | 6.12 | 118 | 118 | learner turn |
-| **Paper totals** | — | — | **1,645** | **1,628** | — |
+| **Paper totals** | — | — | **1,717** | **1,700** | — |
 
-The difference between Total Attempts and Scored (17 unscored out of 1,645) reflects attempts where the ego model's API call failed (timeout, rate limit, or malformed response) or where the judge could not produce a valid score from the tutor's output. These failures are distributed across runs and conditions with no systematic pattern.
+The difference between Total Attempts and Scored (17 unscored out of 1,717) reflects attempts where the ego model's API call failed (timeout, rate limit, or malformed response) or where the judge could not produce a valid score from the tutor's output. These failures are distributed across runs and conditions with no systematic pattern.
 
-**Total evaluation database**: The complete database contains 3,800+ evaluation attempts across 76 runs, with 3,800+ successfully scored. This paper reports primarily on the twenty key runs above (N=1,628 scored), and supplementary historical data for ablation analyses.
+**Total evaluation database**: The complete database contains 3,800+ evaluation attempts across 76 runs, with 3,800+ successfully scored. This paper reports primarily on the twenty-one key runs above (N=1,700 scored), and supplementary historical data for ablation analyses.
 
-**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=120" for memory isolation) refer to scored responses in that analysis. The "N=3,800+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the twenty key runs above (N=1,628). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts; the re-run uses the same ego model (Kimi K2.5) and judge (Claude Code/Opus) as the original factorial.
+**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=120" for memory isolation) refer to scored responses in that analysis. The "N=3,800+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the twenty-one key runs above (N=1,700). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts; the re-run uses the same ego model (Kimi K2.5) and judge (Claude Code/Opus) as the original factorial.
 
 ### 5.8 Inter-Judge Reliability Analysis
 
@@ -790,22 +792,22 @@ Analysis of Superego critique patterns across 455 dialogues (186 rejections) rev
 | Memory | 31% | Ignores learner history |
 | Level-matching | 20% | Difficulty mismatch |
 
-**Hardwired Rules Ablation**: We encoded the top patterns as static rules in the Ego prompt:
+**Hardwired Rules Ablation**: We encoded the top patterns as static rules in the Ego prompt (e.g., "If learner offers interpretation, engage before prescribing"; "Reference specific lecture IDs, not generic topics"; "If learner shows productive confusion, pose questions rather than resolve"). These five rules were embedded directly in the Ego system prompt, allowing single-agent operation without live Superego dialogue.
 
-```
-HARDWIRED RULES:
-1. If learner offers interpretation, engage before prescribing
-2. Reference specific lecture IDs, not generic topics
-3. If learner shows productive confusion, pose questions do not resolve
-4. For returning learners, reference previous interactions
-5. Match content level to demonstrated understanding
-```
+An initial exploratory test (N=9 per condition, Haiku model) suggested hardwired rules could capture approximately 50% of the Superego's benefit. However, a larger replication (N=72, Kimi K2.5 ego, Opus judge) produced the opposite result:
 
-**Result** (exploratory, N=9 per condition, 3 scenarios × 3 reps, Haiku model): Hardwired rules capture approximately 50% of the Superego's benefit at 70% cost savings (no Superego API calls). Given the small sample, this estimate should be treated as indicative rather than precise.
+**Table 10b: Hardwired Rules Ablation (N=72, Kimi K2.5, Opus judge)**
 
-**However**: Dynamic Superego dialogue provides unique value on challenging scenarios (struggling learner, frustrated learner) where edge cases require contextual judgment beyond codifiable rules. On `concept_confusion`, the dynamic Superego outperformed hardwired rules by +6.4 points; on easier scenarios, the difference was negligible.
+| Condition | Architecture | Learner | N | Mean | vs Base |
+|-----------|-------------|---------|---|------|---------|
+| Base (cell 1) | Single, no superego | Single | 44 | 77.6 | — |
+| Base (cell 2) | Single, no superego | Multi | 42 | 80.0 | — |
+| Hardwired (cell 13) | Single + rules, no superego | Single | 36 | 74.0 | $-3.6$ |
+| Hardwired (cell 14) | Single + rules, no superego | Multi | 36 | 69.0 | $-11.0$ |
 
-**Theoretical Interpretation**: This distinguishes *procedural* from *contextual* judgment. The Superego's value is partially in enforcing known rules (codifiable) and partially in recognizing edge cases (requiring judgment). This maps onto debates about rule-following vs. practical wisdom in moral philosophy—some situations call for *phronesis* (Aristotelian practical wisdom: the capacity for situational judgment that cannot be reduced to general rules) that codified rules cannot capture.
+Rather than improving performance, hardwired rules *degraded* it, particularly with multi-agent learners ($-11.0$ points). The rules may constrain the model's natural flexibility without providing the contextual judgment that makes live Superego dialogue effective. This finding reverses the exploratory N=9 result and suggests the Superego's value lies almost entirely in dynamic, contextual evaluation rather than in the specific rules it enforces.
+
+**Theoretical Interpretation**: This result supports a *phronesis* interpretation of the Superego's function. Aristotelian practical wisdom—the capacity for situational judgment that cannot be reduced to general rules—appears to be what the live Superego provides. Codifying its most common critiques as static rules fails to capture the contextual sensitivity that makes those critiques effective. The Superego does not merely enforce rules; it *reads the situation* and determines which rules apply, when exceptions are warranted, and how to balance competing pedagogical goals. This distinction between rule-following and practical wisdom maps directly onto debates in moral philosophy about whether ethical judgment can be proceduralized [@aristotle_nicomachean].
 
 ### 6.8 Dimension Analysis
 
@@ -939,7 +941,7 @@ The dimension breakdown reveals *how* recognition rescues the multi-agent learne
 
 ### 6.13 Qualitative Analysis: What Recognition Looks Like
 
-The preceding sections establish that recognition-enhanced prompts produce statistically significant score improvements across scenarios, models, and domains. But score differences alone do not reveal *what changes* in the actual text. This section presents qualitative evidence from the evaluation corpus (N=4,875 suggestion texts across base and recognition conditions) to ground the quantitative findings in observable linguistic differences.
+The preceding sections establish that recognition-enhanced prompts produce statistically significant score improvements across scenarios, models, and domains. But score differences alone do not reveal *what changes* in the actual text. This section presents qualitative evidence from the evaluation corpus to ground the quantitative findings in observable linguistic differences, using three complementary methods at increasing levels of analytical sophistication: (a) regex-based lexical and thematic coding, which proves the *words* differ; (b) AI-assisted open-ended theme discovery, which reveals the *pedagogical stances* that emerge without predefined categories; and (c) theory-driven resolution strategy coding (Section 6.16), which proves *behaviour under impasse* differs along Hegelian lines.
 
 #### 6.13.1 Transcript Excerpts
 
@@ -1036,6 +1038,52 @@ Regex-based thematic coding (using patterns adapted from the bilateral measureme
 Three categories show significant differences. *Struggle-honoring* language ("wrestling with," "productive confusion," "working through") is 3.1× more frequent in recognition responses, consistent with the framework's emphasis on productive negativity. *Engagement markers* ("your insight," "building on your," "your question") are 1.8× more frequent, indicating greater second-person engagement with learner contributions. Conversely, *generic/placeholder* language ("foundational," "key concepts," "solid foundation") is 3× more frequent in base responses, reflecting the generic instructional stance observed in the transcript excerpts.
 
 Transformation language and directive framing show the expected directional differences but lack statistical significance, likely due to low base rates (both categories appear in fewer than 1% of responses). Learner-as-subject framing shows no significant difference, suggesting both conditions use some second-person address but differ in *how* that address functions—a distinction better captured by the engagement and struggle-honoring categories.
+
+#### 6.13.4 AI-Assisted Theme Discovery
+
+The regex-based analysis (Sections 6.13.2–3) confirms that *words* differ between conditions, but the categories were researcher-defined. To test whether the thematic distinction emerges without predefined categories, we conducted an open-ended AI theme discovery analysis using Claude Opus as coder. A stratified random sample of 300 responses (135 base, 165 recognition) was presented to the model with no category scheme; the coder was asked to identify the dominant emergent theme, pedagogical stance, and epistemic orientation for each response independently.
+
+**Table 17b: Top Emergent Themes by Condition (AI Discovery, N=300)**
+
+| Theme | Base | Recog | Total | Direction |
+|-------|------|-------|-------|-----------|
+| Deficit-oriented framing | 35 | 0 | 35 | Base-exclusive |
+| Collaborative learning partnership | 0 | 21 | 21 | Recog-exclusive |
+| Affirming learner's conceptual contribution | 3 | 12 | 15 | Recog-dominant |
+| Forward momentum without reflection | 5 | 6 | 11 | Shared |
+| Connecting learner questions to frameworks | 1 | 7 | 8 | Recog-dominant |
+| Diagnostic authority and monitoring | 7 | 0 | 7 | Base-exclusive |
+| Prescriptive remediation directive | 7 | 0 | 7 | Base-exclusive |
+| Emotional validation and acknowledgment | 0 | 6 | 6 | Recog-exclusive |
+| Invitation to joint inquiry | 0 | 6 | 6 | Recog-exclusive |
+| Reframing struggle as productive | 0 | 6 | 6 | Recog-exclusive |
+
+*Only themes with total $\geq 6$ shown. Full results: 44 distinct themes discovered across 300 responses.*
+
+The theme landscape is almost perfectly bimodal: of the 15 themes with frequency $\geq 6$, only one ("forward momentum without reflection") appears roughly equally in both conditions. Every other theme is condition-exclusive or near-exclusive. The single most frequent theme—"deficit-oriented framing" (N=35)—appears only in base responses, while its mirror—"collaborative learning partnership" (N=21)—appears only in recognition responses. This clean separation emerged without any researcher-imposed category scheme.
+
+**Table 17c: Pedagogical Stance (AI Discovery, N=300)**
+
+| Stance | Base | Recognition |
+|--------|------|-------------|
+| Directive | 113 (84%) | 12 (7%) |
+| Facilitative | 4 (3%) | 43 (26%) |
+| Dialogical | 0 | 45 (27%) |
+| Collaborative | 0 | 12 (7%) |
+| Other/compound | 18 (13%) | 53 (32%) |
+
+**Table 17d: Epistemic Orientation (AI Discovery, N=300)**
+
+| Orientation | Base | Recognition |
+|-------------|------|-------------|
+| Transmissive | 125 (93%) | 15 (9%) |
+| Dialectical | 1 (1%) | 79 (48%) |
+| Constructivist | 7 (5%) | 60 (36%) |
+| Other/compound | 2 (1%) | 11 (7%) |
+
+The stance and orientation distributions are even more sharply separated than the emergent themes. Base responses are 84% directive and 93% transmissive; recognition responses are 60% facilitative/dialogical/collaborative and 84% dialectical/constructivist. The AI coder independently discovers the theoretical distinction the recognition framework was designed to produce: the shift from treating learning as transmission (tutor possesses knowledge, learner receives it) to treating it as dialectical encounter (both parties transform through engagement).
+
+**Methodological note**: AI-assisted theme discovery risks circular validation if the coding model recognizes the prompt engineering that produced the responses. Two factors mitigate this concern: (1) the coder received only the tutor's suggestion text, not the system prompt or condition label; and (2) the near-perfect theme separation itself is the finding—whether or not the coder "recognizes" the framework, the fact that emergent themes partition cleanly by condition demonstrates that the two conditions produce qualitatively distinct pedagogical texts, not merely quantitatively different scores.
 
 ### 6.14 Dynamic Prompt Rewriting: Step-by-Step Evolution
 
