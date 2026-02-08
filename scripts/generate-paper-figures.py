@@ -374,6 +374,71 @@ def figure5():
     print('  figure5.png')
 
 
+# ── Figure 6: Emergent Theme Word Clouds ──────────────────────────────────────
+
+def figure6():
+    try:
+        from wordcloud import WordCloud
+    except ImportError:
+        print('  figure6.png SKIPPED (pip install wordcloud)')
+        return
+
+    import json
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'exports',
+                             'qualitative-ai-claude-code-sample300-2026-02-08.json')
+    if not os.path.exists(data_path):
+        print('  figure6.png SKIPPED (discovery data not found)')
+        return
+
+    with open(data_path) as f:
+        data = json.load(f)
+
+    themes = data['discovery']['analysis']['themeFrequency']
+
+    base_freq = {}
+    recog_freq = {}
+    for key, t in themes.items():
+        label = t['label']
+        b = t.get('base', 0)
+        r = t.get('recognition', 0)
+        if b + r >= 3:
+            if b > 0:
+                base_freq[label] = b
+            if r > 0:
+                recog_freq[label] = r
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+
+    wc_base = WordCloud(
+        width=1200, height=800, background_color='white', colormap='OrRd',
+        max_words=30, max_font_size=120, min_font_size=14,
+        prefer_horizontal=0.85, relative_scaling=0.5, margin=10,
+        collocations=False,
+    ).generate_from_frequencies(base_freq)
+
+    wc_recog = WordCloud(
+        width=1200, height=800, background_color='white', colormap='YlGn',
+        max_words=30, max_font_size=120, min_font_size=14,
+        prefer_horizontal=0.85, relative_scaling=0.5, margin=10,
+        collocations=False,
+    ).generate_from_frequencies(recog_freq)
+
+    ax1.imshow(wc_base, interpolation='bilinear')
+    ax1.set_title('Base Condition', fontsize=18, fontweight='bold', pad=15)
+    ax1.axis('off')
+
+    ax2.imshow(wc_recog, interpolation='bilinear')
+    ax2.set_title('Recognition Condition', fontsize=18, fontweight='bold', pad=15)
+    ax2.axis('off')
+
+    fig.suptitle('Figure 6: Emergent Theme Word Clouds (AI Discovery, N=300)',
+                 fontsize=16, fontweight='bold', y=0.98)
+    fig.tight_layout(rect=[0, 0.02, 1, 0.94])
+    fig.savefig(os.path.join(OUTPUT_DIR, 'figure6.png'))
+    plt.close(fig)
+    print('  figure6.png')
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
@@ -383,4 +448,5 @@ if __name__ == '__main__':
     figure3()
     figure4()
     figure5()
+    figure6()
     print(f'Done. Output: {os.path.abspath(OUTPUT_DIR)}/')
