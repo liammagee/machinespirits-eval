@@ -1,6 +1,6 @@
 ---
 title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
-author: "Liam Magee"
+author: "Liam Magee\\footnote{This sentence is the only one actually authored by Liam Magee in this paper.}"
 date: "February 2026"
 bibliography: references.bib
 csl: apa.csl
