@@ -46,8 +46,11 @@ Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with ze
 
 ### LOW PRIORITY
 
-- [x] **Hardwired Rules Larger Sample** — DEPRIORITIZED. Framed as exploratory in paper.
-      Not blocking for current draft.
+- [x] **Hardwired Rules Larger Sample** — DONE. eval-2026-02-08-65a6718f (N=72, kimi-k2.5,
+      Opus judge). Hardwired rules performed BELOW baseline (cell 13=74.0 vs cell 1=77.6;
+      cell 14=69.0 vs cell 2=80.0), contradicting the exploratory N=9 finding. Supports
+      phronesis interpretation: the superego's value is in contextual judgment, not codifiable
+      rules. Paper updated: Section 6.7 rewritten, run ID tables updated.
 
 - [x] **Bilateral Transformation Larger Sample** — DONE: eval-2026-02-07-b6d75e87 (N=118
       scored, 8 cells × 3 multi-turn scenarios × 5 reps, Kimi K2.5, Opus judge).

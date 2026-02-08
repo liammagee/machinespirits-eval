@@ -313,15 +313,18 @@ Each tutor response at turns 3 and 5 gets coded (by Opus judge) into one of five
 
 #### Follow-up items (from #38)
 
-### #38a — GPT-5.2 cross-judge reliability for strategy coding
+### [DONE] #38a — GPT-5.2 cross-judge reliability for strategy coding
 
 **Context**: The original #38 design specified "Inter-rater reliability via GPT-5.2 cross-judge." The current strategy coding uses a single Opus judge. Cross-judge validation would establish whether the 5-category coding scheme produces consistent results across judges, or whether the perfect separation is an artifact of judge calibration.
 
-**Work**:
-- [ ] Run `node scripts/code-impasse-strategies.js --model haiku` (or sonnet) as a second coder on the same 24 dialogues
-- [ ] Compute Cohen's kappa between the two judges on the 5-category forced choice
-- [ ] If kappa > 0.6, report as inter-rater reliability; if lower, investigate disagreements
-- [ ] Update paper §6.16 limitations and add cross-judge row to Table 26
+**Resolved (2026-02-08)**:
+- Ran `node scripts/code-impasse-strategies.js --model gpt` (GPT-5.2 via OpenRouter) on all 24 dialogues
+- 23/24 coded successfully (1 JSON parse error)
+- GPT-5.2: 11/11 base=withdrawal, 12/12 recognition=scaffolded_reframing (100% binary agreement)
+- Agreement on 5-category coding: 21/23 = 91.3%, Cohen's κ = 0.84 (near-perfect)
+- 2 disagreements: GPT coded as scaffolded_reframing where Opus coded mutual_recognition and domination (the two outliers)
+- Paper §6.16 updated with cross-judge validation paragraph and justification for using two SOTA models from different providers/training lineages
+- Output: `exports/impasse-strategy-coding-2026-02-08T08-41-44.json` and `.md`
 
 ### [DONE] #38b — Per-turn strategy coding (turns 3 and 5)
 

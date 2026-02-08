@@ -60,7 +60,7 @@ We make the following contributions:
 
 5. **Domain Generalizability Testing**: Evaluation on elementary mathematics content across two models confirming recognition advantage replicates, with multi-agent architecture providing critical error correction for domain transfer.
 
-6. **Hardwired Rules Ablation**: Analysis of superego critique patterns identifying that static rules can capture ~50% of superego benefit at 70% cost savings, clarifying when dynamic dialogue adds unique value.
+6. **Hardwired Rules Ablation**: A larger replication (N=72) reversing the initial finding—encoding the Superego's most common critique patterns as static rules *degrades* performance rather than replicating its benefit, supporting a *phronesis* interpretation where the Superego's value lies in contextual judgment.
 
 7. **Bilateral Transformation Metrics**: Empirical evidence (N=118, three multi-turn scenarios) that recognition-prompted tutors measurably adapt their approach (+26%), though learner-side growth does not increase, qualifying the "mutual transformation" claim as primarily tutor-side responsiveness.
 
@@ -485,9 +485,9 @@ Analysis of 186 superego rejections from 455 dialogues reveals systematic patter
 4. **Memory Rule** (31%): If learner has >3 sessions, reference their history/progress.
 5. **Level-Matching Rule** (20%): If learner completed advanced content, never suggest introductory material.
 
-**Ablation Finding**: Hardwired rules capturing these patterns achieve approximately **50% of superego benefit at 70% cost savings**.
+**Ablation Finding**: An initial exploratory test (N=9, Haiku) suggested hardwired rules could capture ~50% of superego benefit. However, a larger replication (N=72, Kimi K2.5, Opus judge) reversed this finding: hardwired rules *degraded* performance by $-3.6$ points (single-agent learner) and $-11.0$ points (multi-agent learner) relative to the unmodified base prompt.
 
-**Interpretation**: The superego's value is partially in the *rules* it enforces and partially in *dynamic judgment* for edge cases. For straightforward scenarios, static rules suffice. For challenging scenarios (struggling learners, frustrated learners, multi-turn complexity), dynamic dialogue provides unique value.
+**Interpretation**: The superego's value lies almost entirely in *contextual judgment* (phronesis) rather than in the specific rules it enforces. Codifying its critiques as static instructions constrains the model's natural flexibility without providing the situational sensitivity that makes live dialogue effective. This supports a view of the multi-agent architecture as implementing practical wisdom that resists proceduralization.
 
 ### 6.7 Domain Generalizability
 
@@ -548,12 +548,12 @@ However, learner growth is slightly *lower* under recognition (0.210 vs 0.242), 
 | Recognition + Multi-agent | 92.3 | High | Production (quality-critical) |
 | Recognition + Single | 92.5 | Medium | Production (cost-sensitive) |
 | Enhanced + Single | 83.3 | Low | Budget deployment |
-| Base + Hardwired Rules | ~75 | Very Low | Minimum viable |
+| Base + Hardwired Rules | 71.5 | Very Low | Not recommended (below base) |
 
 **Practical Guidance:**
 - For **well-trained content domains**: Recognition + single-agent is cost-effective
 - For **new content domains**: Recognition + multi-agent is essential for error correction
-- For **budget deployments**: Enhanced prompts with hardwired rules provide reasonable quality
+- For **budget deployments**: Enhanced prompts provide reasonable quality; hardwired rules are counterproductive
 
 ### 6.10 Qualitative Analysis: What Recognition Looks Like
 
@@ -635,16 +635,9 @@ The consistent finding across all five models is that multi-agent architecture's
 
 ### 7.5 The Value of Dynamic vs. Static Judgment
 
-The hardwired rules finding clarifies when dynamic superego dialogue adds value:
+The hardwired rules ablation (N=72) reverses the initial exploratory finding: rather than capturing 50% of the Superego's benefit, encoding critique patterns as static rules *degrades* performance below the unmodified base prompt ($-3.6$ for single-agent learners, $-11.0$ for multi-agent learners). The rules appear to constrain the model's natural response flexibility without providing the contextual sensitivity that makes live Superego dialogue effective.
 
-| Scenario Type | Hardwired Rules | Dynamic Superego | Difference |
-|---------------|-----------------|------------------|------------|
-| Straightforward | ~75 | ~78 | +3 pts |
-| Challenging | ~60 | ~75 | +15 pts |
-
-On straightforward scenarios (new user, mid-course), static rules capture most of the benefit. On challenging scenarios (struggling learner, frustrated learner, multi-turn), dynamic judgment adds substantial value.
-
-**Interpretation**: The superego's value is partially *procedural* (enforcing known rules) and partially *contextual* (recognizing edge cases). Hardwired rules encode the procedural component; dynamic dialogue handles the contextual component.
+This supports a *phronesis* interpretation: the Superego's value lies not in the rules it enforces but in its capacity for situational judgment—determining *which* rules apply, *when* exceptions are warranted, and *how* to balance competing pedagogical goals. This is practical wisdom in Aristotle's sense: judgment that resists codification into general rules. The multi-agent architecture implements this by giving the Superego access to the full dialogue context and allowing it to evaluate the Ego's suggestion against the specific learner's situation, rather than against a fixed checklist.
 
 ### 7.6 Bilateral Transformation as Empirical Evidence
 
