@@ -26,6 +26,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js rejudge <runId> --overwrite  # Re-run AI judge (replaces existing)
  *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
  *   node scripts/eval-cli.js evaluate <runId> --follow  # Poll & judge results as they appear
+ *   node scripts/eval-cli.js evaluate-learner <runId>  # Score learner turns from multi-turn interactions
  *   node scripts/eval-cli.js chat            # AI conversational interface
  *
  * Options:
@@ -63,6 +64,8 @@ import * as evaluationRunner from '../services/evaluationRunner.js';
 import * as anovaStats from '../services/anovaStats.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import { getAvailableJudge, buildEvaluationPrompt, calculateOverallScore, calculateBaseScore, calculateRecognitionScore } from '../services/rubricEvaluator.js';
+import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
+import * as learnerConfig from '../services/learnerConfigLoader.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
@@ -2296,9 +2299,320 @@ async function main() {
         break;
       }
 
+      case 'evaluate-learner': {
+        // ── Learner-side evaluation: score learner turns from multi-turn dialogues ──
+        //
+        // Data lives in evaluation_results (per-dialogue rows with dialogueId)
+        // and logs/tutor-dialogues/*.json (full dialogue traces with learner turns).
+        //
+        // For each dialogue:
+        //   1. Load the log file to get learner turn messages + deliberation traces
+        //   2. Build a learner evaluation prompt per learner turn (truncated context)
+        //   3. Call Claude as judge
+        //   4. Store per-turn scores as JSON + overall learner score on the result row
+
+        const runId = args.find(a => !a.startsWith('--') && a !== 'evaluate-learner');
+        if (!runId) {
+          console.error('Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose]');
+          console.error('  Scores learner turns from dialogue logs using the learner rubric.');
+          console.error('  Only works on multi-turn runs with learner turns (e.g., bilateral transformation).');
+          process.exit(1);
+        }
+
+        const verbose = getFlag('verbose');
+        const force = getFlag('force');
+        const modelOverride = getOption('model') || null;
+        const profileFilter = getOption('profile') || getOption('profiles') || null;
+
+        // Load results with dialogue IDs (multi-turn data)
+        const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
+        const dialogueResults = allResults.filter(r => r.dialogueId && r.success);
+
+        if (dialogueResults.length === 0) {
+          console.error(`No multi-turn dialogue results found for run: ${runId}`);
+          console.error('This command only works on runs that produced dialogue log files.');
+          process.exit(1);
+        }
+
+        // Filter to those needing learner evaluation (unless --force)
+        const toEvaluate = force
+          ? dialogueResults
+          : dialogueResults.filter(r => r.learnerOverallScore == null);
+
+        if (toEvaluate.length === 0) {
+          console.log('All dialogue results already have learner scores. Use --force to re-evaluate.');
+          break;
+        }
+
+        console.log(`\nEvaluating learner turns for ${toEvaluate.length} dialogue(s) from run: ${runId}`);
+        if (modelOverride) console.log(`  Model: ${modelOverride}`);
+        console.log('');
+
+        let succeeded = 0;
+        let failed = 0;
+        const allScores = [];
+
+        for (let i = 0; i < toEvaluate.length; i++) {
+          const result = toEvaluate[i];
+          const profileName = result.profileName || `${result.provider}/${result.model}`;
+          const tag = `[${i + 1}/${toEvaluate.length}]`;
+
+          // Load dialogue log file
+          const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
+          let dialogueLog;
+          try {
+            if (!fs.existsSync(logPath)) {
+              console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (log file not found)`);
+              failed++;
+              continue;
+            }
+            dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+          } catch (e) {
+            console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (${e.message})`);
+            failed++;
+            continue;
+          }
+
+          if (!dialogueLog.isMultiTurn) {
+            console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (not multi-turn)`);
+            failed++;
+            continue;
+          }
+
+          const trace = dialogueLog.dialogueTrace || [];
+          const learnerArch = dialogueLog.learnerArchitecture || 'unified';
+          const isMultiAgent = learnerArch === 'ego_superego' || learnerArch === 'multi_agent' || learnerArch === 'psychodynamic';
+
+          // Extract learner turns from dialogue trace.
+          // Each learner turn consists of:
+          //   - turn_action entry (contextSummary = external message)
+          //   - For multi-agent: preceding learner_ego_initial, learner_superego, learner_ego_revision entries
+          const learnerTurns = [];
+          const turnActionEntries = trace.filter(t => t.agent === 'user' && t.action === 'turn_action');
+
+          for (const ta of turnActionEntries) {
+            const turnData = {
+              turnIndex: ta.turnIndex,
+              externalMessage: ta.contextSummary || '',
+              internalDeliberation: [],
+            };
+
+            // Find deliberation entries associated with this turn action
+            // They appear before the turn_action in the trace and after the previous tutor turn
+            if (isMultiAgent) {
+              const taIdx = trace.indexOf(ta);
+              // Walk backward from turn_action to find learner deliberation entries
+              for (let j = taIdx - 1; j >= 0; j--) {
+                const entry = trace[j];
+                if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
+                  turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
+                  break; // ego_initial is the first step, stop here
+                } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
+                  turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
+                } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
+                  turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
+                } else if (entry.agent === 'learner_synthesis' && entry.action === 'response') {
+                  // synthesis is the final merged output, skip (same as external message)
+                } else if (entry.agent === 'ego' || entry.agent === 'system') {
+                  break; // Reached the tutor's turn, stop
+                }
+              }
+            }
+
+            learnerTurns.push(turnData);
+          }
+
+          if (learnerTurns.length === 0) {
+            console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (no learner turns in trace)`);
+            failed++;
+            continue;
+          }
+
+          // Build a reconstructed turn array for the prompt builder
+          // Interleave tutor suggestions and learner messages
+          const reconstructedTurns = [];
+          const turnResults = dialogueLog.turnResults || [];
+
+          // Turn 0: initial tutor suggestion
+          if (turnResults.length > 0) {
+            const sug = turnResults[0].suggestions?.[0];
+            reconstructedTurns.push({
+              turnNumber: 0,
+              phase: 'tutor',
+              externalMessage: sug?.message || sug?.text || JSON.stringify(sug),
+            });
+          }
+
+          // Subsequent turns: learner → tutor pairs
+          for (let lt = 0; lt < learnerTurns.length; lt++) {
+            reconstructedTurns.push({
+              turnNumber: lt + 1,
+              phase: 'learner',
+              externalMessage: learnerTurns[lt].externalMessage,
+              internalDeliberation: learnerTurns[lt].internalDeliberation,
+            });
+
+            // Add corresponding tutor response (if exists)
+            const tutorTurn = turnResults[lt + 1];
+            if (tutorTurn) {
+              const sug = tutorTurn.suggestions?.[0];
+              reconstructedTurns.push({
+                turnNumber: lt + 1,
+                phase: 'tutor',
+                externalMessage: sug?.message || sug?.text || JSON.stringify(sug),
+              });
+            }
+          }
+
+          // Get scenario info
+          const scenario = getScenario(result.scenarioId);
+          const scenarioName = scenario?.name || result.scenarioId;
+
+          // Get persona description
+          let personaDescription = 'No persona description available';
+          try {
+            // Profile name encodes persona info (e.g., cell_2_base_single_psycho)
+            const persona = learnerConfig.getPersona('productive_struggler');
+            personaDescription = persona?.description || personaDescription;
+          } catch (e) { /* use default */ }
+
+          const turnScores = {};
+          let turnSucceeded = 0;
+
+          // Score each learner turn
+          for (let lt = 0; lt < learnerTurns.length; lt++) {
+            // Find the learner turn's index in reconstructedTurns
+            const targetIdx = reconstructedTurns.findIndex((t, idx) =>
+              t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0
+            );
+
+            if (targetIdx === -1) continue;
+
+            const turnTag = `${tag} ${result.scenarioId} / ${profileName} learner-turn-${lt + 1}`;
+
+            try {
+              const prompt = buildLearnerEvaluationPrompt({
+                turns: reconstructedTurns,
+                targetTurnIndex: targetIdx,
+                personaId: profileName.includes('psycho') ? 'psychodynamic_learner' : 'productive_struggler',
+                personaDescription,
+                learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+                scenarioName,
+                topic: result.scenarioId,
+              });
+
+              const claudeArgs = ['-p', '-', '--output-format', 'text'];
+              if (modelOverride) {
+                claudeArgs.push('--model', modelOverride);
+              }
+
+              if (verbose) {
+                console.log(`${turnTag} ... calling claude`);
+              }
+
+              const stdout = await new Promise((resolve, reject) => {
+                const env = { ...process.env };
+                delete env.ANTHROPIC_API_KEY;
+                const child = spawn('claude', claudeArgs, {
+                  stdio: ['pipe', 'pipe', 'pipe'],
+                  env,
+                });
+                let out = '';
+                let err = '';
+                child.stdout.on('data', d => { out += d; });
+                child.stderr.on('data', d => { err += d; });
+                child.on('error', reject);
+                child.on('close', code => {
+                  if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+                  else resolve(out);
+                });
+                child.stdin.write(prompt);
+                child.stdin.end();
+              });
+
+              // Parse JSON response
+              let jsonStr = stdout.trim();
+              const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+              if (fenceMatch) {
+                jsonStr = fenceMatch[1].trim();
+              } else {
+                const firstBrace = jsonStr.indexOf('{');
+                const lastBrace = jsonStr.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace > firstBrace) {
+                  jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+                }
+              }
+
+              const parsed = JSON.parse(jsonStr);
+              const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
+
+              turnScores[lt] = {
+                turnIndex: lt + 1,
+                scores: parsed.scores,
+                overallScore: turnOverall,
+                summary: parsed.summary,
+              };
+
+              const dimScores = Object.entries(parsed.scores || {})
+                .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
+                .join(' ');
+              console.log(`${turnTag} ... ${turnOverall.toFixed(1)}  (${dimScores})`);
+
+              if (verbose && parsed.summary) {
+                console.log(`     Judge: ${parsed.summary}`);
+              }
+
+              turnSucceeded++;
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${turnTag} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+          }
+
+          if (turnSucceeded > 0) {
+            // Calculate dialogue-level learner score (average across turns)
+            const turnOveralls = Object.values(turnScores).map(ts => ts.overallScore);
+            const dialogueLearnerScore = turnOveralls.reduce((a, b) => a + b, 0) / turnOveralls.length;
+
+            // Store in database on the evaluation_results row
+            evaluationStore.updateResultLearnerScores(result.id, {
+              scores: turnScores,
+              overallScore: dialogueLearnerScore,
+              judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-code/opus',
+            });
+
+            allScores.push(dialogueLearnerScore);
+            succeeded++;
+
+            console.log(`  → Dialogue learner score: ${dialogueLearnerScore.toFixed(1)} (${turnSucceeded} turns scored)`);
+            console.log('');
+          } else {
+            failed++;
+          }
+        }
+
+        // Summary
+        console.log('\n' + '='.repeat(50));
+        console.log('  EVALUATE-LEARNER SUMMARY');
+        console.log('='.repeat(50));
+        console.log(`  Total dialogues:  ${toEvaluate.length}`);
+        console.log(`  Succeeded: ${succeeded}`);
+        console.log(`  Failed:    ${failed}`);
+        if (allScores.length > 0) {
+          const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+          const sd = allScores.length > 1
+            ? Math.sqrt(allScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (allScores.length - 1))
+            : 0;
+          console.log(`  Avg learner score: ${avg.toFixed(1)} (SD=${sd.toFixed(1)})`);
+        }
+        console.log('');
+        break;
+      }
+
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, chat');
+        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, evaluate-learner, chat');
         process.exit(1);
     }
   } catch (error) {

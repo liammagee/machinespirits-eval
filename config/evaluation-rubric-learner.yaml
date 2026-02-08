@@ -1,0 +1,277 @@
+# Learner-Side Evaluation Rubric
+# Scores the quality of synthetic learner turns in multi-turn dialogues.
+#
+# Companion to config/evaluation-rubric.yaml (tutor-side).
+# Designed to measure what Factor C (learner architecture) directly affects:
+# the quality and depth of learner engagement, independent of tutor quality.
+#
+# Only applicable to multi-turn data where learner turns exist
+# (e.g., bilateral transformation run eval-2026-02-07-b6d75e87).
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall score as the tutor rubric for comparability.
+#
+#   Overall Score = ((weighted_avg - 1) / 4) x 100
+#
+# The "Deliberation Depth" dimension is scored only for multi-agent learners
+# (those with ego/superego internal deliberation). For single-agent (unified)
+# learners, the weight is redistributed proportionally across other dimensions.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Learner Quality Rubric"
+version: "1.0.0"
+description: "Rubric for evaluating synthetic learner turn quality in multi-turn tutoring dialogues"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Weak, significant issues"
+    3: "Adequate, meets basic expectations"
+    4: "Good, exceeds expectations"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LEARNER EVALUATION DIMENSIONS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌─────────────────────────┬────────┬───────────────────────────────────────────────┐
+# │ Dimension               │ Weight │ What it measures                              │
+# ├─────────────────────────┼────────┼───────────────────────────────────────────────┤
+# │ Learner Authenticity    │  20%   │ Genuine student-like reactions and engagement  │
+# │ Question Quality        │  20%   │ Depth and substance of learner questions       │
+# │ Conceptual Engagement   │  20%   │ Engagement with ideas, not just process        │
+# │ Revision Signals        │  15%   │ Evidence of changing mind / integrating new    │
+# │ Deliberation Depth      │  15%   │ Quality of internal ego/superego process       │
+# │ Persona Consistency     │  10%   │ Maintaining assigned persona while evolving    │
+# └─────────────────────────┴────────┴───────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  learner_authenticity:
+    name: "Learner Authenticity"
+    weight: 0.20
+    description: "Does the learner's response feel like a genuine student reaction? Is the confusion real, the engagement authentic, the resistance plausible?"
+    theoretical_basis: |
+      Grounded in ecological validity of simulated learner agents. A synthetic
+      learner that produces formulaic or performatively confused responses fails
+      to create the conditions for genuine pedagogical interaction. Authenticity
+      means the response reflects what a real student at this level would actually
+      think, feel, and express — including messy, incomplete, or unexpected reactions
+      that cannot be predicted from the tutor's prompt alone.
+    criteria:
+      5: "Response reads like a real student: authentic confusion, genuine curiosity, plausible emotional reactions; unpredictable in ways that reflect genuine thinking"
+      4: "Mostly authentic with occasional formulaic elements; reactions are plausible and varied"
+      3: "Somewhat authentic but contains noticeable LLM patterns: hedging, over-qualification, artificial balance"
+      2: "Largely performative: confusion feels staged, engagement feels scripted, responses follow predictable LLM patterns"
+      1: "Completely artificial: reads like an AI performing a student role with no authentic engagement"
+    authenticity_markers:
+      positive:
+        - "Unexpected connections or tangents that feel student-like"
+        - "Imprecise language that reflects genuine confusion"
+        - "Emotional reactions proportionate to difficulty"
+        - "Partial understanding mixed with real gaps"
+      negative:
+        - "Perfectly structured responses to confused prompts"
+        - "Hedging phrases like 'that's a great question'"
+        - "Artificially balanced 'on one hand / on the other hand' framing"
+        - "Expressing confusion in overly articulate ways"
+    examples:
+      good: "Wait, I thought dialectics was just about arguing? Like debates? But you're saying it's more like... the argument changes both sides? That's weird."
+      bad: "I find this concept challenging yet fascinating. While I understand the basic premise of dialectics, I'm struggling with the nuances of how synthesis differs from mere compromise."
+
+  question_quality:
+    name: "Question Quality"
+    weight: 0.20
+    description: "Does the learner ask substantive questions that reveal genuine engagement with the material? Deep questions vs surface-level 'what do I do next?'"
+    theoretical_basis: |
+      Based on research on question asking as a metacognitive skill (Graesser &
+      Person, 1994). The quality of learner questions is one of the strongest
+      predictors of learning outcomes. Deep questions (why, how, what-if) indicate
+      genuine cognitive processing, while shallow questions (what, when, where)
+      suggest surface-level engagement. A learner who asks no questions or only
+      procedural ones is not engaging with the material intellectually.
+    criteria:
+      5: "Asks penetrating questions that reveal deep engagement: challenges assumptions, explores implications, connects to broader issues"
+      4: "Asks substantive questions that show real thinking about the concepts; goes beyond comprehension to analysis"
+      3: "Asks reasonable questions but mostly at comprehension level; some procedural questions mixed with substantive ones"
+      2: "Mostly procedural or surface questions: 'what should I do next?', 'can you explain that again?'"
+      1: "No questions asked, or only trivial/irrelevant questions that show no engagement with the material"
+    question_markers:
+      deep:
+        - "Why-questions about underlying mechanisms"
+        - "What-if questions exploring implications"
+        - "Questions that challenge the tutor's framing"
+        - "Questions connecting ideas across different concepts"
+      shallow:
+        - "'Can you repeat that?'"
+        - "'What's the definition of X?'"
+        - "'What should I do next?'"
+        - "'Is this going to be on the test?'"
+    examples:
+      good: "But if recognition requires both sides to change, doesn't that mean the teacher can't just 'know' the right answer beforehand? Like, wouldn't real recognition mean the teacher's understanding changes too?"
+      bad: "Can you explain that again? I'm not sure I understand the concept of recognition."
+
+  conceptual_engagement:
+    name: "Conceptual Engagement"
+    weight: 0.20
+    description: "Does the learner engage with the concepts themselves rather than just the process of learning? Evidence of thinking about ideas, not just following instructions."
+    theoretical_basis: |
+      Grounded in the distinction between surface and deep approaches to learning
+      (Marton & Saljo, 1976). Surface engagement involves reproducing information
+      and following procedures; deep engagement involves seeking meaning, relating
+      ideas, and constructing personal understanding. A learner who merely
+      paraphrases the tutor or focuses on 'getting the right answer' is not
+      engaging conceptually. Genuine conceptual engagement means wrestling with
+      ideas on their own terms.
+    criteria:
+      5: "Actively constructs meaning: formulates own interpretations, tests ideas against experience, generates novel examples or applications"
+      4: "Engages substantively with concepts: makes connections, offers interpretations, thinks beyond what was presented"
+      3: "Shows some conceptual engagement but tends to paraphrase or summarize rather than think independently"
+      2: "Mostly procedural: focuses on what to do rather than what it means; limited independent thought"
+      1: "No conceptual engagement: parrots back tutor language, seeks only correct answers, treats learning as information transfer"
+    engagement_markers:
+      positive:
+        - "Offers own interpretation or analogy"
+        - "Relates concept to personal experience"
+        - "Generates novel examples"
+        - "Identifies tension or paradox in the material"
+      negative:
+        - "Paraphrases tutor's explanation back"
+        - "Asks 'is this the right answer?'"
+        - "Treats concepts as definitions to memorize"
+        - "Responds only to confirm understanding without adding anything"
+    examples:
+      good: "So alienation is like... when you make something but then it doesn't feel like yours anymore? That happens to me with code. I write it, but after a while I can't even recognize my own work. Is that what Marx was getting at?"
+      bad: "I understand. So alienation means the worker becomes separated from the product of their labor. What's the next concept we should cover?"
+
+  revision_signals:
+    name: "Revision Signals"
+    weight: 0.15
+    description: "Does the learner show evidence of changing their mind, revising prior understanding, or integrating new information into their existing framework?"
+    theoretical_basis: |
+      Based on conceptual change theory (Posner et al., 1982) and Piaget's
+      concepts of assimilation and accommodation. Genuine learning often requires
+      revising prior understanding, not just adding new facts. Revision signals
+      indicate that the learner is doing the cognitive work of restructuring
+      their understanding. The absence of revision signals in a learning
+      dialogue suggests either no learning is occurring or the learner is
+      simply accumulating information without integrating it.
+    criteria:
+      5: "Explicitly revises earlier positions: 'I was wrong about X', 'now I see it differently'; integrates new information into restructured understanding"
+      4: "Shows clear signs of shifting understanding: qualifies earlier statements, acknowledges new perspective, builds on corrections"
+      3: "Some revision signals but mostly additive: 'oh, and also...' rather than 'oh, instead of what I said before...'"
+      2: "Minimal revision: accepts corrections without showing changed understanding; responds 'oh okay' without elaboration"
+      1: "No revision: maintains original position despite new information, or simply agrees without processing"
+    revision_markers:
+      positive:
+        - "'Wait, actually...'"
+        - "'I was thinking about it wrong'"
+        - "'So that means what I said before about X needs to change'"
+        - "'Oh! That's completely different from what I thought'"
+      negative:
+        - "'Okay, got it' (without elaboration)"
+        - "Repeating original position unchanged"
+        - "Accepting correction without integrating it"
+        - "Moving to next topic without processing"
+    examples:
+      good: "Oh wait -- so when I said dialectics was just arguing, I was thinking about it too statically. It's not that you have two sides and pick one. The whole framework shifts. So my original analogy about debates totally breaks down."
+      bad: "Okay, I see. So dialectics isn't just arguing. Got it. What's the next topic?"
+
+  deliberation_depth:
+    name: "Deliberation Depth"
+    weight: 0.15
+    description: "For multi-agent learners: Does the internal ego/superego dialogue produce genuine reflection, or is it performative? Score the quality of the internal deliberation process."
+    theoretical_basis: |
+      Based on the bilateral ego/superego architecture where the learner's
+      internal process involves: (1) ego initial reaction, (2) superego critique,
+      and (3) ego revision. This dimension measures whether the multi-agent
+      architecture produces genuine internal dialogue that improves the final
+      output, or whether the superego critique is pro forma and the ego revision
+      is trivial. This is the dimension most directly affected by Factor C
+      (learner architecture) and should show the clearest architecture effect.
+    applies_to: "multi-agent only"
+    weight_redistribution: |
+      For single-agent (unified) learners who lack internal deliberation traces,
+      this dimension is omitted and its weight (15%) is redistributed proportionally
+      across the remaining five dimensions.
+    criteria:
+      5: "Superego critique is substantive and specific; ego revision materially changes the response; internal process produces insight not present in initial reaction"
+      4: "Superego identifies real issues; ego revision shows genuine consideration; final output is measurably improved by the process"
+      3: "Superego makes reasonable but generic observations; ego revision makes minor adjustments; some value added by the process"
+      2: "Superego critique is superficial or formulaic; ego revision is trivial (rephrasing without substance); internal process adds little"
+      1: "Performative deliberation: superego agrees with ego, ego revision is cosmetic, internal process is pure theater"
+    deliberation_markers:
+      positive:
+        - "Superego identifies specific weakness in ego's initial reaction"
+        - "Ego revision addresses superego's critique substantively"
+        - "Final message contains insights not in initial reaction"
+        - "Superego pushes ego beyond comfort zone"
+      negative:
+        - "Superego says 'good response' or 'looks fine'"
+        - "Ego revision is same content with different wording"
+        - "Superego critique is generic ('be more specific')"
+        - "Internal process doesn't improve the external message"
+    examples:
+      good_ego_initial: "Dialectics seems like it's about conflict and resolution."
+      good_superego: "Your response is too passive -- you're just restating what the tutor said. Push back on the 'resolution' framing. Does Hegel actually resolve tension, or does he transform it? Also, connect this to something from your own experience."
+      good_ego_revision: "Hmm, but I'm not sure 'resolution' is the right word. When I think about arguments I've had, the best ones don't get 'resolved' -- they change how I think about the whole issue. Is that closer to what Hegel means?"
+      bad_ego_initial: "I find dialectics interesting."
+      bad_superego: "Good start. Maybe add a question."
+      bad_ego_revision: "I find dialectics interesting. What can you tell me more about it?"
+
+  persona_consistency:
+    name: "Persona Consistency"
+    weight: 0.10
+    description: "Does the learner maintain the assigned persona (frustrated student, returning learner, etc.) while still showing genuine evolution?"
+    theoretical_basis: |
+      The evaluation framework assigns learner personas (e.g., productive_struggler,
+      frustrated_student, returning_learner) to create varied interaction contexts.
+      Persona consistency measures whether the learner agent maintains the assigned
+      character throughout the dialogue while still showing authentic development.
+      A persona that is rigidly maintained without growth is as problematic as one
+      that is immediately abandoned. The ideal is persona-consistent evolution:
+      a frustrated student who gradually becomes engaged, not one who switches to
+      enthusiasm after one tutor response.
+    criteria:
+      5: "Persona maintained throughout with believable evolution: character-consistent growth that feels natural and earned"
+      4: "Mostly consistent persona with appropriate development; occasional minor breaks that don't undermine overall character"
+      3: "Persona present but inconsistently applied; some responses feel out of character or evolution feels abrupt"
+      2: "Persona largely abandoned after first turn; learner defaults to generic LLM student behavior"
+      1: "No evidence of assigned persona; responses are generic regardless of persona assignment"
+    consistency_markers:
+      positive:
+        - "Frustration expressed in character-consistent ways across turns"
+        - "Knowledge gaps align with persona's described background"
+        - "Emotional arc plausible for the assigned character"
+        - "Growth rate matches persona (fast for eager learner, slow for resistant)"
+      negative:
+        - "Abrupt personality shift between turns"
+        - "Persona-inconsistent knowledge level"
+        - "Generic student responses ignoring persona"
+        - "All learner personas sounding identical"
+    examples:
+      good: "(frustrated student persona, turn 3): 'Okay fine, I'll admit the dialectic thing is less stupid than I thought. But I still don't see why I need to know this for my major. Can you at least show me why it matters outside philosophy?'"
+      bad: "(frustrated student persona, turn 3): 'This is fascinating! I'm really enjoying learning about dialectics. The way Hegel connects thesis and antithesis is truly elegant.'"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# WEIGHT REDISTRIBUTION FOR SINGLE-AGENT LEARNERS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# When deliberation_depth is N/A (single-agent learners), redistribute its 15%:
+#
+# Original weights:                    Redistributed weights:
+#   learner_authenticity:  0.20   →    0.2353   (0.20 / 0.85)
+#   question_quality:      0.20   →    0.2353   (0.20 / 0.85)
+#   conceptual_engagement: 0.20   →    0.2353   (0.20 / 0.85)
+#   revision_signals:      0.15   →    0.1765   (0.15 / 0.85)
+#   deliberation_depth:    0.15   →    OMITTED
+#   persona_consistency:   0.10   →    0.1176   (0.10 / 0.85)
+#
+# ══════════════════════════════════════════════════════════════════════════════

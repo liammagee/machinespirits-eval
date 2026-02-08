@@ -23,11 +23,11 @@ Items below require further investigation, tests, or tooling work.
 
 **Note**: This fix affects the Superego "reality testing" claims in #40/#44 — the "hallucinated philosophy content" may have been this bug, not a Superego catch. Verify before crediting Superego.
 
-### [IN PROGRESS] #30 — Design test for multi-agent synergy replication
+### [DONE] #30 — Design and run multi-agent synergy replication
 
 **Feedback**: "In a todo note, say how this test could be done" (re: multi-agent synergy for recognition prompts, p. 33).
 
-**Current state**: A×B interaction did not replicate on Kimi (N=342 factorial F=0.04; N=60 dedicated replication +1.35 pts). Only observed on Nemotron (N=17, +9.2 pts). The Nemotron sample is too small to draw conclusions.
+**Result (2026-02-08)**: Ran 2×2 (Recognition × Architecture) on 4 ego models (Nemotron, DeepSeek V3.2, GLM-4.7, Claude Haiku 4.5) with N=30/cell each, Opus judge. Combined with existing Kimi data (N=350), tested across 5 models with N=826 total. **Verdict: NOISE.** A×B interaction ranges from -5.7 to -0.7 across all 5 models (mean -2.2). The original Nemotron +9.2 on N=17 was sampling error. Recognition main effect replicates robustly across all 5 models (+9.6 to +17.8, mean +12.5). See `notes/todo-axb-synergy-probe-2026-02-08.md` for full results table and run IDs.
 
 #### Concrete Test Design: Multi-Model A×B Synergy Probe
 

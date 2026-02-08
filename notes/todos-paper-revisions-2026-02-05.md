@@ -48,8 +48,12 @@ Duplicate entries removed. `pandoc --citeproc` resolves all 29 citations with ze
 - [ ] **Hardwired Rules Larger Sample** — Currently N=9 per condition (Haiku). Already
       framed as exploratory. Only needed if hardwired rules become a production feature.
 
-- [ ] **Bilateral Transformation Larger Sample** — Currently N=20, single scenario. More
-      scenarios + reps would narrow CIs but direction is clear.
+- [x] **Bilateral Transformation Larger Sample** — DONE: eval-2026-02-07-b6d75e87 (N=118
+      scored, 8 cells × 3 multi-turn scenarios × 5 reps, Kimi K2.5, Opus judge).
+      Results: tutor adaptation +26% (was +36% from N=20), learner growth *reversal*
+      (base 0.242 > recognition 0.210). Paper updated: both papers' Table 14, abstract,
+      contributions, discussion §7.6, limitations, conclusion finding #3 reframed from
+      "bilateral transformation" to "tutor adaptation". N updated to 1,010/14 runs.
 
 ---
 
