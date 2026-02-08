@@ -199,6 +199,8 @@ We implement recognition through a multiagent architecture drawing on Freud's st
 
 ![Ego/Superego Architecture](figures/figure1.png){width=100%}
 
+\clearpage
+
 ![Recognition vs. Baseline Response Flow](figures/figure2.png){width=100%}
 
 ### 4.2 The Superego as Ghost

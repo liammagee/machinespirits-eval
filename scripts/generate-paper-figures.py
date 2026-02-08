@@ -100,7 +100,7 @@ def figure1():
     # Arrows
     # Writing Pad -> Ego
     draw_arrow(ax, (3.0, 4.1), (4.0, 4.1))
-    ax.text(3.5, 4.4, 'Memory\ntraces', ha='center', va='bottom', fontsize=9,
+    ax.text(3.5, 4.4, 'Memory\ntraces', ha='center', va='bottom', fontsize=10,
             fontstyle='italic', color='#555555')
 
     # Ego -> Superego
@@ -172,7 +172,7 @@ def figure2():
         draw_box(ax1, (1.5, y), 3.0, 1.1, label,
                  facecolor=base_color, edgecolor=base_edge, fontsize=12, fontweight='bold')
         ax1.text(6.5, y + 0.55, detail, ha='center', va='center',
-                fontsize=9, fontstyle='italic', color='#555555',
+                fontsize=10, fontstyle='italic', color='#555555',
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#CCCCCC', alpha=0.8))
 
     # Outcome
@@ -203,7 +203,7 @@ def figure2():
         draw_box(ax2, (1.5, y), 3.0, 1.1, label,
                  facecolor=recog_color, edgecolor=recog_edge, fontsize=12, fontweight='bold')
         ax2.text(6.5, y + 0.55, detail, ha='center', va='center',
-                fontsize=9, fontstyle='italic', color='#555555',
+                fontsize=10, fontstyle='italic', color='#555555',
                 bbox=dict(boxstyle='round,pad=0.3', facecolor='white', edgecolor='#CCCCCC', alpha=0.8))
 
     # Outcome
@@ -316,7 +316,7 @@ def figure4():
 
     fig.text(0.12, 0.02, '** Significant synergy effect (p < .05); however, this did not replicate\n'
              '     in the 5-model probe (N=826, mean interaction = −2.2 pts)',
-             fontsize=10, fontstyle='italic', color='#777777')
+             fontsize=11, fontstyle='italic', color='#777777')
 
     fig.tight_layout(rect=[0, 0.1, 1, 1])
     fig.savefig(os.path.join(OUTPUT_DIR, 'figure4.png'))
@@ -330,7 +330,7 @@ def figure5():
     fig, ax = plt.subplots(figsize=(10, 5.5))
 
     factors = ['A: Recognition\nEffect', 'B: Multi-Agent\nEffect', 'C: Learner\nEffect']
-    phil = [13.9, 0.5, 2.1]
+    phil = [15.4, -0.8, 2.1]
     elem = [4.4, 9.9, 0.75]
 
     y = np.arange(len(factors))
@@ -343,13 +343,17 @@ def figure5():
 
     # Score labels
     for bar, val in zip(bars_phil, phil):
-        ax.text(val + 0.3, bar.get_y() + bar.get_height()/2, f'+{val}',
-                va='center', fontsize=12, fontweight='bold', color='#1A5276')
+        label = f'+{val}' if val >= 0 else f'{val}'
+        offset = 0.3 if val >= 0 else -0.3
+        ha = 'left' if val >= 0 else 'right'
+        ax.text(val + offset, bar.get_y() + bar.get_height()/2, label,
+                va='center', ha=ha, fontsize=12, fontweight='bold', color='#1A5276')
     for bar, val in zip(bars_elem, elem):
         ax.text(val + 0.3, bar.get_y() + bar.get_height()/2, f'+{val}',
                 va='center', fontsize=12, fontweight='bold', color='#784212')
 
-    ax.set_xlim(0, 18)
+    ax.set_xlim(-2, 18)
+    ax.axvline(x=0, color='#999999', linewidth=0.8, linestyle='-')
     ax.set_yticks(y)
     ax.set_yticklabels(factors, fontsize=13)
     ax.set_xlabel('Effect Size (points)', fontsize=14)
@@ -362,7 +366,7 @@ def figure5():
     fig.text(0.12, 0.02,
              'Factor dominance inverts: Philosophy favors recognition (A); Elementary favors architecture (B).\n'
              'Elementary recognition partially model-dependent (Kimi shows d ≈ 0.61).',
-             fontsize=10, fontstyle='italic', color='#777777')
+             fontsize=11, fontstyle='italic', color='#777777')
 
     fig.tight_layout(rect=[0, 0.1, 1, 1])
     fig.savefig(os.path.join(OUTPUT_DIR, 'figure5.png'))
