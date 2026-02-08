@@ -176,6 +176,17 @@ try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`);
 } catch (e) { /* Column already exists */ }
 
+// Migration: Add learner-side evaluation columns to evaluation_results
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_overall_score REAL`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_judge_model TEXT`);
+} catch (e) { /* Column already exists */ }
+
 // Migration: Add reproducibility metadata columns to evaluation_runs
 try {
   db.exec(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`);
@@ -247,6 +258,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_interaction_scenario ON interaction_evaluations(scenario_id);
   CREATE INDEX IF NOT EXISTS idx_interaction_created ON interaction_evaluations(created_at);
 `);
+
+// Migration: Add learner-side evaluation columns to interaction_evaluations
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_scores TEXT`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_overall_score REAL`);
+} catch (e) { /* Column already exists */ }
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_judge_model TEXT`);
+} catch (e) { /* Column already exists */ }
 
 /**
  * Generate a unique run ID
@@ -1282,6 +1304,9 @@ export function getInteractionEval(evalId) {
     uniqueOutcomes: JSON.parse(row.unique_outcomes || '[]'),
     judgeOverallScore: row.judge_overall_score,
     judgeEvaluation: JSON.parse(row.judge_evaluation || 'null'),
+    learnerScores: JSON.parse(row.learner_scores || 'null'),
+    learnerOverallScore: row.learner_overall_score,
+    learnerJudgeModel: row.learner_judge_model,
     createdAt: row.created_at,
   };
 }
@@ -1511,12 +1536,99 @@ export function updateResultScores(resultId, evaluation) {
   );
 }
 
+/**
+ * Update learner-side evaluation scores on an evaluation_results row.
+ *
+ * @param {string} resultId - The evaluation result ID
+ * @param {Object} evaluation - Learner evaluation data
+ * @param {Object} evaluation.scores - Per-turn learner scores (JSON-serializable)
+ * @param {number} evaluation.overallScore - Weighted average learner score (0-100)
+ * @param {string} evaluation.judgeModel - Model used for judging
+ */
+export function updateResultLearnerScores(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      learner_scores = ?,
+      learner_overall_score = ?,
+      learner_judge_model = ?
+    WHERE id = ?
+  `);
+
+  stmt.run(
+    JSON.stringify(evaluation.scores),
+    evaluation.overallScore,
+    evaluation.judgeModel || null,
+    resultId
+  );
+}
+
+/**
+ * List all interaction evaluations for a given run ID.
+ *
+ * @param {string} runId - The run ID
+ * @returns {Array} Array of interaction evaluation objects
+ */
+export function listInteractionEvalsByRunId(runId) {
+  const stmt = db.prepare('SELECT * FROM interaction_evaluations WHERE run_id = ? ORDER BY created_at');
+  const rows = stmt.all(runId);
+
+  return rows.map(row => ({
+    evalId: row.id,
+    runId: row.run_id,
+    scenarioId: row.scenario_id,
+    scenarioName: row.scenario_name,
+    evalType: row.eval_type,
+    learnerProfile: row.learner_profile,
+    tutorProfile: row.tutor_profile,
+    personaId: row.persona_id,
+    learnerAgents: JSON.parse(row.learner_agents || '[]'),
+    turnCount: row.turn_count,
+    turns: JSON.parse(row.turns || '[]'),
+    formattedTranscript: row.formatted_transcript,
+    totalTokens: row.total_tokens,
+    finalLearnerState: row.final_learner_state,
+    finalUnderstanding: row.final_understanding,
+    judgeOverallScore: row.judge_overall_score,
+    learnerScores: JSON.parse(row.learner_scores || 'null'),
+    learnerOverallScore: row.learner_overall_score,
+    learnerJudgeModel: row.learner_judge_model,
+    createdAt: row.created_at,
+  }));
+}
+
+/**
+ * Update learner-side evaluation scores for an interaction evaluation.
+ *
+ * @param {string} evalId - The interaction evaluation ID
+ * @param {Object} evaluation - Learner evaluation data
+ * @param {Object} evaluation.scores - Per-turn scores: { turnIndex: { dimension: {score, reasoning} } }
+ * @param {number} evaluation.overallScore - Weighted average learner score (0-100)
+ * @param {string} evaluation.judgeModel - Model used for judging
+ */
+export function updateInteractionLearnerScores(evalId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE interaction_evaluations
+    SET learner_scores = ?,
+        learner_overall_score = ?,
+        learner_judge_model = ?
+    WHERE id = ?
+  `);
+
+  stmt.run(
+    JSON.stringify(evaluation.scores),
+    evaluation.overallScore,
+    evaluation.judgeModel || null,
+    evalId
+  );
+}
+
 export default {
   createRun,
   updateRun,
   storeResult,
   storeRejudgment,
   updateResultScores,
+  updateResultLearnerScores,
   getRun,
   listRuns,
   getResults,
@@ -1534,6 +1646,8 @@ export default {
   // Interaction evaluations
   storeInteractionEval,
   listInteractionEvals,
+  listInteractionEvalsByRunId,
   getInteractionEval,
   getInteractionEvalByRunId,
+  updateInteractionLearnerScores,
 };
