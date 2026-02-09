@@ -27,7 +27,7 @@
     "eval:quick": "node scripts/eval-cli.js quick",
     "eval:test": "node scripts/eval-cli.js test",
     "seed": "node scripts/seed-db.js",
-    "test": "node --test --test-force-exit 'services/__tests__/*.test.js' 'tests/*.test.js'",
+    "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js"
   },
   "keywords": [
