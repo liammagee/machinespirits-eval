@@ -20,31 +20,6 @@ server:
   # Initialization hook
   init: "./server-init.js"
 
-# Client-side configuration
-client:
-  # React components to expose
-  components:
-    - name: MobileEvalDashboard
-      module: "./components/MobileEvalDashboard.tsx"
-      route: "#/m/eval"
-
-    - name: QuickTestView
-      module: "./components/mobile/QuickTestView.tsx"
-
-    - name: RunHistoryView
-      module: "./components/mobile/RunHistoryView.tsx"
-
-    - name: LogsView
-      module: "./components/mobile/LogsView.tsx"
-
-    - name: DocsView
-      module: "./components/mobile/DocsView.tsx"
-
-  # Custom hooks
-  hooks:
-    - name: useEvalData
-      module: "./hooks/useEvalData.ts"
-
 # Data configuration
 data:
   # SQLite database for evaluation results
@@ -55,7 +30,3 @@ data:
 documentation:
   directory: "./docs"
   research: "./docs/research"
-
-# Assets that should be served statically
-assets:
-  static: "./components"
