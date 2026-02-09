@@ -1,0 +1,8 @@
+# Eval Content Package (minimal)
+# Read-only subset of @machinespirits/content-philosophy for evaluation.
+
+name: "@machinespirits/eval-content"
+version: "1.0.0"
+
+content:
+  courses: "./courses"

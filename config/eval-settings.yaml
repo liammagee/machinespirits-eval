@@ -6,9 +6,9 @@
 content:
   # Path to a content package containing courses/ with lecture markdown.
   # Relative paths are resolved from the eval repo root.
-  # Default: bundled test content. Override with EVAL_CONTENT_PATH env var
-  # or change this path to point to a full content package.
-  content_package_path: "./content-test-elementary"
+  # Default: bundled 479 course content. Override with EVAL_CONTENT_PATH env var
+  # to use the full content-philosophy package (e.g., "../machinespirits-content-philosophy").
+  content_package_path: "./content"
 
   # Maximum characters to include from a lecture file.
   # Safety valve for token budget in large lectures.
