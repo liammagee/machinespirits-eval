@@ -13,7 +13,6 @@
   "files": [
     "index.js",
     "server.js",
-    "server-init.js",
     "routes/",
     "services/",
     "config/",

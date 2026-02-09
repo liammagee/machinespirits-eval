@@ -17,9 +17,6 @@ server:
     - path: "/api/eval"
       module: "./routes/evalRoutes.js"
 
-  # Initialization hook
-  init: "./server-init.js"
-
 # Data configuration
 data:
   # SQLite database for evaluation results

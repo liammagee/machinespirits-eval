@@ -97,15 +97,15 @@ import { evaluationRunner, evaluationStore, rubricEvaluator } from '@machinespir
 ## Project Structure
 
 ```
-config/           YAML configuration (tutor agents, scenarios, rubrics, providers)
-prompts/          LLM prompt templates (ego, superego, recognition, placebo)
-scripts/          CLI tools and analysis scripts
-services/         Core evaluation engine, rubric evaluator, learner simulation
-routes/           Express API routes
-components/       React UI components (for web dashboard)
-hooks/            React hooks
-docs/             Documentation and research paper
-tests/            Test suites
+config/                    YAML configuration (tutor agents, scenarios, rubrics, providers)
+prompts/                   LLM prompt templates (ego, superego, recognition, placebo)
+scripts/                   CLI tools and analysis scripts
+services/                  Core evaluation engine, rubric evaluator, learner simulation
+routes/                    Express API routes (optional server mode)
+data/                      SQLite databases (evaluation results, writing pads)
+content-test-elementary/   Bundled test content package
+docs/                      Documentation and research paper
+tests/                     Test suites
 ```
 
 ### Key configuration files
