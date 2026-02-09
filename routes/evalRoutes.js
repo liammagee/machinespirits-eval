@@ -15,21 +15,42 @@ import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as promptRecommendationService from '../services/promptRecommendationService.js';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
-// Import core tutor services from @machinespirits/tutor-core
-import {
-  tutorApiService as tutorApi,
-  tutorConfigLoader,
-  dialogueLogService,
-  monitoringService,
-  aiConfigService,
-  writingPadService
-} from '@machinespirits/tutor-core';
-const { getApiKey, getDefaultModel } = aiConfigService;
-const { clearConscious, getWritingPad } = writingPadService;
+// Lazy-loaded tutor-core services — resolved on first request so this module
+// can be imported without tutor-core installed at parse time.
+// Module-scoped vars are populated by the middleware below; existing handler
+// code references them unchanged.
+let tutorApi, tutorConfigLoader, dialogueLogService, monitoringService;
+let getApiKey, getDefaultModel, clearConscious, getWritingPad;
+let _tutorCoreLoaded = false;
+
+async function ensureTutorCore() {
+  if (_tutorCoreLoaded) return;
+  const mod = await import('@machinespirits/tutor-core');
+  tutorApi = mod.tutorApiService;
+  tutorConfigLoader = mod.tutorConfigLoader;
+  dialogueLogService = mod.dialogueLogService;
+  monitoringService = mod.monitoringService;
+  getApiKey = mod.aiConfigService.getApiKey;
+  getDefaultModel = mod.aiConfigService.getDefaultModel;
+  clearConscious = mod.writingPadService.clearConscious;
+  getWritingPad = mod.writingPadService.getWritingPad;
+  _tutorCoreLoaded = true;
+}
+
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
+
+// Resolve tutor-core on first request
+router.use(async (req, res, next) => {
+  try {
+    await ensureTutorCore();
+    next();
+  } catch (err) {
+    res.status(503).json({ error: 'tutor-core not available', message: err.message });
+  }
+});
 
 // ============================================================================
 // CRASH PROTECTION: Track active evaluation streams

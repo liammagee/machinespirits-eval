@@ -4,9 +4,11 @@
 # content integration with the course content package.
 
 content:
-  # Path to the machinespirits-content-philosophy repo.
+  # Path to a content package containing courses/ with lecture markdown.
   # Relative paths are resolved from the eval repo root.
-  content_package_path: "../machinespirits-content-philosophy"
+  # Default: bundled test content. Override with EVAL_CONTENT_PATH env var
+  # or change this path to point to a full content package.
+  content_package_path: "./content-test-elementary"
 
   # Maximum characters to include from a lecture file.
   # Safety valve for token budget in large lectures.

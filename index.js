@@ -24,8 +24,9 @@ export * as learnerConfigLoader from './services/learnerConfigLoader.js';
 export * as learnerTutorInteractionEngine from './services/learnerTutorInteractionEngine.js';
 export * as promptRecommendationService from './services/promptRecommendationService.js';
 
-// Re-export routes for manual mounting
-export { default as evalRoutes } from './routes/evalRoutes.js';
+// Routes available via '@machinespirits/eval/routes/evalRoutes'
+// Not re-exported here to avoid eagerly loading tutor-core for consumers
+// that only need standalone services (evaluationStore, evalConfigLoader, etc.)
 
 // Package metadata
 export const packageInfo = {
