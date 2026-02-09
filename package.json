@@ -17,7 +17,8 @@
     "services/",
     "config/",
     "scripts/",
-    "docs/"
+    "docs/EVALUATION-VARIABLES.md",
+    "docs/REPLICATION-PLAN.md"
   ],
   "scripts": {
     "start": "STANDALONE=true node server.js",
