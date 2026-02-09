@@ -1,45 +1,10 @@
 # Project Memory for Claude
 
-## Evaluation Methodology
-
-### Inter-Rater Reliability: Compare Apples to Apples
-
-**Critical rule**: Inter-judge reliability MUST compare the **same response** scored by different judges, not different responses from similar conditions.
-
-**Wrong approach** (produces meaningless results):
-- Group by scenario + profile
-- Compare scores from different runs (different responses)
-- This measures response variance, not judge variance
-
-**Correct approach**:
-1. Generate paired data by rejudging same responses:
-   ```bash
-   node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5
-   node scripts/eval-cli.js rejudge <runId> --judge openrouter/moonshotai/kimi-k2.5
-   ```
-2. Match on `suggestions` content (actual response), not just metadata
-3. Only then calculate correlation between judges
-
-The script `scripts/analyze-judge-reliability.js` implements this correctly by hashing `suggestions` content.
-
-### Sample Size Claims
-
-- **Primary evaluations**: Count distinct (scenario × profile) cells with complete data
-- **Total database rows**: May include duplicates, reruns, failed attempts
-- Always report both: "N=435 primary; N=2,700+ total"
-
-### Factor Analysis
-
-When reporting factor effects:
-- Report within-judge comparisons to control for judge calibration differences
-- Different judges have different "grading curves" (up to 23 points apart)
-- Relative comparisons within same judge remain valid
-
 ## Core Architecture
 
 ### Bilateral Ego-Superego Architecture
 
-**CRITICAL**: Both tutor AND learner have dynamic LLM-powered ego-superego architectures:
+Both tutor AND learner have dynamic LLM-powered ego-superego architectures:
 
 **Tutor (services in @machinespirits/tutor-core):**
 - Ego generates initial response
@@ -51,7 +16,7 @@ When reporting factor effects:
 - Superego critiques (is it too superficial? what's being missed?)
 - Ego revision produces final external message
 
-**Key point**: The learner is NOT scripted - it's a full LLM agent with its own deliberation. Multi-turn scenarios in `config/suggestion-scenarios.yaml` define initial prompts, but actual learner responses are LLM-generated via `generateLearnerResponse()`.
+The learner is NOT scripted — it's a full LLM agent with its own deliberation. Multi-turn scenarios in `config/suggestion-scenarios.yaml` define initial prompts, but actual learner responses are LLM-generated via `generateLearnerResponse()`.
 
 **Bilateral transformation measurement** tracks evolution of BOTH sides:
 - `adaptationIndex`: How much tutor approach changes between turns
@@ -59,9 +24,9 @@ When reporting factor effects:
 - `bilateralTransformationIndex`: Combined measure of mutual change
 
 Related services:
-- `services/turnComparisonAnalyzer.js` - Turn-over-turn evolution tracking
-- `services/dialogueTraceAnalyzer.js` - Superego feedback incorporation analysis
-- `services/learnerConfigLoader.js` - Learner personas and profiles
+- `services/turnComparisonAnalyzer.js` — Turn-over-turn evolution tracking
+- `services/dialogueTraceAnalyzer.js` — Superego feedback incorporation analysis
+- `services/learnerConfigLoader.js` — Learner personas and profiles
 
 ## Configuration
 
@@ -69,8 +34,11 @@ Related services:
 
 - Cells 1-4: Base (no recognition theory)
 - Cells 5-8: Recognition theory enabled
-- Cells 9-14: Enhanced prompts (longer, more pedagogical detail)
+- Cells 9-12: Enhanced prompts (longer, more pedagogical detail)
+- Cells 13-14: Hardwired rules (superego rules embedded in ego prompt)
 - Cells 15-18: Placebo control (length-matched, no recognition theory)
+- Cells 19-20: Memory isolation (recognition vs memory disentangling)
+- Cell 21: Dynamic prompt rewriting with Writing Pad
 
 ### Placebo Control Design
 
@@ -80,18 +48,51 @@ Placebo prompts (`prompts/tutor-ego-placebo.md`, `prompts/tutor-superego-placebo
 - Remove all Hegelian theory (mutual recognition, autonomous subject, etc.)
 - Enable 3-way comparison: enhanced vs placebo vs recognition
 
+## Evaluation Methodology
+
+### Inter-Rater Reliability
+
+Inter-judge reliability MUST compare the **same response** scored by different judges, not different responses from similar conditions.
+
+**Correct approach**:
+1. Generate paired data by rejudging same responses:
+   ```bash
+   node scripts/eval-cli.js rejudge <runId> --judge openrouter.gpt
+   ```
+2. Match on `suggestions` content (actual response), not just metadata
+3. Then calculate correlation between judges
+
+The script `scripts/analyze-judge-reliability.js` implements this correctly by hashing `suggestions` content.
+
+### Important Notes
+
+- CLI model format uses **dot notation**: `openrouter.gpt`, NOT `openrouter/gpt`
+- CLI uses `--runs` NOT `--repeats` for runsPerConfig
+- Database: `data/evaluations.db` (SQLite)
+- DB score column: `overall_score` (NOT `base_score`)
+- Always filter by `judge_model` when querying — runs can have rows from multiple judges
+- `evaluate --force` only processes rows with NULL scores
+- `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
+- Rejudge creates new rows by default; `--overwrite` replaces
+
 ## Common Commands
 
 ```bash
 # Run factorial evaluation
-node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --repeats 3
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3
 
-# Rejudge with different model
-node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5
+# Judge with Claude Opus (default)
+node scripts/eval-cli.js evaluate <runId>
+
+# Rejudge with GPT-5.2
+node scripts/eval-cli.js rejudge <runId> --judge openrouter.gpt
 
 # Analyze inter-judge reliability (requires rejudged data)
 node scripts/analyze-judge-reliability.js
 
 # Export results
 node scripts/eval-cli.js export <runId> --format csv
+
+# Run tests
+npm test
 ```

@@ -25,7 +25,7 @@
 
 **Setup**:
 ```bash
-cd /Users/lmagee/Dev/machinespirits-eval
+cd <path-to-machinespirits-eval>
 npm install
 ```
 

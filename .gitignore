@@ -40,6 +40,7 @@ Thumbs.db
 # Test output
 coverage/
 .nyc_output/
+.test-tmp/
 
 # Temp files
 tmp/
@@ -54,3 +55,17 @@ exports/
 
 # Scratchpad
 scratchpad/
+
+# Research working files (local only)
+notes/
+liams-paper/
+docs/research/archive/
+docs/research/eval-2-0/
+docs/research/paper-draft/
+docs/research/*.bak*
+docs/research/*.pdf
+docs/research/*.pptx
+docs/research/transcript-*.md
+docs/research/feedback-*.md
+docs/research/measurement-*.md
+docs/research/SESSION-NOTES-*.md
