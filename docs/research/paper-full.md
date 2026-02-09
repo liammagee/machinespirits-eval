@@ -1,6 +1,6 @@
 ---
 title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
-author: "Liam Magee\\footnote{This sentence is the only one actually authored by Liam Magee in this paper.}"
+author: "Liam Magee"
 date: "February 2026"
 version: "2.1.0"
 bibliography: references.bib
@@ -401,11 +401,13 @@ The primary curriculum content is Hegelian philosophy, drawn from a graduate cou
 We developed test scenarios specifically designed to probe recognition behaviors. The full evaluation uses 15 scenarios from the core scenario set (`config/suggestion-scenarios.yaml`); we highlight those most relevant to recognition below.
 
 **Single-turn scenarios:**
+
 - `recognition_seeking_learner`: Learner offers interpretation, seeks engagement
 - `transformative_moment_setup`: Learner had insight, expects acknowledgment
 - `memory_continuity_single`: Returning learner; tests whether tutor references prior interactions
 
 **Multi-turn scenarios (3-5 dialogue rounds):**
+
 - `mutual_transformation_journey`: Tests whether both tutor and learner positions evolve (avg 4.1 rounds)
 - `misconception_correction_flow`: Learner holds misconception that must be addressed without dismissal (avg 3.2 rounds)
 - `mood_frustration_to_breakthrough`: Learner moves from frustration through confusion to breakthrough; tests honoring struggle (avg 3.0 rounds)
@@ -858,9 +860,9 @@ To test whether recognition quality is maintained over extended interactions, we
 
 | Scenario | N | Avg Rounds | Base | Recognition | Δ | Cohen's d |
 |----------|---|------------|------|-------------|---|-----------|
-| `misconception_correction_flow` | 161 | 3.2 | 50.5 | 71.8 | +21.3 | 0.85 |
-| `mood_frustration_to_breakthrough` | 277 | 3.0 | 57.3 | 70.5 | +13.2 | 0.59 |
-| `mutual_transformation_journey` | 165 | 4.1 | 42.6 | 61.5 | +18.9 | 0.78 |
+| misconception correction | 161 | 3.2 | 50.5 | 71.8 | +21.3 | 0.85 |
+| frustration to breakthrough | 277 | 3.0 | 57.3 | 70.5 | +13.2 | 0.59 |
+| mutual transformation | 165 | 4.1 | 42.6 | 61.5 | +18.9 | 0.78 |
 
 All three multi-turn scenarios show medium-to-large effect sizes (d = 0.59–0.85), with an average improvement of +17.8 points. Recognition quality is maintained over longer interactions. The `misconception_correction_flow` scenario shows the largest effect (d = 0.85), suggesting that recognition-informed tutors handle misconceptions with particular skill—addressing errors without dismissing the learner's reasoning. The `mood_frustration_to_breakthrough` scenario shows the smallest but still meaningful effect (d = 0.59), consistent with the single-turn finding that emotionally complex scenarios benefit from recognition but present more variance.
 

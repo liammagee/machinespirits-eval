@@ -1,4 +1,9 @@
-\usepackage{amssymb}
+\usepackage{unicode-math}
+
+% Shrink monospace font so code spans fit in table columns
+\let\oldtexttt\texttt
+\DeclareRobustCommand{\texttt}[1]{{\ttfamily\small #1}}
+
 \AtBeginDocument{%
-  \author{Liam Magee\\[0.3em]Education Policy, Organization and Leadership\\University of Illinois Urbana-Champaign}%
+  \author{Liam Magee\footnote{This sentence is the only one actually authored by Liam Magee in this paper.}\\[0.3em]Education Policy, Organization and Leadership\\University of Illinois Urbana-Champaign}%
 }
