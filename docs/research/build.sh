@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-# Build PDFs (and optionally PPTX) from paper markdown sources.
+# Build PDF (and optionally PPTX) from paper markdown source.
 # Usage:
-#   ./build.sh              # build both PDFs
-#   ./build.sh full         # build full paper PDF only
-#   ./build.sh short        # build short paper PDF only
+#   ./build.sh              # build full paper PDF
+#   ./build.sh full         # build full paper PDF
 #   ./build.sh slides       # build slides PPTX from full paper (basic pandoc output)
-#   ./build.sh all          # build PDFs + slides
+#   ./build.sh all          # build PDF + slides
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -18,7 +17,6 @@ if [ -z "$VERSION" ]; then
 fi
 
 FULL_PDF="paper-full-v${VERSION}.pdf"
-SHORT_PDF="paper-short-v${VERSION}.pdf"
 SLIDES_PPTX="paper-slides-v${VERSION}.pptx"
 
 PANDOC_OPTS=(
@@ -33,12 +31,6 @@ build_full() {
   echo "  -> ${FULL_PDF}"
 }
 
-build_short() {
-  echo "Building ${SHORT_PDF} ..."
-  pandoc "${PANDOC_OPTS[@]}" paper-short.md -o "${SHORT_PDF}"
-  echo "  -> ${SHORT_PDF}"
-}
-
 build_slides() {
   echo "Building ${SLIDES_PPTX} (basic pandoc conversion) ..."
   pandoc --citeproc paper-full.md -o "${SLIDES_PPTX}"
@@ -46,27 +38,19 @@ build_slides() {
   echo "  Note: For the full presentation, see notes/Drama-Machine-Presentation.pptx"
 }
 
-case "${1:-pdf}" in
-  full)
+case "${1:-full}" in
+  full|pdf|"")
     build_full
-    ;;
-  short)
-    build_short
     ;;
   slides)
     build_slides
     ;;
   all)
     build_full
-    build_short
     build_slides
     ;;
-  pdf|"")
-    build_full
-    build_short
-    ;;
   *)
-    echo "Usage: $0 [full|short|slides|pdf|all]"
+    echo "Usage: $0 [full|slides|all]"
     exit 1
     ;;
 esac

@@ -109,9 +109,10 @@ scripts/                   CLI tools and analysis scripts
 services/                  Core evaluation engine, rubric evaluator, learner simulation
 routes/                    Express API routes (optional server mode)
 data/                      SQLite databases (evaluation results, writing pads)
-content-test-elementary/   Bundled test content package
+content/                   Bundled course content (philosophy 479)
+content-test-elementary/   Bundled test content (elementary 101)
 notebooks/                 Reproducibility notebook (Jupyter)
-docs/                      Research paper and build scripts
+docs/research/             Research paper and build scripts
 tests/                     Test suites
 ```
 
@@ -139,6 +140,8 @@ Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo 
 The full research paper is at `docs/research/paper-full.md`. A Jupyter notebook in `notebooks/` independently reproduces all 17 tables and key statistical findings.
 
 The evaluation dataset (database + dialogue logs, ~19 MB) is available as a [GitHub Release artifact](https://github.com/liammagee/machinespirits-eval/releases/tag/v0.2.0). See `notebooks/README.md` for setup instructions.
+
+To re-run evaluations from scratch (rather than reproducing from saved data), expect ~$65–90 USD in API costs and 48–72 hours wall-clock time. See the CLI help (`node scripts/eval-cli.js --help`) for details on running cells, judging, and exporting results.
 
 ## Running Tests
 
