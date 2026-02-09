@@ -54,6 +54,12 @@ cp .env.example .env
 
 See `.env.example` for all available configuration options.
 
+Optionally, seed the database with sample data to explore the CLI:
+
+```bash
+npm run seed
+```
+
 ## Usage
 
 ### CLI (primary interface)
