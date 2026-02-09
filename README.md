@@ -17,7 +17,7 @@ The system runs automated tutoring dialogues across configurable experimental ce
 ## Prerequisites
 
 - **Node.js** >= 18.0.0
-- **@machinespirits/tutor-core** 0.3.1 (peer dependency)
+- **@machinespirits/tutor-core** >= 0.3.1 (peer dependency)
 - At least one AI provider API key (see below)
 
 ## Installation
@@ -110,7 +110,8 @@ services/                  Core evaluation engine, rubric evaluator, learner sim
 routes/                    Express API routes (optional server mode)
 data/                      SQLite databases (evaluation results, writing pads)
 content-test-elementary/   Bundled test content package
-docs/                      Documentation and research paper
+notebooks/                 Reproducibility notebook (Jupyter)
+docs/                      Research paper and build scripts
 tests/                     Test suites
 ```
 
@@ -133,9 +134,11 @@ The core factorial design crosses three factors:
 
 Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo controls (15-18), memory isolation (19-20), and dynamic prompt rewriting (21).
 
-## Research Paper
+## Reproducing Paper Findings
 
-The full research paper is included at `docs/research/PAPER-FULL-2026-02-04.md`. For replication instructions, see `docs/REPLICATION-PLAN.md`.
+The full research paper is at `docs/research/paper-full.md`. A Jupyter notebook in `notebooks/` independently reproduces all 17 tables and key statistical findings.
+
+The evaluation dataset (database + dialogue logs, ~19 MB) is available as a [GitHub Release artifact](https://github.com/liammagee/machinespirits-eval/releases/tag/v0.2.0). See `notebooks/README.md` for setup instructions.
 
 ## Running Tests
 
