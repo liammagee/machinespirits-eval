@@ -86,6 +86,18 @@ node scripts/eval-cli.js report <run-id>
 node scripts/eval-cli.js export <run-id> --format csv
 ```
 
+### Dry-run mode (no API keys required)
+
+Verify the full pipeline without API calls:
+
+```bash
+node scripts/eval-cli.js quick --dry-run
+node scripts/eval-cli.js run --dry-run --runs 2
+node scripts/eval-cli.js run --dry-run --runs 3 --scenario new_user_first_visit
+```
+
+Dry-run uses deterministic mock data that mirrors real score distributions (recognition cells ~85-92, base cells ~72-82). All downstream steps (DB storage, ANOVA, reporting) work normally on the mock data.
+
 ### Standalone server
 
 ```bash

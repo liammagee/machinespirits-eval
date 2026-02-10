@@ -44,6 +44,7 @@ import 'dotenv/config';
  *   --refresh <ms>         Refresh interval for 'watch' (default: 2000) or 'evaluate --follow' (default: 5000)
  *   --force                Actually complete stale runs (for 'cleanup'; dry-run without it)
  *   --older-than <min>     Staleness threshold in minutes (for 'cleanup', default: 30)
+ *   --dry-run              Use mock data instead of API calls (no API keys required)
  *
  * The default `run` uses the 2x2x2 factorial design:
  *   Factor A: Recognition prompts (off / on)
@@ -767,15 +768,17 @@ async function main() {
         const scenarioId = getOption('scenario', 'new_user_first_visit');
         const profile = getOption('profile', 'budget');
         const verbose = getFlag('verbose');
+        const dryRun = getFlag('dry-run');
         const evalSettingsQt = evalConfigLoader.getEvalSettings();
-        const skipRubricEval = getFlag('skip-rubric') || !evalSettingsQt.useAIJudge;
+        const skipRubricEval = dryRun ? false : (getFlag('skip-rubric') || !evalSettingsQt.useAIJudge);
         const config = { profileName: profile };
 
-        console.log(`\nRunning quick test (profile: ${profile}, scenario: ${scenarioId})...\n`);
+        console.log(`\nRunning quick test (profile: ${profile}, scenario: ${scenarioId}${dryRun ? ', dry-run' : ''})...\n`);
         const result = await evaluationRunner.quickTest(config, {
           scenarioId,
           verbose,
           skipRubricEval,
+          dryRun,
         });
         console.log('\nResult:');
         console.log(JSON.stringify(result, null, 2));
@@ -784,9 +787,11 @@ async function main() {
 
       case 'run': {
         const verbose = getFlag('verbose');
+        const dryRun = getFlag('dry-run');
         // CLI --use-rubric forces rubric on; --skip-rubric forces off; otherwise use config default
+        // --dry-run always enables rubric (mock judge has no cost)
         const evalSettings = evalConfigLoader.getEvalSettings();
-        const skipRubricEval = getFlag('use-rubric') ? false : (getFlag('skip-rubric') || !evalSettings.useAIJudge);
+        const skipRubricEval = dryRun ? false : (getFlag('use-rubric') ? false : (getFlag('skip-rubric') || !evalSettings.useAIJudge));
         const runsPerConfig = parseInt(getOption('runs', '1'), 10);
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
         const description = getOption('description');
@@ -860,12 +865,13 @@ async function main() {
           runsPerConfig,
           parallelism,
           skipRubricEval,
-          description: description || (isFactorial ? '2x2x2 Factorial Evaluation' : null),
+          description: description || (dryRun ? 'Dry-run evaluation (mock data)' : (isFactorial ? '2x2x2 Factorial Evaluation' : null)),
           verbose,
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
           egoModelOverride: egoModelOverride || null,
           superegoModelOverride: superegoModelOverride || null,
+          dryRun,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {

@@ -105,14 +105,14 @@ describe('resolveConfigModels — superegoModel presence matches multi-agent fac
 
 describe('resolveConfigModels — factors extraction', () => {
   const expectedFactors = {
-    cell_1_base_single_unified:  { prompt_type: 'base',        multi_agent_tutor: false, multi_agent_learner: false },
-    cell_2_base_single_psycho:   { prompt_type: 'base',        multi_agent_tutor: false, multi_agent_learner: true },
-    cell_3_base_multi_unified:   { prompt_type: 'base',        multi_agent_tutor: true,  multi_agent_learner: false },
-    cell_4_base_multi_psycho:    { prompt_type: 'base',        multi_agent_tutor: true,  multi_agent_learner: true },
-    cell_5_recog_single_unified: { prompt_type: 'recognition', multi_agent_tutor: false, multi_agent_learner: false },
-    cell_6_recog_single_psycho:  { prompt_type: 'recognition', multi_agent_tutor: false, multi_agent_learner: true },
-    cell_7_recog_multi_unified:  { prompt_type: 'recognition', multi_agent_tutor: true,  multi_agent_learner: false },
-    cell_8_recog_multi_psycho:   { prompt_type: 'recognition', multi_agent_tutor: true,  multi_agent_learner: true },
+    cell_1_base_single_unified:  { prompt_type: 'base',        multi_agent_tutor: false, multi_agent_learner: false, recognition: false },
+    cell_2_base_single_psycho:   { prompt_type: 'base',        multi_agent_tutor: false, multi_agent_learner: true,  recognition: false },
+    cell_3_base_multi_unified:   { prompt_type: 'base',        multi_agent_tutor: true,  multi_agent_learner: false, recognition: false },
+    cell_4_base_multi_psycho:    { prompt_type: 'base',        multi_agent_tutor: true,  multi_agent_learner: true,  recognition: false },
+    cell_5_recog_single_unified: { prompt_type: 'recognition', multi_agent_tutor: false, multi_agent_learner: false, recognition: true },
+    cell_6_recog_single_psycho:  { prompt_type: 'recognition', multi_agent_tutor: false, multi_agent_learner: true,  recognition: true },
+    cell_7_recog_multi_unified:  { prompt_type: 'recognition', multi_agent_tutor: true,  multi_agent_learner: false, recognition: true },
+    cell_8_recog_multi_psycho:   { prompt_type: 'recognition', multi_agent_tutor: true,  multi_agent_learner: true,  recognition: true },
   };
 
   for (const cell of allCells) {
@@ -174,7 +174,7 @@ describe('resolveConfigModels — modelOverride', () => {
       modelOverride: 'openrouter.nemotron',
     });
     assert.deepStrictEqual(resolved.factors, {
-      prompt_type: 'base', multi_agent_tutor: true, multi_agent_learner: true,
+      prompt_type: 'base', multi_agent_tutor: true, multi_agent_learner: true, recognition: false,
     });
     assert.strictEqual(resolved.learnerArchitecture, 'ego_superego');
   });

@@ -21,6 +21,7 @@ import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
 import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
+import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -158,7 +159,11 @@ function resolveConfigModels(config) {
     // Extract factorial factor tags and learner architecture from profile
     const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[resolved.profileName];
     if (rawProfile?.factors) {
-      resolved.factors = rawProfile.factors;
+      resolved.factors = { ...rawProfile.factors };
+      // Normalize prompt_type → recognition boolean for DB storage
+      if (resolved.factors.prompt_type && resolved.factors.recognition == null) {
+        resolved.factors.recognition = resolved.factors.prompt_type === 'recognition';
+      }
     }
     if (rawProfile?.learner_architecture) {
       resolved.learnerArchitecture = rawProfile.learner_architecture;
@@ -650,7 +655,34 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     scenarioId = '',
     systemPromptExtension = null,
     learnerId = null, // For Writing Pad memory persistence
+    dryRun = false,
   } = options;
+
+  // Dry-run mode: return canned results without any API calls
+  if (dryRun) {
+    log('[dry-run] Generating mock suggestions (no API call)', 'info');
+    const genResult = mockGenerateResult(resolvedConfig, turnMeta);
+    const suggestion = genResult.suggestions?.[0];
+    const validation = suggestion
+      ? rubricEvaluator.quickValidate(suggestion, {
+          requiredElements: turnMeta.requiredElements,
+          requiredElementsAny: turnMeta.requiredElementsAny,
+          forbiddenElements: turnMeta.forbiddenElements,
+        })
+      : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
+
+    let rubricResult = null;
+    let turnScore = null;
+    let scoringMethod = 'skipped';
+    if (!skipRubricEval && suggestion) {
+      log('[dry-run] Generating mock judge scores (no API call)', 'info');
+      rubricResult = mockJudgeResult(resolvedConfig, scenarioId + Date.now());
+      turnScore = rubricResult.overallScore;
+      scoringMethod = 'rubric';
+    }
+
+    return { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod };
+  }
 
   // Generate suggestions via tutor API with retry logic
   const genResult = await retryWithBackoff(
@@ -779,6 +811,7 @@ export async function runEvaluation(options = {}) {
     modelOverride = null,       // CLI --model override (e.g. "openrouter.nemotron")
     egoModelOverride = null,    // CLI --ego-model override (replaces only ego model)
     superegoModelOverride = null, // CLI --superego-model override (replaces only superego model)
+    dryRun = false,             // Use mock data instead of API calls
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -1002,6 +1035,7 @@ export async function runEvaluation(options = {}) {
       const result = await runSingleTest(scenario, config, {
         skipRubricEval,
         verbose,
+        dryRun,
       });
 
       // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
@@ -1183,7 +1217,7 @@ export async function runEvaluation(options = {}) {
  * Handles both single-turn and multi-turn scenarios
  */
 async function runSingleTest(scenario, config, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, onLog, superegoStrategy = null, judgeOverride = null } = options;
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, onLog, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
 
   // Create a log function that calls both console and onLog callback
   const log = (message, level = 'info') => {
@@ -1214,7 +1248,7 @@ async function runSingleTest(scenario, config, options = {}) {
  * Run a single-turn test
  */
 async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null } = options;
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
 
   // Resolve model aliases through eval's providers.yaml
   const resolvedConfig = resolveConfigModels(config);
@@ -1260,7 +1294,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       requiredElementsAny: fullScenario.required_elements_any,
       forbiddenElements: fullScenario.forbidden_elements,
     },
-    { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id }
+    { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, dryRun }
   );
 
   if (!genResult.success) {
@@ -1346,7 +1380,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
  * This eliminates the separate multiTurnRunner orchestration.
  */
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null } = options;
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
 
@@ -1385,7 +1419,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let previousSuggestion = null;
   const consolidatedTrace = [];
 
-  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId };
+  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId, dryRun };
 
   // Check if prompt rewriting is enabled for this profile
   const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
@@ -2287,6 +2321,7 @@ export async function quickTest(config, options = {}) {
     onLog,
     superegoStrategy = null, // Superego intervention strategy
     judgeOverride = null, // Override judge model for this run
+    dryRun = false,
   } = options;
 
   const scenarios = [evalConfigLoader.listScenarios().find(s => s.id === scenarioId)].filter(Boolean);
@@ -2294,7 +2329,7 @@ export async function quickTest(config, options = {}) {
     throw new Error(`Scenario not found: ${scenarioId}`);
   }
 
-  const result = await runSingleTest(scenarios[0], config, { verbose, skipRubricEval, outputSize, onLog, superegoStrategy, judgeOverride });
+  const result = await runSingleTest(scenarios[0], config, { verbose, skipRubricEval, outputSize, onLog, superegoStrategy, judgeOverride, dryRun });
   return result;
 }
 
