@@ -274,51 +274,58 @@ def figure3():
 # ── Figure 4: Multi-Agent Synergy by Prompt Type ─────────────────────────────
 
 def figure4():
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    """Interaction plot emphasizing the synergy effect (slopes) rather than
+    absolute score levels.  Recognition prompts gain +9.2 from multi-agent;
+    Enhanced prompts gain +0.0.  An interaction plot makes this visually
+    obvious, while the old horizontal-bar version made recognition look worse
+    than enhanced because absolute scores dominated the visual."""
 
-    categories = ['Recognition\nPrompts', 'Enhanced\nPrompts']
-    single = [72.2, 83.3]
-    multi = [81.5, 83.3]
-    deltas = ['+9.2**', '+0.0']
+    fig, ax = plt.subplots(figsize=(9, 5.5))
 
-    y = np.arange(len(categories))
-    bar_height = 0.3
+    # Data — preliminary N=36 Nemotron analysis
+    x = [0, 1]
+    x_labels = ['Single-Agent', 'Multi-Agent']
+    recog = [72.2, 81.5]     # +9.2
+    enhanced = [83.3, 83.3]  # +0.0
 
-    bars1 = ax.barh(y + bar_height/2, single, bar_height, color='#85C1E9',
-                    edgecolor='#2471A3', linewidth=1.5, label='Single-Agent')
-    bars2 = ax.barh(y - bar_height/2, multi, bar_height, color='#82E0AA',
-                    edgecolor='#1E8449', linewidth=1.5, label='Multi-Agent')
+    # Lines
+    ax.plot(x, recog, 'o-', color='#27AE60', linewidth=2.5, markersize=10,
+            label='Recognition Prompts', zorder=3)
+    ax.plot(x, enhanced, 's--', color='#2471A3', linewidth=2.5, markersize=10,
+            label='Enhanced Prompts', zorder=3)
 
-    # Score labels
-    for bar, val in zip(bars1, single):
-        ax.text(val + 0.5, bar.get_y() + bar.get_height()/2, f'{val}',
-                va='center', fontsize=12, fontweight='bold')
-    for bar, val in zip(bars2, multi):
-        ax.text(val + 0.5, bar.get_y() + bar.get_height()/2, f'{val}',
-                va='center', fontsize=12, fontweight='bold')
+    # Score labels offset above/below points
+    for xi, yr, ye in zip(x, recog, enhanced):
+        ax.text(xi, yr - 2.2, f'{yr}', ha='center', va='top', fontsize=12,
+                fontweight='bold', color='#1E8449')
+        ax.text(xi, ye + 1.5, f'{ye}', ha='center', va='bottom', fontsize=12,
+                fontweight='bold', color='#1A5276')
 
-    # Delta labels
-    for i, delta in enumerate(deltas):
-        ax.text(max(single[i], multi[i]) + 4.5, y[i],
-                f'Δ {delta}', ha='center', va='center',
-                fontsize=12, fontweight='bold',
-                color='#C0392B' if '**' in delta else '#555555')
+    # Delta annotations on right side
+    ax.annotate(r'$\Delta$ +9.2 (p < .05)',
+                xy=(1.02, np.mean(recog)), xycoords=('axes fraction', 'data'),
+                fontsize=12, fontweight='bold', color='#C0392B', va='center')
+    ax.annotate(r'$\Delta$ +0.0 (n.s.)',
+                xy=(1.02, np.mean(enhanced)), xycoords=('axes fraction', 'data'),
+                fontsize=12, fontweight='bold', color='#888888', va='center')
 
-    ax.set_xlim(0, 100)
-    ax.set_yticks(y)
-    ax.set_yticklabels(categories, fontsize=13)
-    ax.set_xlabel('Mean Score', fontsize=14)
-    ax.set_title('Figure 4: Multi-Agent Synergy by Prompt Type\n(Preliminary N=36)',
+    ax.set_xlim(-0.3, 1.3)
+    ax.set_ylim(65, 92)
+    ax.set_xticks(x)
+    ax.set_xticklabels(x_labels, fontsize=13)
+    ax.set_ylabel('Mean Score', fontsize=14)
+    ax.set_title('Figure 4: Multi-Agent Synergy by Prompt Type\n(Preliminary N=36, Nemotron)',
                  fontsize=15, fontweight='bold')
-    ax.legend(loc='lower right', fontsize=12, framealpha=0.9)
+    ax.legend(loc='upper left', fontsize=12, framealpha=0.9)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
-    fig.text(0.12, 0.02, '** Significant synergy effect (p < .05); however, this did not replicate\n'
-             '     in the 5-model probe (N=826, mean interaction = −2.2 pts)',
+    fig.text(0.10, 0.02,
+             'Synergy effect (+9.2) did not replicate in the 5-model probe '
+             '(N=655, mean interaction = −1.8 pts).',
              fontsize=11, fontstyle='italic', color='#777777')
 
-    fig.tight_layout(rect=[0, 0.1, 1, 1])
+    fig.tight_layout(rect=[0, 0.08, 0.88, 1])
     fig.savefig(os.path.join(OUTPUT_DIR, 'figure4.png'))
     plt.close(fig)
     print('  figure4.png')
@@ -374,64 +381,127 @@ def figure5():
     print('  figure5.png')
 
 
-# ── Figure 6: Emergent Theme Word Clouds ──────────────────────────────────────
+# ── Figure 6: Tutor Language Word Clouds ──────────────────────────────────────
 
 def figure6():
+    """Word clouds from actual tutor transcript text (N=350 factorial responses).
+    Shows the raw linguistic differences between base and recognition conditions,
+    complementing the AI theme coding in Tables 17b–d."""
+
     try:
         from wordcloud import WordCloud
     except ImportError:
         print('  figure6.png SKIPPED (pip install wordcloud)')
         return
 
+    import sqlite3
     import json
-    data_path = os.path.join(os.path.dirname(__file__), '..', 'exports',
-                             'qualitative-ai-claude-code-sample300-2026-02-08.json')
-    if not os.path.exists(data_path):
-        print('  figure6.png SKIPPED (discovery data not found)')
+    import re
+
+    db_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'evaluations.db')
+    if not os.path.exists(db_path):
+        print('  figure6.png SKIPPED (database not found)')
         return
 
-    with open(data_path) as f:
-        data = json.load(f)
+    conn = sqlite3.connect(db_path)
+    rows = conn.execute("""
+        SELECT profile_name, suggestions
+        FROM evaluation_results
+        WHERE run_id IN ('eval-2026-02-03-f5d4dd93', 'eval-2026-02-06-a933d745')
+          AND overall_score IS NOT NULL
+          AND judge_model LIKE '%claude%'
+    """).fetchall()
+    conn.close()
 
-    themes = data['discovery']['analysis']['themeFrequency']
+    # Extract message text from JSON suggestions
+    base_texts = []
+    recog_texts = []
+    for profile, suggestions_json in rows:
+        try:
+            suggestions = json.loads(suggestions_json)
+            text_parts = []
+            for s in suggestions:
+                if isinstance(s, dict):
+                    for key in ('message', 'title', 'reason'):
+                        if key in s and s[key]:
+                            text_parts.append(str(s[key]))
+            text = ' '.join(text_parts)
+        except (json.JSONDecodeError, TypeError):
+            text = str(suggestions_json) if suggestions_json else ''
 
-    base_freq = {}
-    recog_freq = {}
-    for key, t in themes.items():
-        label = t['label']
-        b = t.get('base', 0)
-        r = t.get('recognition', 0)
-        if b + r >= 3:
-            if b > 0:
-                base_freq[label] = b
-            if r > 0:
-                recog_freq[label] = r
+        if 'recog' in profile:
+            recog_texts.append(text)
+        else:
+            base_texts.append(text)
+
+    base_corpus = ' '.join(base_texts)
+    recog_corpus = ' '.join(recog_texts)
+
+    # Pedagogical stop words — remove generic terms common to both conditions
+    # so the clouds highlight what *differs*
+    stop_words = {
+        # Standard English stop words
+        'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+        'should', 'may', 'might', 'shall', 'can', 'need', 'dare', 'ought',
+        'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
+        'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
+        'between', 'out', 'off', 'over', 'under', 'again', 'further', 'then',
+        'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each',
+        'every', 'both', 'few', 'more', 'most', 'other', 'some', 'such', 'no',
+        'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very',
+        'just', 'because', 'but', 'and', 'or', 'if', 'while', 'about', 'up',
+        'that', 'this', 'these', 'those', 'it', 'its', 'he', 'she', 'they',
+        'them', 'their', 'we', 'our', 'you', 'your', 'i', 'me', 'my', 'also',
+        'which', 'who', 'whom', 'what', 'any', 'much', 'many', 'well',
+        'still', 'even', 'back', 'get', 'go', 'make', 'like', 'take',
+        'one', 'two', 'first', 'new', 'way', 'us',
+        # Common tutoring terms shared by both conditions
+        'lecture', 'student', 'course', 'content', 'topic', 'material',
+        'next', 'current', 'help', 'suggest', 'review', 'start', 'continue',
+        'see', 'know', 'think', 'let', 'look', 'want', 'come',
+    }
+
+    def text_to_freq(corpus, stop_words):
+        words = re.findall(r'[a-z]{3,}', corpus.lower())
+        freq = {}
+        for w in words:
+            if w not in stop_words:
+                freq[w] = freq.get(w, 0) + 1
+        return freq
+
+    base_freq = text_to_freq(base_corpus, stop_words)
+    recog_freq = text_to_freq(recog_corpus, stop_words)
+
+    if not base_freq or not recog_freq:
+        print('  figure6.png SKIPPED (no text extracted)')
+        return
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
 
     wc_base = WordCloud(
         width=1200, height=800, background_color='white', colormap='OrRd',
-        max_words=30, max_font_size=120, min_font_size=14,
+        max_words=50, max_font_size=120, min_font_size=14,
         prefer_horizontal=0.85, relative_scaling=0.5, margin=10,
         collocations=False,
     ).generate_from_frequencies(base_freq)
 
     wc_recog = WordCloud(
         width=1200, height=800, background_color='white', colormap='YlGn',
-        max_words=30, max_font_size=120, min_font_size=14,
+        max_words=50, max_font_size=120, min_font_size=14,
         prefer_horizontal=0.85, relative_scaling=0.5, margin=10,
         collocations=False,
     ).generate_from_frequencies(recog_freq)
 
     ax1.imshow(wc_base, interpolation='bilinear')
-    ax1.set_title('Base Condition', fontsize=18, fontweight='bold', pad=15)
+    ax1.set_title('Base Condition (N=172)', fontsize=18, fontweight='bold', pad=15)
     ax1.axis('off')
 
     ax2.imshow(wc_recog, interpolation='bilinear')
-    ax2.set_title('Recognition Condition', fontsize=18, fontweight='bold', pad=15)
+    ax2.set_title('Recognition Condition (N=178)', fontsize=18, fontweight='bold', pad=15)
     ax2.axis('off')
 
-    fig.suptitle('Figure 6: Emergent Theme Word Clouds (AI Discovery, N=300)',
+    fig.suptitle('Figure 6: Tutor Language Word Clouds (Factorial, N=350)',
                  fontsize=16, fontweight='bold', y=0.98)
     fig.tight_layout(rect=[0, 0.02, 1, 0.94])
     fig.savefig(os.path.join(OUTPUT_DIR, 'figure6.png'))
