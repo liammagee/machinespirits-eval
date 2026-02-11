@@ -2,7 +2,7 @@
 title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "February 2026"
-version: "2.1.2"
+version: "2.2.0"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -56,6 +56,8 @@ The contributions of this paper are:
 - A post-hoc active control (N=118) showing that generic pedagogical elaboration provides partial benefit (~+9 pts above same-model base) but recognition gains are substantially larger (~+15 pts), supporting recognition theory's specific contribution beyond prompt length
 - Evidence from a three-way comparison (N=36) consistent with recognition dominance, showing recognition outperforms enhanced prompting by +8.7 points
 - Bilateral transformation metrics (N=118, three multi-turn scenarios) demonstrating that recognition produces measurable tutor-side adaptation (+26%), though learner-side growth does not increase, qualifying the "mutual" transformation claim
+- Post-hoc modulation analysis (N=350) showing that multi-agent architecture does not increase behavioral range ($d = 0.05$), while recognition produces calibration—uniformly high performance across all dimensions (dimension variance $d = -1.00$)—reframing the Drama Machine's contribution from productive irresolution to *phronesis*
+- A synthetic learning outcome index (N=118) confirming that recognition-enhanced tutoring produces modest gains in simulated conceptual growth (+3.8 pts, d=0.32), with all conditions showing substantial learning arcs (15–21 pts first-to-final turn), though these remain proxies for actual learning pending human studies
 - Analysis of how recognition effects vary across content domains and scenario difficulty
 - Evidence that multi-agent architecture serves as critical error correction for domain transfer, with its synergy with recognition prompts remaining model-dependent
 - A hardwired rules ablation (N=72) demonstrating that encoding the Superego's most common critique patterns as static rules fails to replicate its benefit, supporting a *phronesis* interpretation where the Superego's value lies in contextual judgment rather than rule enforcement
@@ -888,7 +890,7 @@ Additionally, a composite **Transformation Quality** score (0–100) is computed
 | Learner Growth Index (0–1) | 0.242 | 0.210 | −0.032 |
 | Bilateral Transformation Index (0–1) | 0.287 | 0.314 | +0.027 |
 
-*Data from three multi-turn scenarios (`misconception_correction_flow`, `mood_frustration_to_breakthrough`, `mutual_transformation_journey`), N=118 scored dialogues across all 8 factorial cells (eval-2026-02-07-b6d75e87).*
+*Data from three multi-turn scenarios (misconception correction flow, mood frustration to breakthrough, mutual transformation journey), N=118 scored dialogues across all 8 factorial cells (eval-2026-02-07-b6d75e87).*
 
 **Table 14a: Tutor Adaptation Index by Scenario**
 
@@ -903,6 +905,45 @@ The tutor adaptation index confirms that recognition-prompted tutors measurably 
 **Learner growth reversal**: Contrary to the expectation that recognition would produce greater learner-side evolution, the learner growth index is slightly *lower* under recognition (0.210 vs 0.242). This pattern, which also appeared in a larger post-fix sample (N=359), suggests that recognition's benefit manifests as tutor-side responsiveness rather than observable learner message complexity. One interpretation: recognition tutors are more effective at meeting learners where they are, reducing the visible "struggle" markers (revision language, escalating complexity) that the growth index captures. The bilateral transformation claim is thus better characterized as *tutor adaptation* than *mutual transformation* in the strict sense. A symmetric learner-side evaluation (Section 6.12) provides a more direct measure of learner quality and reveals a different pattern: the multi-agent learner architecture significantly hurts learner quality, but recognition partially rescues it.
 
 Multi-agent architecture also shows a modest advantage: multi-agent tutors adapt more than single-agent (0.411 vs 0.339 pooled across conditions), consistent with the superego providing feedback that drives revision between turns.
+
+#### 6.11.1 Modulation and Behavioral Range
+
+The Drama Machine framework (Section 2.3) predicts that internal ego-superego tension produces *modulated* behavior—dynamic variation in register, approach, and intensity. To test this empirically, we computed post-hoc modulation metrics across the N=350 factorial dataset: response length variability (coefficient of variation), vocabulary richness (type-token ratio), within-scenario score variability, and dimension score variance (a proxy for behavioral range across the 14 rubric dimensions).
+
+**Table 14e: Modulation Metrics by Condition (N=350 Factorial)**
+
+| Metric | Base Single | Base Multi | Recog Single | Recog Multi |
+|--------|-------------|------------|--------------|-------------|
+| Response length (chars) | 499 | 526 | 771 | 763 |
+| Type-token ratio | 0.826 | 0.832 | 0.807 | 0.804 |
+| Dimension score SD (14-dim) | 0.807 | 0.821 | 0.575 | 0.585 |
+| Within-scenario score CV | 0.090 | 0.112 | 0.087 | 0.066 |
+| Ego-superego rounds | — | 2.05 | — | 2.62 |
+
+Two findings are notable. First, **multi-agent architecture does not increase behavioral range**. Across all modulation metrics, single-agent and multi-agent conditions show virtually identical variability (TTR: d=0.01; dimension variance: d=0.05; length CV: d=0.01). The Superego's value, as established in Sections 6.3 and 6.7, is quality improvement and error correction—not output diversification.
+
+Second, **recognition is the modulation driver, but via calibration rather than oscillation**. Recognition responses show dramatically lower dimension score variance (SD=0.58 vs 0.81, $d = -1.00$, $F = 87.69$, $p < .001$)—meaning recognition tutors perform *uniformly well* across all 14 rubric dimensions rather than excelling on some while neglecting others. This is the opposite of what a naïve reading of the Drama Machine would predict: internal tension does not produce more *varied* output, but more *calibrated* output. Recognition tutors also negotiate longer with their Superego (2.62 vs 2.05 rounds), suggesting more productive internal tension even as the output becomes more consistent.
+
+This reframes the Drama Machine's contribution to pedagogy: the value of internal dialogue is *phronesis*—contextual practical wisdom that calibrates response quality across multiple dimensions simultaneously—rather than the productive irresolution that the framework emphasizes for narrative contexts. The Superego ensures the Ego doesn't neglect any dimension, raising the floor rather than the ceiling.
+
+#### 6.11.2 Synthetic Learning Outcomes
+
+The evaluation rubric (Section 5.1) measures tutor suggestion quality, not learner learning. To provide a proxy measure of synthetic learning outcomes, we constructed a composite index from the three learner rubric dimensions most directly related to conceptual growth: revision signals (35% weight), question quality (30%), and conceptual engagement (35%). This composite was computed for each of the N=118 bilateral dialogues, where per-turn learner scores were available.
+
+**Table 14f: Synthetic Learning Outcome Index (0–100 scale)**
+
+| Condition | N | Avg Composite | Final Turn | Learning Arc |
+|-----------|---|---------------|------------|--------------|
+| Base, single-agent | 28 | 69.9 | 77.0 | +20.0 |
+| Base, multi-agent | 30 | 68.4 | 75.7 | +15.7 |
+| Recognition, single-agent | 30 | 72.1 | 79.3 | +20.6 |
+| Recognition, multi-agent | 30 | 73.8 | 80.9 | +18.8 |
+
+All conditions show substantial learning arcs (15.7–20.6 points improvement from first to final turn), confirming that the multi-turn scenarios successfully scaffold synthetic conceptual growth. Recognition produces a modest advantage on the composite learning outcome index (+3.8 pts, d=0.32, F=3.02), consistent with the tutor-side findings though smaller in magnitude. Architecture has essentially no effect on learning outcomes (d=0.01).
+
+A positive A×B interaction (+3.2 pts) suggests recognition benefits multi-agent learners slightly more than single-agent learners on the composite outcome—a mirror of the tutor-side factorial finding where recognition helps single-agent learners more. This cross-side asymmetry is consistent with the learner superego paradox (Section 6.12): the multi-agent learner's internal critic suppresses authenticity, but recognition-prompted tutors partially compensate by creating more space for genuine engagement.
+
+**Important caveat**: These are *synthetic* learning outcomes—scores assigned by an AI judge to LLM-generated learner turns. They measure the *quality of simulated learning behavior*, not actual knowledge acquisition or conceptual change. Validating whether recognition-enhanced tutoring produces genuine learning gains requires studies with real learners (Section 8.2).
 
 ### 6.12 Learner-Side Evaluation: The Superego Paradox
 
@@ -1089,7 +1130,9 @@ The theme landscape is almost perfectly bimodal: of the 10 themes with frequency
 
 The stance and orientation distributions are even more sharply separated than the emergent themes. Base responses are 84% directive and 93% transmissive; recognition responses are 60% facilitative/dialogical/collaborative and 84% dialectical/constructivist. The AI coder independently discovers the theoretical distinction the recognition framework was designed to produce: the shift from treating learning as transmission (tutor possesses knowledge, learner receives it) to treating it as dialectical encounter (both parties transform through engagement).
 
-![Emergent Theme Word Clouds](figures/figure6.png){width=100%}
+![Tutor Language Word Clouds](figures/figure6.png){width=100%}
+
+**Figure 6** shows word frequency clouds generated directly from tutor response text in the N=350 factorial dataset (base: N=172; recognition: N=178), with common English stop words and shared tutoring terms removed. Because both conditions discuss the same Hegelian philosophy content, the vocabularies substantially overlap. Nevertheless, condition-specific emphasis is visible: recognition responses foreground relational and process terms ("recognition," "tension," "transformation," "struggle," "explore," "practice"), while base responses foreground content-delivery terms ("concept," "dialectical," "servant," "section," "quiz"). The AI-assisted theme discovery (Tables 17b–d) provides the interpretive layer for these raw differences.
 
 **Methodological note**: AI-assisted theme discovery risks circular validation if the coding model recognizes the prompt engineering that produced the responses. Two factors mitigate this concern: (1) the coder received only the tutor's suggestion text, not the system prompt or condition label; and (2) the near-perfect theme separation itself is the finding—whether or not the coder "recognizes" the framework, the fact that emergent themes partition cleanly by condition demonstrates that the two conditions produce qualitatively distinct pedagogical texts, not merely quantitatively different scores.
 
@@ -1349,6 +1392,8 @@ For practical deployment, this suggests multi-agent architecture is most valuabl
 2. Prompt templates contain domain-specific examples that may leak across deployments
 3. Domain-specific accuracy is critical
 
+The modulation analysis (Section 6.11.1) extends this reinterpretation. The Drama Machine framework predicts that internal ego-superego tension produces *modulated* behavior—dynamic variation in register, approach, and intensity. Post-hoc analysis of the N=350 factorial data reveals that the Superego does not increase behavioral range (multi-agent dimension score variance is virtually identical to single-agent, $d = 0.05$). Instead, **recognition is the modulation driver, operating through calibration rather than oscillation**: recognition responses show dramatically lower dimension variance ($d = -1.00$), meaning recognition tutors perform uniformly well across all 14 rubric dimensions rather than excelling on some while neglecting others. The Superego's contribution is *phronesis*—contextual practical wisdom that calibrates quality—rather than the productive irresolution the Drama Machine emphasizes for narrative contexts. Recognition tutors do negotiate longer with their Superego (2.62 vs 2.05 rounds), suggesting productive tension occurs internally even as the output becomes more consistent.
+
 ### 7.5 Factor C: The Learner Superego Paradox
 
 The learner architecture factor (single-agent vs multi-agent learner) showed the smallest and least significant effect in the tutor-side factorial analysis (-1.7 pts, F=2.56, p>.10). The symmetric learner-side evaluation (Section 6.12) reveals why: the multi-agent learner architecture does not merely fail to help—it actively *hurts* learner quality ($d = 1.43$, $F(1,114) = 68.28$, $p < .001$, $\eta^2 = .342$). This is the largest effect in the entire study and inverts the intuition that motivated the architecture.
@@ -1446,6 +1491,8 @@ These findings carry important limitations. The thematic coding is regex-based r
 **Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17, Section 6.4) but failed to replicate on Kimi in both the larger factorial (N=350) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models and domains.
 
 **Domain sampling and content isolation**: We tested two domains (philosophy, elementary math). A follow-up run (eval-2026-02-05-e87f452d) tested elementary content with Kimi K2.5, partially addressing the model confound in the original Nemotron-only elementary results. The recognition main effect replicated (+9.9 pts, d $\approx$ 0.61), though the factor inversion pattern from Table 8 (architecture dominance on elementary) was partly model-dependent: Kimi showed recognition dominance on elementary content, while Nemotron showed architecture dominance. Post-hoc investigation (Section 6.6) identified two content isolation bugs that caused philosophy references to appear in one elementary scenario (`new_student_first_visit`, 16/24 responses affected). These bugs—a content resolver fallback and hardcoded prompt examples—have been fixed but partly inflated the architecture effect on elementary content, since multi-agent cells caught the errors while single-agent cells did not. The Kimi architecture effect (+3.0 pts) is likely more representative than the Nemotron effect (+9.9 pts). Broader domain sampling beyond two content areas, with verified content isolation, would further strengthen generalizability claims.
+
+**Synthetic learning outcomes only**: All evaluations measure tutor response quality and simulated learner behavior, not actual learning. The synthetic learning outcome index (Section 6.11.2) provides a proxy from learner rubric dimensions (revision signals, question quality, conceptual engagement), and all conditions show substantial learning arcs (15–21 pts). However, these are AI-judge assessments of LLM-generated learner turns—measuring the *quality of simulated learning behavior*, not knowledge acquisition, comprehension, or transfer. Whether recognition-enhanced tutoring produces genuine learning gains in human learners remains the critical open question.
 
 **Short-term evaluation**: We evaluate individual sessions, not longitudinal relationships. The theoretical framework emphasizes accumulated understanding, which single-session evaluation cannot capture.
 
@@ -1916,3 +1963,4 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | 2026-02-08 | v2.1 | **AI theme discovery & figure regeneration**: Added §6.13.4 AI-assisted theme discovery (N=300, Claude Opus coder) showing near-perfect bimodal separation — base 84% directive/93% transmissive, recognition 60% dialogical-facilitative/84% dialectical-constructivist. Added Figure 6 (word clouds). Regenerated all figures from Python with corrected data and larger text. Removed standalone §10 Reproducibility (merged into Appendix D). Moved Appendix E after other appendices. Increased font to 12pt. |
 | 2026-02-10 | v2.1.1 | **Consistency fixes**: Corrected stale N=1,628/twenty → N=1,700/twenty-one in abstract, introduction, and conclusion (reflecting hardwired rules ablation and learner-side evaluation added in v1.8–v1.9). Fixed dynamic rewrite section references in Tables 2 and D (6.13→6.14, after §6.12 insertion renumbered sections). Added hardwired rules ablation and learner-side evaluation to Appendix D run list (was 19 rows, now 21). Fixed inter-judge reliability cross-reference in §8.1 (5.7→5.8). Fixed Appendix D repository URL. |
 | 2026-02-10 | v2.1.2 | **Review corrections** (30 fixes): Table 7b Kimi row corrected to single-learner cells (N=350→179, Recognition +10.2→+15.5, Interaction -1.5→+0.5) matching probe design; total probe N 826→655. Table 1 Primary/Alternative model columns corrected. Factor C in Discussion corrected (-1.7 pts, F=2.56 from +1.5, p=.341). Stale A×C values updated (+15.5/+4.8). Dynamic rewrite swing corrected (+16.7→+8.7 delta). Abstract trailing deficit corrected (7.2→3.2). Table cross-refs fixed (Table 5→6, Table 23→29). Dimension count 6→8. Terminology standardized (unified→single-agent, behaviour→behavior). Theme count 15→10. Impasse N=4→2 per cell. Malformed citation fixed. |
+| 2026-02-11 | v2.2.0 | **Modulation and learning outcomes**: Added §6.11.1 (modulation metrics, N=350 post-hoc) showing multi-agent architecture does not increase behavioral range (d=0.05); recognition produces calibration not oscillation (dimension variance d=−1.00, F=87.69). Added §6.11.2 (synthetic learning outcome index, N=118) from learner rubric composites: recognition +3.8 pts (d=0.32), all conditions show 15–21 pt learning arcs. Extended §7.4 Discussion with phronesis reframing. Added explicit synthetic-learning-only limitation to §8.1. Regenerated Figure 4 as interaction plot (legend no longer overlaps). Regenerated Figure 6 from actual transcript word frequencies (was AI theme labels). Fixed p.44 caption overflow (removed monospace from scenario names). |
