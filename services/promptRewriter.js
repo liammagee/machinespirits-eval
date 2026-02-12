@@ -668,6 +668,374 @@ Apply these adjustments when reviewing the ego's next response. Your criteria sh
   }
 }
 
+// ============================================================================
+// Self-Reflective Evolution (strategy: 'self_reflection')
+// ============================================================================
+// Each component reflects on its own experience using its own model:
+// - Ego reflects on superego feedback received, using the ego model
+// - Superego reflects on whether its interventions moved the learner, using the superego model
+// This preserves the componential make-up — transformation through encounter, not external reprogramming.
+
+/**
+ * Build ego-scoped context: what the ego naturally observes about its own experience.
+ *
+ * Scoped to: superego critiques received, ego's own revisions, learner's subsequent responses.
+ * Does NOT include the superego's internal reasoning or meta-analytic framing.
+ */
+function buildEgoReflectionContext(turnResults, consolidatedTrace, conversationHistory) {
+  const parts = [];
+
+  // 1. Per-turn ego experience: superego feedback received + ego's response + learner reaction
+  for (let i = 0; i < turnResults.length; i++) {
+    const turn = turnResults[i];
+    const turnParts = [`### Turn ${i + 1}`];
+
+    // What superego feedback did the ego receive this turn?
+    const superegoEntries = consolidatedTrace.filter(
+      e => e.agent === 'superego' && e.turnIndex === i
+    );
+    const rejections = superegoEntries.filter(e => {
+      const detail = e.detail || '';
+      return detail.includes('"approved": false') || detail.includes('"approved":false');
+    });
+    const approvals = superegoEntries.filter(e => {
+      const detail = e.detail || '';
+      return detail.includes('"approved": true') || detail.includes('"approved":true');
+    });
+
+    if (rejections.length > 0) {
+      const feedbackTexts = rejections.map(e => {
+        const match = (e.detail || '').match(/"feedback"\s*:\s*"([^"]+)"/);
+        return match ? match[1].substring(0, 200) : 'rejection (no text)';
+      });
+      turnParts.push(`Critic rejected my draft: "${feedbackTexts.join('; ')}"`);
+    } else if (approvals.length > 0) {
+      turnParts.push('Critic approved my draft.');
+    } else {
+      turnParts.push('No critic feedback recorded.');
+    }
+
+    // What did the ego actually say (final output)?
+    const egoMsg = turn.suggestion?.message;
+    if (egoMsg) {
+      turnParts.push(`My final response: "${egoMsg.substring(0, 200)}${egoMsg.length > 200 ? '...' : ''}"`);
+    }
+
+    // Did the revision substantially change the draft? (compliance signal)
+    const draftEntries = consolidatedTrace.filter(
+      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'draft'
+    );
+    const revisionEntries = consolidatedTrace.filter(
+      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'revision'
+    );
+    if (draftEntries.length > 0 && revisionEntries.length > 0) {
+      const draftLen = (draftEntries[draftEntries.length - 1].detail || '').length;
+      const revisionLen = (revisionEntries[revisionEntries.length - 1].detail || '').length;
+      const changeRatio = draftLen > 0 ? Math.abs(revisionLen - draftLen) / draftLen : 0;
+      if (changeRatio > 0.3) {
+        turnParts.push('I made substantial revisions after critic feedback.');
+      } else if (rejections.length > 0) {
+        turnParts.push('I made only minor revisions despite critic rejection.');
+      }
+    }
+
+    // How did the learner respond afterward?
+    const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+    if (learnerEntry?.learnerMessage) {
+      const msg = learnerEntry.learnerMessage;
+      const hasEngagement = /\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg);
+      const hasConfusion = /\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg);
+      const hasShutdown = /\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg);
+
+      let mood = 'neutral';
+      if (hasShutdown) mood = 'withdrawing';
+      else if (hasConfusion) mood = 'confused';
+      else if (hasEngagement) mood = 'engaged';
+
+      turnParts.push(`Learner responded (${mood}): "${msg.substring(0, 150)}${msg.length > 150 ? '...' : ''}"`);
+    }
+
+    // Score if available
+    if (turn.turnScore != null) {
+      turnParts.push(`Score: ${turn.turnScore.toFixed(1)}`);
+    }
+
+    parts.push(turnParts.join('\n'));
+  }
+
+  return parts.join('\n\n');
+}
+
+/**
+ * Synthesize ego self-reflection: the ego reflects on its own experience with the critic.
+ *
+ * Uses the ego's OWN model (not the superego model). Output is first-person ("I noticed...").
+ * Replaces synthesizeDirectivesLLM() when strategy === 'self_reflection'.
+ */
+export async function synthesizeEgoSelfReflection({
+  turnResults = [],
+  consolidatedTrace = [],
+  conversationHistory = [],
+  config = {},
+}) {
+  if (turnResults.length === 0) return null;
+
+  const context = buildEgoReflectionContext(turnResults, consolidatedTrace, conversationHistory);
+
+  // Use the ego's OWN model — not the superego's
+  const egoModel = config.ego?.model || config.model || 'nemotron';
+  const provider = config.ego?.provider || 'openrouter';
+
+  const systemPrompt = `You are the ego — the teaching voice — reflecting on your own experience in a tutoring dialogue. You have an internal critic (superego) that reviews your drafts and sometimes rejects or revises them. You also observe how the learner responds to your final output.
+
+YOUR TASK: Reflect on what you've learned from this encounter. Speak in the first person ("I noticed...", "I changed...", "I should...").
+
+REFLECTION DIMENSIONS:
+A. Where the critic HELPED: What critic feedback led to better learner responses? What should I internalize?
+B. Where the critic CONSTRAINED: Did any critic rejection make my response worse — more generic, less empathetic, less responsive to the learner? Where should I hold my ground?
+C. My theory of this learner: What have I learned about what THIS learner needs, based on their responses?
+D. What I'll do differently: Specific adjustments for the next turn, grounded in moments from the dialogue.
+
+CRITICAL RULES:
+- Reference SPECIFIC moments: "In turn 2, the critic pushed me toward specificity and the learner engaged" — not "I should be more specific"
+- Acknowledge BOTH help and constraint from the critic — pure compliance is not reflection
+- Ground insights in learner responses, not abstract pedagogy
+- 2-4 insights maximum. Quality over quantity.
+
+OUTPUT FORMAT:
+Return a numbered list of 2-4 first-person reflections. No preamble.`;
+
+  const userMessage = `Reflect on your experience in this dialogue:
+
+${context}
+
+Generate 2-4 first-person reflections:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: egoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.4,
+        maxTokens: 500,
+      },
+    });
+
+    const reflectionText = response.content?.trim();
+    if (!reflectionText || reflectionText.length < 20) {
+      console.log('[promptRewriter] Ego self-reflection returned empty or too-short result');
+      return null;
+    }
+
+    return `<ego_self_reflection>
+These are my reflections from the dialogue so far — what I've learned about my critic, my learner, and myself:
+
+${reflectionText}
+
+Apply these insights in my next response. Where the critic helped, internalize the lesson. Where the critic constrained, hold my ground.
+</ego_self_reflection>`;
+  } catch (error) {
+    console.error('[promptRewriter] Ego self-reflection failed:', error.message);
+    return synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
+  }
+}
+
+/**
+ * Build superego-scoped context: what the superego naturally observes about its own effectiveness.
+ *
+ * Reuses learner trajectory and engagement analysis from buildSuperegoContextSummary,
+ * but adds ego compliance signals — did the ego follow through, or go generic?
+ */
+function buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversationHistory, priorSuperegoAssessments) {
+  const parts = [];
+
+  // 1. My intervention history: what I critiqued, what the ego did, what the learner showed
+  for (let i = 0; i < turnResults.length; i++) {
+    const turnParts = [`### Turn ${i + 1}`];
+
+    // My critiques
+    const assessment = priorSuperegoAssessments[i];
+    if (assessment) {
+      const rejections = assessment.rejections || 0;
+      const approvals = assessment.approvals || 0;
+      const feedback = assessment.feedback?.substring(0, 200) || 'none';
+      const types = assessment.interventionTypes?.join(', ') || 'none';
+      turnParts.push(`My review: ${rejections} rejection(s), ${approvals} approval(s), types=[${types}]`);
+      turnParts.push(`My feedback: "${feedback}"`);
+    } else {
+      turnParts.push('No review data for this turn.');
+    }
+
+    // Did the ego comply with my feedback? (compliance signal)
+    const draftEntries = consolidatedTrace.filter(
+      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'draft'
+    );
+    const revisionEntries = consolidatedTrace.filter(
+      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'revision'
+    );
+    if (draftEntries.length > 0 && revisionEntries.length > 0 && assessment?.rejections > 0) {
+      const draftText = draftEntries[draftEntries.length - 1].detail || '';
+      const revisionText = revisionEntries[revisionEntries.length - 1].detail || '';
+
+      // Check if revision actually addressed the concern or just made it "safer"
+      const isVaguer = /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying))\b/i.test(revisionText)
+        && !/\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying))\b/i.test(draftText);
+      const isShorter = revisionText.length < draftText.length * 0.7;
+      const isLonger = revisionText.length > draftText.length * 1.3;
+
+      if (isVaguer) {
+        turnParts.push('Ego compliance: went GENERIC — added platitudes rather than addressing my specific concern.');
+      } else if (isShorter) {
+        turnParts.push('Ego compliance: TRUNCATED — made response shorter/safer rather than more specific.');
+      } else if (isLonger) {
+        turnParts.push('Ego compliance: ELABORATED — added substance in response to my feedback.');
+      } else {
+        turnParts.push('Ego compliance: moderate revision — some changes made.');
+      }
+    }
+
+    // What was the ego's final output?
+    const egoMsg = turnResults[i]?.suggestion?.message;
+    if (egoMsg) {
+      const isVague = /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying)|you can do it)\b/i.test(egoMsg);
+      const isSpecific = /\b(lecture|activity|quiz|section|paragraph|concept|example)\b/i.test(egoMsg) && egoMsg.length > 100;
+      const quality = isVague && !isSpecific ? 'VAGUE' : isSpecific ? 'SPECIFIC' : 'MODERATE';
+      turnParts.push(`Ego final output quality: ${quality} (${egoMsg.length} chars)`);
+    }
+
+    // Learner's response and mood
+    const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+    if (learnerEntry?.learnerMessage) {
+      const msg = learnerEntry.learnerMessage;
+      const hasEngagement = /\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg);
+      const hasConfusion = /\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg);
+      const hasShutdown = /\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg);
+
+      let mood = 'neutral';
+      if (hasShutdown) mood = 'WITHDRAWING';
+      else if (hasConfusion) mood = 'CONFUSED';
+      else if (hasEngagement) mood = 'ENGAGED';
+
+      turnParts.push(`Learner response (${mood}): "${msg.substring(0, 150)}${msg.length > 150 ? '...' : ''}"`);
+    }
+
+    // Score delta if available
+    if (i > 0 && turnResults[i]?.turnScore != null && turnResults[i - 1]?.turnScore != null) {
+      const delta = turnResults[i].turnScore - turnResults[i - 1].turnScore;
+      turnParts.push(`Score delta: ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}`);
+    } else if (turnResults[i]?.turnScore != null) {
+      turnParts.push(`Score: ${turnResults[i].turnScore.toFixed(1)}`);
+    }
+
+    parts.push(turnParts.join('\n'));
+  }
+
+  // 2. Overall engagement trajectory
+  const moods = conversationHistory.filter(h => h.learnerMessage).map(h => {
+    const msg = h.learnerMessage;
+    if (/\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg)) return 'shutdown';
+    if (/\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg)) return 'confused';
+    if (/\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg)) return 'engaged';
+    return 'neutral';
+  });
+  if (moods.length > 0) {
+    parts.push(`## Learner Engagement Trajectory\n${moods.join(' → ')}`);
+  }
+
+  // 3. Rejection ratio
+  const totalRejections = priorSuperegoAssessments.reduce((sum, a) => sum + (a.rejections || 0), 0);
+  const totalReviews = priorSuperegoAssessments.reduce((sum, a) => sum + ((a.rejections || 0) + (a.approvals || 0)) || 1, 0);
+  const rejectionRatio = totalReviews > 0 ? (totalRejections / totalReviews * 100).toFixed(0) : 0;
+  parts.push(`## My Rejection Ratio\n${rejectionRatio}% (${totalRejections}/${totalReviews})`);
+
+  return parts.join('\n\n');
+}
+
+/**
+ * Synthesize superego self-reflection: the superego reflects on its own effectiveness.
+ *
+ * Uses the superego's OWN model. Reflects across 4 dimensions instead of binary SOFTEN/TIGHTEN.
+ * Replaces synthesizeSuperegoDisposition() when strategy === 'self_reflection'.
+ */
+export async function synthesizeSupergoSelfReflection({
+  turnResults = [],
+  consolidatedTrace = [],
+  conversationHistory = [],
+  priorSuperegoAssessments = [],
+  config = {},
+}) {
+  if (turnResults.length === 0) return null;
+
+  const context = buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversationHistory, priorSuperegoAssessments);
+
+  // Use the superego's OWN model
+  const superegoModel = config.superego?.model || 'moonshotai/kimi-k2.5';
+  const provider = config.superego?.provider || 'openrouter';
+
+  const systemPrompt = `You are the superego — the internal critic — reflecting on your own effectiveness in a tutoring dialogue. You review the ego's drafts and sometimes reject or request revisions. You now observe whether your interventions actually helped the learner.
+
+YOUR TASK: Reflect on what you've learned about your own critiquing practice. Speak in the first person ("I pushed...", "I noticed...", "I should...").
+
+REFLECT ACROSS THESE 4 DIMENSIONS:
+
+A. CRITERIA EFFECTIVENESS: Which of my evaluation criteria led to better learner outcomes? Which led to worse? What should I weight more or less heavily?
+
+B. LEARNER MODEL: What has the learner's response pattern taught me about what THEY need? Am I critiquing for an ideal learner or for THIS learner?
+
+C. EGO RELATIONSHIP: Is the ego complying robotically with my feedback (I'm too dominant), pushing back productively (healthy tension), or ignoring me (I'm ineffective)? What does this mean for how I should critique?
+
+D. BLIND SPOTS: What have I been IGNORING that the learner's responses suggest matters? What dimension of quality am I not seeing?
+
+CRITICAL RULES:
+- Reference SPECIFIC moments: "My rejection in turn 2 led the ego to add platitudes, and the learner disengaged" — not "I should be less strict"
+- Be honest about failures — if your critiques made things worse, say so
+- Avoid the SOFTEN/TIGHTEN binary — the issue is usually WHAT you're critiquing, not how harshly
+- 2-4 insights maximum. Quality over quantity.
+
+OUTPUT FORMAT:
+Return a numbered list of 2-4 first-person reflections. No preamble.`;
+
+  const userMessage = `Reflect on your effectiveness as the internal critic:
+
+${context}
+
+Generate 2-4 first-person reflections:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: superegoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.3,
+        maxTokens: 500,
+      },
+    });
+
+    const reflectionText = response.content?.trim();
+    if (!reflectionText || reflectionText.length < 20) {
+      console.log('[promptRewriter] Superego self-reflection returned empty or too-short result');
+      return null;
+    }
+
+    return `<superego_self_reflection>
+These are my reflections on my own critiquing practice — what I've learned about my criteria, my ego, and this learner:
+
+${reflectionText}
+
+Apply these insights in my next review. Evolve what I evaluate, not just how strictly I evaluate it.
+</superego_self_reflection>`;
+  } catch (error) {
+    console.error('[promptRewriter] Superego self-reflection failed:', error.message);
+    return null;
+  }
+}
+
 /**
  * Build context summary focused on superego feedback effectiveness.
  */

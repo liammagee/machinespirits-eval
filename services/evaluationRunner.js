@@ -1854,7 +1854,35 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     // Synthesize prompt rewriting directives for next turn (if enabled)
     if (promptRewritingEnabled && turnIdx < totalTurnCount - 1) {
-      if (promptRewritingStrategy === 'llm') {
+      if (promptRewritingStrategy === 'self_reflection') {
+        // Self-reflective ego evolution — ego reflects using its own model
+        try {
+          sessionEvolution = await promptRewriter.synthesizeEgoSelfReflection({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+            config: rawProfile,
+          });
+          if (sessionEvolution) {
+            log(`[evaluationRunner] Ego self-reflection generated for turn ${turnIdx + 1}`, 'info');
+            consolidatedTrace.push({
+              agent: 'ego_self_reflection',
+              action: 'rewrite',
+              turnIndex: turnIdx,
+              contextSummary: `Ego self-reflection generated for turn ${turnIdx + 1}`,
+              detail: sessionEvolution,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch (error) {
+          log(`[evaluationRunner] Ego self-reflection failed, falling back to template: ${error.message}`, 'warn');
+          sessionEvolution = promptRewriter.synthesizeDirectives({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+          });
+        }
+      } else if (promptRewritingStrategy === 'llm') {
         // LLM-based directive synthesis using superego model
         try {
           sessionEvolution = await promptRewriter.synthesizeDirectivesLLM({
@@ -1890,27 +1918,49 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // Synthesize superego disposition evolution for next turn (if enabled)
     if (superegoDispositionRewriting && turnIdx < totalTurnCount - 1) {
       try {
-        superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
-          turnResults,
-          consolidatedTrace,
-          conversationHistory,
-          priorSuperegoAssessments,
-          config: rawProfile,
-        });
-        if (superegoEvolution) {
-          log(`[evaluationRunner] Superego disposition rewriter generated evolution for turn ${turnIdx + 1}`, 'info');
-          // Record in consolidated trace for verifiability
-          consolidatedTrace.push({
-            agent: 'superego_disposition',
-            action: 'rewrite',
-            turnIndex: turnIdx,
-            contextSummary: `Disposition evolution generated for turn ${turnIdx + 1}`,
-            detail: superegoEvolution,
-            timestamp: new Date().toISOString(),
+        if (promptRewritingStrategy === 'self_reflection') {
+          // Self-reflective superego evolution — superego reflects using its own model
+          superegoEvolution = await promptRewriter.synthesizeSupergoSelfReflection({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+            priorSuperegoAssessments,
+            config: rawProfile,
           });
+          if (superegoEvolution) {
+            log(`[evaluationRunner] Superego self-reflection generated for turn ${turnIdx + 1}`, 'info');
+            consolidatedTrace.push({
+              agent: 'superego_self_reflection',
+              action: 'rewrite',
+              turnIndex: turnIdx,
+              contextSummary: `Superego self-reflection generated for turn ${turnIdx + 1}`,
+              detail: superegoEvolution,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } else {
+          superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+            priorSuperegoAssessments,
+            config: rawProfile,
+          });
+          if (superegoEvolution) {
+            log(`[evaluationRunner] Superego disposition rewriter generated evolution for turn ${turnIdx + 1}`, 'info');
+            // Record in consolidated trace for verifiability
+            consolidatedTrace.push({
+              agent: 'superego_disposition',
+              action: 'rewrite',
+              turnIndex: turnIdx,
+              contextSummary: `Disposition evolution generated for turn ${turnIdx + 1}`,
+              detail: superegoEvolution,
+              timestamp: new Date().toISOString(),
+            });
+          }
         }
       } catch (error) {
-        log(`[evaluationRunner] Superego disposition rewriting failed: ${error.message}`, 'warn');
+        log(`[evaluationRunner] Superego disposition/self-reflection rewriting failed: ${error.message}`, 'warn');
       }
     }
 

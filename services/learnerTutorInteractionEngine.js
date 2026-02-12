@@ -538,6 +538,9 @@ ${tutorMemory || 'New learner - no prior history.'}
 
 Topic: ${topic}
 
+Recent conversation:
+${conversationContext}
+
 The learner said:
 "${learnerMessage}"
 

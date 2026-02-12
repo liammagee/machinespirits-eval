@@ -1438,7 +1438,7 @@ profiles:
     dialectical_negotiation: true
     prompt_rewriting:
       enabled: true
-      strategy: llm
+      strategy: self_reflection
     superego_disposition_rewriting: true
     dialogue:
       enabled: true
@@ -1481,7 +1481,7 @@ profiles:
     dialectical_negotiation: true
     prompt_rewriting:
       enabled: true
-      strategy: llm
+      strategy: self_reflection
     superego_disposition_rewriting: true
     dialogue:
       enabled: true
@@ -1525,7 +1525,7 @@ profiles:
     dialectical_negotiation: true
     prompt_rewriting:
       enabled: true
-      strategy: llm
+      strategy: self_reflection
     superego_disposition_rewriting: true
     dialogue:
       enabled: true
@@ -1568,7 +1568,7 @@ profiles:
     dialectical_negotiation: true
     prompt_rewriting:
       enabled: true
-      strategy: llm
+      strategy: self_reflection
     superego_disposition_rewriting: true
     dialogue:
       enabled: true
@@ -1612,7 +1612,7 @@ profiles:
     dialectical_negotiation: true
     prompt_rewriting:
       enabled: true
-      strategy: llm
+      strategy: self_reflection
     superego_disposition_rewriting: true
     dialogue:
       enabled: true
@@ -1655,7 +1655,7 @@ profiles:
     dialectical_negotiation: true
     prompt_rewriting:
       enabled: true
-      strategy: llm
+      strategy: self_reflection
     superego_disposition_rewriting: true
     dialogue:
       enabled: true

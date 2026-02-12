@@ -75,6 +75,23 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
 - Rejudge creates new rows by default; `--overwrite` replaces
 
+### Resuming Incomplete Runs
+
+When a run has empty/failed attempts (`suggestions = '[]'`, NULL `overall_score`):
+1. Clean out empty rows first:
+   ```bash
+   sqlite3 data/evaluations.db "DELETE FROM evaluation_results WHERE run_id = '<runId>' AND overall_score IS NULL AND suggestions = '[]'"
+   ```
+2. Resume generation (skip-rubric) and judge in parallel:
+   ```bash
+   node scripts/eval-cli.js resume <runId> --skip-rubric
+   node scripts/eval-cli.js evaluate <runId> --force --follow
+   ```
+- `resume` detects missing attempts from the original run plan and re-runs only those
+- `--skip-rubric` generates without judging (matching the typical two-phase workflow)
+- `evaluate --force --follow` polls and judges each new row as it lands
+- `resume` accepts: `--parallelism N`, `--verbose`, `--force`, `--skip-rubric`
+
 ## Common Commands
 
 ```bash
@@ -86,6 +103,10 @@ node scripts/eval-cli.js evaluate <runId>
 
 # Rejudge with GPT-5.2
 node scripts/eval-cli.js rejudge <runId> --judge openrouter.gpt
+
+# Resume incomplete run (generation + judging in parallel)
+node scripts/eval-cli.js resume <runId> --skip-rubric
+node scripts/eval-cli.js evaluate <runId> --force --follow
 
 # Analyze inter-judge reliability (requires rejudged data)
 node scripts/analyze-judge-reliability.js

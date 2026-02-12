@@ -43,7 +43,9 @@ const coreCellNames = cellNames.filter(n => /^cell_[1-8]_/.test(n));
 const coreCells = Object.fromEntries(coreCellNames.map(name => [name, cells[name]]));
 
 // Valid prompt types
-const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo', 'memory', 'recognition_nomem'];
+const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo', 'memory', 'recognition_nomem',
+  'divergent_suspicious', 'divergent_adversary', 'divergent_advocate',
+  'dialectical_suspicious', 'dialectical_adversary', 'dialectical_advocate'];
 
 // ============================================================================
 // CONFIG INTEGRITY
@@ -93,14 +95,26 @@ describe('factorial design — config integrity', () => {
       placebo: 'placebo',
       memory: 'memory',
       recognition_nomem: 'recog',
+      divergent_suspicious: 'suspicious',
+      divergent_adversary: 'adversary',
+      divergent_advocate: 'advocate',
+      dialectical_suspicious: 'dialectical',
+      dialectical_adversary: 'dialectical',
+      dialectical_advocate: 'dialectical',
     };
+
+    // Divergent/dialectical cells encode multi-agent status via superego type name, not "multi"/"single"
+    const isDivergent = (pt) => pt.startsWith('divergent_') || pt.startsWith('dialectical_');
 
     for (const [name, profile] of Object.entries(cells)) {
       const { prompt_type, multi_agent_tutor } = profile.factors;
       const expectedSubstr = namePatterns[prompt_type];
       assert.ok(name.includes(expectedSubstr),
         `${name} has prompt_type=${prompt_type} but name lacks "${expectedSubstr}"`);
-      if (multi_agent_tutor) {
+      if (isDivergent(prompt_type)) {
+        // Divergent cells always have multi_agent_tutor=true; superego type in name implies multi-agent
+        assert.ok(multi_agent_tutor, `${name} is divergent but multi_agent_tutor is false`);
+      } else if (multi_agent_tutor) {
         assert.ok(name.includes('multi'), `${name} has multi_agent_tutor=true but name lacks "multi"`);
       } else {
         assert.ok(name.includes('single'), `${name} has multi_agent_tutor=false but name lacks "single"`);
@@ -115,6 +129,8 @@ describe('factorial design — config integrity', () => {
 
 describe('factorial design — prompt file assignment', () => {
   // Expected ego prompt file for each prompt_type
+  // Expected ego prompt file for each prompt_type
+  // Divergent cells use base or recognition ego depending on recognition_mode
   const egoPromptFiles = {
     base: 'tutor-ego.md',
     recognition: 'tutor-ego-recognition.md',
@@ -131,11 +147,27 @@ describe('factorial design — prompt file assignment', () => {
     recognition: 'tutor-superego-recognition.md',
     enhanced: 'tutor-superego-enhanced.md',
     placebo: 'tutor-superego-placebo.md',
+    divergent_suspicious: 'tutor-superego-suspicious.md',
+    divergent_adversary: 'tutor-superego-adversary.md',
+    divergent_advocate: 'tutor-superego-advocate.md',
+    dialectical_suspicious: 'tutor-superego-suspicious.md',
+    dialectical_adversary: 'tutor-superego-adversary.md',
+    dialectical_advocate: 'tutor-superego-advocate.md',
   };
 
   it('each cell uses the correct ego prompt file for its prompt_type', () => {
     for (const [name, profile] of Object.entries(cells)) {
-      const expected = egoPromptFiles[profile.factors.prompt_type];
+      const pt = profile.factors.prompt_type;
+      let expected;
+      if (pt.startsWith('divergent_')) {
+        // Divergent cells use base or recognition ego depending on recognition_mode
+        expected = profile.recognition_mode ? 'tutor-ego-recognition.md' : 'tutor-ego.md';
+      } else if (pt.startsWith('dialectical_')) {
+        // Dialectical cells use dialectical or recognition-dialectical ego
+        expected = profile.recognition_mode ? 'tutor-ego-recognition-dialectical.md' : 'tutor-ego-dialectical.md';
+      } else {
+        expected = egoPromptFiles[pt];
+      }
       assert.strictEqual(profile.ego.prompt_file, expected, `${name} ego prompt_file`);
     }
   });
