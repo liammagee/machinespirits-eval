@@ -714,3 +714,970 @@ profiles:
       enforce_mutual_recognition: true
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # ===========================================================================
+  # DIVERGENT SUPEREGO CELLS (22-27)
+  # ===========================================================================
+  # These cells test whether genuinely divergent internal agents produce the
+  # behavioral modulation predicted by the Drama Machine framework.
+  #
+  # The convergent superego (cells 3,4,7,8) shares the Ego's goal (good pedagogy)
+  # and acts as quality control — producing d=0.05 modulation.
+  #
+  # Divergent superegos have CONFLICTING objectives:
+  #   - Suspicious: Challenges authenticity of engagement (orthogonal to correctness)
+  #   - Adversary: Argues for the opposite pedagogical method (methodological tension)
+  #   - Advocate: Represents the learner's experience (experiential vs. expert view)
+  #
+  # Design: 3 superego types × 2 recognition levels = 6 cells
+  # All use unified learner (Factor C held constant) to isolate superego effect.
+  # Models: nemotron (ego) + kimi-k2.5 (superego), matching factorial conditions.
+  #
+  # Key parameter changes vs convergent (max_rounds=2, threshold=0.8):
+  #   - max_rounds: 3 (more room for genuine negotiation)
+  #   - convergence_threshold: 0.65/0.60 (lower bar for adversarial agreement)
+  #
+  # Comparisons:
+  #   Cell 3  (M=76.6) vs Cells 22,24,26 → Does divergence increase modulation?
+  #   Cell 7  (M=92.3) vs Cells 23,25,27 → Does divergence interact with recognition?
+
+  # Cell 22: Base × Suspicious Superego × Unified Learner
+  cell_22_base_suspicious_unified:
+    description: "Divergent cell 22: base ego + suspicious superego, unified learner"
+    factors:
+      prompt_type: divergent_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 23: Recognition × Suspicious Superego × Unified Learner
+  cell_23_recog_suspicious_unified:
+    description: "Divergent cell 23: recognition ego + suspicious superego, unified learner"
+    factors:
+      prompt_type: divergent_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 24: Base × Adversary Superego × Unified Learner
+  cell_24_base_adversary_unified:
+    description: "Divergent cell 24: base ego + adversary superego, unified learner"
+    factors:
+      prompt_type: divergent_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 25: Recognition × Adversary Superego × Unified Learner
+  cell_25_recog_adversary_unified:
+    description: "Divergent cell 25: recognition ego + adversary superego, unified learner"
+    factors:
+      prompt_type: divergent_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 26: Base × Advocate Superego × Unified Learner
+  cell_26_base_advocate_unified:
+    description: "Divergent cell 26: base ego + advocate superego, unified learner"
+    factors:
+      prompt_type: divergent_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 27: Recognition × Advocate Superego × Unified Learner
+  cell_27_recog_advocate_unified:
+    description: "Divergent cell 27: recognition ego + advocate superego, unified learner"
+    factors:
+      prompt_type: divergent_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # ===========================================================================
+  # DIALECTICAL SYNTHESIS CELLS (28-33)
+  # ===========================================================================
+  # Same divergent superegos as cells 22-27, but paired with a DIALECTICAL ego
+  # that is trained to synthesize (Aufhebung) rather than capitulate.
+  #
+  # Cells 22-27 = divergent superego + standard ego → capitulation baseline
+  # Cells 28-33 = divergent superego + dialectical ego → synthesis test
+  #
+  # The dialectical ego follows: defend → extract what's valid → integrate.
+  # Hypothesis: divergent agents produce BOTH modulation AND quality gains
+  # when the Ego treats critique as material for synthesis, not as a veto.
+  #
+  # Comparisons:
+  #   Cells 22-27 vs 28-33 → Does Aufhebung training recover quality?
+  #   Cells 28-33 vs 3,7   → Does dialectical divergence beat convergent?
+  #   SD(28-33) vs SD(3,7) → Does modulation survive synthesis training?
+
+  # Cell 28: Base Dialectical × Suspicious Superego × Unified Learner
+  cell_28_base_dialectical_suspicious_unified:
+    description: "Dialectical cell 28: base dialectical ego + suspicious superego, unified learner"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 29: Recognition Dialectical × Suspicious Superego × Unified Learner
+  cell_29_recog_dialectical_suspicious_unified:
+    description: "Dialectical cell 29: recognition dialectical ego + suspicious superego, unified learner"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 30: Base Dialectical × Adversary Superego × Unified Learner
+  cell_30_base_dialectical_adversary_unified:
+    description: "Dialectical cell 30: base dialectical ego + adversary superego, unified learner"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 31: Recognition Dialectical × Adversary Superego × Unified Learner
+  cell_31_recog_dialectical_adversary_unified:
+    description: "Dialectical cell 31: recognition dialectical ego + adversary superego, unified learner"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 32: Base Dialectical × Advocate Superego × Unified Learner
+  cell_32_base_dialectical_advocate_unified:
+    description: "Dialectical cell 32: base dialectical ego + advocate superego, unified learner"
+    factors:
+      prompt_type: dialectical_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 33: Recognition Dialectical × Advocate Superego × Unified Learner
+  cell_33_recog_dialectical_advocate_unified:
+    description: "Dialectical cell 33: recognition dialectical ego + advocate superego, unified learner"
+    factors:
+      prompt_type: dialectical_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # ===========================================================================
+  # FULL-FEATURE DIALECTICAL CELLS (34-39)
+  # ===========================================================================
+  # These cells enable ALL modulation features on top of the dialectical
+  # superego architecture:
+  #   - Writing Pad (persistent learner model across turns)
+  #   - Dialectical Negotiation (memory surfaces in prompts)
+  #   - Prompt Rewriting (LLM-synthesized between-turn directives)
+  #   - Cross-turn superego memory (prior feedback accumulation)
+  #   - Learner trajectory assessment (structured resistance signals)
+  #
+  # Without these features, the superego operates as a near-deterministic
+  # quality filter — it cannot adapt across turns, detect resistance patterns,
+  # or help the ego find breakthrough directions.
+  #
+  # Cells 34-39 test the hypothesis: with full modulation infrastructure,
+  # does dialectical superego negotiation produce measurable learning
+  # trajectories (vs the flat learnerGrowthIndex observed in cells 28-33)?
+  #
+  # Design: 2 (base/recog) × 3 (suspicious/adversary/advocate) = 6 cells
+  # ===========================================================================
+
+  # Cell 34: Base Dialectical × Suspicious × Full Features
+  cell_34_base_dialectical_suspicious_unified_full:
+    description: "Full-feature dialectical cell 34: base ego + suspicious superego + writing pad + prompt rewriting"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 35: Recognition Dialectical × Suspicious × Full Features
+  cell_35_recog_dialectical_suspicious_unified_full:
+    description: "Full-feature dialectical cell 35: recognition ego + suspicious superego + writing pad + prompt rewriting"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 36: Base Dialectical × Adversary × Full Features
+  cell_36_base_dialectical_adversary_unified_full:
+    description: "Full-feature dialectical cell 36: base ego + adversary superego + writing pad + prompt rewriting"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+      full_modulation: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 37: Recognition Dialectical × Adversary × Full Features
+  cell_37_recog_dialectical_adversary_unified_full:
+    description: "Full-feature dialectical cell 37: recognition ego + adversary superego + writing pad + prompt rewriting"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+      full_modulation: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 38: Base Dialectical × Advocate × Full Features
+  cell_38_base_dialectical_advocate_unified_full:
+    description: "Full-feature dialectical cell 38: base ego + advocate superego + writing pad + prompt rewriting"
+    factors:
+      prompt_type: dialectical_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+      full_modulation: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 39: Recognition Dialectical × Advocate × Full Features
+  cell_39_recog_dialectical_advocate_unified_full:
+    description: "Full-feature dialectical cell 39: recognition ego + advocate superego + writing pad + prompt rewriting"
+    factors:
+      prompt_type: dialectical_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+      full_modulation: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # ===========================================================================
+  # SUPEREGO DISPOSITION REWRITING CELLS (40-45)
+  # ===========================================================================
+  # Clone of cells 34-39 with superego_disposition_rewriting enabled.
+  # The superego's evaluation criteria evolve turn-by-turn based on whether
+  # its prior critiques actually improved learner engagement.
+
+  # Cell 40: Base Dialectical × Suspicious × Full + Superego Rewriting
+  cell_40_base_dialectical_suspicious_unified_superego:
+    description: "Superego disposition cell 40: base ego + suspicious superego + full features + superego rewriting"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 41: Recognition Dialectical × Suspicious × Full + Superego Rewriting
+  cell_41_recog_dialectical_suspicious_unified_superego:
+    description: "Superego disposition cell 41: recognition ego + suspicious superego + full features + superego rewriting"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 42: Base Dialectical × Adversary × Full + Superego Rewriting
+  cell_42_base_dialectical_adversary_unified_superego:
+    description: "Superego disposition cell 42: base ego + adversary superego + full features + superego rewriting"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 43: Recognition Dialectical × Adversary × Full + Superego Rewriting
+  cell_43_recog_dialectical_adversary_unified_superego:
+    description: "Superego disposition cell 43: recognition ego + adversary superego + full features + superego rewriting"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: adversary
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 44: Base Dialectical × Advocate × Full + Superego Rewriting
+  cell_44_base_dialectical_advocate_unified_superego:
+    description: "Superego disposition cell 44: base ego + advocate superego + full features + superego rewriting"
+    factors:
+      prompt_type: dialectical_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 45: Recognition Dialectical × Advocate × Full + Superego Rewriting
+  cell_45_recog_dialectical_advocate_unified_superego:
+    description: "Superego disposition cell 45: recognition ego + advocate superego + full features + superego rewriting"
+    factors:
+      prompt_type: dialectical_advocate
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: advocate
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: llm
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-advocate.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
