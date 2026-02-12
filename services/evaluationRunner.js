@@ -69,6 +69,18 @@ const EVAL_ONLY_PROFILES = [
   'cell_17_placebo_multi_unified', 'cell_18_placebo_multi_psycho',
   'cell_19_memory_single_unified', 'cell_20_recog_nomem_single_unified',
   'cell_21_recog_multi_unified_rewrite',
+  'cell_22_base_suspicious_unified', 'cell_23_recog_suspicious_unified',
+  'cell_24_base_adversary_unified', 'cell_25_recog_adversary_unified',
+  'cell_26_base_advocate_unified', 'cell_27_recog_advocate_unified',
+  'cell_28_base_dialectical_suspicious_unified', 'cell_29_recog_dialectical_suspicious_unified',
+  'cell_30_base_dialectical_adversary_unified', 'cell_31_recog_dialectical_adversary_unified',
+  'cell_32_base_dialectical_advocate_unified', 'cell_33_recog_dialectical_advocate_unified',
+  'cell_34_base_dialectical_suspicious_unified_full', 'cell_35_recog_dialectical_suspicious_unified_full',
+  'cell_36_base_dialectical_adversary_unified_full', 'cell_37_recog_dialectical_adversary_unified_full',
+  'cell_38_base_dialectical_advocate_unified_full', 'cell_39_recog_dialectical_advocate_unified_full',
+  'cell_40_base_dialectical_suspicious_unified_superego', 'cell_41_recog_dialectical_suspicious_unified_superego',
+  'cell_42_base_dialectical_adversary_unified_superego', 'cell_43_recog_dialectical_adversary_unified_superego',
+  'cell_44_base_dialectical_advocate_unified_superego', 'cell_45_recog_dialectical_advocate_unified_superego',
 ];
 
 /**
@@ -100,6 +112,18 @@ export function resolveEvalProfile(profileName) {
       resolvedProfileName = 'memory';
     } else if (promptType === 'recognition_nomem') {
       resolvedProfileName = 'recognition_nomem';
+    } else if (promptType === 'divergent_suspicious') {
+      resolvedProfileName = recognitionMode ? 'suspicious_recognition' : 'suspicious';
+    } else if (promptType === 'divergent_adversary') {
+      resolvedProfileName = recognitionMode ? 'adversary_recognition' : 'adversary';
+    } else if (promptType === 'divergent_advocate') {
+      resolvedProfileName = recognitionMode ? 'advocate_recognition' : 'advocate';
+    } else if (promptType === 'dialectical_suspicious') {
+      resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
+    } else if (promptType === 'dialectical_adversary') {
+      resolvedProfileName = recognitionMode ? 'dialectical_adversary_recognition' : 'dialectical_adversary';
+    } else if (promptType === 'dialectical_advocate') {
+      resolvedProfileName = recognitionMode ? 'dialectical_advocate_recognition' : 'dialectical_advocate';
     } else if (recognitionMode) {
       resolvedProfileName = 'recognition';
     } else {
@@ -438,6 +462,8 @@ function buildMultiTurnContext(options) {
     conversationHistory = [],
     currentTurn,
     previousSuggestion,
+    priorSuperegoAssessments = [],
+    learnerTrajectory = null,
   } = options;
 
   const contextParts = [];
@@ -454,6 +480,26 @@ function buildMultiTurnContext(options) {
     }
   }
 
+  // Cross-turn superego memory: accumulated feedback from prior turns' internal
+  // deliberation. Visible to both ego (full context) and superego (via
+  // extractStructuredSummary fallback). Enables the superego to detect whether
+  // its prior feedback was incorporated and escalate if needed.
+  if (priorSuperegoAssessments.length > 0) {
+    contextParts.push('\n### Prior Superego Assessment');
+    for (const assessment of priorSuperegoAssessments) {
+      contextParts.push(formatSuperegoAssessment(assessment));
+    }
+  }
+
+  // Structured learner trajectory: pre-processed resistance/engagement signals
+  // derived from conversation history and score trajectory. Enables the superego
+  // to distinguish "learner asked a new question" from "learner is repeating the
+  // same confusion because our approach isn't working."
+  if (learnerTrajectory) {
+    contextParts.push('\n### Learner Trajectory Assessment');
+    contextParts.push(formatLearnerTrajectory(learnerTrajectory));
+  }
+
   // Note: "Previous Tutor Suggestion" block removed — it duplicated the last
   // entry already present in conversation history above.
 
@@ -467,6 +513,210 @@ function buildMultiTurnContext(options) {
   }
 
   return contextParts.join('\n');
+}
+
+/**
+ * Extract superego feedback from a single turn's dialogue trace entries.
+ * Returns a structured assessment object for cross-turn memory.
+ */
+function extractTurnSuperegoAssessment(turnIndex, traceEntries) {
+  const superegoEntries = traceEntries.filter(e => e.agent === 'superego');
+  if (superegoEntries.length === 0) return null;
+
+  const lastEntry = superegoEntries[superegoEntries.length - 1];
+  const totalRejections = superegoEntries.filter(e => e.approved === false).length;
+  const totalApprovals = superegoEntries.filter(e => e.approved === true).length;
+  const interventionTypes = superegoEntries
+    .map(e => e.interventionType)
+    .filter(Boolean);
+
+  // Extract feedback text from last entry
+  let feedbackText = lastEntry.feedback || '';
+  if (!feedbackText && lastEntry.detail) {
+    const match = lastEntry.detail.match(/"feedback"\s*:\s*"([^"]+)"/);
+    if (match) feedbackText = match[1];
+  }
+
+  return {
+    turnIndex,
+    rejections: totalRejections,
+    approvals: totalApprovals,
+    interventionTypes,
+    finalApproved: lastEntry.approved,
+    confidence: lastEntry.confidence,
+    feedback: feedbackText.substring(0, 300),
+  };
+}
+
+/**
+ * Format a superego assessment for context injection.
+ */
+function formatSuperegoAssessment(assessment) {
+  const lines = [];
+  lines.push(`\n**Turn ${assessment.turnIndex + 1} internal critique:**`);
+  lines.push(`- Outcome: ${assessment.finalApproved ? 'approved' : 'rejected'} after ${assessment.rejections} rejection(s)`);
+  if (assessment.interventionTypes.length > 0) {
+    lines.push(`- Interventions: ${[...new Set(assessment.interventionTypes)].join(', ')}`);
+  }
+  if (assessment.feedback) {
+    lines.push(`- Key concern: "${assessment.feedback}"`);
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Analyze learner trajectory across turns to produce structured resistance signals.
+ * Returns null if insufficient data.
+ */
+function analyzeLearnerTrajectory(turnResults, conversationHistory) {
+  if (turnResults.length < 2) return null;
+
+  const trajectory = {
+    turnCount: turnResults.length,
+    engagementDirection: 'stable',
+    resistanceType: null,
+    resistanceStrength: 0,    // 0-3 scale
+    priorApproachEffective: null,
+    scoreTrajectory: [],
+    messageLengthTrajectory: [],
+    repeatedConfusion: false,
+    questionDiversity: 0,
+  };
+
+  // Score trajectory
+  trajectory.scoreTrajectory = turnResults
+    .filter(t => t.turnScore != null)
+    .map(t => t.turnScore);
+
+  // Message length trajectory (proxy for engagement)
+  const messageLengths = conversationHistory
+    .filter(h => h.learnerMessage)
+    .map(h => h.learnerMessage.length);
+  trajectory.messageLengthTrajectory = messageLengths;
+
+  // Engagement direction: declining if last 2 messages shorter than first 2
+  if (messageLengths.length >= 3) {
+    const earlyAvg = messageLengths.slice(0, 2).reduce((a, b) => a + b, 0) / 2;
+    const lateAvg = messageLengths.slice(-2).reduce((a, b) => a + b, 0) / 2;
+    if (lateAvg < earlyAvg * 0.6) trajectory.engagementDirection = 'declining';
+    else if (lateAvg > earlyAvg * 1.4) trajectory.engagementDirection = 'increasing';
+  }
+
+  // Score direction
+  if (trajectory.scoreTrajectory.length >= 2) {
+    const last = trajectory.scoreTrajectory[trajectory.scoreTrajectory.length - 1];
+    const prev = trajectory.scoreTrajectory[trajectory.scoreTrajectory.length - 2];
+    trajectory.priorApproachEffective = last >= prev;
+  }
+
+  // Repeated confusion detection: learner uses similar phrasing across turns
+  const learnerMessages = conversationHistory
+    .filter(h => h.learnerMessage)
+    .map(h => h.learnerMessage.toLowerCase());
+
+  if (learnerMessages.length >= 2) {
+    // Check for confusion markers repeating
+    const confusionPatterns = [
+      /i('m| am) (still )?(confused|lost|not sure|unsure)/i,
+      /i don'?t (understand|get|see)/i,
+      /what do you mean/i,
+      /can you explain/i,
+      /i('m| am) not following/i,
+    ];
+
+    const confusionCounts = learnerMessages.map(msg =>
+      confusionPatterns.filter(p => p.test(msg)).length
+    );
+    const lastTwoConfusion = confusionCounts.slice(-2);
+    if (lastTwoConfusion.length >= 2 && lastTwoConfusion.every(c => c > 0)) {
+      trajectory.repeatedConfusion = true;
+      trajectory.resistanceType = 'repeated_confusion';
+      trajectory.resistanceStrength = 2;
+    }
+  }
+
+  // Pushback detection
+  const lastMessage = learnerMessages[learnerMessages.length - 1] || '';
+  const pushbackPatterns = [
+    /\bbut\s+(what about|doesn'?t|isn'?t|that doesn'?t)\b/i,
+    /\bi disagree\b/i,
+    /\bi don'?t think\b/i,
+    /\bthat'?s not (right|correct|what i)\b/i,
+    /\byou('re| are) (wrong|missing|not)\b/i,
+  ];
+  if (pushbackPatterns.some(p => p.test(lastMessage))) {
+    trajectory.resistanceType = trajectory.resistanceType || 'pushback';
+    trajectory.resistanceStrength = Math.max(trajectory.resistanceStrength, 2);
+  }
+
+  // Disengagement detection: very short messages, no questions
+  if (messageLengths.length >= 2) {
+    const lastLen = messageLengths[messageLengths.length - 1];
+    if (lastLen < 30 && !lastMessage.includes('?')) {
+      trajectory.resistanceType = trajectory.resistanceType || 'disengagement';
+      trajectory.resistanceStrength = Math.max(trajectory.resistanceStrength, 1);
+      trajectory.engagementDirection = 'declining';
+    }
+  }
+
+  // Question diversity: how varied are the learner's questions?
+  const questions = learnerMessages.filter(m => m.includes('?'));
+  if (questions.length >= 2) {
+    // Simple word overlap check between consecutive questions
+    const uniqueQuestionWords = questions.map(q => new Set(q.split(/\s+/).filter(w => w.length > 3)));
+    let totalOverlap = 0;
+    for (let i = 1; i < uniqueQuestionWords.length; i++) {
+      const prev = uniqueQuestionWords[i - 1];
+      const curr = uniqueQuestionWords[i];
+      const overlap = [...curr].filter(w => prev.has(w)).length / Math.max(curr.size, 1);
+      totalOverlap += overlap;
+    }
+    trajectory.questionDiversity = 1 - (totalOverlap / Math.max(uniqueQuestionWords.length - 1, 1));
+  }
+
+  // Cumulative resistance: if score declining AND engagement declining, high resistance
+  if (trajectory.engagementDirection === 'declining' && trajectory.priorApproachEffective === false) {
+    trajectory.resistanceStrength = 3;
+    trajectory.resistanceType = trajectory.resistanceType || 'cumulative_decline';
+  }
+
+  return trajectory;
+}
+
+/**
+ * Format learner trajectory assessment for context injection.
+ */
+function formatLearnerTrajectory(trajectory) {
+  const lines = [];
+
+  // Engagement direction
+  const engagementEmoji = trajectory.engagementDirection === 'declining' ? 'DECLINING' :
+    trajectory.engagementDirection === 'increasing' ? 'INCREASING' : 'STABLE';
+  lines.push(`- Engagement: ${engagementEmoji} (over ${trajectory.turnCount} turns)`);
+
+  // Score trajectory
+  if (trajectory.scoreTrajectory.length >= 2) {
+    const scores = trajectory.scoreTrajectory.map(s => s.toFixed(0)).join(' → ');
+    lines.push(`- Score trajectory: ${scores}`);
+    lines.push(`- Prior approach effective: ${trajectory.priorApproachEffective ? 'YES' : 'NO'}`);
+  }
+
+  // Resistance
+  if (trajectory.resistanceType) {
+    const strengthLabel = ['none', 'mild', 'moderate', 'strong'][trajectory.resistanceStrength] || 'unknown';
+    lines.push(`- Resistance detected: ${trajectory.resistanceType} (${strengthLabel})`);
+  }
+
+  // Specific signals
+  if (trajectory.repeatedConfusion) {
+    lines.push(`- WARNING: Learner expressed confusion in consecutive turns — prior explanation did not land`);
+  }
+
+  if (trajectory.questionDiversity < 0.3 && trajectory.turnCount >= 3) {
+    lines.push(`- WARNING: Learner questions show low diversity — they may be stuck on the same concept`);
+  }
+
+  return lines.join('\n');
 }
 
 /**
@@ -654,7 +904,9 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     log = () => {},
     scenarioId = '',
     systemPromptExtension = null,
+    superegoPromptExtension = null, // Dynamic disposition adjustments for superego
     learnerId = null, // For Writing Pad memory persistence
+    dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
     dryRun = false,
   } = options;
 
@@ -699,7 +951,9 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
       useDialogue,
       maxRounds,
       systemPromptExtension,
+      superegoPromptExtension, // Dynamic disposition adjustments for superego
       learnerId, // Activates Writing Pad three-layer memory
+      dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
     }),
     { log }
   );
@@ -1418,14 +1672,18 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let conversationHistory = [];
   let previousSuggestion = null;
   const consolidatedTrace = [];
+  const priorSuperegoAssessments = [];  // Cross-turn superego memory
 
-  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId, dryRun };
-
-  // Check if prompt rewriting is enabled for this profile
+  // Check profile-level feature flags
   const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
+  const dialecticalNegotiation = rawProfile?.dialectical_negotiation ?? false;
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
   const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
+  const superegoDispositionRewriting = rawProfile?.superego_disposition_rewriting ?? false;
+
+  const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId, dialecticalNegotiation, dryRun };
   let sessionEvolution = null;
+  let superegoEvolution = null;
 
   // 4. Loop through turns (initial turn 0 + follow-up turns)
   const totalTurnCount = 1 + turns.length;
@@ -1454,11 +1712,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         learnerMessage: turnDef.action_details?.message,
       });
 
+      // Build learner trajectory assessment from accumulated turn data
+      const learnerTrajectory = analyzeLearnerTrajectory(turnResults, conversationHistory);
+
       contextStr = buildMultiTurnContext({
         originalContext: fullScenario.learner_context,
         conversationHistory,
         currentTurn: turnDef,
         previousSuggestion,
+        priorSuperegoAssessments,
+        learnerTrajectory,
       });
     }
 
@@ -1494,6 +1757,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     const turnOptions = {
       ...sharedTurnOptions,
       ...(sessionEvolution ? { systemPromptExtension: sessionEvolution } : {}),
+      ...(superegoEvolution ? { superegoPromptExtension: superegoEvolution } : {}),
       conversationHistory: conversationHistory.length > 0 ? conversationHistory : null,
       consolidatedTrace: consolidatedTrace.length > 0 ? consolidatedTrace : null,
     };
@@ -1537,6 +1801,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           detail: `Turn ${turnIdx + 1} complete`,
           timestamp: new Date().toISOString(),
         });
+      }
+    }
+
+    // Accumulate cross-turn superego memory from this turn's trace
+    if (genResult.dialogueTrace && genResult.dialogueTrace.length > 0) {
+      const assessment = extractTurnSuperegoAssessment(turnIdx, genResult.dialogueTrace);
+      if (assessment) {
+        priorSuperegoAssessments.push(assessment);
       }
     }
 
@@ -1612,6 +1884,33 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       }
       if (sessionEvolution) {
         log(`[evaluationRunner] Prompt rewriter (${promptRewritingStrategy}) generated ${sessionEvolution.split('\n').length - 2} directives for turn ${turnIdx + 1}`, 'info');
+      }
+    }
+
+    // Synthesize superego disposition evolution for next turn (if enabled)
+    if (superegoDispositionRewriting && turnIdx < totalTurnCount - 1) {
+      try {
+        superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
+          turnResults,
+          consolidatedTrace,
+          conversationHistory,
+          priorSuperegoAssessments,
+          config: rawProfile,
+        });
+        if (superegoEvolution) {
+          log(`[evaluationRunner] Superego disposition rewriter generated evolution for turn ${turnIdx + 1}`, 'info');
+          // Record in consolidated trace for verifiability
+          consolidatedTrace.push({
+            agent: 'superego_disposition',
+            action: 'rewrite',
+            turnIndex: turnIdx,
+            contextSummary: `Disposition evolution generated for turn ${turnIdx + 1}`,
+            detail: superegoEvolution,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        log(`[evaluationRunner] Superego disposition rewriting failed: ${error.message}`, 'warn');
       }
     }
 
