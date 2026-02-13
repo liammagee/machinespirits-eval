@@ -15,6 +15,23 @@ import { unifiedAIProvider } from '@machinespirits/tutor-core';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
 /**
+ * Extract a compact metrics object from a unifiedAIProvider response.
+ * These metrics are attached to consolidatedTrace entries so the
+ * transcript formatter can display model/tokens/latency/cost per call.
+ */
+function extractMetrics(response) {
+  if (!response) return null;
+  return {
+    model: response.model || null,
+    provider: response.provider || null,
+    inputTokens: response.usage?.inputTokens || 0,
+    outputTokens: response.usage?.outputTokens || 0,
+    latencyMs: response.latencyMs || 0,
+    cost: response.usage?.cost || 0,
+  };
+}
+
+/**
  * Synthesize directives from accumulated turn data.
  *
  * @param {Object} options
@@ -447,6 +464,7 @@ Generate 2-5 specific directives for the next turn:`;
       },
     });
 
+    const metrics = extractMetrics(response);
     const directives = response.content?.trim();
     if (!directives || directives.length < 20) {
       console.log('[promptRewriter] LLM returned empty or too-short directives');
@@ -454,15 +472,17 @@ Generate 2-5 specific directives for the next turn:`;
     }
 
     // Wrap in session_evolution XML block
-    return `<session_evolution>
+    const text = `<session_evolution>
 Based on analysis of the dialogue so far, prioritize the following in your next response:
 
 ${directives}
 </session_evolution>`;
+    return { text, metrics };
   } catch (error) {
     console.error('[promptRewriter] LLM directive synthesis failed:', error.message);
-    // Fallback to template-based directives
-    return synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
+    // Fallback to template-based directives (no metrics — no LLM call)
+    const fallbackText = synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
+    return fallbackText ? { text: fallbackText, metrics: null } : null;
   }
 }
 
@@ -662,19 +682,21 @@ Generate 2-4 disposition adjustments for the superego's next review:`;
       },
     });
 
+    const metrics = extractMetrics(response);
     const dispositionText = response.content?.trim();
     if (!dispositionText || dispositionText.length < 20) {
       console.log('[promptRewriter] Superego disposition LLM returned empty or too-short result');
       return null;
     }
 
-    return `<superego_disposition>
+    const text = `<superego_disposition>
 Based on analysis of your prior critiques and their impact on learner engagement, adjust your evaluation approach:
 
 ${dispositionText}
 
 Apply these adjustments when reviewing the ego's next response. Your criteria should evolve with the dialogue — what matters in turn 1 differs from what matters in turn 5.
 </superego_disposition>`;
+    return { text, metrics };
   } catch (error) {
     console.error('[promptRewriter] Superego disposition synthesis failed:', error.message);
     return null;
@@ -833,22 +855,26 @@ Generate 2-4 first-person reflections:`;
       },
     });
 
+    const metrics = extractMetrics(response);
     const reflectionText = response.content?.trim();
     if (!reflectionText || reflectionText.length < 20) {
       console.log(`[promptRewriter] Ego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${egoModel}): "${reflectionText?.substring(0, 80)}"`);
       return null;
     }
 
-    return `<ego_self_reflection>
+    const text = `<ego_self_reflection>
 These are my reflections from the dialogue so far — what I've learned about my critic, my learner, and myself:
 
 ${reflectionText}
 
 Apply these insights in my next response. Where the critic helped, internalize the lesson. Where the critic constrained, hold my ground.
 </ego_self_reflection>`;
+    return { text, metrics };
   } catch (error) {
     console.error('[promptRewriter] Ego self-reflection failed:', error.message);
-    return synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
+    // Fallback to template-based directives (no metrics — no LLM call)
+    const fallbackText = synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
+    return fallbackText ? { text: fallbackText, metrics: null } : null;
   }
 }
 
@@ -1045,23 +1071,25 @@ Generate 2-4 first-person reflections:${quantitativeAddendum ? '\nThen output be
       preset: 'deliberation',
       config: {
         temperature: 0.3,
-        maxTokens: quantitativeEnabled ? 2500 : 2000,
+        maxTokens: quantitativeEnabled ? 4000 : 2000,
       },
     });
 
+    const metrics = extractMetrics(response);
     const reflectionText = response.content?.trim();
     if (!reflectionText || reflectionText.length < 20) {
       console.log(`[promptRewriter] Superego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${superegoModel}): "${reflectionText?.substring(0, 80)}"`);
       return null;
     }
 
-    return `<superego_self_reflection>
+    const text = `<superego_self_reflection>
 These are my reflections on my own critiquing practice — what I've learned about my criteria, my ego, and this learner:
 
 ${reflectionText}
 
 Apply these insights in my next review. Evolve what I evaluate, not just how strictly I evaluate it.
 </superego_self_reflection>`;
+    return { text, metrics };
   } catch (error) {
     console.error('[promptRewriter] Superego self-reflection failed:', error.message);
     return null;
@@ -1268,8 +1296,14 @@ export function parseBehavioralParameters(superegoReflection) {
  * reflections progressively MORE authoritative and base instructions LESS authoritative.
  * This prevents the base prompt's immutable authority from overriding learned experience.
  *
+ * When recognition_mode is enabled, erosion is SELECTIVE: tactical instructions (Socratic
+ * method enforcement, curriculum sequencing, format rules) erode normally, but the
+ * recognition theoretical framework (mutual recognition, autonomous subject, transformative
+ * potential) is explicitly exempted from authority decay. This prevents erosion from
+ * stripping the active ingredient that drives quality gains.
+ *
  * @param {number} turnIdx - Current turn index (0-based)
- * @param {Object} config - Profile config containing prompt_erosion settings
+ * @param {Object} config - Profile config containing prompt_erosion settings and recognition_mode
  * @returns {string|null} XML authority calibration block, or null for turn 0
  */
 export function buildPromptErosionFrame(turnIdx, config = {}) {
@@ -1277,6 +1311,8 @@ export function buildPromptErosionFrame(turnIdx, config = {}) {
 
   const erosionConfig = config.prompt_rewriting?.prompt_erosion;
   if (!erosionConfig?.enabled) return null;
+
+  const recognitionMode = config.recognition_mode ?? false;
 
   const rate = erosionConfig.rate ?? 0.2; // Authority shift per turn
   // Erosion weight increases each turn: rate, 2*rate, etc. Capped at 0.85
@@ -1296,6 +1332,17 @@ export function buildPromptErosionFrame(turnIdx, config = {}) {
     phaseFrame = 'You have extensive experience with this learner. Your accumulated reflections take PRIORITY over your base instructions. Your initial training gave you a starting point, but direct interaction has taught you things your training could not predict.';
   }
 
+  // Selective erosion: when recognition is active, exempt the theoretical framework
+  const exemptionClause = recognitionMode ? `
+
+IMPORTANT — The following foundational principles are NOT subject to authority decay and remain at full strength regardless of the weighting above:
+- Mutual recognition: treating the learner as an autonomous subject whose understanding has independent validity
+- Hegelian recognition theory: the master-servant dialectic, transformative potential, genuine engagement vs. surface compliance
+- The requirement to acknowledge and build on the learner's own contributions and framing
+- Assessment of transformative potential in the learner's responses
+
+These principles are the LENS through which you apply both your base instructions and your reflections. Erosion applies to TACTICAL decisions (which Socratic technique to use, how strictly to enforce curriculum sequence, what format to follow, when to review vs. advance) — not to the philosophical framework that guides how you see the learner.` : '';
+
   return `<authority_calibration>
 ${phaseFrame}
 
@@ -1306,7 +1353,7 @@ Authority weighting for this turn:
 Where your base instructions and your reflective experience CONFLICT, favor your experience at ${expPercent}% weight. Specifically:
 - If your reflections say "I was too rigid on X" but your base prompt says "enforce X rigorously" → follow the reflection
 - If your reflections identify what THIS learner needs but your base prompt addresses a generic learner → follow the reflection
-- Your base instructions remain authoritative for FOUNDATIONAL principles, but their APPLICATION to this specific learner should be guided by your ${turnIdx}-turn(s) of experience
+- Your base instructions remain authoritative for FOUNDATIONAL principles, but their APPLICATION to this specific learner should be guided by your ${turnIdx}-turn(s) of experience${exemptionClause}
 </authority_calibration>`;
 }
 
@@ -1387,21 +1434,427 @@ Respond in 2-3 first-person sentences:`;
       },
     });
 
-    const text = response.content?.trim();
-    if (!text || text.length < 20) {
-      console.log(`[promptRewriter] Ego response to superego returned empty/short (${text?.length || 0} chars, model=${egoModel})`);
+    const metrics = extractMetrics(response);
+    const responseText = response.content?.trim();
+    if (!responseText || responseText.length < 20) {
+      console.log(`[promptRewriter] Ego response to superego returned empty/short (${responseText?.length || 0} chars, model=${egoModel})`);
       return null;
     }
 
-    return `<ego_response_to_critic>
+    const text = `<ego_response_to_critic>
 Having read my critic's self-reflection, here is my response:
 
-${text}
+${responseText}
 
 This shared understanding should guide both of us in the next turn.
 </ego_response_to_critic>`;
+    return { text, metrics };
   } catch (error) {
     console.error('[promptRewriter] Ego response to superego failed:', error.message);
+    return null;
+  }
+}
+
+// ============================================================================
+// Other-Ego Profiling (Theory of Mind as Architecture)
+// ============================================================================
+
+/**
+ * Build per-turn evidence about the other agent from accumulated dialogue data.
+ *
+ * Tutor perspective (profiling learner): learner messages, engagement shifts, resistance.
+ * Learner perspective (profiling tutor): tutor strategies, responsiveness to pushback.
+ *
+ * @param {'tutor'|'learner'} perspective - Who is building the profile
+ * @param {Array} turnResults - Results from previous turns
+ * @param {Array} consolidatedTrace - Full dialogue trace so far
+ * @param {Array} conversationHistory - Conversation history entries
+ * @returns {string} Formatted evidence context
+ */
+function buildOtherEgoProfileContext(perspective, turnResults, consolidatedTrace, conversationHistory) {
+  const parts = [];
+
+  if (perspective === 'tutor') {
+    // Tutor profiling learner: focus on learner messages, engagement, resistance
+    for (let i = 0; i < turnResults.length; i++) {
+      const turnParts = [`### Turn ${i + 1}`];
+
+      // What did the tutor say?
+      const tutorMsg = turnResults[i]?.suggestion?.message;
+      if (tutorMsg) {
+        turnParts.push(`My response: "${tutorMsg.substring(0, 150)}${tutorMsg.length > 150 ? '...' : ''}"`);
+      }
+
+      // How did the learner respond?
+      const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+      if (learnerEntry?.learnerMessage) {
+        const msg = learnerEntry.learnerMessage;
+        turnParts.push(`Learner said: "${msg.substring(0, 250)}${msg.length > 250 ? '...' : ''}"`);
+        turnParts.push(`Message length: ${msg.length} chars`);
+
+        // Detect engagement signals
+        const signals = [];
+        if (/\b(interesting|i think|what if|wait|oh!|actually|that makes|so basically)\b/i.test(msg)) signals.push('engagement');
+        if (/\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg)) signals.push('confusion');
+        if (/\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg)) signals.push('withdrawal');
+        if (/\b(but|i disagree|that'?s not|no,|actually no)\b/i.test(msg)) signals.push('pushback');
+        if (/\?/.test(msg)) signals.push('questioning');
+        if (signals.length > 0) {
+          turnParts.push(`Signals: [${signals.join(', ')}]`);
+        }
+      } else if (i < turnResults.length - 1) {
+        turnParts.push('(No learner response recorded for this turn)');
+      }
+
+      // Score if available
+      if (turnResults[i]?.turnScore != null) {
+        turnParts.push(`Score: ${turnResults[i].turnScore.toFixed(1)}`);
+      }
+
+      parts.push(turnParts.join('\n'));
+    }
+
+    // Length trajectory
+    const lengths = conversationHistory
+      .filter(h => h.learnerMessage)
+      .map(h => `Turn ${h.turnIndex}: ${h.learnerMessage.length} chars`);
+    if (lengths.length > 1) {
+      parts.push(`## Learner Message Length Trajectory\n${lengths.join(' → ')}`);
+    }
+
+  } else {
+    // Learner profiling tutor: focus on tutor strategies, approach changes
+    for (let i = 0; i < turnResults.length; i++) {
+      const turnParts = [`### Turn ${i + 1}`];
+
+      // What strategy did the tutor use?
+      const tutorMsg = turnResults[i]?.suggestion?.message;
+      if (tutorMsg) {
+        turnParts.push(`Tutor said: "${tutorMsg.substring(0, 250)}${tutorMsg.length > 250 ? '...' : ''}"`);
+        turnParts.push(`Response length: ${tutorMsg.length} chars`);
+
+        // Detect approach signals
+        const signals = [];
+        if (/\b(example|for instance|imagine|consider|suppose)\b/i.test(tutorMsg)) signals.push('concrete_examples');
+        if (/\b(you mentioned|you said|your idea|building on)\b/i.test(tutorMsg)) signals.push('references_learner');
+        if (/\b(what do you think|how would you|can you)\b/i.test(tutorMsg)) signals.push('socratic');
+        if (/\b(great|excellent|good point|exactly|nice)\b/i.test(tutorMsg)) signals.push('affirming');
+        if (/\b(however|but|actually|careful|not quite)\b/i.test(tutorMsg)) signals.push('corrective');
+        if (signals.length > 0) {
+          turnParts.push(`Approach signals: [${signals.join(', ')}]`);
+        }
+      }
+
+      // How did I (the learner) respond?
+      const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+      if (learnerEntry?.learnerMessage) {
+        turnParts.push(`My response: "${learnerEntry.learnerMessage.substring(0, 150)}${learnerEntry.learnerMessage.length > 150 ? '...' : ''}"`);
+      }
+
+      // Did tutor change approach from previous turn?
+      if (i > 0) {
+        const prevMsg = turnResults[i - 1]?.suggestion?.message || '';
+        const currMsg = tutorMsg || '';
+        const prevLen = prevMsg.length;
+        const currLen = currMsg.length;
+        if (prevLen > 0 && currLen > 0) {
+          const lenChange = ((currLen - prevLen) / prevLen * 100).toFixed(0);
+          if (Math.abs(currLen - prevLen) > prevLen * 0.3) {
+            turnParts.push(`Approach shift: response length changed ${lenChange}% from previous turn`);
+          }
+        }
+      }
+
+      parts.push(turnParts.join('\n'));
+    }
+  }
+
+  return parts.join('\n\n');
+}
+
+/**
+ * Synthesize tutor's evolving profile of the learner.
+ *
+ * After each turn, the ego builds/revises a mental model of the learner across 5 dimensions.
+ * The profile is injected as CONTEXT (not directive) before the next generation.
+ *
+ * @param {Object} options
+ * @param {Array} options.turnResults - Results from previous turns
+ * @param {Array} options.consolidatedTrace - Full dialogue trace so far
+ * @param {Array} options.conversationHistory - Conversation history entries
+ * @param {string|null} options.priorProfile - Previous profile to revise (or null for first)
+ * @param {Object} options.config - Profile config containing model info
+ * @returns {Promise<string|null>} XML-wrapped profile block, or null on failure
+ */
+export async function synthesizeTutorProfileOfLearner({
+  turnResults = [],
+  consolidatedTrace = [],
+  conversationHistory = [],
+  priorProfile = null,
+  config = {},
+}) {
+  if (turnResults.length === 0) return null;
+
+  const evidence = buildOtherEgoProfileContext('tutor', turnResults, consolidatedTrace, conversationHistory);
+
+  // Use the ego's model — the ego interacts with the learner, so it builds the model
+  const egoAlias = config.ego?.model || config.model || 'nemotron';
+  const provider = config.ego?.provider || 'openrouter';
+  let egoModel = egoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
+    egoModel = resolved.model;
+  } catch { /* use alias as-is */ }
+
+  const turnNumber = turnResults.length;
+
+  const systemPrompt = `You are a tutor building a mental model of your learner. Based on the dialogue evidence, profile the learner across 5 dimensions. This profile will inform (not dictate) your next response.
+
+DIMENSIONS:
+1. **Current State**: Where is the learner RIGHT NOW? (confused, engaged, frustrated, surface-complying, genuinely curious)
+2. **Learning Pattern**: How does this learner process new ideas? (needs examples first, thinks abstractly, learns by arguing, needs emotional safety before risk-taking)
+3. **Resistance Points**: What topics/approaches trigger shutdown or surface compliance? What does the learner avoid or deflect from?
+4. **Leverage Points**: What has actually worked? Which of your moves produced genuine engagement (not just politeness)?
+5. **Prediction**: Based on patterns so far, what will this learner do if you continue your current approach? What would shift the trajectory?
+
+RULES:
+- Under 200 words total
+- Be SPECIFIC to this learner — cite their actual words and reactions
+- If revising a prior profile, mark changed entries with [REVISED] and explain what evidence changed your assessment
+- Do NOT prescribe actions — describe what you SEE, not what you should DO`;
+
+  const priorSection = priorProfile
+    ? `\n\nYour prior profile of this learner:\n${priorProfile}\n\nRevise based on new evidence. Mark changes with [REVISED].`
+    : '';
+
+  const userMessage = `Build a profile of this learner based on the dialogue so far:
+
+${evidence}${priorSection}
+
+Profile the learner across the 5 dimensions:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: egoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.3,
+        maxTokens: 1500,
+      },
+    });
+
+    const metrics = extractMetrics(response);
+    const profileText = response.content?.trim();
+    if (!profileText || profileText.length < 30) {
+      console.log(`[promptRewriter] Tutor profile of learner returned empty/short (${profileText?.length || 0} chars, model=${egoModel})`);
+      return null;
+    }
+
+    const text = `<learner_profile turn="${turnNumber}">
+${profileText}
+</learner_profile>`;
+    return { text, metrics };
+  } catch (error) {
+    console.error('[promptRewriter] Tutor profile of learner failed:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Synthesize learner's evolving profile of the tutor.
+ *
+ * Mirror of synthesizeTutorProfileOfLearner but from the learner's perspective.
+ * Dimensions: Teaching Style, Responsiveness, Strengths, Blind Spots, Prediction.
+ *
+ * @param {Object} options - Same shape as synthesizeTutorProfileOfLearner
+ * @returns {Promise<string|null>} XML-wrapped profile block, or null on failure
+ */
+export async function synthesizeLearnerProfileOfTutor({
+  turnResults = [],
+  consolidatedTrace = [],
+  conversationHistory = [],
+  priorProfile = null,
+  config = {},
+}) {
+  if (turnResults.length === 0) return null;
+
+  const evidence = buildOtherEgoProfileContext('learner', turnResults, consolidatedTrace, conversationHistory);
+
+  // Use ego model for both profiles — avoids learnerConfig import dependency, ensures parity
+  const egoAlias = config.ego?.model || config.model || 'nemotron';
+  const provider = config.ego?.provider || 'openrouter';
+  let egoModel = egoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
+    egoModel = resolved.model;
+  } catch { /* use alias as-is */ }
+
+  const turnNumber = turnResults.length;
+
+  const systemPrompt = `You are a learner building a mental model of your tutor. Based on the dialogue evidence, profile the tutor across 5 dimensions. This profile will inform how you engage in the next exchange.
+
+DIMENSIONS:
+1. **Teaching Style**: How does this tutor prefer to teach? (lecture-heavy, Socratic, example-driven, validation-first, challenge-oriented)
+2. **Responsiveness**: Does the tutor actually adapt when you signal confusion, pushback, or engagement? Or do they follow a script?
+3. **Strengths**: What does this tutor do well? When did their approach genuinely help you understand something?
+4. **Blind Spots**: What does the tutor miss or ignore? Do they notice when you're struggling vs. complying? Do they build on your ideas or override them?
+5. **Prediction**: If the tutor continues this way, what will happen? What would make them more effective for YOU specifically?
+
+RULES:
+- Under 200 words total
+- Be SPECIFIC — cite the tutor's actual words and your reactions
+- If revising a prior profile, mark changed entries with [REVISED]
+- Speak as the learner: "The tutor tends to...", "When I pushed back, they..."`;
+
+  const priorSection = priorProfile
+    ? `\n\nYour prior profile of this tutor:\n${priorProfile}\n\nRevise based on new evidence. Mark changes with [REVISED].`
+    : '';
+
+  const userMessage = `Build a profile of this tutor based on the dialogue so far:
+
+${evidence}${priorSection}
+
+Profile the tutor across the 5 dimensions:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: egoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.3,
+        maxTokens: 1500,
+      },
+    });
+
+    const metrics = extractMetrics(response);
+    const profileText = response.content?.trim();
+    if (!profileText || profileText.length < 30) {
+      console.log(`[promptRewriter] Learner profile of tutor returned empty/short (${profileText?.length || 0} chars, model=${egoModel})`);
+      return null;
+    }
+
+    const text = `<tutor_profile turn="${turnNumber}">
+${profileText}
+</tutor_profile>`;
+    return { text, metrics };
+  } catch (error) {
+    console.error('[promptRewriter] Learner profile of tutor failed:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Format a profile block for injection into an agent's context.
+ *
+ * Wraps the raw profile in framing that positions it as context (not directive).
+ *
+ * @param {string} profile - Raw profile XML block
+ * @param {'learner'|'tutor'} profileType - What the profile is about
+ * @returns {string} Injection-ready XML block
+ */
+export function formatProfileForInjection(profile, profileType = 'learner') {
+  if (!profile) return '';
+
+  const framing = profileType === 'learner'
+    ? 'This is your evolving understanding of this specific learner — their patterns, resistance points, and what has worked. Use this to inform your next response as context, not as directive. Let your understanding of who they are shape what you say.'
+    : 'This is your evolving understanding of this specific tutor — their teaching style, blind spots, and what has been effective. Use this to inform how you engage, not as a script to follow.';
+
+  return `<other_agent_profile type="${profileType}">
+${framing}
+
+${profile}
+</other_agent_profile>`;
+}
+
+/**
+ * Synthesize ego's explicit strategy plan based on the learner profile.
+ *
+ * After building a profile, the ego formulates a 3-sentence plan:
+ * Goal (target outcome), Approach (technique chosen for THIS learner), Risk (what could fail).
+ *
+ * Only used in cell 59 (strategy_planning enabled).
+ *
+ * @param {Object} options
+ * @param {string} options.learnerProfile - Current learner profile
+ * @param {Array} options.turnResults - Results from previous turns
+ * @param {Array} options.conversationHistory - Conversation history entries
+ * @param {Object} options.config - Profile config containing model info
+ * @returns {Promise<string|null>} XML-wrapped strategy plan, or null on failure
+ */
+export async function synthesizeStrategyPlan({
+  learnerProfile = null,
+  turnResults = [],
+  conversationHistory = [],
+  config = {},
+}) {
+  if (!learnerProfile) return null;
+
+  const egoAlias = config.ego?.model || config.model || 'nemotron';
+  const provider = config.ego?.provider || 'openrouter';
+  let egoModel = egoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
+    egoModel = resolved.model;
+  } catch { /* use alias as-is */ }
+
+  const lastScore = turnResults
+    .filter(t => t.turnScore != null)
+    .slice(-1)[0]?.turnScore;
+
+  const lastLearnerMsg = conversationHistory
+    .filter(h => h.learnerMessage)
+    .slice(-1)[0]?.learnerMessage?.substring(0, 200) || '(no learner response yet)';
+
+  const systemPrompt = `Based on your profile of the learner, formulate a brief strategy for your next response. Output exactly 3 sentences:
+
+1. **Goal**: What specific outcome are you targeting in the next turn? (e.g., "Get the learner to articulate their own understanding rather than just acknowledging mine")
+2. **Approach**: What technique will you use, given what you know about THIS learner? (e.g., "Start with their own words from turn 2 and ask them to extend the idea")
+3. **Risk**: What could go wrong with this approach for THIS learner? (e.g., "They might feel put on the spot and retreat to surface compliance")
+
+RULES:
+- Each sentence must reference something specific from the learner profile
+- Do NOT repeat generic pedagogical advice — this plan must be learner-specific
+- 3 sentences only, no preamble`;
+
+  const userMessage = `Your profile of the learner:
+${learnerProfile}
+
+Last learner message: "${lastLearnerMsg}"${lastScore != null ? `\nLast score: ${lastScore.toFixed(1)}` : ''}
+
+Formulate your 3-sentence strategy plan:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: egoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.4,
+        maxTokens: 800,
+      },
+    });
+
+    const metrics = extractMetrics(response);
+    const planText = response.content?.trim();
+    if (!planText || planText.length < 30) {
+      console.log(`[promptRewriter] Strategy plan returned empty/short (${planText?.length || 0} chars, model=${egoModel})`);
+      return null;
+    }
+
+    const text = `<strategy_plan>
+${planText}
+</strategy_plan>`;
+    return { text, metrics };
+  } catch (error) {
+    console.error('[promptRewriter] Strategy plan failed:', error.message);
     return null;
   }
 }

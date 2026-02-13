@@ -1111,6 +1111,7 @@ export async function generateLearnerResponse(options) {
     learnerProfile = 'unified',
     personaId = 'eager_novice',
     modelOverride,
+    profileContext,
   } = options;
 
   // Resolve model override once (if provided) so all learner agents use the same model
@@ -1148,7 +1149,11 @@ export async function generateLearnerResponse(options) {
   if (hasMultiAgent) {
     // === STEP 1: Ego initial reaction ===
     const egoConfig = applyOverride(learnerConfig.getAgentConfig('ego', profile.name));
-    const egoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nGenerate your initial internal reaction as the learner's ego.`;
+    let egoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+    if (profileContext) {
+      egoContext += `\n\n${profileContext}`;
+    }
+    egoContext += `\n\nGenerate your initial internal reaction as the learner's ego.`;
     const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
 
     const egoInitialResponse = await callLearnerAI(egoConfig, egoSystemPrompt, "React to the tutor's message.", 'learner_ego_initial');
@@ -1159,7 +1164,11 @@ export async function generateLearnerResponse(options) {
 
     // === STEP 2: Superego critique ===
     const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name));
-    const superegoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?`;
+    let superegoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"`;
+    if (profileContext) {
+      superegoContext += `\n\n${profileContext}`;
+    }
+    superegoContext += `\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?`;
     const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
 
     const superegoResponse = await callLearnerAI(superegoConfig, superegoSystemPrompt, "Critique the EGO's reaction.", 'learner_superego');
@@ -1199,6 +1208,9 @@ export async function generateLearnerResponse(options) {
       if (!agentConfig) continue;
 
       let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+      if (profileContext) {
+        roleContext += `\n\n${profileContext}`;
+      }
       roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);

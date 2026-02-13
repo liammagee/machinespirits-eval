@@ -22,10 +22,12 @@ import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
+import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
 const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
+const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
 
 // Redirect tutor-core logs to this repo's logs/ directory (if available)
 import('@machinespirits/tutor-core').then(mod => {
@@ -85,6 +87,9 @@ const EVAL_ONLY_PROFILES = [
   'cell_48_base_dialectical_suspicious_unified_erosion', 'cell_49_recog_dialectical_suspicious_unified_erosion',
   'cell_50_base_dialectical_suspicious_unified_intersubjective', 'cell_51_recog_dialectical_suspicious_unified_intersubjective',
   'cell_52_base_dialectical_suspicious_unified_combined', 'cell_53_recog_dialectical_suspicious_unified_combined',
+  'cell_54_base_dialectical_profile_tutor', 'cell_55_recog_dialectical_profile_tutor',
+  'cell_56_base_dialectical_profile_bidirectional', 'cell_57_recog_dialectical_profile_bidirectional',
+  'cell_58_recog_dialectical_profile_bidirectional_full', 'cell_59_recog_dialectical_profile_bidirectional_strategy',
 ];
 
 /**
@@ -1078,10 +1083,12 @@ export async function runEvaluation(options = {}) {
     description = null,
     verbose = false,
     scenarioFilter = null,      // Cluster filter: 'single-turn', 'multi-turn', or category names
-    modelOverride = null,       // CLI --model override (e.g. "openrouter.nemotron")
-    egoModelOverride = null,    // CLI --ego-model override (replaces only ego model)
-    superegoModelOverride = null, // CLI --superego-model override (replaces only superego model)
+    modelOverride = null,       // CLI --model override (e.g. "openrouter.nemotron") — ALL agents
+    egoModelOverride = null,    // CLI --ego-model override (replaces only tutor ego model)
+    superegoModelOverride = null, // CLI --superego-model override (replaces only tutor superego model)
+    learnerModelOverride = null, // CLI --learner-model override (replaces all learner agent models)
     dryRun = false,             // Use mock data instead of API calls
+    transcriptMode = false,     // Write play-format transcript files during multi-turn runs
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -1159,6 +1166,7 @@ export async function runEvaluation(options = {}) {
   const effectiveModelOverride = modelOverride || yamlOverrides.modelOverride;
   const effectiveEgoModelOverride = egoModelOverride || yamlOverrides.egoModelOverride;
   const effectiveSuperegoModelOverride = superegoModelOverride || yamlOverrides.superegoModelOverride;
+  const effectiveLearnerModelOverride = learnerModelOverride || null;
 
   if (effectiveModelOverride) {
     targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride: effectiveModelOverride }));
@@ -1168,6 +1176,9 @@ export async function runEvaluation(options = {}) {
   }
   if (effectiveSuperegoModelOverride) {
     targetConfigs = targetConfigs.map(c => ({ ...c, superegoModelOverride: effectiveSuperegoModelOverride }));
+  }
+  if (effectiveLearnerModelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, learnerModelOverride: effectiveLearnerModelOverride }));
   }
 
   if (targetConfigs.length === 0) {
@@ -1191,6 +1202,7 @@ export async function runEvaluation(options = {}) {
       modelOverride: effectiveModelOverride || null,
       egoModelOverride: effectiveEgoModelOverride || null,
       superegoModelOverride: effectiveSuperegoModelOverride || null,
+      learnerModelOverride: effectiveLearnerModelOverride || null,
       // Store scenario IDs and profile names for accurate resume
       scenarioIds: targetScenarios.map(s => s.id),
       profileNames: targetConfigs.map(c => c.profileName).filter(Boolean),
@@ -1306,6 +1318,8 @@ export async function runEvaluation(options = {}) {
         skipRubricEval,
         verbose,
         dryRun,
+        transcriptMode,
+        runId: run.id,
       });
 
       // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
@@ -1650,7 +1664,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
  * This eliminates the separate multiTurnRunner orchestration.
  */
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
+  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false, transcriptMode = false, runId = null } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
 
@@ -1675,6 +1689,41 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const learnerId = `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
   log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
 
+  // Set up transcript file for incremental writing (tail -f friendly)
+  let transcriptPath = null;
+  if (transcriptMode) {
+    const effectiveRunId = runId || 'live';
+    const transcriptDir = path.join(TRANSCRIPTS_DIR, effectiveRunId);
+    if (!fs.existsSync(transcriptDir)) fs.mkdirSync(transcriptDir, { recursive: true });
+    const safeName = `${config.profileName}--${scenario.id}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+    transcriptPath = path.join(transcriptDir, `${safeName}.txt`);
+    // Write header
+    const totalTurnCount = 1 + (fullScenario.turns || []).length;
+    const header = `\n${(fullScenario.name || scenario.id).toUpperCase()} (${totalTurnCount}-turn)\n${config.profileName}\n${'─'.repeat(40)}\n\n`;
+    fs.writeFileSync(transcriptPath, header);
+    log(`[evaluationRunner] Transcript: ${transcriptPath}`, 'info');
+  }
+
+  // Helper: append new trace entries to transcript file and optionally console
+  let lastTranscriptIdx = 0;
+  function flushTranscript() {
+    if (!transcriptMode || !transcriptPath) return;
+    const newEntries = consolidatedTrace.slice(lastTranscriptIdx);
+    if (newEntries.length === 0) return;
+    lastTranscriptIdx = consolidatedTrace.length;
+    const lines = [];
+    for (const entry of newEntries) {
+      const formatted = formatEntry(entry, { detail: 'play' });
+      if (formatted) lines.push(formatted + '\n');
+      // Also print compact line to console in transcript mode
+      const compactLine = formatCompactLine(entry);
+      if (compactLine) console.log(compactLine);
+    }
+    if (lines.length > 0) {
+      fs.appendFileSync(transcriptPath, lines.join('\n'));
+    }
+  }
+
   // Deep-clone turns to prevent mutation of shared scenario objects across profiles
   const turns = JSON.parse(JSON.stringify(fullScenario.turns || []));
   const turnResults = [];
@@ -1692,6 +1741,31 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // Check profile-level feature flags
   const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
+
+  // Apply CLI model override to rawProfile so prompt rewriter calls use the correct model.
+  // Without this, --model/--ego-model only affects tutor-core's generateSuggestions,
+  // while promptRewriter functions (self-reflection, profiling, etc.) still use the YAML model.
+  if (config.modelOverride || config.egoModelOverride) {
+    const overrideModel = config.egoModelOverride || config.modelOverride;
+    try {
+      const r = evalConfigLoader.resolveModel(overrideModel);
+      if (rawProfile?.ego) {
+        rawProfile.ego = { ...rawProfile.ego, provider: r.provider, model: r.model };
+      }
+      // Also update top-level model for functions that read config.model
+      if (rawProfile) rawProfile.model = r.model;
+    } catch { /* leave rawProfile as-is if resolution fails */ }
+  }
+  if (config.modelOverride || config.superegoModelOverride) {
+    const overrideModel = config.superegoModelOverride || config.modelOverride;
+    try {
+      const r = evalConfigLoader.resolveModel(overrideModel);
+      if (rawProfile?.superego) {
+        rawProfile.superego = { ...rawProfile.superego, provider: r.provider, model: r.model };
+      }
+    } catch { /* leave rawProfile as-is if resolution fails */ }
+  }
+
   const dialecticalNegotiation = rawProfile?.dialectical_negotiation ?? false;
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
   const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
@@ -1699,11 +1773,22 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const quantitativeDispositionEnabled = rawProfile?.prompt_rewriting?.quantitative_disposition ?? false;
   const promptErosionEnabled = rawProfile?.prompt_rewriting?.prompt_erosion?.enabled ?? false;
   const intersubjectiveEnabled = rawProfile?.prompt_rewriting?.intersubjective ?? false;
+  const otherEgoProfilingEnabled = rawProfile?.other_ego_profiling?.enabled ?? false;
+  const otherEgoBidirectional = rawProfile?.other_ego_profiling?.bidirectional ?? false;
+  const strategyPlanningEnabled = rawProfile?.other_ego_profiling?.strategy_planning ?? false;
 
   const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId, dialecticalNegotiation, dryRun };
   let sessionEvolution = null;
   let superegoEvolution = null;
   let behavioralOverrides = null; // Parsed quantitative params from superego self-reflection
+  let tutorProfileOfLearner = null;  // Other-ego: tutor's mental model of learner
+  let learnerProfileOfTutor = null;  // Other-ego: learner's mental model of tutor
+  let strategyPlan = null;           // Other-ego: ego's explicit strategy plan
+
+  // Per-dialogue rejection budget: limits total superego rejections across all turns
+  // to prevent worst-case cascade (e.g., 3 rejections × 5 turns = 15 total)
+  let rejectionBudget = rawProfile?.dialogue?.rejection_budget ?? null;  // null = unlimited (backwards-compatible)
+  let totalRejections = 0;
 
   // 4. Loop through turns (initial turn 0 + follow-up turns)
   const totalTurnCount = 1 + turns.length;
@@ -1783,6 +1868,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       }
     }
 
+    // Append other-ego profile and strategy plan to ego extension
+    // Injection order: erosion frame → self-reflection → other-ego profile → strategy plan
+    if (otherEgoProfilingEnabled && tutorProfileOfLearner) {
+      const profileBlock = promptRewriter.formatProfileForInjection(tutorProfileOfLearner, 'learner');
+      fullEgoExtension = (fullEgoExtension ? fullEgoExtension + '\n\n' : '') + profileBlock;
+    }
+    if (strategyPlanningEnabled && strategyPlan) {
+      fullEgoExtension = (fullEgoExtension ? fullEgoExtension + '\n\n' : '') + strategyPlan;
+    }
+
     // Build the superego prompt extension: erosion frame + superego evolution (reflections)
     let fullSuperegoExtension = superegoEvolution;
     if (promptErosionEnabled && turnIdx > 0 && superegoEvolution) {
@@ -1794,11 +1889,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     // Call the SAME generation+evaluation code path as single-turn
     // Pass dialogue context so the judge can see the full exchange
+    // When rejection budget is exhausted, also skip outer superego review loop (maxRounds: 0)
+    const budgetExhausted = rejectionBudget !== null && totalRejections >= rejectionBudget;
     const turnOptions = {
       ...sharedTurnOptions,
       ...(fullEgoExtension ? { systemPromptExtension: fullEgoExtension } : {}),
       ...(fullSuperegoExtension ? { superegoPromptExtension: fullSuperegoExtension } : {}),
       ...(behavioralOverrides ? { behavioralOverrides } : {}),
+      ...(budgetExhausted ? { maxRounds: 0 } : {}),
       conversationHistory: conversationHistory.length > 0 ? conversationHistory : null,
       consolidatedTrace: consolidatedTrace.length > 0 ? consolidatedTrace : null,
     };
@@ -1845,11 +1943,36 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       }
     }
 
+    // Flush transcript: ego/superego exchange for this turn
+    flushTranscript();
+
     // Accumulate cross-turn superego memory from this turn's trace
     if (genResult.dialogueTrace && genResult.dialogueTrace.length > 0) {
       const assessment = extractTurnSuperegoAssessment(turnIdx, genResult.dialogueTrace);
       if (assessment) {
         priorSuperegoAssessments.push(assessment);
+      }
+    }
+
+    // Track rejection budget across turns: count superego rejections in this turn's trace
+    if (rejectionBudget !== null && genResult.dialogueTrace) {
+      const turnRejections = genResult.dialogueTrace.filter(
+        entry => entry.agent === 'superego' && entry.action === 'review' && entry.approved === false
+      ).length;
+      totalRejections += turnRejections;
+
+      if (totalRejections >= rejectionBudget) {
+        // Budget exhausted: force approve-only mode for remaining turns
+        behavioralOverrides = { ...(behavioralOverrides || {}), max_rejections: 0 };
+        log(`[evaluationRunner] Rejection budget exhausted (${totalRejections}/${rejectionBudget}): forcing approve-only for remaining turns`, 'info');
+        consolidatedTrace.push({
+          agent: 'rejection_budget',
+          action: 'exhausted',
+          turnIndex: turnIdx,
+          contextSummary: `Budget exhausted: ${totalRejections}/${rejectionBudget} rejections used`,
+          detail: `Total rejections across ${turnIdx + 1} turns: ${totalRejections}. Remaining turns will auto-approve.`,
+          timestamp: new Date().toISOString(),
+        });
       }
     }
 
@@ -1898,12 +2021,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       if (promptRewritingStrategy === 'self_reflection') {
         // Self-reflective ego evolution — ego reflects using its own model
         try {
-          sessionEvolution = await promptRewriter.synthesizeEgoSelfReflection({
+          const egoReflResult = await promptRewriter.synthesizeEgoSelfReflection({
             turnResults,
             consolidatedTrace,
             conversationHistory,
             config: rawProfile,
           });
+          sessionEvolution = egoReflResult?.text ?? null;
           if (sessionEvolution) {
             log(`[evaluationRunner] Ego self-reflection generated for turn ${turnIdx + 1}`, 'info');
             consolidatedTrace.push({
@@ -1912,6 +2036,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               turnIndex: turnIdx,
               contextSummary: `Ego self-reflection generated for turn ${turnIdx + 1}`,
               detail: sessionEvolution,
+              metrics: egoReflResult?.metrics ?? null,
               timestamp: new Date().toISOString(),
             });
           } else {
@@ -1934,12 +2059,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       } else if (promptRewritingStrategy === 'llm') {
         // LLM-based directive synthesis using superego model
         try {
-          sessionEvolution = await promptRewriter.synthesizeDirectivesLLM({
+          const llmDirResult = await promptRewriter.synthesizeDirectivesLLM({
             turnResults,
             consolidatedTrace,
             conversationHistory,
             config: rawProfile,
           });
+          sessionEvolution = llmDirResult?.text ?? null;
           if (sessionEvolution) {
             log(`[evaluationRunner] LLM rewriter generated directives for turn ${turnIdx + 1}`, 'info');
           }
@@ -1969,13 +2095,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       try {
         if (promptRewritingStrategy === 'self_reflection') {
           // Self-reflective superego evolution — superego reflects using its own model
-          superegoEvolution = await promptRewriter.synthesizeSupergoSelfReflection({
+          const seReflResult = await promptRewriter.synthesizeSupergoSelfReflection({
             turnResults,
             consolidatedTrace,
             conversationHistory,
             priorSuperegoAssessments,
             config: rawProfile,
           });
+          superegoEvolution = seReflResult?.text ?? null;
           if (superegoEvolution) {
             log(`[evaluationRunner] Superego self-reflection generated for turn ${turnIdx + 1}`, 'info');
             consolidatedTrace.push({
@@ -1984,27 +2111,30 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               turnIndex: turnIdx,
               contextSummary: `Superego self-reflection generated for turn ${turnIdx + 1}`,
               detail: superegoEvolution,
+              metrics: seReflResult?.metrics ?? null,
               timestamp: new Date().toISOString(),
             });
           } else {
             // Self-reflection returned empty — fall back to LLM disposition rewriting
             log(`[evaluationRunner] Superego self-reflection returned empty, falling back to LLM disposition for turn ${turnIdx + 1}`, 'warn');
-            superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
+            const dispFallback = await promptRewriter.synthesizeSuperegoDisposition({
               turnResults,
               consolidatedTrace,
               conversationHistory,
               priorSuperegoAssessments,
               config: rawProfile,
             });
+            superegoEvolution = dispFallback?.text ?? null;
           }
         } else {
-          superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
+          const dispResult = await promptRewriter.synthesizeSuperegoDisposition({
             turnResults,
             consolidatedTrace,
             conversationHistory,
             priorSuperegoAssessments,
             config: rawProfile,
           });
+          superegoEvolution = dispResult?.text ?? null;
           if (superegoEvolution) {
             log(`[evaluationRunner] Superego disposition rewriter generated evolution for turn ${turnIdx + 1}`, 'info');
             // Record in consolidated trace for verifiability
@@ -2014,6 +2144,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               turnIndex: turnIdx,
               contextSummary: `Disposition evolution generated for turn ${turnIdx + 1}`,
               detail: superegoEvolution,
+              metrics: dispResult?.metrics ?? null,
               timestamp: new Date().toISOString(),
             });
           }
@@ -2045,25 +2176,27 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // Intersubjective recognition: ego responds to superego's self-reflection (if enabled)
     if (intersubjectiveEnabled && superegoEvolution && turnIdx < totalTurnCount - 1) {
       try {
-        const egoResponse = await promptRewriter.synthesizeEgoResponseToSuperego({
+        const egoRespResult = await promptRewriter.synthesizeEgoResponseToSuperego({
           superegoReflection: superegoEvolution,
           egoReflection: sessionEvolution,
           turnResults,
           conversationHistory,
           config: rawProfile,
         });
-        if (egoResponse) {
+        const egoResponseText = egoRespResult?.text ?? null;
+        if (egoResponseText) {
           // Append ego's response to critic alongside the ego's own self-reflection
           sessionEvolution = sessionEvolution
-            ? sessionEvolution + '\n\n' + egoResponse
-            : egoResponse;
+            ? sessionEvolution + '\n\n' + egoResponseText
+            : egoResponseText;
           log(`[evaluationRunner] Intersubjective ego response to superego generated for turn ${turnIdx + 1}`, 'info');
           consolidatedTrace.push({
             agent: 'ego_intersubjective',
             action: 'respond_to_critic',
             turnIndex: turnIdx,
             contextSummary: `Ego responded to superego's self-reflection for turn ${turnIdx + 1}`,
-            detail: egoResponse,
+            detail: egoResponseText,
+            metrics: egoRespResult?.metrics ?? null,
             timestamp: new Date().toISOString(),
           });
         }
@@ -2071,6 +2204,94 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         log(`[evaluationRunner] Intersubjective ego response failed: ${error.message}`, 'warn');
       }
     }
+
+    // Build other-ego profiles (Theory of Mind) for next turn
+    if (otherEgoProfilingEnabled && turnIdx < totalTurnCount - 1) {
+      // Tutor profiles learner
+      try {
+        const tutorProfResult = await promptRewriter.synthesizeTutorProfileOfLearner({
+          turnResults,
+          consolidatedTrace,
+          conversationHistory,
+          priorProfile: tutorProfileOfLearner,
+          config: rawProfile,
+        });
+        if (tutorProfResult?.text) {
+          tutorProfileOfLearner = tutorProfResult.text;
+          log(`[evaluationRunner] Tutor profile of learner generated for turn ${turnIdx + 1}`, 'info');
+          consolidatedTrace.push({
+            agent: 'tutor_other_ego',
+            action: 'profile_learner',
+            turnIndex: turnIdx,
+            contextSummary: `Tutor built mental model of learner after turn ${turnIdx + 1}`,
+            detail: tutorProfileOfLearner,
+            metrics: tutorProfResult.metrics ?? null,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        log(`[evaluationRunner] Tutor profile of learner failed: ${error.message}`, 'warn');
+        // Preserve prior profile on failure
+      }
+
+      // Bidirectional: learner profiles tutor
+      if (otherEgoBidirectional) {
+        try {
+          const learnerProfResult = await promptRewriter.synthesizeLearnerProfileOfTutor({
+            turnResults,
+            consolidatedTrace,
+            conversationHistory,
+            priorProfile: learnerProfileOfTutor,
+            config: rawProfile,
+          });
+          if (learnerProfResult?.text) {
+            learnerProfileOfTutor = learnerProfResult.text;
+            log(`[evaluationRunner] Learner profile of tutor generated for turn ${turnIdx + 1}`, 'info');
+            consolidatedTrace.push({
+              agent: 'learner_other_ego',
+              action: 'profile_tutor',
+              turnIndex: turnIdx,
+              contextSummary: `Learner built mental model of tutor after turn ${turnIdx + 1}`,
+              detail: learnerProfileOfTutor,
+              metrics: learnerProfResult.metrics ?? null,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch (error) {
+          log(`[evaluationRunner] Learner profile of tutor failed: ${error.message}`, 'warn');
+        }
+      }
+
+      // Strategy planning (cell 59 only)
+      if (strategyPlanningEnabled && tutorProfileOfLearner) {
+        try {
+          const stratResult = await promptRewriter.synthesizeStrategyPlan({
+            learnerProfile: tutorProfileOfLearner,
+            turnResults,
+            conversationHistory,
+            config: rawProfile,
+          });
+          strategyPlan = stratResult?.text ?? null;
+          if (strategyPlan) {
+            log(`[evaluationRunner] Strategy plan generated for turn ${turnIdx + 1}`, 'info');
+            consolidatedTrace.push({
+              agent: 'ego_strategy',
+              action: 'plan',
+              turnIndex: turnIdx,
+              contextSummary: `Ego formulated strategy plan for turn ${turnIdx + 1}`,
+              detail: strategyPlan,
+              metrics: stratResult?.metrics ?? null,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch (error) {
+          log(`[evaluationRunner] Strategy plan failed: ${error.message}`, 'warn');
+        }
+      }
+    }
+
+    // Flush transcript: reflections (self-reflection, disposition, profiling, etc.)
+    flushTranscript();
 
     // Generate LLM learner response for next turn if ego_superego architecture
     // Note: check includes() to handle both 'ego_superego' and 'ego_superego_recognition'
@@ -2086,7 +2307,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           })),
           learnerProfile: resolvedConfig.learnerArchitecture,
           personaId: fullScenario.learner_persona || 'eager_novice',
-          modelOverride: config.modelOverride || null,
+          modelOverride: config.learnerModelOverride || config.modelOverride || null,
+          profileContext: (otherEgoBidirectional && learnerProfileOfTutor)
+            ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
+            : null,
         });
 
         // Override scripted message with LLM-generated one
@@ -2124,8 +2348,23 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         }
 
         log(`[evaluationRunner] Generated LLM learner response (ego_superego): "${learnerResponse.message.substring(0, 80)}..."`, 'info');
+
+        // Flush transcript: learner deliberation
+        flushTranscript();
       }
     }
+  }
+
+  // Write complete transcript file at end (for post-hoc viewing)
+  if (transcriptMode && transcriptPath) {
+    const fullTranscript = formatTranscript(consolidatedTrace, {
+      detail: 'play',
+      scenarioName: fullScenario.name || scenario.id,
+      profileName: config.profileName,
+      totalTurns: turnResults.length,
+    });
+    fs.writeFileSync(transcriptPath, fullTranscript);
+    log(`[evaluationRunner] Transcript written: ${transcriptPath}`, 'info');
   }
 
   // 5. Aggregate scores across turns
@@ -2367,6 +2606,7 @@ export async function resumeEvaluation(options = {}) {
   const runsPerConfig = metadata.runsPerConfig || 1;
   const skipRubricEval = metadata.skipRubricEval || false;
   const modelOverride = metadata.modelOverride || null;
+  const learnerModelOverride = metadata.learnerModelOverride || null;
 
   // 3. Get existing results for completion checking
   const existingResults = evaluationStore.getResults(runId);
@@ -2408,9 +2648,12 @@ export async function resumeEvaluation(options = {}) {
     label: name,
   }));
 
-  // 6. Re-apply modelOverride if present in metadata
+  // 6. Re-apply model overrides if present in metadata
   if (modelOverride) {
     targetConfigs = targetConfigs.map(c => ({ ...c, modelOverride }));
+  }
+  if (learnerModelOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, learnerModelOverride }));
   }
 
   // 6. Count successful results per (profile, scenario) combo and fill up to runsPerConfig.
@@ -2462,6 +2705,7 @@ export async function resumeEvaluation(options = {}) {
   console.log(`  Profiles: ${profileNames.join(', ')}`);
   console.log(`  Scenarios: ${targetScenarios.length}`);
   if (modelOverride) console.log(`  Model override: ${modelOverride}`);
+  if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
 
   // Initialize content resolver (same as runEvaluation)
   const contentConfig = evalConfigLoader.getContentConfig();
