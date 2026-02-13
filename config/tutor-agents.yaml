@@ -1681,3 +1681,392 @@ profiles:
       enforce_mutual_recognition: true
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # ============================================================================
+  # Cells 46-53: Insight-Action Gap Mechanisms
+  # ============================================================================
+  # These cells test 3 mechanisms to close the insight-action gap where superego
+  # reflections diagnose problems but don't change behavior. All use suspicious
+  # superego type for controlled comparison against cells 40-41.
+  #
+  # Also fixes foundational gap: superegoPromptExtension is now threaded to the
+  # dialectical engine, so superego self-reflections reach the critique prompt.
+
+  # Cell 46-47: Quantitative Disposition
+  # Superego self-reflection outputs parseable behavioral parameters (rejection_threshold,
+  # max_rejections, priority/deprioritized criteria) that are enforced by the dialectical engine.
+  cell_46_base_dialectical_suspicious_unified_quantitative:
+    description: "Insight-action cell 46: base ego + suspicious superego + quantitative disposition"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: quantitative_disposition
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      quantitative_disposition: true
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  cell_47_recog_dialectical_suspicious_unified_quantitative:
+    description: "Insight-action cell 47: recognition ego + suspicious superego + quantitative disposition"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: quantitative_disposition
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      quantitative_disposition: true
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 48-49: Progressive Prompt Erosion
+  # Each turn reduces base prompt authority and increases experiential reflection authority.
+  # Rate 0.2 means: turn 1 = 80/20 base/experience, turn 2 = 60/40, turn 3 = 40/60, etc.
+  cell_48_base_dialectical_suspicious_unified_erosion:
+    description: "Insight-action cell 48: base ego + suspicious superego + prompt erosion"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: prompt_erosion
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      prompt_erosion:
+        enabled: true
+        rate: 0.2
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  cell_49_recog_dialectical_suspicious_unified_erosion:
+    description: "Insight-action cell 49: recognition ego + suspicious superego + prompt erosion"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: prompt_erosion
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      prompt_erosion:
+        enabled: true
+        rate: 0.2
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 50-51: Intersubjective Recognition
+  # After both ego and superego reflect, ego reads superego's reflection and responds.
+  # Creates bidirectional awareness — reflections become dialogues, not monologues.
+  cell_50_base_dialectical_suspicious_unified_intersubjective:
+    description: "Insight-action cell 50: base ego + suspicious superego + intersubjective recognition"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: intersubjective
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      intersubjective: true
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  cell_51_recog_dialectical_suspicious_unified_intersubjective:
+    description: "Insight-action cell 51: recognition ego + suspicious superego + intersubjective recognition"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: intersubjective
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      intersubjective: true
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 52-53: Combined — All 3 Mechanisms
+  # Quantitative disposition + prompt erosion + intersubjective recognition
+  cell_52_base_dialectical_suspicious_unified_combined:
+    description: "Insight-action cell 52: base ego + suspicious superego + all 3 mechanisms combined"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: combined
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      quantitative_disposition: true
+      prompt_erosion:
+        enabled: true
+        rate: 0.2
+      intersubjective: true
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.65
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  cell_53_recog_dialectical_suspicious_unified_combined:
+    description: "Insight-action cell 53: recognition ego + suspicious superego + all 3 mechanisms combined"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+      mechanism: combined
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+      quantitative_disposition: true
+      prompt_erosion:
+        enabled: true
+        rate: 0.2
+      intersubjective: true
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 3
+      convergence_threshold: 0.60
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
