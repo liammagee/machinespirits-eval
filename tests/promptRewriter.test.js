@@ -282,6 +282,50 @@ describe('buildPromptErosionFrame', () => {
     assert.ok(result.includes('85%'), 'experience should cap at 85%');
     assert.ok(result.includes('15%'), 'base should be 15% at cap');
   });
+
+  it('omits recognition exemption when recognition_mode is false', async () => {
+    const promptRewriter = await import('../services/promptRewriter.js');
+    const result = promptRewriter.buildPromptErosionFrame(2, {
+      recognition_mode: false,
+      prompt_rewriting: { prompt_erosion: { enabled: true, rate: 0.2 } },
+    });
+    assert.ok(result, 'should return a string');
+    assert.ok(!result.includes('NOT subject to authority decay'), 'should not contain exemption clause');
+    assert.ok(!result.includes('Mutual recognition'), 'should not mention recognition theory');
+  });
+
+  it('includes recognition exemption when recognition_mode is true', async () => {
+    const promptRewriter = await import('../services/promptRewriter.js');
+    const result = promptRewriter.buildPromptErosionFrame(2, {
+      recognition_mode: true,
+      prompt_rewriting: { prompt_erosion: { enabled: true, rate: 0.2 } },
+    });
+    assert.ok(result, 'should return a string');
+    assert.ok(result.includes('NOT subject to authority decay'), 'should contain exemption clause');
+    assert.ok(result.includes('Mutual recognition'), 'should mention mutual recognition');
+    assert.ok(result.includes('autonomous subject'), 'should mention autonomous subject');
+    assert.ok(result.includes('TACTICAL'), 'should clarify erosion applies to tactical decisions');
+  });
+
+  it('includes recognition exemption at all erosion phases', async () => {
+    const promptRewriter = await import('../services/promptRewriter.js');
+    const config = {
+      recognition_mode: true,
+      prompt_rewriting: { prompt_erosion: { enabled: true, rate: 0.2 } },
+    };
+
+    // Early phase (turn 1, 20%)
+    const early = promptRewriter.buildPromptErosionFrame(1, config);
+    assert.ok(early.includes('NOT subject to authority decay'), 'exemption present at early phase');
+
+    // Mid phase (turn 2, 40%)
+    const mid = promptRewriter.buildPromptErosionFrame(2, config);
+    assert.ok(mid.includes('NOT subject to authority decay'), 'exemption present at mid phase');
+
+    // Late phase (turn 4, 80%)
+    const late = promptRewriter.buildPromptErosionFrame(4, config);
+    assert.ok(late.includes('NOT subject to authority decay'), 'exemption present at late phase');
+  });
 });
 
 // ============================================================================
@@ -301,5 +345,59 @@ describe('intersubjective recognition exports', () => {
       config: {},
     });
     assert.strictEqual(result, null);
+  });
+});
+
+// ============================================================================
+// Return type contract: { text, metrics } for LLM functions
+// ============================================================================
+describe('promptRewriter return type contract', () => {
+  it('template synthesizeDirectives returns plain string (no metrics)', async () => {
+    const { synthesizeDirectives } = await import('../services/promptRewriter.js');
+    const result = synthesizeDirectives({
+      turnResults: [
+        { turnScore: 90, scores: { specificity: 90 } },
+        { turnScore: 70, scores: { specificity: 50 } },
+      ],
+      consolidatedTrace: [],
+      conversationHistory: [],
+    });
+    // Template function returns plain string, not { text, metrics }
+    assert.strictEqual(typeof result, 'string', 'template function should return plain string');
+    assert.ok(result.includes('<session_evolution>'), 'should wrap in XML');
+  });
+
+  it('LLM functions return null (not object) for empty input', async () => {
+    const pr = await import('../services/promptRewriter.js');
+
+    // All LLM functions should return null when given empty turnResults
+    const egoRefl = await pr.synthesizeEgoSelfReflection({ turnResults: [], config: {} });
+    assert.strictEqual(egoRefl, null, 'ego self-reflection should be null for empty input');
+
+    const seRefl = await pr.synthesizeSupergoSelfReflection({ turnResults: [], config: {} });
+    assert.strictEqual(seRefl, null, 'superego self-reflection should be null for empty input');
+
+    const directives = await pr.synthesizeDirectivesLLM({ turnResults: [], config: {} });
+    assert.strictEqual(directives, null, 'LLM directives should be null for empty input');
+
+    const seDisp = await pr.synthesizeSuperegoDisposition({ turnResults: [], config: {} });
+    assert.strictEqual(seDisp, null, 'superego disposition should be null for empty input');
+
+    const tutorProf = await pr.synthesizeTutorProfileOfLearner({ turnResults: [], config: {} });
+    assert.strictEqual(tutorProf, null, 'tutor profile should be null for empty input');
+
+    const learnerProf = await pr.synthesizeLearnerProfileOfTutor({ turnResults: [], config: {} });
+    assert.strictEqual(learnerProf, null, 'learner profile should be null for empty input');
+
+    const strategy = await pr.synthesizeStrategyPlan({ learnerProfile: null, config: {} });
+    assert.strictEqual(strategy, null, 'strategy plan should be null for null input');
+
+    const egoResp = await pr.synthesizeEgoResponseToSuperego({ superegoReflection: null, config: {} });
+    assert.strictEqual(egoResp, null, 'ego response should be null for null input');
+  });
+
+  it('extractMetrics helper is not exported (internal only)', async () => {
+    const pr = await import('../services/promptRewriter.js');
+    assert.strictEqual(pr.extractMetrics, undefined, 'extractMetrics should be internal');
   });
 });

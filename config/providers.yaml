@@ -29,10 +29,11 @@ providers:
       # Budget-friendly options (free tier)
       nemotron: nvidia/nemotron-3-nano-30b-a3b:free
       glm47: z-ai/glm-4.7
+      glm5: z-ai/glm-5
       kimi-k2: moonshotai/kimi-k2-thinking
       "kimi-k2.5": moonshotai/kimi-k2.5
       deepseek: deepseek/deepseek-v3.2
-      minimax: minimax/minimax-m2.1ate
+      minimax: minimax/minimax-m2.5
       haiku: anthropic/claude-haiku-4.5
       gpt-oss: openai/gpt-oss-120b
       # Mid-tier options

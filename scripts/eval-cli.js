@@ -69,6 +69,7 @@ import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../s
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
+import { formatTranscript } from '../services/transcriptFormatter.js';
 import { spawn } from 'child_process';
 import readline from 'readline';
 import fs from 'fs';
@@ -801,6 +802,8 @@ async function main() {
         const modelOverride = getOption('model');
         const egoModelOverride = getOption('ego-model');
         const superegoModelOverride = getOption('superego-model');
+        const learnerModelOverride = getOption('learner-model');
+        const transcriptMode = getFlag('transcript');
 
         // --cluster and --scenario are mutually exclusive
         if (clusterOpt && scenarioOpt) {
@@ -852,6 +855,7 @@ async function main() {
             if (egoModelOverride) console.log(`  Ego model override: ${egoModelOverride}`);
             if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
           }
+          if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
           console.log('');
         }
 
@@ -871,7 +875,9 @@ async function main() {
           modelOverride: modelOverride || null,
           egoModelOverride: egoModelOverride || null,
           superegoModelOverride: superegoModelOverride || null,
+          learnerModelOverride: learnerModelOverride || null,
           dryRun,
+          transcriptMode,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
@@ -1229,11 +1235,17 @@ async function main() {
       case 'transcript': {
         const runId = args.find(a => !a.startsWith('--') && a !== 'transcript');
         if (!runId) {
-          console.error('Usage: eval-cli.js transcript <runId> [--scenario <id>]');
+          console.error('Usage: eval-cli.js transcript <runId> [--scenario <id>] [--detail play|compact|messages-only|full]');
           process.exit(1);
         }
 
         const scenarioFilter = getOption('scenario');
+        // Determine detail level: --compact and --messages-only are shortcuts, --detail is explicit
+        let detailLevel = getOption('detail') || 'play';
+        if (getFlag('compact')) detailLevel = 'compact';
+        if (getFlag('messages-only')) detailLevel = 'messages-only';
+        if (getFlag('full')) detailLevel = 'full';
+
         const results = evaluationStore.getResults(runId, {
           scenarioId: scenarioFilter || null,
         });
@@ -1243,7 +1255,7 @@ async function main() {
           break;
         }
 
-        console.log(`\nTranscripts for run: ${runId} (${results.length} results)\n`);
+        console.log(`\nTranscripts for run: ${runId} (${results.length} results, detail: ${detailLevel})\n`);
 
         for (const result of results) {
           console.log('='.repeat(80));
@@ -1252,10 +1264,9 @@ async function main() {
           console.log(`Score:    ${result.overallScore != null ? result.overallScore.toFixed(1) : '--'}  |  Success: ${result.success}`);
           console.log('-'.repeat(80));
 
-          // Try dialogue log file first
+          // Try dialogue log file first (rich trace with metadata)
           let printed = false;
           if (result.dialogueId) {
-            // Search for the dialogue file (may include date prefix in filename)
             const files = fs.existsSync(LOGS_DIR)
               ? fs.readdirSync(LOGS_DIR).filter(f => f.includes(result.dialogueId))
               : [];
@@ -1264,24 +1275,29 @@ async function main() {
               try {
                 const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
                 const trace = dialogue.dialogueTrace || [];
-                for (const entry of trace) {
-                  console.log(formatTraceEntry(entry));
-                  console.log('');
+                if (trace.length > 0) {
+                  const formatted = formatTranscript(trace, {
+                    detail: detailLevel,
+                    scenarioName: result.scenarioName || result.scenarioId,
+                    profileName: result.profileName,
+                    totalTurns: dialogue.totalTurns || 0,
+                  });
+                  console.log(formatted);
+                  printed = true;
                 }
-                if (trace.length > 0) printed = true;
               } catch (e) {
-                // Fall through to suggestions
+                // Fall through to legacy format
               }
             }
           }
 
-          // Fall back to suggestions / raw response from DB
+          // Fall back to legacy format (suggestions / raw response from DB)
           if (!printed) {
             if (result.suggestions?.length > 0) {
               console.log('Suggestions:');
               for (const s of result.suggestions) {
                 const text = typeof s === 'string' ? s : (s.text || s.content || JSON.stringify(s));
-                console.log(`  • ${text}`);
+                console.log(`  \u2022 ${text}`);
               }
               console.log('');
             }
