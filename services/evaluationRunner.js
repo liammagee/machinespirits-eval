@@ -1798,6 +1798,19 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     log(`[evaluationRunner] Turn ${turnIdx}/${totalTurnCount - 1}${isInitialTurn ? ' (initial)' : ` (${turnDef.id})`}`, 'info');
 
+    // Update run metadata with current turn progress for `runs` command
+    if (runId) {
+      evaluationStore.updateRun(runId, {
+        metadata: {
+          turnProgress: {
+            current: turnIdx + 1,
+            total: totalTurnCount,
+            scenarioId: scenario.id,
+          }
+        }
+      });
+    }
+
     // Show learner action in transcript mode (for follow-up turns)
     if (!isInitialTurn && dialogueEngine.isTranscriptMode()) {
       dialogueEngine.transcript('LEARNER ACTION', formatLearnerActionForTranscript(turnDef));
@@ -2438,6 +2451,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         flushTranscript();
       }
     }
+  }
+
+  // Clear turn progress from run metadata now that all turns are complete
+  if (runId) {
+    evaluationStore.updateRun(runId, {
+      metadata: { turnProgress: null }
+    });
   }
 
   // Write complete transcript file at end (for post-hoc viewing)

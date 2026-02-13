@@ -1033,6 +1033,11 @@ async function main() {
           } else if (run.completedResults > 0) {
             progress = `${run.completedResults} done`;
           }
+          // Show per-turn progress for running multi-turn tests
+          const turnProgress = run.metadata?.turnProgress;
+          if (run.status === 'running' && turnProgress) {
+            progress += ` T${turnProgress.current}/${turnProgress.total}`;
+          }
           const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
           // Duration formatting
           let duration = '--';
