@@ -896,6 +896,63 @@ async function main() {
         if (modelAliases.length > 0) {
           console.log(`Models: ${modelAliases.join(', ')}`);
         }
+
+        // Token / cost / latency summary report
+        if (result.runId) {
+          const runResults = evaluationStore.getResults(result.runId);
+          if (runResults.length > 0) {
+            console.log('\n' + '='.repeat(80));
+            console.log('  TOKEN & COST SUMMARY');
+            console.log('='.repeat(80));
+
+            // Per-result breakdown
+            const header = '  #  | Scenario                         | In Tok  | Out Tok | API  | Rounds | Latency   | Cost';
+            const divider = '  ' + '-'.repeat(header.length - 2);
+            console.log(header);
+            console.log(divider);
+
+            let totalIn = 0, totalOut = 0, totalApi = 0, totalRounds = 0, totalLatency = 0, totalCost = 0;
+
+            runResults.forEach((r, i) => {
+              const inTok = r.input_tokens || r.inputTokens || 0;
+              const outTok = r.output_tokens || r.outputTokens || 0;
+              const apiCalls = r.api_calls || r.apiCalls || 0;
+              const rounds = r.dialogue_rounds || r.dialogueRounds || 0;
+              const latMs = r.latency_ms || r.latencyMs || 0;
+              const cost = r.cost || 0;
+
+              totalIn += inTok;
+              totalOut += outTok;
+              totalApi += apiCalls;
+              totalRounds += rounds;
+              totalLatency += latMs;
+              totalCost += cost;
+
+              const scenLabel = (r.scenario_id || r.scenarioId || '').substring(0, 32).padEnd(32);
+              const latStr = latMs >= 1000 ? `${(latMs / 1000).toFixed(1)}s` : `${latMs}ms`;
+              const costStr = cost > 0 ? `$${cost.toFixed(4)}` : '-';
+              console.log(`  ${String(i + 1).padStart(2)} | ${scenLabel} | ${String(inTok).padStart(7)} | ${String(outTok).padStart(7)} | ${String(apiCalls).padStart(4)} | ${String(rounds).padStart(6)} | ${latStr.padStart(9)} | ${costStr}`);
+            });
+
+            console.log(divider);
+            const totalLatStr = totalLatency >= 1000 ? `${(totalLatency / 1000).toFixed(1)}s` : `${totalLatency}ms`;
+            const totalCostStr = totalCost > 0 ? `$${totalCost.toFixed(4)}` : '-';
+            console.log(`  ${'TOTAL'.padStart(2)} | ${''.padEnd(32)} | ${String(totalIn).padStart(7)} | ${String(totalOut).padStart(7)} | ${String(totalApi).padStart(4)} | ${String(totalRounds).padStart(6)} | ${totalLatStr.padStart(9)} | ${totalCostStr}`);
+
+            // Per-token cost efficiency
+            const totalTok = totalIn + totalOut;
+            if (totalTok > 0) {
+              const avgLatPerCall = totalApi > 0 ? (totalLatency / totalApi / 1000).toFixed(2) : '-';
+              console.log(`\n  Tokens: ${totalTok.toLocaleString()} total (${totalIn.toLocaleString()} in + ${totalOut.toLocaleString()} out)`);
+              console.log(`  Avg latency/API call: ${avgLatPerCall}s  |  Results: ${runResults.length}  |  API calls: ${totalApi}`);
+              if (totalCost > 0) {
+                console.log(`  Cost/1K tokens: $${(totalCost / totalTok * 1000).toFixed(4)}`);
+              }
+            }
+            console.log('='.repeat(80));
+          }
+        }
+
         console.log(JSON.stringify(result, null, 2));
 
         // Factorial post-analysis: print cell means and ANOVA for each score type
