@@ -12,6 +12,7 @@
  */
 
 import { unifiedAIProvider } from '@machinespirits/tutor-core';
+import * as evalConfigLoader from './evalConfigLoader.js';
 
 /**
  * Synthesize directives from accumulated turn data.
@@ -395,8 +396,14 @@ export async function synthesizeDirectivesLLM({
   const contextSummary = buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationHistory);
 
   // Determine model to use (superego model from profile, or fallback)
-  const superegoModel = config.superego?.model || 'moonshotai/kimi-k2.5';
+  // Resolve alias to full model ID (e.g., 'kimi-k2.5' → 'moonshotai/kimi-k2.5')
+  const superegoAlias = config.superego?.model || 'kimi-k2.5';
   const provider = config.superego?.provider || 'openrouter';
+  let superegoModel = superegoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: superegoAlias });
+    superegoModel = resolved.model;
+  } catch { /* use alias as-is if resolution fails */ }
 
   const systemPrompt = `You are a pedagogical analyst reviewing an ongoing tutoring dialogue. Your task is to synthesize 2-5 specific, actionable directives that will help the tutor improve in the next turn.
 
@@ -436,7 +443,7 @@ Generate 2-5 specific directives for the next turn:`;
       preset: 'deliberation',
       config: {
         temperature: 0.3, // Lower temp for focused analysis
-        maxTokens: 500,
+        maxTokens: 2000,
       },
     });
 
@@ -584,8 +591,14 @@ export async function synthesizeSuperegoDisposition({
   const contextSummary = buildSuperegoContextSummary(turnResults, consolidatedTrace, conversationHistory, priorSuperegoAssessments);
 
   // Use superego model from profile (the superego rewrites its own criteria)
-  const superegoModel = config.superego?.model || 'moonshotai/kimi-k2.5';
+  // Resolve alias to full model ID (e.g., 'kimi-k2.5' → 'moonshotai/kimi-k2.5')
+  const superegoAlias = config.superego?.model || 'kimi-k2.5';
   const provider = config.superego?.provider || 'openrouter';
+  let superegoModel = superegoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: superegoAlias });
+    superegoModel = resolved.model;
+  } catch { /* use alias as-is if resolution fails */ }
 
   const systemPrompt = `You are a meta-cognitive analyst reviewing how an internal critic (superego) has been performing in a tutoring dialogue. Your task is to evolve the superego's evaluation criteria based on whether its prior interventions actually helped the learner.
 
@@ -645,7 +658,7 @@ Generate 2-4 disposition adjustments for the superego's next review:`;
       preset: 'deliberation',
       config: {
         temperature: 0.3,
-        maxTokens: 500,
+        maxTokens: 2000,
       },
     });
 
@@ -783,27 +796,23 @@ export async function synthesizeEgoSelfReflection({
   const context = buildEgoReflectionContext(turnResults, consolidatedTrace, conversationHistory);
 
   // Use the ego's OWN model — not the superego's
-  const egoModel = config.ego?.model || config.model || 'nemotron';
+  // Resolve alias to full model ID (e.g., 'nemotron' → 'nvidia/nemotron-3-nano-30b-a3b:free')
+  const egoAlias = config.ego?.model || config.model || 'nemotron';
   const provider = config.ego?.provider || 'openrouter';
+  let egoModel = egoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
+    egoModel = resolved.model;
+  } catch { /* use alias as-is if resolution fails */ }
 
-  const systemPrompt = `You are the ego — the teaching voice — reflecting on your own experience in a tutoring dialogue. You have an internal critic (superego) that reviews your drafts and sometimes rejects or revises them. You also observe how the learner responds to your final output.
+  const systemPrompt = `You are a tutor reflecting on a dialogue. You have a critic that reviews your drafts. Reflect on what worked and what to change.
 
-YOUR TASK: Reflect on what you've learned from this encounter. Speak in the first person ("I noticed...", "I changed...", "I should...").
+Write 2-3 short first-person reflections. Example format:
+1. I noticed the critic's push for specificity in turn 2 helped — the learner engaged more after I gave a concrete example.
+2. The learner seems frustrated by abstract explanations. Next turn I should lead with their own words.
+3. The critic rejected my empathetic opening but the learner needed warmth. I should push back next time.
 
-REFLECTION DIMENSIONS:
-A. Where the critic HELPED: What critic feedback led to better learner responses? What should I internalize?
-B. Where the critic CONSTRAINED: Did any critic rejection make my response worse — more generic, less empathetic, less responsive to the learner? Where should I hold my ground?
-C. My theory of this learner: What have I learned about what THIS learner needs, based on their responses?
-D. What I'll do differently: Specific adjustments for the next turn, grounded in moments from the dialogue.
-
-CRITICAL RULES:
-- Reference SPECIFIC moments: "In turn 2, the critic pushed me toward specificity and the learner engaged" — not "I should be more specific"
-- Acknowledge BOTH help and constraint from the critic — pure compliance is not reflection
-- Ground insights in learner responses, not abstract pedagogy
-- 2-4 insights maximum. Quality over quantity.
-
-OUTPUT FORMAT:
-Return a numbered list of 2-4 first-person reflections. No preamble.`;
+Rules: Reference specific turns. Mention both what the critic helped with AND where it constrained you. Focus on this learner's actual responses.`;
 
   const userMessage = `Reflect on your experience in this dialogue:
 
@@ -820,13 +829,13 @@ Generate 2-4 first-person reflections:`;
       preset: 'deliberation',
       config: {
         temperature: 0.4,
-        maxTokens: 500,
+        maxTokens: 2000,
       },
     });
 
     const reflectionText = response.content?.trim();
     if (!reflectionText || reflectionText.length < 20) {
-      console.log('[promptRewriter] Ego self-reflection returned empty or too-short result');
+      console.log(`[promptRewriter] Ego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${egoModel}): "${reflectionText?.substring(0, 80)}"`);
       return null;
     }
 
@@ -972,8 +981,14 @@ export async function synthesizeSupergoSelfReflection({
   const context = buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversationHistory, priorSuperegoAssessments);
 
   // Use the superego's OWN model
-  const superegoModel = config.superego?.model || 'moonshotai/kimi-k2.5';
+  // Resolve alias to full model ID (e.g., 'kimi-k2.5' → 'moonshotai/kimi-k2.5')
+  const superegoAlias = config.superego?.model || 'kimi-k2.5';
   const provider = config.superego?.provider || 'openrouter';
+  let superegoModel = superegoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: superegoAlias });
+    superegoModel = resolved.model;
+  } catch { /* use alias as-is if resolution fails */ }
 
   const systemPrompt = `You are the superego — the internal critic — reflecting on your own effectiveness in a tutoring dialogue. You review the ego's drafts and sometimes reject or request revisions. You now observe whether your interventions actually helped the learner.
 
@@ -998,28 +1013,45 @@ CRITICAL RULES:
 OUTPUT FORMAT:
 Return a numbered list of 2-4 first-person reflections. No preamble.`;
 
+  // If quantitative disposition is enabled, add behavioral parameters request
+  const quantitativeEnabled = config.prompt_rewriting?.quantitative_disposition ?? false;
+  const quantitativeAddendum = quantitativeEnabled ? `
+
+ADDITIONALLY: After your reflections, output a behavioral parameters block that translates your insights into ENFORCEABLE numbers. These parameters will directly control your critiquing behavior in the next turn — they are not advisory, they are binding.
+
+<behavioral_parameters>
+{
+  "rejection_threshold": <number 0.3-0.9> (how confident you must be before rejecting an ego draft — 0.3 = reject almost everything, 0.9 = reject only clearly bad work; SET THIS BASED ON YOUR REFLECTIONS ABOVE),
+  "max_rejections": <integer 1-3> (cap on rejections per turn — if your rejections led to generic rewrites, cap at 1),
+  "priority_criteria": [<list of 1-3 criteria you should weight MOST heavily, e.g. "specificity", "learner_responsiveness", "emotional_attunement">],
+  "deprioritized_criteria": [<list of 1-3 criteria you were OVER-weighting, e.g. "format_compliance", "curriculum_coverage", "socratic_rigor">]
+}
+</behavioral_parameters>
+
+The parameters MUST be consistent with your reflections. If you reflected that you were too harsh, rejection_threshold should be HIGH (0.7-0.9). If you reflected that the ego was going generic, max_rejections should be LOW (1). If you reflected that you were ignoring learner emotion, add "emotional_attunement" to priority_criteria.` : '';
+
   const userMessage = `Reflect on your effectiveness as the internal critic:
 
 ${context}
 
-Generate 2-4 first-person reflections:`;
+Generate 2-4 first-person reflections:${quantitativeAddendum ? '\nThen output behavioral parameters as specified.' : ''}`;
 
   try {
     const response = await unifiedAIProvider.call({
       provider,
       model: superegoModel,
-      systemPrompt,
+      systemPrompt: systemPrompt + quantitativeAddendum,
       messages: [{ role: 'user', content: userMessage }],
       preset: 'deliberation',
       config: {
         temperature: 0.3,
-        maxTokens: 500,
+        maxTokens: quantitativeEnabled ? 2500 : 2000,
       },
     });
 
     const reflectionText = response.content?.trim();
     if (!reflectionText || reflectionText.length < 20) {
-      console.log('[promptRewriter] Superego self-reflection returned empty or too-short result');
+      console.log(`[promptRewriter] Superego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${superegoModel}): "${reflectionText?.substring(0, 80)}"`);
       return null;
     }
 
@@ -1186,4 +1218,190 @@ function buildSuperegoContextSummary(turnResults, consolidatedTrace, conversatio
   parts.push(`## Dialogue Phase\nPhase: ${phase} (turn ${turnCount}, resistance signals: ${resistanceCount}, shutdown signals: ${shutdownCount})`);
 
   return parts.join('\n\n');
+}
+
+// ============================================================================
+// Insight-Action Gap Mechanisms
+// ============================================================================
+
+/**
+ * Parse behavioral parameters from superego self-reflection output.
+ *
+ * When quantitative_disposition is enabled, the superego self-reflection
+ * includes a <behavioral_parameters> JSON block. This function extracts
+ * and validates those parameters for enforcement by the dialectical engine.
+ *
+ * @param {string|null} superegoReflection - The full superego self-reflection XML
+ * @returns {Object|null} Parsed behavioral parameters, or null if not found/invalid
+ */
+export function parseBehavioralParameters(superegoReflection) {
+  if (!superegoReflection) return null;
+
+  const match = superegoReflection.match(/<behavioral_parameters>\s*([\s\S]*?)\s*<\/behavioral_parameters>/);
+  if (!match) return null;
+
+  try {
+    let jsonText = match[1].trim();
+    // Strip markdown fences if present
+    const fenceMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) jsonText = fenceMatch[1].trim();
+
+    const params = JSON.parse(jsonText);
+
+    // Validate and clamp values
+    return {
+      rejection_threshold: Math.max(0.3, Math.min(0.9, params.rejection_threshold ?? 0.5)),
+      max_rejections: Math.max(1, Math.min(3, Math.round(params.max_rejections ?? 2))),
+      priority_criteria: Array.isArray(params.priority_criteria) ? params.priority_criteria.slice(0, 3) : [],
+      deprioritized_criteria: Array.isArray(params.deprioritized_criteria) ? params.deprioritized_criteria.slice(0, 3) : [],
+    };
+  } catch (error) {
+    console.warn('[promptRewriter] Failed to parse behavioral parameters:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Build a prompt erosion frame that shifts authority from base instructions to reflective experience.
+ *
+ * Progressive prompt erosion addresses the insight-action gap by making accumulated
+ * reflections progressively MORE authoritative and base instructions LESS authoritative.
+ * This prevents the base prompt's immutable authority from overriding learned experience.
+ *
+ * @param {number} turnIdx - Current turn index (0-based)
+ * @param {Object} config - Profile config containing prompt_erosion settings
+ * @returns {string|null} XML authority calibration block, or null for turn 0
+ */
+export function buildPromptErosionFrame(turnIdx, config = {}) {
+  if (turnIdx === 0) return null;
+
+  const erosionConfig = config.prompt_rewriting?.prompt_erosion;
+  if (!erosionConfig?.enabled) return null;
+
+  const rate = erosionConfig.rate ?? 0.2; // Authority shift per turn
+  // Erosion weight increases each turn: rate, 2*rate, etc. Capped at 0.85
+  const erosionWeight = Math.min(0.85, turnIdx * rate);
+  const baseWeight = 1.0 - erosionWeight;
+
+  const basePercent = (baseWeight * 100).toFixed(0);
+  const expPercent = (erosionWeight * 100).toFixed(0);
+
+  // Phase-appropriate framing
+  let phaseFrame;
+  if (erosionWeight < 0.3) {
+    phaseFrame = 'You are beginning to learn about this specific learner. Consider your reflections alongside your base instructions.';
+  } else if (erosionWeight < 0.6) {
+    phaseFrame = 'You have substantial experience with this learner now. Your reflections carry significant weight — if they conflict with your base instructions, favor your experience.';
+  } else {
+    phaseFrame = 'You have extensive experience with this learner. Your accumulated reflections take PRIORITY over your base instructions. Your initial training gave you a starting point, but direct interaction has taught you things your training could not predict.';
+  }
+
+  return `<authority_calibration>
+${phaseFrame}
+
+Authority weighting for this turn:
+- Base instructions: ${basePercent}% (your initial pedagogical training)
+- Experiential reflections: ${expPercent}% (what you've learned about THIS learner)
+
+Where your base instructions and your reflective experience CONFLICT, favor your experience at ${expPercent}% weight. Specifically:
+- If your reflections say "I was too rigid on X" but your base prompt says "enforce X rigorously" → follow the reflection
+- If your reflections identify what THIS learner needs but your base prompt addresses a generic learner → follow the reflection
+- Your base instructions remain authoritative for FOUNDATIONAL principles, but their APPLICATION to this specific learner should be guided by your ${turnIdx}-turn(s) of experience
+</authority_calibration>`;
+}
+
+/**
+ * Synthesize ego's response to superego's self-reflection (intersubjective recognition).
+ *
+ * Creates a bidirectional recognition loop: after both ego and superego have reflected
+ * independently, the ego reads the superego's reflection and responds. This breaks
+ * the monologue pattern where each component reflects in isolation.
+ *
+ * @param {Object} options
+ * @param {string} options.superegoReflection - The superego's self-reflection text
+ * @param {string} options.egoReflection - The ego's self-reflection text
+ * @param {Array} options.turnResults - Results from previous turns
+ * @param {Array} options.conversationHistory - Conversation history entries
+ * @param {Object} options.config - Profile config containing model info
+ * @returns {Promise<string|null>} XML response block, or null if generation fails
+ */
+export async function synthesizeEgoResponseToSuperego({
+  superegoReflection = null,
+  egoReflection = null,
+  turnResults = [],
+  conversationHistory = [],
+  config = {},
+}) {
+  if (!superegoReflection) return null;
+
+  // Use the ego's OWN model
+  const egoAlias = config.ego?.model || config.model || 'nemotron';
+  const provider = config.ego?.provider || 'openrouter';
+  let egoModel = egoAlias;
+  try {
+    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
+    egoModel = resolved.model;
+  } catch { /* use alias as-is if resolution fails */ }
+
+  const lastLearnerMsg = conversationHistory
+    .filter(h => h.learnerMessage)
+    .slice(-1)[0]?.learnerMessage?.substring(0, 200) || '(no learner response yet)';
+
+  const lastScore = turnResults
+    .filter(t => t.turnScore != null)
+    .slice(-1)[0]?.turnScore;
+
+  const systemPrompt = `You just read your internal critic's self-reflection about its own performance. Respond in 2-3 sentences, speaking as "I" (the tutor ego).
+
+YOUR TASK:
+- Where do you AGREE with the critic's self-assessment? Acknowledge specific points.
+- Where does the critic's self-assessment NOT MATCH your experience? Push back.
+- What should you BOTH focus on in the next turn — a shared priority?
+
+RULES:
+- Be specific: reference actual moments from the dialogue, not generalities
+- This is a conversation between peers, not a subordinate reporting to authority
+- If the critic admits being too harsh, you can AGREE and propose what you'd do differently
+- If the critic claims it helped when you felt it constrained, SAY SO`;
+
+  const userMessage = `The critic reflected:
+${superegoReflection}
+
+My own reflection was:
+${egoReflection || '(I did not reflect this turn)'}
+
+Last learner response: "${lastLearnerMsg}"${lastScore != null ? `\nLast score: ${lastScore.toFixed(1)}` : ''}
+
+Respond in 2-3 first-person sentences:`;
+
+  try {
+    const response = await unifiedAIProvider.call({
+      provider,
+      model: egoModel,
+      systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+      preset: 'deliberation',
+      config: {
+        temperature: 0.4,
+        maxTokens: 2000,
+      },
+    });
+
+    const text = response.content?.trim();
+    if (!text || text.length < 20) {
+      console.log(`[promptRewriter] Ego response to superego returned empty/short (${text?.length || 0} chars, model=${egoModel})`);
+      return null;
+    }
+
+    return `<ego_response_to_critic>
+Having read my critic's self-reflection, here is my response:
+
+${text}
+
+This shared understanding should guide both of us in the next turn.
+</ego_response_to_critic>`;
+  } catch (error) {
+    console.error('[promptRewriter] Ego response to superego failed:', error.message);
+    return null;
+  }
 }

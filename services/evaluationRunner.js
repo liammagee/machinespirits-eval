@@ -81,6 +81,10 @@ const EVAL_ONLY_PROFILES = [
   'cell_40_base_dialectical_suspicious_unified_superego', 'cell_41_recog_dialectical_suspicious_unified_superego',
   'cell_42_base_dialectical_adversary_unified_superego', 'cell_43_recog_dialectical_adversary_unified_superego',
   'cell_44_base_dialectical_advocate_unified_superego', 'cell_45_recog_dialectical_advocate_unified_superego',
+  'cell_46_base_dialectical_suspicious_unified_quantitative', 'cell_47_recog_dialectical_suspicious_unified_quantitative',
+  'cell_48_base_dialectical_suspicious_unified_erosion', 'cell_49_recog_dialectical_suspicious_unified_erosion',
+  'cell_50_base_dialectical_suspicious_unified_intersubjective', 'cell_51_recog_dialectical_suspicious_unified_intersubjective',
+  'cell_52_base_dialectical_suspicious_unified_combined', 'cell_53_recog_dialectical_suspicious_unified_combined',
 ];
 
 /**
@@ -907,6 +911,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     superegoPromptExtension = null, // Dynamic disposition adjustments for superego
     learnerId = null, // For Writing Pad memory persistence
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
+    behavioralOverrides = null, // Quantitative params from superego self-reflection
     dryRun = false,
   } = options;
 
@@ -937,24 +942,35 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
   }
 
   // Generate suggestions via tutor API with retry logic
+  // Note: retryWithBackoff handles thrown errors, but tutorApi.generateSuggestions()
+  // catches its own errors and returns { success: false }. We need to also handle
+  // 429 rate limit errors returned in the result (not thrown).
   const genResult = await retryWithBackoff(
-    () => tutorApi.generateSuggestions(context, {
-      provider: resolvedConfig.provider,
-      model: resolvedConfig.model,
-      egoModel: resolvedConfig.egoModel,
-      superegoModel: resolvedConfig.superegoModel || null,
-      profileName: resolvedConfig.profileName,
-      hyperparameters: resolvedConfig.hyperparameters || {},
-      trace: true,
-      superegoStrategy,
-      outputSize,
-      useDialogue,
-      maxRounds,
-      systemPromptExtension,
-      superegoPromptExtension, // Dynamic disposition adjustments for superego
-      learnerId, // Activates Writing Pad three-layer memory
-      dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
-    }),
+    async () => {
+      const result = await tutorApi.generateSuggestions(context, {
+        provider: resolvedConfig.provider,
+        model: resolvedConfig.model,
+        egoModel: resolvedConfig.egoModel,
+        superegoModel: resolvedConfig.superegoModel || null,
+        profileName: resolvedConfig.profileName,
+        hyperparameters: resolvedConfig.hyperparameters || {},
+        trace: true,
+        superegoStrategy,
+        outputSize,
+        useDialogue,
+        maxRounds,
+        systemPromptExtension,
+        superegoPromptExtension, // Dynamic disposition adjustments for superego
+        learnerId, // Activates Writing Pad three-layer memory
+        dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+        behavioralOverrides, // Quantitative params from superego self-reflection
+      });
+      // Re-throw 429 errors so retryWithBackoff can handle them
+      if (!result.success && result.error && (result.error.includes('429') || result.error.toLowerCase().includes('rate limit'))) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
     { log }
   );
 
@@ -1680,10 +1696,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const promptRewritingEnabled = rawProfile?.prompt_rewriting?.enabled ?? false;
   const promptRewritingStrategy = rawProfile?.prompt_rewriting?.strategy ?? 'template';
   const superegoDispositionRewriting = rawProfile?.superego_disposition_rewriting ?? false;
+  const quantitativeDispositionEnabled = rawProfile?.prompt_rewriting?.quantitative_disposition ?? false;
+  const promptErosionEnabled = rawProfile?.prompt_rewriting?.prompt_erosion?.enabled ?? false;
+  const intersubjectiveEnabled = rawProfile?.prompt_rewriting?.intersubjective ?? false;
 
   const sharedTurnOptions = { skipRubricEval, outputSize, superegoStrategy, judgeOverride, useDialogue, maxRounds, log, scenarioId: scenario.id, learnerId, dialecticalNegotiation, dryRun };
   let sessionEvolution = null;
   let superegoEvolution = null;
+  let behavioralOverrides = null; // Parsed quantitative params from superego self-reflection
 
   // 4. Loop through turns (initial turn 0 + follow-up turns)
   const totalTurnCount = 1 + turns.length;
@@ -1752,12 +1772,33 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         : (turnDef.forbidden_elements || []),
     };
 
+    // Build the ego prompt extension: erosion frame + session evolution (reflections)
+    let fullEgoExtension = sessionEvolution;
+    if (promptErosionEnabled && turnIdx > 0) {
+      const erosionFrame = promptRewriter.buildPromptErosionFrame(turnIdx, rawProfile);
+      if (erosionFrame) {
+        // Erosion frame goes BEFORE reflections, so the model sees authority calibration first
+        fullEgoExtension = erosionFrame + (sessionEvolution ? '\n\n' + sessionEvolution : '');
+        log(`[evaluationRunner] Prompt erosion frame applied for turn ${turnIdx} (rate=${rawProfile.prompt_rewriting?.prompt_erosion?.rate ?? 0.2})`, 'info');
+      }
+    }
+
+    // Build the superego prompt extension: erosion frame + superego evolution (reflections)
+    let fullSuperegoExtension = superegoEvolution;
+    if (promptErosionEnabled && turnIdx > 0 && superegoEvolution) {
+      const erosionFrame = promptRewriter.buildPromptErosionFrame(turnIdx, rawProfile);
+      if (erosionFrame) {
+        fullSuperegoExtension = erosionFrame + '\n\n' + superegoEvolution;
+      }
+    }
+
     // Call the SAME generation+evaluation code path as single-turn
     // Pass dialogue context so the judge can see the full exchange
     const turnOptions = {
       ...sharedTurnOptions,
-      ...(sessionEvolution ? { systemPromptExtension: sessionEvolution } : {}),
-      ...(superegoEvolution ? { superegoPromptExtension: superegoEvolution } : {}),
+      ...(fullEgoExtension ? { systemPromptExtension: fullEgoExtension } : {}),
+      ...(fullSuperegoExtension ? { superegoPromptExtension: fullSuperegoExtension } : {}),
+      ...(behavioralOverrides ? { behavioralOverrides } : {}),
       conversationHistory: conversationHistory.length > 0 ? conversationHistory : null,
       consolidatedTrace: consolidatedTrace.length > 0 ? consolidatedTrace : null,
     };
@@ -1766,7 +1807,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     if (!genResult.success) {
       const turnId = isInitialTurn ? 'initial' : turnDef.id;
-      throw new Error(`Multi-turn scenario ${scenario.id}: Turn ${turnIdx} (${turnId}) failed to generate suggestions`);
+      throw new Error(`Multi-turn scenario ${scenario.id}: Turn ${turnIdx} (${turnId}) failed to generate suggestions: ${genResult.error || 'unknown error'}`);
     }
 
     // Accumulate dialogue traces
@@ -1873,6 +1914,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               detail: sessionEvolution,
               timestamp: new Date().toISOString(),
             });
+          } else {
+            // Self-reflection returned empty — fall back to template to preserve treatment
+            log(`[evaluationRunner] Ego self-reflection returned empty, falling back to template for turn ${turnIdx + 1}`, 'warn');
+            sessionEvolution = promptRewriter.synthesizeDirectives({
+              turnResults,
+              consolidatedTrace,
+              conversationHistory,
+            });
           }
         } catch (error) {
           log(`[evaluationRunner] Ego self-reflection failed, falling back to template: ${error.message}`, 'warn');
@@ -1937,6 +1986,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               detail: superegoEvolution,
               timestamp: new Date().toISOString(),
             });
+          } else {
+            // Self-reflection returned empty — fall back to LLM disposition rewriting
+            log(`[evaluationRunner] Superego self-reflection returned empty, falling back to LLM disposition for turn ${turnIdx + 1}`, 'warn');
+            superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
+              turnResults,
+              consolidatedTrace,
+              conversationHistory,
+              priorSuperegoAssessments,
+              config: rawProfile,
+            });
           }
         } else {
           superegoEvolution = await promptRewriter.synthesizeSuperegoDisposition({
@@ -1961,6 +2020,55 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         }
       } catch (error) {
         log(`[evaluationRunner] Superego disposition/self-reflection rewriting failed: ${error.message}`, 'warn');
+      }
+    }
+
+    // Parse quantitative behavioral parameters from superego self-reflection (if enabled)
+    if (quantitativeDispositionEnabled && superegoEvolution) {
+      const parsed = promptRewriter.parseBehavioralParameters(superegoEvolution);
+      if (parsed) {
+        behavioralOverrides = parsed;
+        log(`[evaluationRunner] Behavioral overrides parsed: threshold=${parsed.rejection_threshold}, max_rejections=${parsed.max_rejections}, priority=[${parsed.priority_criteria.join(',')}], deprioritized=[${parsed.deprioritized_criteria.join(',')}]`, 'info');
+        consolidatedTrace.push({
+          agent: 'behavioral_overrides',
+          action: 'parse',
+          turnIndex: turnIdx,
+          contextSummary: `Quantitative behavioral params: threshold=${parsed.rejection_threshold}, max=${parsed.max_rejections}`,
+          detail: JSON.stringify(parsed),
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        log(`[evaluationRunner] No behavioral parameters found in superego reflection for turn ${turnIdx + 1} (quantitative_disposition enabled but no <behavioral_parameters> block)`, 'warn');
+      }
+    }
+
+    // Intersubjective recognition: ego responds to superego's self-reflection (if enabled)
+    if (intersubjectiveEnabled && superegoEvolution && turnIdx < totalTurnCount - 1) {
+      try {
+        const egoResponse = await promptRewriter.synthesizeEgoResponseToSuperego({
+          superegoReflection: superegoEvolution,
+          egoReflection: sessionEvolution,
+          turnResults,
+          conversationHistory,
+          config: rawProfile,
+        });
+        if (egoResponse) {
+          // Append ego's response to critic alongside the ego's own self-reflection
+          sessionEvolution = sessionEvolution
+            ? sessionEvolution + '\n\n' + egoResponse
+            : egoResponse;
+          log(`[evaluationRunner] Intersubjective ego response to superego generated for turn ${turnIdx + 1}`, 'info');
+          consolidatedTrace.push({
+            agent: 'ego_intersubjective',
+            action: 'respond_to_critic',
+            turnIndex: turnIdx,
+            contextSummary: `Ego responded to superego's self-reflection for turn ${turnIdx + 1}`,
+            detail: egoResponse,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        log(`[evaluationRunner] Intersubjective ego response failed: ${error.message}`, 'warn');
       }
     }
 
