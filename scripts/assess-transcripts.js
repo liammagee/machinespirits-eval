@@ -149,6 +149,12 @@ function ensureColumns(db) {
   if (!cols.includes('qualitative_model')) {
     db.exec("ALTER TABLE evaluation_results ADD COLUMN qualitative_model TEXT");
   }
+  if (!cols.includes('blinded_qualitative_assessment')) {
+    db.exec("ALTER TABLE evaluation_results ADD COLUMN blinded_qualitative_assessment TEXT");
+  }
+  if (!cols.includes('blinded_qualitative_model')) {
+    db.exec("ALTER TABLE evaluation_results ADD COLUMN blinded_qualitative_model TEXT");
+  }
 }
 
 // ── Data Loading ─────────────────────────────────────────────────────────
@@ -159,7 +165,8 @@ function loadMultiTurnResults(db, runId, filters = {}) {
            dialogue_id, dialogue_rounds, factor_recognition,
            factor_multi_agent_tutor, learner_architecture,
            judge_model, ego_model, superego_model,
-           qualitative_assessment, qualitative_model
+           qualitative_assessment, qualitative_model,
+           blinded_qualitative_assessment, blinded_qualitative_model
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND dialogue_id IS NOT NULL
   `;
@@ -236,9 +243,17 @@ function detectMechanism(profileName) {
 
 // ── Assessment Prompt ────────────────────────────────────────────────────
 
-function buildAssessmentPrompt(row, transcript) {
+function buildAssessmentPrompt(row, transcript, { blinded = false } = {}) {
   const condition = detectCondition(row);
   const mechanism = detectMechanism(row.profile_name);
+
+  const metadataLines = [];
+  if (!blinded) metadataLines.push(`- Cell: ${row.profile_name}`);
+  metadataLines.push(`- Scenario: ${row.scenario_id}`);
+  if (!blinded) metadataLines.push(`- Recognition condition: ${condition}`);
+  metadataLines.push(`- Mechanism: ${mechanism}`);
+  if (!blinded) metadataLines.push(`- Numeric score: ${row.overall_score != null ? row.overall_score.toFixed(1) : 'N/A'}/100`);
+  metadataLines.push(`- Turns: ${row.dialogue_rounds || 'unknown'}`);
 
   return `You are analyzing a multi-turn AI tutoring dialogue. The dialogue uses an
 ego-superego architecture where:
@@ -248,12 +263,7 @@ ego-superego architecture where:
 - Some dialogues include intersubjective responses (ego responding to superego's reflections)
 
 METADATA:
-- Cell: ${row.profile_name}
-- Scenario: ${row.scenario_id}
-- Recognition condition: ${condition}
-- Mechanism: ${mechanism}
-- Numeric score: ${row.overall_score != null ? row.overall_score.toFixed(1) : 'N/A'}/100
-- Turns: ${row.dialogue_rounds || 'unknown'}
+${metadataLines.join('\n')}
 
 TRANSCRIPT:
 ${transcript}
@@ -422,6 +432,7 @@ function parseArgs() {
     output: null,
     resume: false,
     force: false,
+    blinded: false,
     importFile: null,
   };
 
@@ -436,6 +447,7 @@ function parseArgs() {
       case '--output': opts.output = args[++i]; break;
       case '--resume': opts.resume = true; break;
       case '--force': opts.force = true; break;
+      case '--blinded': opts.blinded = true; break;
       case '--import': opts.importFile = args[++i]; break;
       case '--help':
         console.log(`Usage: node scripts/assess-transcripts.js <runId> [options]
@@ -450,6 +462,7 @@ Options:
   --output <path>       Output file path
   --resume              Skip dialogues already assessed in DB
   --force               Re-assess even if already in DB (overwrites)
+  --blinded             Strip condition labels from metadata and transcript header
   --import <jsonl>      Import assessments from a JSONL file into DB
   --help                Show this help
 
@@ -556,17 +569,19 @@ async function main() {
     return;
   }
 
-  // Prepare DB statements
+  // Prepare DB statements — blinded assessments go to separate columns
+  const assessCol = opts.blinded ? 'blinded_qualitative_assessment' : 'qualitative_assessment';
+  const modelCol = opts.blinded ? 'blinded_qualitative_model' : 'qualitative_model';
   const updateStmt = db.prepare(`
     UPDATE evaluation_results
-    SET qualitative_assessment = ?, qualitative_model = ?
+    SET ${assessCol} = ?, ${modelCol} = ?
     WHERE id = ?
   `);
 
   console.log('='.repeat(70));
-  console.log('QUALITATIVE TRANSCRIPT ASSESSMENT');
+  console.log(`QUALITATIVE TRANSCRIPT ASSESSMENT${opts.blinded ? ' (BLINDED)' : ''}`);
   console.log('='.repeat(70));
-  console.log(`Run: ${opts.runId} | Model: ${opts.model} | Parallelism: ${opts.parallelism}`);
+  console.log(`Run: ${opts.runId} | Model: ${opts.model} | Parallelism: ${opts.parallelism}${opts.blinded ? ' | BLINDED' : ''}`);
 
   // Load results with multi-turn dialogues
   const rows = loadMultiTurnResults(db, opts.runId, {
@@ -597,7 +612,7 @@ async function main() {
     const transcript = formatTranscript(dialogue.trace, {
       detail: 'play',
       scenarioName: row.scenario_name || row.scenario_id,
-      profileName: row.profile_name,
+      profileName: opts.blinded ? '' : row.profile_name,
       totalTurns: dialogue.totalTurns,
     });
 
@@ -644,19 +659,23 @@ async function main() {
 
   // Determine which dialogues need assessment
   let remaining;
+  // Use blinded column when --blinded, otherwise the standard column
+  const checkCol = opts.blinded ? 'blinded_qualitative_assessment' : 'qualitative_assessment';
+  const hasAssessment = (d) => d.row[checkCol] != null;
+
   if (opts.force) {
     remaining = dialogues;
     console.log(`  --force: will re-assess all ${dialogues.length} dialogues`);
   } else if (opts.resume) {
     // Check DB for existing assessments
-    const alreadyDone = dialogues.filter(d => d.row.qualitative_assessment != null);
-    remaining = dialogues.filter(d => d.row.qualitative_assessment == null);
+    const alreadyDone = dialogues.filter(hasAssessment);
+    remaining = dialogues.filter(d => !hasAssessment(d));
     if (alreadyDone.length > 0) {
       console.log(`\n  ${alreadyDone.length} already assessed in DB, ${remaining.length} remaining`);
     }
   } else {
     // Default: skip rows that already have assessments (same as --resume)
-    remaining = dialogues.filter(d => d.row.qualitative_assessment == null);
+    remaining = dialogues.filter(d => !hasAssessment(d));
     const alreadyDone = dialogues.length - remaining.length;
     if (alreadyDone > 0) {
       console.log(`  ${alreadyDone} already assessed in DB (use --force to re-assess)`);
@@ -684,7 +703,7 @@ async function main() {
       const label = `[${idx + 1}/${remaining.length}]`;
       process.stdout.write(`  ${label} ${d.row.scenario_id} / ${d.row.profile_name} (${d.condition})...`);
 
-      const prompt = buildAssessmentPrompt(d.row, d.transcript);
+      const prompt = buildAssessmentPrompt(d.row, d.transcript, { blinded: opts.blinded });
 
       // Retry once on failure
       for (let attempt = 0; attempt < 2; attempt++) {
@@ -748,9 +767,9 @@ async function main() {
   // Reload all assessments from DB (the source of truth)
   const allAssessments = db.prepare(`
     SELECT id, scenario_id, profile_name, overall_score, factor_recognition,
-           qualitative_assessment, qualitative_model
+           ${assessCol} AS qualitative_assessment, ${modelCol} AS qualitative_model
     FROM evaluation_results
-    WHERE run_id = ? AND success = 1 AND qualitative_assessment IS NOT NULL
+    WHERE run_id = ? AND success = 1 AND ${assessCol} IS NOT NULL
     ORDER BY scenario_id, profile_name, id
   `).all(opts.runId).map(row => ({
     id: row.id,
