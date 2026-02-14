@@ -39,6 +39,25 @@ Related services:
 - Cells 15-18: Placebo control (length-matched, no recognition theory)
 - Cells 19-20: Memory isolation (recognition vs memory disentangling)
 - Cell 21: Dynamic prompt rewriting with Writing Pad
+- Cells 22-27: Standard ego + divergent superego (suspicious/adversary/advocate × base/recog)
+- Cells 28-33: Dialectical ego + divergent superego
+- Cells 34-39: Full-feature dialectical (cross-turn memory, prompt rewriting, learner signals)
+- Cells 40-45: Self-reflective evolution (suspicious/adversary/advocate × base/recog)
+- Cells 46-47: Quantitative disposition (base/recog)
+- Cells 48-49: Prompt erosion (base/recog)
+- Cells 50-51: Intersubjective recognition (base/recog)
+- Cells 52-53: Combined mechanisms (base/recog)
+- Cells 54-59: Other-ego profiling (tutor-only/bidirectional/full-suite/strategy)
+- Cells 60-63: Dynamic learner (ego_superego) × self-reflection/profiling × base/recog
+- Cells 64-65: Dynamic learner × intersubjective/combined (recognition only)
+
+**Learner architecture**: Cells 1-59 use `learner_architecture: unified` (scripted — learner messages from scenario YAML). Cells 60-65 use `learner_architecture: ego_superego` (dynamic — LLM-generated learner with internal ego-superego deliberation). Mechanism effects only differentiate with dynamic learners.
+
+### Adding New Cells
+
+New eval-repo cells must be registered in the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (line ~56-95). Without this, `resolveEvalProfile()` won't remap cell names to tutor-core profiles, and the run will silently fall back to the default profile.
+
+Cell names must include "dialectical" if they use `prompt_type: dialectical_suspicious` (test enforced).
 
 ### Placebo Control Design
 
