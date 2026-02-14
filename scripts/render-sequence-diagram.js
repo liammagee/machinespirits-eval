@@ -190,15 +190,35 @@ function traceToSteps(trace) {
 
     // Tutor ego generate/revise
     if (agent === 'ego' && (action === 'generate' || action === 'revise' || action === 'incorporate-feedback')) {
-      const label = action === 'generate' ? 'Draft' : 'Revised';
       const full = fullContent(e);
-      steps.push({
-        from: 'tutor_ego', to: 'tutor_superego', label,
-        detail: snippet(e, 120), fullDetail: full, type: 'back',
-        latency: e.metrics?.latencyMs || null,
-        speaker: action === 'generate' ? 'TUTOR EGO (draft)' : 'TUTOR EGO (revised)',
-        model: e.metrics?.model || null,
-      });
+
+      // Look ahead: does a superego review follow before the next learner block?
+      let superegoFollows = false;
+      for (let j = i + 1; j < trace.length; j++) {
+        if (trace[j].agent === 'superego' && trace[j].action === 'review') { superegoFollows = true; break; }
+        if (learnerBlockStarts.has(j)) break; // hit learner block first — no review coming
+        if (trace[j].agent === 'user' && trace[j].action === 'context_input') break;
+      }
+
+      if (action !== 'generate' && !superegoFollows) {
+        // Final revision with no superego review — render as direct Response to learner
+        steps.push({
+          from: 'tutor_ego', to: 'learner_ego', label: 'Response',
+          detail: '', fullDetail: full, type: 'response',
+          latency: e.metrics?.latencyMs || null,
+          speaker: 'TUTOR EGO', model: e.metrics?.model || null,
+        });
+        needsResponseArrow = false;
+      } else {
+        const label = action === 'generate' ? 'Draft' : 'Revised';
+        steps.push({
+          from: 'tutor_ego', to: 'tutor_superego', label,
+          detail: snippet(e, 120), fullDetail: full, type: 'back',
+          latency: e.metrics?.latencyMs || null,
+          speaker: action === 'generate' ? 'TUTOR EGO (draft)' : 'TUTOR EGO (revised)',
+          model: e.metrics?.model || null,
+        });
+      }
       continue;
     }
 
@@ -455,9 +475,12 @@ function generateHtml(result, steps, trace, meta = {}) {
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:'SF Mono','Fira Code','JetBrains Mono',monospace; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; display:flex; flex-direction:column; }
 
-  .top-bar { padding:12px 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-  .top-bar h1 { font-size:13px; font-weight:600; }
-  .top-bar .meta { font-size:11px; color:var(--muted); }
+  .top-bar { padding:12px 20px; border-bottom:1px solid var(--border); background:var(--surface); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; gap:20px; }
+  .top-bar h1 { font-size:14px; font-weight:600; margin-bottom:4px; }
+  .top-bar .meta-grid { display:grid; grid-template-columns:auto auto auto; gap:2px 16px; font-size:11px; }
+  .top-bar .meta-label { color:var(--muted); }
+  .top-bar .meta-value { color:var(--text); font-weight:500; }
+  .top-bar .meta-id { font-size:9px; color:#555; margin-top:3px; }
   .top-bar .score-badge { padding:3px 12px; border-radius:12px; font-weight:700; font-size:14px; color:#fff;
     background:${parseFloat(score) >= 90 ? '#1b5e20' : parseFloat(score) >= 70 ? '#e65100' : '#b71c1c'}; }
 
@@ -518,9 +541,13 @@ function generateHtml(result, steps, trace, meta = {}) {
 <div class="top-bar">
   <div>
     <h1>${escapeHtml(scenario?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '')}</h1>
-    <div class="meta">${escapeHtml(profile)} &middot; ${condLabel} &middot; ${meta.totalTurns ? meta.totalTurns + ' turns' : ''}</div>
-    <div class="meta">Ego: ${escapeHtml(shortModel(meta.egoModel))} &middot; Superego: ${escapeHtml(shortModel(meta.superegoModel))} &middot; Judge: ${escapeHtml(shortModel(meta.judgeModel))}</div>
-    <div class="meta" style="font-size:10px;opacity:0.6">${escapeHtml(meta.runId)} &middot; ${escapeHtml(meta.dialogueId)}</div>
+    <div class="meta-grid">
+      <span class="meta-label">Cell</span><span class="meta-value">${escapeHtml(profile)}</span><span class="meta-value">${condLabel}${meta.totalTurns ? ' · ' + meta.totalTurns + ' turns' : ''}</span>
+      <span class="meta-label">Tutor</span><span class="meta-value">ego ${escapeHtml(shortModel(meta.egoModel))}</span><span class="meta-value">superego ${escapeHtml(shortModel(meta.superegoModel) || shortModel(meta.egoModel))}</span>
+      <span class="meta-label">Learner</span><span class="meta-value">ego ${escapeHtml(shortModel(meta.learnerEgoModel))}</span><span class="meta-value">superego ${escapeHtml(shortModel(meta.learnerSuperegoModel))}</span>
+      <span class="meta-label">Judge</span><span class="meta-value">${escapeHtml(shortModel(meta.judgeModel))}</span><span></span>
+    </div>
+    <div class="meta-id">${escapeHtml(meta.runId)} · ${escapeHtml(meta.dialogueId)}</div>
   </div>
   <span class="score-badge">${score}</span>
 </div>
