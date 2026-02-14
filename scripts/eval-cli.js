@@ -1297,7 +1297,7 @@ async function main() {
       case 'transcript': {
         const runId = args.find(a => !a.startsWith('--') && a !== 'transcript');
         if (!runId) {
-          console.error('Usage: eval-cli.js transcript <runId> [--scenario <id>] [--detail play|compact|messages-only|full]');
+          console.error('Usage: eval-cli.js transcript <runId> [--scenario <id>] [--detail play|compact|messages-only|full|bilateral]');
           process.exit(1);
         }
 
@@ -1307,6 +1307,7 @@ async function main() {
         if (getFlag('compact')) detailLevel = 'compact';
         if (getFlag('messages-only')) detailLevel = 'messages-only';
         if (getFlag('full')) detailLevel = 'full';
+        if (getFlag('bilateral')) detailLevel = 'bilateral';
 
         const results = evaluationStore.getResults(runId, {
           scenarioId: scenarioFilter || null,
