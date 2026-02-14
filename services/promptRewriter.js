@@ -1597,18 +1597,39 @@ export async function synthesizeTutorProfileOfLearner({
 
   const evidence = buildOtherEgoProfileContext('tutor', turnResults, consolidatedTrace, conversationHistory);
 
-  // Use the ego's model — the ego interacts with the learner, so it builds the model
-  const egoAlias = config.ego?.model || config.model || 'nemotron';
-  const provider = config.ego?.provider || 'openrouter';
-  let egoModel = egoAlias;
+  // Use superego model if configured (cognitive prosthesis for weaker ego models)
+  const useSuperego = config.other_ego_profiling?.use_superego_model && config.superego;
+  const modelAlias = useSuperego
+    ? (config.superego.model || 'kimi-k2.5')
+    : (config.ego?.model || config.model || 'nemotron');
+  const provider = useSuperego
+    ? (config.superego.provider || 'openrouter')
+    : (config.ego?.provider || 'openrouter');
+  let profileModel = modelAlias;
   try {
-    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
-    egoModel = resolved.model;
+    const resolved = evalConfigLoader.resolveModel({ provider, model: modelAlias });
+    profileModel = resolved.model;
   } catch { /* use alias as-is */ }
 
   const turnNumber = turnResults.length;
+  const prescriptive = config.other_ego_profiling?.prescriptive ?? false;
 
-  const systemPrompt = `You are a tutor building a mental model of your learner. Based on the dialogue evidence, profile the learner across 5 dimensions. This profile will inform (not dictate) your next response.
+  const systemPrompt = prescriptive
+    ? `You are a tutor building an ACTION PLAN based on your learner's behavior. For each dimension, output a specific DO and DON'T directive that will guide your next response. The ego model receiving these directives may be less capable — be concrete and unambiguous.
+
+DIMENSIONS:
+1. **Engagement**: DO: [specific action to take]. DON'T: [specific thing to avoid].
+2. **Content Delivery**: DO: [how to present the next idea]. DON'T: [what framing to avoid].
+3. **Response to Learner**: DO: [how to handle their likely next move]. DON'T: [common mistake to avoid with this learner].
+4. **Leverage**: DO: [build on what worked]. DON'T: [repeat what failed].
+5. **Next Move**: DO: [single most important thing for the next turn]. DON'T: [single biggest risk].
+
+RULES:
+- Under 200 words total
+- Every DO/DON'T must reference THIS learner's actual words or behavior
+- If revising a prior plan, mark changed entries with [REVISED]
+- Be PRESCRIPTIVE — tell the ego exactly what to do, not what the learner is like`
+    : `You are a tutor building a mental model of your learner. Based on the dialogue evidence, profile the learner across 5 dimensions. This profile will inform (not dictate) your next response.
 
 DIMENSIONS:
 1. **Current State**: Where is the learner RIGHT NOW? (confused, engaged, frustrated, surface-complying, genuinely curious)
@@ -1636,7 +1657,7 @@ Profile the learner across the 5 dimensions:`;
   try {
     const response = await unifiedAIProvider.call({
       provider,
-      model: egoModel,
+      model: profileModel,
       systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
       preset: 'deliberation',
@@ -1649,13 +1670,14 @@ Profile the learner across the 5 dimensions:`;
     const metrics = extractMetrics(response);
     const profileText = response.content?.trim();
     if (!profileText || profileText.length < 30) {
-      console.log(`[promptRewriter] Tutor profile of learner returned empty/short (${profileText?.length || 0} chars, model=${egoModel})`);
+      console.log(`[promptRewriter] Tutor profile of learner returned empty/short (${profileText?.length || 0} chars, model=${profileModel})`);
       return null;
     }
 
-    const text = `<learner_profile turn="${turnNumber}">
+    const tag = prescriptive ? 'learner_action_plan' : 'learner_profile';
+    const text = `<${tag} turn="${turnNumber}">
 ${profileText}
-</learner_profile>`;
+</${tag}>`;
     return { text, metrics };
   } catch (error) {
     console.error('[promptRewriter] Tutor profile of learner failed:', error.message);
@@ -1683,13 +1705,18 @@ export async function synthesizeLearnerProfileOfTutor({
 
   const evidence = buildOtherEgoProfileContext('learner', turnResults, consolidatedTrace, conversationHistory);
 
-  // Use ego model for both profiles — avoids learnerConfig import dependency, ensures parity
-  const egoAlias = config.ego?.model || config.model || 'nemotron';
-  const provider = config.ego?.provider || 'openrouter';
-  let egoModel = egoAlias;
+  // Use superego model if configured (cognitive prosthesis for weaker ego models)
+  const useSuperego = config.other_ego_profiling?.use_superego_model && config.superego;
+  const modelAlias = useSuperego
+    ? (config.superego.model || 'kimi-k2.5')
+    : (config.ego?.model || config.model || 'nemotron');
+  const provider = useSuperego
+    ? (config.superego.provider || 'openrouter')
+    : (config.ego?.provider || 'openrouter');
+  let profileModel = modelAlias;
   try {
-    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
-    egoModel = resolved.model;
+    const resolved = evalConfigLoader.resolveModel({ provider, model: modelAlias });
+    profileModel = resolved.model;
   } catch { /* use alias as-is */ }
 
   const turnNumber = turnResults.length;
@@ -1722,7 +1749,7 @@ Profile the tutor across the 5 dimensions:`;
   try {
     const response = await unifiedAIProvider.call({
       provider,
-      model: egoModel,
+      model: profileModel,
       systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
       preset: 'deliberation',
@@ -1735,7 +1762,7 @@ Profile the tutor across the 5 dimensions:`;
     const metrics = extractMetrics(response);
     const profileText = response.content?.trim();
     if (!profileText || profileText.length < 30) {
-      console.log(`[promptRewriter] Learner profile of tutor returned empty/short (${profileText?.length || 0} chars, model=${egoModel})`);
+      console.log(`[promptRewriter] Learner profile of tutor returned empty/short (${profileText?.length || 0} chars, model=${profileModel})`);
       return null;
     }
 
@@ -1795,12 +1822,18 @@ export async function synthesizeStrategyPlan({
 }) {
   if (!learnerProfile) return null;
 
-  const egoAlias = config.ego?.model || config.model || 'nemotron';
-  const provider = config.ego?.provider || 'openrouter';
-  let egoModel = egoAlias;
+  // Use superego model if configured (cognitive prosthesis for weaker ego models)
+  const useSuperego = config.other_ego_profiling?.use_superego_model && config.superego;
+  const modelAlias = useSuperego
+    ? (config.superego.model || 'kimi-k2.5')
+    : (config.ego?.model || config.model || 'nemotron');
+  const provider = useSuperego
+    ? (config.superego.provider || 'openrouter')
+    : (config.ego?.provider || 'openrouter');
+  let strategyModel = modelAlias;
   try {
-    const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
-    egoModel = resolved.model;
+    const resolved = evalConfigLoader.resolveModel({ provider, model: modelAlias });
+    strategyModel = resolved.model;
   } catch { /* use alias as-is */ }
 
   const lastScore = turnResults
@@ -1832,7 +1865,7 @@ Formulate your 3-sentence strategy plan:`;
   try {
     const response = await unifiedAIProvider.call({
       provider,
-      model: egoModel,
+      model: strategyModel,
       systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
       preset: 'deliberation',
@@ -1845,7 +1878,7 @@ Formulate your 3-sentence strategy plan:`;
     const metrics = extractMetrics(response);
     const planText = response.content?.trim();
     if (!planText || planText.length < 30) {
-      console.log(`[promptRewriter] Strategy plan returned empty/short (${planText?.length || 0} chars, model=${egoModel})`);
+      console.log(`[promptRewriter] Strategy plan returned empty/short (${planText?.length || 0} chars, model=${strategyModel})`);
       return null;
     }
 
