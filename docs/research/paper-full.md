@@ -906,10 +906,13 @@ Recognition effect: +10.1 pts, $d = 1.02$—substantially stronger than the dial
 | Approach | Cells | N | Recog $\Delta$ | $d$ |
 |----------|-------|---|----------------|-----|
 | Dialectical only | 28–33 | 90 | +4.5 | 0.38 |
-| Self-reflective evolution | 40–45 | 36 | +10.1 | 1.02 |
+| Self-reflective evolution (Kimi) | 40–45 | 36 | +10.1 | 1.02 |
+| Self-reflective evolution (Nemotron) | 40–45 | 60 | +0.4 | n.s. |
 | Original factorial | 1–8 | 350 | +10.2 | 0.80 |
 
 Self-reflection restores the recognition effect to original factorial levels, suggesting the reduced effect in cells 28–33 reflects the dialectical architecture's additional friction, which self-reflection partially overcomes. However, N=36 is a partial run and these results should be interpreted with appropriate caution (Section 8.1).
+
+**Cross-model non-replication.** A Nemotron replication (eval-2026-02-14-559d854b, N=60, cells 40–45) shows base $M = 66.6$, recognition $M = 67.0$ ($\Delta = +0.4$)—essentially no recognition effect. The persona pattern also fails to replicate: adversary shows a negative delta ($-4.3$), advocate positive ($+6.9$), suspicious near-zero ($-1.4$). Self-reflective evolution's recognition amplification appears model-dependent: Nemotron, scoring approximately 15 points lower than Kimi across all conditions, does not show the effect. This is consistent with the broader cross-model mechanism replication (Section 6.10), where Nemotron replicates the basic recognition effect but at compressed magnitudes. Whether self-reflection requires a minimum capability threshold to amplify recognition remains an open question.
 
 ### 6.10 Mechanism Robustness and the Scripted Learner Confound
 
@@ -1000,7 +1003,25 @@ The tag distributions reveal three specific effects of recognition:
 
 **3. Architecture interaction explained.** The bilateral run shows a massive architecture $\times$ recognition interaction: ego_superego without recognition scores worst ($M = 38.0$), ego_superego with recognition scores best ($M = 73.9$). The qualitative assessments explain why. Without recognition, the ego_superego architecture creates circular self-criticism: the superego identifies the problem, the ego can't act on it, the revision loop produces the same response repeatedly (`ego_compliance`—the ego complies with the *form* of revision without changing the *substance*). With recognition, the ego has sufficient autonomy to incorporate the superego's critique productively. The deliberation loop becomes generative rather than circular.
 
-**Caveat**: The qualitative assessor (Claude Opus) receives cell names in metadata, so is not blinded to condition. The near-perfect tag separation (stalling: 100% base $\to$ 3% recognition; recognition\_moment: 0% base $\to$ 82% recognition) could partly reflect confirmation bias. Cross-validation with a blinded assessment protocol would strengthen these findings (Section 8.1).
+**Blinded validation.** A blinded replication (Haiku assessor, condition labels and cell names stripped from metadata and transcript headers, N=118) tested whether the tag discrimination holds without condition knowledge. Key results:
+
+**Table 21b: Blinded vs Unblinded Tag Comparison — Bilateral Run**
+
+| Tag | Unblinded Base% | Unblinded Recog% | Blinded Base% | Blinded Recog% |
+|-----|----------------|-----------------|---------------|----------------|
+| recognition\_moment | 0.0 | 51.7 | 65.5 | 88.3 |
+| stalling | 100.0 | 45.0 | 32.8 | 11.7 |
+| strategy\_shift | 0.0 | 30.0 | 17.2 | 50.0 |
+| emotional\_attunement | 6.9 | 36.7 | 12.1 | 51.7 |
+| missed\_scaffold | 101.7 | 68.3 | 79.3 | 36.7 |
+
+Three findings emerge. First, the **direction of tag discrimination is preserved under blinding**—recognition dialogues receive more positive tags (recognition\_moment, strategy\_shift, emotional\_attunement) and fewer negative tags (stalling, missed\_scaffold, ego\_compliance) than base dialogues. The qualitative difference between conditions is real, not an artifact of assessor knowledge.
+
+Second, the **extreme binary separation was inflated by unblinding**. The most dramatic claims—stalling at 100% in base and recognition\_moment at 0% in base—do not hold under blinding. The blinded assessor finds recognition moments in 66% of base dialogues and stalling in only 33% of base dialogues. This suggests the unblinded assessor applied condition-consistent labels more aggressively when it knew the condition.
+
+Third, **different model calibration** contributes to the differences. The blinded assessment used Haiku (faster, less capable) while the original used Opus. The higher overall tagging rates under blinding (more tags per dialogue, less selective application) may partly reflect model-specific calibration rather than pure blinding effects. A fully controlled comparison would use the same model with and without blinding.
+
+The practical conclusion is that the qualitative findings in this section should be interpreted as directionally robust but quantitatively approximate. The tag percentages reported in Tables 20–21 overstate the binary separation between conditions.
 
 ### 6.12 Dimension Analysis
 
@@ -1410,6 +1431,8 @@ The one non-replication is the recognition-vs-enhanced comparison (Claude: +8.7 
 
 **Updated rubric cross-judge replication.** The cells 6 and 8 responses (N=88) were also scored under the updated 14-dimension rubric with dialogue transcript context by both judges. The cross-judge correlation on these responses is r=0.55 (N=88, p<.001), with GPT-5.2 scoring at 87% of Opus magnitudes (Opus mean=85.6, GPT mean=74.4). Both judges find cell 8 (multi-agent) scores higher than cell 6 (single-agent): Opus 87.3 vs 83.9, GPT 74.6 vs 74.2. The updated rubric does not alter the cross-judge pattern observed throughout the study.
 
+**Dialectical modulation cross-judge.** GPT-5.2 rejudging of the dialectical multi-turn experiment (eval-2026-02-11-a54235ea, N=90) yields inter-judge $r = 0.51$ ($p < .001$). However, the recognition effect does not replicate: Opus finds $\Delta = +4.5$ ($d = 0.38$, $p \approx .075$), while GPT-5.2 finds $\Delta = -0.7$ (n.s.). This is consistent with the general pattern of effect compression (GPT-5.2 finds $\approx$58% of Opus magnitudes): a marginal Opus effect is expected to vanish under GPT-5.2's narrower score range. The dialectical recognition effect is the weakest in the study ($d = 0.38$ under the most favorable judge) and should be interpreted with corresponding caution.
+
 ### 6.20 Dialectical Impasse Test
 
 The preceding multi-turn scenarios (Section 6.14) test recognition under conditions of frustration, misconception, and intellectual exploration—situations where a productive resolution is readily available. But recognition theory makes a stronger claim: that genuine pedagogical encounters involve working *through* impasse rather than around it. Section 7.1 discusses how the master-slave dialectic can terminate in deadlock when the tutor's expertise is confirmed but the learner remains a vessel rather than a subject. Do recognition-prompted tutors handle sustained, unresolved impasse differently from base tutors?
@@ -1725,7 +1748,7 @@ The experimental evidence across twenty-eight evaluations (N $\approx$ 2,700) co
 
 **Scripted learner confound**: The mechanism robustness testing (Section 6.10, cells 40–59, N=360) uses a single-agent (scripted) learner whose responses are predetermined. This design prevents feedback loops between tutor mechanisms and learner behavior, rendering all mechanisms causally inert—they cannot influence what the learner says next. The resulting null result (all mechanisms cluster within 2.4 pts) reflects the experimental design rather than genuine mechanism equivalence. The dynamic learner results (cells 60–65, N=240) partially address this confound, demonstrating that mechanisms do differentiate with genuine feedback loops, but cover only four mechanisms and two scenarios.
 
-**Qualitative assessor not blinded**: The qualitative transcript assessments (Section 6.11) were conducted by an AI judge (Claude Opus) with access to cell metadata that includes condition labels. The assessor could infer whether a dialogue was from a recognition or base condition, potentially introducing confirmation bias into tag assignment and narrative assessment. Blinded assessment—stripping condition metadata before submission—would provide stronger evidence for the tag discrimination patterns reported.
+**Qualitative assessor partially blinded**: The initial qualitative transcript assessments (Section 6.11) were conducted by an AI judge (Claude Opus) with access to condition labels. A blinded replication (Haiku assessor, condition metadata stripped, Table 21b) shows that tag discrimination directions are preserved but extreme binary separations (e.g., stalling at 100% base, recognition\_moment at 0% base) were inflated by unblinding. The blinded validation uses a different model (Haiku vs Opus), so the comparison confounds blinding with model calibration. A same-model blinded comparison would provide cleaner evidence.
 
 ### 8.2 Future Directions
 
@@ -1745,7 +1768,7 @@ The experimental evidence across twenty-eight evaluations (N $\approx$ 2,700) co
 
 **Theory of Mind architecture**: The other-ego profiling results (Section 6.10) suggest that explicit Theory of Mind—building and maintaining a model of the interlocutor—provides additive benefit (+4.1 pts) with dynamic learners. Bidirectional profiling (both tutor and learner maintain models of each other) and strategy planning based on these profiles represent a promising architectural direction that warrants systematic exploration.
 
-**Blinded qualitative assessment**: The qualitative transcript assessments (Section 6.11) should be replicated with condition metadata stripped before submission to the AI assessor, testing whether the tag discrimination patterns (e.g., `stalling` at 100% in base, `recognition_moment` at 0%) hold under blinded conditions.
+**Same-model blinded assessment**: The blinded validation (Table 21b) used a different model (Haiku) than the original (Opus), confounding blinding with model calibration. A same-model (Opus) blinded replication would isolate the blinding effect and determine whether the residual tag discrimination under blinding (e.g., recognition\_moment 66% vs 88%) reflects genuine dialogue quality differences or model-specific artifact.
 
 ---
 
@@ -2226,6 +2249,7 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | Dynamic learner mechanisms (cells 60–63) | eval-2026-02-14-6c033830 | 6.10 |
 | Dynamic learner mechanisms (cells 64–65) | eval-2026-02-14-a2b2717c | 6.10 |
 | Mechanism robustness, Nemotron (cells 40–59) | eval-2026-02-14-49b33fdd | 6.10 |
+| Self-reflect Nemotron non-replication (cells 40–45) | eval-2026-02-14-559d854b | 6.9 |
 
 ---
 

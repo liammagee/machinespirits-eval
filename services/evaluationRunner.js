@@ -96,6 +96,7 @@ const EVAL_ONLY_PROFILES = [
   'cell_66_recog_dialectical_profile_prosthesis_descriptive',
   'cell_67_recog_dialectical_profile_prosthesis_prescriptive',
   'cell_68_recog_dialectical_profile_prosthesis_adversary',
+  'cell_69_base_dialectical_intersubjective_psycho', 'cell_70_base_dialectical_combined_psycho',
 ];
 
 /**
