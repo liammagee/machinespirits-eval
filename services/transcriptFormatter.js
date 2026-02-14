@@ -216,6 +216,14 @@ function getEntryContent(entry) {
     if (ctx.currentPage) parts.push(ctx.currentPage.replace(/^\*+:\s*/, ''));
     if (ctx.strugglesCount) parts.push(`${ctx.strugglesCount} struggle signals`);
     if (ctx.sessions) parts.push(`${ctx.sessions} prior sessions`);
+    // Extract the learner's message from rawContext if present
+    const raw = entry.rawContext || '';
+    const msgMatch = raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s)
+      || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
+    if (msgMatch) {
+      const contextLine = parts.length ? parts.join(', ') : '';
+      return (contextLine ? contextLine + '\n\n' : '') + 'Learner: ' + msgMatch[1].trim();
+    }
     return parts.length ? parts.join(', ') : entry.contextSummary || '(scenario input)';
   }
 
@@ -569,6 +577,8 @@ function formatBilateralTranscript(trace, options = {}) {
       for (const entry of tutorEntries) {
         // Skip final_output markers (they're structural, not content)
         if (entry.agent === 'user' && entry.action === 'final_output') continue;
+        // Skip repeated context_input after the first turn — it's the same scenario data re-injected
+        if (entry.agent === 'user' && entry.action === 'context_input' && turnNum > 0) continue;
 
         const formatted = formatEntry(entry, { detail: 'play' });
         if (formatted) {
