@@ -2686,3 +2686,153 @@ profiles:
       enforce_mutual_recognition: true
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # ========================================================================
+  # Cells 66-68: Cognitive Prosthesis — Superego-Routed Profiling
+  # ========================================================================
+  # Test whether routing profiling through the stronger superego model (kimi-k2.5)
+  # helps weaker ego models (nemotron) approximate stronger model quality.
+  # All cells use recognition + dynamic learner + bidirectional profiling.
+
+  # Cell 66: Superego-routed profiling (descriptive format)
+  cell_66_recog_dialectical_profile_prosthesis_descriptive:
+    description: "Cognitive prosthesis cell 66: superego-routed bidirectional profiling (descriptive), nemotron ego, recognition"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      superego_type: suspicious
+      mechanism: profile_bidirectional
+    learner_architecture: ego_superego_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    other_ego_profiling:
+      enabled: true
+      bidirectional: true
+      use_superego_model: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.60
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 67: Superego-routed profiling (prescriptive DO/DON'T format)
+  cell_67_recog_dialectical_profile_prosthesis_prescriptive:
+    description: "Cognitive prosthesis cell 67: superego-routed bidirectional profiling (prescriptive), nemotron ego, recognition"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      superego_type: suspicious
+      mechanism: profile_bidirectional
+    learner_architecture: ego_superego_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    other_ego_profiling:
+      enabled: true
+      bidirectional: true
+      use_superego_model: true
+      prescriptive: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.60
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 68: Superego-routed profiling (prescriptive) + adversary superego
+  cell_68_recog_dialectical_profile_prosthesis_adversary:
+    description: "Cognitive prosthesis cell 68: superego-routed prescriptive profiling + adversary superego, nemotron ego, recognition"
+    factors:
+      prompt_type: dialectical_adversary
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      superego_type: adversary
+      mechanism: profile_bidirectional
+    learner_architecture: ego_superego_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    other_ego_profiling:
+      enabled: true
+      bidirectional: true
+      use_superego_model: true
+      prescriptive: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.60
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-adversary.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
