@@ -7,7 +7,7 @@ bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current approaches to AI tutoring treat the learner as a knowledge deficit to be filled and the tutor as an expert dispensing information. We propose an alternative grounded in Hegel's theory of mutual recognition—understood as a *derivative* framework rather than literal application—where effective pedagogy requires acknowledging the learner as an autonomous subject whose understanding has intrinsic validity. We implement this framework through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent (a *productive metaphor* for internal quality review) evaluates them before delivery. An evaluation framework (N=2,700 primary scored responses across twenty-eight key evaluations; N=7,000+ across the full development database) comparing recognition-enhanced configurations against baselines reveals that recognition theory is the primary driver of tutoring improvement: a corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition produces large effects with or without memory (+15.2 pts without memory, d=1.71; +11.0 pts with memory), while memory alone provides only a modest, non-significant benefit (+4.8 pts, d=0.46, $p \approx .08$). The combined condition yields the highest scores (91.2, d=1.81 vs base), with a small negative interaction (-4.2 pts) suggesting ceiling effects rather than synergy. A post-hoc active control (N=118), using length-matched prompts with generic pedagogical best practices but no recognition theory, scores 66.5—approximately 9 points above same-model base (${\approx}58$) but well below recognition levels (${\approx}73$), with recognition gains (~+15 pts above same-model base) substantially exceeding active-control gains (~+9 pts). (The active control ran on a different ego model than the factorial, precluding direct cross-condition comparison; same-model historical data provides the fair baseline.) A preliminary three-way comparison (N=36) found that recognition outperforms enhanced prompting by +8.7 points, consistent with recognition dominance, though the increment does not reach significance under GPT-5.2 (+1.3 pts, p=.60). A multi-model probe of multi-agent synergy across five ego models (N=655; Section 6.4) confirms that architecture and recognition contribute additively: the A$\times$B interaction ranges from -5.7 to +0.5 across all models (mean -1.8), definitively refuting an earlier exploratory finding (+9.2 on N=17) as sampling noise. Domain generalizability testing across both models and content domains confirms recognition advantage replicates: elementary math with Kimi shows +9.9 pts (d $\approx$ 0.61, N=60), with effects concentrated in challenging scenarios. The factor inversion between domains (philosophy: recognition dominance; elementary: architecture dominance) is partly model-dependent—Kimi shows recognition dominance on elementary content, revising the Nemotron-only finding. Multi-agent architecture serves as critical error correction when content isolation failures introduce wrong-domain references. Bilateral transformation tracking across three multi-turn scenarios (N=118) confirms that recognition-prompted tutors measurably adapt their approach in response to learner input (+26% relative improvement in adaptation index), though learner-side growth is not higher under recognition, suggesting the effect is tutor-side responsiveness rather than symmetric mutual transformation. A step-by-step evolution analysis of dynamic prompt rewriting (cell 21: LLM-authored session directives + active Writing Pad memory) across three iterative development runs (N=82) suggests the Writing Pad as an important enabler: cell 21 progresses from trailing its static baseline by 3.2 points to leading by 5.5 points, with every rubric dimension improving. A cross-judge replication with GPT-5.2 confirms the main findings are judge-robust: the recognition main effect (d=1.03), recognition dominance in the memory isolation experiment (d=0.99), and multi-agent null effects all replicate, though at compressed magnitudes (~58% of primary judge effect sizes). The memory isolation condition ordering is identical under both judges with no rank reversals (inter-judge r=0.63, N=120). Phase 2 experiments probe the internal architecture: dialectical superego modulation (N=174) reveals the superego functions as a quality filter rather than an active improver; self-reflective evolution (N=36) amplifies recognition's effect to d=1.02; mechanism robustness testing (N=360) shows all nine mechanisms cluster within 2.4 pts under scripted learners, while dynamic learner testing (N=120) demonstrates that other-ego profiling differentiates only with genuine feedback loops; and qualitative transcript assessment provides narrative evidence that recognition gives the ego the capacity to be changed by its internal critic rather than merely compliant with it. These results suggest that operationalizing philosophical theories of intersubjectivity as design heuristics can produce measurable improvements in AI tutor adaptive pedagogy, and that recognition may be better understood as an achievable relational stance rather than requiring genuine machine consciousness.
+  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across twenty-eight evaluations (N=2,700 primary scored; N=7,000+ development database), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71 with or without memory, while memory alone provides only d=0.46 (n.s.). A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (~58% of primary effect sizes, inter-judge r=0.63). Phase 2 experiments reveal that the Superego functions as a quality filter rather than an active improver—structural modulation metrics do not predict outcome quality. Nine architectural mechanisms cluster within 2.4 points under scripted learners, but differentiate when tested with dynamic interlocutors capable of genuine feedback loops: Theory of Mind profiling adds 4.1 points, and recognition's effect doubles. Qualitative transcript assessment identifies three specific changes recognition produces: the ego listens to its internal critic, the tutor builds on learner contributions rather than redirecting, and mid-conversation strategy shifts occur. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems, and that recognition is better understood as an achievable relational stance than a requirement for machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
 fontsize: 12pt
 geometry: margin=1in
@@ -709,7 +709,7 @@ We tested whether multi-agent synergy generalizes beyond recognition prompts by 
 
 The non-replication across both the larger factorial and this dedicated replication motivated a systematic multi-model probe: the same 2$\times$2 design (Recognition $\times$ Architecture, single-agent learner held constant) was run across four additional ego models (N$\approx$120 each, Opus judge), with the single-agent-learner cells from the Kimi factorial (cells 1, 3, 5, 7; N=179) serving as the fifth model.
 
-**Table 7b: Multi-Model A$\times$B Interaction Probe (N=655 across 5 ego models)**
+**Table 8: Multi-Model A$\times$B Interaction Probe (N=655 across 5 ego models)**
 
 | Ego Model | N | Base Single | Base Multi | Recog Single | Recog Multi | Recognition Effect | A$\times$B Interaction |
 |-----------|---|------------|-----------|-------------|------------|-------------------|----------------------|
@@ -731,7 +731,7 @@ A critical question for any pedagogical framework: Do findings generalize across
 
 **Data sources**: Elementary math results come from a dedicated domain-transfer run (eval-2026-02-04-79b633ca, N=47 scored, 8 cells × 5 elementary scenarios, Nemotron ego). Philosophy results use the subset of the Kimi-based factorial (Section 6.3) matched on the same 4 factor-level combinations (cells 1, 3, 5, 7). Because these use different ego models, the comparison focuses on *relative factor effects within each domain* rather than absolute score differences between domains.
 
-**Table 8: Factor Effects by Domain (Nemotron Elementary vs Kimi Philosophy)**
+**Table 9: Factor Effects by Domain (Nemotron Elementary vs Kimi Philosophy)**
 
 | Factor | Elementary (Math) | Philosophy (Hegel) |
 |--------|-------------------|-------------------|
@@ -754,9 +754,9 @@ A critical question for any pedagogical framework: Do findings generalize across
    - **New/untrained domain**: Multi-agent essential (Superego catches content isolation errors)
    - **Well-trained domain**: Recognition prompts sufficient, multi-agent optional
 
-**Kimi Replication (Addressing Model Confound)**: A follow-up run (eval-2026-02-05-e87f452d, N=60) tested elementary content with Kimi K2.5 to address the model confound in Table 8. With base and recognition cells (1, 3, 5, 7) on the same 5 elementary scenarios:
+**Kimi Replication (Addressing Model Confound)**: A follow-up run (eval-2026-02-05-e87f452d, N=60) tested elementary content with Kimi K2.5 to address the model confound in Table 9. With base and recognition cells (1, 3, 5, 7) on the same 5 elementary scenarios:
 
-**Table 9: Elementary Domain — Kimi Replication**
+**Table 10: Elementary Domain — Kimi Replication**
 
 | Condition | N | Mean | Δ |
 |-----------|---|------|---|
@@ -765,7 +765,7 @@ A critical question for any pedagogical framework: Do findings generalize across
 
 The recognition main effect (+9.9 pts, d $\approx$ 0.61) replicates on Kimi, confirming that recognition advantage in elementary content is not an artifact of the Nemotron model. Notably, the effect is scenario-dependent: challenging scenarios (frustrated_student: +23.8, concept_confusion: +13.6, struggling_student: +11.8) show substantial recognition advantage, while neutral scenarios (new_student_first_visit: +0.2, returning_student_mid_course: +0.1) show none. This pattern is consistent with recognition theory—recognition behaviors matter most when the learner needs to be acknowledged as a struggling subject, not for routine interactions.
 
-The Kimi replication also revises the architecture dominance finding from Table 8. With Nemotron, architecture (+9.9) dominated recognition (+4.4) on elementary content. With Kimi, recognition (+9.9) is the primary effect, while architecture shows a smaller advantage (multi=73.7, single=70.6, Δ=+3.0). The factor inversion appears to be partly model-dependent: Nemotron's higher rate of content isolation errors on elementary content inflated the architecture effect (Superego error correction), while Kimi's lower error rate reveals the underlying recognition advantage.
+The Kimi replication also revises the architecture dominance finding from Table 9. With Nemotron, architecture (+9.9) dominated recognition (+4.4) on elementary content. With Kimi, recognition (+9.9) is the primary effect, while architecture shows a smaller advantage (multi=73.7, single=70.6, Δ=+3.0). The factor inversion appears to be partly model-dependent: Nemotron's higher rate of content isolation errors on elementary content inflated the architecture effect (Superego error correction), while Kimi's lower error rate reveals the underlying recognition advantage.
 
 **Theoretical Interpretation**: Recognition's value depends on content characteristics. Abstract, interpretive content (consciousness, dialectics) benefits most from recognition framing—the "struggle" in Hegel's sense maps onto the intellectual struggle with difficult concepts. Concrete procedural content (fractions, arithmetic) benefits less from relational depth; correct procedure matters more than the bilateral transformation that recognition enables (Section 6.15). However, the Kimi replication shows that even in concrete domains, recognition provides meaningful improvement for challenging scenarios—suggesting recognition's value is modulated by both content type and scenario difficulty, not content type alone.
 
@@ -789,13 +789,13 @@ Both bugs have been fixed: the fallback was removed (scenarios must now declare 
 
 This connects to Freud's reality principle: the Superego enforces correspondence with external reality, not just internal standards. In our architecture, the Superego ensures the tutor's suggestions correspond to the learner's actual curriculum. The elementary scenario results demonstrate this concretely: multi-agent cells (3, 7) produced correct elementary content references in cases where single-agent cells (1, 5) propagated the philosophy content uncorrected.
 
-**Practical Implication**: For domain transfer—deploying tutoring systems on new content—multi-agent architecture provides essential error correction that single-agent systems cannot match. The bugs identified here represent a realistic class of deployment failure: incomplete content scoping and prompt examples that assume a particular domain. The Superego's reality-testing function catches these errors regardless of their source. However, the +9.9 point architecture advantage on elementary content (Table 8, Nemotron) was partly inflated by these bugs—the Kimi replication (Table 9), with fewer affected responses, shows a more modest +3.0 point architecture effect, likely closer to the true value once content isolation is correct.
+**Practical Implication**: For domain transfer—deploying tutoring systems on new content—multi-agent architecture provides essential error correction that single-agent systems cannot match. The bugs identified here represent a realistic class of deployment failure: incomplete content scoping and prompt examples that assume a particular domain. The Superego's reality-testing function catches these errors regardless of their source. However, the +9.9 point architecture advantage on elementary content (Table 9, Nemotron) was partly inflated by these bugs—the Kimi replication (Table 10), with fewer affected responses, shows a more modest +3.0 point architecture effect, likely closer to the true value once content isolation is correct.
 
 ### 6.7 Hardwired Rules vs Dynamic Dialogue
 
 Analysis of Superego critique patterns across 455 dialogues (186 rejections) revealed consistent failure modes:
 
-**Table 10: Superego Rejection Patterns**
+**Table 11: Superego Rejection Patterns**
 
 | Pattern | Frequency | Description |
 |---------|-----------|-------------|
@@ -809,7 +809,7 @@ Analysis of Superego critique patterns across 455 dialogues (186 rejections) rev
 
 An initial exploratory test (N=9 per condition, Haiku model) suggested hardwired rules could capture approximately 50% of the Superego's benefit. However, a larger replication (N=72, Kimi K2.5 ego, Opus judge) produced the opposite result:
 
-**Table 10b: Hardwired Rules Ablation (N=72, Kimi K2.5, Opus judge)**
+**Table 12: Hardwired Rules Ablation (N=72, Kimi K2.5, Opus judge)**
 
 | Condition | Architecture | Learner | N | Mean | vs Base |
 |-----------|-------------|---------|---|------|---------|
@@ -828,7 +828,7 @@ The dialectical superego modulation experiments (cells 22–33) tested whether s
 
 #### Standard Divergent Superego (cells 22–27)
 
-**Table 29: Standard Divergent Superego Results (N=84, Opus judge)**
+**Table 13: Standard Divergent Superego Results (N=84, Opus judge)**
 
 | Persona | Base | Recog | $\Delta$ |
 |---------|------|-------|----------|
@@ -844,7 +844,7 @@ All divergent/dialectical cells score approximately 20 points below the original
 
 #### Dialectical Multi-Turn Results (cells 28–33)
 
-**Table 30: Dialectical Multi-Turn Modulation (eval-2026-02-11-a54235ea, N=90, Opus judge)**
+**Table 14: Dialectical Multi-Turn Modulation (eval-2026-02-11-a54235ea, N=90, Opus judge)**
 
 | Persona | Base (N=15) | Recog (N=15) | $\Delta$ |
 |---------|-------------|--------------|----------|
@@ -857,7 +857,7 @@ All divergent/dialectical cells score approximately 20 points below the original
 
 The overall recognition effect is +4.5 pts, $d = 0.38$, $t(88) = 1.80$, $p \approx .075$—marginally significant and substantially weaker than the original factorial ($d = 0.80$). Recognition interacts with persona type: adversary (+6.2 pts) and advocate (+6.4 pts) benefit substantially, while suspicious shows minimal change (+0.9 pts). This reverses the single-turn pattern, where suspicious was neutral and adversary was catastrophically negative.
 
-**Table 30a: Structural Modulation Metrics — Base vs Recognition (N=90)**
+**Table 15: Structural Modulation Metrics — Base vs Recognition (N=90)**
 
 | Metric | Base (N=45) | Recog (N=45) | Cohen's $d$ |
 |--------|-------------|--------------|-------------|
@@ -878,13 +878,15 @@ Third, **the superego is a filter, not an improver.** The superego catches poor 
 
 **Intervention type distribution.** The *proportion* of revise/reject/reframe interventions is identical for base and recognition ($\chi^2(4) = 1.17$, $p = .883$, $V = 0.036$). The difference is purely in *volume*—recognition doesn't change *how* the superego intervenes, just *how often*. Recognition cells are also cheaper: 7.9 internal dialogue rounds at \$0.067/attempt vs 12.3 rounds at \$0.098/attempt for base (${\approx}30\%$ cost reduction).
 
+![Persona × Recognition Interaction in Dialectical Architecture](figures/figure7.png){width=100%}
+
 ### 6.9 Self-Reflective Evolution and the Insight-Action Gap
 
 Cells 40–45 extended the dialectical architecture with self-reflective evolution: between turns, both ego and superego generate first-person reflections on the prior interaction using their own respective models. The ego reflects on superego feedback received and its own revision patterns; the superego reflects on its intervention history and ego compliance signals. These reflections are injected into subsequent turns, enabling the system to accumulate insights about its own operation.
 
 Three superego disposition types (suspicious, adversary, advocate) were crossed with recognition (present/absent) in a partial run (N=36, eval-2026-02-13-8d40e086, Kimi K2.5 ego, Opus judge).
 
-**Table 31: Self-Reflective Evolution — Persona $\times$ Recognition (N=36, partial)**
+**Table 16: Self-Reflective Evolution — Persona $\times$ Recognition (N=36, partial)**
 
 | Persona | Base (N=6) | Recog (N=6) | $\Delta$ |
 |---------|------------|-------------|----------|
@@ -899,7 +901,7 @@ Recognition effect: +10.1 pts, $d = 1.02$—substantially stronger than the dial
 
 **The insight-action gap.** Despite the amplified recognition effect, a fundamental limitation persists. Qualitative trace analysis reveals that both base and recognition conditions show *awareness* of their own failures through self-reflection—the ego correctly identifies "I kept circling back to the same framework," the superego correctly diagnoses "the ego ignores my feedback." But awareness alone does not produce behavioral change. The ego's self-reflection states the correct insight ("I should stop interrupting") without generating a concrete alternative strategy. This insight-action gap—where the system accurately diagnoses its own failures but lacks the mechanism to translate diagnosis into different behavior—becomes the central design challenge addressed in subsequent experiments with Theory of Mind mechanisms (Section 6.10).
 
-**Table 31a: Comparison Across Approaches**
+**Table 17: Comparison Across Approaches**
 
 | Approach | Cells | N | Recog $\Delta$ | $d$ |
 |----------|-------|---|----------------|-----|
@@ -913,7 +915,7 @@ Self-reflection restores the recognition effect to original factorial levels, su
 
 To test whether specific mechanisms beyond basic recognition and self-reflection differentially affect tutoring quality, we ran a comprehensive 20-cell mechanism comparison (cells 40–59) across nine mechanism variants: self-reflection with three superego dispositions (suspicious, adversary, advocate), quantitative disposition tracking, prompt erosion detection, intersubjective ego-superego dialogue, combined mechanisms, and bidirectional Theory of Mind profiling in two configurations (tutor-only and bidirectional). All cells used Haiku 4.5 as ego model, unified (scripted) learner, and Opus judge.
 
-**Table 32: Mechanism Robustness Under Scripted Learner (eval-2026-02-14-e0e3a622, N=360, Opus judge)**
+**Table 18: Mechanism Robustness Under Scripted Learner (eval-2026-02-14-e0e3a622, N=360, Opus judge)**
 
 | Mechanism | Base M | Recog M | $\Delta$ |
 |-----------|--------|---------|----------|
@@ -937,7 +939,7 @@ Recognition is confirmed as the dominant active ingredient ($d = 0.86$), replica
 
 To test whether mechanism differentiation emerges with a responsive interlocutor, we ran two experiments using ego/superego (dynamic) learners that generate genuine LLM-powered responses (Haiku 4.5 ego, Opus judge, 2 scenarios). The first (eval-2026-02-14-6c033830, N=120) crosses recognition (present/absent) with mechanism type (self-reflection vs bidirectional profiling) in a 2$\times$2 design. The second (eval-2026-02-14-a2b2717c, N=120) adds recognition-only cells for intersubjective framing and combined mechanisms.
 
-**Table 33: Dynamic Learner $\times$ Mechanism (N=240, Opus judge)**
+**Table 19: Dynamic Learner $\times$ Mechanism (N=240, Opus judge)**
 
 | | Self-reflect | Profiling | Intersubjective | Combined |
 |---|---|---|---|---|
@@ -947,11 +949,13 @@ To test whether mechanism differentiation emerges with a responsive interlocutor
 
 Three findings emerge. First, **recognition with a dynamic learner** produces a +14 pt effect—roughly double the scripted learner effect (+7.6)—consistent with a responsive interlocutor providing more material for recognition to work with.
 
-Second, **mechanisms genuinely differentiate with dynamic learners**. Unlike the scripted condition (Table 32) where all mechanisms cluster within 2.4 pts, dynamic learner recognition cells span a 6.0-point range (82.8–88.8). Profiling and combined mechanisms (88.8, 87.8) outperform self-reflect and intersubjective framing (85.9, 82.8). The profiling effect is additive: +4.1 pts in the base condition, +2.9 pts under recognition, with near-zero interaction ($-0.7$). Profiling helps more on the harder scenario (misconception correction: +8.9 pts) than the open-ended one (mutual transformation: $-0.6$ pts). The mechanism operates on a different causal pathway from recognition: recognition changes *what* the tutor tries to do (treat learner as autonomous subject); profiling changes *how well* it adapts to this specific learner.
+Second, **mechanisms genuinely differentiate with dynamic learners**. Unlike the scripted condition (Table 18) where all mechanisms cluster within 2.4 pts, dynamic learner recognition cells span a 6.0-point range (82.8–88.8). Profiling and combined mechanisms (88.8, 87.8) outperform self-reflect and intersubjective framing (85.9, 82.8). The profiling effect is additive: +4.1 pts in the base condition, +2.9 pts under recognition, with near-zero interaction ($-0.7$). Profiling helps more on the harder scenario (misconception correction: +8.9 pts) than the open-ended one (mutual transformation: $-0.6$ pts). The mechanism operates on a different causal pathway from recognition: recognition changes *what* the tutor tries to do (treat learner as autonomous subject); profiling changes *how well* it adapts to this specific learner.
 
 Third, **variance collapses monotonically**: SD drops from 22.5 (self-reflect base) $\to$ 19.0 (profiling base) $\to$ 14.7 (self-reflect recognition) $\to$ 11.8 (profiling recognition). Each factor independently reduces output variance, consistent with both recognition and profiling constraining the tutor's output toward consistently high quality.
 
-**Theory of Mind interpretation.** Profiling is a Theory of Mind mechanism: it builds a model of the other agent's cognitive state, epistemic commitments, and response patterns. Theory of Mind is only useful when there is a mind to model. With a scripted learner, profiling builds a model of a recording—confabulation that cannot create a feedback loop. With a dynamic learner, profiling creates a genuine feedback loop: profile $\to$ adapted strategy $\to$ changed learner response $\to$ updated profile. This explains the null result in Table 32 (scripted learner: no mechanism differentiation) alongside the positive result in Table 33 (dynamic learner: profiling and combined differentiate).
+**Theory of Mind interpretation.** Profiling is a Theory of Mind mechanism: it builds a model of the other agent's cognitive state, epistemic commitments, and response patterns. Theory of Mind is only useful when there is a mind to model. With a scripted learner, profiling builds a model of a recording—confabulation that cannot create a feedback loop. With a dynamic learner, profiling creates a genuine feedback loop: profile $\to$ adapted strategy $\to$ changed learner response $\to$ updated profile. This explains the null result in Table 18 (scripted learner: no mechanism differentiation) alongside the positive result in Table 19 (dynamic learner: profiling and combined differentiate).
+
+![Scripted vs Dynamic Learner Mechanism Spread](figures/figure8.png){width=100%}
 
 #### Cross-Model Replication: Nemotron (eval-2026-02-14-49b33fdd)
 
@@ -961,7 +965,7 @@ A Nemotron replication of the full mechanism suite (cells 40–59, N=279, Opus j
 
 To complement the quantitative findings with interpretive depth, we conducted AI-assisted qualitative assessments of full dialogue transcripts from two key runs: the dialectical mechanism run (eval-2026-02-14-e0e3a622, N=360, cells 40–59) and the bilateral transformation run (eval-2026-02-07-b6d75e87, N=118, cells 1–8). Each transcript was assessed by Claude Opus across six narrative axes (pedagogical arc, recognition dynamics, superego effectiveness, learner trajectory, missed opportunities, key turning point), and assigned 2–5 qualitative tags from a fixed vocabulary. Assessments are stored in the evaluation database for reproducibility.
 
-**Table 34: Qualitative Tag Distribution — Bilateral Run (b6d75e87, N=118)**
+**Table 20: Qualitative Tag Distribution — Bilateral Run (b6d75e87, N=118)**
 
 | Tag | Base % | Recog % | Direction |
 |-----|--------|---------|-----------|
@@ -973,7 +977,7 @@ To complement the quantitative findings with interpretive depth, we conducted AI
 
 *Tags appearing in $\geq$5% of either condition shown. The bilateral run uses original factorial cells (1–8) with no dialectical mechanisms.*
 
-**Table 34a: Qualitative Tag Distribution — Dialectical Run (e0e3a622, N=360)**
+**Table 21: Qualitative Tag Distribution — Dialectical Run (e0e3a622, N=360)**
 
 | Tag | Base % | Recog % | Direction |
 |-----|--------|---------|-----------|
@@ -985,6 +989,8 @@ To complement the quantitative findings with interpretive depth, we conducted AI
 | learner_breakthrough | 29.0% | 29.9% | Neutral |
 
 The comparison between runs is instructive: in the bilateral run (no dialectical mechanisms), stalling is universal in base (100%) and recognition moments are entirely absent (0%); in the dialectical run (with mechanisms), the gap is smaller—stalling drops to 27% in base and recognition moments reach 26%. The dialectical mechanisms provide a partial floor even without recognition, compressing the gap between conditions.
+
+![Qualitative Tag Divergence: Base vs Recognition](figures/figure9.png){width=100%}
 
 The tag distributions reveal three specific effects of recognition:
 
@@ -1000,7 +1006,7 @@ The tag distributions reveal three specific effects of recognition:
 
 Effect size analysis reveals improvements concentrate in dimensions predicted by the theoretical framework:
 
-**Table 11: Dimension-Level Effect Sizes (Recognition vs Base)**
+**Table 22: Dimension-Level Effect Sizes (Recognition vs Base)**
 
 | Dimension | Base | Recognition | Cohen's d | Interpretation |
 |-----------|------|-------------|-----------|----------------|
@@ -1021,7 +1027,7 @@ A methodological concern: the evaluation rubric includes recognition-specific di
 
 To address this, we re-analyzed scores excluding all non-standard dimensions, using only standard pedagogical dimensions (relevance, specificity, pedagogical soundness, personalization, actionability, tone), re-weighted to 100%.
 
-**Table 12: Standard Dimensions Only (Recognition Dimensions Excluded)**
+**Table 23: Standard Dimensions Only (Recognition Dimensions Excluded)**
 
 | Profile Type | N | Overall Score |
 |--------------|---|---------------|
@@ -1039,7 +1045,7 @@ The larger effect on recognition dimensions (+21.8) is expected and not concerni
 
 To test whether recognition quality is maintained over extended interactions, we examine results from the three multi-turn scenarios (3–5 dialogue rounds each). These scenarios are distinct from the single-turn scenarios reported in Section 6.3; they require sustained engagement across multiple exchanges. The sample sizes below (N=161, 277, 165) are pooled across the full development database (all runs containing these scenarios), not from a single evaluation run. They therefore include responses generated under varying model configurations and implementation stages. The pooled analysis maximizes statistical power but means the results should be interpreted as describing the *average* effect across development iterations.
 
-**Table 13: Multi-Turn Scenario Results**
+**Table 24: Multi-Turn Scenario Results**
 
 | Scenario | N | Avg Rounds | Base | Recognition | Δ | Cohen's d |
 |----------|---|------------|------|-------------|---|-----------|
@@ -1061,7 +1067,7 @@ Three indices are computed for each multi-turn dialogue:
 
 Additionally, a composite **Transformation Quality** score (0–100) is computed from bilateral balance, mutual transformation presence, superego incorporation rate, and intervention effectiveness.
 
-**Table 14: Bilateral Transformation Metrics — Base vs Recognition Profiles**
+**Table 25: Bilateral Transformation Metrics — Base vs Recognition Profiles**
 
 | Metric | Base (N=58) | Recognition (N=60) | Δ |
 |--------|------|-------------|---|
@@ -1071,7 +1077,7 @@ Additionally, a composite **Transformation Quality** score (0–100) is computed
 
 *Data from three multi-turn scenarios (misconception correction flow, mood frustration to breakthrough, mutual transformation journey), N=118 scored dialogues across all 8 factorial cells (eval-2026-02-07-b6d75e87).*
 
-**Table 14a: Tutor Adaptation Index by Scenario**
+**Table 26: Tutor Adaptation Index by Scenario**
 
 | Scenario | Base | Recognition | Δ |
 |----------|------|-------------|---|
@@ -1089,7 +1095,7 @@ Multi-agent architecture also shows a modest advantage: multi-agent tutors adapt
 
 The Drama Machine framework (Section 2.3) predicts that internal ego-superego tension produces *modulated* behavior—dynamic variation in register, approach, and intensity. To test this empirically, we computed post-hoc modulation metrics across the N=350 factorial dataset: response length variability (coefficient of variation), vocabulary richness (type-token ratio), within-scenario score variability, and dimension score variance (a proxy for behavioral range across the 14 rubric dimensions).
 
-**Table 14e: Modulation Metrics by Condition (N=350 Factorial)**
+**Table 27: Modulation Metrics by Condition (N=350 Factorial)**
 
 | Metric | Base Single | Base Multi | Recog Single | Recog Multi |
 |--------|-------------|------------|--------------|-------------|
@@ -1109,7 +1115,7 @@ This reframes the Drama Machine's contribution to pedagogy: the value of interna
 
 The evaluation rubric (Section 5.1) measures tutor suggestion quality, not learner learning. To provide a proxy measure of synthetic learning outcomes, we constructed a composite index from the three learner rubric dimensions most directly related to conceptual growth: revision signals (35% weight), question quality (30%), and conceptual engagement (35%). This composite was computed for each of the N=118 bilateral dialogues, where per-turn learner scores were available.
 
-**Table 14f: Synthetic Learning Outcome Index (0–100 scale)**
+**Table 28: Synthetic Learning Outcome Index (0–100 scale)**
 
 | Condition | N | Avg Composite | Final Turn | Learning Arc |
 |-----------|---|---------------|------------|--------------|
@@ -1128,7 +1134,7 @@ A positive A×B interaction (+3.2 pts) suggests recognition benefits multi-agent
 
 The tutor-focused rubric (Section 5.1) captures Factor C's effect indirectly—through how the tutor responds to different learner contexts. To measure Factor C's *direct* effect on learner turn quality, we applied the symmetric learner rubric (Section 5.1) to the N=118 bilateral transformation dialogues (eval-2026-02-07-b6d75e87), scoring each of the ~3 learner turns per dialogue independently. The judge receives the dialogue transcript truncated at the learner turn being evaluated (no subsequent tutor response), preventing retrospective bias. For multi-agent learners, the internal ego/superego deliberation trace is provided for the Deliberation Depth dimension.
 
-**Table 14b: Learner Quality by Architecture and Recognition (2×2 ANOVA)**
+**Table 29: Learner Quality by Architecture and Recognition (2×2 ANOVA)**
 
 | Effect | F(1,114) | p | $\eta^2$ | Cohen's d |
 |--------|----------|---|----------|-----------|
@@ -1136,7 +1142,7 @@ The tutor-focused rubric (Section 5.1) captures Factor C's effect indirectly—t
 | Recognition (A) | 5.70 | .019 | .029 | 0.34 |
 | **A × C Interaction** | **11.50** | **< .001** | **.058** | — |
 
-**Table 14c: Learner Quality Cell Means (0-100 scale)**
+**Table 30: Learner Quality Cell Means (0-100 scale)**
 
 | Architecture | N | Mean |
 |---|---|---|
@@ -1149,7 +1155,7 @@ The multi-agent (ego/superego) learner architecture produces significantly *lowe
 
 **Simple effects**: Recognition has no effect on single-agent learner quality (76.1 → 74.8, $d = -0.46$, $p = .082$, n.s.)—there is nothing to fix. But recognition significantly improves multi-agent learner quality (57.5 → 67.0, $d = 0.79$, $p = .004$), partially counteracting the superego's flattening effect. Even so, the rescue is incomplete: multi-agent learners with recognition (67.0) do not reach the level of single-agent learners without it (76.1).
 
-**Table 14d: Per-Dimension Interactions (1-5 scale)**
+**Table 31: Per-Dimension Interactions (1-5 scale)**
 
 | Dimension | Single recog effect | Multi recog effect | Interaction F(1,114) | p | $\eta^2$ |
 |---|---|---|---|---|---|
@@ -1215,7 +1221,7 @@ Across all three pairs, the pattern is consistent: base responses are context-fr
 
 Automated analysis of the full suggestion corpus reveals measurable linguistic differences between conditions.
 
-**Table 15: Lexical Diversity Metrics by Condition**
+**Table 32: Lexical Diversity Metrics by Condition**
 
 | Metric | Base (message) | Recognition (message) |
 |--------|----------------|----------------------|
@@ -1229,7 +1235,7 @@ Automated analysis of the full suggestion corpus reveals measurable linguistic d
 
 Recognition responses deploy a 59% larger vocabulary despite similar word and sentence length, suggesting greater lexical variety rather than merely longer output.
 
-**Table 16: Differential Word Frequency (Selected Terms)**
+**Table 33: Differential Word Frequency (Selected Terms)**
 
 | Recognition-skewed | Base | Recog | Ratio | | Base-skewed | Base | Recog | Ratio |
 |-------------------|------|-------|-------|-|-------------|------|-------|-------|
@@ -1248,7 +1254,7 @@ The recognition-skewed vocabulary is interpersonal and process-oriented ("consid
 
 Regex-based thematic coding (using patterns adapted from the bilateral measurement framework in Section 6.15) quantifies the frequency of theoretically relevant language categories across conditions.
 
-**Table 17: Thematic Code Frequency by Condition**
+**Table 34: Thematic Code Frequency by Condition**
 
 | Category | Base (per 1000 words) | Recognition (per 1000 words) | Ratio | $\chi^2$(1) | Sig |
 |----------|----------------------|------------------------------|-------|-------|-----|
@@ -1269,7 +1275,7 @@ Transformation language and directive framing show the expected directional diff
 
 The regex-based analysis (Sections 6.17.2–3) confirms that *words* differ between conditions, but the categories were researcher-defined. To test whether the thematic distinction emerges without predefined categories, we conducted an open-ended AI theme discovery analysis using Claude Opus as coder. A stratified random sample of 300 responses (135 base, 165 recognition) was presented to the model with no category scheme; the coder was asked to identify the dominant emergent theme, pedagogical stance, and epistemic orientation for each response independently.
 
-**Table 17b: Top Emergent Themes by Condition (AI Discovery, N=300)**
+**Table 35: Top Emergent Themes by Condition (AI Discovery, N=300)**
 
 | Theme | Base | Recog | Total | Direction |
 |-------|------|-------|-------|-----------|
@@ -1288,7 +1294,7 @@ The regex-based analysis (Sections 6.17.2–3) confirms that *words* differ betw
 
 The theme landscape is almost perfectly bimodal: of the 10 themes with frequency $\geq 6$, only one ("forward momentum without reflection") appears roughly equally in both conditions. Every other theme is condition-exclusive or near-exclusive. The single most frequent theme—"deficit-oriented framing" (N=35)—appears only in base responses, while its mirror—"collaborative learning partnership" (N=21)—appears only in recognition responses. This clean separation emerged without any researcher-imposed category scheme.
 
-**Table 17c: Pedagogical Stance (AI Discovery, N=300)**
+**Table 36: Pedagogical Stance (AI Discovery, N=300)**
 
 | Stance | Base | Recognition |
 |--------|------|-------------|
@@ -1298,7 +1304,7 @@ The theme landscape is almost perfectly bimodal: of the 10 themes with frequency
 | Collaborative | 0 | 12 (7%) |
 | Other/compound | 18 (13%) | 53 (32%) |
 
-**Table 17d: Epistemic Orientation (AI Discovery, N=300)**
+**Table 37: Epistemic Orientation (AI Discovery, N=300)**
 
 | Orientation | Base | Recognition |
 |-------------|------|-------------|
@@ -1311,7 +1317,7 @@ The stance and orientation distributions are even more sharply separated than th
 
 ![Tutor Language Word Clouds](figures/figure6.png){width=100%}
 
-**Figure 6** shows word frequency clouds generated directly from tutor response text in the N=350 factorial dataset (base: N=172; recognition: N=178), with common English stop words and shared tutoring terms removed. Because both conditions discuss the same Hegelian philosophy content, the vocabularies substantially overlap. Nevertheless, condition-specific emphasis is visible: recognition responses foreground relational and process terms ("recognition," "tension," "transformation," "struggle," "explore," "practice"), while base responses foreground content-delivery terms ("concept," "dialectical," "servant," "section," "quiz"). The AI-assisted theme discovery (Tables 17b–d) provides the interpretive layer for these raw differences.
+**Figure 6** shows word frequency clouds generated directly from tutor response text in the N=350 factorial dataset (base: N=172; recognition: N=178), with common English stop words and shared tutoring terms removed. Because both conditions discuss the same Hegelian philosophy content, the vocabularies substantially overlap. Nevertheless, condition-specific emphasis is visible: recognition responses foreground relational and process terms ("recognition," "tension," "transformation," "struggle," "explore," "practice"), while base responses foreground content-delivery terms ("concept," "dialectical," "servant," "section," "quiz"). The AI-assisted theme discovery (Tables 35–d) provides the interpretive layer for these raw differences.
 
 **Methodological note**: AI-assisted theme discovery risks circular validation if the coding model recognizes the prompt engineering that produced the responses. Two factors mitigate this concern: (1) the coder received only the tutor's suggestion text, not the system prompt or condition label; and (2) the near-perfect theme separation itself is the finding—whether or not the coder "recognizes" the framework, the fact that emergent themes partition cleanly by condition demonstrates that the two conditions produce qualitatively distinct pedagogical texts, not merely quantitatively different scores.
 
@@ -1321,7 +1327,7 @@ Cell 21 extends the recognition multi-agent configuration (cell 7) with two addi
 
 Three iterative development runs tracked cell 21's performance as its implementation evolved across commits:
 
-**Table 18: Step-by-Step Evolution of Cell 21 vs Cell 7**
+**Table 38: Step-by-Step Evolution of Cell 21 vs Cell 7**
 
 | Run ID | Commit | Grand Avg | Cell 7 | Cell 21 | Δ (21−7) | N (scored) |
 |--------|--------|-----------|--------|---------|----------|------------|
@@ -1333,7 +1339,7 @@ Three iterative development runs tracked cell 21's performance as its implementa
 
 The inflection point is commit e673c4b, which activated the Writing Pad memory and refined the LLM directive generation. Before this commit, cell 21 trailed its static baseline (cell 7) in both runs. After activation, cell 21 leads by 5.5 points—a delta swing of +8.7 points from Run 1 to Run 3.
 
-**Table 19: Per-Scenario Breakdown Across Runs**
+**Table 39: Per-Scenario Breakdown Across Runs**
 
 | Scenario | Cell | Run 1 (daf60f79) | Run 2 (49bb2017) | Run 3 (12aebedb) | Trend |
 |----------|------|-------------------|-------------------|-------------------|-------|
@@ -1346,7 +1352,7 @@ The inflection point is commit e673c4b, which activated the Writing Pad memory a
 
 Cell 21 improves on every scenario across the three runs, with the largest gain on the `mutual_transformation_journey` scenario (+22.2 points from run 1 to run 3). Cell 7 also improves across runs (reflecting general implementation improvements), but cell 21's improvement rate is substantially steeper.
 
-**Table 20: Rubric Dimension Improvement for Cell 21 Across Runs (1–5 scale)**
+**Table 40: Rubric Dimension Improvement for Cell 21 Across Runs (1–5 scale)**
 
 | Dimension | Run 1 | Run 2 | Run 3 | Δ (Run 3 − Run 1) |
 |-----------|-------|-------|-------|-----|
@@ -1369,7 +1375,7 @@ This pattern is consistent with the Hegel-Freud synthesis described in Section 3
 
 To assess whether findings depend on the primary judge (Claude Code/Opus), we rejudged all key evaluation runs with GPT-5.2 as an independent second judge. GPT-5.2 scored the identical tutor responses—no new generation occurred.
 
-**Table 21: Inter-Judge Agreement (Claude Code vs GPT-5.2)**
+**Table 41: Inter-Judge Agreement (Claude Code vs GPT-5.2)**
 
 | Run | N (matched) | Pearson r | p | Claude Mean | GPT-5.2 Mean | Calibration Δ |
 |-----|-------------|-----------|---|-------------|--------------|---------------|
@@ -1381,7 +1387,7 @@ To assess whether findings depend on the primary judge (Claude Code/Opus), we re
 
 All correlations are moderate-to-good (r = 0.49–0.64) and highly significant (all p < .001). GPT-5.2 applies stricter absolute standards (10–12 points lower), consistent with the calibration differences reported in Section 5.8.
 
-**Table 22: Cross-Judge Replication of Key Findings**
+**Table 42: Cross-Judge Replication of Key Findings**
 
 | Finding | Claude Effect | GPT-5.2 Effect | GPT-5.2 p | Replicates? |
 |---------|-------------|----------------|-----------|-------------|
@@ -1416,7 +1422,7 @@ To test this, we designed three 5-turn impasse scenarios where scripted learner 
 
 Each scenario was run with 4 cells (base single, base multi, recognition single, recognition multi) $\times$ 2 runs = 24 five-turn dialogues (eval-2026-02-08-f896275d, Opus judge).
 
-**Table 24: Dialectical Impasse Results by Scenario**
+**Table 43: Dialectical Impasse Results by Scenario**
 
 | Scenario | Base Mean (N=4) | Recognition Mean (N=4) | $\Delta$ | Recog. Score (Base) | Recog. Score (Recognition) |
 |----------|----------------|----------------------|-----|--------------------------|---------------------------|
@@ -1425,7 +1431,7 @@ Each scenario was run with 4 cells (base single, base multi, recognition single,
 | Affective shutdown | 52.0 | 50.9 | $-$1.1 | 30.2 | 35.7 |
 | **Grand mean** | **33.2** | **56.8** | **+23.6** | **13.5** | **40.9** |
 
-**Table 25: Impasse Results by Cell**
+**Table 44: Impasse Results by Cell**
 
 | Cell | Epistemic | Affective | Deadlock | Mean |
 |------|-----------|-----------|----------|------|
@@ -1438,13 +1444,13 @@ The results reveal a striking dissociation across impasse types. Recognition the
 
 The affective shutdown scenario shows no recognition advantage ($\Delta$ = $-$1.1). Base tutors handle emotional repair roughly as well as recognition tutors, suggesting that the recognition framework's distinctive contribution lies in the epistemological structure of dialogue—how the tutor relates to the learner's *ideas*—rather than in emotional support per se. This pattern is theoretically coherent: Hegel's recognition theory addresses the constitution of the other as a knowing subject, not primarily as a feeling subject. The affective dimension maps more naturally onto Honneth's later extension of recognition to emotional needs, which is not the primary theoretical ground of our prompts.
 
-The cell-level data (Table 25) show that multi-agent architecture provides a notable benefit for base tutors on affective shutdown (cell 3: 62.1 vs cell 1: 41.9), suggesting the Superego's quality enforcement helps catch dismissive responses even without recognition theory. For epistemic resistance, recognition + multi-agent (cell 7: 73.8) substantially outperforms recognition + single-agent (cell 5: 56.2), suggesting that internal deliberation helps navigate philosophically demanding impasses.
+The cell-level data (Table 44) show that multi-agent architecture provides a notable benefit for base tutors on affective shutdown (cell 3: 62.1 vs cell 1: 41.9), suggesting the Superego's quality enforcement helps catch dismissive responses even without recognition theory. For epistemic resistance, recognition + multi-agent (cell 7: 73.8) substantially outperforms recognition + single-agent (cell 5: 56.2), suggesting that internal deliberation helps navigate philosophically demanding impasses.
 
 #### Resolution Strategy Coding
 
 The rubric scores show *how well* tutors handle impasse; resolution strategy coding reveals *how* they handle it. Each of the 24 dialogues was coded by an LLM judge (Opus) into one of five Hegelian resolution strategies: mutual recognition (engaging the learner's position as valid, exploring tension together), domination (reasserting expertise, dismissing the objection), capitulation (agreeing with the learner to avoid conflict), withdrawal (changing topic, deflecting, offering platitudes), and scaffolded reframing (acknowledging the learner's position, then reframing to open new ground—the Aufhebung pattern of preserving and overcoming).
 
-**Table 26: Resolution Strategy Distribution by Condition**
+**Table 45: Resolution Strategy Distribution by Condition**
 
 | Strategy | Base (N=12) | % | Recognition (N=12) | % |
 |----------|-------------|------|---------------------|------|
@@ -1478,7 +1484,7 @@ The absence of capitulation in either condition (0/24) likely reflects scenario 
 
 The overall strategy coding captures the arc of a full dialogue. But does strategy evolve *within* a dialogue as impasse deepens? To investigate, we independently coded turns 3 and 5 of each dialogue—the responses after the learner's first major escalation and final challenge respectively—using the same five-category scheme. The per-turn coder received the dialogue transcript only up to and including the target turn, and coded only the tutor's response at that turn.
 
-**Table 27: Strategy Distribution by Turn**
+**Table 46: Strategy Distribution by Turn**
 
 | Turn | Condition | Withdrawal | Scaffolded Reframing | Other |
 |------|-----------|-----------|---------------------|-------|
@@ -1487,7 +1493,7 @@ The overall strategy coding captures the arc of a full dialogue. But does strate
 | 5 (final challenge) | Base (N=12) | 12 (100%) | 0 | 0 |
 | 5 (final challenge) | Recognition (N=12) | 10 (83%) | 1 (8%) | 1 domination |
 
-**Table 28: Strategy Stability (Turn 3 $\to$ Turn 5)**
+**Table 47: Strategy Stability (Turn 3 $\to$ Turn 5)**
 
 | Condition | Same Strategy | Changed | Stability Rate |
 |-----------|--------------|---------|----------------|
@@ -1538,7 +1544,7 @@ The null result on affective shutdown ($\Delta$ = $-$1.1) sharpens the theoretic
 
 ### 7.2 Architecture as Additive, Not Synergistic
 
-An early exploratory analysis (N=17, Nemotron) suggested that multi-agent architecture might synergize specifically with recognition prompts (+9.2 pts interaction). This raised the theoretically appealing possibility that recognition creates qualitatively different conditions for productive internal dialogue. However, a multi-model probe across five ego models (N=655 total; Section 6.4, Table 7b) decisively refutes this hypothesis: the A$\times$B interaction ranges from -5.7 to +0.5 across all five models tested, with four of five showing negative interactions and only Kimi showing a negligible positive value. The Nemotron re-run itself (N=119) shows an interaction of -5.7, confirming the original +9.2 as sampling noise on a tiny sample.
+An early exploratory analysis (N=17, Nemotron) suggested that multi-agent architecture might synergize specifically with recognition prompts (+9.2 pts interaction). This raised the theoretically appealing possibility that recognition creates qualitatively different conditions for productive internal dialogue. However, a multi-model probe across five ego models (N=655 total; Section 6.4, Table 8) decisively refutes this hypothesis: the A$\times$B interaction ranges from -5.7 to +0.5 across all five models tested, with four of five showing negative interactions and only Kimi showing a negligible positive value. The Nemotron re-run itself (N=119) shows an interaction of -5.7, confirming the original +9.2 as sampling noise on a tiny sample.
 
 The corrected picture is simpler: recognition and architecture contribute additively. Recognition provides a large, consistent main effect (+9.6 to +17.8 across models), while architecture provides a small main effect (-0.8 to +3.7) that does not meaningfully depend on prompt type. The Superego adds modest value regardless of whether recognition theory is present—likely through generic quality enforcement (catching errors, improving specificity) rather than through recognition-specific deliberation. This finding aligns with the architecture's primary demonstrated value being error correction on new domains (Section 6.5) rather than recognition amplification.
 
@@ -1623,7 +1629,7 @@ If mutual recognition produces better outcomes, and if mutual recognition requir
 
 The domain generalizability findings raise a practical question: when is the additional cost of multi-agent architecture justified?
 
-**Table 35: Cost-Benefit by Domain and Architecture**
+**Table 48: Cost-Benefit by Domain and Architecture**
 
 | Domain | Architecture | Avg Score | Latency (s) | Δ Score | Latency Multiple |
 |--------|-------------|-----------|-------------|---------|------------------|
@@ -1705,7 +1711,7 @@ The experimental evidence across twenty-eight evaluations (N $\approx$ 2,700) co
 
 **Model dependence**: Results were obtained with specific models (Kimi K2.5, Nemotron). The A×B interaction (multi-agent synergy specific to recognition) appeared in the Nemotron analysis (N=17, Section 6.4) but failed to replicate on Kimi in both the larger factorial (N=350) and a dedicated replication (N=60), confirming this as a model-specific finding. The recognition main effect, by contrast, replicates across both models and domains.
 
-**Domain sampling and content isolation**: We tested two domains (philosophy, elementary math). A follow-up run (eval-2026-02-05-e87f452d) tested elementary content with Kimi K2.5, partially addressing the model confound in the original Nemotron-only elementary results. The recognition main effect replicated (+9.9 pts, d $\approx$ 0.61), though the factor inversion pattern from Table 8 (architecture dominance on elementary) was partly model-dependent: Kimi showed recognition dominance on elementary content, while Nemotron showed architecture dominance. Post-hoc investigation (Section 6.6) identified two content isolation bugs that caused philosophy references to appear in one elementary scenario (`new_student_first_visit`, 16/24 responses affected). These bugs—a content resolver fallback and hardcoded prompt examples—have been fixed but partly inflated the architecture effect on elementary content, since multi-agent cells caught the errors while single-agent cells did not. The Kimi architecture effect (+3.0 pts) is likely more representative than the Nemotron effect (+9.9 pts). Broader domain sampling beyond two content areas, with verified content isolation, would further strengthen generalizability claims.
+**Domain sampling and content isolation**: We tested two domains (philosophy, elementary math). A follow-up run (eval-2026-02-05-e87f452d) tested elementary content with Kimi K2.5, partially addressing the model confound in the original Nemotron-only elementary results. The recognition main effect replicated (+9.9 pts, d $\approx$ 0.61), though the factor inversion pattern from Table 9 (architecture dominance on elementary) was partly model-dependent: Kimi showed recognition dominance on elementary content, while Nemotron showed architecture dominance. Post-hoc investigation (Section 6.6) identified two content isolation bugs that caused philosophy references to appear in one elementary scenario (`new_student_first_visit`, 16/24 responses affected). These bugs—a content resolver fallback and hardcoded prompt examples—have been fixed but partly inflated the architecture effect on elementary content, since multi-agent cells caught the errors while single-agent cells did not. The Kimi architecture effect (+3.0 pts) is likely more representative than the Nemotron effect (+9.9 pts). Broader domain sampling beyond two content areas, with verified content isolation, would further strengthen generalizability claims.
 
 **Synthetic learning outcomes only**: All evaluations measure tutor response quality and simulated learner behavior, not actual learning. The synthetic learning outcome index (Section 6.15.2) provides a proxy from learner rubric dimensions (revision signals, question quality, conceptual engagement), and all conditions show substantial learning arcs (15–21 pts). However, these are AI-judge assessments of LLM-generated learner turns—measuring the *quality of simulated learning behavior*, not knowledge acquisition, comprehension, or transfer. Whether recognition-enhanced tutoring produces genuine learning gains in human learners remains the critical open question.
 
@@ -1751,7 +1757,7 @@ An evaluation framework (N=2,700 primary scored across twenty-eight key evaluati
 
 1. **Recognition as primary driver (the definitive finding)**: A corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition theory is the primary driver of tutoring improvement: recognition alone produces d=1.71 (+15.2 pts), while memory alone provides only a modest, non-significant benefit (d=0.46, +4.8 pts, $p \approx .08$). The combined condition reaches d=1.81 (+15.8 pts vs base), with ceiling effects at ~91 limiting further gains. A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content provides partial corroboration: same-model comparisons show the active control scores approximately 9 points above base while recognition scores approximately 15 points above base, with recognition gains (~+15 pts above base) substantially exceeding active-control gains (~+9 pts; see Section 8.1 for model confound caveats). A preliminary three-way comparison (N=36) found recognition outperforms enhanced prompting by +8.7 points, consistent with recognition dominance, though the increment does not replicate under GPT-5.2 (+1.3 pts, p=.60). Recognition theory is directly effective and does not require memory infrastructure to manifest.
 
-2. **Architecture is additive, not synergistic**: A multi-model probe across five ego models (N=655; Section 6.4, Table 7b) shows that multi-agent architecture does not meaningfully interact with recognition prompts. The A$\times$B interaction ranges from -5.7 to +0.5 across all five models tested (mean -1.8), with four of five showing negative values. The original exploratory finding (+9.2 on N=17, Nemotron) was sampling noise. Architecture provides a small additive benefit (-0.8 to +3.7 pts) largely independent of prompt type.
+2. **Architecture is additive, not synergistic**: A multi-model probe across five ego models (N=655; Section 6.4, Table 8) shows that multi-agent architecture does not meaningfully interact with recognition prompts. The A$\times$B interaction ranges from -5.7 to +0.5 across all five models tested (mean -1.8), with four of five showing negative values. The original exploratory finding (+9.2 on N=17, Nemotron) was sampling noise. Architecture provides a small additive benefit (-0.8 to +3.7 pts) largely independent of prompt type.
 
 3. **Tutor adaptation**: Recognition-prompted tutors measurably adapt their approach in response to learner input (adaptation index +26% higher than baseline across N=118 multi-turn dialogues and three scenarios). However, learner-side growth is not higher under recognition, suggesting the effect is tutor-side responsiveness rather than symmetric mutual transformation. This provides partial empirical grounding for recognition theory: recognition prompts produce tutors that are genuinely shaped by the encounter, even if the "mutual" claim requires qualification.
 
@@ -2241,4 +2247,4 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | 2026-02-10 | v2.1.1 | **Consistency fixes**: Corrected stale N=1,628/twenty → N=1,700/twenty-one in abstract, introduction, and conclusion (reflecting hardwired rules ablation and learner-side evaluation added in v1.8–v1.9). Fixed dynamic rewrite section references in Tables 2 and D (6.13→6.14, after §6.12 insertion renumbered sections). Added hardwired rules ablation and learner-side evaluation to Appendix D run list (was 19 rows, now 21). Fixed inter-judge reliability cross-reference in §8.1 (5.7→5.8). Fixed Appendix D repository URL. |
 | 2026-02-10 | v2.1.2 | **Review corrections** (30 fixes): Table 7b Kimi row corrected to single-learner cells (N=350→179, Recognition +10.2→+15.5, Interaction -1.5→+0.5) matching probe design; total probe N 826→655. Table 1 Primary/Alternative model columns corrected. Factor C in Discussion corrected (-1.7 pts, F=2.56 from +1.5, p=.341). Stale A×C values updated (+15.5/+4.8). Dynamic rewrite swing corrected (+16.7→+8.7 delta). Abstract trailing deficit corrected (7.2→3.2). Table cross-refs fixed (Table 5→6, Table 23→29). Dimension count 6→8. Terminology standardized (unified→single-agent, behaviour→behavior). Theme count 15→10. Impasse N=4→2 per cell. Malformed citation fixed. |
 | 2026-02-11 | v2.2.0 | **Modulation and learning outcomes**: Added §6.11.1 (modulation metrics, N=350 post-hoc) showing multi-agent architecture does not increase behavioral range (d=0.05); recognition produces calibration not oscillation (dimension variance d=−1.00, F=87.69). Added §6.11.2 (synthetic learning outcome index, N=118) from learner rubric composites: recognition +3.8 pts (d=0.32), all conditions show 15–21 pt learning arcs. Extended §7.4 Discussion with phronesis reframing. Added explicit synthetic-learning-only limitation to §8.1. Regenerated Figure 4 as interaction plot (legend no longer overlaps). Regenerated Figure 6 from actual transcript word frequencies (was AI theme labels). Fixed p.44 caption overflow (removed monospace from scenario names). |
-| 2026-02-14 | v2.3.0 | **Phase 2 experimental results**: Added four new Results sections: §6.8 Dialectical Superego Modulation (cells 22–33, N=174, Tables 29–30a) — superego functions as quality filter not improver, adversary over-deference mechanism, structural modulation metrics don't predict quality; §6.9 Self-Reflective Evolution (cells 40–45, N=36, Tables 31–31a) — recognition d=1.02, variance regularization, insight-action gap; §6.10 Mechanism Robustness (cells 40–59 N=360 + cells 60–63 N=120, Tables 32–33) — nine mechanisms cluster within 2.4 pts under scripted learners, profiling differentiates with dynamic learners; §6.11 Qualitative Transcript Assessment (Tables 34–34a) — tag analysis, three specific effects of recognition. Renumbered §6.8–6.16→§6.12–6.20. Added §7.10 Scripted Learner Confound, §7.11 Practical Recommendations for AI Tutor Design (6 recommendations). Updated §7.2, §7.4. Added limitations (partial N, scripted confound, unblinded assessor). Added future directions (mechanistic binding, ToM architecture, blinded assessment). Updated conclusion (findings 10–12). Updated abstract, introduction, Appendices B/D/E. Expanded §6.10 with cells 64–65 (dynamic learner intersubjective + combined, N=120, a2b2717c) and Nemotron cross-model replication (N=279, 49b33fdd). Paper totals: N=2,700 across 28 key evaluations. |
+| 2026-02-14 | v2.3.0 | **Phase 2 experimental results**: Added four new Results sections: §6.8 Dialectical Superego Modulation (cells 22–33, N=174, Tables 13–15) — superego functions as quality filter not improver, adversary over-deference mechanism, structural modulation metrics don't predict quality; §6.9 Self-Reflective Evolution (cells 40–45, N=36, Tables 16–17) — recognition d=1.02, variance regularization, insight-action gap; §6.10 Mechanism Robustness (cells 40–59 N=360 + cells 60–63 N=120, Tables 18–19) — nine mechanisms cluster within 2.4 pts under scripted learners, profiling differentiates with dynamic learners; §6.11 Qualitative Transcript Assessment (Tables 20–21) — tag analysis, three specific effects of recognition. Renumbered §6.8–6.16→§6.12–6.20. Added §7.10 Scripted Learner Confound, §7.11 Practical Recommendations for AI Tutor Design (6 recommendations). Updated §7.2, §7.4. Added limitations (partial N, scripted confound, unblinded assessor). Added future directions (mechanistic binding, ToM architecture, blinded assessment). Updated conclusion (findings 10–12). Updated abstract, introduction, Appendices B/D/E. Expanded §6.10 with cells 64–65 (dynamic learner intersubjective + combined, N=120, a2b2717c) and Nemotron cross-model replication (N=279, 49b33fdd). Renumbered all tables sequentially (1–48; previously non-sequential due to insertions). Trimmed abstract from ~650 to ~250 words. Paper totals: N=2,700 across 28 key evaluations. |
