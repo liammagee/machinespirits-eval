@@ -161,6 +161,12 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 npm test
 ```
 
+## Known Deferred Risks
+
+This repository currently accepts a small set of known risks because it is run as an internal localhost-only evaluation system.
+
+See `notes/known-risks-localhost-2026-02-13.md` for the tracked risk register, acceptance scope, and hardening triggers required before broader deployment.
+
 ## Citation
 
 If you use this software in your research, please cite:

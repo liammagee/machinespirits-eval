@@ -26,7 +26,7 @@ providers:
     base_url: https://openrouter.ai/api/v1/chat/completions
     default_model: nvidia/nemotron-3-nano-30b-a3b:free
     models:
-      # Budget-friendly options (free tier)
+      # Budget-friendly options
       nemotron: nvidia/nemotron-3-nano-30b-a3b:free
       glm47: z-ai/glm-4.7
       glm5: z-ai/glm-5
