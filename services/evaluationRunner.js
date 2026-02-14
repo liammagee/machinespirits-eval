@@ -92,6 +92,7 @@ const EVAL_ONLY_PROFILES = [
   'cell_58_recog_dialectical_profile_bidirectional_full', 'cell_59_recog_dialectical_profile_bidirectional_strategy',
   'cell_60_base_dialectical_selfreflect_psycho', 'cell_61_recog_dialectical_selfreflect_psycho',
   'cell_62_base_dialectical_profile_bidirectional_psycho', 'cell_63_recog_dialectical_profile_bidirectional_psycho',
+  'cell_64_recog_dialectical_intersubjective_psycho', 'cell_65_recog_dialectical_combined_psycho',
 ];
 
 /**
