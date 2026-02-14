@@ -9,6 +9,9 @@
  *   compact       Turn headers + final messages + superego verdicts (with metadata)
  *   messages-only Just the learner↔tutor exchange
  *   full          Like play but includes raw metrics, token counts, model info per entry
+ *   bilateral     Dialogue-turn-level grouping for multi-turn bilateral traces:
+ *                 splits on final_output boundaries, shows tutor then learner
+ *                 deliberation within each dialogue turn
  */
 
 const DEFAULT_WIDTH = 72;
@@ -326,7 +329,7 @@ export function formatEntry(entry, options = {}) {
  *
  * @param {Array} trace - The consolidatedTrace array
  * @param {Object} options
- * @param {string} options.detail - 'play' | 'compact' | 'messages-only' | 'full'
+ * @param {string} options.detail - 'play' | 'compact' | 'messages-only' | 'full' | 'bilateral'
  * @param {string} options.scenarioName - Scenario title for the header
  * @param {string} options.profileName - Cell/profile name
  * @param {number} options.totalTurns - Total number of dialogue turns
@@ -336,6 +339,11 @@ export function formatTranscript(trace, options = {}) {
   const { detail = 'play', scenarioName = '', profileName = '', totalTurns = 0 } = options;
 
   if (!trace || trace.length === 0) return '(empty trace)\n';
+
+  // Bilateral mode uses dialogue-turn-level grouping instead of turnIndex
+  if (detail === 'bilateral') {
+    return formatBilateralTranscript(trace, options);
+  }
 
   // Pre-process: mark entries that have a revision following them
   const processed = trace.map((entry, i) => {
@@ -426,6 +434,188 @@ export function formatTranscript(trace, options = {}) {
             lines.push(formatted);
             lines.push('');
           }
+        }
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Classify a trace entry as belonging to the tutor phase or learner phase.
+ */
+function isTutorEntry(entry) {
+  const tutorAgents = new Set([
+    'ego', 'superego', 'ego_self_reflection', 'superego_self_reflection',
+    'superego_disposition', 'ego_intersubjective', 'tutor_other_ego', 'ego_strategy',
+    'behavioral_overrides', 'rejection_budget',
+  ]);
+  if (tutorAgents.has(entry.agent)) return true;
+  // context_input and final_output are tutor-phase bookends
+  if (entry.agent === 'user' && (entry.action === 'context_input' || entry.action === 'final_output')) return true;
+  // system entries (memory_cycle, etc.) belong to tutor phase
+  if (entry.agent === 'system') return true;
+  return false;
+}
+
+/**
+ * Format a bilateral transcript: splits trace into dialogue turns using
+ * final_output boundaries, then shows tutor and learner deliberation
+ * sequentially within each turn.
+ *
+ * This gives a per-dialogue-turn view:
+ *   TURN 1
+ *     ── TUTOR DELIBERATION ──
+ *     context_input → ego generate → superego review → ...
+ *     ── LEARNER DELIBERATION ──
+ *     learner_ego → learner_superego → learner_ego_revision → learner_synthesis
+ *     ── LEARNER MESSAGE ──
+ *     (the external turn_action)
+ *   TURN 2
+ *     ...
+ */
+function formatBilateralTranscript(trace, options = {}) {
+  const { scenarioName = '', profileName = '', totalTurns = 0 } = options;
+
+  // Pre-process: mark ego generate entries that have revisions
+  const processed = trace.map((entry, i) => {
+    const copy = { ...entry };
+    if (entry.agent === 'ego' && entry.action === 'generate') {
+      const hasRevision = trace.slice(i + 1).some(
+        e => e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final' || e.action === 'incorporate-feedback')
+      );
+      copy._hasRevision = hasRevision;
+    }
+    return copy;
+  });
+
+  // Split into dialogue turns.
+  // Each "dialogue turn" = tutor deliberation block + learner deliberation block.
+  // Tutor block ends at final_output; learner block ends at turn_action.
+  // For traces without final_output (unified single-turn), fall back to
+  // splitting on turn_action.
+  const dialogueTurns = [];
+  let currentEntries = [];
+
+  for (const entry of processed) {
+    currentEntries.push(entry);
+
+    // turn_action marks the end of a full dialogue turn (tutor + learner)
+    if (entry.agent === 'user' && entry.action === 'turn_action') {
+      dialogueTurns.push(currentEntries);
+      currentEntries = [];
+    }
+  }
+
+  // Remaining entries after last turn_action (trailing tutor deliberation with no learner response)
+  if (currentEntries.length > 0) {
+    dialogueTurns.push(currentEntries);
+  }
+
+  const lines = [];
+
+  const center = (text) => {
+    const pad = Math.max(0, Math.floor((DEFAULT_WIDTH - text.length) / 2));
+    return ' '.repeat(pad) + text;
+  };
+
+  // Header
+  if (scenarioName || profileName) {
+    lines.push('');
+    if (scenarioName) {
+      const titleLine = totalTurns > 0 ? `${scenarioName.toUpperCase()} (${totalTurns}-turn)` : scenarioName.toUpperCase();
+      lines.push(center(titleLine));
+    }
+    if (profileName) lines.push(center(profileName));
+    lines.push(center('\u2500'.repeat(Math.min(DEFAULT_WIDTH - 10, 40))));
+    lines.push('');
+  }
+
+  const PHASE_LINE = '\u2500'.repeat(30);
+
+  for (let turnNum = 0; turnNum < dialogueTurns.length; turnNum++) {
+    const entries = dialogueTurns[turnNum];
+
+    // Turn header
+    lines.push('');
+    lines.push(center(`TURN ${turnNum + 1}`));
+    lines.push('');
+
+    // Split entries into phases: tutor deliberation, learner deliberation, learner message
+    const tutorEntries = [];
+    const learnerDeliberation = [];
+    let learnerMessage = null;
+    const reflections = [];
+
+    for (const entry of entries) {
+      if (isReflectionEntry(entry)) {
+        reflections.push(entry);
+      } else if (entry.agent === 'user' && entry.action === 'turn_action') {
+        learnerMessage = entry;
+      } else if (isTutorEntry(entry)) {
+        tutorEntries.push(entry);
+      } else {
+        // Learner ego/superego/synthesis deliberation
+        learnerDeliberation.push(entry);
+      }
+    }
+
+    // ── TUTOR DELIBERATION ──
+    if (tutorEntries.length > 0) {
+      lines.push(INDENT + `\u2500\u2500 TUTOR DELIBERATION ${PHASE_LINE}`);
+      lines.push('');
+
+      for (const entry of tutorEntries) {
+        // Skip final_output markers (they're structural, not content)
+        if (entry.agent === 'user' && entry.action === 'final_output') continue;
+
+        const formatted = formatEntry(entry, { detail: 'play' });
+        if (formatted) {
+          lines.push(formatted);
+          lines.push('');
+        }
+      }
+    }
+
+    // ── LEARNER DELIBERATION ──
+    // Skip learner_synthesis — it duplicates the turn_action content shown in LEARNER MESSAGE
+    const deliberationOnly = learnerDeliberation.filter(
+      e => !(e.agent === 'learner_synthesis' && e.action === 'response')
+    );
+    if (deliberationOnly.length > 0) {
+      lines.push(INDENT + `\u2500\u2500 LEARNER DELIBERATION ${PHASE_LINE}`);
+      lines.push('');
+
+      for (const entry of deliberationOnly) {
+        const formatted = formatEntry(entry, { detail: 'play' });
+        if (formatted) {
+          lines.push(formatted);
+          lines.push('');
+        }
+      }
+    }
+
+    // ── LEARNER MESSAGE ── (the external turn_action)
+    if (learnerMessage) {
+      lines.push(INDENT + `\u2500\u2500 LEARNER MESSAGE ${PHASE_LINE}`);
+      lines.push('');
+      const formatted = formatEntry(learnerMessage, { detail: 'play' });
+      if (formatted) {
+        lines.push(formatted);
+        lines.push('');
+      }
+    }
+
+    // Between-turn reflections (intermission)
+    if (reflections.length > 0) {
+      lines.push(center('~~~ intermission ~~~'));
+      lines.push('');
+      for (const entry of reflections) {
+        const formatted = formatEntry(entry, { detail: 'play' });
+        if (formatted) {
+          lines.push(formatted);
+          lines.push('');
         }
       }
     }
