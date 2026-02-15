@@ -197,7 +197,7 @@
     },
     {
       "run_ids": ["eval-2026-02-13-8d40e086"],
-      "label": "Self-reflective evolution (cells 40-45, Kimi)",
+      "label": "Self-reflective evolution (cells 40-45, Nemotron)",
       "section": "6.9",
       "primary_judge_pattern": "claude-code%",
       "unit": "dialogue",

@@ -548,7 +548,7 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Learner-side evaluation (symmetric) | eval-2026-02-07-b6d75e87 | 6.16 | 118 | 118 | learner turn |
 | Dialectical modulation, standard (cells 22–27) | eval-2026-02-11-35c53e99, eval-2026-02-11-5f6d51f5 | 6.8 | 84 | 84 | response |
 | Dialectical modulation, multi-turn (cells 28–33) | eval-2026-02-11-a54235ea | 6.8 | 90 | 90 | dialogue |
-| Self-reflective evolution (cells 40–45, Kimi) | eval-2026-02-13-8d40e086 | 6.9 | 61 | 61 | dialogue |
+| Self-reflective evolution (cells 40–45, Nemotron) | eval-2026-02-13-8d40e086 | 6.9 | 61 | 61 | dialogue |
 | Self-reflect Nemotron non-replication (cells 40–59) | eval-2026-02-14-559d854b | 6.9 | 167 | 167 | dialogue |
 | Mechanism robustness, scripted (cells 40–59) | eval-2026-02-14-e0e3a622 | 6.10 | 360 | 360 | dialogue |
 | Dynamic learner mechanisms (cells 60–63) | eval-2026-02-14-6c033830 | 6.10 | 120 | 120 | dialogue |
@@ -902,7 +902,7 @@ Third, **the superego is a filter, not an improver.** The superego catches poor 
 
 Cells 40–45 extended the dialectical architecture with self-reflective evolution: between turns, both ego and superego generate first-person reflections on the prior interaction using their own respective models. The ego reflects on superego feedback received and its own revision patterns; the superego reflects on its intervention history and ego compliance signals. These reflections are injected into subsequent turns, enabling the system to accumulate insights about its own operation.
 
-Three superego disposition types (suspicious, adversary, advocate) were crossed with recognition (present/absent) in a partial run (N=36, eval-2026-02-13-8d40e086, Kimi K2.5 ego, Opus judge).
+Three superego disposition types (suspicious, adversary, advocate) were crossed with recognition (present/absent) in a partial run (N=36, eval-2026-02-13-8d40e086, Nemotron ego / Kimi K2.5 superego, Opus judge).
 
 **Table 16: Self-Reflective Evolution — Persona $\times$ Recognition (N=36, partial)**
 

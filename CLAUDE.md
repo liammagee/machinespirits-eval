@@ -111,6 +111,62 @@ When a run has empty/failed attempts (`suggestions = '[]'`, NULL `overall_score`
 - `evaluate --force --follow` polls and judges each new row as it lands
 - `resume` accepts: `--parallelism N`, `--verbose`, `--force`, `--skip-rubric`
 
+## Scripts Reference
+
+### Core CLI (`scripts/eval-cli.js`)
+
+The primary interface for all evaluation workflows:
+
+```bash
+node scripts/eval-cli.js run --profiles <cells> --runs N   # Run evaluation
+node scripts/eval-cli.js evaluate <runId> [--force]        # Judge with Opus
+node scripts/eval-cli.js evaluate-learner <runId>          # Score learner quality
+node scripts/eval-cli.js rejudge <runId> --judge <model>   # Re-judge (e.g. openrouter.gpt)
+node scripts/eval-cli.js resume <runId> [--skip-rubric]    # Resume incomplete run
+node scripts/eval-cli.js export <runId> --format csv       # Export results
+```
+
+### Statistical Analysis
+
+| Script | Usage |
+|--------|-------|
+| `analyze-eval-results.js` | ANOVA, effect sizes, marginal means across conditions |
+| `analyze-judge-reliability.js` | Inter-judge correlation (requires rejudged paired data) |
+| `analyze-mechanism-traces.js <runId>` | Process measures (RevΔ, EgoSpec, AdaptΔ, RunVar) |
+| `analyze-eval-costs.js` | Token usage and cost breakdown |
+| `analyze-interaction-evals.js` | Bilateral interaction scoring |
+| `analyze-modulation-learning.js` | Modulation metrics and learning outcomes |
+| `advanced-eval-analysis.js` | Extended multi-turn scenario analysis |
+| `compare-transformation.js` | Transformation metrics (adaptation, growth indices) |
+
+### Qualitative Analysis
+
+| Script | Usage |
+|--------|-------|
+| `assess-transcripts.js <runId>` | AI narrative assessment (`--blinded`, `--force`, `--model`) |
+| `qualitative-analysis.js` | Rule-based thematic coding with chi-square tests |
+| `qualitative-analysis-ai.js` | LLM-based theme discovery (`--mode classify\|discover`) |
+| `code-impasse-strategies.js` | Code dialogues into 5 Hegelian resolution strategies |
+| `code-dialectical-modulation.js` | Code superego modulation (structural + semantic) |
+| `browse-transcripts.js` | Interactive transcript browser (web UI on localhost) |
+
+### Paper & Validation
+
+| Script | Usage |
+|--------|-------|
+| `generate-paper-tables.js` | Generate tables + validate prose N-counts against DB |
+| `validate-paper-manifest.js` | Level 1 manifest validation (N-counts, stalled runs) |
+| `render-sequence-diagram.js` | Render architecture sequence diagrams to HTML/SVG |
+| `validate-content.js` | Validate tutorial content packages |
+
+### Utilities
+
+| Script | Usage |
+|--------|-------|
+| `test-rate-limit.js [model]` | Probe OpenRouter rate limits (default: nemotron) |
+| `test-latency.js` | Latency test across all configured models |
+| `seed-db.js` | Initialize database with sample data |
+
 ## Common Commands
 
 ```bash
@@ -132,6 +188,9 @@ node scripts/analyze-judge-reliability.js
 
 # Export results
 node scripts/eval-cli.js export <runId> --format csv
+
+# Build paper PDF
+cd docs/research && ./build.sh full
 
 # Run tests
 npm test
