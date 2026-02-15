@@ -416,7 +416,7 @@ function loadData(db, cells, sampleSize) {
     WHERE success = 1
       AND overall_score IS NOT NULL
       AND suggestions IS NOT NULL
-      AND judge_model IN ('claude-code', 'claude-code/opus')
+      AND judge_model LIKE 'claude-opus-%'
       AND profile_name IN (${placeholders})
   `;
 
@@ -459,7 +459,7 @@ function printCostEstimate(db) {
   const factorialCount = db.prepare(`
     SELECT COUNT(*) as n FROM evaluation_results
     WHERE success = 1 AND overall_score IS NOT NULL AND suggestions IS NOT NULL
-      AND judge_model IN ('claude-code', 'claude-code/opus')
+      AND judge_model LIKE 'claude-opus-%'
       AND (profile_name LIKE 'cell_1_%' OR profile_name LIKE 'cell_2_%'
        OR profile_name LIKE 'cell_3_%' OR profile_name LIKE 'cell_4_%'
        OR profile_name LIKE 'cell_5_%' OR profile_name LIKE 'cell_6_%'
@@ -469,7 +469,7 @@ function printCostEstimate(db) {
   const allCount = db.prepare(`
     SELECT COUNT(*) as n FROM evaluation_results
     WHERE success = 1 AND overall_score IS NOT NULL AND suggestions IS NOT NULL
-      AND judge_model IN ('claude-code', 'claude-code/opus')
+      AND judge_model LIKE 'claude-opus-%'
   `).get().n;
 
   // Estimated tokens per call
