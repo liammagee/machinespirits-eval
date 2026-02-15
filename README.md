@@ -8,7 +8,7 @@ This is the evaluation and analysis companion to [`@machinespirits/tutor-core`](
 
 The system runs automated tutoring dialogues across configurable experimental cells, then scores them with LLM judges against a multi-dimensional rubric. It supports:
 
-- **Factorial evaluation** — 21 tutor agent cells varying recognition theory, architecture (single-agent vs ego+superego), and learner type
+- **Factorial evaluation** — 70 tutor agent cells varying recognition theory, architecture, learner type, and mechanism design
 - **Multi-turn dialogues** — Learner agents with their own ego-superego deliberation
 - **Multi-judge validation** — Cross-judge reliability via Claude Opus, GPT-5.2, and others
 - **Placebo/active controls** — Length-matched prompts without recognition theory
@@ -130,7 +130,7 @@ tests/                     Test suites
 
 ### Key configuration files
 
-- `config/tutor-agents.yaml` — All 21 experimental cells and their prompt mappings
+- `config/tutor-agents.yaml` — All 70 experimental cells and their prompt mappings
 - `config/suggestion-scenarios.yaml` — Learner scenarios (single-turn and multi-turn)
 - `config/evaluation-rubric.yaml` — Scoring rubric (6 dimensions)
 - `config/providers.yaml` — AI provider and model configuration
@@ -145,7 +145,7 @@ The core factorial design crosses three factors:
 | B: Tutor architecture | Single-agent vs Ego+Superego |
 | C: Learner architecture | Single-agent vs Multi-agent |
 
-Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo controls (15-18), memory isolation (19-20), and dynamic prompt rewriting (21).
+Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo controls (15-18), memory isolation (19-20), dynamic prompt rewriting (21), dialectical superego modulation (22-39), self-reflective evolution (40-45), insight-action mechanisms (46-53), other-ego profiling (54-59), and dynamic learner mechanism testing (60-70).
 
 ## Reproducing Paper Findings
 
@@ -154,6 +154,50 @@ The full research paper is at `docs/research/paper-full.md`. A Jupyter notebook 
 The evaluation dataset (database + dialogue logs, ~19 MB) is available as a [GitHub Release artifact](https://github.com/liammagee/machinespirits-eval/releases/tag/v0.2.0). See `notebooks/README.md` for setup instructions.
 
 To re-run evaluations from scratch (rather than reproducing from saved data), expect ~$65–90 USD in API costs and 48–72 hours wall-clock time. See the CLI help (`node scripts/eval-cli.js --help`) for details on running cells, judging, and exporting results.
+
+## Scripts Reference
+
+### Analysis
+
+| Script | Description |
+|--------|-------------|
+| `analyze-eval-results.js` | Statistical analysis (ANOVA, effect sizes, marginal means) |
+| `analyze-judge-reliability.js` | Inter-judge reliability (requires rejudged data) |
+| `analyze-mechanism-traces.js <runId>` | Process trace analysis for mechanism comparison runs |
+| `analyze-eval-costs.js` | Cost breakdown across runs |
+| `analyze-interaction-evals.js` | Interaction evaluation results |
+| `analyze-modulation-learning.js` | Modulation metrics and learning outcomes |
+| `advanced-eval-analysis.js` | Extended multi-turn scenario analysis |
+| `compare-transformation.js` | Transformation metrics (adaptation, growth indices) |
+
+### Qualitative
+
+| Script | Description |
+|--------|-------------|
+| `assess-transcripts.js <runId>` | Qualitative transcript assessment (`--blinded`, `--force`) |
+| `browse-transcripts.js` | Interactive transcript browser (terminal UI) |
+| `qualitative-analysis-ai.js` | AI-based thematic analysis of transcripts |
+| `code-impasse-strategies.js` | Code impasse dialogues into Hegelian resolution strategies |
+| `code-dialectical-modulation.js` | Code superego modulation patterns |
+
+### Paper & Validation
+
+| Script | Description |
+|--------|-------------|
+| `generate-paper-tables.js` | Generate tables and validate prose against DB |
+| `validate-paper-manifest.js` | Validate paper claims against evaluation data |
+| `render-sequence-diagram.js` | Render architecture sequence diagrams |
+| `validate-content.js` | Validate tutorial content files |
+
+### Utilities
+
+| Script | Description |
+|--------|-------------|
+| `test-rate-limit.js [model]` | Probe OpenRouter rate limits (default: nemotron) |
+| `test-latency.js` | Latency test across all configured models |
+| `seed-db.js` | Initialize/seed the SQLite database |
+
+All scripts are in `scripts/` and run with `node scripts/<name>`.
 
 ## Running Tests
 
