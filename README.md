@@ -199,6 +199,20 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 
 All scripts are in `scripts/` and run with `node scripts/<name>`.
 
+## Claude Code Skills
+
+This project includes [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) (`.claude/skills/`) that encode common evaluation workflows as slash commands. In any Claude Code session:
+
+| Command | What it does |
+|---------|-------------|
+| `/analyze-run <runId>` | Pull scores from DB, compute means, effect sizes, flag issues |
+| `/check-models [alias]` | Probe OpenRouter rate limits and availability |
+| `/build-paper` | Build paper PDF, check citations and cross-references |
+| `/run-eval <cells> --runs N` | Full generation + judging pipeline with pre-flight checks |
+| `/query-db <question>` | Natural language query against the evaluation database |
+
+Skills with a `description` field (`analyze-run`, `check-models`, `query-db`) can also be invoked automatically by Claude when relevant to the conversation. `/run-eval` requires explicit invocation since it consumes API credits.
+
 ## Running Tests
 
 ```bash
