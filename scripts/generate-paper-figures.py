@@ -4,10 +4,15 @@
 Usage:
     python scripts/generate-paper-figures.py
 
-Outputs 5 PNGs to docs/research/figures/
+Reads config/paper-manifest.json and queries data/evaluations.db to produce
+data-driven figures. Falls back to hardcoded values if DB is unavailable.
+
+Outputs PNGs to docs/research/figures/
 """
 
 import os
+import json
+import sqlite3
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -15,8 +20,77 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import numpy as np
 
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'docs', 'research', 'figures')
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.join(SCRIPT_DIR, '..')
+OUTPUT_DIR = os.path.join(ROOT_DIR, 'docs', 'research', 'figures')
+MANIFEST_PATH = os.path.join(ROOT_DIR, 'config', 'paper-manifest.json')
+DB_PATH = os.path.join(ROOT_DIR, 'data', 'evaluations.db')
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+# ── Data Layer ───────────────────────────────────────────────────────────────
+
+_manifest = None
+_db = None
+
+def get_manifest():
+    global _manifest
+    if _manifest is None and os.path.exists(MANIFEST_PATH):
+        with open(MANIFEST_PATH) as f:
+            _manifest = json.load(f)
+    return _manifest
+
+def get_db():
+    global _db
+    if _db is None and os.path.exists(DB_PATH):
+        _db = sqlite3.connect(DB_PATH)
+        _db.row_factory = sqlite3.Row
+    return _db
+
+def query_cell_means(run_ids, judge_filter='claude-code%'):
+    """Query mean overall_score per profile (cell) for given runs."""
+    db = get_db()
+    if not db:
+        return {}
+    placeholders = ','.join('?' * len(run_ids))
+    rows = db.execute(f"""
+        SELECT profile_name, AVG(overall_score) as mean, COUNT(*) as n,
+               -- stdev via manual calculation
+               AVG(overall_score * overall_score) - AVG(overall_score) * AVG(overall_score) as var
+        FROM evaluation_results
+        WHERE run_id IN ({placeholders})
+          AND judge_model LIKE ?
+          AND overall_score IS NOT NULL
+        GROUP BY profile_name
+    """, [*run_ids, judge_filter]).fetchall()
+    return {r['profile_name']: {'mean': r['mean'], 'n': r['n'],
+            'sd': (r['var'] ** 0.5) if r['var'] and r['var'] > 0 else 0}
+            for r in rows}
+
+def extract_cell_number(profile_name):
+    """Extract cell number from profile_name like 'cell_5_recog_single_unified'."""
+    parts = profile_name.split('_')
+    if len(parts) >= 2 and parts[0] == 'cell':
+        try:
+            return int(parts[1])
+        except ValueError:
+            pass
+    return None
+
+def compute_2x2_effects(cell_means, base_single, base_multi, recog_single, recog_multi):
+    """Compute recognition effect, architecture effect, and interaction from 4 cell means."""
+    bs = cell_means.get(base_single, {}).get('mean')
+    bm = cell_means.get(base_multi, {}).get('mean')
+    rs = cell_means.get(recog_single, {}).get('mean')
+    rm = cell_means.get(recog_multi, {}).get('mean')
+    if None in (bs, bm, rs, rm):
+        return None
+    recog_effect = ((rs + rm) / 2) - ((bs + bm) / 2)
+    arch_effect = ((bm + rm) / 2) - ((bs + rs) / 2)
+    interaction = (rm - rs) - (bm - bs)
+    return {'recog_effect': recog_effect, 'arch_effect': arch_effect,
+            'interaction': interaction,
+            'means': {'bs': bs, 'bm': bm, 'rs': rs, 'rm': rm}}
 
 # Common styling
 plt.rcParams.update({
@@ -280,11 +354,42 @@ def figure4():
 
     fig, ax = plt.subplots(figsize=(10, 5.5))
 
-    # Data from Table 8 (multi-model probe, Opus judge)
-    models = ['Kimi K2.5\n(N=179)', 'Nemotron\n(N=119)', 'DeepSeek\n(N=120)',
-              'GLM-4.7\n(N=117)', 'Haiku 4.5\n(N=120)']
-    recog_effect = [15.5, 16.0, 14.0, 17.8, 9.6]
-    ab_interaction = [0.5, -5.7, -1.4, -0.7, -1.6]
+    manifest = get_manifest()
+    fig4_config = manifest['figures']['figure4'] if manifest else None
+
+    # Try data-driven from DB
+    models = []
+    recog_effect = []
+    ab_interaction = []
+    data_driven = False
+
+    if fig4_config and get_db():
+        for key in ['kimi', 'nemotron', 'deepseek', 'glm', 'haiku']:
+            cfg = fig4_config['runs'][key]
+            cell_means = query_cell_means(cfg['run_ids'], fig4_config['judge_filter'])
+            if not cell_means:
+                break
+            effects = compute_2x2_effects(
+                cell_means,
+                'cell_1_base_single_unified', 'cell_3_base_multi_unified',
+                'cell_5_recog_single_unified', 'cell_7_recog_multi_unified')
+            if not effects:
+                break
+            total_n = sum(v['n'] for v in cell_means.values())
+            models.append(f"{cfg['label']}\n(N={total_n})")
+            recog_effect.append(round(effects['recog_effect'], 1))
+            ab_interaction.append(round(effects['interaction'], 1))
+        else:
+            data_driven = True
+            print('    [data-driven from DB]')
+
+    if not data_driven:
+        # Fallback hardcoded values
+        models = ['Kimi K2.5\n(N=179)', 'Nemotron\n(N=119)', 'DeepSeek\n(N=120)',
+                  'GLM-4.7\n(N=117)', 'Haiku 4.5\n(N=120)']
+        recog_effect = [15.5, 16.0, 14.0, 17.8, 9.6]
+        ab_interaction = [0.5, -5.7, -1.4, -0.7, -1.6]
+        print('    [hardcoded fallback]')
 
     x = np.arange(len(models))
     w = 0.35
@@ -340,20 +445,47 @@ def figure5():
 
     fig, ax = plt.subplots(figsize=(10, 5.5))
 
-    # Kimi data for both domains (same model, clean comparison)
-    # Philosophy (factorial cells 1,3,5,7): Recognition +15.4, Architecture -0.8
-    # Elementary (e87f452d, cells 1,3,5,7): Recognition +9.9, Architecture +3.0
+    manifest = get_manifest()
+    fig5_config = manifest['figures']['figure5'] if manifest else None
+
     factors = ['A: Recognition\nEffect', 'B: Multi-Agent\nEffect']
-    phil = [15.4, -0.8]
-    elem = [9.9, 3.0]
+    phil = None
+    elem = None
+    phil_n = 179
+    elem_n = 60
+    data_driven = False
+
+    if fig5_config and get_db():
+        # Philosophy: factorial single-learner cells
+        phil_means = query_cell_means([fig5_config['runs']['philosophy']], fig5_config['judge_filter'])
+        elem_means = query_cell_means([fig5_config['runs']['elementary']], fig5_config['judge_filter'])
+        if phil_means and elem_means:
+            phil_fx = compute_2x2_effects(phil_means,
+                'cell_1_base_single_unified', 'cell_3_base_multi_unified',
+                'cell_5_recog_single_unified', 'cell_7_recog_multi_unified')
+            elem_fx = compute_2x2_effects(elem_means,
+                'cell_1_base_single_unified', 'cell_3_base_multi_unified',
+                'cell_5_recog_single_unified', 'cell_7_recog_multi_unified')
+            if phil_fx and elem_fx:
+                phil = [round(phil_fx['recog_effect'], 1), round(phil_fx['arch_effect'], 1)]
+                elem = [round(elem_fx['recog_effect'], 1), round(elem_fx['arch_effect'], 1)]
+                phil_n = sum(v['n'] for v in phil_means.values())
+                elem_n = sum(v['n'] for v in elem_means.values())
+                data_driven = True
+                print('    [data-driven from DB]')
+
+    if not data_driven:
+        phil = [15.4, -0.8]
+        elem = [9.9, 3.0]
+        print('    [hardcoded fallback]')
 
     y = np.arange(len(factors))
     bar_height = 0.3
 
     bars_phil = ax.barh(y + bar_height/2, phil, bar_height, color='#5DADE2',
-                        edgecolor='#2471A3', linewidth=1.5, label='Philosophy (Kimi, N=179)')
+                        edgecolor='#2471A3', linewidth=1.5, label=f'Philosophy (Kimi, N={phil_n})')
     bars_elem = ax.barh(y - bar_height/2, elem, bar_height, color='#F0B27A',
-                        edgecolor='#CA6F1E', linewidth=1.5, label='Elementary Math (Kimi, N=60)')
+                        edgecolor='#CA6F1E', linewidth=1.5, label=f'Elementary Math (Kimi, N={elem_n})')
 
     # Score labels
     for bar, val in zip(bars_phil, phil):
@@ -524,9 +656,49 @@ def figure7():
 
     fig, ax = plt.subplots(figsize=(9, 5.5))
 
+    manifest = get_manifest()
+    fig7_config = manifest['figures']['figure7'] if manifest else None
+
     personas = ['Suspicious', 'Adversary', 'Advocate']
-    base = [85.7, 88.5, 82.0]
-    recog = [90.2, 88.5, 95.6]
+    base = None
+    recog = None
+    total_n = 90
+    data_driven = False
+
+    if fig7_config and get_db():
+        cell_means = query_cell_means(fig7_config['runs'], 'claude-code%')
+        if cell_means:
+            # Cells 28-33: base/recog × suspicious/adversary/advocate
+            persona_cells = {
+                'Suspicious': ('cell_28_base_dialectical_suspicious_unified',
+                               'cell_29_recog_dialectical_suspicious_unified'),
+                'Adversary':  ('cell_30_base_dialectical_adversary_unified',
+                               'cell_31_recog_dialectical_adversary_unified'),
+                'Advocate':   ('cell_32_base_dialectical_advocate_unified',
+                               'cell_33_recog_dialectical_advocate_unified'),
+            }
+            base = []
+            recog = []
+            for persona in personas:
+                b_key, r_key = persona_cells[persona]
+                b_data = cell_means.get(b_key)
+                r_data = cell_means.get(r_key)
+                if b_data and r_data:
+                    base.append(round(b_data['mean'], 1))
+                    recog.append(round(r_data['mean'], 1))
+                else:
+                    base = None
+                    break
+            if base and len(base) == 3:
+                total_n = sum(v['n'] for v in cell_means.values())
+                data_driven = True
+                print('    [data-driven from DB]')
+
+    if not data_driven:
+        base = [85.7, 88.5, 82.0]
+        recog = [90.2, 88.5, 95.6]
+        print('    [hardcoded fallback]')
+
     deltas = [r - b for r, b in zip(recog, base)]
 
     x = np.arange(len(personas))
@@ -554,7 +726,7 @@ def figure7():
     ax.set_xticks(x)
     ax.set_xticklabels(personas, fontsize=13)
     ax.set_ylabel('Mean Score', fontsize=14)
-    ax.set_title('Figure 7: Superego Persona × Recognition\n(Dialectical Multi-Turn, N=90, Opus Judge)',
+    ax.set_title(f'Figure 7: Superego Persona × Recognition\n(Dialectical Multi-Turn, N={total_n}, Opus Judge)',
                  fontsize=15, fontweight='bold')
     ax.legend(fontsize=12, framealpha=0.9)
     ax.spines['top'].set_visible(False)
@@ -578,20 +750,80 @@ def figure8():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), sharey=True)
 
-    # Scripted learner (Table 18, recognition cells only, Haiku)
-    scripted_mechs = ['Profiling (bidir)', 'Quantitative', 'Combined',
-                      'Profiling (tutor)', 'Self-reflect (susp.)',
-                      'Intersubjective', 'Erosion',
-                      'Self-reflect (adv.)', 'Self-reflect (adv.)']
-    scripted_recog = [92.7, 92.6, 92.4, 92.4, 92.1, 91.7, 90.8, 92.6, 90.3]
-    # Simplified: just show the band
-    scripted_labels = ['Prof. (bidir)', 'Quantitative', 'Combined', 'Prof. (tutor)',
-                       'Self-reflect', 'Intersubjective', 'Erosion', 'Adversary', 'Advocate']
-    scripted_vals = [92.7, 92.6, 92.4, 92.4, 92.1, 91.7, 90.8, 92.6, 90.3]
+    manifest = get_manifest()
+    fig8_config = manifest['figures']['figure8'] if manifest else None
 
-    # Dynamic learner (Table 19, recognition cells, Haiku)
-    dynamic_labels = ['Profiling', 'Combined', 'Self-reflect', 'Intersubjective']
-    dynamic_vals = [88.8, 87.8, 85.9, 82.8]
+    scripted_labels = None
+    scripted_vals = None
+    dynamic_labels = None
+    dynamic_vals = None
+    scripted_n = 360
+    dynamic_n = 240
+    data_driven = False
+
+    # Cell-to-mechanism mapping for recognition cells in e0e3a622
+    scripted_recog_cells = {
+        'cell_41_recog_dialectical_suspicious_unified_superego': 'Self-reflect (susp.)',
+        'cell_43_recog_dialectical_adversary_unified_superego': 'Adversary',
+        'cell_45_recog_dialectical_advocate_unified_superego': 'Advocate',
+        'cell_47_recog_dialectical_suspicious_unified_quantitative': 'Quantitative',
+        'cell_49_recog_dialectical_suspicious_unified_erosion': 'Erosion',
+        'cell_51_recog_dialectical_suspicious_unified_intersubjective': 'Intersubjective',
+        'cell_53_recog_dialectical_suspicious_unified_combined': 'Combined',
+        'cell_55_recog_dialectical_profile_tutor': 'Prof. (tutor)',
+        'cell_57_recog_dialectical_profile_bidirectional': 'Prof. (bidir)',
+    }
+    # Dynamic learner recognition cells from 6c033830 + a2b2717c
+    dynamic_recog_cells = {
+        'cell_61_recog_dialectical_selfreflect_psycho': 'Self-reflect',
+        'cell_63_recog_dialectical_profile_bidirectional_psycho': 'Profiling',
+        'cell_64_recog_dialectical_intersubjective_psycho': 'Intersubjective',
+        'cell_65_recog_dialectical_combined_psycho': 'Combined',
+    }
+
+    if fig8_config and get_db():
+        # Scripted
+        s_means = query_cell_means([fig8_config['runs']['scripted']], 'claude-code%')
+        if s_means:
+            s_labels = []
+            s_vals = []
+            for cell, label in scripted_recog_cells.items():
+                data = s_means.get(cell)
+                if data:
+                    s_labels.append(label)
+                    s_vals.append(round(data['mean'], 1))
+            if len(s_labels) >= 7:
+                scripted_labels = s_labels
+                scripted_vals = s_vals
+                scripted_n = sum(v['n'] for v in s_means.values())
+
+        # Dynamic
+        d_run_ids = [fig8_config['runs']['dynamic_60_63'], fig8_config['runs']['dynamic_64_65']]
+        d_means = query_cell_means(d_run_ids, 'claude-code%')
+        if d_means:
+            d_labels = []
+            d_vals = []
+            for cell, label in dynamic_recog_cells.items():
+                data = d_means.get(cell)
+                if data:
+                    d_labels.append(label)
+                    d_vals.append(round(data['mean'], 1))
+            if len(d_labels) >= 3:
+                dynamic_labels = d_labels
+                dynamic_vals = d_vals
+                dynamic_n = sum(v['n'] for v in d_means.values())
+
+        if scripted_labels and dynamic_labels:
+            data_driven = True
+            print('    [data-driven from DB]')
+
+    if not data_driven:
+        scripted_labels = ['Prof. (bidir)', 'Quantitative', 'Combined', 'Prof. (tutor)',
+                           'Self-reflect', 'Intersubjective', 'Erosion', 'Adversary', 'Advocate']
+        scripted_vals = [92.7, 92.6, 92.4, 92.4, 92.1, 91.7, 90.8, 92.6, 90.3]
+        dynamic_labels = ['Profiling', 'Combined', 'Self-reflect', 'Intersubjective']
+        dynamic_vals = [88.8, 87.8, 85.9, 82.8]
+        print('    [hardcoded fallback]')
 
     # Sort both by value descending
     s_order = np.argsort(scripted_vals)[::-1]
@@ -609,7 +841,8 @@ def figure8():
     ax1.set_yticklabels(scripted_labels, fontsize=11)
     ax1.set_xlim(80, 96)
     ax1.set_xlabel('Mean Score (Recognition)', fontsize=12)
-    ax1.set_title('Scripted Learner (N=360)\n2.4-pt range', fontsize=14, fontweight='bold')
+    s_range = max(scripted_vals) - min(scripted_vals)
+    ax1.set_title(f'Scripted Learner (N={scripted_n})\n{s_range:.1f}-pt range', fontsize=14, fontweight='bold')
     for i, v in enumerate(scripted_vals):
         ax1.text(v + 0.2, i, f'{v:.1f}', va='center', fontsize=10, fontweight='bold')
     # Highlight the band
@@ -624,7 +857,8 @@ def figure8():
     ax2.set_yticklabels(dynamic_labels, fontsize=11)
     ax2.set_xlim(80, 96)
     ax2.set_xlabel('Mean Score (Recognition)', fontsize=12)
-    ax2.set_title('Dynamic Learner (N=240)\n6.0-pt range', fontsize=14, fontweight='bold')
+    d_range = max(dynamic_vals) - min(dynamic_vals)
+    ax2.set_title(f'Dynamic Learner (N={dynamic_n})\n{d_range:.1f}-pt range', fontsize=14, fontweight='bold')
     for i, v in enumerate(dynamic_vals):
         ax2.text(v + 0.2, i, f'{v:.1f}', va='center', fontsize=10, fontweight='bold')
     ax2.axvspan(min(dynamic_vals), max(dynamic_vals), alpha=0.1, color='orange')
@@ -700,6 +934,11 @@ def figure9():
 
 if __name__ == '__main__':
     print('Generating paper figures...')
+    if get_manifest() and get_db():
+        print(f'  Manifest: {MANIFEST_PATH}')
+        print(f'  Database: {DB_PATH}')
+    else:
+        print('  WARNING: manifest or DB not found, using hardcoded fallbacks')
     figure1()
     figure2()
     figure3()
@@ -709,4 +948,6 @@ if __name__ == '__main__':
     figure7()
     figure8()
     figure9()
+    if _db:
+        _db.close()
     print(f'Done. Output: {os.path.abspath(OUTPUT_DIR)}/')
