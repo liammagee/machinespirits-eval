@@ -274,58 +274,58 @@ def figure3():
 # ── Figure 4: Multi-Agent Synergy by Prompt Type ─────────────────────────────
 
 def figure4():
-    """Interaction plot emphasizing the synergy effect (slopes) rather than
-    absolute score levels.  Recognition prompts gain +9.2 from multi-agent;
-    Enhanced prompts gain +0.0.  An interaction plot makes this visually
-    obvious, while the old horizontal-bar version made recognition look worse
-    than enhanced because absolute scores dominated the visual."""
+    """Multi-model A×B interaction probe (Table 8, N=655 across 5 ego models).
+    Shows recognition effect and A×B interaction per model, confirming
+    architecture is additive, not synergistic."""
 
-    fig, ax = plt.subplots(figsize=(9, 5.5))
+    fig, ax = plt.subplots(figsize=(10, 5.5))
 
-    # Data — preliminary N=36 Nemotron analysis
-    x = [0, 1]
-    x_labels = ['Single-Agent', 'Multi-Agent']
-    recog = [72.2, 81.5]     # +9.2
-    enhanced = [83.3, 83.3]  # +0.0
+    # Data from Table 8 (multi-model probe, Opus judge)
+    models = ['Kimi K2.5\n(N=179)', 'Nemotron\n(N=119)', 'DeepSeek\n(N=120)',
+              'GLM-4.7\n(N=117)', 'Haiku 4.5\n(N=120)']
+    recog_effect = [15.5, 16.0, 14.0, 17.8, 9.6]
+    ab_interaction = [0.5, -5.7, -1.4, -0.7, -1.6]
 
-    # Lines
-    ax.plot(x, recog, 'o-', color='#27AE60', linewidth=2.5, markersize=10,
-            label='Recognition Prompts', zorder=3)
-    ax.plot(x, enhanced, 's--', color='#2471A3', linewidth=2.5, markersize=10,
-            label='Enhanced Prompts', zorder=3)
+    x = np.arange(len(models))
+    w = 0.35
 
-    # Score labels offset above/below points
-    for xi, yr, ye in zip(x, recog, enhanced):
-        ax.text(xi, yr - 2.2, f'{yr}', ha='center', va='top', fontsize=12,
-                fontweight='bold', color='#1E8449')
-        ax.text(xi, ye + 1.5, f'{ye}', ha='center', va='bottom', fontsize=12,
-                fontweight='bold', color='#1A5276')
+    bars_r = ax.bar(x - w/2, recog_effect, w, label='Recognition Effect (A)',
+                    color='#27AE60', edgecolor='#1E8449', linewidth=1.2)
+    bars_i = ax.bar(x + w/2, ab_interaction, w, label='A×B Interaction',
+                    color='#E74C3C', edgecolor='#C0392B', linewidth=1.2)
 
-    # Delta annotations on right side
-    ax.annotate(r'$\Delta$ +9.2 (p < .05)',
-                xy=(1.02, np.mean(recog)), xycoords=('axes fraction', 'data'),
-                fontsize=12, fontweight='bold', color='#C0392B', va='center')
-    ax.annotate(r'$\Delta$ +0.0 (n.s.)',
-                xy=(1.02, np.mean(enhanced)), xycoords=('axes fraction', 'data'),
-                fontsize=12, fontweight='bold', color='#888888', va='center')
+    # Value labels
+    for bar in bars_r:
+        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.3,
+                f'+{bar.get_height():.1f}', ha='center', va='bottom',
+                fontsize=10, fontweight='bold', color='#1E8449')
+    for bar in bars_i:
+        val = bar.get_height()
+        y_pos = val - 0.5 if val < 0 else val + 0.3
+        va = 'top' if val < 0 else 'bottom'
+        sign = '+' if val > 0 else ''
+        ax.text(bar.get_x() + bar.get_width()/2, y_pos,
+                f'{sign}{val:.1f}', ha='center', va=va,
+                fontsize=10, fontweight='bold', color='#C0392B')
 
-    ax.set_xlim(-0.3, 1.3)
-    ax.set_ylim(65, 92)
+    ax.axhline(0, color='#999', linewidth=0.8, linestyle='-')
+    ax.set_ylim(-8, 22)
     ax.set_xticks(x)
-    ax.set_xticklabels(x_labels, fontsize=13)
-    ax.set_ylabel('Mean Score', fontsize=14)
-    ax.set_title('Figure 4: Multi-Agent Synergy by Prompt Type\n(Preliminary N=36, Nemotron)',
+    ax.set_xticklabels(models, fontsize=11)
+    ax.set_ylabel('Effect Size (points)', fontsize=14)
+    ax.set_title('Figure 4: Architecture is Additive, Not Synergistic\n'
+                 '(Multi-Model A×B Probe, N=655, Opus Judge)',
                  fontsize=15, fontweight='bold')
-    ax.legend(loc='upper left', fontsize=12, framealpha=0.9)
+    ax.legend(loc='upper right', fontsize=12, framealpha=0.9)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
     fig.text(0.10, 0.02,
-             'Synergy effect (+9.2) did not replicate in the 5-model probe '
-             '(N=655, mean interaction = −1.8 pts).',
+             'Recognition effect replicates across all 5 models (+9.6 to +17.8). '
+             'A×B interaction is negligible (mean −1.8 pts).',
              fontsize=11, fontstyle='italic', color='#777777')
 
-    fig.tight_layout(rect=[0, 0.08, 0.88, 1])
+    fig.tight_layout(rect=[0, 0.08, 1, 1])
     fig.savefig(os.path.join(OUTPUT_DIR, 'figure4.png'))
     plt.close(fig)
     print('  figure4.png')
@@ -334,19 +334,26 @@ def figure4():
 # ── Figure 5: Factor Effects Invert by Domain ────────────────────────────────
 
 def figure5():
+    """Factor effects by domain using Kimi K2.5 for both domains.
+    Elementary: eval-2026-02-05-e87f452d (N=60, cells 1,3,5,7).
+    Philosophy: factorial cells 1,3,5,7 (N=179)."""
+
     fig, ax = plt.subplots(figsize=(10, 5.5))
 
-    factors = ['A: Recognition\nEffect', 'B: Multi-Agent\nEffect', 'C: Learner\nEffect']
-    phil = [15.4, -0.8, 2.1]
-    elem = [4.4, 9.9, 0.75]
+    # Kimi data for both domains (same model, clean comparison)
+    # Philosophy (factorial cells 1,3,5,7): Recognition +15.4, Architecture -0.8
+    # Elementary (e87f452d, cells 1,3,5,7): Recognition +9.9, Architecture +3.0
+    factors = ['A: Recognition\nEffect', 'B: Multi-Agent\nEffect']
+    phil = [15.4, -0.8]
+    elem = [9.9, 3.0]
 
     y = np.arange(len(factors))
     bar_height = 0.3
 
     bars_phil = ax.barh(y + bar_height/2, phil, bar_height, color='#5DADE2',
-                        edgecolor='#2471A3', linewidth=1.5, label='Philosophy')
+                        edgecolor='#2471A3', linewidth=1.5, label='Philosophy (Kimi, N=179)')
     bars_elem = ax.barh(y - bar_height/2, elem, bar_height, color='#F0B27A',
-                        edgecolor='#CA6F1E', linewidth=1.5, label='Elementary Math')
+                        edgecolor='#CA6F1E', linewidth=1.5, label='Elementary Math (Kimi, N=60)')
 
     # Score labels
     for bar, val in zip(bars_phil, phil):
@@ -364,15 +371,15 @@ def figure5():
     ax.set_yticks(y)
     ax.set_yticklabels(factors, fontsize=13)
     ax.set_xlabel('Effect Size (points)', fontsize=14)
-    ax.set_title('Figure 5: Factor Effects Invert by Domain',
+    ax.set_title('Figure 5: Factor Effects by Domain (Kimi K2.5)',
                  fontsize=15, fontweight='bold')
     ax.legend(loc='lower right', fontsize=12, framealpha=0.9)
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
 
     fig.text(0.12, 0.02,
-             'Factor dominance inverts: Philosophy favors recognition (A); Elementary favors architecture (B).\n'
-             'Elementary recognition partially model-dependent (Kimi shows d ≈ 0.61).',
+             'Recognition dominates in both domains. Architecture provides small additive benefit\n'
+             'on elementary content (+3.0 pts) and negligible effect on philosophy (−0.8 pts).',
              fontsize=11, fontstyle='italic', color='#777777')
 
     fig.tight_layout(rect=[0, 0.1, 1, 1])
@@ -644,15 +651,13 @@ def figure9():
             'strategy_shift', 'learner_breakthrough',
             'ego_compliance', 'superego_overcorrection', 'missed_scaffold',
             'stalling']
-    base_pct = [0.0, 0.0, 6.9, 0.0, 80.0, 70.7, 69.0, 101.7, 100.0]
-    recog_pct = [51.7, 0.0, 36.7, 30.0, 80.0, 60.0, 50.0, 68.3, 45.0]
-    # ego_autonomy not in bilateral; use dialectical data instead
-    # Actually let's use the bilateral data which is more dramatic
+    # Note: missed_scaffold was 101.7% due to duplicate tag counting per dialogue;
+    # capped at 100.0% (deduplicated per dialogue).
     tags = ['recognition_moment', 'strategy_shift', 'emotional_attunement',
             'learner_breakthrough',
             'ego_compliance', 'superego_overcorrection', 'missed_scaffold',
             'stalling']
-    base_pct = [0.0, 0.0, 6.9, 80.0, 70.7, 69.0, 101.7, 100.0]
+    base_pct = [0.0, 0.0, 6.9, 80.0, 70.7, 69.0, 100.0, 100.0]
     recog_pct = [51.7, 30.0, 36.7, 80.0, 60.0, 50.0, 68.3, 45.0]
 
     diff = [r - b for r, b in zip(recog_pct, base_pct)]
