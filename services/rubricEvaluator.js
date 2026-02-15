@@ -17,6 +17,59 @@ function debugLog(...args) {
 }
 
 /**
+ * Normalize a judge model label to a canonical, human-readable form.
+ * Strips routing prefixes (e.g. "openrouter/anthropic/") and maps
+ * known model IDs to short names with version numbers.
+ *
+ * Examples:
+ *   "openrouter/anthropic/claude-sonnet-4.5" → "claude-sonnet-4.5"
+ *   "openrouter/openai/gpt-5.2"             → "gpt-5.2"
+ *   "openrouter/moonshotai/kimi-k2.5"       → "kimi-k2.5"
+ *   "anthropic/claude-opus-4-5"              → "claude-opus-4.5"
+ *   "openrouter/nvidia/nemotron-..."         → "nemotron"
+ */
+export function normalizeJudgeLabel(provider, model) {
+  // For known model IDs, extract the canonical name
+  const MODEL_MAP = {
+    'anthropic/claude-opus-4.5':      'claude-opus-4.5',
+    'anthropic/claude-opus-4-5':      'claude-opus-4.5',
+    'anthropic/claude-opus-4-6':      'claude-opus-4.6',
+    'anthropic/claude-sonnet-4.5':    'claude-sonnet-4.5',
+    'anthropic/claude-sonnet-4-5':    'claude-sonnet-4.5',
+    'anthropic/claude-haiku-4.5':     'claude-haiku-4.5',
+    'anthropic/claude-haiku-4-5':     'claude-haiku-4.5',
+    'openai/gpt-5.2':                'gpt-5.2',
+    'openai/gpt-5-mini':             'gpt-5-mini',
+    'openai/gpt-oss-120b':           'gpt-oss-120b',
+    'moonshotai/kimi-k2.5':          'kimi-k2.5',
+    'moonshotai/kimi-k2-thinking':   'kimi-k2',
+    'deepseek/deepseek-v3.2':        'deepseek-v3.2',
+    'z-ai/glm-4.7':                  'glm-4.7',
+    'z-ai/glm-5':                    'glm-5',
+    'google/gemini-3-flash-preview':  'gemini-3-flash',
+    'google/gemini-3-pro-preview':    'gemini-3-pro',
+    'minimax/minimax-m2.5':          'minimax-m2.5',
+  };
+
+  // Try direct model lookup (handles openrouter paths like "anthropic/claude-sonnet-4.5")
+  if (MODEL_MAP[model]) return MODEL_MAP[model];
+
+  // Try full provider/model path
+  const fullPath = `${provider}/${model}`;
+  if (MODEL_MAP[fullPath]) return MODEL_MAP[fullPath];
+
+  // For nvidia/nemotron variants, normalize to "nemotron"
+  if (model.includes('nemotron')) return 'nemotron';
+
+  // Fallback: strip common routing prefixes, keep the model name
+  const stripped = model
+    .replace(/^(anthropic|openai|moonshotai|deepseek|z-ai|google|minimax|nvidia)\//, '')
+    .replace(/:free$/, '');
+
+  return stripped || `${provider}/${model}`;
+}
+
+/**
  * Get available judge configuration, resolving model references via providers.yaml
  * Tries primary model first, then fallback if primary is not configured
  *
@@ -929,7 +982,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       requiredMissing: parsed.validation?.required_missing || [],
       forbiddenFound: parsed.validation?.forbidden_found || [],
       summary: parsed.summary,
-      judgeModel: `${judge.provider}/${judge.model}`,
+      judgeModel: normalizeJudgeLabel(judge.provider, judge.model),
       evaluationTimeMs: Date.now() - startTime,
     };
   } catch (error) {
@@ -940,7 +993,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       baseScore: null,
       recognitionScore: null,
       error: error.message,
-      judgeModel: `${judge.provider}/${judge.model}`,
+      judgeModel: normalizeJudgeLabel(judge.provider, judge.model),
       evaluationTimeMs: Date.now() - startTime,
     };
   }

@@ -166,7 +166,7 @@ describe('resolveModel (string format)', () => {
   it('resolves "anthropic.opus"', () => {
     const r = resolveModel('anthropic.opus');
     assert.strictEqual(r.provider, 'anthropic');
-    assert.strictEqual(r.model, 'claude-opus-4-5');
+    assert.strictEqual(r.model, 'claude-opus-4-6');
   });
 
   it('resolves "openai.mini"', () => {

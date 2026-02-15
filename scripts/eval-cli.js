@@ -1916,7 +1916,7 @@ async function main() {
             requiredMissing: parsed.validation?.required_missing || [],
             forbiddenFound: parsed.validation?.forbidden_found || [],
             summary: parsed.summary,
-            judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-code/opus',
+            judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
           };
 
           evaluationStore.updateResultScores(result.id, evaluation);
@@ -2108,7 +2108,7 @@ async function main() {
                 recognitionScore,
                 scores: normalizedScores,
                 summary: parsed.summary,
-                judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-code/opus',
+                judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
               };
 
               // Save to dialogue log
@@ -2663,7 +2663,7 @@ async function main() {
             evaluationStore.updateResultLearnerScores(result.id, {
               scores: turnScores,
               overallScore: dialogueLearnerScore,
-              judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-code/opus',
+              judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
             });
 
             allScores.push(dialogueLearnerScore);
