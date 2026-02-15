@@ -546,7 +546,7 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Dialectical impasse test | eval-2026-02-08-f896275d | 6.20 | 24 | 24 | dialogue |
 | Hardwired rules ablation (Kimi) | eval-2026-02-08-65a6718f | 6.7 | 72 | 72 | response |
 | Learner-side evaluation (symmetric) | eval-2026-02-07-b6d75e87 | 6.16 | 118 | 118 | learner turn |
-| Dialectical modulation, standard (cells 22–27) | eval-2026-02-11-35c53e99, 5f6d51f5 | 6.8 | 84 | 84 | response |
+| Dialectical modulation, standard (cells 22–27) | eval-2026-02-11-35c53e99, eval-2026-02-11-5f6d51f5 | 6.8 | 84 | 84 | response |
 | Dialectical modulation, multi-turn (cells 28–33) | eval-2026-02-11-a54235ea | 6.8 | 90 | 90 | dialogue |
 | Self-reflective evolution (cells 40–45, Kimi) | eval-2026-02-13-8d40e086 | 6.9 | 55 | 55 | dialogue |
 | Self-reflect Nemotron non-replication (cells 40–59) | eval-2026-02-14-559d854b | 6.9 | 167 | 167 | dialogue |
@@ -1770,7 +1770,7 @@ The experimental evidence across twenty-nine evaluations (N $\approx$ 2,906) con
 
 **Simulated learners**: Our evaluation uses scripted and LLM-generated learner turns rather than real learners. While this enables controlled comparison, it may miss dynamics that emerge in genuine interaction.
 
-**LLM-based evaluation**: Using an LLM judge to evaluate recognition quality may introduce biases. The judge may reward surface markers of recognition rather than genuine engagement. Inter-judge reliability analysis (Section 5.8) reveals that different AI judges show only moderate agreement (r=0.33–0.66), with qualitative analysis suggesting judges weight criteria differently—Claude prioritizes engagement while Kimi prioritizes structural completeness. A cross-judge replication with GPT-5.2 (Section 6.19) confirms the recognition main effect (d=1.03 in the factorial, d=0.99 in the memory isolation experiment) and multi-agent null effects are judge-robust, though GPT-5.2 finds compressed effect magnitudes (~58% of Claude's). The memory isolation recognition dominance pattern replicates with identical condition ordering under both judges (inter-judge r=0.63, N=120). Notably, the recognition-vs-enhanced increment (+8.7 under Claude) does not reach significance under GPT-5.2, warranting caution on the precise magnitude of recognition's unique contribution. This validates our use of within-judge comparisons but cautions against treating absolute scores or specific effect magnitudes as objective measures.
+**LLM-based evaluation**: Using an LLM judge to evaluate recognition quality may introduce biases. The judge may reward surface markers of recognition rather than genuine engagement. Inter-judge reliability analysis (Section 5.8) reveals that different AI judges show only moderate agreement (r=0.33–0.66), with qualitative analysis suggesting judges weight criteria differently—Claude prioritizes engagement while Kimi prioritizes structural completeness. A cross-judge replication with GPT-5.2 (Section 6.19) confirms the recognition main effect (d=1.03 in the factorial, d=0.99 in the memory isolation experiment) and multi-agent null effects are judge-robust, though GPT-5.2 finds compressed effect magnitudes (~58% of Claude's). The memory isolation recognition dominance pattern replicates with identical condition ordering under both judges (inter-judge r=0.63, N=120). Notably, the recognition-vs-enhanced increment (+8.7 under Claude) does not reach significance under GPT-5.2, warranting caution on the precise magnitude of recognition's unique contribution. This validates our use of within-judge comparisons but cautions against treating absolute scores or specific effect magnitudes as objective measures. Additionally, LLM judges are subject to version drift: provider updates to model weights or decoding behavior could shift scoring distributions between evaluation campaigns, a known concern in the LLM-as-Judge literature [@gu2025surveyjudge]. Our within-run comparisons are insulated from this risk (all conditions in a given analysis use the same judge version), but absolute scores may not be directly comparable across studies or future replications using updated model versions.
 
 **Memory isolation experiment**: A corrected 2×2 memory isolation experiment (N=120 across two runs; Section 6.2) isolated recognition and memory factors: recognition is the primary driver (d=1.71), while memory provides a modest secondary benefit (d=0.46, $p \approx .08$). The experiment uses a smaller sample (N=120) than the original uncorrected runs, but the very large effect sizes (d=1.71 for recognition) provide high statistical power. A cross-judge replication with GPT-5.2 confirms recognition dominance (d=0.99), identical condition ordering, and the negative interaction (ceiling effect), with inter-judge r=0.63 (Section 6.19).
 
@@ -2261,7 +2261,7 @@ Standard dimensions (including Productive Struggle and Epistemic Honesty) accoun
 
 ## Appendix D: Reproducibility and Key Evaluation Run IDs
 
-Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/liammagee/machinespirits-eval. The twenty-nine key evaluations are listed below (b6d75e87 serves both bilateral transformation and learner-side evaluation; 35c53e99 and 5f6d51f5 are combined as one dialectical modulation evaluation):
+Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/liammagee/machinespirits-eval. The twenty-nine key evaluations are listed below (b6d75e87 serves both bilateral transformation and learner-side evaluation; eval-2026-02-11-35c53e99 and eval-2026-02-11-5f6d51f5 are combined as one dialectical modulation evaluation):
 
 | Finding | Run ID | Section |
 |---------|--------|---------|
@@ -2284,7 +2284,7 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | Hardwired rules ablation (Kimi) | eval-2026-02-08-65a6718f | 6.7 |
 | Dialectical impasse test | eval-2026-02-08-f896275d | 6.20 |
 | Learner-side evaluation (symmetric) | eval-2026-02-07-b6d75e87 | 6.16 |
-| Dialectical modulation, standard (cells 22–27) | eval-2026-02-11-35c53e99, 5f6d51f5 | 6.8 |
+| Dialectical modulation, standard (cells 22–27) | eval-2026-02-11-35c53e99, eval-2026-02-11-5f6d51f5 | 6.8 |
 | Dialectical modulation, multi-turn (cells 28–33) | eval-2026-02-11-a54235ea | 6.8 |
 | Self-reflective evolution (cells 40–45) | eval-2026-02-13-8d40e086 | 6.9 |
 | Mechanism robustness, scripted (cells 40–59) | eval-2026-02-14-e0e3a622 | 6.10 |
