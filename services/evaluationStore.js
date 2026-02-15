@@ -490,12 +490,19 @@ export function listRuns(options = {}) {
     ORDER BY scenario_name
   `);
 
-  // Count completed results per run
+  // Count completed results per run (primary judge only to avoid inflated counts from rejudging)
   const resultCountStmt = db.prepare(`
     SELECT COUNT(*) as completed,
            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
-           AVG(overall_score) as avg_score
-    FROM evaluation_results WHERE run_id = ?
+           AVG(overall_score) as avg_score,
+           COUNT(DISTINCT judge_model) as judge_count
+    FROM evaluation_results
+    WHERE run_id = ?
+      AND (judge_model IS NULL OR judge_model = (
+        SELECT judge_model FROM evaluation_results
+        WHERE run_id = ? AND judge_model IS NOT NULL
+        ORDER BY created_at ASC LIMIT 1
+      ))
   `);
 
   // Get distinct ego + superego models for each run
@@ -513,7 +520,7 @@ export function listRuns(options = {}) {
   return rows.map(row => {
     const scenarioRows = scenarioStmt.all(row.id);
     const scenarioNames = scenarioRows.map(s => s.scenario_name).filter(Boolean);
-    const counts = resultCountStmt.get(row.id);
+    const counts = resultCountStmt.get(row.id, row.id);
 
     const extractAlias = (raw) => {
       if (!raw) return null;
@@ -554,6 +561,7 @@ export function listRuns(options = {}) {
       completedResults,
       successfulResults: counts?.successful || 0,
       avgScore: counts?.avg_score || null,
+      judgeCount: counts?.judge_count || 1,
       progressPct,
       durationMs,
       status: row.status,

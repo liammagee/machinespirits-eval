@@ -1396,30 +1396,38 @@ export async function runEvaluation(options = {}) {
       completedTests++;
       log(`  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
 
-      // Store failed result so it shows up in the database instead of silently disappearing
-      // Extract provider/model from nested ego config if not at top level (profile-based configs)
-      const failedResult = {
-        scenarioId: scenario.id,
-        scenarioName: scenario.name || scenario.id,
-        profileName: config.profileName,
-        provider: config.provider || config.ego?.provider || 'unknown',
-        model: config.model || config.ego?.model || 'unknown',
-        egoModel: config.egoModel
-          ? `${config.egoModel.provider}.${config.egoModel.model}`
-          : config.ego ? `${config.ego.provider}.${config.ego.model}` : null,
-        superegoModel: config.superegoModel
-          ? `${config.superegoModel.provider}.${config.superegoModel.model}`
-          : config.superego ? `${config.superego.provider}.${config.superego.model}` : null,
-        factors: config.factors || null,
-        learnerArchitecture: config.learnerArchitecture || null,
-        success: false,
-        errorMessage: error.message,
-      };
-      try {
-        evaluationStore.storeResult(run.id, failedResult);
-        results.push(failedResult);
-      } catch (storeErr) {
-        log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+      // Only store failed results for permanent errors (bad config, invalid scenario).
+      // Skip storing for retriable/transient errors (rate limits, model unavailable, timeouts)
+      // so that `resume` can retry them without needing manual cleanup.
+      const errMsg = error.message || '';
+      const isTransient = /429|rate limit|too many requests|503|502|timeout|ECONNREFUSED|ECONNRESET|ETIMEDOUT|terminated|unavailable|failed to generate suggestions/i.test(errMsg);
+
+      if (!isTransient) {
+        const failedResult = {
+          scenarioId: scenario.id,
+          scenarioName: scenario.name || scenario.id,
+          profileName: config.profileName,
+          provider: config.provider || config.ego?.provider || 'unknown',
+          model: config.model || config.ego?.model || 'unknown',
+          egoModel: config.egoModel
+            ? `${config.egoModel.provider}.${config.egoModel.model}`
+            : config.ego ? `${config.ego.provider}.${config.ego.model}` : null,
+          superegoModel: config.superegoModel
+            ? `${config.superegoModel.provider}.${config.superegoModel.model}`
+            : config.superego ? `${config.superego.provider}.${config.superego.model}` : null,
+          factors: config.factors || null,
+          learnerArchitecture: config.learnerArchitecture || null,
+          success: false,
+          errorMessage: error.message,
+        };
+        try {
+          evaluationStore.storeResult(run.id, failedResult);
+          results.push(failedResult);
+        } catch (storeErr) {
+          log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+        }
+      } else {
+        log(`  [SKIPPED] Transient error, not storing empty row (resumable): ${errMsg.substring(0, 100)}`);
       }
 
       // Emit test_error event
@@ -2975,29 +2983,36 @@ export async function resumeEvaluation(options = {}) {
       completedTests++;
       log(`  ${formatProgress(completedTests, totalRemainingTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`);
 
-      // Store failed result so it shows up in the database
-      const failedResult = {
-        scenarioId: scenario.id,
-        scenarioName: scenario.name || scenario.id,
-        profileName: config.profileName,
-        provider: config.provider || config.ego?.provider || 'unknown',
-        model: config.model || config.ego?.model || 'unknown',
-        egoModel: config.egoModel
-          ? `${config.egoModel.provider}.${config.egoModel.model}`
-          : config.ego ? `${config.ego.provider}.${config.ego.model}` : null,
-        superegoModel: config.superegoModel
-          ? `${config.superegoModel.provider}.${config.superegoModel.model}`
-          : config.superego ? `${config.superego.provider}.${config.superego.model}` : null,
-        factors: config.factors || null,
-        learnerArchitecture: config.learnerArchitecture || null,
-        success: false,
-        errorMessage: error.message,
-      };
-      try {
-        evaluationStore.storeResult(runId, failedResult);
-        results.push(failedResult);
-      } catch (storeErr) {
-        log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+      // Only store failed results for permanent errors — skip transient/retriable ones
+      const errMsg = error.message || '';
+      const isTransient = /429|rate limit|too many requests|503|502|timeout|ECONNREFUSED|ECONNRESET|ETIMEDOUT|terminated|unavailable|failed to generate suggestions/i.test(errMsg);
+
+      if (!isTransient) {
+        const failedResult = {
+          scenarioId: scenario.id,
+          scenarioName: scenario.name || scenario.id,
+          profileName: config.profileName,
+          provider: config.provider || config.ego?.provider || 'unknown',
+          model: config.model || config.ego?.model || 'unknown',
+          egoModel: config.egoModel
+            ? `${config.egoModel.provider}.${config.egoModel.model}`
+            : config.ego ? `${config.ego.provider}.${config.ego.model}` : null,
+          superegoModel: config.superegoModel
+            ? `${config.superegoModel.provider}.${config.superegoModel.model}`
+            : config.superego ? `${config.superego.provider}.${config.superego.model}` : null,
+          factors: config.factors || null,
+          learnerArchitecture: config.learnerArchitecture || null,
+          success: false,
+          errorMessage: error.message,
+        };
+        try {
+          evaluationStore.storeResult(runId, failedResult);
+          results.push(failedResult);
+        } catch (storeErr) {
+          log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+        }
+      } else {
+        log(`  [SKIPPED] Transient error, not storing empty row (resumable): ${errMsg.substring(0, 100)}`);
       }
 
       progressLogger.testError({
