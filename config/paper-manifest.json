@@ -1,0 +1,412 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-02-15",
+  "database": "data/evaluations.db",
+  "paper": "docs/research/paper-full.md",
+
+  "key_evaluations": [
+    {
+      "run_ids": ["eval-2026-02-03-86b159cd"],
+      "label": "Recognition validation",
+      "section": "6.1",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 36,
+      "expected_scored": 36
+    },
+    {
+      "run_ids": ["eval-2026-02-03-f5d4dd93"],
+      "label": "Full factorial, cells 1-5,7 (Kimi)",
+      "section": "6.3",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 262,
+      "expected_scored": 262
+    },
+    {
+      "run_ids": ["eval-2026-02-06-a933d745"],
+      "label": "Full factorial, cells 6,8 re-run (Kimi)",
+      "section": "6.3",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 90,
+      "expected_scored": 88
+    },
+    {
+      "run_ids": ["eval-2026-02-05-10b344fb"],
+      "label": "A×B replication (Kimi)",
+      "section": "6.4",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 60,
+      "expected_scored": 60
+    },
+    {
+      "run_ids": ["eval-2026-02-05-e87f452d"],
+      "label": "Domain generalizability (Kimi)",
+      "section": "6.5",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 60,
+      "expected_scored": 60
+    },
+    {
+      "run_ids": ["eval-2026-02-05-daf60f79"],
+      "label": "Dynamic rewrite evolution (run 1)",
+      "section": "6.18",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 29,
+      "expected_scored": 26
+    },
+    {
+      "run_ids": ["eval-2026-02-05-49bb2017"],
+      "label": "Dynamic rewrite evolution (run 2)",
+      "section": "6.18",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 30,
+      "expected_scored": 27
+    },
+    {
+      "run_ids": ["eval-2026-02-05-12aebedb"],
+      "label": "Dynamic rewrite evolution (run 3)",
+      "section": "6.18",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 30,
+      "expected_scored": 29
+    },
+    {
+      "run_ids": ["eval-2026-02-06-81f2d5a1"],
+      "label": "Memory isolation (run 1)",
+      "section": "6.2",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 60,
+      "expected_scored": 60
+    },
+    {
+      "run_ids": ["eval-2026-02-06-ac9ea8f5"],
+      "label": "Memory isolation (run 2)",
+      "section": "6.2",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 62,
+      "expected_scored": 62
+    },
+    {
+      "run_ids": ["eval-2026-02-06-a9ae06ee"],
+      "label": "Active control (post-hoc)",
+      "section": "6.2",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 119,
+      "expected_scored": 118
+    },
+    {
+      "run_ids": ["eval-2026-02-07-b6d75e87"],
+      "label": "Bilateral transformation (multi-turn)",
+      "section": "6.15",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 120,
+      "expected_scored": 118
+    },
+    {
+      "run_ids": ["eval-2026-02-07-722087ac"],
+      "label": "A×B probe: Nemotron",
+      "section": "6.4",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 120,
+      "expected_scored": 119
+    },
+    {
+      "run_ids": ["eval-2026-02-07-70ef73a3"],
+      "label": "A×B probe: DeepSeek V3.2",
+      "section": "6.4",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 120,
+      "expected_scored": 120
+    },
+    {
+      "run_ids": ["eval-2026-02-07-6b3e6565"],
+      "label": "A×B probe: GLM-4.7",
+      "section": "6.4",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 120,
+      "expected_scored": 117
+    },
+    {
+      "run_ids": ["eval-2026-02-07-6ead24c7"],
+      "label": "A×B probe: Claude Haiku 4.5",
+      "section": "6.4",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 120,
+      "expected_scored": 120
+    },
+    {
+      "run_ids": ["eval-2026-02-08-f896275d"],
+      "label": "Dialectical impasse test",
+      "section": "6.20",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 24,
+      "expected_scored": 24
+    },
+    {
+      "run_ids": ["eval-2026-02-08-65a6718f"],
+      "label": "Hardwired rules ablation (Kimi)",
+      "section": "6.7",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 72,
+      "expected_scored": 72
+    },
+    {
+      "run_ids": ["eval-2026-02-07-b6d75e87"],
+      "label": "Learner-side evaluation (symmetric)",
+      "section": "6.16",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "learner turn",
+      "expected_attempts": 118,
+      "expected_scored": 118,
+      "note": "Same run as bilateral transformation; scored with learner rubric"
+    },
+    {
+      "run_ids": ["eval-2026-02-11-35c53e99", "eval-2026-02-11-5f6d51f5"],
+      "label": "Dialectical modulation, standard (cells 22-27)",
+      "section": "6.8",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "response",
+      "expected_attempts": 84,
+      "expected_scored": 84
+    },
+    {
+      "run_ids": ["eval-2026-02-11-a54235ea"],
+      "label": "Dialectical modulation, multi-turn (cells 28-33)",
+      "section": "6.8",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 90,
+      "expected_scored": 90
+    },
+    {
+      "run_ids": ["eval-2026-02-13-8d40e086"],
+      "label": "Self-reflective evolution (cells 40-45, Kimi)",
+      "section": "6.9",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 61,
+      "expected_scored": 61
+    },
+    {
+      "run_ids": ["eval-2026-02-14-559d854b"],
+      "label": "Self-reflect Nemotron non-replication (cells 40-59)",
+      "section": "6.9",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 167,
+      "expected_scored": 167
+    },
+    {
+      "run_ids": ["eval-2026-02-14-e0e3a622"],
+      "label": "Mechanism robustness, scripted (cells 40-59)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 360,
+      "expected_scored": 360
+    },
+    {
+      "run_ids": ["eval-2026-02-14-6c033830"],
+      "label": "Dynamic learner mechanisms (cells 60-63)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 120,
+      "expected_scored": 120
+    },
+    {
+      "run_ids": ["eval-2026-02-14-a2b2717c"],
+      "label": "Dynamic learner mechanisms (cells 64-65)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 120,
+      "expected_scored": 120
+    },
+    {
+      "run_ids": ["eval-2026-02-14-49b33fdd"],
+      "label": "Mechanism robustness, Nemotron (cells 40-59)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 301,
+      "expected_scored": 301
+    },
+    {
+      "run_ids": ["eval-2026-02-14-50487df7"],
+      "label": "Cognitive prosthesis (cells 66-68)",
+      "section": "6.10",
+      "primary_judge_pattern": "%sonnet%",
+      "unit": "dialogue",
+      "expected_attempts": 60,
+      "expected_scored": 60
+    },
+    {
+      "run_ids": ["eval-2026-02-15-664073ab"],
+      "label": "Dynamic learner base mechanisms (cells 69-70)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-code%",
+      "unit": "dialogue",
+      "expected_attempts": 60,
+      "expected_scored": 60
+    }
+  ],
+
+  "totals": {
+    "evaluations": 29,
+    "expected_attempts": 3075,
+    "expected_scored": 3059,
+    "opus_primary_count": 28,
+    "sonnet_primary_count": 1,
+    "sonnet_primary_runs": ["eval-2026-02-14-50487df7"]
+  },
+
+  "figures": {
+    "figure1": {
+      "title": "2×2×2 Factorial Cell Means",
+      "section": "6.3",
+      "runs": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745"],
+      "cells": [1, 2, 3, 4, 5, 6, 7, 8],
+      "judge_filter": "claude-code%",
+      "notes": "Combine f5d4dd93 (cells 1-5,7) and a933d745 (cells 6,8)"
+    },
+    "figure2": {
+      "title": "Memory Isolation 2×2",
+      "section": "6.2",
+      "runs": ["eval-2026-02-06-81f2d5a1", "eval-2026-02-06-ac9ea8f5"],
+      "profiles": {
+        "base": "cell_1_base_single_unified",
+        "memory_only": "cell_19_memory_single_unified",
+        "recognition_only": "cell_20_recog_nomem_single_unified",
+        "recognition_plus_memory": "cell_5_recog_single_unified"
+      },
+      "judge_filter": "claude-code%"
+    },
+    "figure3": {
+      "title": "Active Control Comparison",
+      "section": "6.2",
+      "runs": {
+        "active_control": "eval-2026-02-06-a9ae06ee",
+        "factorial_base": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745"]
+      },
+      "judge_filter": "claude-code%",
+      "notes": "Cross-run comparison: active control (Nemotron) vs factorial (Kimi). Model confound acknowledged."
+    },
+    "figure4": {
+      "title": "Multi-Model A×B Probe",
+      "section": "6.4",
+      "runs": {
+        "kimi": {
+          "run_ids": ["eval-2026-02-03-f5d4dd93"],
+          "cells": [1, 3, 5, 7],
+          "label": "Kimi K2.5",
+          "expected_n": 179
+        },
+        "nemotron": {
+          "run_ids": ["eval-2026-02-07-722087ac"],
+          "cells": [1, 3, 5, 7],
+          "label": "Nemotron",
+          "expected_n": 119
+        },
+        "deepseek": {
+          "run_ids": ["eval-2026-02-07-70ef73a3"],
+          "cells": [1, 3, 5, 7],
+          "label": "DeepSeek V3.2",
+          "expected_n": 120
+        },
+        "glm": {
+          "run_ids": ["eval-2026-02-07-6b3e6565"],
+          "cells": [1, 3, 5, 7],
+          "label": "GLM-4.7",
+          "expected_n": 117
+        },
+        "haiku": {
+          "run_ids": ["eval-2026-02-07-6ead24c7"],
+          "cells": [1, 3, 5, 7],
+          "label": "Claude Haiku 4.5",
+          "expected_n": 120
+        }
+      },
+      "judge_filter": "claude-code%"
+    },
+    "figure5": {
+      "title": "Domain Generalizability",
+      "section": "6.5",
+      "runs": {
+        "elementary": "eval-2026-02-05-e87f452d",
+        "philosophy": "eval-2026-02-03-f5d4dd93"
+      },
+      "cells": [1, 3, 5, 7],
+      "judge_filter": "claude-code%",
+      "notes": "Elementary from domain gen run; philosophy from factorial single-learner cells"
+    },
+    "figure7": {
+      "title": "Superego Persona × Recognition",
+      "section": "6.8",
+      "runs": ["eval-2026-02-11-a54235ea"],
+      "cells": [28, 29, 30, 31, 32, 33],
+      "judge_filter": "claude-code%"
+    },
+    "figure8": {
+      "title": "Mechanism Differentiation — Scripted vs Dynamic",
+      "section": "6.10",
+      "runs": {
+        "scripted": "eval-2026-02-14-e0e3a622",
+        "dynamic_60_63": "eval-2026-02-14-6c033830",
+        "dynamic_64_65": "eval-2026-02-14-a2b2717c",
+        "cognitive": "eval-2026-02-14-50487df7",
+        "base_69_70": "eval-2026-02-15-664073ab"
+      },
+      "judge_filter": "claude-code%",
+      "notes": "50487df7 uses sonnet judge; others use opus"
+    },
+    "figure9": {
+      "title": "Qualitative Tag Divergence",
+      "section": "6.11",
+      "runs": ["eval-2026-02-07-b6d75e87"],
+      "source": "qualitative_assessment column, not overall_score",
+      "data_driven": false,
+      "notes": "Tag data from qualitative assessment, not numerical scores. Kept as hardcoded values with comment."
+    }
+  },
+
+  "tables": {
+    "table2": {
+      "title": "Evaluation Sample Summary",
+      "source": "key_evaluations array above",
+      "notes": "Generated from manifest + DB query"
+    },
+    "appendix_d": {
+      "title": "Reproducibility and Key Evaluation Run IDs",
+      "source": "key_evaluations array above",
+      "notes": "Generated from manifest"
+    }
+  },
+
+  "prose_n_references": [
+    {"location": "abstract", "pattern": "N=3,059 primary scored"},
+    {"location": "introduction (line ~44)", "pattern": "N=3,059 primary scored responses"},
+    {"location": "methods (Table 2 totals)", "pattern": "3,075** | **3,059"},
+    {"location": "methods (line ~563)", "pattern": "N=3,059 scored"},
+    {"location": "methods (line ~565)", "pattern": "N=3,059"},
+    {"location": "discussion (line ~1751)", "pattern": "N=3,059"},
+    {"location": "conclusion (line ~1823)", "pattern": "N=3,059 primary scored"}
+  ]
+}
