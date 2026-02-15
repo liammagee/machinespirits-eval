@@ -49,7 +49,8 @@ temp/
 
 # Evaluation results (large/generated files)
 results/
-exports/
+exports/*
+!exports/PROVENANCE.md
 *.csv
 *.xlsx
 
