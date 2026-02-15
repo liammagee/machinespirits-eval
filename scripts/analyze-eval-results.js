@@ -120,29 +120,81 @@ function tCDF(t, df) {
   return 1 - 0.5 * incompleteBeta(df / 2, 0.5, x);
 }
 
-// Incomplete beta function approximation (very simplified)
+// Regularized incomplete beta function I_x(a, b) via continued fraction.
+// Uses the standard DLMF 8.17.22 recurrence (Numerical Recipes §6.4).
 function incompleteBeta(a, b, x) {
-  // This is a rough approximation; for production use a proper library
-  if (x === 0) return 0;
-  if (x === 1) return 1;
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
 
-  // Use normal approximation for large df
-  if (a > 30) {
-    return x < 0.5 ? 0 : 1;
+  // Use symmetry relation when x > (a+1)/(a+b+2) for faster convergence
+  if (x > (a + 1) / (a + b + 2)) {
+    return 1 - incompleteBeta(b, a, 1 - x);
   }
 
-  // Simple numerical integration
-  const steps = 100;
-  let sum = 0;
-  for (let i = 0; i < steps; i++) {
-    const xi = (i + 0.5) / steps * x;
-    sum += Math.pow(xi, a - 1) * Math.pow(1 - xi, b - 1);
-  }
-  sum *= x / steps;
+  const lnBeta = lnGamma(a) + lnGamma(b) - lnGamma(a + b);
+  const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta);
 
-  // Normalize (approximate)
-  const beta = gamma(a) * gamma(b) / gamma(a + b);
-  return sum / beta;
+  // Evaluate continued fraction with modified Lentz's method
+  const maxIter = 200;
+  const eps = 3e-14;
+  const fpmin = 1e-30;
+
+  let qab = a + b;
+  let qap = a + 1;
+  let qam = a - 1;
+  let c = 1;
+  let d = 1 - qab * x / qap;
+  if (Math.abs(d) < fpmin) d = fpmin;
+  d = 1 / d;
+  let h = d;
+
+  for (let m = 1; m <= maxIter; m++) {
+    let m2 = 2 * m;
+
+    // Even step: d_{2m}
+    let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    d = 1 + aa * d;
+    if (Math.abs(d) < fpmin) d = fpmin;
+    c = 1 + aa / c;
+    if (Math.abs(c) < fpmin) c = fpmin;
+    d = 1 / d;
+    h *= d * c;
+
+    // Odd step: d_{2m+1}
+    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    d = 1 + aa * d;
+    if (Math.abs(d) < fpmin) d = fpmin;
+    c = 1 + aa / c;
+    if (Math.abs(c) < fpmin) c = fpmin;
+    d = 1 / d;
+    const delta = d * c;
+    h *= delta;
+
+    if (Math.abs(delta - 1) < eps) break;
+  }
+
+  return front * h / a;
+}
+
+// Log-gamma function (avoids overflow for large arguments)
+function lnGamma(z) {
+  if (z <= 0) return Infinity;
+  // Lanczos approximation (g=7, same coefficients as existing gamma function)
+  const g = 7;
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+
+  if (z < 0.5) {
+    return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
+  }
+  z -= 1;
+  let x = c[0];
+  for (let i = 1; i < g + 2; i++) {
+    x += c[i] / (z + i);
+  }
+  const t = z + g + 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
 }
 
 function gamma(n) {
