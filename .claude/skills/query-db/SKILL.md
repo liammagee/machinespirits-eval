@@ -11,7 +11,7 @@ Answer questions about evaluation data by querying `data/evaluations.db`.
 
 Key table: `evaluation_results`
 - `run_id` — evaluation run identifier (e.g. `eval-2026-02-03-f5d4dd93`)
-- `tutor_profile` — cell name (e.g. `cell_1_base_single_unified`)
+- `profile_name` — cell name (e.g. `cell_1_base_single_unified`)
 - `scenario_id` — scenario name
 - `model` — ego model used (e.g. `openrouter/moonshotai/kimi-k2.5`)
 - `overall_score` — judge score (0-100), the primary outcome measure
@@ -34,9 +34,10 @@ Key table: `evaluation_results`
 
 ```sql
 -- Run summary
-SELECT tutor_profile, judge_model, COUNT(*) n, ROUND(AVG(overall_score),1) mean, ROUND(STDEV(overall_score),1) sd
+SELECT profile_name, judge_model, COUNT(*) n, ROUND(AVG(overall_score),1) mean,
+  ROUND(AVG(overall_score*overall_score) - AVG(overall_score)*AVG(overall_score),1) var
 FROM evaluation_results WHERE run_id LIKE '<id>%' AND overall_score IS NOT NULL
-GROUP BY tutor_profile, judge_model;
+GROUP BY profile_name, judge_model;
 
 -- All runs
 SELECT run_id, COUNT(*) n, ROUND(AVG(overall_score),1) mean, MIN(created_at) started
