@@ -11,8 +11,9 @@ Analyze evaluation run `$ARGUMENTS`.
 
 1. Query the database for this run:
    ```bash
-   sqlite3 data/evaluations.db "SELECT tutor_profile, scenario_id, judge_model, COUNT(*) as n, ROUND(AVG(overall_score),1) as mean, ROUND(STDEV(overall_score),1) as sd FROM evaluation_results WHERE run_id LIKE '$ARGUMENTS%' AND overall_score IS NOT NULL GROUP BY tutor_profile, scenario_id, judge_model ORDER BY tutor_profile, scenario_id"
+   sqlite3 -header -column data/evaluations.db "SELECT profile_name, judge_model, COUNT(*) n, ROUND(AVG(overall_score),1) mean, ROUND(AVG(overall_score*overall_score) - AVG(overall_score)*AVG(overall_score),1) var FROM evaluation_results WHERE run_id LIKE '$ARGUMENTS%' AND overall_score IS NOT NULL GROUP BY profile_name, judge_model ORDER BY profile_name, judge_model"
    ```
+   Note: SQLite has no STDEV — compute variance as AVG(x²) - AVG(x)², then take sqrt for SD.
 
 2. Show overall summary: N scored, judge model(s), cell means, recognition delta if applicable.
 
