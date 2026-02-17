@@ -11,6 +11,8 @@
  *   node scripts/test-latency.js --models nemotron,glm5,kimi-k2.5
  *   node scripts/test-latency.js --serial          # one at a time
  *   node scripts/test-latency.js --prompt "Explain Hegel in one sentence."
+ *   node scripts/test-latency.js --max-tokens 500  # override max output tokens
+ *   node scripts/test-latency.js --input "I don't understand why Hegel matters"
  */
 
 import 'dotenv/config';
@@ -27,9 +29,13 @@ const getArg = (flag) => {
 const hasFlag = (flag) => args.includes(flag);
 
 const serial = hasFlag('--serial');
-const prompt = getArg('--prompt') || 'Say hello in one sentence.';
+const maxTokens = parseInt(getArg('--max-tokens') || '200', 10);
 const providerFilter = getArg('--provider') || 'openrouter';
 const modelsFilter = getArg('--models')?.split(',').map(s => s.trim()) || null;
+
+const defaultInput = 'I keep reading about Hegel\'s master-slave dialectic but I don\'t really get why it matters. Can you explain it simply?';
+const learnerInput = getArg('--input') || getArg('--prompt') || defaultInput;
+const systemPrompt = 'You are a philosophy tutor. Respond helpfully and concisely to the learner.';
 
 // ── Discover models ─────────────────────────────────────────────────────────
 
@@ -70,11 +76,11 @@ async function testModel({ provider, alias, modelId }) {
     const response = await unifiedAIProvider.call({
       provider,
       model: resolved.model,
-      systemPrompt: 'You are a helpful assistant. Be very brief.',
-      messages: [{ role: 'user', content: prompt }],
+      systemPrompt,
+      messages: [{ role: 'user', content: learnerInput }],
       config: {
         temperature: 0.3,
-        maxTokens: 100,
+        maxTokens,
       },
     });
     const wallMs = Date.now() - start;
@@ -121,8 +127,8 @@ if (targets.length === 0) {
   process.exit(1);
 }
 
-console.log(`\nTesting ${targets.length} model(s) ${serial ? 'sequentially' : 'in parallel'}...`);
-console.log(`Prompt: "${prompt}"\n`);
+console.log(`\nTesting ${targets.length} model(s) ${serial ? 'sequentially' : 'in parallel'} (max ${maxTokens} tokens)...`);
+console.log(`Input: "${learnerInput}"\n`);
 
 let results;
 if (serial) {

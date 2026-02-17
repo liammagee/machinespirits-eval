@@ -44,6 +44,7 @@ const coreCells = Object.fromEntries(coreCellNames.map(name => [name, cells[name
 
 // Valid prompt types
 const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo', 'memory', 'recognition_nomem',
+  'naive',
   'divergent_suspicious', 'divergent_adversary', 'divergent_advocate',
   'dialectical_suspicious', 'dialectical_adversary', 'dialectical_advocate'];
 
@@ -95,6 +96,7 @@ describe('factorial design — config integrity', () => {
       placebo: 'placebo',
       memory: 'memory',
       recognition_nomem: 'recog',
+      naive: 'naive',
       divergent_suspicious: 'suspicious',
       divergent_adversary: 'adversary',
       divergent_advocate: 'advocate',
@@ -139,6 +141,7 @@ describe('factorial design — prompt file assignment', () => {
     placebo: 'tutor-ego-placebo.md',
     memory: 'tutor-ego-memory.md',
     recognition_nomem: 'tutor-ego-recognition-nomem.md',
+    naive: 'tutor-ego-naive.md',
   };
 
   // Expected superego prompt file for each prompt_type
