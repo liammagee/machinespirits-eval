@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "generated": "2026-02-17",
   "database": "data/evaluations.db",
   "paper": "docs/research/paper-full.md",
@@ -266,14 +266,32 @@
       "unit": "dialogue",
       "expected_attempts": 60,
       "expected_scored": 60
+    },
+    {
+      "run_ids": ["eval-2026-02-17-deee5fd6"],
+      "label": "Prompt elaboration baseline, Haiku (cells 1, 71)",
+      "section": "6.21",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "single-turn",
+      "expected_attempts": 72,
+      "expected_scored": 72
+    },
+    {
+      "run_ids": ["eval-2026-02-17-27d7b4e3"],
+      "label": "Prompt elaboration baseline, Kimi (cells 1, 71)",
+      "section": "6.21",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "single-turn",
+      "expected_attempts": 72,
+      "expected_scored": 72
     }
   ],
 
   "totals": {
-    "evaluations": 29,
-    "expected_attempts": 3163,
-    "expected_scored": 3148,
-    "opus_primary_count": 28,
+    "evaluations": 31,
+    "expected_attempts": 3307,
+    "expected_scored": 3292,
+    "opus_primary_count": 30,
     "sonnet_primary_count": 1,
     "sonnet_primary_runs": ["eval-2026-02-14-50487df7"]
   },
@@ -401,12 +419,12 @@
   },
 
   "prose_n_references": [
-    {"location": "abstract", "pattern": "N=3,148 primary scored"},
-    {"location": "introduction (line ~44)", "pattern": "N=3,148 primary scored responses"},
-    {"location": "methods (Table 2 totals)", "pattern": "**3,148**"},
-    {"location": "methods (line ~563)", "pattern": "N=3,148 scored"},
-    {"location": "methods (line ~565)", "pattern": "N=3,148"},
-    {"location": "discussion (line ~1751)", "pattern": "N=3,148"},
-    {"location": "conclusion (line ~1823)", "pattern": "N=3,148 primary scored"}
+    {"location": "abstract", "pattern": "N=3,292 primary scored"},
+    {"location": "introduction (line ~44)", "pattern": "N=3,292 primary scored responses"},
+    {"location": "methods (Table 2 totals)", "pattern": "**3,292**"},
+    {"location": "methods (line ~563)", "pattern": "N=3,292 scored"},
+    {"location": "methods (line ~565)", "pattern": "N=3,292"},
+    {"location": "discussion (line ~1751)", "pattern": "N=3,292"},
+    {"location": "conclusion (line ~1823)", "pattern": "N=3,292 primary scored"}
   ]
 }

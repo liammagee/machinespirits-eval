@@ -47,7 +47,7 @@ def get_db():
         _db.row_factory = sqlite3.Row
     return _db
 
-def query_cell_means(run_ids, judge_filter='claude-code%'):
+def query_cell_means(run_ids, judge_filter='claude-opus%'):
     """Query mean overall_score per profile (cell) for given runs."""
     db = get_db()
     if not db:
@@ -301,9 +301,9 @@ def figure2():
 def figure3():
     fig, ax = plt.subplots(figsize=(10, 4))
 
-    total = 20.1
-    prompt_eng = 11.4
-    recog_unique = 8.7
+    total = 19.7
+    prompt_eng = 11.6
+    recog_unique = 8.0
     prompt_pct = prompt_eng / total * 100  # 57%
     recog_pct = recog_unique / total * 100  # 43%
 
@@ -666,7 +666,7 @@ def figure7():
     data_driven = False
 
     if fig7_config and get_db():
-        cell_means = query_cell_means(fig7_config['runs'], 'claude-code%')
+        cell_means = query_cell_means(fig7_config['runs'], fig7_config['judge_filter'])
         if cell_means:
             # Cells 28-33: base/recog × suspicious/adversary/advocate
             persona_cells = {
@@ -783,7 +783,7 @@ def figure8():
 
     if fig8_config and get_db():
         # Scripted
-        s_means = query_cell_means([fig8_config['runs']['scripted']], 'claude-code%')
+        s_means = query_cell_means([fig8_config['runs']['scripted']], fig8_config['judge_filter'])
         if s_means:
             s_labels = []
             s_vals = []
@@ -799,7 +799,7 @@ def figure8():
 
         # Dynamic
         d_run_ids = [fig8_config['runs']['dynamic_60_63'], fig8_config['runs']['dynamic_64_65']]
-        d_means = query_cell_means(d_run_ids, 'claude-code%')
+        d_means = query_cell_means(d_run_ids, fig8_config['judge_filter'])
         if d_means:
             d_labels = []
             d_vals = []
