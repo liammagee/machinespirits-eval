@@ -152,16 +152,18 @@ function buildReport(runIds) {
       const profile = r.profile_name || r.profileName;
       const score = r.overall_score;
       const outTokens = r.output_tokens || r.outputTokens || 0;
+      const apiCalls = r.api_calls || r.apiCalls || 1;
 
       if (score == null) continue; // unjudged
 
       const key = `${budget}|${profile}`;
       if (!data.has(key)) {
-        data.set(key, { budget, profile, scores: [], outputTokens: [] });
+        data.set(key, { budget, profile, scores: [], outputTokens: [], apiCalls: [] });
       }
       const entry = data.get(key);
       entry.scores.push(score);
       entry.outputTokens.push(outTokens);
+      entry.apiCalls.push(apiCalls);
     }
   }
 
@@ -234,9 +236,13 @@ function buildReport(runIds) {
       }
 
       const s = stats(entry.scores);
-      // Truncation: percentage where output tokens >= budget (within 95% threshold for safety)
-      const truncThreshold = Math.floor(budget * 0.95);
-      const truncCount = entry.outputTokens.filter(t => t >= truncThreshold).length;
+      // Truncation: per-row check whether output tokens >= budget × api_calls (within 95%).
+      // output_tokens is cumulative across all API calls (including inner retries),
+      // so we scale the threshold by api_calls to avoid false positives.
+      const truncCount = entry.outputTokens.filter((t, i) => {
+        const calls = entry.apiCalls[i] || 1;
+        return t >= Math.floor(budget * calls * 0.95);
+      }).length;
       const truncPct = entry.outputTokens.length > 0
         ? Math.round(100 * truncCount / entry.outputTokens.length)
         : 0;
@@ -287,8 +293,10 @@ function buildReport(runIds) {
       const entry = data.get(key);
       if (!entry) continue;
       const s = stats(entry.scores);
-      const truncThreshold = Math.floor(budget * 0.95);
-      const truncCount = entry.outputTokens.filter(t => t >= truncThreshold).length;
+      const truncCount = entry.outputTokens.filter((t, i) => {
+        const calls = entry.apiCalls[i] || 1;
+        return t >= Math.floor(budget * calls * 0.95);
+      }).length;
       const truncPct = entry.outputTokens.length > 0
         ? Math.round(100 * truncCount / entry.outputTokens.length)
         : 0;
