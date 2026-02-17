@@ -804,6 +804,7 @@ async function main() {
         const superegoModelOverride = getOption('superego-model');
         const learnerModelOverride = getOption('learner-model');
         const transcriptMode = getFlag('transcript');
+        const maxTokensOverride = getOption('max-tokens');
 
         // --cluster and --scenario are mutually exclusive
         if (clusterOpt && scenarioOpt) {
@@ -856,6 +857,7 @@ async function main() {
             if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
           }
           if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
+          if (maxTokensOverride) console.log(`  Max tokens override: ${maxTokensOverride}`);
           console.log('');
         }
 
@@ -878,6 +880,7 @@ async function main() {
           learnerModelOverride: learnerModelOverride || null,
           dryRun,
           transcriptMode,
+          maxTokensOverride: maxTokensOverride ? parseInt(maxTokensOverride, 10) : null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {

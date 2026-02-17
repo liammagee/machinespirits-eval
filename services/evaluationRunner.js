@@ -213,6 +213,12 @@ function resolveConfigModels(config) {
     }
   }
 
+  // Apply CLI --max-tokens override (overrides ego max_tokens hyperparameter)
+  if (config.maxTokensOverride) {
+    if (!resolved.hyperparameters) resolved.hyperparameters = {};
+    resolved.hyperparameters = { ...resolved.hyperparameters, max_tokens: config.maxTokensOverride };
+  }
+
   // Apply CLI --model override (replaces ego and superego models, preserves factorial metadata)
   if (config.modelOverride) {
     try {
@@ -1099,6 +1105,7 @@ export async function runEvaluation(options = {}) {
     learnerModelOverride = null, // CLI --learner-model override (replaces all learner agent models)
     dryRun = false,             // Use mock data instead of API calls
     transcriptMode = false,     // Write play-format transcript files during multi-turn runs
+    maxTokensOverride = null,   // CLI --max-tokens override (replaces ego max_tokens hyperparameter)
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -1190,6 +1197,9 @@ export async function runEvaluation(options = {}) {
   if (effectiveLearnerModelOverride) {
     targetConfigs = targetConfigs.map(c => ({ ...c, learnerModelOverride: effectiveLearnerModelOverride }));
   }
+  if (maxTokensOverride) {
+    targetConfigs = targetConfigs.map(c => ({ ...c, maxTokensOverride }));
+  }
 
   if (targetConfigs.length === 0) {
     throw new Error('No configurations to test');
@@ -1213,6 +1223,7 @@ export async function runEvaluation(options = {}) {
       egoModelOverride: effectiveEgoModelOverride || null,
       superegoModelOverride: effectiveSuperegoModelOverride || null,
       learnerModelOverride: effectiveLearnerModelOverride || null,
+      maxTokensOverride: maxTokensOverride || null,
       // Store scenario IDs and profile names for accurate resume
       scenarioIds: targetScenarios.map(s => s.id),
       profileNames: targetConfigs.map(c => c.profileName).filter(Boolean),
@@ -1632,7 +1643,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     superegoModel: resolvedConfig.superegoModel
       ? `${resolvedConfig.superegoModel.provider}.${resolvedConfig.superegoModel.model}`
       : null,
-    hyperparameters: config.hyperparameters,
+    hyperparameters: resolvedConfig.hyperparameters || config.hyperparameters,
     suggestions: genResult.suggestions,
     success: true,
     latencyMs: genResult.metadata?.latencyMs,
@@ -2645,7 +2656,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     superegoModel: resolvedConfig.superegoModel
       ? `${resolvedConfig.superegoModel.provider}.${resolvedConfig.superegoModel.model}`
       : null,
-    hyperparameters: config.hyperparameters,
+    hyperparameters: resolvedConfig.hyperparameters || config.hyperparameters,
     suggestions: turnResults.map(t => t.suggestion).filter(Boolean),
     success: true,
     latencyMs: totalLatencyMs,
