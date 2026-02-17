@@ -1452,7 +1452,7 @@ All correlations are moderate (r = 0.44–0.64) and highly significant (all p < 
 
 | Finding | Claude Effect | GPT-5.2 Effect | GPT-5.2 p | Replicates? |
 |---------|-------------|----------------|-----------|-------------|
-| Recognition main effect (factorial, N=224 paired, 6 cells) | +17.6 pts | **+6.6 pts** (d≈0.9) | <.001 | Yes |
+| Recognition main effect (factorial, N=224 paired, 6 cells) | +17.6 pts | **+6.6 pts** ($d \approx 0.9$) | <.001 | Yes |
 | Recognition vs base (validation, N=36) | +19.7 pts | **+9.6 pts** (d=0.91) | <.001 | Yes |
 | Recognition vs enhanced (validation, N=36) | +8.0 pts | **+2.4 pts** (d=0.24) | n.s. | Marginal |
 | Multi-agent main effect (factorial) | +2.6 pts | **−0.2 pts** | n.s. | Yes (small) |
@@ -2102,10 +2102,13 @@ You are the thoughtful, critical voice who:
 Tests whether recognition theory adds value beyond prompt engineering.
 
 ```bash
-# Run the 3-way comparison (base, enhanced, recognition prompts)
-node scripts/eval-cli.js run \
-  --profiles cell_1_base_single_unified,cell_9_enhanced_single_unified,cell_5_recog_single_unified \
-  --scenarios struggling_learner,concept_confusion,mood_frustrated_explicit,high_performer \
+# Run the 3-way comparison (base, enhanced, recognition)
+CELLS="cell_1_base_single_unified"
+CELLS+=",cell_9_enhanced_single_unified"
+CELLS+=",cell_5_recog_single_unified"
+node scripts/eval-cli.js run --profiles "$CELLS" \
+  --scenarios struggling_learner,concept_confusion,\
+mood_frustrated_explicit,high_performer \
   --runs 3
 
 # Analyze results
@@ -2116,17 +2119,20 @@ node scripts/eval-cli.js report <run-id>
 
 ```bash
 # Run full factorial (8 cells × 15 scenarios × 3 reps)
-node scripts/eval-cli.js run \
-  --profiles cell_1_base_single_unified,cell_2_base_single_psycho,cell_3_base_multi_unified,cell_4_base_multi_psycho,cell_5_recog_single_unified,cell_6_recog_single_psycho,cell_7_recog_multi_unified,cell_8_recog_multi_psycho \
-  --runs 3
+CELLS="cell_1_base_single_unified,cell_2_base_single_psycho"
+CELLS+=",cell_3_base_multi_unified,cell_4_base_multi_psycho"
+CELLS+=",cell_5_recog_single_unified,cell_6_recog_single_psycho"
+CELLS+=",cell_7_recog_multi_unified,cell_8_recog_multi_psycho"
+node scripts/eval-cli.js run --profiles "$CELLS" --runs 3
 ```
 
 ### B.3 A×B Interaction Test
 
 ```bash
 # Recognition vs Enhanced × Single vs Multi comparison
-node scripts/eval-cli.js run \
-  --profiles cell_5_recog_single_unified,cell_7_recog_multi_unified,cell_9_enhanced_single_unified,cell_11_enhanced_multi_unified \
+CELLS="cell_5_recog_single_unified,cell_7_recog_multi_unified"
+CELLS+=",cell_9_enhanced_single_unified,cell_11_enhanced_multi_unified"
+node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios struggling_learner,concept_confusion,mood_frustrated_explicit \
   --runs 3
 ```
@@ -2136,11 +2142,13 @@ node scripts/eval-cli.js run \
 ```bash
 # Run with elementary content (4th grade fractions)
 # Uses all 8 factorial cells × 5 elementary scenarios
+CELLS="cell_1_base_single_unified,cell_2_base_single_psycho"
+CELLS+=",cell_3_base_multi_unified,cell_4_base_multi_psycho"
+CELLS+=",cell_5_recog_single_unified,cell_6_recog_single_psycho"
+CELLS+=",cell_7_recog_multi_unified,cell_8_recog_multi_psycho"
 EVAL_CONTENT_PATH=./content-test-elementary \
 EVAL_SCENARIOS_FILE=./content-test-elementary/scenarios-elementary.yaml \
-node scripts/eval-cli.js run \
-  --profiles cell_1_base_single_unified,cell_2_base_single_psycho,cell_3_base_multi_unified,cell_4_base_multi_psycho,cell_5_recog_single_unified,cell_6_recog_single_psycho,cell_7_recog_multi_unified,cell_8_recog_multi_psycho \
-  --runs 1
+node scripts/eval-cli.js run --profiles "$CELLS" --runs 1
 ```
 
 ### B.5 Dynamic Prompt Rewriting Evolution
@@ -2149,7 +2157,8 @@ node scripts/eval-cli.js run \
 # Run cell_7 (static baseline) vs cell_21 (dynamic rewrite + Writing Pad)
 node scripts/eval-cli.js run \
   --profiles cell_7_recog_multi_unified,cell_21_recog_multi_unified_rewrite \
-  --scenarios misconception_correction_flow,mood_frustration_to_breakthrough,mutual_transformation_journey \
+  --scenarios misconception_correction_flow,\
+mood_frustration_to_breakthrough,mutual_transformation_journey \
   --runs 5
 ```
 
@@ -2157,7 +2166,9 @@ node scripts/eval-cli.js run \
 
 ```bash
 # Code impasse dialogues into Hegelian resolution strategies
-node scripts/code-impasse-strategies.js --model claude-code --run-id eval-2026-02-08-f896275d
+node scripts/code-impasse-strategies.js \
+  --model claude-opus-4.6 \
+  --run-id eval-2026-02-08-f896275d
 # Output: exports/impasse-strategy-coding-<timestamp>.json and .md
 ```
 
@@ -2165,14 +2176,22 @@ node scripts/code-impasse-strategies.js --model claude-code --run-id eval-2026-0
 
 ```bash
 # Standard ego + divergent superego (cells 22-27)
-node scripts/eval-cli.js run \
-  --profiles cell_22_base_dialectical_suspicious,cell_23_recog_dialectical_suspicious,cell_24_base_dialectical_adversary,cell_25_recog_dialectical_adversary,cell_26_base_dialectical_advocate,cell_27_recog_dialectical_advocate \
-  --runs 2
+CELLS="cell_22_base_dialectical_suspicious"
+CELLS+=",cell_23_recog_dialectical_suspicious"
+CELLS+=",cell_24_base_dialectical_adversary"
+CELLS+=",cell_25_recog_dialectical_adversary"
+CELLS+=",cell_26_base_dialectical_advocate"
+CELLS+=",cell_27_recog_dialectical_advocate"
+node scripts/eval-cli.js run --profiles "$CELLS" --runs 2
 
 # Dialectical ego + divergent superego, multi-turn (cells 28-33)
-node scripts/eval-cli.js run \
-  --profiles cell_28_base_dialectical_suspicious,cell_29_recog_dialectical_suspicious,cell_30_base_dialectical_adversary,cell_31_recog_dialectical_adversary,cell_32_base_dialectical_advocate,cell_33_recog_dialectical_advocate \
-  --runs 5
+CELLS="cell_28_base_dialectical_suspicious"
+CELLS+=",cell_29_recog_dialectical_suspicious"
+CELLS+=",cell_30_base_dialectical_adversary"
+CELLS+=",cell_31_recog_dialectical_adversary"
+CELLS+=",cell_32_base_dialectical_advocate"
+CELLS+=",cell_33_recog_dialectical_advocate"
+node scripts/eval-cli.js run --profiles "$CELLS" --runs 5
 ```
 
 ### B.8 Mechanism Robustness (Section 6.10)
@@ -2180,24 +2199,30 @@ node scripts/eval-cli.js run \
 ```bash
 # Scripted learner mechanisms (cells 40-59), Haiku ego
 node scripts/eval-cli.js run \
-  --profiles cell_40_base_dialectical_suspicious_selfreflect,...,cell_59_recog_dialectical_suspicious_profile_bidir_strategy \
+  --profiles cell_40_base_dialectical_suspicious_selfreflect,\
+...,cell_59_recog_dialectical_suspicious_profile_bidir_strategy \
   --runs 2
 
 # Dynamic learner mechanisms (cells 60-63), Haiku ego
-node scripts/eval-cli.js run \
-  --profiles cell_60_base_dialectical_suspicious_selfreflect_psycho,cell_61_recog_dialectical_suspicious_selfreflect_psycho,cell_62_base_dialectical_suspicious_profile_bidir_psycho,cell_63_recog_dialectical_suspicious_profile_bidir_psycho \
+CELLS="cell_60_base_dialectical_suspicious_selfreflect_psycho"
+CELLS+=",cell_61_recog_dialectical_suspicious_selfreflect_psycho"
+CELLS+=",cell_62_base_dialectical_suspicious_profile_bidir_psycho"
+CELLS+=",cell_63_recog_dialectical_suspicious_profile_bidir_psycho"
+node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
 
 # Dynamic learner mechanism head-to-head (cells 64-65), Haiku ego
-node scripts/eval-cli.js run \
-  --profiles cell_64_recog_dialectical_suspicious_intersubjective_psycho,cell_65_recog_dialectical_suspicious_combined_psycho \
+CELLS="cell_64_recog_dialectical_suspicious_intersubjective_psycho"
+CELLS+=",cell_65_recog_dialectical_suspicious_combined_psycho"
+node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
 
 # Dynamic learner base counterparts (cells 69-70), Haiku ego
-node scripts/eval-cli.js run \
-  --profiles cell_69_base_dialectical_suspicious_intersubjective_psycho,cell_70_base_dialectical_suspicious_combined_psycho \
+CELLS="cell_69_base_dialectical_suspicious_intersubjective_psycho"
+CELLS+=",cell_70_base_dialectical_suspicious_combined_psycho"
+node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
 ```
@@ -2409,33 +2434,86 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 ## Appendix E: Revision History
 
-| Date | Version | Changes |
-|------|---------|---------|
-| 2026-02-04 | v1.0 | Initial draft with 2×2×2 factorial design, memory isolation, three-way comparison |
-| 2026-02-06 | v1.1 | Added corrected memory isolation experiment (N=120), active control (N=118), cells 6&8 re-run, cross-judge GPT-5.2 analysis. Corrected GPT-5.2 effect sizes (d=1.15→0.99, d=0.50→0.29) after deduplication of rejudge rows. Dropped dead partial run (e617e757). |
-| 2026-02-06 | v1.2 | **Critical correction**: Reframed "placebo control" as "post-hoc active control." The original v1.1 analysis compared the active control (Nemotron, M=66.5) to factorial base (Kimi K2.5, M=78.8) and reported d=-1.03, but this compared different ego models. Same-model historical data shows Nemotron base $\approx$ 58, making the active control $\approx$ +9 pts above base (not below). Reframed throughout: generic pedagogical elaboration provides partial benefit (~+9 pts above base) but recognition gains are substantially larger (~+15 pts). Acknowledged post-hoc design and active (not inert) control content. |
-| 2026-02-06 | v1.3–v1.4 | Intermediate revisions: corrected factorial with re-run cells 6, 8 (a933d745); updated A×C interaction values; qualitative analysis additions; production quality fixes. Superseded by v1.5. |
-| 2026-02-07 | v1.5 | **Rubric iteration**: Updated to 14-dimension rubric with dialogue transcript context, Productive Struggle (5%), and Epistemic Honesty (5%) dimensions (Actionability/Tone reduced 10%→8%). Re-scored cells 6, 8 (N=88) with identical responses: minimal change (+0.5, +0.6 pts), confirming calibration preserved. Added holistic dialogue evaluation for multi-turn transcripts. Cross-judge replication on updated rubric (r=0.55, N=88, GPT/Opus ratio=0.87). Updated Table 6, main effects, A×C interaction values, Appendix C.2 weight table, and Section 6.18 cross-judge tables. Corrected subsection numbering, weight accounting (120.9% total), and added missing run ID (a933d745) to Reproducibility. |
-| 2026-02-08 | v1.6 | **Content isolation fix**: Identified and fixed two bugs causing cross-domain content leakage in elementary scenarios: (a) `buildCurriculumContext()` fallback that scanned all courses when no content hint was provided, serving philosophy listings to elementary scenarios; (b) hardcoded `479-lecture-*` IDs in tutor ego prompt examples that the model copied when no curriculum anchor was present. Updated Sections 6.5, 6.6, 7.4, 7.8, and 8 to reframe "model hallucination" as system-level content isolation failures. Noted that the +9.9 pt architecture effect on elementary content (Nemotron) was partly inflated by these bugs; Kimi replication (+3.0 pts) is more representative. |
-| 2026-02-08 | v1.7 | **Hardwired rules ablation**: Added Section 6.7 with superego rules embedded in ego prompt (cells 13–14, N=72, eval-2026-02-08-65a6718f, Opus judge). Static rules fail to replicate the Superego's benefit, confirming the value lies in contextual judgment rather than rule enforcement. Added Table 10b, updated Tables 2/D and paper totals. |
-| 2026-02-08 | v1.8 | **Dialectical impasse test**: Added Section 6.20 with three 5-turn impasse scenarios (epistemic resistance, affective shutdown, productive deadlock; N=24, eval-2026-02-08-f896275d, Opus judge). Recognition produces +43 pts on epistemic and +29 pts on interpretive impasses but $\Delta$=$-$1.1 on affective shutdown—sharpening the theoretical claim to epistemological rather than affective recognition. Updated §7.1 discussion, §9 conclusion (finding #8), Tables 2/D run lists, and paper totals. |
-| 2026-02-08 | v1.9 | **Learner superego paradox**: Added symmetric learner-side evaluation (Section 6.16) scoring N=118 bilateral dialogues with 6-dimension learner rubric (eval-2026-02-07-b6d75e87, Opus judge). Multi-agent learner architecture hurts learner quality (d=1.43, F=68.28, p<.001)—the largest effect in the study. Recognition partially rescues multi-agent learners (d=0.79, p=.004) but not single-agent (n.s.), forming a mirror-image interaction with the tutor-side factorial. Deliberation depth uniformly poor (2.7/5), unaffected by recognition. Added learner rubric description to §5.1, new §6.12 with Tables 14b-14d, rewrote §7.5 with results, added finding #9 to §9, learner superego redesign to §8.2. Renumbered §6.12→6.13, §6.13→6.14, §6.14→6.15, §6.15→6.16. Updated cross-references, Table 2, paper totals (N=1,628 across 20 key runs). |
-| 2026-02-08 | v2.0 | **Resolution strategy coding**: Post-hoc qualitative coding of all 24 dialectical impasse dialogues (eval-2026-02-08-f896275d) into five Hegelian resolution strategies (mutual recognition, domination, capitulation, withdrawal, scaffolded reframing). Perfect separation: 12/12 base tutors withdraw (bypass impasse entirely), 10/12 recognition tutors use scaffolded reframing (Aufhebung pattern), 1 mutual recognition, 1 domination. $\chi^2(3)=24.00$, $p<.001$, $V=1.000$. Architecture has no effect on strategy ($p=.576$). Cross-judge validation with GPT-5.2: $\kappa=0.84$, 100% agreement on engagement-vs-withdrawal binary. Added Tables 26–28, per-turn strategy evolution analysis, cross-judge validation, and extended analysis to §6.16; substantially revised §7.1 discussion with mechanistic evidence. Strategy coding tool: `scripts/code-impasse-strategies.js`. |
-| 2026-02-08 | v2.1 | **AI theme discovery & figure regeneration**: Added §6.13.4 AI-assisted theme discovery (N=300, Claude Opus coder) showing near-perfect bimodal separation — base 84% directive/93% transmissive, recognition 60% dialogical-facilitative/84% dialectical-constructivist. Added Figure 6 (word clouds). Regenerated all figures from Python with corrected data and larger text. Removed standalone §10 Reproducibility (merged into Appendix D). Moved Appendix E after other appendices. Increased font to 12pt. |
-| 2026-02-10 | v2.1.1 | **Consistency fixes**: Corrected stale N=1,628/twenty → N=1,700/twenty-one in abstract, introduction, and conclusion (reflecting hardwired rules ablation and learner-side evaluation added in v1.8–v1.9). Fixed dynamic rewrite section references in Tables 2 and D (6.13→6.14, after §6.12 insertion renumbered sections). Added hardwired rules ablation and learner-side evaluation to Appendix D run list (was 19 rows, now 21). Fixed inter-judge reliability cross-reference in §8.1 (5.7→5.8). Fixed Appendix D repository URL. |
-| 2026-02-10 | v2.1.2 | **Review corrections** (30 fixes): Table 7b Kimi row corrected to single-learner cells (N=350→179, Recognition +10.2→+15.5, Interaction -1.5→+0.5) matching probe design; total probe N 826→655. Table 1 Primary/Alternative model columns corrected. Factor C in Discussion corrected (-1.7 pts, F=2.56 from +1.5, p=.341). Stale A×C values updated (+15.5/+4.8). Dynamic rewrite swing corrected (+16.7→+8.7 delta). Abstract trailing deficit corrected (7.2→3.2). Table cross-refs fixed (Table 5→6, Table 23→29). Dimension count 6→8. Terminology standardized (unified→single-agent, behaviour→behavior). Theme count 15→10. Impasse N=4→2 per cell. Malformed citation fixed. |
-| 2026-02-11 | v2.2.0 | **Modulation and learning outcomes**: Added §6.11.1 (modulation metrics, N=350 post-hoc) showing multi-agent architecture does not increase behavioral range (d=0.05); recognition produces calibration not oscillation (dimension variance d=−1.00, F=87.69). Added §6.11.2 (synthetic learning outcome index, N=118) from learner rubric composites: recognition +3.8 pts (d=0.32), all conditions show 15–21 pt learning arcs. Extended §7.4 Discussion with phronesis reframing. Added explicit synthetic-learning-only limitation to §8.1. Regenerated Figure 4 as interaction plot (legend no longer overlaps). Regenerated Figure 6 from actual transcript word frequencies (was AI theme labels). Fixed p.44 caption overflow (removed monospace from scenario names). |
-| 2026-02-17 | v2.3.13 | **Paper correctness fixes**: Fixed eval-2026-02-14-559d854b scope from "cells 40–59, N=167" to "cells 40–45, N=60" in Table 2, matching §6.9 narrative and Appendix D (only cells 40–45 used; cells 46–59 superseded by 49b33fdd at N=360). Fixed broken Table 10 reference in §6.6 — was "(Table 9, Nemotron)" and "(Table 10)" but Table 9 is Kimi data and Table 10 doesn't exist; corrected to reference historical Nemotron analysis and Table 9 for Kimi (+2.3 architecture effect). Fixed dynamic-learner N inconsistency: intro "N=120 dynamic"→"N=300 dynamic", finding 12 "N=240"→"N=300" (correct total: 6c033830 + a2b2717c + 664073ab = 300). Clarified token budget §6.22 design text: 8000-token default is base-only control. Added missing Appendix B commands for cells 64–65, 69–70, prompt elaboration baseline, and token budget runs. Updated paper totals from N=3,454 to N=3,347 scored (3,469→3,362 attempts) reflecting 559d854b scope correction. |
-| 2026-02-17 | v2.3.12 | **Token budget sensitivity**: Added §6.22 Token Budget Sensitivity testing whether constraining `max_tokens` from 8000 to 256–4000 affects evaluation scores. Five runs (eval-2026-02-17-0eb3de77 through eval-2026-02-17-0f6dcd97, Haiku ego, Opus judge) show scores are flat across all budget levels for both base and recognition conditions — the recognition effect is fully preserved even at 256 tokens. The retry-absorption mechanism in `egoGenerateSuggestions` (JSON parse failure → automatic retry) means truncated structured output self-heals rather than degrading scores. Added Table 49 (dose-response), recommendation 8 to §7.11 (budget reduction for production deployments). Updated paper totals from N=3,292 to N=3,454 scored across thirty-six key evaluations (was thirty-one). Added 5 runs to Table 2 and Appendix D. |
-| 2026-02-17 | v2.3.11 | **Transcript figures**: Added Figure 10 (naive vs base high\_performer comparison panel) to §6.21 showing Momentum Rule prescribing linear progression vs naive model suggesting creative synthesis. Added Figure 11 (bilateral mutual\_transformation\_journey transcript comparison) to §6.11 showing recognition dialogue (97.9) with rich ego-superego exchange vs base (24.8) with mechanical repetition. Added `generate-paper-figures.js` script for reproducible paper figure generation from evaluation dialogues. |
-| 2026-02-17 | v2.3.10 | **Prompt elaboration baseline**: Added §6.21 comparing 344-line base prompt against 35-line naive prompt (JSON schema only). Two runs: Haiku (eval-2026-02-17-deee5fd6, N=72) and Kimi (eval-2026-02-17-27d7b4e3, N=72). Key finding: elaborate prompt hurts Haiku (+6.8 pts for naive) and is inert on Kimi (Δ=-0.3) — a model capability × prompt elaboration interaction. Recognition ($M=90.9$) remains well above naive ($M=82.5$), confirming recognition effects are not attributable to prompt length. Added Table 20b, extended §7.6 with intersubjective vs behavioral prompt distinction, added recommendation 7 to §7.11, added conclusion finding 13. Updated paper totals to N=3,292 scored across thirty-one evaluations. |
-| 2026-02-17 | v2.3.9 | **Factorial re-judging cascade**: All early runs re-judged with Opus 4.6 (unifying judge version). Full factorial ANOVA (N=350): recognition F=110.04 p<.001 η²=.243 d=1.11 (was F=71.36, d=0.80). A×C interaction disappears (F=0.97, p=.325; was F=21.85, p<.001) — recognition now consistent across learner types (+15.7 single, +13.0 multi). Learner main effect now significant (F=5.52, p=.019). Updated Tables 4, 6, 8 (Kimi row), 9, 9b, 12, 17. Updated §5.4 methodology note, §6.3–6.5 narratives, §6.7 hardwired rules (now neutral not harmful: +0.6/−0.9 vs old −3.6/−11.0), §6.8–6.9 factorial cross-references, §6.12 rubric cross-reference, §7.5 learner superego, Discussion findings 1/2/4/9/11, intro paragraphs. Validation delta +8.7→+8.0, F 9.84→12.97. Domain gen elementary +9.9→+8.2, philosophy +15.4→+15.7. A×B replication: recognition ~90.6→93.5, enhanced ~80.6→86.3. Updated Table 41 (factorial r=0.64→0.44, N=341→224, Claude mean 85.8→80.5); Table 42 factorial row (+13.7→+17.6 Claude, +7.1→+6.6 GPT). Restored 219 GPT-5.2 rows for factorial that were lost during dedup. Fresh GPT-5.2 rejudging of validation (86b159cd, N=36) and replication (10b344fb, N=60) runs. Deduped 119 duplicate GPT rows from memory isolation runs. Updated Table 42 effect sizes: validation recog-vs-enhanced +1.3→+2.4 (n.s.), memory isolation recognition d=0.99→1.54, memory d=0.29→0.49, interaction -2.7→-3.6. Updated GPT compression ratio from ~58% to 37–59% throughout paper (abstract, §2.3, §5.8, §6.19, §8.1, Discussion finding 7). |
-| 2026-02-17 | v2.3.8 | **Nemotron mechanism N-count update**: Updated eval-2026-02-14-49b33fdd from N=301 to N=360 after run resumption completed. Cascaded count changes: paper totals 3,104→3,163 attempts, 3,088→3,147 scored (abstract, introduction, Table 2, §7.11, §9). Updated §6.10 Nemotron narrative: base M 69.0→66.9, recognition M 75.7→73.6, mechanism cluster 72.8–78.2→70.3–75.8 (range 5.4→5.5 pts), delta range +1.0 to +12.3 → −0.6 to +14.3. Noted bidirectional profiling anomaly (Δ=−0.6). Updated conclusion finding 12 (N=279→360). |
-| 2026-02-17 | v2.3.7 | **Self-reflective evolution complete**: Updated §6.9 from partial (N=36) to complete (N=90) results for eval-2026-02-13-8d40e086. Recognition d=0.91 (was 1.02 at N=36). Key new finding: disposition gradient — suspicious +19.0, adversary +10.9, advocate +2.6 — hostile superego dispositions benefit most from recognition. Updated Table 16 (full cell means/SDs), Table 17 (N and d), Discussion finding 11, intro. Removed N=36 sample size limitation from §8.1. Updated paper totals to N=3,088 scored. Deduped re-judging artifacts (270 duplicate rows removed from 4 runs). |
-| 2026-02-16 | v2.3.6 | **Judge version unification**: Rejudged all early runs (originally scored under Opus 4.5) with Opus 4.6, eliminating version drift across the evaluation dataset. Updated §8.1 LLM-based evaluation limitation to reflect uniform judge version. Revised §8.1 blinded assessor limitation to incorporate the same-model blinded replication results from v2.3.5 (was still marked as future work). Cleaned 6 empty/failed generation rows from dynamic rewrite runs. |
-| 2026-02-15 | v2.3.5 | **Same-model blinded assessment**: Ran Opus-blinded qualitative assessment (N=118) resolving the model calibration confound. Table 21b expanded from 4 to 6 columns (added Blinded Opus Base% and Blinded Opus Recog%). Key finding: blinding barely changes Opus's tag assignments (stalling base 100%→91.4%, recognition\_moment base 0%→5.2%), confirming the near-perfect binary separation is real, not an assessor bias artifact. The Haiku-blinded softening was model calibration, not a blinding effect. Updated §6.11 interpretation (3 paragraphs rewritten), revised §8.2 limitation (blinding concern resolved). |
-| 2026-02-15 | v2.3.4 | **Related Work expansion for arXiv/edArXiv submission**: Expanded §2 from 8 to 10 subsections. Added §2.3 LLM-as-Judge Evaluation Methodology (Zheng et al. 2023, Gu et al. 2025, Li et al. 2024) grounding the multi-judge methodology. Added §2.7 Theory of Mind in AI Agents (Street et al. 2025, Nguyen 2025, Hwang et al. 2025) providing theoretical context for the profiling mechanism. Expanded §2.1 with empirical LLM tutoring studies (Vanzo et al. 2025 RCT, Shi et al. 2025 systematic review, Scarlatos et al. 2025 DPO training). Expanded §2.2 with multi-agent systems (CAMEL, Guo et al. 2024 survey) and self-correction limits (Kamoi et al. 2024, Shinn et al. 2023 Reflexion). Updated §2.10 Positioning from "Three Literatures" to "Four Literatures." Renumbered §2.3–2.8 → §2.4–2.10. Updated all cross-references (4 in-text refs). Added 15 new bib entries. |
-| 2026-02-15 | v2.3.3 | **Complete Table 19 with base mechanism cells**: Added cells 69–70 (eval-2026-02-15-664073ab, N=60, Opus judge) completing the base row of Table 19 (dynamic learner × mechanism). Intersubjective base (67.7) is lowest of all cells — mechanism hurts without recognition. Combined base (73.9) provides partial lift. Recognition delta remarkably consistent across all 4 mechanisms (+13.3 to +15.1). Updated Table 19 N from 240→360, added SDs. Updated paper totals from 30 to 31 evaluations, N=2,969. Added Sonnet rejudge of a2b2717c (r=0.44) to §6.19. |
-| 2026-02-15 | v2.3.2 | **Sample reconciliation and count update**: Added Phase 2 evaluations to Table 2 (9 additional rows). Updated paper totals from 28 to 30 key evaluations, N=2,909 scored across all sections (abstract, introduction, methodology, discussion, conclusion, Appendix D). Added 50487df7 (cognitive prosthesis) to Appendix B.6. Noted Sonnet judge used for two late-stage evaluations. |
-| 2026-02-15 | v2.3.1 | **Cognitive prosthesis and cross-judge completion**: Added cognitive prosthesis test (cells 66–68, N=60, Table 19b) showing full mechanism suite nearly matches recognition (+3.0 vs +3.5). Completed GPT-5.2 cross-judge validation of mechanism robustness (N=360 paired, r=0.59, Table 41/42) — recognition replicates, mechanism clustering confirmed. Added Nemotron self-reflect non-replication (559d854b, N=60) to §6.9/Table 17. Added blinded qualitative assessment validation (Table 21b) to §6.11. Updated §8.1/8.2 with blinding caveat and future direction. |
-| 2026-02-14 | v2.3.0 | **Phase 2 experimental results**: Added four new Results sections: §6.8 Dialectical Superego Modulation (cells 22–33, N=174, Tables 13–15) — superego functions as quality filter not improver, adversary over-deference mechanism, structural modulation metrics don't predict quality; §6.9 Self-Reflective Evolution (cells 40–45, N=36, Tables 16–17) — recognition d=1.02, variance regularization, insight-action gap; §6.10 Mechanism Robustness (cells 40–59 N=360 + cells 60–63 N=120, Tables 18–19) — nine mechanisms cluster within 2.4 pts under scripted learners, profiling differentiates with dynamic learners; §6.11 Qualitative Transcript Assessment (Tables 20–21) — tag analysis, three specific effects of recognition. Renumbered §6.8–6.16→§6.12–6.20. Added §7.10 Scripted Learner Confound, §7.11 Practical Recommendations for AI Tutor Design (6 recommendations). Updated §7.2, §7.4. Added limitations (partial N, scripted confound, unblinded assessor). Added future directions (mechanistic binding, ToM architecture, blinded assessment). Updated conclusion (findings 10–12). Updated abstract, introduction, Appendices B/D/E. Expanded §6.10 with cells 64–65 (dynamic learner intersubjective + combined, N=120, a2b2717c) and Nemotron cross-model replication (N=279, 49b33fdd). Renumbered all tables sequentially (1–48; previously non-sequential due to insertions). Trimmed abstract from ~650 to ~250 words. Paper totals: N=2,700 across 28 key evaluations. |
+**v1.0** (2026-02-04)
+:   Initial draft with 2×2×2 factorial design, memory isolation, three-way comparison.
+
+**v1.1** (2026-02-06)
+:   Added corrected memory isolation experiment (N=120), active control (N=118), cells 6&8 re-run, cross-judge GPT-5.2 analysis. Corrected GPT-5.2 effect sizes (d=1.15→0.99, d=0.50→0.29) after deduplication of rejudge rows. Dropped dead partial run (e617e757).
+
+**v1.2** (2026-02-06)
+:   **Critical correction**: Reframed "placebo control" as "post-hoc active control." The original v1.1 analysis compared the active control (Nemotron, M=66.5) to factorial base (Kimi K2.5, M=78.8) and reported d=-1.03, but this compared different ego models. Same-model historical data shows Nemotron base $\approx$ 58, making the active control $\approx$ +9 pts above base (not below). Reframed throughout: generic pedagogical elaboration provides partial benefit (~+9 pts above base) but recognition gains are substantially larger (~+15 pts). Acknowledged post-hoc design and active (not inert) control content.
+
+**v1.3--v1.4** (2026-02-06)
+:   Intermediate revisions: corrected factorial with re-run cells 6, 8 (a933d745); updated A×C interaction values; qualitative analysis additions; production quality fixes. Superseded by v1.5.
+
+**v1.5** (2026-02-07)
+:   **Rubric iteration**: Updated to 14-dimension rubric with dialogue transcript context, Productive Struggle (5%), and Epistemic Honesty (5%) dimensions (Actionability/Tone reduced 10%→8%). Re-scored cells 6, 8 (N=88) with identical responses: minimal change (+0.5, +0.6 pts), confirming calibration preserved. Added holistic dialogue evaluation for multi-turn transcripts. Cross-judge replication on updated rubric (r=0.55, N=88, GPT/Opus ratio=0.87). Updated Table 6, main effects, A×C interaction values, Appendix C.2 weight table, and Section 6.18 cross-judge tables.
+
+**v1.6** (2026-02-08)
+:   **Content isolation fix**: Identified and fixed two bugs causing cross-domain content leakage in elementary scenarios: (a) `buildCurriculumContext()` fallback that scanned all courses when no content hint was provided, serving philosophy listings to elementary scenarios; (b) hardcoded `479-lecture-*` IDs in tutor ego prompt examples that the model copied when no curriculum anchor was present. Updated Sections 6.5, 6.6, 7.4, 7.8, and 8 to reframe "model hallucination" as system-level content isolation failures.
+
+**v1.7** (2026-02-08)
+:   **Hardwired rules ablation**: Added Section 6.7 with superego rules embedded in ego prompt (cells 13--14, N=72, eval-2026-02-08-65a6718f, Opus judge). Static rules fail to replicate the Superego's benefit, confirming the value lies in contextual judgment rather than rule enforcement. Added Table 10b, updated Tables 2/D and paper totals.
+
+**v1.8** (2026-02-08)
+:   **Dialectical impasse test**: Added Section 6.20 with three 5-turn impasse scenarios (epistemic resistance, affective shutdown, productive deadlock; N=24, eval-2026-02-08-f896275d, Opus judge). Recognition produces +43 pts on epistemic and +29 pts on interpretive impasses but $\Delta=-1.1$ on affective shutdown---sharpening the theoretical claim to epistemological rather than affective recognition.
+
+**v1.9** (2026-02-08)
+:   **Learner superego paradox**: Added symmetric learner-side evaluation (Section 6.16) scoring N=118 bilateral dialogues with 6-dimension learner rubric (eval-2026-02-07-b6d75e87, Opus judge). Multi-agent learner architecture hurts learner quality (d=1.43, F=68.28, p<.001)---the largest effect in the study. Recognition partially rescues multi-agent learners (d=0.79, p=.004) but not single-agent (n.s.). Added learner rubric description to §5.1, new §6.12, rewrote §7.5 with results, added finding #9 to §9.
+
+**v2.0** (2026-02-08)
+:   **Resolution strategy coding**: Post-hoc qualitative coding of all 24 dialectical impasse dialogues into five Hegelian resolution strategies. Perfect separation: 12/12 base tutors withdraw, 10/12 recognition tutors use scaffolded reframing (Aufhebung pattern). $\chi^2(3)=24.00$, $p<.001$, $V=1.000$. Cross-judge validation with GPT-5.2: $\kappa=0.84$. Added Tables 26--28, per-turn strategy evolution analysis.
+
+**v2.1** (2026-02-08)
+:   **AI theme discovery & figure regeneration**: Added §6.13.4 AI-assisted theme discovery (N=300) showing near-perfect bimodal separation. Added Figure 6 (word clouds). Regenerated all figures from Python with corrected data and larger text. Removed standalone §10 Reproducibility (merged into Appendix D). Moved Appendix E after other appendices. Increased font to 12pt.
+
+**v2.1.1** (2026-02-10)
+:   **Consistency fixes**: Corrected stale N=1,628/twenty → N=1,700/twenty-one in abstract, introduction, and conclusion. Fixed dynamic rewrite section references in Tables 2 and D. Added hardwired rules ablation and learner-side evaluation to Appendix D run list (was 19 rows, now 21). Fixed inter-judge reliability cross-reference in §8.1.
+
+**v2.1.2** (2026-02-10)
+:   **Review corrections** (30 fixes): Table 7b Kimi row corrected to single-learner cells (N=350→179, Recognition +10.2→+15.5, Interaction -1.5→+0.5) matching probe design; total probe N 826→655. Factor C in Discussion corrected (-1.7 pts, F=2.56). Stale A×C values updated. Dynamic rewrite swing corrected (+16.7→+8.7 delta). Terminology standardized (unified→single-agent, behaviour→behavior).
+
+**v2.2.0** (2026-02-11)
+:   **Modulation and learning outcomes**: Added §6.11.1 (modulation metrics, N=350 post-hoc) showing multi-agent architecture does not increase behavioral range (d=0.05); recognition produces calibration not oscillation (dimension variance d=$-$1.00, F=87.69). Added §6.11.2 (synthetic learning outcome index, N=118). Extended §7.4 Discussion with phronesis reframing. Regenerated Figures 4 and 6.
+
+**v2.3.0** (2026-02-14)
+:   **Phase 2 experimental results**: Added four new Results sections: §6.8 Dialectical Superego Modulation (cells 22--33, N=174, Tables 13--15); §6.9 Self-Reflective Evolution (cells 40--45, N=36, Tables 16--17); §6.10 Mechanism Robustness (cells 40--59 N=360 + cells 60--63 N=120, Tables 18--19); §6.11 Qualitative Transcript Assessment (Tables 20--21). Added §7.10 Scripted Learner Confound, §7.11 Practical Recommendations (6 recommendations). Expanded §6.10 with cells 64--65 and Nemotron cross-model replication (N=279, 49b33fdd). Renumbered all tables sequentially (1--48). Trimmed abstract from ~650 to ~250 words. Paper totals: N=2,700 across 28 key evaluations.
+
+**v2.3.1** (2026-02-15)
+:   **Cognitive prosthesis and cross-judge completion**: Added cognitive prosthesis test (cells 66--68, N=60). Completed GPT-5.2 cross-judge validation of mechanism robustness (N=360 paired, r=0.59). Added Nemotron self-reflect non-replication (559d854b, N=60) to §6.9/Table 17. Added blinded qualitative assessment validation (Table 21b).
+
+**v2.3.2** (2026-02-15)
+:   **Sample reconciliation and count update**: Added Phase 2 evaluations to Table 2 (9 additional rows). Updated paper totals from 28 to 30 key evaluations, N=2,909 scored. Added 50487df7 (cognitive prosthesis) to Appendix B.6. Noted Sonnet judge used for two late-stage evaluations.
+
+**v2.3.3** (2026-02-15)
+:   **Complete Table 19 with base mechanism cells**: Added cells 69--70 (eval-2026-02-15-664073ab, N=60, Opus judge) completing the base row of Table 19. Recognition delta remarkably consistent across all 4 mechanisms (+13.3 to +15.1). Updated paper totals from 30 to 31 evaluations, N=2,969.
+
+**v2.3.4** (2026-02-15)
+:   **Related Work expansion for arXiv/edArXiv submission**: Expanded §2 from 8 to 10 subsections. Added §2.3 LLM-as-Judge Evaluation Methodology, §2.7 Theory of Mind in AI Agents. Expanded §2.1 with empirical LLM tutoring studies, §2.2 with multi-agent systems and self-correction limits. Added 15 new bib entries.
+
+**v2.3.5** (2026-02-15)
+:   **Same-model blinded assessment**: Ran Opus-blinded qualitative assessment (N=118) resolving the model calibration confound. Key finding: blinding barely changes Opus's tag assignments, confirming the near-perfect binary separation is real, not an assessor bias artifact. Updated §6.11 interpretation, revised §8.2 limitation.
+
+**v2.3.6** (2026-02-16)
+:   **Judge version unification**: Rejudged all early runs (originally scored under Opus 4.5) with Opus 4.6, eliminating version drift across the evaluation dataset. Updated §8.1 limitations. Cleaned 6 empty/failed generation rows from dynamic rewrite runs.
+
+**v2.3.7** (2026-02-17)
+:   **Self-reflective evolution complete**: Updated §6.9 from partial (N=36) to complete (N=90) results for eval-2026-02-13-8d40e086. Recognition d=0.91 (was 1.02 at N=36). Key new finding: disposition gradient---suspicious +19.0, adversary +10.9, advocate +2.6. Updated Table 16, Table 17, Discussion finding 11. Deduped 270 re-judging artifact rows.
+
+**v2.3.8** (2026-02-17)
+:   **Nemotron mechanism N-count update**: Updated eval-2026-02-14-49b33fdd from N=301 to N=360 after run resumption completed. Cascaded count changes through abstract, introduction, Table 2, §7.11, §9. Updated §6.10 Nemotron narrative. Noted bidirectional profiling anomaly ($\Delta=-0.6$).
+
+**v2.3.9** (2026-02-17)
+:   **Factorial re-judging cascade**: All early runs re-judged with Opus 4.6 (unifying judge version). Full factorial ANOVA (N=350): recognition F=110.04 p<.001 $\eta^2$=.243 d=1.11 (was F=71.36, d=0.80). A×C interaction disappears (F=0.97, p=.325; was F=21.85, p<.001)---recognition now consistent across learner types. Updated Tables 4, 6, 8, 9, 9b, 12, 17, 41, 42. Restored 219 GPT-5.2 rows lost during dedup. Updated GPT compression ratio from ~58% to 37--59%.
+
+**v2.3.10** (2026-02-17)
+:   **Prompt elaboration baseline**: Added §6.21 comparing 344-line base prompt against 35-line naive prompt (JSON schema only). Two runs: Haiku (N=72) and Kimi (N=72). Key finding: elaborate prompt hurts Haiku (+6.8 pts for naive) and is inert on Kimi ($\Delta=-0.3$). Recognition ($M=90.9$) remains well above naive ($M=82.5$). Added Table 20b, conclusion finding 13. Updated paper totals to N=3,292 across thirty-one evaluations.
+
+**v2.3.11** (2026-02-17)
+:   **Transcript figures**: Added Figure 10 (naive vs base high\_performer comparison panel) to §6.21. Added Figure 11 (bilateral mutual\_transformation\_journey transcript comparison) to §6.11. Added `generate-paper-figures.js` script for reproducible paper figure generation.
+
+**v2.3.12** (2026-02-17)
+:   **Token budget sensitivity**: Added §6.22 testing whether constraining `max_tokens` from 8000 to 256--2048 affects evaluation scores. Scores are flat across all budget levels; the recognition effect is fully preserved even at 256 tokens. The retry-absorption mechanism means truncated structured output self-heals. Added Table 49, recommendation 8 to §7.11. Updated paper totals to N=3,454 scored across thirty-six evaluations.
+
+**v2.3.13** (2026-02-17)
+:   **Paper correctness fixes**: Fixed eval-2026-02-14-559d854b scope from "cells 40--59, N=167" to "cells 40--45, N=60" in Table 2 (only cells 40--45 used; cells 46--59 superseded by 49b33fdd at N=360). Fixed broken Table 10 reference in §6.6. Fixed dynamic-learner N inconsistency: intro and finding 12 updated to N=300 (6c033830 + a2b2717c + 664073ab). Clarified token budget §6.22 design text. Added missing Appendix B commands.

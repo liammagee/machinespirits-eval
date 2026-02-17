@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "generated": "2026-02-17",
   "database": "data/evaluations.db",
   "paper": "docs/research/paper-full.md",
@@ -206,12 +206,14 @@
     },
     {
       "run_ids": ["eval-2026-02-14-559d854b"],
-      "label": "Self-reflect Nemotron non-replication (cells 40-59)",
+      "label": "Self-reflect Nemotron non-replication (cells 40-45)",
       "section": "6.9",
       "primary_judge_pattern": "claude-opus%",
       "unit": "dialogue",
-      "expected_attempts": 167,
-      "expected_scored": 167
+      "expected_attempts": 60,
+      "expected_scored": 60,
+      "profile_filter": "cell_4%_dialectical_%_superego",
+      "note": "Run contains cells 40-59 (N=167) but paper uses only cells 40-45 (N=60); cells 46-59 superseded by 49b33fdd"
     },
     {
       "run_ids": ["eval-2026-02-14-e0e3a622"],
@@ -284,14 +286,59 @@
       "unit": "single-turn",
       "expected_attempts": 72,
       "expected_scored": 72
+    },
+    {
+      "run_ids": ["eval-2026-02-17-0eb3de77"],
+      "label": "Token budget 256, Haiku (run 1)",
+      "section": "6.22",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 36,
+      "expected_scored": 36
+    },
+    {
+      "run_ids": ["eval-2026-02-17-5a640782"],
+      "label": "Token budget 256, Haiku (run 2)",
+      "section": "6.22",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 36,
+      "expected_scored": 36
+    },
+    {
+      "run_ids": ["eval-2026-02-17-5f281654"],
+      "label": "Token budget 512, Haiku",
+      "section": "6.22",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 36,
+      "expected_scored": 36
+    },
+    {
+      "run_ids": ["eval-2026-02-17-0f6dcd97"],
+      "label": "Token budget 2048, Haiku",
+      "section": "6.22",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 36,
+      "expected_scored": 36
+    },
+    {
+      "run_ids": ["eval-2026-02-17-d32ed226"],
+      "label": "Token budget default, Haiku",
+      "section": "6.22",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 18,
+      "expected_scored": 18
     }
   ],
 
   "totals": {
-    "evaluations": 31,
-    "expected_attempts": 3307,
-    "expected_scored": 3292,
-    "opus_primary_count": 30,
+    "evaluations": 36,
+    "expected_attempts": 3362,
+    "expected_scored": 3347,
+    "opus_primary_count": 35,
     "sonnet_primary_count": 1,
     "sonnet_primary_runs": ["eval-2026-02-14-50487df7"]
   },
@@ -419,12 +466,12 @@
   },
 
   "prose_n_references": [
-    {"location": "abstract", "pattern": "N=3,292 primary scored"},
-    {"location": "introduction (line ~44)", "pattern": "N=3,292 primary scored responses"},
-    {"location": "methods (Table 2 totals)", "pattern": "**3,292**"},
-    {"location": "methods (line ~563)", "pattern": "N=3,292 scored"},
-    {"location": "methods (line ~565)", "pattern": "N=3,292"},
-    {"location": "discussion (line ~1751)", "pattern": "N=3,292"},
-    {"location": "conclusion (line ~1823)", "pattern": "N=3,292 primary scored"}
+    {"location": "abstract", "pattern": "N=3,347 primary scored"},
+    {"location": "introduction (line ~44)", "pattern": "N=3,347 primary scored responses"},
+    {"location": "methods (Table 2 totals)", "pattern": "**3,347**"},
+    {"location": "methods (line ~570)", "pattern": "N=3,347 scored"},
+    {"location": "methods (line ~572)", "pattern": "N=3,347"},
+    {"location": "discussion (line ~1802)", "pattern": "N=3,347"},
+    {"location": "conclusion (line ~1876)", "pattern": "N=3,347 primary scored"}
   ]
 }
