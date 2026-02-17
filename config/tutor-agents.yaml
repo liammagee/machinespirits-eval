@@ -2942,3 +2942,32 @@ profiles:
     intervention_strategies:
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # ===========================================================================
+  # PROMPT ELABORATION BASELINE (cells 71-72)
+  # ===========================================================================
+  # Tests contribution of pedagogical prompt elaboration.
+  # Cell 71 (naive) uses JSON-schema-only prompt (~35 lines).
+  # Compare against cell 1 (base, 344-line prompt) to measure elaboration effect.
+
+  # Cell 71: Naive × Single Agent × Unified Learner
+  cell_71_naive_single_unified:
+    description: "Prompt elaboration baseline: naive single-agent tutor (JSON schema only, no pedagogical guidance), unified learner"
+    factors:
+      prompt_type: naive
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: haiku
+      prompt_file: tutor-ego-naive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null

@@ -97,6 +97,7 @@ const EVAL_ONLY_PROFILES = [
   'cell_67_recog_dialectical_profile_prosthesis_prescriptive',
   'cell_68_recog_dialectical_profile_prosthesis_adversary',
   'cell_69_base_dialectical_intersubjective_psycho', 'cell_70_base_dialectical_combined_psycho',
+  'cell_71_naive_single_unified',
 ];
 
 /**
@@ -124,6 +125,8 @@ export function resolveEvalProfile(profileName) {
       resolvedProfileName = 'placebo';
     } else if (promptType === 'hardwired') {
       resolvedProfileName = 'hardwired';
+    } else if (promptType === 'naive') {
+      resolvedProfileName = 'naive';
     } else if (promptType === 'memory') {
       resolvedProfileName = 'memory';
     } else if (promptType === 'recognition_nomem') {
