@@ -2,12 +2,12 @@
 title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "February 2026"
-version: "2.3.12"
+version: "2.3.13"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across thirty-six evaluations (N=3,454 primary scored; N=7,000+ development database), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71 with or without memory, while memory alone provides only d=0.46 (n.s.). A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (37–59% of primary effect sizes depending on experiment, inter-judge r=0.44–0.64). Phase 2 experiments reveal that the Superego functions as a quality filter rather than an active improver—structural modulation metrics do not predict outcome quality. Nine architectural mechanisms cluster within 2.4 points under scripted learners, but differentiate when tested with dynamic interlocutors capable of genuine feedback loops: Theory of Mind profiling adds 4.1 points, and recognition's effect doubles. Qualitative transcript assessment identifies three specific changes recognition produces: the ego listens to its internal critic, the tutor builds on learner contributions rather than redirecting, and mid-conversation strategy shifts occur. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems, and that recognition is better understood as an achievable relational stance than a requirement for machine consciousness.
+  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across thirty-six evaluations (N=3,347 primary scored; N=7,000+ development database), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71 with or without memory, while memory alone provides only d=0.46 (n.s.). A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (37–59% of primary effect sizes depending on experiment, inter-judge r=0.44–0.64). Phase 2 experiments reveal that the Superego functions as a quality filter rather than an active improver—structural modulation metrics do not predict outcome quality. Nine architectural mechanisms cluster within 2.4 points under scripted learners, but differentiate when tested with dynamic interlocutors capable of genuine feedback loops: Theory of Mind profiling adds 4.1 points, and recognition's effect doubles. Qualitative transcript assessment identifies three specific changes recognition produces: the ego listens to its internal critic, the tutor builds on learner contributions rather than redirecting, and mid-conversation strategy shifts occur. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems, and that recognition is better understood as an achievable relational stance than a requirement for machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
 fontsize: 12pt
 geometry: margin=1in
@@ -41,7 +41,7 @@ We operationalize this framework through:
 3. **New evaluation dimensions** that measure recognition quality alongside traditional pedagogical metrics
 4. **Test scenarios** specifically designed to probe recognition behaviors
 
-In controlled evaluations across thirty-six key evaluations (N=3,454 primary scored responses; N=7,000+ across all development runs), we isolate the contribution of recognition theory from prompt engineering effects and memory integration. The definitive test is a corrected 2×2 memory isolation experiment (N=120 across two independent runs): recognition theory is the primary driver, producing +15.2 points (d=1.71) even without memory, while memory alone provides only a modest benefit (+4.8 pts, d=0.46, $p \approx .08$). The combined condition reaches 91.2 points (d=1.81 vs base), with ceiling effects limiting observable synergy. A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content but no recognition theory scores approximately 9 points above same-model base but well below recognition levels, with recognition gains (~+15 pts above same-model base) substantially exceeding active-control gains (~+9 pts). A three-way comparison (N=36) found recognition adds +8.0 points beyond enhanced prompting, consistent with recognition dominance.
+In controlled evaluations across thirty-six key evaluations (N=3,347 primary scored responses; N=7,000+ across all development runs), we isolate the contribution of recognition theory from prompt engineering effects and memory integration. The definitive test is a corrected 2×2 memory isolation experiment (N=120 across two independent runs): recognition theory is the primary driver, producing +15.2 points (d=1.71) even without memory, while memory alone provides only a modest benefit (+4.8 pts, d=0.46, $p \approx .08$). The combined condition reaches 91.2 points (d=1.81 vs base), with ceiling effects limiting observable synergy. A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content but no recognition theory scores approximately 9 points above same-model base but well below recognition levels, with recognition gains (~+15 pts above same-model base) substantially exceeding active-control gains (~+9 pts). A three-way comparison (N=36) found recognition adds +8.0 points beyond enhanced prompting, consistent with recognition dominance.
 
 A full 2×2×2 factorial (N=350) confirms recognition as the dominant factor (F=110.04, p<.001, $\eta^2$=.243, $d=1.11$), accounting for 24.3% of variance. Crucially, recognition's benefit is consistent across learner types: +15.7 pts for single-agent learners (d=1.73) and +13.0 pts for multi-agent learners (d=0.82), with a non-significant A×C interaction (F=0.97, p=.325). A multi-model probe across five ego models (N=655) confirms that architecture and recognition contribute additively, not synergistically—all five models show negative A×B interactions, consistent with ceiling effects on already-high recognition scores. For systems using only improved instructions, multi-agent architecture appears unnecessary; the architecture's primary value lies in error correction when content isolation failures introduce wrong-domain references.
 
@@ -63,7 +63,7 @@ The contributions of this paper are:
 - A hardwired rules ablation (N=72) demonstrating that encoding the Superego's most common critique patterns as static rules produces performance indistinguishable from base conditions, supporting a *phronesis* interpretation where the Superego's value lies in contextual judgment rather than rule enforcement
 - Dialectical superego modulation testing (N=174) showing the superego functions as a quality filter—preventing poor responses—rather than an active improver, with structural modulation metrics not predicting outcome quality
 - Self-reflective evolution (N=90) amplifying recognition's effect to d=0.91 through between-turn ego and superego reflections, with a striking disposition gradient (suspicious +19.0, adversary +10.9, advocate +2.6) revealing that hostile superego dispositions benefit most from recognition, and an insight-action gap where awareness of the need for change does not produce fundamentally different behavior
-- Mechanism robustness testing (N=360 scripted, N=120 dynamic) demonstrating that all mechanisms are equivalent under scripted learners but that other-ego profiling differentiates with dynamic interlocutors, establishing that genuine feedback loops are necessary for mechanism effects
+- Mechanism robustness testing (N=360 scripted, N=300 dynamic) demonstrating that all mechanisms are equivalent under scripted learners but that other-ego profiling differentiates with dynamic interlocutors, establishing that genuine feedback loops are necessary for mechanism effects
 - Qualitative transcript assessment providing narrative evidence for three specific changes recognition produces: the ego listens to the superego, the tutor builds on learner contributions, and strategy shifts occur mid-conversation
 - Practical design recommendations for AI tutor development distilled from the full experimental programme
 
@@ -549,7 +549,7 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Dialectical modulation, standard (cells 22–27) | eval-2026-02-11-35c53e99, eval-2026-02-11-5f6d51f5 | 6.8 | 84 | 84 | response |
 | Dialectical modulation, multi-turn (cells 28–33) | eval-2026-02-11-a54235ea | 6.8 | 90 | 90 | dialogue |
 | Self-reflective evolution (cells 40–45, Nemotron) | eval-2026-02-13-8d40e086 | 6.9 | 90 | 90 | dialogue |
-| Self-reflect Nemotron non-replication (cells 40–59) | eval-2026-02-14-559d854b | 6.9 | 167 | 167 | dialogue |
+| Self-reflect Nemotron non-replication (cells 40–45) | eval-2026-02-14-559d854b | 6.9 | 60 | 60 | dialogue |
 | Mechanism robustness, scripted (cells 40–59) | eval-2026-02-14-e0e3a622 | 6.10 | 360 | 360 | dialogue |
 | Dynamic learner mechanisms (cells 60–63) | eval-2026-02-14-6c033830 | 6.10 | 120 | 120 | dialogue |
 | Dynamic learner mechanisms (cells 64–65) | eval-2026-02-14-a2b2717c | 6.10 | 120 | 120 | dialogue |
@@ -563,13 +563,13 @@ Effect size interpretation follows standard conventions: |d| < 0.2 negligible, 0
 | Token budget 512, Haiku | eval-2026-02-17-5f281654 | 6.22 | 36 | 36 | mixed |
 | Token budget 2048, Haiku | eval-2026-02-17-0f6dcd97 | 6.22 | 36 | 36 | mixed |
 | Token budget default, Haiku | eval-2026-02-17-d32ed226 | 6.22 | 18 | 18 | mixed |
-| **Paper totals** | — | — | **3,469** | **3,454** | — |
+| **Paper totals** | — | — | **3,362** | **3,347** | — |
 
-The difference between Total Attempts and Scored (15 unscored out of 3,469) reflects attempts where the ego model's API call failed (timeout, rate limit, or malformed response) or where the judge could not produce a valid score from the tutor's output. These failures are distributed across Phase 1 runs and conditions with no systematic pattern; Phase 2 runs achieved 100% scoring.
+The difference between Total Attempts and Scored (15 unscored out of 3,362) reflects attempts where the ego model's API call failed (timeout, rate limit, or malformed response) or where the judge could not produce a valid score from the tutor's output. These failures are distributed across Phase 1 runs and conditions with no systematic pattern; Phase 2 runs achieved 100% scoring.
 
-**Total evaluation database**: The complete database contains 7,000+ evaluation attempts across 117+ runs, with 7,000+ successfully scored. This paper reports primarily on the thirty-six key evaluations above (N=3,454 scored), and supplementary historical data for ablation analyses.
+**Total evaluation database**: The complete database contains 7,000+ evaluation attempts across 117+ runs, with 7,000+ successfully scored. This paper reports primarily on the thirty-six key evaluations above (N=3,347 scored), and supplementary historical data for ablation analyses.
 
-**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=120" for memory isolation) refer to scored responses in that analysis. The "N=7,000+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the thirty-six key evaluations above (N=3,454). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts; the re-run uses the same ego model (Kimi K2.5) and judge (Claude Code/Opus) as the original factorial.
+**Note on N counts**: Section-specific Ns (e.g., "N=36" for recognition validation, "N=120" for memory isolation) refer to scored responses in that analysis. The "N=7,000+" total refers to the full evaluation database including historical development runs, which informed iterative prompt refinement. The primary evidence for reported findings comes from the thirty-six key evaluations above (N=3,347). The factorial cells 6 and 8 were re-run (eval-2026-02-06-a933d745) after the originals were found to use compromised learner prompts; the re-run uses the same ego model (Kimi K2.5) and judge (Claude Code/Opus) as the original factorial.
 
 ### 5.8 Inter-Judge Reliability Analysis
 
@@ -814,7 +814,7 @@ Both bugs have been fixed: the fallback was removed (scenarios must now declare 
 
 This connects to Freud's reality principle: the Superego enforces correspondence with external reality, not just internal standards. In our architecture, the Superego ensures the tutor's suggestions correspond to the learner's actual curriculum. The elementary scenario results demonstrate this concretely: multi-agent cells (3, 7) produced correct elementary content references in cases where single-agent cells (1, 5) propagated the philosophy content uncorrected.
 
-**Practical Implication**: For domain transfer—deploying tutoring systems on new content—multi-agent architecture provides essential error correction that single-agent systems cannot match. The bugs identified here represent a realistic class of deployment failure: incomplete content scoping and prompt examples that assume a particular domain. The Superego's reality-testing function catches these errors regardless of their source. However, the +9.9 point architecture advantage on elementary content (Table 9, Nemotron) was partly inflated by these bugs—the Kimi replication (Table 10), with fewer affected responses, shows a more modest +3.0 point architecture effect, likely closer to the true value once content isolation is correct.
+**Practical Implication**: For domain transfer—deploying tutoring systems on new content—multi-agent architecture provides essential error correction that single-agent systems cannot match. The bugs identified here represent a realistic class of deployment failure: incomplete content scoping and prompt examples that assume a particular domain. The Superego's reality-testing function catches these errors regardless of their source. However, an earlier Nemotron-based analysis showed a +9.9 point architecture advantage on elementary content, partly inflated by these bugs—the Kimi replication (Table 9), with fewer affected responses, shows a more modest +2.3 point architecture effect, likely closer to the true value once content isolation is correct.
 
 ### 6.7 Hardwired Rules vs Dynamic Dialogue
 
@@ -1612,7 +1612,7 @@ Critically, recognition theory ($M = 90.9$ on Haiku, from the multi-model probe 
 
 All evaluation cells use `max_tokens: 8000`, but actual single-turn outputs average approximately 235 tokens (base) to 451 tokens (recognition), with maximums under 650. This means the budget is 12–34$\times$ larger than typical output. A dose-response test measured whether constraining `max_tokens` degrades evaluation scores.
 
-**Design.** Five runs used Haiku ego with Opus judge across two cells (cell 1 base, cell 5 recognition) at three budget levels: 256, 512, and 2048 tokens, plus the default 8000 (N=126 scored single-turn evaluations across all levels). The `max_tokens` parameter was overridden via a new CLI flag (`--max-tokens`) that threads through to the API request body.
+**Design.** Five runs used Haiku ego with Opus judge across two cells (cell 1 base, cell 5 recognition) at three constrained budget levels (256, 512, and 2048 tokens), with an additional base-only control at the default 8000 tokens (N=126 scored single-turn evaluations across all levels). The `max_tokens` parameter was overridden via a new CLI flag (`--max-tokens`) that threads through to the API request body.
 
 **Table 49: Token Budget Dose-Response (Single-Turn Scenarios Only)**
 
@@ -1799,7 +1799,7 @@ This finding reframes several earlier null results. The architecture null effect
 
 ### 7.11 Practical Recommendations for AI Tutor Design
 
-The experimental evidence across thirty-six evaluations (N=3,454) converges on a clear design hierarchy for building effective AI tutors:
+The experimental evidence across thirty-six evaluations (N=3,347) converges on a clear design hierarchy for building effective AI tutors:
 
 **1. Recognition-enhanced prompts are the single most impactful design decision.** Across every experimental condition, model, and content domain tested, recognition theory produces the largest and most consistent gains: $d = 0.91$–$1.71$ in controlled experiments, +7.6 to +14.8 pts depending on learner type. The investment is purely in prompt design—no architectural changes, no additional API calls, no infrastructure overhead. Any team building an AI tutor should start here.
 
@@ -1843,7 +1843,7 @@ The experimental evidence across thirty-six evaluations (N=3,454) converges on a
 
 **Dynamic rewriting evolution**: The step-by-step evolution analysis (Section 6.18) tracks cell 21 across three iterative development runs with small sample sizes (13–15 scored responses per cell per run, 82 total). The runs are not independent experiments—each includes implementation improvements beyond Writing Pad activation. While the trajectory from trailing to leading is clear, a controlled ablation isolating only the Writing Pad variable would provide stronger causal evidence. All three runs use free-tier models (Nemotron ego, Kimi K2.5 superego), and generalization to other model combinations is unknown.
 
-**Scripted learner confound**: The mechanism robustness testing (Section 6.10, cells 40–59, N=360) uses a single-agent (scripted) learner whose responses are predetermined. This design prevents feedback loops between tutor mechanisms and learner behavior, rendering all mechanisms causally inert—they cannot influence what the learner says next. The resulting null result (all mechanisms cluster within 2.4 pts) reflects the experimental design rather than genuine mechanism equivalence. The dynamic learner results (cells 60–65, N=240) partially address this confound, demonstrating that mechanisms do differentiate with genuine feedback loops, but cover only four mechanisms and two scenarios.
+**Scripted learner confound**: The mechanism robustness testing (Section 6.10, cells 40–59, N=360) uses a single-agent (scripted) learner whose responses are predetermined. This design prevents feedback loops between tutor mechanisms and learner behavior, rendering all mechanisms causally inert—they cannot influence what the learner says next. The resulting null result (all mechanisms cluster within 2.4 pts) reflects the experimental design rather than genuine mechanism equivalence. The dynamic learner results (cells 60–65, 69–70, N=300) partially address this confound, demonstrating that mechanisms do differentiate with genuine feedback loops, but cover only four mechanisms and two scenarios.
 
 **Qualitative assessor blinding**: The initial qualitative transcript assessments (Section 6.11) were conducted by an AI judge (Claude Opus) with access to condition labels. Two blinded replications (condition metadata stripped, Table 21b) tested for assessor bias: the first used Haiku, the second used the same model (Opus). The same-model blinded replication confirms that Opus's tag assignments are largely unchanged by blinding (stalling base 100%→91.4%, recognition\_moment base 0%→5.2%), while the Haiku-blinded softening reflects model calibration differences rather than a genuine blinding effect. The near-perfect binary separations in Tables 20–21 are therefore robust rather than inflated. All assessment remains LLM-based; human expert coding would provide independent validation of the qualitative patterns.
 
@@ -1873,7 +1873,7 @@ The experimental evidence across thirty-six evaluations (N=3,454) converges on a
 
 We have proposed and evaluated a framework for AI tutoring grounded in Hegel's theory of mutual recognition. Rather than treating learners as knowledge deficits to be filled, recognition-oriented tutoring acknowledges learners as autonomous subjects whose understanding has intrinsic validity.
 
-An evaluation framework (N=3,454 primary scored across thirty-six key evaluations; N=7,000+ across the full development database) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
+An evaluation framework (N=3,347 primary scored across thirty-six key evaluations; N=7,000+ across the full development database) provides evidence that recognition theory has unique value, subject to the limitations discussed in Section 8.1:
 
 1. **Recognition as primary driver (the definitive finding)**: A corrected 2×2 memory isolation experiment (N=120 across two independent runs) demonstrates that recognition theory is the primary driver of tutoring improvement: recognition alone produces d=1.71 (+15.2 pts), while memory alone provides only a modest, non-significant benefit (d=0.46, +4.8 pts, $p \approx .08$). The combined condition reaches d=1.81 (+15.8 pts vs base), with ceiling effects at ~91 limiting further gains. The full factorial (N=350) confirms recognition as the dominant factor ($d=1.11$, $\eta^2$=.243), with consistent effects across learner types (+15.7 single, +13.0 multi; A×C n.s.). A post-hoc active control (N=118) using length-matched prompts with generic pedagogical content provides partial corroboration: same-model comparisons show the active control scores approximately 9 points above base while recognition scores approximately 15 points above base. A three-way comparison (N=36) found recognition outperforms enhanced prompting by +8.0 points, consistent with recognition dominance, though the increment does not replicate under GPT-5.2 (+2.4 pts, n.s.). Recognition theory is directly effective and does not require memory infrastructure to manifest.
 
@@ -1897,7 +1897,7 @@ An evaluation framework (N=3,454 primary scored across thirty-six key evaluation
 
 11. **Self-reflective evolution amplifies recognition**: When ego and superego are given between-turn self-reflection (Section 6.9, cells 40–45, N=90), recognition's effect size rises to $d = 0.91$—2.4$\times$ the dialectical-only condition ($d = 0.38$). A striking disposition gradient emerges: the more hostile the superego (suspicious +19.0, adversary +10.9, advocate +2.6), the more recognition helps—hostile dispositions become productive under recognition but are destructive without it. However, an insight-action gap persists: the superego's reflections acknowledge the need for change without producing fundamentally different critique behavior.
 
-12. **Mechanisms require dynamic interlocutors**: Nine mechanisms (self-reflection, profiling, quantitative disposition, prompt erosion, intersubjective framing, combined, adversary, advocate, base dialectical) cluster within 2.4 pts under recognition when tested with scripted learners (Section 6.10, N=360). The scripted learner confound renders mechanisms causally inert—they cannot influence predetermined responses. When tested with dynamic (multi-agent) learners (N=240), mechanisms genuinely differentiate for the first time: profiling and combined mechanisms reach 88.8 and 87.8 while intersubjective framing reaches only 82.8—a 6.0-point spread. Recognition's effect doubles (+14 pts vs +7.5 scripted), and a Nemotron cross-model replication (N=360) confirms the pattern at lower absolute scores. A qualitative transcript assessment (Section 6.11) provides narrative evidence for the mechanism: recognition gives the ego the capacity to be *changed by* its internal critic rather than merely *compliant with* it.
+12. **Mechanisms require dynamic interlocutors**: Nine mechanisms (self-reflection, profiling, quantitative disposition, prompt erosion, intersubjective framing, combined, adversary, advocate, base dialectical) cluster within 2.4 pts under recognition when tested with scripted learners (Section 6.10, N=360). The scripted learner confound renders mechanisms causally inert—they cannot influence predetermined responses. When tested with dynamic (multi-agent) learners (N=300), mechanisms genuinely differentiate for the first time: profiling and combined mechanisms reach 88.8 and 87.8 while intersubjective framing reaches only 82.8—a 6.0-point spread. Recognition's effect doubles (+14 pts vs +7.5 scripted), and a Nemotron cross-model replication (N=360) confirms the pattern at lower absolute scores. A qualitative transcript assessment (Section 6.11) provides narrative evidence for the mechanism: recognition gives the ego the capacity to be *changed by* its internal critic rather than merely *compliant with* it.
 
 13. **Prompt elaboration does not explain recognition effects**: A prompt elaboration baseline (Section 6.21, N=144) comparing the full 344-line base prompt against a 35-line naive prompt (JSON schema only, no pedagogical guidance) demonstrates that the recognition effect cannot be attributed to prompt length or instructional detail. On Haiku, the naive prompt *outperforms* the elaborate base by +6.8 pts—the prescriptive decision heuristics actively constrain the model's superior pedagogical intuitions. On Kimi K2.5, the elaborate prompt is inert ($\Delta = -0.3$). Recognition ($M = 90.9$ on Haiku) remains well above the naive baseline ($M = 82.5$), confirming that recognition adds value through relational orientation rather than instructional specificity. This addresses the deflationary concern that recognition effects might be an artifact of more detailed prompting: stripping 90% of the base prompt's content does not diminish scores, but recognition theory still provides a substantial further gain.
 
@@ -2188,6 +2188,54 @@ node scripts/eval-cli.js run \
   --profiles cell_60_base_dialectical_suspicious_selfreflect_psycho,cell_61_recog_dialectical_suspicious_selfreflect_psycho,cell_62_base_dialectical_suspicious_profile_bidir_psycho,cell_63_recog_dialectical_suspicious_profile_bidir_psycho \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
+
+# Dynamic learner mechanism head-to-head (cells 64-65), Haiku ego
+node scripts/eval-cli.js run \
+  --profiles cell_64_recog_dialectical_suspicious_intersubjective_psycho,cell_65_recog_dialectical_suspicious_combined_psycho \
+  --scenarios misconception_correction_flow,mutual_transformation_journey \
+  --runs 5
+
+# Dynamic learner base counterparts (cells 69-70), Haiku ego
+node scripts/eval-cli.js run \
+  --profiles cell_69_base_dialectical_suspicious_intersubjective_psycho,cell_70_base_dialectical_suspicious_combined_psycho \
+  --scenarios misconception_correction_flow,mutual_transformation_journey \
+  --runs 5
+```
+
+### B.8b Prompt Elaboration Baseline (Section 6.21)
+
+```bash
+# Naive baseline, Haiku ego
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_71_naive_single_unified \
+  --runs 6
+
+# Naive baseline, Kimi ego
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_71_naive_single_unified \
+  --runs 6 --model openrouter.kimi
+```
+
+### B.8c Token Budget Sensitivity (Section 6.22)
+
+```bash
+# Token budget dose-response (256, 512, 2048), Haiku ego
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_5_recog_single_unified \
+  --runs 3 --max-tokens 256
+
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_5_recog_single_unified \
+  --runs 3 --max-tokens 512
+
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified,cell_5_recog_single_unified \
+  --runs 3 --max-tokens 2048
+
+# Base-only control at default 8000
+node scripts/eval-cli.js run \
+  --profiles cell_1_base_single_unified \
+  --runs 3
 ```
 
 ### B.9 Qualitative Transcript Assessment (Section 6.11)
@@ -2377,6 +2425,7 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | 2026-02-10 | v2.1.1 | **Consistency fixes**: Corrected stale N=1,628/twenty → N=1,700/twenty-one in abstract, introduction, and conclusion (reflecting hardwired rules ablation and learner-side evaluation added in v1.8–v1.9). Fixed dynamic rewrite section references in Tables 2 and D (6.13→6.14, after §6.12 insertion renumbered sections). Added hardwired rules ablation and learner-side evaluation to Appendix D run list (was 19 rows, now 21). Fixed inter-judge reliability cross-reference in §8.1 (5.7→5.8). Fixed Appendix D repository URL. |
 | 2026-02-10 | v2.1.2 | **Review corrections** (30 fixes): Table 7b Kimi row corrected to single-learner cells (N=350→179, Recognition +10.2→+15.5, Interaction -1.5→+0.5) matching probe design; total probe N 826→655. Table 1 Primary/Alternative model columns corrected. Factor C in Discussion corrected (-1.7 pts, F=2.56 from +1.5, p=.341). Stale A×C values updated (+15.5/+4.8). Dynamic rewrite swing corrected (+16.7→+8.7 delta). Abstract trailing deficit corrected (7.2→3.2). Table cross-refs fixed (Table 5→6, Table 23→29). Dimension count 6→8. Terminology standardized (unified→single-agent, behaviour→behavior). Theme count 15→10. Impasse N=4→2 per cell. Malformed citation fixed. |
 | 2026-02-11 | v2.2.0 | **Modulation and learning outcomes**: Added §6.11.1 (modulation metrics, N=350 post-hoc) showing multi-agent architecture does not increase behavioral range (d=0.05); recognition produces calibration not oscillation (dimension variance d=−1.00, F=87.69). Added §6.11.2 (synthetic learning outcome index, N=118) from learner rubric composites: recognition +3.8 pts (d=0.32), all conditions show 15–21 pt learning arcs. Extended §7.4 Discussion with phronesis reframing. Added explicit synthetic-learning-only limitation to §8.1. Regenerated Figure 4 as interaction plot (legend no longer overlaps). Regenerated Figure 6 from actual transcript word frequencies (was AI theme labels). Fixed p.44 caption overflow (removed monospace from scenario names). |
+| 2026-02-17 | v2.3.13 | **Paper correctness fixes**: Fixed eval-2026-02-14-559d854b scope from "cells 40–59, N=167" to "cells 40–45, N=60" in Table 2, matching §6.9 narrative and Appendix D (only cells 40–45 used; cells 46–59 superseded by 49b33fdd at N=360). Fixed broken Table 10 reference in §6.6 — was "(Table 9, Nemotron)" and "(Table 10)" but Table 9 is Kimi data and Table 10 doesn't exist; corrected to reference historical Nemotron analysis and Table 9 for Kimi (+2.3 architecture effect). Fixed dynamic-learner N inconsistency: intro "N=120 dynamic"→"N=300 dynamic", finding 12 "N=240"→"N=300" (correct total: 6c033830 + a2b2717c + 664073ab = 300). Clarified token budget §6.22 design text: 8000-token default is base-only control. Added missing Appendix B commands for cells 64–65, 69–70, prompt elaboration baseline, and token budget runs. Updated paper totals from N=3,454 to N=3,347 scored (3,469→3,362 attempts) reflecting 559d854b scope correction. |
 | 2026-02-17 | v2.3.12 | **Token budget sensitivity**: Added §6.22 Token Budget Sensitivity testing whether constraining `max_tokens` from 8000 to 256–4000 affects evaluation scores. Five runs (eval-2026-02-17-0eb3de77 through eval-2026-02-17-0f6dcd97, Haiku ego, Opus judge) show scores are flat across all budget levels for both base and recognition conditions — the recognition effect is fully preserved even at 256 tokens. The retry-absorption mechanism in `egoGenerateSuggestions` (JSON parse failure → automatic retry) means truncated structured output self-heals rather than degrading scores. Added Table 49 (dose-response), recommendation 8 to §7.11 (budget reduction for production deployments). Updated paper totals from N=3,292 to N=3,454 scored across thirty-six key evaluations (was thirty-one). Added 5 runs to Table 2 and Appendix D. |
 | 2026-02-17 | v2.3.11 | **Transcript figures**: Added Figure 10 (naive vs base high\_performer comparison panel) to §6.21 showing Momentum Rule prescribing linear progression vs naive model suggesting creative synthesis. Added Figure 11 (bilateral mutual\_transformation\_journey transcript comparison) to §6.11 showing recognition dialogue (97.9) with rich ego-superego exchange vs base (24.8) with mechanical repetition. Added `generate-paper-figures.js` script for reproducible paper figure generation from evaluation dialogues. |
 | 2026-02-17 | v2.3.10 | **Prompt elaboration baseline**: Added §6.21 comparing 344-line base prompt against 35-line naive prompt (JSON schema only). Two runs: Haiku (eval-2026-02-17-deee5fd6, N=72) and Kimi (eval-2026-02-17-27d7b4e3, N=72). Key finding: elaborate prompt hurts Haiku (+6.8 pts for naive) and is inert on Kimi (Δ=-0.3) — a model capability × prompt elaboration interaction. Recognition ($M=90.9$) remains well above naive ($M=82.5$), confirming recognition effects are not attributable to prompt length. Added Table 20b, extended §7.6 with intersubjective vs behavioral prompt distinction, added recommendation 7 to §7.11, added conclusion finding 13. Updated paper totals to N=3,292 scored across thirty-one evaluations. |
