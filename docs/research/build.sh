@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Build PDF (and optionally PPTX) from paper markdown source.
+# Build PDF, short paper, and slides from paper markdown source.
 # Usage:
 #   ./build.sh              # build full paper PDF
 #   ./build.sh full         # build full paper PDF
-#   ./build.sh slides       # build slides PPTX from full paper (basic pandoc output)
-#   ./build.sh all          # build PDF + slides
+#   ./build.sh short        # build short paper PDF
+#   ./build.sh beamer       # build slides PDF (beamer)
+#   ./build.sh pptx         # build slides PPTX
+#   ./build.sh slides       # build both beamer PDF and PPTX slides
+#   ./build.sh all          # build everything
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -17,7 +20,9 @@ if [ -z "$VERSION" ]; then
 fi
 
 FULL_PDF="paper-full-v${VERSION}.pdf"
-SLIDES_PPTX="paper-slides-v${VERSION}.pptx"
+SHORT_PDF="paper-short-v${VERSION}.pdf"
+SLIDES_PDF="slides-v${VERSION}.pdf"
+SLIDES_PPTX="slides-v${VERSION}.pptx"
 
 PANDOC_OPTS=(
   --citeproc
@@ -31,26 +36,49 @@ build_full() {
   echo "  -> ${FULL_PDF}"
 }
 
-build_slides() {
-  echo "Building ${SLIDES_PPTX} (basic pandoc conversion) ..."
-  pandoc --citeproc paper-full.md -o "${SLIDES_PPTX}"
+build_short() {
+  echo "Building ${SHORT_PDF} ..."
+  pandoc "${PANDOC_OPTS[@]}" paper-short.md -o "${SHORT_PDF}"
+  echo "  -> ${SHORT_PDF}"
+}
+
+build_beamer() {
+  echo "Building ${SLIDES_PDF} (beamer) ..."
+  pandoc --citeproc --pdf-engine=xelatex -t beamer slides.md -o "${SLIDES_PDF}"
+  echo "  -> ${SLIDES_PDF}"
+}
+
+build_pptx() {
+  echo "Building ${SLIDES_PPTX} ..."
+  pandoc --citeproc slides.md -o "${SLIDES_PPTX}"
   echo "  -> ${SLIDES_PPTX}"
-  echo "  Note: For the full presentation, see notes/Drama-Machine-Presentation.pptx"
 }
 
 case "${1:-full}" in
   full|pdf|"")
     build_full
     ;;
+  short)
+    build_short
+    ;;
+  beamer)
+    build_beamer
+    ;;
+  pptx)
+    build_pptx
+    ;;
   slides)
-    build_slides
+    build_beamer
+    build_pptx
     ;;
   all)
     build_full
-    build_slides
+    build_short
+    build_beamer
+    build_pptx
     ;;
   *)
-    echo "Usage: $0 [full|slides|all]"
+    echo "Usage: $0 [full|short|beamer|pptx|slides|all]"
     exit 1
     ;;
 esac
