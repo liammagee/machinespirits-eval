@@ -512,7 +512,7 @@ Because no single analysis can simultaneously isolate all factors of interest, w
 
 4. **Domain Generalizability** (Section 6.5): Tests factor effects on elementary math vs graduate philosophy (N=60 Kimi on elementary content; see Table 2).
 
-Responses were evaluated by an LLM judge (Claude Code CLI, using Claude Opus as the underlying model) using the extended rubric. Thirty-five of the thirty-seven key evaluations reported in this paper use Claude Opus as the primary judge. Two additional runs (cells 60–63 and 64–65) include Sonnet cross-judge rejudge rows alongside their primary Opus scores. Earlier development runs in the broader database also used Sonnet, but these are not included in the reported analyses. We report:
+Responses were evaluated by an LLM judge (Claude Code CLI, using Claude Opus as the underlying model) using the extended rubric. All thirty-seven key evaluations reported in this paper use Claude Opus as the primary judge. Two of these runs (cells 60–63 and 64–65) also include Sonnet cross-judge rejudge rows for inter-rater comparison, but reported analyses use only the Opus scores unless explicitly noted. Earlier development runs in the broader database also used Sonnet, but these are not included in the reported analyses. We report:
 
 - **Effect sizes**: Cohen's d for standardized comparison
 - **Statistical significance**: ANOVA F-tests with $\alpha$ = 0.05, p-values computed from the F-distribution CDF via regularized incomplete beta function (custom implementation in the evaluation framework)
@@ -1002,7 +1002,7 @@ Can a strong superego compensate for a weak ego? Cells 66–68 test this "cognit
 | Cell | Superego config | Misconception | Mutual Transform | Overall | SD |
 |------|----------------|-------------|-----------------|---------|-----|
 | 66 | Descriptive | 52.4 | 44.2 | 48.3 | 13.4 |
-| 67 | Prescriptive | 54.8 | 44.0 | 49.0 | 18.8 |
+| 67 | Prescriptive | 54.8 | 43.3 | 49.0 | 18.8 |
 | 68 | Adversary | 57.1 | 45.1 | 51.1 | 20.4 |
 
 The prosthesis hypothesis fails decisively. All three cells score well below Nemotron's own scripted base (cell 40: $M = 64.2$), let alone Haiku's profiling performance (cell 63: $M = 88.7$). Superego type has no significant effect: $F(2,87) = 0.20$, $\eta^2 = .004$, with the adversary advantage ($\Delta = +2.8$, $d = 0.16$) trivial. The mechanism stack that boosts Haiku by +20 points *hurts* Nemotron by $-15$ points—an inversion, not a null result.
@@ -2203,21 +2203,21 @@ node scripts/code-impasse-strategies.js \
 
 ```bash
 # Standard ego + divergent superego (cells 22-27)
-CELLS="cell_22_base_dialectical_suspicious"
-CELLS+=",cell_23_recog_dialectical_suspicious"
-CELLS+=",cell_24_base_dialectical_adversary"
-CELLS+=",cell_25_recog_dialectical_adversary"
-CELLS+=",cell_26_base_dialectical_advocate"
-CELLS+=",cell_27_recog_dialectical_advocate"
+CELLS="cell_22_base_suspicious_unified"
+CELLS+=",cell_23_recog_suspicious_unified"
+CELLS+=",cell_24_base_adversary_unified"
+CELLS+=",cell_25_recog_adversary_unified"
+CELLS+=",cell_26_base_advocate_unified"
+CELLS+=",cell_27_recog_advocate_unified"
 node scripts/eval-cli.js run --profiles "$CELLS" --runs 2
 
 # Dialectical ego + divergent superego, multi-turn (cells 28-33)
-CELLS="cell_28_base_dialectical_suspicious"
-CELLS+=",cell_29_recog_dialectical_suspicious"
-CELLS+=",cell_30_base_dialectical_adversary"
-CELLS+=",cell_31_recog_dialectical_adversary"
-CELLS+=",cell_32_base_dialectical_advocate"
-CELLS+=",cell_33_recog_dialectical_advocate"
+CELLS="cell_28_base_dialectical_suspicious_unified"
+CELLS+=",cell_29_recog_dialectical_suspicious_unified"
+CELLS+=",cell_30_base_dialectical_adversary_unified"
+CELLS+=",cell_31_recog_dialectical_adversary_unified"
+CELLS+=",cell_32_base_dialectical_advocate_unified"
+CELLS+=",cell_33_recog_dialectical_advocate_unified"
 node scripts/eval-cli.js run --profiles "$CELLS" --runs 5
 ```
 
@@ -2225,30 +2225,47 @@ node scripts/eval-cli.js run --profiles "$CELLS" --runs 5
 
 ```bash
 # Scripted learner mechanisms (cells 40-59), Haiku ego
-node scripts/eval-cli.js run \
-  --profiles cell_40_base_dialectical_suspicious_selfreflect,\
-...,cell_59_recog_dialectical_suspicious_profile_bidir_strategy \
-  --runs 2
+CELLS="cell_40_base_dialectical_suspicious_unified_superego"
+CELLS+=",cell_41_recog_dialectical_suspicious_unified_superego"
+CELLS+=",cell_42_base_dialectical_adversary_unified_superego"
+CELLS+=",cell_43_recog_dialectical_adversary_unified_superego"
+CELLS+=",cell_44_base_dialectical_advocate_unified_superego"
+CELLS+=",cell_45_recog_dialectical_advocate_unified_superego"
+CELLS+=",cell_46_base_dialectical_suspicious_unified_quantitative"
+CELLS+=",cell_47_recog_dialectical_suspicious_unified_quantitative"
+CELLS+=",cell_48_base_dialectical_suspicious_unified_erosion"
+CELLS+=",cell_49_recog_dialectical_suspicious_unified_erosion"
+CELLS+=",cell_50_base_dialectical_suspicious_unified_intersubjective"
+CELLS+=",cell_51_recog_dialectical_suspicious_unified_intersubjective"
+CELLS+=",cell_52_base_dialectical_suspicious_unified_combined"
+CELLS+=",cell_53_recog_dialectical_suspicious_unified_combined"
+CELLS+=",cell_54_base_dialectical_profile_tutor"
+CELLS+=",cell_55_recog_dialectical_profile_tutor"
+CELLS+=",cell_56_base_dialectical_profile_bidirectional"
+CELLS+=",cell_57_recog_dialectical_profile_bidirectional"
+CELLS+=",cell_58_recog_dialectical_profile_bidirectional_full"
+CELLS+=",cell_59_recog_dialectical_profile_bidirectional_strategy"
+node scripts/eval-cli.js run --profiles "$CELLS" --runs 2
 
 # Dynamic learner mechanisms (cells 60-63), Haiku ego
-CELLS="cell_60_base_dialectical_suspicious_selfreflect_psycho"
-CELLS+=",cell_61_recog_dialectical_suspicious_selfreflect_psycho"
-CELLS+=",cell_62_base_dialectical_suspicious_profile_bidir_psycho"
-CELLS+=",cell_63_recog_dialectical_suspicious_profile_bidir_psycho"
+CELLS="cell_60_base_dialectical_selfreflect_psycho"
+CELLS+=",cell_61_recog_dialectical_selfreflect_psycho"
+CELLS+=",cell_62_base_dialectical_profile_bidirectional_psycho"
+CELLS+=",cell_63_recog_dialectical_profile_bidirectional_psycho"
 node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
 
 # Dynamic learner mechanism head-to-head (cells 64-65), Haiku ego
-CELLS="cell_64_recog_dialectical_suspicious_intersubjective_psycho"
-CELLS+=",cell_65_recog_dialectical_suspicious_combined_psycho"
+CELLS="cell_64_recog_dialectical_intersubjective_psycho"
+CELLS+=",cell_65_recog_dialectical_combined_psycho"
 node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
 
 # Dynamic learner base counterparts (cells 69-70), Haiku ego
-CELLS="cell_69_base_dialectical_suspicious_intersubjective_psycho"
-CELLS+=",cell_70_base_dialectical_suspicious_combined_psycho"
+CELLS="cell_69_base_dialectical_intersubjective_psycho"
+CELLS+=",cell_70_base_dialectical_combined_psycho"
 node scripts/eval-cli.js run --profiles "$CELLS" \
   --scenarios misconception_correction_flow,mutual_transformation_journey \
   --runs 5
