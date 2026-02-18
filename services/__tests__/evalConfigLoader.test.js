@@ -184,7 +184,7 @@ describe('resolveModel (string format)', () => {
   it('resolves "openrouter.sonnet" to openrouter model ID', () => {
     const r = resolveModel('openrouter.sonnet');
     assert.strictEqual(r.provider, 'openrouter');
-    assert.strictEqual(r.model, 'anthropic/claude-sonnet-4.5');
+    assert.strictEqual(r.model, 'anthropic/claude-sonnet-4.6');
   });
 
   it('resolves "openrouter.nemotron"', () => {
