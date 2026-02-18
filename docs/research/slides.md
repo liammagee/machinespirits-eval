@@ -1,5 +1,5 @@
 ---
-title: "*Geist* in the Machine"
+title: "The Drama Machine in Education"
 subtitle: "Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "February 2026"
@@ -323,7 +323,7 @@ Multi-agent learner architecture **hurts** learner quality (d=1.43, F=68.28, p<.
 
 ## Thank You
 
-**Paper**: "*Geist* in the Machine" (v2.3.14)
+**Paper**: "The Drama Machine in Education" (v2.3.14)
 
 **37 evaluations** | **N=3,383 scored** | **5 ego models** | **2 judges**
 

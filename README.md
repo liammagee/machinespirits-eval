@@ -232,7 +232,7 @@ If you use this software in your research, please cite:
 ```bibtex
 @misc{magee2026machinespirits,
   author = {Magee, Liam},
-  title = {\textit{Geist} in the Machine: Recognition Theory and Multi-Agent Tutoring},
+  title = {The Drama Machine in Education: Recognition Theory and Multi-Agent Tutoring},
   year = {2026},
   url = {https://github.com/liammagee/machinespirits-eval}
 }
