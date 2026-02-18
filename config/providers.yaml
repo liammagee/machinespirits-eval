@@ -39,7 +39,7 @@ providers:
       qwen3.5-plus: qwen/qwen3.5-plus-02-15
       qwen3.5: qwen/qwen3.5-397b-a17b
       # Mid-tier options
-      sonnet: anthropic/claude-sonnet-4.5
+      sonnet: anthropic/claude-sonnet-4.6
       gpt-mini: openai/gpt-5-mini
       gemini-flash: google/gemini-3-flash-preview
       # Premium options
