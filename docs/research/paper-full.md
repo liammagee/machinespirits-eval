@@ -1,5 +1,5 @@
 ---
-title: "The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
+title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "February 2026"
 version: "2.3.14"
@@ -16,7 +16,7 @@ header-includes: |
   \floatplacement{figure}{H}
 ---
 
-# The Drama Machine in Education: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
+# *Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
 
 ## 1. Introduction
 
