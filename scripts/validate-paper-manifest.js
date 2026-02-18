@@ -222,6 +222,7 @@ function runLevel1(manifest, db) {
       /N[=≈]\s*3,112/g,
       /N[=≈]\s*2,906/g,
       /N[=≈]\s*3,292/g,
+      /N[=≈]\s*3,347/g,
     ];
     for (const pat of stalePatterns) {
       const { body } = splitPaper(paper);
