@@ -1391,7 +1391,7 @@ The stance and orientation distributions are even more sharply separated than th
 
 ![Tutor Language Word Clouds](figures/figure6.png){width=100%}
 
-**Figure 6** shows word frequency clouds generated directly from tutor response text in the N=350 factorial dataset (base: N=172; recognition: N=178), with common English stop words and shared tutoring terms removed. Because both conditions discuss the same Hegelian philosophy content, the vocabularies substantially overlap. Nevertheless, condition-specific emphasis is visible: recognition responses foreground relational and process terms ("recognition," "tension," "transformation," "struggle," "explore," "practice"), while base responses foreground content-delivery terms ("concept," "dialectical," "servant," "section," "quiz"). The AI-assisted theme discovery (Tables 35–d) provides the interpretive layer for these raw differences.
+**Figure 6** shows word frequency clouds generated directly from tutor response text in the N=350 factorial dataset (base: N=172; recognition: N=178), with common English stop words and shared tutoring terms removed. Because both conditions discuss the same Hegelian philosophy content, the vocabularies substantially overlap. Nevertheless, condition-specific emphasis is visible: recognition responses foreground relational and process terms ("recognition," "tension," "transformation," "struggle," "explore," "practice"), while base responses foreground content-delivery terms ("concept," "dialectical," "servant," "section," "quiz"). The AI-assisted theme discovery (Tables 35–37) provides the interpretive layer for these raw differences.
 
 **Methodological note**: AI-assisted theme discovery risks circular validation if the coding model recognizes the prompt engineering that produced the responses. Two factors mitigate this concern: (1) the coder received only the tutor's suggestion text, not the system prompt or condition label; and (2) the near-perfect theme separation itself is the finding—whether or not the coder "recognizes" the framework, the fact that emergent themes partition cleanly by condition demonstrates that the two conditions produce qualitatively distinct pedagogical texts, not merely quantitatively different scores.
 
@@ -1477,6 +1477,8 @@ All correlations are moderate (r = 0.44–0.64) and highly significant (all p < 
 | Memory isolation interaction (N=119) | −5.6 pts | **−3.6 pts** | n.s. | Yes (negative) |
 | Recognition in mechanism robustness (N=360) | +7.6 pts | **+3.8 pts** | <.001 | Yes |
 | Mechanism clustering (scripted learner, N=360) | 2.8 pt spread | **4.4 pt spread** | — | Yes (null) |
+
+*Note: Claude effects in this table are computed from the N=119 matched-pair subset (responses scored by both judges), which differs slightly from the full-sample values in Tables 5 and 6 (e.g., memory isolation interaction is $-5.6$ here vs $-4.2$ in Table 5 at N=120).*
 
 **Key result**: GPT-5.2 replicates all directional findings. The recognition main effect is large and highly significant under both judges across all analyses (GPT-5.2 d = 0.91–1.54 depending on design). The memory isolation experiment shows identical condition ordering under both judges (Recognition+Memory $\geq$ Recognition Only >> Memory Only > Base) with no rank reversals. The negative interaction (ceiling effect) replicates under GPT-5.2 (−3.6 vs −5.6 under Claude). Multi-agent null effects and A×B null interactions also replicate.
 
