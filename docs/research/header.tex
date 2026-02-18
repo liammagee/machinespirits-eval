@@ -1,4 +1,5 @@
 \usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
 \usepackage{etoolbox}
 \usepackage{newunicodechar}
 
@@ -7,6 +8,11 @@
 \newunicodechar{≈}{$\approx$}
 \newunicodechar{≥}{$\geq$}
 \newunicodechar{𝜒}{$\chi$}
+
+% Suppress missing-character warnings from xelatex font probing
+% (unicode-math internally uses Unicode codepoints that trigger
+% text-font lookups in table cells before math font resolves them)
+\tracinglostchars=0
 
 % Shrink monospace font so code spans fit in table columns
 \let\oldtexttt\texttt
