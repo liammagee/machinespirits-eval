@@ -325,7 +325,7 @@ function classifyFraming(message) {
   }
 
   const msg = message.toLowerCase();
-  let scores = { directive: 0, exploratory: 0, collaborative: 0, neutral: 0 };
+  const scores = { directive: 0, exploratory: 0, collaborative: 0, neutral: 0 };
 
   // Directive markers
   const directiveMarkers = ['you should', 'you need to', 'you must', 'the correct', 'the answer is',
@@ -374,7 +374,7 @@ function calculateConvergence(trajectories) {
   let totalVarianceReduction = 0;
   let measuredDimensions = 0;
 
-  for (const [dim, values] of Object.entries(trajectories)) {
+  for (const [_dim, values] of Object.entries(trajectories)) {
     const validValues = values.filter(v => v !== null);
     if (validValues.length < 3) continue;
 

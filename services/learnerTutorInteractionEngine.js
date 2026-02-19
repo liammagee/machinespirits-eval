@@ -58,7 +58,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
   const {
     maxTurns = DEFAULT_MAX_TURNS,
-    trace = true,
+    _trace = true,
     observeInternals = true,
   } = options;
 
@@ -484,7 +484,7 @@ async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutor
     .join('\n\n');
 
   // Get tutor configuration from profile
-  const profile = tutorConfig.getActiveProfile(tutorProfileName);
+  const _profile = tutorConfig.getActiveProfile(tutorProfileName);
   const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
   const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
 
@@ -790,7 +790,7 @@ function detectTutorStrategy(response) {
 /**
  * Detect outcomes from a turn
  */
-function detectTurnOutcomes(learnerResponse, tutorResponse) {
+function detectTurnOutcomes(learnerResponse, _tutorResponse) {
   const outcomes = [];
 
   if (learnerResponse.understandingLevel === 'transforming') {
@@ -896,7 +896,8 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
  */
 async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
-  let { temperature = 0.7, max_tokens = 300, top_p } = hyperparameters;
+  const { temperature = 0.7, top_p } = hyperparameters;
+  let { max_tokens = 300 } = hyperparameters;
 
   // Thinking models (kimi-k2.5, deepseek-r1, etc.) use reasoning tokens that consume
   // the max_tokens budget. Increase significantly to allow for both reasoning and output.

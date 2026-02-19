@@ -414,7 +414,7 @@ describe('calculateRecognitionMetrics', () => {
 let parseJudgeResponse;
 
 // Use a top-level await to import the function
-const rubricModule = await import('../services/rubricEvaluator.js');
+const _rubricModule = await import('../services/rubricEvaluator.js');
 // parseJudgeResponse is not exported — we need to test it indirectly.
 // Let's extract it by reading the source and creating a wrapper.
 // Actually, let's use a cleaner approach: create a test wrapper.
@@ -424,7 +424,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const rubricSource = readFileSync(path.join(__dirname, '../services/rubricEvaluator.js'), 'utf8');
+const _rubricSource = readFileSync(path.join(__dirname, '../services/rubricEvaluator.js'), 'utf8');
 
 // Extract the functions we need by creating a test module dynamically.
 // Since parseJudgeResponse relies on jsonrepair and internal helpers,
@@ -551,7 +551,7 @@ export function parseJudgeResponse(responseText) {
 `;
 
 // Write the test helper module to a temp file
-import { writeFileSync, mkdirSync, unlinkSync } from 'fs';
+import { writeFileSync, mkdirSync, unlinkSync, rmdirSync } from 'fs';
 const tmpDir = path.join(__dirname, '../.test-tmp');
 try { mkdirSync(tmpDir, { recursive: true }); } catch (e) { /* exists */ }
 const tmpModulePath = path.join(tmpDir, 'parseJudgeResponse.mjs');
@@ -562,7 +562,7 @@ try {
   parseJudgeResponse = parseMod.parseJudgeResponse;
 } finally {
   try { unlinkSync(tmpModulePath); } catch (e) { /* cleanup */ }
-  try { fs.rmdirSync(tmpDir); } catch (e) { /* may not be empty */ }
+  try { rmdirSync(tmpDir); } catch (e) { /* may not be empty */ }
 }
 
 describe('parseJudgeResponse — valid JSON', () => {

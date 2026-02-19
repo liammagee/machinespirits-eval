@@ -482,7 +482,7 @@ async function main() {
     recog_reasoning: computeLexicalMetrics(corpus.recognition.reasonings.join(' '), 'Recognition (reasoning)'),
   };
 
-  for (const [key, m] of Object.entries(lexical)) {
+  for (const [_key, m] of Object.entries(lexical)) {
     console.log(`\n  ${m.label}:`);
     console.log(`    Tokens:              ${m.tokens.toLocaleString()}`);
     console.log(`    Type-Token Ratio:    ${m.ttr.toFixed(4)}`);
@@ -669,7 +669,7 @@ async function main() {
 | Category | Base (per 1000 words) | Recognition (per 1000 words) | Ratio | χ²(1) | Sig |
 |----------|----------------------|------------------------------|-------|-------|-----|
 `;
-  for (const [cat, r] of Object.entries(thematicResults)) {
+  for (const [_cat, r] of Object.entries(thematicResults)) {
     md += `| ${r.label} | ${r.basePer1000.toFixed(1)} | ${r.recogPer1000.toFixed(1)} | ${r.ratio === Infinity ? '∞' : r.ratio.toFixed(2)}× | ${r.chi2.toFixed(2)} | ${r.sig ? '*' : r.p < 0.10 ? '†' : ''} |\n`;
   }
 

@@ -113,7 +113,7 @@ function analyzeScoreTrajectory(turnResults) {
 /**
  * Extract the most recent superego feedback from the dialogue trace.
  */
-function extractSuperegoFeedback(consolidatedTrace, turnCount) {
+function extractSuperegoFeedback(consolidatedTrace, _turnCount) {
   if (!consolidatedTrace || consolidatedTrace.length === 0) return null;
 
   // Find the last superego entry from the most recent turn
@@ -202,7 +202,7 @@ function detectStrategyStagnation(turnResults) {
 /**
  * Detect recognition signals from the learner worth building on.
  */
-function detectRecognitionSignals(conversationHistory, turnResults) {
+function detectRecognitionSignals(conversationHistory, _turnResults) {
   if (conversationHistory.length === 0) return null;
 
   const lastEntry = conversationHistory[conversationHistory.length - 1];
@@ -532,7 +532,7 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
   const learnerMsgs = conversationHistory
     .filter(h => h.learnerMessage)
     .slice(-3) // Last 3 learner messages
-    .map((h, i) => `Turn ${h.turnIndex + 1}: "${h.learnerMessage.substring(0, 150)}${h.learnerMessage.length > 150 ? '...' : ''}"`);
+    .map((h, _i) => `Turn ${h.turnIndex + 1}: "${h.learnerMessage.substring(0, 150)}${h.learnerMessage.length > 150 ? '...' : ''}"`);
   if (learnerMsgs.length > 0) {
     parts.push(`## Recent Learner Messages\n${learnerMsgs.join('\n')}`);
   }

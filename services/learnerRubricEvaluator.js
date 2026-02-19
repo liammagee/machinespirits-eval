@@ -17,7 +17,7 @@ import yaml from 'yaml';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.resolve(__dirname, '..', 'config');
-const PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
+const _PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
 
 let rubricCache = null;
 let rubricMtime = null;

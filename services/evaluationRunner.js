@@ -486,7 +486,7 @@ function buildMultiTurnContext(options) {
     originalContext,
     conversationHistory = [],
     currentTurn,
-    previousSuggestion,
+    _previousSuggestion,
     priorSuperegoAssessments = [],
     learnerTrajectory = null,
   } = options;
@@ -771,7 +771,7 @@ function formatTurnForContext(turn) {
 /**
  * Format a suggestion for inclusion in conversation context
  */
-function formatSuggestionForContext(suggestion) {
+function _formatSuggestionForContext(suggestion) {
   const lines = [];
 
   if (suggestion.title) {
@@ -1530,7 +1530,7 @@ export async function runEvaluation(options = {}) {
  * Handles both single-turn and multi-turn scenarios
  */
 async function runSingleTest(scenario, config, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, onLog, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
+  const { _skipRubricEval = false, _outputSize = 'normal', verbose = false, onLog, _superegoStrategy = null, judgeOverride = null, _dryRun = false } = options;
 
   // Create a log function that calls both console and onLog callback
   const log = (message, level = 'info') => {
@@ -1561,7 +1561,7 @@ async function runSingleTest(scenario, config, options = {}) {
  * Run a single-turn test
  */
 async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
+  const { skipRubricEval = false, outputSize = 'normal', _verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false } = options;
 
   // Resolve model aliases through eval's providers.yaml
   const resolvedConfig = resolveConfigModels(config);
@@ -1596,7 +1596,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   // Use shared generation + evaluation helper
-  const { genResult, suggestion, validation, rubricResult, turnScore: overallScore, scoringMethod } = await generateAndEvaluateTurn(
+  const { genResult, _suggestion, validation, rubricResult, turnScore: overallScore, scoringMethod } = await generateAndEvaluateTurn(
     context, resolvedConfig,
     {
       scenarioName: fullScenario.name,
@@ -1693,7 +1693,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
  * This eliminates the separate multiTurnRunner orchestration.
  */
 async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
-  const { skipRubricEval = false, outputSize = 'normal', verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false, transcriptMode = false, runId = null } = options;
+  const { skipRubricEval = false, outputSize = 'normal', _verbose = false, log = () => {}, superegoStrategy = null, judgeOverride = null, dryRun = false, transcriptMode = false, runId = null } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
 
@@ -1763,7 +1763,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let totalCost = 0;
   let totalDialogueRounds = 0;
 
-  let conversationHistory = [];
+  const conversationHistory = [];
   let previousSuggestion = null;
   const consolidatedTrace = [];
   const priorSuperegoAssessments = [];  // Cross-turn superego memory
@@ -1816,7 +1816,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // Per-dialogue rejection budget: limits total superego rejections across all turns
   // to prevent worst-case cascade (e.g., 3 rejections × 5 turns = 15 total)
-  let rejectionBudget = rawProfile?.dialogue?.rejection_budget ?? null;  // null = unlimited (backwards-compatible)
+  const rejectionBudget = rawProfile?.dialogue?.rejection_budget ?? null;  // null = unlimited (backwards-compatible)
   let totalRejections = 0;
 
   // 4. Loop through turns (initial turn 0 + follow-up turns)
@@ -2831,7 +2831,7 @@ export async function resumeEvaluation(options = {}) {
   evaluationStore.updateRun(runId, { status: 'running', metadata: { pid: process.pid } });
 
   const totalRemainingTests = remainingTests.length;
-  const totalExpectedTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
+  const _totalExpectedTests = targetScenarios.length * targetConfigs.length * runsPerConfig;
 
   console.log(`\nResuming run: ${runId}`);
   console.log(`  Previously completed: ${existingResults.length} tests`);

@@ -157,7 +157,7 @@ for (const row of factorialRows) {
   ].filter(x => x != null);
 
   // Extended dimensions from JSON if available
-  let extDimScores = [...dimScores];
+  const extDimScores = [...dimScores];
   if (row.scores_with_reasoning) {
     try {
       const parsed = JSON.parse(row.scores_with_reasoning);
@@ -166,7 +166,7 @@ for (const row of factorialRows) {
                           'productive_struggle', 'epistemic_honesty']) {
         if (parsed[key]?.score != null) extDimScores.push(parsed[key].score);
       }
-    } catch {}
+    } catch { /* no-op */ }
   }
 
   conditions[key].push({

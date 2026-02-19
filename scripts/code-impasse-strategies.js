@@ -406,7 +406,7 @@ function analyzePerTurnResults(codings) {
   }
 
   // Count strategies per turn and compute transitions
-  for (const [id, turns] of Object.entries(byDialogue)) {
+  for (const [_id, turns] of Object.entries(byDialogue)) {
     if (!turns[3] || !turns[5]) continue;
 
     const s3 = turns[3].coding.primary_strategy;
@@ -559,8 +559,8 @@ function chi2PValue(x, df) {
   if (df <= 0 || x <= 0) return 1;
   // Regularized upper incomplete gamma function approximation
   // Using series expansion for small chi2 values
-  const a = df / 2;
-  const z = x / 2;
+  const _a = df / 2;
+  const _z = x / 2;
 
   // For moderate df and chi2, use Wilson-Hilferty normal approximation
   if (df > 2) {

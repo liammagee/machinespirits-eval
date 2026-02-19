@@ -271,7 +271,7 @@ function runDeepChecks(manifest) {
   const paper = readFileSync(PAPER_PATH, 'utf8');
   const { body } = splitPaper(paper);
   const paperLines = paper.split('\n');
-  const bodyLines = body.split('\n');
+  const _bodyLines = body.split('\n');
 
   // ── Pass A: Parse Table 2 from Markdown ──
   passA(paper, manifest);
@@ -555,7 +555,7 @@ function passD(body, paperLines) {
  * Pass E: Audit run IDs — every run ID in prose should be in Table 2,
  * and every Table 2 run ID should appear somewhere in the paper.
  */
-function passE(body, fullPaper, manifest) {
+function passE(body, fullPaper, _manifest) {
   console.log('\n  ── Pass E: Run ID Audit ──');
 
   // Extract run IDs from Table 2 in the paper

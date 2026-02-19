@@ -6,7 +6,7 @@
  * that the correct model is passed through the call chain.
  */
 
-import { describe, it, beforeEach, mock } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 // We need to mock dependencies before importing the dialectical engine.

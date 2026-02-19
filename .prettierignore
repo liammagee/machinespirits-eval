@@ -1,0 +1,10 @@
+node_modules/
+data/
+logs/
+exports/
+docs/
+content/
+.test-tmp/
+*.md
+*.yaml
+*.yml
