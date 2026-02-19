@@ -25,7 +25,10 @@ db.pragma('journal_mode = WAL');
 
 // Migrate: rename evaluator_model → judge_model if the old column exists
 try {
-  const cols = db.prepare('PRAGMA table_info(evaluation_results)').all().map(c => c.name);
+  const cols = db
+    .prepare('PRAGMA table_info(evaluation_results)')
+    .all()
+    .map((c) => c.name);
   if (cols.includes('evaluator_model') && !cols.includes('judge_model')) {
     db.exec('ALTER TABLE evaluation_results RENAME COLUMN evaluator_model TO judge_model');
   }
@@ -162,38 +165,58 @@ try {
 // Migration: Add factorial factor columns
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_recognition BOOLEAN`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_tutor BOOLEAN`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_learner BOOLEAN`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 
 // Migration: Add learner-side evaluation columns to evaluation_results
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_overall_score REAL`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_judge_model TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 
 // Migration: Add reproducibility metadata columns to evaluation_runs
 try {
   db.exec(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 
 // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
 try {
@@ -262,13 +285,19 @@ db.exec(`
 // Migration: Add learner-side evaluation columns to interaction_evaluations
 try {
   db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_scores TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_overall_score REAL`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 try {
   db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_judge_model TEXT`);
-} catch (e) { /* Column already exists */ }
+} catch (e) {
+  /* Column already exists */
+}
 
 /**
  * Generate a unique run ID
@@ -286,12 +315,7 @@ function generateRunId() {
  * @returns {Object} Created run
  */
 export function createRun(options = {}) {
-  const {
-    description = null,
-    totalScenarios = 0,
-    totalConfigurations = 0,
-    metadata = {},
-  } = options;
+  const { description = null, totalScenarios = 0, totalConfigurations = 0, metadata = {} } = options;
 
   const id = generateRunId();
   const now = new Date().toISOString();
@@ -301,7 +325,16 @@ export function createRun(options = {}) {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, now, description, totalScenarios, totalConfigurations, JSON.stringify(metadata), metadata.gitCommit || null, metadata.packageVersion || null);
+  stmt.run(
+    id,
+    now,
+    description,
+    totalScenarios,
+    totalConfigurations,
+    JSON.stringify(metadata),
+    metadata.gitCommit || null,
+    metadata.packageVersion || null,
+  );
 
   return {
     id,
@@ -431,7 +464,7 @@ export function storeResult(runId, result) {
     result.factors?.multi_agent_learner != null ? (result.factors.multi_agent_learner ? 1 : 0) : null,
     result.learnerArchitecture || null,
     result.scoringMethod || null,
-    new Date().toISOString()
+    new Date().toISOString(),
   );
 
   return info.lastInsertRowid;
@@ -517,9 +550,9 @@ export function listRuns(options = {}) {
     ORDER BY superego_model
   `);
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const scenarioRows = scenarioStmt.all(row.id);
-    const scenarioNames = scenarioRows.map(s => s.scenario_name).filter(Boolean);
+    const scenarioNames = scenarioRows.map((s) => s.scenario_name).filter(Boolean);
     const counts = resultCountStmt.get(row.id, row.id);
 
     const extractAlias = (raw) => {
@@ -530,10 +563,14 @@ export function listRuns(options = {}) {
 
     const modelRows = modelStmt.all(row.id);
     const superegoRows = superegoModelStmt.all(row.id);
-    const models = [...new Set([
-      ...modelRows.map(m => extractAlias(m.ego_model)),
-      ...superegoRows.map(m => extractAlias(m.superego_model)),
-    ].filter(Boolean))];
+    const models = [
+      ...new Set(
+        [
+          ...modelRows.map((m) => extractAlias(m.ego_model)),
+          ...superegoRows.map((m) => extractAlias(m.superego_model)),
+        ].filter(Boolean),
+      ),
+    ];
 
     const completedResults = counts?.completed || 0;
     const totalTests = row.total_tests || 0;
@@ -645,7 +682,7 @@ export function getRunStats(runId) {
 
   const rows = stmt.all(runId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     provider: row.provider,
     model: row.model,
     profileName: row.profile_name,
@@ -670,9 +707,7 @@ export function getRunStats(runId) {
     totalOutputTokens: row.total_output_tokens,
     passesRequired: row.passes_required,
     passesForbidden: row.passes_forbidden,
-    validationPassRate: row.total_tests > 0
-      ? (row.passes_required + row.passes_forbidden) / (row.total_tests * 2)
-      : 0,
+    validationPassRate: row.total_tests > 0 ? (row.passes_required + row.passes_forbidden) / (row.total_tests * 2) : 0,
   }));
 }
 
@@ -760,28 +795,26 @@ export function compareConfigs(runId, config1, config2) {
 
   // Build comparison
   const comparison = [];
-  const scenarios = new Set([...results1.map(r => r.scenario_id), ...results2.map(r => r.scenario_id)]);
+  const scenarios = new Set([...results1.map((r) => r.scenario_id), ...results2.map((r) => r.scenario_id)]);
 
   for (const scenarioId of scenarios) {
-    const r1 = results1.find(r => r.scenario_id === scenarioId) || {};
-    const r2 = results2.find(r => r.scenario_id === scenarioId) || {};
+    const r1 = results1.find((r) => r.scenario_id === scenarioId) || {};
+    const r2 = results2.find((r) => r.scenario_id === scenarioId) || {};
 
     comparison.push({
       scenarioId,
       config1Score: r1.avg_score || null,
       config2Score: r2.avg_score || null,
       difference: (r1.avg_score || 0) - (r2.avg_score || 0),
-      winner: r1.avg_score > r2.avg_score ? 'config1'
-        : r2.avg_score > r1.avg_score ? 'config2'
-        : 'tie',
+      winner: r1.avg_score > r2.avg_score ? 'config1' : r2.avg_score > r1.avg_score ? 'config2' : 'tie',
     });
   }
 
   // Overall stats
   const overall = {
-    config1Wins: comparison.filter(c => c.winner === 'config1').length,
-    config2Wins: comparison.filter(c => c.winner === 'config2').length,
-    ties: comparison.filter(c => c.winner === 'tie').length,
+    config1Wins: comparison.filter((c) => c.winner === 'config1').length,
+    config2Wins: comparison.filter((c) => c.winner === 'config2').length,
+    ties: comparison.filter((c) => c.winner === 'tie').length,
     config1AvgScore: results1.reduce((sum, r) => sum + r.avg_score, 0) / (results1.length || 1),
     config2AvgScore: results2.reduce((sum, r) => sum + r.avg_score, 0) / (results2.length || 1),
   };
@@ -814,14 +847,26 @@ export function exportToCsv(runId) {
   const results = getResults(runId);
 
   const headers = [
-    'scenario_id', 'scenario_name', 'provider', 'model',
-    'overall_score', 'relevance', 'specificity', 'pedagogical',
-    'personalization', 'actionability', 'tone',
-    'latency_ms', 'input_tokens', 'output_tokens',
-    'passes_required', 'passes_forbidden', 'success'
+    'scenario_id',
+    'scenario_name',
+    'provider',
+    'model',
+    'overall_score',
+    'relevance',
+    'specificity',
+    'pedagogical',
+    'personalization',
+    'actionability',
+    'tone',
+    'latency_ms',
+    'input_tokens',
+    'output_tokens',
+    'passes_required',
+    'passes_forbidden',
+    'success',
   ];
 
-  const rows = results.map(r => [
+  const rows = results.map((r) => [
     r.scenarioId,
     r.scenarioName,
     r.provider,
@@ -850,7 +895,7 @@ export function exportToCsv(runId) {
     return str;
   };
 
-  return [headers.join(','), ...rows.map(row => row.map(escapeCsvField).join(','))].join('\n');
+  return [headers.join(','), ...rows.map((row) => row.map(escapeCsvField).join(','))].join('\n');
 }
 
 /**
@@ -958,7 +1003,7 @@ export function findIncompleteRuns(options = {}) {
 
   const rows = stmt.all(cutoffTime);
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const resultsStmt = db.prepare('SELECT COUNT(*) as count FROM evaluation_results WHERE run_id = ?');
     const resultsCount = resultsStmt.get(row.id).count;
     const metadata = JSON.parse(row.metadata || '{}');
@@ -994,7 +1039,7 @@ export function autoCompleteStaleRuns(options = {}) {
   const incompleteRuns = findIncompleteRuns({ olderThanMinutes });
 
   // Filter out runs whose PID is still alive
-  const staleRuns = incompleteRuns.filter(run => {
+  const staleRuns = incompleteRuns.filter((run) => {
     const pid = run.metadata?.pid;
     const isAlive = isPidAlive(pid);
     if (isAlive) {
@@ -1175,13 +1220,14 @@ function parseResultRow(row) {
     success: Boolean(row.success),
     errorMessage: row.error_message,
     createdAt: row.created_at,
-    factors: (row.factor_recognition != null || row.factor_multi_agent_tutor != null || row.factor_multi_agent_learner != null)
-      ? {
-          recognition: Boolean(row.factor_recognition),
-          multi_agent_tutor: Boolean(row.factor_multi_agent_tutor),
-          multi_agent_learner: Boolean(row.factor_multi_agent_learner),
-        }
-      : null,
+    factors:
+      row.factor_recognition != null || row.factor_multi_agent_tutor != null || row.factor_multi_agent_learner != null
+        ? {
+            recognition: Boolean(row.factor_recognition),
+            multi_agent_tutor: Boolean(row.factor_multi_agent_tutor),
+            multi_agent_learner: Boolean(row.factor_multi_agent_learner),
+          }
+        : null,
     learnerArchitecture: row.learner_architecture || null,
     learnerScores: row.learner_scores ? JSON.parse(row.learner_scores) : null,
     learnerOverallScore: row.learner_overall_score != null ? row.learner_overall_score : null,
@@ -1237,8 +1283,9 @@ export function storeInteractionEval(evalData) {
     // Extract overall score from multiple possible locations in judge evaluation
     evalData.judgeEvaluation?.overall_assessment?.score ??
       evalData.judgeEvaluation?.narrative_summary?.overall_quality ??
-      evalData.judgeEvaluation?.overall_score ?? null,
-    JSON.stringify(evalData.judgeEvaluation || null)
+      evalData.judgeEvaluation?.overall_score ??
+      null,
+    JSON.stringify(evalData.judgeEvaluation || null),
   );
 
   return evalData.evalId;
@@ -1260,7 +1307,7 @@ export function listInteractionEvals(options = {}) {
   const stmt = db.prepare(sql);
   const rows = scenarioId ? stmt.all(scenarioId, limit) : stmt.all(limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     evalId: row.id,
     runId: row.run_id,
     scenarioId: row.scenario_id,
@@ -1490,8 +1537,8 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.factorMultiAgentTutor ?? null,
     originalResult.factorMultiAgentLearner ?? null,
     originalResult.learnerArchitecture || null,
-    'rubric',  // Rejudgments only store successful rubric evaluations
-    new Date().toISOString()
+    'rubric', // Rejudgments only store successful rubric evaluations
+    new Date().toISOString(),
   );
 
   return info.lastInsertRowid;
@@ -1542,8 +1589,8 @@ export function updateResultScores(resultId, evaluation) {
     evaluation.judgeModel || null,
     evaluation.summary || null,
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
-    'rubric',  // Only called on successful evaluations
-    resultId
+    'rubric', // Only called on successful evaluations
+    resultId,
   );
 }
 
@@ -1565,12 +1612,7 @@ export function updateResultLearnerScores(resultId, evaluation) {
     WHERE id = ?
   `);
 
-  stmt.run(
-    JSON.stringify(evaluation.scores),
-    evaluation.overallScore,
-    evaluation.judgeModel || null,
-    resultId
-  );
+  stmt.run(JSON.stringify(evaluation.scores), evaluation.overallScore, evaluation.judgeModel || null, resultId);
 }
 
 /**
@@ -1583,7 +1625,7 @@ export function listInteractionEvalsByRunId(runId) {
   const stmt = db.prepare('SELECT * FROM interaction_evaluations WHERE run_id = ? ORDER BY created_at');
   const rows = stmt.all(runId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     evalId: row.id,
     runId: row.run_id,
     scenarioId: row.scenario_id,
@@ -1625,12 +1667,7 @@ export function updateInteractionLearnerScores(evalId, evaluation) {
     WHERE id = ?
   `);
 
-  stmt.run(
-    JSON.stringify(evaluation.scores),
-    evaluation.overallScore,
-    evaluation.judgeModel || null,
-    evalId
-  );
+  stmt.run(JSON.stringify(evaluation.scores), evaluation.overallScore, evaluation.judgeModel || null, evalId);
 }
 
 export default {

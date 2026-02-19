@@ -56,9 +56,7 @@ export class StreamingReporter {
     const latency = result.latencyMs ? formatMs(result.latencyMs) : '';
     const eta = formatEta(this.completedCount, this.totalTests, elapsed);
 
-    console.log(
-      `${bar} ${count} | ${status} ${score} | ${profile} | ${scenario} | ${latency} | ETA ${eta}`
-    );
+    console.log(`${bar} ${count} | ${status} ${score} | ${profile} | ${scenario} | ${latency} | ETA ${eta}`);
   }
 
   /**
@@ -73,7 +71,7 @@ export class StreamingReporter {
     const errShort = (errorMessage || 'unknown error').slice(0, 60);
 
     console.log(
-      `${bar} ${count} | \u2717 ERROR | ${profileName || ''} | ${scenarioName || ''} | ${errShort} | ETA ${eta}`
+      `${bar} ${count} | \u2717 ERROR | ${profileName || ''} | ${scenarioName || ''} | ${errShort} | ETA ${eta}`,
     );
   }
 

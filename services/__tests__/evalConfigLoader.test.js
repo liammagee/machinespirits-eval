@@ -10,11 +10,7 @@ import assert from 'node:assert/strict';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import {
-  loadProviders,
-  getProviderConfig,
-  resolveModel,
-} from '../evalConfigLoader.js';
+import { loadProviders, getProviderConfig, resolveModel } from '../evalConfigLoader.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_DIR = path.resolve(__dirname, '../../config');
@@ -59,10 +55,7 @@ describe('loadProviders', () => {
     const data = loadProviders({ forceReload: true });
     for (const [name, provider] of Object.entries(data.providers)) {
       assert.ok(provider.models, `${name} should have models`);
-      assert.ok(
-        typeof provider.models === 'object',
-        `${name}.models should be an object`
-      );
+      assert.ok(typeof provider.models === 'object', `${name}.models should be an object`);
     }
   });
 });
@@ -74,12 +67,7 @@ describe('loadProviders', () => {
 describe('getProviderConfig', () => {
   // Save and restore env vars to avoid side effects
   const savedEnv = {};
-  const envKeys = [
-    'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY',
-    'OPENROUTER_API_KEY',
-    'GEMINI_API_KEY',
-  ];
+  const envKeys = ['ANTHROPIC_API_KEY', 'OPENAI_API_KEY', 'OPENROUTER_API_KEY', 'GEMINI_API_KEY'];
 
   beforeEach(() => {
     for (const key of envKeys) {
@@ -106,10 +94,7 @@ describe('getProviderConfig', () => {
   });
 
   it('throws for unknown provider', () => {
-    assert.throws(
-      () => getProviderConfig('nonexistent'),
-      /Unknown provider: nonexistent/
-    );
+    assert.throws(() => getProviderConfig('nonexistent'), /Unknown provider: nonexistent/);
   });
 
   it('resolves API key from environment', () => {
@@ -251,10 +236,7 @@ describe('resolveModel (object format)', () => {
 
 describe('resolveModel (error cases)', () => {
   it('throws on single-part string (no dot)', () => {
-    assert.throws(
-      () => resolveModel('sonnet'),
-      /Invalid model reference.*Use format "provider\.model"/
-    );
+    assert.throws(() => resolveModel('sonnet'), /Invalid model reference.*Use format "provider\.model"/);
   });
 
   it('splits on first dot only (handles aliases with dots like kimi-k2.5)', () => {
@@ -265,45 +247,27 @@ describe('resolveModel (error cases)', () => {
   });
 
   it('throws on unknown provider', () => {
-    assert.throws(
-      () => resolveModel('fakeprovider.model'),
-      /Unknown provider: fakeprovider/
-    );
+    assert.throws(() => resolveModel('fakeprovider.model'), /Unknown provider: fakeprovider/);
   });
 
   it('throws on object missing provider', () => {
-    assert.throws(
-      () => resolveModel({ model: 'haiku' }),
-      /must have both "provider" and "model"/
-    );
+    assert.throws(() => resolveModel({ model: 'haiku' }), /must have both "provider" and "model"/);
   });
 
   it('throws on object missing model', () => {
-    assert.throws(
-      () => resolveModel({ provider: 'anthropic' }),
-      /must have both "provider" and "model"/
-    );
+    assert.throws(() => resolveModel({ provider: 'anthropic' }), /must have both "provider" and "model"/);
   });
 
   it('throws on null', () => {
-    assert.throws(
-      () => resolveModel(null),
-      /Model reference must be a string or object/
-    );
+    assert.throws(() => resolveModel(null), /Model reference must be a string or object/);
   });
 
   it('throws on number', () => {
-    assert.throws(
-      () => resolveModel(42),
-      /Model reference must be a string or object/
-    );
+    assert.throws(() => resolveModel(42), /Model reference must be a string or object/);
   });
 
   it('throws on empty object', () => {
-    assert.throws(
-      () => resolveModel({}),
-      /must have both "provider" and "model"/
-    );
+    assert.throws(() => resolveModel({}), /must have both "provider" and "model"/);
   });
 });
 
@@ -322,7 +286,7 @@ describe('resolveModel consistency', () => {
         assert.strictEqual(
           r.model,
           provider.models[alias],
-          `${providerName}.${alias} should resolve to ${provider.models[alias]}`
+          `${providerName}.${alias} should resolve to ${provider.models[alias]}`,
         );
       }
     }

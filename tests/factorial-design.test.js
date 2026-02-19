@@ -35,18 +35,30 @@ const tutorConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'tutor-agent
 const learnerConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'learner-agents.yaml'), 'utf8'));
 
 // All cell profiles (cell_1 through cell_N)
-const cellNames = Object.keys(tutorConfig.profiles).filter(name => /^cell_\d/.test(name));
-const cells = Object.fromEntries(cellNames.map(name => [name, tutorConfig.profiles[name]]));
+const cellNames = Object.keys(tutorConfig.profiles).filter((name) => /^cell_\d/.test(name));
+const cells = Object.fromEntries(cellNames.map((name) => [name, tutorConfig.profiles[name]]));
 
 // Core 8 factorial cells (base + recognition)
-const coreCellNames = cellNames.filter(n => /^cell_[1-8]_/.test(n));
-const coreCells = Object.fromEntries(coreCellNames.map(name => [name, cells[name]]));
+const coreCellNames = cellNames.filter((n) => /^cell_[1-8]_/.test(n));
+const coreCells = Object.fromEntries(coreCellNames.map((name) => [name, cells[name]]));
 
 // Valid prompt types
-const VALID_PROMPT_TYPES = ['base', 'recognition', 'enhanced', 'hardwired', 'placebo', 'memory', 'recognition_nomem',
+const VALID_PROMPT_TYPES = [
+  'base',
+  'recognition',
+  'enhanced',
+  'hardwired',
+  'placebo',
+  'memory',
+  'recognition_nomem',
   'naive',
-  'divergent_suspicious', 'divergent_adversary', 'divergent_advocate',
-  'dialectical_suspicious', 'dialectical_adversary', 'dialectical_advocate'];
+  'divergent_suspicious',
+  'divergent_adversary',
+  'divergent_advocate',
+  'dialectical_suspicious',
+  'dialectical_adversary',
+  'dialectical_advocate',
+];
 
 // ============================================================================
 // CONFIG INTEGRITY
@@ -58,7 +70,11 @@ describe('factorial design — config integrity', () => {
   });
 
   it('core cells 1-8 exist', () => {
-    assert.strictEqual(coreCellNames.length, 8, `Expected 8 core cells, got ${coreCellNames.length}: ${coreCellNames.join(', ')}`);
+    assert.strictEqual(
+      coreCellNames.length,
+      8,
+      `Expected 8 core cells, got ${coreCellNames.length}: ${coreCellNames.join(', ')}`,
+    );
   });
 
   it('each cell has a factors block with prompt_type, multi_agent_tutor, multi_agent_learner', () => {
@@ -69,10 +85,20 @@ describe('factorial design — config integrity', () => {
       for (const k of requiredKeys) {
         assert.ok(keys.includes(k), `${name} missing required factor key: ${k}`);
       }
-      assert.ok(VALID_PROMPT_TYPES.includes(profile.factors.prompt_type),
-        `${name} prompt_type "${profile.factors.prompt_type}" not in ${VALID_PROMPT_TYPES.join(',')}`);
-      assert.strictEqual(typeof profile.factors.multi_agent_tutor, 'boolean', `${name}.factors.multi_agent_tutor should be boolean`);
-      assert.strictEqual(typeof profile.factors.multi_agent_learner, 'boolean', `${name}.factors.multi_agent_learner should be boolean`);
+      assert.ok(
+        VALID_PROMPT_TYPES.includes(profile.factors.prompt_type),
+        `${name} prompt_type "${profile.factors.prompt_type}" not in ${VALID_PROMPT_TYPES.join(',')}`,
+      );
+      assert.strictEqual(
+        typeof profile.factors.multi_agent_tutor,
+        'boolean',
+        `${name}.factors.multi_agent_tutor should be boolean`,
+      );
+      assert.strictEqual(
+        typeof profile.factors.multi_agent_learner,
+        'boolean',
+        `${name}.factors.multi_agent_learner should be boolean`,
+      );
     }
   });
 
@@ -80,8 +106,10 @@ describe('factorial design — config integrity', () => {
     const combos = new Set();
     for (const [name, profile] of Object.entries(coreCells)) {
       const { prompt_type, multi_agent_tutor, multi_agent_learner } = profile.factors;
-      assert.ok(['base', 'recognition'].includes(prompt_type),
-        `Core cell ${name} should have prompt_type base or recognition, got ${prompt_type}`);
+      assert.ok(
+        ['base', 'recognition'].includes(prompt_type),
+        `Core cell ${name} should have prompt_type base or recognition, got ${prompt_type}`,
+      );
       combos.add(`${prompt_type}_t${+multi_agent_tutor}_l${+multi_agent_learner}`);
     }
     assert.strictEqual(combos.size, 8, `Expected 8 unique core factor combos, got ${combos.size}`);
@@ -111,8 +139,10 @@ describe('factorial design — config integrity', () => {
     for (const [name, profile] of Object.entries(cells)) {
       const { prompt_type, multi_agent_tutor } = profile.factors;
       const expectedSubstr = namePatterns[prompt_type];
-      assert.ok(name.includes(expectedSubstr),
-        `${name} has prompt_type=${prompt_type} but name lacks "${expectedSubstr}"`);
+      assert.ok(
+        name.includes(expectedSubstr),
+        `${name} has prompt_type=${prompt_type} but name lacks "${expectedSubstr}"`,
+      );
       if (isDivergent(prompt_type)) {
         // Divergent cells always have multi_agent_tutor=true; superego type in name implies multi-agent
         assert.ok(multi_agent_tutor, `${name} is divergent but multi_agent_tutor is false`);
@@ -176,7 +206,7 @@ describe('factorial design — prompt file assignment', () => {
   });
 
   it('multi-agent cells use the correct superego prompt file for their prompt_type', () => {
-    const multiCells = cellNames.filter(n => cells[n].factors.multi_agent_tutor);
+    const multiCells = cellNames.filter((n) => cells[n].factors.multi_agent_tutor);
     for (const name of multiCells) {
       const expected = superegoPromptFiles[cells[name].factors.prompt_type];
       assert.strictEqual(cells[name].superego.prompt_file, expected, `${name} superego prompt_file`);
@@ -214,12 +244,12 @@ describe('factorial design — model consistency', () => {
   });
 
   it('superego uses temperature 0.2 (lower than ego)', () => {
-    const multiCells = cellNames.filter(n => cells[n].factors.multi_agent_tutor);
+    const multiCells = cellNames.filter((n) => cells[n].factors.multi_agent_tutor);
     for (const name of multiCells) {
       assert.strictEqual(cells[name].superego.hyperparameters.temperature, 0.2, `${name} superego temperature`);
       assert.ok(
         cells[name].superego.hyperparameters.temperature < cells[name].ego.hyperparameters.temperature,
-        `${name} superego temp should be lower than ego temp`
+        `${name} superego temp should be lower than ego temp`,
       );
     }
   });
@@ -236,38 +266,42 @@ describe('factorial design — learner architecture wiring', () => {
       assert.ok(arch, `${name} missing learner_architecture`);
       assert.ok(
         learnerConfig.profiles[arch],
-        `${name} learner_architecture "${arch}" not found in learner-agents.yaml`
+        `${name} learner_architecture "${arch}" not found in learner-agents.yaml`,
       );
     }
   });
 
   it('base+unified cells use "unified" learner architecture', () => {
-    const matching = cellNames.filter(n =>
-      cells[n].factors.prompt_type === 'base' && !cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(
+      (n) => cells[n].factors.prompt_type === 'base' && !cells[n].factors.multi_agent_learner,
+    );
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'unified', `${name} learner_architecture`);
     }
   });
 
   it('base+psycho cells use "ego_superego" learner architecture', () => {
-    const matching = cellNames.filter(n =>
-      cells[n].factors.prompt_type === 'base' && cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(
+      (n) => cells[n].factors.prompt_type === 'base' && cells[n].factors.multi_agent_learner,
+    );
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'ego_superego', `${name} learner_architecture`);
     }
   });
 
   it('recognition+unified cells use "unified_recognition" learner architecture', () => {
-    const matching = cellNames.filter(n =>
-      cells[n].factors.prompt_type === 'recognition' && !cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(
+      (n) => cells[n].factors.prompt_type === 'recognition' && !cells[n].factors.multi_agent_learner,
+    );
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'unified_recognition', `${name} learner_architecture`);
     }
   });
 
   it('recognition+psycho cells use "ego_superego_recognition" learner architecture', () => {
-    const matching = cellNames.filter(n =>
-      cells[n].factors.prompt_type === 'recognition' && cells[n].factors.multi_agent_learner);
+    const matching = cellNames.filter(
+      (n) => cells[n].factors.prompt_type === 'recognition' && cells[n].factors.multi_agent_learner,
+    );
     for (const name of matching) {
       assert.strictEqual(cells[name].learner_architecture, 'ego_superego_recognition', `${name} learner_architecture`);
     }

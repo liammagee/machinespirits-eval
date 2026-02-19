@@ -87,7 +87,10 @@ describe('runInteraction (multi-turn)', () => {
       { maxTurns: 2, observeInternals: true, learnerProfile: 'unified' },
     );
 
-    assert.ok(result.turns.length >= 3, `expected ≥3 turns (initial learner + 2×tutor/learner pairs), got ${result.turns.length}`);
+    assert.ok(
+      result.turns.length >= 3,
+      `expected ≥3 turns (initial learner + 2×tutor/learner pairs), got ${result.turns.length}`,
+    );
 
     // Turn 0 should always be a learner message
     assert.strictEqual(result.turns[0].phase, 'learner', 'first turn should be learner');
@@ -96,8 +99,11 @@ describe('runInteraction (multi-turn)', () => {
     // Subsequent turns should alternate tutor → learner
     for (let i = 1; i < result.turns.length; i++) {
       const expectedPhase = i % 2 === 1 ? 'tutor' : 'learner';
-      assert.strictEqual(result.turns[i].phase, expectedPhase,
-        `turn ${i} should be ${expectedPhase}, got ${result.turns[i].phase}`);
+      assert.strictEqual(
+        result.turns[i].phase,
+        expectedPhase,
+        `turn ${i} should be ${expectedPhase}, got ${result.turns[i].phase}`,
+      );
     }
   });
 
@@ -115,7 +121,7 @@ describe('runInteraction (multi-turn)', () => {
     );
 
     // With maxTurns=1: initial learner (turn 0) + 1 tutor + 1 learner = 3 turns max
-    const tutorTurns = result.turns.filter(t => t.phase === 'tutor');
+    const tutorTurns = result.turns.filter((t) => t.phase === 'tutor');
     assert.ok(tutorTurns.length <= 1, `expected ≤1 tutor turn with maxTurns=1, got ${tutorTurns.length}`);
   });
 
@@ -184,9 +190,14 @@ describe('runInteraction (multi-turn)', () => {
 
   it('INTERACTION_OUTCOMES exports expected keys', () => {
     const expectedKeys = [
-      'BREAKTHROUGH', 'PRODUCTIVE_STRUGGLE', 'MUTUAL_RECOGNITION',
-      'FRUSTRATION', 'DISENGAGEMENT', 'SCAFFOLDING_NEEDED',
-      'FADING_APPROPRIATE', 'TRANSFORMATION',
+      'BREAKTHROUGH',
+      'PRODUCTIVE_STRUGGLE',
+      'MUTUAL_RECOGNITION',
+      'FRUSTRATION',
+      'DISENGAGEMENT',
+      'SCAFFOLDING_NEEDED',
+      'FADING_APPROPRIATE',
+      'TRANSFORMATION',
     ];
     for (const key of expectedKeys) {
       assert.ok(key in INTERACTION_OUTCOMES, `INTERACTION_OUTCOMES should have ${key}`);

@@ -50,31 +50,60 @@ export class ProgressLogger {
     this.writeEvent('test_start', { scenarioId, scenarioName, profileName });
   }
 
-  testComplete({ scenarioId, scenarioName, profileName, success, overallScore, baseScore, recognitionScore, latencyMs, completedCount, totalTests }) {
+  testComplete({
+    scenarioId,
+    scenarioName,
+    profileName,
+    success,
+    overallScore,
+    baseScore,
+    recognitionScore,
+    latencyMs,
+    completedCount,
+    totalTests,
+  }) {
     this.writeEvent('test_complete', {
-      scenarioId, scenarioName, profileName,
-      success, overallScore, baseScore, recognitionScore, latencyMs,
-      completedCount, totalTests,
+      scenarioId,
+      scenarioName,
+      profileName,
+      success,
+      overallScore,
+      baseScore,
+      recognitionScore,
+      latencyMs,
+      completedCount,
+      totalTests,
     });
   }
 
   testError({ scenarioId, scenarioName, profileName, errorMessage, completedCount, totalTests }) {
     this.writeEvent('test_error', {
-      scenarioId, scenarioName, profileName, errorMessage,
-      completedCount, totalTests,
+      scenarioId,
+      scenarioName,
+      profileName,
+      errorMessage,
+      completedCount,
+      totalTests,
     });
   }
 
   scenarioComplete({ scenarioId, scenarioName, profileNames, avgScore, completedScenarios, totalScenarios }) {
     this.writeEvent('scenario_complete', {
-      scenarioId, scenarioName, profileNames, avgScore,
-      completedScenarios, totalScenarios,
+      scenarioId,
+      scenarioName,
+      profileNames,
+      avgScore,
+      completedScenarios,
+      totalScenarios,
     });
   }
 
   runComplete({ totalTests, successfulTests, failedTests, durationMs }) {
     this.writeEvent('run_complete', {
-      totalTests, successfulTests, failedTests, durationMs,
+      totalTests,
+      successfulTests,
+      failedTests,
+      durationMs,
     });
   }
 }
@@ -89,10 +118,15 @@ export function readProgressLog(runId) {
   const filePath = path.join(PROGRESS_DIR, `${runId}.jsonl`);
   if (!fs.existsSync(filePath)) return [];
   const lines = fs.readFileSync(filePath, 'utf-8').split('\n').filter(Boolean);
-  return lines.map(line => {
-    try { return JSON.parse(line); }
-    catch { return null; }
-  }).filter(Boolean);
+  return lines
+    .map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
 }
 
 export default { ProgressLogger, getProgressLogPath, readProgressLog };

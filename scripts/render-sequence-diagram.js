@@ -56,9 +56,19 @@ function getOption(name) {
   const idx = args.indexOf('--' + name);
   return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : null;
 }
-function getFlag(name) { return args.includes('--' + name); }
+function getFlag(name) {
+  return args.includes('--' + name);
+}
 
-const runId = args.find(a => !a.startsWith('--') && a !== getOption('scenario') && a !== getOption('profile') && a !== getOption('dialogue') && a !== getOption('limit') && a !== getOption('output'));
+const runId = args.find(
+  (a) =>
+    !a.startsWith('--') &&
+    a !== getOption('scenario') &&
+    a !== getOption('profile') &&
+    a !== getOption('dialogue') &&
+    a !== getOption('limit') &&
+    a !== getOption('output'),
+);
 const scenarioFilter = getOption('scenario');
 const profileFilter = getOption('profile');
 const dialogueFilter = getOption('dialogue');
@@ -83,12 +93,24 @@ let query = `SELECT id, profile_name, scenario_id, dialogue_id, overall_score, j
   WHERE run_id = ? AND dialogue_id IS NOT NULL`;
 const params = [runId];
 
-if (dialogueFilter) { query += ' AND dialogue_id = ?'; params.push(dialogueFilter); }
-if (scenarioFilter) { query += ' AND scenario_id LIKE ?'; params.push('%' + scenarioFilter + '%'); }
-if (profileFilter) { query += ' AND profile_name LIKE ?'; params.push('%' + profileFilter + '%'); }
+if (dialogueFilter) {
+  query += ' AND dialogue_id = ?';
+  params.push(dialogueFilter);
+}
+if (scenarioFilter) {
+  query += ' AND scenario_id LIKE ?';
+  params.push('%' + scenarioFilter + '%');
+}
+if (profileFilter) {
+  query += ' AND profile_name LIKE ?';
+  params.push('%' + profileFilter + '%');
+}
 
 query += ' ORDER BY overall_score DESC';
-if (limit) { query += ' LIMIT ?'; params.push(limit); }
+if (limit) {
+  query += ' LIMIT ?';
+  params.push(limit);
+}
 
 const results = db.prepare(query).all(...params);
 
@@ -104,13 +126,17 @@ console.log(`Found ${results.length} dialogue(s) to render.`);
 function shortModel(m) {
   if (!m) return '?';
   // Strip provider prefix and version suffixes: "openrouter.kimi-k2.5" → "kimi-k2.5", "moonshotai/kimi-k2.5" → "kimi-k2.5"
-  return String(m).replace(/^openrouter\./, '').split('/').pop().split(':')[0];
+  return String(m)
+    .replace(/^openrouter\./, '')
+    .split('/')
+    .pop()
+    .split(':')[0];
 }
 
 function extractLearnerQuery(entry) {
   const raw = entry.rawContext || '';
-  const match = raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s)
-    || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
+  const match =
+    raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s) || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
   return match ? match[1].trim() : null;
 }
 
@@ -123,7 +149,7 @@ function fullContent(entry) {
     return entry.feedback || entry.verdict?.feedback || '';
   }
   if (entry.suggestions?.length > 0) {
-    return entry.suggestions.map(s => s.message || s.text || s.title || '').join('\n\n');
+    return entry.suggestions.map((s) => s.message || s.text || s.title || '').join('\n\n');
   }
   if (entry.agent === 'user' && entry.action === 'context_input') {
     return extractLearnerQuery(entry) || '(scenario context)';
@@ -157,12 +183,23 @@ function traceToSteps(trace) {
       let responseContent = '';
       for (let j = i - 1; j >= 0; j--) {
         const prev = trace[j];
-        if (prev.agent === 'ego' && (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')) {
+        if (
+          prev.agent === 'ego' &&
+          (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')
+        ) {
           responseContent = fullContent(prev);
           break;
         }
       }
-      steps.push({ from: 'tutor_ego', to: 'learner_ego', label: 'Response', detail: '', fullDetail: responseContent, type: 'response', speaker: 'TUTOR EGO' });
+      steps.push({
+        from: 'tutor_ego',
+        to: 'learner_ego',
+        label: 'Response',
+        detail: '',
+        fullDetail: responseContent,
+        type: 'response',
+        speaker: 'TUTOR EGO',
+      });
       needsResponseArrow = false;
     }
 
@@ -177,11 +214,13 @@ function traceToSteps(trace) {
         const query = extractLearnerQuery(e);
         const full = query || '(scenario prompt)';
         steps.push({
-          from: 'learner_ego', to: 'tutor_ego',
+          from: 'learner_ego',
+          to: 'tutor_ego',
           label: 'Initial query',
           detail: full.substring(0, 120),
           fullDetail: full,
-          type: 'front', speaker: 'LEARNER',
+          type: 'front',
+          speaker: 'LEARNER',
         });
       }
       needsResponseArrow = true;
@@ -195,7 +234,10 @@ function traceToSteps(trace) {
       // Look ahead: does a superego review follow before the next learner block?
       let superegoFollows = false;
       for (let j = i + 1; j < trace.length; j++) {
-        if (trace[j].agent === 'superego' && trace[j].action === 'review') { superegoFollows = true; break; }
+        if (trace[j].agent === 'superego' && trace[j].action === 'review') {
+          superegoFollows = true;
+          break;
+        }
         if (learnerBlockStarts.has(j)) break; // hit learner block first — no review coming
         if (trace[j].agent === 'user' && trace[j].action === 'context_input') break;
       }
@@ -203,17 +245,26 @@ function traceToSteps(trace) {
       if (action !== 'generate' && !superegoFollows) {
         // Final revision with no superego review — render as direct Response to learner
         steps.push({
-          from: 'tutor_ego', to: 'learner_ego', label: 'Response',
-          detail: '', fullDetail: full, type: 'response',
+          from: 'tutor_ego',
+          to: 'learner_ego',
+          label: 'Response',
+          detail: '',
+          fullDetail: full,
+          type: 'response',
           latency: e.metrics?.latencyMs || null,
-          speaker: 'TUTOR EGO', model: e.metrics?.model || null,
+          speaker: 'TUTOR EGO',
+          model: e.metrics?.model || null,
         });
         needsResponseArrow = false;
       } else {
         const label = action === 'generate' ? 'Draft' : 'Revised';
         steps.push({
-          from: 'tutor_ego', to: 'tutor_superego', label,
-          detail: snippet(e, 120), fullDetail: full, type: 'back',
+          from: 'tutor_ego',
+          to: 'tutor_superego',
+          label,
+          detail: snippet(e, 120),
+          fullDetail: full,
+          type: 'back',
           latency: e.metrics?.latencyMs || null,
           speaker: action === 'generate' ? 'TUTOR EGO (draft)' : 'TUTOR EGO (revised)',
           model: e.metrics?.model || null,
@@ -228,28 +279,51 @@ function traceToSteps(trace) {
       const full = fullContent(e);
       if (approved) {
         steps.push({
-          from: 'tutor_superego', to: 'tutor_ego', label: 'Approved \u2713',
-          detail: snippet(e, 120), fullDetail: full, type: 'back', approved: true,
+          from: 'tutor_superego',
+          to: 'tutor_ego',
+          label: 'Approved \u2713',
+          detail: snippet(e, 120),
+          fullDetail: full,
+          type: 'back',
+          approved: true,
           latency: e.metrics?.latencyMs || null,
-          speaker: 'SUPEREGO', model: e.metrics?.model || null,
+          speaker: 'SUPEREGO',
+          model: e.metrics?.model || null,
         });
         // Find the approved ego output for the response
         let responseContent = '';
         for (let j = i - 1; j >= 0; j--) {
           const prev = trace[j];
-          if (prev.agent === 'ego' && (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')) {
+          if (
+            prev.agent === 'ego' &&
+            (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')
+          ) {
             responseContent = fullContent(prev);
             break;
           }
         }
-        steps.push({ from: 'tutor_ego', to: 'learner_ego', label: 'Response', detail: '', fullDetail: responseContent, type: 'response', speaker: 'TUTOR EGO' });
+        steps.push({
+          from: 'tutor_ego',
+          to: 'learner_ego',
+          label: 'Response',
+          detail: '',
+          fullDetail: responseContent,
+          type: 'response',
+          speaker: 'TUTOR EGO',
+        });
         needsResponseArrow = false;
       } else {
         steps.push({
-          from: 'tutor_superego', to: 'tutor_ego', label: 'Revise \u21BB',
-          detail: snippet(e, 120), fullDetail: full, type: 'back', approved: false,
+          from: 'tutor_superego',
+          to: 'tutor_ego',
+          label: 'Revise \u21BB',
+          detail: snippet(e, 120),
+          fullDetail: full,
+          type: 'back',
+          approved: false,
           latency: e.metrics?.latencyMs || null,
-          speaker: 'SUPEREGO', model: e.metrics?.model || null,
+          speaker: 'SUPEREGO',
+          model: e.metrics?.model || null,
         });
       }
       continue;
@@ -259,8 +333,12 @@ function traceToSteps(trace) {
     if (agent === 'learner_ego_initial' && action === 'deliberation') {
       const full = fullContent(e);
       steps.push({
-        from: 'learner_ego', to: 'learner_superego', label: 'Reaction',
-        detail: snippet(e, 120), fullDetail: full, type: 'back',
+        from: 'learner_ego',
+        to: 'learner_superego',
+        label: 'Reaction',
+        detail: snippet(e, 120),
+        fullDetail: full,
+        type: 'back',
         speaker: 'LEARNER EGO',
       });
       continue;
@@ -270,8 +348,12 @@ function traceToSteps(trace) {
     if (agent === 'learner_superego' && action === 'deliberation') {
       const full = fullContent(e);
       steps.push({
-        from: 'learner_superego', to: 'learner_ego', label: 'Critique',
-        detail: snippet(e, 120), fullDetail: full, type: 'back',
+        from: 'learner_superego',
+        to: 'learner_ego',
+        label: 'Critique',
+        detail: snippet(e, 120),
+        fullDetail: full,
+        type: 'back',
         speaker: 'LEARNER SUPEREGO',
       });
       continue;
@@ -284,9 +366,12 @@ function traceToSteps(trace) {
     if (agent === 'user' && action === 'turn_action') {
       const full = fullContent(e);
       steps.push({
-        from: 'learner_ego', to: 'tutor_ego',
+        from: 'learner_ego',
+        to: 'tutor_ego',
         label: 'Turn ' + (dialogueTurn + 1),
-        detail: snippet(e, 120), fullDetail: full, type: 'front',
+        detail: snippet(e, 120),
+        fullDetail: full,
+        type: 'front',
         speaker: 'LEARNER',
       });
       needsResponseArrow = true;
@@ -310,22 +395,60 @@ function generateHtml(result, steps, trace, meta = {}) {
   const score = result.overall_score?.toFixed(1) || '--';
 
   let judgeScores = {};
-  try { judgeScores = JSON.parse(result.scores_with_reasoning || '{}'); } catch { /* ignored */ }
+  try {
+    judgeScores = JSON.parse(result.scores_with_reasoning || '{}');
+  } catch {
+    /* ignored */
+  }
   let qualitative = {};
-  try { qualitative = JSON.parse(result.qualitative_assessment || '{}'); } catch { /* ignored */ }
+  try {
+    qualitative = JSON.parse(result.qualitative_assessment || '{}');
+  } catch {
+    /* ignored */
+  }
 
   const isRecog = /recog/i.test(profile);
   const condLabel = isRecog ? 'Recognition' : 'Base';
 
   // ── Actors & SVG dimensions ──
   const actors = [
-    { id: 'learner_superego', label: 'L.Superego', model: shortModel(meta.learnerSuperegoModel), color: '#fce4ec', textColor: '#c62828', stroke: '#ef5350' },
-    { id: 'learner_ego', label: 'L.Ego', model: shortModel(meta.learnerEgoModel), color: '#f3e5f5', textColor: '#6a1b9a', stroke: '#ab47bc' },
-    { id: 'tutor_ego', label: 'T.Ego', model: shortModel(meta.egoModel), color: '#e3f2fd', textColor: '#1565c0', stroke: '#42a5f5' },
-    { id: 'tutor_superego', label: 'T.Superego', model: shortModel(meta.superegoModel), color: '#e8f5e9', textColor: '#2e7d32', stroke: '#66bb6a' },
+    {
+      id: 'learner_superego',
+      label: 'L.Superego',
+      model: shortModel(meta.learnerSuperegoModel),
+      color: '#fce4ec',
+      textColor: '#c62828',
+      stroke: '#ef5350',
+    },
+    {
+      id: 'learner_ego',
+      label: 'L.Ego',
+      model: shortModel(meta.learnerEgoModel),
+      color: '#f3e5f5',
+      textColor: '#6a1b9a',
+      stroke: '#ab47bc',
+    },
+    {
+      id: 'tutor_ego',
+      label: 'T.Ego',
+      model: shortModel(meta.egoModel),
+      color: '#e3f2fd',
+      textColor: '#1565c0',
+      stroke: '#42a5f5',
+    },
+    {
+      id: 'tutor_superego',
+      label: 'T.Superego',
+      model: shortModel(meta.superegoModel),
+      color: '#e8f5e9',
+      textColor: '#2e7d32',
+      stroke: '#66bb6a',
+    },
   ];
   const colMap = {};
-  actors.forEach((a, i) => { colMap[a.id] = i; });
+  actors.forEach((a, i) => {
+    colMap[a.id] = i;
+  });
 
   const colWidth = 140;
   const rowHeight = 38;
@@ -353,10 +476,13 @@ function generateHtml(result, steps, trace, meta = {}) {
   steps.forEach((s, i) => {
     if (s.label.startsWith('Turn ') || s.label === 'Initial query') {
       const num = s.label === 'Initial query' ? 1 : parseInt(s.label.replace('Turn ', ''));
-      if (num !== prevTurn) { turnBoundaries.push({ index: i, turn: num }); prevTurn = num; }
+      if (num !== prevTurn) {
+        turnBoundaries.push({ index: i, turn: num });
+        prevTurn = num;
+      }
     }
   });
-  turnBoundaries.forEach(tb => {
+  turnBoundaries.forEach((tb) => {
     const y = headerHeight + tb.index * rowHeight;
     svg += `<line x1="${padding}" y1="${y}" x2="${svgWidth - padding}" y2="${y}" stroke="#444" stroke-width="0.5"/>`;
     svg += `<text x="${svgWidth - padding + 3}" y="${y + 12}" font-size="9" fill="#666" font-weight="600">T${tb.turn}</text>`;
@@ -375,10 +501,13 @@ function generateHtml(result, steps, trace, meta = {}) {
 
     let color;
     const fromActor = actors[fromCol];
-    if (step.type === 'front' || step.type === 'response') { color = '#78909c'; }
-    else { color = fromActor.stroke; }
+    if (step.type === 'front' || step.type === 'response') {
+      color = '#78909c';
+    } else {
+      color = fromActor.stroke;
+    }
 
-    const sw = (step.type === 'front' || step.type === 'response') ? 2.2 : 1.2;
+    const sw = step.type === 'front' || step.type === 'response' ? 2.2 : 1.2;
     const tipOff = isLR ? -6 : 6;
 
     // Invisible wider hit area for clicking
@@ -406,9 +535,13 @@ function generateHtml(result, steps, trace, meta = {}) {
 
   // ── Build transcript entries ──
   const speakerColors = {
-    'TUTOR EGO': '#42a5f5', 'TUTOR EGO (draft)': '#42a5f5', 'TUTOR EGO (revised)': '#42a5f5',
-    'SUPEREGO': '#66bb6a', 'LEARNER EGO': '#ab47bc', 'LEARNER SUPEREGO': '#ef5350',
-    'LEARNER': '#78909c',
+    'TUTOR EGO': '#42a5f5',
+    'TUTOR EGO (draft)': '#42a5f5',
+    'TUTOR EGO (revised)': '#42a5f5',
+    SUPEREGO: '#66bb6a',
+    'LEARNER EGO': '#ab47bc',
+    'LEARNER SUPEREGO': '#ef5350',
+    LEARNER: '#78909c',
   };
 
   let transcriptHtml = '';
@@ -422,7 +555,9 @@ function generateHtml(result, steps, trace, meta = {}) {
     if (step.approved === true) badge = '<span class="badge approved">APPROVED</span>';
     else if (step.approved === false) badge = '<span class="badge revise">REVISE</span>';
 
-    const modelStr = step.model ? `<span class="entry-model">${escapeHtml(String(step.model).split('/').pop().split(':')[0])}</span>` : '';
+    const modelStr = step.model
+      ? `<span class="entry-model">${escapeHtml(String(step.model).split('/').pop().split(':')[0])}</span>`
+      : '';
 
     transcriptHtml += `<div class="entry" id="entry-${i}" data-step="${i}" onclick="highlight(${i})">
   <div class="entry-speaker" style="color:${color}">${escapeHtml(speaker)} ${badge} ${modelStr}</div>
@@ -433,7 +568,7 @@ function generateHtml(result, steps, trace, meta = {}) {
   // ── Judge table ──
   let judgeRows = '';
   for (const [dim, data] of Object.entries(judgeScores)) {
-    const label = dim.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const label = dim.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
     const sv = data.score || 0;
     const reasoning = escapeHtml(data.reasoning || '');
     const barW = (sv / 5) * 100;
@@ -447,9 +582,12 @@ function generateHtml(result, steps, trace, meta = {}) {
   // ── Qualitative ──
   let qualHtml = '';
   const axes = [
-    ['pedagogical_arc', 'Pedagogical Arc'], ['recognition_dynamics', 'Recognition Dynamics'],
-    ['superego_effectiveness', 'Superego Effectiveness'], ['learner_trajectory', 'Learner Trajectory'],
-    ['missed_opportunities', 'Missed Opportunities'], ['overall_narrative', 'Overall Narrative'],
+    ['pedagogical_arc', 'Pedagogical Arc'],
+    ['recognition_dynamics', 'Recognition Dynamics'],
+    ['superego_effectiveness', 'Superego Effectiveness'],
+    ['learner_trajectory', 'Learner Trajectory'],
+    ['missed_opportunities', 'Missed Opportunities'],
+    ['overall_narrative', 'Overall Narrative'],
   ];
   for (const [k, lab] of axes) {
     if (qualitative[k]) {
@@ -461,7 +599,7 @@ function generateHtml(result, steps, trace, meta = {}) {
     qualHtml += `<div class="qual-ktp"><div class="qual-label" style="color:#ffab40">Key Turning Point (Turn ${ktp.turn || '?'})</div><div class="qual-text">${escapeHtml(ktp.description || '')}</div></div>`;
   }
   if (qualitative.tags?.length) {
-    qualHtml += `<div class="qual-tags">${qualitative.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`;
+    qualHtml += `<div class="qual-tags">${qualitative.tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`;
   }
 
   return `<!DOCTYPE html>
@@ -540,7 +678,7 @@ function generateHtml(result, steps, trace, meta = {}) {
 
 <div class="top-bar">
   <div>
-    <h1>${escapeHtml(scenario?.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || '')}</h1>
+    <h1>${escapeHtml(scenario?.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || '')}</h1>
     <div class="meta-grid">
       <span class="meta-label">Cell</span><span class="meta-value">${escapeHtml(profile)}</span><span class="meta-value">${condLabel}${meta.totalTurns ? ' · ' + meta.totalTurns + ' turns' : ''}</span>
       <span class="meta-label">Tutor</span><span class="meta-value">ego ${escapeHtml(shortModel(meta.egoModel))}</span><span class="meta-value">superego ${escapeHtml(shortModel(meta.superegoModel) || shortModel(meta.egoModel))}</span>
@@ -569,13 +707,17 @@ function generateHtml(result, steps, trace, meta = {}) {
   </div>
 </div>
 
-${(judgeRows || qualHtml) ? `<details class="judge-panel">
+${
+  judgeRows || qualHtml
+    ? `<details class="judge-panel">
 <summary class="judge-toggle">Judge Adjudication &mdash; ${score}/100</summary>
 <div class="judge-body">
   ${judgeRows ? `<table>${judgeRows}</table>` : ''}
   ${qualHtml ? `<div style="margin-top:16px">${qualHtml}</div>` : ''}
 </div>
-</details>` : ''}
+</details>`
+    : ''
+}
 
 <script>
 let activeStep = -1;
@@ -623,7 +765,7 @@ const rendered = [];
 
 for (const result of results) {
   const dialogueId = result.dialogue_id;
-  const logFiles = fs.readdirSync(LOGS_DIR).filter(f => f.includes(dialogueId));
+  const logFiles = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
 
   if (logFiles.length === 0) {
     console.log(`  ⚠ No log file for ${dialogueId}, skipping`);
@@ -647,19 +789,24 @@ for (const result of results) {
 
   // Collect metadata from log + DB result for the header
   // Resolve learner models from config
-  let learnerEgoModel = '', learnerSuperegoModel = '';
+  let learnerEgoModel = '',
+    learnerSuperegoModel = '';
   try {
     const learnerYaml = YAML.parse(fs.readFileSync(path.join(process.cwd(), 'config/learner-agents.yaml'), 'utf8'));
     const arch = log.learnerArchitecture || 'unified';
     const prof = learnerYaml.profiles?.[arch];
     if (prof?.ego) {
       learnerEgoModel = (prof.ego.provider ? prof.ego.provider + '.' : '') + (prof.ego.model || '');
-      learnerSuperegoModel = (prof.superego?.provider ? prof.superego.provider + '.' : '') + (prof.superego?.model || '');
+      learnerSuperegoModel =
+        (prof.superego?.provider ? prof.superego.provider + '.' : '') + (prof.superego?.model || '');
     } else if (prof?.unified_learner) {
-      learnerEgoModel = (prof.unified_learner.provider ? prof.unified_learner.provider + '.' : '') + (prof.unified_learner.model || '');
+      learnerEgoModel =
+        (prof.unified_learner.provider ? prof.unified_learner.provider + '.' : '') + (prof.unified_learner.model || '');
       learnerSuperegoModel = learnerEgoModel;
     }
-  } catch { /* ignored */ }
+  } catch {
+    /* ignored */
+  }
 
   const meta = {
     runId,
@@ -688,7 +835,9 @@ if (shouldOpen && rendered.length > 0) {
   try {
     execSync(`open "${rendered[0]}"`);
     console.log(`Opened: ${path.basename(rendered[0])}`);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 db.close();

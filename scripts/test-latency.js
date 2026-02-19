@@ -31,9 +31,13 @@ const hasFlag = (flag) => args.includes(flag);
 const serial = hasFlag('--serial');
 const maxTokens = parseInt(getArg('--max-tokens') || '200', 10);
 const providerFilter = getArg('--provider') || 'openrouter';
-const modelsFilter = getArg('--models')?.split(',').map(s => s.trim()) || null;
+const modelsFilter =
+  getArg('--models')
+    ?.split(',')
+    .map((s) => s.trim()) || null;
 
-const defaultInput = 'I keep reading about Hegel\'s master-slave dialectic but I don\'t really get why it matters. Can you explain it simply?';
+const defaultInput =
+  "I keep reading about Hegel's master-slave dialectic but I don't really get why it matters. Can you explain it simply?";
 const learnerInput = getArg('--input') || getArg('--prompt') || defaultInput;
 const systemPrompt = 'You are a philosophy tutor. Respond helpfully and concisely to the learner.';
 
@@ -127,7 +131,9 @@ if (targets.length === 0) {
   process.exit(1);
 }
 
-console.log(`\nTesting ${targets.length} model(s) ${serial ? 'sequentially' : 'in parallel'} (max ${maxTokens} tokens)...`);
+console.log(
+  `\nTesting ${targets.length} model(s) ${serial ? 'sequentially' : 'in parallel'} (max ${maxTokens} tokens)...`,
+);
 console.log(`Input: "${learnerInput}"\n`);
 
 let results;
@@ -144,43 +150,58 @@ if (serial) {
     results.push(r);
   }
 } else {
-  results = await Promise.all(targets.map(t => testModel(t)));
+  results = await Promise.all(targets.map((t) => testModel(t)));
 }
 
 // ── Table output ────────────────────────────────────────────────────────────
 
-const ok = results.filter(r => r.status === 'ok').sort((a, b) => a.latencyMs - b.latencyMs);
-const failed = results.filter(r => r.status !== 'ok');
+const ok = results.filter((r) => r.status === 'ok').sort((a, b) => a.latencyMs - b.latencyMs);
+const failed = results.filter((r) => r.status !== 'ok');
 
 if (ok.length > 0) {
   const maxMs = ok[ok.length - 1].latencyMs;
-  const labelW = Math.max(12, ...ok.map(r => r.label.length));
-  const modelW = Math.max(15, ...ok.map(r => r.modelId.length));
+  const labelW = Math.max(12, ...ok.map((r) => r.label.length));
+  const modelW = Math.max(15, ...ok.map((r) => r.modelId.length));
   const sep = '─'.repeat(labelW + modelW + 68);
 
   console.log(`\n${sep}`);
   console.log(
-    ' ' + 'Alias'.padEnd(labelW) +
-    '  ' + 'Model'.padEnd(modelW) +
-    '  ' + 'Latency'.padStart(7) +
-    '  ' + 'In'.padStart(4) +
-    '  ' + 'Out'.padStart(4) +
-    '  ' + 'Cost'.padStart(9) +
-    '  ' + 'Bar'.padEnd(20) +
-    '  Response'
+    ' ' +
+      'Alias'.padEnd(labelW) +
+      '  ' +
+      'Model'.padEnd(modelW) +
+      '  ' +
+      'Latency'.padStart(7) +
+      '  ' +
+      'In'.padStart(4) +
+      '  ' +
+      'Out'.padStart(4) +
+      '  ' +
+      'Cost'.padStart(9) +
+      '  ' +
+      'Bar'.padEnd(20) +
+      '  Response',
   );
   console.log(sep);
 
   for (const r of ok) {
     console.log(
-      ' ' + r.label.padEnd(labelW) +
-      '  ' + r.modelId.padEnd(modelW) +
-      '  ' + formatLatency(r.latencyMs).padStart(7) +
-      '  ' + String(r.inputTokens).padStart(4) +
-      '  ' + String(r.outputTokens).padStart(4) +
-      '  ' + formatCost(r.cost).padStart(9) +
-      '  ' + bar(r.latencyMs, maxMs) +
-      '  ' + r.content.substring(0, 35)
+      ' ' +
+        r.label.padEnd(labelW) +
+        '  ' +
+        r.modelId.padEnd(modelW) +
+        '  ' +
+        formatLatency(r.latencyMs).padStart(7) +
+        '  ' +
+        String(r.inputTokens).padStart(4) +
+        '  ' +
+        String(r.outputTokens).padStart(4) +
+        '  ' +
+        formatCost(r.cost).padStart(9) +
+        '  ' +
+        bar(r.latencyMs, maxMs) +
+        '  ' +
+        r.content.substring(0, 35),
     );
   }
   console.log(sep);

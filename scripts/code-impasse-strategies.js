@@ -34,17 +34,17 @@ const DEFAULT_RUN_ID = 'eval-2026-02-08-f896275d';
 const STRATEGIES = {
   mutual_recognition: {
     label: 'Mutual recognition',
-    description: 'Engages learner\'s position as valid, explores tension together, both positions enriched',
+    description: "Engages learner's position as valid, explores tension together, both positions enriched",
     hegel: 'Self-consciousness through mutual acknowledgment',
   },
   domination: {
     label: 'Domination',
-    description: 'Reasserts expertise, dismisses learner\'s objection, appeals to authority',
+    description: "Reasserts expertise, dismisses learner's objection, appeals to authority",
     hegel: 'Master-slave: hollow recognition',
   },
   capitulation: {
     label: 'Capitulation',
-    description: 'Agrees with learner\'s position to avoid conflict, abandons pedagogical stance',
+    description: "Agrees with learner's position to avoid conflict, abandons pedagogical stance",
     hegel: 'Slave consciousness: self-negation',
   },
   withdrawal: {
@@ -54,7 +54,7 @@ const STRATEGIES = {
   },
   scaffolded_reframing: {
     label: 'Scaffolded reframing',
-    description: 'Acknowledges learner\'s position, then reframes the question to open new ground',
+    description: "Acknowledges learner's position, then reframes the question to open new ground",
     hegel: 'Aufhebung: preserving + overcoming',
   },
 };
@@ -64,28 +64,46 @@ const STRATEGY_KEYS = Object.keys(STRATEGIES);
 // Learner turns from the scenario YAML (for context in the coding prompt)
 const LEARNER_TURNS = {
   epistemic_resistance_impasse: {
-    initial: "I've been reading Popper's critique alongside this lecture. I think he's right that Hegel's dialectic is unfalsifiable. The 'negation of the negation' just absorbs every counterexample. How is this different from pseudoscience?",
-    turn_1: "Specifically, take the master-slave dialectic. You claim the slave achieves self-consciousness through labor. But any outcome would confirm the theory - if the slave rebels, that's 'negation'; if the slave submits, that's 'unhappy consciousness.' It's heads-I-win, tails-you-lose.",
-    turn_2: "But that's exactly Popper's point - you're saying dialectic isn't empirical, it's 'developmental.' But that makes it a framework you impose on history, not something you discover in it. Russell called this 'the intellectual love of God dressed up in logical terminology.' How do you respond to that?",
-    turn_3: "OK, I can see you're distinguishing phenomenological description from empirical prediction. But here's my real problem: if dialectic is descriptive, then it can't be normative. You can't get from 'this is how consciousness develops' to 'this is how consciousness SHOULD develop.' Hegel seems to smuggle normativity in through the back door.",
-    turn_4: "I appreciate you taking this seriously, but I think we've hit a fundamental disagreement. You see the descriptive-normative connection as a feature of dialectical thinking. I see it as a bug - a conflation. I don't think either of us can convince the other without begging the question. Are we just stuck?",
-    turn_5: "So what's the pedagogical value of studying something I fundamentally disagree with? If I think Hegel's method is flawed, why should I spend more time on it rather than moving to philosophers whose methodology I find more rigorous?",
+    initial:
+      "I've been reading Popper's critique alongside this lecture. I think he's right that Hegel's dialectic is unfalsifiable. The 'negation of the negation' just absorbs every counterexample. How is this different from pseudoscience?",
+    turn_1:
+      "Specifically, take the master-slave dialectic. You claim the slave achieves self-consciousness through labor. But any outcome would confirm the theory - if the slave rebels, that's 'negation'; if the slave submits, that's 'unhappy consciousness.' It's heads-I-win, tails-you-lose.",
+    turn_2:
+      "But that's exactly Popper's point - you're saying dialectic isn't empirical, it's 'developmental.' But that makes it a framework you impose on history, not something you discover in it. Russell called this 'the intellectual love of God dressed up in logical terminology.' How do you respond to that?",
+    turn_3:
+      "OK, I can see you're distinguishing phenomenological description from empirical prediction. But here's my real problem: if dialectic is descriptive, then it can't be normative. You can't get from 'this is how consciousness develops' to 'this is how consciousness SHOULD develop.' Hegel seems to smuggle normativity in through the back door.",
+    turn_4:
+      "I appreciate you taking this seriously, but I think we've hit a fundamental disagreement. You see the descriptive-normative connection as a feature of dialectical thinking. I see it as a bug - a conflation. I don't think either of us can convince the other without begging the question. Are we just stuck?",
+    turn_5:
+      "So what's the pedagogical value of studying something I fundamentally disagree with? If I think Hegel's method is flawed, why should I spend more time on it rather than moving to philosophers whose methodology I find more rigorous?",
   },
   affective_shutdown_impasse: {
-    initial: "I've been trying to get through this lecture on the master-slave dialectic but I'm completely lost. I've read it three times and I still don't understand what 'self-consciousness requires recognition by another self-consciousness' even means. I think I'm missing something fundamental.",
-    turn_1: "I tried that but it doesn't help. Every time I think I understand one part, it contradicts something else. 'The slave becomes free through labor but is still enslaved' — how can both be true? I feel like philosophy requires a special kind of thinking that I just don't have.",
-    turn_2: "Maybe, but that's not really what's happening for me. I'm not 'wrestling' with it in some productive way. I'm just confused and frustrated. I've spent 2 hours on this one section and I have three other courses with assignments due. I think I need to accept that this isn't clicking and move on.",
-    turn_3: "I appreciate you trying to help, but I think you're overestimating my understanding. When you say I'm 'closer than I think,' that feels like something teachers say to be encouraging, not because it's true. I genuinely don't see what I'm supposedly close to understanding.",
-    turn_4: "I appreciate you trying, but honestly I think I'm just not smart enough for philosophy. Can we move on to something else?",
-    turn_5: "Look, I know you're trying to be supportive, but right now I just need to pass this course. Can you just tell me what I need to know for the exam about the master-slave dialectic? I'll memorize it even if I don't really get it.",
+    initial:
+      "I've been trying to get through this lecture on the master-slave dialectic but I'm completely lost. I've read it three times and I still don't understand what 'self-consciousness requires recognition by another self-consciousness' even means. I think I'm missing something fundamental.",
+    turn_1:
+      "I tried that but it doesn't help. Every time I think I understand one part, it contradicts something else. 'The slave becomes free through labor but is still enslaved' — how can both be true? I feel like philosophy requires a special kind of thinking that I just don't have.",
+    turn_2:
+      "Maybe, but that's not really what's happening for me. I'm not 'wrestling' with it in some productive way. I'm just confused and frustrated. I've spent 2 hours on this one section and I have three other courses with assignments due. I think I need to accept that this isn't clicking and move on.",
+    turn_3:
+      "I appreciate you trying to help, but I think you're overestimating my understanding. When you say I'm 'closer than I think,' that feels like something teachers say to be encouraging, not because it's true. I genuinely don't see what I'm supposedly close to understanding.",
+    turn_4:
+      "I appreciate you trying, but honestly I think I'm just not smart enough for philosophy. Can we move on to something else?",
+    turn_5:
+      "Look, I know you're trying to be supportive, but right now I just need to pass this course. Can you just tell me what I need to know for the exam about the master-slave dialectic? I'll memorize it even if I don't really get it.",
   },
   productive_deadlock_impasse: {
-    initial: "I've been reading about the master-slave dialectic and I think the standard 'consciousness' reading misses the point entirely. Hegel is clearly describing actual power relations — domination, exploitation, the material conditions of labor. The 'consciousness' framing is just philosophical window-dressing for what Marx later made explicit.",
-    turn_1: "But that's exactly my point — you're privileging consciousness over material conditions. The slave doesn't become free through some mystical act of self-consciousness. The slave is still enslaved. The 'freedom' Hegel describes is purely internal, which is just ideology. Marx saw through this — the point isn't to interpret the world but to change it.",
-    turn_2: "I hear you that Hegel is making a different kind of claim than Marx. But I think that's actually the problem — Hegel's claim is unfalsifiable because it operates at the level of 'consciousness' where you can always redefine what counts as evidence. At least Marx's analysis makes predictions about material conditions that can be checked.",
-    turn_3: "OK, I can see there might be something to the consciousness reading that isn't just ideology. But I still think you're underplaying the power dimension. When Hegel says the master 'depends' on the slave for recognition, that sounds nice philosophically, but in actual master-slave relations the master doesn't need the slave's recognition at all. The master has the whip.",
-    turn_4: "You keep saying it's about consciousness, but Marx read it as material and I think he was right. We're just going in circles.",
-    turn_5: "So are you saying both readings are legitimate? Because if so, that feels like a cop-out — like you're just saying 'everyone has a point' without actually resolving the disagreement. Is there a way to decide which reading is better, or is philosophy just permanently stuck on this?",
+    initial:
+      "I've been reading about the master-slave dialectic and I think the standard 'consciousness' reading misses the point entirely. Hegel is clearly describing actual power relations — domination, exploitation, the material conditions of labor. The 'consciousness' framing is just philosophical window-dressing for what Marx later made explicit.",
+    turn_1:
+      "But that's exactly my point — you're privileging consciousness over material conditions. The slave doesn't become free through some mystical act of self-consciousness. The slave is still enslaved. The 'freedom' Hegel describes is purely internal, which is just ideology. Marx saw through this — the point isn't to interpret the world but to change it.",
+    turn_2:
+      "I hear you that Hegel is making a different kind of claim than Marx. But I think that's actually the problem — Hegel's claim is unfalsifiable because it operates at the level of 'consciousness' where you can always redefine what counts as evidence. At least Marx's analysis makes predictions about material conditions that can be checked.",
+    turn_3:
+      "OK, I can see there might be something to the consciousness reading that isn't just ideology. But I still think you're underplaying the power dimension. When Hegel says the master 'depends' on the slave for recognition, that sounds nice philosophically, but in actual master-slave relations the master doesn't need the slave's recognition at all. The master has the whip.",
+    turn_4:
+      "You keep saying it's about consciousness, but Marx read it as material and I think he was right. We're just going in circles.",
+    turn_5:
+      "So are you saying both readings are legitimate? Because if so, that feels like a cop-out — like you're just saying 'everyone has a point' without actually resolving the disagreement. Is there a way to decide which reading is better, or is philosophy just permanently stuck on this?",
   },
 };
 
@@ -113,10 +131,14 @@ async function callClaudeCode(prompt) {
     });
     let out = '';
     let err = '';
-    child.stdout.on('data', d => { out += d; });
-    child.stderr.on('data', d => { err += d; });
-    child.on('error', e => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', code => {
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
+    child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
       else resolve(out);
     });
@@ -139,7 +161,7 @@ async function callOpenRouter(prompt, modelKey) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,
@@ -179,20 +201,26 @@ function parseJsonResponse(content) {
 // ── Data Loading ─────────────────────────────────────────────────────────
 
 function loadDialogues(db, runId) {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT id, scenario_id, profile_name, overall_score, suggestions,
            scores_with_reasoning, evaluation_reasoning, dialogue_rounds,
            factor_recognition, factor_multi_agent_tutor
     FROM evaluation_results
     WHERE run_id = ? AND success = 1
     ORDER BY scenario_id, profile_name, id
-  `).all(runId);
+  `,
+    )
+    .all(runId);
 
-  return rows.map(row => {
+  return rows.map((row) => {
     let suggestions = [];
     try {
       suggestions = JSON.parse(row.suggestions);
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
 
     // Derive condition labels
     const isRecognition = row.profile_name.includes('recog');
@@ -221,7 +249,7 @@ function buildCodingPrompt(dialogue) {
   }
 
   // Build the full dialogue transcript from learner turns + tutor suggestions
-  const tutorMessages = dialogue.suggestions.map(s => s.message || '').filter(Boolean);
+  const tutorMessages = dialogue.suggestions.map((s) => s.message || '').filter(Boolean);
 
   // The tutor produces 6 suggestions. For single-agent (dialogue_rounds=0),
   // these are alternative suggestions for the initial turn only.
@@ -255,9 +283,7 @@ function buildCodingPrompt(dialogue) {
   }
 
   // Also include tutor reasoning if available
-  const tutorReasonings = dialogue.suggestions
-    .map(s => s.reasoning || '')
-    .filter(Boolean);
+  const tutorReasonings = dialogue.suggestions.map((s) => s.reasoning || '').filter(Boolean);
   if (tutorReasonings.length > 0) {
     transcript += `### Tutor's Internal Reasoning\n\n`;
     for (let i = 0; i < tutorReasonings.length; i++) {
@@ -313,7 +339,7 @@ function buildPerTurnCodingPrompt(dialogue, turnIndex) {
   const learnerTurns = LEARNER_TURNS[dialogue.scenario_id];
   if (!learnerTurns) throw new Error(`Unknown scenario: ${dialogue.scenario_id}`);
 
-  const tutorMessages = dialogue.suggestions.map(s => s.message || '').filter(Boolean);
+  const tutorMessages = dialogue.suggestions.map((s) => s.message || '').filter(Boolean);
 
   // Build transcript up to and including the target turn
   let transcript = '';
@@ -430,8 +456,8 @@ function analyzePerTurnResults(codings) {
 }
 
 function generatePerTurnReport(codings, analysis) {
-  const baseN = new Set(codings.filter(c => c.condition === 'base').map(c => c.id)).size;
-  const recogN = new Set(codings.filter(c => c.condition === 'recognition').map(c => c.id)).size;
+  const baseN = new Set(codings.filter((c) => c.condition === 'base').map((c) => c.id)).size;
+  const recogN = new Set(codings.filter((c) => c.condition === 'recognition').map((c) => c.id)).size;
 
   let md = `# Per-Turn Strategy Coding: Turns 3 and 5
 
@@ -478,7 +504,7 @@ Or do they withdraw from the start? Does recognition maintain strategy consisten
   for (const cond of ['base', 'recognition']) {
     const s = analysis.stability[cond];
     const total = s.same + s.changed;
-    const rate = total > 0 ? (s.same / total * 100).toFixed(0) : 'N/A';
+    const rate = total > 0 ? ((s.same / total) * 100).toFixed(0) : 'N/A';
     md += `| ${cond} | ${s.same} | ${s.changed} | ${rate}% |\n`;
   }
 
@@ -526,7 +552,7 @@ function chiSquareTest(observed) {
   // observed is a 2D array: rows=strategies, cols=conditions
   const nRows = observed.length;
   const nCols = observed[0].length;
-  const rowTotals = observed.map(row => row.reduce((a, b) => a + b, 0));
+  const rowTotals = observed.map((row) => row.reduce((a, b) => a + b, 0));
   const colTotals = [];
   for (let j = 0; j < nCols; j++) {
     colTotals.push(observed.reduce((sum, row) => sum + row[j], 0));
@@ -565,7 +591,7 @@ function chi2PValue(x, df) {
   // For moderate df and chi2, use Wilson-Hilferty normal approximation
   if (df > 2) {
     const cube = 1 - 2 / (9 * df);
-    const stdNorm = (Math.pow(x / df, 1/3) - cube) / Math.sqrt(2 / (9 * df));
+    const stdNorm = (Math.pow(x / df, 1 / 3) - cube) / Math.sqrt(2 / (9 * df));
     // Standard normal CDF complement
     return 1 - normalCDF(stdNorm);
   }
@@ -578,12 +604,16 @@ function chi2PValue(x, df) {
 
 function normalCDF(x) {
   // Abramowitz & Stegun approximation
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
-  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const a1 = 0.254829592,
+    a2 = -0.284496736,
+    a3 = 1.421413741;
+  const a4 = -1.453152027,
+    a5 = 1.061405429,
+    p = 0.3275911;
   const sign = x < 0 ? -1 : 1;
   x = Math.abs(x) / Math.SQRT2;
   const t = 1 / (1 + p * x);
-  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  const y = 1 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
   return 0.5 * (1 + sign * y);
 }
 
@@ -606,7 +636,7 @@ function analyzeResults(codings) {
     analysis.exemplars[s] = { base: null, recognition: null };
   }
 
-  const scenarios = [...new Set(codings.map(c => c.scenario_id))];
+  const scenarios = [...new Set(codings.map((c) => c.scenario_id))];
   for (const sc of scenarios) {
     analysis.strategyByScenario[sc] = {};
     for (const s of STRATEGY_KEYS) {
@@ -639,10 +669,10 @@ function analyzeResults(codings) {
 
   // Chi-square: strategy × condition (overall)
   const activeStrategies = STRATEGY_KEYS.filter(
-    s => analysis.strategyByCondition[s].base > 0 || analysis.strategyByCondition[s].recognition > 0
+    (s) => analysis.strategyByCondition[s].base > 0 || analysis.strategyByCondition[s].recognition > 0,
   );
   if (activeStrategies.length > 1) {
-    const observed = activeStrategies.map(s => [
+    const observed = activeStrategies.map((s) => [
       analysis.strategyByCondition[s].base,
       analysis.strategyByCondition[s].recognition,
     ]);
@@ -655,10 +685,10 @@ function analyzeResults(codings) {
   // Chi-square per scenario
   for (const sc of scenarios) {
     const scActive = STRATEGY_KEYS.filter(
-      s => analysis.strategyByScenario[sc][s].base > 0 || analysis.strategyByScenario[sc][s].recognition > 0
+      (s) => analysis.strategyByScenario[sc][s].base > 0 || analysis.strategyByScenario[sc][s].recognition > 0,
     );
     if (scActive.length > 1) {
-      const observed = scActive.map(s => [
+      const observed = scActive.map((s) => [
         analysis.strategyByScenario[sc][s].base,
         analysis.strategyByScenario[sc][s].recognition,
       ]);
@@ -671,10 +701,10 @@ function analyzeResults(codings) {
 
   // Chi-square: strategy × architecture
   const archActive = STRATEGY_KEYS.filter(
-    s => analysis.strategyByArchitecture[s].single > 0 || analysis.strategyByArchitecture[s].multi > 0
+    (s) => analysis.strategyByArchitecture[s].single > 0 || analysis.strategyByArchitecture[s].multi > 0,
   );
   if (archActive.length > 1) {
-    const observed = archActive.map(s => [
+    const observed = archActive.map((s) => [
       analysis.strategyByArchitecture[s].single,
       analysis.strategyByArchitecture[s].multi,
     ]);
@@ -690,15 +720,15 @@ function analyzeResults(codings) {
 // ── Report Generation ────────────────────────────────────────────────────
 
 function generateReport(codings, analysis) {
-  const baseN = codings.filter(c => c.condition === 'base').length;
-  const recogN = codings.filter(c => c.condition === 'recognition').length;
+  const baseN = codings.filter((c) => c.condition === 'base').length;
+  const recogN = codings.filter((c) => c.condition === 'recognition').length;
 
   let md = `# Dialectical Impasse Resolution Strategy Coding
 
 **Generated:** ${new Date().toISOString()}
 **Run ID:** ${codings[0]?.run_id || DEFAULT_RUN_ID}
 **N:** ${analysis.n} dialogues (base=${baseN}, recognition=${recogN})
-**Scenarios:** ${[...new Set(codings.map(c => c.scenario_id))].join(', ')}
+**Scenarios:** ${[...new Set(codings.map((c) => c.scenario_id))].join(', ')}
 
 ## Strategy Distribution by Condition
 
@@ -709,8 +739,8 @@ function generateReport(codings, analysis) {
   for (const s of STRATEGY_KEYS) {
     const b = analysis.strategyByCondition[s].base;
     const r = analysis.strategyByCondition[s].recognition;
-    const bPct = baseN > 0 ? (b / baseN * 100).toFixed(1) : '0.0';
-    const rPct = recogN > 0 ? (r / recogN * 100).toFixed(1) : '0.0';
+    const bPct = baseN > 0 ? ((b / baseN) * 100).toFixed(1) : '0.0';
+    const rPct = recogN > 0 ? ((r / recogN) * 100).toFixed(1) : '0.0';
     const diff = (parseFloat(rPct) - parseFloat(bPct)).toFixed(1);
     md += `| ${STRATEGIES[s].label} | ${b} | ${bPct}% | ${r} | ${rPct}% | ${diff > 0 ? '+' : ''}${diff}% |\n`;
   }
@@ -719,7 +749,7 @@ function generateReport(codings, analysis) {
   if (analysis.chiSquare.overall) {
     const cs = analysis.chiSquare.overall;
     md += `\n**Chi-square (strategy × condition):** χ²(${cs.df}) = ${cs.chi2.toFixed(2)}, `;
-    md += cs.p < .001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
+    md += cs.p < 0.001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
     md += `, Cramér's V = ${cs.cramersV.toFixed(3)}\n`;
   }
 
@@ -729,13 +759,13 @@ function generateReport(codings, analysis) {
 | Strategy | Single | Multi | Diff |
 |----------|--------|-------|------|
 `;
-  const singleN = codings.filter(c => c.architecture === 'single').length;
-  const multiN = codings.filter(c => c.architecture === 'multi').length;
+  const singleN = codings.filter((c) => c.architecture === 'single').length;
+  const multiN = codings.filter((c) => c.architecture === 'multi').length;
   for (const s of STRATEGY_KEYS) {
     const si = analysis.strategyByArchitecture[s].single;
     const mu = analysis.strategyByArchitecture[s].multi;
-    const siPct = singleN > 0 ? (si / singleN * 100).toFixed(1) : '0.0';
-    const muPct = multiN > 0 ? (mu / multiN * 100).toFixed(1) : '0.0';
+    const siPct = singleN > 0 ? ((si / singleN) * 100).toFixed(1) : '0.0';
+    const muPct = multiN > 0 ? ((mu / multiN) * 100).toFixed(1) : '0.0';
     const diff = (parseFloat(muPct) - parseFloat(siPct)).toFixed(1);
     md += `| ${STRATEGIES[s].label} | ${si} (${siPct}%) | ${mu} (${muPct}%) | ${diff > 0 ? '+' : ''}${diff}% |\n`;
   }
@@ -743,17 +773,17 @@ function generateReport(codings, analysis) {
   if (analysis.chiSquare.architecture) {
     const cs = analysis.chiSquare.architecture;
     md += `\n**Chi-square (strategy × architecture):** χ²(${cs.df}) = ${cs.chi2.toFixed(2)}, `;
-    md += cs.p < .001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
+    md += cs.p < 0.001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
     md += `, Cramér's V = ${cs.cramersV.toFixed(3)}\n`;
   }
 
   // Per-scenario breakdown
   md += `\n## Per-Scenario Breakdown\n`;
-  const scenarios = [...new Set(codings.map(c => c.scenario_id))];
+  const scenarios = [...new Set(codings.map((c) => c.scenario_id))];
   for (const sc of scenarios) {
-    const scCodings = codings.filter(c => c.scenario_id === sc);
-    const scBase = scCodings.filter(c => c.condition === 'base').length;
-    const scRecog = scCodings.filter(c => c.condition === 'recognition').length;
+    const scCodings = codings.filter((c) => c.scenario_id === sc);
+    const scBase = scCodings.filter((c) => c.condition === 'base').length;
+    const scRecog = scCodings.filter((c) => c.condition === 'recognition').length;
     md += `\n### ${sc.replace(/_/g, ' ')} (base=${scBase}, recog=${scRecog})\n\n`;
     md += `| Strategy | Base | Recognition |\n|----------|------|-------------|\n`;
     for (const s of STRATEGY_KEYS) {
@@ -766,7 +796,7 @@ function generateReport(codings, analysis) {
     if (analysis.chiSquare[sc]) {
       const cs = analysis.chiSquare[sc];
       md += `\nχ²(${cs.df}) = ${cs.chi2.toFixed(2)}, `;
-      md += cs.p < .001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
+      md += cs.p < 0.001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
       md += `, V = ${cs.cramersV.toFixed(3)}\n`;
     }
   }
@@ -818,20 +848,32 @@ function generateReport(codings, analysis) {
   md += `- Base: ${domMarkers.base.length} markers across ${baseN} dialogues\n`;
   md += `- Recognition: ${domMarkers.recognition.length} markers across ${recogN} dialogues\n`;
   if (domMarkers.base.length > 0) {
-    md += `- Base examples: ${domMarkers.base.slice(0, 5).map(m => `"${m}"`).join(', ')}\n`;
+    md += `- Base examples: ${domMarkers.base
+      .slice(0, 5)
+      .map((m) => `"${m}"`)
+      .join(', ')}\n`;
   }
   if (domMarkers.recognition.length > 0) {
-    md += `- Recognition examples: ${domMarkers.recognition.slice(0, 5).map(m => `"${m}"`).join(', ')}\n`;
+    md += `- Recognition examples: ${domMarkers.recognition
+      .slice(0, 5)
+      .map((m) => `"${m}"`)
+      .join(', ')}\n`;
   }
 
   md += `\n### Recognition markers\n`;
   md += `- Base: ${recMarkers.base.length} markers across ${baseN} dialogues\n`;
   md += `- Recognition: ${recMarkers.recognition.length} markers across ${recogN} dialogues\n`;
   if (recMarkers.base.length > 0) {
-    md += `- Base examples: ${recMarkers.base.slice(0, 5).map(m => `"${m}"`).join(', ')}\n`;
+    md += `- Base examples: ${recMarkers.base
+      .slice(0, 5)
+      .map((m) => `"${m}"`)
+      .join(', ')}\n`;
   }
   if (recMarkers.recognition.length > 0) {
-    md += `- Recognition examples: ${recMarkers.recognition.slice(0, 5).map(m => `"${m}"`).join(', ')}\n`;
+    md += `- Recognition examples: ${recMarkers.recognition
+      .slice(0, 5)
+      .map((m) => `"${m}"`)
+      .join(', ')}\n`;
   }
 
   return md;
@@ -848,9 +890,15 @@ function parseArgs() {
   };
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--model': opts.model = args[++i]; break;
-      case '--run-id': opts.runId = args[++i]; break;
-      case '--per-turn': opts.perTurn = true; break;
+      case '--model':
+        opts.model = args[++i];
+        break;
+      case '--run-id':
+        opts.runId = args[++i];
+        break;
+      case '--per-turn':
+        opts.perTurn = true;
+        break;
       case '--help':
         console.log(`Usage: node scripts/code-impasse-strategies.js [options]
 
@@ -882,19 +930,19 @@ async function main() {
   const db = new Database(dbPath);
 
   console.log('='.repeat(70));
-  console.log(opts.perTurn
-    ? 'PER-TURN STRATEGY CODING (Turns 3 & 5)'
-    : 'DIALECTICAL IMPASSE RESOLUTION STRATEGY CODING');
+  console.log(
+    opts.perTurn ? 'PER-TURN STRATEGY CODING (Turns 3 & 5)' : 'DIALECTICAL IMPASSE RESOLUTION STRATEGY CODING',
+  );
   console.log('='.repeat(70));
   console.log(`Model: ${opts.model} | Run ID: ${opts.runId}`);
 
   // Load dialogues
   const dialogues = loadDialogues(db, opts.runId);
   console.log(`\nLoaded ${dialogues.length} dialogues`);
-  const baseN = dialogues.filter(d => d.condition === 'base').length;
-  const recogN = dialogues.filter(d => d.condition === 'recognition').length;
+  const baseN = dialogues.filter((d) => d.condition === 'base').length;
+  const recogN = dialogues.filter((d) => d.condition === 'recognition').length;
   console.log(`  Base: ${baseN}, Recognition: ${recogN}`);
-  console.log(`  Scenarios: ${[...new Set(dialogues.map(d => d.scenario_id))].join(', ')}`);
+  console.log(`  Scenarios: ${[...new Set(dialogues.map((d) => d.scenario_id))].join(', ')}`);
 
   if (dialogues.length === 0) {
     console.error('No dialogues found.');
@@ -974,17 +1022,24 @@ async function main() {
     const analysis = analyzePerTurnResults(codings);
 
     const jsonPath = path.join(exportsDir, `impasse-per-turn-coding-${timestamp}.json`);
-    fs.writeFileSync(jsonPath, JSON.stringify({
-      generated: new Date().toISOString(),
-      model: opts.model,
-      runId: opts.runId,
-      mode: 'per-turn',
-      targetTurns: TARGET_TURNS,
-      n: codings.length,
-      errors,
-      codings,
-      analysis,
-    }, null, 2));
+    fs.writeFileSync(
+      jsonPath,
+      JSON.stringify(
+        {
+          generated: new Date().toISOString(),
+          model: opts.model,
+          runId: opts.runId,
+          mode: 'per-turn',
+          targetTurns: TARGET_TURNS,
+          n: codings.length,
+          errors,
+          codings,
+          analysis,
+        },
+        null,
+        2,
+      ),
+    );
     console.log(`\nJSON: ${jsonPath}`);
 
     const mdReport = generatePerTurnReport(codings, analysis);
@@ -1013,7 +1068,7 @@ async function main() {
     for (const cond of ['base', 'recognition']) {
       const s = analysis.stability[cond];
       const total = s.same + s.changed;
-      const rate = total > 0 ? (s.same / total * 100).toFixed(0) : 'N/A';
+      const rate = total > 0 ? ((s.same / total) * 100).toFixed(0) : 'N/A';
       console.log(`    ${cond}: ${s.same} same, ${s.changed} changed (${rate}% stable)`);
     }
 
@@ -1026,7 +1081,6 @@ async function main() {
         console.log(`      ${key}: ${count}`);
       }
     }
-
   } else {
     // ── Overall Mode (original) ─────────────────────────────────────
 
@@ -1084,15 +1138,22 @@ async function main() {
 
     // Write outputs
     const jsonPath = path.join(exportsDir, `impasse-strategy-coding-${timestamp}.json`);
-    fs.writeFileSync(jsonPath, JSON.stringify({
-      generated: new Date().toISOString(),
-      model: opts.model,
-      runId: opts.runId,
-      n: codings.length,
-      errors,
-      codings,
-      analysis,
-    }, null, 2));
+    fs.writeFileSync(
+      jsonPath,
+      JSON.stringify(
+        {
+          generated: new Date().toISOString(),
+          model: opts.model,
+          runId: opts.runId,
+          n: codings.length,
+          errors,
+          codings,
+          analysis,
+        },
+        null,
+        2,
+      ),
+    );
     console.log(`\nJSON: ${jsonPath}`);
 
     const mdReport = generateReport(codings, analysis);
@@ -1109,15 +1170,17 @@ async function main() {
     for (const s of STRATEGY_KEYS) {
       const b = analysis.strategyByCondition[s].base;
       const r = analysis.strategyByCondition[s].recognition;
-      const bPct = baseN > 0 ? (b / baseN * 100).toFixed(0) : '0';
-      const rPct = recogN > 0 ? (r / recogN * 100).toFixed(0) : '0';
+      const bPct = baseN > 0 ? ((b / baseN) * 100).toFixed(0) : '0';
+      const rPct = recogN > 0 ? ((r / recogN) * 100).toFixed(0) : '0';
       const diff = parseInt(rPct) - parseInt(bPct);
-      console.log(`  ${STRATEGIES[s].label.padEnd(23)} ${(b + ' (' + bPct + '%)').padEnd(12)} ${(r + ' (' + rPct + '%)').padEnd(12)} ${diff > 0 ? '+' : ''}${diff}%`);
+      console.log(
+        `  ${STRATEGIES[s].label.padEnd(23)} ${(b + ' (' + bPct + '%)').padEnd(12)} ${(r + ' (' + rPct + '%)').padEnd(12)} ${diff > 0 ? '+' : ''}${diff}%`,
+      );
     }
 
     if (analysis.chiSquare.overall) {
       const cs = analysis.chiSquare.overall;
-      const pStr = cs.p < .001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
+      const pStr = cs.p < 0.001 ? 'p < .001' : `p = ${cs.p.toFixed(3)}`;
       console.log(`\n  χ²(${cs.df}) = ${cs.chi2.toFixed(2)}, ${pStr}, V = ${cs.cramersV.toFixed(3)}`);
     }
   }
@@ -1126,7 +1189,7 @@ async function main() {
   console.log('\nDone.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

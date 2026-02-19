@@ -150,7 +150,7 @@ export function getProviderConfig(providerName, options = {}) {
     throw new Error(`Unknown provider: ${providerName}`);
   }
 
-  const apiKey = provider.api_key_env ? (process.env[provider.api_key_env] || '') : '';
+  const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
   const isLocal = providerName === 'local';
   const isConfigured = isLocal ? Boolean(provider.base_url) : Boolean(apiKey);
 
@@ -183,7 +183,7 @@ export function resolveModel(ref, options = {}) {
       modelAlias = ref.slice(dotIndex + 1);
     } else {
       throw new Error(
-        `Invalid model reference: "${ref}". Use format "provider.model" (e.g., "openrouter.haiku", "anthropic.sonnet")`
+        `Invalid model reference: "${ref}". Use format "provider.model" (e.g., "openrouter.haiku", "anthropic.sonnet")`,
       );
     }
   } else if (typeof ref === 'object' && ref !== null) {
@@ -480,7 +480,7 @@ export function listConfigurations(options = {}) {
  * @returns {Array} Filtered scenario list
  */
 export function listScenariosByCategory(category, options = {}) {
-  return listScenarios(options).filter(s => s.category === category);
+  return listScenarios(options).filter((s) => s.category === category);
 }
 
 /**

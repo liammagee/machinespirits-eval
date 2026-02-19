@@ -18,13 +18,13 @@ import fs from 'fs';
 
 // Statistical helpers
 const stats = {
-  mean: (arr) => arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0,
+  mean: (arr) => (arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0),
   std: (arr) => {
     if (arr.length < 2) return 0;
     const m = stats.mean(arr);
     return Math.sqrt(arr.reduce((acc, val) => acc + (val - m) ** 2, 0) / (arr.length - 1));
   },
-  sem: (arr) => arr.length > 1 ? stats.std(arr) / Math.sqrt(arr.length) : 0,
+  sem: (arr) => (arr.length > 1 ? stats.std(arr) / Math.sqrt(arr.length) : 0),
   ci95: (arr) => {
     const m = stats.mean(arr);
     const se = stats.sem(arr);
@@ -55,11 +55,11 @@ const stats = {
     if (absT > 3.5) p = 0.001;
     else if (absT > 2.5) p = 0.01;
     else if (absT > 2.0) p = 0.05;
-    else if (absT > 1.5) p = 0.10;
+    else if (absT > 1.5) p = 0.1;
     else p = 0.25;
 
     return { t, p, df, sig: p < 0.05 };
-  }
+  },
 };
 
 /**
@@ -113,10 +113,10 @@ async function main() {
 
   // Scenario descriptions
   const scenarioInfo = {
-    'sustained_dialogue': { name: 'Sustained Dialogue', turns: 8, type: 'Extended' },
-    'breakdown_recovery': { name: 'Breakdown Recovery', turns: 6, type: 'Repair' },
-    'productive_struggle_arc': { name: 'Productive Struggle', turns: 5, type: 'Developmental' },
-    'mutual_transformation_journey': { name: 'Mutual Transformation', turns: 5, type: 'Bilateral' },
+    sustained_dialogue: { name: 'Sustained Dialogue', turns: 8, type: 'Extended' },
+    breakdown_recovery: { name: 'Breakdown Recovery', turns: 6, type: 'Repair' },
+    productive_struggle_arc: { name: 'Productive Struggle', turns: 5, type: 'Developmental' },
+    mutual_transformation_journey: { name: 'Mutual Transformation', turns: 5, type: 'Bilateral' },
   };
 
   // Analyze each scenario
@@ -162,8 +162,12 @@ async function main() {
         const test = stats.tTest(recScores, baseScores);
 
         console.log(`  Difference:  ${diff >= 0 ? '+' : ''}${diff.toFixed(2)} points`);
-        console.log(`  Cohen's d:   ${d.toFixed(2)} (${Math.abs(d) >= 0.8 ? 'Large' : Math.abs(d) >= 0.5 ? 'Medium' : 'Small'})`);
-        console.log(`  t-test:      t(${test.df}) = ${test.t.toFixed(2)}, p ${test.p < 0.05 ? '< .05 *' : `= ${test.p.toFixed(2)}`}`);
+        console.log(
+          `  Cohen's d:   ${d.toFixed(2)} (${Math.abs(d) >= 0.8 ? 'Large' : Math.abs(d) >= 0.5 ? 'Medium' : 'Small'})`,
+        );
+        console.log(
+          `  t-test:      t(${test.df}) = ${test.t.toFixed(2)}, p ${test.p < 0.05 ? '< .05 *' : `= ${test.p.toFixed(2)}`}`,
+        );
 
         results.push({
           scenario: info.name,
@@ -190,9 +194,9 @@ async function main() {
   console.log('='.repeat(70));
 
   if (results.length > 0) {
-    const avgDiff = stats.mean(results.map(r => r.diff));
-    const avgD = stats.mean(results.map(r => r.cohenD));
-    const sigCount = results.filter(r => r.sig).length;
+    const avgDiff = stats.mean(results.map((r) => r.diff));
+    const avgD = stats.mean(results.map((r) => r.cohenD));
+    const sigCount = results.filter((r) => r.sig).length;
 
     console.log(`\nAcross ${results.length} extended scenarios:`);
     console.log(`  Average improvement: +${avgDiff.toFixed(2)} points`);
@@ -206,7 +210,7 @@ async function main() {
 
     for (const r of results) {
       console.log(
-        `${r.scenario.padEnd(24)} ${r.turns.toString().padStart(4)}   ${r.baseMean.toFixed(1).padStart(7)}    ${r.recMean.toFixed(1).padStart(7)}    ${(r.diff >= 0 ? '+' : '') + r.diff.toFixed(1).padStart(5)}  ${r.cohenD.toFixed(2).padStart(5)}   ${r.sig ? '*' : ''}`
+        `${r.scenario.padEnd(24)} ${r.turns.toString().padStart(4)}   ${r.baseMean.toFixed(1).padStart(7)}    ${r.recMean.toFixed(1).padStart(7)}    ${(r.diff >= 0 ? '+' : '') + r.diff.toFixed(1).padStart(5)}  ${r.cohenD.toFixed(2).padStart(5)}   ${r.sig ? '*' : ''}`,
       );
     }
   }
@@ -244,13 +248,13 @@ async function main() {
 
   const profiles = ['recognition', 'baseline'];
   for (const profile of profiles) {
-    const single = singleTurnData.find(d => d.profile_name === profile);
-    const multi = multiTurnData.find(d => d.profile_name === profile);
+    const single = singleTurnData.find((d) => d.profile_name === profile);
+    const multi = multiTurnData.find((d) => d.profile_name === profile);
 
     if (single && multi) {
       const diff = multi.mean - single.mean;
       console.log(
-        `${profile.padEnd(16)} ${single.mean.toFixed(1).padStart(10)} (n=${single.n})  ${multi.mean.toFixed(1).padStart(10)} (n=${multi.n})  ${(diff >= 0 ? '+' : '') + diff.toFixed(1).padStart(10)}`
+        `${profile.padEnd(16)} ${single.mean.toFixed(1).padStart(10)} (n=${single.n})  ${multi.mean.toFixed(1).padStart(10)} (n=${multi.n})  ${(diff >= 0 ? '+' : '') + diff.toFixed(1).padStart(10)}`,
       );
     }
   }
@@ -293,14 +297,17 @@ These scenarios test recognition quality across multiple conversation turns, whe
 
 | Scenario | Turns | Baseline | Recognition | Diff | Cohen's d | Sig |
 |----------|-------|----------|-------------|------|-----------|-----|
-${results.map(r =>
-  `| ${r.scenario} | ${r.turns} | ${r.baseMean.toFixed(1)} | ${r.recMean.toFixed(1)} | ${r.diff >= 0 ? '+' : ''}${r.diff.toFixed(1)} | ${r.cohenD.toFixed(2)} | ${r.sig ? '*' : ''} |`
-).join('\n')}
+${results
+  .map(
+    (r) =>
+      `| ${r.scenario} | ${r.turns} | ${r.baseMean.toFixed(1)} | ${r.recMean.toFixed(1)} | ${r.diff >= 0 ? '+' : ''}${r.diff.toFixed(1)} | ${r.cohenD.toFixed(2)} | ${r.sig ? '*' : ''} |`,
+  )
+  .join('\n')}
 
 **Aggregate Statistics:**
-- Average improvement: +${results.length > 0 ? stats.mean(results.map(r => r.diff)).toFixed(1) : 'N/A'} points
-- Average effect size: d = ${results.length > 0 ? stats.mean(results.map(r => r.cohenD)).toFixed(2) : 'N/A'}
-- Significant effects: ${results.filter(r => r.sig).length}/${results.length}
+- Average improvement: +${results.length > 0 ? stats.mean(results.map((r) => r.diff)).toFixed(1) : 'N/A'} points
+- Average effect size: d = ${results.length > 0 ? stats.mean(results.map((r) => r.cohenD)).toFixed(2) : 'N/A'}
+- Significant effects: ${results.filter((r) => r.sig).length}/${results.length}
 
 ## Contingent Learner Analysis
 

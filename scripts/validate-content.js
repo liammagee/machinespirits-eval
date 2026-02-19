@@ -178,12 +178,18 @@ if (args.includes('--help') || args.includes('-h')) {
 if (args.includes('--lecture')) {
   const idx = args.indexOf('--lecture');
   const ref = args[idx + 1];
-  if (!ref) { console.error('Missing lecture ref'); process.exit(1); }
+  if (!ref) {
+    console.error('Missing lecture ref');
+    process.exit(1);
+  }
   showLecture(ref);
 } else if (args.includes('--preview')) {
   const idx = args.indexOf('--preview');
   const ref = args[idx + 1];
-  if (!ref) { console.error('Missing lecture ref'); process.exit(1); }
+  if (!ref) {
+    console.error('Missing lecture ref');
+    process.exit(1);
+  }
   previewCurriculum(ref);
 } else if (args.includes('--scenarios')) {
   checkScenarios();

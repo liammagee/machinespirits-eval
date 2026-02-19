@@ -59,10 +59,7 @@ function makeScores(values) {
 
 // Helper: assert approximate equality to handle floating point precision
 function assertApprox(actual, expected, message, tolerance = 0.01) {
-  assert.ok(
-    Math.abs(actual - expected) < tolerance,
-    `${message || ''} expected ~${expected}, got ${actual}`
-  );
+  assert.ok(Math.abs(actual - expected) < tolerance, `${message || ''} expected ~${expected}, got ${actual}`);
 }
 
 describe('calculateBaseScore', () => {
@@ -553,7 +550,11 @@ export function parseJudgeResponse(responseText) {
 // Write the test helper module to a temp file
 import { writeFileSync, mkdirSync, unlinkSync, rmdirSync } from 'fs';
 const tmpDir = path.join(__dirname, '../.test-tmp');
-try { mkdirSync(tmpDir, { recursive: true }); } catch (e) { /* exists */ }
+try {
+  mkdirSync(tmpDir, { recursive: true });
+} catch (e) {
+  /* exists */
+}
 const tmpModulePath = path.join(tmpDir, 'parseJudgeResponse.mjs');
 writeFileSync(tmpModulePath, testModuleCode);
 
@@ -561,8 +562,16 @@ try {
   const parseMod = await import(tmpModulePath);
   parseJudgeResponse = parseMod.parseJudgeResponse;
 } finally {
-  try { unlinkSync(tmpModulePath); } catch (e) { /* cleanup */ }
-  try { rmdirSync(tmpDir); } catch (e) { /* may not be empty */ }
+  try {
+    unlinkSync(tmpModulePath);
+  } catch (e) {
+    /* cleanup */
+  }
+  try {
+    rmdirSync(tmpDir);
+  } catch (e) {
+    /* may not be empty */
+  }
 }
 
 describe('parseJudgeResponse — valid JSON', () => {
@@ -613,7 +622,8 @@ describe('parseJudgeResponse — valid JSON', () => {
 
 describe('parseJudgeResponse — trailing commas', () => {
   it('handles trailing comma before closing brace', () => {
-    const input = '{"scores": {"relevance": {"score": 4, "reasoning": "good"},}, "overall_score": 75, "summary": "ok",}';
+    const input =
+      '{"scores": {"relevance": {"score": 4, "reasoning": "good"},}, "overall_score": 75, "summary": "ok",}';
     const result = parseJudgeResponse(input);
     assert.strictEqual(result.overall_score, 75);
   });
@@ -628,7 +638,8 @@ describe('parseJudgeResponse — trailing commas', () => {
 describe('parseJudgeResponse — unescaped quotes', () => {
   it('repairs unescaped double quotes inside string values', () => {
     // This is the exact pattern that breaks: "Says "great job" which is encouraging"
-    const input = '{"scores": {"relevance": {"score": 4, "reasoning": "Says \'great job\' which is encouraging"}}, "overall_score": 80, "summary": "ok"}';
+    const input =
+      '{"scores": {"relevance": {"score": 4, "reasoning": "Says \'great job\' which is encouraging"}}, "overall_score": 80, "summary": "ok"}';
     const result = parseJudgeResponse(input);
     assert.strictEqual(result.scores.relevance.score, 4);
   });

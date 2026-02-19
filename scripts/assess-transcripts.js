@@ -41,9 +41,17 @@ const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
 // ── Assessment Tags ──────────────────────────────────────────────────────
 
 const VALID_TAGS = [
-  'recognition_moment', 'superego_overcorrection', 'learner_breakthrough',
-  'strategy_shift', 'missed_scaffold', 'ego_compliance', 'ego_autonomy',
-  'productive_impasse', 'emotional_attunement', 'stalling', 'regression',
+  'recognition_moment',
+  'superego_overcorrection',
+  'learner_breakthrough',
+  'strategy_shift',
+  'missed_scaffold',
+  'ego_compliance',
+  'ego_autonomy',
+  'productive_impasse',
+  'emotional_attunement',
+  'stalling',
+  'regression',
 ];
 
 // ── Model Calls ──────────────────────────────────────────────────────────
@@ -70,10 +78,14 @@ async function callClaudeCode(prompt) {
     });
     let out = '';
     let err = '';
-    child.stdout.on('data', d => { out += d; });
-    child.stderr.on('data', d => { err += d; });
-    child.on('error', e => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', code => {
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
+    child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
       else resolve(out);
     });
@@ -96,7 +108,7 @@ async function callOpenRouter(prompt, modelKey) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,
@@ -142,18 +154,21 @@ function parseJsonResponse(content) {
 // ── DB Schema ────────────────────────────────────────────────────────────
 
 function ensureColumns(db) {
-  const cols = db.prepare("PRAGMA table_info(evaluation_results)").all().map(c => c.name);
+  const cols = db
+    .prepare('PRAGMA table_info(evaluation_results)')
+    .all()
+    .map((c) => c.name);
   if (!cols.includes('qualitative_assessment')) {
-    db.exec("ALTER TABLE evaluation_results ADD COLUMN qualitative_assessment TEXT");
+    db.exec('ALTER TABLE evaluation_results ADD COLUMN qualitative_assessment TEXT');
   }
   if (!cols.includes('qualitative_model')) {
-    db.exec("ALTER TABLE evaluation_results ADD COLUMN qualitative_model TEXT");
+    db.exec('ALTER TABLE evaluation_results ADD COLUMN qualitative_model TEXT');
   }
   if (!cols.includes('blinded_qualitative_assessment')) {
-    db.exec("ALTER TABLE evaluation_results ADD COLUMN blinded_qualitative_assessment TEXT");
+    db.exec('ALTER TABLE evaluation_results ADD COLUMN blinded_qualitative_assessment TEXT');
   }
   if (!cols.includes('blinded_qualitative_model')) {
-    db.exec("ALTER TABLE evaluation_results ADD COLUMN blinded_qualitative_model TEXT");
+    db.exec('ALTER TABLE evaluation_results ADD COLUMN blinded_qualitative_model TEXT');
   }
 }
 
@@ -200,7 +215,7 @@ function loadMultiTurnResults(db, runId, filters = {}) {
 function loadDialogueTrace(dialogueId) {
   if (!dialogueId || !fs.existsSync(LOGS_DIR)) return null;
 
-  const files = fs.readdirSync(LOGS_DIR).filter(f => f.includes(dialogueId));
+  const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
   if (files.length === 0) return null;
 
   try {
@@ -252,7 +267,8 @@ function buildAssessmentPrompt(row, transcript, { blinded = false } = {}) {
   metadataLines.push(`- Scenario: ${row.scenario_id}`);
   if (!blinded) metadataLines.push(`- Recognition condition: ${condition}`);
   metadataLines.push(`- Mechanism: ${mechanism}`);
-  if (!blinded) metadataLines.push(`- Numeric score: ${row.overall_score != null ? row.overall_score.toFixed(1) : 'N/A'}/100`);
+  if (!blinded)
+    metadataLines.push(`- Numeric score: ${row.overall_score != null ? row.overall_score.toFixed(1) : 'N/A'}/100`);
   metadataLines.push(`- Turns: ${row.dialogue_rounds || 'unknown'}`);
 
   return `You are analyzing a multi-turn AI tutoring dialogue. The dialogue uses an
@@ -292,7 +308,7 @@ Return a JSON object with this exact structure:
 }
 
 Valid tags (use only from this list, pick 2-5 that apply):
-${VALID_TAGS.map(t => `  - ${t}`).join('\n')}
+${VALID_TAGS.map((t) => `  - ${t}`).join('\n')}
 
 Return ONLY the JSON object, no other text.`;
 }
@@ -318,8 +334,8 @@ async function runWithConcurrency(tasks, concurrency) {
 // ── Report Generation ────────────────────────────────────────────────────
 
 function generateReport(runId, assessments, modelKey) {
-  const scored = assessments.filter(a => a.assessment);
-  const errored = assessments.filter(a => a.error);
+  const scored = assessments.filter((a) => a.assessment);
+  const errored = assessments.filter((a) => a.error);
 
   let md = `# Qualitative Transcript Assessment: ${runId}
 Generated: ${new Date().toISOString().slice(0, 10)} | Model: ${modelKey} | N=${scored.length} dialogues`;
@@ -364,18 +380,32 @@ Generated: ${new Date().toISOString().slice(0, 10)} | Model: ${modelKey} | N=${s
   md += `\n### Cross-Dialogue Themes\n\n`;
 
   // Aggregate narratives for a synthesis
-  const baseNarratives = scored.filter(a => a.condition === 'base').map(a => a.assessment.overall_narrative).filter(Boolean);
-  const recogNarratives = scored.filter(a => a.condition === 'recognition').map(a => a.assessment.overall_narrative).filter(Boolean);
+  const baseNarratives = scored
+    .filter((a) => a.condition === 'base')
+    .map((a) => a.assessment.overall_narrative)
+    .filter(Boolean);
+  const recogNarratives = scored
+    .filter((a) => a.condition === 'recognition')
+    .map((a) => a.assessment.overall_narrative)
+    .filter(Boolean);
 
   if (baseNarratives.length > 0) {
-    const baseScores = scored.filter(a => a.condition === 'base').map(a => a.overall_score).filter(s => s != null);
-    const baseMean = baseScores.length > 0 ? (baseScores.reduce((a, b) => a + b, 0) / baseScores.length).toFixed(1) : '--';
+    const baseScores = scored
+      .filter((a) => a.condition === 'base')
+      .map((a) => a.overall_score)
+      .filter((s) => s != null);
+    const baseMean =
+      baseScores.length > 0 ? (baseScores.reduce((a, b) => a + b, 0) / baseScores.length).toFixed(1) : '--';
     md += `**Base condition** (N=${baseNarratives.length}, mean score=${baseMean}): `;
     md += `See individual assessments below.\n\n`;
   }
   if (recogNarratives.length > 0) {
-    const recogScores = scored.filter(a => a.condition === 'recognition').map(a => a.overall_score).filter(s => s != null);
-    const recogMean = recogScores.length > 0 ? (recogScores.reduce((a, b) => a + b, 0) / recogScores.length).toFixed(1) : '--';
+    const recogScores = scored
+      .filter((a) => a.condition === 'recognition')
+      .map((a) => a.overall_score)
+      .filter((s) => s != null);
+    const recogMean =
+      recogScores.length > 0 ? (recogScores.reduce((a, b) => a + b, 0) / recogScores.length).toFixed(1) : '--';
     md += `**Recognition condition** (N=${recogNarratives.length}, mean score=${recogMean}): `;
     md += `See individual assessments below.\n\n`;
   }
@@ -438,17 +468,39 @@ function parseArgs() {
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--scenario': opts.scenario = args[++i]; break;
-      case '--condition': opts.condition = args[++i]; break;
-      case '--profile': opts.profile = args[++i]; break;
-      case '--limit': opts.limit = parseInt(args[++i], 10); break;
-      case '--model': opts.model = args[++i]; break;
-      case '--parallelism': opts.parallelism = parseInt(args[++i], 10); break;
-      case '--output': opts.output = args[++i]; break;
-      case '--resume': opts.resume = true; break;
-      case '--force': opts.force = true; break;
-      case '--blinded': opts.blinded = true; break;
-      case '--import': opts.importFile = args[++i]; break;
+      case '--scenario':
+        opts.scenario = args[++i];
+        break;
+      case '--condition':
+        opts.condition = args[++i];
+        break;
+      case '--profile':
+        opts.profile = args[++i];
+        break;
+      case '--limit':
+        opts.limit = parseInt(args[++i], 10);
+        break;
+      case '--model':
+        opts.model = args[++i];
+        break;
+      case '--parallelism':
+        opts.parallelism = parseInt(args[++i], 10);
+        break;
+      case '--output':
+        opts.output = args[++i];
+        break;
+      case '--resume':
+        opts.resume = true;
+        break;
+      case '--force':
+        opts.force = true;
+        break;
+      case '--blinded':
+        opts.blinded = true;
+        break;
+      case '--import':
+        opts.importFile = args[++i];
+        break;
       case '--help':
         console.log(`Usage: node scripts/assess-transcripts.js <runId> [options]
 
@@ -512,14 +564,18 @@ function importFromFile(db, filePath, modelKey) {
 
   if (filePath.endsWith('.jsonl')) {
     // JSONL: one entry per line
-    for (const line of raw.split('\n').filter(l => l.trim())) {
-      try { entries.push(JSON.parse(line)); } catch { /* skip */ }
+    for (const line of raw.split('\n').filter((l) => l.trim())) {
+      try {
+        entries.push(JSON.parse(line));
+      } catch {
+        /* skip */
+      }
     }
   } else {
     // JSON: expect { assessments: [...] } or bare array
     try {
       const parsed = JSON.parse(raw);
-      const arr = Array.isArray(parsed) ? parsed : (parsed.assessments || []);
+      const arr = Array.isArray(parsed) ? parsed : parsed.assessments || [];
       entries.push(...arr);
     } catch (err) {
       console.error(`Failed to parse JSON: ${err.message}`);
@@ -582,7 +638,9 @@ async function main() {
   console.log('='.repeat(70));
   console.log(`QUALITATIVE TRANSCRIPT ASSESSMENT${opts.blinded ? ' (BLINDED)' : ''}`);
   console.log('='.repeat(70));
-  console.log(`Run: ${opts.runId} | Model: ${opts.model} | Parallelism: ${opts.parallelism}${opts.blinded ? ' | BLINDED' : ''}`);
+  console.log(
+    `Run: ${opts.runId} | Model: ${opts.model} | Parallelism: ${opts.parallelism}${opts.blinded ? ' | BLINDED' : ''}`,
+  );
 
   // Load results with multi-turn dialogues
   const rows = loadMultiTurnResults(db, opts.runId, {
@@ -637,8 +695,8 @@ async function main() {
   }
 
   // Estimate and confirm
-  const conditions = [...new Set(dialogues.map(d => d.condition))];
-  const scenarios = [...new Set(dialogues.map(d => d.row.scenario_id))];
+  const conditions = [...new Set(dialogues.map((d) => d.condition))];
+  const scenarios = [...new Set(dialogues.map((d) => d.row.scenario_id))];
   console.log(`  Conditions: ${conditions.join(', ')}`);
   console.log(`  Scenarios: ${scenarios.join(', ')}`);
 
@@ -670,13 +728,13 @@ async function main() {
   } else if (opts.resume) {
     // Check DB for existing assessments
     const alreadyDone = dialogues.filter(hasAssessment);
-    remaining = dialogues.filter(d => !hasAssessment(d));
+    remaining = dialogues.filter((d) => !hasAssessment(d));
     if (alreadyDone.length > 0) {
       console.log(`\n  ${alreadyDone.length} already assessed in DB, ${remaining.length} remaining`);
     }
   } else {
     // Default: skip rows that already have assessments (same as --resume)
-    remaining = dialogues.filter(d => !hasAssessment(d));
+    remaining = dialogues.filter((d) => !hasAssessment(d));
     const alreadyDone = dialogues.length - remaining.length;
     if (alreadyDone > 0) {
       console.log(`  ${alreadyDone} already assessed in DB (use --force to re-assess)`);
@@ -714,7 +772,7 @@ async function main() {
 
           // Validate tags
           if (assessment.tags) {
-            assessment.tags = assessment.tags.filter(t => VALID_TAGS.includes(t));
+            assessment.tags = assessment.tags.filter((t) => VALID_TAGS.includes(t));
           }
 
           // Write to DB immediately
@@ -766,21 +824,26 @@ async function main() {
   console.log(`\nAssessment complete: ${completed} new, ${errors} errors, ${elapsed}s`);
 
   // Reload all assessments from DB (the source of truth)
-  const allAssessments = db.prepare(`
+  const allAssessments = db
+    .prepare(
+      `
     SELECT id, scenario_id, profile_name, overall_score, factor_recognition,
            ${assessCol} AS qualitative_assessment, ${modelCol} AS qualitative_model
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND ${assessCol} IS NOT NULL
     ORDER BY scenario_id, profile_name, id
-  `).all(opts.runId).map(row => ({
-    id: row.id,
-    scenario_id: row.scenario_id,
-    profile_name: row.profile_name,
-    overall_score: row.overall_score,
-    condition: detectCondition(row),
-    mechanism: detectMechanism(row.profile_name),
-    assessment: JSON.parse(row.qualitative_assessment),
-  }));
+  `,
+    )
+    .all(opts.runId)
+    .map((row) => ({
+      id: row.id,
+      scenario_id: row.scenario_id,
+      profile_name: row.profile_name,
+      overall_score: row.overall_score,
+      condition: detectCondition(row),
+      mechanism: detectMechanism(row.profile_name),
+      assessment: JSON.parse(row.qualitative_assessment),
+    }));
 
   if (allAssessments.length === 0) {
     console.error('No successful assessments in DB.');
@@ -797,14 +860,21 @@ async function main() {
 
   // Also write a consolidated JSON
   const jsonPath = outputPath.replace(/\.md$/, '.json');
-  fs.writeFileSync(jsonPath, JSON.stringify({
-    generated: new Date().toISOString(),
-    runId: opts.runId,
-    model: opts.model,
-    n: allAssessments.length,
-    errors,
-    assessments: allAssessments,
-  }, null, 2));
+  fs.writeFileSync(
+    jsonPath,
+    JSON.stringify(
+      {
+        generated: new Date().toISOString(),
+        runId: opts.runId,
+        model: opts.model,
+        n: allAssessments.length,
+        errors,
+        assessments: allAssessments,
+      },
+      null,
+      2,
+    ),
+  );
   console.log(`JSON:   ${jsonPath}`);
 
   // Print summary
@@ -815,7 +885,7 @@ async function main() {
   const tagCounts = {};
   for (const a of allAssessments) {
     if (!a.assessment) continue;
-    for (const tag of (a.assessment.tags || [])) {
+    for (const tag of a.assessment.tags || []) {
       tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     }
   }
@@ -840,7 +910,9 @@ async function main() {
       if (scores.length === 0) continue;
       const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
       const sd = Math.sqrt(scores.reduce((s, v) => s + (v - mean) ** 2, 0) / scores.length);
-      console.log(`  ${cond.padEnd(15)} N=${String(scores.length).padStart(3)}  M=${mean.toFixed(1)}  SD=${sd.toFixed(1)}`);
+      console.log(
+        `  ${cond.padEnd(15)} N=${String(scores.length).padStart(3)}  M=${mean.toFixed(1)}  SD=${sd.toFixed(1)}`,
+      );
     }
   }
 
@@ -848,7 +920,7 @@ async function main() {
   console.log('\nDone.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

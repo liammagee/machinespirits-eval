@@ -37,12 +37,28 @@ function commaNum(n) {
 
 function numToWord(n) {
   const words = {
-    1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five',
-    6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten',
-    20: 'twenty', 21: 'twenty-one', 22: 'twenty-two', 23: 'twenty-three',
-    24: 'twenty-four', 25: 'twenty-five', 26: 'twenty-six',
-    27: 'twenty-seven', 28: 'twenty-eight', 29: 'twenty-nine',
-    30: 'thirty', 31: 'thirty-one',
+    1: 'one',
+    2: 'two',
+    3: 'three',
+    4: 'four',
+    5: 'five',
+    6: 'six',
+    7: 'seven',
+    8: 'eight',
+    9: 'nine',
+    10: 'ten',
+    20: 'twenty',
+    21: 'twenty-one',
+    22: 'twenty-two',
+    23: 'twenty-three',
+    24: 'twenty-four',
+    25: 'twenty-five',
+    26: 'twenty-six',
+    27: 'twenty-seven',
+    28: 'twenty-eight',
+    29: 'twenty-nine',
+    30: 'thirty',
+    31: 'thirty-one',
   };
   return words[n] || String(n);
 }
@@ -75,20 +91,28 @@ function main() {
 
     let scored;
     if (eval_.unit === 'learner turn') {
-      const row = db.prepare(`
+      const row = db
+        .prepare(
+          `
         SELECT COUNT(*) as total,
                SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
         WHERE run_id IN (${placeholders}) AND judge_model LIKE ?
-      `).get(...runIds, judgePattern);
+      `,
+        )
+        .get(...runIds, judgePattern);
       scored = row?.scored ?? 0;
     } else {
-      const row = db.prepare(`
+      const row = db
+        .prepare(
+          `
         SELECT COUNT(*) as total,
                SUM(CASE WHEN overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
         WHERE run_id IN (${placeholders}) AND judge_model LIKE ?
-      `).get(...runIds, judgePattern);
+      `,
+        )
+        .get(...runIds, judgePattern);
       scored = row?.scored ?? 0;
     }
 
@@ -115,13 +139,11 @@ function main() {
     for (const e of evalData) {
       const label = e.label.replace(/×/g, '$\\times$');
       lines.push(
-        `| ${label} | ${e.run_id_display} | ${e.section} | ${e.expected_attempts} | ${e.actual_scored} | ${e.unit} |`
+        `| ${label} | ${e.run_id_display} | ${e.section} | ${e.expected_attempts} | ${e.actual_scored} | ${e.unit} |`,
       );
     }
 
-    lines.push(
-      `| **Paper totals** | — | — | **${commaNum(totalAttempts)}** | **${commaNum(totalScored)}** | — |`
-    );
+    lines.push(`| **Paper totals** | — | — | **${commaNum(totalAttempts)}** | **${commaNum(totalScored)}** | — |`);
 
     console.log(lines.join('\n'));
     console.log();
@@ -133,7 +155,7 @@ function main() {
     console.log('═══ Generated Appendix D: Reproducibility and Key Evaluation Run IDs ═══\n');
 
     const uniqueEvals = manifest.key_evaluations;
-    const _uniqueRunIds = [...new Set(uniqueEvals.flatMap(e => e.run_ids))];
+    const _uniqueRunIds = [...new Set(uniqueEvals.flatMap((e) => e.run_ids))];
 
     // Find duplicate run IDs (same run used for multiple evaluations)
     const runIdCounts = {};
@@ -147,24 +169,26 @@ function main() {
       .map(([rid]) => rid);
 
     // Multi-ID evals
-    const multiIdEvals = uniqueEvals.filter(e => e.run_ids.length > 1);
+    const multiIdEvals = uniqueEvals.filter((e) => e.run_ids.length > 1);
 
     const notes = [];
     if (duplicateRuns.length > 0) {
-      notes.push(`${duplicateRuns.join(', ')} serves both ${
-        uniqueEvals.filter(e => e.run_ids.some(r => duplicateRuns.includes(r))).map(e => e.label.toLowerCase()).join(' and ')
-      }`);
+      notes.push(
+        `${duplicateRuns.join(', ')} serves both ${uniqueEvals
+          .filter((e) => e.run_ids.some((r) => duplicateRuns.includes(r)))
+          .map((e) => e.label.toLowerCase())
+          .join(' and ')}`,
+      );
     }
     if (multiIdEvals.length > 0) {
       notes.push(`${multiIdEvals[0].run_ids.join(' and ')} are combined as one ${multiIdEvals[0].label.toLowerCase()}`);
     }
 
-    console.log(`The ${numToWord(uniqueEvals.length)} key evaluations are listed below${notes.length > 0 ? ` (${notes.join('; ')})` : ''}:\n`);
+    console.log(
+      `The ${numToWord(uniqueEvals.length)} key evaluations are listed below${notes.length > 0 ? ` (${notes.join('; ')})` : ''}:\n`,
+    );
 
-    const dLines = [
-      '| Finding | Run ID | Section |',
-      '|---------|--------|---------|',
-    ];
+    const dLines = ['| Finding | Run ID | Section |', '|---------|--------|---------|'];
     for (const e of evalData) {
       dLines.push(`| ${e.label} | ${e.run_id_display} | ${e.section} |`);
     }
@@ -231,7 +255,7 @@ function main() {
 
   // Check: Table 2 totals row
   const totalsPattern = new RegExp(
-    `\\*\\*${expectedAttempts.replace(/,/g, ',')}\\*\\*.*\\*\\*${expectedScored.replace(/,/g, ',')}\\*\\*`
+    `\\*\\*${expectedAttempts.replace(/,/g, ',')}\\*\\*.*\\*\\*${expectedScored.replace(/,/g, ',')}\\*\\*`,
   );
   if (!totalsPattern.test(paper)) {
     console.log(`  ✗ Table 2 totals row doesn't match expected ${expectedAttempts}/${expectedScored}`);
@@ -256,7 +280,7 @@ function main() {
   }
 
   // Check: each run ID appears in paper
-  const allRunIds = manifest.key_evaluations.flatMap(e => e.run_ids);
+  const allRunIds = manifest.key_evaluations.flatMap((e) => e.run_ids);
   const uniqueRunIds = [...new Set(allRunIds)];
   for (const runId of uniqueRunIds) {
     if (!paper.includes(runId)) {
@@ -274,7 +298,7 @@ function main() {
 
     // Check the row appears in paper with correct scored count
     const rowPattern = new RegExp(
-      `${e.run_ids[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*\\|.*\\|.*${e.expected_scored}`
+      `${e.run_ids[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*\\|.*\\|.*${e.expected_scored}`,
     );
     if (!rowPattern.test(paper)) {
       console.log(`  ⚠ ${e.label}: scored count ${e.expected_scored} may not appear in Table 2 row`);

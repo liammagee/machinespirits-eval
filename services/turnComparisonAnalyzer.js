@@ -34,26 +34,32 @@ export function analyzeTurnProgression(turnResults) {
   // Track dimension score trajectories
   const dimensionTrajectories = {};
   const allDimensions = [
-    'relevance', 'specificity', 'pedagogical', 'personalization',
-    'actionability', 'tone', 'mutual_recognition', 'dialectical_responsiveness',
-    'memory_integration', 'transformative_potential', 'tutor_adaptation', 'learner_growth',
+    'relevance',
+    'specificity',
+    'pedagogical',
+    'personalization',
+    'actionability',
+    'tone',
+    'mutual_recognition',
+    'dialectical_responsiveness',
+    'memory_integration',
+    'transformative_potential',
+    'tutor_adaptation',
+    'learner_growth',
   ];
 
   for (const dim of allDimensions) {
-    dimensionTrajectories[dim] = turnResults.map(t => t.scores?.[dim] ?? null);
+    dimensionTrajectories[dim] = turnResults.map((t) => t.scores?.[dim] ?? null);
   }
 
   // Track suggestion type progression (e.g., lecture -> explore -> continue)
-  const suggestionTypeProgression = turnResults
-    .map(t => t.suggestion?.type || t.suggestion?.action || 'unknown');
+  const suggestionTypeProgression = turnResults.map((t) => t.suggestion?.type || t.suggestion?.action || 'unknown');
 
   // Analyze framing evolution
   const framingEvolution = analyzeFramingShift(turnResults);
 
   // Calculate score improvement (first to last turn)
-  const validScores = turnResults
-    .filter(t => t.turnScore !== null)
-    .map(t => t.turnScore);
+  const validScores = turnResults.filter((t) => t.turnScore !== null).map((t) => t.turnScore);
 
   let avgScoreImprovement = null;
   if (validScores.length >= 2) {
@@ -193,17 +199,17 @@ function measureMessageComplexity(message) {
 
   // Connective words suggest reasoning
   const connectives = ['because', 'therefore', 'however', 'although', 'if', 'then', 'so', 'but'];
-  const connectiveCount = connectives.filter(c => message.toLowerCase().includes(c)).length;
+  const connectiveCount = connectives.filter((c) => message.toLowerCase().includes(c)).length;
   score += connectiveCount * 0.15;
 
   // Self-revision markers
   const revisionMarkers = ['wait', 'actually', 'I see', 'oh', 'hmm', 'let me think'];
-  const revisionCount = revisionMarkers.filter(m => message.toLowerCase().includes(m)).length;
+  const revisionCount = revisionMarkers.filter((m) => message.toLowerCase().includes(m)).length;
   score += revisionCount * 0.25;
 
   // References to prior content
   const priorRefs = ['earlier', 'before', 'you said', 'you mentioned', 'we discussed'];
-  const priorRefCount = priorRefs.filter(r => message.toLowerCase().includes(r)).length;
+  const priorRefCount = priorRefs.filter((r) => message.toLowerCase().includes(r)).length;
   score += priorRefCount * 0.2;
 
   return score;
@@ -238,10 +244,10 @@ function measureSuggestionShift(prev, curr) {
   const currWords = new Set((curr.message || '').toLowerCase().split(/\s+/));
 
   if (prevWords.size > 0 && currWords.size > 0) {
-    const intersection = [...prevWords].filter(w => currWords.has(w)).length;
+    const intersection = [...prevWords].filter((w) => currWords.has(w)).length;
     const union = new Set([...prevWords, ...currWords]).size;
     const similarity = intersection / union;
-    shift += (1 - similarity); // More change = higher shift
+    shift += 1 - similarity; // More change = higher shift
   }
   factors++;
 
@@ -328,22 +334,47 @@ function classifyFraming(message) {
   const scores = { directive: 0, exploratory: 0, collaborative: 0, neutral: 0 };
 
   // Directive markers
-  const directiveMarkers = ['you should', 'you need to', 'you must', 'the correct', 'the answer is',
-    'let me explain', 'here\'s what', 'first, you', 'make sure to'];
+  const directiveMarkers = [
+    'you should',
+    'you need to',
+    'you must',
+    'the correct',
+    'the answer is',
+    'let me explain',
+    "here's what",
+    'first, you',
+    'make sure to',
+  ];
   for (const marker of directiveMarkers) {
     if (msg.includes(marker)) scores.directive++;
   }
 
   // Exploratory markers
-  const exploratoryMarkers = ['what if', 'have you considered', 'what do you think', 'how might',
-    'could it be', 'I wonder', 'let\'s explore', 'what would happen'];
+  const exploratoryMarkers = [
+    'what if',
+    'have you considered',
+    'what do you think',
+    'how might',
+    'could it be',
+    'I wonder',
+    "let's explore",
+    'what would happen',
+  ];
   for (const marker of exploratoryMarkers) {
     if (msg.includes(marker)) scores.exploratory++;
   }
 
   // Collaborative markers
-  const collaborativeMarkers = ['together', 'let\'s', 'we could', 'building on your',
-    'your insight', 'you\'ve helped me', 'our conversation', 'co-create'];
+  const collaborativeMarkers = [
+    'together',
+    "let's",
+    'we could',
+    'building on your',
+    'your insight',
+    "you've helped me",
+    'our conversation',
+    'co-create',
+  ];
   for (const marker of collaborativeMarkers) {
     if (msg.includes(marker)) scores.collaborative++;
   }
@@ -375,7 +406,7 @@ function calculateConvergence(trajectories) {
   let measuredDimensions = 0;
 
   for (const [_dim, values] of Object.entries(trajectories)) {
-    const validValues = values.filter(v => v !== null);
+    const validValues = values.filter((v) => v !== null);
     if (validValues.length < 3) continue;
 
     // Compare variance of first half vs second half
@@ -406,7 +437,7 @@ function calculateConvergence(trajectories) {
 function calculateVariance(values) {
   if (!values || values.length === 0) return 0;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
+  const squaredDiffs = values.map((v) => Math.pow(v - mean, 2));
   return squaredDiffs.reduce((a, b) => a + b, 0) / values.length;
 }
 

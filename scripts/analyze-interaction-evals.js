@@ -26,7 +26,7 @@ const LEARNER_DIMS = ['authenticity', 'responsiveness', 'development'];
  * Load all interaction eval JSON files
  */
 function loadEvals() {
-  const files = fs.readdirSync(LOGS_DIR).filter(f => f.endsWith('.json'));
+  const files = fs.readdirSync(LOGS_DIR).filter((f) => f.endsWith('.json'));
   const evals = [];
 
   for (const file of files) {
@@ -192,12 +192,12 @@ function generateReport(evals) {
   console.log('═'.repeat(70));
 
   // Filter to only evals with judge evaluation
-  const judgedEvals = evals.filter(e => e.judgeEvaluation && !e.skipJudge);
+  const judgedEvals = evals.filter((e) => e.judgeEvaluation && !e.skipJudge);
   console.log(`\nTotal evals: ${evals.length}`);
   console.log(`With judge evaluation: ${judgedEvals.length}`);
 
   // Battery evals
-  const batteryEvals = judgedEvals.filter(e => e._filename.includes('battery'));
+  const batteryEvals = judgedEvals.filter((e) => e._filename.includes('battery'));
   console.log(`Battery evals: ${batteryEvals.length}`);
 
   // By Tutor Profile
@@ -273,8 +273,8 @@ function generateReport(evals) {
   }
 
   // Create table
-  const profiles = [...new Set(batteryEvals.map(e => extractMetadata(e).tutorProfile))].sort();
-  const architectures = [...new Set(batteryEvals.map(e => extractMetadata(e).learnerArchitecture))].sort();
+  const profiles = [...new Set(batteryEvals.map((e) => extractMetadata(e).tutorProfile))].sort();
+  const architectures = [...new Set(batteryEvals.map((e) => extractMetadata(e).learnerArchitecture))].sort();
 
   console.log('\nTutor Overall Score by Profile × Architecture:');
   console.log('─'.repeat(70));
@@ -328,7 +328,9 @@ function generateReport(evals) {
 
     if (sortedProfiles.length > 0) {
       console.log(`\nBest tutor profile: ${sortedProfiles[0][0]} (${sortedProfiles[0][1].tutor.overall})`);
-      console.log(`Worst tutor profile: ${sortedProfiles[sortedProfiles.length-1][0]} (${sortedProfiles[sortedProfiles.length-1][1].tutor.overall})`);
+      console.log(
+        `Worst tutor profile: ${sortedProfiles[sortedProfiles.length - 1][0]} (${sortedProfiles[sortedProfiles.length - 1][1].tutor.overall})`,
+      );
     }
   }
 
@@ -340,7 +342,9 @@ function generateReport(evals) {
 
     if (sortedArchs.length > 0) {
       console.log(`\nBest learner architecture: ${sortedArchs[0][0]} (${sortedArchs[0][1].learner.overall})`);
-      console.log(`Worst learner architecture: ${sortedArchs[sortedArchs.length-1][0]} (${sortedArchs[sortedArchs.length-1][1].learner.overall})`);
+      console.log(
+        `Worst learner architecture: ${sortedArchs[sortedArchs.length - 1][0]} (${sortedArchs[sortedArchs.length - 1][1].learner.overall})`,
+      );
     }
   }
 

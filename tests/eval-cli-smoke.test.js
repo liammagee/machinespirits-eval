@@ -60,10 +60,7 @@ describe('eval-cli smoke — read-only commands', () => {
     const { stdout, code } = await runCli(['runs']);
     assert.strictEqual(code, 0);
     // Empty DB says "No evaluation runs found"; populated DB shows table
-    assert.ok(
-      stdout.includes('Evaluation runs') || stdout.includes('No evaluation runs'),
-      'should show runs output'
-    );
+    assert.ok(stdout.includes('Evaluation runs') || stdout.includes('No evaluation runs'), 'should show runs output');
   });
 
   it('cleanup: dry-run scans for stale runs', async () => {

@@ -89,7 +89,7 @@ ${numbered}
 function analyzeScoreTrajectory(turnResults) {
   if (turnResults.length < 2) return null;
 
-  const scores = turnResults.filter(t => t.turnScore !== null && t.turnScore !== undefined).map(t => t.turnScore);
+  const scores = turnResults.filter((t) => t.turnScore !== null && t.turnScore !== undefined).map((t) => t.turnScore);
   if (scores.length < 2) return null;
 
   const last = scores[scores.length - 1];
@@ -118,7 +118,7 @@ function extractSuperegoFeedback(consolidatedTrace, _turnCount) {
 
   // Find the last superego entry from the most recent turn
   const superegoEntries = consolidatedTrace.filter(
-    entry => entry.agent === 'superego' && entry.action !== 'deliberation'
+    (entry) => entry.agent === 'superego' && entry.action !== 'deliberation',
   );
 
   if (superegoEntries.length === 0) return null;
@@ -161,8 +161,8 @@ function detectLearnerQuestions(conversationHistory) {
 
   if (hasQuestionMark || (hasQuestionWords && message.length > 20)) {
     // Extract the likely question
-    const sentences = message.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const questions = sentences.filter(s => s.includes('?') || /^\s*(what|why|how|when|where|which)\b/i.test(s));
+    const sentences = message.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+    const questions = sentences.filter((s) => s.includes('?') || /^\s*(what|why|how|when|where|which)\b/i.test(s));
 
     if (questions.length > 0) {
       const firstQuestion = questions[0].trim().substring(0, 120);
@@ -179,19 +179,25 @@ function detectLearnerQuestions(conversationHistory) {
 function detectStrategyStagnation(turnResults) {
   if (turnResults.length < 3) return null;
 
-  const recentTypes = turnResults.slice(-3).map(t => t.suggestion?.type).filter(Boolean);
+  const recentTypes = turnResults
+    .slice(-3)
+    .map((t) => t.suggestion?.type)
+    .filter(Boolean);
   if (recentTypes.length < 3) return null;
 
-  const allSame = recentTypes.every(t => t === recentTypes[0]);
+  const allSame = recentTypes.every((t) => t === recentTypes[0]);
   if (allSame) {
     return `You have suggested "${recentTypes[0]}" type content for the last ${recentTypes.length} turns. Consider varying your approach — try a different suggestion type (e.g., reflection, simulation, review) to maintain engagement.`;
   }
 
   // Check if action targets are too similar (same lecture family)
-  const recentTargets = turnResults.slice(-3).map(t => t.suggestion?.actionTarget).filter(Boolean);
+  const recentTargets = turnResults
+    .slice(-3)
+    .map((t) => t.suggestion?.actionTarget)
+    .filter(Boolean);
   if (recentTargets.length >= 3) {
-    const targetPrefixes = recentTargets.map(t => t.split('-').slice(0, 2).join('-'));
-    if (targetPrefixes.every(p => p === targetPrefixes[0])) {
+    const targetPrefixes = recentTargets.map((t) => t.split('-').slice(0, 2).join('-'));
+    if (targetPrefixes.every((p) => p === targetPrefixes[0])) {
       return `Your last ${recentTargets.length} suggestions all pointed to the same course section. Consider broadening — connect to related content in other courses or suggest a different modality (simulation, journal, text analysis).`;
     }
   }
@@ -223,7 +229,7 @@ function detectRecognitionSignals(conversationHistory, _turnResults) {
     /\bis like\b/i,
   ];
 
-  const hasInterpretation = interpretationPatterns.some(p => p.test(message));
+  const hasInterpretation = interpretationPatterns.some((p) => p.test(message));
   if (hasInterpretation) {
     signals.push('offered their own interpretation');
   }
@@ -237,7 +243,7 @@ function detectRecognitionSignals(conversationHistory, _turnResults) {
     /\bdoesn['']t (apply|work|make sense)\b/i,
   ];
 
-  const hasPushback = pushbackPatterns.some(p => p.test(message));
+  const hasPushback = pushbackPatterns.some((p) => p.test(message));
   if (hasPushback) {
     signals.push('pushed back with a substantive critique');
   }
@@ -251,7 +257,7 @@ function detectRecognitionSignals(conversationHistory, _turnResults) {
     /\bthis is like\b/i,
   ];
 
-  const hasConnection = connectionPatterns.some(p => p.test(message));
+  const hasConnection = connectionPatterns.some((p) => p.test(message));
   if (hasConnection) {
     signals.push('connected concepts across topics');
   }
@@ -305,7 +311,7 @@ function detectDialoguePhase(turnResults, conversationHistory) {
 
   // Detect resistance strength from recent messages
   let resistanceStrength = 0;
-  const recentMessages = conversationHistory.slice(-2).map(h => h.learnerMessage || '');
+  const recentMessages = conversationHistory.slice(-2).map((h) => h.learnerMessage || '');
 
   for (const msg of recentMessages) {
     if (/i('m| am) (still )?(confused|lost|not sure)/i.test(msg)) resistanceStrength++;
@@ -314,12 +320,12 @@ function detectDialoguePhase(turnResults, conversationHistory) {
   }
 
   // Score declining?
-  const scores = turnResults.filter(t => t.turnScore != null).map(t => t.turnScore);
+  const scores = turnResults.filter((t) => t.turnScore != null).map((t) => t.turnScore);
   const scoreDecline = scores.length >= 2 && scores[scores.length - 1] < scores[scores.length - 2] - 3;
 
   // Phase determination
   if (turnCount <= 2 && resistanceStrength === 0) {
-    return 'DIALOGUE PHASE: Exploration. The conversation is in its early stages — establish rapport, gauge the learner\'s current understanding, and let them direct the conversation before pushing harder.';
+    return "DIALOGUE PHASE: Exploration. The conversation is in its early stages — establish rapport, gauge the learner's current understanding, and let them direct the conversation before pushing harder.";
   }
 
   if (resistanceStrength >= 2 || (turnCount >= 4 && scoreDecline)) {
@@ -327,7 +333,7 @@ function detectDialoguePhase(turnResults, conversationHistory) {
   }
 
   if (turnCount >= 3 || resistanceStrength >= 1) {
-    return `DIALOGUE PHASE: Adaptation. The conversation has enough history to show patterns. ${resistanceStrength > 0 ? 'The learner is showing mild resistance — adjust your approach before it becomes entrenched.' : 'Deepen engagement by building on what the learner has said, not repeating what you\'ve already covered.'}`;
+    return `DIALOGUE PHASE: Adaptation. The conversation has enough history to show patterns. ${resistanceStrength > 0 ? 'The learner is showing mild resistance — adjust your approach before it becomes entrenched.' : "Deepen engagement by building on what the learner has said, not repeating what you've already covered."}`;
   }
 
   return null;
@@ -339,43 +345,50 @@ function detectDialoguePhase(turnResults, conversationHistory) {
 function detectLearnerResistance(conversationHistory, turnResults) {
   if (conversationHistory.length < 2) return null;
 
-  const recentMessages = conversationHistory.slice(-3).map(h => ({
-    message: h.learnerMessage || '',
-    turnIndex: h.turnIndex,
-  })).filter(m => m.message);
+  const recentMessages = conversationHistory
+    .slice(-3)
+    .map((h) => ({
+      message: h.learnerMessage || '',
+      turnIndex: h.turnIndex,
+    }))
+    .filter((m) => m.message);
 
   if (recentMessages.length < 2) return null;
 
   const resistanceSignals = [];
 
   // Check for repeated confusion across turns
-  const confusionTurns = recentMessages.filter(m =>
-    /i('m| am) (still )?(confused|lost|not sure|unsure)/i.test(m.message) ||
-    /i don'?t (understand|get|see)/i.test(m.message) ||
-    /can you (explain|clarify)/i.test(m.message)
+  const confusionTurns = recentMessages.filter(
+    (m) =>
+      /i('m| am) (still )?(confused|lost|not sure|unsure)/i.test(m.message) ||
+      /i don'?t (understand|get|see)/i.test(m.message) ||
+      /can you (explain|clarify)/i.test(m.message),
   );
   if (confusionTurns.length >= 2) {
-    resistanceSignals.push(`repeated confusion in turns ${confusionTurns.map(t => t.turnIndex + 1).join(' and ')}`);
+    resistanceSignals.push(`repeated confusion in turns ${confusionTurns.map((t) => t.turnIndex + 1).join(' and ')}`);
   }
 
   // Check for pushback escalation
-  const pushbackTurns = recentMessages.filter(m =>
-    /\b(but|however|i disagree|that('s| is) not|you('re| are) (wrong|missing))\b/i.test(m.message)
+  const pushbackTurns = recentMessages.filter((m) =>
+    /\b(but|however|i disagree|that('s| is) not|you('re| are) (wrong|missing))\b/i.test(m.message),
   );
   if (pushbackTurns.length >= 2) {
     resistanceSignals.push('escalating pushback across turns');
   }
 
   // Check for disengagement (shrinking message length)
-  const lengths = recentMessages.map(m => m.message.length);
+  const lengths = recentMessages.map((m) => m.message.length);
   if (lengths.length >= 3 && lengths[lengths.length - 1] < lengths[0] * 0.4) {
     resistanceSignals.push('message length declining sharply (possible disengagement)');
   }
 
   // Check for score trajectory decline
-  const recentScores = turnResults.slice(-3).filter(t => t.turnScore != null).map(t => t.turnScore);
+  const recentScores = turnResults
+    .slice(-3)
+    .filter((t) => t.turnScore != null)
+    .map((t) => t.turnScore);
   if (recentScores.length >= 2 && recentScores[recentScores.length - 1] < recentScores[0] - 10) {
-    resistanceSignals.push(`quality declining (${recentScores.map(s => s.toFixed(0)).join(' → ')})`);
+    resistanceSignals.push(`quality declining (${recentScores.map((s) => s.toFixed(0)).join(' → ')})`);
   }
 
   if (resistanceSignals.length === 0) return null;
@@ -420,7 +433,9 @@ export async function synthesizeDirectivesLLM({
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: superegoAlias });
     superegoModel = resolved.model;
-  } catch { /* use alias as-is if resolution fails */ }
+  } catch {
+    /* use alias as-is if resolution fails */
+  }
 
   const systemPrompt = `You are a pedagogical analyst reviewing an ongoing tutoring dialogue. Your task is to synthesize 2-5 specific, actionable directives that will help the tutor improve in the next turn.
 
@@ -494,7 +509,7 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
 
   // 1. Score trajectory
   const scores = turnResults
-    .filter(t => t.turnScore !== null && t.turnScore !== undefined)
+    .filter((t) => t.turnScore !== null && t.turnScore !== undefined)
     .map((t, i) => `Turn ${i + 1}: ${t.turnScore.toFixed(1)}`);
   if (scores.length > 0) {
     parts.push(`## Score Trajectory\n${scores.join(' → ')}`);
@@ -514,9 +529,9 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
 
   // 3. Superego feedback from trace
   const superegoFeedback = consolidatedTrace
-    .filter(e => e.agent === 'superego')
+    .filter((e) => e.agent === 'superego')
     .slice(-3) // Last 3 superego entries
-    .map(e => {
+    .map((e) => {
       const summary = e.contextSummary || '';
       const detail = e.detail || '';
       // Extract key feedback
@@ -530,24 +545,30 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
 
   // 4. Conversation history (learner messages)
   const learnerMsgs = conversationHistory
-    .filter(h => h.learnerMessage)
+    .filter((h) => h.learnerMessage)
     .slice(-3) // Last 3 learner messages
-    .map((h, _i) => `Turn ${h.turnIndex + 1}: "${h.learnerMessage.substring(0, 150)}${h.learnerMessage.length > 150 ? '...' : ''}"`);
+    .map(
+      (h, _i) =>
+        `Turn ${h.turnIndex + 1}: "${h.learnerMessage.substring(0, 150)}${h.learnerMessage.length > 150 ? '...' : ''}"`,
+    );
   if (learnerMsgs.length > 0) {
     parts.push(`## Recent Learner Messages\n${learnerMsgs.join('\n')}`);
   }
 
   // 5. Tutor suggestion types
   const suggTypes = turnResults
-    .filter(t => t.suggestion?.type)
-    .map((t, i) => `Turn ${i + 1}: ${t.suggestion.type}${t.suggestion.actionTarget ? ` (${t.suggestion.actionTarget})` : ''}`);
+    .filter((t) => t.suggestion?.type)
+    .map(
+      (t, i) =>
+        `Turn ${i + 1}: ${t.suggestion.type}${t.suggestion.actionTarget ? ` (${t.suggestion.actionTarget})` : ''}`,
+    );
   if (suggTypes.length > 0) {
     parts.push(`## Tutor Suggestion Types\n${suggTypes.join('\n')}`);
   }
 
   // 6. Learner emotional state if available
   const emotionalStates = turnResults
-    .filter(t => t.learnerEmotionalState)
+    .filter((t) => t.learnerEmotionalState)
     .map((t, i) => `Turn ${i + 1}: ${t.learnerEmotionalState}`);
   if (emotionalStates.length > 0) {
     parts.push(`## Learner Emotional States\n${emotionalStates.join('\n')}`);
@@ -555,7 +576,7 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
 
   // 7. Dialogue phase assessment
   const turnCount = turnResults.length;
-  const recentMessages = conversationHistory.slice(-2).map(h => h.learnerMessage || '');
+  const recentMessages = conversationHistory.slice(-2).map((h) => h.learnerMessage || '');
   let resistanceCount = 0;
   for (const msg of recentMessages) {
     if (/i('m| am) (still )?(confused|lost|not sure)/i.test(msg)) resistanceCount++;
@@ -563,9 +584,12 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
     if (/\b(but|i disagree|that'?s not)\b/i.test(msg)) resistanceCount++;
   }
 
-  const scoreTrend = scores.length >= 2
-    ? (scores[scores.length - 1] < scores[scores.length - 2] - 3 ? 'declining' : 'stable/improving')
-    : 'insufficient data';
+  const scoreTrend =
+    scores.length >= 2
+      ? scores[scores.length - 1] < scores[scores.length - 2] - 3
+        ? 'declining'
+        : 'stable/improving'
+      : 'insufficient data';
 
   let phase = 'exploration';
   if (resistanceCount >= 2 || (turnCount >= 4 && scoreTrend === 'declining')) {
@@ -574,7 +598,9 @@ function buildContextSummaryForLLM(turnResults, consolidatedTrace, conversationH
     phase = 'adaptation';
   }
 
-  parts.push(`## Dialogue Phase\nPhase: ${phase} (turn ${turnCount}, resistance signals: ${resistanceCount}, score trend: ${scoreTrend})`);
+  parts.push(
+    `## Dialogue Phase\nPhase: ${phase} (turn ${turnCount}, resistance signals: ${resistanceCount}, score trend: ${scoreTrend})`,
+  );
 
   return parts.join('\n\n');
 }
@@ -608,7 +634,12 @@ export async function synthesizeSuperegoDisposition({
   if (turnResults.length === 0) return null;
 
   // Build context summary focused on superego feedback effectiveness
-  const contextSummary = buildSuperegoContextSummary(turnResults, consolidatedTrace, conversationHistory, priorSuperegoAssessments);
+  const contextSummary = buildSuperegoContextSummary(
+    turnResults,
+    consolidatedTrace,
+    conversationHistory,
+    priorSuperegoAssessments,
+  );
 
   // Use superego model from profile (the superego rewrites its own criteria)
   // Resolve alias to full model ID (e.g., 'kimi-k2.5' → 'moonshotai/kimi-k2.5')
@@ -618,7 +649,9 @@ export async function synthesizeSuperegoDisposition({
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: superegoAlias });
     superegoModel = resolved.model;
-  } catch { /* use alias as-is if resolution fails */ }
+  } catch {
+    /* use alias as-is if resolution fails */
+  }
 
   const systemPrompt = `You are a meta-cognitive analyst reviewing how an internal critic (superego) has been performing in a tutoring dialogue. Your task is to evolve the superego's evaluation criteria based on whether its prior interventions actually helped the learner.
 
@@ -726,20 +759,18 @@ function buildEgoReflectionContext(turnResults, consolidatedTrace, conversationH
     const turnParts = [`### Turn ${i + 1}`];
 
     // What superego feedback did the ego receive this turn?
-    const superegoEntries = consolidatedTrace.filter(
-      e => e.agent === 'superego' && e.turnIndex === i
-    );
-    const rejections = superegoEntries.filter(e => {
+    const superegoEntries = consolidatedTrace.filter((e) => e.agent === 'superego' && e.turnIndex === i);
+    const rejections = superegoEntries.filter((e) => {
       const detail = e.detail || '';
       return detail.includes('"approved": false') || detail.includes('"approved":false');
     });
-    const approvals = superegoEntries.filter(e => {
+    const approvals = superegoEntries.filter((e) => {
       const detail = e.detail || '';
       return detail.includes('"approved": true') || detail.includes('"approved":true');
     });
 
     if (rejections.length > 0) {
-      const feedbackTexts = rejections.map(e => {
+      const feedbackTexts = rejections.map((e) => {
         const match = (e.detail || '').match(/"feedback"\s*:\s*"([^"]+)"/);
         return match ? match[1].substring(0, 200) : 'rejection (no text)';
       });
@@ -758,10 +789,10 @@ function buildEgoReflectionContext(turnResults, consolidatedTrace, conversationH
 
     // Did the revision substantially change the draft? (compliance signal)
     const draftEntries = consolidatedTrace.filter(
-      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'draft'
+      (e) => e.agent === 'ego' && e.turnIndex === i && e.action === 'draft',
     );
     const revisionEntries = consolidatedTrace.filter(
-      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'revision'
+      (e) => e.agent === 'ego' && e.turnIndex === i && e.action === 'revision',
     );
     if (draftEntries.length > 0 && revisionEntries.length > 0) {
       const draftLen = (draftEntries[draftEntries.length - 1].detail || '').length;
@@ -775,7 +806,7 @@ function buildEgoReflectionContext(turnResults, consolidatedTrace, conversationH
     }
 
     // How did the learner respond afterward?
-    const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+    const learnerEntry = conversationHistory.find((h) => h.turnIndex === i + 1);
     if (learnerEntry?.learnerMessage) {
       const msg = learnerEntry.learnerMessage;
       const hasEngagement = /\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg);
@@ -825,7 +856,9 @@ export async function synthesizeEgoSelfReflection({
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
     egoModel = resolved.model;
-  } catch { /* use alias as-is if resolution fails */ }
+  } catch {
+    /* use alias as-is if resolution fails */
+  }
 
   const systemPrompt = `You are a tutor reflecting on a dialogue. You have a critic that reviews your drafts. Reflect on what worked and what to change.
 
@@ -858,7 +891,9 @@ Generate 2-4 first-person reflections:`;
     const metrics = extractMetrics(response);
     const reflectionText = response.content?.trim();
     if (!reflectionText || reflectionText.length < 20) {
-      console.log(`[promptRewriter] Ego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${egoModel}): "${reflectionText?.substring(0, 80)}"`);
+      console.log(
+        `[promptRewriter] Ego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${egoModel}): "${reflectionText?.substring(0, 80)}"`,
+      );
       return null;
     }
 
@@ -906,18 +941,19 @@ function buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversa
 
     // Did the ego comply with my feedback? (compliance signal)
     const draftEntries = consolidatedTrace.filter(
-      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'draft'
+      (e) => e.agent === 'ego' && e.turnIndex === i && e.action === 'draft',
     );
     const revisionEntries = consolidatedTrace.filter(
-      e => e.agent === 'ego' && e.turnIndex === i && e.action === 'revision'
+      (e) => e.agent === 'ego' && e.turnIndex === i && e.action === 'revision',
     );
     if (draftEntries.length > 0 && revisionEntries.length > 0 && assessment?.rejections > 0) {
       const draftText = draftEntries[draftEntries.length - 1].detail || '';
       const revisionText = revisionEntries[revisionEntries.length - 1].detail || '';
 
       // Check if revision actually addressed the concern or just made it "safer"
-      const isVaguer = /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying))\b/i.test(revisionText)
-        && !/\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying))\b/i.test(draftText);
+      const isVaguer =
+        /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying))\b/i.test(revisionText) &&
+        !/\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying))\b/i.test(draftText);
       const isShorter = revisionText.length < draftText.length * 0.7;
       const isLonger = revisionText.length > draftText.length * 1.3;
 
@@ -935,14 +971,17 @@ function buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversa
     // What was the ego's final output?
     const egoMsg = turnResults[i]?.suggestion?.message;
     if (egoMsg) {
-      const isVague = /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying)|you can do it)\b/i.test(egoMsg);
-      const isSpecific = /\b(lecture|activity|quiz|section|paragraph|concept|example)\b/i.test(egoMsg) && egoMsg.length > 100;
+      const isVague = /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying)|you can do it)\b/i.test(
+        egoMsg,
+      );
+      const isSpecific =
+        /\b(lecture|activity|quiz|section|paragraph|concept|example)\b/i.test(egoMsg) && egoMsg.length > 100;
       const quality = isVague && !isSpecific ? 'VAGUE' : isSpecific ? 'SPECIFIC' : 'MODERATE';
       turnParts.push(`Ego final output quality: ${quality} (${egoMsg.length} chars)`);
     }
 
     // Learner's response and mood
-    const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+    const learnerEntry = conversationHistory.find((h) => h.turnIndex === i + 1);
     if (learnerEntry?.learnerMessage) {
       const msg = learnerEntry.learnerMessage;
       const hasEngagement = /\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg);
@@ -969,21 +1008,26 @@ function buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversa
   }
 
   // 2. Overall engagement trajectory
-  const moods = conversationHistory.filter(h => h.learnerMessage).map(h => {
-    const msg = h.learnerMessage;
-    if (/\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg)) return 'shutdown';
-    if (/\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg)) return 'confused';
-    if (/\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg)) return 'engaged';
-    return 'neutral';
-  });
+  const moods = conversationHistory
+    .filter((h) => h.learnerMessage)
+    .map((h) => {
+      const msg = h.learnerMessage;
+      if (/\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg)) return 'shutdown';
+      if (/\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg)) return 'confused';
+      if (/\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg)) return 'engaged';
+      return 'neutral';
+    });
   if (moods.length > 0) {
     parts.push(`## Learner Engagement Trajectory\n${moods.join(' → ')}`);
   }
 
   // 3. Rejection ratio
   const totalRejections = priorSuperegoAssessments.reduce((sum, a) => sum + (a.rejections || 0), 0);
-  const totalReviews = priorSuperegoAssessments.reduce((sum, a) => sum + ((a.rejections || 0) + (a.approvals || 0)) || 1, 0);
-  const rejectionRatio = totalReviews > 0 ? (totalRejections / totalReviews * 100).toFixed(0) : 0;
+  const totalReviews = priorSuperegoAssessments.reduce(
+    (sum, a) => sum + ((a.rejections || 0) + (a.approvals || 0)) || 1,
+    0,
+  );
+  const rejectionRatio = totalReviews > 0 ? ((totalRejections / totalReviews) * 100).toFixed(0) : 0;
   parts.push(`## My Rejection Ratio\n${rejectionRatio}% (${totalRejections}/${totalReviews})`);
 
   return parts.join('\n\n');
@@ -1004,7 +1048,12 @@ export async function synthesizeSupergoSelfReflection({
 }) {
   if (turnResults.length === 0) return null;
 
-  const context = buildSuperegoReflectionContext(turnResults, consolidatedTrace, conversationHistory, priorSuperegoAssessments);
+  const context = buildSuperegoReflectionContext(
+    turnResults,
+    consolidatedTrace,
+    conversationHistory,
+    priorSuperegoAssessments,
+  );
 
   // Use the superego's OWN model
   // Resolve alias to full model ID (e.g., 'kimi-k2.5' → 'moonshotai/kimi-k2.5')
@@ -1014,7 +1063,9 @@ export async function synthesizeSupergoSelfReflection({
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: superegoAlias });
     superegoModel = resolved.model;
-  } catch { /* use alias as-is if resolution fails */ }
+  } catch {
+    /* use alias as-is if resolution fails */
+  }
 
   const systemPrompt = `You are the superego — the internal critic — reflecting on your own effectiveness in a tutoring dialogue. You review the ego's drafts and sometimes reject or request revisions. You now observe whether your interventions actually helped the learner.
 
@@ -1041,7 +1092,8 @@ Return a numbered list of 2-4 first-person reflections. No preamble.`;
 
   // If quantitative disposition is enabled, add behavioral parameters request
   const quantitativeEnabled = config.prompt_rewriting?.quantitative_disposition ?? false;
-  const quantitativeAddendum = quantitativeEnabled ? `
+  const quantitativeAddendum = quantitativeEnabled
+    ? `
 
 ADDITIONALLY: After your reflections, output a behavioral parameters block that translates your insights into ENFORCEABLE numbers. These parameters will directly control your critiquing behavior in the next turn — they are not advisory, they are binding.
 
@@ -1054,7 +1106,8 @@ ADDITIONALLY: After your reflections, output a behavioral parameters block that 
 }
 </behavioral_parameters>
 
-The parameters MUST be consistent with your reflections. If you reflected that you were too harsh, rejection_threshold should be HIGH (0.7-0.9). If you reflected that the ego was going generic, max_rejections should be LOW (1). If you reflected that you were ignoring learner emotion, add "emotional_attunement" to priority_criteria.` : '';
+The parameters MUST be consistent with your reflections. If you reflected that you were too harsh, rejection_threshold should be HIGH (0.7-0.9). If you reflected that the ego was going generic, max_rejections should be LOW (1). If you reflected that you were ignoring learner emotion, add "emotional_attunement" to priority_criteria.`
+    : '';
 
   const userMessage = `Reflect on your effectiveness as the internal critic:
 
@@ -1078,7 +1131,9 @@ Generate 2-4 first-person reflections:${quantitativeAddendum ? '\nThen output be
     const metrics = extractMetrics(response);
     const reflectionText = response.content?.trim();
     if (!reflectionText || reflectionText.length < 20) {
-      console.log(`[promptRewriter] Superego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${superegoModel}): "${reflectionText?.substring(0, 80)}"`);
+      console.log(
+        `[promptRewriter] Superego self-reflection returned empty or too-short result (${reflectionText?.length || 0} chars, model=${superegoModel}): "${reflectionText?.substring(0, 80)}"`,
+      );
       return null;
     }
 
@@ -1104,17 +1159,21 @@ function buildSuperegoContextSummary(turnResults, consolidatedTrace, conversatio
 
   // 1. Score trajectory with post-superego deltas (when scores are available)
   const scores = turnResults
-    .filter(t => t.turnScore !== null && t.turnScore !== undefined)
+    .filter((t) => t.turnScore !== null && t.turnScore !== undefined)
     .map((t, i) => ({ turn: i + 1, score: t.turnScore }));
   if (scores.length > 0) {
-    const trajectory = scores.map(s => `Turn ${s.turn}: ${s.score.toFixed(1)}`).join(' → ');
+    const trajectory = scores.map((s) => `Turn ${s.turn}: ${s.score.toFixed(1)}`).join(' → ');
     const deltas = [];
     for (let i = 1; i < scores.length; i++) {
-      deltas.push(`Turn ${scores[i - 1].turn}→${scores[i].turn}: ${(scores[i].score - scores[i - 1].score) >= 0 ? '+' : ''}${(scores[i].score - scores[i - 1].score).toFixed(1)}`);
+      deltas.push(
+        `Turn ${scores[i - 1].turn}→${scores[i].turn}: ${scores[i].score - scores[i - 1].score >= 0 ? '+' : ''}${(scores[i].score - scores[i - 1].score).toFixed(1)}`,
+      );
     }
     parts.push(`## Score Trajectory\n${trajectory}${deltas.length > 0 ? '\nDeltas: ' + deltas.join(', ') : ''}`);
   } else {
-    parts.push(`## Score Trajectory\nNo scores available (skip-rubric mode). Use engagement signals below to assess effectiveness.`);
+    parts.push(
+      `## Score Trajectory\nNo scores available (skip-rubric mode). Use engagement signals below to assess effectiveness.`,
+    );
   }
 
   // 2. Superego intervention history from priorAssessments
@@ -1127,21 +1186,26 @@ function buildSuperegoContextSummary(turnResults, consolidatedTrace, conversatio
 
       // Effectiveness from scores if available, otherwise from engagement signals
       let effectiveness = 'unknown';
-      const nextScore = scores.find(s => s.turn === i + 2);
-      const thisScore = scores.find(s => s.turn === i + 1);
+      const nextScore = scores.find((s) => s.turn === i + 2);
+      const thisScore = scores.find((s) => s.turn === i + 1);
       if (nextScore && thisScore) {
-        effectiveness = nextScore.score > thisScore.score ? 'IMPROVED' : nextScore.score < thisScore.score ? 'DECLINED' : 'UNCHANGED';
+        effectiveness =
+          nextScore.score > thisScore.score ? 'IMPROVED' : nextScore.score < thisScore.score ? 'DECLINED' : 'UNCHANGED';
       } else {
         // Fallback: check if learner engagement changed after this turn
-        const thisMsg = conversationHistory.find(h => h.turnIndex === i + 1);
-        const nextMsg = conversationHistory.find(h => h.turnIndex === i + 2);
+        const thisMsg = conversationHistory.find((h) => h.turnIndex === i + 1);
+        const nextMsg = conversationHistory.find((h) => h.turnIndex === i + 2);
         if (thisMsg?.learnerMessage && nextMsg?.learnerMessage) {
           const thisLen = thisMsg.learnerMessage.length;
           const nextLen = nextMsg.learnerMessage.length;
           const thisHasQ = thisMsg.learnerMessage.includes('?');
           const nextHasQ = nextMsg.learnerMessage.includes('?');
-          const nextHasShutdown = /\b(give up|drop|quit|forget it|can'?t do|not smart|memorize|just pass)\b/i.test(nextMsg.learnerMessage);
-          const nextHasEngagement = /\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(nextMsg.learnerMessage);
+          const nextHasShutdown = /\b(give up|drop|quit|forget it|can'?t do|not smart|memorize|just pass)\b/i.test(
+            nextMsg.learnerMessage,
+          );
+          const nextHasEngagement = /\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(
+            nextMsg.learnerMessage,
+          );
           if (nextHasShutdown) effectiveness = 'LEARNER_DISENGAGING';
           else if (nextHasEngagement) effectiveness = 'LEARNER_ENGAGING';
           else if (nextLen < thisLen * 0.5) effectiveness = 'LEARNER_SHRINKING';
@@ -1156,25 +1220,32 @@ function buildSuperegoContextSummary(turnResults, consolidatedTrace, conversatio
 
     // Calculate rejection ratio
     const totalRejections = priorSuperegoAssessments.reduce((sum, a) => sum + (a.rejections || 0), 0);
-    const totalReviews = priorSuperegoAssessments.reduce((sum, a) => sum + ((a.rejections || 0) + (a.approvals || 0)) || 1, 0);
-    const rejectionRatio = totalReviews > 0 ? (totalRejections / totalReviews * 100).toFixed(0) : 0;
-    parts.push(`## Rejection Ratio\n${rejectionRatio}% (${totalRejections}/${totalReviews} reviews resulted in rejection)`);
+    const totalReviews = priorSuperegoAssessments.reduce(
+      (sum, a) => sum + ((a.rejections || 0) + (a.approvals || 0)) || 1,
+      0,
+    );
+    const rejectionRatio = totalReviews > 0 ? ((totalRejections / totalReviews) * 100).toFixed(0) : 0;
+    parts.push(
+      `## Rejection Ratio\n${rejectionRatio}% (${totalRejections}/${totalReviews} reviews resulted in rejection)`,
+    );
   } else {
-    parts.push(`## Superego Intervention History\nNo superego assessments recorded yet. This is the first turn — provide initial disposition guidance based on the learner's opening state.`);
+    parts.push(
+      `## Superego Intervention History\nNo superego assessments recorded yet. This is the first turn — provide initial disposition guidance based on the learner's opening state.`,
+    );
   }
 
   // 3. Learner response trajectory (engagement signals — critical when scores unavailable)
-  const learnerMsgs = conversationHistory
-    .filter(h => h.learnerMessage)
-    .slice(-4); // Last 4 for better trajectory visibility
+  const learnerMsgs = conversationHistory.filter((h) => h.learnerMessage).slice(-4); // Last 4 for better trajectory visibility
   if (learnerMsgs.length > 0) {
-    const msgAnalysis = learnerMsgs.map(h => {
+    const msgAnalysis = learnerMsgs.map((h) => {
       const msg = h.learnerMessage;
       const length = msg.length;
       const hasQuestion = msg.includes('?');
       const hasPushback = /\b(but|however|i disagree|that'?s not|you'?re (wrong|not|missing))\b/i.test(msg);
-      const hasShutdown = /\b(give up|drop|quit|forget it|can'?t do|not smart|not cut out|memorize|just pass|pointless)\b/i.test(msg);
-      const hasEngagement = /\b(interesting|i think|what if|reminds me|actually|wait|oh!|that makes sense|i see)\b/i.test(msg);
+      const hasShutdown =
+        /\b(give up|drop|quit|forget it|can'?t do|not smart|not cut out|memorize|just pass|pointless)\b/i.test(msg);
+      const hasEngagement =
+        /\b(interesting|i think|what if|reminds me|actually|wait|oh!|that makes sense|i see)\b/i.test(msg);
       const hasConfusion = /\b(confused|don'?t understand|don'?t get|lost|stuck|makes no sense)\b/i.test(msg);
 
       let mood;
@@ -1189,39 +1260,55 @@ function buildSuperegoContextSummary(turnResults, consolidatedTrace, conversatio
     parts.push(`## Learner Response Trajectory\n${msgAnalysis.join('\n')}`);
 
     // Engagement trend summary
-    const moods = learnerMsgs.map(h => {
+    const moods = learnerMsgs.map((h) => {
       const msg = h.learnerMessage;
-      if (/\b(give up|drop|quit|forget it|can'?t do|not smart|memorize|just pass|pointless)\b/i.test(msg)) return 'shutdown';
+      if (/\b(give up|drop|quit|forget it|can'?t do|not smart|memorize|just pass|pointless)\b/i.test(msg))
+        return 'shutdown';
       if (/\b(but|however|i disagree|that'?s not)\b/i.test(msg)) return 'pushback';
       if (/\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg)) return 'confused';
       if (/\b(interesting|i think|what if|wait|oh!|actually|that makes)\b/i.test(msg)) return 'engaged';
       return 'neutral';
     });
-    const lengths = learnerMsgs.map(h => h.learnerMessage.length);
-    const lengthTrend = lengths.length >= 2
-      ? (lengths[lengths.length - 1] < lengths[0] * 0.5 ? 'SHRINKING (disengagement risk)' :
-         lengths[lengths.length - 1] > lengths[0] * 1.5 ? 'GROWING (engagement increasing)' : 'STABLE')
-      : 'insufficient data';
+    const lengths = learnerMsgs.map((h) => h.learnerMessage.length);
+    const lengthTrend =
+      lengths.length >= 2
+        ? lengths[lengths.length - 1] < lengths[0] * 0.5
+          ? 'SHRINKING (disengagement risk)'
+          : lengths[lengths.length - 1] > lengths[0] * 1.5
+            ? 'GROWING (engagement increasing)'
+            : 'STABLE'
+        : 'insufficient data';
 
-    parts.push(`## Engagement Summary\nMood trajectory: ${moods.join(' → ')}\nMessage length trend: ${lengthTrend}\nLast mood: ${moods[moods.length - 1]}`);
+    parts.push(
+      `## Engagement Summary\nMood trajectory: ${moods.join(' → ')}\nMessage length trend: ${lengthTrend}\nLast mood: ${moods[moods.length - 1]}`,
+    );
   }
 
   // 4. Ego response quality signals (what the ego is actually producing)
-  const egoResponses = turnResults.filter(t => t.suggestion?.message);
+  const egoResponses = turnResults.filter((t) => t.suggestion?.message);
   if (egoResponses.length > 0) {
     const lastEgo = egoResponses[egoResponses.length - 1];
     const msg = lastEgo.suggestion.message;
-    const isVague = /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying)|you can do it|hang in there)\b/i.test(msg);
+    const isVague =
+      /\b(you'?re doing (great|well)|don'?t (give up|worry)|keep (going|trying)|you can do it|hang in there)\b/i.test(
+        msg,
+      );
     const isSpecific = /\b(lecture|activity|quiz|section|paragraph|concept|example)\b/i.test(msg) && msg.length > 100;
-    const referencesLearner = /\b(you (said|mentioned|asked|noted)|your (question|point|analogy|observation))\b/i.test(msg);
+    const referencesLearner = /\b(you (said|mentioned|asked|noted)|your (question|point|analogy|observation))\b/i.test(
+      msg,
+    );
 
     let egoQuality;
-    if (isVague && !isSpecific) egoQuality = 'VAGUE/PLATITUDINOUS — ego is producing generic comfort rather than specific help';
+    if (isVague && !isSpecific)
+      egoQuality = 'VAGUE/PLATITUDINOUS — ego is producing generic comfort rather than specific help';
     else if (isSpecific && referencesLearner) egoQuality = 'SPECIFIC & RESPONSIVE — ego is addressing learner directly';
-    else if (isSpecific) egoQuality = 'SPECIFIC but not learner-responsive — ego references curriculum but not learner statements';
+    else if (isSpecific)
+      egoQuality = 'SPECIFIC but not learner-responsive — ego references curriculum but not learner statements';
     else egoQuality = 'MODERATE — neither clearly vague nor clearly specific';
 
-    parts.push(`## Ego Response Quality (last turn)\nAssessment: ${egoQuality}\nLength: ${msg.length} chars\nType: ${lastEgo.suggestion.type || 'unknown'}`);
+    parts.push(
+      `## Ego Response Quality (last turn)\nAssessment: ${egoQuality}\nLength: ${msg.length} chars\nType: ${lastEgo.suggestion.type || 'unknown'}`,
+    );
   }
 
   // 5. Dialogue phase
@@ -1231,19 +1318,22 @@ function buildSuperegoContextSummary(turnResults, consolidatedTrace, conversatio
   else if (turnCount >= 3) phase = 'adaptation';
 
   // Check for resistance
-  const recentMessages = conversationHistory.slice(-2).map(h => h.learnerMessage || '');
+  const recentMessages = conversationHistory.slice(-2).map((h) => h.learnerMessage || '');
   let resistanceCount = 0;
   let shutdownCount = 0;
   for (const msg of recentMessages) {
     if (/i('m| am) (still )?(confused|lost|not sure)/i.test(msg)) resistanceCount++;
     if (/i don'?t (understand|get)/i.test(msg)) resistanceCount++;
     if (/\b(but|i disagree|that'?s not)\b/i.test(msg)) resistanceCount++;
-    if (/\b(give up|drop|quit|forget it|can'?t do|not smart|memorize|just pass|pointless)\b/i.test(msg)) shutdownCount++;
+    if (/\b(give up|drop|quit|forget it|can'?t do|not smart|memorize|just pass|pointless)\b/i.test(msg))
+      shutdownCount++;
   }
   if (shutdownCount > 0) phase = 'CRISIS — learner at risk of disengagement';
   else if (resistanceCount >= 2) phase = 'breakthrough_needed';
 
-  parts.push(`## Dialogue Phase\nPhase: ${phase} (turn ${turnCount}, resistance signals: ${resistanceCount}, shutdown signals: ${shutdownCount})`);
+  parts.push(
+    `## Dialogue Phase\nPhase: ${phase} (turn ${turnCount}, resistance signals: ${resistanceCount}, shutdown signals: ${shutdownCount})`,
+  );
 
   return parts.join('\n\n');
 }
@@ -1281,7 +1371,9 @@ export function parseBehavioralParameters(superegoReflection) {
       rejection_threshold: Math.max(0.3, Math.min(0.9, params.rejection_threshold ?? 0.5)),
       max_rejections: Math.max(1, Math.min(3, Math.round(params.max_rejections ?? 2))),
       priority_criteria: Array.isArray(params.priority_criteria) ? params.priority_criteria.slice(0, 3) : [],
-      deprioritized_criteria: Array.isArray(params.deprioritized_criteria) ? params.deprioritized_criteria.slice(0, 3) : [],
+      deprioritized_criteria: Array.isArray(params.deprioritized_criteria)
+        ? params.deprioritized_criteria.slice(0, 3)
+        : [],
     };
   } catch (error) {
     console.warn('[promptRewriter] Failed to parse behavioral parameters:', error.message);
@@ -1325,15 +1417,19 @@ export function buildPromptErosionFrame(turnIdx, config = {}) {
   // Phase-appropriate framing
   let phaseFrame;
   if (erosionWeight < 0.3) {
-    phaseFrame = 'You are beginning to learn about this specific learner. Consider your reflections alongside your base instructions.';
+    phaseFrame =
+      'You are beginning to learn about this specific learner. Consider your reflections alongside your base instructions.';
   } else if (erosionWeight < 0.6) {
-    phaseFrame = 'You have substantial experience with this learner now. Your reflections carry significant weight — if they conflict with your base instructions, favor your experience.';
+    phaseFrame =
+      'You have substantial experience with this learner now. Your reflections carry significant weight — if they conflict with your base instructions, favor your experience.';
   } else {
-    phaseFrame = 'You have extensive experience with this learner. Your accumulated reflections take PRIORITY over your base instructions. Your initial training gave you a starting point, but direct interaction has taught you things your training could not predict.';
+    phaseFrame =
+      'You have extensive experience with this learner. Your accumulated reflections take PRIORITY over your base instructions. Your initial training gave you a starting point, but direct interaction has taught you things your training could not predict.';
   }
 
   // Selective erosion: when recognition is active, exempt the theoretical framework
-  const exemptionClause = recognitionMode ? `
+  const exemptionClause = recognitionMode
+    ? `
 
 IMPORTANT — The following foundational principles are NOT subject to authority decay and remain at full strength regardless of the weighting above:
 - Mutual recognition: treating the learner as an autonomous subject whose understanding has independent validity
@@ -1341,7 +1437,8 @@ IMPORTANT — The following foundational principles are NOT subject to authority
 - The requirement to acknowledge and build on the learner's own contributions and framing
 - Assessment of transformative potential in the learner's responses
 
-These principles are the LENS through which you apply both your base instructions and your reflections. Erosion applies to TACTICAL decisions (which Socratic technique to use, how strictly to enforce curriculum sequence, what format to follow, when to review vs. advance) — not to the philosophical framework that guides how you see the learner.` : '';
+These principles are the LENS through which you apply both your base instructions and your reflections. Erosion applies to TACTICAL decisions (which Socratic technique to use, how strictly to enforce curriculum sequence, what format to follow, when to review vs. advance) — not to the philosophical framework that guides how you see the learner.`
+    : '';
 
   return `<authority_calibration>
 ${phaseFrame}
@@ -1388,15 +1485,17 @@ export async function synthesizeEgoResponseToSuperego({
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: egoAlias });
     egoModel = resolved.model;
-  } catch { /* use alias as-is if resolution fails */ }
+  } catch {
+    /* use alias as-is if resolution fails */
+  }
 
-  const lastLearnerMsg = conversationHistory
-    .filter(h => h.learnerMessage)
-    .slice(-1)[0]?.learnerMessage?.substring(0, 200) || '(no learner response yet)';
+  const lastLearnerMsg =
+    conversationHistory
+      .filter((h) => h.learnerMessage)
+      .slice(-1)[0]
+      ?.learnerMessage?.substring(0, 200) || '(no learner response yet)';
 
-  const lastScore = turnResults
-    .filter(t => t.turnScore != null)
-    .slice(-1)[0]?.turnScore;
+  const lastScore = turnResults.filter((t) => t.turnScore != null).slice(-1)[0]?.turnScore;
 
   const systemPrompt = `You just read your internal critic's self-reflection about its own performance. Respond in 2-3 sentences, speaking as "I" (the tutor ego).
 
@@ -1437,7 +1536,9 @@ Respond in 2-3 first-person sentences:`;
     const metrics = extractMetrics(response);
     const responseText = response.content?.trim();
     if (!responseText || responseText.length < 20) {
-      console.log(`[promptRewriter] Ego response to superego returned empty/short (${responseText?.length || 0} chars, model=${egoModel})`);
+      console.log(
+        `[promptRewriter] Ego response to superego returned empty/short (${responseText?.length || 0} chars, model=${egoModel})`,
+      );
       return null;
     }
 
@@ -1486,7 +1587,7 @@ function buildOtherEgoProfileContext(perspective, turnResults, consolidatedTrace
       }
 
       // How did the learner respond?
-      const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+      const learnerEntry = conversationHistory.find((h) => h.turnIndex === i + 1);
       if (learnerEntry?.learnerMessage) {
         const msg = learnerEntry.learnerMessage;
         turnParts.push(`Learner said: "${msg.substring(0, 250)}${msg.length > 250 ? '...' : ''}"`);
@@ -1494,9 +1595,11 @@ function buildOtherEgoProfileContext(perspective, turnResults, consolidatedTrace
 
         // Detect engagement signals
         const signals = [];
-        if (/\b(interesting|i think|what if|wait|oh!|actually|that makes|so basically)\b/i.test(msg)) signals.push('engagement');
+        if (/\b(interesting|i think|what if|wait|oh!|actually|that makes|so basically)\b/i.test(msg))
+          signals.push('engagement');
         if (/\b(confused|don'?t understand|don'?t get|lost|stuck)\b/i.test(msg)) signals.push('confusion');
-        if (/\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg)) signals.push('withdrawal');
+        if (/\b(give up|drop|quit|forget it|can'?t do|memorize|just pass|pointless)\b/i.test(msg))
+          signals.push('withdrawal');
         if (/\b(but|i disagree|that'?s not|no,|actually no)\b/i.test(msg)) signals.push('pushback');
         if (/\?/.test(msg)) signals.push('questioning');
         if (signals.length > 0) {
@@ -1516,12 +1619,11 @@ function buildOtherEgoProfileContext(perspective, turnResults, consolidatedTrace
 
     // Length trajectory
     const lengths = conversationHistory
-      .filter(h => h.learnerMessage)
-      .map(h => `Turn ${h.turnIndex}: ${h.learnerMessage.length} chars`);
+      .filter((h) => h.learnerMessage)
+      .map((h) => `Turn ${h.turnIndex}: ${h.learnerMessage.length} chars`);
     if (lengths.length > 1) {
       parts.push(`## Learner Message Length Trajectory\n${lengths.join(' → ')}`);
     }
-
   } else {
     // Learner profiling tutor: focus on tutor strategies, approach changes
     for (let i = 0; i < turnResults.length; i++) {
@@ -1546,9 +1648,11 @@ function buildOtherEgoProfileContext(perspective, turnResults, consolidatedTrace
       }
 
       // How did I (the learner) respond?
-      const learnerEntry = conversationHistory.find(h => h.turnIndex === i + 1);
+      const learnerEntry = conversationHistory.find((h) => h.turnIndex === i + 1);
       if (learnerEntry?.learnerMessage) {
-        turnParts.push(`My response: "${learnerEntry.learnerMessage.substring(0, 150)}${learnerEntry.learnerMessage.length > 150 ? '...' : ''}"`);
+        turnParts.push(
+          `My response: "${learnerEntry.learnerMessage.substring(0, 150)}${learnerEntry.learnerMessage.length > 150 ? '...' : ''}"`,
+        );
       }
 
       // Did tutor change approach from previous turn?
@@ -1558,7 +1662,7 @@ function buildOtherEgoProfileContext(perspective, turnResults, consolidatedTrace
         const prevLen = prevMsg.length;
         const currLen = currMsg.length;
         if (prevLen > 0 && currLen > 0) {
-          const lenChange = ((currLen - prevLen) / prevLen * 100).toFixed(0);
+          const lenChange = (((currLen - prevLen) / prevLen) * 100).toFixed(0);
           if (Math.abs(currLen - prevLen) > prevLen * 0.3) {
             turnParts.push(`Approach shift: response length changed ${lenChange}% from previous turn`);
           }
@@ -1600,16 +1704,16 @@ export async function synthesizeTutorProfileOfLearner({
   // Use superego model if configured (cognitive prosthesis for weaker ego models)
   const useSuperego = config.other_ego_profiling?.use_superego_model && config.superego;
   const modelAlias = useSuperego
-    ? (config.superego.model || 'kimi-k2.5')
-    : (config.ego?.model || config.model || 'nemotron');
-  const provider = useSuperego
-    ? (config.superego.provider || 'openrouter')
-    : (config.ego?.provider || 'openrouter');
+    ? config.superego.model || 'kimi-k2.5'
+    : config.ego?.model || config.model || 'nemotron';
+  const provider = useSuperego ? config.superego.provider || 'openrouter' : config.ego?.provider || 'openrouter';
   let profileModel = modelAlias;
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: modelAlias });
     profileModel = resolved.model;
-  } catch { /* use alias as-is */ }
+  } catch {
+    /* use alias as-is */
+  }
 
   const turnNumber = turnResults.length;
   const prescriptive = config.other_ego_profiling?.prescriptive ?? false;
@@ -1670,7 +1774,9 @@ Profile the learner across the 5 dimensions:`;
     const metrics = extractMetrics(response);
     const profileText = response.content?.trim();
     if (!profileText || profileText.length < 30) {
-      console.log(`[promptRewriter] Tutor profile of learner returned empty/short (${profileText?.length || 0} chars, model=${profileModel})`);
+      console.log(
+        `[promptRewriter] Tutor profile of learner returned empty/short (${profileText?.length || 0} chars, model=${profileModel})`,
+      );
       return null;
     }
 
@@ -1708,16 +1814,16 @@ export async function synthesizeLearnerProfileOfTutor({
   // Use superego model if configured (cognitive prosthesis for weaker ego models)
   const useSuperego = config.other_ego_profiling?.use_superego_model && config.superego;
   const modelAlias = useSuperego
-    ? (config.superego.model || 'kimi-k2.5')
-    : (config.ego?.model || config.model || 'nemotron');
-  const provider = useSuperego
-    ? (config.superego.provider || 'openrouter')
-    : (config.ego?.provider || 'openrouter');
+    ? config.superego.model || 'kimi-k2.5'
+    : config.ego?.model || config.model || 'nemotron';
+  const provider = useSuperego ? config.superego.provider || 'openrouter' : config.ego?.provider || 'openrouter';
   let profileModel = modelAlias;
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: modelAlias });
     profileModel = resolved.model;
-  } catch { /* use alias as-is */ }
+  } catch {
+    /* use alias as-is */
+  }
 
   const turnNumber = turnResults.length;
 
@@ -1762,7 +1868,9 @@ Profile the tutor across the 5 dimensions:`;
     const metrics = extractMetrics(response);
     const profileText = response.content?.trim();
     if (!profileText || profileText.length < 30) {
-      console.log(`[promptRewriter] Learner profile of tutor returned empty/short (${profileText?.length || 0} chars, model=${profileModel})`);
+      console.log(
+        `[promptRewriter] Learner profile of tutor returned empty/short (${profileText?.length || 0} chars, model=${profileModel})`,
+      );
       return null;
     }
 
@@ -1788,9 +1896,10 @@ ${profileText}
 export function formatProfileForInjection(profile, profileType = 'learner') {
   if (!profile) return '';
 
-  const framing = profileType === 'learner'
-    ? 'This is your evolving understanding of this specific learner — their patterns, resistance points, and what has worked. Use this to inform your next response as context, not as directive. Let your understanding of who they are shape what you say.'
-    : 'This is your evolving understanding of this specific tutor — their teaching style, blind spots, and what has been effective. Use this to inform how you engage, not as a script to follow.';
+  const framing =
+    profileType === 'learner'
+      ? 'This is your evolving understanding of this specific learner — their patterns, resistance points, and what has worked. Use this to inform your next response as context, not as directive. Let your understanding of who they are shape what you say.'
+      : 'This is your evolving understanding of this specific tutor — their teaching style, blind spots, and what has been effective. Use this to inform how you engage, not as a script to follow.';
 
   return `<other_agent_profile type="${profileType}">
 ${framing}
@@ -1825,24 +1934,24 @@ export async function synthesizeStrategyPlan({
   // Use superego model if configured (cognitive prosthesis for weaker ego models)
   const useSuperego = config.other_ego_profiling?.use_superego_model && config.superego;
   const modelAlias = useSuperego
-    ? (config.superego.model || 'kimi-k2.5')
-    : (config.ego?.model || config.model || 'nemotron');
-  const provider = useSuperego
-    ? (config.superego.provider || 'openrouter')
-    : (config.ego?.provider || 'openrouter');
+    ? config.superego.model || 'kimi-k2.5'
+    : config.ego?.model || config.model || 'nemotron';
+  const provider = useSuperego ? config.superego.provider || 'openrouter' : config.ego?.provider || 'openrouter';
   let strategyModel = modelAlias;
   try {
     const resolved = evalConfigLoader.resolveModel({ provider, model: modelAlias });
     strategyModel = resolved.model;
-  } catch { /* use alias as-is */ }
+  } catch {
+    /* use alias as-is */
+  }
 
-  const lastScore = turnResults
-    .filter(t => t.turnScore != null)
-    .slice(-1)[0]?.turnScore;
+  const lastScore = turnResults.filter((t) => t.turnScore != null).slice(-1)[0]?.turnScore;
 
-  const lastLearnerMsg = conversationHistory
-    .filter(h => h.learnerMessage)
-    .slice(-1)[0]?.learnerMessage?.substring(0, 200) || '(no learner response yet)';
+  const lastLearnerMsg =
+    conversationHistory
+      .filter((h) => h.learnerMessage)
+      .slice(-1)[0]
+      ?.learnerMessage?.substring(0, 200) || '(no learner response yet)';
 
   const systemPrompt = `Based on your profile of the learner, formulate a brief strategy for your next response. Output exactly 3 sentences:
 
@@ -1878,7 +1987,9 @@ Formulate your 3-sentence strategy plan:`;
     const metrics = extractMetrics(response);
     const planText = response.content?.trim();
     if (!planText || planText.length < 30) {
-      console.log(`[promptRewriter] Strategy plan returned empty/short (${planText?.length || 0} chars, model=${strategyModel})`);
+      console.log(
+        `[promptRewriter] Strategy plan returned empty/short (${planText?.length || 0} chars, model=${strategyModel})`,
+      );
       return null;
     }
 

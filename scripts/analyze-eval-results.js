@@ -143,7 +143,7 @@ function incompleteBeta(a, b, x) {
   const qap = a + 1;
   const qam = a - 1;
   let c = 1;
-  let d = 1 - qab * x / qap;
+  let d = 1 - (qab * x) / qap;
   if (Math.abs(d) < fpmin) d = fpmin;
   d = 1 / d;
   let h = d;
@@ -152,7 +152,7 @@ function incompleteBeta(a, b, x) {
     const m2 = 2 * m;
 
     // Even step: d_{2m}
-    let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
     d = 1 + aa * d;
     if (Math.abs(d) < fpmin) d = fpmin;
     c = 1 + aa / c;
@@ -161,7 +161,7 @@ function incompleteBeta(a, b, x) {
     h *= d * c;
 
     // Odd step: d_{2m+1}
-    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    aa = (-(a + m) * (qab + m) * x) / ((a + m2) * (qap + m2));
     d = 1 + aa * d;
     if (Math.abs(d) < fpmin) d = fpmin;
     c = 1 + aa / c;
@@ -173,7 +173,7 @@ function incompleteBeta(a, b, x) {
     if (Math.abs(delta - 1) < eps) break;
   }
 
-  return front * h / a;
+  return (front * h) / a;
 }
 
 // Log-gamma function (avoids overflow for large arguments)
@@ -181,9 +181,10 @@ function lnGamma(z) {
   if (z <= 0) return Infinity;
   // Lanczos approximation (g=7, same coefficients as existing gamma function)
   const g = 7;
-  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-    771.32342877765313, -176.61502916214059, 12.507343278686905,
-    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  const c = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+  ];
 
   if (z < 0.5) {
     return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
@@ -202,9 +203,10 @@ function _gamma(n) {
   if (n < 0.5) return Math.PI / (Math.sin(Math.PI * n) * _gamma(1 - n));
   n -= 1;
   const g = 7;
-  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
-    771.32342877765313, -176.61502916214059, 12.507343278686905,
-    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  const c = [
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
+  ];
 
   let x = c[0];
   for (let i = 1; i < g + 2; i++) {
@@ -230,8 +232,15 @@ function parseArgs() {
     profiles: [],
     runId: null,
     scenarios: [],
-    dimensions: ['overall_score', 'score_relevance', 'score_specificity',
-      'score_pedagogical', 'score_personalization', 'score_actionability', 'score_tone'],
+    dimensions: [
+      'overall_score',
+      'score_relevance',
+      'score_specificity',
+      'score_pedagogical',
+      'score_personalization',
+      'score_actionability',
+      'score_tone',
+    ],
     export: null,
     verbose: false,
   };
@@ -352,7 +361,9 @@ async function analyzeResults(options) {
 
   const profiles = Object.keys(byProfile).sort();
 
-  console.log(`\n${c.bold}${c.cyan}═══════════════════════════════════════════════════════════════════════════════${c.reset}`);
+  console.log(
+    `\n${c.bold}${c.cyan}═══════════════════════════════════════════════════════════════════════════════${c.reset}`,
+  );
   console.log(`${c.bold}  STATISTICAL ANALYSIS OF EVALUATION RESULTS${c.reset}`);
   console.log(`${c.cyan}═══════════════════════════════════════════════════════════════════════════════${c.reset}\n`);
 
@@ -363,21 +374,23 @@ async function analyzeResults(options) {
   // Profile summary statistics
   console.log(`${c.bold}PROFILE SUMMARY${c.reset}`);
   console.log(`${'─'.repeat(80)}`);
-  console.log(`${'Profile'.padEnd(20)} ${'N'.padStart(6)} ${'Mean'.padStart(8)} ${'SD'.padStart(8)} ${'95% CI'.padStart(20)}`);
+  console.log(
+    `${'Profile'.padEnd(20)} ${'N'.padStart(6)} ${'Mean'.padStart(8)} ${'SD'.padStart(8)} ${'95% CI'.padStart(20)}`,
+  );
   console.log(`${'─'.repeat(80)}`);
 
   const profileStats = {};
   for (const profile of profiles) {
-    const scores = byProfile[profile].map(r => r.overall_score);
+    const scores = byProfile[profile].map((r) => r.overall_score);
     const ci = confidenceInterval(scores);
     profileStats[profile] = { scores, ci, n: scores.length };
 
     console.log(
       `${profile.padEnd(20)} ` +
-      `${scores.length.toString().padStart(6)} ` +
-      `${ci.mean.toFixed(2).padStart(8)} ` +
-      `${standardDeviation(scores).toFixed(2).padStart(8)} ` +
-      `[${ci.lower.toFixed(2)}, ${ci.upper.toFixed(2)}]`.padStart(20)
+        `${scores.length.toString().padStart(6)} ` +
+        `${ci.mean.toFixed(2).padStart(8)} ` +
+        `${standardDeviation(scores).toFixed(2).padStart(8)} ` +
+        `[${ci.lower.toFixed(2)}, ${ci.upper.toFixed(2)}]`.padStart(20),
     );
   }
   console.log();
@@ -388,11 +401,11 @@ async function analyzeResults(options) {
     console.log(`${'─'.repeat(90)}`);
     console.log(
       `${'Comparison'.padEnd(30)} ` +
-      `${'Δ Mean'.padStart(10)} ` +
-      `${"Cohen's d".padStart(12)} ` +
-      `${'Effect'.padStart(12)} ` +
-      `${'t'.padStart(8)} ` +
-      `${'p-value'.padStart(10)}`
+        `${'Δ Mean'.padStart(10)} ` +
+        `${"Cohen's d".padStart(12)} ` +
+        `${'Effect'.padStart(12)} ` +
+        `${'t'.padStart(8)} ` +
+        `${'p-value'.padStart(10)}`,
     );
     console.log(`${'─'.repeat(90)}`);
 
@@ -414,11 +427,11 @@ async function analyzeResults(options) {
 
         console.log(
           `${`${p1} vs ${p2}`.padEnd(30)} ` +
-          `${(diff >= 0 ? '+' : '') + diff.toFixed(2).padStart(9)} ` +
-          `${d.toFixed(3).padStart(12)} ` +
-          `${effectLabel.padStart(12)} ` +
-          `${ttest.t.toFixed(2).padStart(8)} ` +
-          `${pStr.padStart(8)}${sigMarker.padStart(2)}`
+            `${(diff >= 0 ? '+' : '') + diff.toFixed(2).padStart(9)} ` +
+            `${d.toFixed(3).padStart(12)} ` +
+            `${effectLabel.padStart(12)} ` +
+            `${ttest.t.toFixed(2).padStart(8)} ` +
+            `${pStr.padStart(8)}${sigMarker.padStart(2)}`,
         );
 
         comparisons.push({ p1, p2, diff, d, effectLabel, t: ttest.t, p: ttest.p });
@@ -456,9 +469,7 @@ async function analyzeResults(options) {
 
       const dimScores = {};
       for (const profile of profiles) {
-        const scores = byProfile[profile]
-          .map(r => r[dim.key])
-          .filter(s => s !== null && s !== undefined);
+        const scores = byProfile[profile].map((r) => r[dim.key]).filter((s) => s !== null && s !== undefined);
         dimScores[profile] = scores;
         row += mean(scores).toFixed(2).padStart(14);
       }
@@ -486,9 +497,9 @@ async function analyzeResults(options) {
         const direction = dr.d >= 0 ? c.green : c.red;
         console.log(
           `${dr.dimension.padEnd(20)} ` +
-          `${direction}${dr.d >= 0 ? '+' : ''}${dr.d.toFixed(3).padStart(7)}${c.reset} ` +
-          `${direction}${bar}${c.reset} ` +
-          `${dr.effect}`
+            `${direction}${dr.d >= 0 ? '+' : ''}${dr.d.toFixed(3).padStart(7)}${c.reset} ` +
+            `${direction}${bar}${c.reset} ` +
+            `${dr.effect}`,
         );
       }
       console.log();
@@ -511,19 +522,19 @@ async function analyzeResults(options) {
         for (let j = i + 1; j < availableProfiles.length; j++) {
           const p1 = availableProfiles[i];
           const p2 = availableProfiles[j];
-          const s1 = scenarioData[p1].map(r => r.overall_score);
-          const s2 = scenarioData[p2].map(r => r.overall_score);
+          const s1 = scenarioData[p1].map((r) => r.overall_score);
+          const s2 = scenarioData[p2].map((r) => r.overall_score);
 
           const d = cohensD(s1, s2);
           const ttest = welchTTest(s1, s2);
           const diff = mean(s1) - mean(s2);
-          const pctImprove = mean(s2) !== 0 ? ((mean(s1) - mean(s2)) / mean(s2) * 100) : 0;
+          const pctImprove = mean(s2) !== 0 ? ((mean(s1) - mean(s2)) / mean(s2)) * 100 : 0;
 
           console.log(
             `  ${p1}(n=${s1.length}, μ=${mean(s1).toFixed(1)}) vs ` +
-            `${p2}(n=${s2.length}, μ=${mean(s2).toFixed(1)}): ` +
-            `Δ=${diff >= 0 ? '+' : ''}${diff.toFixed(1)} (${pctImprove >= 0 ? '+' : ''}${pctImprove.toFixed(0)}%), ` +
-            `d=${d.toFixed(2)}, p=${ttest.p < 0.001 ? '<0.001' : ttest.p.toFixed(3)}`
+              `${p2}(n=${s2.length}, μ=${mean(s2).toFixed(1)}): ` +
+              `Δ=${diff >= 0 ? '+' : ''}${diff.toFixed(1)} (${pctImprove >= 0 ? '+' : ''}${pctImprove.toFixed(0)}%), ` +
+              `d=${d.toFixed(2)}, p=${ttest.p < 0.001 ? '<0.001' : ttest.p.toFixed(3)}`,
           );
         }
       }
@@ -559,7 +570,7 @@ async function analyzeResults(options) {
 
 // Run
 const options = parseArgs();
-analyzeResults(options).catch(err => {
+analyzeResults(options).catch((err) => {
   console.error(`${c.red}Error: ${err.message}${c.reset}`);
   process.exit(1);
 });

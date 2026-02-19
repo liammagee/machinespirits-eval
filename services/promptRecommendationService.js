@@ -97,8 +97,8 @@ function readPromptFile(filename) {
 function analyzeResults(results) {
   const analysis = {
     totalResults: results.length,
-    successCount: results.filter(r => r.success).length,
-    failureCount: results.filter(r => !r.success).length,
+    successCount: results.filter((r) => r.success).length,
+    failureCount: results.filter((r) => !r.success).length,
     avgScore: 0,
     lowScoreResults: [],
     validationFailures: [],
@@ -107,18 +107,16 @@ function analyzeResults(results) {
   };
 
   // Calculate average and find low scores
-  const scores = results.filter(r => r.overallScore != null).map(r => r.overallScore);
+  const scores = results.filter((r) => r.overallScore != null).map((r) => r.overallScore);
   if (scores.length > 0) {
     analysis.avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-    analysis.lowScoreResults = results
-      .filter(r => r.overallScore != null && r.overallScore < 70)
-      .slice(0, 10); // Top 10 low scorers
+    analysis.lowScoreResults = results.filter((r) => r.overallScore != null && r.overallScore < 70).slice(0, 10); // Top 10 low scorers
   }
 
   // Find validation failures
   analysis.validationFailures = results
-    .filter(r => !r.passesRequired || !r.passesForbidden)
-    .map(r => ({
+    .filter((r) => !r.passesRequired || !r.passesForbidden)
+    .map((r) => ({
       scenarioId: r.scenarioId,
       scenarioName: r.scenarioName,
       requiredMissing: r.requiredMissing || [],
@@ -200,12 +198,17 @@ ${Object.entries(analysis.dimensionWeaknesses)
 
 These tests failed required/forbidden element checks:
 
-${analysis.validationFailures.slice(0, 5).map(f => `
+${analysis.validationFailures
+  .slice(0, 5)
+  .map(
+    (f) => `
 ### ${f.scenarioName} (${f.scenarioId})
 - Required elements missing: ${f.requiredMissing.length > 0 ? f.requiredMissing.join(', ') : 'none'}
 - Forbidden elements found: ${f.forbiddenFound.length > 0 ? f.forbiddenFound.join(', ') : 'none'}
 - Generated suggestion: "${f.suggestion?.title || 'N/A'}" - ${f.suggestion?.message?.substring(0, 100) || 'N/A'}...
-`).join('\n')}
+`,
+  )
+  .join('\n')}
 `);
   }
 
@@ -216,12 +219,17 @@ ${analysis.validationFailures.slice(0, 5).map(f => `
 
 These tests scored below 70/100:
 
-${analysis.lowScoreResults.slice(0, 5).map(r => `
+${analysis.lowScoreResults
+  .slice(0, 5)
+  .map(
+    (r) => `
 ### ${r.scenarioName} (score: ${r.overallScore?.toFixed(1)})
 - Suggestion: "${r.suggestions?.[0]?.title || 'N/A'}"
 - Message: ${r.suggestions?.[0]?.message?.substring(0, 150) || 'N/A'}...
 - Evaluation reasoning: ${r.evaluationReasoning?.substring(0, 200) || 'N/A'}...
-`).join('\n')}
+`,
+  )
+  .join('\n')}
 `);
   }
 
@@ -300,7 +308,9 @@ async function callRecommender(prompt, options = {}) {
   try {
     Anthropic = (await import('@anthropic-ai/sdk')).default;
   } catch {
-    throw new Error('@anthropic-ai/sdk is not installed. Install it to use the Anthropic provider for recommendations.');
+    throw new Error(
+      '@anthropic-ai/sdk is not installed. Install it to use the Anthropic provider for recommendations.',
+    );
   }
 
   const client = new Anthropic({ apiKey });
@@ -339,7 +349,7 @@ async function callOpenRouterEvaluator(prompt, model, options = {}) {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'https://machinespirits.org',
       'X-Title': 'Machine Spirits Tutor Eval',

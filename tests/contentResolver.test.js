@@ -86,7 +86,7 @@ describe('contentResolver — philosophy content (479)', () => {
 
   it('resolves all scenario current_content references', () => {
     const refs = extractContentRefs(scenarios);
-    const philosophy479Refs = refs.filter(r => r.startsWith('479-'));
+    const philosophy479Refs = refs.filter((r) => r.startsWith('479-'));
     assert.ok(philosophy479Refs.length > 0, 'should have 479 refs in scenarios');
 
     for (const ref of philosophy479Refs) {
@@ -215,7 +215,7 @@ describe('contentResolver — scenario content coverage', () => {
     // This test documents the gap — it's acceptable because the eval falls
     // back gracefully when content is missing (no curriculum context).
     const refs = extractContentRefs(scenarios);
-    const unbundled = refs.filter(r => !r.startsWith('479-') && !r.startsWith('101-'));
+    const unbundled = refs.filter((r) => !r.startsWith('479-') && !r.startsWith('101-'));
     if (unbundled.length > 0) {
       // Verify these refs are from course 480 only
       for (const ref of unbundled) {

@@ -31,24 +31,24 @@ function debugLog(...args) {
 export function normalizeJudgeLabel(provider, model) {
   // For known model IDs, extract the canonical name
   const MODEL_MAP = {
-    'anthropic/claude-opus-4.5':      'claude-opus-4.5',
-    'anthropic/claude-opus-4-5':      'claude-opus-4.5',
-    'anthropic/claude-opus-4-6':      'claude-opus-4.6',
-    'anthropic/claude-sonnet-4.5':    'claude-sonnet-4.5',
-    'anthropic/claude-sonnet-4-5':    'claude-sonnet-4.5',
-    'anthropic/claude-haiku-4.5':     'claude-haiku-4.5',
-    'anthropic/claude-haiku-4-5':     'claude-haiku-4.5',
-    'openai/gpt-5.2':                'gpt-5.2',
-    'openai/gpt-5-mini':             'gpt-5-mini',
-    'openai/gpt-oss-120b':           'gpt-oss-120b',
-    'moonshotai/kimi-k2.5':          'kimi-k2.5',
-    'moonshotai/kimi-k2-thinking':   'kimi-k2',
-    'deepseek/deepseek-v3.2':        'deepseek-v3.2',
-    'z-ai/glm-4.7':                  'glm-4.7',
-    'z-ai/glm-5':                    'glm-5',
-    'google/gemini-3-flash-preview':  'gemini-3-flash',
-    'google/gemini-3-pro-preview':    'gemini-3-pro',
-    'minimax/minimax-m2.5':          'minimax-m2.5',
+    'anthropic/claude-opus-4.5': 'claude-opus-4.5',
+    'anthropic/claude-opus-4-5': 'claude-opus-4.5',
+    'anthropic/claude-opus-4-6': 'claude-opus-4.6',
+    'anthropic/claude-sonnet-4.5': 'claude-sonnet-4.5',
+    'anthropic/claude-sonnet-4-5': 'claude-sonnet-4.5',
+    'anthropic/claude-haiku-4.5': 'claude-haiku-4.5',
+    'anthropic/claude-haiku-4-5': 'claude-haiku-4.5',
+    'openai/gpt-5.2': 'gpt-5.2',
+    'openai/gpt-5-mini': 'gpt-5-mini',
+    'openai/gpt-oss-120b': 'gpt-oss-120b',
+    'moonshotai/kimi-k2.5': 'kimi-k2.5',
+    'moonshotai/kimi-k2-thinking': 'kimi-k2',
+    'deepseek/deepseek-v3.2': 'deepseek-v3.2',
+    'z-ai/glm-4.7': 'glm-4.7',
+    'z-ai/glm-5': 'glm-5',
+    'google/gemini-3-flash-preview': 'gemini-3-flash',
+    'google/gemini-3-pro-preview': 'gemini-3-pro',
+    'minimax/minimax-m2.5': 'minimax-m2.5',
   };
 
   // Try direct model lookup (handles openrouter paths like "anthropic/claude-sonnet-4.5")
@@ -210,7 +210,7 @@ async function callJudgeModelWithConfig(prompt, config) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
             model,
@@ -229,7 +229,7 @@ async function callJudgeModelWithConfig(prompt, config) {
           throw new Error(`OpenRouter API error: ${res.status} - ${errorBody.slice(0, 200)}`);
         }
 
-        const data = await res.json().catch(err => {
+        const data = await res.json().catch((err) => {
           throw new Error(`Failed to parse OpenRouter response: ${err.message}`);
         });
 
@@ -265,7 +265,7 @@ async function callJudgeModelWithConfig(prompt, config) {
               },
             }),
             signal: controller.signal,
-          }
+          },
         );
 
         clearTimeout(timeout);
@@ -275,7 +275,7 @@ async function callJudgeModelWithConfig(prompt, config) {
           throw new Error(`Gemini API error: ${res.status} - ${errorBody.slice(0, 200)}`);
         }
 
-        const data = await res.json().catch(err => {
+        const data = await res.json().catch((err) => {
           throw new Error(`Failed to parse Gemini response: ${err.message}`);
         });
 
@@ -387,15 +387,17 @@ function buildEvaluationPrompt(suggestion, scenario, context) {
   const dimensions = evalConfigLoader.getRubricDimensions();
 
   // Build dimension criteria text
-  const dimensionCriteria = Object.entries(dimensions).map(([_key, dim]) => {
-    const criteriaText = Object.entries(dim.criteria || {})
-      .map(([score, desc]) => `  ${score}: ${desc}`)
-      .join('\n');
-    return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([_key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
 ${dim.description}
 Criteria:
 ${criteriaText}`;
-  }).join('\n\n');
+    })
+    .join('\n\n');
 
   // Build optional dialogue transcript section
   const dialogueTranscript = formatDialogueTranscript(context.dialogueContext);
@@ -408,7 +410,7 @@ ${dialogueTranscript}
 `
     : '';
 
-  return `You are an expert evaluator of AI tutoring systems. Evaluate the following AI tutor suggestion against the pedagogical rubric.${dialogueTranscript ? ' The suggestion was produced in the context of a multi-turn dialogue — evaluate it in that context, considering how the tutor responds to the learner\'s actual engagement and development.' : ''}
+  return `You are an expert evaluator of AI tutoring systems. Evaluate the following AI tutor suggestion against the pedagogical rubric.${dialogueTranscript ? " The suggestion was produced in the context of a multi-turn dialogue — evaluate it in that context, considering how the tutor responds to the learner's actual engagement and development." : ''}
 
 ## EVALUATION RUBRIC
 
@@ -439,10 +441,10 @@ ${JSON.stringify(suggestion, null, 2)}
 ## VALIDATION REQUIREMENTS
 
 Required elements (must include):
-${(scenario.requiredElements || []).map(e => `- ${e}`).join('\n') || '- None specified'}
+${(scenario.requiredElements || []).map((e) => `- ${e}`).join('\n') || '- None specified'}
 
 Forbidden elements (must NOT include):
-${(scenario.forbiddenElements || []).map(e => `- ${e}`).join('\n') || '- None specified'}
+${(scenario.forbiddenElements || []).map((e) => `- ${e}`).join('\n') || '- None specified'}
 
 ## YOUR TASK
 
@@ -453,7 +455,7 @@ Evaluate the suggestion${dialogueTranscript ? ' in the context of the dialogue a
 
 For each dimension, include:
 - **score**: 1-5 rating
-- **reasoning**: Brief explanation of why this score was given${dialogueTranscript ? '. For recognition dimensions, consider how the tutor engaged with the learner\'s actual responses and development.' : ''}
+- **reasoning**: Brief explanation of why this score was given${dialogueTranscript ? ". For recognition dimensions, consider how the tutor engaged with the learner's actual responses and development." : ''}
 
 CRITICAL JSON RULES:
 - Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
@@ -502,7 +504,7 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 const JSON_MODE_PREFIXES = ['gpt-', 'deepseek-', 'claude-'];
 
 function supportsJsonMode(model) {
-  return JSON_MODE_PREFIXES.some(prefix => model.startsWith(prefix));
+  return JSON_MODE_PREFIXES.some((prefix) => model.startsWith(prefix));
 }
 
 async function callJudgeModel(prompt, overrides = {}) {
@@ -543,7 +545,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`Anthropic API error: ${res.status} - ${errorBody.slice(0, 200)}`);
       }
 
-      const data = await res.json().catch(err => {
+      const data = await res.json().catch((err) => {
         throw new Error(`Failed to parse Anthropic response: ${err.message}`);
       });
 
@@ -581,7 +583,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
@@ -594,7 +596,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`OpenRouter API error: ${res.status} - ${errorBody.slice(0, 200)}`);
       }
 
-      const data = await res.json().catch(err => {
+      const data = await res.json().catch((err) => {
         throw new Error(`Failed to parse OpenRouter response: ${err.message}`);
       });
 
@@ -631,7 +633,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
@@ -644,7 +646,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`OpenAI API error: ${res.status} - ${errorBody.slice(0, 200)}`);
       }
 
-      const data = await res.json().catch(err => {
+      const data = await res.json().catch((err) => {
         throw new Error(`Failed to parse OpenAI response: ${err.message}`);
       });
 
@@ -680,7 +682,7 @@ async function callJudgeModel(prompt, overrides = {}) {
             },
           }),
           signal: controller.signal,
-        }
+        },
       );
 
       clearTimeout(timeout);
@@ -690,7 +692,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`Gemini API error: ${res.status} - ${errorBody.slice(0, 200)}`);
       }
 
-      const data = await res.json().catch(err => {
+      const data = await res.json().catch((err) => {
         throw new Error(`Failed to parse Gemini response: ${err.message}`);
       });
 
@@ -768,10 +770,20 @@ function repairUnescapedQuotes(jsonStr) {
  */
 function regexScoreRescue(text) {
   const dimensionNames = [
-    'relevance', 'specificity', 'pedagogical_soundness', 'personalization',
-    'actionability', 'tone', 'mutual_recognition', 'dialectical_responsiveness',
-    'memory_integration', 'transformative_potential', 'tutor_adaptation',
-    'learner_growth', 'productive_struggle', 'epistemic_honesty',
+    'relevance',
+    'specificity',
+    'pedagogical_soundness',
+    'personalization',
+    'actionability',
+    'tone',
+    'mutual_recognition',
+    'dialectical_responsiveness',
+    'memory_integration',
+    'transformative_potential',
+    'tutor_adaptation',
+    'learner_growth',
+    'productive_struggle',
+    'epistemic_honesty',
   ];
 
   const scores = {};
@@ -828,10 +840,14 @@ function parseJudgeResponse(responseText) {
   } catch (e) {
     // Try to fix common JSON issues: trailing commas, unescaped newlines in strings
     const cleaned = jsonStr
-      .replace(/,\s*([}\]])/g, '$1')           // trailing commas
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x1f]/g, m =>            // control chars in strings
-        m === '\n' ? '\\n' : m === '\t' ? '\\t' : m === '\r' ? '\\r' : '');
+      .replace(/,\s*([}\]])/g, '$1') // trailing commas
+      .replace(
+        // eslint-disable-next-line no-control-regex
+        /[\x00-\x1f]/g,
+        (
+          m, // control chars in strings
+        ) => (m === '\n' ? '\\n' : m === '\t' ? '\\t' : m === '\r' ? '\\r' : ''),
+      );
     try {
       return JSON.parse(cleaned);
     } catch (e2) {
@@ -852,7 +868,9 @@ function parseJudgeResponse(responseText) {
           debugLog('[rubricEvaluator] Attempting regex score rescue...');
           const rescued = regexScoreRescue(jsonStr);
           if (rescued) return rescued;
-          throw new Error(`Could not parse judge response as JSON: initial=${e.message}, repair=${e3.message}, jsonrepair=${e4.message}`);
+          throw new Error(
+            `Could not parse judge response as JSON: initial=${e.message}, repair=${e3.message}, jsonrepair=${e4.message}`,
+          );
         }
       }
     }
@@ -907,7 +925,9 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
             parsed = parseJudgeResponse(retryText);
           } catch (retryParseError) {
             // Second attempt: models are non-deterministic, retry once more
-            console.warn(`[rubricEvaluator] Fallback parse also failed (${retryParseError.message}), retrying once more...`);
+            console.warn(
+              `[rubricEvaluator] Fallback parse also failed (${retryParseError.message}), retrying once more...`,
+            );
             retryText = await callJudgeModelWithConfig(prompt, fallbackConfig);
             if (retryText && retryText.trim()) {
               parsed = parseJudgeResponse(retryText);
@@ -1014,29 +1034,34 @@ export async function evaluateSuggestions(suggestions, scenario, context = {}, o
   // Aggregate scores if multiple suggestions
   if (results.length > 0 && results[0].success) {
     const avgScores = {};
-    const dimensions = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'productive_struggle', 'epistemic_honesty'];
+    const dimensions = [
+      'relevance',
+      'specificity',
+      'pedagogical',
+      'personalization',
+      'actionability',
+      'tone',
+      'productive_struggle',
+      'epistemic_honesty',
+    ];
 
     for (const dim of dimensions) {
-      const scores = results
-        .filter(r => r.success && r.scores?.[dim])
-        .map(r => r.scores[dim].score);
+      const scores = results.filter((r) => r.success && r.scores?.[dim]).map((r) => r.scores[dim].score);
 
       if (scores.length > 0) {
         avgScores[dim] = scores.reduce((a, b) => a + b, 0) / scores.length;
       }
     }
 
-    const overallScores = results.filter(r => r.success).map(r => r.overallScore);
-    const avgOverall = overallScores.length > 0
-      ? overallScores.reduce((a, b) => a + b, 0) / overallScores.length
-      : 0;
+    const overallScores = results.filter((r) => r.success).map((r) => r.overallScore);
+    const avgOverall = overallScores.length > 0 ? overallScores.reduce((a, b) => a + b, 0) / overallScores.length : 0;
 
     return {
       individualResults: results,
       aggregateScores: avgScores,
       aggregateOverall: avgOverall,
-      allPassRequired: results.every(r => r.passesRequired),
-      allPassForbidden: results.every(r => r.passesForbidden),
+      allPassRequired: results.every((r) => r.passesRequired),
+      allPassForbidden: results.every((r) => r.passesForbidden),
     };
   }
 
@@ -1062,10 +1087,7 @@ export function quickValidate(suggestion, scenario) {
 
   // For forbidden elements, only check user-facing fields (title, message)
   // NOT the internal 'reasoning' field which may contain context-derived text
-  const userFacingText = [
-    suggestion.title || '',
-    suggestion.message || '',
-  ].join(' ').toLowerCase();
+  const userFacingText = [suggestion.title || '', suggestion.message || ''].join(' ').toLowerCase();
 
   const result = {
     passesRequired: true,
@@ -1086,7 +1108,8 @@ export function quickValidate(suggestion, scenario) {
   // ALL elements in requiredElements must be present
   for (const required of scenario.requiredElements || []) {
     const normalizedRequired = required.toLowerCase();
-    const found = fullSuggestionText.includes(normalizedRequired) ||
+    const found =
+      fullSuggestionText.includes(normalizedRequired) ||
       (suggestion.actionTarget && suggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
       (suggestion.title && suggestion.title.toLowerCase().includes(normalizedRequired)) ||
       (suggestion.message && suggestion.message.toLowerCase().includes(normalizedRequired));
@@ -1100,12 +1123,14 @@ export function quickValidate(suggestion, scenario) {
   // Check requiredElementsAny - ANY one of these must be present
   const anyElements = scenario.requiredElementsAny || [];
   if (anyElements.length > 0) {
-    const anyFound = anyElements.some(required => {
+    const anyFound = anyElements.some((required) => {
       const normalizedRequired = required.toLowerCase();
-      return fullSuggestionText.includes(normalizedRequired) ||
+      return (
+        fullSuggestionText.includes(normalizedRequired) ||
         (suggestion.actionTarget && suggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
         (suggestion.title && suggestion.title.toLowerCase().includes(normalizedRequired)) ||
-        (suggestion.message && suggestion.message.toLowerCase().includes(normalizedRequired));
+        (suggestion.message && suggestion.message.toLowerCase().includes(normalizedRequired))
+      );
     });
 
     if (!anyFound) {
@@ -1169,8 +1194,24 @@ export function quickValidate(suggestion, scenario) {
 }
 
 // Dimension groups for dual scoring
-const BASE_DIMENSIONS = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'productive_struggle', 'epistemic_honesty'];
-const RECOGNITION_DIMENSIONS = ['mutual_recognition', 'dialectical_responsiveness', 'memory_integration', 'transformative_potential', 'tutor_adaptation', 'learner_growth'];
+const BASE_DIMENSIONS = [
+  'relevance',
+  'specificity',
+  'pedagogical',
+  'personalization',
+  'actionability',
+  'tone',
+  'productive_struggle',
+  'epistemic_honesty',
+];
+const RECOGNITION_DIMENSIONS = [
+  'mutual_recognition',
+  'dialectical_responsiveness',
+  'memory_integration',
+  'transformative_potential',
+  'tutor_adaptation',
+  'learner_growth',
+];
 
 /**
  * Calculate base score from the 6 core pedagogical dimensions.

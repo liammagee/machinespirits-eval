@@ -17,7 +17,6 @@ import assert from 'node:assert/strict';
 import { resolveEvalProfile } from '../services/evaluationRunner.js';
 
 describe('resolveEvalProfile', () => {
-
   // --- Recognition + Multi-agent cells (dialogue ON, recognition ON) ---
 
   it('cell_7 (recog+multi+unified) enables dialogue with 2 rounds', () => {
@@ -99,8 +98,10 @@ describe('resolveEvalProfile', () => {
 
   it('all multi-agent cells enable dialogue with 2 rounds', () => {
     const multiCells = [
-      'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
-      'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
+      'cell_3_base_multi_unified',
+      'cell_4_base_multi_psycho',
+      'cell_7_recog_multi_unified',
+      'cell_8_recog_multi_psycho',
     ];
     for (const cell of multiCells) {
       const result = resolveEvalProfile(cell);
@@ -111,8 +112,10 @@ describe('resolveEvalProfile', () => {
 
   it('all single-agent cells disable dialogue', () => {
     const singleCells = [
-      'cell_1_base_single_unified', 'cell_2_base_single_psycho',
-      'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
+      'cell_1_base_single_unified',
+      'cell_2_base_single_psycho',
+      'cell_5_recog_single_unified',
+      'cell_6_recog_single_psycho',
     ];
     for (const cell of singleCells) {
       const result = resolveEvalProfile(cell);
@@ -125,8 +128,10 @@ describe('resolveEvalProfile', () => {
 
   it('all recog cells enable recognition mode', () => {
     const recogCells = [
-      'cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
-      'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho',
+      'cell_5_recog_single_unified',
+      'cell_6_recog_single_psycho',
+      'cell_7_recog_multi_unified',
+      'cell_8_recog_multi_psycho',
     ];
     for (const cell of recogCells) {
       const result = resolveEvalProfile(cell);
@@ -137,8 +142,10 @@ describe('resolveEvalProfile', () => {
 
   it('all base cells disable recognition mode', () => {
     const baseCells = [
-      'cell_1_base_single_unified', 'cell_2_base_single_psycho',
-      'cell_3_base_multi_unified', 'cell_4_base_multi_psycho',
+      'cell_1_base_single_unified',
+      'cell_2_base_single_psycho',
+      'cell_3_base_multi_unified',
+      'cell_4_base_multi_psycho',
     ];
     for (const cell of baseCells) {
       const result = resolveEvalProfile(cell);

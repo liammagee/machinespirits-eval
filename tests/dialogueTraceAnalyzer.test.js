@@ -18,27 +18,63 @@ const BASIC_TRACE = [
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Here is my initial suggestion.' },
   { agent: 'superego', action: 'review', turnIndex: 0, verdict: { approved: true, confidence: 0.8 } },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: 'Updated suggestion after learner input.' },
-  { agent: 'superego', action: 'revise', turnIndex: 1, interventionType: 'revise', verdict: { approved: false, confidence: 0.6 } },
+  {
+    agent: 'superego',
+    action: 'revise',
+    turnIndex: 1,
+    interventionType: 'revise',
+    verdict: { approved: false, confidence: 0.6 },
+  },
   { agent: 'ego', action: 'revision', turnIndex: 1, detail: 'Revised based on superego feedback.' },
 ];
 
 const TRACE_WITH_TRANSFORMATION = [
   { agent: 'ego', action: 'generate', turnIndex: 0, reasoning: 'Standard pedagogical approach.' },
-  { agent: 'superego', action: 'review', turnIndex: 0, verdict: { feedback: 'The response is genuinely responsive to the learner.', confidence: 0.9 } },
-  { agent: 'ego', action: 'revision', turnIndex: 1, reasoning: "Building on that insight, I hadn't considered this angle before." },
+  {
+    agent: 'superego',
+    action: 'review',
+    turnIndex: 0,
+    verdict: { feedback: 'The response is genuinely responsive to the learner.', confidence: 0.9 },
+  },
+  {
+    agent: 'ego',
+    action: 'revision',
+    turnIndex: 1,
+    reasoning: "Building on that insight, I hadn't considered this angle before.",
+  },
   { agent: 'learner_ego', action: 'deliberation', turnIndex: 1, detail: 'Oh I see now, this is clicking for me.' },
-  { agent: 'superego', action: 'review', turnIndex: 1, verdict: { feedback: 'Mutual recognition is evident. Both parties have adapted.', confidence: 0.95 } },
-  { agent: 'learner_synthesis', action: 'response', turnIndex: 2, detail: 'The whole way I think about this has shifted.' },
+  {
+    agent: 'superego',
+    action: 'review',
+    turnIndex: 1,
+    verdict: { feedback: 'Mutual recognition is evident. Both parties have adapted.', confidence: 0.95 },
+  },
+  {
+    agent: 'learner_synthesis',
+    action: 'response',
+    turnIndex: 2,
+    detail: 'The whole way I think about this has shifted.',
+  },
 ];
 
 const TRACE_TUTOR_ONLY_TRANSFORM = [
-  { agent: 'ego', action: 'revision', turnIndex: 0, reasoning: "Let me revise my understanding. You've helped me see this differently." },
+  {
+    agent: 'ego',
+    action: 'revision',
+    turnIndex: 0,
+    reasoning: "Let me revise my understanding. You've helped me see this differently.",
+  },
   { agent: 'ego', action: 'revision', turnIndex: 1, reasoning: 'That changes how I would frame the problem.' },
 ];
 
 const TRACE_LEARNER_ONLY_TRANSFORM = [
   { agent: 'learner_ego', action: 'deliberation', turnIndex: 0, detail: 'Oh wait, I think I was wrong about this.' },
-  { agent: 'learner_synthesis', action: 'response', turnIndex: 1, detail: 'I see now that my understanding has changed.' },
+  {
+    agent: 'learner_synthesis',
+    action: 'response',
+    turnIndex: 1,
+    detail: 'I see now that my understanding has changed.',
+  },
 ];
 
 // ============================================================================
@@ -111,27 +147,25 @@ describe('extractTransformationSignals', () => {
 
   it('detects tutor transformation from ego reasoning', () => {
     const signals = extractTransformationSignals(TRACE_WITH_TRANSFORMATION);
-    const tutorSignals = signals.filter(s => s.type === 'tutor_transformation');
+    const tutorSignals = signals.filter((s) => s.type === 'tutor_transformation');
     assert.ok(tutorSignals.length > 0, 'Should detect tutor transformation');
     assert.strictEqual(tutorSignals[0].source, 'ego_reasoning');
   });
 
   it('detects learner transformation', () => {
     const signals = extractTransformationSignals(TRACE_WITH_TRANSFORMATION);
-    const learnerSignals = signals.filter(s => s.type === 'learner_transformation');
+    const learnerSignals = signals.filter((s) => s.type === 'learner_transformation');
     assert.ok(learnerSignals.length > 0, 'Should detect learner transformation');
   });
 
   it('detects superego acknowledgment of adaptation', () => {
     const signals = extractTransformationSignals(TRACE_WITH_TRANSFORMATION);
-    const ackSignals = signals.filter(s => s.type === 'superego_noted_adaptation');
+    const ackSignals = signals.filter((s) => s.type === 'superego_noted_adaptation');
     assert.ok(ackSignals.length > 0, 'Should detect superego acknowledgment');
   });
 
   it('truncates content to 150 chars', () => {
-    const longTrace = [
-      { agent: 'ego', reasoning: "Building on that insight, ".repeat(20) },
-    ];
+    const longTrace = [{ agent: 'ego', reasoning: 'Building on that insight, '.repeat(20) }];
     const signals = extractTransformationSignals(longTrace);
     if (signals.length > 0) {
       assert.ok(signals[0].content.length <= 150);
@@ -144,7 +178,7 @@ describe('extractTransformationSignals', () => {
       { agent: 'ego', reasoning: "You've helped me see this. I hadn't considered that. Let me revise my approach." },
     ];
     const signals = extractTransformationSignals(trace);
-    const egoSignals = signals.filter(s => s.source === 'ego_reasoning');
+    const egoSignals = signals.filter((s) => s.source === 'ego_reasoning');
     assert.ok(egoSignals.length <= 1, 'Should produce at most one signal per entry');
   });
 });
@@ -240,9 +274,7 @@ describe('analyzeInterventionEffectiveness', () => {
   });
 
   it('measures score improvement after intervention', () => {
-    const trace = [
-      { agent: 'superego', action: 'revise', turnIndex: 1, interventionType: 'revise' },
-    ];
+    const trace = [{ agent: 'superego', action: 'revise', turnIndex: 1, interventionType: 'revise' }];
     const turnResults = [
       { turnIndex: 0, turnScore: 40 },
       { turnIndex: 1, turnScore: 60 },

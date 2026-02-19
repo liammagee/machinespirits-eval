@@ -27,15 +27,8 @@ function lnGamma(z) {
 
   const g = 7;
   const c = [
-    0.99999999999980993,
-    676.5203681218851,
-    -1259.1392167224028,
-    771.32342877765313,
-    -176.61502916214059,
-    12.507343278686905,
-    -0.13857109526572012,
-    9.9843695780195716e-6,
-    1.5056327351493116e-7,
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
   ];
 
   z -= 1;
@@ -66,8 +59,7 @@ function regularizedBeta(x, a, b) {
   }
 
   // Compute the prefactor: x^a * (1-x)^b / (a * Beta(a,b))
-  const lnPrefactor = a * Math.log(x) + b * Math.log(1 - x)
-    - Math.log(a) - lnGamma(a) - lnGamma(b) + lnGamma(a + b);
+  const lnPrefactor = a * Math.log(x) + b * Math.log(1 - x) - Math.log(a) - lnGamma(a) - lnGamma(b) + lnGamma(a + b);
   const prefactor = Math.exp(lnPrefactor);
 
   // Evaluate the continued fraction using modified Lentz's method
@@ -80,14 +72,14 @@ function regularizedBeta(x, a, b) {
   const qap = a + 1;
   const qam = a - 1;
   let c = 1;
-  let d = 1 - qab * x / qap;
+  let d = 1 - (qab * x) / qap;
   if (Math.abs(d) < fpmin) d = fpmin;
   d = 1 / d;
   let h = d;
 
   for (let m = 1; m <= maxIter; m++) {
     // Even step: d_{2m}
-    let aa = m * (b - m) * x / ((qam + 2 * m) * (a + 2 * m));
+    let aa = (m * (b - m) * x) / ((qam + 2 * m) * (a + 2 * m));
     d = 1 + aa * d;
     if (Math.abs(d) < fpmin) d = fpmin;
     c = 1 + aa / c;
@@ -96,7 +88,7 @@ function regularizedBeta(x, a, b) {
     h *= d * c;
 
     // Odd step: d_{2m+1}
-    aa = -(a + m) * (qab + m) * x / ((a + 2 * m) * (qap + 2 * m));
+    aa = (-(a + m) * (qab + m) * x) / ((a + 2 * m) * (qap + 2 * m));
     d = 1 + aa * d;
     if (Math.abs(d) < fpmin) d = fpmin;
     c = 1 + aa / c;
@@ -123,7 +115,7 @@ function fDistPValue(F, d1, d2) {
   if (F <= 0 || d1 <= 0 || d2 <= 0) return 1;
   if (!isFinite(F)) return 0;
 
-  const x = d1 * F / (d1 * F + d2);
+  const x = (d1 * F) / (d1 * F + d2);
   return 1 - regularizedBeta(x, d1 / 2, d2 / 2);
 }
 
@@ -244,7 +236,9 @@ export function runThreeWayANOVA(data) {
     return values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : grandMean;
   };
 
-  let SS_RT = 0, SS_RL = 0, SS_TL = 0;
+  let SS_RT = 0,
+    SS_RL = 0,
+    SS_TL = 0;
   for (const r of [0, 1]) {
     for (const t of [0, 1]) {
       const cellMean = getTwoWayMean('recognition', r, 'tutor', t);
@@ -300,8 +294,12 @@ export function runThreeWayANOVA(data) {
   }
 
   // Degrees of freedom
-  const df_R = 1, df_T = 1, df_L = 1;
-  const df_RT = 1, df_RL = 1, df_TL = 1;
+  const df_R = 1,
+    df_T = 1,
+    df_L = 1;
+  const df_RT = 1,
+    df_RL = 1,
+    df_TL = 1;
   const df_RTL = 1;
   const df_E = N - 8;
   const df_T_total = N - 1;
@@ -328,7 +326,7 @@ export function runThreeWayANOVA(data) {
   // Compute p-values from the F distribution CDF
   const getP = (F, df1, df2) => fDistPValue(F, df1, df2);
 
-  const etaSq = (SS) => SST > 0 ? SS / SST : 0;
+  const etaSq = (SS) => (SST > 0 ? SS / SST : 0);
 
   return {
     grandMean,
@@ -344,8 +342,22 @@ export function runThreeWayANOVA(data) {
       learner: { SS: SS_L, df: df_L, MS: MS_L, F: F_L, p: getP(F_L, df_L, df_E), etaSq: etaSq(SS_L) },
     },
     interactions: {
-      recognition_x_tutor: { SS: SS_RT, df: df_RT, MS: MS_RT, F: F_RT, p: getP(F_RT, df_RT, df_E), etaSq: etaSq(SS_RT) },
-      recognition_x_learner: { SS: SS_RL, df: df_RL, MS: MS_RL, F: F_RL, p: getP(F_RL, df_RL, df_E), etaSq: etaSq(SS_RL) },
+      recognition_x_tutor: {
+        SS: SS_RT,
+        df: df_RT,
+        MS: MS_RT,
+        F: F_RT,
+        p: getP(F_RT, df_RT, df_E),
+        etaSq: etaSq(SS_RT),
+      },
+      recognition_x_learner: {
+        SS: SS_RL,
+        df: df_RL,
+        MS: MS_RL,
+        F: F_RL,
+        p: getP(F_RL, df_RL, df_E),
+        etaSq: etaSq(SS_RL),
+      },
       tutor_x_learner: { SS: SS_TL, df: df_TL, MS: MS_TL, F: F_TL, p: getP(F_TL, df_TL, df_E), etaSq: etaSq(SS_TL) },
       three_way: { SS: SS_RTL, df: df_RTL, MS: MS_RTL, F: F_RTL, p: getP(F_RTL, df_RTL, df_E), etaSq: etaSq(SS_RTL) },
     },
@@ -399,9 +411,13 @@ export function formatANOVAReport(anovaResults, options = {}) {
   lines.push('-'.repeat(70));
   lines.push('  MARGINAL MEANS');
   lines.push('-'.repeat(70));
-  lines.push(`  Recognition:   Standard = ${mm.recognition.standard.toFixed(2)},  Recognition = ${mm.recognition.recognition.toFixed(2)}`);
+  lines.push(
+    `  Recognition:   Standard = ${mm.recognition.standard.toFixed(2)},  Recognition = ${mm.recognition.recognition.toFixed(2)}`,
+  );
   lines.push(`  Tutor:         Single = ${mm.tutor.single.toFixed(2)},  Multi-Agent = ${mm.tutor.multi.toFixed(2)}`);
-  lines.push(`  Learner:       Unified = ${mm.learner.unified.toFixed(2)},  Ego/Superego = ${mm.learner.ego_superego.toFixed(2)}`);
+  lines.push(
+    `  Learner:       Unified = ${mm.learner.unified.toFixed(2)},  Ego/Superego = ${mm.learner.ego_superego.toFixed(2)}`,
+  );
   lines.push('');
 
   // ANOVA table
@@ -418,7 +434,7 @@ export function formatANOVAReport(anovaResults, options = {}) {
     const f = data.F.toFixed(3).padStart(8);
     const p = data.p < 0.001 ? '< .001' : data.p.toFixed(3);
     const eta = data.etaSq.toFixed(3).padStart(6);
-    const sig = data.p < 0.05 ? '***' : (data.p < 0.1 ? '*' : '');
+    const sig = data.p < 0.05 ? '***' : data.p < 0.1 ? '*' : '';
     return `  ${name.padEnd(22)}  ${ss}  ${df}  ${ms}  ${f}  ${p.padStart(8)}  ${eta}  ${sig}`;
   };
 
@@ -436,7 +452,9 @@ export function formatANOVAReport(anovaResults, options = {}) {
   lines.push('  ' + '-'.repeat(66));
 
   const err = anovaResults.error;
-  lines.push(`  ${'Error'.padEnd(22)}  ${err.SS.toFixed(2).padStart(8)}  ${err.df.toString().padStart(6)}  ${err.MS.toFixed(2).padStart(8)}`);
+  lines.push(
+    `  ${'Error'.padEnd(22)}  ${err.SS.toFixed(2).padStart(8)}  ${err.df.toString().padStart(6)}  ${err.MS.toFixed(2).padStart(8)}`,
+  );
   lines.push('');
   lines.push('  Significance: *** p < .05, * p < .10');
   lines.push('');
@@ -446,14 +464,20 @@ export function formatANOVAReport(anovaResults, options = {}) {
   lines.push('  INTERPRETATION');
   lines.push('-'.repeat(70));
 
-  const formatP = (p) => p < 0.001 ? '< .001' : `= .${p.toFixed(3).slice(2)}`;
+  const formatP = (p) => (p < 0.001 ? '< .001' : `= .${p.toFixed(3).slice(2)}`);
 
   if (me.recognition.p < 0.05) {
     const effect = mm.recognition.recognition - mm.recognition.standard;
-    lines.push(`  * Recognition prompts: SIGNIFICANT (F = ${me.recognition.F.toFixed(2)}, p ${formatP(me.recognition.p)})`);
-    lines.push(`    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.recognition.etaSq.toFixed(3)}`);
+    lines.push(
+      `  * Recognition prompts: SIGNIFICANT (F = ${me.recognition.F.toFixed(2)}, p ${formatP(me.recognition.p)})`,
+    );
+    lines.push(
+      `    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.recognition.etaSq.toFixed(3)}`,
+    );
   } else {
-    lines.push(`  - Recognition prompts: not significant (F = ${me.recognition.F.toFixed(2)}, p ${formatP(me.recognition.p)})`);
+    lines.push(
+      `  - Recognition prompts: not significant (F = ${me.recognition.F.toFixed(2)}, p ${formatP(me.recognition.p)})`,
+    );
   }
 
   if (me.tutor.p < 0.05) {
@@ -467,7 +491,9 @@ export function formatANOVAReport(anovaResults, options = {}) {
   if (me.learner.p < 0.05) {
     const effect = mm.learner.ego_superego - mm.learner.unified;
     lines.push(`  * Multi-agent learner: SIGNIFICANT (F = ${me.learner.F.toFixed(2)}, p ${formatP(me.learner.p)})`);
-    lines.push(`    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.learner.etaSq.toFixed(3)}`);
+    lines.push(
+      `    Effect: ${effect >= 0 ? '+' : ''}${effect.toFixed(2)} points, eta2 = ${me.learner.etaSq.toFixed(3)}`,
+    );
   } else {
     lines.push(`  - Multi-agent learner: not significant (F = ${me.learner.F.toFixed(2)}, p ${formatP(me.learner.p)})`);
   }

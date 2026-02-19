@@ -17,15 +17,23 @@ import { app } from '../server.js';
 /** Simple GET helper returning { status, body } with parsed JSON. */
 function get(baseUrl, path) {
   return new Promise((resolve, reject) => {
-    http.get(`${baseUrl}${path}`, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        let body;
-        try { body = JSON.parse(data); } catch { body = data; }
-        resolve({ status: res.statusCode, body });
-      });
-    }).on('error', reject);
+    http
+      .get(`${baseUrl}${path}`, (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          let body;
+          try {
+            body = JSON.parse(data);
+          } catch {
+            body = data;
+          }
+          resolve({ status: res.statusCode, body });
+        });
+      })
+      .on('error', reject);
   });
 }
 

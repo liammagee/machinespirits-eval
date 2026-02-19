@@ -53,10 +53,7 @@ describe('mockProvider', () => {
 
   it('mockGenerateResult returns valid structure', async () => {
     if (!mockProvider) mockProvider = await import('../services/mockProvider.js');
-    const result = mockProvider.mockGenerateResult(
-      { profileName: 'budget' },
-      { scenarioName: 'test scenario' }
-    );
+    const result = mockProvider.mockGenerateResult({ profileName: 'budget' }, { scenarioName: 'test scenario' });
     assert.strictEqual(result.success, true);
     assert.ok(Array.isArray(result.suggestions), 'suggestions should be array');
     assert.ok(result.suggestions.length > 0, 'should have at least one suggestion');
@@ -68,16 +65,13 @@ describe('mockProvider', () => {
 
   it('mockGenerateResult varies content by recognition mode', async () => {
     if (!mockProvider) mockProvider = await import('../services/mockProvider.js');
-    const base = mockProvider.mockGenerateResult(
-      { profileName: 'budget' },
-      { scenarioName: 'test' }
+    const base = mockProvider.mockGenerateResult({ profileName: 'budget' }, { scenarioName: 'test' });
+    const recog = mockProvider.mockGenerateResult({ profileName: 'recognition' }, { scenarioName: 'test' });
+    assert.notStrictEqual(
+      base.suggestions[0].title,
+      recog.suggestions[0].title,
+      'recognition and base should have different titles',
     );
-    const recog = mockProvider.mockGenerateResult(
-      { profileName: 'recognition' },
-      { scenarioName: 'test' }
-    );
-    assert.notStrictEqual(base.suggestions[0].title, recog.suggestions[0].title,
-      'recognition and base should have different titles');
   });
 
   it('mockJudgeResult scores recognition higher than base', async () => {
@@ -89,8 +83,10 @@ describe('mockProvider', () => {
     assert.ok(recogResult.success, 'recog result should succeed');
     assert.ok(typeof baseResult.overallScore === 'number', 'base should have numeric score');
     assert.ok(typeof recogResult.overallScore === 'number', 'recog should have numeric score');
-    assert.ok(recogResult.overallScore > baseResult.overallScore,
-      `recognition (${recogResult.overallScore}) should score higher than base (${baseResult.overallScore})`);
+    assert.ok(
+      recogResult.overallScore > baseResult.overallScore,
+      `recognition (${recogResult.overallScore}) should score higher than base (${baseResult.overallScore})`,
+    );
   });
 
   it('mockJudgeResult has all 6 dimensions', async () => {
@@ -152,7 +148,9 @@ describe('eval-cli --dry-run', () => {
     const baseJson = JSON.parse(baseRun.stdout.match(/Result:\s*\n([\s\S]+)/)[1]);
     const recogJson = JSON.parse(recogRun.stdout.match(/Result:\s*\n([\s\S]+)/)[1]);
 
-    assert.ok(recogJson.overallScore > baseJson.overallScore,
-      `recognition (${recogJson.overallScore}) should score higher than base (${baseJson.overallScore})`);
+    assert.ok(
+      recogJson.overallScore > baseJson.overallScore,
+      `recognition (${recogJson.overallScore}) should score higher than base (${baseJson.overallScore})`,
+    );
   });
 });

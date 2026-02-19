@@ -105,14 +105,54 @@ describe('resolveConfigModels — superegoModel presence matches multi-agent fac
 
 describe('resolveConfigModels — factors extraction', () => {
   const expectedFactors = {
-    cell_1_base_single_unified:  { prompt_type: 'base',        multi_agent_tutor: false, multi_agent_learner: false, recognition: false },
-    cell_2_base_single_psycho:   { prompt_type: 'base',        multi_agent_tutor: false, multi_agent_learner: true,  recognition: false },
-    cell_3_base_multi_unified:   { prompt_type: 'base',        multi_agent_tutor: true,  multi_agent_learner: false, recognition: false },
-    cell_4_base_multi_psycho:    { prompt_type: 'base',        multi_agent_tutor: true,  multi_agent_learner: true,  recognition: false },
-    cell_5_recog_single_unified: { prompt_type: 'recognition', multi_agent_tutor: false, multi_agent_learner: false, recognition: true },
-    cell_6_recog_single_psycho:  { prompt_type: 'recognition', multi_agent_tutor: false, multi_agent_learner: true,  recognition: true },
-    cell_7_recog_multi_unified:  { prompt_type: 'recognition', multi_agent_tutor: true,  multi_agent_learner: false, recognition: true },
-    cell_8_recog_multi_psycho:   { prompt_type: 'recognition', multi_agent_tutor: true,  multi_agent_learner: true,  recognition: true },
+    cell_1_base_single_unified: {
+      prompt_type: 'base',
+      multi_agent_tutor: false,
+      multi_agent_learner: false,
+      recognition: false,
+    },
+    cell_2_base_single_psycho: {
+      prompt_type: 'base',
+      multi_agent_tutor: false,
+      multi_agent_learner: true,
+      recognition: false,
+    },
+    cell_3_base_multi_unified: {
+      prompt_type: 'base',
+      multi_agent_tutor: true,
+      multi_agent_learner: false,
+      recognition: false,
+    },
+    cell_4_base_multi_psycho: {
+      prompt_type: 'base',
+      multi_agent_tutor: true,
+      multi_agent_learner: true,
+      recognition: false,
+    },
+    cell_5_recog_single_unified: {
+      prompt_type: 'recognition',
+      multi_agent_tutor: false,
+      multi_agent_learner: false,
+      recognition: true,
+    },
+    cell_6_recog_single_psycho: {
+      prompt_type: 'recognition',
+      multi_agent_tutor: false,
+      multi_agent_learner: true,
+      recognition: true,
+    },
+    cell_7_recog_multi_unified: {
+      prompt_type: 'recognition',
+      multi_agent_tutor: true,
+      multi_agent_learner: false,
+      recognition: true,
+    },
+    cell_8_recog_multi_psycho: {
+      prompt_type: 'recognition',
+      multi_agent_tutor: true,
+      multi_agent_learner: true,
+      recognition: true,
+    },
   };
 
   for (const cell of allCells) {
@@ -125,14 +165,14 @@ describe('resolveConfigModels — factors extraction', () => {
 
 describe('resolveConfigModels — learnerArchitecture extraction', () => {
   const expectedArch = {
-    cell_1_base_single_unified:  'unified',
-    cell_2_base_single_psycho:   'ego_superego',
-    cell_3_base_multi_unified:   'unified',
-    cell_4_base_multi_psycho:    'ego_superego',
+    cell_1_base_single_unified: 'unified',
+    cell_2_base_single_psycho: 'ego_superego',
+    cell_3_base_multi_unified: 'unified',
+    cell_4_base_multi_psycho: 'ego_superego',
     cell_5_recog_single_unified: 'unified_recognition',
-    cell_6_recog_single_psycho:  'ego_superego_recognition',
-    cell_7_recog_multi_unified:  'unified_recognition',
-    cell_8_recog_multi_psycho:   'ego_superego_recognition',
+    cell_6_recog_single_psycho: 'ego_superego_recognition',
+    cell_7_recog_multi_unified: 'unified_recognition',
+    cell_8_recog_multi_psycho: 'ego_superego_recognition',
   };
 
   for (const cell of allCells) {
@@ -151,7 +191,10 @@ describe('resolveConfigModels — modelOverride', () => {
     });
     // resolveModel returns the full model ID from providers.yaml, not the alias
     assert.strictEqual(resolved.egoModel.provider, 'openrouter');
-    assert.ok(resolved.egoModel.model.includes('nemotron'), `egoModel.model should contain "nemotron", got: ${resolved.egoModel.model}`);
+    assert.ok(
+      resolved.egoModel.model.includes('nemotron'),
+      `egoModel.model should contain "nemotron", got: ${resolved.egoModel.model}`,
+    );
     assert.strictEqual(resolved.provider, 'openrouter');
     assert.strictEqual(resolved.model, resolved.egoModel.model);
   });
@@ -174,7 +217,10 @@ describe('resolveConfigModels — modelOverride', () => {
       modelOverride: 'openrouter.nemotron',
     });
     assert.deepStrictEqual(resolved.factors, {
-      prompt_type: 'base', multi_agent_tutor: true, multi_agent_learner: true, recognition: false,
+      prompt_type: 'base',
+      multi_agent_tutor: true,
+      multi_agent_learner: true,
+      recognition: false,
     });
     assert.strictEqual(resolved.learnerArchitecture, 'ego_superego');
   });
@@ -220,7 +266,7 @@ describe('resolveConfigModels — hyperparameters extraction', () => {
       assert.ok(resolved.hyperparameters, `${cell} should have hyperparameters`);
       assert.ok(
         resolved.hyperparameters.max_tokens >= 8000,
-        `${cell} max_tokens should be >= 8000 for reasoning models, got ${resolved.hyperparameters.max_tokens}`
+        `${cell} max_tokens should be >= 8000 for reasoning models, got ${resolved.hyperparameters.max_tokens}`,
       );
     }
   });
@@ -234,7 +280,7 @@ describe('resolveConfigModels — hyperparameters extraction', () => {
     assert.strictEqual(resolved.hyperparameters.temperature, 0.6, 'temperature preserved');
     assert.ok(
       resolved.hyperparameters.max_tokens >= 8000,
-      `max_tokens should be >= 8000, got ${resolved.hyperparameters.max_tokens}`
+      `max_tokens should be >= 8000, got ${resolved.hyperparameters.max_tokens}`,
     );
   });
 });

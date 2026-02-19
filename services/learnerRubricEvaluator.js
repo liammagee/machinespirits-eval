@@ -102,15 +102,17 @@ export function calculateLearnerOverallScore(scores, isMultiAgent = false) {
  * @returns {string} Formatted criteria text
  */
 function buildDimensionCriteria(dimensions) {
-  return Object.entries(dimensions).map(([key, dim]) => {
-    const criteriaText = Object.entries(dim.criteria || {})
-      .map(([score, desc]) => `  ${score}: ${desc}`)
-      .join('\n');
-    return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+  return Object.entries(dimensions)
+    .map(([key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
 ${dim.description}
 Criteria:
 ${criteriaText}`;
-  }).join('\n\n');
+    })
+    .join('\n\n');
 }
 
 /**
@@ -146,17 +148,20 @@ function buildTruncatedTranscript(turns, targetTurnIndex) {
 function formatDeliberation(deliberation) {
   if (!deliberation || deliberation.length === 0) return '';
 
-  return deliberation.map(step => {
-    const roleLabel = {
-      'ego_initial': 'Ego (initial reaction)',
-      'superego': 'Superego (critique)',
-      'ego_revision': 'Ego (revision — final authority)',
-      'synthesis': 'Synthesis (unified process)',
-      'ego': 'Ego',
-    }[step.role] || step.role;
+  return deliberation
+    .map((step) => {
+      const roleLabel =
+        {
+          ego_initial: 'Ego (initial reaction)',
+          superego: 'Superego (critique)',
+          ego_revision: 'Ego (revision — final authority)',
+          synthesis: 'Synthesis (unified process)',
+          ego: 'Ego',
+        }[step.role] || step.role;
 
-    return `**${roleLabel}**:\n${step.content}`;
-  }).join('\n\n');
+      return `**${roleLabel}**:\n${step.content}`;
+    })
+    .join('\n\n');
 }
 
 /**
@@ -203,16 +208,20 @@ ${formatDeliberation(targetTurn.internalDeliberation)}
   // Note about deliberation_depth dimension
   let deliberationDepthNote = '';
   if (isMultiAgent) {
-    deliberationDepthNote = 'This is a multi-agent learner. Score ALL dimensions including deliberation_depth (evaluate the quality of the internal ego/superego process shown above).';
+    deliberationDepthNote =
+      'This is a multi-agent learner. Score ALL dimensions including deliberation_depth (evaluate the quality of the internal ego/superego process shown above).';
   } else {
-    deliberationDepthNote = 'This is a single-agent (unified) learner. OMIT the deliberation_depth dimension — do not include it in your scores.';
+    deliberationDepthNote =
+      'This is a single-agent (unified) learner. OMIT the deliberation_depth dimension — do not include it in your scores.';
   }
 
   // Build dimension keys for JSON example
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map(key => {
-    return `    "${key}": {"score": 3, "reasoning": "Brief reason"}`;
-  }).join(',\n');
+  const exampleScores = dimKeys
+    .map((key) => {
+      return `    "${key}": {"score": 3, "reasoning": "Brief reason"}`;
+    })
+    .join(',\n');
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the quality of a LEARNER's response turn — how well the learner agent engages as a student, independent of the tutor's quality.
 

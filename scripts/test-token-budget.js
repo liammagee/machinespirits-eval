@@ -39,9 +39,11 @@ function getFlag(name) {
 }
 
 const model = getOption('model') || 'openrouter.haiku';
-const levels = (getOption('levels') || '256,512,1024,2048,4000').split(',').map(s => parseInt(s.trim(), 10));
+const levels = (getOption('levels') || '256,512,1024,2048,4000').split(',').map((s) => parseInt(s.trim(), 10));
 const runsPerLevel = parseInt(getOption('runs') || '4', 10);
-const profiles = (getOption('profiles') || 'cell_1_base_single_unified,cell_5_recog_single_unified').split(',').map(s => s.trim());
+const profiles = (getOption('profiles') || 'cell_1_base_single_unified,cell_5_recog_single_unified')
+  .split(',')
+  .map((s) => s.trim());
 const skipJudge = getFlag('skip-judge');
 const parallelism = getOption('parallelism') || '2';
 const reportOnly = getOption('report-only');
@@ -64,7 +66,7 @@ console.log('');
  */
 async function runAllLevels() {
   if (reportOnly) {
-    const ids = reportOnly.split(',').map(s => s.trim());
+    const ids = reportOnly.split(',').map((s) => s.trim());
     console.log(`Report-only mode: using ${ids.length} existing run IDs\n`);
     return ids;
   }
@@ -79,12 +81,18 @@ async function runAllLevels() {
     const args = [
       CLI_PATH,
       'run',
-      '--profiles', profiles.join(','),
-      '--runs', String(runsPerLevel),
-      '--max-tokens', String(level),
-      '--model', model,
-      '--parallelism', parallelism,
-      '--description', `Token budget test: max_tokens=${level}`,
+      '--profiles',
+      profiles.join(','),
+      '--runs',
+      String(runsPerLevel),
+      '--max-tokens',
+      String(level),
+      '--model',
+      model,
+      '--parallelism',
+      parallelism,
+      '--description',
+      `Token budget test: max_tokens=${level}`,
     ];
     if (skipJudge) args.push('--skip-rubric');
 
@@ -138,9 +146,10 @@ function buildReport(runIds) {
     }
 
     // Extract max_tokens from hyperparameters of first result
-    const firstHyper = typeof results[0].hyperparameters === 'string'
-      ? JSON.parse(results[0].hyperparameters || '{}')
-      : (results[0].hyperparameters || {});
+    const firstHyper =
+      typeof results[0].hyperparameters === 'string'
+        ? JSON.parse(results[0].hyperparameters || '{}')
+        : results[0].hyperparameters || {};
     const budget = firstHyper.max_tokens || null;
 
     if (!budget) {
@@ -177,9 +186,7 @@ function buildReport(runIds) {
     if (arr.length === 0) return { mean: 0, sd: 0, n: 0 };
     const n = arr.length;
     const mean = arr.reduce((a, b) => a + b, 0) / n;
-    const sd = n > 1
-      ? Math.sqrt(arr.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (n - 1))
-      : 0;
+    const sd = n > 1 ? Math.sqrt(arr.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (n - 1)) : 0;
     return { mean, sd, n };
   };
 
@@ -187,8 +194,8 @@ function buildReport(runIds) {
   const modelAlias = model.includes('.') ? model.split('.').slice(1).join('.') : model;
 
   // Build table rows grouped by profile
-  const profileNames = [...new Set([...data.values()].map(d => d.profile))].sort();
-  const budgetLevels = [...new Set([...data.values()].map(d => d.budget))].sort((a, b) => a - b);
+  const profileNames = [...new Set([...data.values()].map((d) => d.profile))].sort();
+  const budgetLevels = [...new Set([...data.values()].map((d) => d.budget))].sort((a, b) => a - b);
 
   // Format the report
   const lines = [];
@@ -203,7 +210,7 @@ function buildReport(runIds) {
   lines.push('');
 
   // Build the table
-  const profileLabels = profileNames.map(p => {
+  const profileLabels = profileNames.map((p) => {
     if (p.includes('base')) return `Base (${p})`;
     if (p.includes('recog')) return `Recognition (${p})`;
     return p;
@@ -243,9 +250,7 @@ function buildReport(runIds) {
         const calls = entry.apiCalls[i] || 1;
         return t >= Math.floor(budget * calls * 0.95);
       }).length;
-      const truncPct = entry.outputTokens.length > 0
-        ? Math.round(100 * truncCount / entry.outputTokens.length)
-        : 0;
+      const truncPct = entry.outputTokens.length > 0 ? Math.round((100 * truncCount) / entry.outputTokens.length) : 0;
 
       const cell = `${s.mean.toFixed(1).padStart(5)}  ${s.sd.toFixed(1).padStart(5)}  ${String(s.n).padStart(3)}   ${String(truncPct).padStart(3)}%`;
       row += ` ${cell.padEnd(colWidth)}|`;
@@ -273,10 +278,12 @@ function buildReport(runIds) {
         const highStats = stats(highEntry.scores);
         const lowStats = stats(lowEntry.scores);
         const delta = highStats.mean - lowStats.mean;
-        const pooledSD = Math.sqrt(((highStats.sd ** 2) + (lowStats.sd ** 2)) / 2);
+        const pooledSD = Math.sqrt((highStats.sd ** 2 + lowStats.sd ** 2) / 2);
         const d = pooledSD > 0 ? delta / pooledSD : 0;
 
-        lines.push(`- **${profile}**: ${highBudget} vs ${lowBudget} tokens → Δ=${delta.toFixed(1)} pts (d=${d.toFixed(2)})`);
+        lines.push(
+          `- **${profile}**: ${highBudget} vs ${lowBudget} tokens → Δ=${delta.toFixed(1)} pts (d=${d.toFixed(2)})`,
+        );
       }
     }
     lines.push('');
@@ -297,9 +304,7 @@ function buildReport(runIds) {
         const calls = entry.apiCalls[i] || 1;
         return t >= Math.floor(budget * calls * 0.95);
       }).length;
-      const truncPct = entry.outputTokens.length > 0
-        ? Math.round(100 * truncCount / entry.outputTokens.length)
-        : 0;
+      const truncPct = entry.outputTokens.length > 0 ? Math.round((100 * truncCount) / entry.outputTokens.length) : 0;
       lines.push(`| ${budget} | ${profile} | ${s.n} | ${s.mean.toFixed(1)} | ${s.sd.toFixed(1)} | ${truncPct}% |`);
     }
   }

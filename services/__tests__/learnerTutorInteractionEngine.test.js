@@ -136,70 +136,58 @@ describe('detectTutorStrategy', () => {
   it('detects socratic_questioning', () => {
     assert.strictEqual(
       detectTutorStrategy('What do you think would happen if we applied this differently?'),
-      'socratic_questioning'
+      'socratic_questioning',
     );
   });
 
   it('detects socratic_questioning with "how might"', () => {
     assert.strictEqual(
       detectTutorStrategy('How might this concept relate to your experience?'),
-      'socratic_questioning'
+      'socratic_questioning',
     );
   });
 
   it('detects concrete_examples', () => {
-    assert.strictEqual(
-      detectTutorStrategy('For example, imagine you are building a bridge.'),
-      'concrete_examples'
-    );
+    assert.strictEqual(detectTutorStrategy('For example, imagine you are building a bridge.'), 'concrete_examples');
   });
 
   it('detects concrete_examples with "like when"', () => {
     assert.strictEqual(
       detectTutorStrategy('It is like when you first learned to ride a bicycle.'),
-      'concrete_examples'
+      'concrete_examples',
     );
   });
 
   it('detects scaffolding', () => {
-    assert.strictEqual(
-      detectTutorStrategy('Let me break this down. First, we look at the thesis.'),
-      'scaffolding'
-    );
+    assert.strictEqual(detectTutorStrategy('Let me break this down. First, we look at the thesis.'), 'scaffolding');
   });
 
   it('detects validation', () => {
-    assert.strictEqual(
-      detectTutorStrategy("You're right, that is an important insight."),
-      'validation'
-    );
+    assert.strictEqual(detectTutorStrategy("You're right, that is an important insight."), 'validation');
   });
 
   it('detects validation with "good observation"', () => {
-    assert.strictEqual(
-      detectTutorStrategy('Good observation! That connection is key.'),
-      'validation'
-    );
+    assert.strictEqual(detectTutorStrategy('Good observation! That connection is key.'), 'validation');
   });
 
   it('detects gentle_correction', () => {
     assert.strictEqual(
       detectTutorStrategy('Actually, there is an important distinction between these concepts.'),
-      'gentle_correction'
+      'gentle_correction',
     );
   });
 
   it('detects intellectual_challenge', () => {
     assert.strictEqual(
       detectTutorStrategy('Consider what would happen in the opposite case.'),
-      'intellectual_challenge'
+      'intellectual_challenge',
     );
   });
 
   it('returns direct_explanation as default', () => {
     assert.strictEqual(
       detectTutorStrategy('Dialectics is a philosophical framework developed by Hegel.'),
-      'direct_explanation'
+      'direct_explanation',
     );
   });
 });
@@ -212,24 +200,18 @@ describe('extractTutorMessage', () => {
   it('returns plain text as-is', () => {
     assert.strictEqual(
       extractTutorMessage('Hello, let me help you understand this concept.'),
-      'Hello, let me help you understand this concept.'
+      'Hello, let me help you understand this concept.',
     );
   });
 
   it('extracts message from JSON array (tutor suggestion format)', () => {
     const json = JSON.stringify([{ message: 'This is the tutor response.' }]);
-    assert.strictEqual(
-      extractTutorMessage(json),
-      'This is the tutor response.'
-    );
+    assert.strictEqual(extractTutorMessage(json), 'This is the tutor response.');
   });
 
   it('extracts message from single JSON object', () => {
     const json = JSON.stringify({ message: 'A single suggestion.' });
-    assert.strictEqual(
-      extractTutorMessage(json),
-      'A single suggestion.'
-    );
+    assert.strictEqual(extractTutorMessage(json), 'A single suggestion.');
   });
 
   it('returns empty string for null input', () => {
