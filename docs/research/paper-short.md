@@ -155,7 +155,7 @@ The strongest cross-judge agreement occurs on tone (r=0.36--0.65) and specificit
 | Dialectical impasse test | 6.15 | 24 |
 | **Paper totals** | — | **3,383** |
 
-The complete database contains 7,000+ evaluations across 117+ runs. This paper reports primarily on the thirty-seven key evaluations above.
+The complete database contains 7,000+ evaluations across 117+ runs. This table groups the thirty-seven key evaluations by topic; several rows combine multiple runs (e.g., the factorial comprises two runs, the memory isolation two independent replications). The full paper's Appendix D provides a per-run breakdown.
 
 ---
 
