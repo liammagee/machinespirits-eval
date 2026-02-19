@@ -1,6 +1,6 @@
 /**
  * Detailed statistical analysis of an evaluation run.
- * Usage: node scripts/analyze-run.mjs [run_id]
+ * Usage: node scripts/analyze-run.js [run_id]
  */
 import Database from 'better-sqlite3';
 const db = new Database('data/evaluations.db');
