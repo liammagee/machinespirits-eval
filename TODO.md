@@ -158,22 +158,28 @@ Hostile superegos become productive under recognition (suspicious +19.0, adversa
 
 ## E. Known Bugs & Workarounds
 
-### E1. Superego JSON Parse Failures (DOCUMENTED)
+### E1. Superego JSON Parse Failures (TUTOR-CORE — not fixable here)
 Kimi K2.5 returns malformed JSON 16-45% of turns, causing silent auto-approve.
-- Implement structured output enforcement or retry logic
+- Auto-approve fallback in `tutor-core/services/tutorDialogueEngine.js:1574-1582`
+- Superego parsing uses only 2-tier fallback (parse + retry with stronger model)
+- `jsonrepair` library is available but only used in judge path (`rubricEvaluator.js`), not superego path
 - Adversary prompt has lowest failure rate (11.5%) — prompt structure affects reliability
+- **Fix lives in tutor-core repo**, not this repo
 - Paper ref: Section 8.2 Future Direction #10
 
-### E2. GPT Rejudge Duplicate Rows (DOCUMENTED)
-`rejudge` without `--overwrite` can create 2x rows per response.
-- Workaround: dedup with `ROW_NUMBER()`
-- Consider adding dedup check to rejudge command
+### ~~E2. GPT Rejudge Duplicate Rows~~ (FIXED)
+~~`rejudge` without `--overwrite` can create 2x rows per response.~~
+Fixed: `rejudgeRun()` now resolves the target judge label and skips responses already
+judged by that judge in prior calls. Within-call dedup by suggestion content also preserved.
 
-### E3. Context Scoping Bug (FIXED but fragile)
-When scenarios lack `current_content`, content resolution can leak cross-domain.
-- Fixed by adding `course_ids` to scenarios
-- No automated validation prevents regression
-- Related to B4 (config validation)
+### ~~E3. Context Scoping Bug~~ (FIXED — robust)
+~~When scenarios lack `current_content`, content resolution can leak cross-domain.~~
+Fixed comprehensively:
+1. Dangerous `listAvailableCourses()` fallback removed from `contentResolver.js`
+2. All scenarios have `course_ids` defined
+3. Prompt contamination fixed (hardcoded lecture IDs replaced with placeholders)
+4. Test coverage validates scenario-content alignment
+- Regression prevention: automated validation would help (see B4) but current fix is robust
 
 ---
 
