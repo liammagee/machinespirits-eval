@@ -973,7 +973,10 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch((parseErr) => {
+        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
+        return {};
+      });
       throw new Error(`Anthropic API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
     }
 
@@ -1009,7 +1012,10 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch((parseErr) => {
+        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
+        return {};
+      });
       throw new Error(`OpenAI API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
     }
 
@@ -1047,7 +1053,10 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch((parseErr) => {
+        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
+        return {};
+      });
       throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
     }
 
@@ -1107,7 +1116,10 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch((parseErr) => {
+        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
+        return {};
+      });
       throw new Error(`Local LLM error: ${res.status} - ${data?.error?.message || 'Is LM Studio running?'}`);
     }
 

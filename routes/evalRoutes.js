@@ -1052,7 +1052,7 @@ router.get('/stream/interact', async (req, res) => {
   }, 15000);
 
   // Register stream for crash protection (interaction evals can take a while)
-  const streamId = registerStream(res, keepAlive, { maxDuration: 30 * 60 * 1000 }); // 30 min timeout
+  const streamId = registerStream(res, keepAlive, { maxDuration: TIMEOUT_WARNING_MS });
 
   // Clean up on close
   req.on('close', () => {

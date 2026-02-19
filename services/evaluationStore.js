@@ -109,114 +109,40 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_runs_created ON evaluation_runs(created_at);
 `);
 
-// Migration: Add dialogue_id column if it doesn't exist
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN dialogue_id TEXT`);
-} catch (e) {
-  // Column already exists, ignore
+// Helper: run idempotent ALTER TABLE migration, only ignoring "already exists" errors
+function migrateAddColumn(sql, description) {
+  try {
+    db.exec(sql);
+  } catch (e) {
+    if (e.message && e.message.includes('duplicate column name')) return;
+    if (e.message && e.message.includes('already exists')) return;
+    console.error(`[evaluationStore] Migration failed (${description}):`, e.message);
+    throw e;
+  }
 }
+
+// Migrations: Add columns to evaluation_results
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_id TEXT`, 'dialogue_id');
 db.exec(`CREATE INDEX IF NOT EXISTS idx_results_dialogue ON evaluation_results(dialogue_id)`);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN scenario_type TEXT DEFAULT 'suggestion'`, 'scenario_type');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN scores_with_reasoning TEXT`, 'scores_with_reasoning');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN cost REAL`, 'cost');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN base_score REAL`, 'base_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN recognition_score REAL`, 'recognition_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN ego_model TEXT`, 'ego_model');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN superego_model TEXT`, 'superego_model');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN factor_recognition BOOLEAN`, 'factor_recognition');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_tutor BOOLEAN`, 'factor_multi_agent_tutor');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_learner BOOLEAN`, 'factor_multi_agent_learner');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`, 'learner_architecture');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`, 'scoring_method');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`, 'learner_scores');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_overall_score REAL`, 'learner_overall_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_judge_model TEXT`, 'learner_judge_model');
 
-// Migration: Add scenario_type column if it doesn't exist
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN scenario_type TEXT DEFAULT 'suggestion'`);
-} catch (e) {
-  // Column already exists, ignore
-}
-
-// Migration: Add scores_with_reasoning column if it doesn't exist
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN scores_with_reasoning TEXT`);
-} catch (e) {
-  // Column already exists, ignore
-}
-
-// Migration: Add cost column if it doesn't exist
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN cost REAL`);
-} catch (e) {
-  // Column already exists, ignore
-}
-
-// Migration: Add dual scoring columns if they don't exist
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN base_score REAL`);
-} catch (e) {
-  // Column already exists, ignore
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN recognition_score REAL`);
-} catch (e) {
-  // Column already exists, ignore
-}
-
-// Migration: Add ego_model and superego_model columns
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN ego_model TEXT`);
-} catch (e) {
-  // Column already exists, ignore
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN superego_model TEXT`);
-} catch (e) {
-  // Column already exists, ignore
-}
-
-// Migration: Add factorial factor columns
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_recognition BOOLEAN`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_tutor BOOLEAN`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_learner BOOLEAN`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`);
-} catch (e) {
-  /* Column already exists */
-}
-
-// Migration: Add learner-side evaluation columns to evaluation_results
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_overall_score REAL`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_results ADD COLUMN learner_judge_model TEXT`);
-} catch (e) {
-  /* Column already exists */
-}
-
-// Migration: Add reproducibility metadata columns to evaluation_runs
-try {
-  db.exec(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`);
-} catch (e) {
-  /* Column already exists */
-}
-try {
-  db.exec(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`);
-} catch (e) {
-  /* Column already exists */
-}
+// Migrations: Add columns to evaluation_runs
+migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
+migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`, 'package_version');
 
 // Migration: Revert any accidental renames (batch→matrix, interact→interaction)
 try {
@@ -227,7 +153,10 @@ try {
   `);
   revertRuns.run();
 } catch (e) {
-  // Ignore errors
+  if (!(e.message && e.message.includes('no such column'))) {
+    console.error('[evaluationStore] Migration failed (revert renames):', e.message);
+    throw e;
+  }
 }
 
 // Create interaction evaluation tables

@@ -9,6 +9,9 @@
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { jsonrepair } from 'jsonrepair';
 
+// HTTP request timeout for all judge API calls (ms)
+const API_CALL_TIMEOUT_MS = 60000;
+
 // Debug logging helper - suppressed in transcript mode for clean output
 function debugLog(...args) {
   if (process.env.TUTOR_TRANSCRIPT !== 'true') {
@@ -203,7 +206,7 @@ async function callJudgeModelWithConfig(prompt, config) {
 
       // Add timeout to prevent hanging
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+      const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS); // 60 second timeout
 
       try {
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -249,7 +252,7 @@ async function callJudgeModelWithConfig(prompt, config) {
 
       // Add timeout to prevent hanging
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60000);
+      const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
 
       try {
         const res = await fetch(
@@ -519,7 +522,7 @@ async function callJudgeModel(prompt, overrides = {}) {
 
     // Add timeout to prevent hanging
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
 
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -565,7 +568,7 @@ async function callJudgeModel(prompt, overrides = {}) {
 
     // Add timeout to prevent hanging
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
 
     try {
       const body = {
@@ -616,7 +619,7 @@ async function callJudgeModel(prompt, overrides = {}) {
 
     // Add timeout to prevent hanging
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
 
     try {
       const body = {
@@ -666,7 +669,7 @@ async function callJudgeModel(prompt, overrides = {}) {
 
     // Add timeout to prevent hanging
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000);
+    const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
 
     try {
       const res = await fetch(

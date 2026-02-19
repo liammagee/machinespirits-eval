@@ -67,33 +67,29 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 
 ## B. Code Quality & Infrastructure
 
-### B1. Test Coverage Gaps (MEDIUM)
-6 services have no test coverage:
-- `services/learnerConfigLoader.js` — Learner persona loading
-- `services/promptRecommendationService.js` — Prompt recommendations (possibly unused)
-- `services/processUtils.js` — Process utilities
-- `services/progressLogger.js` — Logging utility
-- `services/streamingReporter.js` — Streaming response reporting
-- `services/mockProvider.js` — Mock API provider
+### B1. Test Coverage Gaps (PARTIALLY ADDRESSED)
+Tests added for `processUtils.js` (4 tests) and `streamingReporter.js` (8 tests). `mockProvider.js` already tested in `dryRun.test.js`.
+Remaining untested:
+- `services/learnerConfigLoader.js` — 461 LOC, medium difficulty, actively used
+- `services/promptRecommendationService.js` — 508 LOC, hard to test (requires API mocking), optional feature
+- `services/progressLogger.js` — 132 LOC, easy, JSONL file I/O
 
-### B2. Silent Error Handling (MEDIUM)
-Multiple locations swallow errors silently:
-- `learnerTutorInteractionEngine.js:976,1012,1050,1110` — JSON parse failures return `{}` with no logging
-- `evaluationStore.js:113-230` — 20+ migration blocks with empty catch (can't distinguish "column exists" from corruption)
-- `promptRewriter.js:497,734,909,1149,1554,1789,1882,2001` — Synthesis failures logged but unstructured
+### ~~B2. Silent Error Handling~~ (FIXED)
+- ~~`learnerTutorInteractionEngine.js` JSON parse failures~~ — Now logs warning with status code on parse failure
+- ~~`evaluationStore.js` empty migration catches~~ — Replaced 20+ bare catches with `migrateAddColumn()` helper that only ignores "duplicate column name"/"already exists", throws on real errors
+- `promptRewriter.js` — Synthesis failures still return null with console.error. Lower priority: upstream code handles null gracefully with template fallback.
 
-### B3. Hardcoded Constants (LOW)
-- HTTP timeout 60000ms appears 6 times in `rubricEvaluator.js` — extract to constant
-- Stream timeout/warning thresholds in `evalRoutes.js:61-62` — make configurable
-- Learner retry delays in `learnerTutorInteractionEngine.js:893` — extract to config
-- Content resolver limits in `contentResolver.js:17-19` — initialize from env
+### ~~B3. Hardcoded Constants~~ (FIXED)
+- ~~HTTP timeout 60000ms in `rubricEvaluator.js`~~ — Extracted to `API_CALL_TIMEOUT_MS` constant (6 occurrences)
+- ~~Inconsistent inline `30 * 60 * 1000` in `evalRoutes.js:1055`~~ — Now uses `TIMEOUT_WARNING_MS` constant
+- `learnerTutorInteractionEngine.js:893` — Already a named constant (`LEARNER_RETRY_DELAYS`), could be centralized
+- `contentResolver.js:17-19` — Already configurable via `configure()` method, no action needed
 
 ### B4. Configuration Validation CLI (LOW)
 No runtime validation of cell definitions. Potential issues:
 - `prompt_type` references nonexistent prompts
 - Factor combinations invalid
 - Learner architectures unavailable
-- Scenarios missing `course_ids` (context scoping bug)
 Implement: `node scripts/eval-cli.js validate-config`
 
 ### B5. Centralized Error Reporting (LOW)
