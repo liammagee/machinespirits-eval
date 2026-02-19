@@ -61,7 +61,7 @@ import { isPidAlive } from './processUtils.js';
 /**
  * Eval-only profile names that need remapping to tutor-core profiles.
  */
-const EVAL_ONLY_PROFILES = [
+export const EVAL_ONLY_PROFILES = [
   'single_baseline',
   'single_baseline_paid',
   'single_recognition',
@@ -3734,6 +3734,8 @@ export async function rejudgeRun(runId, options = {}) {
         );
 
         if (evaluation.success) {
+          // Map evaluationTimeMs → judgeLatencyMs for DB storage
+          evaluation.judgeLatencyMs = evaluation.evaluationTimeMs ?? null;
           if (overwrite) {
             // Old behavior: update in place (loses history)
             evaluationStore.updateResultScores(result.id, evaluation);
