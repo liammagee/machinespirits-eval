@@ -132,8 +132,14 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN recognition_score RE
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN ego_model TEXT`, 'ego_model');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN superego_model TEXT`, 'superego_model');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN factor_recognition BOOLEAN`, 'factor_recognition');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_tutor BOOLEAN`, 'factor_multi_agent_tutor');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_learner BOOLEAN`, 'factor_multi_agent_learner');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_tutor BOOLEAN`,
+  'factor_multi_agent_tutor',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN factor_multi_agent_learner BOOLEAN`,
+  'factor_multi_agent_learner',
+);
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_architecture TEXT`, 'learner_architecture');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`, 'scoring_method');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`, 'learner_scores');

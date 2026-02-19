@@ -139,8 +139,20 @@ function loadLocalConfig(forceReload = false) {
       return localConfigCache;
     }
     const content = fs.readFileSync(localPath, 'utf-8');
-    localConfigCache = yaml.parse(content);
+    const localYaml = yaml.parse(content);
     localConfigMtime = stats.mtimeMs;
+
+    // Merge local overrides on top of defaults so missing sections
+    // (e.g. personas) fall back to built-in defaults instead of being undefined
+    const defaults = getDefaultConfig();
+    localConfigCache = {
+      ...defaults,
+      ...localYaml,
+      providers: { ...defaults.providers, ...localYaml.providers },
+      profiles: { ...defaults.profiles, ...localYaml.profiles },
+      architectures: { ...defaults.architectures, ...localYaml.architectures },
+      personas: { ...defaults.personas, ...localYaml.personas },
+    };
 
     // Merge shared providers (providers.yaml)
     const sharedProviders = loadProviders(forceReload);

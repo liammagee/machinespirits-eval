@@ -2858,9 +2858,7 @@ async function main() {
         console.log('');
 
         // Determine which profiles to validate
-        const profilesToCheck = filterProfile
-          ? filterProfile.split(',').map((p) => p.trim())
-          : profileNames;
+        const profilesToCheck = filterProfile ? filterProfile.split(',').map((p) => p.trim()) : profileNames;
 
         if (filterProfile) {
           const missing = profilesToCheck.filter((p) => !allProfiles[p]);
@@ -2880,7 +2878,9 @@ async function main() {
         const cellProfiles = EVAL_ONLY_PROFILES.filter((name) => name.startsWith('cell_'));
         const missingInYaml = cellProfiles.filter((name) => !allProfiles[name]);
         if (missingInYaml.length > 0) {
-          console.log(`  \u2717 EVAL_ONLY_PROFILES: ${missingInYaml.length} cell entries missing from tutor-agents.yaml`);
+          console.log(
+            `  \u2717 EVAL_ONLY_PROFILES: ${missingInYaml.length} cell entries missing from tutor-agents.yaml`,
+          );
           for (const name of missingInYaml) {
             console.log(`      - ${name}`);
           }

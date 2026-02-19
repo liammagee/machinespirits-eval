@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import {
   tutorApiService as tutorApi,
+  tutorConfigLoader,
   monitoringService,
   tutorDialogueEngine as dialogueEngine,
 } from '@machinespirits/tutor-core';
@@ -161,7 +162,9 @@ export function resolveEvalProfile(profileName) {
   const recognitionMode = evalProfile?.recognition_mode ?? profileName?.includes('recognition') ?? false;
 
   let resolvedProfileName = profileName;
+  let wasRemapped = false;
   if (profileName && EVAL_ONLY_PROFILES.includes(profileName)) {
+    wasRemapped = true;
     // Map eval profile to tutor-core profile based on prompt_type
     const promptType = evalProfile?.factors?.prompt_type;
     if (promptType === 'enhanced') {
@@ -192,6 +195,26 @@ export function resolveEvalProfile(profileName) {
       resolvedProfileName = 'recognition';
     } else {
       resolvedProfileName = 'budget';
+    }
+  }
+
+  // For remapped eval-only profiles, verify the resolved name exists in tutor-core.
+  // Eval-specific profiles (enhanced, placebo, dialectical_*, etc.) only exist in the
+  // dev version of tutor-core. When the published package is installed, fall back to a
+  // safe base profile — the eval runner provides all real configuration via explicit
+  // overrides (egoModel, superegoModel, hyperparameters, systemPromptExtension).
+  if (wasRemapped) {
+    try {
+      const tutorConfig = tutorConfigLoader.loadConfig();
+      if (!tutorConfig.profiles?.[resolvedProfileName]) {
+        const fallback = recognitionMode ? 'recognition' : 'budget';
+        console.debug(
+          `[resolveEvalProfile] Profile "${resolvedProfileName}" not in tutor-core, using "${fallback}" base`,
+        );
+        resolvedProfileName = fallback;
+      }
+    } catch {
+      // tutorConfigLoader not available — keep resolved name as-is
     }
   }
 
@@ -3617,9 +3640,7 @@ export async function rejudgeRun(runId, options = {}) {
   let targetJudgeLabel = null;
   if (!overwrite) {
     try {
-      const judge = rubricEvaluator.getAvailableJudge(
-        judgeOverride ? { judgeOverride: { model: judgeOverride } } : {},
-      );
+      const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
       targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
     } catch {
       // If we can't resolve, skip the cross-call dedup (fall back to within-call dedup only)
