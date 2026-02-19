@@ -144,6 +144,12 @@ export const EVAL_ONLY_PROFILES = [
   'cell_69_base_dialectical_intersubjective_psycho',
   'cell_70_base_dialectical_combined_psycho',
   'cell_71_naive_single_unified',
+  'cell_72_base_dialectical_quantitative_psycho',
+  'cell_73_recog_dialectical_quantitative_psycho',
+  'cell_74_base_dialectical_erosion_psycho',
+  'cell_75_recog_dialectical_erosion_psycho',
+  'cell_76_base_dialectical_profile_tutor_psycho',
+  'cell_77_recog_dialectical_profile_tutor_psycho',
 ];
 
 /**

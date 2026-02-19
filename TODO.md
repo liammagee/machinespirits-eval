@@ -14,11 +14,15 @@ All evaluations use simulated learners. The critical open question is whether re
 - Qualitative interviews on learner experience of recognition vs base
 - Paper ref: Section 8.2 Future Direction #1
 
-### A2. Dynamic Learner Mechanism Sweep (HIGH)
+### A2. Dynamic Learner Mechanism Sweep (HIGH — cells defined, not yet run)
 Only 4 of 9 mechanisms tested with dynamic (ego_superego) learners. Scripted learner confound masks mechanism differentiation.
-- **Untested with dynamic learner**: quantitative disposition (46-47), prompt erosion (48-49), tutor-only profiling (54-55)
-- Cells 64-65 (intersubjective + combined) are recognition-only; no base pairs defined
-- Full 2x9 matrix (recognition x mechanism) with dynamic learner would complete the story
+- ~~Cells 64-65 (intersubjective + combined) are recognition-only; no base pairs defined~~ — Fixed: cells 69-70 added
+- ~~**Untested with dynamic learner**: quantitative disposition (46-47), prompt erosion (48-49), tutor-only profiling (54-55)~~ — Fixed: cells 72-77 defined
+  - 72/73: quantitative disposition (base/recog) × ego_superego
+  - 74/75: prompt erosion (base/recog) × ego_superego
+  - 76/77: tutor-only profiling (base/recog) × ego_superego
+- **Next step**: Run cells 72-77 (`eval-cli.js run --profiles cell_72_...,cell_73_... --runs 3`) and judge
+- Full 2×7 matrix (recognition × mechanism) with dynamic learner now fully defined
 - Paper ref: Section 8.2 Future Direction #7, Finding 11
 
 ### A3. Capability Threshold Mapping (MEDIUM)
@@ -52,9 +56,12 @@ Single-session evaluation cannot capture accumulated understanding.
 - Track: accumulated memory, repair quality, transformation trajectories
 - Paper ref: Section 8.2 Future Direction #2
 
-### A8. Active Control Rerun on Kimi K2.5 (LOW)
+### A8. Active Control Rerun on Kimi K2.5 (IN PROGRESS)
 Active control used Nemotron while factorial used Kimi. Model confound acknowledged but not resolved.
-- Rerun active control on Kimi K2.5 for direct comparability
+- **Wrong cells run first**: eval-2026-02-19-e000a987 used cells 9-12 (enhanced), not 15-18 (placebo). N=64 scored, 77% hallucination rate. Enhanced prompt causes catastrophic context loss on Kimi — confirms "prompt elaboration hurts strong models" but doesn't address A8.
+- **Correct run**: eval-2026-02-19-f2263b04 uses cells 15-18 (placebo) on Kimi K2.5. In progress (~25% complete). ~50% hallucination rate (Kimi baseline artifact). Grounded rows (N=22 so far): placebo Kimi ~69, base Kimi ~73, recognition Kimi ~80. Gap concentrates in theory-dependent dimensions (mutual_recognition, dialectical_responsiveness, transformative_potential).
+- Early finding: model confound accounts for ~5 pts (Nemotron placebo 66.5 → Kimi placebo ~69). Recognition advantage (~11 pts over placebo on same model) holds after removing confound.
+- Kimi hallucination rate (~20-50% depending on scenario complexity) is a known baseline artifact across all runs, not specific to this experiment.
 - Paper ref: Section 8.1 Limitation #4
 
 ### A9. Cells 34-39 Full Run (LOW — superseded)
@@ -68,9 +75,8 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 ## B. Code Quality & Infrastructure
 
 ### ~~B1. Test Coverage Gaps~~ (DONE)
-Tests added for `processUtils.js` (4 tests), `streamingReporter.js` (8 tests), and `progressLogger.js` (13 tests). `mockProvider.js` already tested in `dryRun.test.js`.
+Tests added for `processUtils.js` (4 tests), `streamingReporter.js` (8 tests), `progressLogger.js` (13 tests), and `learnerConfigLoader.js` (36 tests). `mockProvider.js` already tested in `dryRun.test.js`.
 Remaining untested (low priority):
-- `services/learnerConfigLoader.js` — 461 LOC, medium difficulty, actively used
 - `services/promptRecommendationService.js` — 508 LOC, hard to test (requires API mocking), optional feature
 
 ### ~~B2. Silent Error Handling~~ (FIXED)
@@ -155,13 +161,9 @@ Hostile superegos become productive under recognition (suspicious +19.0, adversa
 
 ## E. Known Bugs & Workarounds
 
-### E1. Superego JSON Parse Failures (TUTOR-CORE — not fixable here)
-Kimi K2.5 returns malformed JSON 16-45% of turns, causing silent auto-approve.
-- Auto-approve fallback in `tutor-core/services/tutorDialogueEngine.js:1574-1582`
-- Superego parsing uses only 2-tier fallback (parse + retry with stronger model)
-- `jsonrepair` library is available but only used in judge path (`rubricEvaluator.js`), not superego path
-- Adversary prompt has lowest failure rate (11.5%) — prompt structure affects reliability
-- **Fix lives in tutor-core repo**, not this repo
+### ~~E1. Superego JSON Parse Failures~~ (FIXED in tutor-core)
+~~Kimi K2.5 returns malformed JSON 16-45% of turns, causing silent auto-approve.~~
+Fixed: `jsonrepair` library added to `parseJsonWithFallback()` in tutor-core's `tutorDialogueEngine.js`. Now tries `jsonrepair()` between initial `JSON.parse()` failure and model-retry fallback. Handles trailing commas, unescaped quotes, control characters, and other common LLM JSON malformations. Adversary prompt has lowest failure rate (11.5%) — prompt structure still affects reliability.
 - Paper ref: Section 8.2 Future Direction #10
 
 ### ~~E2. GPT Rejudge Duplicate Rows~~ (FIXED)
