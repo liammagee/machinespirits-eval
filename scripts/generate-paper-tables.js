@@ -133,7 +133,7 @@ function main() {
     console.log('═══ Generated Appendix D: Reproducibility and Key Evaluation Run IDs ═══\n');
 
     const uniqueEvals = manifest.key_evaluations;
-    const uniqueRunIds = [...new Set(uniqueEvals.flatMap(e => e.run_ids))];
+    const _uniqueRunIds = [...new Set(uniqueEvals.flatMap(e => e.run_ids))];
 
     // Find duplicate run IDs (same run used for multiple evaluations)
     const runIdCounts = {};
@@ -183,7 +183,7 @@ function main() {
   }
 
   const paper = readFileSync(PAPER_PATH, 'utf8');
-  const lines = paper.split('\n');
+  const _lines = paper.split('\n');
   let issues = 0;
 
   const expectedScored = commaNum(totalScored);

@@ -1250,7 +1250,7 @@ export function storeInteractionEval(evalData) {
 export function listInteractionEvals(options = {}) {
   const { limit = 50, scenarioId = null } = options;
 
-  let sql = `
+  const sql = `
     SELECT * FROM interaction_evaluations
     ${scenarioId ? 'WHERE scenario_id = ?' : ''}
     ORDER BY created_at DESC

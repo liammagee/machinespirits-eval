@@ -28,7 +28,11 @@
     "eval:test": "node scripts/eval-cli.js test",
     "seed": "node scripts/seed-db.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
-    "content:validate": "node scripts/validate-content.js"
+    "content:validate": "node scripts/validate-content.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [
     "evaluation",
@@ -60,7 +64,12 @@
     "yaml": "2.8.2"
   },
   "devDependencies": {
-    "@types/node": "22.14.0"
+    "@eslint/js": "^9.39.2",
+    "@types/node": "22.14.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1"
   },
   "engines": {
     "node": ">=20.0.0"

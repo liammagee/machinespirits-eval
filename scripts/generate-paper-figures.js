@@ -24,7 +24,7 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
-import YAML from 'yaml';
+
 
 const DB_PATH = path.join(import.meta.dirname, '..', 'data', 'evaluations.db');
 const LOGS_DIR = path.join(import.meta.dirname, '..', 'logs', 'tutor-dialogues');
@@ -353,7 +353,7 @@ function traceToSteps(trace) {
 function buildSingleTurnHtml(data) {
   const { row } = data;
   let suggestions = [];
-  try { suggestions = JSON.parse(row.suggestions || '[]'); } catch {}
+  try { suggestions = JSON.parse(row.suggestions || '[]'); } catch { /* ignored */ }
 
   const cond = conditionLabel(row.profile_name);
   const score = row.overall_score?.toFixed(1) || '--';
@@ -371,7 +371,7 @@ function buildSingleTurnHtml(data) {
         <div class="score-bar"><div class="score-fill" style="width:${(s/5)*100}%;background:${barColor}"></div></div>
       </div>`;
     }
-  } catch {}
+  } catch { /* ignored */ }
 
   const suggestion = suggestions[0] || {};
   const messageHtml = esc(suggestion.message || '(no suggestion)');
@@ -657,7 +657,7 @@ console.log(`\nRendered ${rendered.length} file(s) to ${outputDir}/`);
 
 if (shouldOpen && rendered.length > 0) {
   const toOpen = rendered.find(f => f.endsWith('.html')) || rendered[0];
-  try { execSync(`open "${toOpen}"`); } catch {}
+  try { execSync(`open "${toOpen}"`); } catch { /* ignored */ }
 }
 
 db.close();

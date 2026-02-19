@@ -471,6 +471,7 @@ Examples:
   node scripts/assess-transcripts.js eval-2026-02-14-abcd1234 --scenario epistemic --condition recog
   node scripts/assess-transcripts.js eval-2026-02-14-abcd1234 --model haiku --parallelism 4`);
         process.exit(0);
+      // falls through
       default:
         if (!args[i].startsWith('--') && !opts.runId) {
           opts.runId = args[i];

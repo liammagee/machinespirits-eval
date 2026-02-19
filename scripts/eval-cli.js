@@ -172,7 +172,7 @@ function buildGridFromEvents(events) {
   let completedTests = 0;
   let runDone = false;
   let durationMs = null;
-  let isResumed = false;
+  let _isResumed = false;
   const grid = {}; // grid[scenarioName][profileName] = { score, success, ... }
 
   for (const ev of events) {
@@ -183,7 +183,7 @@ function buildGridFromEvents(events) {
       if (originalTotalTests === 0) {
         originalTotalTests = ev.totalTests || 0;
       } else {
-        isResumed = true;  // This is a resume
+        _isResumed = true;  // This is a resume
       }
     } else if (ev.eventType === 'test_complete') {
       // Count actual events instead of relying on per-event completedCount
@@ -617,7 +617,7 @@ async function runChat() {
     console.error('OPENROUTER_API_KEY not set. Required for chat mode.');
     process.exit(1);
   }
-  const model = `${judge.provider === 'openrouter' ? '' : judge.provider + '/'}${judge.model}`;
+  const _model = `${judge.provider === 'openrouter' ? '' : judge.provider + '/'}${judge.model}`;
   const chatModel = judge.provider === 'openrouter' ? judge.model : `${judge.provider}/${judge.model}`;
 
   console.log(`\nEval Chat (model: ${chatModel})`);
@@ -1092,7 +1092,9 @@ async function main() {
         // Try JSONL first for in-progress runs
         const events = readProgressLog(runId);
         if (events.length > 0) {
-          let { scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs } = buildGridFromEvents(events);
+          const gridResult = buildGridFromEvents(events);
+          const { scenarios, profiles, grid, completedTests, runDone, durationMs } = gridResult;
+          let { totalTests } = gridResult;
 
           // Check if process is still alive (for running runs)
           let statusLabel = runDone ? 'completed' : 'running';
@@ -2235,7 +2237,7 @@ async function main() {
           console.log('');
 
           const processedIds = new Set();
-          let evalCounter = 0;
+          let _evalCounter = 0;
           let interrupted = false;
 
           // SIGINT handler: print summary so far and exit
@@ -2270,7 +2272,7 @@ async function main() {
             for (const result of unevaluated) {
               if (interrupted) break;
               processedIds.add(result.id);
-              evalCounter++;
+              _evalCounter++;
               batchIndex++;
               // Show: [batch progress] (overall: evaluated/total)
               const tag = `[${batchIndex}/${batchSize}] (${alreadyEvaluated + batchIndex}/${totalResults} scored)`;

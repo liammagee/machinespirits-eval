@@ -19,7 +19,7 @@ import 'dotenv/config';
  *   --report-only <csv>   Skip generation, just build report from existing run IDs
  */
 
-import { execSync, execFileSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';

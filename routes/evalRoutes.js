@@ -19,14 +19,13 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 // can be imported without tutor-core installed at parse time.
 // Module-scoped vars are populated by the middleware below; existing handler
 // code references them unchanged.
-let tutorApi, tutorConfigLoader, dialogueLogService, monitoringService;
+let tutorConfigLoader, dialogueLogService, monitoringService;
 let getApiKey, getDefaultModel, clearConscious, getWritingPad;
 let _tutorCoreLoaded = false;
 
 async function ensureTutorCore() {
   if (_tutorCoreLoaded) return;
   const mod = await import('@machinespirits/tutor-core');
-  tutorApi = mod.tutorApiService;
   tutorConfigLoader = mod.tutorConfigLoader;
   dialogueLogService = mod.dialogueLogService;
   monitoringService = mod.monitoringService;
@@ -606,7 +605,8 @@ router.post('/compare', async (req, res) => {
  */
 router.post('/matrix', async (req, res) => {
   try {
-    let { profiles = [], scenarios = 'all', skipRubric = false } = req.body;
+    let { profiles = [] } = req.body;
+    const { scenarios = 'all', skipRubric = false } = req.body;
 
     // Default profiles if none specified
     const allProfiles = tutorConfigLoader.listProfiles();
@@ -1725,7 +1725,6 @@ router.get('/logs/dialogue/:dialogueId', (req, res) => {
 
         // Calculate summary stats
         const learnerTurns = (interactionEval.turns || []).filter(t => t.phase === 'learner').length;
-        const tutorTurns = (interactionEval.turns || []).filter(t => t.phase === 'tutor').length;
 
         return res.json({
           success: true,
@@ -2554,8 +2553,8 @@ router.get('/runs/:runId/resume-status', (req, res) => {
 
     // Get profiles and scenarios from query or run metadata
     const metadata = run.metadata ? JSON.parse(run.metadata) : {};
-    let profiles = req.query.profiles ? req.query.profiles.split(',') : metadata.profiles || [];
-    let scenariosParam = req.query.scenarios || metadata.scenarios || 'all';
+    const profiles = req.query.profiles ? req.query.profiles.split(',') : metadata.profiles || [];
+    const scenariosParam = req.query.scenarios || metadata.scenarios || 'all';
 
     if (profiles.length === 0) {
       return res.status(400).json({

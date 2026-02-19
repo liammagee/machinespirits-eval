@@ -37,7 +37,7 @@ const app = express();
 // ── Learner config cache ────────────────────────────────────────────────────
 
 let learnerConfig = null;
-try { learnerConfig = YAML.parse(fs.readFileSync(LEARNER_CONFIG, 'utf8')); } catch {}
+try { learnerConfig = YAML.parse(fs.readFileSync(LEARNER_CONFIG, 'utf8')); } catch { /* ignored */ }
 
 function resolvelearnerModels(arch) {
   if (!learnerConfig) return { ego: '?', superego: '?' };
@@ -137,14 +137,14 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
         learnerArchitecture: log.learnerArchitecture,
       };
     }
-  } catch {}
+  } catch { /* ignored */ }
 
   const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified');
 
   let judgeScores = {};
-  try { judgeScores = JSON.parse(row.scores_with_reasoning || '{}'); } catch {}
+  try { judgeScores = JSON.parse(row.scores_with_reasoning || '{}'); } catch { /* ignored */ }
   let qualitative = {};
-  try { qualitative = JSON.parse(row.qualitative_assessment || '{}'); } catch {}
+  try { qualitative = JSON.parse(row.qualitative_assessment || '{}'); } catch { /* ignored */ }
 
   res.json({
     trace,

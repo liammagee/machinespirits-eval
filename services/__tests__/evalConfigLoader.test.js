@@ -7,10 +7,8 @@
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import yaml from 'yaml';
 
 import {
   loadProviders,
@@ -20,7 +18,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG_DIR = path.resolve(__dirname, '../../config');
-const PROVIDERS_PATH = path.join(CONFIG_DIR, 'providers.yaml');
+const _PROVIDERS_PATH = path.join(CONFIG_DIR, 'providers.yaml');
 
 // ============================================================================
 // loadProviders

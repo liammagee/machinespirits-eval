@@ -311,7 +311,7 @@ async function callJudgeModelWithConfig(prompt, config) {
 function formatDialogueTranscript(dialogueContext) {
   if (!dialogueContext) return null;
 
-  const { conversationHistory, dialogueTrace, consolidatedTrace } = dialogueContext;
+  const { conversationHistory, _dialogueTrace, consolidatedTrace } = dialogueContext;
 
   // Use consolidatedTrace if available (richest source), otherwise fall back to conversationHistory
   const trace = consolidatedTrace?.length > 0 ? consolidatedTrace : null;
@@ -387,7 +387,7 @@ function buildEvaluationPrompt(suggestion, scenario, context) {
   const dimensions = evalConfigLoader.getRubricDimensions();
 
   // Build dimension criteria text
-  const dimensionCriteria = Object.entries(dimensions).map(([key, dim]) => {
+  const dimensionCriteria = Object.entries(dimensions).map(([_key, dim]) => {
     const criteriaText = Object.entries(dim.criteria || {})
       .map(([score, desc]) => `  ${score}: ${desc}`)
       .join('\n');
@@ -829,6 +829,7 @@ function parseJudgeResponse(responseText) {
     // Try to fix common JSON issues: trailing commas, unescaped newlines in strings
     const cleaned = jsonStr
       .replace(/,\s*([}\]])/g, '$1')           // trailing commas
+      // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x1f]/g, m =>            // control chars in strings
         m === '\n' ? '\\n' : m === '\t' ? '\\t' : m === '\r' ? '\\r' : '');
     try {

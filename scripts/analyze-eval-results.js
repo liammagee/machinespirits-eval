@@ -139,9 +139,9 @@ function incompleteBeta(a, b, x) {
   const eps = 3e-14;
   const fpmin = 1e-30;
 
-  let qab = a + b;
-  let qap = a + 1;
-  let qam = a - 1;
+  const qab = a + b;
+  const qap = a + 1;
+  const qam = a - 1;
   let c = 1;
   let d = 1 - qab * x / qap;
   if (Math.abs(d) < fpmin) d = fpmin;
@@ -149,7 +149,7 @@ function incompleteBeta(a, b, x) {
   let h = d;
 
   for (let m = 1; m <= maxIter; m++) {
-    let m2 = 2 * m;
+    const m2 = 2 * m;
 
     // Even step: d_{2m}
     let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
@@ -197,9 +197,9 @@ function lnGamma(z) {
   return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
 }
 
-function gamma(n) {
+function _gamma(n) {
   // Stirling's approximation for gamma function
-  if (n < 0.5) return Math.PI / (Math.sin(Math.PI * n) * gamma(1 - n));
+  if (n < 0.5) return Math.PI / (Math.sin(Math.PI * n) * _gamma(1 - n));
   n -= 1;
   const g = 7;
   const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,

@@ -99,7 +99,7 @@ function meanAbsoluteDifference(x, y) {
   return sum / x.length;
 }
 
-function cronbachAlpha(items) {
+function _cronbachAlpha(items) {
   // items: array of arrays, each inner array is scores from one rater
   // Returns alpha for internal consistency
   if (items.length < 2 || items[0].length < 2) return null;
@@ -205,7 +205,7 @@ function analyzeJudgeReliability() {
 
   // Count how many responses have multiple judgments
   let responsesWithMultipleJudges = 0;
-  for (const [key, group] of responseGroups) {
+  for (const [_key, group] of responseGroups) {
     const uniqueJudges = new Set(group.map(r => r.judge_model));
     if (uniqueJudges.size > 1) {
       responsesWithMultipleJudges++;
@@ -235,10 +235,10 @@ function analyzeJudgeReliability() {
   console.log('');
 
   // Find groups with multiple judges
-  const pairsData = [];
+  const _pairsData = [];
   const judgePairs = new Map(); // "judgeA|judgeB" -> [{score1, score2, ...}]
 
-  for (const [key, group] of responseGroups) {
+  for (const [_key, group] of responseGroups) {
     const judgeScores = new Map();
     for (const r of group) {
       if (!judgeScores.has(r.judge_model)) {

@@ -24,7 +24,7 @@ const SINGLE_TURN = [
   },
 ];
 
-const TWO_TURNS_SAME_TYPE = [
+const _TWO_TURNS_SAME_TYPE = [
   {
     turnIndex: 0,
     suggestion: { type: 'lecture', message: 'Let me explain this concept.', title: 'Intro' },

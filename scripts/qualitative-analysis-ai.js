@@ -388,8 +388,8 @@ function regexClassify(text) {
 
 // ── Data Loading ────────────────────────────────────────────────────────
 
-function loadData(db, cells, sampleSize) {
-  const cellList = cells.map(c => `'cell_${c}_base_single_unified','cell_${c}_base_single_psycho','cell_${c}_base_multi_unified','cell_${c}_base_multi_psycho','cell_${c}_recog_single_unified','cell_${c}_recog_single_psycho','cell_${c}_recog_multi_unified','cell_${c}_recog_multi_psycho'`);
+function loadData(db, cells, _sampleSize) {
+  const _cellList = cells.map(c => `'cell_${c}_base_single_unified','cell_${c}_base_single_psycho','cell_${c}_base_multi_unified','cell_${c}_base_multi_psycho','cell_${c}_recog_single_unified','cell_${c}_recog_single_psycho','cell_${c}_recog_multi_unified','cell_${c}_recog_multi_psycho'`);
 
   // Build cell name list from cell numbers
   const baseCells = [];
@@ -407,7 +407,7 @@ function loadData(db, cells, sampleSize) {
   const allCells = [...baseCells, ...recogCells];
   const placeholders = allCells.map(() => '?').join(',');
 
-  let query = `
+  const query = `
     SELECT id, scenario_id, profile_name, overall_score, suggestions,
       CASE WHEN profile_name LIKE 'cell_1_%' OR profile_name LIKE 'cell_2_%'
            OR profile_name LIKE 'cell_3_%' OR profile_name LIKE 'cell_4_%'

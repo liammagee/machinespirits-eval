@@ -458,7 +458,7 @@ function aggregateMeasures(allMeasures) {
     const behavioralEvolutions = measures.flatMap(m => m.behavioralEvolution.evolution);
 
     // Between-run variance of final output
-    const finalMessages = measures.map(m => {
+    const _finalMessages = measures.map(m => {
       // Get last ego suggestion message
       const revs = m.revisionMagnitude;
       return revs.length > 0 ? revs[revs.length - 1] : null;
@@ -734,7 +734,7 @@ function main() {
     const jsonPath = outputPath.replace(/\.md$/, '.json');
     // Remove finalMessage from JSON output (too large)
     const cleanMeasures = allMeasures.map(m => {
-      const { finalMessage, ...rest } = m;
+      const { finalMessage: _finalMessage, ...rest } = m;
       return rest;
     });
     fs.writeFileSync(jsonPath, JSON.stringify({ runId, summary, measures: cleanMeasures }, null, 2));

@@ -98,7 +98,7 @@ for (let i = 0; i < modelNames.length; i++) {
 // ============================================================
 console.log('\n=== DIMENSION STATISTICS ===');
 const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-const dimCols = dims.map(d => `score_${d}`);
+const _dimCols = dims.map(d => `score_${d}`);
 
 for (const dim of dims) {
   const col = `score_${dim}`;

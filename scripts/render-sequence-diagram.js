@@ -310,9 +310,9 @@ function generateHtml(result, steps, trace, meta = {}) {
   const score = result.overall_score?.toFixed(1) || '--';
 
   let judgeScores = {};
-  try { judgeScores = JSON.parse(result.scores_with_reasoning || '{}'); } catch {}
+  try { judgeScores = JSON.parse(result.scores_with_reasoning || '{}'); } catch { /* ignored */ }
   let qualitative = {};
-  try { qualitative = JSON.parse(result.qualitative_assessment || '{}'); } catch {}
+  try { qualitative = JSON.parse(result.qualitative_assessment || '{}'); } catch { /* ignored */ }
 
   const isRecog = /recog/i.test(profile);
   const condLabel = isRecog ? 'Recognition' : 'Base';
@@ -659,7 +659,7 @@ for (const result of results) {
       learnerEgoModel = (prof.unified_learner.provider ? prof.unified_learner.provider + '.' : '') + (prof.unified_learner.model || '');
       learnerSuperegoModel = learnerEgoModel;
     }
-  } catch {}
+  } catch { /* ignored */ }
 
   const meta = {
     runId,

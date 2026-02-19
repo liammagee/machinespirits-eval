@@ -275,7 +275,7 @@ Be specific and actionable. Quote exact text to change when possible.
  * Uses config from evaluation-rubric.yaml
  */
 async function callRecommender(prompt, options = {}) {
-  const { budget = false } = options;
+  const { _budget = false } = options;
 
   // Get config from yaml (handles fallbacks automatically)
   const config = getRecommenderConfig();
@@ -393,9 +393,9 @@ export async function generateRecommendations(options = {}) {
     profileName = 'unknown',
     egoPromptFile = 'tutor-ego.md',
     superegoPromptFile = 'tutor-superego.md',
-    recommenderModel = null,
-    recommenderProvider = 'anthropic',
-    budget = false,
+    _recommenderModel = null,
+    _recommenderProvider = 'anthropic',
+    _budget = false,
   } = options;
 
   if (results.length === 0) {
