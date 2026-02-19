@@ -52,15 +52,46 @@ function fail(msg) {
 
 // Number words for matching spelled-out counts in prose
 const WORD_TO_NUM = {
-  'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-  'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-  'eleven': 11, 'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15,
-  'sixteen': 16, 'seventeen': 17, 'eighteen': 18, 'nineteen': 19, 'twenty': 20,
-  'twenty-one': 21, 'twenty-two': 22, 'twenty-three': 23, 'twenty-four': 24,
-  'twenty-five': 25, 'twenty-six': 26, 'twenty-seven': 27, 'twenty-eight': 28,
-  'twenty-nine': 29, 'thirty': 30, 'thirty-one': 31, 'thirty-two': 32,
-  'thirty-three': 33, 'thirty-four': 34, 'thirty-five': 35, 'thirty-six': 36,
-  'thirty-seven': 37, 'thirty-eight': 38, 'thirty-nine': 39, 'forty': 40,
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+  thirteen: 13,
+  fourteen: 14,
+  fifteen: 15,
+  sixteen: 16,
+  seventeen: 17,
+  eighteen: 18,
+  nineteen: 19,
+  twenty: 20,
+  'twenty-one': 21,
+  'twenty-two': 22,
+  'twenty-three': 23,
+  'twenty-four': 24,
+  'twenty-five': 25,
+  'twenty-six': 26,
+  'twenty-seven': 27,
+  'twenty-eight': 28,
+  'twenty-nine': 29,
+  thirty: 30,
+  'thirty-one': 31,
+  'thirty-two': 32,
+  'thirty-three': 33,
+  'thirty-four': 34,
+  'thirty-five': 35,
+  'thirty-six': 36,
+  'thirty-seven': 37,
+  'thirty-eight': 38,
+  'thirty-nine': 39,
+  forty: 40,
 };
 
 function numToWord(n) {
@@ -100,28 +131,36 @@ function runLevel1(manifest, db) {
     const profileClause = profileFilter ? ' AND profile_name LIKE ?' : '';
     const params = [...runIds, judgePattern, ...(profileFilter ? [profileFilter] : [])];
 
-    const row = db.prepare(`
+    const row = db
+      .prepare(
+        `
       SELECT
         COUNT(*) as total,
         SUM(CASE WHEN overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
       FROM evaluation_results
       WHERE run_id IN (${placeholders})
         AND judge_model LIKE ?${profileClause}
-    `).get(...params);
+    `,
+      )
+      .get(...params);
 
     const actualTotal = row?.total ?? 0;
     const actualScored = row?.scored ?? 0;
 
     let effectiveScored = actualScored;
     if (eval_.unit === 'learner turn') {
-      const learnerRow = db.prepare(`
+      const learnerRow = db
+        .prepare(
+          `
         SELECT
           COUNT(*) as total,
           SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
         WHERE run_id IN (${placeholders})
           AND judge_model LIKE ?${profileClause}
-      `).get(...params);
+      `,
+        )
+        .get(...params);
       effectiveScored = learnerRow?.scored ?? 0;
     }
 
@@ -131,7 +170,9 @@ function runLevel1(manifest, db) {
         fail(`${label}: run ${runId} not found in evaluation_runs`);
       } else if (runRow.status !== 'completed') {
         if (fixStatus) {
-          db.prepare("UPDATE evaluation_runs SET status = 'completed', completed_at = datetime('now') WHERE id = ?").run(runId);
+          db.prepare(
+            "UPDATE evaluation_runs SET status = 'completed', completed_at = datetime('now') WHERE id = ?",
+          ).run(runId);
           warn(`${label}: ${runId} was '${runRow.status}', fixed to 'completed'`);
         } else {
           fail(`${label}: ${runId} status='${runRow.status}' (expected 'completed'). Use --fix-status to fix.`);
@@ -217,13 +258,7 @@ function runLevel1(manifest, db) {
       warn(`N=${expectedScored} appears only ${scoredMatches.length} times (expected ≥4)`);
     }
 
-    const stalePatterns = [
-      /N[=≈]\s*3,047/g,
-      /N[=≈]\s*3,112/g,
-      /N[=≈]\s*2,906/g,
-      /N[=≈]\s*3,292/g,
-      /N[=≈]\s*3,347/g,
-    ];
+    const stalePatterns = [/N[=≈]\s*3,047/g, /N[=≈]\s*3,112/g, /N[=≈]\s*2,906/g, /N[=≈]\s*3,292/g, /N[=≈]\s*3,347/g];
     for (const pat of stalePatterns) {
       const { body } = splitPaper(paper);
       const matches = body.match(pat) || [];
@@ -233,7 +268,7 @@ function runLevel1(manifest, db) {
     }
 
     const totalsRowPattern = new RegExp(
-      `\\*\\*${expectedAttempts.replace(',', ',')}\\*\\*.*\\*\\*${expectedScored.replace(',', ',')}\\*\\*`
+      `\\*\\*${expectedAttempts.replace(',', ',')}\\*\\*.*\\*\\*${expectedScored.replace(',', ',')}\\*\\*`,
     );
     if (totalsRowPattern.test(paper)) {
       pass(`Table 2 totals row matches: ${expectedAttempts}/${expectedScored}`);
@@ -241,7 +276,7 @@ function runLevel1(manifest, db) {
       fail(`Table 2 totals row doesn't match expected ${expectedAttempts}/${expectedScored}`);
     }
 
-    const allRunIds = manifest.key_evaluations.flatMap(e => e.run_ids);
+    const allRunIds = manifest.key_evaluations.flatMap((e) => e.run_ids);
     const uniqueRunIds = [...new Set(allRunIds)];
     let missingFromPaper = 0;
     for (const runId of uniqueRunIds) {
@@ -299,7 +334,7 @@ function passA(paper, manifest) {
   const lines = paper.split('\n');
 
   // Find Table 2 header
-  const headerIdx = lines.findIndex(l => /^\*\*Table 2:/.test(l.trim()));
+  const headerIdx = lines.findIndex((l) => /^\*\*Table 2:/.test(l.trim()));
   if (headerIdx === -1) {
     fail('Table 2 header not found');
     return;
@@ -325,7 +360,10 @@ function passA(paper, manifest) {
     const line = lines[i].trim();
     if (!line.startsWith('|')) break;
 
-    const cells = line.split('|').map(c => c.trim()).filter(c => c !== '');
+    const cells = line
+      .split('|')
+      .map((c) => c.trim())
+      .filter((c) => c !== '');
     if (cells.length < 5) continue;
 
     // Check if this is the totals row
@@ -356,7 +394,9 @@ function passA(paper, manifest) {
   const computedAttempts = dataRows.reduce((s, r) => s + r.attempts, 0);
   const computedScored = dataRows.reduce((s, r) => s + r.scored, 0);
 
-  pass(`${dataRows.length} rows parsed, computed: ${computedAttempts.toLocaleString()} attempts / ${computedScored.toLocaleString()} scored`);
+  pass(
+    `${dataRows.length} rows parsed, computed: ${computedAttempts.toLocaleString()} attempts / ${computedScored.toLocaleString()} scored`,
+  );
 
   if (totalsRow) {
     if (totalsRow.attempts !== computedAttempts) {
@@ -422,7 +462,9 @@ function passB(body, manifest) {
 
   if (staleCandidate.length > 0) {
     for (const { value, context } of staleCandidate) {
-      fail(`Possible stale total: ${value.toLocaleString()} ("${context}") — close to but ≠ paper total ${expectedScored.toLocaleString()}`);
+      fail(
+        `Possible stale total: ${value.toLocaleString()} ("${context}") — close to but ≠ paper total ${expectedScored.toLocaleString()}`,
+      );
     }
   } else {
     pass(`No stale N values near paper total detected`);
@@ -564,7 +606,7 @@ function passE(body, fullPaper, _manifest) {
   const lines = fullPaper.split('\n');
 
   // Find Table 2 boundaries
-  const headerIdx = lines.findIndex(l => /^\*\*Table 2:/.test(l.trim()));
+  const headerIdx = lines.findIndex((l) => /^\*\*Table 2:/.test(l.trim()));
   if (headerIdx === -1) {
     warn('Table 2 not found for run ID audit');
     return;
@@ -638,7 +680,9 @@ function main() {
 
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
   console.log(`\nManifest v${manifest.version} (${manifest.generated})`);
-  console.log(`Expected: ${manifest.totals.evaluations} evaluations, ${manifest.totals.expected_scored.toLocaleString()} scored`);
+  console.log(
+    `Expected: ${manifest.totals.evaluations} evaluations, ${manifest.totals.expected_scored.toLocaleString()} scored`,
+  );
 
   // Level 1: Manifest ↔ DB (always runs)
   if (existsSync(DB_PATH)) {

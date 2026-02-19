@@ -32,7 +32,7 @@ import readline from 'readline';
 // ── Model Configuration ─────────────────────────────────────────────────
 
 const MODEL_MAP = {
-  'claude-code': 'claude-code',  // Uses Claude Code CLI subprocess (subscription)
+  'claude-code': 'claude-code', // Uses Claude Code CLI subprocess (subscription)
   haiku: 'anthropic/claude-haiku-4.5',
   sonnet: 'anthropic/claude-sonnet-4.5',
   opus: 'anthropic/claude-opus-4.5',
@@ -40,9 +40,9 @@ const MODEL_MAP = {
 
 // OpenRouter pricing per million tokens (as of Feb 2026)
 const PRICING = {
-  haiku:  { input: 1.00,  output: 5.00  },
-  sonnet: { input: 3.00,  output: 15.00 },
-  opus:   { input: 15.00, output: 75.00 },
+  haiku: { input: 1.0, output: 5.0 },
+  sonnet: { input: 3.0, output: 15.0 },
+  opus: { input: 15.0, output: 75.0 },
 };
 
 // ── Existing Regex Categories (from qualitative-analysis.js) ────────────
@@ -50,11 +50,12 @@ const PRICING = {
 const THEMATIC_CATEGORIES = {
   engagement: {
     label: 'Engagement markers',
-    description: 'Second-person engagement with learner contributions (e.g., "your insight", "building on your", "you\'ve raised")',
+    description:
+      'Second-person engagement with learner contributions (e.g., "your insight", "building on your", "you\'ve raised")',
     examples_positive: [
       'Your insight about alienation connects to...',
       'Building on your earlier point about power...',
-      'You\'ve raised an important question here.',
+      "You've raised an important question here.",
     ],
     examples_negative: [
       'The concept of alienation is important.',
@@ -64,10 +65,11 @@ const THEMATIC_CATEGORIES = {
   },
   transformation: {
     label: 'Transformation language',
-    description: 'Markers of mutual change or perspective shift (e.g., "reconsidering", "that changes how I", "I hadn\'t thought")',
+    description:
+      'Markers of mutual change or perspective shift (e.g., "reconsidering", "that changes how I", "I hadn\'t thought")',
     examples_positive: [
       'That changes how I think about this passage.',
-      'I hadn\'t considered that angle before.',
+      "I hadn't considered that angle before.",
       'Your critique enriches the standard reading.',
     ],
     examples_negative: [
@@ -78,25 +80,27 @@ const THEMATIC_CATEGORIES = {
   },
   struggle_honoring: {
     label: 'Struggle-honoring',
-    description: 'Acknowledging productive confusion or difficulty (e.g., "wrestling with", "productive confusion", "grappling with")',
+    description:
+      'Acknowledging productive confusion or difficulty (e.g., "wrestling with", "productive confusion", "grappling with")',
     examples_positive: [
-      'You\'re wrestling with a genuinely hard question.',
+      "You're wrestling with a genuinely hard question.",
       'This productive confusion is where real learning happens.',
       'The tension between these ideas is worth sitting with.',
     ],
     examples_negative: [
-      'Don\'t worry, this is easy once you understand it.',
+      "Don't worry, this is easy once you understand it.",
       'The answer is straightforward.',
       'Let me simplify this for you.',
     ],
   },
   learner_as_subject: {
     label: 'Learner-as-subject framing',
-    description: 'Treating learner as autonomous intellectual agent (e.g., "your interpretation", "your framework", "what you\'re building")',
+    description:
+      'Treating learner as autonomous intellectual agent (e.g., "your interpretation", "your framework", "what you\'re building")',
     examples_positive: [
       'Your interpretation of the text offers...',
       'Your framework for understanding this...',
-      'What you\'re developing is a sophisticated reading.',
+      "What you're developing is a sophisticated reading.",
     ],
     examples_negative: [
       'The correct framework is...',
@@ -120,7 +124,8 @@ const THEMATIC_CATEGORIES = {
   },
   generic: {
     label: 'Generic/placeholder',
-    description: 'Vague pedagogical language without specificity (e.g., "foundational", "key concepts", "solid foundation")',
+    description:
+      'Vague pedagogical language without specificity (e.g., "foundational", "key concepts", "solid foundation")',
     examples_positive: [
       'This covers foundational concepts.',
       'Building a solid foundation is key.',
@@ -137,38 +142,67 @@ const THEMATIC_CATEGORIES = {
 // Regex patterns for inter-method agreement scoring
 const REGEX_PATTERNS = {
   engagement: [
-    /your insight/gi, /building on your/gi, /your question/gi, /your point/gi,
-    /your observation/gi, /your analysis/gi, /your argument/gi, /your critique/gi,
+    /your insight/gi,
+    /building on your/gi,
+    /your question/gi,
+    /your point/gi,
+    /your observation/gi,
+    /your analysis/gi,
+    /your argument/gi,
+    /your critique/gi,
     /you've (raised|identified|highlighted|noticed|pointed out)/gi,
     /you're (asking|raising|pushing|exploring|getting at)/gi,
   ],
   transformation: [
-    /reconsidering/gi, /that changes (how I|my)/gi, /I hadn't (thought|considered)/gi,
-    /revising (my|the)/gi, /let me (revise|adjust|rethink)/gi,
-    /you've (helped|pushed|made) me/gi, /your .{1,20} (complicates|enriches|changes)/gi,
+    /reconsidering/gi,
+    /that changes (how I|my)/gi,
+    /I hadn't (thought|considered)/gi,
+    /revising (my|the)/gi,
+    /let me (revise|adjust|rethink)/gi,
+    /you've (helped|pushed|made) me/gi,
+    /your .{1,20} (complicates|enriches|changes)/gi,
     /shifts? (my|the|our) (understanding|framing|approach)/gi,
   ],
   struggle_honoring: [
-    /wrestling with/gi, /productive confusion/gi, /working through/gi,
-    /grappling with/gi, /sitting with (the|this)/gi, /tension (between|here|you)/gi,
-    /difficulty (is|here)/gi, /struggle (with|is|here)/gi,
+    /wrestling with/gi,
+    /productive confusion/gi,
+    /working through/gi,
+    /grappling with/gi,
+    /sitting with (the|this)/gi,
+    /tension (between|here|you)/gi,
+    /difficulty (is|here)/gi,
+    /struggle (with|is|here)/gi,
     /not (easy|simple|straightforward)/gi,
   ],
   learner_as_subject: [
-    /your interpretation/gi, /your analysis/gi, /your understanding/gi,
-    /you're grappling with/gi, /your perspective/gi, /your framework/gi,
-    /your reading/gi, /what you're (doing|building|developing|constructing)/gi,
+    /your interpretation/gi,
+    /your analysis/gi,
+    /your understanding/gi,
+    /you're grappling with/gi,
+    /your perspective/gi,
+    /your framework/gi,
+    /your reading/gi,
+    /what you're (doing|building|developing|constructing)/gi,
     /your (intellectual|philosophical|analytical)/gi,
   ],
   directive: [
-    /you should/gi, /you need to/gi, /you must/gi,
-    /the correct (answer|approach|way)/gi, /the answer is/gi,
-    /let me explain/gi, /here's what/gi, /make sure (to|you)/gi,
+    /you should/gi,
+    /you need to/gi,
+    /you must/gi,
+    /the correct (answer|approach|way)/gi,
+    /the answer is/gi,
+    /let me explain/gi,
+    /here's what/gi,
+    /make sure (to|you)/gi,
     /first,? you/gi,
   ],
   generic: [
-    /foundational/gi, /key concepts/gi, /learning objectives/gi,
-    /knowledge base/gi, /solid foundation/gi, /core concepts/gi,
+    /foundational/gi,
+    /key concepts/gi,
+    /learning objectives/gi,
+    /knowledge base/gi,
+    /solid foundation/gi,
+    /core concepts/gi,
     /build (a|your) (solid|strong)/gi,
     /comprehensive (understanding|overview|review)/gi,
   ],
@@ -177,11 +211,13 @@ const REGEX_PATTERNS = {
 // ── Prompts ─────────────────────────────────────────────────────────────
 
 function buildClassifyPrompt(responseText, condition) {
-  const catDescriptions = Object.entries(THEMATIC_CATEGORIES).map(([key, cat]) => {
-    const posExamples = cat.examples_positive.map(e => `  + "${e}"`).join('\n');
-    const negExamples = cat.examples_negative.map(e => `  - "${e}"`).join('\n');
-    return `**${key}** (${cat.label}): ${cat.description}\nPresent examples:\n${posExamples}\nAbsent examples:\n${negExamples}`;
-  }).join('\n\n');
+  const catDescriptions = Object.entries(THEMATIC_CATEGORIES)
+    .map(([key, cat]) => {
+      const posExamples = cat.examples_positive.map((e) => `  + "${e}"`).join('\n');
+      const negExamples = cat.examples_negative.map((e) => `  - "${e}"`).join('\n');
+      return `**${key}** (${cat.label}): ${cat.description}\nPresent examples:\n${posExamples}\nAbsent examples:\n${negExamples}`;
+    })
+    .join('\n\n');
 
   return `You are a qualitative coding expert analyzing AI tutor responses in an educational technology study.
 
@@ -296,10 +332,14 @@ async function callClaudeCode(prompt) {
     });
     let out = '';
     let err = '';
-    child.stdout.on('data', d => { out += d; });
-    child.stderr.on('data', d => { err += d; });
-    child.on('error', e => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', code => {
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
+    child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
       else resolve(out);
     });
@@ -325,7 +365,7 @@ async function callOpenRouter(prompt, modelKey) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,
@@ -389,18 +429,29 @@ function regexClassify(text) {
 // ── Data Loading ────────────────────────────────────────────────────────
 
 function loadData(db, cells, _sampleSize) {
-  const _cellList = cells.map(c => `'cell_${c}_base_single_unified','cell_${c}_base_single_psycho','cell_${c}_base_multi_unified','cell_${c}_base_multi_psycho','cell_${c}_recog_single_unified','cell_${c}_recog_single_psycho','cell_${c}_recog_multi_unified','cell_${c}_recog_multi_psycho'`);
+  const _cellList = cells.map(
+    (c) =>
+      `'cell_${c}_base_single_unified','cell_${c}_base_single_psycho','cell_${c}_base_multi_unified','cell_${c}_base_multi_psycho','cell_${c}_recog_single_unified','cell_${c}_recog_single_psycho','cell_${c}_recog_multi_unified','cell_${c}_recog_multi_psycho'`,
+  );
 
   // Build cell name list from cell numbers
   const baseCells = [];
   const recogCells = [];
   for (const c of cells) {
     if (c <= 4) {
-      baseCells.push(`cell_${c}_base_single_unified`, `cell_${c}_base_single_psycho`,
-        `cell_${c}_base_multi_unified`, `cell_${c}_base_multi_psycho`);
+      baseCells.push(
+        `cell_${c}_base_single_unified`,
+        `cell_${c}_base_single_psycho`,
+        `cell_${c}_base_multi_unified`,
+        `cell_${c}_base_multi_psycho`,
+      );
     } else {
-      recogCells.push(`cell_${c}_recog_single_unified`, `cell_${c}_recog_single_psycho`,
-        `cell_${c}_recog_multi_unified`, `cell_${c}_recog_multi_psycho`);
+      recogCells.push(
+        `cell_${c}_recog_single_unified`,
+        `cell_${c}_recog_single_psycho`,
+        `cell_${c}_recog_multi_unified`,
+        `cell_${c}_recog_multi_psycho`,
+      );
     }
   }
 
@@ -425,27 +476,32 @@ function loadData(db, cells, _sampleSize) {
   // to NEW items to process (see runClassification/runDiscovery).
   const rows = db.prepare(query).all(...allCells);
 
-  return rows.map(row => {
-    let messages = [], reasonings = [];
-    try {
-      const parsed = JSON.parse(row.suggestions);
-      if (Array.isArray(parsed)) {
-        messages = parsed.map(s => s.message || '').filter(Boolean);
-        reasonings = parsed.map(s => s.reasoning || '').filter(Boolean);
+  return rows
+    .map((row) => {
+      let messages = [],
+        reasonings = [];
+      try {
+        const parsed = JSON.parse(row.suggestions);
+        if (Array.isArray(parsed)) {
+          messages = parsed.map((s) => s.message || '').filter(Boolean);
+          reasonings = parsed.map((s) => s.reasoning || '').filter(Boolean);
+        }
+      } catch {
+        /* skip */
       }
-    } catch { /* skip */ }
 
-    return {
-      id: row.id,
-      scenario_id: row.scenario_id,
-      profile_name: row.profile_name,
-      overall_score: row.overall_score,
-      condition: row.condition,
-      messageText: messages.join('\n\n'),
-      reasoningText: reasonings.join('\n\n'),
-      fullText: [...messages, ...reasonings].join('\n\n'),
-    };
-  }).filter(r => r.messageText.length > 0);
+      return {
+        id: row.id,
+        scenario_id: row.scenario_id,
+        profile_name: row.profile_name,
+        overall_score: row.overall_score,
+        condition: row.condition,
+        messageText: messages.join('\n\n'),
+        reasoningText: reasonings.join('\n\n'),
+        fullText: [...messages, ...reasonings].join('\n\n'),
+      };
+    })
+    .filter((r) => r.messageText.length > 0);
 }
 
 // ── Cost Estimation ─────────────────────────────────────────────────────
@@ -456,7 +512,9 @@ function printCostEstimate(db) {
   console.log('='.repeat(70));
 
   // Count responses
-  const factorialCount = db.prepare(`
+  const factorialCount = db
+    .prepare(
+      `
     SELECT COUNT(*) as n FROM evaluation_results
     WHERE success = 1 AND overall_score IS NOT NULL AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
@@ -464,17 +522,23 @@ function printCostEstimate(db) {
        OR profile_name LIKE 'cell_3_%' OR profile_name LIKE 'cell_4_%'
        OR profile_name LIKE 'cell_5_%' OR profile_name LIKE 'cell_6_%'
        OR profile_name LIKE 'cell_7_%' OR profile_name LIKE 'cell_8_%')
-  `).get().n;
+  `,
+    )
+    .get().n;
 
-  const allCount = db.prepare(`
+  const allCount = db
+    .prepare(
+      `
     SELECT COUNT(*) as n FROM evaluation_results
     WHERE success = 1 AND overall_score IS NOT NULL AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
-  `).get().n;
+  `,
+    )
+    .get().n;
 
   // Estimated tokens per call
-  const inputTokens = 1200;  // prompt + response text
-  const outputTokens = 300;  // JSON output
+  const inputTokens = 1200; // prompt + response text
+  const outputTokens = 300; // JSON output
 
   console.log(`\nData volumes:`);
   console.log(`  Factorial (cells 1-8): ${factorialCount} responses`);
@@ -486,18 +550,20 @@ function printCostEstimate(db) {
   console.log('|--------|---------|------------------|-----------------|------------------|');
 
   for (const [model, pricing] of Object.entries(PRICING)) {
-    const perCall = (inputTokens * pricing.input / 1e6) + (outputTokens * pricing.output / 1e6);
+    const perCall = (inputTokens * pricing.input) / 1e6 + (outputTokens * pricing.output) / 1e6;
     const factorial = perCall * factorialCount;
     const all = perCall * allCount;
     const bothAll = all * 2;
-    console.log(`| ${model.padEnd(6)} | $${perCall.toFixed(4).padEnd(6)} | $${factorial.toFixed(2).padStart(16)} | $${all.toFixed(2).padStart(15)} | $${bothAll.toFixed(2).padStart(16)} |`);
+    console.log(
+      `| ${model.padEnd(6)} | $${perCall.toFixed(4).padEnd(6)} | $${factorial.toFixed(2).padStart(16)} | $${all.toFixed(2).padStart(15)} | $${bothAll.toFixed(2).padStart(16)} |`,
+    );
   }
 
   console.log('\nSampled estimates (--sample flag):');
   for (const sampleSize of [50, 100, 200]) {
     console.log(`  --sample ${sampleSize}:`);
     for (const [model, pricing] of Object.entries(PRICING)) {
-      const perCall = (inputTokens * pricing.input / 1e6) + (outputTokens * pricing.output / 1e6);
+      const perCall = (inputTokens * pricing.input) / 1e6 + (outputTokens * pricing.output) / 1e6;
       const cost = perCall * sampleSize;
       const bothCost = cost * 2;
       console.log(`    ${model}: $${cost.toFixed(2)} (one mode), $${bothCost.toFixed(2)} (both modes)`);
@@ -506,8 +572,12 @@ function printCostEstimate(db) {
 
   console.log('\n  claude-code model uses Claude Code CLI (your subscription) — $0 API cost.');
   console.log('  Runs sequentially (~10-20s per call). Estimated time:');
-  console.log(`    --sample 50:  ~${Math.ceil(50 * 15 / 60)} min (one mode), ~${Math.ceil(100 * 15 / 60)} min (both)`);
-  console.log(`    Full dataset:  ~${Math.ceil(factorialCount * 15 / 3600)} hrs (one mode), ~${Math.ceil(factorialCount * 2 * 15 / 3600)} hrs (both)`);
+  console.log(
+    `    --sample 50:  ~${Math.ceil((50 * 15) / 60)} min (one mode), ~${Math.ceil((100 * 15) / 60)} min (both)`,
+  );
+  console.log(
+    `    Full dataset:  ~${Math.ceil((factorialCount * 15) / 3600)} hrs (one mode), ~${Math.ceil((factorialCount * 2 * 15) / 3600)} hrs (both)`,
+  );
 
   console.log('\nRecommended approach:');
   console.log('  1. Start with --sample 50 --model claude-code --mode both (free, ~25 min)');
@@ -528,8 +598,11 @@ function loadCheckpoint(filepath) {
   const lines = fs.readFileSync(filepath, 'utf-8').split('\n').filter(Boolean);
   const results = [];
   for (const line of lines) {
-    try { results.push(JSON.parse(line)); }
-    catch { /* skip corrupt lines */ }
+    try {
+      results.push(JSON.parse(line));
+    } catch {
+      /* skip corrupt lines */
+    }
   }
   return results;
 }
@@ -553,8 +626,8 @@ function formatEta(elapsedMs, completed, total) {
 
 async function askContinue(message) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise(resolve => {
-    rl.question(message, answer => {
+  return new Promise((resolve) => {
+    rl.question(message, (answer) => {
       rl.close();
       const a = answer.trim().toLowerCase();
       resolve(a === '' || a === 'y' || a === 'yes');
@@ -565,8 +638,8 @@ async function askContinue(message) {
 function printInterimSummary(mode, results, startTime, totalTodo) {
   const elapsed = Date.now() - startTime;
   const n = results.length;
-  const base = results.filter(r => r.condition === 'base').length;
-  const recog = results.filter(r => r.condition === 'recognition').length;
+  const base = results.filter((r) => r.condition === 'base').length;
+  const recog = results.filter((r) => r.condition === 'recognition').length;
   const eta = formatEta(elapsed, n, totalTodo);
 
   console.log('\n  ┌─ Interim Summary ──────────────────────────────────');
@@ -577,14 +650,14 @@ function printInterimSummary(mode, results, startTime, totalTodo) {
     const cats = {};
     for (const r of results) {
       for (const [cat, val] of Object.entries(r.ai_categories || {})) {
-        if (!cats[cat]) cats[cat] = { base: [0,0], recognition: [0,0] };
+        if (!cats[cat]) cats[cat] = { base: [0, 0], recognition: [0, 0] };
         if (val?.present) cats[cat][r.condition][0]++;
         cats[cat][r.condition][1]++;
       }
     }
     for (const [cat, counts] of Object.entries(cats)) {
-      const bPct = counts.base[1] ? (counts.base[0]/counts.base[1]*100).toFixed(0) : '-';
-      const rPct = counts.recognition[1] ? (counts.recognition[0]/counts.recognition[1]*100).toFixed(0) : '-';
+      const bPct = counts.base[1] ? ((counts.base[0] / counts.base[1]) * 100).toFixed(0) : '-';
+      const rPct = counts.recognition[1] ? ((counts.recognition[0] / counts.recognition[1]) * 100).toFixed(0) : '-';
       console.log(`  │   ${cat.padEnd(22)} base=${bPct}%  recog=${rPct}%`);
     }
   }
@@ -597,9 +670,11 @@ function printInterimSummary(mode, results, startTime, totalTodo) {
       stances[r.condition][s] = (stances[r.condition][s] || 0) + 1;
     }
     for (const cond of ['base', 'recognition']) {
-      const sorted = Object.entries(stances[cond]).sort((a,b) => b[1]-a[1]).slice(0,4);
+      const sorted = Object.entries(stances[cond])
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4);
       if (sorted.length) {
-        console.log(`  │   ${cond} stances: ${sorted.map(([s,n]) => `${s}(${n})`).join(', ')}`);
+        console.log(`  │   ${cond} stances: ${sorted.map(([s, n]) => `${s}(${n})`).join(', ')}`);
       }
     }
   }
@@ -631,17 +706,17 @@ function writeLiveReport(exportsDir, modelKey, classifyResults, discoveryResults
   md += `**Updated:** ${now}\n\n`;
 
   if (classifyResults && classifyResults.length > 0) {
-    const base = classifyResults.filter(r => r.condition === 'base');
-    const recog = classifyResults.filter(r => r.condition === 'recognition');
+    const base = classifyResults.filter((r) => r.condition === 'base');
+    const recog = classifyResults.filter((r) => r.condition === 'recognition');
     md += `## Classification (N=${classifyResults.length}: base=${base.length}, recog=${recog.length})\n\n`;
     md += `| Category | Base % | Recog % | Diff |\n|----------|--------|---------|------|\n`;
 
     const catNames = Object.keys(THEMATIC_CATEGORIES);
     for (const cat of catNames) {
-      const bPresent = base.filter(r => r.ai_categories?.[cat]?.present).length;
-      const rPresent = recog.filter(r => r.ai_categories?.[cat]?.present).length;
-      const bPct = base.length ? (bPresent/base.length*100).toFixed(1) : '0.0';
-      const rPct = recog.length ? (rPresent/recog.length*100).toFixed(1) : '0.0';
+      const bPresent = base.filter((r) => r.ai_categories?.[cat]?.present).length;
+      const rPresent = recog.filter((r) => r.ai_categories?.[cat]?.present).length;
+      const bPct = base.length ? ((bPresent / base.length) * 100).toFixed(1) : '0.0';
+      const rPct = recog.length ? ((rPresent / recog.length) * 100).toFixed(1) : '0.0';
       const diff = (parseFloat(rPct) - parseFloat(bPct)).toFixed(1);
       md += `| ${THEMATIC_CATEGORIES[cat].label} | ${bPct}% | ${rPct}% | ${diff > 0 ? '+' : ''}${diff}% |\n`;
     }
@@ -649,8 +724,8 @@ function writeLiveReport(exportsDir, modelKey, classifyResults, discoveryResults
   }
 
   if (discoveryResults && discoveryResults.length > 0) {
-    const base = discoveryResults.filter(r => r.condition === 'base');
-    const recog = discoveryResults.filter(r => r.condition === 'recognition');
+    const base = discoveryResults.filter((r) => r.condition === 'base');
+    const recog = discoveryResults.filter((r) => r.condition === 'recognition');
     md += `## Discovery (N=${discoveryResults.length}: base=${base.length}, recog=${recog.length})\n\n`;
 
     // Stances
@@ -661,7 +736,9 @@ function writeLiveReport(exportsDir, modelKey, classifyResults, discoveryResults
       if (!allStances[s]) allStances[s] = { base: 0, recognition: 0 };
       allStances[s][r.condition]++;
     }
-    for (const [s, c] of Object.entries(allStances).sort((a,b) => (b[1].base+b[1].recognition)-(a[1].base+a[1].recognition))) {
+    for (const [s, c] of Object.entries(allStances).sort(
+      (a, b) => b[1].base + b[1].recognition - (a[1].base + a[1].recognition),
+    )) {
       md += `| ${s} | ${c.base} | ${c.recognition} |\n`;
     }
 
@@ -669,13 +746,13 @@ function writeLiveReport(exportsDir, modelKey, classifyResults, discoveryResults
     md += `\n### Top Emergent Themes\n\n| Theme | Base | Recog | Diff |\n|-------|------|-------|------|\n`;
     const themes = {};
     for (const r of discoveryResults) {
-      for (const t of (r.themes || [])) {
+      for (const t of r.themes || []) {
         const name = t.name?.toLowerCase()?.replace(/[^a-z0-9_]/g, '_') || 'unknown';
         if (!themes[name]) themes[name] = { label: t.label, base: 0, recognition: 0 };
         themes[name][r.condition]++;
       }
     }
-    const sorted = Object.entries(themes).sort((a,b) => (b[1].base+b[1].recognition)-(a[1].base+a[1].recognition));
+    const sorted = Object.entries(themes).sort((a, b) => b[1].base + b[1].recognition - (a[1].base + a[1].recognition));
     for (const [, t] of sorted.slice(0, 20)) {
       const diff = t.recognition - t.base;
       md += `| ${t.label || ''} | ${t.base} | ${t.recognition} | ${diff > 0 ? '+' : ''}${diff} |\n`;
@@ -689,10 +766,16 @@ function writeLiveReport(exportsDir, modelKey, classifyResults, discoveryResults
 
 // ── Main Analysis ───────────────────────────────────────────────────────
 
-async function runClassification(data, modelKey, concurrency, checkpointFile, { pauseEvery, exportsDir, sampleSize } = {}) {
+async function runClassification(
+  data,
+  modelKey,
+  concurrency,
+  checkpointFile,
+  { pauseEvery, exportsDir, sampleSize } = {},
+) {
   const existing = loadCheckpoint(checkpointFile);
-  const doneIds = new Set(existing.map(r => r.id));
-  let todo = data.filter(d => !doneIds.has(d.id));
+  const doneIds = new Set(existing.map((r) => r.id));
+  let todo = data.filter((d) => !doneIds.has(d.id));
   // For --sample: limit total results (existing + new) to sampleSize
   if (sampleSize && existing.length + todo.length > sampleSize) {
     const remaining = Math.max(0, sampleSize - existing.length);
@@ -788,8 +871,8 @@ async function runClassification(data, modelKey, concurrency, checkpointFile, { 
 
 async function runDiscovery(data, modelKey, concurrency, checkpointFile, { pauseEvery, exportsDir, sampleSize } = {}) {
   const existing = loadCheckpoint(checkpointFile);
-  const doneIds = new Set(existing.map(r => r.id));
-  let todo = data.filter(d => !doneIds.has(d.id));
+  const doneIds = new Set(existing.map((r) => r.id));
+  let todo = data.filter((d) => !doneIds.has(d.id));
   if (sampleSize && existing.length + todo.length > sampleSize) {
     const remaining = Math.max(0, sampleSize - existing.length);
     todo = todo.sort(() => Math.random() - 0.5).slice(0, remaining);
@@ -896,8 +979,10 @@ function analyzeClassificationResults(results) {
       recognition: { present: 0, absent: 0, strengths: {} },
     };
     analysis.interMethodAgreement[cat] = {
-      bothPresent: 0, bothAbsent: 0,
-      aiOnlyPresent: 0, regexOnlyPresent: 0,
+      bothPresent: 0,
+      bothAbsent: 0,
+      aiOnlyPresent: 0,
+      regexOnlyPresent: 0,
     };
   }
 
@@ -928,7 +1013,7 @@ function analyzeClassificationResults(results) {
   for (const cat of Object.keys(THEMATIC_CATEGORIES)) {
     const a = analysis.interMethodAgreement[cat];
     const total = a.bothPresent + a.bothAbsent + a.aiOnlyPresent + a.regexOnlyPresent;
-    a.percentAgreement = total > 0 ? ((a.bothPresent + a.bothAbsent) / total * 100).toFixed(1) : 'N/A';
+    a.percentAgreement = total > 0 ? (((a.bothPresent + a.bothAbsent) / total) * 100).toFixed(1) : 'N/A';
 
     // Cohen's kappa
     if (total > 0) {
@@ -959,13 +1044,14 @@ function analyzeDiscoveryResults(results) {
     analysis.byCondition[cond].n++;
 
     // Collect theme names
-    for (const theme of (r.themes || [])) {
+    for (const theme of r.themes || []) {
       const name = theme.name?.toLowerCase()?.replace(/[^a-z0-9_]/g, '_') || 'unknown';
       if (!analysis.themeFrequency[name]) {
         analysis.themeFrequency[name] = {
           label: theme.label,
           description: theme.description,
-          base: 0, recognition: 0,
+          base: 0,
+          recognition: 0,
         };
       }
       analysis.themeFrequency[name][cond]++;
@@ -973,13 +1059,11 @@ function analyzeDiscoveryResults(results) {
 
     // Stances
     const stance = r.pedagogical_stance?.toLowerCase() || 'unknown';
-    analysis.stanceDistribution[cond][stance] =
-      (analysis.stanceDistribution[cond][stance] || 0) + 1;
+    analysis.stanceDistribution[cond][stance] = (analysis.stanceDistribution[cond][stance] || 0) + 1;
 
     // Epistemic
     const epistemic = r.epistemic_orientation?.toLowerCase() || 'unknown';
-    analysis.epistemicDistribution[cond][epistemic] =
-      (analysis.epistemicDistribution[cond][epistemic] || 0) + 1;
+    analysis.epistemicDistribution[cond][epistemic] = (analysis.epistemicDistribution[cond][epistemic] || 0) + 1;
   }
 
   return analysis;
@@ -1009,8 +1093,8 @@ Base: N=${classifyAnalysis.byCondition.base.n}, Recognition: N=${classifyAnalysi
     for (const [cat, stats] of Object.entries(classifyAnalysis.categoryStats)) {
       const baseN = stats.base.present + stats.base.absent;
       const recogN = stats.recognition.present + stats.recognition.absent;
-      const basePct = baseN > 0 ? (stats.base.present / baseN * 100).toFixed(1) : '0.0';
-      const recogPct = recogN > 0 ? (stats.recognition.present / recogN * 100).toFixed(1) : '0.0';
+      const basePct = baseN > 0 ? ((stats.base.present / baseN) * 100).toFixed(1) : '0.0';
+      const recogPct = recogN > 0 ? ((stats.recognition.present / recogN) * 100).toFixed(1) : '0.0';
       const diff = (parseFloat(recogPct) - parseFloat(basePct)).toFixed(1);
       md += `| ${THEMATIC_CATEGORIES[cat].label} | ${stats.base.present}/${baseN} | ${basePct}% | ${stats.recognition.present}/${recogN} | ${recogPct}% | ${diff > 0 ? '+' : ''}${diff}% |\n`;
     }
@@ -1044,8 +1128,9 @@ Base: N=${discoveryAnalysis.byCondition.base.n}, Recognition: N=${discoveryAnaly
 | Theme | Label | Base | Recog | Total | Difference |
 |-------|-------|------|-------|-------|------------|
 `;
-    const sortedThemes = Object.entries(discoveryAnalysis.themeFrequency)
-      .sort((a, b) => (b[1].base + b[1].recognition) - (a[1].base + a[1].recognition));
+    const sortedThemes = Object.entries(discoveryAnalysis.themeFrequency).sort(
+      (a, b) => b[1].base + b[1].recognition - (a[1].base + a[1].recognition),
+    );
 
     for (const [name, freq] of sortedThemes.slice(0, 30)) {
       const total = freq.base + freq.recognition;
@@ -1088,26 +1173,42 @@ Base: N=${discoveryAnalysis.byCondition.base.n}, Recognition: N=${discoveryAnaly
 function parseArgs() {
   const args = process.argv.slice(2);
   const opts = {
-    mode: 'both',           // classify, discover, both
-    model: 'claude-code',   // claude-code, haiku, sonnet, opus
-    sample: null,           // null = all, number = sample size
-    cells: [1,2,3,4,5,6,7,8],
+    mode: 'both', // classify, discover, both
+    model: 'claude-code', // claude-code, haiku, sonnet, opus
+    sample: null, // null = all, number = sample size
+    cells: [1, 2, 3, 4, 5, 6, 7, 8],
     concurrency: 5,
-    pauseEvery: null,       // pause after N responses for review
+    pauseEvery: null, // pause after N responses for review
     costEstimate: false,
-    clean: false,           // delete checkpoint files before starting
+    clean: false, // delete checkpoint files before starting
   };
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--mode': opts.mode = args[++i]; break;
-      case '--model': opts.model = args[++i]; break;
-      case '--sample': opts.sample = parseInt(args[++i]); break;
-      case '--cells': opts.cells = args[++i].split(',').map(Number); break;
-      case '--concurrency': opts.concurrency = parseInt(args[++i]); break;
-      case '--pause-every': opts.pauseEvery = parseInt(args[++i]); break;
-      case '--cost-estimate': opts.costEstimate = true; break;
-      case '--clean': opts.clean = true; break;
+      case '--mode':
+        opts.mode = args[++i];
+        break;
+      case '--model':
+        opts.model = args[++i];
+        break;
+      case '--sample':
+        opts.sample = parseInt(args[++i]);
+        break;
+      case '--cells':
+        opts.cells = args[++i].split(',').map(Number);
+        break;
+      case '--concurrency':
+        opts.concurrency = parseInt(args[++i]);
+        break;
+      case '--pause-every':
+        opts.pauseEvery = parseInt(args[++i]);
+        break;
+      case '--cost-estimate':
+        opts.costEstimate = true;
+        break;
+      case '--clean':
+        opts.clean = true;
+        break;
       case '--help':
         console.log(`Usage: node scripts/qualitative-analysis-ai.js [options]
 
@@ -1175,13 +1276,15 @@ async function main() {
     console.log(`Pause every: ${opts.pauseEvery} responses`);
   }
   console.log(`\nMonitor live results from another terminal:`);
-  console.log(`  while true; do clear; cat exports/.live-report.md 2>/dev/null || echo "Waiting for first result..."; sleep 5; done`);
+  console.log(
+    `  while true; do clear; cat exports/.live-report.md 2>/dev/null || echo "Waiting for first result..."; sleep 5; done`,
+  );
 
   // Load data
   const data = loadData(db, opts.cells, opts.sample);
   console.log(`\nLoaded ${data.length} responses`);
-  const baseCount = data.filter(d => d.condition === 'base').length;
-  const recogCount = data.filter(d => d.condition === 'recognition').length;
+  const baseCount = data.filter((d) => d.condition === 'base').length;
+  const recogCount = data.filter((d) => d.condition === 'recognition').length;
   console.log(`  Base: ${baseCount}, Recognition: ${recogCount}`);
 
   if (data.length === 0) {
@@ -1247,14 +1350,18 @@ async function main() {
     modelId: MODEL_MAP[opts.model],
     sample: opts.sample,
     cells: opts.cells,
-    classification: classifyResults ? {
-      results: classifyResults,
-      analysis: classifyAnalysis,
-    } : null,
-    discovery: discoveryResults ? {
-      results: discoveryResults,
-      analysis: discoveryAnalysis,
-    } : null,
+    classification: classifyResults
+      ? {
+          results: classifyResults,
+          analysis: classifyAnalysis,
+        }
+      : null,
+    discovery: discoveryResults
+      ? {
+          results: discoveryResults,
+          analysis: discoveryAnalysis,
+        }
+      : null,
   };
 
   const jsonPath = path.join(exportsDir, `qualitative-ai-${opts.model}${suffix}-${timestamp}.json`);
@@ -1275,10 +1382,12 @@ async function main() {
     for (const [cat, stats] of Object.entries(classifyAnalysis.categoryStats)) {
       const baseN = stats.base.present + stats.base.absent;
       const recogN = stats.recognition.present + stats.recognition.absent;
-      const basePct = baseN > 0 ? (stats.base.present / baseN * 100).toFixed(1) : '0.0';
-      const recogPct = recogN > 0 ? (stats.recognition.present / recogN * 100).toFixed(1) : '0.0';
+      const basePct = baseN > 0 ? ((stats.base.present / baseN) * 100).toFixed(1) : '0.0';
+      const recogPct = recogN > 0 ? ((stats.recognition.present / recogN) * 100).toFixed(1) : '0.0';
       const agree = classifyAnalysis.interMethodAgreement[cat];
-      console.log(`  ${THEMATIC_CATEGORIES[cat].label.padEnd(28)} base=${basePct}% recog=${recogPct}% | AI-regex κ=${agree.kappa}`);
+      console.log(
+        `  ${THEMATIC_CATEGORIES[cat].label.padEnd(28)} base=${basePct}% recog=${recogPct}% | AI-regex κ=${agree.kappa}`,
+      );
     }
   }
 
@@ -1286,19 +1395,21 @@ async function main() {
     console.log('\n' + '─'.repeat(70));
     console.log('DISCOVERY SUMMARY');
     console.log('─'.repeat(70));
-    const sorted = Object.entries(discoveryAnalysis.themeFrequency)
-      .sort((a, b) => (b[1].base + b[1].recognition) - (a[1].base + a[1].recognition));
+    const sorted = Object.entries(discoveryAnalysis.themeFrequency).sort(
+      (a, b) => b[1].base + b[1].recognition - (a[1].base + a[1].recognition),
+    );
     console.log('  Top 15 emergent themes:');
     for (const [name, freq] of sorted.slice(0, 15)) {
       const total = freq.base + freq.recognition;
       const diff = freq.recognition - freq.base;
-      console.log(`    ${(freq.label || name).padEnd(35)} total=${total} (base=${freq.base}, recog=${freq.recognition}, diff=${diff > 0 ? '+' : ''}${diff})`);
+      console.log(
+        `    ${(freq.label || name).padEnd(35)} total=${total} (base=${freq.base}, recog=${freq.recognition}, diff=${diff > 0 ? '+' : ''}${diff})`,
+      );
     }
 
     console.log('\n  Pedagogical stances:');
     for (const cond of ['base', 'recognition']) {
-      const sorted = Object.entries(discoveryAnalysis.stanceDistribution[cond])
-        .sort((a, b) => b[1] - a[1]);
+      const sorted = Object.entries(discoveryAnalysis.stanceDistribution[cond]).sort((a, b) => b[1] - a[1]);
       console.log(`    ${cond}: ${sorted.map(([s, n]) => `${s}(${n})`).join(', ')}`);
     }
   }
@@ -1307,7 +1418,7 @@ async function main() {
   console.log('\nDone.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

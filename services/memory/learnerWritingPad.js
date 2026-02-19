@@ -134,7 +134,7 @@ export function updateConsciousLayer(learnerId, sessionId, data) {
     data.currentTopic || null,
     data.currentUnderstanding || null,
     data.activeQuestions ? JSON.stringify(data.activeQuestions) : null,
-    data.emotionalState || null
+    data.emotionalState || null,
   );
 }
 
@@ -144,9 +144,13 @@ export function updateConsciousLayer(learnerId, sessionId, data) {
 export function getConsciousLayer(learnerId, sessionId) {
   if (!db) return null;
 
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM conscious_layer WHERE learner_id = ? AND session_id = ?
-  `).get(learnerId, sessionId);
+  `,
+    )
+    .get(learnerId, sessionId);
 
   if (!row) return null;
 
@@ -192,7 +196,7 @@ export function recordLesson(learnerId, concept, data) {
     data.currentUnderstanding || null,
     data.retentionScore || 1.0,
     data.misunderstandings ? JSON.stringify(data.misunderstandings) : null,
-    data.connections ? JSON.stringify(data.connections) : null
+    data.connections ? JSON.stringify(data.connections) : null,
   );
 }
 
@@ -203,12 +207,16 @@ export function recordLesson(learnerId, concept, data) {
 export function applyMemoryDecay(learnerId, decayRate = 0.05) {
   if (!db) return null;
 
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     UPDATE preconscious_lessons
     SET retention_score = MAX(0.1, retention_score - ?),
         updated_at = CURRENT_TIMESTAMP
     WHERE learner_id = ?
-  `).run(decayRate, learnerId);
+  `,
+    )
+    .run(decayRate, learnerId);
 }
 
 /**
@@ -217,13 +225,17 @@ export function applyMemoryDecay(learnerId, decayRate = 0.05) {
 export function getPreconsciousLessons(learnerId, minRetention = 0) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM preconscious_lessons
     WHERE learner_id = ? AND retention_score >= ?
     ORDER BY retention_score DESC
-  `).all(learnerId, minRetention);
+  `,
+    )
+    .all(learnerId, minRetention);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     concept: row.concept,
     initialUnderstanding: row.initial_understanding,
     currentUnderstanding: row.current_understanding,
@@ -241,13 +253,17 @@ export function getPreconsciousLessons(learnerId, minRetention = 0) {
 export function getLessonsAtRisk(learnerId, threshold = 0.4) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM preconscious_lessons
     WHERE learner_id = ? AND retention_score < ?
     ORDER BY retention_score ASC
-  `).all(learnerId, threshold);
+  `,
+    )
+    .all(learnerId, threshold);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     concept: row.concept,
     retentionScore: row.retention_score,
     lastAccessed: row.last_accessed,
@@ -277,7 +293,7 @@ export function recordBreakthrough(learnerId, data) {
     data.impactScore || 0.5,
     data.sessionNumber || null,
     data.context || null,
-    data.emotionalValence || 'positive'
+    data.emotionalValence || 'positive',
   );
 }
 
@@ -298,7 +314,7 @@ export function recordTrauma(learnerId, data) {
     data.concept || null,
     data.impactScore || 0.5,
     data.sessionNumber || null,
-    data.trigger || null
+    data.trigger || null,
   );
 }
 
@@ -308,9 +324,13 @@ export function recordTrauma(learnerId, data) {
 export function resolveTrauma(learnerId, traumaId) {
   if (!db) return null;
 
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     UPDATE unconscious_traumas SET resolved = 1 WHERE id = ? AND learner_id = ?
-  `).run(traumaId, learnerId);
+  `,
+    )
+    .run(traumaId, learnerId);
 }
 
 /**
@@ -319,11 +339,15 @@ export function resolveTrauma(learnerId, traumaId) {
 export function getBreakthroughs(learnerId) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM unconscious_breakthroughs WHERE learner_id = ? ORDER BY impact_score DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     momentDescription: row.moment_description,
     concept: row.concept,
@@ -341,11 +365,15 @@ export function getBreakthroughs(learnerId) {
 export function getUnresolvedTraumas(learnerId) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM unconscious_traumas WHERE learner_id = ? AND resolved = 0 ORDER BY impact_score DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     momentDescription: row.moment_description,
     concept: row.concept,
@@ -385,9 +413,13 @@ export function recordPattern(learnerId, patternType, patternKey, patternValue, 
 export function getCorePatterns(learnerId) {
   if (!db) return {};
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM core_patterns WHERE learner_id = ? ORDER BY confidence DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
   const patterns = {};
   for (const row of rows) {
@@ -458,12 +490,16 @@ export function createSnapshot(learnerId, evalRunId = null) {
 export function getSnapshots(learnerId, limit = 10) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM memory_snapshots WHERE learner_id = ?
     ORDER BY created_at DESC LIMIT ?
-  `).all(learnerId, limit);
+  `,
+    )
+    .all(learnerId, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     evalRunId: row.eval_run_id,
     snapshotData: JSON.parse(row.snapshot_data),
@@ -493,14 +529,14 @@ export function buildNarrativeSummary(learnerId, sessionId = null) {
   }
 
   // Preconscious - strong memories
-  const strongLessons = pad.preconscious.lessons.filter(l => l.retentionScore > 0.7);
+  const strongLessons = pad.preconscious.lessons.filter((l) => l.retentionScore > 0.7);
   if (strongLessons.length > 0) {
-    parts.push(`\nStrong understanding of: ${strongLessons.map(l => l.concept).join(', ')}`);
+    parts.push(`\nStrong understanding of: ${strongLessons.map((l) => l.concept).join(', ')}`);
   }
 
   // Preconscious - at risk
   if (pad.preconscious.atRisk.length > 0) {
-    parts.push(`Fading memories of: ${pad.preconscious.atRisk.map(l => l.concept).join(', ')}`);
+    parts.push(`Fading memories of: ${pad.preconscious.atRisk.map((l) => l.concept).join(', ')}`);
   }
 
   // Unconscious - breakthroughs

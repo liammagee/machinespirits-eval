@@ -45,7 +45,7 @@ async function probe() {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -89,7 +89,7 @@ async function probe() {
   if (body.id) console.log(`Request ID: ${body.id}`);
 }
 
-probe().catch(err => {
+probe().catch((err) => {
   console.error('Fetch error:', err.message);
   process.exit(1);
 });

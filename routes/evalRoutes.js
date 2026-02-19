@@ -92,7 +92,9 @@ function registerStream(res, keepAlive, options = {}) {
     console.warn(`[EvalRoutes] Stream ${streamId} exceeded max duration (${maxDuration}ms), forcing cleanup`);
     try {
       if (res && !res.writableEnded) {
-        res.write('event: error\ndata: {"error": "Evaluation timeout - exceeded maximum duration", "timeout": true}\n\n');
+        res.write(
+          'event: error\ndata: {"error": "Evaluation timeout - exceeded maximum duration", "timeout": true}\n\n',
+        );
         res.end();
       }
     } catch (e) {
@@ -107,10 +109,12 @@ function registerStream(res, keepAlive, options = {}) {
     timeoutTimer,
     streamId,
     startedAt,
-    maxDuration
+    maxDuration,
   });
 
-  console.log(`[EvalRoutes] Stream registered: ${streamId} (Timeout: ${maxDuration}ms, Total active: ${activeEvalStreams.size})`);
+  console.log(
+    `[EvalRoutes] Stream registered: ${streamId} (Timeout: ${maxDuration}ms, Total active: ${activeEvalStreams.size})`,
+  );
   return streamId;
 }
 
@@ -122,31 +126,38 @@ function unregisterStream(streamId) {
     if (stream.timeoutTimer) clearTimeout(stream.timeoutTimer);
     activeEvalStreams.delete(streamId);
     const duration = Math.round((Date.now() - stream.startedAt) / 1000);
-    console.log(`[EvalRoutes] Stream closed: ${streamId} (Duration: ${duration}s, Remaining: ${activeEvalStreams.size})`);
+    console.log(
+      `[EvalRoutes] Stream closed: ${streamId} (Duration: ${duration}s, Remaining: ${activeEvalStreams.size})`,
+    );
   }
 }
 
 // Periodic check for hung streams (runs every 5 minutes)
-setInterval(() => {
-  const now = Date.now();
-  activeEvalStreams.forEach((stream, streamId) => {
-    const age = now - stream.startedAt;
+setInterval(
+  () => {
+    const now = Date.now();
+    activeEvalStreams.forEach((stream, streamId) => {
+      const age = now - stream.startedAt;
 
-    // Warn if approaching timeout
-    if (age > (stream.maxDuration - TIMEOUT_WARNING_MS) && !stream.warningShown) {
-      const remaining = Math.round((stream.maxDuration - age) / 1000 / 60);
-      console.warn(`[EvalRoutes] Stream ${streamId} will timeout in ${remaining} minutes`);
-      try {
-        if (stream.res && !stream.res.writableEnded) {
-          stream.res.write(`event: warning\ndata: {"message": "Evaluation will timeout in ${remaining} minutes", "remainingMs": ${stream.maxDuration - age}}\n\n`);
+      // Warn if approaching timeout
+      if (age > stream.maxDuration - TIMEOUT_WARNING_MS && !stream.warningShown) {
+        const remaining = Math.round((stream.maxDuration - age) / 1000 / 60);
+        console.warn(`[EvalRoutes] Stream ${streamId} will timeout in ${remaining} minutes`);
+        try {
+          if (stream.res && !stream.res.writableEnded) {
+            stream.res.write(
+              `event: warning\ndata: {"message": "Evaluation will timeout in ${remaining} minutes", "remainingMs": ${stream.maxDuration - age}}\n\n`,
+            );
+          }
+        } catch (e) {
+          // Ignore write errors
         }
-      } catch (e) {
-        // Ignore write errors
+        stream.warningShown = true;
       }
-      stream.warningShown = true;
-    }
-  });
-}, 5 * 60 * 1000); // Check every 5 minutes
+    });
+  },
+  5 * 60 * 1000,
+); // Check every 5 minutes
 
 // Path to prompts directory
 const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
@@ -343,11 +354,13 @@ router.post('/quick', async (req, res) => {
         evaluationReasoning: result.evaluationReasoning,
         judgeModel: result.judgeModel,
         // Scenario context for display (original user request)
-        scenarioContext: scenarioDetails ? {
-          description: scenarioDetails.description,
-          expectedBehavior: scenarioDetails.expected_behavior,
-          learnerContext: scenarioDetails.learner_context,
-        } : null,
+        scenarioContext: scenarioDetails
+          ? {
+              description: scenarioDetails.description,
+              expectedBehavior: scenarioDetails.expected_behavior,
+              learnerContext: scenarioDetails.learner_context,
+            }
+          : null,
       },
     });
   } catch (error) {
@@ -453,7 +466,10 @@ router.get('/stream/quick', async (req, res) => {
       completedAt: new Date().toISOString(),
     });
 
-    sendEvent('log', { message: `Test completed: score=${result.overallScore?.toFixed(1) || 'N/A'}`, level: 'success' });
+    sendEvent('log', {
+      message: `Test completed: score=${result.overallScore?.toFixed(1) || 'N/A'}`,
+      level: 'success',
+    });
     sendEvent('log', { message: `Saved to history: ${run.id}`, level: 'info' });
 
     sendEvent('result', {
@@ -484,11 +500,13 @@ router.get('/stream/quick', async (req, res) => {
       evaluationReasoning: result.evaluationReasoning,
       judgeModel: result.judgeModel,
       // Scenario context for display (original user request)
-      scenarioContext: scenarioDetails ? {
-        description: scenarioDetails.description,
-        expectedBehavior: scenarioDetails.expected_behavior,
-        learnerContext: scenarioDetails.learner_context,
-      } : null,
+      scenarioContext: scenarioDetails
+        ? {
+            description: scenarioDetails.description,
+            expectedBehavior: scenarioDetails.expected_behavior,
+            learnerContext: scenarioDetails.learner_context,
+          }
+        : null,
     });
 
     sendEvent('complete', { success: true, runId: run.id });
@@ -519,16 +537,10 @@ router.get('/stream/quick', async (req, res) => {
  */
 router.post('/run', async (req, res) => {
   try {
-    const {
-      profiles = ['budget'],
-      scenarios = 'all',
-      runsPerConfig = 1,
-      skipRubric = false,
-      description
-    } = req.body;
+    const { profiles = ['budget'], scenarios = 'all', runsPerConfig = 1, skipRubric = false, description } = req.body;
 
     // Build configurations from profiles
-    const configurations = profiles.map(p => ({ profileName: p, label: p }));
+    const configurations = profiles.map((p) => ({ profileName: p, label: p }));
 
     const result = await evaluationRunner.runEvaluation({
       scenarios,
@@ -571,7 +583,7 @@ router.post('/compare', async (req, res) => {
       return res.status(400).json({ error: 'At least 2 profiles required for comparison' });
     }
 
-    const configs = profiles.map(p => ({ profileName: p, label: p }));
+    const configs = profiles.map((p) => ({ profileName: p, label: p }));
 
     const result = await evaluationRunner.compareConfigurations(configs, {
       scenarios,
@@ -611,27 +623,23 @@ router.post('/matrix', async (req, res) => {
     // Default profiles if none specified
     const allProfiles = tutorConfigLoader.listProfiles();
     if (profiles.length === 0) {
-      profiles = ['budget', 'experimental', 'default', 'fast'].filter(p =>
-        allProfiles.some(ap => ap.name === p)
-      );
+      profiles = ['budget', 'experimental', 'default', 'fast'].filter((p) => allProfiles.some((ap) => ap.name === p));
     }
 
     // Validate profiles exist
-    const validProfiles = profiles.filter(p => allProfiles.some(ap => ap.name === p));
-    const invalidProfiles = profiles.filter(p => !allProfiles.some(ap => ap.name === p));
+    const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
+    const invalidProfiles = profiles.filter((p) => !allProfiles.some((ap) => ap.name === p));
 
     if (validProfiles.length === 0) {
       return res.status(400).json({
         error: 'No valid profiles specified',
-        available: allProfiles.map(p => p.name),
+        available: allProfiles.map((p) => p.name),
       });
     }
 
     // Get scenarios
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenariosToRun = scenarios === 'all'
-      ? allScenarios
-      : allScenarios.filter(s => scenarios.includes(s.id));
+    const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
 
     // Create a run to persist results to history
     const run = evaluationStore.createRun({
@@ -641,8 +649,8 @@ router.post('/matrix', async (req, res) => {
       metadata: {
         runType: 'matrix',
         profiles: validProfiles,
-        scenarios: scenariosToRun.map(s => s.id),
-        scenarioNames: scenariosToRun.map(s => s.name),
+        scenarios: scenariosToRun.map((s) => s.id),
+        scenarioNames: scenariosToRun.map((s) => s.name),
         skipRubric,
       },
     });
@@ -723,29 +731,29 @@ router.post('/matrix', async (req, res) => {
       dimensionAverages[profile] = {};
       for (const dim of dimensions) {
         const scores = dimensionScores[profile]?.[dim] || [];
-        dimensionAverages[profile][dim] = scores.length > 0
-          ? scores.reduce((a, b) => a + b, 0) / scores.length
-          : null;
+        dimensionAverages[profile][dim] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
       }
     }
 
     // Build rankings
-    const rankings = validProfiles.map(profile => {
-      const profileResults = results[profile] || [];
-      const successCount = profileResults.filter(r => r.success !== false).length;
-      const scores = profileResults.filter(r => r.overallScore != null).map(r => r.overallScore);
-      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-      const latencies = profileResults.filter(r => r.latencyMs != null).map(r => r.latencyMs);
-      const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
+    const rankings = validProfiles
+      .map((profile) => {
+        const profileResults = results[profile] || [];
+        const successCount = profileResults.filter((r) => r.success !== false).length;
+        const scores = profileResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+        const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+        const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
+        const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
 
-      return {
-        profile,
-        tests: profileResults.length,
-        successes: successCount,
-        avgScore,
-        avgLatency,
-      };
-    }).sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
+        return {
+          profile,
+          tests: profileResults.length,
+          successes: successCount,
+          avgScore,
+          avgLatency,
+        };
+      })
+      .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
 
     res.json({
       success: true,
@@ -806,13 +814,11 @@ router.get('/stream/matrix', async (req, res) => {
     // Get all available profiles
     const allProfiles = tutorConfigLoader.listProfiles();
     if (profiles.length === 0) {
-      profiles = ['budget', 'experimental', 'default', 'fast'].filter(p =>
-        allProfiles.some(ap => ap.name === p)
-      );
+      profiles = ['budget', 'experimental', 'default', 'fast'].filter((p) => allProfiles.some((ap) => ap.name === p));
     }
 
     // Validate profiles
-    const validProfiles = profiles.filter(p => allProfiles.some(ap => ap.name === p));
+    const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
     if (validProfiles.length === 0) {
       sendEvent('error', { error: 'No valid profiles specified' });
       return res.end();
@@ -820,9 +826,7 @@ router.get('/stream/matrix', async (req, res) => {
 
     // Get scenarios
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenariosToRun = scenarios === 'all'
-      ? allScenarios
-      : allScenarios.filter(s => scenarios.includes(s.id));
+    const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
 
     const totalTests = validProfiles.length * scenariosToRun.length;
 
@@ -835,7 +839,10 @@ router.get('/stream/matrix', async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
-    sendEvent('log', { message: `Starting matrix: ${validProfiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`, level: 'info' });
+    sendEvent('log', {
+      message: `Starting matrix: ${validProfiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`,
+      level: 'info',
+    });
     sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
 
     // Create a run to persist results
@@ -846,8 +853,8 @@ router.get('/stream/matrix', async (req, res) => {
       metadata: {
         runType: 'matrix',
         profiles: validProfiles,
-        scenarios: scenariosToRun.map(s => s.id),
-        scenarioNames: scenariosToRun.map(s => s.name),
+        scenarios: scenariosToRun.map((s) => s.id),
+        scenarioNames: scenariosToRun.map((s) => s.name),
         skipRubric,
       },
     });
@@ -918,7 +925,10 @@ router.get('/stream/matrix', async (req, res) => {
 
           const scoreStr = result.overallScore != null ? result.overallScore.toFixed(1) : 'N/A';
           const status = result.success !== false ? '✓' : '✗';
-          sendEvent('log', { message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`, level: result.success !== false ? 'success' : 'warning' });
+          sendEvent('log', {
+            message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
+            level: result.success !== false ? 'success' : 'warning',
+          });
 
           sendEvent('result', {
             profile: profileName,
@@ -930,7 +940,6 @@ router.get('/stream/matrix', async (req, res) => {
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
           });
-
         } catch (e) {
           sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
 
@@ -966,29 +975,29 @@ router.get('/stream/matrix', async (req, res) => {
       dimensionAverages[profile] = {};
       for (const dim of dimensions) {
         const scores = dimensionScores[profile]?.[dim] || [];
-        dimensionAverages[profile][dim] = scores.length > 0
-          ? scores.reduce((a, b) => a + b, 0) / scores.length
-          : null;
+        dimensionAverages[profile][dim] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
       }
     }
 
     // Build rankings
-    const rankings = validProfiles.map(profile => {
-      const profileResults = results[profile] || [];
-      const successCount = profileResults.filter(r => r.success !== false).length;
-      const scores = profileResults.filter(r => r.overallScore != null).map(r => r.overallScore);
-      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
-      const latencies = profileResults.filter(r => r.latencyMs != null).map(r => r.latencyMs);
-      const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
+    const rankings = validProfiles
+      .map((profile) => {
+        const profileResults = results[profile] || [];
+        const successCount = profileResults.filter((r) => r.success !== false).length;
+        const scores = profileResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+        const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+        const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
+        const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
 
-      return {
-        profile,
-        tests: profileResults.length,
-        successes: successCount,
-        avgScore,
-        avgLatency,
-      };
-    }).sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
+        return {
+          profile,
+          tests: profileResults.length,
+          successes: successCount,
+          avgScore,
+          avgLatency,
+        };
+      })
+      .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
 
     sendEvent('log', { message: `\n=== Matrix Complete ===`, level: 'success' });
     sendEvent('log', { message: `Total tests: ${completedTests}`, level: 'info' });
@@ -1110,13 +1119,18 @@ router.get('/stream/interact', async (req, res) => {
       llmClient = new OpenAI({ apiKey: openaiKey });
       sendEvent('log', { message: `Using OpenAI for LLM calls`, level: 'info' });
     } else {
-      throw new Error('No LLM API key configured. Set OPENROUTER_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY.');
+      throw new Error(
+        'No LLM API key configured. Set OPENROUTER_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, or OPENAI_API_KEY.',
+      );
     }
 
     // Create the llmCall function matching the expected signature
     const llmCall = async (requestedModel, systemPrompt, messages, options = {}) => {
       const { temperature = 0.7, maxTokens = 1000 } = options;
-      const model = requestedModel || getDefaultModel(llmProvider === 'anthropic' ? 'claude' : llmProvider) || 'deepseek/deepseek-chat';
+      const model =
+        requestedModel ||
+        getDefaultModel(llmProvider === 'anthropic' ? 'claude' : llmProvider) ||
+        'deepseek/deepseek-chat';
 
       try {
         if (llmProvider === 'openrouter') {
@@ -1126,7 +1140,7 @@ router.get('/stream/interact', async (req, res) => {
             max_tokens: maxTokens,
             messages: [
               { role: 'system', content: systemPrompt },
-              ...messages.map(m => ({
+              ...messages.map((m) => ({
                 role: m.role === 'user' ? 'user' : 'assistant',
                 content: m.content,
               })),
@@ -1140,7 +1154,7 @@ router.get('/stream/interact', async (req, res) => {
             },
           };
         } else if (llmProvider === 'gemini') {
-          const userMessages = messages.map(m => m.content).join('\n\n');
+          const userMessages = messages.map((m) => m.content).join('\n\n');
           const response = await llmClient.models.generateContent({
             model,
             contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n${userMessages}` }] }],
@@ -1159,7 +1173,7 @@ router.get('/stream/interact', async (req, res) => {
             model: model || 'claude-3-5-haiku-20241022',
             max_tokens: maxTokens,
             system: systemPrompt,
-            messages: messages.map(m => ({
+            messages: messages.map((m) => ({
               role: m.role === 'user' ? 'user' : 'assistant',
               content: m.content,
             })),
@@ -1178,7 +1192,7 @@ router.get('/stream/interact', async (req, res) => {
             max_tokens: maxTokens,
             messages: [
               { role: 'system', content: systemPrompt },
-              ...messages.map(m => ({
+              ...messages.map((m) => ({
                 role: m.role === 'user' ? 'user' : 'assistant',
                 content: m.content,
               })),
@@ -1227,7 +1241,7 @@ router.get('/stream/interact', async (req, res) => {
         maxTurns,
         trace: true,
         observeInternals: true,
-      }
+      },
     );
 
     sendEvent('log', { message: `Interaction completed: ${interactionTrace.turns.length} turns`, level: 'success' });
@@ -1279,14 +1293,15 @@ router.get('/stream/interact', async (req, res) => {
       skipJudge: !runJudge,
       metrics: {
         turnCount: interactionTrace.turns.length,
-        totalTokens: (interactionTrace.metrics?.learnerInputTokens || 0) +
-                     (interactionTrace.metrics?.learnerOutputTokens || 0) +
-                     (interactionTrace.metrics?.tutorInputTokens || 0) +
-                     (interactionTrace.metrics?.tutorOutputTokens || 0),
-        learnerTokens: (interactionTrace.metrics?.learnerInputTokens || 0) +
-                       (interactionTrace.metrics?.learnerOutputTokens || 0),
-        tutorTokens: (interactionTrace.metrics?.tutorInputTokens || 0) +
-                     (interactionTrace.metrics?.tutorOutputTokens || 0),
+        totalTokens:
+          (interactionTrace.metrics?.learnerInputTokens || 0) +
+          (interactionTrace.metrics?.learnerOutputTokens || 0) +
+          (interactionTrace.metrics?.tutorInputTokens || 0) +
+          (interactionTrace.metrics?.tutorOutputTokens || 0),
+        learnerTokens:
+          (interactionTrace.metrics?.learnerInputTokens || 0) + (interactionTrace.metrics?.learnerOutputTokens || 0),
+        tutorTokens:
+          (interactionTrace.metrics?.tutorInputTokens || 0) + (interactionTrace.metrics?.tutorOutputTokens || 0),
         totalLatencyMs: interactionTrace.metrics?.totalLatencyMs || 0,
       },
       timestamp: new Date().toISOString(),
@@ -1396,7 +1411,7 @@ router.get('/runs', (req, res) => {
 
     // Also include interaction evals in the runs list
     const interactionEvals = evaluationStore.listInteractionEvals({ limit });
-    const interactionRuns = interactionEvals.map(e => ({
+    const interactionRuns = interactionEvals.map((e) => ({
       id: e.evalId,
       description: e.scenarioName || 'Interaction Evaluation',
       status: 'completed',
@@ -1414,9 +1429,9 @@ router.get('/runs', (req, res) => {
     }));
 
     // Merge and sort by createdAt descending
-    const allRuns = [...runs, ...interactionRuns].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    ).slice(0, limit);
+    const allRuns = [...runs, ...interactionRuns]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
 
     res.json({ success: true, runs: allRuns });
   } catch (error) {
@@ -1486,26 +1501,28 @@ router.get('/runs/:runId', (req, res) => {
           totalTests: 1,
           avgScore: evalData.judgeOverallScore,
         },
-        results: [{
-          scenarioId: evalData.scenarioId,
-          scenarioName: evalData.scenarioName,
-          profileName: evalData.tutorProfile || 'default',
-          tutorProfile: evalData.tutorProfile || 'default',
-          model: `${evalData.turnCount} turns`,
-          passed: evalData.judgeOverallScore >= 3,
-          overallScore: evalData.judgeOverallScore,
-          overall_score: evalData.judgeOverallScore,
-          inputTokens: evalData.learnerTokens || 0,
-          outputTokens: evalData.tutorTokens || 0,
-          latencyMs: evalData.latencyMs || 0,
-          latency_ms: evalData.latencyMs || 0,
-          isInteraction: true,
-          interactionEvalId: evalData.evalId,
-          // dialogueId links to the dialogue log viewer
-          dialogueId: evalData.evalId,
-          // Include judgeEvaluation for dimension score extraction in History tab
-          judgeEvaluation: evalData.judgeEvaluation,
-        }],
+        results: [
+          {
+            scenarioId: evalData.scenarioId,
+            scenarioName: evalData.scenarioName,
+            profileName: evalData.tutorProfile || 'default',
+            tutorProfile: evalData.tutorProfile || 'default',
+            model: `${evalData.turnCount} turns`,
+            passed: evalData.judgeOverallScore >= 3,
+            overallScore: evalData.judgeOverallScore,
+            overall_score: evalData.judgeOverallScore,
+            inputTokens: evalData.learnerTokens || 0,
+            outputTokens: evalData.tutorTokens || 0,
+            latencyMs: evalData.latencyMs || 0,
+            latency_ms: evalData.latencyMs || 0,
+            isInteraction: true,
+            interactionEvalId: evalData.evalId,
+            // dialogueId links to the dialogue log viewer
+            dialogueId: evalData.evalId,
+            // Include judgeEvaluation for dimension score extraction in History tab
+            judgeEvaluation: evalData.judgeEvaluation,
+          },
+        ],
         // Include full interaction data for display
         interaction: {
           evalId: evalData.evalId,
@@ -1531,8 +1548,10 @@ router.get('/runs/:runId', (req, res) => {
     const result = evaluationRunner.getRunResults(runId);
 
     // Check if this is an interaction run (created from Interact tab)
-    const runMetadata = result.run?.metadata ?
-      (typeof result.run.metadata === 'string' ? JSON.parse(result.run.metadata) : result.run.metadata)
+    const runMetadata = result.run?.metadata
+      ? typeof result.run.metadata === 'string'
+        ? JSON.parse(result.run.metadata)
+        : result.run.metadata
       : {};
 
     if (runMetadata.runType === 'interaction') {
@@ -1547,24 +1566,26 @@ router.get('/runs/:runId', (req, res) => {
             totalTests: 1,
             avgScore: interactionEval.judgeOverallScore,
           },
-          results: [{
-            scenarioId: interactionEval.scenarioId,
-            scenarioName: interactionEval.scenarioName,
-            profileName: interactionEval.tutorProfile || 'default',
-            tutorProfile: interactionEval.tutorProfile || 'default',
-            model: `${interactionEval.turnCount} turns`,
-            passed: interactionEval.judgeOverallScore >= 3,
-            overallScore: interactionEval.judgeOverallScore,
-            overall_score: interactionEval.judgeOverallScore,
-            inputTokens: interactionEval.learnerTokens || 0,
-            outputTokens: interactionEval.tutorTokens || 0,
-            latencyMs: interactionEval.latencyMs || 0,
-            latency_ms: interactionEval.latencyMs || 0,
-            isInteraction: true,
-            interactionEvalId: interactionEval.evalId,
-            dialogueId: interactionEval.evalId,
-            judgeEvaluation: interactionEval.judgeEvaluation,
-          }],
+          results: [
+            {
+              scenarioId: interactionEval.scenarioId,
+              scenarioName: interactionEval.scenarioName,
+              profileName: interactionEval.tutorProfile || 'default',
+              tutorProfile: interactionEval.tutorProfile || 'default',
+              model: `${interactionEval.turnCount} turns`,
+              passed: interactionEval.judgeOverallScore >= 3,
+              overallScore: interactionEval.judgeOverallScore,
+              overall_score: interactionEval.judgeOverallScore,
+              inputTokens: interactionEval.learnerTokens || 0,
+              outputTokens: interactionEval.tutorTokens || 0,
+              latencyMs: interactionEval.latencyMs || 0,
+              latency_ms: interactionEval.latencyMs || 0,
+              isInteraction: true,
+              interactionEvalId: interactionEval.evalId,
+              dialogueId: interactionEval.evalId,
+              judgeEvaluation: interactionEval.judgeEvaluation,
+            },
+          ],
           interaction: {
             evalId: interactionEval.evalId,
             scenarioName: interactionEval.scenarioName,
@@ -1588,11 +1609,7 @@ router.get('/runs/:runId', (req, res) => {
     }
 
     // Extract scenario names from results for display
-    const scenarioNames = [...new Set(
-      (result.results || [])
-        .map((r) => r.scenarioName)
-        .filter(Boolean)
-    )].sort();
+    const scenarioNames = [...new Set((result.results || []).map((r) => r.scenarioName).filter(Boolean))].sort();
 
     // Include key run properties at top level for easier frontend access
     res.json({
@@ -1724,7 +1741,7 @@ router.get('/logs/dialogue/:dialogueId', (req, res) => {
         }
 
         // Calculate summary stats
-        const learnerTurns = (interactionEval.turns || []).filter(t => t.phase === 'learner').length;
+        const learnerTurns = (interactionEval.turns || []).filter((t) => t.phase === 'learner').length;
 
         return res.json({
           success: true,
@@ -1819,9 +1836,10 @@ router.get('/prompts', (req, res) => {
       return res.json({ success: true, prompts: [] });
     }
 
-    const files = fs.readdirSync(PROMPTS_DIR)
-      .filter(f => f.endsWith('.md'))
-      .map(f => {
+    const files = fs
+      .readdirSync(PROMPTS_DIR)
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => {
         const filePath = path.join(PROMPTS_DIR, f);
         const stats = fs.statSync(filePath);
         return {
@@ -1845,9 +1863,7 @@ router.get('/prompts', (req, res) => {
  */
 router.get('/prompts/:name', (req, res) => {
   try {
-    const filename = req.params.name.endsWith('.md')
-      ? req.params.name
-      : `${req.params.name}.md`;
+    const filename = req.params.name.endsWith('.md') ? req.params.name : `${req.params.name}.md`;
     const filePath = path.join(PROMPTS_DIR, filename);
 
     if (!fs.existsSync(filePath)) {
@@ -1904,9 +1920,7 @@ router.post('/prompts/recommend', async (req, res) => {
     } else if (profile) {
       // Run fresh evaluations
       const allScenarios = evalConfigLoader.listScenarios();
-      const scenariosToRun = scenarios === 'all'
-        ? allScenarios
-        : allScenarios.filter(s => scenarios.includes(s.id));
+      const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
 
       for (const scenario of scenariosToRun) {
         try {
@@ -1985,20 +1999,14 @@ router.get('/stream/run', async (req, res) => {
   });
 
   try {
-    const profiles = req.query.profiles
-      ? req.query.profiles.split(',')
-      : ['budget'];
-    const scenarios = req.query.scenarios === 'all' || !req.query.scenarios
-      ? 'all'
-      : req.query.scenarios.split(',');
+    const profiles = req.query.profiles ? req.query.profiles.split(',') : ['budget'];
+    const scenarios = req.query.scenarios === 'all' || !req.query.scenarios ? 'all' : req.query.scenarios.split(',');
     const skipRubric = req.query.skipRubric === 'true';
     const outputSize = req.query.outputSize || 'normal';
 
     // Get all scenarios to run
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenariosToRun = scenarios === 'all'
-      ? allScenarios
-      : allScenarios.filter(s => scenarios.includes(s.id));
+    const scenariosToRun = scenarios === 'all' ? allScenarios : allScenarios.filter((s) => scenarios.includes(s.id));
 
     const totalTests = profiles.length * scenariosToRun.length;
     let completedTests = 0;
@@ -2012,7 +2020,10 @@ router.get('/stream/run', async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
-    sendEvent('log', { message: `Starting batch run: ${profiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`, level: 'info' });
+    sendEvent('log', {
+      message: `Starting batch run: ${profiles.length} profiles × ${scenariosToRun.length} scenarios = ${totalTests} tests`,
+      level: 'info',
+    });
     sendEvent('log', { message: `Fast mode (skip rubric): ${skipRubric}`, level: 'info' });
     sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
 
@@ -2054,7 +2065,10 @@ router.get('/stream/run', async (req, res) => {
 
           const scoreStr = result.overallScore != null ? result.overallScore.toFixed(1) : 'N/A';
           const status = result.success !== false ? '✓' : '✗';
-          sendEvent('log', { message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`, level: result.success !== false ? 'success' : 'warning' });
+          sendEvent('log', {
+            message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
+            level: result.success !== false ? 'success' : 'warning',
+          });
 
           sendEvent('result', {
             profile: profileName,
@@ -2079,14 +2093,15 @@ router.get('/stream/run', async (req, res) => {
     }
 
     // Calculate summary
-    const successCount = results.filter(r => r.success !== false).length;
-    const scores = results.filter(r => r.overallScore != null).map(r => r.overallScore);
-    const avgScore = scores.length > 0
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
-      : null;
+    const successCount = results.filter((r) => r.success !== false).length;
+    const scores = results.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+    const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
 
     sendEvent('log', { message: `\n=== Batch Complete ===`, level: 'success' });
-    sendEvent('log', { message: `Total: ${totalTests}, Passed: ${successCount}, Avg Score: ${avgScore?.toFixed(1) || 'N/A'}`, level: 'info' });
+    sendEvent('log', {
+      message: `Total: ${totalTests}, Passed: ${successCount}, Avg Score: ${avgScore?.toFixed(1) || 'N/A'}`,
+      level: 'info',
+    });
 
     sendEvent('complete', {
       totalTests,
@@ -2170,17 +2185,19 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
     const calcAverages = (results) => {
       const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
       const dimScores = {};
-      dims.forEach(d => { dimScores[d] = []; });
+      dims.forEach((d) => {
+        dimScores[d] = [];
+      });
 
       let totalScore = 0;
       let scoreCount = 0;
 
-      results.forEach(r => {
+      results.forEach((r) => {
         if (r.overall_score != null) {
           totalScore += r.overall_score;
           scoreCount++;
         }
-        dims.forEach(d => {
+        dims.forEach((d) => {
           const score = r[`score_${d}`];
           if (score != null) {
             dimScores[d].push(score);
@@ -2189,18 +2206,16 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
       });
 
       const dimAverages = {};
-      dims.forEach(d => {
+      dims.forEach((d) => {
         const scores = dimScores[d];
-        dimAverages[d] = scores.length > 0
-          ? scores.reduce((a, b) => a + b, 0) / scores.length
-          : null;
+        dimAverages[d] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
       });
 
       return {
         overallScore: scoreCount > 0 ? totalScore / scoreCount : null,
         dimensions: dimAverages,
         testCount: results.length,
-        successCount: results.filter(r => r.success).length,
+        successCount: results.filter((r) => r.success).length,
       };
     };
 
@@ -2209,13 +2224,12 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
 
     // Calculate deltas
     const deltas = {
-      overallScore: avg2.overallScore != null && avg1.overallScore != null
-        ? avg2.overallScore - avg1.overallScore
-        : null,
+      overallScore:
+        avg2.overallScore != null && avg1.overallScore != null ? avg2.overallScore - avg1.overallScore : null,
       dimensions: {},
     };
 
-    Object.keys(avg1.dimensions).forEach(dim => {
+    Object.keys(avg1.dimensions).forEach((dim) => {
       if (avg1.dimensions[dim] != null && avg2.dimensions[dim] != null) {
         deltas.dimensions[dim] = avg2.dimensions[dim] - avg1.dimensions[dim];
       } else {
@@ -2288,7 +2302,7 @@ router.get('/trends', (req, res) => {
 
         // Extract dimension scores
         const dimScores = {};
-        dims.forEach(d => {
+        dims.forEach((d) => {
           dimScores[d] = extractNumericScore(r.scores?.[d]);
         });
 
@@ -2345,16 +2359,15 @@ router.get('/docs', (req, res) => {
       return res.json({ success: true, docs: [] });
     }
 
-    const files = fs.readdirSync(EVAL_DOCS_DIR)
-      .filter(f => f.endsWith('.md'))
-      .map(f => {
+    const files = fs
+      .readdirSync(EVAL_DOCS_DIR)
+      .filter((f) => f.endsWith('.md'))
+      .map((f) => {
         const filePath = path.join(EVAL_DOCS_DIR, f);
         const stats = fs.statSync(filePath);
         // Extract a friendly title from filename
         const name = f.replace('.md', '');
-        const title = name
-          .replace(/-/g, ' ')
-          .replace(/\b\w/g, l => l.toUpperCase());
+        const title = name.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
         return {
           name,
           filename: f,
@@ -2390,9 +2403,7 @@ router.get('/docs/:name', (req, res) => {
       docsDir = RESEARCH_DOCS_DIR;
     }
 
-    const filename = docName.endsWith('.md')
-      ? docName
-      : `${docName}.md`;
+    const filename = docName.endsWith('.md') ? docName : `${docName}.md`;
     const filePath = path.join(docsDir, filename);
 
     if (!fs.existsSync(filePath)) {
@@ -2404,9 +2415,7 @@ router.get('/docs/:name', (req, res) => {
 
     // Extract title from first heading or filename
     const titleMatch = content.match(/^#\s+(.+)$/m);
-    const title = titleMatch
-      ? titleMatch[1]
-      : docName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const title = titleMatch ? titleMatch[1] : docName.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
     res.json({
       success: true,
@@ -2565,9 +2574,8 @@ router.get('/runs/:runId/resume-status', (req, res) => {
 
     // Get scenarios
     const allScenarios = evalConfigLoader.listScenarios();
-    const scenarios = scenariosParam === 'all'
-      ? allScenarios
-      : allScenarios.filter(s => scenariosParam.includes(s.id));
+    const scenarios =
+      scenariosParam === 'all' ? allScenarios : allScenarios.filter((s) => scenariosParam.includes(s.id));
 
     // Get incomplete tests
     const status = evaluationStore.getIncompleteTests(runId, profiles, scenarios);
@@ -2721,20 +2729,20 @@ router.get('/stream/recognition-ab', async (req, res) => {
 
     // Validate profiles exist
     const allProfiles = tutorConfigLoader.listProfiles();
-    const validProfiles = profiles.filter(p => allProfiles.some(ap => ap.name === p));
+    const validProfiles = profiles.filter((p) => allProfiles.some((ap) => ap.name === p));
 
     if (validProfiles.length !== 2) {
       sendEvent('error', {
         error: 'Recognition A/B requires both baseline and recognition profiles',
         found: validProfiles,
-        available: allProfiles.map(p => p.name),
+        available: allProfiles.map((p) => p.name),
       });
       return res.end();
     }
 
     // Get only recognition_test scenarios
     const allScenarios = evalConfigLoader.listScenarios();
-    const recognitionScenarios = allScenarios.filter(s => s.recognition_test === true);
+    const recognitionScenarios = allScenarios.filter((s) => s.recognition_test === true);
 
     if (recognitionScenarios.length === 0) {
       sendEvent('error', { error: 'No recognition_test scenarios found in config' });
@@ -2747,7 +2755,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
     sendEvent('start', {
       profiles: validProfiles,
       scenarioCount: recognitionScenarios.length,
-      scenarioIds: recognitionScenarios.map(s => s.id),
+      scenarioIds: recognitionScenarios.map((s) => s.id),
       totalTests,
       skipRubric,
       outputSize,
@@ -2768,8 +2776,8 @@ router.get('/stream/recognition-ab', async (req, res) => {
       metadata: {
         runType: 'recognition-ab',
         profiles: validProfiles,
-        scenarios: recognitionScenarios.map(s => s.id),
-        scenarioNames: recognitionScenarios.map(s => s.name),
+        scenarios: recognitionScenarios.map((s) => s.id),
+        scenarioNames: recognitionScenarios.map((s) => s.name),
         skipRubric,
         testLearnerId,
       },
@@ -2866,9 +2874,12 @@ router.get('/stream/recognition-ab', async (req, res) => {
                 // Aggregate synthesis strategies from pad stats
                 const stats = pad.statistics || {};
                 if (stats.synthesisStrategies) {
-                  recognitionMetrics.synthesisStrategies.ghost_dominates += stats.synthesisStrategies.ghost_dominates || 0;
-                  recognitionMetrics.synthesisStrategies.learner_dominates += stats.synthesisStrategies.learner_dominates || 0;
-                  recognitionMetrics.synthesisStrategies.dialectical_synthesis += stats.synthesisStrategies.dialectical_synthesis || 0;
+                  recognitionMetrics.synthesisStrategies.ghost_dominates +=
+                    stats.synthesisStrategies.ghost_dominates || 0;
+                  recognitionMetrics.synthesisStrategies.learner_dominates +=
+                    stats.synthesisStrategies.learner_dominates || 0;
+                  recognitionMetrics.synthesisStrategies.dialectical_synthesis +=
+                    stats.synthesisStrategies.dialectical_synthesis || 0;
                 }
               }
             } catch (e) {
@@ -2893,7 +2904,6 @@ router.get('/stream/recognition-ab', async (req, res) => {
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
           });
-
         } catch (e) {
           sendEvent('log', { message: `  ✗ Error: ${e.message}`, level: 'error' });
 
@@ -2929,9 +2939,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
     for (const profile of validProfiles) {
       for (const dim of dimensions) {
         const scores = dimensionScores[profile]?.[dim] || [];
-        dimensionAverages[profile][dim] = scores.length > 0
-          ? scores.reduce((a, b) => a + b, 0) / scores.length
-          : null;
+        dimensionAverages[profile][dim] = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
       }
     }
 
@@ -2975,15 +2983,13 @@ router.get('/stream/recognition-ab', async (req, res) => {
     const baselineResults = results.baseline || [];
     const recognitionResults = results.recognition || [];
 
-    const baselineScores = baselineResults.filter(r => r.overallScore != null).map(r => r.overallScore);
-    const recognitionScores = recognitionResults.filter(r => r.overallScore != null).map(r => r.overallScore);
+    const baselineScores = baselineResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+    const recognitionScores = recognitionResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
 
-    const baselineAvgScore = baselineScores.length > 0
-      ? baselineScores.reduce((a, b) => a + b, 0) / baselineScores.length
-      : null;
-    const recognitionAvgScore = recognitionScores.length > 0
-      ? recognitionScores.reduce((a, b) => a + b, 0) / recognitionScores.length
-      : null;
+    const baselineAvgScore =
+      baselineScores.length > 0 ? baselineScores.reduce((a, b) => a + b, 0) / baselineScores.length : null;
+    const recognitionAvgScore =
+      recognitionScores.length > 0 ? recognitionScores.reduce((a, b) => a + b, 0) / recognitionScores.length : null;
 
     let overallWinner = null;
     let overallDelta = null;
@@ -3003,9 +3009,10 @@ router.get('/stream/recognition-ab', async (req, res) => {
     }
 
     // Calculate average dialectical depth
-    const avgDialecticalDepth = recognitionMetrics.dialecticalDepth.length > 0
-      ? recognitionMetrics.dialecticalDepth.reduce((a, b) => a + b, 0) / recognitionMetrics.dialecticalDepth.length
-      : 0;
+    const avgDialecticalDepth =
+      recognitionMetrics.dialecticalDepth.length > 0
+        ? recognitionMetrics.dialecticalDepth.reduce((a, b) => a + b, 0) / recognitionMetrics.dialecticalDepth.length
+        : 0;
 
     sendEvent('log', { message: `\n=== Recognition A/B Complete ===`, level: 'success' });
     sendEvent('log', { message: `Total tests: ${completedTests}`, level: 'info' });
@@ -3014,7 +3021,10 @@ router.get('/stream/recognition-ab', async (req, res) => {
       level: 'info',
     });
     if (overallWinner) {
-      sendEvent('log', { message: `Winner: ${overallWinner.toUpperCase()} (${overallSignificance})`, level: 'success' });
+      sendEvent('log', {
+        message: `Winner: ${overallWinner.toUpperCase()} (${overallSignificance})`,
+        level: 'success',
+      });
     }
 
     // Send final complete event with full results

@@ -57,12 +57,8 @@ describe('loadLearnerRubric', () => {
 
   it('weights sum to 1.0', () => {
     const rubric = loadLearnerRubric({ forceReload: true });
-    const totalWeight = Object.values(rubric.dimensions)
-      .reduce((sum, dim) => sum + dim.weight, 0);
-    assert.ok(
-      Math.abs(totalWeight - 1.0) < 0.001,
-      `weights should sum to 1.0, got ${totalWeight}`
-    );
+    const totalWeight = Object.values(rubric.dimensions).reduce((sum, dim) => sum + dim.weight, 0);
+    assert.ok(Math.abs(totalWeight - 1.0) < 0.001, `weights should sum to 1.0, got ${totalWeight}`);
   });
 });
 
@@ -107,10 +103,7 @@ describe('calculateLearnerOverallScore', () => {
   // Rubric weights are 0.20, 0.20, 0.20, 0.15, 0.15, 0.10 — these don't sum
   // to exactly 1.0 in IEEE 754, so use approximate comparison for score results.
   const approxEqual = (actual, expected, msg) => {
-    assert.ok(
-      Math.abs(actual - expected) < 0.01,
-      `${msg || 'approxEqual'}: expected ~${expected}, got ${actual}`
-    );
+    assert.ok(Math.abs(actual - expected) < 0.01, `${msg || 'approxEqual'}: expected ~${expected}, got ${actual}`);
   };
 
   it('returns ~100 when all scores are 5 (multi-agent)', () => {
@@ -211,12 +204,12 @@ describe('calculateLearnerOverallScore', () => {
   it('correctly applies weights for mixed scores', () => {
     // Multi-agent: weights are 0.20, 0.20, 0.20, 0.15, 0.15, 0.10
     const scores = {
-      learner_authenticity: { score: 5, reasoning: '' },    // 0.20
-      question_quality: { score: 5, reasoning: '' },         // 0.20
-      conceptual_engagement: { score: 5, reasoning: '' },    // 0.20
-      revision_signals: { score: 1, reasoning: '' },         // 0.15
-      deliberation_depth: { score: 1, reasoning: '' },       // 0.15
-      persona_consistency: { score: 1, reasoning: '' },      // 0.10
+      learner_authenticity: { score: 5, reasoning: '' }, // 0.20
+      question_quality: { score: 5, reasoning: '' }, // 0.20
+      conceptual_engagement: { score: 5, reasoning: '' }, // 0.20
+      revision_signals: { score: 1, reasoning: '' }, // 0.15
+      deliberation_depth: { score: 1, reasoning: '' }, // 0.15
+      persona_consistency: { score: 1, reasoning: '' }, // 0.10
     };
     // weighted avg = (5*0.20 + 5*0.20 + 5*0.20 + 1*0.15 + 1*0.15 + 1*0.10) / 1.0
     //             = 3.4
@@ -335,9 +328,7 @@ describe('buildLearnerEvaluationPrompt', () => {
   });
 
   it('handles missing externalMessage gracefully', () => {
-    const turns = [
-      { turnNumber: 0, phase: 'learner', externalMessage: null },
-    ];
+    const turns = [{ turnNumber: 0, phase: 'learner', externalMessage: null }];
 
     const prompt = buildLearnerEvaluationPrompt({
       turns,

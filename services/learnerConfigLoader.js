@@ -103,22 +103,24 @@ function getDefaultPrompt(filename) {
   const role = filename.replace('learner-', '').replace('.md', '');
 
   const defaults = {
-    'unified': `You are simulating a learner's internal experience. Respond authentically to the tutor's message, showing genuine reactions including confusion, insight, frustration, or understanding.`,
-    'ego': `You represent the EGO dimension of the learner. Draft an authentic learner response based on the conversation so far — express what the learner would naturally say, including confusion, partial understanding, questions, and emotional reactions.`,
-    'superego': `You represent the SUPEREGO dimension of the learner. Critique the ego's draft response: Is it realistic for this learner's level? Does it engage meaningfully with the tutor's message? Should the learner push back, ask for clarification, or show more/less understanding?`,
-    'desire': `You represent the DESIRE dimension of a learner. Express immediate wants, frustrations, and emotional reactions.`,
-    'intellect': `You represent the INTELLECT dimension of a learner. Process information rationally, identify what makes sense and what doesn't.`,
-    'aspiration': `You represent the ASPIRATION dimension of a learner. Express goals, standards, and desire for mastery.`,
-    'thesis': `You represent the learner's CURRENT UNDERSTANDING. State what you currently believe or understand about the topic.`,
-    'antithesis': `You represent the learner's DOUBT. Challenge the current understanding, raise questions and objections.`,
+    unified: `You are simulating a learner's internal experience. Respond authentically to the tutor's message, showing genuine reactions including confusion, insight, frustration, or understanding.`,
+    ego: `You represent the EGO dimension of the learner. Draft an authentic learner response based on the conversation so far — express what the learner would naturally say, including confusion, partial understanding, questions, and emotional reactions.`,
+    superego: `You represent the SUPEREGO dimension of the learner. Critique the ego's draft response: Is it realistic for this learner's level? Does it engage meaningfully with the tutor's message? Should the learner push back, ask for clarification, or show more/less understanding?`,
+    desire: `You represent the DESIRE dimension of a learner. Express immediate wants, frustrations, and emotional reactions.`,
+    intellect: `You represent the INTELLECT dimension of a learner. Process information rationally, identify what makes sense and what doesn't.`,
+    aspiration: `You represent the ASPIRATION dimension of a learner. Express goals, standards, and desire for mastery.`,
+    thesis: `You represent the learner's CURRENT UNDERSTANDING. State what you currently believe or understand about the topic.`,
+    antithesis: `You represent the learner's DOUBT. Challenge the current understanding, raise questions and objections.`,
     'synthesis-dialectical': `You represent the learner's EMERGING UNDERSTANDING. Integrate the thesis and antithesis into a new perspective.`,
-    'synthesis': `Synthesize the internal voices into a coherent external response that the learner would actually say.`,
-    'novice': `You are the NOVICE voice. Express confusion, basic questions, and unfamiliarity with the material.`,
-    'practitioner': `You are the PRACTITIONER voice. Apply prior knowledge, make connections, show developing competence.`,
-    'expert': `You are the EXPERT voice. Show deep understanding, make sophisticated connections, identify nuance.`,
+    synthesis: `Synthesize the internal voices into a coherent external response that the learner would actually say.`,
+    novice: `You are the NOVICE voice. Express confusion, basic questions, and unfamiliarity with the material.`,
+    practitioner: `You are the PRACTITIONER voice. Apply prior knowledge, make connections, show developing competence.`,
+    expert: `You are the EXPERT voice. Show deep understanding, make sophisticated connections, identify nuance.`,
   };
 
-  return defaults[role] || `You are simulating part of a learner's internal experience. (Prompt file ${filename} not found)`;
+  return (
+    defaults[role] || `You are simulating part of a learner's internal experience. (Prompt file ${filename} not found)`
+  );
 }
 
 // ============================================================================
@@ -169,7 +171,7 @@ export function getProviderConfig(providerName) {
     // Fall back to tutor-core's resolver
     return coreConfigLoader.getProviderConfig(providerName);
   }
-  const apiKey = provider.api_key_env ? (process.env[provider.api_key_env] || '') : '';
+  const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
   const isLocal = providerName === 'local';
   const isConfigured = isLocal ? Boolean(provider.base_url) : Boolean(apiKey);
   return { ...provider, apiKey, isConfigured };
@@ -310,7 +312,7 @@ export function listProfiles() {
       description: profile.description || '',
       dialogueEnabled: profile.dialogue?.enabled ?? false,
       maxRounds: profile.dialogue?.max_rounds ?? 0,
-      agents: agents.map(role => ({
+      agents: agents.map((role) => ({
         role,
         provider: profile[role]?.provider,
         model: profile[role]?.model,
@@ -331,7 +333,7 @@ export function getProfileAgentRoles(profileName = null) {
   const reservedKeys = ['name', 'description', 'dialogue', 'synthesis'];
 
   // Get all keys that have a provider/model/prompt_file (indicating an agent config)
-  const agentRoles = Object.keys(profile).filter(key => {
+  const agentRoles = Object.keys(profile).filter((key) => {
     if (reservedKeys.includes(key)) return false;
     const val = profile[key];
     return val && typeof val === 'object' && (val.provider || val.model || val.prompt_file);
@@ -389,11 +391,13 @@ export function listArchitectures() {
  */
 export function getLoggingConfig() {
   const config = loadConfig();
-  return config.logging || {
-    log_deliberation: true,
-    log_path: 'logs/learner-agents',
-    include_internal_state: true,
-  };
+  return (
+    config.logging || {
+      log_deliberation: true,
+      log_path: 'logs/learner-agents',
+      include_internal_state: true,
+    }
+  );
 }
 
 /**
@@ -402,11 +406,13 @@ export function getLoggingConfig() {
  */
 export function getEvaluationConfig() {
   const config = loadConfig();
-  return config.evaluation || {
-    track_emotional_state: true,
-    track_understanding_level: true,
-    track_memory_changes: true,
-  };
+  return (
+    config.evaluation || {
+      track_emotional_state: true,
+      track_understanding_level: true,
+      track_memory_changes: true,
+    }
+  );
 }
 
 /**

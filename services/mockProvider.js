@@ -27,9 +27,7 @@ export function mockGenerateResult(resolvedConfig, turnMeta) {
   const profileName = resolvedConfig.profileName || 'budget';
   const isRecognition = profileName.includes('recognition') || profileName.includes('recog');
 
-  const title = isRecognition
-    ? 'Recognizing Your Learning Journey'
-    : 'Getting Started with the Material';
+  const title = isRecognition ? 'Recognizing Your Learning Journey' : 'Getting Started with the Material';
 
   const message = isRecognition
     ? `I notice you're approaching this topic with genuine curiosity, and I want to honor that. Let's explore ${turnMeta.scenarioName || 'this concept'} together by first acknowledging what you already understand. Your perspective matters here — when we recognize each other as autonomous thinkers, we create space for deeper understanding. What aspects of this topic feel most alive to you right now?`
@@ -83,8 +81,10 @@ export function mockGenerateResult(resolvedConfig, turnMeta) {
  */
 export function mockJudgeResult(config, seed = '') {
   const profileName = config.profileName || '';
-  const isRecognition = profileName.includes('recognition') || profileName.includes('recog')
-    || config.factors?.prompt_type === 'recognition';
+  const isRecognition =
+    profileName.includes('recognition') ||
+    profileName.includes('recog') ||
+    config.factors?.prompt_type === 'recognition';
 
   // Deterministic jitter based on profile + seed
   const jitter = seededRandom(profileName + seed) * 0.3; // ±0.3 on 1-5 scale

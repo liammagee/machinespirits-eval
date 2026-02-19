@@ -146,7 +146,7 @@ export function updateConsciousState(learnerId, sessionId, data) {
     data.learnerPerceivedState || null,
     data.immediateGoal || null,
     data.currentTopic || null,
-    data.scaffoldingLevel || null
+    data.scaffoldingLevel || null,
   );
 }
 
@@ -156,9 +156,13 @@ export function updateConsciousState(learnerId, sessionId, data) {
 export function getConsciousState(learnerId, sessionId) {
   if (!db) return null;
 
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM conscious_state WHERE learner_id = ? AND session_id = ?
-  `).get(learnerId, sessionId);
+  `,
+    )
+    .get(learnerId, sessionId);
 
   if (!row) return null;
 
@@ -182,9 +186,13 @@ export function getConsciousState(learnerId, sessionId) {
 export function recordStrategyUse(learnerId, strategyType, success, contextNotes = null) {
   if (!db) return null;
 
-  const existing = db.prepare(`
+  const existing = db
+    .prepare(
+      `
     SELECT * FROM strategy_effectiveness WHERE learner_id = ? AND strategy_type = ?
-  `).get(learnerId, strategyType);
+  `,
+    )
+    .get(learnerId, strategyType);
 
   if (existing) {
     const stmt = db.prepare(`
@@ -196,13 +204,7 @@ export function recordStrategyUse(learnerId, strategyType, success, contextNotes
           updated_at = CURRENT_TIMESTAMP
       WHERE learner_id = ? AND strategy_type = ?
     `);
-    return stmt.run(
-      success ? 1 : 0,
-      success ? 0 : 1,
-      contextNotes,
-      learnerId,
-      strategyType
-    );
+    return stmt.run(success ? 1 : 0, success ? 0 : 1, contextNotes, learnerId, strategyType);
   } else {
     const stmt = db.prepare(`
       INSERT INTO strategy_effectiveness (learner_id, strategy_type, success_count, failure_count, last_used, context_notes)
@@ -218,7 +220,9 @@ export function recordStrategyUse(learnerId, strategyType, success, contextNotes
 export function getStrategyEffectiveness(learnerId) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT *,
       CASE WHEN success_count + failure_count > 0
         THEN CAST(success_count AS REAL) / (success_count + failure_count)
@@ -227,9 +231,11 @@ export function getStrategyEffectiveness(learnerId) {
     FROM strategy_effectiveness
     WHERE learner_id = ?
     ORDER BY success_rate DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     strategyType: row.strategy_type,
     successCount: row.success_count,
     failureCount: row.failure_count,
@@ -246,7 +252,7 @@ export function getBestStrategy(learnerId, excludeTypes = []) {
   if (!db) return null;
 
   const strategies = getStrategyEffectiveness(learnerId);
-  return strategies.find(s => !excludeTypes.includes(s.strategyType) && s.successRate > 0.5);
+  return strategies.find((s) => !excludeTypes.includes(s.strategyType) && s.successRate > 0.5);
 }
 
 // ============================================================================
@@ -259,9 +265,13 @@ export function getBestStrategy(learnerId, excludeTypes = []) {
 export function recordTrigger(learnerId, triggerType, description, example = null) {
   if (!db) return null;
 
-  const existing = db.prepare(`
+  const existing = db
+    .prepare(
+      `
     SELECT * FROM learner_triggers WHERE learner_id = ? AND trigger_type = ? AND trigger_description = ?
-  `).get(learnerId, triggerType, description);
+  `,
+    )
+    .get(learnerId, triggerType, description);
 
   if (existing) {
     let examples = existing.examples ? JSON.parse(existing.examples) : [];
@@ -282,12 +292,7 @@ export function recordTrigger(learnerId, triggerType, description, example = nul
       INSERT INTO learner_triggers (learner_id, trigger_type, trigger_description, examples)
       VALUES (?, ?, ?, ?)
     `);
-    return stmt.run(
-      learnerId,
-      triggerType,
-      description,
-      example ? JSON.stringify([example]) : null
-    );
+    return stmt.run(learnerId, triggerType, description, example ? JSON.stringify([example]) : null);
   }
 }
 
@@ -309,7 +314,7 @@ export function getTriggers(learnerId, triggerType = null) {
 
   const rows = db.prepare(query).all(...params);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     triggerType: row.trigger_type,
     description: row.trigger_description,
     confidence: row.confidence,
@@ -333,13 +338,7 @@ export function recordInsight(learnerId, insight, insightType, confidence = 0.5,
     VALUES (?, ?, ?, ?, ?)
   `);
 
-  return stmt.run(
-    learnerId,
-    insight,
-    insightType,
-    confidence,
-    JSON.stringify(evidence)
-  );
+  return stmt.run(learnerId, insight, insightType, confidence, JSON.stringify(evidence));
 }
 
 /**
@@ -348,13 +347,17 @@ export function recordInsight(learnerId, insight, insightType, confidence = 0.5,
 export function getInsights(learnerId, minConfidence = 0) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM pedagogical_insights
     WHERE learner_id = ? AND confidence >= ?
     ORDER BY confidence DESC
-  `).all(learnerId, minConfidence);
+  `,
+    )
+    .all(learnerId, minConfidence);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     insight: row.insight,
     insightType: row.insight_type,
@@ -374,9 +377,13 @@ export function getInsights(learnerId, minConfidence = 0) {
 export function updateRelationshipDynamics(learnerId, data) {
   if (!db) return null;
 
-  const existing = db.prepare(`
+  const existing = db
+    .prepare(
+      `
     SELECT * FROM relationship_dynamics WHERE learner_id = ?
-  `).get(learnerId);
+  `,
+    )
+    .get(learnerId);
 
   if (existing) {
     const stmt = db.prepare(`
@@ -397,7 +404,7 @@ export function updateRelationshipDynamics(learnerId, data) {
       data.transformationPotential ?? null,
       data.relationshipStage ?? null,
       data.notes ?? null,
-      learnerId
+      learnerId,
     );
   } else {
     const stmt = db.prepare(`
@@ -411,7 +418,7 @@ export function updateRelationshipDynamics(learnerId, data) {
       data.vulnerabilityShown ?? 0,
       data.transformationPotential ?? 'medium',
       data.relationshipStage ?? 'stranger',
-      data.notes ?? null
+      data.notes ?? null,
     );
   }
 }
@@ -422,9 +429,13 @@ export function updateRelationshipDynamics(learnerId, data) {
 export function getRelationshipDynamics(learnerId) {
   if (!db) return null;
 
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM relationship_dynamics WHERE learner_id = ?
-  `).get(learnerId);
+  `,
+    )
+    .get(learnerId);
 
   if (!row) return null;
 
@@ -460,7 +471,7 @@ export function recordIntervention(learnerId, sessionId, data) {
     data.interventionType,
     data.interventionDescription || null,
     data.learnerResponse || null,
-    data.context || null
+    data.context || null,
   );
 }
 
@@ -470,14 +481,18 @@ export function recordIntervention(learnerId, sessionId, data) {
 export function getRecentInterventions(learnerId, limit = 10) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM intervention_history
     WHERE learner_id = ?
     ORDER BY created_at DESC
     LIMIT ?
-  `).all(learnerId, limit);
+  `,
+    )
+    .all(learnerId, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     sessionId: row.session_id,
     interventionType: row.intervention_type,
@@ -506,13 +521,13 @@ export function getFullWritingPad(learnerId, sessionId = null) {
   return {
     conscious,
     preconscious: {
-      effectiveStrategies: strategies.filter(s => s.successRate > 0.6),
-      ineffectiveStrategies: strategies.filter(s => s.successRate < 0.4),
+      effectiveStrategies: strategies.filter((s) => s.successRate > 0.6),
+      ineffectiveStrategies: strategies.filter((s) => s.successRate < 0.4),
       triggers: {
-        frustration: triggers.filter(t => t.triggerType === 'frustration'),
-        engagement: triggers.filter(t => t.triggerType === 'engagement'),
-        breakthrough: triggers.filter(t => t.triggerType === 'breakthrough'),
-        shutdown: triggers.filter(t => t.triggerType === 'shutdown'),
+        frustration: triggers.filter((t) => t.triggerType === 'frustration'),
+        engagement: triggers.filter((t) => t.triggerType === 'engagement'),
+        breakthrough: triggers.filter((t) => t.triggerType === 'breakthrough'),
+        shutdown: triggers.filter((t) => t.triggerType === 'shutdown'),
       },
     },
     unconscious: {
@@ -549,12 +564,16 @@ export function createSnapshot(learnerId, evalRunId = null) {
 export function getSnapshots(learnerId, limit = 10) {
   if (!db) return [];
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM tutor_snapshots WHERE learner_id = ?
     ORDER BY created_at DESC LIMIT ?
-  `).all(learnerId, limit);
+  `,
+    )
+    .all(learnerId, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     id: row.id,
     evalRunId: row.eval_run_id,
     snapshotData: JSON.parse(row.snapshot_data),
@@ -600,16 +619,16 @@ export function buildNarrativeSummary(learnerId, sessionId = null) {
   // Triggers
   const triggers = pad.preconscious.triggers;
   if (triggers.frustration.length > 0) {
-    const desc = triggers.frustration.map(t => t.description).join('; ');
+    const desc = triggers.frustration.map((t) => t.description).join('; ');
     parts.push(`\nFrustration triggers: ${desc}`);
   }
   if (triggers.engagement.length > 0) {
-    const desc = triggers.engagement.map(t => t.description).join('; ');
+    const desc = triggers.engagement.map((t) => t.description).join('; ');
     parts.push(`Engagement triggers: ${desc}`);
   }
 
   // Insights
-  const highConfidenceInsights = pad.unconscious.insights.filter(i => i.confidence > 0.7);
+  const highConfidenceInsights = pad.unconscious.insights.filter((i) => i.confidence > 0.7);
   if (highConfidenceInsights.length > 0) {
     parts.push(`\nKey insights about this learner:`);
     for (const i of highConfidenceInsights.slice(0, 3)) {

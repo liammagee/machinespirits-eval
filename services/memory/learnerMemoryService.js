@@ -24,9 +24,16 @@ const db = getDb();
 // ============================================================================
 
 const LEARNER_MEMORY_TABLES = [
-  'learner_memory', 'concept_states', 'episodes', 'tutor_session_summaries',
-  'threads', 'personal_definitions', 'connections', 'learner_preferences',
-  'learning_milestones', 'agent_cost_log'
+  'learner_memory',
+  'concept_states',
+  'episodes',
+  'tutor_session_summaries',
+  'threads',
+  'personal_definitions',
+  'connections',
+  'learner_preferences',
+  'learning_milestones',
+  'agent_cost_log',
 ];
 
 const createSchemaSQL = `
@@ -241,7 +248,9 @@ try {
     for (const table of LEARNER_MEMORY_TABLES) {
       try {
         db.exec(`DROP TABLE IF EXISTS ${table}`);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     db.exec(createSchemaSQL);
     console.log('[LearnerMemory] Tables recreated successfully');
@@ -279,17 +288,21 @@ export const getOrCreateLearnerMemory = (learnerId) => {
 
   if (!memory) {
     const id = generateId();
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO learner_memory (id, learner_id)
       VALUES (?, ?)
-    `).run(id, learnerId);
+    `,
+    ).run(id, learnerId);
     memory = db.prepare('SELECT * FROM learner_memory WHERE id = ?').get(id);
 
     // Also create default preferences
-    db.prepare(`
+    db.prepare(
+      `
       INSERT OR IGNORE INTO learner_preferences (learner_id)
       VALUES (?)
-    `).run(learnerId);
+    `,
+    ).run(learnerId);
   }
 
   return memory;
@@ -299,11 +312,13 @@ export const getOrCreateLearnerMemory = (learnerId) => {
  * Update last session timestamp
  */
 export const updateLastSession = (learnerId, sessionId) => {
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE learner_memory
     SET last_session = ?
     WHERE learner_id = ?
-  `).run(sessionId, learnerId);
+  `,
+  ).run(sessionId, learnerId);
 };
 
 // ============================================================================
@@ -314,10 +329,14 @@ export const updateLastSession = (learnerId, sessionId) => {
  * Get concept state for a learner
  */
 export const getConceptState = (learnerId, conceptId) => {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM concept_states
     WHERE learner_id = ? AND concept_id = ?
-  `).get(learnerId, conceptId);
+  `,
+    )
+    .get(learnerId, conceptId);
 
   if (!row) return null;
 
@@ -333,13 +352,17 @@ export const getConceptState = (learnerId, conceptId) => {
  * Get all concept states for a learner
  */
 export const getAllConceptStates = (learnerId) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM concept_states
     WHERE learner_id = ?
     ORDER BY last_engaged DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     sources: parseJSON(row.sources),
     struggles: parseJSON(row.struggles),
@@ -352,7 +375,9 @@ export const getAllConceptStates = (learnerId) => {
  */
 export const getConceptsDueForReview = (learnerId, limit = 5) => {
   // Simple algorithm: concepts not engaged recently with decay factor
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT *,
       julianday('now') - julianday(last_engaged) AS days_since,
       (julianday('now') - julianday(last_engaged)) * decay_rate AS review_urgency
@@ -362,9 +387,11 @@ export const getConceptsDueForReview = (learnerId, limit = 5) => {
       AND last_engaged IS NOT NULL
     ORDER BY review_urgency DESC
     LIMIT ?
-  `).all(learnerId, limit);
+  `,
+    )
+    .all(learnerId, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     sources: parseJSON(row.sources),
     struggles: parseJSON(row.struggles),
@@ -395,11 +422,26 @@ export const upsertConceptState = (learnerIdOrData, conceptIdArg, dataArg) => {
     const updates = [];
     const params = [];
 
-    if (data.label !== undefined) { updates.push('label = ?'); params.push(data.label); }
-    if (data.level !== undefined) { updates.push('level = ?'); params.push(data.level); }
-    if (data.confidence !== undefined) { updates.push('confidence = ?'); params.push(data.confidence); }
-    if (data.calibration !== undefined) { updates.push('calibration = ?'); params.push(data.calibration); }
-    if (data.decayRate !== undefined) { updates.push('decay_rate = ?'); params.push(data.decayRate); }
+    if (data.label !== undefined) {
+      updates.push('label = ?');
+      params.push(data.label);
+    }
+    if (data.level !== undefined) {
+      updates.push('level = ?');
+      params.push(data.level);
+    }
+    if (data.confidence !== undefined) {
+      updates.push('confidence = ?');
+      params.push(data.confidence);
+    }
+    if (data.calibration !== undefined) {
+      updates.push('calibration = ?');
+      params.push(data.calibration);
+    }
+    if (data.decayRate !== undefined) {
+      updates.push('decay_rate = ?');
+      params.push(data.decayRate);
+    }
 
     // Always update engagement
     updates.push('last_engaged = datetime("now")');
@@ -431,23 +473,27 @@ export const upsertConceptState = (learnerIdOrData, conceptIdArg, dataArg) => {
 
     params.push(learnerId, conceptId);
 
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE concept_states
       SET ${updates.join(', ')}
       WHERE learner_id = ? AND concept_id = ?
-    `).run(...params);
+    `,
+    ).run(...params);
 
     return getConceptState(learnerId, conceptId);
   } else {
     // Create new
     const id = generateId();
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO concept_states (
         id, learner_id, concept_id, label, level, confidence,
         last_engaged, sources, struggles, breakthroughs
       )
       VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?, ?, ?)
-    `).run(
+    `,
+    ).run(
       id,
       learnerId,
       conceptId,
@@ -456,7 +502,7 @@ export const upsertConceptState = (learnerIdOrData, conceptIdArg, dataArg) => {
       data.confidence || 0.5,
       stringifyJSON(data.addSource ? [data.addSource] : []),
       stringifyJSON(data.addStruggle ? [{ ...data.addStruggle, timestamp: new Date().toISOString() }] : []),
-      stringifyJSON(data.addBreakthrough ? [{ ...data.addBreakthrough, timestamp: new Date().toISOString() }] : [])
+      stringifyJSON(data.addBreakthrough ? [{ ...data.addBreakthrough, timestamp: new Date().toISOString() }] : []),
     );
 
     return getConceptState(learnerId, conceptId);
@@ -472,13 +518,15 @@ export const upsertConceptState = (learnerIdOrData, conceptIdArg, dataArg) => {
  */
 export const createEpisode = (data) => {
   const id = generateId();
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO episodes (
       id, learner_id, session_id, type, content, context,
       concepts, importance, agent_notes
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+  `,
+  ).run(
     id,
     data.learnerId,
     data.sessionId,
@@ -487,7 +535,7 @@ export const createEpisode = (data) => {
     data.context || '',
     stringifyJSON(data.concepts || []),
     data.importance || 0.5,
-    stringifyJSON(data.agentNotes || [])
+    stringifyJSON(data.agentNotes || []),
   );
 
   return db.prepare('SELECT * FROM episodes WHERE id = ?').get(id);
@@ -497,14 +545,18 @@ export const createEpisode = (data) => {
  * Get recent episodes for a learner
  */
 export const getRecentEpisodes = (learnerId, limit = 20) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM episodes
     WHERE learner_id = ?
     ORDER BY timestamp DESC
     LIMIT ?
-  `).all(learnerId, limit);
+  `,
+    )
+    .all(learnerId, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     concepts: parseJSON(row.concepts),
     agentNotes: parseJSON(row.agent_notes),
@@ -515,14 +567,18 @@ export const getRecentEpisodes = (learnerId, limit = 20) => {
  * Get episodes by type
  */
 export const getEpisodesByType = (learnerId, type, limit = 10) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM episodes
     WHERE learner_id = ? AND type = ?
     ORDER BY timestamp DESC
     LIMIT ?
-  `).all(learnerId, type, limit);
+  `,
+    )
+    .all(learnerId, type, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     concepts: parseJSON(row.concepts),
     agentNotes: parseJSON(row.agent_notes),
@@ -533,14 +589,18 @@ export const getEpisodesByType = (learnerId, type, limit = 10) => {
  * Get important episodes (for context injection)
  */
 export const getImportantEpisodes = (learnerId, minImportance = 0.7, limit = 10) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM episodes
     WHERE learner_id = ? AND importance >= ?
     ORDER BY importance DESC, timestamp DESC
     LIMIT ?
-  `).all(learnerId, minImportance, limit);
+  `,
+    )
+    .all(learnerId, minImportance, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     concepts: parseJSON(row.concepts),
     agentNotes: parseJSON(row.agent_notes),
@@ -551,23 +611,27 @@ export const getImportantEpisodes = (learnerId, minImportance = 0.7, limit = 10)
  * Increment retrieval count (when episode is surfaced in context)
  */
 export const incrementEpisodeRetrieval = (episodeId) => {
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE episodes
     SET retrieval_count = retrieval_count + 1
     WHERE id = ?
-  `).run(episodeId);
+  `,
+  ).run(episodeId);
 };
 
 /**
  * Decay episode importance over time
  */
 export const decayEpisodeImportance = (olderThanDays = 30, decayFactor = 0.9) => {
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE episodes
     SET importance = importance * ?
     WHERE timestamp < datetime('now', '-' || ? || ' days')
       AND importance > 0.1
-  `).run(decayFactor, olderThanDays);
+  `,
+  ).run(decayFactor, olderThanDays);
 };
 
 // ============================================================================
@@ -579,7 +643,8 @@ export const decayEpisodeImportance = (olderThanDays = 30, decayFactor = 0.9) =>
  */
 export const createSessionSummary = (data) => {
   const id = generateId();
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO tutor_session_summaries (
       id, learner_id, session_id, duration, topics, concepts_touched,
       key_insights, unresolved_questions, scaffolding_level_avg,
@@ -587,7 +652,8 @@ export const createSessionSummary = (data) => {
       agent_calls, narrative_summary
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+  `,
+  ).run(
     id,
     data.learnerId,
     data.sessionId,
@@ -602,7 +668,7 @@ export const createSessionSummary = (data) => {
     data.messageCount || 0,
     data.tokensUsed || 0,
     stringifyJSON(data.agentCalls || []),
-    data.narrativeSummary || ''
+    data.narrativeSummary || '',
   );
 
   return getSessionSummary(data.sessionId);
@@ -612,10 +678,14 @@ export const createSessionSummary = (data) => {
  * Get session summary
  */
 export const getSessionSummary = (sessionId) => {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM tutor_session_summaries
     WHERE session_id = ?
-  `).get(sessionId);
+  `,
+    )
+    .get(sessionId);
 
   if (!row) return null;
 
@@ -633,14 +703,18 @@ export const getSessionSummary = (sessionId) => {
  * Get recent session summaries
  */
 export const getRecentSessionSummaries = (learnerId, limit = 5) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM tutor_session_summaries
     WHERE learner_id = ?
     ORDER BY timestamp DESC
     LIMIT ?
-  `).all(learnerId, limit);
+  `,
+    )
+    .all(learnerId, limit);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     topics: parseJSON(row.topics),
     conceptsTouched: parseJSON(row.concepts_touched),
@@ -659,13 +733,15 @@ export const getRecentSessionSummaries = (learnerId, limit = 5) => {
  */
 export const createThread = (data) => {
   const id = generateId();
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO threads (
       id, learner_id, topic, question, origin_session,
       related_concepts, student_interest, pedagogical_importance
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+  `,
+  ).run(
     id,
     data.learnerId,
     data.topic,
@@ -673,7 +749,7 @@ export const createThread = (data) => {
     data.originSession,
     stringifyJSON(data.relatedConcepts || []),
     data.studentInterest || 0.5,
-    data.pedagogicalImportance || 0.5
+    data.pedagogicalImportance || 0.5,
   );
 
   return getThread(id);
@@ -698,13 +774,17 @@ export const getThread = (threadId) => {
  * Get active threads for a learner
  */
 export const getActiveThreads = (learnerId) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM threads
     WHERE learner_id = ? AND status = 'active'
     ORDER BY last_touched DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     mentions: parseJSON(row.mentions),
     partialAnswers: parseJSON(row.partial_answers),
@@ -722,9 +802,18 @@ export const updateThread = (threadId, data) => {
   const updates = [];
   const params = [];
 
-  if (data.status !== undefined) { updates.push('status = ?'); params.push(data.status); }
-  if (data.studentInterest !== undefined) { updates.push('student_interest = ?'); params.push(data.studentInterest); }
-  if (data.pedagogicalImportance !== undefined) { updates.push('pedagogical_importance = ?'); params.push(data.pedagogicalImportance); }
+  if (data.status !== undefined) {
+    updates.push('status = ?');
+    params.push(data.status);
+  }
+  if (data.studentInterest !== undefined) {
+    updates.push('student_interest = ?');
+    params.push(data.studentInterest);
+  }
+  if (data.pedagogicalImportance !== undefined) {
+    updates.push('pedagogical_importance = ?');
+    params.push(data.pedagogicalImportance);
+  }
 
   if (data.addMention) {
     const mentions = [...existing.mentions, data.addMention];
@@ -742,11 +831,13 @@ export const updateThread = (threadId, data) => {
   updates.push('updated_at = datetime("now")');
   params.push(threadId);
 
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE threads
     SET ${updates.join(', ')}
     WHERE id = ?
-  `).run(...params);
+  `,
+  ).run(...params);
 
   return getThread(threadId);
 };
@@ -759,10 +850,14 @@ export const updateThread = (threadId, data) => {
  * Get or create personal definition
  */
 export const upsertPersonalDefinition = (learnerId, term, definition, confidence = 0.5) => {
-  const existing = db.prepare(`
+  const existing = db
+    .prepare(
+      `
     SELECT * FROM personal_definitions
     WHERE learner_id = ? AND term = ?
-  `).get(learnerId, term);
+  `,
+    )
+    .get(learnerId, term);
 
   if (existing) {
     // Track evolution
@@ -772,36 +867,48 @@ export const upsertPersonalDefinition = (learnerId, term, definition, confidence
       definition: existing.definition,
     });
 
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE personal_definitions
       SET definition = ?, confidence = ?, evolution = ?, updated_at = datetime('now')
       WHERE learner_id = ? AND term = ?
-    `).run(definition, confidence, stringifyJSON(evolution), learnerId, term);
+    `,
+    ).run(definition, confidence, stringifyJSON(evolution), learnerId, term);
   } else {
     const id = generateId();
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO personal_definitions (id, learner_id, term, definition, confidence)
       VALUES (?, ?, ?, ?, ?)
-    `).run(id, learnerId, term, definition, confidence);
+    `,
+    ).run(id, learnerId, term, definition, confidence);
   }
 
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT * FROM personal_definitions
     WHERE learner_id = ? AND term = ?
-  `).get(learnerId, term);
+  `,
+    )
+    .get(learnerId, term);
 };
 
 /**
  * Get all personal definitions
  */
 export const getPersonalDefinitions = (learnerId) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT * FROM personal_definitions
     WHERE learner_id = ?
     ORDER BY updated_at DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     ...row,
     evolution: parseJSON(row.evolution),
   }));
@@ -817,28 +924,34 @@ export const getPersonalDefinitions = (learnerId) => {
 export const createConnection = (data) => {
   const id = generateId();
   try {
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO connections (
         id, learner_id, concept_a, concept_b, relationship, source, strength
       )
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(
+    `,
+    ).run(
       id,
       data.learnerId,
       data.conceptA,
       data.conceptB,
       data.relationship,
       data.source || 'student',
-      data.strength || 0.5
+      data.strength || 0.5,
     );
 
     return db.prepare('SELECT * FROM connections WHERE id = ?').get(id);
   } catch (e) {
     // Unique constraint violation - connection already exists
-    return db.prepare(`
+    return db
+      .prepare(
+        `
       SELECT * FROM connections
       WHERE learner_id = ? AND concept_a = ? AND concept_b = ?
-    `).get(data.learnerId, data.conceptA, data.conceptB);
+    `,
+      )
+      .get(data.learnerId, data.conceptA, data.conceptB);
   }
 };
 
@@ -846,11 +959,15 @@ export const createConnection = (data) => {
  * Get connections for a learner
  */
 export const getConnections = (learnerId) => {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT * FROM connections
     WHERE learner_id = ?
     ORDER BY created_at DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 };
 
 // ============================================================================
@@ -861,10 +978,14 @@ export const getConnections = (learnerId) => {
  * Get learner preferences
  */
 export const getPreferences = (learnerId) => {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM learner_preferences
     WHERE learner_id = ?
-  `).get(learnerId);
+  `,
+    )
+    .get(learnerId);
 
   if (!row) return null;
 
@@ -889,10 +1010,12 @@ export const getPreferences = (learnerId) => {
  */
 export const updatePreferences = (learnerId, data) => {
   // Ensure record exists
-  db.prepare(`
+  db.prepare(
+    `
     INSERT OR IGNORE INTO learner_preferences (learner_id)
     VALUES (?)
-  `).run(learnerId);
+  `,
+  ).run(learnerId);
 
   const updates = [];
   const params = [];
@@ -942,11 +1065,13 @@ export const updatePreferences = (learnerId, data) => {
     updates.push('updated_at = datetime("now")');
     params.push(learnerId);
 
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE learner_preferences
       SET ${updates.join(', ')}
       WHERE learner_id = ?
-    `).run(...params);
+    `,
+    ).run(...params);
   }
 
   return getPreferences(learnerId);
@@ -961,19 +1086,21 @@ export const updatePreferences = (learnerId, data) => {
  */
 export const createMilestone = (data) => {
   const id = generateId();
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO learning_milestones (
       id, learner_id, type, title, description, concept_id, course_id
     )
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
+  `,
+  ).run(
     id,
     data.learnerId,
     data.type,
     data.title,
     data.description || '',
     data.conceptId || null,
-    data.courseId || null
+    data.courseId || null,
   );
 
   return db.prepare('SELECT * FROM learning_milestones WHERE id = ?').get(id);
@@ -983,22 +1110,28 @@ export const createMilestone = (data) => {
  * Get unacknowledged milestones
  */
 export const getUnacknowledgedMilestones = (learnerId) => {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT * FROM learning_milestones
     WHERE learner_id = ? AND acknowledged = 0
     ORDER BY achieved_at DESC
-  `).all(learnerId);
+  `,
+    )
+    .all(learnerId);
 };
 
 /**
  * Acknowledge milestone
  */
 export const acknowledgeMilestone = (milestoneId) => {
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE learning_milestones
     SET acknowledged = 1
     WHERE id = ?
-  `).run(milestoneId);
+  `,
+  ).run(milestoneId);
 };
 
 // ============================================================================
@@ -1010,13 +1143,15 @@ export const acknowledgeMilestone = (milestoneId) => {
  */
 export const logAgentCost = (data) => {
   const id = generateId();
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO agent_cost_log (
       id, learner_id, session_id, agent_role, architecture,
       input_tokens, output_tokens, latency_ms, model
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
+  `,
+  ).run(
     id,
     data.learnerId,
     data.sessionId,
@@ -1025,7 +1160,7 @@ export const logAgentCost = (data) => {
     data.inputTokens || 0,
     data.outputTokens || 0,
     data.latencyMs || 0,
-    data.model || ''
+    data.model || '',
   );
 
   return id;
@@ -1035,7 +1170,9 @@ export const logAgentCost = (data) => {
  * Get cost statistics
  */
 export const getCostStats = (learnerId, days = 30) => {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT
       COUNT(*) as total_calls,
       SUM(input_tokens) as total_input_tokens,
@@ -1045,9 +1182,13 @@ export const getCostStats = (learnerId, days = 30) => {
     FROM agent_cost_log
     WHERE learner_id = ?
       AND timestamp > datetime('now', '-' || ? || ' days')
-  `).get(learnerId, days);
+  `,
+    )
+    .get(learnerId, days);
 
-  const byArchitecture = db.prepare(`
+  const byArchitecture = db
+    .prepare(
+      `
     SELECT
       architecture,
       COUNT(*) as calls,
@@ -1056,7 +1197,9 @@ export const getCostStats = (learnerId, days = 30) => {
     WHERE learner_id = ?
       AND timestamp > datetime('now', '-' || ? || ' days')
     GROUP BY architecture
-  `).all(learnerId, days);
+  `,
+    )
+    .all(learnerId, days);
 
   return { ...row, byArchitecture };
 };
@@ -1070,12 +1213,7 @@ export const getCostStats = (learnerId, days = 30) => {
  * Returns a structured summary of the learner's history for system prompts
  */
 export const buildContextInjection = (learnerId, options = {}) => {
-  const {
-    maxSessionSummaries = 3,
-    maxEpisodes = 5,
-    maxThreads = 3,
-    includePreferences = true,
-  } = options;
+  const { maxSessionSummaries = 3, maxEpisodes = 5, maxThreads = 3, includePreferences = true } = options;
 
   // Get recent session summaries
   const recentSessions = getRecentSessionSummaries(learnerId, maxSessionSummaries);
@@ -1105,11 +1243,11 @@ export const buildContextInjection = (learnerId, options = {}) => {
   }
 
   if (activeThreads.length > 0) {
-    narrative += `Active questions: ${activeThreads.map(t => t.question).join('; ')}. `;
+    narrative += `Active questions: ${activeThreads.map((t) => t.question).join('; ')}. `;
   }
 
   if (dueForReview.length > 0) {
-    narrative += `Concepts due for review: ${dueForReview.map(c => c.label).join(', ')}. `;
+    narrative += `Concepts due for review: ${dueForReview.map((c) => c.label).join(', ')}. `;
   }
 
   if (preferences) {
@@ -1156,11 +1294,15 @@ export const getFullKnowledgeBase = (learnerId) => {
     lexicon: getPersonalDefinitions(learnerId),
     connections: getConnections(learnerId),
     preferences: getPreferences(learnerId),
-    milestones: db.prepare(`
+    milestones: db
+      .prepare(
+        `
       SELECT * FROM learning_milestones
       WHERE learner_id = ?
       ORDER BY achieved_at DESC
-    `).all(learnerId),
+    `,
+      )
+      .all(learnerId),
     costStats: getCostStats(learnerId),
   };
 };
@@ -1176,10 +1318,14 @@ export const getFullKnowledgeBase = (learnerId) => {
 export const checkDatabaseHealth = () => {
   try {
     // Simple query to check table existence and connection
-    const result = db.prepare(`
+    const result = db
+      .prepare(
+        `
       SELECT name FROM sqlite_master
       WHERE type='table' AND name='learner_memory'
-    `).get();
+    `,
+      )
+      .get();
     return !!result;
   } catch (error) {
     console.error('[LearnerMemory] Database health check failed:', error);

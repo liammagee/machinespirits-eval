@@ -108,7 +108,7 @@ function _cronbachAlpha(items) {
   const n = items[0].length;
 
   // Calculate variance of each item and total
-  const itemVariances = items.map(item => {
+  const itemVariances = items.map((item) => {
     const m = mean(item);
     return item.reduce((s, v) => s + (v - m) ** 2, 0) / (n - 1);
   });
@@ -135,7 +135,7 @@ function simpleHash(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return hash.toString(16);
@@ -150,11 +150,16 @@ function analyzeJudgeReliability() {
   console.log('');
 
   // Find all judge models
-  const judges = db.prepare(`
+  const judges = db
+    .prepare(
+      `
     SELECT DISTINCT judge_model
     FROM evaluation_results
     WHERE judge_model IS NOT NULL
-  `).all().map(r => r.judge_model);
+  `,
+    )
+    .all()
+    .map((r) => r.judge_model);
 
   console.log(`Judges found: ${judges.join(', ')}`);
   console.log('');
@@ -206,7 +211,7 @@ function analyzeJudgeReliability() {
   // Count how many responses have multiple judgments
   let responsesWithMultipleJudges = 0;
   for (const [_key, group] of responseGroups) {
-    const uniqueJudges = new Set(group.map(r => r.judge_model));
+    const uniqueJudges = new Set(group.map((r) => r.judge_model));
     if (uniqueJudges.size > 1) {
       responsesWithMultipleJudges++;
     }
@@ -274,10 +279,10 @@ function analyzeJudgeReliability() {
               pedagogical: [s1.score_pedagogical, s2.score_pedagogical],
               personalization: [s1.score_personalization, s2.score_personalization],
               actionability: [s1.score_actionability, s2.score_actionability],
-              tone: [s1.score_tone, s2.score_tone]
+              tone: [s1.score_tone, s2.score_tone],
             },
             scenario: s1.scenario_id,
-            profile: s1.profile_name
+            profile: s1.profile_name,
           });
         }
       }
@@ -305,8 +310,8 @@ function analyzeJudgeReliability() {
     const [judge1, judge2] = pairKey.split('|');
     const n = pairs.length;
 
-    const scores1 = pairs.map(p => p.score1);
-    const scores2 = pairs.map(p => p.score2);
+    const scores1 = pairs.map((p) => p.score1);
+    const scores2 = pairs.map((p) => p.score2);
 
     overallScores1.push(...scores1);
     overallScores2.push(...scores2);
@@ -328,8 +333,8 @@ function analyzeJudgeReliability() {
     console.log('\n  Per-dimension correlations:');
 
     for (const dim of dimensions) {
-      const d1 = pairs.map(p => p.dimensions[dim][0]).filter(v => v != null);
-      const d2 = pairs.map(p => p.dimensions[dim][1]).filter(v => v != null);
+      const d1 = pairs.map((p) => p.dimensions[dim][0]).filter((v) => v != null);
+      const d2 = pairs.map((p) => p.dimensions[dim][1]).filter((v) => v != null);
 
       if (d1.length >= 3 && d2.length >= 3) {
         const r = pearsonCorrelation(d1, d2);
@@ -338,7 +343,7 @@ function analyzeJudgeReliability() {
     }
 
     // Identify major disagreements (diff > 20)
-    const bigDisagreements = pairs.filter(p => p.diff > 20);
+    const bigDisagreements = pairs.filter((p) => p.diff > 20);
     if (bigDisagreements.length > 0) {
       allDisagreements.push(...bigDisagreements);
       console.log(`\n  Major disagreements (diff > 20): ${bigDisagreements.length}`);

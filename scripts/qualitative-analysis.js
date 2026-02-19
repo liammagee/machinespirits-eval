@@ -21,38 +21,265 @@ import fs from 'fs';
 // ── Stopwords ────────────────────────────────────────────────────────────
 
 const STOPWORDS = new Set([
-  'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an',
-  'and', 'any', 'are', 'aren\'t', 'as', 'at', 'be', 'because', 'been',
-  'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can',
-  'can\'t', 'cannot', 'could', 'couldn\'t', 'did', 'didn\'t', 'do', 'does',
-  'doesn\'t', 'doing', 'don\'t', 'down', 'during', 'each', 'few', 'for',
-  'from', 'further', 'get', 'got', 'had', 'hadn\'t', 'has', 'hasn\'t',
-  'have', 'haven\'t', 'having', 'he', 'he\'d', 'he\'ll', 'he\'s', 'her',
-  'here', 'here\'s', 'hers', 'herself', 'him', 'himself', 'his', 'how',
-  'how\'s', 'i', 'i\'d', 'i\'ll', 'i\'m', 'i\'ve', 'if', 'in', 'into',
-  'is', 'isn\'t', 'it', 'it\'s', 'its', 'itself', 'just', 'let', 'let\'s',
-  'like', 'make', 'me', 'might', 'more', 'most', 'mustn\'t', 'my',
-  'myself', 'no', 'nor', 'not', 'of', 'off', 'on', 'once', 'only', 'or',
-  'other', 'ought', 'our', 'ours', 'ourselves', 'out', 'over', 'own',
-  'really', 'right', 'same', 'shan\'t', 'she', 'she\'d', 'she\'ll',
-  'she\'s', 'should', 'shouldn\'t', 'so', 'some', 'such', 'take', 'than',
-  'that', 'that\'s', 'the', 'their', 'theirs', 'them', 'themselves', 'then',
-  'there', 'there\'s', 'these', 'they', 'they\'d', 'they\'ll', 'they\'re',
-  'they\'ve', 'this', 'those', 'through', 'to', 'too', 'under', 'until',
-  'up', 'us', 'very', 'was', 'wasn\'t', 'we', 'we\'d', 'we\'ll', 'we\'re',
-  'we\'ve', 'well', 'were', 'weren\'t', 'what', 'what\'s', 'when',
-  'when\'s', 'where', 'where\'s', 'which', 'while', 'who', 'who\'s',
-  'whom', 'why', 'why\'s', 'will', 'with', 'won\'t', 'would', 'wouldn\'t',
-  'you', 'you\'d', 'you\'ll', 'you\'re', 'you\'ve', 'your', 'yours',
-  'yourself', 'yourselves', 'also', 'been', 'being', 'come', 'even',
-  'first', 'going', 'good', 'know', 'look', 'much', 'need', 'new', 'now',
-  'one', 'people', 'really', 'see', 'think', 'thing', 'time', 'two',
-  'use', 'want', 'way', 'work', 'would', 'year', 'back', 'long', 'say',
-  'still', 'tell', 'try', 'give', 'go', 'help', 'keep', 'many',
-  'may', 'put', 'seem', 'show', 'start', 'turn', 'big', 'end', 'set',
-  'll', 've', 're', 's', 't', 'd', 'don', 'isn', 'doesn', 'didn',
-  'won', 'can', 'couldn', 'shouldn', 'wasn', 'weren', 'hasn', 'haven',
-  'hadn', 'aren', 'mustn', 'shan', 'ain',
+  'a',
+  'about',
+  'above',
+  'after',
+  'again',
+  'against',
+  'all',
+  'am',
+  'an',
+  'and',
+  'any',
+  'are',
+  "aren't",
+  'as',
+  'at',
+  'be',
+  'because',
+  'been',
+  'before',
+  'being',
+  'below',
+  'between',
+  'both',
+  'but',
+  'by',
+  'can',
+  "can't",
+  'cannot',
+  'could',
+  "couldn't",
+  'did',
+  "didn't",
+  'do',
+  'does',
+  "doesn't",
+  'doing',
+  "don't",
+  'down',
+  'during',
+  'each',
+  'few',
+  'for',
+  'from',
+  'further',
+  'get',
+  'got',
+  'had',
+  "hadn't",
+  'has',
+  "hasn't",
+  'have',
+  "haven't",
+  'having',
+  'he',
+  "he'd",
+  "he'll",
+  "he's",
+  'her',
+  'here',
+  "here's",
+  'hers',
+  'herself',
+  'him',
+  'himself',
+  'his',
+  'how',
+  "how's",
+  'i',
+  "i'd",
+  "i'll",
+  "i'm",
+  "i've",
+  'if',
+  'in',
+  'into',
+  'is',
+  "isn't",
+  'it',
+  "it's",
+  'its',
+  'itself',
+  'just',
+  'let',
+  "let's",
+  'like',
+  'make',
+  'me',
+  'might',
+  'more',
+  'most',
+  "mustn't",
+  'my',
+  'myself',
+  'no',
+  'nor',
+  'not',
+  'of',
+  'off',
+  'on',
+  'once',
+  'only',
+  'or',
+  'other',
+  'ought',
+  'our',
+  'ours',
+  'ourselves',
+  'out',
+  'over',
+  'own',
+  'really',
+  'right',
+  'same',
+  "shan't",
+  'she',
+  "she'd",
+  "she'll",
+  "she's",
+  'should',
+  "shouldn't",
+  'so',
+  'some',
+  'such',
+  'take',
+  'than',
+  'that',
+  "that's",
+  'the',
+  'their',
+  'theirs',
+  'them',
+  'themselves',
+  'then',
+  'there',
+  "there's",
+  'these',
+  'they',
+  "they'd",
+  "they'll",
+  "they're",
+  "they've",
+  'this',
+  'those',
+  'through',
+  'to',
+  'too',
+  'under',
+  'until',
+  'up',
+  'us',
+  'very',
+  'was',
+  "wasn't",
+  'we',
+  "we'd",
+  "we'll",
+  "we're",
+  "we've",
+  'well',
+  'were',
+  "weren't",
+  'what',
+  "what's",
+  'when',
+  "when's",
+  'where',
+  "where's",
+  'which',
+  'while',
+  'who',
+  "who's",
+  'whom',
+  'why',
+  "why's",
+  'will',
+  'with',
+  "won't",
+  'would',
+  "wouldn't",
+  'you',
+  "you'd",
+  "you'll",
+  "you're",
+  "you've",
+  'your',
+  'yours',
+  'yourself',
+  'yourselves',
+  'also',
+  'been',
+  'being',
+  'come',
+  'even',
+  'first',
+  'going',
+  'good',
+  'know',
+  'look',
+  'much',
+  'need',
+  'new',
+  'now',
+  'one',
+  'people',
+  'really',
+  'see',
+  'think',
+  'thing',
+  'time',
+  'two',
+  'use',
+  'want',
+  'way',
+  'work',
+  'would',
+  'year',
+  'back',
+  'long',
+  'say',
+  'still',
+  'tell',
+  'try',
+  'give',
+  'go',
+  'help',
+  'keep',
+  'many',
+  'may',
+  'put',
+  'seem',
+  'show',
+  'start',
+  'turn',
+  'big',
+  'end',
+  'set',
+  'll',
+  've',
+  're',
+  's',
+  't',
+  'd',
+  'don',
+  'isn',
+  'doesn',
+  'didn',
+  'won',
+  'can',
+  'couldn',
+  'shouldn',
+  'wasn',
+  'weren',
+  'hasn',
+  'haven',
+  'hadn',
+  'aren',
+  'mustn',
+  'shan',
+  'ain',
 ]);
 
 // ── Thematic coding categories ───────────────────────────────────────────
@@ -157,15 +384,15 @@ function tokenize(text) {
     .toLowerCase()
     .replace(/[^a-z'\s-]/g, ' ')
     .split(/\s+/)
-    .filter(w => w.length > 1);
+    .filter((w) => w.length > 1);
 }
 
 function tokenizeFiltered(text) {
-  return tokenize(text).filter(w => !STOPWORDS.has(w));
+  return tokenize(text).filter((w) => !STOPWORDS.has(w));
 }
 
 function countSentences(text) {
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
   return Math.max(sentences.length, 1);
 }
 
@@ -198,12 +425,7 @@ function topN(freqObj, n) {
 function chiSquare2x2(a, b, c, d) {
   const n = a + b + c + d;
   if (n === 0) return { chi2: 0, p: 1 };
-  const expected = [
-    ((a + b) * (a + c)) / n,
-    ((a + b) * (b + d)) / n,
-    ((c + d) * (a + c)) / n,
-    ((c + d) * (b + d)) / n,
-  ];
+  const expected = [((a + b) * (a + c)) / n, ((a + b) * (b + d)) / n, ((c + d) * (a + c)) / n, ((c + d) * (b + d)) / n];
   // Yates correction for small samples
   const chi2 = [a, b, c, d].reduce((sum, obs, i) => {
     const exp = expected[i];
@@ -216,7 +438,7 @@ function chiSquare2x2(a, b, c, d) {
   if (chi2 > 10.83) p = 0.001;
   else if (chi2 > 6.63) p = 0.01;
   else if (chi2 > 3.84) p = 0.05;
-  else if (chi2 > 2.71) p = 0.10;
+  else if (chi2 > 2.71) p = 0.1;
   else p = 0.25;
 
   return { chi2, p, sig: p < 0.05 };
@@ -226,8 +448,8 @@ function extractSuggestionTexts(suggestionsJson) {
   try {
     const parsed = JSON.parse(suggestionsJson);
     if (!Array.isArray(parsed)) return { messages: [], reasonings: [] };
-    const messages = parsed.map(s => s.message || '').filter(Boolean);
-    const reasonings = parsed.map(s => s.reasoning || '').filter(Boolean);
+    const messages = parsed.map((s) => s.message || '').filter(Boolean);
+    const reasonings = parsed.map((s) => s.reasoning || '').filter(Boolean);
     return { messages, reasonings };
   } catch {
     return { messages: [], reasonings: [] };
@@ -261,23 +483,29 @@ async function main() {
   console.log('1. TRANSCRIPT PAIR SELECTION');
   console.log('-'.repeat(70));
 
-  const baseCells = ['cell_1_base_single_unified', 'cell_2_base_single_psycho',
-    'cell_3_base_multi_unified', 'cell_4_base_multi_psycho'];
-  const recogCells = ['cell_5_recog_single_unified', 'cell_6_recog_single_psycho',
-    'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho'];
+  const baseCells = [
+    'cell_1_base_single_unified',
+    'cell_2_base_single_psycho',
+    'cell_3_base_multi_unified',
+    'cell_4_base_multi_psycho',
+  ];
+  const recogCells = [
+    'cell_5_recog_single_unified',
+    'cell_6_recog_single_psycho',
+    'cell_7_recog_multi_unified',
+    'cell_8_recog_multi_psycho',
+  ];
 
   // Scenarios to find pairs for (high contrast)
-  const pairScenarios = [
-    'struggling_learner',
-    'recognition_seeking_learner',
-    'adversarial_tester',
-  ];
+  const pairScenarios = ['struggling_learner', 'recognition_seeking_learner', 'adversarial_tester'];
 
   const pairs = [];
 
   for (const scenario of pairScenarios) {
     // Highest-scoring recognition result
-    const bestRecog = db.prepare(`
+    const bestRecog = db
+      .prepare(
+        `
       SELECT id, scenario_id, profile_name, overall_score, suggestions
       FROM evaluation_results
       WHERE success = 1 AND overall_score IS NOT NULL
@@ -286,10 +514,14 @@ async function main() {
         AND suggestions IS NOT NULL
       ORDER BY overall_score DESC
       LIMIT 1
-    `).get(scenario, ...recogCells);
+    `,
+      )
+      .get(scenario, ...recogCells);
 
     // Lowest-scoring base result (exclude score=0 which are error cases)
-    const worstBase = db.prepare(`
+    const worstBase = db
+      .prepare(
+        `
       SELECT id, scenario_id, profile_name, overall_score, suggestions
       FROM evaluation_results
       WHERE success = 1 AND overall_score IS NOT NULL AND overall_score > 0
@@ -298,7 +530,9 @@ async function main() {
         AND suggestions IS NOT NULL
       ORDER BY overall_score ASC
       LIMIT 1
-    `).get(scenario, ...baseCells);
+    `,
+      )
+      .get(scenario, ...baseCells);
 
     if (bestRecog && worstBase) {
       const recTexts = extractSuggestionTexts(bestRecog.suggestions);
@@ -325,8 +559,12 @@ async function main() {
       pairs.push(pair);
 
       console.log(`\n  ${scenario}:`);
-      console.log(`    Recognition: id=${pair.recognition.id}, profile=${pair.recognition.profile}, score=${pair.recognition.score.toFixed(1)}`);
-      console.log(`    Base:        id=${pair.base.id}, profile=${pair.base.profile}, score=${pair.base.score.toFixed(1)}`);
+      console.log(
+        `    Recognition: id=${pair.recognition.id}, profile=${pair.recognition.profile}, score=${pair.recognition.score.toFixed(1)}`,
+      );
+      console.log(
+        `    Base:        id=${pair.base.id}, profile=${pair.base.profile}, score=${pair.base.score.toFixed(1)}`,
+      );
       console.log(`    Score gap:   ${pair.scoreDiff.toFixed(1)} points`);
     }
   }
@@ -337,13 +575,17 @@ async function main() {
   console.log('-'.repeat(70));
 
   // Gather all suggestion text for base and recognition conditions
-  const allRows = db.prepare(`
+  const allRows = db
+    .prepare(
+      `
     SELECT profile_name, suggestions
     FROM evaluation_results
     WHERE success = 1
       AND suggestions IS NOT NULL
       AND profile_name IN (${[...baseCells, ...recogCells].map(() => '?').join(',')})
-  `).all(...baseCells, ...recogCells);
+  `,
+    )
+    .all(...baseCells, ...recogCells);
 
   const corpus = {
     base: { messages: [], reasonings: [] },
@@ -358,7 +600,9 @@ async function main() {
   }
 
   console.log(`  Base:        ${corpus.base.messages.length} messages, ${corpus.base.reasonings.length} reasonings`);
-  console.log(`  Recognition: ${corpus.recognition.messages.length} messages, ${corpus.recognition.reasonings.length} reasonings`);
+  console.log(
+    `  Recognition: ${corpus.recognition.messages.length} messages, ${corpus.recognition.reasonings.length} reasonings`,
+  );
 
   // ── 3. Word Frequency Analysis ──────────────────────────────────────
 
@@ -400,31 +644,31 @@ async function main() {
     const baseRate = baseCount / baseTotal;
     const recogRate = recogCount / recogTotal;
     if (baseRate === 0 && recogRate === 0) continue;
-    const ratio = recogRate > 0 && baseRate > 0
-      ? recogRate / baseRate
-      : recogRate > 0 ? Infinity : 0;
+    const ratio = recogRate > 0 && baseRate > 0 ? recogRate / baseRate : recogRate > 0 ? Infinity : 0;
     differential.push({ word, baseCount, recogCount, baseRate, recogRate, ratio });
   }
 
   // Sort by ratio descending for recognition-skewed
   // Require both counts > 0 for finite ratios, and minimum 10 in dominant condition
   const recogSkewed = differential
-    .filter(d => d.ratio !== Infinity && d.ratio > 1 && d.recogCount >= 10)
+    .filter((d) => d.ratio !== Infinity && d.ratio > 1 && d.recogCount >= 10)
     .sort((a, b) => b.ratio - a.ratio)
     .slice(0, 15);
 
   const baseSkewed = differential
-    .filter(d => d.ratio > 0 && d.ratio < 1 && d.baseCount >= 10)
+    .filter((d) => d.ratio > 0 && d.ratio < 1 && d.baseCount >= 10)
     .sort((a, b) => a.ratio - b.ratio)
     .slice(0, 15);
 
   console.log('\n  Top 15 Recognition-Skewed Words:');
-  recogSkewed.forEach(d => {
-    console.log(`    ${d.word.padEnd(20)} base=${d.baseCount}, recog=${d.recogCount}, ratio=${d.ratio === Infinity ? '∞' : d.ratio.toFixed(2)}×`);
+  recogSkewed.forEach((d) => {
+    console.log(
+      `    ${d.word.padEnd(20)} base=${d.baseCount}, recog=${d.recogCount}, ratio=${d.ratio === Infinity ? '∞' : d.ratio.toFixed(2)}×`,
+    );
   });
 
   console.log('\n  Top 15 Base-Skewed Words:');
-  baseSkewed.forEach(d => {
+  baseSkewed.forEach((d) => {
     console.log(`    ${d.word.padEnd(20)} base=${d.baseCount}, recog=${d.recogCount}, ratio=${d.ratio.toFixed(2)}×`);
   });
 
@@ -441,12 +685,20 @@ async function main() {
     bigramDiff.push({ bigram: bg, baseCount: bc, recogCount: rc, ratio });
   }
 
-  const recogBigramSkewed = bigramDiff.filter(d => d.ratio > 1).sort((a, b) => b.ratio - a.ratio).slice(0, 10);
-  const baseBigramSkewed = bigramDiff.filter(d => d.ratio < 1 && d.ratio > 0).sort((a, b) => a.ratio - b.ratio).slice(0, 10);
+  const recogBigramSkewed = bigramDiff
+    .filter((d) => d.ratio > 1)
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, 10);
+  const baseBigramSkewed = bigramDiff
+    .filter((d) => d.ratio < 1 && d.ratio > 0)
+    .sort((a, b) => a.ratio - b.ratio)
+    .slice(0, 10);
 
   console.log('\n  Top 10 Recognition-Skewed Bigrams:');
-  recogBigramSkewed.forEach(d => {
-    console.log(`    ${d.bigram.padEnd(30)} base=${d.baseCount}, recog=${d.recogCount}, ratio=${d.ratio === Infinity ? '∞' : d.ratio.toFixed(2)}×`);
+  recogBigramSkewed.forEach((d) => {
+    console.log(
+      `    ${d.bigram.padEnd(30)} base=${d.baseCount}, recog=${d.recogCount}, ratio=${d.ratio === Infinity ? '∞' : d.ratio.toFixed(2)}×`,
+    );
   });
 
   // ── 4. Lexical Diversity ────────────────────────────────────────────
@@ -459,9 +711,7 @@ async function main() {
     const types = new Set(allTokens);
     const sentences = countSentences(text);
     const ttr = allTokens.length > 0 ? types.size / allTokens.length : 0;
-    const meanWordLen = allTokens.length > 0
-      ? allTokens.reduce((sum, w) => sum + w.length, 0) / allTokens.length
-      : 0;
+    const meanWordLen = allTokens.length > 0 ? allTokens.reduce((sum, w) => sum + w.length, 0) / allTokens.length : 0;
     const meanSentLen = sentences > 0 ? allTokens.length / sentences : 0;
 
     return {
@@ -534,7 +784,7 @@ async function main() {
     const basePer1000 = baseWordCount > 0 ? (baseRawCount / baseWordCount) * 1000 : 0;
     const recogPer1000 = recogWordCount > 0 ? (recogRawCount / recogWordCount) * 1000 : 0;
 
-    const ratio = basePer1000 > 0 ? recogPer1000 / basePer1000 : (recogPer1000 > 0 ? Infinity : 1);
+    const ratio = basePer1000 > 0 ? recogPer1000 / basePer1000 : recogPer1000 > 0 ? Infinity : 1;
 
     // Chi-square: response-level presence/absence
     const basePresent = countResponsePresence(corpus.base.messages, config.patterns);
@@ -562,10 +812,16 @@ async function main() {
     };
 
     console.log(`\n  ${config.label}:`);
-    console.log(`    Base:        ${baseRawCount} occurrences (${basePer1000.toFixed(1)}/1000 words), ${basePresent}/${corpus.base.messages.length} responses`);
-    console.log(`    Recognition: ${recogRawCount} occurrences (${recogPer1000.toFixed(1)}/1000 words), ${recogPresent}/${corpus.recognition.messages.length} responses`);
+    console.log(
+      `    Base:        ${baseRawCount} occurrences (${basePer1000.toFixed(1)}/1000 words), ${basePresent}/${corpus.base.messages.length} responses`,
+    );
+    console.log(
+      `    Recognition: ${recogRawCount} occurrences (${recogPer1000.toFixed(1)}/1000 words), ${recogPresent}/${corpus.recognition.messages.length} responses`,
+    );
     console.log(`    Ratio:       ${ratio === Infinity ? '∞' : ratio.toFixed(2)}×`);
-    console.log(`    χ²(1) = ${chi.chi2.toFixed(2)}, p ${chi.p < 0.05 ? '< .05 *' : chi.p < 0.10 ? '< .10 †' : `≈ ${chi.p.toFixed(2)}`}`);
+    console.log(
+      `    χ²(1) = ${chi.chi2.toFixed(2)}, p ${chi.p < 0.05 ? '< .05 *' : chi.p < 0.1 ? '< .10 †' : `≈ ${chi.p.toFixed(2)}`}`,
+    );
   }
 
   // ── 6. Build Output ────────────────────────────────────────────────
@@ -670,7 +926,7 @@ async function main() {
 |----------|----------------------|------------------------------|-------|-------|-----|
 `;
   for (const [_cat, r] of Object.entries(thematicResults)) {
-    md += `| ${r.label} | ${r.basePer1000.toFixed(1)} | ${r.recogPer1000.toFixed(1)} | ${r.ratio === Infinity ? '∞' : r.ratio.toFixed(2)}× | ${r.chi2.toFixed(2)} | ${r.sig ? '*' : r.p < 0.10 ? '†' : ''} |\n`;
+    md += `| ${r.label} | ${r.basePer1000.toFixed(1)} | ${r.recogPer1000.toFixed(1)} | ${r.ratio === Infinity ? '∞' : r.ratio.toFixed(2)}× | ${r.chi2.toFixed(2)} | ${r.sig ? '*' : r.p < 0.1 ? '†' : ''} |\n`;
   }
 
   md += `\n*\\* p < .05, † p < .10. Chi-square tests on response-level presence/absence (base N=${corpus.base.messages.length}, recognition N=${corpus.recognition.messages.length}).*\n`;

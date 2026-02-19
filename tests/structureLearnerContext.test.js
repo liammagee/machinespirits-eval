@@ -36,29 +36,22 @@ describe('structureLearnerContext — passthrough cases', () => {
 
 describe('structureLearnerContext — field extraction', () => {
   it('extracts returning user with sessions and events', () => {
-    const input = [
-      '**Returning user** - 3 sessions, 28 total events',
-      '**Struggle signals detected**: 4',
-    ].join('\n');
+    const input = ['**Returning user** - 3 sessions, 28 total events', '**Struggle signals detected**: 4'].join('\n');
     const result = structureLearnerContext(input);
     assert.ok(result.includes('Learner Type: Returning user, 3 sessions, 28 events'));
     assert.ok(result.includes('Struggle Signals: 4 detected'));
   });
 
   it('extracts struggle signals', () => {
-    const input = [
-      '**Returning user** - 5 sessions, 10 total events',
-      '**Struggle signals detected**: 4',
-    ].join('\n');
+    const input = ['**Returning user** - 5 sessions, 10 total events', '**Struggle signals detected**: 4'].join('\n');
     const result = structureLearnerContext(input);
     assert.ok(result.includes('Struggle Signals: 4 detected'));
   });
 
   it('extracts activity retries from "retried N times" pattern', () => {
-    const input = [
-      '**Returning user** - 2 sessions, 15 total events',
-      'The learner retried 3 times on quiz 1',
-    ].join('\n');
+    const input = ['**Returning user** - 2 sessions, 15 total events', 'The learner retried 3 times on quiz 1'].join(
+      '\n',
+    );
     const result = structureLearnerContext(input);
     assert.ok(result.includes('Activity Retries: 3 retries'));
   });

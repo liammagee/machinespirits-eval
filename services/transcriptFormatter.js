@@ -201,7 +201,7 @@ function getEntryContent(entry) {
 
   // Generation entries: extract suggestion message text
   if ((action === 'generate' || action === 'revise' || action === 'generate_final') && entry.suggestions?.length > 0) {
-    return entry.suggestions.map(s => s.message || s.text || s.title || JSON.stringify(s)).join('\n\n');
+    return entry.suggestions.map((s) => s.message || s.text || s.title || JSON.stringify(s)).join('\n\n');
   }
 
   // Learner turn action
@@ -218,8 +218,8 @@ function getEntryContent(entry) {
     if (ctx.sessions) parts.push(`${ctx.sessions} prior sessions`);
     // Extract the learner's message from rawContext if present
     const raw = entry.rawContext || '';
-    const msgMatch = raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s)
-      || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
+    const msgMatch =
+      raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s) || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
     if (msgMatch) {
       const contextLine = parts.length ? parts.join(', ') : '';
       return (contextLine ? contextLine + '\n\n' : '') + 'Learner: ' + msgMatch[1].trim();
@@ -228,7 +228,13 @@ function getEntryContent(entry) {
   }
 
   // Reflection/rewrite entries
-  if (action === 'rewrite' || action === 'respond_to_critic' || action === 'profile_learner' || action === 'profile_tutor' || action === 'plan') {
+  if (
+    action === 'rewrite' ||
+    action === 'respond_to_critic' ||
+    action === 'profile_learner' ||
+    action === 'profile_tutor' ||
+    action === 'plan'
+  ) {
     return entry.detail || entry.contextSummary || '';
   }
 
@@ -251,9 +257,15 @@ function getEntryContent(entry) {
  */
 function isReflectionEntry(entry) {
   const reflectionAgents = new Set([
-    'ego_self_reflection', 'superego_self_reflection', 'superego_disposition',
-    'ego_intersubjective', 'behavioral_overrides', 'rejection_budget',
-    'tutor_other_ego', 'learner_other_ego', 'ego_strategy',
+    'ego_self_reflection',
+    'superego_self_reflection',
+    'superego_disposition',
+    'ego_intersubjective',
+    'behavioral_overrides',
+    'rejection_budget',
+    'tutor_other_ego',
+    'learner_other_ego',
+    'ego_strategy',
   ]);
   return reflectionAgents.has(entry.agent);
 }
@@ -358,9 +370,14 @@ export function formatTranscript(trace, options = {}) {
     const copy = { ...entry };
     if (entry.agent === 'ego' && entry.action === 'generate') {
       // Check if a revision follows within the same turn
-      const hasRevision = trace.slice(i + 1).some(
-        e => e.turnIndex === entry.turnIndex && e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final')
-      );
+      const hasRevision = trace
+        .slice(i + 1)
+        .some(
+          (e) =>
+            e.turnIndex === entry.turnIndex &&
+            e.agent === 'ego' &&
+            (e.action === 'revise' || e.action === 'generate_final'),
+        );
       copy._hasRevision = hasRevision;
     }
     return copy;
@@ -377,7 +394,8 @@ export function formatTranscript(trace, options = {}) {
   if (scenarioName || profileName) {
     lines.push('');
     if (scenarioName) {
-      const titleLine = totalTurns > 0 ? `${scenarioName.toUpperCase()} (${totalTurns}-turn)` : scenarioName.toUpperCase();
+      const titleLine =
+        totalTurns > 0 ? `${scenarioName.toUpperCase()} (${totalTurns}-turn)` : scenarioName.toUpperCase();
       lines.push(center(titleLine));
     }
     if (profileName) lines.push(center(profileName));
@@ -404,8 +422,8 @@ export function formatTranscript(trace, options = {}) {
     lines.push('');
 
     // Separate main entries from reflections
-    const mainEntries = entries.filter(e => !isReflectionEntry(e));
-    const reflections = entries.filter(e => isReflectionEntry(e));
+    const mainEntries = entries.filter((e) => !isReflectionEntry(e));
+    const reflections = entries.filter((e) => isReflectionEntry(e));
 
     // Main entries
     for (const entry of mainEntries) {
@@ -455,9 +473,16 @@ export function formatTranscript(trace, options = {}) {
  */
 function isTutorEntry(entry) {
   const tutorAgents = new Set([
-    'ego', 'superego', 'ego_self_reflection', 'superego_self_reflection',
-    'superego_disposition', 'ego_intersubjective', 'tutor_other_ego', 'ego_strategy',
-    'behavioral_overrides', 'rejection_budget',
+    'ego',
+    'superego',
+    'ego_self_reflection',
+    'superego_self_reflection',
+    'superego_disposition',
+    'ego_intersubjective',
+    'tutor_other_ego',
+    'ego_strategy',
+    'behavioral_overrides',
+    'rejection_budget',
   ]);
   if (tutorAgents.has(entry.agent)) return true;
   // context_input and final_output are tutor-phase bookends
@@ -490,9 +515,13 @@ function formatBilateralTranscript(trace, options = {}) {
   const processed = trace.map((entry, i) => {
     const copy = { ...entry };
     if (entry.agent === 'ego' && entry.action === 'generate') {
-      const hasRevision = trace.slice(i + 1).some(
-        e => e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final' || e.action === 'incorporate-feedback')
-      );
+      const hasRevision = trace
+        .slice(i + 1)
+        .some(
+          (e) =>
+            e.agent === 'ego' &&
+            (e.action === 'revise' || e.action === 'generate_final' || e.action === 'incorporate-feedback'),
+        );
       copy._hasRevision = hasRevision;
     }
     return copy;
@@ -532,7 +561,8 @@ function formatBilateralTranscript(trace, options = {}) {
   if (scenarioName || profileName) {
     lines.push('');
     if (scenarioName) {
-      const titleLine = totalTurns > 0 ? `${scenarioName.toUpperCase()} (${totalTurns}-turn)` : scenarioName.toUpperCase();
+      const titleLine =
+        totalTurns > 0 ? `${scenarioName.toUpperCase()} (${totalTurns}-turn)` : scenarioName.toUpperCase();
       lines.push(center(titleLine));
     }
     if (profileName) lines.push(center(profileName));
@@ -591,7 +621,7 @@ function formatBilateralTranscript(trace, options = {}) {
     // ── LEARNER DELIBERATION ──
     // Skip learner_synthesis — it duplicates the turn_action content shown in LEARNER MESSAGE
     const deliberationOnly = learnerDeliberation.filter(
-      e => !(e.agent === 'learner_synthesis' && e.action === 'response')
+      (e) => !(e.agent === 'learner_synthesis' && e.action === 'response'),
     );
     if (deliberationOnly.length > 0) {
       lines.push(INDENT + `\u2500\u2500 LEARNER DELIBERATION ${PHASE_LINE}`);
@@ -661,7 +691,7 @@ export function formatCompactLine(entry) {
 
   // Final tutor output (revised or initial)
   if (action === 'revise' || (agent === 'ego' && action === 'generate' && !entry._hasRevision)) {
-    const msg = (entry.suggestions || []).map(s => (s.message || s.title || '').substring(0, 80)).join('; ');
+    const msg = (entry.suggestions || []).map((s) => (s.message || s.title || '').substring(0, 80)).join('; ');
     return `  [TUTOR]${metaSuffix} ${msg}`;
   }
 

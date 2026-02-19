@@ -50,8 +50,16 @@ after(() => {
   try {
     fs.unlinkSync(testDbPath);
     // SQLite WAL/SHM files
-    try { fs.unlinkSync(testDbPath + '-wal'); } catch (e) { /* may not exist */ }
-    try { fs.unlinkSync(testDbPath + '-shm'); } catch (e) { /* may not exist */ }
+    try {
+      fs.unlinkSync(testDbPath + '-wal');
+    } catch (e) {
+      /* may not exist */
+    }
+    try {
+      fs.unlinkSync(testDbPath + '-shm');
+    } catch (e) {
+      /* may not exist */
+    }
   } catch (e) {
     // Ignore cleanup errors
   }
@@ -574,7 +582,7 @@ describe('listRuns', () => {
     const runs = listRuns();
     assert.ok(runs.length > 0, 'should have at least one run');
 
-    const found = runs.find(r => r.id === run.id);
+    const found = runs.find((r) => r.id === run.id);
     assert.ok(found, 'should find our test run');
     assert.strictEqual(found.description, 'listRuns test marker 9z8y7x');
   });
@@ -594,7 +602,7 @@ describe('listRuns', () => {
     });
 
     const runs = listRuns();
-    const found = runs.find(r => r.id === run.id);
+    const found = runs.find((r) => r.id === run.id);
     assert.ok(found, 'should find the run');
     assert.ok(found.completedResults >= 1, 'should count completed results');
     assert.ok(found.scenarioNames.includes('Enrich Test'), 'should include scenario name');

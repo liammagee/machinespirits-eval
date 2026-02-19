@@ -37,7 +37,11 @@ const app = express();
 // ── Learner config cache ────────────────────────────────────────────────────
 
 let learnerConfig = null;
-try { learnerConfig = YAML.parse(fs.readFileSync(LEARNER_CONFIG, 'utf8')); } catch { /* ignored */ }
+try {
+  learnerConfig = YAML.parse(fs.readFileSync(LEARNER_CONFIG, 'utf8'));
+} catch {
+  /* ignored */
+}
 
 function resolvelearnerModels(arch) {
   if (!learnerConfig) return { ego: '?', superego: '?' };
@@ -49,7 +53,8 @@ function resolvelearnerModels(arch) {
     };
   }
   if (prof?.unified_learner) {
-    const m = (prof.unified_learner.provider ? prof.unified_learner.provider + '.' : '') + (prof.unified_learner.model || '');
+    const m =
+      (prof.unified_learner.provider ? prof.unified_learner.provider + '.' : '') + (prof.unified_learner.model || '');
     return { ego: m, superego: m };
   }
   return { ego: '?', superego: '?' };
@@ -58,7 +63,9 @@ function resolvelearnerModels(arch) {
 // ── API endpoints ───────────────────────────────────────────────────────────
 
 app.get('/api/runs', (req, res) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT run_id,
       COUNT(*) as dialogue_count,
       MIN(overall_score) as min_score,
@@ -70,11 +77,13 @@ app.get('/api/runs', (req, res) => {
     WHERE dialogue_id IS NOT NULL AND overall_score IS NOT NULL
     GROUP BY run_id
     ORDER BY first_created DESC
-  `).all();
+  `,
+    )
+    .all();
 
-  const runs = rows.map(r => {
+  const runs = rows.map((r) => {
     const profiles = (r.profiles || '').split(',');
-    const cells = [...new Set(profiles.map(p => p.replace(/^cell_(\d+)_.*/, '$1')))].sort((a,b) => a-b);
+    const cells = [...new Set(profiles.map((p) => p.replace(/^cell_(\d+)_.*/, '$1')))].sort((a, b) => a - b);
     return {
       runId: r.run_id,
       date: r.run_id.replace(/^eval-/, '').replace(/-[a-f0-9]+$/, ''),
@@ -88,16 +97,20 @@ app.get('/api/runs', (req, res) => {
 });
 
 app.get('/api/runs/:runId', (req, res) => {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT id, dialogue_id, profile_name, scenario_id, overall_score,
       ego_model, judge_model, learner_architecture, superego_model,
       factor_recognition
     FROM evaluation_results
     WHERE run_id = ? AND dialogue_id IS NOT NULL AND overall_score IS NOT NULL
     ORDER BY profile_name, scenario_id, overall_score DESC
-  `).all(req.params.runId);
+  `,
+    )
+    .all(req.params.runId);
 
-  const dialogues = rows.map(r => ({
+  const dialogues = rows.map((r) => ({
     dialogueId: r.dialogue_id,
     profile: r.profile_name,
     scenario: r.scenario_id,
@@ -111,7 +124,9 @@ app.get('/api/runs/:runId', (req, res) => {
 });
 
 app.get('/api/dialogue/:dialogueId', (req, res) => {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT id, run_id, profile_name, scenario_id, dialogue_id, overall_score,
       ego_model, superego_model, judge_model, learner_architecture,
       score_relevance, score_specificity, score_pedagogical, score_personalization,
@@ -120,7 +135,9 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     FROM evaluation_results
     WHERE dialogue_id = ? AND overall_score IS NOT NULL
     ORDER BY id DESC LIMIT 1
-  `).get(req.params.dialogueId);
+  `,
+    )
+    .get(req.params.dialogueId);
 
   if (!row) return res.status(404).json({ error: 'Dialogue not found' });
 
@@ -128,7 +145,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
   let trace = [];
   let logMeta = {};
   try {
-    const files = fs.readdirSync(LOGS_DIR).filter(f => f.includes(req.params.dialogueId));
+    const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(req.params.dialogueId));
     if (files.length > 0) {
       const log = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf8'));
       trace = log.consolidatedTrace || log.dialogueTrace || [];
@@ -137,14 +154,24 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
         learnerArchitecture: log.learnerArchitecture,
       };
     }
-  } catch { /* ignored */ }
+  } catch {
+    /* ignored */
+  }
 
   const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified');
 
   let judgeScores = {};
-  try { judgeScores = JSON.parse(row.scores_with_reasoning || '{}'); } catch { /* ignored */ }
+  try {
+    judgeScores = JSON.parse(row.scores_with_reasoning || '{}');
+  } catch {
+    /* ignored */
+  }
   let qualitative = {};
-  try { qualitative = JSON.parse(row.qualitative_assessment || '{}'); } catch { /* ignored */ }
+  try {
+    qualitative = JSON.parse(row.qualitative_assessment || '{}');
+  } catch {
+    /* ignored */
+  }
 
   res.json({
     trace,
@@ -174,7 +201,11 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
 
 function shortModel(m) {
   if (!m) return '?';
-  return String(m).replace(/^openrouter\./, '').split('/').pop().split(':')[0];
+  return String(m)
+    .replace(/^openrouter\./, '')
+    .split('/')
+    .pop()
+    .split(':')[0];
 }
 
 // ── Serve inline HTML page ──────────────────────────────────────────────────

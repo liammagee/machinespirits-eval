@@ -5,48 +5,77 @@ import { formatTranscript, formatEntry, formatCompactLine, wrapText } from '../s
 // Sample trace data mimicking real consolidatedTrace entries
 const sampleTrace = [
   {
-    agent: 'user', action: 'context_input', round: 1, turnIndex: 0,
+    agent: 'user',
+    action: 'context_input',
+    round: 1,
+    turnIndex: 0,
     contextData: { currentPage: '479-lecture-3', strugglesCount: 5, sessions: 2 },
   },
   {
-    agent: 'ego', action: 'generate', round: 1, turnIndex: 0,
+    agent: 'ego',
+    action: 'generate',
+    round: 1,
+    turnIndex: 0,
     suggestions: [{ title: 'Review basics', message: 'Let me help you revisit the key concepts from lecture 2.' }],
     latencyMs: 3200,
     metrics: { model: 'moonshot-ai/kimi-k2.5', inputTokens: 8500, outputTokens: 1200, latencyMs: 3200, cost: 0.0032 },
   },
   {
-    agent: 'superego', action: 'review', round: 1, turnIndex: 0,
+    agent: 'superego',
+    action: 'review',
+    round: 1,
+    turnIndex: 0,
     approved: false,
     feedback: 'The response is too clinical. Acknowledge the learner frustration explicitly before jumping to content.',
     latencyMs: 2100,
     metrics: { model: 'moonshot-ai/kimi-k2.5', inputTokens: 4000, outputTokens: 800, latencyMs: 2100, cost: 0.0015 },
   },
   {
-    agent: 'ego', action: 'revise', round: 2, turnIndex: 0,
-    suggestions: [{ title: 'Empathetic review', message: 'I hear you — feeling stuck is completely valid. Let us revisit the dialectic framework together.' }],
+    agent: 'ego',
+    action: 'revise',
+    round: 2,
+    turnIndex: 0,
+    suggestions: [
+      {
+        title: 'Empathetic review',
+        message: 'I hear you — feeling stuck is completely valid. Let us revisit the dialectic framework together.',
+      },
+    ],
     latencyMs: 2800,
     metrics: { model: 'moonshot-ai/kimi-k2.5', inputTokens: 9200, outputTokens: 1500, latencyMs: 2800, cost: 0.0038 },
   },
   {
-    agent: 'user', action: 'final_output', turnIndex: 0,
-    contextSummary: 'Delivered 1 suggestion', detail: 'Turn 1 complete',
+    agent: 'user',
+    action: 'final_output',
+    turnIndex: 0,
+    contextSummary: 'Delivered 1 suggestion',
+    detail: 'Turn 1 complete',
   },
   // Between-turn reflection
   {
-    agent: 'ego_self_reflection', action: 'rewrite', turnIndex: 0,
+    agent: 'ego_self_reflection',
+    action: 'rewrite',
+    turnIndex: 0,
     contextSummary: 'Ego self-reflection generated for turn 1',
     detail: 'I tried to validate frustration but fell into clinical language.',
     timestamp: '2026-02-14T10:00:00Z',
   },
   // Turn 2
   {
-    agent: 'user', action: 'turn_action', turnIndex: 1,
+    agent: 'user',
+    action: 'turn_action',
+    turnIndex: 1,
     contextSummary: 'That helped a little but I am still confused about how thesis becomes antithesis.',
     timestamp: '2026-02-14T10:00:05Z',
   },
   {
-    agent: 'ego', action: 'generate', round: 1, turnIndex: 1,
-    suggestions: [{ title: 'Dialectic walkthrough', message: 'Great question! The thesis-antithesis transition happens when...' }],
+    agent: 'ego',
+    action: 'generate',
+    round: 1,
+    turnIndex: 1,
+    suggestions: [
+      { title: 'Dialectic walkthrough', message: 'Great question! The thesis-antithesis transition happens when...' },
+    ],
     latencyMs: 4100,
     metrics: { model: 'moonshot-ai/kimi-k2.5', inputTokens: 12000, outputTokens: 2000, latencyMs: 4100, cost: 0.005 },
   },
@@ -58,7 +87,10 @@ describe('transcriptFormatter', () => {
       const text = 'The quick brown fox jumps over the lazy dog and keeps running across the meadow';
       const result = wrapText(text, '  ', 40);
       const lines = result.split('\n');
-      assert.ok(lines.every(l => l.length <= 40), `Some lines exceed 40 chars: ${lines.map(l => l.length)}`);
+      assert.ok(
+        lines.every((l) => l.length <= 40),
+        `Some lines exceed 40 chars: ${lines.map((l) => l.length)}`,
+      );
       assert.ok(lines.length > 1, 'Should produce multiple lines');
     });
 
@@ -270,7 +302,9 @@ describe('transcriptFormatter', () => {
   describe('metadata formatting', () => {
     it('formats free model cost as null (not $0.0000)', () => {
       const entry = {
-        agent: 'ego', action: 'generate', turnIndex: 0,
+        agent: 'ego',
+        action: 'generate',
+        turnIndex: 0,
         suggestions: [{ message: 'Hello' }],
         metrics: { model: 'nvidia/nemotron:free', inputTokens: 100, outputTokens: 50, latencyMs: 500, cost: 0 },
       };
@@ -281,7 +315,9 @@ describe('transcriptFormatter', () => {
 
     it('formats sub-second latency in ms', () => {
       const entry = {
-        agent: 'ego', action: 'generate', turnIndex: 0,
+        agent: 'ego',
+        action: 'generate',
+        turnIndex: 0,
         suggestions: [{ message: 'Hello' }],
         metrics: { model: 'test-model', latencyMs: 450 },
       };
@@ -291,7 +327,9 @@ describe('transcriptFormatter', () => {
 
     it('truncates long model names', () => {
       const entry = {
-        agent: 'ego', action: 'generate', turnIndex: 0,
+        agent: 'ego',
+        action: 'generate',
+        turnIndex: 0,
         suggestions: [{ message: 'Hello' }],
         metrics: { model: 'provider/very-long-model-name-that-exceeds-limits-v3' },
       };

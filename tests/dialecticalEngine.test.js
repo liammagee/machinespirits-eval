@@ -27,7 +27,8 @@ describe('parseJsonResponse (via generateSuperegoCritique fallback)', () => {
   // aiService in ESM, we test the JSON parsing patterns directly.
 
   it('should handle plain JSON', () => {
-    const json = '{"disapproves": true, "severity": 0.8, "critique": "test", "reasoning": "test", "principle": "socratic_rigor"}';
+    const json =
+      '{"disapproves": true, "severity": 0.8, "critique": "test", "reasoning": "test", "principle": "socratic_rigor"}';
     const parsed = JSON.parse(json);
     assert.strictEqual(parsed.disapproves, true);
     assert.strictEqual(parsed.severity, 0.8);
@@ -214,7 +215,7 @@ describe('superegoModel threading through eval pipeline', () => {
           // Dialectical cells always have superego config
           assert.ok(
             resolved.superegoModel === undefined || typeof resolved.superegoModel === 'object',
-            `${cell}: superegoModel should be undefined or object`
+            `${cell}: superegoModel should be undefined or object`,
           );
         }
       } catch (e) {

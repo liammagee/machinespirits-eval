@@ -32,34 +32,34 @@ const MODEL_PRICING = {
     name: 'Nemotron 3 Nano 30B (free)',
   },
   'anthropic/claude-sonnet-4.5': {
-    input: 3.00,
-    output: 15.00,
+    input: 3.0,
+    output: 15.0,
     name: 'Claude Sonnet 4.5',
   },
   'anthropic/claude-haiku-4.5': {
-    input: 0.80,
-    output: 4.00,
+    input: 0.8,
+    output: 4.0,
     name: 'Claude Haiku 4.5',
   },
   'openai/gpt-5.2': {
-    input: 2.50,
-    output: 10.00,
+    input: 2.5,
+    output: 10.0,
     name: 'GPT-5.2',
   },
   'google/gemini-3-pro-preview': {
     input: 1.25,
-    output: 5.00,
+    output: 5.0,
     name: 'Gemini 3 Pro',
   },
   // Aliases
-  'nemotron': {
+  nemotron: {
     input: 0,
     output: 0,
     name: 'Nemotron 3 Nano 30B (free)',
   },
-  'sonnet': {
-    input: 3.00,
-    output: 15.00,
+  sonnet: {
+    input: 3.0,
+    output: 15.0,
     name: 'Claude Sonnet 4.5',
   },
 };
@@ -114,7 +114,7 @@ function analyzeBatteryScenario(filePath) {
   // Token counts
   const tutorTokens = metrics.tutorTokens || 0;
   const learnerTokens = metrics.learnerTokens || 0;
-  const totalTokens = metrics.totalTokens || (tutorTokens + learnerTokens);
+  const totalTokens = metrics.totalTokens || tutorTokens + learnerTokens;
 
   // Estimate input/output split
   // Tutor: more output (responses), Learner: more output (responses)
@@ -154,11 +154,12 @@ function analyzeBatteryScenario(filePath) {
 }
 
 function analyzeBatteryDirectory(dirPath) {
-  const files = fs.readdirSync(dirPath)
-    .filter(f => f.endsWith('.json') && f.includes('battery'))
-    .map(f => path.join(dirPath, f));
+  const files = fs
+    .readdirSync(dirPath)
+    .filter((f) => f.endsWith('.json') && f.includes('battery'))
+    .map((f) => path.join(dirPath, f));
 
-  return files.map(f => analyzeBatteryScenario(f));
+  return files.map((f) => analyzeBatteryScenario(f));
 }
 
 // ============================================================================
@@ -188,13 +189,17 @@ function printDetailedReport(results) {
 
   for (const r of results) {
     const scenarioShort = r.scenario.replace('battery_', '').substring(0, 25);
-    console.log(`| ${scenarioShort.padEnd(25)} | ${String(r.turns).padStart(5)} | ${formatNumber(r.tokens.tutor).padStart(12)} | ${formatNumber(r.tokens.learner).padStart(14)} | ${formatNumber(r.tokens.judgeEstimate).padStart(10)} | ${formatCurrency(r.costs.total).padStart(10)} | ${r.score !== null ? String(r.score).padStart(5) : 'N/A'.padStart(5)} |`);
+    console.log(
+      `| ${scenarioShort.padEnd(25)} | ${String(r.turns).padStart(5)} | ${formatNumber(r.tokens.tutor).padStart(12)} | ${formatNumber(r.tokens.learner).padStart(14)} | ${formatNumber(r.tokens.judgeEstimate).padStart(10)} | ${formatCurrency(r.costs.total).padStart(10)} | ${r.score !== null ? String(r.score).padStart(5) : 'N/A'.padStart(5)} |`,
+    );
     totalTokens += r.tokens.total + r.tokens.judgeEstimate;
     totalCost += r.costs.total;
   }
 
   console.log('|' + '-'.repeat(78) + '|');
-  console.log(`| **TOTAL** | | | | ${formatNumber(totalTokens).padStart(10)} | ${formatCurrency(totalCost).padStart(10)} | |`);
+  console.log(
+    `| **TOTAL** | | | | ${formatNumber(totalTokens).padStart(10)} | ${formatCurrency(totalCost).padStart(10)} | |`,
+  );
 
   // Cost breakdown by component
   console.log('\n## Cost Breakdown by Component\n');
@@ -221,17 +226,25 @@ function printDetailedReport(results) {
     componentTotals.judge.cost += r.costs.judge.totalCost;
   }
 
-  console.log(`| Tutor (Ego+Superego) | ${MODEL_PRICING[DEFAULT_MODELS.tutor_ego].name} | ${formatNumber(Math.round(componentTotals.tutor.input))} | ${formatNumber(Math.round(componentTotals.tutor.output))} | ${formatCurrency(componentTotals.tutor.cost)} |`);
-  console.log(`| Learner (Ego+Superego) | ${MODEL_PRICING[DEFAULT_MODELS.learner_ego].name} | ${formatNumber(Math.round(componentTotals.learner.input))} | ${formatNumber(Math.round(componentTotals.learner.output))} | ${formatCurrency(componentTotals.learner.cost)} |`);
-  console.log(`| Judge | ${MODEL_PRICING[DEFAULT_MODELS.judge].name} | ${formatNumber(Math.round(componentTotals.judge.input))} | ${formatNumber(Math.round(componentTotals.judge.output))} | ${formatCurrency(componentTotals.judge.cost)} |`);
-  console.log(`| **TOTAL** | | ${formatNumber(Math.round(componentTotals.tutor.input + componentTotals.learner.input + componentTotals.judge.input))} | ${formatNumber(Math.round(componentTotals.tutor.output + componentTotals.learner.output + componentTotals.judge.output))} | **${formatCurrency(totalCost)}** |`);
+  console.log(
+    `| Tutor (Ego+Superego) | ${MODEL_PRICING[DEFAULT_MODELS.tutor_ego].name} | ${formatNumber(Math.round(componentTotals.tutor.input))} | ${formatNumber(Math.round(componentTotals.tutor.output))} | ${formatCurrency(componentTotals.tutor.cost)} |`,
+  );
+  console.log(
+    `| Learner (Ego+Superego) | ${MODEL_PRICING[DEFAULT_MODELS.learner_ego].name} | ${formatNumber(Math.round(componentTotals.learner.input))} | ${formatNumber(Math.round(componentTotals.learner.output))} | ${formatCurrency(componentTotals.learner.cost)} |`,
+  );
+  console.log(
+    `| Judge | ${MODEL_PRICING[DEFAULT_MODELS.judge].name} | ${formatNumber(Math.round(componentTotals.judge.input))} | ${formatNumber(Math.round(componentTotals.judge.output))} | ${formatCurrency(componentTotals.judge.cost)} |`,
+  );
+  console.log(
+    `| **TOTAL** | | ${formatNumber(Math.round(componentTotals.tutor.input + componentTotals.learner.input + componentTotals.judge.input))} | ${formatNumber(Math.round(componentTotals.tutor.output + componentTotals.learner.output + componentTotals.judge.output))} | **${formatCurrency(totalCost)}** |`,
+  );
 
   // Hypothetical costs
   console.log('\n## Hypothetical: All Claude Sonnet 4.5\n');
   const allSonnetCost = calculateCost(
     componentTotals.tutor.input + componentTotals.learner.input + componentTotals.judge.input,
     componentTotals.tutor.output + componentTotals.learner.output + componentTotals.judge.output,
-    'sonnet'
+    'sonnet',
   );
   console.log(`| Current Cost (Nemotron + Sonnet Judge) | ${formatCurrency(totalCost)} |`);
   console.log(`| Hypothetical (All Sonnet 4.5) | ${formatCurrency(allSonnetCost.totalCost)} |`);
@@ -340,10 +353,12 @@ This document provides token usage and cost analysis for evaluation runs, suppor
 
 | Scenario | Turns | Tutor Tokens | Learner Tokens | Total Cost | Score |
 |----------|-------|--------------|----------------|------------|-------|
-${results.map(r => {
-  const scenarioShort = r.scenario.replace('short-battery_', '').replace(/-\d+$/, '');
-  return `| ${scenarioShort} | ${r.turns} | ${r.tokens.tutor.toLocaleString()} | ${r.tokens.learner.toLocaleString()} | ${formatCurrency(r.costs.total)} | ${r.score || 'N/A'} |`;
-}).join('\n')}
+${results
+  .map((r) => {
+    const scenarioShort = r.scenario.replace('short-battery_', '').replace(/-\d+$/, '');
+    return `| ${scenarioShort} | ${r.turns} | ${r.tokens.tutor.toLocaleString()} | ${r.tokens.learner.toLocaleString()} | ${formatCurrency(r.costs.total)} | ${r.score || 'N/A'} |`;
+  })
+  .join('\n')}
 | **TOTAL** | ${results.reduce((sum, r) => sum + r.turns, 0)} | ${results.reduce((sum, r) => sum + r.tokens.tutor, 0).toLocaleString()} | ${results.reduce((sum, r) => sum + r.tokens.learner, 0).toLocaleString()} | **${formatCurrency(totals.totalCost)}** | |
 
 ## Cost by Component

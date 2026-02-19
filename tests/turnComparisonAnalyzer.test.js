@@ -44,22 +44,38 @@ const _TWO_TURNS_SAME_TYPE = [
 const THREE_TURNS_EVOLVING = [
   {
     turnIndex: 0,
-    suggestion: { type: 'lecture', message: 'You should read chapter 5 first.', title: 'Start here', actionTarget: 'chapter-5' },
+    suggestion: {
+      type: 'lecture',
+      message: 'You should read chapter 5 first.',
+      title: 'Start here',
+      actionTarget: 'chapter-5',
+    },
     learnerMessage: 'ok',
     scores: { relevance: 3, learner_growth: 2 },
     turnScore: 45,
   },
   {
     turnIndex: 1,
-    suggestion: { type: 'review', message: 'What do you think about the relationship between these ideas?', title: 'Explore connections', actionTarget: 'connections' },
+    suggestion: {
+      type: 'review',
+      message: 'What do you think about the relationship between these ideas?',
+      title: 'Explore connections',
+      actionTarget: 'connections',
+    },
     learnerMessage: 'Wait, actually I think I see how this connects because the earlier point about recognition...',
     scores: { relevance: 4, learner_growth: 3 },
     turnScore: 65,
   },
   {
     turnIndex: 2,
-    suggestion: { type: 'explore', message: "Building on your insight, let's explore how this applies to AI.", title: 'Apply to AI', actionTarget: 'ai-applications' },
-    learnerMessage: "Oh I see now! So if we discussed this before, then the whole way I think about it has shifted. However, I wonder whether that also means...",
+    suggestion: {
+      type: 'explore',
+      message: "Building on your insight, let's explore how this applies to AI.",
+      title: 'Apply to AI',
+      actionTarget: 'ai-applications',
+    },
+    learnerMessage:
+      'Oh I see now! So if we discussed this before, then the whole way I think about it has shifted. However, I wonder whether that also means...',
     scores: { relevance: 5, learner_growth: 5 },
     turnScore: 80,
   },
@@ -146,7 +162,14 @@ describe('calculateAdaptationIndex', () => {
   it('returns positive index for different suggestion types', () => {
     const turns = [
       { suggestion: { type: 'lecture', message: 'Read this chapter.', title: 'Chapter 1', actionTarget: 'ch1' } },
-      { suggestion: { type: 'explore', message: 'What do you think about this?', title: 'Explore', actionTarget: 'explore' } },
+      {
+        suggestion: {
+          type: 'explore',
+          message: 'What do you think about this?',
+          title: 'Explore',
+          actionTarget: 'explore',
+        },
+      },
     ];
     const index = calculateAdaptationIndex(turns);
     assert.ok(index > 0, `Expected positive adaptation, got ${index}`);
@@ -188,7 +211,10 @@ describe('calculateLearnerGrowthIndex', () => {
   it('detects growth when messages increase in complexity', () => {
     const turns = [
       { learnerMessage: 'ok' },
-      { learnerMessage: 'Wait, actually I see the connection because of what you said earlier. However, I wonder about the implications.' },
+      {
+        learnerMessage:
+          'Wait, actually I see the connection because of what you said earlier. However, I wonder about the implications.',
+      },
     ];
     const index = calculateLearnerGrowthIndex(turns);
     assert.ok(index > 0, `Expected positive growth, got ${index}`);
@@ -206,7 +232,9 @@ describe('calculateLearnerGrowthIndex', () => {
   it('uses learnerAction as fallback when learnerMessage is missing', () => {
     const turns = [
       { learnerAction: 'short question' },
-      { learnerAction: 'Wait, actually I need to reconsider because of what you mentioned earlier about the framework.' },
+      {
+        learnerAction: 'Wait, actually I need to reconsider because of what you mentioned earlier about the framework.',
+      },
     ];
     const index = calculateLearnerGrowthIndex(turns);
     assert.ok(index > 0, `Expected growth from learnerAction fallback, got ${index}`);
@@ -241,7 +269,10 @@ describe('analyzeFramingShift', () => {
 
   it('classifies directive framing', () => {
     const turns = [
-      { turnIndex: 0, suggestion: { message: 'You should read this chapter. You need to understand the basics first.' } },
+      {
+        turnIndex: 0,
+        suggestion: { message: 'You should read this chapter. You need to understand the basics first.' },
+      },
     ];
     const result = analyzeFramingShift(turns);
     assert.strictEqual(result.timeline[0].framing.type, 'directive');
@@ -249,7 +280,12 @@ describe('analyzeFramingShift', () => {
 
   it('classifies exploratory framing', () => {
     const turns = [
-      { turnIndex: 0, suggestion: { message: 'What if we considered this from a different angle? Have you considered the implications?' } },
+      {
+        turnIndex: 0,
+        suggestion: {
+          message: 'What if we considered this from a different angle? Have you considered the implications?',
+        },
+      },
     ];
     const result = analyzeFramingShift(turns);
     assert.strictEqual(result.timeline[0].framing.type, 'exploratory');
@@ -257,7 +293,12 @@ describe('analyzeFramingShift', () => {
 
   it('classifies collaborative framing', () => {
     const turns = [
-      { turnIndex: 0, suggestion: { message: "Building on your insight, together we could explore this further. Your insight is valuable." } },
+      {
+        turnIndex: 0,
+        suggestion: {
+          message: 'Building on your insight, together we could explore this further. Your insight is valuable.',
+        },
+      },
     ];
     const result = analyzeFramingShift(turns);
     assert.strictEqual(result.timeline[0].framing.type, 'collaborative');
@@ -266,7 +307,10 @@ describe('analyzeFramingShift', () => {
   it('detects dominant shift across turns', () => {
     const turns = [
       { turnIndex: 0, suggestion: { message: 'You should study this. You need to learn the basics.' } },
-      { turnIndex: 1, suggestion: { message: 'What if we explored this together? What do you think about this idea?' } },
+      {
+        turnIndex: 1,
+        suggestion: { message: 'What if we explored this together? What do you think about this idea?' },
+      },
     ];
     const result = analyzeFramingShift(turns);
     assert.ok(result.dominantShift, 'Should detect a dominant shift');
@@ -317,9 +361,7 @@ describe('analyzeTransformationMarkers', () => {
   });
 
   it('counts tutor static markers', () => {
-    const turns = [
-      { suggestion: { message: 'As I said before, to repeat, the answer is...' }, learnerMessage: '' },
-    ];
+    const turns = [{ suggestion: { message: 'As I said before, to repeat, the answer is...' }, learnerMessage: '' }];
     const result = analyzeTransformationMarkers(turns, markers);
     assert.strictEqual(result.tutorStaticCount, 2);
     assert.strictEqual(result.tutorEvolvingCount, 0);
@@ -336,9 +378,7 @@ describe('analyzeTransformationMarkers', () => {
   });
 
   it('counts learner static markers', () => {
-    const turns = [
-      { suggestion: { message: '' }, learnerMessage: 'Just tell me the answer already.' },
-    ];
+    const turns = [{ suggestion: { message: '' }, learnerMessage: 'Just tell me the answer already.' }];
     const result = analyzeTransformationMarkers(turns, markers);
     assert.strictEqual(result.learnerStaticCount, 1);
     assert.strictEqual(result.learnerEvolvingCount, 0);
@@ -356,7 +396,7 @@ describe('analyzeTransformationMarkers', () => {
   it('accumulates markers across multiple turns', () => {
     const turns = [
       { suggestion: { message: 'As I said before...' }, learnerMessage: 'ok' },
-      { suggestion: { message: "Reconsidering, building on your point..." }, learnerMessage: 'Oh wait, I see now!' },
+      { suggestion: { message: 'Reconsidering, building on your point...' }, learnerMessage: 'Oh wait, I see now!' },
     ];
     const result = analyzeTransformationMarkers(turns, markers);
     assert.strictEqual(result.tutorEvolvingCount, 2);

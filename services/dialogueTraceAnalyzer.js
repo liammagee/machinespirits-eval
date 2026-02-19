@@ -30,9 +30,9 @@ export function analyzeSuperegoIncorporation(dialogueTrace) {
     };
   }
 
-  const superegoFeedback = dialogueTrace.filter(e => e.agent === 'superego');
-  const egoRevisions = dialogueTrace.filter(e =>
-    e.agent === 'ego' && (e.action === 'revision' || e.action === 'revise')
+  const superegoFeedback = dialogueTrace.filter((e) => e.agent === 'superego');
+  const egoRevisions = dialogueTrace.filter(
+    (e) => e.agent === 'ego' && (e.action === 'revision' || e.action === 'revise'),
   );
 
   // Count feedback patterns
@@ -41,9 +41,7 @@ export function analyzeSuperegoIncorporation(dialogueTrace) {
 
   for (const feedback of superegoFeedback) {
     // Track intervention type
-    const interventionType = feedback.interventionType ||
-                            feedback.verdict?.interventionType ||
-                            feedback.action;
+    const interventionType = feedback.interventionType || feedback.verdict?.interventionType || feedback.action;
 
     if (interventionType === 'enhance') feedbackPatterns.enhance++;
     else if (interventionType === 'revise') feedbackPatterns.revise++;
@@ -51,9 +49,7 @@ export function analyzeSuperegoIncorporation(dialogueTrace) {
     else if (feedback.verdict?.approved === false) feedbackPatterns.reject++;
 
     // Track confidence
-    const confidence = feedback.confidence ||
-                      feedback.verdict?.confidence ||
-                      feedback.score;
+    const confidence = feedback.confidence || feedback.verdict?.confidence || feedback.score;
     if (typeof confidence === 'number') {
       confidenceProgression.push({
         turnIndex: feedback.turnIndex,
@@ -65,14 +61,13 @@ export function analyzeSuperegoIncorporation(dialogueTrace) {
 
   // Calculate incorporation rate
   // How often does an ego revision follow superego feedback?
-  const incorporationRate = superegoFeedback.length > 0
-    ? egoRevisions.length / superegoFeedback.length
-    : null;
+  const incorporationRate = superegoFeedback.length > 0 ? egoRevisions.length / superegoFeedback.length : null;
 
   // Average confidence
-  const avgConfidence = confidenceProgression.length > 0
-    ? confidenceProgression.reduce((sum, c) => sum + c.confidence, 0) / confidenceProgression.length
-    : null;
+  const avgConfidence =
+    confidenceProgression.length > 0
+      ? confidenceProgression.reduce((sum, c) => sum + c.confidence, 0) / confidenceProgression.length
+      : null;
 
   // Extract transformation signals
   const transformationSignals = extractTransformationSignals(dialogueTrace);
@@ -153,11 +148,7 @@ export function extractTransformationSignals(dialogueTrace) {
 
     // Check superego feedback for acknowledgment of adaptation
     if (entry.agent === 'superego') {
-      const text = entry.verdict?.feedback ||
-                  entry.verdict?.reasoning ||
-                  entry.detail ||
-                  entry.contextSummary ||
-                  '';
+      const text = entry.verdict?.feedback || entry.verdict?.reasoning || entry.detail || entry.contextSummary || '';
 
       for (const pattern of superegoAcknowledgmentPatterns) {
         if (pattern.test(text)) {
@@ -207,9 +198,9 @@ export function extractTransformationSignals(dialogueTrace) {
 export function analyzeBilateralTransformation(dialogueTrace) {
   const signals = extractTransformationSignals(dialogueTrace);
 
-  const tutorSignals = signals.filter(s => s.type === 'tutor_transformation');
-  const learnerSignals = signals.filter(s => s.type === 'learner_transformation');
-  const acknowledgmentSignals = signals.filter(s => s.type === 'superego_noted_adaptation');
+  const tutorSignals = signals.filter((s) => s.type === 'tutor_transformation');
+  const learnerSignals = signals.filter((s) => s.type === 'learner_transformation');
+  const acknowledgmentSignals = signals.filter((s) => s.type === 'superego_noted_adaptation');
 
   const tutorCount = tutorSignals.length;
   const learnerCount = learnerSignals.length;
@@ -288,9 +279,7 @@ export function analyzeInterventionEffectiveness(dialogueTrace, turnResults) {
     };
   }
 
-  const interventions = dialogueTrace.filter(e =>
-    e.agent === 'superego' && e.action === 'revise'
-  );
+  const interventions = dialogueTrace.filter((e) => e.agent === 'superego' && e.action === 'revise');
 
   const interventionsByType = {};
   let totalImprovement = 0;
@@ -307,8 +296,8 @@ export function analyzeInterventionEffectiveness(dialogueTrace, turnResults) {
     interventionsByType[type].count++;
 
     // Find score before and after intervention
-    const turnBefore = turnResults.find(t => t.turnIndex === turnIndex - 1);
-    const turnAfter = turnResults.find(t => t.turnIndex === turnIndex);
+    const turnBefore = turnResults.find((t) => t.turnIndex === turnIndex - 1);
+    const turnAfter = turnResults.find((t) => t.turnIndex === turnIndex);
 
     if (turnBefore?.turnScore !== null && turnAfter?.turnScore !== null) {
       const improvement = turnAfter.turnScore - turnBefore.turnScore;
@@ -338,9 +327,7 @@ export function analyzeInterventionEffectiveness(dialogueTrace, turnResults) {
 
   return {
     interventionCount: interventions.length,
-    scoreImprovementAfterIntervention: measuredInterventions > 0
-      ? totalImprovement / measuredInterventions
-      : null,
+    scoreImprovementAfterIntervention: measuredInterventions > 0 ? totalImprovement / measuredInterventions : null,
     mostEffectiveInterventionType: mostEffectiveType,
     interventionsByType,
   };
@@ -391,13 +378,8 @@ export function generateTransformationReport(dialogueTrace, turnResults) {
     overallAssessment: {
       hasMutualTransformation: bilateralAnalysis.isMutualTransformation,
       bilateralBalance: bilateralAnalysis.bilateralBalance,
-      superegoEffective: superegoAnalysis.incorporationRate !== null &&
-                        superegoAnalysis.incorporationRate > 0.5,
-      transformationQuality: calculateTransformationQuality(
-        bilateralAnalysis,
-        superegoAnalysis,
-        interventionAnalysis
-      ),
+      superegoEffective: superegoAnalysis.incorporationRate !== null && superegoAnalysis.incorporationRate > 0.5,
+      transformationQuality: calculateTransformationQuality(bilateralAnalysis, superegoAnalysis, interventionAnalysis),
     },
   };
 }
@@ -435,9 +417,7 @@ function calculateTransformationQuality(bilateral, superego, intervention) {
   // Intervention effectiveness (weight: 20%)
   if (intervention.scoreImprovementAfterIntervention !== null) {
     // Normalize improvement (assume max reasonable improvement is 20 points)
-    const normalizedImprovement = Math.min(1, Math.max(0,
-      intervention.scoreImprovementAfterIntervention / 20
-    ));
+    const normalizedImprovement = Math.min(1, Math.max(0, intervention.scoreImprovementAfterIntervention / 20));
     score += normalizedImprovement * 20;
     factors += 20;
   }

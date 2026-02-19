@@ -64,7 +64,13 @@ import 'dotenv/config';
 import * as evaluationRunner from '../services/evaluationRunner.js';
 import * as anovaStats from '../services/anovaStats.js';
 import * as evaluationStore from '../services/evaluationStore.js';
-import { getAvailableJudge, buildEvaluationPrompt, calculateOverallScore, calculateBaseScore, calculateRecognitionScore } from '../services/rubricEvaluator.js';
+import {
+  getAvailableJudge,
+  buildEvaluationPrompt,
+  calculateOverallScore,
+  calculateBaseScore,
+  calculateRecognitionScore,
+} from '../services/rubricEvaluator.js';
 import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
@@ -80,7 +86,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 
 const args = process.argv.slice(2);
-const command = args.find(a => !a.startsWith('--')) || 'list';
+const command = args.find((a) => !a.startsWith('--')) || 'list';
 
 function getFlag(name) {
   return args.includes(`--${name}`);
@@ -131,7 +137,7 @@ function formatTraceEntry(entry) {
       return `[CONTEXT] ${parts.length ? parts.join(', ') : '(scenario input)'}`;
     }
     case 'generate': {
-      const titles = (entry.suggestions || []).map(s => s.title || s.type).join('; ');
+      const titles = (entry.suggestions || []).map((s) => s.title || s.type).join('; ');
       return `[EGO → SUPEREGO] Generated: ${titles}`;
     }
     case 'review': {
@@ -143,7 +149,7 @@ function formatTraceEntry(entry) {
       return `[SUPEREGO ${tag}] ${summary}`;
     }
     case 'revise': {
-      const titles = (entry.suggestions || []).map(s => s.title || s.type).join('; ');
+      const titles = (entry.suggestions || []).map((s) => s.title || s.type).join('; ');
       return `[EGO revised] ${titles}`;
     }
     case 'final_output': {
@@ -168,7 +174,7 @@ function formatTraceEntry(entry) {
 function buildGridFromEvents(events) {
   let scenarios = [];
   let profiles = [];
-  let originalTotalTests = 0;  // From first run_start (original plan)
+  let originalTotalTests = 0; // From first run_start (original plan)
   let completedTests = 0;
   let runDone = false;
   let durationMs = null;
@@ -183,7 +189,7 @@ function buildGridFromEvents(events) {
       if (originalTotalTests === 0) {
         originalTotalTests = ev.totalTests || 0;
       } else {
-        _isResumed = true;  // This is a resume
+        _isResumed = true; // This is a resume
       }
     } else if (ev.eventType === 'test_complete') {
       // Count actual events instead of relying on per-event completedCount
@@ -235,21 +241,23 @@ function buildGridFromEvents(events) {
 function renderGrid({ scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs }) {
   const lines = [];
   const pct = totalTests > 0 ? Math.round((completedTests / totalTests) * 100) : 0;
-  lines.push(`Progress: ${completedTests}/${totalTests} (${pct}%)${runDone ? '  DONE' : '  running...'}${durationMs ? `  ${formatMs(durationMs)}` : ''}`);
+  lines.push(
+    `Progress: ${completedTests}/${totalTests} (${pct}%)${runDone ? '  DONE' : '  running...'}${durationMs ? `  ${formatMs(durationMs)}` : ''}`,
+  );
   lines.push('');
 
   // Determine column widths
-  const scenarioColWidth = Math.max(20, ...scenarios.map(s => s.length));
-  const profileColWidth = Math.max(8, ...profiles.map(p => p.length));
+  const scenarioColWidth = Math.max(20, ...scenarios.map((s) => s.length));
+  const profileColWidth = Math.max(8, ...profiles.map((p) => p.length));
 
   // Header row
-  const header = ''.padEnd(scenarioColWidth) + ' | ' + profiles.map(p => p.padEnd(profileColWidth)).join(' | ');
+  const header = ''.padEnd(scenarioColWidth) + ' | ' + profiles.map((p) => p.padEnd(profileColWidth)).join(' | ');
   lines.push(header);
   lines.push('-'.repeat(header.length));
 
   // Data rows
   for (const scenario of scenarios) {
-    const cells = profiles.map(profile => {
+    const cells = profiles.map((profile) => {
       const cell = grid[scenario]?.[profile];
       if (!cell) return ''.padEnd(profileColWidth);
       if (cell.error) return 'ERR'.padEnd(profileColWidth);
@@ -285,7 +293,8 @@ const CHAT_TOOLS = [
     type: 'function',
     function: {
       name: 'get_run_report',
-      description: 'Generate a full text report for a run including rankings, dimension breakdown, scenario performance, and ANOVA.',
+      description:
+        'Generate a full text report for a run including rankings, dimension breakdown, scenario performance, and ANOVA.',
       parameters: {
         type: 'object',
         properties: {
@@ -314,7 +323,8 @@ const CHAT_TOOLS = [
     type: 'function',
     function: {
       name: 'run_anova',
-      description: 'Run a 2x2x2 three-way ANOVA on factorial cell data for a given run. Requires factor-tagged results.',
+      description:
+        'Run a 2x2x2 three-way ANOVA on factorial cell data for a given run. Requires factor-tagged results.',
       parameters: {
         type: 'object',
         properties: {
@@ -344,7 +354,8 @@ const CHAT_TOOLS = [
           },
           cluster: {
             type: 'string',
-            description: 'Scenario cluster filter: single-turn, multi-turn, or category names (core, mood, benchmark, recognition, multi_turn). Comma-separated for multiple.',
+            description:
+              'Scenario cluster filter: single-turn, multi-turn, or category names (core, mood, benchmark, recognition, multi_turn). Comma-separated for multiple.',
           },
           runs: { type: 'number', description: 'Replications per cell (default 1)' },
           description: { type: 'string', description: 'Description for this run' },
@@ -473,26 +484,28 @@ async function executeTool(name, params) {
 
       const lines = [];
       for (const r of results) {
-        lines.push(`--- ${r.scenarioName || r.scenarioId} | ${r.profileName} | score=${r.overallScore?.toFixed(1) ?? '--'} ---`);
+        lines.push(
+          `--- ${r.scenarioName || r.scenarioId} | ${r.profileName} | score=${r.overallScore?.toFixed(1) ?? '--'} ---`,
+        );
         let printed = false;
         if (r.dialogueId) {
-          const files = fs.existsSync(LOGS_DIR)
-            ? fs.readdirSync(LOGS_DIR).filter(f => f.includes(r.dialogueId))
-            : [];
+          const files = fs.existsSync(LOGS_DIR) ? fs.readdirSync(LOGS_DIR).filter((f) => f.includes(r.dialogueId)) : [];
           if (files.length > 0) {
             try {
               const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
-              for (const entry of (dialogue.dialogueTrace || [])) {
+              for (const entry of dialogue.dialogueTrace || []) {
                 lines.push(`[${(entry.role || 'unknown').toUpperCase()}] ${entry.content || ''}`);
               }
               printed = true;
-            } catch (e) { /* fall through */ }
+            } catch (e) {
+              /* fall through */
+            }
           }
         }
         if (!printed && r.suggestions?.length > 0) {
           lines.push('Suggestions:');
           for (const s of r.suggestions) {
-            lines.push(`  • ${typeof s === 'string' ? s : (s.text || s.message || JSON.stringify(s))}`);
+            lines.push(`  • ${typeof s === 'string' ? s : s.text || s.message || JSON.stringify(s)}`);
           }
         }
         if (r.evaluationReasoning) lines.push(`Judge: ${r.evaluationReasoning}`);
@@ -524,8 +537,11 @@ async function executeTool(name, params) {
       const scenarios = params.scenarios?.length > 0 ? params.scenarios : 'all';
       let configurations = 'factorial';
       if (params.profiles?.length > 0) {
-        configurations = params.profiles.map(name => ({
-          provider: null, model: null, profileName: name, label: name,
+        configurations = params.profiles.map((name) => ({
+          provider: null,
+          model: null,
+          profileName: name,
+          label: name,
         }));
       }
       const result = await evaluationRunner.runEvaluation({
@@ -553,10 +569,16 @@ async function executeTool(name, params) {
     }
     case 'list_options': {
       const opts = evaluationRunner.listOptions();
-      return truncate(JSON.stringify({
-        scenarios: opts.scenarios.map(s => ({ id: s.id, name: s.name, isMultiTurn: s.isMultiTurn })),
-        profiles: opts.profiles?.map(p => ({ name: p.name, description: p.description })),
-      }, null, 2));
+      return truncate(
+        JSON.stringify(
+          {
+            scenarios: opts.scenarios.map((s) => ({ id: s.id, name: s.name, isMultiTurn: s.isMultiTurn })),
+            profiles: opts.profiles?.map((p) => ({ name: p.name, description: p.description })),
+          },
+          null,
+          2,
+        ),
+      );
     }
     case 'export_results': {
       const data = evaluationStore.exportToJson(params.runId);
@@ -575,11 +597,17 @@ async function executeTool(name, params) {
     }
     case 'get_run_status': {
       const runData = evaluationRunner.getRunResults(params.runId);
-      return truncate(JSON.stringify({
-        run: runData.run,
-        stats: runData.stats,
-        resultCount: runData.results.length,
-      }, null, 2));
+      return truncate(
+        JSON.stringify(
+          {
+            run: runData.run,
+            stats: runData.stats,
+            resultCount: runData.results.length,
+          },
+          null,
+          2,
+        ),
+      );
     }
     default:
       return `Unknown tool: ${name}`;
@@ -591,7 +619,7 @@ async function callOpenRouter(messages, model, apiKey) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
@@ -662,7 +690,10 @@ To see available test scenarios and profiles, use list_options.`,
 
   for await (const line of rl) {
     const input = line.trim();
-    if (!input) { prompt(); continue; }
+    if (!input) {
+      prompt();
+      continue;
+    }
     if (input === 'quit' || input === 'exit') {
       console.log('Bye.');
       process.exit(0);
@@ -689,7 +720,11 @@ To see available test scenarios and profiles, use list_options.`,
           for (const tc of msg.tool_calls) {
             const fnName = tc.function.name;
             let fnArgs = {};
-            try { fnArgs = JSON.parse(tc.function.arguments || '{}'); } catch (e) { /* empty */ }
+            try {
+              fnArgs = JSON.parse(tc.function.arguments || '{}');
+            } catch (e) {
+              /* empty */
+            }
 
             process.stdout.write(`  [calling ${fnName}...]\n`);
             let result;
@@ -729,8 +764,8 @@ async function main() {
 
         // Factorial design — the default run mode
         if (options.profiles?.length) {
-          const cellProfiles = options.profiles.filter(p => p.name.startsWith('cell_'));
-          const regularProfiles = options.profiles.filter(p => !p.name.startsWith('cell_'));
+          const cellProfiles = options.profiles.filter((p) => p.name.startsWith('cell_'));
+          const regularProfiles = options.profiles.filter((p) => !p.name.startsWith('cell_'));
 
           if (cellProfiles.length > 0) {
             console.log('\n2x2x2 Factorial Cells (default `run` configuration):');
@@ -771,10 +806,12 @@ async function main() {
         const verbose = getFlag('verbose');
         const dryRun = getFlag('dry-run');
         const evalSettingsQt = evalConfigLoader.getEvalSettings();
-        const skipRubricEval = dryRun ? false : (getFlag('skip-rubric') || !evalSettingsQt.useAIJudge);
+        const skipRubricEval = dryRun ? false : getFlag('skip-rubric') || !evalSettingsQt.useAIJudge;
         const config = { profileName: profile };
 
-        console.log(`\nRunning quick test (profile: ${profile}, scenario: ${scenarioId}${dryRun ? ', dry-run' : ''})...\n`);
+        console.log(
+          `\nRunning quick test (profile: ${profile}, scenario: ${scenarioId}${dryRun ? ', dry-run' : ''})...\n`,
+        );
         const result = await evaluationRunner.quickTest(config, {
           scenarioId,
           verbose,
@@ -792,7 +829,11 @@ async function main() {
         // CLI --use-rubric forces rubric on; --skip-rubric forces off; otherwise use config default
         // --dry-run always enables rubric (mock judge has no cost)
         const evalSettings = evalConfigLoader.getEvalSettings();
-        const skipRubricEval = dryRun ? false : (getFlag('use-rubric') ? false : (getFlag('skip-rubric') || !evalSettings.useAIJudge));
+        const skipRubricEval = dryRun
+          ? false
+          : getFlag('use-rubric')
+            ? false
+            : getFlag('skip-rubric') || !evalSettings.useAIJudge;
         const runsPerConfig = parseInt(getOption('runs', '1'), 10);
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
         const description = getOption('description');
@@ -812,9 +853,7 @@ async function main() {
           process.exit(1);
         }
 
-        const scenarios = scenarioOpt
-          ? scenarioOpt.split(',').map(s => s.trim())
-          : 'all';
+        const scenarios = scenarioOpt ? scenarioOpt.split(',').map((s) => s.trim()) : 'all';
 
         // Determine configurations: explicit --profile overrides everything,
         // --all-profiles loads every profile, default is the 8 factorial cells.
@@ -824,17 +863,15 @@ async function main() {
 
         if (profileOpt) {
           // Explicit profile selection (single or comma-separated)
-          const profileNames = profileOpt.includes(',')
-            ? profileOpt.split(',').map(s => s.trim())
-            : [profileOpt];
-          configurations = profileNames.map(name => ({
+          const profileNames = profileOpt.includes(',') ? profileOpt.split(',').map((s) => s.trim()) : [profileOpt];
+          configurations = profileNames.map((name) => ({
             provider: null,
             model: null,
             profileName: name,
             label: name,
           }));
           // Check if the selection happens to be factorial cells
-          isFactorial = profileNames.every(n => n.startsWith('cell_'));
+          isFactorial = profileNames.every((n) => n.startsWith('cell_'));
         } else if (allProfiles) {
           configurations = 'profiles';
         } else {
@@ -849,7 +886,9 @@ async function main() {
           console.log(`  Factor A: Recognition      (off / on)`);
           console.log(`  Factor B: Tutor arch.      (single / ego+superego)`);
           console.log(`  Factor C: Learner arch.    (unified / ego_superego)`);
-          console.log(`  Cells: ${cellCount}  |  Runs/cell: ${runsPerConfig}  |  Per scenario: ${cellCount * runsPerConfig}`);
+          console.log(
+            `  Cells: ${cellCount}  |  Runs/cell: ${runsPerConfig}  |  Per scenario: ${cellCount * runsPerConfig}`,
+          );
           if (modelOverride) {
             console.log(`  Model override: ${modelOverride}`);
           } else if (egoModelOverride || superegoModelOverride) {
@@ -871,7 +910,9 @@ async function main() {
           runsPerConfig,
           parallelism,
           skipRubricEval,
-          description: description || (dryRun ? 'Dry-run evaluation (mock data)' : (isFactorial ? '2x2x2 Factorial Evaluation' : null)),
+          description:
+            description ||
+            (dryRun ? 'Dry-run evaluation (mock data)' : isFactorial ? '2x2x2 Factorial Evaluation' : null),
           verbose,
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
@@ -888,12 +929,13 @@ async function main() {
           const dotIdx = raw.indexOf('.');
           return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
         };
-        const modelAliases = [...new Set(
-          (result.stats || []).flatMap(s => [
-            extractAlias(s.egoModel || s.model),
-            extractAlias(s.superegoModel),
-          ]).filter(Boolean)
-        )];
+        const modelAliases = [
+          ...new Set(
+            (result.stats || [])
+              .flatMap((s) => [extractAlias(s.egoModel || s.model), extractAlias(s.superegoModel)])
+              .filter(Boolean),
+          ),
+        ];
 
         console.log('\nEvaluation complete.');
         if (modelAliases.length > 0) {
@@ -909,12 +951,18 @@ async function main() {
             console.log('='.repeat(80));
 
             // Per-result breakdown
-            const header = '  #  | Scenario                         | In Tok  | Out Tok | API  | Rounds | Latency   | Cost';
+            const header =
+              '  #  | Scenario                         | In Tok  | Out Tok | API  | Rounds | Latency   | Cost';
             const divider = '  ' + '-'.repeat(header.length - 2);
             console.log(header);
             console.log(divider);
 
-            let totalIn = 0, totalOut = 0, totalApi = 0, totalRounds = 0, totalLatency = 0, totalCost = 0;
+            let totalIn = 0,
+              totalOut = 0,
+              totalApi = 0,
+              totalRounds = 0,
+              totalLatency = 0,
+              totalCost = 0;
 
             runResults.forEach((r, i) => {
               const inTok = r.input_tokens || r.inputTokens || 0;
@@ -934,22 +982,30 @@ async function main() {
               const scenLabel = (r.scenario_id || r.scenarioId || '').substring(0, 32).padEnd(32);
               const latStr = latMs >= 1000 ? `${(latMs / 1000).toFixed(1)}s` : `${latMs}ms`;
               const costStr = cost > 0 ? `$${cost.toFixed(4)}` : '-';
-              console.log(`  ${String(i + 1).padStart(2)} | ${scenLabel} | ${String(inTok).padStart(7)} | ${String(outTok).padStart(7)} | ${String(apiCalls).padStart(4)} | ${String(rounds).padStart(6)} | ${latStr.padStart(9)} | ${costStr}`);
+              console.log(
+                `  ${String(i + 1).padStart(2)} | ${scenLabel} | ${String(inTok).padStart(7)} | ${String(outTok).padStart(7)} | ${String(apiCalls).padStart(4)} | ${String(rounds).padStart(6)} | ${latStr.padStart(9)} | ${costStr}`,
+              );
             });
 
             console.log(divider);
             const totalLatStr = totalLatency >= 1000 ? `${(totalLatency / 1000).toFixed(1)}s` : `${totalLatency}ms`;
             const totalCostStr = totalCost > 0 ? `$${totalCost.toFixed(4)}` : '-';
-            console.log(`  ${'TOTAL'.padStart(2)} | ${''.padEnd(32)} | ${String(totalIn).padStart(7)} | ${String(totalOut).padStart(7)} | ${String(totalApi).padStart(4)} | ${String(totalRounds).padStart(6)} | ${totalLatStr.padStart(9)} | ${totalCostStr}`);
+            console.log(
+              `  ${'TOTAL'.padStart(2)} | ${''.padEnd(32)} | ${String(totalIn).padStart(7)} | ${String(totalOut).padStart(7)} | ${String(totalApi).padStart(4)} | ${String(totalRounds).padStart(6)} | ${totalLatStr.padStart(9)} | ${totalCostStr}`,
+            );
 
             // Per-token cost efficiency
             const totalTok = totalIn + totalOut;
             if (totalTok > 0) {
               const avgLatPerCall = totalApi > 0 ? (totalLatency / totalApi / 1000).toFixed(2) : '-';
-              console.log(`\n  Tokens: ${totalTok.toLocaleString()} total (${totalIn.toLocaleString()} in + ${totalOut.toLocaleString()} out)`);
-              console.log(`  Avg latency/API call: ${avgLatPerCall}s  |  Results: ${runResults.length}  |  API calls: ${totalApi}`);
+              console.log(
+                `\n  Tokens: ${totalTok.toLocaleString()} total (${totalIn.toLocaleString()} in + ${totalOut.toLocaleString()} out)`,
+              );
+              console.log(
+                `  Avg latency/API call: ${avgLatPerCall}s  |  Results: ${runResults.length}  |  API calls: ${totalApi}`,
+              );
               if (totalCost > 0) {
-                console.log(`  Cost/1K tokens: $${(totalCost / totalTok * 1000).toFixed(4)}`);
+                console.log(`  Cost/1K tokens: $${((totalCost / totalTok) * 1000).toFixed(4)}`);
               }
             }
             console.log('='.repeat(80));
@@ -980,11 +1036,14 @@ async function main() {
             for (const key of cellKeys.sort()) {
               const scores = cellData[key];
               const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
-              const sd = scores.length > 1
-                ? Math.sqrt(scores.reduce((acc, s) => acc + (s - mean) ** 2, 0) / (scores.length - 1))
-                : 0;
-              const cellLabel = key.replace(/r(\d)_t(\d)_l(\d)/, (_, r, t, l) =>
-                `Recog=${r === '1' ? 'Y' : 'N'}  Tutor=${t === '1' ? 'Multi' : 'Single'}  Learner=${l === '1' ? 'Psycho' : 'Unified'}`
+              const sd =
+                scores.length > 1
+                  ? Math.sqrt(scores.reduce((acc, s) => acc + (s - mean) ** 2, 0) / (scores.length - 1))
+                  : 0;
+              const cellLabel = key.replace(
+                /r(\d)_t(\d)_l(\d)/,
+                (_, r, t, l) =>
+                  `Recog=${r === '1' ? 'Y' : 'N'}  Tutor=${t === '1' ? 'Multi' : 'Single'}  Learner=${l === '1' ? 'Psycho' : 'Unified'}`,
               );
               console.log(`  ${cellLabel.padEnd(52)} mean=${mean.toFixed(1)}  sd=${sd.toFixed(1)}  n=${scores.length}`);
             }
@@ -1014,20 +1073,18 @@ async function main() {
         console.log(`\nEvaluation runs (${runs.length} total):\n`);
         console.log(
           '  ' +
-          'ID'.padEnd(40) +
-          'Status'.padEnd(12) +
-          'Progress'.padEnd(18) +
-          'Avg'.padEnd(7) +
-          'Duration'.padEnd(10) +
-          'Created'.padEnd(24) +
-          'Description'
+            'ID'.padEnd(40) +
+            'Status'.padEnd(12) +
+            'Progress'.padEnd(18) +
+            'Avg'.padEnd(7) +
+            'Duration'.padEnd(10) +
+            'Created'.padEnd(24) +
+            'Description',
         );
         console.log('  ' + '-'.repeat(130));
 
         for (const run of runs) {
-          const created = run.createdAt
-            ? new Date(run.createdAt).toLocaleString()
-            : '--';
+          const created = run.createdAt ? new Date(run.createdAt).toLocaleString() : '--';
           // Progress: show completed/total (pct%)
           let progress = '--';
           if (run.totalTests > 0) {
@@ -1051,16 +1108,16 @@ async function main() {
             duration = m > 0 ? `${m}m ${s}s` : `${s}s`;
           }
           const desc = run.description || '';
-          const models = (run.models && run.models.length > 0) ? run.models.join(', ') : '--';
+          const models = run.models && run.models.length > 0 ? run.models.join(', ') : '--';
           console.log(
             '  ' +
-            run.id.padEnd(40) +
-            (run.status || '--').padEnd(12) +
-            progress.padEnd(18) +
-            avg.padEnd(7) +
-            duration.padEnd(10) +
-            created.padEnd(24) +
-            desc
+              run.id.padEnd(40) +
+              (run.status || '--').padEnd(12) +
+              progress.padEnd(18) +
+              avg.padEnd(7) +
+              duration.padEnd(10) +
+              created.padEnd(24) +
+              desc,
           );
           if (models !== '--') {
             console.log('  ' + `  Models: ${models}`);
@@ -1071,7 +1128,7 @@ async function main() {
       }
 
       case 'report': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'report');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'report');
         if (!runId) {
           console.error('Usage: eval-cli.js report <runId>');
           process.exit(1);
@@ -1083,7 +1140,7 @@ async function main() {
 
       case 'status': {
         // Quick snapshot of a run's current state
-        const runId = args.find(a => !a.startsWith('--') && a !== 'status');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'status');
         if (!runId) {
           console.error('Usage: eval-cli.js status <runId>');
           process.exit(1);
@@ -1103,7 +1160,8 @@ async function main() {
 
           // If JSONL has no run_start (totalTests=0), fall back to DB for the total
           if (totalTests === 0 && runData?.run) {
-            totalTests = (runData.run.totalScenarios || scenarios.length) * (runData.run.totalConfigurations || profiles.length);
+            totalTests =
+              (runData.run.totalScenarios || scenarios.length) * (runData.run.totalConfigurations || profiles.length);
           }
 
           // For resumed runs, completed can exceed total - cap display at total
@@ -1120,7 +1178,9 @@ async function main() {
 
           console.log(`\nRun: ${runId}`);
           console.log(`Status: ${statusLabel}`);
-          console.log(`Progress: ${displayCompleted}/${totalTests} tests (${pct}%)${completedTests > totalTests ? ` [${completedTests - totalTests} retried]` : ''}`);
+          console.log(
+            `Progress: ${displayCompleted}/${totalTests} tests (${pct}%)${completedTests > totalTests ? ` [${completedTests - totalTests} retried]` : ''}`,
+          );
           if (durationMs) console.log(`Duration: ${formatMs(durationMs)}`);
           console.log(`Scenarios: ${scenarios.length} | Profiles: ${profiles.length}`);
 
@@ -1128,13 +1188,9 @@ async function main() {
           if (scenarios.length > 0) {
             console.log('\nScenario completion:');
             for (const s of scenarios) {
-              const done = profiles.filter(p => grid[s]?.[p]).length;
-              const scores = profiles
-                .filter(p => grid[s]?.[p]?.score != null)
-                .map(p => grid[s][p].score);
-              const avg = scores.length > 0
-                ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
-                : '--';
+              const done = profiles.filter((p) => grid[s]?.[p]).length;
+              const scores = profiles.filter((p) => grid[s]?.[p]?.score != null).map((p) => grid[s][p].score);
+              const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '--';
               console.log(`  ${s}: ${done}/${profiles.length} profiles done, avg=${avg}`);
             }
           }
@@ -1168,13 +1224,11 @@ async function main() {
           const runData = evaluationRunner.getRunResults(runId);
           console.log(`\nRun: ${runId}`);
           console.log(`Status: ${runData.run.status}`);
-          const createdLocal = runData.run.createdAt
-            ? new Date(runData.run.createdAt).toLocaleString()
-            : '--';
+          const createdLocal = runData.run.createdAt ? new Date(runData.run.createdAt).toLocaleString() : '--';
           console.log(`Created: ${createdLocal}`);
           console.log(`Description: ${runData.run.description || 'N/A'}`);
           // Count unique (scenario, profile) pairs to handle rejudge duplicates
-          const uniqueTests = new Set(runData.results.map(r => `${r.scenarioId}:${r.profileName}`)).size;
+          const uniqueTests = new Set(runData.results.map((r) => `${r.scenarioId}:${r.profileName}`)).size;
           console.log(`Tests: ${runData.run.totalTests || uniqueTests}`);
 
           if (runData.stats.length > 0) {
@@ -1183,7 +1237,9 @@ async function main() {
               const label = stat.profileName || `${stat.provider}/${stat.model}`;
               const base = stat.avgBaseScore != null ? ` base=${stat.avgBaseScore.toFixed(1)}` : '';
               const recog = stat.avgRecognitionScore != null ? ` recog=${stat.avgRecognitionScore.toFixed(1)}` : '';
-              console.log(`  ${label}: avg=${stat.avgScore?.toFixed(1) || '--'}${base}${recog} (${stat.totalTests} tests)`);
+              console.log(
+                `  ${label}: avg=${stat.avgScore?.toFixed(1) || '--'}${base}${recog} (${stat.totalTests} tests)`,
+              );
             }
           }
         }
@@ -1193,7 +1249,7 @@ async function main() {
 
       case 'watch': {
         // Live-updating scenario×profile grid table
-        const runId = args.find(a => !a.startsWith('--') && a !== 'watch');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'watch');
         if (!runId) {
           console.error('Usage: eval-cli.js watch <runId> [--refresh 2000] [--db]');
           process.exit(1);
@@ -1230,8 +1286,8 @@ async function main() {
             const runData = evaluationRunner.getRunResults(runId);
             const results = runData.results || [];
             // Build grid from DB results
-            const scenarios = [...new Set(results.map(r => r.scenarioName || r.scenarioId))];
-            const profiles = [...new Set(results.map(r => r.profileName || `${r.provider}/${r.model}`))];
+            const scenarios = [...new Set(results.map((r) => r.scenarioName || r.scenarioId))];
+            const profiles = [...new Set(results.map((r) => r.profileName || `${r.provider}/${r.model}`))];
             const grid = {};
             for (const r of results) {
               const sName = r.scenarioName || r.scenarioId;
@@ -1243,12 +1299,21 @@ async function main() {
                 latencyMs: r.latencyMs,
               };
             }
-            const totalTests = (runData.run.totalScenarios || scenarios.length) * (runData.run.totalConfigurations || profiles.length);
+            const totalTests =
+              (runData.run.totalScenarios || scenarios.length) * (runData.run.totalConfigurations || profiles.length);
             const done = runData.run.status === 'completed';
             // Count unique (scenario, profile) pairs instead of total rows (handles rejudge duplicates)
-            const uniqueCompleted = new Set(results.map(r => `${r.scenarioId}:${r.profileName}`)).size;
+            const uniqueCompleted = new Set(results.map((r) => `${r.scenarioId}:${r.profileName}`)).size;
             return {
-              output: renderGrid({ scenarios, profiles, grid, completedTests: uniqueCompleted, totalTests, runDone: done, durationMs: null }),
+              output: renderGrid({
+                scenarios,
+                profiles,
+                grid,
+                completedTests: uniqueCompleted,
+                totalTests,
+                runDone: done,
+                durationMs: null,
+              }),
               done,
             };
           } catch (e) {
@@ -1300,9 +1365,11 @@ async function main() {
       }
 
       case 'transcript': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'transcript');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'transcript');
         if (!runId) {
-          console.error('Usage: eval-cli.js transcript <runId> [--scenario <id>] [--detail play|compact|messages-only|full|bilateral]');
+          console.error(
+            'Usage: eval-cli.js transcript <runId> [--scenario <id>] [--detail play|compact|messages-only|full|bilateral]',
+          );
           process.exit(1);
         }
 
@@ -1329,14 +1396,16 @@ async function main() {
           console.log('='.repeat(80));
           console.log(`Scenario: ${result.scenarioName || result.scenarioId}`);
           console.log(`Profile:  ${result.profileName || `${result.provider}/${result.model}`}`);
-          console.log(`Score:    ${result.overallScore != null ? result.overallScore.toFixed(1) : '--'}  |  Success: ${result.success}`);
+          console.log(
+            `Score:    ${result.overallScore != null ? result.overallScore.toFixed(1) : '--'}  |  Success: ${result.success}`,
+          );
           console.log('-'.repeat(80));
 
           // Try dialogue log file first (rich trace with metadata)
           let printed = false;
           if (result.dialogueId) {
             const files = fs.existsSync(LOGS_DIR)
-              ? fs.readdirSync(LOGS_DIR).filter(f => f.includes(result.dialogueId))
+              ? fs.readdirSync(LOGS_DIR).filter((f) => f.includes(result.dialogueId))
               : [];
 
             if (files.length > 0) {
@@ -1364,7 +1433,7 @@ async function main() {
             if (result.suggestions?.length > 0) {
               console.log('Suggestions:');
               for (const s of result.suggestions) {
-                const text = typeof s === 'string' ? s : (s.text || s.content || JSON.stringify(s));
+                const text = typeof s === 'string' ? s : s.text || s.content || JSON.stringify(s);
                 console.log(`  \u2022 ${text}`);
               }
               console.log('');
@@ -1384,7 +1453,7 @@ async function main() {
 
         // Also check for interaction evals
         const interactionEvals = evaluationStore.listInteractionEvals({ limit: 200 });
-        const runInteractions = interactionEvals.filter(e => e.runId === runId);
+        const runInteractions = interactionEvals.filter((e) => e.runId === runId);
 
         if (runInteractions.length > 0) {
           console.log('\n' + '='.repeat(80));
@@ -1436,7 +1505,9 @@ async function main() {
         } else if (dryRun) {
           console.log(`Found ${result.found} stale run(s):\n`);
           for (const run of result.runs) {
-            console.log(`  ${run.id}  age=${run.ageMinutes}m  results=${run.resultsFound}  desc="${run.description || ''}"` );
+            console.log(
+              `  ${run.id}  age=${run.ageMinutes}m  results=${run.resultsFound}  desc="${run.description || ''}"`,
+            );
           }
           console.log('\nRe-run with --force to mark these as completed.');
         } else {
@@ -1453,7 +1524,7 @@ async function main() {
       }
 
       case 'resume': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'resume');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'resume');
         if (!runId) {
           console.error('Usage: eval-cli.js resume <runId> [--parallelism N] [--verbose] [--force]');
           process.exit(1);
@@ -1480,12 +1551,13 @@ async function main() {
           const dotIdx = raw.indexOf('.');
           return dotIdx !== -1 ? raw.slice(dotIdx + 1) : raw;
         };
-        const modelAliases = [...new Set(
-          (result.stats || []).flatMap(s => [
-            extractAlias(s.egoModel || s.model),
-            extractAlias(s.superegoModel),
-          ]).filter(Boolean)
-        )];
+        const modelAliases = [
+          ...new Set(
+            (result.stats || [])
+              .flatMap((s) => [extractAlias(s.egoModel || s.model), extractAlias(s.superegoModel)])
+              .filter(Boolean),
+          ),
+        ];
 
         console.log('\nResume complete.');
         if (modelAliases.length > 0) {
@@ -1518,11 +1590,14 @@ async function main() {
             for (const key of cellKeys.sort()) {
               const scores = cellData[key];
               const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
-              const sd = scores.length > 1
-                ? Math.sqrt(scores.reduce((acc, s) => acc + (s - mean) ** 2, 0) / (scores.length - 1))
-                : 0;
-              const cellLabel = key.replace(/r(\d)_t(\d)_l(\d)/, (_, r, t, l) =>
-                `Recog=${r === '1' ? 'Y' : 'N'}  Tutor=${t === '1' ? 'Multi' : 'Single'}  Learner=${l === '1' ? 'Psycho' : 'Unified'}`
+              const sd =
+                scores.length > 1
+                  ? Math.sqrt(scores.reduce((acc, s) => acc + (s - mean) ** 2, 0) / (scores.length - 1))
+                  : 0;
+              const cellLabel = key.replace(
+                /r(\d)_t(\d)_l(\d)/,
+                (_, r, t, l) =>
+                  `Recog=${r === '1' ? 'Y' : 'N'}  Tutor=${t === '1' ? 'Multi' : 'Single'}  Learner=${l === '1' ? 'Psycho' : 'Unified'}`,
               );
               console.log(`  ${cellLabel.padEnd(52)} mean=${mean.toFixed(1)}  sd=${sd.toFixed(1)}  n=${scores.length}`);
             }
@@ -1539,7 +1614,7 @@ async function main() {
       }
 
       case 'revert': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'revert');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'revert');
         if (!runId) {
           console.error('Usage: eval-cli.js revert <runId>');
           process.exit(1);
@@ -1568,9 +1643,11 @@ async function main() {
       }
 
       case 'rejudge': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'rejudge');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'rejudge');
         if (!runId) {
-          console.error('Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose] [--overwrite]');
+          console.error(
+            'Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose] [--overwrite]',
+          );
           console.error('');
           console.error('By default, creates new rows (preserves history for inter-judge reliability).');
           console.error('Use --overwrite to replace existing scores instead.');
@@ -1627,7 +1704,7 @@ async function main() {
       }
 
       case 'export': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'export');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'export');
         if (!runId) {
           console.error('Usage: eval-cli.js export <runId> [--scenario <id>] [--profile <name>] [--output <path>]');
           process.exit(1);
@@ -1711,7 +1788,7 @@ async function main() {
           // Dialogue trace
           if (result.dialogueId) {
             const files = fs.existsSync(LOGS_DIR)
-              ? fs.readdirSync(LOGS_DIR).filter(f => f.includes(result.dialogueId))
+              ? fs.readdirSync(LOGS_DIR).filter((f) => f.includes(result.dialogueId))
               : [];
 
             if (files.length > 0) {
@@ -1758,9 +1835,11 @@ async function main() {
       }
 
       case 'evaluate': {
-        const runId = args.find(a => !a.startsWith('--') && a !== 'evaluate');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
-          console.error('Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--force] [--follow] [--review] [--refresh <ms>] [--verbose]');
+          console.error(
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--force] [--follow] [--review] [--refresh <ms>] [--verbose]',
+          );
           process.exit(1);
         }
 
@@ -1824,7 +1903,9 @@ async function main() {
                     })),
                   };
                   if (verbose) {
-                    console.log(`${tag}   loaded dialogue transcript (${dialogueLog.dialogueTrace.length} trace entries)`);
+                    console.log(
+                      `${tag}   loaded dialogue transcript (${dialogueLog.dialogueTrace.length} trace entries)`,
+                    );
                   }
                 }
               }
@@ -1833,14 +1914,18 @@ async function main() {
             }
           }
 
-          const prompt = buildEvaluationPrompt(suggestion, {
-            name: scenario.name,
-            description: scenario.description,
-            expectedBehavior: scenario.expected_behavior,
-            learnerContext: scenario.learner_context,
-            requiredElements: scenario.required_elements,
-            forbiddenElements: scenario.forbidden_elements,
-          }, { dialogueContext });
+          const prompt = buildEvaluationPrompt(
+            suggestion,
+            {
+              name: scenario.name,
+              description: scenario.description,
+              expectedBehavior: scenario.expected_behavior,
+              learnerContext: scenario.learner_context,
+              requiredElements: scenario.required_elements,
+              forbiddenElements: scenario.forbidden_elements,
+            },
+            { dialogueContext },
+          );
 
           const claudeArgs = ['-p', '-', '--output-format', 'text'];
           if (modelOverride) {
@@ -1860,10 +1945,14 @@ async function main() {
             });
             let out = '';
             let err = '';
-            child.stdout.on('data', d => { out += d; });
-            child.stderr.on('data', d => { err += d; });
+            child.stdout.on('data', (d) => {
+              out += d;
+            });
+            child.stderr.on('data', (d) => {
+              err += d;
+            });
             child.on('error', reject);
-            child.on('close', code => {
+            child.on('close', (code) => {
               if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
               else resolve(out);
             });
@@ -1905,9 +1994,8 @@ async function main() {
             }
           }
 
-          const overallScore = Object.keys(normalizedScores).length > 0
-            ? calculateOverallScore(normalizedScores)
-            : parsed.overall_score;
+          const overallScore =
+            Object.keys(normalizedScores).length > 0 ? calculateOverallScore(normalizedScores) : parsed.overall_score;
           const baseScore = calculateBaseScore(normalizedScores);
           const recognitionScore = calculateRecognitionScore(normalizedScores);
 
@@ -1934,19 +2022,20 @@ async function main() {
 
           if (verbose) {
             // Truncated suggestion excerpt
-            const suggText = typeof suggestion === 'string'
-              ? suggestion
-              : (suggestion.message || suggestion.text || suggestion.content || JSON.stringify(suggestion));
-            const truncSugg = suggText.length > 200
-              ? suggText.slice(0, 200).replace(/\n/g, ' ') + '...'
-              : suggText.replace(/\n/g, ' ');
+            const suggText =
+              typeof suggestion === 'string'
+                ? suggestion
+                : suggestion.message || suggestion.text || suggestion.content || JSON.stringify(suggestion);
+            const truncSugg =
+              suggText.length > 200 ? suggText.slice(0, 200).replace(/\n/g, ' ') + '...' : suggText.replace(/\n/g, ' ');
             console.log(`     Suggestion: ${truncSugg}`);
 
             // Judge summary
             if (parsed.summary) {
-              const truncSummary = parsed.summary.length > 300
-                ? parsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
-                : parsed.summary.replace(/\n/g, ' ');
+              const truncSummary =
+                parsed.summary.length > 300
+                  ? parsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                  : parsed.summary.replace(/\n/g, ' ');
               console.log(`     Judge: ${truncSummary}`);
             }
             console.log('');
@@ -1957,9 +2046,7 @@ async function main() {
 
         // Helper: print summary
         function printEvaluateSummary(succeeded, failed, totalAttempted, scores) {
-          const avgScore = scores.length > 0
-            ? scores.reduce((a, b) => a + b, 0) / scores.length
-            : 0;
+          const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
 
           console.log('\n' + '='.repeat(50));
           console.log('  EVALUATE SUMMARY');
@@ -2038,16 +2125,20 @@ async function main() {
               continue;
             }
 
-            const prompt = buildEvaluationPrompt(lastSuggestion, {
-              name: `${scenario.name} (holistic dialogue)`,
-              description: `Holistic evaluation of ${results.length}-turn dialogue. Score the overall quality of the tutoring interaction across all turns, not just this final response.`,
-              expectedBehavior: scenario.expected_behavior,
-              learnerContext: scenario.learner_context,
-              requiredElements: scenario.required_elements,
-              forbiddenElements: scenario.forbidden_elements,
-            }, {
-              dialogueContext: { conversationHistory, consolidatedTrace },
-            });
+            const prompt = buildEvaluationPrompt(
+              lastSuggestion,
+              {
+                name: `${scenario.name} (holistic dialogue)`,
+                description: `Holistic evaluation of ${results.length}-turn dialogue. Score the overall quality of the tutoring interaction across all turns, not just this final response.`,
+                expectedBehavior: scenario.expected_behavior,
+                learnerContext: scenario.learner_context,
+                requiredElements: scenario.required_elements,
+                forbiddenElements: scenario.forbidden_elements,
+              },
+              {
+                dialogueContext: { conversationHistory, consolidatedTrace },
+              },
+            );
 
             try {
               const claudeArgs = ['-p', '-', '--output-format', 'text'];
@@ -2062,10 +2153,14 @@ async function main() {
                 });
                 let out = '';
                 let err = '';
-                child.stdout.on('data', d => { out += d; });
-                child.stderr.on('data', d => { err += d; });
+                child.stdout.on('data', (d) => {
+                  out += d;
+                });
+                child.stderr.on('data', (d) => {
+                  err += d;
+                });
                 child.on('error', reject);
-                child.on('close', code => {
+                child.on('close', (code) => {
                   if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
                   else resolve(out);
                 });
@@ -2089,9 +2184,13 @@ async function main() {
 
               const normalizedScores = {};
               const dimensionMap = {
-                relevance: 'relevance', specificity: 'specificity',
-                pedagogical_soundness: 'pedagogical', pedagogical: 'pedagogical',
-                personalization: 'personalization', actionability: 'actionability', tone: 'tone',
+                relevance: 'relevance',
+                specificity: 'specificity',
+                pedagogical_soundness: 'pedagogical',
+                pedagogical: 'pedagogical',
+                personalization: 'personalization',
+                actionability: 'actionability',
+                tone: 'tone',
               };
               for (const [key, value] of Object.entries(parsed.scores || {})) {
                 const normalizedKey = dimensionMap[key] || key;
@@ -2102,8 +2201,10 @@ async function main() {
                 }
               }
 
-              const overallScore = Object.keys(normalizedScores).length > 0
-                ? calculateOverallScore(normalizedScores) : parsed.overall_score;
+              const overallScore =
+                Object.keys(normalizedScores).length > 0
+                  ? calculateOverallScore(normalizedScores)
+                  : parsed.overall_score;
               const baseScore = calculateBaseScore(normalizedScores);
               const recognitionScore = calculateRecognitionScore(normalizedScores);
 
@@ -2121,11 +2222,14 @@ async function main() {
               fs.writeFileSync(logPath, JSON.stringify(dialogueLog, null, 2));
 
               const profileName = lastResult.profileName || `${lastResult.provider}/${lastResult.model}`;
-              console.log(`  ${scenarioId} / ${profileName} ... holistic=${overallScore.toFixed(1)} (base=${baseScore.toFixed(1)} recog=${recognitionScore.toFixed(1)})`);
+              console.log(
+                `  ${scenarioId} / ${profileName} ... holistic=${overallScore.toFixed(1)} (base=${baseScore.toFixed(1)} recog=${recognitionScore.toFixed(1)})`,
+              );
               if (verbose && parsed.summary) {
-                const truncSummary = parsed.summary.length > 300
-                  ? parsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
-                  : parsed.summary.replace(/\n/g, ' ');
+                const truncSummary =
+                  parsed.summary.length > 300
+                    ? parsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                    : parsed.summary.replace(/\n/g, ' ');
                 console.log(`     Judge: ${truncSummary}\n`);
               }
             } catch (err) {
@@ -2147,7 +2251,7 @@ async function main() {
             process.exit(1);
           }
 
-          const evaluated = results.filter(r => r.baseScore != null);
+          const evaluated = results.filter((r) => r.baseScore != null);
           if (evaluated.length === 0) {
             console.log('No evaluated results to review. Run evaluate first.');
             break;
@@ -2168,25 +2272,30 @@ async function main() {
               })
               .join(' ');
 
-            console.log(`[${i + 1}/${evaluated.length}] ${r.scenarioId} / ${profileName} ... ${r.overallScore?.toFixed(1) ?? '--'}  (${dimScores})`);
+            console.log(
+              `[${i + 1}/${evaluated.length}] ${r.scenarioId} / ${profileName} ... ${r.overallScore?.toFixed(1) ?? '--'}  (${dimScores})`,
+            );
 
             // Suggestion excerpt
             const suggestion = r.suggestions?.[0];
             if (suggestion) {
-              const suggText = typeof suggestion === 'string'
-                ? suggestion
-                : (suggestion.message || suggestion.text || suggestion.content || JSON.stringify(suggestion));
-              const truncSugg = suggText.length > 200
-                ? suggText.slice(0, 200).replace(/\n/g, ' ') + '...'
-                : suggText.replace(/\n/g, ' ');
+              const suggText =
+                typeof suggestion === 'string'
+                  ? suggestion
+                  : suggestion.message || suggestion.text || suggestion.content || JSON.stringify(suggestion);
+              const truncSugg =
+                suggText.length > 200
+                  ? suggText.slice(0, 200).replace(/\n/g, ' ') + '...'
+                  : suggText.replace(/\n/g, ' ');
               console.log(`     Suggestion: ${truncSugg}`);
             }
 
             // Judge summary
             if (r.evaluationReasoning) {
-              const truncReasoning = r.evaluationReasoning.length > 300
-                ? r.evaluationReasoning.slice(0, 300).replace(/\n/g, ' ') + '...'
-                : r.evaluationReasoning.replace(/\n/g, ' ');
+              const truncReasoning =
+                r.evaluationReasoning.length > 300
+                  ? r.evaluationReasoning.slice(0, 300).replace(/\n/g, ' ') + '...'
+                  : r.evaluationReasoning.replace(/\n/g, ' ');
               console.log(`     Judge: ${truncReasoning}`);
             }
 
@@ -2194,9 +2303,10 @@ async function main() {
             if (verbose && r.scores) {
               for (const [dim, val] of Object.entries(r.scores)) {
                 if (typeof val === 'object' && val?.reasoning) {
-                  const truncDim = val.reasoning.length > 150
-                    ? val.reasoning.slice(0, 150).replace(/\n/g, ' ') + '...'
-                    : val.reasoning.replace(/\n/g, ' ');
+                  const truncDim =
+                    val.reasoning.length > 150
+                      ? val.reasoning.slice(0, 150).replace(/\n/g, ' ') + '...'
+                      : val.reasoning.replace(/\n/g, ' ');
                   console.log(`       ${dim} (${val.score}): ${truncDim}`);
                 }
               }
@@ -2205,7 +2315,7 @@ async function main() {
           }
 
           // Quick stats
-          const reviewScores = evaluated.map(r => r.overallScore).filter(s => s != null);
+          const reviewScores = evaluated.map((r) => r.overallScore).filter((s) => s != null);
           if (reviewScores.length > 0) {
             const avg = reviewScores.reduce((a, b) => a + b, 0) / reviewScores.length;
             const sd = Math.sqrt(reviewScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (reviewScores.length - 1));
@@ -2225,8 +2335,8 @@ async function main() {
             scenarioId: scenarioFilter,
             profileName: profileFilter,
           });
-          const initialTotal = initialResults.filter(r => r.success).length;
-          const initialUnevaluated = initialResults.filter(r => r.baseScore == null && r.success).length;
+          const initialTotal = initialResults.filter((r) => r.success).length;
+          const initialUnevaluated = initialResults.filter((r) => r.baseScore == null && r.success).length;
           const initialEvaluated = initialTotal - initialUnevaluated;
 
           console.log(`\nFollowing run: ${runId}`);
@@ -2249,7 +2359,7 @@ async function main() {
           };
           process.on('SIGINT', sigintHandler);
 
-          const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+          const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
           while (!interrupted) {
             // Fetch results that have a suggestion but no rubric evaluation
@@ -2258,13 +2368,11 @@ async function main() {
               profileName: profileFilter,
             });
 
-            const unevaluated = results.filter(r =>
-              r.baseScore == null && r.success && !processedIds.has(r.id)
-            );
+            const unevaluated = results.filter((r) => r.baseScore == null && r.success && !processedIds.has(r.id));
 
             // Total results available so far (for progress display)
-            const totalResults = results.filter(r => r.success).length;
-            const alreadyEvaluated = results.filter(r => r.baseScore != null && r.success).length;
+            const totalResults = results.filter((r) => r.success).length;
+            const alreadyEvaluated = results.filter((r) => r.baseScore != null && r.success).length;
 
             // Process each new unevaluated result
             let batchIndex = 0;
@@ -2304,8 +2412,8 @@ async function main() {
                 scenarioId: scenarioFilter,
                 profileName: profileFilter,
               });
-              const finalUnevaluated = finalResults.filter(r =>
-                r.baseScore == null && r.success && !processedIds.has(r.id)
+              const finalUnevaluated = finalResults.filter(
+                (r) => r.baseScore == null && r.success && !processedIds.has(r.id),
               );
               if (finalUnevaluated.length === 0) {
                 console.log(`\nRun ${runStatus}. All results evaluated.`);
@@ -2314,8 +2422,10 @@ async function main() {
             }
 
             // Status line while waiting
-            const evaluatedCount = results.filter(r => r.baseScore != null).length;
-            console.log(`Waiting for new results... (${evaluatedCount} evaluated of ${totalResults} total, run ${runStatus})`);
+            const evaluatedCount = results.filter((r) => r.baseScore != null).length;
+            console.log(
+              `Waiting for new results... (${evaluatedCount} evaluated of ${totalResults} total, run ${runStatus})`,
+            );
 
             await sleep(refreshMs);
           }
@@ -2324,12 +2434,13 @@ async function main() {
           printEvaluateSummary(succeeded, failed, succeeded + failed, scores);
 
           // Holistic dialogue evaluation for multi-turn dialogues
-          const allResults = evaluationStore.getResults(runId, {
-            scenarioId: scenarioFilter,
-            profileName: profileFilter,
-          }).filter(r => r.success && r.baseScore != null);
+          const allResults = evaluationStore
+            .getResults(runId, {
+              scenarioId: scenarioFilter,
+              profileName: profileFilter,
+            })
+            .filter((r) => r.success && r.baseScore != null);
           await evaluateHolisticDialogues(allResults);
-
         } else {
           // ── One-shot mode (existing behavior) ──
 
@@ -2346,12 +2457,12 @@ async function main() {
 
           // Filter to unevaluated results unless --force
           // Use baseScore == null to detect skip-rubric results (overallScore=100 but no rubric dims)
-          const toEvaluate = force
-            ? results
-            : results.filter(r => r.baseScore == null && r.success);
+          const toEvaluate = force ? results : results.filter((r) => r.baseScore == null && r.success);
 
           if (toEvaluate.length === 0) {
-            console.log('All results already have rubric scores. Use --review to inspect reasoning, or --force to re-evaluate.');
+            console.log(
+              'All results already have rubric scores. Use --review to inspect reasoning, or --force to re-evaluate.',
+            );
             break;
           }
 
@@ -2383,7 +2494,7 @@ async function main() {
           printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
 
           // Holistic dialogue evaluation for multi-turn dialogues
-          await evaluateHolisticDialogues(toEvaluate.filter(r => r.success));
+          await evaluateHolisticDialogues(toEvaluate.filter((r) => r.success));
         }
         break;
       }
@@ -2400,9 +2511,11 @@ async function main() {
         //   3. Call Claude as judge
         //   4. Store per-turn scores as JSON + overall learner score on the result row
 
-        const runId = args.find(a => !a.startsWith('--') && a !== 'evaluate-learner');
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate-learner');
         if (!runId) {
-          console.error('Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>]');
+          console.error(
+            'Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>]',
+          );
           console.error('  Scores learner turns from dialogue logs using the learner rubric.');
           console.error('  Only works on multi-turn runs with learner turns (e.g., bilateral transformation).');
           console.error('  --arch filters by learner_architecture (e.g., ego_superego_recognition)');
@@ -2417,9 +2530,9 @@ async function main() {
 
         // Load results with dialogue IDs (multi-turn data)
         const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
-        let dialogueResults = allResults.filter(r => r.dialogueId && r.success);
+        let dialogueResults = allResults.filter((r) => r.dialogueId && r.success);
         if (archFilter) {
-          dialogueResults = dialogueResults.filter(r => r.learnerArchitecture === archFilter);
+          dialogueResults = dialogueResults.filter((r) => r.learnerArchitecture === archFilter);
         }
 
         if (dialogueResults.length === 0) {
@@ -2429,9 +2542,7 @@ async function main() {
         }
 
         // Filter to those needing learner evaluation (unless --force)
-        const toEvaluate = force
-          ? dialogueResults
-          : dialogueResults.filter(r => r.learnerOverallScore == null);
+        const toEvaluate = force ? dialogueResults : dialogueResults.filter((r) => r.learnerOverallScore == null);
 
         if (toEvaluate.length === 0) {
           console.log('All dialogue results already have learner scores. Use --force to re-evaluate.');
@@ -2475,14 +2586,17 @@ async function main() {
 
           const trace = dialogueLog.dialogueTrace || [];
           const learnerArch = dialogueLog.learnerArchitecture || 'unified';
-          const isMultiAgent = learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
+          const isMultiAgent =
+            learnerArch.includes('ego_superego') ||
+            learnerArch === 'multi_agent' ||
+            learnerArch.includes('psychodynamic');
 
           // Extract learner turns from dialogue trace.
           // Each learner turn consists of:
           //   - turn_action entry (contextSummary = external message)
           //   - For multi-agent: preceding learner_ego_initial, learner_superego, learner_ego_revision entries
           const learnerTurns = [];
-          const turnActionEntries = trace.filter(t => t.agent === 'user' && t.action === 'turn_action');
+          const turnActionEntries = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action');
 
           for (const ta of turnActionEntries) {
             const turnData = {
@@ -2571,8 +2685,8 @@ async function main() {
           // Score each learner turn
           for (let lt = 0; lt < learnerTurns.length; lt++) {
             // Find the learner turn's index in reconstructedTurns
-            const targetIdx = reconstructedTurns.findIndex((t, idx) =>
-              t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0
+            const targetIdx = reconstructedTurns.findIndex(
+              (t, idx) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0,
             );
 
             if (targetIdx === -1) continue;
@@ -2608,10 +2722,14 @@ async function main() {
                 });
                 let out = '';
                 let err = '';
-                child.stdout.on('data', d => { out += d; });
-                child.stderr.on('data', d => { err += d; });
+                child.stdout.on('data', (d) => {
+                  out += d;
+                });
+                child.stderr.on('data', (d) => {
+                  err += d;
+                });
                 child.on('error', reject);
-                child.on('close', code => {
+                child.on('close', (code) => {
                   if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
                   else resolve(out);
                 });
@@ -2661,7 +2779,7 @@ async function main() {
 
           if (turnSucceeded > 0) {
             // Calculate dialogue-level learner score (average across turns)
-            const turnOveralls = Object.values(turnScores).map(ts => ts.overallScore);
+            const turnOveralls = Object.values(turnScores).map((ts) => ts.overallScore);
             const dialogueLearnerScore = turnOveralls.reduce((a, b) => a + b, 0) / turnOveralls.length;
 
             // Store in database on the evaluation_results row
@@ -2674,7 +2792,9 @@ async function main() {
             allScores.push(dialogueLearnerScore);
             succeeded++;
 
-            console.log(`  → Dialogue learner score: ${dialogueLearnerScore.toFixed(1)} (${turnSucceeded} turns scored)`);
+            console.log(
+              `  → Dialogue learner score: ${dialogueLearnerScore.toFixed(1)} (${turnSucceeded} turns scored)`,
+            );
             console.log('');
           } else {
             failed++;
@@ -2690,9 +2810,10 @@ async function main() {
         console.log(`  Failed:    ${failed}`);
         if (allScores.length > 0) {
           const avg = allScores.reduce((a, b) => a + b, 0) / allScores.length;
-          const sd = allScores.length > 1
-            ? Math.sqrt(allScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (allScores.length - 1))
-            : 0;
+          const sd =
+            allScores.length > 1
+              ? Math.sqrt(allScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (allScores.length - 1))
+              : 0;
           console.log(`  Avg learner score: ${avg.toFixed(1)} (SD=${sd.toFixed(1)})`);
         }
         console.log('');
@@ -2701,7 +2822,9 @@ async function main() {
 
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, evaluate-learner, chat');
+        console.error(
+          'Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, evaluate-learner, chat',
+        );
         process.exit(1);
     }
   } catch (error) {

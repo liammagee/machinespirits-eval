@@ -102,9 +102,7 @@ export function loadLecture(lectureRef) {
   const parsed = parseLectureRef(lectureRef);
   if (!parsed) return null;
 
-  const filePath = path.join(
-    contentPackagePath, 'courses', parsed.courseId, `lecture-${parsed.lectureNum}.md`
-  );
+  const filePath = path.join(contentPackagePath, 'courses', parsed.courseId, `lecture-${parsed.lectureNum}.md`);
 
   try {
     const stats = fs.statSync(filePath);
@@ -129,7 +127,10 @@ export function loadLecture(lectureRef) {
  */
 export function parseLectureMarkdown(raw) {
   // Split on slide delimiter (--- on its own line)
-  const slides = raw.split(/\n---\n/).map(s => s.trim()).filter(Boolean);
+  const slides = raw
+    .split(/\n---\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   const notes = [];
   const contentSlides = [];
@@ -169,7 +170,9 @@ export function buildCurriculumContext(opts = {}) {
     if (parsed) courseIds = [parsed.courseId];
   }
   if (!courseIds || courseIds.length === 0) {
-    console.warn('[contentResolver] No course hint provided (missing current_content or course_ids on scenario) — skipping curriculum context');
+    console.warn(
+      '[contentResolver] No course hint provided (missing current_content or course_ids on scenario) — skipping curriculum context',
+    );
     return null;
   }
 
@@ -181,7 +184,8 @@ export function buildCurriculumContext(opts = {}) {
 
     // Course overview
     parts.push(`## Course: EPOL ${courseId} - ${meta.title || courseId}`);
-    if (meta.instructor) parts.push(`Instructor: ${meta.instructor}${meta.semester ? ` | Semester: ${meta.semester}` : ''}`);
+    if (meta.instructor)
+      parts.push(`Instructor: ${meta.instructor}${meta.semester ? ` | Semester: ${meta.semester}` : ''}`);
     if (meta.description) parts.push(`Description: ${meta.description.trim()}`);
     if (meta.objectives?.length) {
       parts.push('Objectives:');
@@ -281,10 +285,9 @@ export function listAvailableCourses() {
 
   const coursesDir = path.join(contentPackagePath, 'courses');
   try {
-    return fs.readdirSync(coursesDir).filter(name => {
+    return fs.readdirSync(coursesDir).filter((name) => {
       const courseDir = path.join(coursesDir, name);
-      return fs.statSync(courseDir).isDirectory() &&
-        fs.existsSync(path.join(courseDir, 'course.md'));
+      return fs.statSync(courseDir).isDirectory() && fs.existsSync(path.join(courseDir, 'course.md'));
     });
   } catch {
     return [];
@@ -369,8 +372,9 @@ function listCourseLectures(courseId) {
   if (!contentPackagePath) return [];
   const courseDir = path.join(contentPackagePath, 'courses', courseId);
   try {
-    return fs.readdirSync(courseDir)
-      .filter(f => /^lecture-\d+\.md$/.test(f))
+    return fs
+      .readdirSync(courseDir)
+      .filter((f) => /^lecture-\d+\.md$/.test(f))
       .sort((a, b) => {
         const na = parseInt(a.match(/\d+/)[0], 10);
         const nb = parseInt(b.match(/\d+/)[0], 10);

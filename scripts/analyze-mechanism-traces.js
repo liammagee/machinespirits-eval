@@ -37,14 +37,18 @@ const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
 
 function tokenize(text) {
   if (!text) return [];
-  return text.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
 }
 
 function jaccardSimilarity(a, b) {
   const setA = new Set(tokenize(a));
   const setB = new Set(tokenize(b));
   if (setA.size === 0 && setB.size === 0) return 1;
-  const intersection = new Set([...setA].filter(x => setB.has(x)));
+  const intersection = new Set([...setA].filter((x) => setB.has(x)));
   const union = new Set([...setA, ...setB]);
   return intersection.size / union.size;
 }
@@ -57,11 +61,17 @@ function cosineSimilarity(a, b) {
 
   const freqA = {};
   const freqB = {};
-  tokensA.forEach(t => { freqA[t] = (freqA[t] || 0) + 1; });
-  tokensB.forEach(t => { freqB[t] = (freqB[t] || 0) + 1; });
+  tokensA.forEach((t) => {
+    freqA[t] = (freqA[t] || 0) + 1;
+  });
+  tokensB.forEach((t) => {
+    freqB[t] = (freqB[t] || 0) + 1;
+  });
 
   const allTokens = new Set([...Object.keys(freqA), ...Object.keys(freqB)]);
-  let dot = 0, magA = 0, magB = 0;
+  let dot = 0,
+    magA = 0,
+    magB = 0;
   for (const t of allTokens) {
     const va = freqA[t] || 0;
     const vb = freqB[t] || 0;
@@ -90,9 +100,8 @@ function editDistance(a, b) {
   for (let j = 0; j <= n; j++) dp[0][j] = j;
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      dp[i][j] = sa[i - 1] === sb[j - 1]
-        ? dp[i - 1][j - 1]
-        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      dp[i][j] =
+        sa[i - 1] === sb[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
     }
   }
   return dp[m][n] / Math.max(m, n);
@@ -128,13 +137,13 @@ function isRecognition(profileName) {
 function measureRevisionMagnitude(trace) {
   const results = [];
   // Group by round pairs: generate at round N, revise at round N+1
-  const generates = trace.filter(e => e.agent === 'ego' && e.action === 'generate');
-  const revisions = trace.filter(e => e.agent === 'ego' && e.action === 'revise');
+  const generates = trace.filter((e) => e.agent === 'ego' && e.action === 'generate');
+  const revisions = trace.filter((e) => e.agent === 'ego' && e.action === 'revise');
 
   for (const gen of generates) {
     const genMsg = gen.suggestions?.[0]?.message || '';
     // Find the revision that follows this generation (same or next round)
-    const rev = revisions.find(r => r.round >= gen.round);
+    const rev = revisions.find((r) => r.round >= gen.round);
     if (!rev) continue;
     const revMsg = rev.suggestions?.[0]?.message || '';
     if (!genMsg || !revMsg) continue;
@@ -154,27 +163,42 @@ function measureRevisionMagnitude(trace) {
 // ── Measure 2: Self-Reflection Specificity ──────────────────────────────
 
 const LEARNER_SPECIFIC_PATTERNS = [
-  /the learner/gi, /they said/gi, /they asked/gi, /their (?:question|response|point|insight|critique)/gi,
-  /the student/gi, /learner's/gi, /their (?:argument|claim|objection)/gi,
+  /the learner/gi,
+  /they said/gi,
+  /they asked/gi,
+  /their (?:question|response|point|insight|critique)/gi,
+  /the student/gi,
+  /learner's/gi,
+  /their (?:argument|claim|objection)/gi,
   /you (?:said|asked|raised|pointed|mentioned|noted)/gi,
   /your (?:question|response|point|insight|critique|argument|claim)/gi,
-  /specific(?:ally)/gi, /in this case/gi, /this particular/gi,
-  /when they/gi, /after they/gi, /because they/gi,
+  /specific(?:ally)/gi,
+  /in this case/gi,
+  /this particular/gi,
+  /when they/gi,
+  /after they/gi,
+  /because they/gi,
 ];
 
 const GENERIC_PEDAGOGY_PATTERNS = [
-  /in general/gi, /typically/gi, /usually/gi, /always/gi,
-  /best practice/gi, /should (?:always|generally|typically)/gi,
-  /it's important to/gi, /one should/gi, /a good (?:tutor|teacher)/gi,
-  /pedagogical(?:ly)?/gi, /scaffolding/gi, /next time/gi,
+  /in general/gi,
+  /typically/gi,
+  /usually/gi,
+  /always/gi,
+  /best practice/gi,
+  /should (?:always|generally|typically)/gi,
+  /it's important to/gi,
+  /one should/gi,
+  /a good (?:tutor|teacher)/gi,
+  /pedagogical(?:ly)?/gi,
+  /scaffolding/gi,
+  /next time/gi,
 ];
 
 function measureReflectionSpecificity(trace) {
-  const reflections = trace.filter(e =>
-    e.agent === 'ego_self_reflection' || e.agent === 'superego_self_reflection'
-  );
+  const reflections = trace.filter((e) => e.agent === 'ego_self_reflection' || e.agent === 'superego_self_reflection');
 
-  return reflections.map(r => {
+  return reflections.map((r) => {
     const text = r.detail || '';
     const words = tokenize(text).length;
 
@@ -252,13 +276,11 @@ function measureCrossTurnAdaptation(trace) {
 // ── Measure 4: Profile Richness & Evolution ─────────────────────────────
 
 function measureProfileRichness(trace) {
-  const profiles = trace.filter(e =>
-    e.agent === 'tutor_other_ego' || e.agent === 'learner_other_ego'
-  );
+  const profiles = trace.filter((e) => e.agent === 'tutor_other_ego' || e.agent === 'learner_other_ego');
 
   if (profiles.length === 0) return { profiles: [], evolution: [] };
 
-  const profileData = profiles.map(p => {
+  const profileData = profiles.map((p) => {
     const text = p.detail || '';
     const words = tokenize(text).length;
     // Count dimensions mentioned (numbered sections or bold headers)
@@ -309,22 +331,37 @@ function measureProfileRichness(trace) {
 // ── Measure 5: Intersubjective Coordination ─────────────────────────────
 
 const AGREEMENT_MARKERS = [
-  /i agree/gi, /you're right/gi, /fair point/gi, /well said/gi,
-  /exactly/gi, /that's true/gi, /good catch/gi, /you're correct/gi,
-  /i'm relieved/gi, /helpful/gi,
+  /i agree/gi,
+  /you're right/gi,
+  /fair point/gi,
+  /well said/gi,
+  /exactly/gi,
+  /that's true/gi,
+  /good catch/gi,
+  /you're correct/gi,
+  /i'm relieved/gi,
+  /helpful/gi,
 ];
 
 const DISAGREEMENT_MARKERS = [
-  /i(?:'d| would) push back/gi, /i disagree/gi, /where i(?:'d| would) challenge/gi,
-  /but i think/gi, /i(?:'d| would) argue/gi, /that's not quite/gi,
-  /i(?:'m| am) not sure/gi, /overcorrect/gi, /too (?:strict|harsh|rigid)/gi,
-  /missed the point/gi, /doesn't capture/gi, /oversimplif/gi,
+  /i(?:'d| would) push back/gi,
+  /i disagree/gi,
+  /where i(?:'d| would) challenge/gi,
+  /but i think/gi,
+  /i(?:'d| would) argue/gi,
+  /that's not quite/gi,
+  /i(?:'m| am) not sure/gi,
+  /overcorrect/gi,
+  /too (?:strict|harsh|rigid)/gi,
+  /missed the point/gi,
+  /doesn't capture/gi,
+  /oversimplif/gi,
 ];
 
 function measureIntersubjectiveCoordination(trace) {
-  const responses = trace.filter(e => e.agent === 'ego_intersubjective');
+  const responses = trace.filter((e) => e.agent === 'ego_intersubjective');
 
-  return responses.map(r => {
+  return responses.map((r) => {
     const text = r.detail || '';
     const words = tokenize(text).length;
 
@@ -354,30 +391,32 @@ function measureIntersubjectiveCoordination(trace) {
 // ── Measure 6: Behavioral Parameter Evolution ───────────────────────────
 
 function measureBehavioralEvolution(trace) {
-  const overrides = trace.filter(e => e.agent === 'behavioral_overrides');
+  const overrides = trace.filter((e) => e.agent === 'behavioral_overrides');
 
-  const parsed = overrides.map(o => {
-    try {
-      const params = JSON.parse(o.detail);
-      return {
-        turnIndex: o.turnIndex ?? -1,
-        rejectionThreshold: params.rejection_threshold,
-        maxRejections: params.max_rejections,
-        priorityCriteria: params.priority_criteria || [],
-        deprioritizedCriteria: params.deprioritized_criteria || [],
-      };
-    } catch {
-      return null;
-    }
-  }).filter(Boolean);
+  const parsed = overrides
+    .map((o) => {
+      try {
+        const params = JSON.parse(o.detail);
+        return {
+          turnIndex: o.turnIndex ?? -1,
+          rejectionThreshold: params.rejection_threshold,
+          maxRejections: params.max_rejections,
+          priorityCriteria: params.priority_criteria || [],
+          deprioritizedCriteria: params.deprioritized_criteria || [],
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
 
   const evolution = [];
   for (let i = 1; i < parsed.length; i++) {
     const prev = parsed[i - 1];
     const curr = parsed[i];
     const prioChange = new Set([
-      ...curr.priorityCriteria.filter(c => !prev.priorityCriteria.includes(c)),
-      ...prev.priorityCriteria.filter(c => !curr.priorityCriteria.includes(c)),
+      ...curr.priorityCriteria.filter((c) => !prev.priorityCriteria.includes(c)),
+      ...prev.priorityCriteria.filter((c) => !curr.priorityCriteria.includes(c)),
     ]).size;
 
     evolution.push({
@@ -395,7 +434,7 @@ function measureBehavioralEvolution(trace) {
 
 function loadDialogueTrace(dialogueId) {
   if (!dialogueId) return null;
-  const files = fs.readdirSync(LOGS_DIR).filter(f => f.includes(dialogueId));
+  const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
   if (files.length === 0) return null;
 
   try {
@@ -435,34 +474,36 @@ function aggregateMeasures(allMeasures) {
     const n = measures.length;
 
     // Revision magnitude
-    const revisions = measures.flatMap(m => m.revisionMagnitude);
-    const revEditDists = revisions.map(r => r.editDist);
+    const revisions = measures.flatMap((m) => m.revisionMagnitude);
+    const revEditDists = revisions.map((r) => r.editDist);
 
     // Self-reflection specificity
-    const reflections = measures.flatMap(m => m.reflectionSpecificity);
-    const egoReflections = reflections.filter(r => r.agent === 'ego_self_reflection');
-    const superegoReflections = reflections.filter(r => r.agent === 'superego_self_reflection');
+    const reflections = measures.flatMap((m) => m.reflectionSpecificity);
+    const egoReflections = reflections.filter((r) => r.agent === 'ego_self_reflection');
+    const superegoReflections = reflections.filter((r) => r.agent === 'superego_self_reflection');
 
     // Cross-turn adaptation
-    const adaptations = measures.flatMap(m => m.crossTurnAdaptation);
-    const adaptEditDists = adaptations.map(a => a.editDist);
+    const adaptations = measures.flatMap((m) => m.crossTurnAdaptation);
+    const adaptEditDists = adaptations.map((a) => a.editDist);
 
     // Profile richness
-    const profiles = measures.flatMap(m => m.profileRichness.profiles);
-    const profileEvolutions = measures.flatMap(m => m.profileRichness.evolution);
+    const profiles = measures.flatMap((m) => m.profileRichness.profiles);
+    const profileEvolutions = measures.flatMap((m) => m.profileRichness.evolution);
 
     // Intersubjective
-    const intersubjective = measures.flatMap(m => m.intersubjectiveCoordination);
+    const intersubjective = measures.flatMap((m) => m.intersubjectiveCoordination);
 
     // Behavioral
-    const behavioralEvolutions = measures.flatMap(m => m.behavioralEvolution.evolution);
+    const behavioralEvolutions = measures.flatMap((m) => m.behavioralEvolution.evolution);
 
     // Between-run variance of final output
-    const _finalMessages = measures.map(m => {
-      // Get last ego suggestion message
-      const revs = m.revisionMagnitude;
-      return revs.length > 0 ? revs[revs.length - 1] : null;
-    }).filter(Boolean);
+    const _finalMessages = measures
+      .map((m) => {
+        // Get last ego suggestion message
+        const revs = m.revisionMagnitude;
+        return revs.length > 0 ? revs[revs.length - 1] : null;
+      })
+      .filter(Boolean);
 
     // Pairwise cosine distances between runs
     const pairwiseDists = [];
@@ -487,13 +528,13 @@ function aggregateMeasures(allMeasures) {
       },
       egoReflection: {
         count: egoReflections.length,
-        avgSpecificity: avg(egoReflections.map(r => r.specificityRatio)),
-        avgWordCount: avg(egoReflections.map(r => r.wordCount)),
+        avgSpecificity: avg(egoReflections.map((r) => r.specificityRatio)),
+        avgWordCount: avg(egoReflections.map((r) => r.wordCount)),
       },
       superegoReflection: {
         count: superegoReflections.length,
-        avgSpecificity: avg(superegoReflections.map(r => r.specificityRatio)),
-        avgWordCount: avg(superegoReflections.map(r => r.wordCount)),
+        avgSpecificity: avg(superegoReflections.map((r) => r.specificityRatio)),
+        avgWordCount: avg(superegoReflections.map((r) => r.wordCount)),
       },
       adaptation: {
         count: adaptations.length,
@@ -502,20 +543,20 @@ function aggregateMeasures(allMeasures) {
       },
       profiles: {
         count: profiles.length,
-        avgWordCount: avg(profiles.map(p => p.wordCount)),
-        avgDimensions: avg(profiles.map(p => p.dimensions)),
+        avgWordCount: avg(profiles.map((p) => p.wordCount)),
+        avgDimensions: avg(profiles.map((p) => p.dimensions)),
         evolutionCount: profileEvolutions.length,
-        avgEvolutionDist: avg(profileEvolutions.map(e => e.editDist)),
+        avgEvolutionDist: avg(profileEvolutions.map((e) => e.editDist)),
       },
       intersubjective: {
         count: intersubjective.length,
-        avgDisagreement: avg(intersubjective.map(i => i.disagreementRatio)),
-        avgWordCount: avg(intersubjective.map(i => i.wordCount)),
+        avgDisagreement: avg(intersubjective.map((i) => i.disagreementRatio)),
+        avgWordCount: avg(intersubjective.map((i) => i.wordCount)),
       },
       behavioral: {
         evolutionCount: behavioralEvolutions.length,
-        avgThresholdDelta: avg(behavioralEvolutions.map(e => e.thresholdDelta)),
-        avgCriteriaChanged: avg(behavioralEvolutions.map(e => e.priorityCriteriaChanged)),
+        avgThresholdDelta: avg(behavioralEvolutions.map((e) => e.thresholdDelta)),
+        avgCriteriaChanged: avg(behavioralEvolutions.map((e) => e.priorityCriteriaChanged)),
       },
       betweenRunVariance: {
         pairCount: pairwiseDists.length,
@@ -537,29 +578,37 @@ function generateReport(runId, summary, allMeasures) {
 
   // Overview table
   lines.push('\n## Summary by Mechanism × Condition\n');
-  lines.push('| Mechanism | Cond | N | Rev Δ | Ego Spec | SE Spec | Adapt Δ | Profile WC | Intersub Disagree | Run Var |');
-  lines.push('|-----------|------|---|-------|----------|---------|---------|------------|-------------------|---------|');
+  lines.push(
+    '| Mechanism | Cond | N | Rev Δ | Ego Spec | SE Spec | Adapt Δ | Profile WC | Intersub Disagree | Run Var |',
+  );
+  lines.push(
+    '|-----------|------|---|-------|----------|---------|---------|------------|-------------------|---------|',
+  );
 
   for (const s of summary) {
-    lines.push([
-      '',
-      s.mechanism,
-      s.condition,
-      s.n,
-      s.revision.count > 0 ? s.revision.avgEditDist.toFixed(3) : '—',
-      s.egoReflection.count > 0 ? s.egoReflection.avgSpecificity.toFixed(2) : '—',
-      s.superegoReflection.count > 0 ? s.superegoReflection.avgSpecificity.toFixed(2) : '—',
-      s.adaptation.count > 0 ? s.adaptation.avgEditDist.toFixed(3) : '—',
-      s.profiles.count > 0 ? s.profiles.avgWordCount.toFixed(0) : '—',
-      s.intersubjective.count > 0 ? s.intersubjective.avgDisagreement.toFixed(2) : '—',
-      s.betweenRunVariance.pairCount > 0 ? s.betweenRunVariance.avgPairwiseDist.toFixed(3) : '—',
-      '',
-    ].join(' | '));
+    lines.push(
+      [
+        '',
+        s.mechanism,
+        s.condition,
+        s.n,
+        s.revision.count > 0 ? s.revision.avgEditDist.toFixed(3) : '—',
+        s.egoReflection.count > 0 ? s.egoReflection.avgSpecificity.toFixed(2) : '—',
+        s.superegoReflection.count > 0 ? s.superegoReflection.avgSpecificity.toFixed(2) : '—',
+        s.adaptation.count > 0 ? s.adaptation.avgEditDist.toFixed(3) : '—',
+        s.profiles.count > 0 ? s.profiles.avgWordCount.toFixed(0) : '—',
+        s.intersubjective.count > 0 ? s.intersubjective.avgDisagreement.toFixed(2) : '—',
+        s.betweenRunVariance.pairCount > 0 ? s.betweenRunVariance.avgPairwiseDist.toFixed(3) : '—',
+        '',
+      ].join(' | '),
+    );
   }
 
   // Column legend
   lines.push('\n**Column key:**');
-  lines.push('- **Rev Δ**: Avg normalized edit distance between ego generate → revise (0=identical, 1=completely different)');
+  lines.push(
+    '- **Rev Δ**: Avg normalized edit distance between ego generate → revise (0=identical, 1=completely different)',
+  );
   lines.push('- **Ego Spec**: Ego self-reflection specificity ratio (learner-specific / total references)');
   lines.push('- **SE Spec**: Superego self-reflection specificity ratio');
   lines.push('- **Adapt Δ**: Avg cross-turn adaptation (edit distance between consecutive turn outputs)');
@@ -569,50 +618,62 @@ function generateReport(runId, summary, allMeasures) {
 
   // Detailed sections
   lines.push('\n## Revision Magnitude by Mechanism\n');
-  lines.push('How much does superego feedback actually change the ego\'s output?\n');
+  lines.push("How much does superego feedback actually change the ego's output?\n");
   for (const s of summary) {
     if (s.revision.count === 0) continue;
-    lines.push(`- **${s.mechanism}** (${s.condition}): edit_dist=${s.revision.avgEditDist.toFixed(3)} ±${s.revision.sdEditDist.toFixed(3)} (N=${s.revision.count})`);
+    lines.push(
+      `- **${s.mechanism}** (${s.condition}): edit_dist=${s.revision.avgEditDist.toFixed(3)} ±${s.revision.sdEditDist.toFixed(3)} (N=${s.revision.count})`,
+    );
   }
 
   lines.push('\n## Self-Reflection Specificity\n');
   lines.push('Does the reflection reference actual learner behavior (specific) or generic pedagogy?\n');
   for (const s of summary) {
     if (s.egoReflection.count === 0) continue;
-    lines.push(`- **${s.mechanism}** (${s.condition}): ego_specificity=${s.egoReflection.avgSpecificity.toFixed(2)}, ` +
-      `superego_specificity=${s.superegoReflection.avgSpecificity.toFixed(2)}, ` +
-      `ego_words=${s.egoReflection.avgWordCount.toFixed(0)}, superego_words=${s.superegoReflection.avgWordCount.toFixed(0)}`);
+    lines.push(
+      `- **${s.mechanism}** (${s.condition}): ego_specificity=${s.egoReflection.avgSpecificity.toFixed(2)}, ` +
+        `superego_specificity=${s.superegoReflection.avgSpecificity.toFixed(2)}, ` +
+        `ego_words=${s.egoReflection.avgWordCount.toFixed(0)}, superego_words=${s.superegoReflection.avgWordCount.toFixed(0)}`,
+    );
   }
 
   lines.push('\n## Cross-Turn Adaptation\n');
-  lines.push('How much does the tutor\'s output change between turns?\n');
+  lines.push("How much does the tutor's output change between turns?\n");
   for (const s of summary) {
     if (s.adaptation.count === 0) continue;
-    lines.push(`- **${s.mechanism}** (${s.condition}): edit_dist=${s.adaptation.avgEditDist.toFixed(3)} ±${s.adaptation.sdEditDist.toFixed(3)} (N=${s.adaptation.count})`);
+    lines.push(
+      `- **${s.mechanism}** (${s.condition}): edit_dist=${s.adaptation.avgEditDist.toFixed(3)} ±${s.adaptation.sdEditDist.toFixed(3)} (N=${s.adaptation.count})`,
+    );
   }
 
   lines.push('\n## Profile Richness & Evolution\n');
   lines.push('How detailed are other-ego profiles and how much do they change?\n');
   for (const s of summary) {
     if (s.profiles.count === 0) continue;
-    lines.push(`- **${s.mechanism}** (${s.condition}): avg_words=${s.profiles.avgWordCount.toFixed(0)}, ` +
-      `avg_dimensions=${s.profiles.avgDimensions.toFixed(1)}, ` +
-      `evolution_dist=${s.profiles.avgEvolutionDist.toFixed(3)} (N_profiles=${s.profiles.count}, N_evolutions=${s.profiles.evolutionCount})`);
+    lines.push(
+      `- **${s.mechanism}** (${s.condition}): avg_words=${s.profiles.avgWordCount.toFixed(0)}, ` +
+        `avg_dimensions=${s.profiles.avgDimensions.toFixed(1)}, ` +
+        `evolution_dist=${s.profiles.avgEvolutionDist.toFixed(3)} (N_profiles=${s.profiles.count}, N_evolutions=${s.profiles.evolutionCount})`,
+    );
   }
 
   lines.push('\n## Intersubjective Coordination\n');
   lines.push('Does the ego agree with or push back against the superego?\n');
   for (const s of summary) {
     if (s.intersubjective.count === 0) continue;
-    lines.push(`- **${s.mechanism}** (${s.condition}): disagreement=${s.intersubjective.avgDisagreement.toFixed(2)}, ` +
-      `avg_words=${s.intersubjective.avgWordCount.toFixed(0)} (N=${s.intersubjective.count})`);
+    lines.push(
+      `- **${s.mechanism}** (${s.condition}): disagreement=${s.intersubjective.avgDisagreement.toFixed(2)}, ` +
+        `avg_words=${s.intersubjective.avgWordCount.toFixed(0)} (N=${s.intersubjective.count})`,
+    );
   }
 
   lines.push('\n## Between-Run Variance\n');
   lines.push('Does the mechanism produce different outputs across runs of the same cell?\n');
   for (const s of summary) {
     if (s.betweenRunVariance.pairCount === 0) continue;
-    lines.push(`- **${s.mechanism}** (${s.condition}): avg_pairwise_cosine_dist=${s.betweenRunVariance.avgPairwiseDist.toFixed(3)} (${s.betweenRunVariance.pairCount} pairs)`);
+    lines.push(
+      `- **${s.mechanism}** (${s.condition}): avg_pairwise_cosine_dist=${s.betweenRunVariance.avgPairwiseDist.toFixed(3)} (${s.betweenRunVariance.pairCount} pairs)`,
+    );
   }
 
   lines.push('\n## Interpretation Guide\n');
@@ -623,7 +684,7 @@ function generateReport(runId, summary, allMeasures) {
   lines.push('4. **Profile evolution** — profiles update with new information each turn');
   lines.push('5. **Productive disagreement** — ego pushes back on superego, not just complying');
   lines.push('6. **High between-run variance** — mechanism is context-sensitive, not formulaic');
-  lines.push('\nA mechanism that doesn\'t matter shows low/uniform values across all measures.');
+  lines.push("\nA mechanism that doesn't matter shows low/uniform values across all measures.");
 
   return lines.join('\n');
 }
@@ -632,7 +693,7 @@ function generateReport(runId, summary, allMeasures) {
 
 function main() {
   const args = process.argv.slice(2);
-  const runId = args.find(a => !a.startsWith('--'));
+  const runId = args.find((a) => !a.startsWith('--'));
   if (!runId) {
     console.error('Usage: node scripts/analyze-mechanism-traces.js <runId> [--output <path>] [--json] [--verbose]');
     process.exit(1);
@@ -647,12 +708,16 @@ function main() {
   const db = new Database(DB_PATH, { readonly: true });
 
   // Load multi-turn results with dialogue IDs
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT id, scenario_id, profile_name, overall_score, dialogue_id, dialogue_rounds
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND dialogue_id IS NOT NULL
     ORDER BY profile_name, scenario_id
-  `).all(runId);
+  `,
+    )
+    .all(runId);
 
   console.log(`Found ${rows.length} multi-turn dialogues for ${runId}`);
 
@@ -684,9 +749,9 @@ function main() {
     const behavioralEvolution = measureBehavioralEvolution(trace);
 
     // Get final message for between-run variance
-    const lastRevision = [...trace].reverse().find(e =>
-      e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate')
-    );
+    const lastRevision = [...trace]
+      .reverse()
+      .find((e) => e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate'));
     const finalMessage = lastRevision?.suggestions?.[0]?.message || '';
 
     const measures = {
@@ -708,10 +773,12 @@ function main() {
     allMeasures.push(measures);
 
     if (verbose) {
-      console.log(`  ${row.profile_name} | ${row.scenario_id} | ` +
-        `rev=${revisionMagnitude.length} refl=${reflectionSpecificity.length} ` +
-        `adapt=${crossTurnAdaptation.length} prof=${profileRichness.profiles.length} ` +
-        `inter=${intersubjectiveCoordination.length}`);
+      console.log(
+        `  ${row.profile_name} | ${row.scenario_id} | ` +
+          `rev=${revisionMagnitude.length} refl=${reflectionSpecificity.length} ` +
+          `adapt=${crossTurnAdaptation.length} prof=${profileRichness.profiles.length} ` +
+          `inter=${intersubjectiveCoordination.length}`,
+      );
     }
   }
 
@@ -733,7 +800,7 @@ function main() {
   if (outputJson) {
     const jsonPath = outputPath.replace(/\.md$/, '.json');
     // Remove finalMessage from JSON output (too large)
-    const cleanMeasures = allMeasures.map(m => {
+    const cleanMeasures = allMeasures.map((m) => {
       const { finalMessage: _finalMessage, ...rest } = m;
       return rest;
     });
@@ -743,18 +810,22 @@ function main() {
 
   // Print quick summary to console
   console.log('\n── Quick Summary ──────────────────────────────────────');
-  console.log(`${'Mechanism'.padEnd(25)} ${'Cond'.padEnd(6)} ${'N'.padEnd(4)} ${'RevΔ'.padEnd(7)} ${'EgoSpec'.padEnd(8)} ${'AdaptΔ'.padEnd(7)} ${'RunVar'.padEnd(7)}`);
+  console.log(
+    `${'Mechanism'.padEnd(25)} ${'Cond'.padEnd(6)} ${'N'.padEnd(4)} ${'RevΔ'.padEnd(7)} ${'EgoSpec'.padEnd(8)} ${'AdaptΔ'.padEnd(7)} ${'RunVar'.padEnd(7)}`,
+  );
   console.log('─'.repeat(70));
   for (const s of summary) {
-    console.log([
-      s.mechanism.padEnd(25),
-      s.condition.padEnd(6),
-      String(s.n).padEnd(4),
-      s.revision.count > 0 ? s.revision.avgEditDist.toFixed(3).padEnd(7) : '—'.padEnd(7),
-      s.egoReflection.count > 0 ? s.egoReflection.avgSpecificity.toFixed(2).padEnd(8) : '—'.padEnd(8),
-      s.adaptation.count > 0 ? s.adaptation.avgEditDist.toFixed(3).padEnd(7) : '—'.padEnd(7),
-      s.betweenRunVariance.pairCount > 0 ? s.betweenRunVariance.avgPairwiseDist.toFixed(3) : '—',
-    ].join(' '));
+    console.log(
+      [
+        s.mechanism.padEnd(25),
+        s.condition.padEnd(6),
+        String(s.n).padEnd(4),
+        s.revision.count > 0 ? s.revision.avgEditDist.toFixed(3).padEnd(7) : '—'.padEnd(7),
+        s.egoReflection.count > 0 ? s.egoReflection.avgSpecificity.toFixed(2).padEnd(8) : '—'.padEnd(8),
+        s.adaptation.count > 0 ? s.adaptation.avgEditDist.toFixed(3).padEnd(7) : '—'.padEnd(7),
+        s.betweenRunVariance.pairCount > 0 ? s.betweenRunVariance.avgPairwiseDist.toFixed(3) : '—',
+      ].join(' '),
+    );
   }
 
   db.close();

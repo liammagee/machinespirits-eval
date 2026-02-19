@@ -25,7 +25,6 @@ import path from 'path';
 import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
 
-
 const DB_PATH = path.join(import.meta.dirname, '..', 'data', 'evaluations.db');
 const LOGS_DIR = path.join(import.meta.dirname, '..', 'logs', 'tutor-dialogues');
 const DEFAULT_OUTPUT = path.join(import.meta.dirname, '..', 'exports', 'paper-figures');
@@ -54,7 +53,9 @@ function getOption(name) {
   const idx = args.indexOf('--' + name);
   return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : null;
 }
-function getFlag(name) { return args.includes('--' + name); }
+function getFlag(name) {
+  return args.includes('--' + name);
+}
 
 const outputDir = getOption('output') || DEFAULT_OUTPUT;
 const format = getOption('format') || 'both';
@@ -71,7 +72,9 @@ const db = new Database(DB_PATH, { readonly: true });
 // ── Data loading ─────────────────────────────────────────────────────────────
 
 function loadDialogue(dialogueId) {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT id, run_id, profile_name, scenario_id, dialogue_id,
       overall_score, judge_model, ego_model, superego_model,
       score_relevance, score_specificity, score_pedagogical,
@@ -80,7 +83,9 @@ function loadDialogue(dialogueId) {
     FROM evaluation_results
     WHERE dialogue_id = ? AND judge_model = 'claude-opus-4.6'
     ORDER BY overall_score DESC LIMIT 1
-  `).get(dialogueId);
+  `,
+    )
+    .get(dialogueId);
 
   if (!row) {
     console.error(`No scored dialogue found: ${dialogueId}`);
@@ -88,7 +93,7 @@ function loadDialogue(dialogueId) {
   }
 
   // Load trace from log file
-  const logFiles = fs.readdirSync(LOGS_DIR).filter(f => f.includes(dialogueId));
+  const logFiles = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
   let trace = [];
   let log = {};
   if (logFiles.length > 0) {
@@ -97,19 +102,23 @@ function loadDialogue(dialogueId) {
   }
 
   // Detect multi-turn: look for turn_action events (learner followups)
-  const isMultiTurn = trace.some(e => e.agent === 'user' && e.action === 'turn_action');
+  const isMultiTurn = trace.some((e) => e.agent === 'user' && e.action === 'turn_action');
 
   return { row, trace, log, isMultiTurn };
 }
 
 function loadByRunScenario(runId, scenarioId) {
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT dialogue_id FROM evaluation_results
     WHERE run_id = ? AND scenario_id LIKE ? AND judge_model = 'claude-opus-4.6'
       AND overall_score IS NOT NULL
     ORDER BY overall_score DESC
-  `).all(runId, '%' + scenarioId + '%');
-  return rows.map(r => r.dialogue_id);
+  `,
+    )
+    .all(runId, '%' + scenarioId + '%');
+  return rows.map((r) => r.dialogue_id);
 }
 
 // ── HTML helpers ─────────────────────────────────────────────────────────────
@@ -121,11 +130,15 @@ function esc(text) {
 
 function shortModel(m) {
   if (!m) return '—';
-  return String(m).replace(/^openrouter\./, '').split('/').pop().split(':')[0];
+  return String(m)
+    .replace(/^openrouter\./, '')
+    .split('/')
+    .pop()
+    .split(':')[0];
 }
 
 function scenarioLabel(id) {
-  return (id || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return (id || '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function scoreColor(s) {
@@ -152,7 +165,9 @@ function buildSequenceSvg(trace, meta) {
     { id: 'tutor_superego', label: 'T.Superego', color: '#e8f5e9', textColor: '#2e7d32', stroke: '#66bb6a' },
   ];
   const colMap = {};
-  actors.forEach((a, i) => { colMap[a.id] = i; });
+  actors.forEach((a, i) => {
+    colMap[a.id] = i;
+  });
 
   const steps = traceToSteps(trace);
   if (steps.length === 0) return { svg: '', steps };
@@ -173,7 +188,7 @@ function buildSequenceSvg(trace, meta) {
     const cx = x + colWidth / 2;
     svg += `<rect x="${x + 6}" y="4" width="${colWidth - 12}" height="34" rx="4" fill="${a.color}" stroke="${a.stroke}" stroke-width="1"/>`;
     svg += `<text x="${cx}" y="20" text-anchor="middle" font-size="10" font-weight="600" fill="${a.textColor}">${a.label}</text>`;
-    svg += `<text x="${cx}" y="32" text-anchor="middle" font-size="7.5" fill="${a.textColor}" opacity="0.6">${shortModel(a.id.startsWith('learner') ? meta.learnerModel : (a.id === 'tutor_ego' ? meta.egoModel : meta.superegoModel))}</text>`;
+    svg += `<text x="${cx}" y="32" text-anchor="middle" font-size="7.5" fill="${a.textColor}" opacity="0.6">${shortModel(a.id.startsWith('learner') ? meta.learnerModel : a.id === 'tutor_ego' ? meta.egoModel : meta.superegoModel)}</text>`;
     svg += `<line x1="${cx}" y1="${headerHeight}" x2="${cx}" y2="${svgHeight - 10}" stroke="#ddd" stroke-width="1" stroke-dasharray="3,3"/>`;
   });
 
@@ -203,10 +218,13 @@ function buildSequenceSvg(trace, meta) {
     const isLR = fromX < toX;
 
     let color;
-    if (step.type === 'front' || step.type === 'response') { color = '#78909c'; }
-    else { color = actors[fromCol].stroke; }
+    if (step.type === 'front' || step.type === 'response') {
+      color = '#78909c';
+    } else {
+      color = actors[fromCol].stroke;
+    }
 
-    const sw = (step.type === 'front' || step.type === 'response') ? 2 : 1;
+    const sw = step.type === 'front' || step.type === 'response' ? 2 : 1;
     const tipOff = isLR ? -5 : 5;
 
     svg += `<line x1="${fromX}" y1="${y}" x2="${toX + tipOff}" y2="${y}" stroke="${color}" stroke-width="${sw}"/>`;
@@ -232,8 +250,8 @@ function buildSequenceSvg(trace, meta) {
 
 function extractLearnerQuery(entry) {
   const raw = entry.rawContext || '';
-  const match = raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s)
-    || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
+  const match =
+    raw.match(/Learner Messages?:\s*(.+?)(?:\n<\/|$)/s) || raw.match(/Recent Chat History\n-\s*User:\s*"(.+?)"/s);
   return match ? match[1].trim() : null;
 }
 
@@ -242,7 +260,7 @@ function fullContent(entry) {
     return entry.feedback || entry.verdict?.feedback || '';
   }
   if (entry.suggestions?.length > 0) {
-    return entry.suggestions.map(s => s.message || s.text || s.title || '').join('\n\n');
+    return entry.suggestions.map((s) => s.message || s.text || s.title || '').join('\n\n');
   }
   if (entry.agent === 'user' && entry.action === 'context_input') {
     return extractLearnerQuery(entry) || '(scenario context)';
@@ -257,7 +275,9 @@ function traceToSteps(trace) {
   const steps = [];
   let dialogueTurn = 0;
   const learnerBlockStarts = new Set();
-  trace.forEach((e, i) => { if (e.agent === 'learner_ego_initial') learnerBlockStarts.add(i); });
+  trace.forEach((e, i) => {
+    if (e.agent === 'learner_ego_initial') learnerBlockStarts.add(i);
+  });
   let needsResponseArrow = false;
 
   for (let i = 0; i < trace.length; i++) {
@@ -268,23 +288,41 @@ function traceToSteps(trace) {
       let responseContent = '';
       for (let j = i - 1; j >= 0; j--) {
         const prev = trace[j];
-        if (prev.agent === 'ego' && (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')) {
+        if (
+          prev.agent === 'ego' &&
+          (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')
+        ) {
           responseContent = fullContent(prev);
           break;
         }
       }
-      steps.push({ from: 'tutor_ego', to: 'learner_ego', label: 'Response', fullDetail: responseContent, type: 'response', speaker: 'TUTOR EGO' });
+      steps.push({
+        from: 'tutor_ego',
+        to: 'learner_ego',
+        label: 'Response',
+        fullDetail: responseContent,
+        type: 'response',
+        speaker: 'TUTOR EGO',
+      });
       needsResponseArrow = false;
     }
 
-    if (agent === 'system' || (agent === 'user' && action === 'final_output') || agent === 'learner_synthesis') continue;
+    if (agent === 'system' || (agent === 'user' && action === 'final_output') || agent === 'learner_synthesis')
+      continue;
 
     if (agent === 'user' && action === 'context_input') {
       dialogueTurn++;
       if (dialogueTurn === 1) {
         const query = extractLearnerQuery(e);
         const full = query || '(scenario prompt)';
-        steps.push({ from: 'learner_ego', to: 'tutor_ego', label: 'Initial query', fullDetail: full, type: 'front', speaker: 'LEARNER' });
+        steps.push({
+          from: 'learner_ego',
+          to: 'tutor_ego',
+          label: 'Initial query',
+          fullDetail: full,
+          type: 'front',
+          speaker: 'LEARNER',
+        });
       }
       needsResponseArrow = true;
       continue;
@@ -294,15 +332,32 @@ function traceToSteps(trace) {
       const full = fullContent(e);
       let superegoFollows = false;
       for (let j = i + 1; j < trace.length; j++) {
-        if (trace[j].agent === 'superego' && trace[j].action === 'review') { superegoFollows = true; break; }
+        if (trace[j].agent === 'superego' && trace[j].action === 'review') {
+          superegoFollows = true;
+          break;
+        }
         if (learnerBlockStarts.has(j) || (trace[j].agent === 'user' && trace[j].action === 'context_input')) break;
       }
       if (action !== 'generate' && !superegoFollows) {
-        steps.push({ from: 'tutor_ego', to: 'learner_ego', label: 'Response', fullDetail: full, type: 'response', speaker: 'TUTOR EGO' });
+        steps.push({
+          from: 'tutor_ego',
+          to: 'learner_ego',
+          label: 'Response',
+          fullDetail: full,
+          type: 'response',
+          speaker: 'TUTOR EGO',
+        });
         needsResponseArrow = false;
       } else {
         const label = action === 'generate' ? 'Draft' : 'Revised';
-        steps.push({ from: 'tutor_ego', to: 'tutor_superego', label, fullDetail: full, type: 'back', speaker: action === 'generate' ? 'TUTOR EGO (draft)' : 'TUTOR EGO (revised)' });
+        steps.push({
+          from: 'tutor_ego',
+          to: 'tutor_superego',
+          label,
+          fullDetail: full,
+          type: 'back',
+          speaker: action === 'generate' ? 'TUTOR EGO (draft)' : 'TUTOR EGO (revised)',
+        });
       }
       continue;
     }
@@ -311,36 +366,71 @@ function traceToSteps(trace) {
       const approved = e.approved;
       const full = fullContent(e);
       steps.push({
-        from: approved ? 'tutor_superego' : 'tutor_superego', to: 'tutor_ego',
+        from: approved ? 'tutor_superego' : 'tutor_superego',
+        to: 'tutor_ego',
         label: approved ? 'Approved \u2713' : 'Revise \u21BB',
-        fullDetail: full, type: 'back', approved, speaker: 'SUPEREGO',
+        fullDetail: full,
+        type: 'back',
+        approved,
+        speaker: 'SUPEREGO',
       });
       if (approved) {
         let responseContent = '';
         for (let j = i - 1; j >= 0; j--) {
           const prev = trace[j];
-          if (prev.agent === 'ego' && (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')) {
+          if (
+            prev.agent === 'ego' &&
+            (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')
+          ) {
             responseContent = fullContent(prev);
             break;
           }
         }
-        steps.push({ from: 'tutor_ego', to: 'learner_ego', label: 'Response', fullDetail: responseContent, type: 'response', speaker: 'TUTOR EGO' });
+        steps.push({
+          from: 'tutor_ego',
+          to: 'learner_ego',
+          label: 'Response',
+          fullDetail: responseContent,
+          type: 'response',
+          speaker: 'TUTOR EGO',
+        });
         needsResponseArrow = false;
       }
       continue;
     }
 
     if (agent === 'learner_ego_initial' && action === 'deliberation') {
-      steps.push({ from: 'learner_ego', to: 'learner_superego', label: 'Reaction', fullDetail: fullContent(e), type: 'back', speaker: 'LEARNER EGO' });
+      steps.push({
+        from: 'learner_ego',
+        to: 'learner_superego',
+        label: 'Reaction',
+        fullDetail: fullContent(e),
+        type: 'back',
+        speaker: 'LEARNER EGO',
+      });
       continue;
     }
     if (agent === 'learner_superego' && action === 'deliberation') {
-      steps.push({ from: 'learner_superego', to: 'learner_ego', label: 'Critique', fullDetail: fullContent(e), type: 'back', speaker: 'LEARNER SUPEREGO' });
+      steps.push({
+        from: 'learner_superego',
+        to: 'learner_ego',
+        label: 'Critique',
+        fullDetail: fullContent(e),
+        type: 'back',
+        speaker: 'LEARNER SUPEREGO',
+      });
       continue;
     }
     if (agent === 'learner_ego_revision') continue;
     if (agent === 'user' && action === 'turn_action') {
-      steps.push({ from: 'learner_ego', to: 'tutor_ego', label: 'Turn ' + (dialogueTurn + 1), fullDetail: fullContent(e), type: 'front', speaker: 'LEARNER' });
+      steps.push({
+        from: 'learner_ego',
+        to: 'tutor_ego',
+        label: 'Turn ' + (dialogueTurn + 1),
+        fullDetail: fullContent(e),
+        type: 'front',
+        speaker: 'LEARNER',
+      });
       needsResponseArrow = true;
       continue;
     }
@@ -353,7 +443,11 @@ function traceToSteps(trace) {
 function buildSingleTurnHtml(data) {
   const { row } = data;
   let suggestions = [];
-  try { suggestions = JSON.parse(row.suggestions || '[]'); } catch { /* ignored */ }
+  try {
+    suggestions = JSON.parse(row.suggestions || '[]');
+  } catch {
+    /* ignored */
+  }
 
   const cond = conditionLabel(row.profile_name);
   const score = row.overall_score?.toFixed(1) || '--';
@@ -362,16 +456,18 @@ function buildSingleTurnHtml(data) {
   try {
     const scores = JSON.parse(row.scores_with_reasoning || '{}');
     for (const [dim, info] of Object.entries(scores)) {
-      const label = dim.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const label = dim.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
       const s = info.score || 0;
       const barColor = s >= 4 ? '#4caf50' : s >= 3 ? '#ff9800' : '#f44336';
       scoresHtml += `<div class="score-row">
         <span class="score-dim">${label}</span>
         <span class="score-val" style="color:${barColor}">${s}/5</span>
-        <div class="score-bar"><div class="score-fill" style="width:${(s/5)*100}%;background:${barColor}"></div></div>
+        <div class="score-bar"><div class="score-fill" style="width:${(s / 5) * 100}%;background:${barColor}"></div></div>
       </div>`;
     }
-  } catch { /* ignored */ }
+  } catch {
+    /* ignored */
+  }
 
   const suggestion = suggestions[0] || {};
   const messageHtml = esc(suggestion.message || '(no suggestion)');
@@ -412,15 +508,23 @@ function buildMultiTurnHtml(data) {
   const score = row.overall_score?.toFixed(1) || '--';
 
   // Select key moments: initial query, responses, learner turns
-  const keySteps = steps.filter(s =>
-    s.type === 'front' || s.type === 'response' ||
-    (s.approved === false) || (s.speaker === 'LEARNER EGO') || (s.speaker === 'LEARNER SUPEREGO')
+  const keySteps = steps.filter(
+    (s) =>
+      s.type === 'front' ||
+      s.type === 'response' ||
+      s.approved === false ||
+      s.speaker === 'LEARNER EGO' ||
+      s.speaker === 'LEARNER SUPEREGO',
   );
 
   const speakerColors = {
-    'TUTOR EGO': '#1565c0', 'TUTOR EGO (draft)': '#1565c0', 'TUTOR EGO (revised)': '#1565c0',
-    'SUPEREGO': '#2e7d32', 'LEARNER EGO': '#6a1b9a', 'LEARNER SUPEREGO': '#c62828',
-    'LEARNER': '#455a64',
+    'TUTOR EGO': '#1565c0',
+    'TUTOR EGO (draft)': '#1565c0',
+    'TUTOR EGO (revised)': '#1565c0',
+    SUPEREGO: '#2e7d32',
+    'LEARNER EGO': '#6a1b9a',
+    'LEARNER SUPEREGO': '#c62828',
+    LEARNER: '#455a64',
   };
 
   let excerptHtml = '';
@@ -522,7 +626,10 @@ ${bodyHtml}
 
 function htmlToPng(htmlPath, pngPath) {
   try {
-    execSync(`npx capture-website-cli "file://${htmlPath}" --output "${pngPath}" --width ${figWidth} --full-page --type png --scale-factor 2 --delay 0.5`, { stdio: 'pipe' });
+    execSync(
+      `npx capture-website-cli "file://${htmlPath}" --output "${pngPath}" --width ${figWidth} --full-page --type png --scale-factor 2 --delay 0.5`,
+      { stdio: 'pipe' },
+    );
     return true;
   } catch (e) {
     console.error(`  ⚠ PNG conversion failed: ${e.message}`);
@@ -536,7 +643,9 @@ const rendered = [];
 
 if (isCompare) {
   // Side-by-side comparison: --compare <id1> <id2>
-  const ids = args.filter(a => !a.startsWith('--') && a !== getOption('output') && a !== getOption('format') && a !== getOption('width'));
+  const ids = args.filter(
+    (a) => !a.startsWith('--') && a !== getOption('output') && a !== getOption('format') && a !== getOption('width'),
+  );
   if (ids.length < 2) {
     console.error('--compare requires two dialogue IDs');
     process.exit(1);
@@ -553,8 +662,16 @@ if (isCompare) {
 
   let svgHtml = '';
   if (!transcriptOnly && isMultiTurn1 && isMultiTurn2) {
-    const svg1 = buildSequenceSvg(d1.trace, { egoModel: d1.row.ego_model, superegoModel: d1.row.superego_model, learnerModel: '' });
-    const svg2 = buildSequenceSvg(d2.trace, { egoModel: d2.row.ego_model, superegoModel: d2.row.superego_model, learnerModel: '' });
+    const svg1 = buildSequenceSvg(d1.trace, {
+      egoModel: d1.row.ego_model,
+      superegoModel: d1.row.superego_model,
+      learnerModel: '',
+    });
+    const svg2 = buildSequenceSvg(d2.trace, {
+      egoModel: d2.row.ego_model,
+      superegoModel: d2.row.superego_model,
+      learnerModel: '',
+    });
     svgHtml = `<div class="figure-row"><div>${svg1.svg}</div><div>${svg2.svg}</div></div>`;
   }
 
@@ -578,7 +695,6 @@ if (isCompare) {
       console.log(`  ✓ ${baseName}.png`);
     }
   }
-
 } else if (runFilter && scenarioFilter) {
   // All dialogues for a run+scenario
   const dialogueIds = loadByRunScenario(runFilter, scenarioFilter);
@@ -593,7 +709,11 @@ if (isCompare) {
 
     let svgHtml = '';
     if (!transcriptOnly && isMultiTurn) {
-      const { svg } = buildSequenceSvg(data.trace, { egoModel: data.row.ego_model, superegoModel: data.row.superego_model, learnerModel: '' });
+      const { svg } = buildSequenceSvg(data.trace, {
+        egoModel: data.row.ego_model,
+        superegoModel: data.row.superego_model,
+        learnerModel: '',
+      });
       svgHtml = svg;
     }
 
@@ -614,10 +734,11 @@ if (isCompare) {
       }
     }
   }
-
 } else {
   // Single dialogue
-  const dialogueId = args.find(a => !a.startsWith('--') && a !== getOption('output') && a !== getOption('format') && a !== getOption('width'));
+  const dialogueId = args.find(
+    (a) => !a.startsWith('--') && a !== getOption('output') && a !== getOption('format') && a !== getOption('width'),
+  );
   if (!dialogueId) {
     console.error('Provide a dialogue ID, or use --compare or --run + --scenario');
     process.exit(1);
@@ -631,7 +752,11 @@ if (isCompare) {
 
   let svgHtml = '';
   if (!transcriptOnly && isMultiTurn) {
-    const { svg } = buildSequenceSvg(data.trace, { egoModel: data.row.ego_model, superegoModel: data.row.superego_model, learnerModel: '' });
+    const { svg } = buildSequenceSvg(data.trace, {
+      egoModel: data.row.ego_model,
+      superegoModel: data.row.superego_model,
+      learnerModel: '',
+    });
     svgHtml = svg;
   }
 
@@ -656,8 +781,12 @@ if (isCompare) {
 console.log(`\nRendered ${rendered.length} file(s) to ${outputDir}/`);
 
 if (shouldOpen && rendered.length > 0) {
-  const toOpen = rendered.find(f => f.endsWith('.html')) || rendered[0];
-  try { execSync(`open "${toOpen}"`); } catch { /* ignored */ }
+  const toOpen = rendered.find((f) => f.endsWith('.html')) || rendered[0];
+  try {
+    execSync(`open "${toOpen}"`);
+  } catch {
+    /* ignored */
+  }
 }
 
 db.close();

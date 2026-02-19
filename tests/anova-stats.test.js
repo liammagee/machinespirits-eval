@@ -19,27 +19,27 @@ describe('factorsToCellKey', () => {
   it('maps all-false factors to "r0_t0_l0"', () => {
     assert.strictEqual(
       factorsToCellKey({ recognition: false, multi_agent_tutor: false, multi_agent_learner: false }),
-      'r0_t0_l0'
+      'r0_t0_l0',
     );
   });
 
   it('maps all-true factors to "r1_t1_l1"', () => {
     assert.strictEqual(
       factorsToCellKey({ recognition: true, multi_agent_tutor: true, multi_agent_learner: true }),
-      'r1_t1_l1'
+      'r1_t1_l1',
     );
   });
 
   it('all 8 factor combinations produce unique correct keys', () => {
     const expected = [
       [{ recognition: false, multi_agent_tutor: false, multi_agent_learner: false }, 'r0_t0_l0'],
-      [{ recognition: false, multi_agent_tutor: false, multi_agent_learner: true },  'r0_t0_l1'],
-      [{ recognition: false, multi_agent_tutor: true,  multi_agent_learner: false }, 'r0_t1_l0'],
-      [{ recognition: false, multi_agent_tutor: true,  multi_agent_learner: true },  'r0_t1_l1'],
-      [{ recognition: true,  multi_agent_tutor: false, multi_agent_learner: false }, 'r1_t0_l0'],
-      [{ recognition: true,  multi_agent_tutor: false, multi_agent_learner: true },  'r1_t0_l1'],
-      [{ recognition: true,  multi_agent_tutor: true,  multi_agent_learner: false }, 'r1_t1_l0'],
-      [{ recognition: true,  multi_agent_tutor: true,  multi_agent_learner: true },  'r1_t1_l1'],
+      [{ recognition: false, multi_agent_tutor: false, multi_agent_learner: true }, 'r0_t0_l1'],
+      [{ recognition: false, multi_agent_tutor: true, multi_agent_learner: false }, 'r0_t1_l0'],
+      [{ recognition: false, multi_agent_tutor: true, multi_agent_learner: true }, 'r0_t1_l1'],
+      [{ recognition: true, multi_agent_tutor: false, multi_agent_learner: false }, 'r1_t0_l0'],
+      [{ recognition: true, multi_agent_tutor: false, multi_agent_learner: true }, 'r1_t0_l1'],
+      [{ recognition: true, multi_agent_tutor: true, multi_agent_learner: false }, 'r1_t1_l0'],
+      [{ recognition: true, multi_agent_tutor: true, multi_agent_learner: true }, 'r1_t1_l1'],
     ];
     const keys = new Set();
     for (const [factors, expectedKey] of expected) {
@@ -63,12 +63,12 @@ describe('runThreeWayANOVA — error handling', () => {
   });
 
   it('returns error for non-cell-keyed data', () => {
-    const result = runThreeWayANOVA({ 'budget': [50, 60], 'recognition': [70, 80] });
+    const result = runThreeWayANOVA({ budget: [50, 60], recognition: [70, 80] });
     assert.strictEqual(typeof result.error, 'string');
   });
 
   it('returns error for cell-keyed data with empty arrays', () => {
-    const result = runThreeWayANOVA({ 'r0_t0_l0': [], 'r1_t1_l1': [] });
+    const result = runThreeWayANOVA({ r0_t0_l0: [], r1_t1_l1: [] });
     assert.strictEqual(typeof result.error, 'string');
   });
 });
@@ -124,7 +124,7 @@ describe('runThreeWayANOVA — recognition main effect', () => {
     assert.ok(result.mainEffects.recognition.F > 0, 'Recognition F should be > 0');
     assert.ok(
       result.marginalMeans.recognition.recognition > result.marginalMeans.recognition.standard,
-      'Recognition marginal mean should exceed standard'
+      'Recognition marginal mean should exceed standard',
     );
   });
 });
@@ -144,7 +144,7 @@ describe('runThreeWayANOVA — tutor main effect', () => {
     assert.ok(result.mainEffects.tutor.F > 0, 'Tutor F should be > 0');
     assert.ok(
       result.marginalMeans.tutor.multi > result.marginalMeans.tutor.single,
-      'Multi-agent tutor mean should exceed single'
+      'Multi-agent tutor mean should exceed single',
     );
   });
 });
@@ -245,9 +245,7 @@ describe('formatANOVAReport', () => {
     for (const r of [0, 1]) {
       for (const t of [0, 1]) {
         for (const l of [0, 1]) {
-          data[`r${r}_t${t}_l${l}`] = r === 1
-            ? [90, 92, 88, 91, 89, 90, 93, 87]
-            : [50, 52, 48, 51, 49, 50, 53, 47];
+          data[`r${r}_t${t}_l${l}`] = r === 1 ? [90, 92, 88, 91, 89, 90, 93, 87] : [50, 52, 48, 51, 49, 50, 53, 47];
         }
       }
     }

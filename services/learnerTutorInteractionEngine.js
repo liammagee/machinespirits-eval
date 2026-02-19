@@ -20,14 +20,14 @@ const DEFAULT_MAX_TURNS = 10;
 
 // Interaction outcomes for tracking
 const INTERACTION_OUTCOMES = {
-  BREAKTHROUGH: 'breakthrough',         // Learner shows genuine understanding
-  PRODUCTIVE_STRUGGLE: 'productive_struggle',  // Healthy confusion/effort
-  MUTUAL_RECOGNITION: 'mutual_recognition',    // Both parties recognize each other
-  FRUSTRATION: 'frustration',            // Learner becomes frustrated
-  DISENGAGEMENT: 'disengagement',        // Learner disengages
-  SCAFFOLDING_NEEDED: 'scaffolding_needed',    // Learner needs more support
-  FADING_APPROPRIATE: 'fading_appropriate',    // Ready for less support
-  TRANSFORMATION: 'transformation',      // Conceptual restructuring occurred
+  BREAKTHROUGH: 'breakthrough', // Learner shows genuine understanding
+  PRODUCTIVE_STRUGGLE: 'productive_struggle', // Healthy confusion/effort
+  MUTUAL_RECOGNITION: 'mutual_recognition', // Both parties recognize each other
+  FRUSTRATION: 'frustration', // Learner becomes frustrated
+  DISENGAGEMENT: 'disengagement', // Learner disengages
+  SCAFFOLDING_NEEDED: 'scaffolding_needed', // Learner needs more support
+  FADING_APPROPRIATE: 'fading_appropriate', // Ready for less support
+  TRANSFORMATION: 'transformation', // Conceptual restructuring occurred
 };
 
 // ============================================================================
@@ -56,11 +56,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     sessionId = `session-${Date.now()}`,
   } = config;
 
-  const {
-    maxTurns = DEFAULT_MAX_TURNS,
-    _trace = true,
-    observeInternals = true,
-  } = options;
+  const { maxTurns = DEFAULT_MAX_TURNS, _trace = true, observeInternals = true } = options;
 
   const startTime = Date.now();
 
@@ -108,7 +104,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     scenario,
     topic,
     llmCall,
-    interactionTrace
+    interactionTrace,
   );
 
   conversationHistory.push({
@@ -145,7 +141,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       tutorProfile,
       topic,
       llmCall,
-      interactionTrace
+      interactionTrace,
     );
 
     conversationHistory.push({
@@ -183,7 +179,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       conversationHistory,
       topic,
       llmCall,
-      interactionTrace
+      interactionTrace,
     );
 
     conversationHistory.push({
@@ -256,9 +252,7 @@ Initial state: ${scenario?.learnerStartState || 'Beginning new topic'}`;
 
     // If this is superego and we have prior deliberation (ego), include it for critique
     if (role === 'superego' && internalDeliberation.length > 0) {
-      const priorDeliberation = internalDeliberation
-        .map(d => `${d.role.toUpperCase()}: ${d.content}`)
-        .join('\n\n');
+      const priorDeliberation = internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n');
       roleContext += `
 
 The EGO's initial reaction was:
@@ -273,10 +267,20 @@ Generate this agent's internal voice as the learner approaches this topic for th
 
     const prompt = buildLearnerPrompt(agentConfig, persona, roleContext);
 
-    const response = await llmCall(agentConfig.model, prompt, [{ role: 'user', content: role === 'superego' ? 'Critique the EGO\'s initial reaction.' : 'Generate your internal voice.' }], {
-      temperature: agentConfig.hyperparameters?.temperature || 0.7,
-      maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
-    });
+    const response = await llmCall(
+      agentConfig.model,
+      prompt,
+      [
+        {
+          role: 'user',
+          content: role === 'superego' ? "Critique the EGO's initial reaction." : 'Generate your internal voice.',
+        },
+      ],
+      {
+        temperature: agentConfig.hyperparameters?.temperature || 0.7,
+        maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
+      },
+    );
 
     internalDeliberation.push({
       role,
@@ -297,7 +301,7 @@ Generate this agent's internal voice as the learner approaches this topic for th
   const synthesisPrompt = hasOpeningMessage
     ? `You are simulating a learner with these internal voices:
 
-${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
+${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
 
 The learner wants to open with this message: "${scenario.learnerOpening}"
 
@@ -305,7 +309,7 @@ Lightly adapt this opening to feel natural given the internal deliberation, but 
 The adapted message should be 1-3 sentences and maintain the original meaning.`
     : `You are simulating a learner with these internal voices:
 
-${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
+${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
 
 Synthesize these into a realistic first message to a tutor about: ${topic}
 
@@ -313,10 +317,15 @@ The message should feel authentic - not too polished, showing real confusion or 
 Keep it 1-3 sentences.`;
 
   const synthModel = synthesisConfig?.model || resolveProfileModel(profile);
-  const externalResponse = await llmCall(synthModel, synthesisPrompt, [{ role: 'user', content: 'Generate the learner\'s opening message.' }], {
-    temperature: synthesisConfig?.hyperparameters?.temperature || 0.7,
-    maxTokens: synthesisConfig?.hyperparameters?.max_tokens || 200,
-  });
+  const externalResponse = await llmCall(
+    synthModel,
+    synthesisPrompt,
+    [{ role: 'user', content: "Generate the learner's opening message." }],
+    {
+      temperature: synthesisConfig?.hyperparameters?.temperature || 0.7,
+      maxTokens: synthesisConfig?.hyperparameters?.max_tokens || 200,
+    },
+  );
 
   trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
   trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
@@ -360,7 +369,18 @@ function resolveProfileModel(profile) {
 /**
  * Run a learner turn in response to tutor
  */
-async function runLearnerTurn(learnerId, sessionId, persona, architecture, profile, tutorMessage, history, topic, llmCall, trace) {
+async function runLearnerTurn(
+  learnerId,
+  sessionId,
+  persona,
+  architecture,
+  profile,
+  tutorMessage,
+  history,
+  topic,
+  llmCall,
+  trace,
+) {
   // Get agent roles from profile (not architecture)
   const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
   const internalDeliberation = [];
@@ -371,7 +391,7 @@ async function runLearnerTurn(learnerId, sessionId, persona, architecture, profi
   // Build conversation context
   const conversationContext = history
     .slice(-6)
-    .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
 
   // Run internal deliberation for each agent
@@ -395,9 +415,7 @@ The tutor just said:
 
     // If this is superego and we have prior deliberation (ego), include it for critique
     if (role === 'superego' && internalDeliberation.length > 0) {
-      const priorDeliberation = internalDeliberation
-        .map(d => `${d.role.toUpperCase()}: ${d.content}`)
-        .join('\n\n');
+      const priorDeliberation = internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n');
       roleContext += `
 
 The EGO's initial reaction was:
@@ -412,10 +430,20 @@ Generate your internal reaction as this dimension of the learner's experience.`;
 
     const prompt = buildLearnerPrompt(agentConfig, persona, roleContext);
 
-    const response = await llmCall(agentConfig.model, prompt, [{ role: 'user', content: role === 'superego' ? 'Critique the EGO\'s reaction.' : 'React to the tutor\'s message.' }], {
-      temperature: agentConfig.hyperparameters?.temperature || 0.7,
-      maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
-    });
+    const response = await llmCall(
+      agentConfig.model,
+      prompt,
+      [
+        {
+          role: 'user',
+          content: role === 'superego' ? "Critique the EGO's reaction." : "React to the tutor's message.",
+        },
+      ],
+      {
+        temperature: agentConfig.hyperparameters?.temperature || 0.7,
+        maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
+      },
+    );
 
     internalDeliberation.push({
       role,
@@ -433,7 +461,7 @@ Generate your internal reaction as this dimension of the learner's experience.`;
   const synthesisConfig = learnerConfig.getSynthesisConfig(profile.name);
   const synthesisPrompt = `You are simulating a ${persona.name} learner with these internal reactions:
 
-${internalDeliberation.map(d => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
+${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
 
 Current emotional state: ${emotionalState}
 Current understanding: ${understandingLevel}
@@ -449,10 +477,15 @@ Synthesize these internal reactions into a realistic response. The learner shoul
 Keep response to 1-4 sentences. Be authentic.`;
 
   const synthModel = synthesisConfig?.model || resolveProfileModel(profile);
-  const externalResponse = await llmCall(synthModel, synthesisPrompt, [{ role: 'user', content: 'Generate the learner\'s response.' }], {
-    temperature: synthesisConfig?.hyperparameters?.temperature || 0.7,
-    maxTokens: synthesisConfig?.hyperparameters?.max_tokens || 250,
-  });
+  const externalResponse = await llmCall(
+    synthModel,
+    synthesisPrompt,
+    [{ role: 'user', content: "Generate the learner's response." }],
+    {
+      temperature: synthesisConfig?.hyperparameters?.temperature || 0.7,
+      maxTokens: synthesisConfig?.hyperparameters?.max_tokens || 250,
+    },
+  );
 
   trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
   trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
@@ -480,7 +513,7 @@ async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutor
   // Build conversation context
   const conversationContext = history
     .slice(-6)
-    .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
 
   // Get tutor configuration from profile
@@ -598,7 +631,8 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
   // Fallback for empty responses - generate a brief acknowledgment
   if (!externalMessage || externalMessage.trim() === '') {
     console.warn('[TutorTurn] Empty message after extraction, using fallback');
-    externalMessage = "I see what you're saying. Let me think about that for a moment. Could you tell me more about what's confusing you?";
+    externalMessage =
+      "I see what you're saying. Let me think about that for a moment. Could you tell me more about what's confusing you?";
   }
 
   return {
@@ -606,8 +640,9 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
     rawResponse: egoResponse.content, // Keep raw for debugging
     internalDeliberation,
     strategy,
-    suggestsEnding: externalMessage.toLowerCase().includes('good place to pause') ||
-                    externalMessage.toLowerCase().includes('think about this'),
+    suggestsEnding:
+      externalMessage.toLowerCase().includes('good place to pause') ||
+      externalMessage.toLowerCase().includes('think about this'),
   };
 }
 
@@ -661,9 +696,11 @@ async function updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tu
   });
 
   // Check for breakthrough/trauma signals
-  if (learnerResponse.understandingLevel === 'transforming' ||
-      learnerResponse.externalMessage.toLowerCase().includes('oh, i see') ||
-      learnerResponse.externalMessage.toLowerCase().includes('wait, so')) {
+  if (
+    learnerResponse.understandingLevel === 'transforming' ||
+    learnerResponse.externalMessage.toLowerCase().includes('oh, i see') ||
+    learnerResponse.externalMessage.toLowerCase().includes('wait, so')
+  ) {
     learnerWritingPad.recordBreakthrough(learnerId, {
       momentDescription: 'Understanding shift detected',
       concept: topic,
@@ -672,8 +709,10 @@ async function updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tu
     });
   }
 
-  if (learnerResponse.emotionalState === 'frustrated' ||
-      learnerResponse.externalMessage.toLowerCase().includes("don't understand")) {
+  if (
+    learnerResponse.emotionalState === 'frustrated' ||
+    learnerResponse.externalMessage.toLowerCase().includes("don't understand")
+  ) {
     learnerWritingPad.recordTrauma(learnerId, {
       momentDescription: 'Frustration with comprehension',
       concept: topic,
@@ -719,9 +758,9 @@ async function updateTutorWritingPad(learnerId, sessionId, tutorResponse, learne
  * Detect emotional state from internal deliberation
  */
 function detectEmotionalState(deliberation) {
-  const combinedText = deliberation.map(d => d.content.toLowerCase()).join(' ');
+  const combinedText = deliberation.map((d) => d.content.toLowerCase()).join(' ');
 
-  if (combinedText.includes('frustrat') || combinedText.includes('confus') && combinedText.includes('give up')) {
+  if (combinedText.includes('frustrat') || (combinedText.includes('confus') && combinedText.includes('give up'))) {
     return 'frustrated';
   }
   if (combinedText.includes('excit') || combinedText.includes('interest') || combinedText.includes('curious')) {
@@ -743,7 +782,7 @@ function detectEmotionalState(deliberation) {
  * Detect understanding level from internal deliberation
  */
 function detectUnderstandingLevel(deliberation) {
-  const combinedText = deliberation.map(d => d.content.toLowerCase()).join(' ');
+  const combinedText = deliberation.map((d) => d.content.toLowerCase()).join(' ');
 
   if (combinedText.includes('completely lost') || combinedText.includes('no idea')) {
     return 'none';
@@ -824,14 +863,8 @@ function generateInteractionSummary(trace) {
     learnerFinalState: trace.turns[trace.turns.length - 1]?.emotionalState || 'unknown',
     learnerFinalUnderstanding: trace.turns[trace.turns.length - 1]?.understandingLevel || 'unknown',
     memoryChanges: {
-      learner: calculateMemoryDelta(
-        trace.writingPadSnapshots.learner.before,
-        trace.writingPadSnapshots.learner.after
-      ),
-      tutor: calculateMemoryDelta(
-        trace.writingPadSnapshots.tutor.before,
-        trace.writingPadSnapshots.tutor.after
-      ),
+      learner: calculateMemoryDelta(trace.writingPadSnapshots.learner.before, trace.writingPadSnapshots.learner.after),
+      tutor: calculateMemoryDelta(trace.writingPadSnapshots.tutor.before, trace.writingPadSnapshots.tutor.after),
     },
   };
 }
@@ -845,8 +878,10 @@ function calculateMemoryDelta(before, after) {
   // Simple delta calculation
   return {
     newLessons: (after.preconscious?.lessons?.length || 0) - (before.preconscious?.lessons?.length || 0),
-    newBreakthroughs: (after.unconscious?.breakthroughs?.length || 0) - (before.unconscious?.breakthroughs?.length || 0),
-    newTraumas: (after.unconscious?.unresolvedTraumas?.length || 0) - (before.unconscious?.unresolvedTraumas?.length || 0),
+    newBreakthroughs:
+      (after.unconscious?.breakthroughs?.length || 0) - (before.unconscious?.breakthroughs?.length || 0),
+    newTraumas:
+      (after.unconscious?.unresolvedTraumas?.length || 0) - (before.unconscious?.unresolvedTraumas?.length || 0),
   };
 }
 
@@ -878,12 +913,13 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
       return await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole);
     } catch (error) {
       lastError = error;
-      const is429 = error?.message?.includes('429') ||
-                    error?.message?.toLowerCase()?.includes('rate limit');
+      const is429 = error?.message?.includes('429') || error?.message?.toLowerCase()?.includes('rate limit');
       if (!is429 || attempt >= LEARNER_RETRY_DELAYS.length) throw error;
       const delay = LEARNER_RETRY_DELAYS[attempt];
-      console.warn(`[${agentRole}] Rate limit hit, retrying in ${delay}ms (attempt ${attempt + 1}/${LEARNER_RETRY_DELAYS.length})`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      console.warn(
+        `[${agentRole}] Rate limit hit, retrying in ${delay}ms (attempt ${attempt + 1}/${LEARNER_RETRY_DELAYS.length})`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
   throw lastError;
@@ -1019,7 +1055,9 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     const content = data?.choices?.[0]?.message?.content?.trim() || '';
 
     if (!content) {
-      console.warn(`[${agentRole}] OpenRouter returned empty content. Model: ${model}, finish_reason: ${data?.choices?.[0]?.finish_reason}`);
+      console.warn(
+        `[${agentRole}] OpenRouter returned empty content. Model: ${model}, finish_reason: ${data?.choices?.[0]?.finish_reason}`,
+      );
     }
 
     return {
@@ -1126,7 +1164,13 @@ export async function generateLearnerResponse(options) {
 
   const applyOverride = (cfg) => {
     if (!resolvedOverride || !cfg) return cfg;
-    return { ...cfg, provider: resolvedOverride.provider, providerConfig: resolvedOverride.providerConfig, model: resolvedOverride.model, modelAlias: resolvedOverride.modelAlias };
+    return {
+      ...cfg,
+      provider: resolvedOverride.provider,
+      providerConfig: resolvedOverride.providerConfig,
+      model: resolvedOverride.model,
+      modelAlias: resolvedOverride.modelAlias,
+    };
   };
 
   const persona = learnerConfig.getPersona(personaId);
@@ -1138,7 +1182,7 @@ export async function generateLearnerResponse(options) {
   // Build conversation context string from history
   const conversationContext = conversationHistory
     .slice(-6)
-    .map(m => `${m.role.toUpperCase()}: ${m.content}`)
+    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
 
   // Psychodynamic flow: Ego (initial) → Superego (critique) → Ego (revision/final)
@@ -1157,7 +1201,12 @@ export async function generateLearnerResponse(options) {
     egoContext += `\n\nGenerate your initial internal reaction as the learner's ego.`;
     const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
 
-    const egoInitialResponse = await callLearnerAI(egoConfig, egoSystemPrompt, "React to the tutor's message.", 'learner_ego_initial');
+    const egoInitialResponse = await callLearnerAI(
+      egoConfig,
+      egoSystemPrompt,
+      "React to the tutor's message.",
+      'learner_ego_initial',
+    );
     internalDeliberation.push({ role: 'ego_initial', content: egoInitialResponse.content });
     tokenUsage.inputTokens += egoInitialResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoInitialResponse.usage?.outputTokens || 0;
@@ -1172,7 +1221,12 @@ export async function generateLearnerResponse(options) {
     superegoContext += `\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?`;
     const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
 
-    const superegoResponse = await callLearnerAI(superegoConfig, superegoSystemPrompt, "Critique the EGO's reaction.", 'learner_superego');
+    const superegoResponse = await callLearnerAI(
+      superegoConfig,
+      superegoSystemPrompt,
+      "Critique the EGO's reaction.",
+      'learner_superego',
+    );
     internalDeliberation.push({ role: 'superego', content: superegoResponse.content });
     tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
@@ -1184,7 +1238,12 @@ export async function generateLearnerResponse(options) {
     const egoRevisionContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nYour initial reaction was:\n"${egoInitialResponse.content}"\n\nThe SUPEREGO's critique:\n"${superegoResponse.content}"\n\nConsider the superego's feedback. You have final authority — accept, reject, or modify its suggestions as you see fit. Then produce a realistic external response (1-4 sentences) that the learner would actually say to the tutor.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
-    const egoFinalResponse = await callLearnerAI(egoConfig, egoRevisionSystemPrompt, "Produce your final response to the tutor.", 'learner_ego_revision');
+    const egoFinalResponse = await callLearnerAI(
+      egoConfig,
+      egoRevisionSystemPrompt,
+      'Produce your final response to the tutor.',
+      'learner_ego_revision',
+    );
     internalDeliberation.push({ role: 'ego_revision', content: egoFinalResponse.content });
     tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
@@ -1215,7 +1274,12 @@ export async function generateLearnerResponse(options) {
       roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
-      const response = await callLearnerAI(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
+      const response = await callLearnerAI(
+        agentConfig,
+        systemPrompt,
+        "React to the tutor's message.",
+        `learner_${role}`,
+      );
 
       internalDeliberation.push({ role, content: response.content });
       tokenUsage.inputTokens += response.usage?.inputTokens || 0;

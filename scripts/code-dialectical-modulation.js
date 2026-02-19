@@ -53,20 +53,24 @@ function std(arr) {
 
 function cohensD(group1, group2) {
   if (!group1.length || !group2.length) return 0;
-  const m1 = mean(group1), m2 = mean(group2);
-  const s1 = std(group1), s2 = std(group2);
+  const m1 = mean(group1),
+    m2 = mean(group2);
+  const s1 = std(group1),
+    s2 = std(group2);
   const pooled = Math.sqrt(
-    ((group1.length - 1) * s1 ** 2 + (group2.length - 1) * s2 ** 2)
-    / (group1.length + group2.length - 2)
+    ((group1.length - 1) * s1 ** 2 + (group2.length - 1) * s2 ** 2) / (group1.length + group2.length - 2),
   );
   return pooled > 0 ? (m1 - m2) / pooled : 0;
 }
 
 function welchTTest(group1, group2) {
   if (group1.length < 2 || group2.length < 2) return { t: 0, df: 0, p: 1 };
-  const m1 = mean(group1), m2 = mean(group2);
-  const v1 = std(group1) ** 2, v2 = std(group2) ** 2;
-  const n1 = group1.length, n2 = group2.length;
+  const m1 = mean(group1),
+    m2 = mean(group2);
+  const v1 = std(group1) ** 2,
+    v2 = std(group2) ** 2;
+  const n1 = group1.length,
+    n2 = group2.length;
   const se = Math.sqrt(v1 / n1 + v2 / n2);
   if (se === 0) return { t: 0, df: n1 + n2 - 2, p: 1 };
   const t = (m1 - m2) / se;
@@ -95,7 +99,9 @@ function regularizedBeta(x, a, b) {
   const lnBeta = lnGamma(a) + lnGamma(b) - lnGamma(a + b);
   const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta);
   // Lentz's continued fraction
-  let f = 1, c = 1, d = 1 - (a + 1) * x / (a + 1);
+  let f = 1,
+    c = 1,
+    d = 1 - ((a + 1) * x) / (a + 1);
   if (Math.abs(d) < 1e-30) d = 1e-30;
   d = 1 / d;
   f = d;
@@ -103,10 +109,10 @@ function regularizedBeta(x, a, b) {
     let numerator;
     if (m % 2 === 0) {
       const k = m / 2;
-      numerator = k * (b - k) * x / ((a + 2 * k - 1) * (a + 2 * k));
+      numerator = (k * (b - k) * x) / ((a + 2 * k - 1) * (a + 2 * k));
     } else {
       const k = (m - 1) / 2;
-      numerator = -(a + k) * (a + b + k) * x / ((a + 2 * k) * (a + 2 * k + 1));
+      numerator = (-(a + k) * (a + b + k) * x) / ((a + 2 * k) * (a + 2 * k + 1));
     }
     d = 1 + numerator * d;
     if (Math.abs(d) < 1e-30) d = 1e-30;
@@ -116,35 +122,42 @@ function regularizedBeta(x, a, b) {
     f *= c * d;
     if (Math.abs(c * d - 1) < 1e-8) break;
   }
-  return front * f / a;
+  return (front * f) / a;
 }
 
 function lnGamma(z) {
   // Stirling's approximation
-  const c = [76.1800917294715, -86.5053203294168, 24.0140982408309,
-    -1.231739572450155, 0.001208650973866179, -0.000005395239384953];
-  const x = z; let y = z;
+  const c = [
+    76.1800917294715, -86.5053203294168, 24.0140982408309, -1.231739572450155, 0.001208650973866179,
+    -0.000005395239384953,
+  ];
+  const x = z;
+  let y = z;
   let tmp = x + 5.5;
   tmp -= (x + 0.5) * Math.log(tmp);
   let ser = 1.000000000190015;
   for (let j = 0; j < 6; j++) ser += c[j] / ++y;
-  return -tmp + Math.log(2.50662827463100 * ser / x);
+  return -tmp + Math.log((2.506628274631 * ser) / x);
 }
 
 function normalCDF(x) {
-  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
-  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const a1 = 0.254829592,
+    a2 = -0.284496736,
+    a3 = 1.421413741;
+  const a4 = -1.453152027,
+    a5 = 1.061405429,
+    p = 0.3275911;
   const sign = x < 0 ? -1 : 1;
   const ax = Math.abs(x) / Math.SQRT2;
   const t = 1 / (1 + p * ax);
-  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-ax * ax);
+  const y = 1 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-ax * ax);
   return 0.5 * (1 + sign * y);
 }
 
 function chiSquareTest(observed) {
   const nRows = observed.length;
   const nCols = observed[0].length;
-  const rowTotals = observed.map(row => row.reduce((a, b) => a + b, 0));
+  const rowTotals = observed.map((row) => row.reduce((a, b) => a + b, 0));
   const colTotals = [];
   for (let j = 0; j < nCols; j++) {
     colTotals.push(observed.reduce((sum, row) => sum + row[j], 0));
@@ -183,10 +196,14 @@ function chi2PValue(x, df) {
 function pearsonR(xs, ys) {
   if (xs.length < 3) return { r: 0, p: 1 };
   const n = xs.length;
-  const mx = mean(xs), my = mean(ys);
-  let num = 0, dx2 = 0, dy2 = 0;
+  const mx = mean(xs),
+    my = mean(ys);
+  let num = 0,
+    dx2 = 0,
+    dy2 = 0;
   for (let i = 0; i < n; i++) {
-    const dx = xs[i] - mx, dy = ys[i] - my;
+    const dx = xs[i] - mx,
+      dy = ys[i] - my;
     num += dx * dy;
     dx2 += dx * dx;
     dy2 += dy * dy;
@@ -216,10 +233,14 @@ async function callClaudeCode(prompt) {
     });
     let out = '';
     let err = '';
-    child.stdout.on('data', d => { out += d; });
-    child.stderr.on('data', d => { err += d; });
-    child.on('error', e => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', code => {
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
+    child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
       else resolve(out);
     });
@@ -242,7 +263,7 @@ async function callOpenRouter(prompt, modelKey) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,
@@ -282,13 +303,17 @@ function parseJsonResponse(content) {
 // ── Data Loading ─────────────────────────────────────────────────────────
 
 function loadRows(db, runId) {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT id, dialogue_id, scenario_id, profile_name, overall_score,
            dialogue_rounds, suggestions
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND dialogue_id IS NOT NULL
     ORDER BY profile_name, id
-  `).all(runId);
+  `,
+    )
+    .all(runId);
 }
 
 function parseCondition(profileName) {
@@ -342,11 +367,11 @@ function segmentTraceByTurn(dialogueTrace) {
   }
 
   // Enrich each turn with parsed sub-components
-  return turns.map(turn => {
-    const superegoEntries = turn.entries.filter(e => e.agent === 'superego');
-    const egoEntries = turn.entries.filter(e => e.agent === 'ego');
-    const learnerAction = turn.entries.find(e => e.action === 'turn_action');
-    const contextInput = turn.entries.find(e => e.action === 'context_input');
+  return turns.map((turn) => {
+    const superegoEntries = turn.entries.filter((e) => e.agent === 'superego');
+    const egoEntries = turn.entries.filter((e) => e.agent === 'ego');
+    const learnerAction = turn.entries.find((e) => e.action === 'turn_action');
+    const contextInput = turn.entries.find((e) => e.action === 'context_input');
 
     return {
       turnIndex: turn.turnIndex,
@@ -369,11 +394,9 @@ function extractStructuralMetrics(dialogueLog, turns) {
 
   // Per-turn metrics
   for (const turn of turns) {
-    const rejections = turn.superegoEntries.filter(e => e.approved === false);
-    const approvals = turn.superegoEntries.filter(e => e.approved === true);
-    const confidences = turn.superegoEntries
-      .map(e => e.confidence)
-      .filter(c => c != null);
+    const rejections = turn.superegoEntries.filter((e) => e.approved === false);
+    const approvals = turn.superegoEntries.filter((e) => e.approved === true);
+    const confidences = turn.superegoEntries.map((e) => e.confidence).filter((c) => c != null);
 
     // Intervention type distribution for this turn
     const interventionTypes = {};
@@ -387,14 +410,14 @@ function extractStructuralMetrics(dialogueLog, turns) {
 
     // Ego suggestion changes: track actionType/actionTarget shifts across revisions
     const egoSuggestionTypes = turn.egoEntries
-      .filter(e => e.suggestions && e.suggestions[0])
-      .map(e => ({
+      .filter((e) => e.suggestions && e.suggestions[0])
+      .map((e) => ({
         actionType: e.suggestions[0].actionType,
         actionTarget: e.suggestions[0].actionTarget,
         type: e.suggestions[0].type,
       }));
 
-    const typeShifts = countShifts(egoSuggestionTypes.map(s => `${s.actionType}:${s.actionTarget}`));
+    const typeShifts = countShifts(egoSuggestionTypes.map((s) => `${s.actionType}:${s.actionTarget}`));
 
     // Learner action for this turn
     const learnerDetail = turn.learnerAction?.detail || null;
@@ -409,23 +432,19 @@ function extractStructuralMetrics(dialogueLog, turns) {
       interventionTypes,
       suggestionTypeShifts: typeShifts,
       learnerAction: learnerDetail,
-      superegoFeedbackLengths: turn.superegoEntries
-        .map(e => (e.feedback || '').length)
-        .filter(l => l > 0),
+      superegoFeedbackLengths: turn.superegoEntries.map((e) => (e.feedback || '').length).filter((l) => l > 0),
     });
   }
 
   // Aggregate metrics across all turns
-  const allNegationDepths = metrics.perTurn.map(t => t.negationDepth);
-  const allRoundsToConverge = metrics.perTurn.map(t => t.roundsToConverge);
-  const allConfidences = metrics.perTurn.flatMap(t => t.confidences);
-  const allFeedbackLengths = metrics.perTurn.flatMap(t => t.superegoFeedbackLengths);
+  const allNegationDepths = metrics.perTurn.map((t) => t.negationDepth);
+  const allRoundsToConverge = metrics.perTurn.map((t) => t.roundsToConverge);
+  const allConfidences = metrics.perTurn.flatMap((t) => t.confidences);
+  const allFeedbackLengths = metrics.perTurn.flatMap((t) => t.superegoFeedbackLengths);
 
   // Confidence trajectory: first turn vs last turn
   const firstTurnConf = metrics.perTurn[0]?.meanConfidence;
-  const lastTurnConf = metrics.perTurn.length > 1
-    ? metrics.perTurn[metrics.perTurn.length - 1]?.meanConfidence
-    : null;
+  const lastTurnConf = metrics.perTurn.length > 1 ? metrics.perTurn[metrics.perTurn.length - 1]?.meanConfidence : null;
 
   // Intervention type distribution across all turns
   const totalInterventions = {};
@@ -436,14 +455,11 @@ function extractStructuralMetrics(dialogueLog, turns) {
   }
 
   // Learner action trajectory
-  const learnerActions = metrics.perTurn
-    .map(t => t.learnerAction)
-    .filter(Boolean);
+  const learnerActions = metrics.perTurn.map((t) => t.learnerAction).filter(Boolean);
 
   // Convergence speed trajectory (does negotiation get faster?)
-  const convergenceTrajectory = allRoundsToConverge.length > 1
-    ? allRoundsToConverge[allRoundsToConverge.length - 1] - allRoundsToConverge[0]
-    : 0;
+  const convergenceTrajectory =
+    allRoundsToConverge.length > 1 ? allRoundsToConverge[allRoundsToConverge.length - 1] - allRoundsToConverge[0] : 0;
 
   metrics.aggregate = {
     meanNegationDepth: mean(allNegationDepths),
@@ -452,9 +468,7 @@ function extractStructuralMetrics(dialogueLog, turns) {
     sdRoundsToConverge: std(allRoundsToConverge),
     convergenceTrajectory,
     meanConfidence: allConfidences.length > 0 ? mean(allConfidences) : null,
-    confidenceTrajectory: firstTurnConf != null && lastTurnConf != null
-      ? lastTurnConf - firstTurnConf
-      : null,
+    confidenceTrajectory: firstTurnConf != null && lastTurnConf != null ? lastTurnConf - firstTurnConf : null,
     totalInterventions,
     meanFeedbackLength: allFeedbackLengths.length > 0 ? mean(allFeedbackLengths) : 0,
     learnerActionSequence: learnerActions,
@@ -484,11 +498,11 @@ function buildStanceReversalPrompt(turns) {
   const pairs = [];
   for (let i = 0; i < turns.length - 1; i++) {
     const feedbackA = turns[i].superegoEntries
-      .map(e => e.feedback)
+      .map((e) => e.feedback)
       .filter(Boolean)
       .join('\n');
     const feedbackB = turns[i + 1].superegoEntries
-      .map(e => e.feedback)
+      .map((e) => e.feedback)
       .filter(Boolean)
       .join('\n');
     if (feedbackA && feedbackB) {
@@ -503,9 +517,12 @@ function buildStanceReversalPrompt(turns) {
 
   if (pairs.length === 0) return null;
 
-  const pairsText = pairs.map((p, i) =>
-    `### Pair ${i + 1} (Turn ${p.turnA} → Turn ${p.turnB})\n**Turn ${p.turnA} superego feedback:**\n${p.feedbackA}\n\n**Turn ${p.turnB} superego feedback:**\n${p.feedbackB}`
-  ).join('\n\n');
+  const pairsText = pairs
+    .map(
+      (p, i) =>
+        `### Pair ${i + 1} (Turn ${p.turnA} → Turn ${p.turnB})\n**Turn ${p.turnA} superego feedback:**\n${p.feedbackA}\n\n**Turn ${p.turnB} superego feedback:**\n${p.feedbackB}`,
+    )
+    .join('\n\n');
 
   return `You are analyzing ego-superego dialogue traces from an AI tutoring system. The superego reviews and critiques the ego's suggestions across multiple turns of a tutoring conversation.
 
@@ -541,18 +558,17 @@ function buildCrossTurnMemoryPrompt(turns) {
   const turnData = [];
   for (let i = 0; i < turns.length; i++) {
     const feedback = turns[i].superegoEntries
-      .map(e => e.feedback)
+      .map((e) => e.feedback)
       .filter(Boolean)
       .join('\n');
-    const priorTurnSummaries = turns.slice(0, i)
-      .map(t => {
-        const fb = t.superegoEntries
-          .map(e => e.feedback)
-          .filter(Boolean)
-          .join('; ')
-          .slice(0, 200);
-        return `Turn ${t.turnIndex}: ${fb || '(no feedback)'}`;
-      });
+    const priorTurnSummaries = turns.slice(0, i).map((t) => {
+      const fb = t.superegoEntries
+        .map((e) => e.feedback)
+        .filter(Boolean)
+        .join('; ')
+        .slice(0, 200);
+      return `Turn ${t.turnIndex}: ${fb || '(no feedback)'}`;
+    });
 
     if (feedback && priorTurnSummaries.length > 0) {
       turnData.push({
@@ -565,9 +581,12 @@ function buildCrossTurnMemoryPrompt(turns) {
 
   if (turnData.length === 0) return null;
 
-  const turnText = turnData.map(t =>
-    `### Turn ${t.turnIndex}\n**Prior turns:**\n${t.priorSummaries.join('\n')}\n\n**Current superego feedback:**\n${t.feedback}`
-  ).join('\n\n');
+  const turnText = turnData
+    .map(
+      (t) =>
+        `### Turn ${t.turnIndex}\n**Prior turns:**\n${t.priorSummaries.join('\n')}\n\n**Current superego feedback:**\n${t.feedback}`,
+    )
+    .join('\n\n');
 
   return `You are analyzing ego-superego dialogue traces from an AI tutoring system. The superego reviews the ego's suggestions across multiple external turns.
 
@@ -629,9 +648,12 @@ function buildHallucinationCorrectionPrompt(turns) {
   // Limit to first 6 rejections to keep prompt manageable
   const subset = rejections.slice(0, 6);
 
-  const rejectText = subset.map((r, i) =>
-    `### Rejection ${i + 1} (Turn ${r.turnIndex}, Round ${r.round})\n**Context:** ${r.context}\n**Ego suggestion:** ${r.egoSuggestion}\n**Superego rejection:** ${r.superegoFeedback}`
-  ).join('\n\n');
+  const rejectText = subset
+    .map(
+      (r, i) =>
+        `### Rejection ${i + 1} (Turn ${r.turnIndex}, Round ${r.round})\n**Context:** ${r.context}\n**Ego suggestion:** ${r.egoSuggestion}\n**Superego rejection:** ${r.superegoFeedback}`,
+    )
+    .join('\n\n');
 
   return `You are analyzing ego-superego dialogue traces from an AI tutoring system. The superego sometimes rejects the ego's suggestions.
 
@@ -671,12 +693,11 @@ function buildPhaseTransitionPrompt(turns) {
   // Build the learner message sequence + superego response characterization
   const sequence = [];
   for (const turn of turns) {
-    const learnerMsg = turn.learnerAction?.contextSummary
-      || turn.contextInput?.rawContext?.slice(0, 200)
-      || '(initial turn)';
+    const learnerMsg =
+      turn.learnerAction?.contextSummary || turn.contextInput?.rawContext?.slice(0, 200) || '(initial turn)';
     const superegoStance = turn.superegoEntries
-      .filter(e => e.feedback)
-      .map(e => e.feedback.slice(0, 200))
+      .filter((e) => e.feedback)
+      .map((e) => e.feedback.slice(0, 200))
       .join(' | ');
     const learnerDetail = turn.learnerAction?.detail || 'initial';
 
@@ -690,9 +711,12 @@ function buildPhaseTransitionPrompt(turns) {
 
   if (sequence.length < 2) return null;
 
-  const seqText = sequence.map(s =>
-    `### Turn ${s.turnIndex}\n**Learner** [${s.learnerAction}]: ${s.learnerMessage}\n**Superego stance:** ${s.superegoStance}`
-  ).join('\n\n');
+  const seqText = sequence
+    .map(
+      (s) =>
+        `### Turn ${s.turnIndex}\n**Learner** [${s.learnerAction}]: ${s.learnerMessage}\n**Superego stance:** ${s.superegoStance}`,
+    )
+    .join('\n\n');
 
   return `You are analyzing multi-turn ego-superego tutoring dialogues. The learner interacts with a tutor over multiple turns, and the superego reviews each of the tutor's responses.
 
@@ -806,18 +830,38 @@ function analyzeAggregateResults(profiles) {
   // ── Structural Metric Comparisons ──────────────────────────────────
 
   const structuralMetrics = [
-    { key: 'meanNegationDepth', label: 'Mean Negation Depth', extract: p => p.structural.aggregate.meanNegationDepth },
-    { key: 'totalNegations', label: 'Total Negations', extract: p => p.structural.aggregate.totalNegations },
-    { key: 'meanRoundsToConverge', label: 'Mean Rounds to Converge', extract: p => p.structural.aggregate.meanRoundsToConverge },
-    { key: 'convergenceTrajectory', label: 'Convergence Trajectory', extract: p => p.structural.aggregate.convergenceTrajectory },
-    { key: 'meanConfidence', label: 'Mean Superego Confidence', extract: p => p.structural.aggregate.meanConfidence },
-    { key: 'confidenceTrajectory', label: 'Confidence Trajectory', extract: p => p.structural.aggregate.confidenceTrajectory },
-    { key: 'meanFeedbackLength', label: 'Mean Feedback Length', extract: p => p.structural.aggregate.meanFeedbackLength },
+    {
+      key: 'meanNegationDepth',
+      label: 'Mean Negation Depth',
+      extract: (p) => p.structural.aggregate.meanNegationDepth,
+    },
+    { key: 'totalNegations', label: 'Total Negations', extract: (p) => p.structural.aggregate.totalNegations },
+    {
+      key: 'meanRoundsToConverge',
+      label: 'Mean Rounds to Converge',
+      extract: (p) => p.structural.aggregate.meanRoundsToConverge,
+    },
+    {
+      key: 'convergenceTrajectory',
+      label: 'Convergence Trajectory',
+      extract: (p) => p.structural.aggregate.convergenceTrajectory,
+    },
+    { key: 'meanConfidence', label: 'Mean Superego Confidence', extract: (p) => p.structural.aggregate.meanConfidence },
+    {
+      key: 'confidenceTrajectory',
+      label: 'Confidence Trajectory',
+      extract: (p) => p.structural.aggregate.confidenceTrajectory,
+    },
+    {
+      key: 'meanFeedbackLength',
+      label: 'Mean Feedback Length',
+      extract: (p) => p.structural.aggregate.meanFeedbackLength,
+    },
   ];
 
   for (const metric of structuralMetrics) {
-    const baseVals = analysis.byCondition.base.map(metric.extract).filter(v => v != null);
-    const recogVals = analysis.byCondition.recognition.map(metric.extract).filter(v => v != null);
+    const baseVals = analysis.byCondition.base.map(metric.extract).filter((v) => v != null);
+    const recogVals = analysis.byCondition.recognition.map(metric.extract).filter((v) => v != null);
 
     analysis.structural[metric.key] = {
       label: metric.label,
@@ -830,8 +874,14 @@ function analyzeAggregateResults(profiles) {
     // Per-persona breakdown
     const byPersona = {};
     for (const [persona, pProfiles] of Object.entries(analysis.byPersona)) {
-      const baseP = pProfiles.filter(p => p.condition === 'base').map(metric.extract).filter(v => v != null);
-      const recogP = pProfiles.filter(p => p.condition === 'recognition').map(metric.extract).filter(v => v != null);
+      const baseP = pProfiles
+        .filter((p) => p.condition === 'base')
+        .map(metric.extract)
+        .filter((v) => v != null);
+      const recogP = pProfiles
+        .filter((p) => p.condition === 'recognition')
+        .map(metric.extract)
+        .filter((v) => v != null);
       byPersona[persona] = {
         base: { n: baseP.length, mean: mean(baseP), sd: std(baseP) },
         recognition: { n: recogP.length, mean: mean(recogP), sd: std(recogP) },
@@ -853,15 +903,11 @@ function analyzeAggregateResults(profiles) {
   analysis.structural.interventionDistribution = interventionCounts;
 
   // Chi-square on intervention types
-  const allIntTypes = [...new Set([
-    ...Object.keys(interventionCounts.base),
-    ...Object.keys(interventionCounts.recognition),
-  ])];
+  const allIntTypes = [
+    ...new Set([...Object.keys(interventionCounts.base), ...Object.keys(interventionCounts.recognition)]),
+  ];
   if (allIntTypes.length > 1) {
-    const observed = allIntTypes.map(t => [
-      interventionCounts.base[t] || 0,
-      interventionCounts.recognition[t] || 0,
-    ]);
+    const observed = allIntTypes.map((t) => [interventionCounts.base[t] || 0, interventionCounts.recognition[t] || 0]);
     analysis.structural.interventionChiSquare = {
       ...chiSquareTest(observed),
       types: allIntTypes,
@@ -874,8 +920,7 @@ function analyzeAggregateResults(profiles) {
   for (const p of profiles) {
     for (const action of p.structural.aggregate.learnerActionSequence) {
       const normalized = action.replace(/^Learner:\s*/, '');
-      learnerActionCounts[p.condition][normalized] =
-        (learnerActionCounts[p.condition][normalized] || 0) + 1;
+      learnerActionCounts[p.condition][normalized] = (learnerActionCounts[p.condition][normalized] || 0) + 1;
     }
   }
   analysis.structural.learnerActionDistribution = learnerActionCounts;
@@ -885,11 +930,11 @@ function analyzeAggregateResults(profiles) {
   if (profiles[0]?.llmCoded && !profiles[0].llmCoded.stanceReversal?.skipped) {
     // Stance reversals
     const baseReversals = analysis.byCondition.base
-      .map(p => p.llmCoded?.stanceReversal?.total_reversals)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.stanceReversal?.total_reversals)
+      .filter((v) => v != null);
     const recogReversals = analysis.byCondition.recognition
-      .map(p => p.llmCoded?.stanceReversal?.total_reversals)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.stanceReversal?.total_reversals)
+      .filter((v) => v != null);
     analysis.llmCoded.stanceReversal = {
       base: { n: baseReversals.length, mean: mean(baseReversals), sd: std(baseReversals) },
       recognition: { n: recogReversals.length, mean: mean(recogReversals), sd: std(recogReversals) },
@@ -899,11 +944,11 @@ function analyzeAggregateResults(profiles) {
 
     // Cross-turn memory
     const baseMemory = analysis.byCondition.base
-      .map(p => p.llmCoded?.crossTurnMemory?.memory_rate)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.crossTurnMemory?.memory_rate)
+      .filter((v) => v != null);
     const recogMemory = analysis.byCondition.recognition
-      .map(p => p.llmCoded?.crossTurnMemory?.memory_rate)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.crossTurnMemory?.memory_rate)
+      .filter((v) => v != null);
     analysis.llmCoded.crossTurnMemory = {
       base: { n: baseMemory.length, mean: mean(baseMemory), sd: std(baseMemory) },
       recognition: { n: recogMemory.length, mean: mean(recogMemory), sd: std(recogMemory) },
@@ -913,11 +958,11 @@ function analyzeAggregateResults(profiles) {
 
     // Hallucination rate
     const baseHalluc = analysis.byCondition.base
-      .map(p => p.llmCoded?.hallucinationCorrection?.hallucination_rate)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.hallucinationCorrection?.hallucination_rate)
+      .filter((v) => v != null);
     const recogHalluc = analysis.byCondition.recognition
-      .map(p => p.llmCoded?.hallucinationCorrection?.hallucination_rate)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.hallucinationCorrection?.hallucination_rate)
+      .filter((v) => v != null);
     analysis.llmCoded.hallucinationCorrection = {
       base: { n: baseHalluc.length, mean: mean(baseHalluc), sd: std(baseHalluc) },
       recognition: { n: recogHalluc.length, mean: mean(recogHalluc), sd: std(recogHalluc) },
@@ -927,11 +972,11 @@ function analyzeAggregateResults(profiles) {
 
     // Phase transitions
     const basePhase = analysis.byCondition.base
-      .map(p => p.llmCoded?.phaseTransition?.transition_density)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.phaseTransition?.transition_density)
+      .filter((v) => v != null);
     const recogPhase = analysis.byCondition.recognition
-      .map(p => p.llmCoded?.phaseTransition?.transition_density)
-      .filter(v => v != null);
+      .map((p) => p.llmCoded?.phaseTransition?.transition_density)
+      .filter((v) => v != null);
     analysis.llmCoded.phaseTransition = {
       base: { n: basePhase.length, mean: mean(basePhase), sd: std(basePhase) },
       recognition: { n: recogPhase.length, mean: mean(recogPhase), sd: std(recogPhase) },
@@ -942,23 +987,23 @@ function analyzeAggregateResults(profiles) {
 
   // ── Correlations: modulation metrics vs overall_score ──────────────
 
-  const scores = profiles.map(p => p.overallScore).filter(v => v != null);
-  const _negDepths = profiles.map(p => p.structural.aggregate.meanNegationDepth);
-  const _convergeSpeeds = profiles.map(p => p.structural.aggregate.meanRoundsToConverge);
-  const _feedbackLens = profiles.map(p => p.structural.aggregate.meanFeedbackLength);
+  const scores = profiles.map((p) => p.overallScore).filter((v) => v != null);
+  const _negDepths = profiles.map((p) => p.structural.aggregate.meanNegationDepth);
+  const _convergeSpeeds = profiles.map((p) => p.structural.aggregate.meanRoundsToConverge);
+  const _feedbackLens = profiles.map((p) => p.structural.aggregate.meanFeedbackLength);
 
   if (scores.length >= 5) {
     analysis.correlations.negationDepth_score = pearsonR(
-      profiles.filter(p => p.overallScore != null).map(p => p.structural.aggregate.meanNegationDepth),
-      profiles.filter(p => p.overallScore != null).map(p => p.overallScore)
+      profiles.filter((p) => p.overallScore != null).map((p) => p.structural.aggregate.meanNegationDepth),
+      profiles.filter((p) => p.overallScore != null).map((p) => p.overallScore),
     );
     analysis.correlations.convergenceSpeed_score = pearsonR(
-      profiles.filter(p => p.overallScore != null).map(p => p.structural.aggregate.meanRoundsToConverge),
-      profiles.filter(p => p.overallScore != null).map(p => p.overallScore)
+      profiles.filter((p) => p.overallScore != null).map((p) => p.structural.aggregate.meanRoundsToConverge),
+      profiles.filter((p) => p.overallScore != null).map((p) => p.overallScore),
     );
     analysis.correlations.feedbackLength_score = pearsonR(
-      profiles.filter(p => p.overallScore != null).map(p => p.structural.aggregate.meanFeedbackLength),
-      profiles.filter(p => p.overallScore != null).map(p => p.overallScore)
+      profiles.filter((p) => p.overallScore != null).map((p) => p.structural.aggregate.meanFeedbackLength),
+      profiles.filter((p) => p.overallScore != null).map((p) => p.overallScore),
     );
   }
 
@@ -978,7 +1023,7 @@ function generateReport(profiles, analysis, opts) {
 **Run ID:** ${opts.runId}
 **N:** ${analysis.n} dialogues (base=${baseN}, recognition=${recogN})
 **Personas:** ${Object.keys(analysis.byPersona).join(', ')}
-**Scenarios:** ${[...new Set(profiles.map(p => p.scenarioId))].join(', ')}
+**Scenarios:** ${[...new Set(profiles.map((p) => p.scenarioId))].join(', ')}
 **Model:** ${opts.model}
 **Mode:** ${opts.structuralOnly ? 'structural only' : 'full (structural + LLM-coded)'}
 
@@ -991,7 +1036,8 @@ function generateReport(profiles, analysis, opts) {
 `;
 
   for (const [key, data] of Object.entries(analysis.structural)) {
-    if (key === 'interventionDistribution' || key === 'interventionChiSquare' || key === 'learnerActionDistribution') continue;
+    if (key === 'interventionDistribution' || key === 'interventionChiSquare' || key === 'learnerActionDistribution')
+      continue;
     const bStr = `${data.base.mean.toFixed(2)} (${data.base.sd.toFixed(2)})`;
     const rStr = `${data.recognition.mean.toFixed(2)} (${data.recognition.sd.toFixed(2)})`;
     const pStr = data.welch.p < 0.001 ? '<.001' : data.welch.p.toFixed(3);
@@ -1001,8 +1047,8 @@ function generateReport(profiles, analysis, opts) {
   // Per-persona breakdown
   md += `\n### 1.2 Per-Persona Breakdown\n`;
   for (const [persona, pProfiles] of Object.entries(analysis.byPersona)) {
-    const pBase = pProfiles.filter(p => p.condition === 'base').length;
-    const pRecog = pProfiles.filter(p => p.condition === 'recognition').length;
+    const pBase = pProfiles.filter((p) => p.condition === 'base').length;
+    const pRecog = pProfiles.filter((p) => p.condition === 'recognition').length;
     md += `\n#### ${persona} (base=${pBase}, recog=${pRecog})\n\n`;
     md += `| Metric | Base | Recog | d |\n|--------|------|-------|---|\n`;
 
@@ -1016,10 +1062,12 @@ function generateReport(profiles, analysis, opts) {
   // Intervention distribution
   md += `\n### 1.3 Intervention Type Distribution\n\n`;
   md += `| Type | Base | Recognition |\n|------|------|-------------|\n`;
-  const allTypes = [...new Set([
-    ...Object.keys(analysis.structural.interventionDistribution?.base || {}),
-    ...Object.keys(analysis.structural.interventionDistribution?.recognition || {}),
-  ])];
+  const allTypes = [
+    ...new Set([
+      ...Object.keys(analysis.structural.interventionDistribution?.base || {}),
+      ...Object.keys(analysis.structural.interventionDistribution?.recognition || {}),
+    ]),
+  ];
   for (const type of allTypes) {
     const b = analysis.structural.interventionDistribution?.base?.[type] || 0;
     const r = analysis.structural.interventionDistribution?.recognition?.[type] || 0;
@@ -1034,10 +1082,12 @@ function generateReport(profiles, analysis, opts) {
   // Learner action distribution
   md += `\n### 1.4 Learner Action Distribution\n\n`;
   md += `| Action | Base | Recognition |\n|--------|------|-------------|\n`;
-  const allActions = [...new Set([
-    ...Object.keys(analysis.structural.learnerActionDistribution?.base || {}),
-    ...Object.keys(analysis.structural.learnerActionDistribution?.recognition || {}),
-  ])];
+  const allActions = [
+    ...new Set([
+      ...Object.keys(analysis.structural.learnerActionDistribution?.base || {}),
+      ...Object.keys(analysis.structural.learnerActionDistribution?.recognition || {}),
+    ]),
+  ];
   for (const action of allActions) {
     const b = analysis.structural.learnerActionDistribution?.base?.[action] || 0;
     const r = analysis.structural.learnerActionDistribution?.recognition?.[action] || 0;
@@ -1079,18 +1129,18 @@ function generateReport(profiles, analysis, opts) {
   md += `| Cell | N | Mean Score | Mean Neg Depth | Mean Rounds | Mean Confidence |\n`;
   md += `|------|---|------------|----------------|-------------|------------------|\n`;
   for (const [cellKey, cellProfiles] of Object.entries(analysis.byCell)) {
-    const scores = cellProfiles.map(p => p.overallScore).filter(v => v != null);
-    const negDepths = cellProfiles.map(p => p.structural.aggregate.meanNegationDepth);
-    const rounds = cellProfiles.map(p => p.structural.aggregate.meanRoundsToConverge);
-    const confs = cellProfiles.map(p => p.structural.aggregate.meanConfidence).filter(v => v != null);
+    const scores = cellProfiles.map((p) => p.overallScore).filter((v) => v != null);
+    const negDepths = cellProfiles.map((p) => p.structural.aggregate.meanNegationDepth);
+    const rounds = cellProfiles.map((p) => p.structural.aggregate.meanRoundsToConverge);
+    const confs = cellProfiles.map((p) => p.structural.aggregate.meanConfidence).filter((v) => v != null);
     md += `| ${cellKey} | ${cellProfiles.length} | ${mean(scores).toFixed(1)} | ${mean(negDepths).toFixed(2)} | ${mean(rounds).toFixed(2)} | ${confs.length > 0 ? mean(confs).toFixed(3) : 'N/A'} |\n`;
   }
 
   // Exemplar dialogues
   md += `\n## 4. Exemplar Dialogues\n\n`;
   // Highest and lowest negation depth
-  const sorted = [...profiles].sort((a, b) =>
-    b.structural.aggregate.totalNegations - a.structural.aggregate.totalNegations
+  const sorted = [...profiles].sort(
+    (a, b) => b.structural.aggregate.totalNegations - a.structural.aggregate.totalNegations,
   );
   if (sorted.length > 0) {
     const high = sorted[0];
@@ -1117,9 +1167,15 @@ function parseArgs() {
   };
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--model': opts.model = args[++i]; break;
-      case '--run-id': opts.runId = args[++i]; break;
-      case '--structural-only': opts.structuralOnly = true; break;
+      case '--model':
+        opts.model = args[++i];
+        break;
+      case '--run-id':
+        opts.runId = args[++i];
+        break;
+      case '--structural-only':
+        opts.structuralOnly = true;
+        break;
       case '--help':
         console.log(`Usage: node scripts/code-dialectical-modulation.js [options]
 
@@ -1153,7 +1209,9 @@ async function main() {
   console.log('='.repeat(70));
   console.log('DIALECTICAL MODULATION CODING');
   console.log('='.repeat(70));
-  console.log(`Model: ${opts.model} | Run ID: ${opts.runId} | Mode: ${opts.structuralOnly ? 'structural only' : 'full'}`);
+  console.log(
+    `Model: ${opts.model} | Run ID: ${opts.runId} | Mode: ${opts.structuralOnly ? 'structural only' : 'full'}`,
+  );
 
   // Load rows
   const rows = loadRows(db, opts.runId);
@@ -1174,7 +1232,11 @@ async function main() {
     personaCounts[persona] = (personaCounts[persona] || 0) + 1;
   }
   console.log(`  Base: ${condCounts.base}, Recognition: ${condCounts.recognition}`);
-  console.log(`  Personas: ${Object.entries(personaCounts).map(([k, v]) => `${k}=${v}`).join(', ')}`);
+  console.log(
+    `  Personas: ${Object.entries(personaCounts)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(', ')}`,
+  );
 
   // Ensure exports directory
   const exportsDir = path.join(process.cwd(), 'exports');
@@ -1233,7 +1295,9 @@ async function main() {
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`\nProcessing complete: ${profiles.length} profiles, ${loadErrors} load errors, ${llmErrors} LLM errors, ${elapsed}s`);
+  console.log(
+    `\nProcessing complete: ${profiles.length} profiles, ${loadErrors} load errors, ${llmErrors} LLM errors, ${elapsed}s`,
+  );
 
   if (profiles.length === 0) {
     console.error('No profiles generated.');
@@ -1246,17 +1310,24 @@ async function main() {
 
   // Write outputs
   const jsonPath = path.join(exportsDir, `dialectical-modulation-${timestamp}.json`);
-  fs.writeFileSync(jsonPath, JSON.stringify({
-    generated: new Date().toISOString(),
-    model: opts.model,
-    runId: opts.runId,
-    mode: opts.structuralOnly ? 'structural' : 'full',
-    n: profiles.length,
-    loadErrors,
-    llmErrors,
-    profiles,
-    analysis,
-  }, null, 2));
+  fs.writeFileSync(
+    jsonPath,
+    JSON.stringify(
+      {
+        generated: new Date().toISOString(),
+        model: opts.model,
+        runId: opts.runId,
+        mode: opts.structuralOnly ? 'structural' : 'full',
+        n: profiles.length,
+        loadErrors,
+        llmErrors,
+        profiles,
+        analysis,
+      },
+      null,
+      2,
+    ),
+  );
   console.log(`\nJSON: ${jsonPath}`);
 
   const mdReport = generateReport(profiles, analysis, opts);
@@ -1272,11 +1343,14 @@ async function main() {
   console.log('─'.repeat(70));
 
   for (const [key, data] of Object.entries(analysis.structural)) {
-    if (key === 'interventionDistribution' || key === 'interventionChiSquare' || key === 'learnerActionDistribution') continue;
+    if (key === 'interventionDistribution' || key === 'interventionChiSquare' || key === 'learnerActionDistribution')
+      continue;
     const bStr = data.base.mean.toFixed(2);
     const rStr = data.recognition.mean.toFixed(2);
     const pStr = data.welch.p < 0.001 ? '<.001' : data.welch.p.toFixed(3);
-    console.log(`  ${data.label.padEnd(28)} ${bStr.padEnd(14)} ${rStr.padEnd(14)} ${data.d.toFixed(2).padEnd(8)} ${pStr}`);
+    console.log(
+      `  ${data.label.padEnd(28)} ${bStr.padEnd(14)} ${rStr.padEnd(14)} ${data.d.toFixed(2).padEnd(8)} ${pStr}`,
+    );
   }
 
   // Correlations
@@ -1306,7 +1380,9 @@ async function main() {
     for (const [key, data] of Object.entries(analysis.llmCoded)) {
       if (!data.base) continue;
       const pStr = data.welch.p < 0.001 ? '<.001' : data.welch.p.toFixed(3);
-      console.log(`  ${(llmLabels[key] || key).padEnd(28)} base=${data.base.mean.toFixed(3).padEnd(8)} recog=${data.recognition.mean.toFixed(3).padEnd(8)} d=${data.d.toFixed(2).padEnd(8)} p=${pStr}`);
+      console.log(
+        `  ${(llmLabels[key] || key).padEnd(28)} base=${data.base.mean.toFixed(3).padEnd(8)} recog=${data.recognition.mean.toFixed(3).padEnd(8)} d=${data.d.toFixed(2).padEnd(8)} p=${pStr}`,
+      );
     }
   }
 
@@ -1314,7 +1390,7 @@ async function main() {
   console.log('\nDone.');
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });
