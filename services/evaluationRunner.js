@@ -3613,16 +3613,42 @@ export async function rejudgeRun(runId, options = {}) {
     throw new Error('No successful results with suggestions found to rejudge');
   }
 
-  // Deduplicate: only rejudge unique responses (by suggestions content)
-  // This prevents cascading rejudgments when running multiple times
+  // Resolve the target judge label so we can detect prior rejudgments by the same judge
+  let targetJudgeLabel = null;
+  if (!overwrite) {
+    try {
+      const judge = rubricEvaluator.getAvailableJudge(
+        judgeOverride ? { judgeOverride: { model: judgeOverride } } : {},
+      );
+      targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
+    } catch {
+      // If we can't resolve, skip the cross-call dedup (fall back to within-call dedup only)
+    }
+  }
+
+  // Build a set of suggestion keys that have already been judged by the target judge.
+  // This prevents duplicate rows when rejudge is run multiple times with the same judge.
+  const alreadyJudgedByTarget = new Set();
+  if (targetJudgeLabel) {
+    for (const r of results) {
+      if (r.judgeModel === targetJudgeLabel) {
+        const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
+        alreadyJudgedByTarget.add(suggKey);
+      }
+    }
+  }
+
+  // Deduplicate: only rejudge unique responses (by suggestions content),
+  // and skip responses already judged by the target judge
   const seenSuggestions = new Set();
   const uniqueResults = [];
   for (const r of results) {
     const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
-    if (!seenSuggestions.has(suggKey)) {
-      seenSuggestions.add(suggKey);
-      uniqueResults.push(r);
-    }
+    if (seenSuggestions.has(suggKey)) continue;
+    seenSuggestions.add(suggKey);
+    // Skip if this response was already judged by the target judge in a prior rejudge call
+    if (alreadyJudgedByTarget.has(suggKey)) continue;
+    uniqueResults.push(r);
   }
 
   const skipped = results.length - uniqueResults.length;
