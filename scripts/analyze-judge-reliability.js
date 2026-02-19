@@ -7,8 +7,8 @@
  * IMPORTANT: This requires paired data where identical responses were scored by
  * multiple judges. Generate this by rejudging an existing run:
  *
- *   node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5
- *   node scripts/eval-cli.js rejudge <runId> --judge openrouter/moonshotai/kimi-k2.5
+ *   node scripts/eval-cli.js rejudge <runId> --judge openrouter.sonnet
+ *   node scripts/eval-cli.js rejudge <runId> --judge openrouter.kimi
  *
  * The script matches responses by their `suggestions` content (MD5 hash) to find
  * cases where the exact same tutor output was scored by different judges.
@@ -227,8 +227,8 @@ function analyzeJudgeReliability() {
     console.log('  node scripts/eval-cli.js list');
     console.log('');
     console.log('  # Then rejudge with different models:');
-    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5');
-    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter/moonshotai/kimi-k2.5');
+    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter.sonnet');
+    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter.kimi');
     console.log('');
     console.log('  # Then run this analysis again');
     console.log('');
@@ -293,7 +293,7 @@ function analyzeJudgeReliability() {
     console.log('No paired judgments found (same response scored by multiple judges).');
     console.log('');
     console.log('To generate paired data, use the rejudge command with a different model:');
-    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter/anthropic/claude-sonnet-4.5');
+    console.log('  node scripts/eval-cli.js rejudge <runId> --judge openrouter.sonnet');
     db.close();
     return;
   }
