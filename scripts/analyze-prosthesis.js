@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const Database = require('better-sqlite3');
+import Database from 'better-sqlite3';
 const db = new Database('data/evaluations.db');
 
 const RUN_ID = 'eval-2026-02-17-25aaae85';

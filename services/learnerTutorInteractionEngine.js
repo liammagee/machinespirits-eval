@@ -1240,6 +1240,16 @@ export async function generateLearnerResponse(options) {
 // Exports
 // ============================================================================
 
+// Named exports for pure helper functions (used in unit tests)
+export {
+  detectEmotionalState,
+  detectUnderstandingLevel,
+  detectTutorStrategy,
+  extractTutorMessage,
+  calculateMemoryDelta,
+  INTERACTION_OUTCOMES,
+};
+
 export default {
   runInteraction,
   generateLearnerResponse,
