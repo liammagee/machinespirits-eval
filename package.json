@@ -1,6 +1,6 @@
 {
   "name": "@machinespirits/eval",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Evaluation system for Machine Spirits tutor - benchmarking, rubric evaluation, and analysis tools",
   "type": "module",
   "main": "index.js",
