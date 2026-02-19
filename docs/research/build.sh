@@ -44,13 +44,25 @@ build_short() {
 
 build_beamer() {
   echo "Building ${SLIDES_PDF} (beamer) ..."
-  pandoc --citeproc --pdf-engine=xelatex -t beamer slides.md -o "${SLIDES_PDF}"
+  pandoc --citeproc --pdf-engine=xelatex -t beamer \
+    --slide-level=2 \
+    slides.md -o "${SLIDES_PDF}"
   echo "  -> ${SLIDES_PDF}"
 }
 
 build_pptx() {
   echo "Building ${SLIDES_PPTX} ..."
-  pandoc --citeproc slides.md -o "${SLIDES_PPTX}"
+  # Use slides-pptx.md (stripped of LaTeX commands) with styled reference doc
+  if [ -f slides-pptx.md ]; then
+    SLIDES_SRC="slides-pptx.md"
+  else
+    SLIDES_SRC="slides.md"
+  fi
+  PPTX_OPTS=(--citeproc --slide-level=2)
+  if [ -f reference.pptx ]; then
+    PPTX_OPTS+=(--reference-doc=reference.pptx)
+  fi
+  pandoc "${PPTX_OPTS[@]}" "${SLIDES_SRC}" -o "${SLIDES_PPTX}"
   echo "  -> ${SLIDES_PPTX}"
 }
 

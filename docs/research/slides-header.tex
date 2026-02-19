@@ -1,0 +1,188 @@
+% Custom Beamer styling for "Geist in the Machine" presentation
+% Uses Metropolis theme with a refined academic color palette
+
+% ─── Color Palette ───────────────────────────────────────────
+% Deep slate blue primary, warm amber accent, clean backgrounds
+\definecolor{GeistPrimary}{HTML}{1B2838}      % Dark slate (titles, bars)
+\definecolor{GeistAccent}{HTML}{D4872C}        % Warm amber (highlights, alerts)
+\definecolor{GeistLight}{HTML}{F5F2EB}         % Warm off-white (backgrounds)
+\definecolor{GeistMid}{HTML}{5C6B7A}           % Medium slate (subtitles)
+\definecolor{GeistText}{HTML}{2D3436}          % Near-black (body text)
+\definecolor{GeistTableHead}{HTML}{E8E2D6}     % Warm beige (table headers)
+\definecolor{GeistTableAlt}{HTML}{F9F7F3}      % Light warm (table alt rows)
+\definecolor{GeistPositive}{HTML}{27AE60}      % Green (positive results)
+\definecolor{GeistNegative}{HTML}{C0392B}      % Red (negative results)
+\definecolor{GeistCode}{HTML}{F0ECE3}          % Code background
+
+% ─── Metropolis Configuration ────────────────────────────────
+\metroset{
+  progressbar=frametitle,
+  sectionpage=none,
+  numbering=fraction,
+  block=fill,
+}
+
+% Apply custom colors to metropolis elements
+\setbeamercolor{normal text}{fg=GeistText, bg=white}
+\setbeamercolor{background canvas}{bg=white}
+\setbeamercolor{alerted text}{fg=GeistAccent}
+\setbeamercolor{frametitle}{fg=white, bg=GeistPrimary}
+\setbeamercolor{title separator}{fg=GeistAccent}
+\setbeamercolor{progress bar}{fg=GeistAccent, bg=GeistPrimary!20}
+\setbeamercolor{progress bar in head/foot}{fg=GeistAccent, bg=GeistPrimary!20}
+\setbeamercolor{progress bar in section page}{fg=GeistAccent, bg=GeistPrimary!20}
+\setbeamercolor{title}{fg=white}
+\setbeamercolor{subtitle}{fg=GeistAccent!80!white}
+\setbeamercolor{author}{fg=GeistLight!90!white}
+\setbeamercolor{date}{fg=GeistLight!70!white}
+\setbeamercolor{institute}{fg=GeistLight!80!white}
+\setbeamercolor{section title}{fg=white}
+\setbeamercolor{block title}{fg=white, bg=GeistPrimary}
+\setbeamercolor{block body}{bg=GeistLight}
+\setbeamercolor{block title alerted}{fg=white, bg=GeistAccent}
+\setbeamercolor{block body alerted}{bg=GeistAccent!10}
+\setbeamercolor{block title example}{fg=white, bg=GeistPositive!80!black}
+\setbeamercolor{block body example}{bg=GeistPositive!5}
+\setbeamercolor{itemize item}{fg=GeistAccent}
+\setbeamercolor{itemize subitem}{fg=GeistMid}
+\setbeamercolor{enumerate item}{fg=GeistAccent}
+\setbeamercolor{description item}{fg=GeistPrimary}
+\setbeamercolor{footnote}{fg=GeistMid}
+\setbeamercolor{page number in head/foot}{fg=GeistMid}
+
+% ─── Typography ──────────────────────────────────────────────
+\usepackage{FiraSans}
+\usepackage{FiraMono}
+
+% Title page font sizes
+\setbeamerfont{title}{size=\Large, series=\bfseries}
+\setbeamerfont{subtitle}{size=\normalsize}
+\setbeamerfont{author}{size=\small}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{institute}{size=\footnotesize}
+\setbeamerfont{frametitle}{size=\large}
+
+% ─── Title Page ──────────────────────────────────────────────
+\setbeamertemplate{title page}{
+  \begin{minipage}[b][\paperheight]{\textwidth}
+    \vfill
+    \ifx\inserttitlegraphic\@empty\else\usebeamertemplate*{title graphic}\fi
+
+    {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+
+    \vspace{0.6em}
+    {\usebeamercolor{title separator}\textcolor{fg}{\rule{0.35\textwidth}{1.2pt}}\par}
+
+    \vspace{0.6em}
+    \ifx\insertsubtitle\@empty\else
+      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}
+      \vspace{0.4em}
+    \fi
+
+    \ifx\insertauthor\@empty\else
+      {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}
+      \vspace{0.2em}
+    \fi
+
+    \ifx\insertinstitute\@empty\else
+      {\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}
+      \vspace{0.2em}
+    \fi
+
+    \ifx\insertdate\@empty\else
+      {\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par}
+    \fi
+
+    \vfill
+    \vspace{1em}
+  \end{minipage}
+}
+
+% Dark background for title page
+\makeatletter
+\def\ps@titlepage{%
+  \setbeamertemplate{background}{%
+    \begin{tikzpicture}
+      \useasboundingbox (0,0) rectangle (\the\paperwidth,\the\paperheight);
+      \fill[GeistPrimary] (0,0) rectangle (\the\paperwidth,\the\paperheight);
+    \end{tikzpicture}
+  }
+}
+\addtobeamertemplate{title page}{\thispagestyle{titlepage}}{}
+\makeatother
+
+% ─── Table Styling ───────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{array}
+
+% Redefine \toprule/\bottomrule colors
+\renewcommand{\toprule}{\arrayrulecolor{GeistPrimary}\specialrule{0.8pt}{0pt}{4pt}}
+\renewcommand{\midrule}{\arrayrulecolor{GeistPrimary!30}\specialrule{0.4pt}{3pt}{4pt}}
+\renewcommand{\bottomrule}{\arrayrulecolor{GeistPrimary}\specialrule{0.8pt}{4pt}{0pt}}
+
+% Scale tables to fit slides
+\usepackage{adjustbox}
+\let\oldtabular\tabular
+\let\endoldtabular\endtabular
+\renewenvironment{tabular}[1]{%
+  \adjustbox{max width=\textwidth}{%
+  \oldtabular{#1}%
+}{%
+  \endoldtabular}%
+}
+
+% Smaller font in tables for readability on slides
+\AtBeginEnvironment{longtable}{\footnotesize}
+
+% ─── Code Block Styling ─────────────────────────────────────
+\usepackage{etoolbox}
+\AtBeginDocument{%
+  \apptocmd{\Shaded}{\scriptsize\setlength{\fboxsep}{6pt}}{}{}%
+}
+
+% ─── Spacing & Layout ───────────────────────────────────────
+\setlength{\parskip}{0.4em}
+\linespread{1.1}
+
+% Tighter list spacing
+\setbeamertemplate{itemize/enumerate body begin}{\vspace{-0.2em}}
+\setbeamertemplate{itemize/enumerate body end}{\vspace{-0.2em}}
+\setlength{\leftmargini}{1.2em}
+\setlength{\leftmarginii}{1.2em}
+
+% ─── Blockquote Styling ─────────────────────────────────────
+% Style quotes with a left accent bar
+\usepackage{tikz}
+\renewenvironment{quote}{%
+  \begin{tikzpicture}
+  \node[
+    inner sep=8pt,
+    text width=0.88\textwidth,
+    fill=GeistLight,
+    draw=none,
+    font=\small\itshape\color{GeistText},
+    execute at begin node={\hspace{0pt}},
+  ] (quote) \bgroup
+}{%
+  \egroup;
+  \fill[GeistAccent] ([xshift=-4pt]quote.north west) rectangle ([xshift=-1pt]quote.south west);
+  \end{tikzpicture}
+}
+
+% ─── Standout colors (used only for Thank You slide) ─────────
+% Note: pandoc+metropolis standout frames leak color changes to
+% subsequent frames. Use sparingly — only as the final slide.
+
+% ─── Unicode Support ─────────────────────────────────────────
+\usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
+\usepackage{newunicodechar}
+\newunicodechar{≈}{$\approx$}
+\newunicodechar{≥}{$\geq$}
+\newunicodechar{𝜒}{$\chi$}
+\tracinglostchars=0
+
+% ─── Misc ────────────────────────────────────────────────────
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{navigation symbols}{}
