@@ -16,11 +16,7 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 
-# Un-ignore tracked DB files (managed by Git LFS)
-!data/evaluations.db
-!data/learner-writing-pad.db
-!data/tutor-writing-pad.db
-!data/writing-pads.db
+# DB files are symlinked from ~/.machinespirits-data/ (not in repo)
 
 # Logs
 logs/
