@@ -1165,6 +1165,10 @@ profiles:
   # Design: 2 (base/recog) × 3 (suspicious/adversary/advocate) = 6 cells
   # ===========================================================================
 
+  # DEPRECATED: Cells 34-39 were designed for full-feature dialectical testing
+  # (cross-turn memory + prompt rewriting + learner signals) but were never run.
+  # The mechanisms they test were later explored through cells 40-65.
+
   # Cell 34: Base Dialectical × Suspicious × Full Features
   cell_34_base_dialectical_suspicious_unified_full:
     description: "Full-feature dialectical cell 34: base ego + suspicious superego + writing pad + prompt rewriting"
