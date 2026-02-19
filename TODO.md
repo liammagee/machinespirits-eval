@@ -56,12 +56,18 @@ Single-session evaluation cannot capture accumulated understanding.
 - Track: accumulated memory, repair quality, transformation trajectories
 - Paper ref: Section 8.2 Future Direction #2
 
-### A8. Active Control Rerun on Kimi K2.5 (IN PROGRESS)
-Active control used Nemotron while factorial used Kimi. Model confound acknowledged but not resolved.
+### A8. Active Control Rerun on Kimi K2.5 (COMPLETE)
+Active control used Nemotron while factorial used Kimi. Model confound now resolved.
 - **Wrong cells run first**: eval-2026-02-19-e000a987 used cells 9-12 (enhanced), not 15-18 (placebo). N=64 scored, 77% hallucination rate. Enhanced prompt causes catastrophic context loss on Kimi — confirms "prompt elaboration hurts strong models" but doesn't address A8.
-- **Correct run**: eval-2026-02-19-f2263b04 uses cells 15-18 (placebo) on Kimi K2.5. In progress (~25% complete). ~50% hallucination rate (Kimi baseline artifact). Grounded rows (N=22 so far): placebo Kimi ~69, base Kimi ~73, recognition Kimi ~80. Gap concentrates in theory-dependent dimensions (mutual_recognition, dialectical_responsiveness, transformative_potential).
-- Early finding: model confound accounts for ~5 pts (Nemotron placebo 66.5 → Kimi placebo ~69). Recognition advantage (~11 pts over placebo on same model) holds after removing confound.
-- Kimi hallucination rate (~20-50% depending on scenario complexity) is a known baseline artifact across all runs, not specific to this experiment.
+- **Correct run**: eval-2026-02-19-f2263b04 — cells 15-18 (placebo) on Kimi K2.5. N=216 scored, 46% hallucination. GPT-5.2 rejudge in progress.
+- **Reproduction runs**: eval-2026-02-19-13d34bef (Kimi base, grounded mean 71.6) and eval-2026-02-19-411414e4 (Nemotron base, grounded mean 57.4) confirm factorial baselines are stable — no model drift.
+- **Three-way comparison** (grounded, matched scenarios, Kimi ego, Opus-judged):
+  - Factorial base: N=285, M=64.2
+  - Placebo: N=73, M=56.0
+  - Factorial recognition: N=549, M=86.8
+- **Key finding**: Placebo scores **below base** (−8.2 pts), not between base and recognition. Prompt elaboration without recognition theory is counterproductive on capable models. The gap concentrates in complex multi-turn scenarios (misconception_correction −34.9, mutual_transformation −25.1, frustration_to_breakthrough −17.5); simple scenarios roughly match base.
+- **Model confound resolution**: Original Nemotron placebo (66.5) vs Kimi base (68.5) gap was ~2 pts. The real confound was that placebo prompt structure *hurts* Kimi more than Nemotron, so the original comparison actually **understated** recognition's advantage.
+- Hallucination pattern: 6 hardcoded example IDs in placebo prompt let Kimi bypass curriculum context; base prompt uses 11 placeholders forcing context lookup (near-zero hallucination historically).
 - Paper ref: Section 8.1 Limitation #4
 
 ### A9. Cells 34-39 Full Run (LOW — superseded)
@@ -95,8 +101,9 @@ Remaining untested (low priority):
 Implemented: `node scripts/eval-cli.js validate-config [--verbose] [--profile <name>]`
 Validates: EVAL_ONLY_PROFILES coverage, provider/model resolution, dialogue consistency, learner architectures, scenario course_ids, hyperparameter ranges, prompt file existence. Also serves as regression prevention for E3 (context scoping).
 
-### B5. Centralized Error Reporting (LOW)
-Error reporting scattered across 4+ destinations (progressLogger, reporter, console, DB). Consider unified error handler.
+### ~~B5. Centralized Error Reporting~~ (WON'T FIX — by design)
+~~Error reporting scattered across 4+ destinations (progressLogger, reporter, console, DB).~~
+The 4-way dispatch in evaluationRunner (progressLogger → JSONL files, streamingReporter → user terminal, DB → persistence, monitoringService → metrics) is intentional redundancy for different consumers. The ~106 console.error calls in services/scripts are mostly CLI user-facing output (stderr) with graceful upstream handling (null fallbacks, template defaults). Centralizing would add abstraction without fixing a real problem.
 
 ### ~~B6. Judge Model Metrics~~ (DONE)
 ~~No tracking of judge response times.~~
@@ -126,7 +133,7 @@ vs cells 40-45 which add superego rewriting and use `strategy: self_reflection`.
 
 ### ~~C5. Short Paper Staleness~~ (ALREADY RESOLVED)
 ~~`docs/research/paper-short.md` not updated since v2.3.0~~
-Already at v2.3.14-short with current N=3,383 counts. No action needed.
+Already at v2.3.15-short with current N=3,653 counts. No action needed.
 
 ### ~~C6. Test Directory Convention~~ (DOCUMENTED)
 ~~Tests split between `tests/` and `services/__tests__/`.~~
