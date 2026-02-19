@@ -93,6 +93,13 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - `evaluate --force` only processes rows with NULL scores
 - `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
 - Rejudge creates new rows by default; `--overwrite` replaces
+- **Legacy cell names**: Early runs used shorthand `cell_1`, later runs use canonical `cell_1_base_single_unified`. Both coexist in the DB. Analysis scripts should match on prefix or use `LIKE 'cell_1%'` when querying across runs.
+
+### Test Directory Convention
+
+- `tests/` — Integration and functional tests for the evaluation system (CLI, runners, stores, analyzers)
+- `services/__tests__/` — Unit tests co-located with their service files (evalConfigLoader, learnerRubricEvaluator, learnerTutorInteractionEngine)
+- Both directories are included in `npm test` via: `node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js`
 
 ### Resuming Incomplete Runs
 

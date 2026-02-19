@@ -57,10 +57,11 @@ Active control used Nemotron while factorial used Kimi. Model confound acknowled
 - Rerun active control on Kimi K2.5 for direct comparability
 - Paper ref: Section 8.1 Limitation #4
 
-### A9. Cells 34-39 Full Run (LOW — possibly superseded)
+### A9. Cells 34-39 Full Run (LOW — superseded)
 Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner signals). Early N=20 results showed recognition delta only +1.0, below cells 28-33's +4.5.
-- Mechanisms may be superseded by cells 40-65 exploration
-- Run or formally deprecate
+- Superseded by cells 40-65: cells 34-39 lack `superego_disposition_rewriting` and use generic `strategy: llm` rewriting; cells 40-45 add both improvements
+- YAML definitions kept as historical documentation with DEPRECATED header
+- No strong reason to run unless isolating the effect of superego disposition rewriting itself
 
 ---
 
@@ -105,29 +106,31 @@ No tracking of judge response times, success rates, or parse error rates per jud
 
 ## C. Cleanup & Maintenance
 
-### C1. Stale Files
-- [x] `data/eval-results.db` — 0 bytes, orphaned; delete
-- [ ] `scripts/generate-paper-figures.py` — superseded by `.js` version; delete
-- [ ] `data/evaluations.db.bak-*` — 3 backups totaling ~156 MB; archive or delete old ones
+### ~~C1. Stale Files~~ (DONE)
+- [x] `data/eval-results.db` — 0 bytes, orphaned; deleted
+- [x] `scripts/generate-paper-figures.py` — superseded by `.js` version; git rm'd
+- [ ] `data/evaluations.db.bak-*` — 4 backups totaling ~208 MB; .gitignored (local only), keep for safety
 
-### C2. Deprecated Notation
-- `scripts/analyze-judge-reliability.js` lines 4-6, 42-44, 68-69 — contains deprecated `openrouter/` slash notation in example commands; update to dot notation
+### ~~C2. Deprecated Notation~~ (FIXED)
+~~`scripts/analyze-judge-reliability.js` — deprecated `openrouter/` slash notation in example commands~~
+Fixed: updated 5 occurrences to dot notation (`openrouter.sonnet`, `openrouter.kimi`).
 
-### C3. Legacy Cell Names in DB
-- `cell_1` (shorthand) coexists with `cell_1_base_single_unified` (canonical) in DB
-- Document or migrate for consistency
+### ~~C3. Legacy Cell Names in DB~~ (DOCUMENTED)
+~~`cell_1` (shorthand) coexists with `cell_1_base_single_unified` (canonical) in DB~~
+Documented in CLAUDE.md: use `LIKE 'cell_1%'` when querying across runs.
 
-### C4. Cells 34-39 YAML Definitions
-Already marked deprecated in YAML. Either:
-- Remove definitions entirely (reducing cognitive load)
-- Keep with clear DEPRECATED header (current state)
+### C4. Cells 34-39 YAML Definitions (KEEPING)
+Kept with DEPRECATED header. Superseded by cells 40-65 but preserved as historical documentation.
+See comparison: cells 34-39 lack `superego_disposition_rewriting` and use `strategy: llm` (generic)
+vs cells 40-45 which add superego rewriting and use `strategy: self_reflection`.
 
-### C5. Short Paper Staleness
-`docs/research/paper-short.md` not updated since v2.3.0; full paper is v2.3.14.
-- Refresh if needed for circulation, or mark as archived
+### ~~C5. Short Paper Staleness~~ (ALREADY RESOLVED)
+~~`docs/research/paper-short.md` not updated since v2.3.0~~
+Already at v2.3.14-short with current N=3,383 counts. No action needed.
 
-### C6. Test Directory Convention
-Tests split between `tests/` and `services/__tests__/`. Document the convention or consolidate.
+### ~~C6. Test Directory Convention~~ (DOCUMENTED)
+~~Tests split between `tests/` and `services/__tests__/`.~~
+Documented in CLAUDE.md: `tests/` for integration tests, `services/__tests__/` for co-located unit tests.
 
 ---
 
