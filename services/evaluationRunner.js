@@ -1204,6 +1204,8 @@ export async function runEvaluation(options = {}) {
     egoModelOverride = null, // CLI --ego-model override (replaces only tutor ego model)
     superegoModelOverride = null, // CLI --superego-model override (replaces only tutor superego model)
     learnerModelOverride = null, // CLI --learner-model override (replaces all learner agent models)
+    learnerEgoModelOverride = null, // CLI --learner-ego-model override (replaces only learner ego model)
+    learnerSuperegoModelOverride = null, // CLI --learner-superego-model override (replaces only learner superego model)
     dryRun = false, // Use mock data instead of API calls
     transcriptMode = false, // Write play-format transcript files during multi-turn runs
     maxTokensOverride = null, // CLI --max-tokens override (replaces ego max_tokens hyperparameter)
@@ -1287,6 +1289,8 @@ export async function runEvaluation(options = {}) {
   const effectiveEgoModelOverride = egoModelOverride || yamlOverrides.egoModelOverride;
   const effectiveSuperegoModelOverride = superegoModelOverride || yamlOverrides.superegoModelOverride;
   const effectiveLearnerModelOverride = learnerModelOverride || null;
+  const effectiveLearnerEgoModelOverride = learnerEgoModelOverride || null;
+  const effectiveLearnerSuperegoModelOverride = learnerSuperegoModelOverride || null;
 
   if (effectiveModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, modelOverride: effectiveModelOverride }));
@@ -1299,6 +1303,12 @@ export async function runEvaluation(options = {}) {
   }
   if (effectiveLearnerModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, learnerModelOverride: effectiveLearnerModelOverride }));
+  }
+  if (effectiveLearnerEgoModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, learnerEgoModelOverride: effectiveLearnerEgoModelOverride }));
+  }
+  if (effectiveLearnerSuperegoModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride }));
   }
   if (maxTokensOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, maxTokensOverride }));
@@ -1326,6 +1336,8 @@ export async function runEvaluation(options = {}) {
       egoModelOverride: effectiveEgoModelOverride || null,
       superegoModelOverride: effectiveSuperegoModelOverride || null,
       learnerModelOverride: effectiveLearnerModelOverride || null,
+      learnerEgoModelOverride: effectiveLearnerEgoModelOverride || null,
+      learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride || null,
       maxTokensOverride: maxTokensOverride || null,
       // Store scenario IDs and profile names for accurate resume
       scenarioIds: targetScenarios.map((s) => s.id),
@@ -2656,6 +2668,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           learnerProfile: resolvedConfig.learnerArchitecture,
           personaId: fullScenario.learner_persona || 'eager_novice',
           modelOverride: config.learnerModelOverride || config.modelOverride || null,
+          egoModelOverride: config.learnerEgoModelOverride || null,
+          superegoModelOverride: config.learnerSuperegoModelOverride || null,
           profileContext:
             otherEgoBidirectional && learnerProfileOfTutor
               ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
@@ -2995,6 +3009,8 @@ export async function resumeEvaluation(options = {}) {
   const skipRubricEval = metadata.skipRubricEval || false;
   const modelOverride = metadata.modelOverride || null;
   const learnerModelOverride = metadata.learnerModelOverride || null;
+  const learnerEgoModelOverride = metadata.learnerEgoModelOverride || null;
+  const learnerSuperegoModelOverride = metadata.learnerSuperegoModelOverride || null;
 
   // 3. Get existing results for completion checking
   const existingResults = evaluationStore.getResults(runId);
@@ -3042,6 +3058,12 @@ export async function resumeEvaluation(options = {}) {
   }
   if (learnerModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, learnerModelOverride }));
+  }
+  if (learnerEgoModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, learnerEgoModelOverride }));
+  }
+  if (learnerSuperegoModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, learnerSuperegoModelOverride }));
   }
 
   // 6. Count successful results per (profile, scenario) combo and fill up to runsPerConfig.
@@ -3094,6 +3116,8 @@ export async function resumeEvaluation(options = {}) {
   console.log(`  Scenarios: ${targetScenarios.length}`);
   if (modelOverride) console.log(`  Model override: ${modelOverride}`);
   if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
+  if (learnerEgoModelOverride) console.log(`  Learner ego model override: ${learnerEgoModelOverride}`);
+  if (learnerSuperegoModelOverride) console.log(`  Learner superego model override: ${learnerSuperegoModelOverride}`);
 
   // Initialize content resolver (same as runEvaluation)
   const contentConfig = evalConfigLoader.getContentConfig();
