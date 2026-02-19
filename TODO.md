@@ -68,11 +68,10 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 ## B. Code Quality & Infrastructure
 
 ### B1. Test Coverage Gaps (PARTIALLY ADDRESSED)
-Tests added for `processUtils.js` (4 tests) and `streamingReporter.js` (8 tests). `mockProvider.js` already tested in `dryRun.test.js`.
+Tests added for `processUtils.js` (4 tests), `streamingReporter.js` (8 tests), and `progressLogger.js` (13 tests). `mockProvider.js` already tested in `dryRun.test.js`.
 Remaining untested:
 - `services/learnerConfigLoader.js` — 461 LOC, medium difficulty, actively used
 - `services/promptRecommendationService.js` — 508 LOC, hard to test (requires API mocking), optional feature
-- `services/progressLogger.js` — 132 LOC, easy, JSONL file I/O
 
 ### ~~B2. Silent Error Handling~~ (FIXED)
 - ~~`learnerTutorInteractionEngine.js` JSON parse failures~~ — Now logs warning with status code on parse failure
@@ -85,18 +84,17 @@ Remaining untested:
 - `learnerTutorInteractionEngine.js:893` — Already a named constant (`LEARNER_RETRY_DELAYS`), could be centralized
 - `contentResolver.js:17-19` — Already configurable via `configure()` method, no action needed
 
-### B4. Configuration Validation CLI (LOW)
-No runtime validation of cell definitions. Potential issues:
-- `prompt_type` references nonexistent prompts
-- Factor combinations invalid
-- Learner architectures unavailable
-Implement: `node scripts/eval-cli.js validate-config`
+### ~~B4. Configuration Validation CLI~~ (DONE)
+~~No runtime validation of cell definitions.~~
+Implemented: `node scripts/eval-cli.js validate-config [--verbose] [--profile <name>]`
+Validates: EVAL_ONLY_PROFILES coverage, provider/model resolution, dialogue consistency, learner architectures, scenario course_ids, hyperparameter ranges, prompt file existence. Also serves as regression prevention for E3 (context scoping).
 
 ### B5. Centralized Error Reporting (LOW)
 Error reporting scattered across 4+ destinations (progressLogger, reporter, console, DB). Consider unified error handler.
 
-### B6. Judge Model Metrics (LOW)
-No tracking of judge response times, success rates, or parse error rates per judge model. Would help diagnose judge drift.
+### ~~B6. Judge Model Metrics~~ (PARTIALLY DONE)
+~~No tracking of judge response times.~~
+Added `judge_latency_ms` column to `evaluation_results`. Stored by `evaluate` (CLI judge) and `rejudge` (API judge) commands. Parse error rates and success rates not yet tracked — would require adding counters to `callJudgeModel()`.
 
 ---
 

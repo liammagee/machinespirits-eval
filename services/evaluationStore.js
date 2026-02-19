@@ -139,6 +139,7 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`, 'learner_scores');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_overall_score REAL`, 'learner_overall_score');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_judge_model TEXT`, 'learner_judge_model');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN judge_latency_ms INTEGER`, 'judge_latency_ms');
 
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
@@ -1398,6 +1399,7 @@ export function storeRejudgment(originalResult, evaluation) {
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
+      judge_latency_ms,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -1411,6 +1413,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?
     )
@@ -1467,6 +1470,7 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.factorMultiAgentLearner ?? null,
     originalResult.learnerArchitecture || null,
     'rubric', // Rejudgments only store successful rubric evaluations
+    evaluation.judgeLatencyMs ?? null,
     new Date().toISOString(),
   );
 
@@ -1496,7 +1500,8 @@ export function updateResultScores(resultId, evaluation) {
       judge_model = ?,
       evaluation_reasoning = ?,
       scores_with_reasoning = ?,
-      scoring_method = ?
+      scoring_method = ?,
+      judge_latency_ms = ?
     WHERE id = ?
   `);
 
@@ -1519,6 +1524,7 @@ export function updateResultScores(resultId, evaluation) {
     evaluation.summary || null,
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
     'rubric', // Only called on successful evaluations
+    evaluation.judgeLatencyMs ?? null,
     resultId,
   );
 }
