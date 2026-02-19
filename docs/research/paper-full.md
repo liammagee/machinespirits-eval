@@ -7,7 +7,7 @@ bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across thirty-seven evaluations (N=3,383 primary scored; N=7,000+ development database), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71 with or without memory, while memory alone provides only d=0.46 (n.s.). A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (37–59% of primary effect sizes depending on experiment, inter-judge r=0.44–0.64). Phase 2 experiments reveal that the Superego functions as a quality filter rather than an active improver—structural modulation metrics do not predict outcome quality. Nine architectural mechanisms cluster within 2.4 points under scripted learners, but differentiate when tested with dynamic interlocutors capable of genuine feedback loops: Theory of Mind profiling adds 4.1 points, and recognition's effect doubles. Qualitative transcript assessment identifies three specific changes recognition produces: the ego listens to its internal critic, the tutor builds on learner contributions rather than redirecting, and mid-conversation strategy shifts occur. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems, and that recognition is better understood as an achievable relational stance than a requirement for machine consciousness.
+  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across thirty-seven evaluations (N=3,383 primary scored; N=7,000+ development database), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71 (Claude Opus judge) with or without memory, while memory alone provides only d=0.46 (n.s.). A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (37–59% of primary effect sizes depending on experiment, inter-judge r=0.44–0.64). Phase 2 experiments reveal that the Superego functions as a quality filter rather than an active improver—structural modulation metrics do not predict outcome quality. Nine architectural mechanisms cluster within 2.4 points under scripted learners, but differentiate when tested with dynamic interlocutors capable of genuine feedback loops: Theory of Mind profiling adds 4.1 points, and recognition's effect doubles. Qualitative transcript assessment identifies three specific changes recognition produces: the ego listens to its internal critic, the tutor builds on learner contributions rather than redirecting, and mid-conversation strategy shifts occur. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems, and that recognition is better understood as an achievable relational stance than a requirement for machine consciousness.
 keywords: [AI tutoring, mutual recognition, Hegel, Freud, multiagent systems, educational technology, productive struggle, Drama Machine, domain generalizability]
 fontsize: 12pt
 geometry: margin=1in
@@ -702,15 +702,13 @@ We conducted a full 2×2×2 factorial evaluation examining three factors:
 
 †Cells 6 and 8 were re-run with corrected learner prompts (eval-2026-02-06-a933d745). Cells 1–5 and 7 were originally scored under Opus 4.5 (eval-2026-02-03-f5d4dd93) and re-judged under Opus 4.6 for consistency across the full dataset (see Section 8.1).
 
-**Main Effects:**
+**Table 7: Factorial Main Effects and ANOVA Summary (df=1,342 for each factor)**
 
 | Factor | Effect Size | 95% CI | Interpretation |
 |--------|-------------|--------|----------------|
 | A: Recognition | **+14.4 pts** | [11.6, 17.1] | Large, dominant |
 | B: Multi-agent tutor | +2.6 pts | | Marginal (p=.057) |
 | C: Learner (multi-agent) | -3.1 pts | | Small (p=.019) |
-
-**ANOVA Summary (df=1,342 for each factor):**
 
 | Source | F | p | $\eta^2$ |
 |--------|---|---|-----|
@@ -1247,7 +1245,7 @@ The dimension breakdown reveals *how* recognition rescues the multi-agent learne
 
 ### 6.17 Qualitative Analysis: What Recognition Looks Like
 
-The preceding sections establish that recognition-enhanced prompts produce statistically significant score improvements across scenarios, models, and domains. But score differences alone do not reveal *what changes* in the actual text. This section presents qualitative evidence from the evaluation corpus to ground the quantitative findings in observable linguistic differences, using three complementary methods at increasing levels of analytical sophistication: (a) regex-based lexical and thematic coding, which proves the *words* differ; (b) AI-assisted open-ended theme discovery, which reveals the *pedagogical stances* that emerge without predefined categories; and (c) theory-driven resolution strategy coding (Section 6.20), which proves *behavior under impasse* differs along Hegelian lines.
+Section 6.11 established *that* recognition changes tutor behavior through structured tag distributions. This section asks *how*—what specific linguistic and pedagogical differences appear in the actual text. This section presents qualitative evidence from the evaluation corpus to ground the quantitative findings in observable linguistic differences, using three complementary methods at increasing levels of analytical sophistication: (a) regex-based lexical and thematic coding, which proves the *words* differ; (b) AI-assisted open-ended theme discovery, which reveals the *pedagogical stances* that emerge without predefined categories; and (c) theory-driven resolution strategy coding (Section 6.20), which proves *behavior under impasse* differs along Hegelian lines.
 
 #### 6.17.1 Transcript Excerpts
 
@@ -1405,7 +1403,7 @@ Three iterative development runs tracked cell 21's performance as its implementa
 
 | Run ID | Commit | Grand Avg | Cell 7 | Cell 21 | Δ (21−7) | N (scored) |
 |--------|--------|-----------|--------|---------|----------|------------|
-| eval-2026-02-05-daf60f79 | e3843ee | 63.8 | 65.3 | 62.1 | −3.2 | 26 |
+| eval-2026-02-05-daf60f79 | e3843ee | 63.8 | 65.3 | 62.1 | −3.2 | 27 |
 | eval-2026-02-05-49bb2017 | b2265c7 | 67.8 | 71.3 | 64.1 | −7.2 | 27 |
 | eval-2026-02-05-12aebedb | e673c4b | 75.9 | 73.3 | 78.8 | **+5.5** | 29 |
 
@@ -1884,7 +1882,7 @@ The experimental evidence across thirty-seven evaluations (N=3,383) converges on
 
 **Theory of Mind architecture**: The other-ego profiling results (Section 6.10) suggest that explicit Theory of Mind—building and maintaining a model of the interlocutor—provides additive benefit (+4.1 pts) with dynamic learners. Bidirectional profiling (both tutor and learner maintain models of each other) and strategy planning based on these profiles represent a promising architectural direction that warrants systematic exploration.
 
-**Qualitative assessment blinding**: The same-model blinded assessment (Table 21b) confirmed that Opus's tag discrimination is robust to condition label removal (e.g., stalling 100% → 91.4% in base, recognition\_moment 0% → 5.2% in base). The earlier apparent softening under blinding was a model calibration artifact (Haiku tags more liberally). While this addresses the primary blinding concern, all qualitative assessments were conducted by LLM judges rather than human raters—a limitation shared with the quantitative evaluation.
+**Qualitative assessment blinding**: The same-model blinded assessment (Table 21b) confirmed that Opus's tag discrimination is robust to condition label removal (e.g., stalling 100% → 91.4% in base, recognition\_moment 0% → 5.2% in base). The earlier apparent softening under blinding was a model calibration artifact (Haiku tags more liberally). While this addresses the primary blinding concern, all qualitative assessments were conducted by LLM judges rather than human expert coders—a limitation shared with the quantitative evaluation. Human raters applying established qualitative coding frameworks (e.g., thematic analysis, discourse analysis) would provide independent validation of the AI-discovered themes and tag distributions.
 
 **Superego parse robustness**: The cognitive prosthesis analysis (Section 6.10) revealed that the Kimi K2.5 superego returns malformed JSON on 16–45% of reviews, silently disabling quality control through automatic approval. Structured output enforcement, retry logic, or prompt engineering for JSON reliability would reduce this failure mode. The adversary prompt's lower parse failure rate (11.5% vs 21.8% for descriptive) suggests that prompt structure itself affects JSON reliability from thinking models—a finding with implications for any system using LLM-generated structured output.
 
