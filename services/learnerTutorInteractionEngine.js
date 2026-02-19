@@ -1152,6 +1152,8 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
  * @param {string} options.learnerProfile - Profile name ('ego_superego' or 'unified')
  * @param {string} options.personaId - Persona identifier (default: 'eager_novice')
  * @param {string|Object} [options.modelOverride] - Optional model override (e.g. 'openrouter.nemotron') applied to all learner agents
+ * @param {string} [options.egoModelOverride] - Optional override for learner ego model only (e.g. 'openrouter.haiku')
+ * @param {string} [options.superegoModelOverride] - Optional override for learner superego model only (e.g. 'openrouter.kimi-k2.5')
  * @returns {Promise<Object>} { message, internalDeliberation, emotionalState, understandingLevel, tokenUsage }
  */
 export async function generateLearnerResponse(options) {
@@ -1162,26 +1164,35 @@ export async function generateLearnerResponse(options) {
     learnerProfile = 'unified',
     personaId = 'eager_novice',
     modelOverride,
+    egoModelOverride,
+    superegoModelOverride,
     profileContext,
   } = options;
 
-  // Resolve model override once (if provided) so all learner agents use the same model
-  let resolvedOverride = null;
-  if (modelOverride) {
-    const r = learnerConfig.resolveModel(modelOverride);
+  // Resolve model overrides. Priority: specific (ego/superego) > general (modelOverride) > YAML default
+  function resolveOverride(ref) {
+    if (!ref) return null;
+    const r = learnerConfig.resolveModel(ref);
     const providerConfig = learnerConfig.getProviderConfig(r.provider);
     const modelFullId = providerConfig.models?.[r.model] || r.model;
-    resolvedOverride = { provider: r.provider, providerConfig, model: modelFullId, modelAlias: r.model };
+    return { provider: r.provider, providerConfig, model: modelFullId, modelAlias: r.model };
   }
 
-  const applyOverride = (cfg) => {
-    if (!resolvedOverride || !cfg) return cfg;
+  const resolvedGeneralOverride = resolveOverride(modelOverride);
+  const resolvedEgoOverride = resolveOverride(egoModelOverride);
+  const resolvedSuperegoOverride = resolveOverride(superegoModelOverride);
+
+  const applyOverride = (cfg, role) => {
+    // Specific override for this role takes priority over general override
+    const override = (role === 'ego' ? resolvedEgoOverride : role === 'superego' ? resolvedSuperegoOverride : null)
+      || resolvedGeneralOverride;
+    if (!override || !cfg) return cfg;
     return {
       ...cfg,
-      provider: resolvedOverride.provider,
-      providerConfig: resolvedOverride.providerConfig,
-      model: resolvedOverride.model,
-      modelAlias: resolvedOverride.modelAlias,
+      provider: override.provider,
+      providerConfig: override.providerConfig,
+      model: override.model,
+      modelAlias: override.modelAlias,
     };
   };
 
@@ -1205,7 +1216,7 @@ export async function generateLearnerResponse(options) {
 
   if (hasMultiAgent) {
     // === STEP 1: Ego initial reaction ===
-    const egoConfig = applyOverride(learnerConfig.getAgentConfig('ego', profile.name));
+    const egoConfig = applyOverride(learnerConfig.getAgentConfig('ego', profile.name), 'ego');
     let egoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
     if (profileContext) {
       egoContext += `\n\n${profileContext}`;
@@ -1225,7 +1236,7 @@ export async function generateLearnerResponse(options) {
     tokenUsage.apiCalls++;
 
     // === STEP 2: Superego critique ===
-    const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name));
+    const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
     let superegoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"`;
     if (profileContext) {
       superegoContext += `\n\n${profileContext}`;
@@ -1276,7 +1287,7 @@ export async function generateLearnerResponse(options) {
   } else {
     // Single-agent (unified) flow — run each role sequentially as before
     for (const role of agentRoles) {
-      const agentConfig = applyOverride(learnerConfig.getAgentConfig(role, profile.name));
+      const agentConfig = applyOverride(learnerConfig.getAgentConfig(role, profile.name), role);
       if (!agentConfig) continue;
 
       let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;

@@ -845,6 +845,8 @@ async function main() {
         const egoModelOverride = getOption('ego-model');
         const superegoModelOverride = getOption('superego-model');
         const learnerModelOverride = getOption('learner-model');
+        const learnerEgoModelOverride = getOption('learner-ego-model');
+        const learnerSuperegoModelOverride = getOption('learner-superego-model');
         const transcriptMode = getFlag('transcript');
         const maxTokensOverride = getOption('max-tokens');
 
@@ -896,7 +898,12 @@ async function main() {
             if (egoModelOverride) console.log(`  Ego model override: ${egoModelOverride}`);
             if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
           }
-          if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
+          if (learnerModelOverride) {
+            console.log(`  Learner model override: ${learnerModelOverride}`);
+          } else if (learnerEgoModelOverride || learnerSuperegoModelOverride) {
+            if (learnerEgoModelOverride) console.log(`  Learner ego model override: ${learnerEgoModelOverride}`);
+            if (learnerSuperegoModelOverride) console.log(`  Learner superego model override: ${learnerSuperegoModelOverride}`);
+          }
           if (maxTokensOverride) console.log(`  Max tokens override: ${maxTokensOverride}`);
           console.log('');
         }
@@ -920,6 +927,8 @@ async function main() {
           egoModelOverride: egoModelOverride || null,
           superegoModelOverride: superegoModelOverride || null,
           learnerModelOverride: learnerModelOverride || null,
+          learnerEgoModelOverride: learnerEgoModelOverride || null,
+          learnerSuperegoModelOverride: learnerSuperegoModelOverride || null,
           dryRun,
           transcriptMode,
           maxTokensOverride: maxTokensOverride ? parseInt(maxTokensOverride, 10) : null,
