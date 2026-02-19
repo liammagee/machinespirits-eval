@@ -1,0 +1,5 @@
+data/evaluations.db filter=lfs diff=lfs merge=lfs -text
+data/*.db filter=lfs diff=lfs merge=lfs -text
+data/learner-writing-pad.db filter=lfs diff=lfs merge=lfs -text
+data/tutor-writing-pad.db filter=lfs diff=lfs merge=lfs -text
+data/writing-pads.db filter=lfs diff=lfs merge=lfs -text
