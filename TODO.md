@@ -32,10 +32,16 @@ Nemotron falls below and Haiku falls above the minimum ego capability threshold 
 - Correlate: context window, parameter count, instruction-following quality
 - Paper ref: Section 8.2 Future Direction #11
 
-### A4. Learner Superego Redesign (MEDIUM)
+### A4. Learner Superego Redesign (MEDIUM — cells defined, not yet run)
 Current learner ego/superego degrades learner quality (d=1.43). Hypothesis: superego optimizes for "good student" not "authentic student."
-- Re-engineer learner superego to critique for inauthenticity, not correctness
-- A/B test: current vs authenticity-focused superego
+- [x] Re-engineer learner superego to critique for inauthenticity, not correctness
+  - `learner-superego-authentic.md` (base) and `learner-superego-recognition-authentic.md` (recognition) in tutor-core
+  - Learner profiles: `ego_superego_authentic`, `ego_superego_recognition_authentic` in `config/learner-agents.yaml`
+- [x] Define A/B test cells: 78 (base) and 79 (recognition) vs control cells 60-61
+  - Cell 78: `cell_78_base_dialectical_selfreflect_psycho_authentic`
+  - Cell 79: `cell_79_recog_dialectical_selfreflect_psycho_authentic`
+- **Next step**: Run cells 78-79 (`eval-cli.js run --profiles cell_78_...,cell_79_... --runs 3`) and judge
+- Key metrics: persona consistency, conceptual engagement, question quality (the three most damaged by current superego)
 - Paper ref: Section 8.2 Future Direction #6
 
 ### A5. Writing Pad Controlled Ablation (MEDIUM)

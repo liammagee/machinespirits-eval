@@ -3250,6 +3250,104 @@ profiles:
       assess_transformative_potential: true
 
   # ===========================================================================
+  # LEARNER SUPEREGO REDESIGN — AUTHENTICITY-FOCUSED (cells 78-79)
+  # ===========================================================================
+  # A4 experiment: Tests authenticity-focused learner superego vs current
+  # correctness-focused superego. Mirrors cells 60-61 (self-reflection mechanism)
+  # with only the learner superego prompt changed.
+  # Control: cells 60-61 (ego_superego / ego_superego_recognition)
+  # Treatment: cells 78-79 (ego_superego_authentic / ego_superego_recognition_authentic)
+
+  # Cell 78: Base Dialectical × Self-Reflection × Authentic Ego/Superego Learner
+  cell_78_base_dialectical_selfreflect_psycho_authentic:
+    description: "Multi-agent learner cell 78: base ego + suspicious superego + self-reflection + authenticity-focused ego/superego learner (A4)"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: ego_superego_authentic
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.65
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 79: Recognition Dialectical × Self-Reflection × Authentic Ego/Superego Learner
+  cell_79_recog_dialectical_selfreflect_psycho_authentic:
+    description: "Multi-agent learner cell 79: recognition ego + suspicious superego + self-reflection + authenticity-focused ego/superego learner (A4)"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: ego_superego_recognition_authentic
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.60
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # ===========================================================================
   # PROMPT ELABORATION BASELINE (cells 71-72)
   # ===========================================================================
   # Tests contribution of pedagogical prompt elaboration.

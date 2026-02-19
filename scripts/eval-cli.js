@@ -2971,7 +2971,7 @@ async function main() {
         }
 
         // ── 5. Learner architecture ───────────────────────────────────
-        const VALID_LEARNER_ARCHS = ['unified', 'unified_recognition', 'ego_superego', 'ego_superego_recognition'];
+        const VALID_LEARNER_ARCHS = ['unified', 'unified_recognition', 'ego_superego', 'ego_superego_recognition', 'ego_superego_authentic', 'ego_superego_recognition_authentic'];
         const learnerErrors = [];
         for (const name of profilesToCheck) {
           const profile = allProfiles[name];

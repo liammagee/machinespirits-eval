@@ -150,6 +150,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_75_recog_dialectical_erosion_psycho',
   'cell_76_base_dialectical_profile_tutor_psycho',
   'cell_77_recog_dialectical_profile_tutor_psycho',
+  'cell_78_base_dialectical_selfreflect_psycho_authentic',
+  'cell_79_recog_dialectical_selfreflect_psycho_authentic',
 ];
 
 /**
