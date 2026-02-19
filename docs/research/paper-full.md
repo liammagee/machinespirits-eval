@@ -1834,6 +1834,8 @@ The experimental evidence across thirty-seven evaluations (N=3,383) converges on
 
 **9. There is a minimum ego capability threshold for mechanism benefit.** The cognitive prosthesis test (Section 6.10) demonstrates that architectural mechanisms are not model-agnostic: the same mechanism stack (profiling, self-reflection, prompt rewriting, cross-turn memory) that boosts Haiku by +20 points *hurts* Nemotron by $-15$ points. Nemotron succeeds on static dimensions (specificity 4.0, actionability 4.0) but fails catastrophically on dynamic context integration (tutor adaptation 1.8, dialectical responsiveness 2.0). Deploying complex multi-agent architectures on weaker ego models is actively counterproductive—simpler configurations produce better results. Teams should validate that their ego model can process multi-turn context before investing in mechanism complexity.
 
+**Cost summary.** Recognition-oriented prompting simultaneously improves quality and reduces cost: fewer superego revision rounds yield approximately 30% savings per attempt (Section 6.8), token budgets can be reduced 4–16$\times$ without quality loss (Section 6.22), and free-tier models achieve the core recognition effect (Section 5). Recognition is the rare intervention that moves quality and cost in favorable directions at the same time.
+
 ---
 
 ## 8. Limitations and Future Work
