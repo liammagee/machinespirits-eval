@@ -29,6 +29,8 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js evaluate-learner <runId>  # Score learner turns from multi-turn interactions
  *   node scripts/eval-cli.js validate-config          # Validate all config files (profiles, providers, scenarios)
  *   node scripts/eval-cli.js chat            # AI conversational interface
+ *   node scripts/eval-cli.js play            # Human-in-the-loop role-playing
+ *   node scripts/eval-cli.js runs --live     # Auto-refreshing runs display
  *
  * Options:
  *   --scenario <id>        Scenario ID or comma-separated IDs (default: all scenarios)
@@ -46,6 +48,9 @@ import 'dotenv/config';
  *   --force                Actually complete stale runs (for 'cleanup'; dry-run without it)
  *   --older-than <min>     Staleness threshold in minutes (for 'cleanup', default: 30)
  *   --dry-run              Use mock data instead of API calls (no API keys required)
+ *   --live                 Auto-refresh mode for 'runs' command
+ *   --as <side>            For 'play': tutor or learner (default: tutor)
+ *   --role <role>          For 'play': ego, superego, or both (default: ego)
  *
  * The default `run` uses the 2x2x2 factorial design:
  *   Factor A: Recognition prompts (off / on)
@@ -77,6 +82,7 @@ import { readProgressLog, getProgressLogPath } from '../services/progressLogger.
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
 import { formatTranscript } from '../services/transcriptFormatter.js';
+import theme from '../services/cliTheme.js';
 import { spawn } from 'child_process';
 import readline from 'readline';
 import fs from 'fs';
@@ -237,13 +243,71 @@ function buildGridFromEvents(events) {
 }
 
 /**
+ * Render the runs table as a formatted string (reusable for one-shot and --live).
+ */
+function renderRunsTable(runs) {
+  const lines = [];
+  lines.push(
+    '  ' +
+      theme.header('ID'.padEnd(40)) +
+      theme.header('Status'.padEnd(12)) +
+      theme.header('Progress'.padEnd(18)) +
+      theme.header('Avg'.padEnd(7)) +
+      theme.header('Duration'.padEnd(10)) +
+      theme.header('Created'.padEnd(24)) +
+      theme.header('Description'),
+  );
+  lines.push('  ' + theme.dim('-'.repeat(130)));
+
+  for (const run of runs) {
+    const created = run.createdAt ? new Date(run.createdAt).toLocaleString() : '--';
+    let progress = '--';
+    if (run.totalTests > 0) {
+      const pct = run.progressPct != null ? run.progressPct : 100;
+      progress = `${run.completedResults}/${run.totalTests} (${pct}%)`;
+    } else if (run.completedResults > 0) {
+      progress = `${run.completedResults} done`;
+    }
+    const turnProgress = run.metadata?.turnProgress;
+    if (run.status === 'running' && turnProgress) {
+      progress += ` T${turnProgress.current}/${turnProgress.total}`;
+    }
+    const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
+    let duration = '--';
+    if (run.durationMs != null) {
+      const totalSec = Math.round(run.durationMs / 1000);
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      duration = m > 0 ? `${m}m ${s}s` : `${s}s`;
+    }
+    const desc = run.description || '';
+    const models = run.models && run.models.length > 0 ? run.models.join(', ') : '--';
+    lines.push(
+      '  ' +
+        theme.id(run.id.padEnd(40)) +
+        theme.status((run.status || '--').padEnd(12)) +
+        progress.padEnd(18) +
+        theme.score(avg.padEnd(7)) +
+        duration.padEnd(10) +
+        theme.dim(created.padEnd(24)) +
+        desc,
+    );
+    if (models !== '--') {
+      lines.push('  ' + `  Models: ${theme.model(models)}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/**
  * Render the scenario×profile grid table as a string.
  */
 function renderGrid({ scenarios, profiles, grid, completedTests, totalTests, runDone, durationMs }) {
   const lines = [];
   const pct = totalTests > 0 ? Math.round((completedTests / totalTests) * 100) : 0;
+  const statusTag = runDone ? theme.success('  DONE') : theme.status('  running...');
   lines.push(
-    `Progress: ${completedTests}/${totalTests} (${pct}%)${runDone ? '  DONE' : '  running...'}${durationMs ? `  ${formatMs(durationMs)}` : ''}`,
+    `Progress: ${completedTests}/${totalTests} (${pct}%)${statusTag}${durationMs ? `  ${formatMs(durationMs)}` : ''}`,
   );
   lines.push('');
 
@@ -252,19 +316,19 @@ function renderGrid({ scenarios, profiles, grid, completedTests, totalTests, run
   const profileColWidth = Math.max(8, ...profiles.map((p) => p.length));
 
   // Header row
-  const header = ''.padEnd(scenarioColWidth) + ' | ' + profiles.map((p) => p.padEnd(profileColWidth)).join(' | ');
+  const header = ''.padEnd(scenarioColWidth) + ' | ' + profiles.map((p) => theme.header(p.padEnd(profileColWidth))).join(' | ');
   lines.push(header);
-  lines.push('-'.repeat(header.length));
+  lines.push(theme.dim('-'.repeat(scenarioColWidth + 3 + (profileColWidth + 3) * profiles.length)));
 
   // Data rows
   for (const scenario of scenarios) {
     const cells = profiles.map((profile) => {
       const cell = grid[scenario]?.[profile];
       if (!cell) return ''.padEnd(profileColWidth);
-      if (cell.error) return 'ERR'.padEnd(profileColWidth);
-      if (!cell.success) return 'FAIL'.padEnd(profileColWidth);
-      const scoreStr = cell.score != null ? cell.score.toFixed(1) : '--';
-      return scoreStr.padEnd(profileColWidth);
+      if (cell.error) return theme.error('ERR'.padEnd(profileColWidth));
+      if (!cell.success) return theme.warn('FAIL'.padEnd(profileColWidth));
+      if (cell.score != null) return theme.score(cell.score.toFixed(1).padEnd(profileColWidth));
+      return theme.dim('--'.padEnd(profileColWidth));
     });
     const row = scenario.substring(0, scenarioColWidth).padEnd(scenarioColWidth) + ' | ' + cells.join(' | ');
     lines.push(row);
@@ -1073,67 +1137,53 @@ async function main() {
         const limitOpt = getOption('limit');
         const limit = limitOpt ? parseInt(limitOpt, 10) : null;
         const statusFilter = getOption('status') || null;
-        const runs = evaluationStore.listRuns({ limit, status: statusFilter });
+        const isLive = getFlag('live');
+        const refreshMs = parseInt(getOption('refresh', '3000'), 10);
 
-        if (runs.length === 0) {
-          console.log('\nNo evaluation runs found.');
-          break;
+        if (isLive) {
+          // Live auto-refreshing mode
+          let lastOutput = '';
+          const poll = () => {
+            const runs = evaluationStore.listRuns({ limit, status: statusFilter });
+            if (runs.length === 0) {
+              const output = '\nNo evaluation runs found.';
+              if (output !== lastOutput) {
+                process.stdout.write('\x1b[2J\x1b[H');
+                console.log(theme.dim(`Runs  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms)`));
+                console.log(output);
+                lastOutput = output;
+              }
+              return;
+            }
+            const output = renderRunsTable(runs);
+            if (output !== lastOutput) {
+              process.stdout.write('\x1b[2J\x1b[H');
+              console.log(theme.dim(`Runs: ${runs.length} total  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms)`));
+              console.log('');
+              console.log(output);
+              console.log('');
+              lastOutput = output;
+            }
+          };
+          poll();
+          const interval = setInterval(poll, refreshMs);
+          process.on('SIGINT', () => {
+            clearInterval(interval);
+            console.log('\nStopped watching.');
+            process.exit(0);
+          });
+          await new Promise(() => {});
+        } else {
+          // One-shot mode
+          const runs = evaluationStore.listRuns({ limit, status: statusFilter });
+          if (runs.length === 0) {
+            console.log('\nNo evaluation runs found.');
+            break;
+          }
+          console.log(`\nEvaluation runs (${runs.length} total):\n`);
+          console.log(renderRunsTable(runs));
+          console.log('');
         }
-
-        console.log(`\nEvaluation runs (${runs.length} total):\n`);
-        console.log(
-          '  ' +
-            'ID'.padEnd(40) +
-            'Status'.padEnd(12) +
-            'Progress'.padEnd(18) +
-            'Avg'.padEnd(7) +
-            'Duration'.padEnd(10) +
-            'Created'.padEnd(24) +
-            'Description',
-        );
-        console.log('  ' + '-'.repeat(130));
-
-        for (const run of runs) {
-          const created = run.createdAt ? new Date(run.createdAt).toLocaleString() : '--';
-          // Progress: show completed/total (pct%)
-          let progress = '--';
-          if (run.totalTests > 0) {
-            const pct = run.progressPct != null ? run.progressPct : 100;
-            progress = `${run.completedResults}/${run.totalTests} (${pct}%)`;
-          } else if (run.completedResults > 0) {
-            progress = `${run.completedResults} done`;
-          }
-          // Show per-turn progress for running multi-turn tests
-          const turnProgress = run.metadata?.turnProgress;
-          if (run.status === 'running' && turnProgress) {
-            progress += ` T${turnProgress.current}/${turnProgress.total}`;
-          }
-          const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
-          // Duration formatting
-          let duration = '--';
-          if (run.durationMs != null) {
-            const totalSec = Math.round(run.durationMs / 1000);
-            const m = Math.floor(totalSec / 60);
-            const s = totalSec % 60;
-            duration = m > 0 ? `${m}m ${s}s` : `${s}s`;
-          }
-          const desc = run.description || '';
-          const models = run.models && run.models.length > 0 ? run.models.join(', ') : '--';
-          console.log(
-            '  ' +
-              run.id.padEnd(40) +
-              (run.status || '--').padEnd(12) +
-              progress.padEnd(18) +
-              avg.padEnd(7) +
-              duration.padEnd(10) +
-              created.padEnd(24) +
-              desc,
-          );
-          if (models !== '--') {
-            console.log('  ' + `  Models: ${models}`);
-          }
-        }
-        console.log('');
         break;
       }
 
@@ -1186,8 +1236,8 @@ async function main() {
             }
           }
 
-          console.log(`\nRun: ${runId}`);
-          console.log(`Status: ${statusLabel}`);
+          console.log(`\nRun: ${theme.id(runId)}`);
+          console.log(`Status: ${theme.status(statusLabel)}`);
           console.log(
             `Progress: ${displayCompleted}/${totalTests} tests (${pct}%)${completedTests > totalTests ? ` [${completedTests - totalTests} retried]` : ''}`,
           );
@@ -1201,7 +1251,7 @@ async function main() {
               const done = profiles.filter((p) => grid[s]?.[p]).length;
               const scores = profiles.filter((p) => grid[s]?.[p]?.score != null).map((p) => grid[s][p].score);
               const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '--';
-              console.log(`  ${s}: ${done}/${profiles.length} profiles done, avg=${avg}`);
+              console.log(`  ${s}: ${done}/${profiles.length} profiles done, avg=${theme.score(avg)}`);
             }
           }
 
@@ -1224,31 +1274,31 @@ async function main() {
             }))
             .sort((a, b) => b.avg - a.avg);
           if (ranked.length > 0) {
-            console.log('\nTop performers:');
+            console.log(theme.header('\nTop performers:'));
             for (const r of ranked.slice(0, 5)) {
-              console.log(`  ${r.name}: avg=${r.avg.toFixed(1)} (${r.count} tests)`);
+              console.log(`  ${theme.model(r.name)}: avg=${theme.score(r.avg)} (${r.count} tests)`);
             }
           }
         } else {
           // Fallback: read from SQLite
           const runData = evaluationRunner.getRunResults(runId);
-          console.log(`\nRun: ${runId}`);
-          console.log(`Status: ${runData.run.status}`);
+          console.log(`\nRun: ${theme.id(runId)}`);
+          console.log(`Status: ${theme.status(runData.run.status)}`);
           const createdLocal = runData.run.createdAt ? new Date(runData.run.createdAt).toLocaleString() : '--';
-          console.log(`Created: ${createdLocal}`);
+          console.log(`Created: ${theme.dim(createdLocal)}`);
           console.log(`Description: ${runData.run.description || 'N/A'}`);
           // Count unique (scenario, profile) pairs to handle rejudge duplicates
           const uniqueTests = new Set(runData.results.map((r) => `${r.scenarioId}:${r.profileName}`)).size;
           console.log(`Tests: ${runData.run.totalTests || uniqueTests}`);
 
           if (runData.stats.length > 0) {
-            console.log('\nTop performers:');
+            console.log(theme.header('\nTop performers:'));
             for (const stat of runData.stats.slice(0, 10)) {
               const label = stat.profileName || `${stat.provider}/${stat.model}`;
               const base = stat.avgBaseScore != null ? ` base=${stat.avgBaseScore.toFixed(1)}` : '';
               const recog = stat.avgRecognitionScore != null ? ` recog=${stat.avgRecognitionScore.toFixed(1)}` : '';
               console.log(
-                `  ${label}: avg=${stat.avgScore?.toFixed(1) || '--'}${base}${recog} (${stat.totalTests} tests)`,
+                `  ${theme.model(label)}: avg=${theme.score(stat.avgScore)} ${base}${recog} (${stat.totalTests} tests)`,
               );
             }
           }
@@ -1400,16 +1450,16 @@ async function main() {
           break;
         }
 
-        console.log(`\nTranscripts for run: ${runId} (${results.length} results, detail: ${detailLevel})\n`);
+        console.log(`\nTranscripts for run: ${theme.id(runId)} (${results.length} results, detail: ${detailLevel})\n`);
 
         for (const result of results) {
-          console.log('='.repeat(80));
-          console.log(`Scenario: ${result.scenarioName || result.scenarioId}`);
-          console.log(`Profile:  ${result.profileName || `${result.provider}/${result.model}`}`);
+          console.log(theme.dim('='.repeat(80)));
+          console.log(`Scenario: ${theme.header(result.scenarioName || result.scenarioId)}`);
+          console.log(`Profile:  ${theme.model(result.profileName || `${result.provider}/${result.model}`)}`);
           console.log(
-            `Score:    ${result.overallScore != null ? result.overallScore.toFixed(1) : '--'}  |  Success: ${result.success}`,
+            `Score:    ${theme.score(result.overallScore != null ? result.overallScore.toFixed(1) : '--')}  |  Success: ${result.success ? theme.success('true') : theme.error('false')}`,
           );
-          console.log('-'.repeat(80));
+          console.log(theme.dim('-'.repeat(80)));
 
           // Try dialogue log file first (rich trace with metadata)
           let printed = false;
@@ -3125,15 +3175,35 @@ async function main() {
         break;
       }
 
+      case 'play': {
+        const humanSide = getOption('as') || 'tutor';
+        const humanRole = getOption('role') || 'ego';
+        const scenarioId = getOption('scenario') || null;
+        const profileName = getOption('profile') || null;
+
+        if (!['tutor', 'learner'].includes(humanSide)) {
+          console.error(theme.error(`Invalid --as value: ${humanSide}. Use 'tutor' or 'learner'.`));
+          process.exit(1);
+        }
+        if (!['ego', 'superego', 'both'].includes(humanRole)) {
+          console.error(theme.error(`Invalid --role value: ${humanRole}. Use 'ego', 'superego', or 'both'.`));
+          process.exit(1);
+        }
+
+        const { runPlay } = await import('./playCommand.js');
+        await runPlay({ humanSide, humanRole, scenarioId, profileName });
+        break;
+      }
+
       default:
         console.error(`Unknown command: ${command}`);
         console.error(
-          'Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, evaluate-learner, validate-config, chat',
+          'Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, evaluate-learner, validate-config, chat, play',
         );
         process.exit(1);
     }
   } catch (error) {
-    console.error(`\nError: ${error.message}`);
+    console.error(theme.error(`\nError: ${error.message}`));
     if (getFlag('verbose')) {
       console.error(error.stack);
     }
