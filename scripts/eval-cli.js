@@ -2604,8 +2604,44 @@ async function main() {
           process.exit(1);
         }
 
-        // Filter to those needing learner evaluation (unless --force)
-        const toEvaluate = force ? dialogueResults : dialogueResults.filter((r) => r.learnerOverallScore == null);
+        // Filter to those needing learner evaluation (unless --force).
+        // Also detect partially-scored rows where some turns failed mid-run.
+        let toEvaluate;
+        let partialCount = 0;
+        if (force) {
+          toEvaluate = dialogueResults;
+        } else {
+          toEvaluate = dialogueResults.filter((r) => {
+            // No score at all — needs evaluation
+            if (r.learnerOverallScore == null) return true;
+
+            // Has a score — check if all turns were scored by comparing
+            // the number of scored turns against the dialogue log's learner turns
+            if (r.learnerScores && r.dialogueId) {
+              const logPath = path.join(LOGS_DIR, `${r.dialogueId}.json`);
+              try {
+                if (fs.existsSync(logPath)) {
+                  const log = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+                  const trace = log.dialogueTrace || [];
+                  const expectedTurns = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action').length;
+                  const scoredTurns = Object.keys(r.learnerScores).length;
+                  if (scoredTurns < expectedTurns) {
+                    partialCount++;
+                    return true;
+                  }
+                }
+              } catch {
+                // If log can't be read, skip partial detection for this row
+              }
+            }
+
+            return false;
+          });
+        }
+
+        if (partialCount > 0) {
+          console.log(`Found ${partialCount} partially-scored dialogue(s) — will re-evaluate all turns.`);
+        }
 
         if (toEvaluate.length === 0) {
           console.log('All dialogue results already have learner scores. Use --force to re-evaluate.');
