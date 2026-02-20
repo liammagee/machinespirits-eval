@@ -11,17 +11,21 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
+import { configLoaderBase } from '@machinespirits/tutor-core';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.join(path.resolve(__dirname, '..'), 'config');
+
+// Register eval-repo's config dir as client overlay for provider merging.
+// This makes configLoaderBase.loadProviders() return tutor-core defaults
+// deep-merged with eval-repo overrides — single source of truth for all consumers.
+configLoaderBase.registerClientConfigDir(EVAL_CONFIG_DIR);
 
 // Mtime-based caches
 let rubricCache = null;
 let rubricMtime = null;
 let scenariosCache = null;
 let scenariosMtime = null;
-let providersCache = null;
-let providersMtime = null;
 let tutorAgentsCache = null;
 let tutorAgentsMtime = null;
 let evalSettingsCache = null;
@@ -103,35 +107,31 @@ export function loadSuggestionScenarios({ forceReload } = {}) {
   }
 }
 
+// Cache for the { providers: ... } wrapper (so callers get stable references)
+let providersWrapperCache = null;
+let providersWrapperRef = null; // track configLoaderBase's cache reference
+
 /**
- * Load the providers YAML from the eval repo's config directory.
+ * Load merged providers (tutor-core defaults + eval-repo overrides).
+ *
+ * Delegates to configLoaderBase.loadProviders() which returns the deep-merged
+ * provider map. Wraps the result in { providers: ... } for backward compatibility
+ * with existing callers that expect the raw YAML structure.
  *
  * @param {Object} [options]
  * @param {boolean} [options.forceReload] - Bypass mtime cache
- * @returns {Object|null} Parsed providers object, or null if file not found
+ * @returns {Object|null} { providers: mergedProviders } or null
  */
 export function loadProviders({ forceReload } = {}) {
-  const effectivePath = path.join(EVAL_CONFIG_DIR, 'providers.yaml');
-
-  try {
-    const stats = fs.statSync(effectivePath);
-    if (!forceReload && providersCache && providersMtime === stats.mtimeMs) {
-      return providersCache;
-    }
-    providersMtime = stats.mtimeMs;
-  } catch (err) {
-    console.warn('[evalConfigLoader] Providers file not found:', err.message);
-    return null;
+  const merged = configLoaderBase.loadProviders(forceReload);
+  if (!merged) return null;
+  // Return cached wrapper if underlying reference hasn't changed
+  if (providersWrapperCache && providersWrapperRef === merged) {
+    return providersWrapperCache;
   }
-
-  try {
-    const content = fs.readFileSync(effectivePath, 'utf-8');
-    providersCache = yaml.parse(content);
-    return providersCache;
-  } catch (err) {
-    console.error('[evalConfigLoader] Failed to parse providers:', err.message);
-    return null;
-  }
+  providersWrapperRef = merged;
+  providersWrapperCache = { providers: merged };
+  return providersWrapperCache;
 }
 
 /**

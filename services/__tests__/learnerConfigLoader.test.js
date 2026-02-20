@@ -2,12 +2,18 @@
  * Tests for learnerConfigLoader — verifies config loading, profile resolution,
  * persona/architecture lookups, and default fallback behavior.
  *
+ * Includes regression tests that prevent hardcoded model IDs from being
+ * introduced into the provider pipeline (see "No hardcoded model IDs" section).
+ *
  * Uses node:test (built-in, no dependencies required).
  * Run: node --test services/__tests__/learnerConfigLoader.test.js
  */
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   loadConfig,
@@ -26,6 +32,8 @@ import {
   getLearnerModelOverrides,
   getProviderConfig,
 } from '../learnerConfigLoader.js';
+import { loadProviders as loadEvalProviders } from '../evalConfigLoader.js';
+import { configLoaderBase } from '@machinespirits/tutor-core';
 
 // ============================================================================
 // loadConfig
@@ -355,5 +363,154 @@ describe('getProviderConfig', () => {
   it('includes isConfigured flag', () => {
     const config = getProviderConfig('openrouter');
     assert.ok('isConfigured' in config, 'should have isConfigured');
+  });
+});
+
+// ============================================================================
+// No hardcoded model IDs — regression tests
+// ============================================================================
+
+const __test_dirname = fileURLToPath(new URL('.', import.meta.url));
+const PROJECT_ROOT = resolve(__test_dirname, '..', '..');
+
+describe('No hardcoded model IDs (regression)', () => {
+
+  it('resolved provider config contains no :free model IDs', () => {
+    const config = loadConfig(true);
+    const providers = config.providers || {};
+
+    for (const [provName, provConfig] of Object.entries(providers)) {
+      const models = provConfig.models || {};
+      for (const [alias, fullId] of Object.entries(models)) {
+        assert.ok(
+          !fullId.endsWith(':free'),
+          `Provider "${provName}" model "${alias}" resolves to "${fullId}" which has :free suffix`
+        );
+      }
+      if (provConfig.default_model) {
+        assert.ok(
+          !provConfig.default_model.endsWith(':free'),
+          `Provider "${provName}" default_model "${provConfig.default_model}" has :free suffix`
+        );
+      }
+    }
+  });
+
+  it('getAgentConfig resolves models without :free suffix', () => {
+    // Check every agent in both profiles
+    for (const profileName of ['unified', 'ego_superego']) {
+      const roles = getProfileAgentRoles(profileName);
+      for (const role of roles) {
+        const agent = getAgentConfig(role, profileName);
+        if (agent?.model) {
+          assert.ok(
+            !agent.model.endsWith(':free'),
+            `Agent "${role}" in profile "${profileName}" resolved model "${agent.model}" has :free suffix`
+          );
+        }
+      }
+      // Also check synthesis
+      const synthesis = getSynthesisConfig(profileName);
+      if (synthesis?.model) {
+        assert.ok(
+          !synthesis.model.endsWith(':free'),
+          `Synthesis in profile "${profileName}" resolved model "${synthesis.model}" has :free suffix`
+        );
+      }
+    }
+  });
+
+  it('config-loading services have no hardcoded full model IDs', () => {
+    // These service files form the config pipeline and must resolve all models
+    // from providers.yaml — no hardcoded vendor/model strings allowed.
+    const configServices = [
+      'services/learnerConfigLoader.js',
+      'services/evaluationRunner.js',
+      'services/learnerTutorInteractionEngine.js',
+    ];
+
+    // Match patterns like 'nvidia/...' or "nvidia/..." — full provider/model IDs
+    const hardcodedPattern = /['"`](nvidia|anthropic|openai|google|deepseek|moonshotai|minimax|qwen|z-ai)\//;
+
+    const allViolations = [];
+    for (const filePath of configServices) {
+      const src = readFileSync(join(PROJECT_ROOT, filePath), 'utf-8');
+      const lines = src.split('\n');
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        // Skip comments
+        if (line.startsWith('//') || line.startsWith('*') || line.startsWith('/*')) continue;
+        if (hardcodedPattern.test(line)) {
+          allViolations.push(`${filePath}:${i + 1}: ${line}`);
+        }
+      }
+    }
+
+    assert.strictEqual(
+      allViolations.length,
+      0,
+      `Config-loading services contain hardcoded model IDs:\n${allViolations.join('\n')}`
+    );
+  });
+
+  it('providers.yaml has no active :free model entries', () => {
+    const yamlContent = readFileSync(join(PROJECT_ROOT, 'config', 'providers.yaml'), 'utf-8');
+    const lines = yamlContent.split('\n');
+
+    const violations = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Skip commented-out lines
+      if (line.trim().startsWith('#')) continue;
+      if (/:free/.test(line)) {
+        violations.push(`Line ${i + 1}: ${line.trim()}`);
+      }
+    }
+
+    assert.strictEqual(
+      violations.length,
+      0,
+      `providers.yaml has active :free entries:\n${violations.join('\n')}`
+    );
+  });
+
+  it('learner provider config reads from eval-repo providers.yaml (single source of truth)', () => {
+    // Verify that the learner config's openrouter providers match
+    // what evalConfigLoader reads from config/providers.yaml
+    const evalProviders = loadEvalProviders();
+    const learnerConfig = loadConfig(true);
+
+    // The nemotron model should be identical in both
+    const evalNemotron = evalProviders?.providers?.openrouter?.models?.nemotron;
+    const learnerNemotron = learnerConfig?.providers?.openrouter?.models?.nemotron;
+
+    assert.ok(evalNemotron, 'evalConfigLoader should have nemotron');
+    assert.strictEqual(
+      learnerNemotron,
+      evalNemotron,
+      `Learner nemotron "${learnerNemotron}" should match eval-repo "${evalNemotron}"`
+    );
+  });
+
+  it('configLoaderBase.loadProviders() returns same merged providers as evalConfigLoader', () => {
+    // All consumers resolve through configLoaderBase.loadProviders() now.
+    // Verify it returns the same data as the evalConfigLoader wrapper.
+    const baseMerged = configLoaderBase.loadProviders(true);
+    const evalWrapped = loadEvalProviders({ forceReload: true });
+
+    assert.ok(baseMerged, 'configLoaderBase should return merged providers');
+    assert.ok(evalWrapped?.providers, 'evalConfigLoader should return wrapped providers');
+
+    // The unwrapped base result should equal the eval wrapper's inner providers
+    const baseNemotron = baseMerged?.openrouter?.models?.nemotron;
+    const evalNemotron = evalWrapped?.providers?.openrouter?.models?.nemotron;
+
+    assert.ok(baseNemotron, 'configLoaderBase should have nemotron');
+    assert.strictEqual(
+      baseNemotron,
+      evalNemotron,
+      `configLoaderBase nemotron "${baseNemotron}" should match evalConfigLoader "${evalNemotron}"`
+    );
   });
 });

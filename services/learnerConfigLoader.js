@@ -12,7 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { configLoaderBase, modelResolver } from '@machinespirits/tutor-core';
-const { loadProviders, createConfigLoader, createPromptLoader } = configLoaderBase;
+const { createConfigLoader, createPromptLoader } = configLoaderBase;
 const { createBoundResolver } = modelResolver;
 
 // Local eval-repo config directory (for learner-agents.yaml override)
@@ -24,17 +24,19 @@ const LOCAL_CONFIG_DIR = path.join(path.resolve(__dirname_local, '..'), 'config'
 // Default Configurations
 // ============================================================================
 
+/**
+ * Load merged providers from configLoaderBase (tutor-core defaults + eval-repo overrides).
+ * No hardcoded model IDs — all model references are resolved through YAML config.
+ */
 function getDefaultProviders() {
+  const merged = configLoaderBase.loadProviders();
+  if (merged) return merged;
+  // Minimal structural fallback (no model IDs — callers must configure via YAML)
   return {
     openrouter: {
       api_key_env: 'OPENROUTER_API_KEY',
       base_url: 'https://openrouter.ai/api/v1/chat/completions',
-      default_model: 'nvidia/nemotron-3-nano-30b-a3b:free',
-      models: {
-        nemotron: 'nvidia/nemotron-3-nano-30b-a3b:free',
-        sonnet: 'anthropic/claude-sonnet-4.5',
-        haiku: 'anthropic/claude-haiku-4.5',
-      },
+      models: {},
     },
   };
 }
@@ -143,7 +145,9 @@ function loadLocalConfig(forceReload = false) {
     localConfigMtime = stats.mtimeMs;
 
     // Merge local overrides on top of defaults so missing sections
-    // (e.g. personas) fall back to built-in defaults instead of being undefined
+    // (e.g. personas) fall back to built-in defaults instead of being undefined.
+    // getDefaultProviders() already returns the merged tutor-core + eval-repo providers
+    // via configLoaderBase.loadProviders(), so no separate eval provider merge needed.
     const defaults = getDefaultConfig();
     localConfigCache = {
       ...defaults,
@@ -153,12 +157,6 @@ function loadLocalConfig(forceReload = false) {
       architectures: { ...defaults.architectures, ...localYaml.architectures },
       personas: { ...defaults.personas, ...localYaml.personas },
     };
-
-    // Merge shared providers (providers.yaml)
-    const sharedProviders = loadProviders(forceReload);
-    if (sharedProviders) {
-      localConfigCache.providers = { ...localConfigCache.providers, ...sharedProviders };
-    }
 
     return localConfigCache;
   } catch {
@@ -189,8 +187,8 @@ export function getProviderConfig(providerName) {
   return { ...provider, apiKey, isConfigured };
 }
 
-// Re-export loadProviders from base
-export { loadProviders };
+// Re-export loadProviders (delegates to evalConfigLoader which wraps configLoaderBase)
+export { loadProviders } from './evalConfigLoader.js';
 
 // Re-export prompt loading utilities
 export const loadPrompt = promptLoader.loadPrompt;
@@ -451,9 +449,12 @@ export function getLearnerModelOverrides() {
   };
 }
 
+// Import for default export (the named re-export above handles the named export)
+import { loadProviders as _loadProviders } from './evalConfigLoader.js';
+
 export default {
   loadConfig,
-  loadProviders,
+  loadProviders: _loadProviders,
   getActiveProfile,
   getProviderConfig,
   getArchitecture,
