@@ -1,6 +1,6 @@
 {
-  "version": "1.4.0",
-  "generated": "2026-02-17",
+  "version": "1.5.0",
+  "generated": "2026-02-19",
   "database": "data/evaluations.db",
   "paper": "docs/research/paper-full.md",
 
@@ -340,14 +340,41 @@
       "unit": "mixed",
       "expected_attempts": 18,
       "expected_scored": 18
+    },
+    {
+      "run_ids": ["eval-2026-02-19-f2263b04"],
+      "label": "Active control, Kimi replication",
+      "section": "6.2",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "response",
+      "expected_attempts": 216,
+      "expected_scored": 216
+    },
+    {
+      "run_ids": ["eval-2026-02-19-13d34bef"],
+      "label": "Base reproduction, Kimi",
+      "section": "6.2",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "response",
+      "expected_attempts": 36,
+      "expected_scored": 36
+    },
+    {
+      "run_ids": ["eval-2026-02-19-411414e4"],
+      "label": "Base reproduction, Nemotron",
+      "section": "6.2",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "response",
+      "expected_attempts": 18,
+      "expected_scored": 18
     }
   ],
 
   "totals": {
-    "evaluations": 37,
-    "expected_attempts": 3398,
-    "expected_scored": 3383,
-    "opus_primary_count": 37,
+    "evaluations": 40,
+    "expected_attempts": 3668,
+    "expected_scored": 3653,
+    "opus_primary_count": 40,
     "sonnet_primary_count": 0,
     "sonnet_primary_runs": []
   },
@@ -377,11 +404,12 @@
       "title": "Active Control Comparison",
       "section": "6.2",
       "runs": {
-        "active_control": "eval-2026-02-06-a9ae06ee",
+        "active_control_nemotron": "eval-2026-02-06-a9ae06ee",
+        "active_control_kimi": "eval-2026-02-19-f2263b04",
         "factorial_base": ["eval-2026-02-03-f5d4dd93", "eval-2026-02-06-a933d745"]
       },
       "judge_filter": "claude-opus%",
-      "notes": "Cross-run comparison: active control (Nemotron) vs factorial (Kimi). Model confound acknowledged."
+      "notes": "Active control tested on both models. Nemotron: +9 above base. Kimi: -8.2 below base. Model confound resolved."
     },
     "figure4": {
       "title": "Multi-Model A×B Probe",
@@ -475,12 +503,12 @@
   },
 
   "prose_n_references": [
-    { "location": "abstract", "pattern": "N=3,383 primary scored" },
-    { "location": "introduction (line ~44)", "pattern": "N=3,383 primary scored responses" },
-    { "location": "methods (Table 2 totals)", "pattern": "**3,383**" },
-    { "location": "methods (line ~572)", "pattern": "N=3,383 scored" },
-    { "location": "methods (line ~574)", "pattern": "N=3,383" },
-    { "location": "discussion (line ~1817)", "pattern": "N=3,383" },
-    { "location": "conclusion (line ~1899)", "pattern": "N=3,383 primary scored" }
+    { "location": "abstract", "pattern": "N=3,653 primary scored" },
+    { "location": "introduction (line ~44)", "pattern": "N=3,653 primary scored responses" },
+    { "location": "methods (Table 2 totals)", "pattern": "**3,653**" },
+    { "location": "methods (line ~572)", "pattern": "N=3,653 scored" },
+    { "location": "methods (line ~574)", "pattern": "N=3,653" },
+    { "location": "discussion (line ~1817)", "pattern": "N=3,653" },
+    { "location": "conclusion (line ~1899)", "pattern": "N=3,653 primary scored" }
   ]
 }
