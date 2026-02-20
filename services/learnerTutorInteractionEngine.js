@@ -169,18 +169,16 @@ export async function runInteraction(config, llmCall, options = {}) {
     }
 
     // ================ LEARNER TURN ================
-    const learnerResponse = await runLearnerTurn(
-      learnerId,
-      sessionId,
-      learnerPersona,
-      learnerArchitecture,
-      learnerProfile,
-      tutorResponse.externalMessage,
-      conversationHistory,
+    const learnerResponse = await generateLearnerResponse({
+      tutorMessage: tutorResponse.externalMessage,
       topic,
+      conversationHistory: conversationHistory.map((m) => ({ role: m.role, content: m.content })),
+      learnerProfile: learnerProfile.name,
+      personaId,
       llmCall,
-      interactionTrace,
-    );
+      memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
+      trace: interactionTrace,
+    });
 
     conversationHistory.push({
       role: 'learner',
@@ -291,47 +289,105 @@ Generate this agent's internal voice as the learner approaches this topic for th
     trace.metrics.learnerOutputTokens += response.usage?.outputTokens || 0;
   }
 
-  // Synthesize external message
-  const synthesisConfig = learnerConfig.getSynthesisConfig(profile.name);
-
-  // If scenario provides an opening message, use it directly to ensure context
-  // Otherwise, synthesize from internal deliberation
+  // Ego revision: the ego considers superego feedback and produces the external message.
+  // For multi-agent profiles, ego has final authority (mirrors tutor pipeline).
+  // For unified profiles, the single agent's output is the external message.
+  const hasMultiAgent = agentRoles.includes('ego') && agentRoles.includes('superego');
   const hasOpeningMessage = scenario?.learnerOpening && scenario.learnerOpening.trim().length > 0;
 
-  const synthesisPrompt = hasOpeningMessage
-    ? `You are simulating a learner with these internal voices:
+  if (hasMultiAgent && internalDeliberation.length >= 2) {
+    const egoConfig = learnerConfig.getAgentConfig('ego', profile.name);
+    const egoInitial = internalDeliberation.find((d) => d.role === 'ego');
+    const superegoFeedback = internalDeliberation.find((d) => d.role === 'superego');
+
+    let revisionContext = `Topic: ${topic}
+Scenario: ${scenario?.name || 'General learning'}
+
+Your initial reaction was:
+"${egoInitial?.content || ''}"
+
+Internal review feedback:
+"${superegoFeedback?.content || ''}"
+
+Consider this feedback. You have final authority — accept, reject, or modify as you see fit.`;
+
+    if (hasOpeningMessage) {
+      revisionContext += `
+
+The learner wants to open with this message: "${scenario.learnerOpening}"
+Lightly adapt this opening to feel natural given the internal deliberation, but keep the core content and question intact.
+The adapted message should be 1-3 sentences and maintain the original meaning.
+Do NOT include internal thoughts or meta-commentary.`;
+    } else {
+      revisionContext += `
+
+Respond with ONLY what the learner would say out loud as their opening message to a tutor about: ${topic}
+The message should feel authentic - not too polished, showing real confusion or interest.
+Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
+    }
+
+    const revisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, revisionContext);
+    const externalResponse = await llmCall(
+      egoConfig.model,
+      revisionSystemPrompt,
+      [{ role: 'user', content: "Generate the learner's opening message." }],
+      {
+        temperature: egoConfig.hyperparameters?.temperature || 0.7,
+        maxTokens: egoConfig.hyperparameters?.max_tokens || 200,
+      },
+    );
+
+    internalDeliberation.push({ role: 'ego_revision', content: externalResponse.content });
+    trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
+    trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
+
+    return {
+      externalMessage: externalResponse.content,
+      internalDeliberation,
+      emotionalState: detectEmotionalState(internalDeliberation),
+      understandingLevel: 'initial',
+    };
+  }
+
+  // Unified / single-agent: use the last deliberation output directly,
+  // or adapt the scenario opening if one is provided.
+  if (hasOpeningMessage) {
+    const lastConfig = learnerConfig.getAgentConfig(agentRoles[agentRoles.length - 1], profile.name);
+    const adaptPrompt = `You are simulating a learner with this internal voice:
 
 ${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
 
 The learner wants to open with this message: "${scenario.learnerOpening}"
 
 Lightly adapt this opening to feel natural given the internal deliberation, but keep the core content and question intact.
-The adapted message should be 1-3 sentences and maintain the original meaning.`
-    : `You are simulating a learner with these internal voices:
+The adapted message should be 1-3 sentences and maintain the original meaning.
+Do NOT include internal thoughts or meta-commentary.`;
 
-${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
+    const adaptResponse = await llmCall(
+      lastConfig.model,
+      adaptPrompt,
+      [{ role: 'user', content: "Generate the learner's opening message." }],
+      {
+        temperature: lastConfig.hyperparameters?.temperature || 0.7,
+        maxTokens: lastConfig.hyperparameters?.max_tokens || 200,
+      },
+    );
 
-Synthesize these into a realistic first message to a tutor about: ${topic}
+    trace.metrics.learnerInputTokens += adaptResponse.usage?.inputTokens || 0;
+    trace.metrics.learnerOutputTokens += adaptResponse.usage?.outputTokens || 0;
 
-The message should feel authentic - not too polished, showing real confusion or interest.
-Keep it 1-3 sentences.`;
+    return {
+      externalMessage: adaptResponse.content,
+      internalDeliberation,
+      emotionalState: detectEmotionalState(internalDeliberation),
+      understandingLevel: 'initial',
+    };
+  }
 
-  const synthModel = synthesisConfig?.model || resolveProfileModel(profile);
-  const externalResponse = await llmCall(
-    synthModel,
-    synthesisPrompt,
-    [{ role: 'user', content: "Generate the learner's opening message." }],
-    {
-      temperature: synthesisConfig?.hyperparameters?.temperature || 0.7,
-      maxTokens: synthesisConfig?.hyperparameters?.max_tokens || 200,
-    },
-  );
-
-  trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
-  trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
-
+  // No opening message, single agent — use the last deliberation step directly
+  const lastDelib = internalDeliberation[internalDeliberation.length - 1];
   return {
-    externalMessage: externalResponse.content,
+    externalMessage: lastDelib?.content || '',
     internalDeliberation,
     emotionalState: detectEmotionalState(internalDeliberation),
     understandingLevel: 'initial',
@@ -355,148 +411,6 @@ function buildLearnerPrompt(agentConfig, persona, additionalContext) {
   }
 
   return prompt;
-}
-
-/**
- * Resolve model from profile configuration
- */
-function resolveProfileModel(profile) {
-  const providerConfig = learnerConfig.getProviderConfig(profile.provider || 'openrouter');
-  const modelAlias = profile.model || 'nemotron';
-  return providerConfig.models?.[modelAlias] || modelAlias;
-}
-
-/**
- * Run a learner turn in response to tutor
- */
-async function runLearnerTurn(
-  learnerId,
-  sessionId,
-  persona,
-  architecture,
-  profile,
-  tutorMessage,
-  history,
-  topic,
-  llmCall,
-  trace,
-) {
-  // Get agent roles from profile (not architecture)
-  const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
-  const internalDeliberation = [];
-
-  // Get current learner memory state
-  const learnerMemory = learnerWritingPad.buildNarrativeSummary(learnerId, sessionId);
-
-  // Build conversation context
-  const conversationContext = history
-    .slice(-6)
-    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-    .join('\n\n');
-
-  // Run internal deliberation for each agent
-  // For ego/superego pattern: superego sees and critiques ego's response
-  for (const role of agentRoles) {
-    const agentConfig = learnerConfig.getAgentConfig(role, profile.name);
-    if (!agentConfig) continue;
-
-    // Build context based on role
-    let roleContext = `
-Topic: ${topic}
-
-Your memory and state:
-${learnerMemory}
-
-Recent conversation:
-${conversationContext}
-
-The tutor just said:
-"${tutorMessage}"`;
-
-    // If this is superego and we have prior deliberation (ego), include it for critique
-    if (role === 'superego' && internalDeliberation.length > 0) {
-      const priorDeliberation = internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n');
-      roleContext += `
-
-The EGO's initial reaction was:
-${priorDeliberation}
-
-Review the EGO's response. Is it accurate? What's being missed or glossed over? What should we really ask or admit?`;
-    } else {
-      roleContext += `
-
-Generate your internal reaction as this dimension of the learner's experience.`;
-    }
-
-    const prompt = buildLearnerPrompt(agentConfig, persona, roleContext);
-
-    const response = await llmCall(
-      agentConfig.model,
-      prompt,
-      [
-        {
-          role: 'user',
-          content: role === 'superego' ? "Critique the EGO's reaction." : "React to the tutor's message.",
-        },
-      ],
-      {
-        temperature: agentConfig.hyperparameters?.temperature || 0.7,
-        maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
-      },
-    );
-
-    internalDeliberation.push({
-      role,
-      content: response.content,
-    });
-
-    trace.metrics.learnerInputTokens += response.usage?.inputTokens || 0;
-    trace.metrics.learnerOutputTokens += response.usage?.outputTokens || 0;
-  }
-
-  // Synthesize external response
-  const emotionalState = detectEmotionalState(internalDeliberation);
-  const understandingLevel = detectUnderstandingLevel(internalDeliberation);
-
-  const synthesisConfig = learnerConfig.getSynthesisConfig(profile.name);
-  const synthesisPrompt = `You are simulating a ${persona.name} learner with these internal reactions:
-
-${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
-
-Current emotional state: ${emotionalState}
-Current understanding: ${understandingLevel}
-
-The tutor just said: "${tutorMessage}"
-
-Synthesize these internal reactions into a realistic response. The learner should:
-- Show their genuine reaction (confusion, interest, frustration, insight)
-- Ask follow-up questions if naturally arising
-- Not be too polished or articulate if they're genuinely confused
-- Match the persona: ${persona.description}
-
-Keep response to 1-4 sentences. Be authentic.`;
-
-  const synthModel = synthesisConfig?.model || resolveProfileModel(profile);
-  const externalResponse = await llmCall(
-    synthModel,
-    synthesisPrompt,
-    [{ role: 'user', content: "Generate the learner's response." }],
-    {
-      temperature: synthesisConfig?.hyperparameters?.temperature || 0.7,
-      maxTokens: synthesisConfig?.hyperparameters?.max_tokens || 250,
-    },
-  );
-
-  trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
-  trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
-
-  return {
-    externalMessage: externalResponse.content,
-    internalDeliberation,
-    emotionalState,
-    understandingLevel,
-    suggestsEnding: emotionalState === 'satisfied' || emotionalState === 'disengaged',
-  };
 }
 
 // ============================================================================
@@ -1154,7 +1068,10 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
  * @param {string|Object} [options.modelOverride] - Optional model override (e.g. 'openrouter.nemotron') applied to all learner agents
  * @param {string} [options.egoModelOverride] - Optional override for learner ego model only (e.g. 'openrouter.haiku')
  * @param {string} [options.superegoModelOverride] - Optional override for learner superego model only (e.g. 'openrouter.kimi-k2.5')
- * @returns {Promise<Object>} { message, internalDeliberation, emotionalState, understandingLevel, tokenUsage }
+ * @param {Function} [options.llmCall] - Injected LLM function (interactive path); uses callLearnerAI when null
+ * @param {string} [options.memoryContext] - Pre-built narrative from learnerWritingPad
+ * @param {Object} [options.trace] - Mutable trace object for interactive path token tracking
+ * @returns {Promise<Object>} { message, externalMessage, internalDeliberation, emotionalState, understandingLevel, suggestsEnding, tokenUsage }
  */
 export async function generateLearnerResponse(options) {
   const {
@@ -1167,6 +1084,9 @@ export async function generateLearnerResponse(options) {
     egoModelOverride,
     superegoModelOverride,
     profileContext,
+    llmCall = null,
+    memoryContext = null,
+    trace = null,
   } = options;
 
   // Resolve model overrides. Priority: specific (ego/superego) > general (modelOverride) > YAML default
@@ -1196,6 +1116,23 @@ export async function generateLearnerResponse(options) {
     };
   };
 
+  // Build LLM call adapter so both interactive (injected llmCall) and
+  // eval (callLearnerAI) paths use the same pipeline.
+  const callLLM = llmCall
+    ? async (agentConfig, systemPrompt, userPrompt, _role) => {
+        const response = await llmCall(
+          agentConfig.model,
+          systemPrompt,
+          [{ role: 'user', content: userPrompt }],
+          {
+            temperature: agentConfig.hyperparameters?.temperature || 0.7,
+            maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
+          },
+        );
+        return { content: response.content, usage: response.usage };
+      }
+    : callLearnerAI;
+
   const persona = learnerConfig.getPersona(personaId);
   const profile = learnerConfig.getActiveProfile(learnerProfile);
   const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
@@ -1217,14 +1154,18 @@ export async function generateLearnerResponse(options) {
   if (hasMultiAgent) {
     // === STEP 1: Ego initial reaction ===
     const egoConfig = applyOverride(learnerConfig.getAgentConfig('ego', profile.name), 'ego');
-    let egoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+    let egoContext = `Topic: ${topic}`;
+    if (memoryContext) {
+      egoContext += `\n\nYour memory and state:\n${memoryContext}`;
+    }
+    egoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
     if (profileContext) {
       egoContext += `\n\n${profileContext}`;
     }
     egoContext += `\n\nGenerate your initial internal reaction as the learner's ego.`;
     const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
 
-    const egoInitialResponse = await callLearnerAI(
+    const egoInitialResponse = await callLLM(
       egoConfig,
       egoSystemPrompt,
       "React to the tutor's message.",
@@ -1234,17 +1175,25 @@ export async function generateLearnerResponse(options) {
     tokenUsage.inputTokens += egoInitialResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoInitialResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
+    if (trace?.metrics) {
+      trace.metrics.learnerInputTokens += egoInitialResponse.usage?.inputTokens || 0;
+      trace.metrics.learnerOutputTokens += egoInitialResponse.usage?.outputTokens || 0;
+    }
 
     // === STEP 2: Superego critique ===
     const superegoConfig = applyOverride(learnerConfig.getAgentConfig('superego', profile.name), 'superego');
-    let superegoContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"`;
+    let superegoContext = `Topic: ${topic}`;
+    if (memoryContext) {
+      superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
+    }
+    superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"`;
     if (profileContext) {
       superegoContext += `\n\n${profileContext}`;
     }
     superegoContext += `\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?`;
     const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
 
-    const superegoResponse = await callLearnerAI(
+    const superegoResponse = await callLLM(
       superegoConfig,
       superegoSystemPrompt,
       "Critique the EGO's reaction.",
@@ -1254,14 +1203,22 @@ export async function generateLearnerResponse(options) {
     tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
+    if (trace?.metrics) {
+      trace.metrics.learnerInputTokens += superegoResponse.usage?.inputTokens || 0;
+      trace.metrics.learnerOutputTokens += superegoResponse.usage?.outputTokens || 0;
+    }
 
     // === STEP 3: Ego revision (final authority) ===
     // The ego considers the superego's feedback and decides what to actually say.
     // It may accept, reject, or modify the superego's suggestions.
-    const egoRevisionContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nYour initial reaction was:\n"${egoInitialResponse.content}"\n\nThe SUPEREGO's critique:\n"${superegoResponse.content}"\n\nConsider the superego's feedback. You have final authority — accept, reject, or modify its suggestions as you see fit. Then produce a realistic external response (1-4 sentences) that the learner would actually say to the tutor.`;
+    let egoRevisionContext = `Topic: ${topic}`;
+    if (memoryContext) {
+      egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
+    }
+    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nYour initial reaction was:\n"${egoInitialResponse.content}"\n\nInternal review feedback:\n"${superegoResponse.content}"\n\nConsider this feedback. You have final authority — accept, reject, or modify as you see fit.\n\nRespond with ONLY what the learner would say out loud to the tutor (1-4 sentences). Do NOT include internal thoughts, meta-commentary, or references to any review process.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
-    const egoFinalResponse = await callLearnerAI(
+    const egoFinalResponse = await callLLM(
       egoConfig,
       egoRevisionSystemPrompt,
       'Produce your final response to the tutor.',
@@ -1271,6 +1228,10 @@ export async function generateLearnerResponse(options) {
     tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
+    if (trace?.metrics) {
+      trace.metrics.learnerInputTokens += egoFinalResponse.usage?.inputTokens || 0;
+      trace.metrics.learnerOutputTokens += egoFinalResponse.usage?.outputTokens || 0;
+    }
 
     // Log deliberation for debugging/analysis
     if (process.env.LEARNER_DEBUG) {
@@ -1290,14 +1251,18 @@ export async function generateLearnerResponse(options) {
       const agentConfig = applyOverride(learnerConfig.getAgentConfig(role, profile.name), role);
       if (!agentConfig) continue;
 
-      let roleContext = `Topic: ${topic}\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+      let roleContext = `Topic: ${topic}`;
+      if (memoryContext) {
+        roleContext += `\n\nYour memory and state:\n${memoryContext}`;
+      }
+      roleContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
       if (profileContext) {
         roleContext += `\n\n${profileContext}`;
       }
       roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
-      const response = await callLearnerAI(
+      const response = await callLLM(
         agentConfig,
         systemPrompt,
         "React to the tutor's message.",
@@ -1308,18 +1273,25 @@ export async function generateLearnerResponse(options) {
       tokenUsage.inputTokens += response.usage?.inputTokens || 0;
       tokenUsage.outputTokens += response.usage?.outputTokens || 0;
       tokenUsage.apiCalls++;
+      if (trace?.metrics) {
+        trace.metrics.learnerInputTokens += response.usage?.inputTokens || 0;
+        trace.metrics.learnerOutputTokens += response.usage?.outputTokens || 0;
+      }
     }
   }
 
   // Get final message from the last deliberation step
   // For multi-agent: ego_revision. For unified: the single agent's output.
   const finalDeliberation = internalDeliberation[internalDeliberation.length - 1];
+  const emotionalState = detectEmotionalState(internalDeliberation);
 
   return {
     message: finalDeliberation.content,
+    externalMessage: finalDeliberation.content,
     internalDeliberation,
-    emotionalState: detectEmotionalState(internalDeliberation),
+    emotionalState,
     understandingLevel: detectUnderstandingLevel(internalDeliberation),
+    suggestsEnding: emotionalState === 'satisfied' || emotionalState === 'disengaged',
     tokenUsage,
   };
 }
