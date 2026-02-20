@@ -466,6 +466,7 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   const egoResponse = await llmCall(tutorModel, egoPrompt, [{ role: 'user', content: learnerMessage }], {
     temperature: egoConfig?.hyperparameters?.temperature || 0.6,
     maxTokens: egoConfig?.hyperparameters?.max_tokens || 800,
+    agentRole: 'tutor_ego',
   });
 
   trace.metrics.tutorInputTokens += egoResponse.usage?.inputTokens || 0;
@@ -510,6 +511,7 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
   const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
     temperature: superegoConfig?.hyperparameters?.temperature || 0.4,
     maxTokens: superegoConfig?.hyperparameters?.max_tokens || 1000,
+    agentRole: 'tutor_superego',
   });
 
   trace.metrics.tutorInputTokens += superegoResponse.usage?.inputTokens || 0;
@@ -1127,6 +1129,7 @@ export async function generateLearnerResponse(options) {
           {
             temperature: agentConfig.hyperparameters?.temperature || 0.7,
             maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
+            agentRole: _role,
           },
         );
         return { content: response.content, usage: response.usage };
@@ -1307,6 +1310,7 @@ export {
   detectTutorStrategy,
   extractTutorMessage,
   calculateMemoryDelta,
+  callLearnerAI,
   INTERACTION_OUTCOMES,
 };
 
