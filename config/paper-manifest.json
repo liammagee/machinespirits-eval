@@ -1,6 +1,6 @@
 {
-  "version": "1.5.0",
-  "generated": "2026-02-19",
+  "version": "1.6.0",
+  "generated": "2026-02-21",
   "database": "data/evaluations.db",
   "paper": "docs/research/paper-full.md",
 
@@ -367,14 +367,94 @@
       "unit": "response",
       "expected_attempts": 18,
       "expected_scored": 18
+    },
+    {
+      "run_ids": ["eval-2026-02-20-25c78e91"],
+      "label": "Factorial replication, Nemotron ego (cells 1-8)",
+      "section": "6.3",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 144,
+      "expected_scored": 144,
+      "note": "Nemotron ego for cells 1-5,7; Kimi K2.5 ego for cells 6,8 (YAML defaults). Recognition delta +17.1 (Nemotron-only) replicates original +14.4 (Kimi)."
+    },
+    {
+      "run_ids": ["eval-2026-02-20-0fbca69e"],
+      "label": "Dynamic learner clean re-run (cells 60-63)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 120,
+      "expected_scored": 120,
+      "note": "Clean re-run after learner pipeline unification (acb8bb8). Zero learner superego leakage. Replaces 6c033830 for learner-side analysis; 6c033830 tutor-side scores remain valid."
+    },
+    {
+      "run_ids": ["eval-2026-02-19-03dd8434"],
+      "label": "A2: Dynamic learner mechanism sweep (cells 72-77)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 108,
+      "expected_scored": 108,
+      "note": "Completes 2x7 recognition x mechanism matrix with dynamic learner. Cells: quantitative (72-73), erosion (74-75), tutor-profiling (76-77). Nemotron learner ego."
+    },
+    {
+      "run_ids": ["eval-2026-02-20-117710c0"],
+      "label": "Dynamic learner base mechanisms (cells 69-70, run 2)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 36,
+      "expected_scored": 36,
+      "note": "Supplements 664073ab with additional N for cells 69 (base intersubjective) and 70 (base combined)."
+    },
+    {
+      "run_ids": ["eval-2026-02-19-dbcd6543"],
+      "label": "A4: Authentic learner superego, Nemotron (cells 78-79)",
+      "section": "6.16",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 36,
+      "expected_scored": 35,
+      "note": "Tests authenticity-focused learner superego to address learner quality paradox (d=1.43). Nemotron learner ego."
+    },
+    {
+      "run_ids": ["eval-2026-02-20-058c7a0e"],
+      "label": "A4: Authentic learner superego, Haiku (cells 78-79)",
+      "section": "6.16",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 12,
+      "expected_scored": 12,
+      "note": "Haiku learner ego variant of A4 experiment."
+    },
+    {
+      "run_ids": ["eval-2026-02-20-57ba525c"],
+      "label": "A2: Dynamic learner mechanism sweep, Haiku (cells 72-77)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "mixed",
+      "expected_attempts": 24,
+      "expected_scored": 24,
+      "note": "Haiku learner ego variant of A2 mechanism sweep."
+    },
+    {
+      "run_ids": ["eval-2026-02-20-90703a6a"],
+      "label": "Dynamic learner self-reflect, Haiku (cells 60-61)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 12,
+      "expected_scored": 12,
+      "note": "Haiku learner ego variant; confirms zero leakage on corrected codebase."
     }
   ],
 
   "totals": {
-    "evaluations": 40,
-    "expected_attempts": 3668,
-    "expected_scored": 3653,
-    "opus_primary_count": 40,
+    "evaluations": 48,
+    "expected_attempts": 4160,
+    "expected_scored": 4144,
+    "opus_primary_count": 48,
     "sonnet_primary_count": 0,
     "sonnet_primary_runs": []
   },
@@ -472,12 +552,15 @@
       "runs": {
         "scripted": "eval-2026-02-14-e0e3a622",
         "dynamic_60_63": "eval-2026-02-14-6c033830",
+        "dynamic_60_63_clean": "eval-2026-02-20-0fbca69e",
         "dynamic_64_65": "eval-2026-02-14-a2b2717c",
         "cognitive": "eval-2026-02-14-50487df7",
-        "base_69_70": "eval-2026-02-15-664073ab"
+        "base_69_70": "eval-2026-02-15-664073ab",
+        "base_69_70_run2": "eval-2026-02-20-117710c0",
+        "a2_sweep_72_77": "eval-2026-02-19-03dd8434"
       },
       "judge_filter": "claude-opus%",
-      "notes": "50487df7 uses sonnet judge; others use opus"
+      "notes": "50487df7 uses sonnet judge; others use opus. 0fbca69e is clean re-run of 6c033830 (zero learner leakage). 03dd8434 completes the 2x7 mechanism matrix."
     },
     "figure9": {
       "title": "Qualitative Tag Divergence",
@@ -503,12 +586,12 @@
   },
 
   "prose_n_references": [
-    { "location": "abstract", "pattern": "N=3,653 primary scored" },
-    { "location": "introduction (line ~44)", "pattern": "N=3,653 primary scored responses" },
-    { "location": "methods (Table 2 totals)", "pattern": "**3,653**" },
-    { "location": "methods (line ~572)", "pattern": "N=3,653 scored" },
-    { "location": "methods (line ~574)", "pattern": "N=3,653" },
-    { "location": "discussion (line ~1817)", "pattern": "N=3,653" },
-    { "location": "conclusion (line ~1899)", "pattern": "N=3,653 primary scored" }
+    { "location": "abstract", "pattern": "N=4,144 primary scored" },
+    { "location": "introduction (line ~44)", "pattern": "N=4,144 primary scored responses" },
+    { "location": "methods (Table 2 totals)", "pattern": "**4,144**" },
+    { "location": "methods (line ~580)", "pattern": "N=4,144 scored" },
+    { "location": "methods (line ~582)", "pattern": "N=4,144" },
+    { "location": "discussion (line ~1889)", "pattern": "N=4,144" },
+    { "location": "conclusion (line ~1973)", "pattern": "N=4,144 primary scored" }
   ]
 }
