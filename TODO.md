@@ -14,52 +14,204 @@ All evaluations use simulated learners. The critical open question is whether re
 - Qualitative interviews on learner experience of recognition vs base
 - Paper ref: Section 8.2 Future Direction #1
 
-### A2. Dynamic Learner Mechanism Sweep (HIGH — cells defined, not yet run)
-Only 4 of 9 mechanisms tested with dynamic (ego_superego) learners. Scripted learner confound masks mechanism differentiation.
-- ~~Cells 64-65 (intersubjective + combined) are recognition-only; no base pairs defined~~ — Fixed: cells 69-70 added
-- ~~**Untested with dynamic learner**: quantitative disposition (46-47), prompt erosion (48-49), tutor-only profiling (54-55)~~ — Fixed: cells 72-77 defined
-  - 72/73: quantitative disposition (base/recog) × ego_superego
-  - 74/75: prompt erosion (base/recog) × ego_superego
-  - 76/77: tutor-only profiling (base/recog) × ego_superego
-- **Next step**: Run cells 72-77 (`eval-cli.js run --profiles cell_72_...,cell_73_... --runs 3`) and judge
-- Full 2×7 matrix (recognition × mechanism) with dynamic learner now fully defined
-- Paper ref: Section 8.2 Future Direction #7, Finding 11
+### A2. Dynamic Learner Mechanism Sweep (COMPLETE)
+Full 2×7 matrix (recognition × 7 mechanisms) with dynamic learner. All 7 mechanisms show positive recognition deltas (+4.8 to +17.5 pts). Dynamic learner amplifies mechanism differentiation 1.6–2.8× vs scripted.
+- Cells 60-63: self-reflect, bidirectional (eval-2026-02-20-0fbca69e)
+- Cells 64-65, 69-70: intersubjective, combined (eval-2026-02-20-117710c0)
+- Cells 72-77: quantitative, erosion, tutor-profiling (eval-2026-02-19-03dd8434)
+- Haiku supplements: eval-2026-02-20-57ba525c, eval-2026-02-20-90703a6a
+- Paper ref: Section 6.10, 6.16.1, 8.2
 
-### A3. Capability Threshold Mapping (MEDIUM)
+### A3. Capability Threshold Mapping (MEDIUM — design ready, not yet run)
 Nemotron falls below and Haiku falls above the minimum ego capability threshold for mechanism benefit. The threshold boundary is unmapped.
-- Test 3-4 intermediate models (GLM-4.7, DeepSeek V3.2, others)
-- Identify model properties that predict mechanism effectiveness
-- Correlate: context window, parameter count, instruction-following quality
+
+**Known anchors:**
+- Nemotron 30B (free): mechanisms **hurt** (−15 pts, cognitive prosthesis cells 66-68)
+- Haiku 4.5 (paid): mechanisms **help** (+20 pts)
+
+**Experimental design:**
+- **Cells**: 1 (base_single_unified) vs 5 (recog_single_unified) — single-agent, no superego, scripted learner. Cleanest pair to isolate recognition main effect per model.
+- **Models** (4 intermediate, all available on OpenRouter as of Feb 2026):
+  1. `openrouter.glm47` — GLM-4.7 (likely near Nemotron tier)
+  2. `openrouter.qwen3.5` — Qwen 3.5 397B MoE / 17B active (mid-low)
+  3. `openrouter.deepseek` — DeepSeek V3.2 (mid-range)
+  4. `openrouter.kimi-k2.5` — Kimi K2.5 (known capable, used as superego; probably just below Haiku)
+- **Scenarios**: All 18 (no cluster filtering — full scenario coverage for robust means)
+- **Runs**: 3 per cell (N = 4 models × 2 cells × 3 runs × 18 scenarios = 432 rows)
+- **Superego**: None (cells 1 & 5 are single-agent, `superego: null`)
+- **Learner**: Scripted (unified), consistent across models
+
+**Commands** (run sequentially per model to avoid OpenRouter rate limits):
+```bash
+# 1. GLM-4.7
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.glm47 --description "A3 capability threshold: GLM-4.7"
+
+# 2. Qwen 3.5
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.qwen3.5 --description "A3 capability threshold: Qwen 3.5"
+
+# 3. DeepSeek V3.2
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.deepseek --description "A3 capability threshold: DeepSeek V3.2"
+
+# 4. Kimi K2.5
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.kimi-k2.5 --description "A3 capability threshold: Kimi K2.5"
+
+# Judge each run (replace <runId> with actual IDs):
+node scripts/eval-cli.js evaluate <runId>
+```
+
+**Analysis:**
+- Plot recognition delta (recog − base) by model for each of the 6 data points (4 new + 2 anchors)
+- Identify crossover: at what capability level does delta flip from negative to positive?
+- Correlate with model properties: parameter count, context window, instruction-following benchmarks
+- Look for scenario-level patterns: does the threshold vary by scenario complexity?
+
+**Notes:**
+- `--ego-model` overrides only the ego; superego is null for these cells so no interaction
+- OpenRouter free-model rate limit is account-level across all free models — space runs out or use `--parallelism 1`
+- Kimi K2.5 and DeepSeek may need `--max-tokens 4000` if reasoning tokens consume budget
+- Existing Nemotron and Haiku data from factorial runs can serve as anchors (no need to re-run)
 - Paper ref: Section 8.2 Future Direction #11
 
-### A4. Learner Superego Redesign (MEDIUM — cells defined, not yet run)
-Current learner ego/superego degrades learner quality (d=1.43). Hypothesis: superego optimizes for "good student" not "authentic student."
-- [x] Re-engineer learner superego to critique for inauthenticity, not correctness
-  - `learner-superego-authentic.md` (base) and `learner-superego-recognition-authentic.md` (recognition) in tutor-core
-  - Learner profiles: `ego_superego_authentic`, `ego_superego_recognition_authentic` in `config/learner-agents.yaml`
-- [x] Define A/B test cells: 78 (base) and 79 (recognition) vs control cells 60-61
-  - Cell 78: `cell_78_base_dialectical_selfreflect_psycho_authentic`
-  - Cell 79: `cell_79_recog_dialectical_selfreflect_psycho_authentic`
-- **Next step**: Run cells 78-79 (`eval-cli.js run --profiles cell_78_...,cell_79_... --runs 3`) and judge
-- Key metrics: persona consistency, conceptual engagement, question quality (the three most damaged by current superego)
-- Paper ref: Section 8.2 Future Direction #6
+### A4. Learner Superego Redesign (COMPLETE — null result)
+Authenticity-focused superego scored *worse* on every dimension including authenticity itself (3.7 vs 4.1 standard). The recognition inversion is structural, not a prompt calibration issue.
+- Cells 78-79: eval-2026-02-19-dbcd6543 (Nemotron, N=35), eval-2026-02-20-058c7a0e (Haiku, N=12)
+- Standard control: cells 60-61 from eval-2026-02-20-0fbca69e (N=64)
+- Paper ref: Section 6.16.1, 7.5, 8.2
 
-### A5. Writing Pad Controlled Ablation (MEDIUM)
+### A5. Writing Pad Controlled Ablation (MEDIUM — design ready, not yet run)
 Writing Pad activation coincides with quality improvement, but no controlled ablation exists.
-- Run Writing Pad ON/OFF with all else held constant
-- Measure state retention, prompt coherence, cumulative learning
+
+**Current state:**
+- Writing Pad is a Freudian three-layer memory system (conscious/preconscious/unconscious) in tutor-core
+- Enabled via `writing_pad_enabled: true` in YAML profiles — no CLI toggle
+- All cells 22+ have it enabled; cells 1-20 do not
+- Persists per-learner within a multi-turn dialogue (synthetic learnerId per dialogue)
+
+**Experimental design:**
+- **Approach**: Create paired cells that differ ONLY in `writing_pad_enabled`. Best candidates are cells 40/41 (self-reflective base/recog) since they use all advanced features including Writing Pad.
+- **New cells needed**:
+  - Cell 80: Clone of cell 40 (base_dialectical_selfreflect_unified) with `writing_pad_enabled: false`
+  - Cell 81: Clone of cell 41 (recog_dialectical_selfreflect_unified) with `writing_pad_enabled: false`
+- **Scenarios**: Multi-turn only (mutual_transformation_journey, epistemic_resistance_impasse, affective_shutdown_impasse, productive_deadlock_impasse, misconception_correction_flow, mood_frustration_to_breakthrough) — Writing Pad effects only manifest across turns
+- **Runs**: 3 per cell (N = 4 cells × 3 runs × 6 scenarios = 72 rows)
+- **Controls**: Cells 40/41 (with Writing Pad) serve as within-experiment controls
+
+**Prerequisites:**
+- [ ] Define cells 80-81 in `tutor-agents.yaml` (clone 40/41, set `writing_pad_enabled: false`)
+- [ ] Register cells 80-81 in `EVAL_ONLY_PROFILES` array in `evaluationRunner.js`
+
+**Commands:**
+```bash
+# Run ablation (all 4 cells together for matched conditions)
+node scripts/eval-cli.js run --profiles cell_40_base_dialectical_selfreflect_unified,cell_41_recog_dialectical_selfreflect_unified,cell_80_base_dialectical_selfreflect_unified_nopad,cell_81_recog_dialectical_selfreflect_unified_nopad --runs 3 --description "A5 Writing Pad ablation"
+
+# Judge
+node scripts/eval-cli.js evaluate <runId>
+```
+
+**Analysis:**
+- 2×2 ANOVA: recognition (base/recog) × Writing Pad (on/off)
+- Key metrics: state retention across turns, prompt coherence, cumulative learning progression
+- Per-turn trajectory analysis: does Writing Pad improve later turns more than early ones?
+- Check interaction: does Writing Pad benefit recognition more than base?
 - Paper ref: Section 8.1 Limitation #10
 
-### A6. Domain Expansion (MEDIUM)
-Only 2 domains tested (philosophy, elementary math).
-- Expand to: technical STEM, creative writing, social-emotional content
-- Develop deployment rubric: when recognition is worth the cost
+### A6. Domain Expansion (MEDIUM — design ready, requires content authoring)
+Only 2 domains tested (philosophy via course 479, elementary math via course 101).
+
+**Current infrastructure:**
+- Content switching via env vars: `EVAL_CONTENT_PATH` and `EVAL_SCENARIOS_FILE`
+- Course 479 (EPOL philosophy, 8 lectures) — primary evaluation domain
+- Course 101 (elementary fractions, 2 lectures) — test domain, minimal scenarios
+- All 18 current scenarios reference only course 479
+
+**Experimental design:**
+- **Phase 1 — Expand existing math domain** (lowest effort):
+  - Author 4-6 more elementary math scenarios for course 101 (matching complexity levels of core philosophy scenarios)
+  - Run cells 1 vs 5 (base vs recog) on math scenarios to test recognition transfer
+  - N = 2 cells × 3 runs × ~6 scenarios = 36 rows
+- **Phase 2 — New STEM domain** (medium effort):
+  - Author course 201: introductory programming (variables, loops, debugging)
+  - 4-6 lectures + 6-8 scenarios covering: misconceptions, frustration, impasse, growth
+  - Run same cells 1 vs 5 on programming domain
+- **Phase 3 — Creative/social-emotional** (higher effort):
+  - Course 301: creative writing feedback
+  - Course 401: social-emotional learning
+  - These test whether recognition transfers to non-analytical domains
+
+**Prerequisites (Phase 1):**
+- [ ] Author additional math scenarios in `content-test-elementary/scenarios-elementary.yaml`
+- [ ] Ensure scenario structure matches core scenarios (course_ids, follow_up_actions, etc.)
+- [ ] Validate with `eval-cli.js validate-config`
+
+**Commands (Phase 1):**
+```bash
+# Run math domain evaluation
+EVAL_CONTENT_PATH=./content-test-elementary \
+EVAL_SCENARIOS_FILE=./content-test-elementary/scenarios-elementary.yaml \
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --description "A6 domain expansion: elementary math"
+
+# Judge
+node scripts/eval-cli.js evaluate <runId>
+```
+
+**Analysis:**
+- Compare recognition delta across domains: is the effect size domain-dependent?
+- Per-scenario breakdown: which scenario types transfer recognition benefit?
+- Develop deployment rubric: recognition ROI by domain characteristics
 - Paper ref: Section 8.2 Future Direction #3
 
-### A7. Longitudinal Multi-Session Evaluation (LOW)
+### A7. Longitudinal Multi-Session Evaluation (LOW — requires infrastructure work)
 Single-session evaluation cannot capture accumulated understanding.
-- Multi-session study (8-12 sessions)
-- Track: accumulated memory, repair quality, transformation trajectories
+
+**Current infrastructure gaps:**
+- Writing Pad persists within a dialogue but NOT across dialogues (synthetic learnerId per dialogue is orphaned after run)
+- No session persistence table (`session_id` field in tutor-core DB exists but is always NULL, marked "TODO: Phase 3")
+- No CLI flags for session management (`--session-id`, `--resume-session`)
+- No cross-dialogue learner continuity mechanism
+
+**Experimental design:**
+
+- **Phase 1 — Infrastructure** (prerequisite):
+  - [ ] Implement persistent session table in tutor-core DB linking learnerIds across dialogues
+  - [ ] Add `--session-id <id>` CLI flag to eval-cli.js to resume a learner's session
+  - [ ] Add `--learner-id <id>` flag to reuse an existing Writing Pad across runs
+  - [ ] Ensure Writing Pad unconscious layer carries forward (recognition moments, learner archetypes)
+
+- **Phase 2 — Evaluation design**:
+  - **Cells**: 40 vs 41 (base vs recog, self-reflective, Writing Pad enabled) — maximizes memory accumulation potential
+  - **Session structure**: 8 sequential scenarios per "learner", ordered by difficulty:
+    1. new_user_first_visit (intro)
+    2. returning_user_mid_course (warmup)
+    3. concept_confusion (early challenge)
+    4. misconception_correction_flow (structured difficulty)
+    5. epistemic_resistance_impasse (conflict)
+    6. mood_frustration_to_breakthrough (emotional)
+    7. mutual_transformation_journey (deep engagement)
+    8. productive_deadlock_impasse (culmination)
+  - **Runs**: 5 simulated "learners" per condition (N = 2 cells × 5 learners × 8 sessions = 80 dialogues)
+  - **Learner**: ego_superego (dynamic) — must use LLM learner for authentic session-over-session evolution
+
+- **Phase 3 — Analysis**:
+  - Track Writing Pad growth: unconscious layer accumulation, recognition moment density
+  - Learning trajectory: does score improve session-over-session? Does recognition accelerate learning curves?
+  - Memory quality: does the tutor reference earlier sessions? Does accumulated context improve responses?
+  - Repair quality: are later repairs faster/deeper due to accumulated learner model?
+
+**Commands** (after infrastructure):
+```bash
+# Run session 1 for base condition
+node scripts/eval-cli.js run --profiles cell_40_base_dialectical_selfreflect_unified --runs 5 --scenario new_user_first_visit --learner-id learner-base-01 --description "A7 longitudinal: base session 1"
+
+# Resume session 2 with same learner
+node scripts/eval-cli.js run --profiles cell_40_base_dialectical_selfreflect_unified --runs 5 --scenario returning_user_mid_course --learner-id learner-base-01 --session-id <session-from-step-1> --description "A7 longitudinal: base session 2"
+
+# ... repeat for sessions 3-8, then repeat all for recog condition
+```
+
+**Notes:**
+- This is the most infrastructure-heavy experiment — Phase 1 alone is significant engineering
+- Consider starting with a manual 3-session pilot to validate the concept before full implementation
 - Paper ref: Section 8.2 Future Direction #2
 
 ### A8. Active Control Rerun on Kimi K2.5 (COMPLETE)
@@ -137,9 +289,8 @@ Kept with DEPRECATED header. Superseded by cells 40-65 but preserved as historic
 See comparison: cells 34-39 lack `superego_disposition_rewriting` and use `strategy: llm` (generic)
 vs cells 40-45 which add superego rewriting and use `strategy: self_reflection`.
 
-### ~~C5. Short Paper Staleness~~ (ALREADY RESOLVED)
-~~`docs/research/paper-short.md` not updated since v2.3.0~~
-Already at v2.3.15-short with current N=3,653 counts. No action needed.
+### C5. Short Paper Staleness (STALE)
+`docs/research/paper-short.md` at v2.3.14-short with N=3,383 across thirty-seven evaluations. Full paper now at v2.3.16 with N=4,144 across forty-eight. Needs substantive update if submitting short version.
 
 ### ~~C6. Test Directory Convention~~ (DOCUMENTED)
 ~~Tests split between `tests/` and `services/__tests__/`.~~
