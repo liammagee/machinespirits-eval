@@ -374,7 +374,6 @@ const __test_dirname = fileURLToPath(new URL('.', import.meta.url));
 const PROJECT_ROOT = resolve(__test_dirname, '..', '..');
 
 describe('No hardcoded model IDs (regression)', () => {
-
   it('resolved provider config contains no :free model IDs', () => {
     const config = loadConfig(true);
     const providers = config.providers || {};
@@ -384,13 +383,13 @@ describe('No hardcoded model IDs (regression)', () => {
       for (const [alias, fullId] of Object.entries(models)) {
         assert.ok(
           !fullId.endsWith(':free'),
-          `Provider "${provName}" model "${alias}" resolves to "${fullId}" which has :free suffix`
+          `Provider "${provName}" model "${alias}" resolves to "${fullId}" which has :free suffix`,
         );
       }
       if (provConfig.default_model) {
         assert.ok(
           !provConfig.default_model.endsWith(':free'),
-          `Provider "${provName}" default_model "${provConfig.default_model}" has :free suffix`
+          `Provider "${provName}" default_model "${provConfig.default_model}" has :free suffix`,
         );
       }
     }
@@ -405,7 +404,7 @@ describe('No hardcoded model IDs (regression)', () => {
         if (agent?.model) {
           assert.ok(
             !agent.model.endsWith(':free'),
-            `Agent "${role}" in profile "${profileName}" resolved model "${agent.model}" has :free suffix`
+            `Agent "${role}" in profile "${profileName}" resolved model "${agent.model}" has :free suffix`,
           );
         }
       }
@@ -414,7 +413,7 @@ describe('No hardcoded model IDs (regression)', () => {
       if (synthesis?.model) {
         assert.ok(
           !synthesis.model.endsWith(':free'),
-          `Synthesis in profile "${profileName}" resolved model "${synthesis.model}" has :free suffix`
+          `Synthesis in profile "${profileName}" resolved model "${synthesis.model}" has :free suffix`,
         );
       }
     }
@@ -450,7 +449,7 @@ describe('No hardcoded model IDs (regression)', () => {
     assert.strictEqual(
       allViolations.length,
       0,
-      `Config-loading services contain hardcoded model IDs:\n${allViolations.join('\n')}`
+      `Config-loading services contain hardcoded model IDs:\n${allViolations.join('\n')}`,
     );
   });
 
@@ -468,11 +467,7 @@ describe('No hardcoded model IDs (regression)', () => {
       }
     }
 
-    assert.strictEqual(
-      violations.length,
-      0,
-      `providers.yaml has active :free entries:\n${violations.join('\n')}`
-    );
+    assert.strictEqual(violations.length, 0, `providers.yaml has active :free entries:\n${violations.join('\n')}`);
   });
 
   it('learner provider config reads from eval-repo providers.yaml (single source of truth)', () => {
@@ -489,7 +484,7 @@ describe('No hardcoded model IDs (regression)', () => {
     assert.strictEqual(
       learnerNemotron,
       evalNemotron,
-      `Learner nemotron "${learnerNemotron}" should match eval-repo "${evalNemotron}"`
+      `Learner nemotron "${learnerNemotron}" should match eval-repo "${evalNemotron}"`,
     );
   });
 
@@ -510,7 +505,7 @@ describe('No hardcoded model IDs (regression)', () => {
     assert.strictEqual(
       baseNemotron,
       evalNemotron,
-      `configLoaderBase nemotron "${baseNemotron}" should match evalConfigLoader "${evalNemotron}"`
+      `configLoaderBase nemotron "${baseNemotron}" should match evalConfigLoader "${evalNemotron}"`,
     );
   });
 });

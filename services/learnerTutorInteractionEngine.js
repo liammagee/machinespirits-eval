@@ -1106,8 +1106,9 @@ export async function generateLearnerResponse(options) {
 
   const applyOverride = (cfg, role) => {
     // Specific override for this role takes priority over general override
-    const override = (role === 'ego' ? resolvedEgoOverride : role === 'superego' ? resolvedSuperegoOverride : null)
-      || resolvedGeneralOverride;
+    const override =
+      (role === 'ego' ? resolvedEgoOverride : role === 'superego' ? resolvedSuperegoOverride : null) ||
+      resolvedGeneralOverride;
     if (!override || !cfg) return cfg;
     return {
       ...cfg,
@@ -1122,16 +1123,11 @@ export async function generateLearnerResponse(options) {
   // eval (callLearnerAI) paths use the same pipeline.
   const callLLM = llmCall
     ? async (agentConfig, systemPrompt, userPrompt, _role) => {
-        const response = await llmCall(
-          agentConfig.model,
-          systemPrompt,
-          [{ role: 'user', content: userPrompt }],
-          {
-            temperature: agentConfig.hyperparameters?.temperature || 0.7,
-            maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
-            agentRole: _role,
-          },
-        );
+        const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
+          temperature: agentConfig.hyperparameters?.temperature || 0.7,
+          maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
+          agentRole: _role,
+        });
         return { content: response.content, usage: response.usage };
       }
     : callLearnerAI;
@@ -1265,12 +1261,7 @@ export async function generateLearnerResponse(options) {
       roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
-      const response = await callLLM(
-        agentConfig,
-        systemPrompt,
-        "React to the tutor's message.",
-        `learner_${role}`,
-      );
+      const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
 
       internalDeliberation.push({ role, content: response.content });
       tokenUsage.inputTokens += response.usage?.inputTokens || 0;

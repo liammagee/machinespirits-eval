@@ -1329,7 +1329,10 @@ export async function runEvaluation(options = {}) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, learnerEgoModelOverride: effectiveLearnerEgoModelOverride }));
   }
   if (effectiveLearnerSuperegoModelOverride) {
-    targetConfigs = targetConfigs.map((c) => ({ ...c, learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride }));
+    targetConfigs = targetConfigs.map((c) => ({
+      ...c,
+      learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride,
+    }));
   }
   if (maxTokensOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, maxTokensOverride }));

@@ -13,10 +13,7 @@
 
 import 'dotenv/config';
 import readline from 'readline';
-import {
-  runInteraction,
-  callLearnerAI,
-} from '../services/learnerTutorInteractionEngine.js';
+import { runInteraction, callLearnerAI } from '../services/learnerTutorInteractionEngine.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import theme from '../services/cliTheme.js';
 
@@ -25,10 +22,7 @@ import theme from '../services/cliTheme.js';
 function getHumanInput(rl, agentRole, systemPrompt, messages) {
   return new Promise((resolve) => {
     console.log('');
-    console.log(theme.box(
-      `${agentRole.toUpperCase()} (you)`,
-      formatContext(systemPrompt, messages),
-    ));
+    console.log(theme.box(`${agentRole.toUpperCase()} (you)`, formatContext(systemPrompt, messages)));
     console.log('');
 
     const lines = [];
@@ -38,7 +32,10 @@ function getHumanInput(rl, agentRole, systemPrompt, messages) {
       rl.question(theme.human('> '), (answer) => {
         if (answer === null) {
           // EOF (Ctrl+D)
-          resolve({ content: lines.join('\n') || 'I need a moment to think about that.', usage: { inputTokens: 0, outputTokens: 0 } });
+          resolve({
+            content: lines.join('\n') || 'I need a moment to think about that.',
+            usage: { inputTokens: 0, outputTokens: 0 },
+          });
           return;
         }
 
@@ -95,11 +92,13 @@ function formatContext(systemPrompt, messages) {
 
 function displayAgentOutput(agentRole, content) {
   console.log('');
-  console.log(theme.box(
-    agentRole.toUpperCase(),
-    content.substring(0, 1000) + (content.length > 1000 ? '\n...' : ''),
-    theme.agentRole.bind(null, agentRole),
-  ));
+  console.log(
+    theme.box(
+      agentRole.toUpperCase(),
+      content.substring(0, 1000) + (content.length > 1000 ? '\n...' : ''),
+      theme.agentRole.bind(null, agentRole),
+    ),
+  );
 }
 
 // ── Play llmCall wrapper ───────────────────────────────────────
@@ -201,8 +200,8 @@ async function selectScenario(rl) {
 
 export async function runPlay(opts = {}) {
   const {
-    humanSide = 'tutor',      // 'tutor' or 'learner'
-    humanRole = 'ego',         // 'ego', 'superego', or 'both'
+    humanSide = 'tutor', // 'tutor' or 'learner'
+    humanRole = 'ego', // 'ego', 'superego', or 'both'
     scenarioId = null,
     profileName = null,
   } = opts;

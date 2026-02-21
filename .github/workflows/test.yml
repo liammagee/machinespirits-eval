@@ -38,6 +38,6 @@ jobs:
       - run: npm install
 
       - name: Install tutor-core peer dependency
-        run: npm install @machinespirits/tutor-core@0.4.0
+        run: npm install @machinespirits/tutor-core@0.5.0
 
       - run: npm test
