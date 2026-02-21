@@ -230,7 +230,7 @@ The same 2$\times$2 design (Recognition $\times$ Architecture, single-agent lear
 | GLM-4.7 | 117 | 65.8 | 68.6 | 84.0 | 86.0 | +17.8 | -0.7 |
 | Claude Haiku 4.5 | 120 | 80.3 | 82.4 | 90.7 | 91.2 | +9.6 | -1.6 |
 
-All five models show negative A$\times$B interactions (-5.7 to -0.7, mean -2.2), confirming architecture is additive, not synergistic. The recognition main effect replicates robustly (+9.6 to +17.8, mean +14.8). Multi-agent architecture provides a small benefit in four of five models (-0.8 to +3.7 pts) that does not interact with prompt type. For systems using recognition prompts, multi-agent architecture is unnecessary unless error correction on new domains is needed.
+All five models show negative A$\times$B interactions (-5.7 to -0.7, mean -2.2), confirming architecture is additive, not synergistic. The recognition main effect replicates robustly (+9.6 to +17.8, mean +14.8). Multi-agent architecture provides a small benefit in four of five models (-0.8 to +3.7 pts) that does not interact with prompt type. The architecture's value is additive rather than synergistic—contributing quality filtering, error correction on new domains, and enabling advanced mechanisms (self-reflection, Theory of Mind profiling) that require superego critique to function.
 
 ### 6.5 Domain Generalizability
 
