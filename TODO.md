@@ -289,8 +289,8 @@ Kept with DEPRECATED header. Superseded by cells 40-65 but preserved as historic
 See comparison: cells 34-39 lack `superego_disposition_rewriting` and use `strategy: llm` (generic)
 vs cells 40-45 which add superego rewriting and use `strategy: self_reflection`.
 
-### C5. Short Paper Staleness (STALE)
-`docs/research/paper-short.md` at v2.3.14-short with N=3,383 across thirty-seven evaluations. Full paper now at v2.3.16 with N=4,144 across forty-eight. Needs substantive update if submitting short version.
+### ~~C5. Short Paper Staleness~~ (RESOLVED)
+~~`docs/research/paper-short.md` at v2.3.14-short.~~ Updated to v2.3.17-short with N=4,144 across forty-eight evaluations. Added A2 mechanism sweep, recognition inversion, updated Table 1 totals. Slides (beamer + pptx) also updated to v2.3.17. All assets rebuilt.
 
 ### ~~C6. Test Directory Convention~~ (DOCUMENTED)
 ~~Tests split between `tests/` and `services/__tests__/`.~~

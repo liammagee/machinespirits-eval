@@ -68,7 +68,7 @@ The contributions of this paper are:
 - A cognitive prosthesis test (N=90) demonstrating a minimum ego capability threshold: the full mechanism stack that boosts Haiku by +20 points hurts Nemotron by $-15$ points, with dimension analysis revealing a two-tier static/dynamic capability structure and superego parse failures silently disabling quality control on 16–45% of turns
 - Practical design recommendations for AI tutor development distilled from the full experimental programme
 
-The paper is organized as follows. Section 2 reviews related work in AI tutoring, multiagent systems, prompt engineering, and sycophancy. Section 3 develops the theoretical framework connecting Hegelian recognition and Freudian structural theory to pedagogy. Section 4 presents the multiagent architecture (Ego, Superego, and learner agents). Section 5 describes the experimental methodology, including test scenarios, agent profiles, model configuration, and the evaluation rubric. Section 6 reports results across thirty-seven key evaluations, covering recognition validation, memory isolation, factorial analysis, domain generalizability, dialectical superego modulation, self-reflective evolution, mechanism robustness, qualitative transcript assessment, bilateral transformation, learner-side evaluation, cross-judge replication, dialectical impasse testing, and a hardwired rules ablation. Section 7 discusses theoretical and practical implications, including practical design recommendations. Section 8 addresses limitations, and Section 9 concludes.
+The paper is organized as follows. Section 2 reviews related work in AI tutoring, multiagent systems, prompt engineering, and sycophancy. Section 3 develops the theoretical framework connecting Hegelian recognition and Freudian structural theory to pedagogy. Section 4 presents the multiagent architecture (Ego, Superego, and learner agents). Section 5 describes the experimental methodology, including test scenarios, agent profiles, model configuration, and the evaluation rubric. Section 6 reports results across forty-eight key evaluations, covering recognition validation, memory isolation, factorial analysis, domain generalizability, dialectical superego modulation, self-reflective evolution, mechanism robustness, qualitative transcript assessment, bilateral transformation, learner-side evaluation, cross-judge replication, dialectical impasse testing, and a hardwired rules ablation. Section 7 discusses theoretical and practical implications, including practical design recommendations. Section 8 addresses limitations, and Section 9 concludes.
 
 ---
 
@@ -512,7 +512,7 @@ Because no single analysis can simultaneously isolate all factors of interest, w
 
 4. **Domain Generalizability** (Section 6.5): Tests factor effects on elementary math vs graduate philosophy (N=60 Kimi on elementary content; see Table 2).
 
-Responses were evaluated by an LLM judge (Claude Code CLI, using Claude Opus as the underlying model) using the extended rubric. All thirty-seven key evaluations reported in this paper use Claude Opus as the primary judge. Two of these runs (cells 60–63 and 64–65) also include Sonnet cross-judge rejudge rows for inter-rater comparison, but reported analyses use only the Opus scores unless explicitly noted. Earlier development runs in the broader database also used Sonnet, but these are not included in the reported analyses. We report:
+Responses were evaluated by an LLM judge (Claude Code CLI, using Claude Opus as the underlying model) using the extended rubric. All forty-eight key evaluations reported in this paper use Claude Opus as the primary judge. Two of these runs (cells 60–63 and 64–65) also include Sonnet cross-judge rejudge rows for inter-rater comparison, but reported analyses use only the Opus scores unless explicitly noted. Earlier development runs in the broader database also used Sonnet, but these are not included in the reported analyses. We report:
 
 - **Effect sizes**: Cohen's d for standardized comparison
 - **Statistical significance**: ANOVA F-tests with $\alpha$ = 0.05, p-values computed from the F-distribution CDF via regularized incomplete beta function (custom implementation in the evaluation framework)
@@ -2515,7 +2515,7 @@ Standard dimensions (including Productive Struggle and Epistemic Honesty) accoun
 
 ## Appendix D: Reproducibility and Key Evaluation Run IDs
 
-Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/liammagee/machinespirits-eval. The thirty-seven key evaluations are listed below (b6d75e87 serves both bilateral transformation and learner-side evaluation; eval-2026-02-11-35c53e99 and eval-2026-02-11-5f6d51f5 are combined as one dialectical modulation evaluation):
+Evaluation commands are documented in Appendix B. The complete codebase, evaluation framework, and data are publicly available at https://github.com/liammagee/machinespirits-eval. The forty-eight key evaluations are listed below (b6d75e87 serves both bilateral transformation and learner-side evaluation; eval-2026-02-11-35c53e99 and eval-2026-02-11-5f6d51f5 are combined as one dialectical modulation evaluation):
 
 | Finding | Run ID | Section |
 |---------|--------|---------|

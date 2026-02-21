@@ -2,12 +2,12 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "February 2026"
-version: "2.3.14-short"
+version: "2.3.17-short"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
 abstract: |
-  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across thirty-seven evaluations (N=3,383 primary scored), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71, while memory alone provides only d=0.46. A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (inter-judge r=0.44--0.64). Phase 2 experiments reveal that nine architectural mechanisms are equivalent under scripted learners but differentiate with dynamic interlocutors: Theory of Mind profiling adds 4.1 points when genuine feedback loops exist. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems.
+  Current AI tutoring treats learners as knowledge deficits to be filled. We propose an alternative grounded in Hegel's theory of mutual recognition, where effective pedagogy requires acknowledging learners as autonomous subjects whose understanding has intrinsic validity. We implement this through recognition-enhanced prompts and a multi-agent architecture where an "Ego" agent generates pedagogical suggestions and a "Superego" agent evaluates them before delivery. Across forty-eight evaluations (N=4,144 primary scored), recognition theory emerges as the primary driver of improvement: a 2$\times$2 memory isolation experiment (N=120) shows recognition produces d=1.71, while memory alone provides only d=0.46. A multi-model probe across five ego models (N=655) confirms architecture and recognition contribute additively, not synergistically. Cross-judge replication with GPT-5.2 validates the main findings at compressed magnitudes (inter-judge r=0.44--0.64). Phase 2 experiments reveal that nine architectural mechanisms are equivalent under scripted learners but differentiate with dynamic interlocutors: Theory of Mind profiling adds 4.1 points when genuine feedback loops exist. These results suggest that philosophical theories of intersubjectivity can serve as productive design heuristics for AI systems.
 fontsize: 12pt
 geometry: margin=1in
 header-includes: |
@@ -33,9 +33,9 @@ A recognition-oriented tutor, by contrast, treats the learner's understanding as
 
 We operationalize this through: (1) **recognition-enhanced prompts** that instruct the AI to treat learners as autonomous subjects; (2) **a multi-agent architecture** where a "Superego" agent evaluates whether suggestions achieve genuine recognition; (3) **new evaluation dimensions** that measure recognition quality alongside traditional pedagogical metrics; and (4) **test scenarios** specifically designed to probe recognition behaviors.
 
-In controlled evaluations across thirty-seven key evaluations (N=3,383 primary scored responses; N=7,000+ across all development runs), we isolate the contribution of recognition theory from prompt engineering effects and memory integration. The definitive test is a corrected 2$\times$2 memory isolation experiment (N=120 across two independent runs): recognition theory is the primary driver, producing d=1.71 (+15.2 pts) even without memory, while memory alone provides only d=0.46 (+4.8 pts, $p \approx .08$). A full 2$\times$2$\times$2 factorial (N=350) confirms recognition as the dominant factor ($\eta^2$=.243, d=1.11). A multi-model probe across five ego models (N=655) confirms that architecture and recognition contribute additively, not synergistically.
+In controlled evaluations across forty-eight key evaluations (N=4,144 primary scored responses; N=7,000+ across all development runs), we isolate the contribution of recognition theory from prompt engineering effects and memory integration. The definitive test is a corrected 2$\times$2 memory isolation experiment (N=120 across two independent runs): recognition theory is the primary driver, producing d=1.71 (+15.2 pts) even without memory, while memory alone provides only d=0.46 (+4.8 pts, $p \approx .08$). A full 2$\times$2$\times$2 factorial (N=350) confirms recognition as the dominant factor ($\eta^2$=.243, d=1.11). A multi-model probe across five ego models (N=655) confirms that architecture and recognition contribute additively, not synergistically.
 
-The contributions of this paper include: a theoretical framework connecting Hegelian recognition to AI pedagogy; a multi-agent architecture implementing recognition through Freudian structural theory; empirical evidence across thirty-seven evaluations (N=3,383); a corrected memory isolation experiment demonstrating recognition as the primary driver; evidence from a post-hoc active control showing recognition gains substantially exceed generic pedagogical elaboration; bilateral transformation metrics showing tutor-side adaptation (+26%); post-hoc modulation analysis reframing the Drama Machine as *phronesis* rather than productive irresolution; mechanism robustness testing revealing the scripted learner confound; a cognitive prosthesis test establishing a minimum ego capability threshold; and qualitative transcript assessment identifying three specific changes recognition produces.
+The contributions of this paper include: a theoretical framework connecting Hegelian recognition to AI pedagogy; a multi-agent architecture implementing recognition through Freudian structural theory; empirical evidence across forty-eight evaluations (N=4,144); a corrected memory isolation experiment demonstrating recognition as the primary driver; evidence from a post-hoc active control showing recognition gains substantially exceed generic pedagogical elaboration; bilateral transformation metrics showing tutor-side adaptation (+26%); post-hoc modulation analysis reframing the Drama Machine as *phronesis* rather than productive irresolution; mechanism robustness testing revealing the scripted learner confound; a cognitive prosthesis test establishing a minimum ego capability threshold; and qualitative transcript assessment identifying three specific changes recognition produces.
 
 ---
 
@@ -153,9 +153,13 @@ The strongest cross-judge agreement occurs on tone (r=0.36--0.65) and specificit
 | Prompt elaboration baseline | 6.13 | 144 |
 | Token budget sensitivity | 6.14 | 126 |
 | Dialectical impasse test | 6.15 | 24 |
-| **Paper totals** | — | **3,383** |
+| Active control Kimi rerun | 6.3 | 116 |
+| A2 mechanism sweep, dynamic learner (cells 72--77) | 6.9 | 108 |
+| A4 authenticity learner superego (cells 78--79) | 6.12 | 47 |
+| Dynamic learner self-reflect rerun (cells 60--61) | 6.9 | 12 |
+| **Paper totals** | — | **4,144** |
 
-The complete database contains 7,000+ evaluations across 117+ runs. This table groups the thirty-seven key evaluations by topic; several rows combine multiple runs (e.g., the factorial comprises two runs, the memory isolation two independent replications). The full paper's Appendix D provides a per-run breakdown.
+The complete database contains 7,000+ evaluations across 117+ runs. This table groups the forty-eight key evaluations by topic; several rows combine multiple runs. The full paper's Appendix D provides a per-run breakdown.
 
 ---
 
@@ -266,6 +270,8 @@ With dynamic (ego/superego) learners capable of genuine responses (N=300, Haiku,
 
 Four findings emerge. First, recognition with a dynamic learner produces +14.2 pts average---roughly double the scripted effect (+7.6). Second, mechanisms genuinely differentiate: profiling reaches 88.8 while intersubjective framing reaches only 82.8 (6.0-point spread). The profiling effect is additive: +4.1 pts overall, with near-zero recognition interaction ($-0.7$). Third, intersubjective framing underperforms without recognition (67.7, lowest of all cells). Fourth, variance collapses monotonically from SD=24.6 to 12.6 as recognition and mechanism complexity increase---both factors independently constrain output toward consistent quality.
 
+An A2 mechanism sweep (N=108, Nemotron ego, dynamic learners) extends the matrix to seven mechanisms total by adding quantitative disposition, prompt erosion, and tutor-profiling. All seven show positive recognition deltas (+8.0 to +15.1), with no mechanism $\times$ recognition crossover.
+
 Theory of Mind profiling is only useful when there is a mind to model. With scripted learners, profiling reduces to confabulation; with dynamic learners, it creates a genuine feedback loop: profile $\to$ adapted strategy $\to$ changed learner response $\to$ updated profile.
 
 **Cognitive prosthesis test** (N=90, Nemotron ego, Kimi K2.5 superego): Can a strong superego compensate for a weak ego? The prosthesis hypothesis fails decisively. All three superego configurations score M=48.3--51.1---well below Nemotron's own scripted base (M=64.2). The mechanism stack that boosts Haiku by +20 points *hurts* Nemotron by $-15$ points. Dimension analysis reveals two capability tiers: Nemotron succeeds on static dimensions (specificity 4.0, actionability 4.0) but fails on dynamic context integration (adaptation 1.8, dialectical responsiveness 2.0). A Haiku smoke test (N=6, same mechanisms) confirms scores of 90+, establishing a minimum ego capability threshold for mechanism benefit.
@@ -289,6 +295,8 @@ The tutor-focused rubric captures Factor C indirectly. To measure Factor C's dir
 The multi-agent (ego/superego) learner architecture produces significantly *lower*-quality learner responses than the single-agent learner ($d = 1.43$, $F(1,114) = 68.28$, $p < .001$, $\eta^2 = .342$)---the largest effect in the entire study. The ego/superego process was designed to improve learner responses through internal self-critique; instead, it makes them worse. The superego acts as an overzealous editor, polishing away the messy, confused, persona-consistent engagement that characterizes genuine student behavior.
 
 Recognition partially rescues multi-agent learner quality ($d = 0.79$, $p = .004$) while having no effect on already-high single-agent learner quality ($d = -0.46$, n.s.). Even with rescue, multi-agent learners with recognition (67.0) do not reach single-agent learners without it (76.1). Deliberation depth remains uniformly poor (2.7/5) regardless of recognition---confirming recognition works *around* the superego rather than through it.
+
+A further recognition inversion emerges in misconception correction scenarios: recognition improves tutor scores by +30.5 pts while *reducing* learner scores by $-$10.4 pts. The inversion is absent in mutual transformation scenarios, and within-condition tutor-learner correlation is near zero ($r = -0.014$). An authenticity-focused learner superego experiment (A4, cells 78--79, N=108) found the paradox worsened rather than improved, confirming it is structural rather than calibrational.
 
 This has a clean Hegelian interpretation: external recognition from an Other is structurally more effective than internal self-critique. You cannot bootstrap genuine dialogue from a monologue.
 
@@ -394,7 +402,7 @@ AI personality research typically treats personality as dispositional---stable t
 
 **Domain sampling**: We tested two domains (philosophy, elementary math). Content isolation bugs partly inflated the architecture effect on elementary content. Broader domain coverage (technical STEM, creative writing, social-emotional content) is needed before generalizability can be considered established.
 
-**Scripted learner confound**: The mechanism robustness test (N=360) uses scripted learners, rendering all mechanisms causally inert. Dynamic learner results (N=300) partially address this but cover only four mechanisms and two scenarios. The factorial's architecture null effect may partly reflect the scripted learner's inability to respond differently to different architectures.
+**Scripted learner confound**: The mechanism robustness test (N=360) uses scripted learners, rendering all mechanisms causally inert. Dynamic learner results (N=300 Haiku, N=108 Nemotron) address this with all seven mechanisms showing positive recognition deltas, though covering only two scenarios. The factorial's architecture null effect may partly reflect the scripted learner's inability to respond differently to different architectures.
 
 **Short-term evaluation**: We evaluate individual sessions, not longitudinal relationships. The theoretical framework emphasizes accumulated understanding through the Mystic Writing Pad memory model, which single-session evaluation cannot capture.
 
@@ -404,7 +412,7 @@ AI personality research typically treats personality as dispositional---stable t
 
 ## 9. Conclusion
 
-Across thirty-seven evaluations (N=3,383 primary scored), the evidence converges on recognition-enhanced prompting as the dominant driver of AI tutoring improvement:
+Across forty-eight evaluations (N=4,144 primary scored), the evidence converges on recognition-enhanced prompting as the dominant driver of AI tutoring improvement:
 
 1. **Recognition as primary driver**: Memory isolation (N=120): d=1.71 for recognition vs d=0.46 for memory. Full factorial (N=350): $\eta^2$=.243, d=1.11. Directly effective without memory infrastructure.
 
@@ -414,7 +422,7 @@ Across thirty-seven evaluations (N=3,383 primary scored), the evidence converges
 
 4. **Domain generalizability**: Recognition replicates across philosophy (+15.7) and elementary math (+8.2), concentrated in challenging scenarios.
 
-5. **Mechanisms require dynamic learners**: Nine mechanisms are equivalent under scripted learners. With dynamic interlocutors, profiling differentiates (+4.1 pts) through genuine Theory of Mind feedback loops.
+5. **Mechanisms require dynamic learners**: Nine mechanisms are equivalent under scripted learners. With dynamic interlocutors (N=300 Haiku, N=108 Nemotron), all seven mechanisms tested show positive recognition deltas (+8.0 to +15.1). Profiling differentiates (+4.1 pts) through genuine Theory of Mind feedback loops.
 
 6. **Cross-judge robustness**: GPT-5.2 replicates all directional findings at 37--59% of primary magnitudes.
 
@@ -428,7 +436,7 @@ These results carry implications for AI alignment more broadly. If mutual recogn
 
 The broader implication for AI system design is that philosophical theories of intersubjectivity can serve as productive design heuristics. Operationalizing recognition theory through specific prompt language and architectural features produces concrete, measurable improvements that replicate across models, domains, and independent judges. Recognition is better understood as an achievable relational stance than a requirement for machine consciousness. The distinction between recognition proper (requiring genuine consciousness) and recognition-oriented design (using recognition as a functional heuristic) allows practitioners to benefit from the framework without making metaphysical claims about AI sentience.
 
-In summary, we have connected Hegelian recognition theory to AI pedagogy, implemented it through a Freudian multiagent architecture, and tested it across thirty-seven evaluations. The central finding---that recognition-enhanced prompting is the dominant driver of tutoring improvement---was established through memory isolation, confirmed in a full factorial, validated by an independent judge, and deepened through impasse resolution coding, learner-side evaluation, and mechanism robustness testing with dynamic interlocutors. The theoretical framework, empirical methodology, and practical design hierarchy together demonstrate that the gap between continental philosophy and AI engineering is narrower than either tradition might suppose.
+In summary, we have connected Hegelian recognition theory to AI pedagogy, implemented it through a Freudian multiagent architecture, and tested it across forty-eight evaluations. The central finding---that recognition-enhanced prompting is the dominant driver of tutoring improvement---was established through memory isolation, confirmed in a full factorial, validated by an independent judge, and deepened through impasse resolution coding, learner-side evaluation, and mechanism robustness testing with dynamic interlocutors. The theoretical framework, empirical methodology, and practical design hierarchy together demonstrate that the gap between continental philosophy and AI engineering is narrower than either tradition might suppose.
 
 ## References
 
