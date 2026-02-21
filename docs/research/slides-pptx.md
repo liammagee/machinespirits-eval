@@ -317,7 +317,7 @@ Multi-agent learner architecture **hurts** learner quality (d=1.43, F=68.28, p<.
 ## Practical Recommendations
 
 1. **Add recognition prompts** --- immediate +14 pt improvement, no architecture changes needed
-2. **Architecture is optional** --- modest additive benefit (+2 pts), not required
+2. **Architecture is additive, not synergistic** --- quality filtering + error correction (+2 pts), enables self-reflection and ToM profiling
 3. **Use dynamic learners** for testing --- scripted learners mask mechanism effects
 4. **Theory of Mind profiling** --- best mechanism for ceiling performance
 5. **Token budgets can be cut 4--16x** with no quality loss

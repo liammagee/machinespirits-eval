@@ -449,8 +449,9 @@ External recognition from an Other is structurally more effective than internal 
    - Immediate +14 pt improvement
    - No architecture changes needed
 
-2. **Architecture is optional**
-   - Modest additive benefit (+2 pts)
+2. **Architecture is additive, not synergistic**
+   - Quality filtering + error correction (+2 pts)
+   - Enables self-reflection, ToM profiling
 
 3. **Use dynamic learners for testing**
    - Scripted learners mask effects
