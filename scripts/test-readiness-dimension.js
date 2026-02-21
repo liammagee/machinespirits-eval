@@ -77,9 +77,7 @@ async function callModel(prompt) {
       epistemic_readiness: { score: 3, reasoning: 'dry run' },
     };
   }
-  const raw = MODEL_KEY === 'claude-code'
-    ? await callClaudeCode(prompt)
-    : await callOpenRouter(prompt);
+  const raw = MODEL_KEY === 'claude-code' ? await callClaudeCode(prompt) : await callOpenRouter(prompt);
   return parseJsonResponse(raw);
 }
 
@@ -93,8 +91,12 @@ async function callClaudeCode(prompt) {
     });
     let out = '';
     let err = '';
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { err += d; });
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
     child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
     child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
@@ -203,7 +205,9 @@ async function main() {
   const db = new Database(DB_PATH, { readonly: true });
 
   // Pick 5 base + 5 recog from misconception_correction, median range
-  const baseRows = db.prepare(`
+  const baseRows = db
+    .prepare(
+      `
     SELECT dialogue_id, profile_name, learner_overall_score, overall_score
     FROM evaluation_results
     WHERE run_id = 'eval-2026-02-20-0fbca69e'
@@ -212,9 +216,13 @@ async function main() {
     AND profile_name LIKE 'cell_60%'
     ORDER BY learner_overall_score
     LIMIT 5 OFFSET 5
-  `).all();
+  `,
+    )
+    .all();
 
-  const recogRows = db.prepare(`
+  const recogRows = db
+    .prepare(
+      `
     SELECT dialogue_id, profile_name, learner_overall_score, overall_score
     FROM evaluation_results
     WHERE run_id = 'eval-2026-02-20-0fbca69e'
@@ -223,7 +231,9 @@ async function main() {
     AND profile_name LIKE 'cell_61%'
     ORDER BY learner_overall_score
     LIMIT 5 OFFSET 5
-  `).all();
+  `,
+    )
+    .all();
 
   db.close();
 
@@ -233,12 +243,8 @@ async function main() {
   ];
 
   console.log('Scoring 10 dialogues with epistemic_readiness dimension...\n');
-  console.log(
-    'condition | dialogue_id                       | existing_learner | tutor | concept_eng | readiness'
-  );
-  console.log(
-    '----------|-----------------------------------|-----------------|-------|-------------|----------'
-  );
+  console.log('condition | dialogue_id                       | existing_learner | tutor | concept_eng | readiness');
+  console.log('----------|-----------------------------------|-----------------|-------|-------------|----------');
 
   const results = [];
 
@@ -266,7 +272,7 @@ async function main() {
       });
 
       console.log(
-        `${row.condition.padEnd(10)}| ${row.dialogue_id.padEnd(34)}| ${String(Math.round(row.learner_overall_score)).padEnd(16)}| ${String(Math.round(row.overall_score)).padEnd(6)}| ${String(scores.conceptual_engagement.score).padEnd(12)}| ${scores.epistemic_readiness.score}`
+        `${row.condition.padEnd(10)}| ${row.dialogue_id.padEnd(34)}| ${String(Math.round(row.learner_overall_score)).padEnd(16)}| ${String(Math.round(row.overall_score)).padEnd(6)}| ${String(scores.conceptual_engagement.score).padEnd(12)}| ${scores.epistemic_readiness.score}`,
       );
     } catch (err) {
       console.error(`  ERROR on ${row.dialogue_id}: ${err.message}`);
@@ -296,23 +302,24 @@ async function main() {
   const recogResults = results.filter((r) => r.condition === 'recog');
   if (baseResults.length > 0 && recogResults.length > 0) {
     const baseCE = baseResults.reduce((s, r) => s + r.conceptual_engagement, 0) / baseResults.length;
-    const recogCE =
-      recogResults.reduce((s, r) => s + r.conceptual_engagement, 0) / recogResults.length;
-    const baseER =
-      baseResults.reduce((s, r) => s + r.epistemic_readiness, 0) / baseResults.length;
-    const recogER =
-      recogResults.reduce((s, r) => s + r.epistemic_readiness, 0) / recogResults.length;
+    const recogCE = recogResults.reduce((s, r) => s + r.conceptual_engagement, 0) / recogResults.length;
+    const baseER = baseResults.reduce((s, r) => s + r.epistemic_readiness, 0) / baseResults.length;
+    const recogER = recogResults.reduce((s, r) => s + r.epistemic_readiness, 0) / recogResults.length;
 
     console.log('=== KEY COMPARISON ===');
-    console.log(`Conceptual engagement: base ${baseCE.toFixed(2)} vs recog ${recogCE.toFixed(2)} (delta: ${(recogCE - baseCE).toFixed(2)})`);
-    console.log(`Epistemic readiness:   base ${baseER.toFixed(2)} vs recog ${recogER.toFixed(2)} (delta: ${(recogER - baseER).toFixed(2)})`);
+    console.log(
+      `Conceptual engagement: base ${baseCE.toFixed(2)} vs recog ${recogCE.toFixed(2)} (delta: ${(recogCE - baseCE).toFixed(2)})`,
+    );
+    console.log(
+      `Epistemic readiness:   base ${baseER.toFixed(2)} vs recog ${recogER.toFixed(2)} (delta: ${(recogER - baseER).toFixed(2)})`,
+    );
     console.log();
     console.log(
       recogER > baseER && recogCE <= baseCE
         ? '→ HYPOTHESIS SUPPORTED: Recognition improves readiness while reducing visible engagement'
         : recogER > baseER
           ? '→ PARTIAL SUPPORT: Recognition improves readiness'
-          : '→ HYPOTHESIS NOT SUPPORTED: No readiness advantage for recognition'
+          : '→ HYPOTHESIS NOT SUPPORTED: No readiness advantage for recognition',
     );
   }
 

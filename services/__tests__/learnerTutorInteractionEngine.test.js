@@ -349,7 +349,7 @@ describe('learner prompt leakage prevention', () => {
     if (capturing) {
       currentBlock += line + '\n';
       // End capture when we see a line ending with `;` (statement end)
-      if (line.trimEnd().endsWith('`;') || line.trimEnd().endsWith('\';') || line.trimEnd().endsWith('";')) {
+      if (line.trimEnd().endsWith('`;') || line.trimEnd().endsWith("';") || line.trimEnd().endsWith('";')) {
         egoRevisionBlocks.push(currentBlock);
         capturing = false;
       }
@@ -410,8 +410,7 @@ describe('learner prompt leakage prevention', () => {
   it('ego revision prompts use neutral labels for deliberation', () => {
     // Check that the neutral labels are present
     const hasNeutralLabels = egoRevisionBlocks.some(
-      (block) =>
-        block.includes('Your initial reaction was') && block.includes('Internal review feedback'),
+      (block) => block.includes('Your initial reaction was') && block.includes('Internal review feedback'),
     );
     assert.ok(
       hasNeutralLabels,

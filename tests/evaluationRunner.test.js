@@ -227,13 +227,9 @@ describe('flattenConversationHistory', () => {
 
   it('includes tutor entry even when learnerMessage is absent (first exchange)', () => {
     // The first exchange may not yet have a learner reply
-    const history = [
-      { suggestion: { message: 'Welcome!' } },
-    ];
+    const history = [{ suggestion: { message: 'Welcome!' } }];
     const flat = flattenConversationHistory(history);
-    assert.deepStrictEqual(flat, [
-      { role: 'tutor', content: 'Welcome!' },
-    ]);
+    assert.deepStrictEqual(flat, [{ role: 'tutor', content: 'Welcome!' }]);
   });
 
   it('handles mixed complete and incomplete exchanges', () => {
@@ -270,9 +266,7 @@ describe('flattenConversationHistory', () => {
 
   it('REGRESSION: tutor content comes from suggestion.message, not learnerMessage', () => {
     // Verify tutor entries get their content from the right field
-    const history = [
-      { suggestion: { message: 'tutor says this' }, learnerMessage: 'learner says that' },
-    ];
+    const history = [{ suggestion: { message: 'tutor says this' }, learnerMessage: 'learner says that' }];
     const flat = flattenConversationHistory(history);
     assert.strictEqual(flat[0].content, 'tutor says this', 'tutor content must come from suggestion.message');
     assert.strictEqual(flat[1].content, 'learner says that', 'learner content must come from learnerMessage');
@@ -285,9 +279,7 @@ describe('flattenConversationHistory', () => {
   });
 
   it('handles entries with empty suggestion message', () => {
-    const history = [
-      { suggestion: {}, learnerMessage: 'A reply' },
-    ];
+    const history = [{ suggestion: {}, learnerMessage: 'A reply' }];
     const flat = flattenConversationHistory(history);
     assert.strictEqual(flat[0].content, '', 'empty suggestion.message should default to empty string');
     assert.strictEqual(flat[1].content, 'A reply');

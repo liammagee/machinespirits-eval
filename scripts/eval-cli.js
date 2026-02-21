@@ -316,7 +316,8 @@ function renderGrid({ scenarios, profiles, grid, completedTests, totalTests, run
   const profileColWidth = Math.max(8, ...profiles.map((p) => p.length));
 
   // Header row
-  const header = ''.padEnd(scenarioColWidth) + ' | ' + profiles.map((p) => theme.header(p.padEnd(profileColWidth))).join(' | ');
+  const header =
+    ''.padEnd(scenarioColWidth) + ' | ' + profiles.map((p) => theme.header(p.padEnd(profileColWidth))).join(' | ');
   lines.push(header);
   lines.push(theme.dim('-'.repeat(scenarioColWidth + 3 + (profileColWidth + 3) * profiles.length)));
 
@@ -966,7 +967,8 @@ async function main() {
             console.log(`  Learner model override: ${learnerModelOverride}`);
           } else if (learnerEgoModelOverride || learnerSuperegoModelOverride) {
             if (learnerEgoModelOverride) console.log(`  Learner ego model override: ${learnerEgoModelOverride}`);
-            if (learnerSuperegoModelOverride) console.log(`  Learner superego model override: ${learnerSuperegoModelOverride}`);
+            if (learnerSuperegoModelOverride)
+              console.log(`  Learner superego model override: ${learnerSuperegoModelOverride}`);
           }
           if (maxTokensOverride) console.log(`  Max tokens override: ${maxTokensOverride}`);
           console.log('');
@@ -1158,7 +1160,9 @@ async function main() {
             const output = renderRunsTable(runs);
             if (output !== lastOutput) {
               process.stdout.write('\x1b[2J\x1b[H');
-              console.log(theme.dim(`Runs: ${runs.length} total  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms)`));
+              console.log(
+                theme.dim(`Runs: ${runs.length} total  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms)`),
+              );
               console.log('');
               console.log(output);
               console.log('');
@@ -3066,7 +3070,14 @@ async function main() {
         }
 
         // ── 5. Learner architecture ───────────────────────────────────
-        const VALID_LEARNER_ARCHS = ['unified', 'unified_recognition', 'ego_superego', 'ego_superego_recognition', 'ego_superego_authentic', 'ego_superego_recognition_authentic'];
+        const VALID_LEARNER_ARCHS = [
+          'unified',
+          'unified_recognition',
+          'ego_superego',
+          'ego_superego_recognition',
+          'ego_superego_authentic',
+          'ego_superego_recognition_authentic',
+        ];
         const learnerErrors = [];
         for (const name of profilesToCheck) {
           const profile = allProfiles[name];
