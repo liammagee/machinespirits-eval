@@ -849,7 +849,7 @@ export async function synthesizeEgoSelfReflection({
   const context = buildEgoReflectionContext(turnResults, consolidatedTrace, conversationHistory);
 
   // Use the ego's OWN model — not the superego's
-  // Resolve alias to full model ID (e.g., 'nemotron' → 'nvidia/nemotron-3-nano-30b-a3b:free')
+  // Resolve alias to full model ID (e.g., 'nemotron' → 'nvidia/nemotron-3-nano-30b-a3b')
   const egoAlias = config.ego?.model || config.model || 'nemotron';
   const provider = config.ego?.provider || 'openrouter';
   let egoModel = egoAlias;

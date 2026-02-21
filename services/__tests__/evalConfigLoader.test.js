@@ -173,7 +173,7 @@ describe('resolveModel (string format)', () => {
   it('resolves "openrouter.nemotron"', () => {
     const r = resolveModel('openrouter.nemotron');
     assert.strictEqual(r.provider, 'openrouter');
-    assert.strictEqual(r.model, 'nvidia/nemotron-3-nano-30b-a3b:free');
+    assert.strictEqual(r.model, 'nvidia/nemotron-3-nano-30b-a3b');
   });
 
   it('resolves "openrouter.deepseek"', () => {

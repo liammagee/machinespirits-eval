@@ -29,7 +29,12 @@ const MODEL_PRICING = {
   'nvidia/nemotron-3-nano-30b-a3b:free': {
     input: 0,
     output: 0,
-    name: 'Nemotron 3 Nano 30B (free)',
+    name: 'Nemotron 3 Nano 30B (free, legacy)',
+  },
+  'nvidia/nemotron-3-nano-30b-a3b': {
+    input: 0.12,
+    output: 0.12,
+    name: 'Nemotron 3 Nano 30B',
   },
   'anthropic/claude-sonnet-4.5': {
     input: 3.0,
@@ -51,11 +56,11 @@ const MODEL_PRICING = {
     output: 5.0,
     name: 'Gemini 3 Pro',
   },
-  // Aliases
+  // Aliases (current pricing)
   nemotron: {
-    input: 0,
-    output: 0,
-    name: 'Nemotron 3 Nano 30B (free)',
+    input: 0.12,
+    output: 0.12,
+    name: 'Nemotron 3 Nano 30B',
   },
   sonnet: {
     input: 3.0,

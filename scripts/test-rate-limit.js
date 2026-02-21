@@ -1,21 +1,24 @@
 #!/usr/bin/env node
 import 'dotenv/config';
+import { resolveModel } from '../services/evalConfigLoader.js';
 /**
  * Quick rate-limit probe for OpenRouter models.
  * Usage: node scripts/test-rate-limit.js [model-alias]
  * Default: nemotron
+ * Resolves model aliases through providers.yaml (e.g. nemotron → full model ID).
  */
 
-const MODEL_MAP = {
-  nemotron: 'nvidia/nemotron-3-nano-30b-a3b:free',
-  glm47: 'z-ai/glm-4.7',
-  'kimi-k2.5': 'moonshotai/kimi-k2.5',
-  deepseek: 'deepseek/deepseek-v3.2',
-  haiku: 'anthropic/claude-haiku-4.5',
-};
-
 const alias = process.argv[2] || 'nemotron';
-const model = MODEL_MAP[alias] || alias;
+// Resolve through providers.yaml — "nemotron" → "openrouter.nemotron" → full ID
+const ref = alias.includes('.') ? alias : `openrouter.${alias}`;
+let model;
+try {
+  const resolved = resolveModel(ref);
+  model = resolved.model;
+} catch {
+  // Pass through as-is if not a known alias (e.g. a full model ID)
+  model = alias;
+}
 const apiKey = process.env.OPENROUTER_API_KEY;
 
 if (!apiKey) {
