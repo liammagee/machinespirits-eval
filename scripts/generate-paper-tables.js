@@ -59,6 +59,17 @@ function numToWord(n) {
     29: 'twenty-nine',
     30: 'thirty',
     31: 'thirty-one',
+    40: 'forty',
+    41: 'forty-one',
+    42: 'forty-two',
+    43: 'forty-three',
+    44: 'forty-four',
+    45: 'forty-five',
+    46: 'forty-six',
+    47: 'forty-seven',
+    48: 'forty-eight',
+    49: 'forty-nine',
+    50: 'fifty',
   };
   return words[n] || String(n);
 }
@@ -88,6 +99,9 @@ function main() {
     const runIds = eval_.run_ids;
     const judgePattern = eval_.primary_judge_pattern;
     const placeholders = runIds.map(() => '?').join(',');
+    const profileFilter = eval_.profile_filter;
+    const profileClause = profileFilter ? ' AND profile_name LIKE ?' : '';
+    const params = [...runIds, judgePattern, ...(profileFilter ? [profileFilter] : [])];
 
     let scored;
     if (eval_.unit === 'learner turn') {
@@ -97,10 +111,10 @@ function main() {
         SELECT COUNT(*) as total,
                SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
-        WHERE run_id IN (${placeholders}) AND judge_model LIKE ?
+        WHERE run_id IN (${placeholders}) AND judge_model LIKE ?${profileClause}
       `,
         )
-        .get(...runIds, judgePattern);
+        .get(...params);
       scored = row?.scored ?? 0;
     } else {
       const row = db
@@ -109,10 +123,10 @@ function main() {
         SELECT COUNT(*) as total,
                SUM(CASE WHEN overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
-        WHERE run_id IN (${placeholders}) AND judge_model LIKE ?
+        WHERE run_id IN (${placeholders}) AND judge_model LIKE ?${profileClause}
       `,
         )
-        .get(...runIds, judgePattern);
+        .get(...params);
       scored = row?.scored ?? 0;
     }
 
@@ -271,11 +285,15 @@ function main() {
     issues++;
   }
 
-  // Check: judge accounting
+  // Check: judge accounting — matches "All forty-eight" or "Forty-eight of the forty-eight"
   const opusWord = numToWord(manifest.totals.opus_primary_count);
   const opusCapWord = opusWord.charAt(0).toUpperCase() + opusWord.slice(1);
-  if (!paper.includes(`${opusCapWord} of the ${countWord}`)) {
-    console.log(`  ✗ Judge accounting: expected "${opusCapWord} of the ${countWord}" not found`);
+  const judgeAccounted =
+    paper.includes(`${opusCapWord} of the ${countWord}`) ||
+    (manifest.totals.opus_primary_count === manifest.totals.evaluations &&
+      paper.includes(`All ${countWord} key evaluations`));
+  if (!judgeAccounted) {
+    console.log(`  ✗ Judge accounting: expected "${opusCapWord} of the ${countWord}" or "All ${countWord}" not found`);
     issues++;
   }
 

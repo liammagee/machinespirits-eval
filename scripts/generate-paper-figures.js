@@ -626,8 +626,12 @@ ${bodyHtml}
 
 function htmlToPng(htmlPath, pngPath) {
   try {
+    const absHtml = path.resolve(htmlPath);
+    const absPng = path.resolve(pngPath);
+    // Remove existing file first — capture-website-cli refuses to overwrite
+    if (fs.existsSync(absPng)) fs.unlinkSync(absPng);
     execSync(
-      `npx capture-website-cli "file://${htmlPath}" --output "${pngPath}" --width ${figWidth} --full-page --type png --scale-factor 2 --delay 0.5`,
+      `npx capture-website-cli "file://${absHtml}" --output "${absPng}" --width ${figWidth} --full-page --type png --scale-factor 2 --delay 0.5`,
       { stdio: 'pipe' },
     );
     return true;

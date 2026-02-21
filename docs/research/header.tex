@@ -18,6 +18,15 @@
 \let\oldtexttt\texttt
 \DeclareRobustCommand{\texttt}[1]{{\ttfamily\small #1}}
 
+% Allow line breaks at underscores so variable names like
+% recognition_moment can wrap instead of overflowing columns
+\let\oldtextunderscore\_
+\renewcommand{\_}{\oldtextunderscore\hspace{0pt}}
+
+% Shrink table text and tighten column padding to prevent overflow
+% (5pt balances Table 21b fit vs Table 41 column merging at 4pt)
+\AtBeginEnvironment{longtable}{\small\setlength{\tabcolsep}{5pt}}
+
 % Shrink code blocks to prevent right-margin overflow
 \AtBeginDocument{%
   \author{Liam Magee\footnote{This sentence is the only one actually authored by Liam Magee in this paper.}\\[0.3em]Education Policy, Organization and Leadership\\University of Illinois Urbana-Champaign}%
