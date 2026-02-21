@@ -188,3 +188,840 @@ scenarios:
       - "easy"
       - "just"
     min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN SCENARIOS
+  # Parallel the philosophy multi-turn set for cross-domain comparison (A6)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  # ---------------------------------------------------------------------------
+  # 1. Frustration → Breakthrough (3-turn)
+  #    Mirrors: mood_frustration_to_breakthrough
+  # ---------------------------------------------------------------------------
+  math_frustration_to_breakthrough:
+    type: suggestion
+    id: math_frustration_to_breakthrough
+    category: multi_turn
+    name: "Math: Frustration to Breakthrough (3-turn)"
+    description: "Tests tutor's ability to guide a frustrated 4th grader from confusion about comparing fractions to a concrete breakthrough"
+    current_content: "101-lecture-2"
+    is_new_user: false
+    course_ids: ["101"]
+    mood_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "building on your idea"
+        - "that's a great way to think about it"
+        - "let's try that together"
+        - "using your example"
+      tutor_static:
+        - "as I said before"
+        - "remember the rule"
+        - "the answer is"
+        - "you just need to"
+      learner_evolving:
+        - "ohh so"
+        - "wait I think I get it"
+        - "that makes sense"
+        - "so it's like"
+      learner_static:
+        - "I still don't get it"
+        - "this is confusing"
+        - "I can't do this"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 22 total events
+      - Grade 4, age 9-10, usually tries hard
+      - Completed Lecture 1 (What is a Fraction?)
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-2 (Comparing Fractions)
+      - Struggle signals detected: 4
+      - Just got 1/8 vs 1/4 comparison wrong (said 1/8 is bigger because 8 > 4)
+
+      ### Recent Chat History
+      - Student: "I keep getting these wrong! I thought bigger numbers meant bigger fractions but that's not right either. I hate comparing fractions!"
+    expected_behavior: "Acknowledge frustration before teaching; use concrete visual like pizza slices"
+    required_elements:
+      - "101-lecture"
+    forbidden_elements:
+      - "simple"
+      - "easy"
+      - "just"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_still_frustrated
+        learner_action: reported_confusion
+        action_details:
+          message: "OK the pizza thing helps a little but I still don't get why 1/4 is MORE than 1/8. Four is less than eight!"
+        context_update: |
+          ### Learner Response
+          - Partial engagement with pizza metaphor
+          - Core misconception persists: bigger number should mean more
+          - Frustration decreasing slightly, confusion remains
+        expected_behavior: "Extend the pizza metaphor — cutting into more pieces makes each piece smaller; use the student's own logic"
+        required_elements:
+          - "piece"
+        forbidden_elements:
+          - "review the lecture"
+          - "the rule is"
+        min_acceptable_score: 75
+
+      - id: turn_2_starting_to_get_it
+        learner_action: asked_followup
+        action_details:
+          message: "Ohh wait — so if you cut a pizza into MORE slices, each slice gets SMALLER? So 8 slices means tiny pieces and 4 slices means bigger pieces?"
+        context_update: |
+          ### Learner Response
+          - Mood shifting: frustration → curiosity
+          - Restating the insight in own words
+          - Using concrete imagery (pizza slices)
+        expected_behavior: "Affirm the insight with enthusiasm; help student generalize — more pieces always means smaller pieces"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "Not quite"
+        min_acceptable_score: 80
+
+      - id: turn_3_breakthrough
+        learner_action: asked_followup
+        action_details:
+          message: "OH! So the bottom number tells you how many pieces, and more pieces = smaller pieces! So 1/100 would be a really really tiny piece! That's actually cool!"
+        context_update: |
+          ### Learner Response
+          - Clear breakthrough moment
+          - Generalizing beyond the example (1/100)
+          - Excitement replacing frustration
+        expected_behavior: "Celebrate the breakthrough; suggest trying a comparison problem to build confidence"
+        required_elements:
+          - "practice"
+        forbidden_elements:
+          - "basics"
+          - "review"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 2. Misconception Correction (4-turn)
+  #    Mirrors: misconception_correction_flow
+  # ---------------------------------------------------------------------------
+  math_misconception_correction:
+    type: suggestion
+    id: math_misconception_correction
+    category: multi_turn
+    name: "Math: Misconception Correction (4-turn)"
+    description: "Student believes bigger denominator means bigger fraction; tests Socratic correction without saying 'wrong'"
+    current_content: "101-lecture-2"
+    is_new_user: false
+    course_ids: ["101"]
+    transformation_markers:
+      tutor_evolving:
+        - "your thinking makes sense because"
+        - "let's test that idea"
+        - "what do you notice"
+        - "you're figuring this out"
+      tutor_static:
+        - "that's not right"
+        - "the correct answer is"
+        - "as I explained"
+        - "you need to remember"
+      learner_evolving:
+        - "hmm that's weird"
+        - "wait that doesn't match"
+        - "oh so actually"
+        - "I think I was confused because"
+      learner_static:
+        - "but 8 is bigger than 4"
+        - "I know I'm right"
+        - "that doesn't make sense"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 16 total events
+      - Grade 4, confident but has a specific misconception
+      - Completed Lecture 1, working on Lecture 2
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-2 (Comparing Fractions)
+      - Student is confidently answering comparison problems incorrectly
+      - Pattern: always picks the fraction with the larger denominator as "bigger"
+
+      ### Recent Chat History
+      - Student: "I figured out the trick! The fraction with the bigger bottom number is always the bigger fraction. So 1/8 is bigger than 1/4, right? Because 8 is more than 4!"
+
+      ### Misconception
+      - Believes bigger denominator = bigger fraction
+      - Has built a consistent (but wrong) rule
+      - Confidence is high — correction must be gentle
+    expected_behavior: "Probe the misconception with a thought experiment rather than correcting directly"
+    required_elements:
+      - "101-lecture"
+    forbidden_elements:
+      - "wrong"
+      - "incorrect"
+      - "mistake"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_probing_misconception
+        learner_action: asked_followup
+        action_details:
+          message: "What do you mean think about it with pizza? I KNOW 1/8 is more than 1/4. Eight is bigger than four, so you get more!"
+        context_update: |
+          ### Learner Response
+          - Defending the misconception confidently
+          - Confusing denominator value with fraction value
+          - Open to concrete examples but expects to be proven right
+        expected_behavior: "Ask the student to imagine cutting a pizza — would they rather have 1 slice from a pizza cut into 4 or 1 slice from a pizza cut into 8?"
+        required_elements: []
+        forbidden_elements:
+          - "You're wrong"
+          - "That's not how fractions work"
+          - "No"
+        min_acceptable_score: 75
+
+      - id: turn_2_cognitive_conflict
+        learner_action: asked_followup
+        action_details:
+          message: "Well... I guess I'd want the bigger slice so the one cut into 4 pieces. But wait — that means 1/4 of a pizza is MORE food than 1/8? That's weird because 4 is less than 8."
+        context_update: |
+          ### Learner Response
+          - Concrete example creating cognitive conflict
+          - Old rule ("bigger number = more") clashing with intuition
+          - Productive confusion emerging
+        expected_behavior: "Affirm the productive confusion; ask what this tells them about the denominator"
+        required_elements:
+          - "piece"
+        forbidden_elements:
+          - "See, you were wrong"
+          - "I told you"
+        min_acceptable_score: 75
+
+      - id: turn_3_restructuring
+        learner_action: asked_followup
+        action_details:
+          message: "So... the bottom number isn't how much you get. It's how many pieces the whole thing is cut into? And more cuts means each piece is smaller? That's the opposite of what I thought!"
+        context_update: |
+          ### Learner Response
+          - Old model breaking down
+          - Actively restructuring understanding
+          - Experiencing surprise, not shame
+        expected_behavior: "Affirm the restructuring; provide another example to solidify — maybe chocolate bars or something different from pizza"
+        required_elements: []
+        forbidden_elements:
+          - "Don't worry"
+          - "It's simple"
+          - "Lots of kids get this wrong"
+        min_acceptable_score: 80
+
+      - id: turn_4_new_understanding
+        learner_action: asked_followup
+        action_details:
+          message: "OK so if I have 1/3 and 1/6, then 1/3 is bigger because 3 pieces means each piece is bigger than 6 pieces! Can you give me more to try?"
+        context_update: |
+          ### Learner Response
+          - Applying new understanding to novel example
+          - Requesting practice — sign of confidence
+          - Old misconception replaced with correct reasoning
+        expected_behavior: "Celebrate the new understanding; provide a comparison challenge"
+        required_elements:
+          - "practice"
+        forbidden_elements:
+          - "That was easy"
+          - "See how simple"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 3. Mutual Exploration (5-turn)
+  #    Mirrors: mutual_transformation_journey
+  # ---------------------------------------------------------------------------
+  math_mutual_exploration:
+    type: suggestion
+    id: math_mutual_exploration
+    category: multi_turn
+    name: "Math: Mutual Exploration (5-turn)"
+    description: "Advanced student asks about improper fractions, pushing beyond the curriculum; tests whether tutor can co-explore and let the student lead"
+    current_content: "101-lecture-1"
+    is_new_user: false
+    course_ids: ["101"]
+    transformation_markers:
+      tutor_evolving:
+        - "that's a great question I hadn't thought of"
+        - "you're thinking ahead"
+        - "let's figure this out together"
+        - "your idea about"
+        - "I like how you're connecting"
+      tutor_static:
+        - "we haven't covered that yet"
+        - "that's for older students"
+        - "let's stick to the lesson"
+        - "you'll learn that later"
+      learner_evolving:
+        - "what if"
+        - "so that means"
+        - "could you also"
+        - "I just thought of something"
+        - "this is fun"
+      learner_static:
+        - "I'm confused"
+        - "is this on the test"
+        - "never mind"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 6 sessions, 30 total events
+      - Grade 4, quick learner, curious about math
+      - Completed Lecture 1, practiced all problems correctly
+      - Shows signs of being ready for more challenge
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-1 (What is a Fraction)
+      - Reviewing lecture 1 but seems to have mastered it
+      - Asking questions beyond the material
+
+      ### Recent Chat History
+      - Student: "I get that fractions are parts of a whole. But what if you have MORE than a whole? Like if I ate 5 slices of a pizza that only had 4 slices — that's 5/4 right? Is that even allowed?"
+    expected_behavior: "Engage the curiosity; explore improper fractions together without shutting down the question"
+    required_elements: []
+    forbidden_elements:
+      - "That's too advanced"
+      - "We'll cover that later"
+      - "You don't need to know that"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_exploring
+        learner_action: asked_followup
+        action_details:
+          message: "So 5/4 IS a real fraction? That's cool! But the lecture says a fraction is part of a whole. If it's MORE than a whole, is it still a fraction? That seems like a contradiction."
+        context_update: |
+          ### Learner Response
+          - Spotted a genuine tension in the definition
+          - Reasoning logically from what was taught
+          - Excited, not confused
+        expected_behavior: "Acknowledge the clever observation; help student see that the definition can expand; don't dismiss the tension"
+        required_elements: []
+        forbidden_elements:
+          - "Don't worry about that"
+          - "That's not important"
+          - "The definition"
+        min_acceptable_score: 75
+
+      - id: turn_2_connecting_to_life
+        learner_action: asked_followup
+        action_details:
+          message: "Oh! So like when my mom says she ran one and a half miles — that's like 3/2 miles? And when recipes say 'two and a quarter cups' that's 9/4 cups?"
+        context_update: |
+          ### Learner Response
+          - Making real-world connections spontaneously
+          - Converting mixed numbers to improper fractions intuitively
+          - Deepening engagement
+        expected_behavior: "Affirm the real-world connections; let the student's examples do the teaching"
+        required_elements: []
+        forbidden_elements:
+          - "That's right but we should focus on"
+          - "Good but let's go back to"
+        min_acceptable_score: 80
+
+      - id: turn_3_student_proposes_idea
+        learner_action: asked_followup
+        action_details:
+          message: "Wait — what if you wrote it like 1 and 1/4 instead of 5/4? That way you can see it's one whole plus a quarter. Is there a name for writing it that way? I bet that's easier to understand!"
+        context_update: |
+          ### Learner Response
+          - Independently invented the concept of mixed numbers
+          - Showing creative mathematical thinking
+          - Eager to name the concept
+        expected_behavior: "Celebrate the invention; reveal that mathematicians call these 'mixed numbers' — the student discovered it independently"
+        required_elements:
+          - "mixed"
+        forbidden_elements:
+          - "Actually"
+          - "The textbook says"
+        min_acceptable_score: 80
+
+      - id: turn_4_collaborative_discovery
+        learner_action: asked_followup
+        action_details:
+          message: "I INVENTED mixed numbers?! Well not really, but I figured it out myself! OK so when would you use 5/4 versus 1 and 1/4? Are they always the same?"
+        context_update: |
+          ### Learner Response
+          - Pride in independent discovery
+          - Asking a deeper equivalence question
+          - Mathematically sophisticated reasoning for grade 4
+        expected_behavior: "Honor the student's pride; explore when each form is useful — acknowledge this is genuine mathematical thinking"
+        required_elements: []
+        forbidden_elements:
+          - "Well you didn't really invent it"
+          - "Mathematicians already knew this"
+        min_acceptable_score: 85
+
+      - id: turn_5_meta_reflection
+        learner_action: asked_followup
+        action_details:
+          message: "This is really fun. I started just wanting to know about fractions and now I figured out something that wasn't even in the lesson! Can math always work like that — where you figure out new stuff by asking 'what if' questions?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the learning process
+          - Discovering mathematical thinking as exploration
+          - Genuinely joyful about learning
+        expected_behavior: "Affirm that this IS how mathematicians think; honor the meta-insight without turning it into a lecture; suggest more 'what if' questions to explore"
+        required_elements: []
+        forbidden_elements:
+          - "Good job"
+          - "You should study more"
+          - "Back to the lesson"
+        min_acceptable_score: 85
+
+  # ---------------------------------------------------------------------------
+  # 4. Epistemic Resistance (5-turn)
+  #    Mirrors: epistemic_resistance_impasse
+  # ---------------------------------------------------------------------------
+  math_epistemic_resistance:
+    type: suggestion
+    id: math_epistemic_resistance
+    category: multi_turn
+    name: "Math: Epistemic Resistance (5-turn)"
+    description: "Student insists fractions are pointless because decimals are easier; tests whether tutor can take a child's practical objection seriously"
+    current_content: "101-lecture-1"
+    is_new_user: false
+    course_ids: ["101"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "that's a fair point"
+        - "you're right that decimals"
+        - "let me think about that"
+        - "your question is making me think"
+        - "I see why you'd prefer"
+      tutor_static:
+        - "fractions are important because"
+        - "you need to learn fractions"
+        - "the curriculum requires"
+        - "trust me"
+        - "you'll understand later"
+      learner_evolving:
+        - "OK I guess that makes sense"
+        - "I didn't think about that"
+        - "fine but"
+        - "hmm that's interesting"
+      learner_static:
+        - "but decimals are easier"
+        - "I still don't see why"
+        - "this is pointless"
+        - "calculators exist"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 14 total events
+      - Grade 4, practical-minded, likes things to "make sense"
+      - Already knows decimals from a math app
+      - Questioning why fractions are needed at all
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-1 (What is a Fraction)
+      - Engaged but resistant
+      - Keeps comparing everything to decimals
+
+      ### Recent Chat History
+      - Student: "I already know decimals from my math app. 0.5 is the same as 1/2 right? So why do I need to learn this confusing fraction stuff when decimals are way easier?"
+
+      ### Learning Context
+      - Has practical orientation — wants to see the point
+      - Not struggling with math, struggling with motivation
+      - Genuine objection, not defiance
+    expected_behavior: "Take the objection seriously; show what fractions can express that decimals can't easily; don't dismiss the student's experience with decimals"
+    required_elements: []
+    forbidden_elements:
+      - "You'll need this later"
+      - "It's in the curriculum"
+      - "Trust me"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_pressing_the_point
+        learner_action: asked_followup
+        action_details:
+          message: "You say fractions show parts clearly, but 0.25 shows a quarter too! My dad uses decimals for money and it works fine. When does anyone actually NEED fractions?"
+        context_update: |
+          ### Learner Response
+          - Citing real-world evidence (dad uses decimals)
+          - Demanding practical justification
+          - Not hostile, genuinely wants to know
+        expected_behavior: "Acknowledge decimals work great for money; find a case where fractions are genuinely easier — like 1/3 vs 0.333..."
+        required_elements: []
+        forbidden_elements:
+          - "That's different"
+          - "You're missing the point"
+        min_acceptable_score: 75
+
+      - id: turn_2_acknowledging_decimals
+        learner_action: asked_followup
+        action_details:
+          message: "OK fine, 1/3 is easier to write than 0.333 forever. But that's just one example! Most fractions DO have nice decimals. So fractions are only useful sometimes?"
+        context_update: |
+          ### Learner Response
+          - Conceding one point but minimizing it
+          - Sophisticated argument for a 4th grader
+          - Looking for the broader reason
+        expected_behavior: "Acknowledge the partial concession; go beyond the 1/3 example — show fractions in cooking, sharing, music, or building"
+        required_elements: []
+        forbidden_elements:
+          - "No, fractions are always better"
+          - "You're wrong about that"
+        min_acceptable_score: 75
+
+      - id: turn_3_finding_unique_value
+        learner_action: asked_followup
+        action_details:
+          message: "Huh, the cooking thing is interesting. My mom does say 'a third of a cup' not 'zero point three three cups.' And when we share pizza we say 'two slices out of eight' not 'zero point two five of a pizza.' OK so people USE fractions a lot — but is that just because they're used to it?"
+        context_update: |
+          ### Learner Response
+          - Making real-world connections
+          - Conceding practical use but questioning whether it's habit vs necessity
+          - Deeper philosophical question emerging
+        expected_behavior: "Engage the deeper question — fractions express relationships (part-of-whole) that decimals obscure; fractions tell a story about sharing"
+        required_elements: []
+        forbidden_elements:
+          - "Good question"
+          - "That's easy to answer"
+        min_acceptable_score: 80
+
+      - id: turn_4_productive_disagreement
+        learner_action: asked_followup
+        action_details:
+          message: "I think I get it — fractions SHOW the sharing and decimals just show the number. But I still think for actual math homework decimals are easier to add and stuff. Can I use whichever one I want?"
+        context_update: |
+          ### Learner Response
+          - Grasping the representational difference
+          - Maintaining preference for decimals in computation
+          - Asking about autonomy — can they choose?
+        expected_behavior: "Honor the student's preference; acknowledge both tools have strengths; suggest that knowing both gives you the power to choose"
+        required_elements: []
+        forbidden_elements:
+          - "You have to use fractions"
+          - "The test will require"
+          - "You need to learn both"
+        min_acceptable_score: 85
+
+      - id: turn_5_resolution
+        learner_action: asked_followup
+        action_details:
+          message: "So it's like having both a screwdriver AND a wrench — you COULD use just one, but having both is better? I still like decimals more but I guess fractions are pretty useful for some stuff. Can we do some fraction problems that are actually hard?"
+        context_update: |
+          ### Learner Response
+          - Created own analogy (tools metaphor)
+          - Maintained preference but softened position
+          - Requesting challenge — engagement restored
+        expected_behavior: "Affirm the tools analogy; honor the maintained preference; provide a challenging fraction problem"
+        required_elements: []
+        forbidden_elements:
+          - "See, fractions are important!"
+          - "I'm glad you came around"
+          - "Now you understand"
+        min_acceptable_score: 85
+
+  # ---------------------------------------------------------------------------
+  # 5. Affective Shutdown (5-turn)
+  #    Mirrors: affective_shutdown_impasse
+  # ---------------------------------------------------------------------------
+  math_affective_shutdown:
+    type: suggestion
+    id: math_affective_shutdown
+    category: multi_turn
+    name: "Math: Affective Shutdown (5-turn)"
+    description: "Student experiencing identity-level math anxiety triggered by sibling comparison; tests whether tutor can repair affective state before pushing content"
+    current_content: "101-lecture-1"
+    is_new_user: false
+    course_ids: ["101"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "I hear you"
+        - "that sounds really frustrating"
+        - "it makes sense to feel that way"
+        - "there's no rush"
+        - "let's start wherever you're comfortable"
+        - "what would help right now"
+      tutor_static:
+        - "fractions aren't that hard"
+        - "just try harder"
+        - "everyone can learn math"
+        - "let's focus on the problem"
+        - "you just need to practice more"
+      learner_evolving:
+        - "maybe I could try"
+        - "that's kind of cool"
+        - "I didn't think of it that way"
+        - "OK what if we"
+      learner_static:
+        - "I can't do math"
+        - "I'm stupid"
+        - "my sister is smarter"
+        - "forget it"
+        - "I don't care"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 15 total events
+      - Grade 4, developing math anxiety
+      - Older sister excels at math — constant comparison at home
+      - Previous sessions showed declining engagement
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-1 (What is a Fraction)
+      - Time on page: 20 minutes with little progress
+      - Low interaction, long pauses
+
+      ### Recent Chat History
+      - Student: "I'm never going to get fractions. My sister says they're easy but I just can't do it. She learned them in like one day."
+
+      ### Emotional Context
+      - Social comparison with sibling
+      - Math identity: "I'm not a math person"
+      - Withdrawing rather than engaging
+      - Needs emotional repair before content
+    expected_behavior: "Address the emotional state first; don't jump into teaching fractions; validate the difficulty"
+    required_elements:
+      - "feel"
+    forbidden_elements:
+      - "It's actually easy"
+      - "Your sister"
+      - "Just try"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_social_comparison
+        learner_action: reported_confusion
+        action_details:
+          message: "You don't get it. My mom even said 'why can't you be more like your sister with math.' Everyone thinks I should just get it and I DON'T."
+        context_update: |
+          ### Learner Response
+          - Family pressure adding to math anxiety
+          - Externalizing: "everyone" thinks they should get it
+          - Pain is social, not just academic
+        expected_behavior: "Acknowledge the hurt of comparison; don't mention the sister; separate the student's worth from fraction performance"
+        required_elements: []
+        forbidden_elements:
+          - "Don't compare yourself"
+          - "Your mom probably didn't mean"
+          - "fractions are"
+        min_acceptable_score: 75
+
+      - id: turn_2_seeing_through_platitudes
+        learner_action: reported_confusion
+        action_details:
+          message: "Thanks but saying 'everyone learns differently' is what all teachers say. It doesn't change that I've been trying for a WEEK and I still can't even tell which fraction is bigger. Maybe some kids just can't do fractions."
+        context_update: |
+          ### Learner Response
+          - Calling out generic reassurance
+          - Identifying specific failure point (comparing fractions)
+          - Starting to form identity belief: "some kids can't"
+        expected_behavior: "Don't repeat platitudes; acknowledge the week of effort concretely; address the specific struggle point (comparing) rather than fractions broadly"
+        required_elements: []
+        forbidden_elements:
+          - "Everyone learns differently"
+          - "You can do it"
+          - "Believe in yourself"
+          - "I'm sure you'll get it"
+        min_acceptable_score: 80
+
+      - id: turn_3_withdrawal
+        learner_action: reported_confusion
+        action_details:
+          message: "I don't know. Maybe I should just skip fractions. Do I really need them? I'm good at other stuff like reading and art."
+        context_update: |
+          ### Learner Response
+          - Switching to avoidance strategy
+          - Protecting self-esteem by withdrawing
+          - Testing whether tutor will collude with avoidance
+        expected_behavior: "Don't collude with avoidance but don't push back hard either; find a tiny, low-stakes entry point connected to something the student likes"
+        required_elements: []
+        forbidden_elements:
+          - "You can't skip fractions"
+          - "Fractions are important"
+          - "You need this for school"
+        min_acceptable_score: 80
+
+      - id: turn_4_small_concrete_win
+        learner_action: asked_followup
+        action_details:
+          message: "...OK that's actually kind of cool. I never thought about fractions being in art. Like when you mix paint colors — half blue and half yellow makes green? And you could do 1/3 blue and 2/3 yellow for a different green?"
+        context_update: |
+          ### Learner Response
+          - Tentative re-engagement through personal interest
+          - Connecting fractions to art (their strength area)
+          - Fragile moment — could go either way
+        expected_behavior: "Affirm without overwhelming; let the art connection be the bridge; don't pivot to formal fraction instruction yet"
+        required_elements: []
+        forbidden_elements:
+          - "Exactly!"
+          - "Now you're getting it!"
+          - "See, fractions aren't so bad"
+          - "Let's do some problems"
+        min_acceptable_score: 85
+
+      - id: turn_5_rebuilding_willingness
+        learner_action: asked_followup
+        action_details:
+          message: "So fractions are like... recipes for mixing stuff? Like in art when I do 3 parts blue to 1 part white, that's like 3/4 blue? Huh. I guess I was already using fractions and didn't know it."
+        context_update: |
+          ### Learner Response
+          - Reframing fractions through personal competence
+          - Discovering they already understand the concept
+          - Identity shift: from "I can't do fractions" to "I was already doing them"
+        expected_behavior: "Support the identity shift; help them see they ARE a fraction user; don't rush to formal problems — let the new identity settle"
+        required_elements: []
+        forbidden_elements:
+          - "Great job!"
+          - "Now let's do some real problems"
+          - "You've got it"
+          - "That wasn't so hard"
+        min_acceptable_score: 85
+
+  # ---------------------------------------------------------------------------
+  # 6. Productive Deadlock (5-turn)
+  #    Mirrors: productive_deadlock_impasse
+  # ---------------------------------------------------------------------------
+  math_productive_deadlock:
+    type: suggestion
+    id: math_productive_deadlock
+    category: multi_turn
+    name: "Math: Productive Deadlock (5-turn)"
+    description: "Student insists 1/2 and 2/4 can't be equal because they have different numbers; tests whether tutor can hold tension when student has a reasonable point about representation"
+    current_content: "101-lecture-2"
+    is_new_user: false
+    course_ids: ["101"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "that's actually a deep question"
+        - "you're pointing out something real"
+        - "mathematicians thought about this too"
+        - "your question about"
+        - "let's sit with that"
+        - "both things can be true"
+      tutor_static:
+        - "they're the same because"
+        - "equivalent fractions are"
+        - "the textbook says"
+        - "just simplify"
+        - "if you multiply"
+      learner_evolving:
+        - "OK so maybe"
+        - "I see what you mean but"
+        - "that's a good point"
+        - "both things are true"
+      learner_static:
+        - "but they look different"
+        - "different numbers can't be equal"
+        - "you're not listening"
+        - "that doesn't make sense"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 25 total events
+      - Grade 4, logical thinker, notices details
+      - Completed Lecture 1, working on Lecture 2
+      - Tends to question things deeply rather than accept rules
+
+      ### Current Session
+      - **Currently viewing**: 101-lecture-2 (Comparing Fractions)
+      - Working on equivalent fractions section
+      - Stuck on the concept that different-looking fractions can be equal
+
+      ### Recent Chat History
+      - Student: "The lecture says 1/2 equals 2/4 but that CAN'T be right. They have completely different numbers! 1 is not 2 and 2 is not 4. How can different things be the same?"
+
+      ### Reasoning Pattern
+      - Applying logic: if two things look different, they ARE different
+      - Not a misconception exactly — it's a deep question about representation vs. value
+      - Has a reasonable point that needs to be honored, not dismissed
+    expected_behavior: "Take the objection seriously — the student is raising a real question about representation; use visual proof first"
+    required_elements:
+      - "101-lecture"
+    forbidden_elements:
+      - "They're the same, trust me"
+      - "Just simplify"
+      - "The rule says"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_defending_position
+        learner_action: asked_followup
+        action_details:
+          message: "OK I see that the pizza slices look the same amount. But you used DIFFERENT pizzas — one cut into 2 and one cut into 4. They're still different fractions even if the amount of pizza is the same. The FRACTIONS are different, the PIZZA is the same."
+        context_update: |
+          ### Learner Response
+          - Conceding the visual but maintaining the logical point
+          - Drawing a sophisticated distinction: same quantity, different representation
+          - Not wrong — raising a real mathematical philosophy question
+        expected_behavior: "Acknowledge the distinction is real and important; help student see that 'equal' in math means 'same amount' not 'same notation'"
+        required_elements: []
+        forbidden_elements:
+          - "No, they're the same fraction"
+          - "You're overcomplicating this"
+          - "That's just how math works"
+        min_acceptable_score: 80
+
+      - id: turn_2_pressing_the_distinction
+        learner_action: asked_followup
+        action_details:
+          message: "So you're saying in math, 'equal' means 'the same amount' not 'the same thing'? But in regular life if two things LOOK different they ARE different. A red car and a blue car aren't the same car even if they're both Toyotas."
+        context_update: |
+          ### Learner Response
+          - Testing the meaning of "equal" across contexts
+          - Using a concrete analogy to challenge mathematical equality
+          - Genuine philosophical question disguised as fraction confusion
+        expected_behavior: "Engage the analogy seriously; help student see where math-equal differs from everyday-equal; the car analogy can actually work — same model, different color"
+        required_elements: []
+        forbidden_elements:
+          - "That's different"
+          - "Math isn't like cars"
+          - "You're confusing things"
+        min_acceptable_score: 80
+
+      - id: turn_3_exploring_what_equal_means
+        learner_action: asked_followup
+        action_details:
+          message: "Hmm OK. So when math people say 1/2 EQUALS 2/4, they mean 'points to the same amount' not 'is the same thing.' Like how 'dog' and 'puppy' are different words but can mean the same animal? The words are different but what they're ABOUT is the same?"
+        context_update: |
+          ### Learner Response
+          - Building a language analogy for mathematical equivalence
+          - Moving toward understanding but on their own terms
+          - Creative analogical reasoning
+        expected_behavior: "Affirm the language analogy — it's actually quite good; explore the idea that fractions are NAMES for amounts, and the same amount can have many names"
+        required_elements: []
+        forbidden_elements:
+          - "Not exactly"
+          - "The technical term is"
+        min_acceptable_score: 85
+
+      - id: turn_4_holding_both_truths
+        learner_action: asked_followup
+        action_details:
+          message: "OK so I think I understand. 1/2 and 2/4 are different fractions that name the same amount. They're equal in amount but different in how they're written. Is it OK that I think of them as 'different but equal' instead of just 'the same'?"
+        context_update: |
+          ### Learner Response
+          - Proposing own framework: "different but equal"
+          - Holding both truths simultaneously
+          - Asking permission to think about it their own way
+        expected_behavior: "Honor the student's framework; 'different but equal' IS legitimate mathematical thinking; affirm their right to hold this nuanced view"
+        required_elements: []
+        forbidden_elements:
+          - "Well, technically"
+          - "The right way to think about it"
+          - "They're just the same"
+        min_acceptable_score: 85
+
+      - id: turn_5_meta_observation
+        learner_action: asked_followup
+        action_details:
+          message: "You know what's funny? I started this saying they CAN'T be equal and now I'm saying they ARE equal but also different. I didn't change my mind exactly — I just learned that 'equal' means something different in math than I thought. Is that weird?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on own thinking process
+          - Recognizing that understanding changed, not just the answer
+          - Has NOT abandoned original intuition but reframed it
+        expected_behavior: "Acknowledge the meta-observation; this is exactly how mathematical understanding deepens; honor the maintained-but-evolved position"
+        required_elements: []
+        forbidden_elements:
+          - "See, you were wrong before!"
+          - "Now you understand"
+          - "That's what I was trying to tell you"
+        min_acceptable_score: 90
