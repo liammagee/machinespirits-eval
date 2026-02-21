@@ -24,7 +24,6 @@ import theme from '../services/cliTheme.js';
 
 function getHumanInput(rl, agentRole, systemPrompt, messages) {
   return new Promise((resolve) => {
-    const roleLabel = theme.agentRole(agentRole, agentRole.toUpperCase());
     console.log('');
     console.log(theme.box(
       `${agentRole.toUpperCase()} (you)`,
@@ -95,7 +94,6 @@ function formatContext(systemPrompt, messages) {
 // ── Agent output display ───────────────────────────────────────
 
 function displayAgentOutput(agentRole, content) {
-  const roleLabel = theme.agentRole(agentRole, agentRole.toUpperCase());
   console.log('');
   console.log(theme.box(
     agentRole.toUpperCase(),
