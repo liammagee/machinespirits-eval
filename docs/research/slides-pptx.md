@@ -108,8 +108,8 @@ Nine architectural mechanisms tested beyond base Ego/Superego:
 - **2x2x2 factorial** (N=350): Recognition x Architecture x Learner type
 - **Memory isolation** (N=120): Disentangle recognition from episodic memory
 - **Multi-model probe** (N=655): 5 ego models, architecture held constant
-- **Dynamic learner tests** (N=768): 7 mechanisms with feedback-capable learners
-- **Cross-judge replication** (N=977): GPT-5.2 independent validation
+- **Dynamic learner tests** (N=743): 7 mechanisms with feedback-capable learners
+- **Cross-judge replication** (N=1,193): GPT-5.2 independent validation
 
 **14-dimension rubric** scored by Claude Opus 4.6
 
@@ -248,7 +248,7 @@ Can a strong Superego (Kimi K2.5) compensate for a weak Ego (Nemotron)?
 
 ## Finding 8: Cross-Judge Robustness
 
-GPT-5.2 independently rejudged N=977 paired responses:
+GPT-5.2 independently rejudged N=1,193 paired responses:
 
 | Finding | Claude | GPT-5.2 | Replicates? |
 |:---------|:--------:|:---------:|:-------------:|

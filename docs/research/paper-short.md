@@ -149,11 +149,11 @@ The strongest cross-judge agreement occurs on tone (r=0.36--0.65) and specificit
 | Cognitive prosthesis (cells 66--68) | 6.9 | 96 |
 | Bilateral transformation (multi-turn) | 6.10 | 118 |
 | Qualitative transcript assessment | 6.11 | 478 |
-| Cross-judge replication (GPT-5.2) | 6.12 | 977 |
+| Cross-judge replication (GPT-5.2) | 6.12 | 1,193 |
 | Prompt elaboration baseline | 6.13 | 144 |
 | Token budget sensitivity | 6.14 | 126 |
 | Dialectical impasse test | 6.15 | 24 |
-| Active control Kimi rerun | 6.3 | 116 |
+| Active control Kimi rerun | 6.2 | 216 |
 | A2 mechanism sweep, dynamic learner (cells 72--77) | 6.9 | 108 |
 | A4 authenticity learner superego (cells 78--79) | 6.12 | 47 |
 | Dynamic learner self-reflect rerun (cells 60--61) | 6.9 | 12 |
@@ -183,7 +183,7 @@ The paper's primary empirical finding comes from a corrected 2$\times$2 memory i
 
 Recognition effect: d=1.71, t(45)=6.62, p<.0001. Memory effect: d=0.46, t(57)=1.79, p$\approx$.08, n.s. Combined condition: d=1.81 vs base. The negative interaction (-4.2 pts) indicates ceiling effects rather than synergy: recognition alone reaches ~91, leaving little room for memory to add. Two independent runs show identical condition ordering with no rank reversals.
 
-A post-hoc **active control** (N=118, Nemotron ego, Opus judge) using length-matched prompts with pedagogical best practices (growth mindset, Bloom's taxonomy, scaffolding strategies) but no recognition theory scores 66.5. Same-model comparison within Nemotron data: recognition (~73) > active control (66.5) > base (~58). Recognition gains (~+15 pts) roughly double the active control's benefit (~+9 pts), supporting recognition theory's specific contribution beyond prompt length.
+A post-hoc **active control** (N=118, Nemotron ego, Opus judge) using length-matched prompts with pedagogical best practices (growth mindset, Bloom's taxonomy, scaffolding strategies) but no recognition theory scores 66.5. Same-model comparison within Nemotron data: recognition (~73) > active control (66.5) > base (~58). Recognition gains (~+15 pts) roughly double the active control's benefit (~+9 pts), supporting recognition theory's specific contribution beyond prompt length. A **Kimi K2.5 replication** (N=216, Opus judge) reveals a model-dependent pattern: the active control scores *below* base on Kimi ($-8.2$ pts), suggesting prescriptive heuristics override the stronger model's pedagogical intuitions on complex interactions. Recognition benefits both models, operating at the level of relational stance rather than prescriptive rules.
 
 **Cross-judge confirmation**: GPT-5.2, scoring the identical responses (N=119 paired), replicates recognition dominance with identical condition ordering: recognition d=1.54 (vs Claude d=1.71), memory d=0.49, negative interaction -3.6. Inter-judge r=0.63 (p<.001).
 
@@ -296,7 +296,7 @@ The multi-agent (ego/superego) learner architecture produces significantly *lowe
 
 Recognition partially rescues multi-agent learner quality ($d = 0.79$, $p = .004$) while having no effect on already-high single-agent learner quality ($d = -0.46$, n.s.). Even with rescue, multi-agent learners with recognition (67.0) do not reach single-agent learners without it (76.1). Deliberation depth remains uniformly poor (2.7/5) regardless of recognition---confirming recognition works *around* the superego rather than through it.
 
-A further recognition inversion emerges in misconception correction scenarios: recognition improves tutor scores by +30.5 pts while *reducing* learner scores by $-$10.4 pts. The inversion is absent in mutual transformation scenarios, and within-condition tutor-learner correlation is near zero ($r = -0.014$). An authenticity-focused learner superego experiment (A4, cells 78--79, N=108) found the paradox worsened rather than improved, confirming it is structural rather than calibrational.
+A further recognition inversion emerges in misconception correction scenarios: recognition improves tutor scores by +30.5 pts while *reducing* learner scores by $-$10.4 pts. The inversion is absent in mutual transformation scenarios, and within-condition tutor-learner correlation is near zero ($r = -0.014$). An authenticity-focused learner superego experiment (A4, cells 78--79, N=47) found the paradox worsened rather than improved, confirming it is structural rather than calibrational.
 
 This has a clean Hegelian interpretation: external recognition from an Other is structurally more effective than internal self-critique. You cannot bootstrap genuine dialogue from a monologue.
 
@@ -318,7 +318,7 @@ Lexical analysis confirms this pattern quantitatively. Recognition responses dep
 
 ### 6.14 Cross-Judge Replication with GPT-5.2
 
-GPT-5.2 rejudging of key runs (N=977 paired responses) confirms all directional findings:
+GPT-5.2 rejudging of key runs (N=1,193 paired responses) confirms all directional findings:
 
 **Table 7: Cross-Judge Replication of Key Findings**
 
@@ -396,7 +396,7 @@ AI personality research typically treats personality as dispositional---stable t
 
 **LLM-based evaluation**: Using an LLM judge to evaluate recognition quality may introduce biases---the judge may reward surface markers of recognition rather than genuine engagement. Inter-judge reliability is moderate (r=0.33--0.66), with different judges weighting criteria differently. Cross-judge replication confirms directional findings at compressed magnitudes (37--59% of primary effect sizes). The recognition-vs-enhanced increment (+8.0 under Claude) does not replicate under GPT-5.2, warranting caution on its precise magnitude. LLM judges are also subject to version drift: our primary judge was updated from Opus 4.5 to 4.6 during data collection, so all early runs were rejudged under 4.6 for consistency. An empirical check on matched conditions shows stable recognition deltas before and after rejudging (+16.3 vs +15.6).
 
-**Active control limitations**: The post-hoc active control (N=118) was designed *after* observing recognition effects, not as part of the original protocol. It ran on Nemotron rather than the primary factorial's Kimi K2.5, requiring same-model comparisons. The base prompts were already designed to produce competent tutoring; the active control contains real pedagogical content (growth mindset, Bloom's taxonomy, scaffolding), functioning as an *active* control rather than a true placebo. A same-model control on Kimi would strengthen the comparison.
+**Active control limitations**: The post-hoc active control (N=118) was designed *after* observing recognition effects, not as part of the original protocol. It ran on Nemotron rather than the primary factorial's Kimi K2.5, requiring same-model comparisons. A Kimi K2.5 replication (N=216) revealed model-dependent effects: the active control scores *below* base on Kimi, suggesting prescriptive heuristics harm stronger models. The base prompts were already designed to produce competent tutoring; the active control contains real pedagogical content (growth mindset, Bloom's taxonomy, scaffolding), functioning as an *active* control rather than a true placebo.
 
 **Model dependence**: Results were obtained with specific models (primarily Kimi K2.5 and Nemotron). The multi-model probe across five ego models (N=655) provides evidence for generality of the recognition effect, but the full mechanism suite has been tested only on Haiku and Nemotron.
 

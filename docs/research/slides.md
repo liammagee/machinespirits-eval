@@ -148,9 +148,9 @@ Nine architectural mechanisms tested beyond base Ego/Superego:
 :::
 ::: {.column width="45%"}
 
-- **Dynamic learner tests** (N=768)
+- **Dynamic learner tests** (N=743)
   - 7 mechanisms with feedback-capable learners
-- **Cross-judge replication** (N=977)
+- **Cross-judge replication** (N=1,193)
   - GPT-5.2 independent validation
 - **14-dimension rubric**
   - Scored by Claude Opus 4.6
@@ -352,7 +352,7 @@ Full mechanism stack scores \textbf{49.5} ---\\that's \alert{--15 pts below} Nem
 
 ## Finding 8: Cross-Judge Robustness
 
-GPT-5.2 independently rejudged N=977 paired responses:
+GPT-5.2 independently rejudged N=1,193 paired responses:
 
 \vspace{0.3em}
 
