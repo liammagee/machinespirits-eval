@@ -24,10 +24,12 @@ providers:
   openrouter:
     api_key_env: OPENROUTER_API_KEY
     base_url: https://openrouter.ai/api/v1/chat/completions
-    default_model: nvidia/nemotron-3-nano-30b-a3b:free
+    default_model: nvidia/nemotron-3-nano-30b-a3b
+    # default_model: nvidia/nemotron-3-nano-30b-a3b:free
     models:
       # Budget-friendly options
-      nemotron: nvidia/nemotron-3-nano-30b-a3b:free
+      nemotron: nvidia/nemotron-3-nano-30b-a3b
+      # nemotron: nvidia/nemotron-3-nano-30b-a3b:free
       glm47: z-ai/glm-4.7
       glm5: z-ai/glm-5
       kimi-k2: moonshotai/kimi-k2-thinking

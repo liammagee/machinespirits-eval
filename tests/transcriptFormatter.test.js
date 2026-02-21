@@ -306,11 +306,11 @@ describe('transcriptFormatter', () => {
         action: 'generate',
         turnIndex: 0,
         suggestions: [{ message: 'Hello' }],
-        metrics: { model: 'nvidia/nemotron:free', inputTokens: 100, outputTokens: 50, latencyMs: 500, cost: 0 },
+        metrics: { model: 'vendor/some-model', inputTokens: 100, outputTokens: 50, latencyMs: 500, cost: 0 },
       };
       const result = formatEntry(entry, { detail: 'play' });
       assert.ok(!result.includes('$0'), 'Should not show $0 cost');
-      assert.ok(result.includes('nemotron'), 'Should show model');
+      assert.ok(result.includes('some-model'), 'Should show model');
     });
 
     it('formats sub-second latency in ms', () => {

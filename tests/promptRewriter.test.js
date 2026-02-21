@@ -4,7 +4,7 @@
  *
  * The promptRewriter uses evalConfigLoader.resolveModel() to convert bare
  * model aliases (e.g., 'nemotron') to full OpenRouter model IDs
- * (e.g., 'nvidia/nemotron-3-nano-30b-a3b:free').
+ * (e.g., 'nvidia/nemotron-3-nano-30b-a3b').
  */
 
 import { describe, it } from 'node:test';
