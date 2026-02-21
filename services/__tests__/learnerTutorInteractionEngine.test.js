@@ -5,12 +5,19 @@
  * The full runInteraction() and generateLearnerResponse() flows require
  * LLM calls and are better tested via integration tests.
  *
+ * Also includes source-scanning regression tests that verify the learner
+ * ego revision prompt does not leak internal architecture terminology
+ * (e.g. "SUPEREGO", "EGO:") into the learner's external-facing messages.
+ *
  * Uses node:test (built-in, no dependencies required).
  * Run: node --test services/__tests__/learnerTutorInteractionEngine.test.js
  */
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 
 import {
   detectEmotionalState,
@@ -304,5 +311,112 @@ describe('calculateMemoryDelta', () => {
       newBreakthroughs: 1,
       newTraumas: 0,
     });
+  });
+});
+
+// ============================================================================
+// REGRESSION: Learner prompt must not leak architecture terminology
+//
+// BUG CONTEXT: The ego revision prompt used to format internal deliberation as
+// "EGO: <text>" and "SUPEREGO: <text>", which leaked into the learner's
+// external messages (e.g. "I hear the Superego", "The Superego is right").
+// The fix replaced these with neutral labels ("Your initial reaction was",
+// "Internal review feedback") and added an anti-leakage instruction.
+//
+// These tests scan the source code to ensure architecture terms never appear
+// in prompt-construction strings.  This is a static analysis / architectural
+// fitness function — it catches regression without needing LLM calls.
+// ============================================================================
+
+describe('learner prompt leakage prevention', () => {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const sourcePath = resolve(__dirname, '..', 'learnerTutorInteractionEngine.js');
+  const source = readFileSync(sourcePath, 'utf-8');
+
+  // Extract only the prompt-construction regions (ego revision contexts).
+  // These are the template literals/strings that become the LLM system prompt.
+  // We look for the egoRevisionContext variable assignments.
+  const egoRevisionBlocks = [];
+  const lines = source.split('\n');
+  let capturing = false;
+  let currentBlock = '';
+  for (const line of lines) {
+    if (line.includes('egoRevisionContext') && (line.includes('+=') || line.includes('= `'))) {
+      capturing = true;
+      currentBlock = '';
+    }
+    if (capturing) {
+      currentBlock += line + '\n';
+      // End capture when we see a line ending with `;` (statement end)
+      if (line.trimEnd().endsWith('`;') || line.trimEnd().endsWith('\';') || line.trimEnd().endsWith('";')) {
+        egoRevisionBlocks.push(currentBlock);
+        capturing = false;
+      }
+    }
+  }
+
+  it('finds ego revision prompt blocks in source (sanity check)', () => {
+    assert.ok(
+      egoRevisionBlocks.length >= 2,
+      `Expected at least 2 egoRevisionContext blocks, found ${egoRevisionBlocks.length}. ` +
+        'If the variable was renamed, update this test.',
+    );
+  });
+
+  it('ego revision prompts do not contain "SUPEREGO" as a label', () => {
+    for (const block of egoRevisionBlocks) {
+      // Allow the word in comments or variable names, but not as a prompt label
+      // like "The SUPEREGO's critique" or "SUPEREGO: ..."
+      assert.ok(
+        !/(?:The |the )SUPEREGO/.test(block) && !/SUPEREGO['"]?s?\s*(critique|feedback|review)/.test(block),
+        'REGRESSION: ego revision prompt must not expose "SUPEREGO" label to learner.\n' +
+          'Found in block:\n' +
+          block.substring(0, 200),
+      );
+    }
+  });
+
+  it('ego revision prompts do not format deliberation with "EGO:" or "SUPEREGO:" labels', () => {
+    for (const block of egoRevisionBlocks) {
+      // Check for patterns like `${d.role.toUpperCase()}: ${d.content}` which
+      // produce literal "EGO: ..." and "SUPEREGO: ..." in the prompt
+      assert.ok(
+        !block.includes('.toUpperCase()'),
+        'REGRESSION: ego revision prompt must not use .toUpperCase() to format role labels.\n' +
+          'This produces literal "EGO:" and "SUPEREGO:" in the prompt that leak into learner messages.\n' +
+          'Found in block:\n' +
+          block.substring(0, 200),
+      );
+    }
+  });
+
+  it('ego revision prompts contain anti-leakage instruction', () => {
+    // At least one ego revision block should contain an instruction not to
+    // reference the internal review process
+    const hasAntiLeakage = egoRevisionBlocks.some(
+      (block) =>
+        /Do NOT include internal thoughts/.test(block) ||
+        /references to any review process/.test(block) ||
+        /meta-commentary/.test(block),
+    );
+    assert.ok(
+      hasAntiLeakage,
+      'REGRESSION: ego revision prompt must include anti-leakage instruction ' +
+        '(e.g. "Do NOT include internal thoughts, meta-commentary, or references to any review process").',
+    );
+  });
+
+  it('ego revision prompts use neutral labels for deliberation', () => {
+    // Check that the neutral labels are present
+    const hasNeutralLabels = egoRevisionBlocks.some(
+      (block) =>
+        block.includes('Your initial reaction was') && block.includes('Internal review feedback'),
+    );
+    assert.ok(
+      hasNeutralLabels,
+      'REGRESSION: ego revision prompt should use neutral labels like ' +
+        '"Your initial reaction was" and "Internal review feedback" instead of architecture terms.',
+    );
   });
 });

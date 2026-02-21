@@ -284,8 +284,10 @@ function resolveConfigModels(config) {
     if (rawProfile?.factors) {
       resolved.factors = { ...rawProfile.factors };
       // Normalize prompt_type → recognition boolean for DB storage
-      if (resolved.factors.prompt_type && resolved.factors.recognition == null) {
-        resolved.factors.recognition = resolved.factors.prompt_type === 'recognition';
+      // Check both prompt_type and the top-level recognition_mode flag
+      if (resolved.factors.recognition == null) {
+        resolved.factors.recognition =
+          resolved.factors.prompt_type === 'recognition' || rawProfile.recognition_mode === true;
       }
     }
     if (rawProfile?.learner_architecture) {
@@ -557,6 +559,25 @@ function structureLearnerContext(rawContext) {
   lines.push('');
 
   return lines.join('\n') + rawContext;
+}
+
+/**
+ * Unpack paired conversation history entries into a flat role-alternating array.
+ *
+ * Each entry in `conversationHistory` represents one exchange and contains both
+ * the tutor's suggestion and the learner's reply.  This helper expands each
+ * entry into separate {role, content} objects so the learner LLM sees a proper
+ * alternating dialogue rather than a monologue.
+ *
+ * CRITICAL: Using .map() instead of .flatMap() here was the root cause of the
+ * multi-turn ego_superego learner regression bug — the learner only ever saw
+ * its own previous messages, causing it to loop.  Do NOT collapse back to .map().
+ */
+function flattenConversationHistory(conversationHistory) {
+  return (conversationHistory || []).flatMap((h) => [
+    { role: 'tutor', content: h.suggestion?.message || '' },
+    ...(h.learnerMessage ? [{ role: 'learner', content: h.learnerMessage }] : []),
+  ]);
 }
 
 // ---------------------------------------------------------------------------
@@ -2661,10 +2682,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         const learnerResponse = await generateLearnerResponse({
           tutorMessage: suggestion?.message || suggestion?.title || '',
           topic: fullScenario.topic || fullScenario.name || '',
-          conversationHistory: conversationHistory.map((h) => ({
-            role: h.learnerMessage ? 'learner' : 'tutor',
-            content: h.learnerMessage || h.suggestion?.message || '',
-          })),
+          conversationHistory: flattenConversationHistory(conversationHistory),
           learnerProfile: resolvedConfig.learnerArchitecture,
           personaId: fullScenario.learner_persona || 'eager_novice',
           modelOverride: config.learnerModelOverride || config.modelOverride || null,
@@ -3837,7 +3855,7 @@ export async function rejudgeRun(runId, options = {}) {
 }
 
 // Named exports for unit testing (these are internal helpers not part of the public API)
-export { structureLearnerContext, resolveConfigModels };
+export { structureLearnerContext, resolveConfigModels, flattenConversationHistory };
 
 export default {
   runEvaluation,
