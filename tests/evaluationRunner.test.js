@@ -7,14 +7,15 @@
  * 2. Recognition cells use recognition-enhanced prompts (mapped to 'recognition' profile)
  * 3. Single-agent cells disable dialogue
  * 4. Profile remapping preserves dialogue and recognition settings
+ * 5. Conversation history for learner LLM preserves both tutor AND learner roles
  *
- * Tests the exported resolveEvalProfile() function directly, avoiding the
- * need to mock ESM modules or make real API calls.
+ * Tests the exported resolveEvalProfile() and flattenConversationHistory()
+ * functions directly, avoiding the need to mock ESM modules or make real API calls.
  */
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveEvalProfile } from '../services/evaluationRunner.js';
+import { resolveEvalProfile, flattenConversationHistory } from '../services/evaluationRunner.js';
 
 describe('resolveEvalProfile', () => {
   // --- Recognition + Multi-agent cells (dialogue ON, recognition ON) ---
@@ -196,5 +197,99 @@ describe('resolveEvalProfile', () => {
     assert.strictEqual(result.resolvedProfileName, 'some_custom_profile');
     assert.strictEqual(result.useDialogue, false, 'unknown profile defaults to no dialogue');
     assert.strictEqual(result.maxRounds, 0, 'unknown profile defaults to 0 rounds');
+  });
+});
+
+// ============================================================================
+// flattenConversationHistory — regression prevention for multi-turn learner bug
+//
+// BUG CONTEXT: Prior to the fix, conversationHistory.map() was used instead of
+// .flatMap(), which collapsed each paired exchange (tutor + learner) into a
+// single entry — always choosing learner when present.  The learner LLM then
+// saw only its own monologue and looped.  These tests ensure .flatMap() behavior
+// is preserved: every exchange expands into separate tutor and learner entries.
+// ============================================================================
+
+describe('flattenConversationHistory', () => {
+  it('produces alternating tutor/learner roles from paired exchanges', () => {
+    const history = [
+      { suggestion: { message: 'Hello student' }, learnerMessage: 'Hi tutor' },
+      { suggestion: { message: 'What do you know?' }, learnerMessage: 'Not much yet' },
+    ];
+    const flat = flattenConversationHistory(history);
+    assert.deepStrictEqual(flat, [
+      { role: 'tutor', content: 'Hello student' },
+      { role: 'learner', content: 'Hi tutor' },
+      { role: 'tutor', content: 'What do you know?' },
+      { role: 'learner', content: 'Not much yet' },
+    ]);
+  });
+
+  it('includes tutor entry even when learnerMessage is absent (first exchange)', () => {
+    // The first exchange may not yet have a learner reply
+    const history = [
+      { suggestion: { message: 'Welcome!' } },
+    ];
+    const flat = flattenConversationHistory(history);
+    assert.deepStrictEqual(flat, [
+      { role: 'tutor', content: 'Welcome!' },
+    ]);
+  });
+
+  it('handles mixed complete and incomplete exchanges', () => {
+    const history = [
+      { suggestion: { message: 'Turn 1' }, learnerMessage: 'Reply 1' },
+      { suggestion: { message: 'Turn 2' }, learnerMessage: 'Reply 2' },
+      { suggestion: { message: 'Turn 3' } }, // no learner reply yet
+    ];
+    const flat = flattenConversationHistory(history);
+    assert.strictEqual(flat.length, 5, 'should have 5 entries (3 tutor + 2 learner)');
+    assert.strictEqual(flat[0].role, 'tutor');
+    assert.strictEqual(flat[1].role, 'learner');
+    assert.strictEqual(flat[2].role, 'tutor');
+    assert.strictEqual(flat[3].role, 'learner');
+    assert.strictEqual(flat[4].role, 'tutor');
+  });
+
+  it('REGRESSION: does NOT collapse paired entries into single role', () => {
+    // This is the exact pattern that caused the bug: 3 complete exchanges
+    // should produce 6 entries (3 tutor + 3 learner), NOT 3 entries.
+    const history = [
+      { suggestion: { message: 'T1' }, learnerMessage: 'L1' },
+      { suggestion: { message: 'T2' }, learnerMessage: 'L2' },
+      { suggestion: { message: 'T3' }, learnerMessage: 'L3' },
+    ];
+    const flat = flattenConversationHistory(history);
+    assert.strictEqual(flat.length, 6, 'REGRESSION: must produce 6 entries, not 3');
+    // Verify BOTH roles are present
+    const tutorEntries = flat.filter((e) => e.role === 'tutor');
+    const learnerEntries = flat.filter((e) => e.role === 'learner');
+    assert.strictEqual(tutorEntries.length, 3, 'REGRESSION: tutor messages must not be dropped');
+    assert.strictEqual(learnerEntries.length, 3, 'REGRESSION: learner messages must not be dropped');
+  });
+
+  it('REGRESSION: tutor content comes from suggestion.message, not learnerMessage', () => {
+    // Verify tutor entries get their content from the right field
+    const history = [
+      { suggestion: { message: 'tutor says this' }, learnerMessage: 'learner says that' },
+    ];
+    const flat = flattenConversationHistory(history);
+    assert.strictEqual(flat[0].content, 'tutor says this', 'tutor content must come from suggestion.message');
+    assert.strictEqual(flat[1].content, 'learner says that', 'learner content must come from learnerMessage');
+  });
+
+  it('handles null/undefined input gracefully', () => {
+    assert.deepStrictEqual(flattenConversationHistory(null), []);
+    assert.deepStrictEqual(flattenConversationHistory(undefined), []);
+    assert.deepStrictEqual(flattenConversationHistory([]), []);
+  });
+
+  it('handles entries with empty suggestion message', () => {
+    const history = [
+      { suggestion: {}, learnerMessage: 'A reply' },
+    ];
+    const flat = flattenConversationHistory(history);
+    assert.strictEqual(flat[0].content, '', 'empty suggestion.message should default to empty string');
+    assert.strictEqual(flat[1].content, 'A reply');
   });
 });
