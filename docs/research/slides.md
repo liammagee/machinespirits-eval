@@ -131,7 +131,7 @@ Nine architectural mechanisms tested beyond base Ego/Superego:
 
 \vspace{0.5em}
 
-**37 evaluations**, N=3,383 primary scored responses
+**48 evaluations**, N=4,144 primary scored responses
 
 \vspace{0.5em}
 
@@ -148,8 +148,8 @@ Nine architectural mechanisms tested beyond base Ego/Superego:
 :::
 ::: {.column width="45%"}
 
-- **Dynamic learner tests** (N=660)
-  - Mechanisms with feedback-capable learners
+- **Dynamic learner tests** (N=768)
+  - 7 mechanisms with feedback-capable learners
 - **Cross-judge replication** (N=977)
   - GPT-5.2 independent validation
 - **14-dimension rubric**
@@ -281,8 +281,8 @@ Strong for conceptual domains (+14 to +22 pts). Weakest for poetry (+6.5) --- hi
 \begin{exampleblock}{Dynamic learners}
 \begin{itemize}
 \item LLM-generated, ego/superego
-\item Mechanisms spread 5+ pts
-\item Recognition doubles: +7.6 $\rightarrow$ \textbf{+14.8}
+\item 7 mechanisms, all show positive $\Delta$
+\item Recognition doubles: +7.6 $\rightarrow$ \textbf{+14.2}
 \end{itemize}
 \end{exampleblock}
 
@@ -297,22 +297,26 @@ Strong for conceptual domains (+14 to +22 pts). Weakest for poetry (+6.5) --- hi
 
 ## Finding 6: Dynamic Learner Mechanisms
 
-Complete 2\texttimes 4 matrix (N=480, Haiku ego, dynamic learner):
+2\texttimes 7 mechanism matrix (N=408, Haiku + Nemotron ego, dynamic learner):
 
 \vspace{0.3em}
+
+\footnotesize
 
 | Mechanism | Base | Recog | $\Delta$ |
 |:-----------|:------:|:-------:|:---:|
-| Self-reflection | 72.3 | 85.6 | +13.3 |
-| Bidirectional profiling | 74.6 | \alert{88.8} | +14.2 |
+| Self-reflection | 71.4 | 85.9 | +14.5 |
+| Bidirectional profiling | 75.5 | \alert{88.8} | +13.3 |
 | Intersubjective | 67.7 | 82.8 | +15.1 |
-| Combined | 73.7 | 87.8 | +14.1 |
+| Combined | 73.9 | 87.8 | +13.9 |
+| Quantitative\textsuperscript{*} | 66.8 | 76.5 | +9.7 |
+| Erosion\textsuperscript{*} | 66.2 | 74.2 | +8.0 |
+| Tutor-profiling\textsuperscript{*} | 69.5 | 79.1 | +9.6 |
 
-\vspace{0.3em}
+\normalsize
 
-- Variance collapses with added mechanisms (SD: 22.5 $\rightarrow$ 11.8)
-- Recognition $\Delta$ stable (+13.3 to +15.1) regardless of mechanism
-- Profiling = highest ceiling; intersubjective = lowest floor
+\textsuperscript{*}Nemotron ego (lower absolute scores).
+All 7 mechanisms show positive recognition $\Delta$ (+8.0 to +15.1).
 
 ---
 
@@ -511,11 +515,11 @@ Philosophical theories of intersubjectivity can serve as productive design heuri
 
 \normalsize
 
-*Geist* in the Machine (v2.3.14)
+*Geist* in the Machine (v2.3.17)
 
 \footnotesize
 
-37 evaluations | N=3,383 scored | 5 ego models | 2 judges
+48 evaluations | N=4,144 scored | 5 ego models | 2 judges
 
 \vspace{1.5em}
 

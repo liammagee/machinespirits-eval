@@ -103,12 +103,12 @@ Nine architectural mechanisms tested beyond base Ego/Superego:
 
 ## Evaluation Design
 
-**37 evaluations**, N=3,383 primary scored responses
+**48 evaluations**, N=4,144 primary scored responses
 
 - **2x2x2 factorial** (N=350): Recognition x Architecture x Learner type
 - **Memory isolation** (N=120): Disentangle recognition from episodic memory
 - **Multi-model probe** (N=655): 5 ego models, architecture held constant
-- **Dynamic learner tests** (N=660): Mechanisms with feedback-capable learners
+- **Dynamic learner tests** (N=768): 7 mechanisms with feedback-capable learners
 - **Cross-judge replication** (N=977): GPT-5.2 independent validation
 
 **14-dimension rubric** scored by Claude Opus 4.6
@@ -204,8 +204,8 @@ Strong for conceptual domains (+14 to +22 pts). Weakest for poetry (+6.5) --- hi
 **Dynamic learners**
 
 - LLM-generated, ego/superego
-- Mechanisms spread 5+ pts
-- Recognition doubles: +7.6 → **+14.8**
+- 7 mechanisms, all show positive delta
+- Recognition doubles: +7.6 → **+14.2**
 
 :::
 ::::::::::::::
@@ -216,18 +216,19 @@ Strong for conceptual domains (+14 to +22 pts). Weakest for poetry (+6.5) --- hi
 
 ## Finding 6: Dynamic Learner Mechanisms
 
-Complete 2x4 matrix (N=480, Haiku ego, dynamic learner):
+2x7 mechanism matrix (N=408, Haiku + Nemotron ego, dynamic learner):
 
 | Mechanism | Base | Recog | Delta |
 |:-----------|:------:|:-------:|:---:|
-| Self-reflection | 72.3 | 85.6 | +13.3 |
-| Bidirectional profiling | 74.6 | **88.8** | +14.2 |
+| Self-reflection | 71.4 | 85.9 | +14.5 |
+| Bidirectional profiling | 75.5 | **88.8** | +13.3 |
 | Intersubjective | 67.7 | 82.8 | +15.1 |
-| Combined | 73.7 | 87.8 | +14.1 |
+| Combined | 73.9 | 87.8 | +13.9 |
+| Quantitative* | 66.8 | 76.5 | +9.7 |
+| Erosion* | 66.2 | 74.2 | +8.0 |
+| Tutor-profiling* | 69.5 | 79.1 | +9.6 |
 
-- Variance collapses with added mechanisms (SD: 22.5 → 11.8)
-- Recognition delta stable (+13.3 to +15.1) regardless of mechanism
-- Profiling = highest ceiling; intersubjective = lowest floor
+*Nemotron ego (lower absolute scores). All 7 mechanisms show positive recognition delta (+8.0 to +15.1).
 
 ---
 
@@ -351,9 +352,9 @@ Multi-agent learner architecture **hurts** learner quality (d=1.43, F=68.28, p<.
 
 ## Thank You
 
-**Paper**: *Geist* in the Machine (v2.3.14)
+**Paper**: *Geist* in the Machine (v2.3.17)
 
-**37 evaluations** | **N=3,383 scored** | **5 ego models** | **2 judges**
+**48 evaluations** | **N=4,144 scored** | **5 ego models** | **2 judges**
 
 Liam Magee
 
