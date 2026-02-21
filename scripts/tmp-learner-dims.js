@@ -2,7 +2,9 @@ import Database from 'better-sqlite3';
 const db = new Database('/Users/lmagee/Dev/machinespirits-eval/data/evaluations.db', { readonly: true });
 
 // A4: Authentic vs Standard superego
-const rows = db.prepare(`
+const rows = db
+  .prepare(
+    `
   SELECT
     CASE WHEN profile_name LIKE '%authentic%' THEN 'authentic' ELSE 'standard' END as superego_type,
     CASE WHEN profile_name LIKE '%recog%' THEN 'recog' ELSE 'base' END as recog,
@@ -15,13 +17,26 @@ const rows = db.prepare(`
   )
   AND learner_overall_score IS NOT NULL
   AND profile_name LIKE '%selfreflect%'
-`).all();
+`,
+  )
+  .all();
 
 const dims = {};
 for (const row of rows) {
   const key = `${row.superego_type}|${row.recog}`;
   const scores = JSON.parse(row.learner_scores);
-  if (!dims[key]) dims[key] = { n: 0, authenticity: 0, question: 0, conceptual: 0, revision: 0, deliberation: 0, persona: 0, overall: 0, dialogues: 0 };
+  if (!dims[key])
+    dims[key] = {
+      n: 0,
+      authenticity: 0,
+      question: 0,
+      conceptual: 0,
+      revision: 0,
+      deliberation: 0,
+      persona: 0,
+      overall: 0,
+      dialogues: 0,
+    };
   dims[key].dialogues++;
   for (const turnKey of Object.keys(scores)) {
     const s = scores[turnKey].scores;
@@ -45,13 +60,15 @@ for (const [key, d] of Object.entries(dims).sort()) {
   const [type, recog] = key.split('|');
   const n = d.n;
   console.log(
-    `${type.padEnd(12)}| ${recog.padEnd(6)}| ${String(d.dialogues).padStart(6)} | ${String(n).padStart(7)} | ${(d.authenticity/n).toFixed(1).padStart(4)} | ${(d.question/n).toFixed(1).padStart(5)} | ${(d.conceptual/n).toFixed(1).padStart(7)} | ${(d.revision/n).toFixed(1).padStart(5)} | ${(d.deliberation/n).toFixed(1).padStart(5)} | ${(d.persona/n).toFixed(1).padStart(7)} | ${(d.overall/d.dialogues).toFixed(1).padStart(6)}`
+    `${type.padEnd(12)}| ${recog.padEnd(6)}| ${String(d.dialogues).padStart(6)} | ${String(n).padStart(7)} | ${(d.authenticity / n).toFixed(1).padStart(4)} | ${(d.question / n).toFixed(1).padStart(5)} | ${(d.conceptual / n).toFixed(1).padStart(7)} | ${(d.revision / n).toFixed(1).padStart(5)} | ${(d.deliberation / n).toFixed(1).padStart(5)} | ${(d.persona / n).toFixed(1).padStart(7)} | ${(d.overall / d.dialogues).toFixed(1).padStart(6)}`,
   );
 }
 
 // Full mechanism matrix: learner dimension breakdown
 console.log('\n\n=== Full Mechanism Matrix: Learner Dimension Scores (clean runs only) ===');
-const mechRows = db.prepare(`
+const mechRows = db
+  .prepare(
+    `
   SELECT
     CASE 
       WHEN profile_name LIKE '%selfreflect%' AND profile_name NOT LIKE '%authentic%' THEN 'self-reflect'
@@ -76,13 +93,26 @@ const mechRows = db.prepare(`
   )
   AND learner_overall_score IS NOT NULL
   AND profile_name != ''
-`).all();
+`,
+  )
+  .all();
 
 const mechDims = {};
 for (const row of mechRows) {
   const key = `${row.mechanism}|${row.recog}`;
   const scores = JSON.parse(row.learner_scores);
-  if (!mechDims[key]) mechDims[key] = { n: 0, authenticity: 0, question: 0, conceptual: 0, revision: 0, deliberation: 0, persona: 0, overall: 0, dialogues: 0 };
+  if (!mechDims[key])
+    mechDims[key] = {
+      n: 0,
+      authenticity: 0,
+      question: 0,
+      conceptual: 0,
+      revision: 0,
+      deliberation: 0,
+      persona: 0,
+      overall: 0,
+      dialogues: 0,
+    };
   mechDims[key].dialogues++;
   for (const turnKey of Object.keys(scores)) {
     const s = scores[turnKey].scores;
@@ -107,7 +137,7 @@ for (const [key, d] of Object.entries(mechDims).sort()) {
   const n = d.n;
   if (n === 0) continue;
   console.log(
-    `${mech.padEnd(16)}| ${recog.padEnd(6)}| ${String(d.dialogues).padStart(6)} | ${String(n).padStart(7)} | ${(d.authenticity/n).toFixed(1).padStart(4)} | ${(d.question/n).toFixed(1).padStart(5)} | ${(d.conceptual/n).toFixed(1).padStart(7)} | ${(d.revision/n).toFixed(1).padStart(5)} | ${(d.deliberation/n).toFixed(1).padStart(5)} | ${(d.persona/n).toFixed(1).padStart(7)} | ${(d.overall/d.dialogues).toFixed(1).padStart(6)}`
+    `${mech.padEnd(16)}| ${recog.padEnd(6)}| ${String(d.dialogues).padStart(6)} | ${String(n).padStart(7)} | ${(d.authenticity / n).toFixed(1).padStart(4)} | ${(d.question / n).toFixed(1).padStart(5)} | ${(d.conceptual / n).toFixed(1).padStart(7)} | ${(d.revision / n).toFixed(1).padStart(5)} | ${(d.deliberation / n).toFixed(1).padStart(5)} | ${(d.persona / n).toFixed(1).padStart(7)} | ${(d.overall / d.dialogues).toFixed(1).padStart(6)}`,
   );
 }
 
