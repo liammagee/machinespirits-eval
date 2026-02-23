@@ -1,10 +1,10 @@
-import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import pty from 'node-pty';
 
 const MAX_SESSIONS = 8;
 const MAX_BUFFER_CHARS = 500_000;
-const HARD_KILL_DELAY_MS = 3_000;
+const HARD_KILL_DELAY_MS = 2_000;
 const STALE_SESSION_MS = 6 * 60 * 60 * 1000; // 6h
 
 const sessions = new Map();
@@ -57,6 +57,14 @@ function addOutput(session, stream, text) {
   session.lastActivityAt = event.ts;
 }
 
+function respondToTerminalQueries(session, text) {
+  if (!text) return;
+  if (text.includes('\u001b[6n')) {
+    // Device Status Report request: report cursor row/col.
+    session.process.write('\u001b[1;1R');
+  }
+}
+
 function sessionSummary(session) {
   return {
     id: session.id,
@@ -102,11 +110,12 @@ export function createCodexSession(options = {}) {
     ...(options.env && typeof options.env === 'object' ? options.env : {}),
   };
 
-  const child = spawn(command, args, {
+  const child = pty.spawn(command, args, {
+    name: options.termName || 'xterm-256color',
+    cols: Number.isFinite(options.cols) ? Number(options.cols) : 120,
+    rows: Number.isFinite(options.rows) ? Number(options.rows) : 40,
     cwd,
     env,
-    stdio: 'pipe',
-    shell: false,
   });
 
   const id = makeSessionId();
@@ -131,15 +140,14 @@ export function createCodexSession(options = {}) {
 
   sessions.set(id, session);
 
-  child.stdout?.setEncoding('utf8');
-  child.stderr?.setEncoding('utf8');
-
-  child.stdout?.on('data', (chunk) => addOutput(session, 'stdout', String(chunk)));
-  child.stderr?.on('data', (chunk) => addOutput(session, 'stderr', String(chunk)));
-  child.on('error', (error) => addOutput(session, 'stderr', `[spawn-error] ${error.message}\n`));
-  child.on('close', (code, signal) => {
+  child.onData((chunk) => {
+    const text = String(chunk);
+    addOutput(session, 'stdout', text);
+    respondToTerminalQueries(session, text);
+  });
+  child.onExit(({ exitCode, signal }) => {
     session.status = 'exited';
-    session.exitCode = code;
+    session.exitCode = exitCode;
     session.signal = signal;
     session.exitedAt = nowIso();
     session.lastActivityAt = session.exitedAt;
@@ -187,10 +195,10 @@ export function writeCodexSessionInput(sessionId, input, appendNewline = true) {
     throw new Error('input must be a string');
   }
 
-  const payload = appendNewline ? `${input}\n` : input;
-  const ok = session.process.stdin?.write(payload);
+  const payload = appendNewline ? `${input}\r` : input;
+  session.process.write(payload);
   session.lastActivityAt = nowIso();
-  return { accepted: Boolean(ok), bytes: Buffer.byteLength(payload) };
+  return { accepted: true, bytes: Buffer.byteLength(payload) };
 }
 
 export function terminateCodexSession(sessionId, signal = 'SIGTERM') {

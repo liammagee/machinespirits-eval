@@ -27,6 +27,8 @@
     "eval:quick": "node scripts/eval-cli.js quick",
     "eval:test": "node scripts/eval-cli.js test",
     "seed": "node scripts/seed-db.js",
+    "paper:bug-audit": "node scripts/validate-bug-claims.js",
+    "paper:integrity-audit": "node scripts/validate-bug-claims.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",
     "lint": "eslint .",
@@ -62,6 +64,7 @@
     "dotenv": "17.2.3",
     "express": "4.19.2",
     "jsonrepair": "3.13.2",
+    "node-pty": "^1.0.0",
     "yaml": "2.8.2"
   },
   "devDependencies": {

@@ -9,6 +9,7 @@
  */
 
 import { Router } from 'express';
+import { spawnSync } from 'child_process';
 import * as evaluationRunner from '../services/evaluationRunner.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
@@ -166,6 +167,73 @@ setInterval(
 // Path to prompts directory
 const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
 
+function resolveApiCwd(cwd) {
+  const resolved = cwd ? path.resolve(cwd) : process.cwd();
+  if (!fs.existsSync(resolved)) {
+    throw new Error(`cwd does not exist: ${resolved}`);
+  }
+  if (!fs.statSync(resolved).isDirectory()) {
+    throw new Error(`cwd is not a directory: ${resolved}`);
+  }
+  return resolved;
+}
+
+function parseJsonSafe(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function runPaperBugAudit({ cwd, claimReportPath, includeAllRuns = false, strict = false, skipCommandChecks = true }) {
+  const scriptPath = path.join(cwd, 'scripts', 'validate-bug-claims.js');
+  if (!fs.existsSync(scriptPath)) {
+    throw new Error(`paper audit script not found: ${scriptPath}`);
+  }
+
+  const args = [scriptPath, '--json'];
+  if (strict) args.push('--strict');
+  if (includeAllRuns) args.push('--include-all-runs');
+  if (skipCommandChecks) args.push('--skip-command-checks');
+  if (claimReportPath) args.push('--claim-report', claimReportPath);
+
+  const result = spawnSync(process.execPath, args, {
+    cwd,
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+  });
+
+  const stdout = result.stdout || '';
+  const stderr = result.stderr || '';
+  const parsed = parseJsonSafe(stdout.trim());
+
+  return {
+    exitCode: result.status,
+    stdout,
+    stderr,
+    parsed,
+  };
+}
+
+function summarizeAudit(parsed) {
+  if (!parsed || typeof parsed !== 'object') {
+    return {
+      summary: { pass: 0, warn: 0, fail: 0 },
+      failedChecks: [],
+      warnedChecks: [],
+    };
+  }
+  const checks = Array.isArray(parsed.checks) ? parsed.checks : [];
+  const failedChecks = checks.filter((check) => check.status === 'fail').map((check) => check.id);
+  const warnedChecks = checks.filter((check) => check.status === 'warn').map((check) => check.id);
+  return {
+    summary: parsed.summary || { pass: 0, warn: 0, fail: 0 },
+    failedChecks,
+    warnedChecks,
+  };
+}
+
 // ============================================================================
 // Codex Session Endpoints
 // ============================================================================
@@ -278,6 +346,99 @@ router.delete('/codex/sessions/:id', (req, res) => {
   } catch (error) {
     console.error('[EvalRoutes] Terminate codex session error:', error);
     res.status(500).json({ error: 'Failed to terminate codex session', message: error.message });
+  }
+});
+
+/**
+ * Run paper bug audit and start a seeded Codex session for interactive follow-up.
+ * POST /api/eval/codex/paper-bug-audit-session
+ *
+ * Body: {
+ *   cwd?: string,
+ *   claimReportPath?: string,       // default: notes/paper-claim-audit.json
+ *   auditJsonPath?: string,         // default: notes/paper-bug-audit.latest.json
+ *   includeAllRuns?: boolean,
+ *   strict?: boolean,
+ *   skipCommandChecks?: boolean,    // default: true
+ *   codexArgs?: string[],           // default: ["--full-auto"]
+ *   seedPrompt?: string,            // custom initial prompt for codex
+ *   seedDelayMs?: number            // default: 3500
+ * }
+ */
+router.post('/codex/paper-bug-audit-session', (req, res) => {
+  try {
+    const cwd = resolveApiCwd(req.body?.cwd);
+    const claimReportPathRel = req.body?.claimReportPath || path.join('notes', 'paper-claim-audit.json');
+    const auditJsonPathRel = req.body?.auditJsonPath || path.join('notes', 'paper-bug-audit.latest.json');
+    const claimReportPath = path.isAbsolute(claimReportPathRel) ? claimReportPathRel : path.join(cwd, claimReportPathRel);
+    const auditJsonPath = path.isAbsolute(auditJsonPathRel) ? auditJsonPathRel : path.join(cwd, auditJsonPathRel);
+
+    const auditRun = runPaperBugAudit({
+      cwd,
+      claimReportPath: claimReportPathRel,
+      includeAllRuns: Boolean(req.body?.includeAllRuns),
+      strict: Boolean(req.body?.strict),
+      skipCommandChecks: req.body?.skipCommandChecks !== false,
+    });
+
+    // Persist latest raw JSON so Codex can inspect full details in-context.
+    if (auditRun.parsed) {
+      fs.mkdirSync(path.dirname(auditJsonPath), { recursive: true });
+      fs.writeFileSync(auditJsonPath, JSON.stringify(auditRun.parsed, null, 2), 'utf8');
+    }
+
+    const codexArgs = Array.isArray(req.body?.codexArgs) && req.body.codexArgs.length > 0
+      ? req.body.codexArgs
+      : ['--full-auto'];
+    const session = codexSessionService.createCodexSession({
+      cwd,
+      args: codexArgs,
+    });
+
+    const auditSummary = summarizeAudit(auditRun.parsed);
+    const seedPrompt =
+      req.body?.seedPrompt ||
+      [
+        'Analyze the latest paper bug audit and help me plan fixes.',
+        `Audit JSON: ${path.relative(cwd, auditJsonPath)}`,
+        `Claim report JSON: ${path.relative(cwd, claimReportPath)}`,
+        `Audit exit code: ${auditRun.exitCode}`,
+        `Summary: pass=${auditSummary.summary.pass || 0}, warn=${auditSummary.summary.warn || 0}, fail=${auditSummary.summary.fail || 0}`,
+        `Failed checks: ${auditSummary.failedChecks.join(', ') || '(none)'}`,
+        `Warn checks: ${auditSummary.warnedChecks.join(', ') || '(none)'}`,
+        'Tasks:',
+        '1) Summarize failures by severity and likely root cause.',
+        '2) Propose an ordered fix plan with concrete commands/files.',
+        '3) Identify which fixes would most change paper conclusions.',
+        'Then wait for my follow-up questions.',
+      ].join('\n');
+
+    const seedDelayMs = Number.isFinite(req.body?.seedDelayMs) ? Number(req.body.seedDelayMs) : 3500;
+    setTimeout(() => {
+      try {
+        codexSessionService.writeCodexSessionInput(session.id, seedPrompt, true);
+      } catch (error) {
+        console.error('[EvalRoutes] Seed codex prompt error:', error.message);
+      }
+    }, Math.max(500, seedDelayMs));
+
+    res.status(201).json({
+      success: true,
+      session,
+      audit: {
+        exitCode: auditRun.exitCode,
+        summary: auditSummary.summary,
+        failedChecks: auditSummary.failedChecks,
+        warnedChecks: auditSummary.warnedChecks,
+        auditJsonPath: path.relative(cwd, auditJsonPath),
+        claimReportPath: path.relative(cwd, claimReportPath),
+      },
+      seeded: true,
+      seedDelayMs: Math.max(500, seedDelayMs),
+    });
+  } catch (error) {
+    console.error('[EvalRoutes] paper-bug-audit-session error:', error);
+    res.status(400).json({ error: 'Failed to create paper bug audit codex session', message: error.message });
   }
 });
 
