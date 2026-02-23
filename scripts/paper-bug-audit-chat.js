@@ -8,6 +8,7 @@ import { spawn, spawnSync } from 'child_process';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const AUDIT_SCRIPT = path.join(ROOT, 'scripts', 'validate-bug-claims.js');
+const DEFAULT_CODEX_MODEL = 'gpt-5.2-codex';
 
 function usage() {
   console.log(`Usage:
@@ -22,6 +23,7 @@ Options:
   --claim-report <path>        (default: notes/paper-claim-audit.json)
   --audit-json <path>          (default: notes/paper-bug-audit.latest.json)
   --prompt <text>              (override default Codex seed prompt)
+  --model <id>                 (default: gpt-5.2-codex)
   --codex-arg <arg>            (repeatable; extra Codex CLI arg)
   --no-full-auto               (do not add --full-auto)
   --no-codex                   (run audit + write JSON, but do not launch Codex)
@@ -30,6 +32,7 @@ Options:
 Examples:
   npm run paper:bug-audit:chat
   npm run paper:bug-audit:chat -- --include-all-runs
+  npm run paper:bug-audit:chat -- --model gpt-5.2-codex
   npm run paper:bug-audit:chat -- --strict --codex-arg "-m" --codex-arg "gpt-5"
 `);
 }
@@ -57,6 +60,7 @@ function parseArgs(argv) {
     claimReport: path.join('notes', 'paper-claim-audit.json'),
     auditJson: path.join('notes', 'paper-bug-audit.latest.json'),
     prompt: null,
+    model: DEFAULT_CODEX_MODEL,
     codexArgs: [],
     fullAuto: true,
     noCodex: false,
@@ -121,6 +125,13 @@ function parseArgs(argv) {
     if (promptValue) {
       opts.prompt = promptValue.value;
       i = promptValue.nextIndex;
+      continue;
+    }
+
+    const modelValue = takeValue(argv, i, '--model');
+    if (modelValue) {
+      opts.model = modelValue.value;
+      i = modelValue.nextIndex;
       continue;
     }
 
@@ -248,8 +259,14 @@ function main() {
     process.exit(auditExitCode);
   }
 
+  const codexArgsHasModel = opts.codexArgs.some(
+    (arg) => arg === '-m' || arg === '--model' || arg.startsWith('--model='),
+  );
   const codexArgs = [];
   if (opts.fullAuto) codexArgs.push('--full-auto');
+  if (!codexArgsHasModel && opts.model) {
+    codexArgs.push('-m', opts.model);
+  }
   codexArgs.push(...opts.codexArgs);
   codexArgs.push(
     buildSeedPrompt({
