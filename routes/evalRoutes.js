@@ -15,6 +15,7 @@ import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as promptRecommendationService from '../services/promptRecommendationService.js';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import * as codexSessionService from '../services/codexSessionService.js';
 // Lazy-loaded tutor-core services — resolved on first request so this module
 // can be imported without tutor-core installed at parse time.
 // Module-scoped vars are populated by the middleware below; existing handler
@@ -43,6 +44,9 @@ const router = Router();
 
 // Resolve tutor-core on first request
 router.use(async (req, res, next) => {
+  if (req.path.startsWith('/codex')) {
+    return next();
+  }
   try {
     await ensureTutorCore();
     next();
@@ -161,6 +165,121 @@ setInterval(
 
 // Path to prompts directory
 const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
+
+// ============================================================================
+// Codex Session Endpoints
+// ============================================================================
+
+/**
+ * Start a Codex process session.
+ * POST /api/eval/codex/sessions
+ *
+ * Body: {
+ *   args?: string[],
+ *   cwd?: string,
+ *   env?: Record<string,string>,
+ *   noColor?: boolean
+ * }
+ */
+router.post('/codex/sessions', (req, res) => {
+  try {
+    const session = codexSessionService.createCodexSession({
+      args: req.body?.args,
+      cwd: req.body?.cwd,
+      env: req.body?.env,
+      noColor: Boolean(req.body?.noColor),
+    });
+    res.status(201).json({ success: true, session });
+  } catch (error) {
+    console.error('[EvalRoutes] Create codex session error:', error);
+    res.status(400).json({ error: 'Failed to create codex session', message: error.message });
+  }
+});
+
+/**
+ * List Codex sessions.
+ * GET /api/eval/codex/sessions
+ */
+router.get('/codex/sessions', (req, res) => {
+  try {
+    const sessions = codexSessionService.listCodexSessions();
+    res.json({ success: true, sessions });
+  } catch (error) {
+    console.error('[EvalRoutes] List codex sessions error:', error);
+    res.status(500).json({ error: 'Failed to list codex sessions', message: error.message });
+  }
+});
+
+/**
+ * Get session metadata.
+ * GET /api/eval/codex/sessions/:id
+ */
+router.get('/codex/sessions/:id', (req, res) => {
+  try {
+    const session = codexSessionService.getCodexSession(req.params.id);
+    if (!session) {
+      return res.status(404).json({ error: 'Codex session not found' });
+    }
+    res.json({ success: true, session });
+  } catch (error) {
+    console.error('[EvalRoutes] Get codex session error:', error);
+    res.status(500).json({ error: 'Failed to get codex session', message: error.message });
+  }
+});
+
+/**
+ * Poll output events from a Codex session.
+ * GET /api/eval/codex/sessions/:id/poll?cursor=<n>
+ */
+router.get('/codex/sessions/:id/poll', (req, res) => {
+  try {
+    const cursor = Number.parseInt(String(req.query.cursor ?? '-1'), 10);
+    const polled = codexSessionService.pollCodexSession(req.params.id, Number.isNaN(cursor) ? -1 : cursor);
+    if (!polled) {
+      return res.status(404).json({ error: 'Codex session not found' });
+    }
+    res.json({ success: true, ...polled });
+  } catch (error) {
+    console.error('[EvalRoutes] Poll codex session error:', error);
+    res.status(500).json({ error: 'Failed to poll codex session', message: error.message });
+  }
+});
+
+/**
+ * Send input to a Codex session.
+ * POST /api/eval/codex/sessions/:id/input
+ *
+ * Body: { input: string, appendNewline?: boolean }
+ */
+router.post('/codex/sessions/:id/input', (req, res) => {
+  try {
+    const input = req.body?.input;
+    const appendNewline = req.body?.appendNewline !== false;
+    const result = codexSessionService.writeCodexSessionInput(req.params.id, input, appendNewline);
+    res.json({ success: true, result });
+  } catch (error) {
+    const status = /not found/i.test(error.message) ? 404 : 400;
+    console.error('[EvalRoutes] Write codex input error:', error);
+    res.status(status).json({ error: 'Failed to write codex input', message: error.message });
+  }
+});
+
+/**
+ * Terminate a Codex session.
+ * DELETE /api/eval/codex/sessions/:id
+ */
+router.delete('/codex/sessions/:id', (req, res) => {
+  try {
+    const terminated = codexSessionService.terminateCodexSession(req.params.id);
+    if (!terminated) {
+      return res.status(404).json({ error: 'Codex session not found' });
+    }
+    res.json({ success: true, session: terminated });
+  } catch (error) {
+    console.error('[EvalRoutes] Terminate codex session error:', error);
+    res.status(500).json({ error: 'Failed to terminate codex session', message: error.message });
+  }
+});
 
 // ============================================================================
 // Configuration Endpoints
