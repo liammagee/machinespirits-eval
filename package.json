@@ -29,6 +29,7 @@
     "seed": "node scripts/seed-db.js",
     "paper:bug-audit": "node scripts/validate-bug-claims.js",
     "paper:integrity-audit": "node scripts/validate-bug-claims.js",
+    "paper:bug-audit:chat": "node scripts/paper-bug-audit-chat.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",
     "lint": "eslint .",
