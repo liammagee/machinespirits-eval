@@ -1,6 +1,6 @@
 {
-  "version": "1.6.0",
-  "generated": "2026-02-21",
+  "version": "1.7.0",
+  "generated": "2026-02-23",
   "database": "data/evaluations.db",
   "paper": "docs/research/paper-full.md",
 
@@ -279,6 +279,26 @@
       "expected_scored": 60
     },
     {
+      "run_ids": ["eval-2026-02-20-bd37cc62"],
+      "label": "Dynamic learner mechanisms clean re-run (cells 64-65)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 60,
+      "expected_scored": 60,
+      "note": "Clean re-run after flatMap+leakage fix. Replaces a2b2717c for learner-side analysis. Haiku learner ego, exact model match with original."
+    },
+    {
+      "run_ids": ["eval-2026-02-20-4e131c6f"],
+      "label": "Dynamic learner base mechanisms clean re-run (cells 69-70)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 60,
+      "expected_scored": 60,
+      "note": "Clean re-run after flatMap+leakage fix. Replaces 664073ab for learner-side analysis. Haiku learner ego, exact model match with original."
+    },
+    {
       "run_ids": ["eval-2026-02-17-deee5fd6"],
       "label": "Prompt elaboration baseline, Haiku (cells 1, 71)",
       "section": "6.21",
@@ -451,10 +471,10 @@
   ],
 
   "totals": {
-    "evaluations": 48,
-    "expected_attempts": 4160,
-    "expected_scored": 4144,
-    "opus_primary_count": 48,
+    "evaluations": 50,
+    "expected_attempts": 4280,
+    "expected_scored": 4264,
+    "opus_primary_count": 50,
     "sonnet_primary_count": 0,
     "sonnet_primary_runs": []
   },
@@ -554,13 +574,15 @@
         "dynamic_60_63": "eval-2026-02-14-6c033830",
         "dynamic_60_63_clean": "eval-2026-02-20-0fbca69e",
         "dynamic_64_65": "eval-2026-02-14-a2b2717c",
+        "dynamic_64_65_clean": "eval-2026-02-20-bd37cc62",
         "cognitive": "eval-2026-02-14-50487df7",
         "base_69_70": "eval-2026-02-15-664073ab",
+        "base_69_70_clean": "eval-2026-02-20-4e131c6f",
         "base_69_70_run2": "eval-2026-02-20-117710c0",
         "a2_sweep_72_77": "eval-2026-02-19-03dd8434"
       },
       "judge_filter": "claude-opus%",
-      "notes": "50487df7 uses sonnet judge; others use opus. 0fbca69e is clean re-run of 6c033830 (zero learner leakage). 03dd8434 completes the 2x7 mechanism matrix."
+      "notes": "50487df7 uses sonnet judge; others use opus. 0fbca69e is clean re-run of 6c033830 (zero learner leakage). bd37cc62 is clean re-run of a2b2717c (cells 64-65). 4e131c6f is clean re-run of 664073ab (cells 69-70). 03dd8434 completes the 2x7 mechanism matrix."
     },
     "figure9": {
       "title": "Qualitative Tag Divergence",
