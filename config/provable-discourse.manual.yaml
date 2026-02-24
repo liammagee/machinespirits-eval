@@ -1,0 +1,221 @@
+version: 1
+claims:
+  - id: manual.rubric_crossjudge.n88
+    description: "Rubric-iteration note cites cross-judge replication sample size N=88."
+    source_keys:
+      - "n|421|N=88"
+    statement:
+      pattern: "N=88"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: db_count
+      filters:
+        run_ids: [eval-2026-02-06-a933d745]
+        not_null: [overall_score]
+        like:
+          judge_model: "claude-opus%"
+    assertion:
+      op: eq
+      expected: 88
+    remediation:
+      - "If this count shifts, update the method note and the associated cross-judge table."
+
+  - id: manual.rubric_crossjudge.r055
+    description: "Rubric-iteration note cites cross-judge correlation r=0.55."
+    source_keys:
+      - "stat|421|r=0.55"
+    statement:
+      pattern: "r=0\\.55"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: judge_pair_correlation
+      run_ids: [eval-2026-02-06-a933d745]
+      judge_a_like: "claude-opus%"
+      judge_b_like: "gpt-5.2%"
+      metric: overall_score
+      key_fields: [run_id, scenario_id, profile_name, dialogue_id]
+      filters:
+        not_null: [overall_score]
+    assertion:
+      op: approx
+      expected: 0.55
+      tolerance_abs: 0.05
+    remediation:
+      - "If r drifts, update cross-judge reliability text and corresponding table values."
+
+  - id: manual.memory_isolation.n120
+    description: "Memory-isolation method note cites N=120 across two runs."
+    source_keys:
+      - "n|465|N=120"
+    statement:
+      pattern: "corrected 2×2 experiment \\(N=120"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: db_count
+      filters:
+        run_ids: [eval-2026-02-06-81f2d5a1, eval-2026-02-06-ac9ea8f5]
+        not_null: [overall_score]
+        like:
+          judge_model: "claude-opus%"
+        in:
+          profile_name:
+            - cell_1_base_single_unified
+            - cell_5_recog_single_unified
+            - cell_19_memory_single_unified
+            - cell_20_recog_nomem_single_unified
+    assertion:
+      op: eq
+      expected: 120
+    remediation:
+      - "If run-level row count no longer equals 120, disclose revised denominator and filtering rules."
+
+  - id: manual.memory_isolation.recognition_d
+    description: "Memory-isolation method note cites recognition main effect d=1.71."
+    source_keys:
+      - "stat|465|d=1.71"
+    statement:
+      pattern: "d=1\\.71"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: profile_group_effect_size
+      metric: overall_score
+      filters:
+        run_ids: [eval-2026-02-06-81f2d5a1, eval-2026-02-06-ac9ea8f5]
+        not_null: [overall_score]
+        like:
+          judge_model: "claude-opus%"
+        in:
+          profile_name:
+            - cell_1_base_single_unified
+            - cell_5_recog_single_unified
+            - cell_19_memory_single_unified
+            - cell_20_recog_nomem_single_unified
+      group1_profiles: [cell_5_recog_single_unified, cell_20_recog_nomem_single_unified]
+      group0_profiles: [cell_1_base_single_unified, cell_19_memory_single_unified]
+    assertion:
+      op: approx
+      expected: 1.71
+      tolerance_abs: 0.2
+    remediation:
+      - "Recompute memory-isolation recognition effect and update method note if changed."
+
+  - id: manual.memory_isolation.memory_d
+    description: "Memory-isolation method note cites memory main effect d=0.46."
+    source_keys:
+      - "stat|465|d=0.46"
+    statement:
+      pattern: "d=0\\.46"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: profile_group_effect_size
+      metric: overall_score
+      filters:
+        run_ids: [eval-2026-02-06-81f2d5a1, eval-2026-02-06-ac9ea8f5]
+        not_null: [overall_score]
+        like:
+          judge_model: "claude-opus%"
+        in:
+          profile_name:
+            - cell_1_base_single_unified
+            - cell_5_recog_single_unified
+            - cell_19_memory_single_unified
+            - cell_20_recog_nomem_single_unified
+      group1_profiles: [cell_5_recog_single_unified, cell_19_memory_single_unified]
+      group0_profiles: [cell_1_base_single_unified, cell_20_recog_nomem_single_unified]
+    assertion:
+      op: approx
+      expected: 0.46
+      tolerance_abs: 0.15
+    remediation:
+      - "If memory-effect magnitude changed, revise both method and results sections consistently."
+
+  - id: manual.multimodel_probe.n655
+    description: "Model-differences note cites multi-model probe sample N=655."
+    source_keys:
+      - "n|495|N=655"
+    statement:
+      pattern: "multi-model probe across five ego models \\(N=655"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: manifest_section_total
+      section: "6.4"
+      field: expected_scored
+      match: exact
+    assertion:
+      op: eq
+      expected: 655
+    remediation:
+      - "If section 6.4 manifest totals changed, revise this N claim and probe summary."
+
+  - id: manual.multimodel_probe.interaction_F
+    description: "Model-differences note cites Kimi factorial interaction F=0.26."
+    source_keys:
+      - "stat|495|F=0.26"
+    statement:
+      pattern: "F=0\\.26"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: anova_2x2
+      metric: overall_score
+      term: interaction
+      output: F
+      filters:
+        run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
+        not_null: [overall_score]
+        like:
+          judge_model: "claude-opus%"
+    assertion:
+      op: approx
+      expected: 0.26
+      tolerance_abs: 0.2
+    remediation:
+      - "Recompute interaction F from current factorial data and update text if it drifts."
+
+  - id: manual.multimodel_probe.interaction_p_bound
+    description: "Model-differences note claims interaction is non-significant (p>.10)."
+    source_keys:
+      - "stat|495|p>.10"
+    statement:
+      pattern: "p>.10"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: anova_2x2
+      metric: overall_score
+      term: interaction
+      output: F
+      filters:
+        run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
+        not_null: [overall_score]
+        like:
+          judge_model: "claude-opus%"
+    assertion:
+      op: lte
+      expected: 2.8
+    remediation:
+      - "If interaction F exceeds this non-significance bound, update p-value wording and interpretation."
+
+  - id: manual.multiturn_holistic.log_coverage
+    description: "Paper claim about multi-turn holistic evaluation is backed by available dialogue traces."
+    statement:
+      pattern: "multi-turn dialogues receive a holistic evaluation"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: log_trace_coverage
+      run_ids: [eval-2026-02-07-b6d75e87]
+      filters:
+        not_null: [dialogue_id]
+      log_dir: logs/tutor-dialogues
+    assertion:
+      op: gte
+      expected: 0.95
+    remediation:
+      - "Repair missing dialogue logs or relax claim language if holistic trace coverage is incomplete."

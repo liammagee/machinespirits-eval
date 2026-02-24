@@ -5,6 +5,9 @@ db_path: data/evaluations.db
 audit_report_path: notes/paper-bug-audit.latest.json
 snapshot_path: notes/provable-discourse.snapshot.json
 inventory_path: config/provable-claim-inventory.json
+import_claims_from:
+  - config/provable-discourse.generated.yaml
+  - config/provable-discourse.manual.yaml
 
 inventory_policy:
   major_only: true
