@@ -26,7 +26,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js rejudge <runId> --overwrite  # Re-run AI judge (replaces existing)
  *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
  *   node scripts/eval-cli.js evaluate <runId> --follow  # Poll & judge results as they appear
- *   node scripts/eval-cli.js evaluate-learner <runId>  # Score learner turns from multi-turn interactions
+ *   node scripts/eval-cli.js evaluate-learner <runId>  # Score learner turns + holistic learner quality from multi-turn interactions
  *   node scripts/eval-cli.js validate-config          # Validate all config files (profiles, providers, scenarios)
  *   node scripts/eval-cli.js chat            # AI conversational interface
  *   node scripts/eval-cli.js play            # Human-in-the-loop role-playing
@@ -40,7 +40,7 @@ import 'dotenv/config';
  *   --skip-rubric          Skip AI-based rubric evaluation
  *   --verbose              Enable verbose output
  *   --runs <n>             Replications per cell (for 'run' command, default: 1)
- *   --parallelism <n>      Parallel test count (for 'run' command, default: 2)
+ *   --parallelism <n>      Parallel worker count (run/resume default: 2, evaluate-learner default: 1)
  *   --description <text>   Description for the evaluation run
  *   --db                   Use SQLite instead of JSONL for 'watch' (slower but persistent)
  *   --follow               Poll for new results in 'evaluate' (live follow mode)
@@ -77,7 +77,11 @@ import {
   calculateBaseScore,
   calculateRecognitionScore,
 } from '../services/rubricEvaluator.js';
-import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
+import {
+  buildLearnerEvaluationPrompt,
+  buildLearnerHolisticEvaluationPrompt,
+  calculateLearnerOverallScore,
+} from '../services/learnerRubricEvaluator.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
@@ -243,6 +247,93 @@ function buildGridFromEvents(events) {
 }
 
 /**
+ * Infer currently active test(s) from progress events.
+ * Returns the most recent in-flight test plus total active count, or null.
+ */
+function deriveActiveTestProgress(events) {
+  const active = new Map();
+
+  for (const ev of events) {
+    const isStart = ev.eventType === 'test_start';
+    const isEnd = ev.eventType === 'test_complete' || ev.eventType === 'test_error';
+    if (!isStart && !isEnd) continue;
+
+    const scenarioKey = ev.scenarioId || ev.scenarioName;
+    const profileKey = ev.profileName || '?';
+    if (!scenarioKey) continue;
+    const key = `${scenarioKey}::${profileKey}`;
+
+    if (isStart) {
+      const prev = active.get(key);
+      if (prev) {
+        prev.count += 1;
+        if (ev.timestamp) prev.startedAt = ev.timestamp;
+      } else {
+        active.set(key, {
+          scenarioId: ev.scenarioId || null,
+          scenarioName: ev.scenarioName || ev.scenarioId || null,
+          profileName: ev.profileName || '?',
+          startedAt: ev.timestamp || null,
+          count: 1,
+        });
+      }
+      continue;
+    }
+
+    const prev = active.get(key);
+    if (!prev) continue;
+    if (prev.count > 1) {
+      prev.count -= 1;
+    } else {
+      active.delete(key);
+    }
+  }
+
+  if (active.size === 0) return null;
+
+  const entries = [...active.values()].sort((a, b) => {
+    const ta = a.startedAt ? new Date(a.startedAt).getTime() : 0;
+    const tb = b.startedAt ? new Date(b.startedAt).getTime() : 0;
+    return tb - ta;
+  });
+
+  const activeCount = entries.reduce((sum, entry) => sum + (entry.count || 1), 0);
+  return {
+    ...entries[0],
+    activeCount,
+  };
+}
+
+function formatActiveTestProgress(activeTest) {
+  if (!activeTest) return null;
+  const scenario = activeTest.scenarioName || activeTest.scenarioId || '?';
+  const profile = activeTest.profileName || '?';
+  let label = `${profile} / ${scenario}`;
+
+  if (activeTest.activeCount > 1) {
+    label += ` (${activeTest.activeCount} active)`;
+  }
+
+  if (activeTest.startedAt) {
+    const started = new Date(activeTest.startedAt).getTime();
+    if (Number.isFinite(started)) {
+      label += ` · ${formatMs(Math.max(0, Date.now() - started))}`;
+    }
+  }
+
+  return label;
+}
+
+function enrichRunsWithActiveTests(runs) {
+  return runs.map((run) => {
+    if (run.status !== 'running') return run;
+    const events = readProgressLog(run.id);
+    const activeTest = deriveActiveTestProgress(events);
+    return activeTest ? { ...run, activeTest } : run;
+  });
+}
+
+/**
  * Render the runs table as a formatted string (reusable for one-shot and --live).
  */
 function renderRunsTable(runs) {
@@ -272,6 +363,7 @@ function renderRunsTable(runs) {
     if (run.status === 'running' && turnProgress) {
       progress += ` T${turnProgress.current}/${turnProgress.total}`;
     }
+    const activeTest = run.activeTest || run.metadata?.testProgress || null;
     const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
     let duration = '--';
     if (run.durationMs != null) {
@@ -294,6 +386,10 @@ function renderRunsTable(runs) {
     );
     if (models !== '--') {
       lines.push('  ' + `  Models: ${theme.model(models)}`);
+    }
+    if (run.status === 'running' && activeTest) {
+      const activeLabel = formatActiveTestProgress(activeTest);
+      if (activeLabel) lines.push('  ' + `  Active: ${theme.dim(activeLabel)}`);
     }
   }
   return lines.join('\n');
@@ -1146,7 +1242,7 @@ async function main() {
           // Live auto-refreshing mode
           let lastOutput = '';
           const poll = () => {
-            const runs = evaluationStore.listRuns({ limit, status: statusFilter });
+            const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit, status: statusFilter }));
             if (runs.length === 0) {
               const output = '\nNo evaluation runs found.';
               if (output !== lastOutput) {
@@ -1179,7 +1275,7 @@ async function main() {
           await new Promise(() => {});
         } else {
           // One-shot mode
-          const runs = evaluationStore.listRuns({ limit, status: statusFilter });
+          const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit, status: statusFilter }));
           if (runs.length === 0) {
             console.log('\nNo evaluation runs found.');
             break;
@@ -1214,6 +1310,7 @@ async function main() {
         const events = readProgressLog(runId);
         if (events.length > 0) {
           const gridResult = buildGridFromEvents(events);
+          const activeTest = deriveActiveTestProgress(events);
           const { scenarios, profiles, grid, completedTests, runDone, durationMs } = gridResult;
           let { totalTests } = gridResult;
 
@@ -1246,6 +1343,9 @@ async function main() {
             `Progress: ${displayCompleted}/${totalTests} tests (${pct}%)${completedTests > totalTests ? ` [${completedTests - totalTests} retried]` : ''}`,
           );
           if (durationMs) console.log(`Duration: ${formatMs(durationMs)}`);
+          if (!runDone && activeTest) {
+            console.log(`Current test: ${theme.dim(formatActiveTestProgress(activeTest))}`);
+          }
           console.log(`Scenarios: ${scenarios.length} | Profiles: ${profiles.length}`);
 
           // Per-scenario completion counts
@@ -1902,7 +2002,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--force] [--follow] [--review] [--refresh <ms>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--force] [--multiturn-only] [--follow] [--review] [--refresh <ms>] [--verbose]',
           );
           process.exit(1);
         }
@@ -1911,6 +2011,7 @@ async function main() {
         const force = getFlag('force');
         const follow = getFlag('follow');
         const review = getFlag('review');
+        const multiturnOnly = getFlag('multiturn-only');
         const refreshMs = parseInt(getOption('refresh', '5000'), 10);
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
@@ -1942,7 +2043,9 @@ async function main() {
             return null;
           }
 
-          const suggestion = result.suggestions?.[0];
+          const suggestion = result.dialogueId && result.suggestions?.length > 1
+            ? result.suggestions[result.suggestions.length - 1]
+            : result.suggestions?.[0];
           if (!suggestion) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (no suggestion)`);
             return null;
@@ -2079,6 +2182,10 @@ async function main() {
             judgeLatencyMs,
           };
 
+          // For multi-turn dialogues, the score reflects the last turn against full context — that IS the holistic score
+          if (result.dialogueId) {
+            evaluation.holisticOverallScore = evaluation.overallScore;
+          }
           evaluationStore.updateResultScores(result.id, evaluation);
 
           // Score line
@@ -2344,7 +2451,9 @@ async function main() {
             );
 
             // Suggestion excerpt
-            const suggestion = r.suggestions?.[0];
+            const suggestion = r.dialogueId && r.suggestions?.length > 1
+              ? r.suggestions[r.suggestions.length - 1]
+              : r.suggestions?.[0];
             if (suggestion) {
               const suggText =
                 typeof suggestion === 'string'
@@ -2524,7 +2633,16 @@ async function main() {
 
           // Filter to unevaluated results unless --force
           // Use baseScore == null to detect skip-rubric results (overallScore=100 but no rubric dims)
-          const toEvaluate = force ? results : results.filter((r) => r.baseScore == null && r.success);
+          let toEvaluate = force ? results : results.filter((r) => r.baseScore == null && r.success);
+
+          // --multiturn-only: only re-score rows with a dialogueId (multi-turn dialogues)
+          if (multiturnOnly) {
+            const before = toEvaluate.length;
+            toEvaluate = toEvaluate.filter((r) => r.dialogueId);
+            if (before !== toEvaluate.length) {
+              console.log(`  --multiturn-only: filtered ${before} → ${toEvaluate.length} multi-turn rows`);
+            }
+          }
 
           if (toEvaluate.length === 0) {
             console.log(
@@ -2575,15 +2693,16 @@ async function main() {
         // For each dialogue:
         //   1. Load the log file to get learner turn messages + deliberation traces
         //   2. Build a learner evaluation prompt per learner turn (truncated context)
-        //   3. Call Claude as judge
-        //   4. Store per-turn scores as JSON + overall learner score on the result row
+        //   3. Build a holistic learner prompt over the full dialogue
+        //   4. Call Claude as judge
+        //   5. Store per-turn + holistic learner scores on the result row
 
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate-learner');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>]',
+            'Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>] [--parallelism N]',
           );
-          console.error('  Scores learner turns from dialogue logs using the learner rubric.');
+          console.error('  Scores learner turns and holistic learner dialogue quality from logs using the learner rubric.');
           console.error('  Only works on multi-turn runs with learner turns (e.g., bilateral transformation).');
           console.error('  --arch filters by learner_architecture (e.g., ego_superego_recognition)');
           process.exit(1);
@@ -2594,6 +2713,8 @@ async function main() {
         const modelOverride = getOption('model') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const archFilter = getOption('arch') || null;
+        const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
+        const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
 
         // Load results with dialogue IDs (multi-turn data)
         const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
@@ -2608,62 +2729,122 @@ async function main() {
           process.exit(1);
         }
 
-        // Filter to those needing learner evaluation (unless --force).
-        // Also detect partially-scored rows where some turns failed mid-run.
-        let toEvaluate;
+        // Filter to those needing learner evaluation.
+        // Supports two paths:
+        //   1) turn-level learner scoring (existing)
+        //   2) holistic learner dialogue scoring (new)
+        // This enables historical backfill of missing holistic scores without
+        // re-scoring all learner turns.
         let partialCount = 0;
-        if (force) {
-          toEvaluate = dialogueResults;
-        } else {
-          toEvaluate = dialogueResults.filter((r) => {
-            // No score at all — needs evaluation
-            if (r.learnerOverallScore == null) return true;
+        let missingHolisticCount = 0;
+        const toEvaluate = dialogueResults
+          .map((r) => {
+            if (force) {
+              return { result: r, needsTurnEval: true, needsHolisticEval: true };
+            }
 
-            // Has a score — check if all turns were scored by comparing
-            // the number of scored turns against the dialogue log's learner turns
-            if (r.learnerScores && r.dialogueId) {
+            let hasCompleteTurnScores = r.learnerOverallScore != null && !!r.learnerScores;
+
+            // If turn scores exist, verify expected turn count against dialogue log.
+            if (hasCompleteTurnScores && r.dialogueId) {
               const logPath = path.join(LOGS_DIR, `${r.dialogueId}.json`);
               try {
                 if (fs.existsSync(logPath)) {
                   const log = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
                   const trace = log.dialogueTrace || [];
                   const expectedTurns = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action').length;
-                  const scoredTurns = Object.keys(r.learnerScores).length;
+                  const scoredTurns = Object.keys(r.learnerScores || {}).length;
                   if (scoredTurns < expectedTurns) {
-                    partialCount++;
-                    return true;
+                    hasCompleteTurnScores = false;
                   }
                 }
               } catch {
-                // If log can't be read, skip partial detection for this row
+                // If log can't be read, preserve existing behavior and trust stored turn score completeness.
               }
             }
 
-            return false;
-          });
-        }
+            const needsTurnEval = !hasCompleteTurnScores;
+            const needsHolisticEval = r.learnerHolisticOverallScore == null;
+
+            if (r.learnerOverallScore != null && needsTurnEval) partialCount++;
+            if (!needsTurnEval && needsHolisticEval) missingHolisticCount++;
+
+            if (!needsTurnEval && !needsHolisticEval) return null;
+            return { result: r, needsTurnEval, needsHolisticEval };
+          })
+          .filter(Boolean);
 
         if (partialCount > 0) {
-          console.log(`Found ${partialCount} partially-scored dialogue(s) — will re-evaluate all turns.`);
+          console.log(`Found ${partialCount} partially-scored dialogue(s) — will re-evaluate learner turns.`);
+        }
+        if (missingHolisticCount > 0) {
+          console.log(`Found ${missingHolisticCount} dialogue(s) with missing learner holistic scores.`);
         }
 
         if (toEvaluate.length === 0) {
-          console.log('All dialogue results already have learner scores. Use --force to re-evaluate.');
+          console.log('All dialogue results already have learner turn + holistic scores. Use --force to re-evaluate.');
           break;
         }
 
         console.log(`\nEvaluating learner turns for ${toEvaluate.length} dialogue(s) from run: ${runId}`);
         if (modelOverride) console.log(`  Model: ${modelOverride}`);
+        if (parallelism > 1) console.log(`  Parallelism: ${parallelism}`);
         console.log('');
 
         let succeeded = 0;
         let failed = 0;
         const allScores = [];
+        const allHolisticScores = [];
+        const learnerJudgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
 
-        for (let i = 0; i < toEvaluate.length; i++) {
-          const result = toEvaluate[i];
+        const callLearnerJudge = async (prompt) => {
+          const claudeArgs = ['-p', '-', '--output-format', 'text'];
+          if (modelOverride) {
+            claudeArgs.push('--model', modelOverride);
+          }
+
+          const stdout = await new Promise((resolve, reject) => {
+            const env = { ...process.env };
+            delete env.ANTHROPIC_API_KEY;
+            const child = spawn('claude', claudeArgs, {
+              stdio: ['pipe', 'pipe', 'pipe'],
+              env,
+            });
+            let out = '';
+            let err = '';
+            child.stdout.on('data', (d) => {
+              out += d;
+            });
+            child.stderr.on('data', (d) => {
+              err += d;
+            });
+            child.on('error', reject);
+            child.on('close', (code) => {
+              if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+              else resolve(out);
+            });
+            child.stdin.write(prompt);
+            child.stdin.end();
+          });
+
+          let jsonStr = stdout.trim();
+          const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+          if (fenceMatch) {
+            jsonStr = fenceMatch[1].trim();
+          } else {
+            const firstBrace = jsonStr.indexOf('{');
+            const lastBrace = jsonStr.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+              jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+            }
+          }
+          return JSON.parse(jsonStr);
+        };
+
+        const evaluateDialogue = async (workItem, index) => {
+          const { result, needsTurnEval, needsHolisticEval } = workItem;
           const profileName = result.profileName || `${result.provider}/${result.model}`;
-          const tag = `[${i + 1}/${toEvaluate.length}]`;
+          const tag = `[${index + 1}/${toEvaluate.length}]`;
 
           // Load dialogue log file
           const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
@@ -2671,20 +2852,17 @@ async function main() {
           try {
             if (!fs.existsSync(logPath)) {
               console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (log file not found)`);
-              failed++;
-              continue;
+              return { ok: false };
             }
             dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
           } catch (e) {
             console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (${e.message})`);
-            failed++;
-            continue;
+            return { ok: false };
           }
 
           if (!dialogueLog.isMultiTurn) {
             console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (not multi-turn)`);
-            failed++;
-            continue;
+            return { ok: false };
           }
 
           const trace = dialogueLog.dialogueTrace || [];
@@ -2735,8 +2913,7 @@ async function main() {
 
           if (learnerTurns.length === 0) {
             console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (no learner turns in trace)`);
-            failed++;
-            continue;
+            return { ok: false };
           }
 
           // Build a reconstructed turn array for the prompt builder
@@ -2782,24 +2959,89 @@ async function main() {
           // Use learnerContext from the dialogue log as persona description
           const personaDescription = dialogueLog.learnerContext || 'No persona description available';
 
-          const turnScores = {};
+          let turnScores = result.learnerScores || {};
           let turnSucceeded = 0;
+          let dialogueLearnerScore = result.learnerOverallScore ?? null;
 
-          // Score each learner turn
-          for (let lt = 0; lt < learnerTurns.length; lt++) {
-            // Find the learner turn's index in reconstructedTurns
-            const targetIdx = reconstructedTurns.findIndex(
-              (t, idx) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0,
-            );
+          let holisticScores = result.learnerHolisticScores || null;
+          let holisticOverallScore = result.learnerHolisticOverallScore ?? null;
+          let holisticSummary = result.learnerHolisticSummary || null;
 
-            if (targetIdx === -1) continue;
+          if (!needsTurnEval && needsHolisticEval) {
+            console.log(`${tag} ${result.scenarioId} / ${profileName} ... holistic-only (reusing learner turn scores)`);
+          }
 
-            const turnTag = `${tag} ${result.scenarioId} / ${profileName} learner-turn-${lt + 1}`;
+          if (needsTurnEval) {
+            turnScores = {};
 
+            // Score each learner turn
+            for (let lt = 0; lt < learnerTurns.length; lt++) {
+              // Find the learner turn's index in reconstructedTurns
+              const targetIdx = reconstructedTurns.findIndex(
+                (t, idx) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0,
+              );
+
+              if (targetIdx === -1) continue;
+
+              const turnTag = `${tag} ${result.scenarioId} / ${profileName} learner-turn-${lt + 1}`;
+
+              try {
+                const prompt = buildLearnerEvaluationPrompt({
+                  turns: reconstructedTurns,
+                  targetTurnIndex: targetIdx,
+                  personaId: profileName,
+                  personaDescription,
+                  learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+                  scenarioName,
+                  topic: result.scenarioId,
+                });
+
+                if (verbose) {
+                  console.log(`${turnTag} ... calling claude`);
+                }
+
+                const parsed = await callLearnerJudge(prompt);
+                const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
+
+                turnScores[lt] = {
+                  turnIndex: lt + 1,
+                  scores: parsed.scores,
+                  overallScore: turnOverall,
+                  summary: parsed.summary,
+                };
+
+                const dimScores = Object.entries(parsed.scores || {})
+                  .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
+                  .join(' ');
+                console.log(`${turnTag} ... ${turnOverall.toFixed(1)}  (${dimScores})`);
+
+                if (verbose && parsed.summary) {
+                  console.log(`     Judge: ${parsed.summary}`);
+                }
+
+                turnSucceeded++;
+              } catch (err) {
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${turnTag} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+              }
+            }
+
+            if (turnSucceeded > 0) {
+              // Calculate dialogue-level learner score (average across turns)
+              const turnOveralls = Object.values(turnScores).map((ts) => ts.overallScore);
+              dialogueLearnerScore = turnOveralls.reduce((a, b) => a + b, 0) / turnOveralls.length;
+            } else {
+              return { ok: false };
+            }
+          }
+
+          let holisticFailed = false;
+          if (needsHolisticEval) {
+            const holisticTag = `${tag} ${result.scenarioId} / ${profileName} learner-holistic`;
             try {
-              const prompt = buildLearnerEvaluationPrompt({
+              const holisticPrompt = buildLearnerHolisticEvaluationPrompt({
                 turns: reconstructedTurns,
-                targetTurnIndex: targetIdx,
                 personaId: profileName,
                 personaDescription,
                 learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
@@ -2807,101 +3049,92 @@ async function main() {
                 topic: result.scenarioId,
               });
 
-              const claudeArgs = ['-p', '-', '--output-format', 'text'];
-              if (modelOverride) {
-                claudeArgs.push('--model', modelOverride);
-              }
-
               if (verbose) {
-                console.log(`${turnTag} ... calling claude`);
+                console.log(`${holisticTag} ... calling claude`);
               }
 
-              const stdout = await new Promise((resolve, reject) => {
-                const env = { ...process.env };
-                delete env.ANTHROPIC_API_KEY;
-                const child = spawn('claude', claudeArgs, {
-                  stdio: ['pipe', 'pipe', 'pipe'],
-                  env,
-                });
-                let out = '';
-                let err = '';
-                child.stdout.on('data', (d) => {
-                  out += d;
-                });
-                child.stderr.on('data', (d) => {
-                  err += d;
-                });
-                child.on('error', reject);
-                child.on('close', (code) => {
-                  if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-                  else resolve(out);
-                });
-                child.stdin.write(prompt);
-                child.stdin.end();
-              });
+              const parsedHolistic = await callLearnerJudge(holisticPrompt);
+              holisticScores = parsedHolistic.scores || {};
+              holisticOverallScore = calculateLearnerOverallScore(holisticScores, isMultiAgent);
+              holisticSummary = parsedHolistic.summary || null;
 
-              // Parse JSON response
-              let jsonStr = stdout.trim();
-              const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-              if (fenceMatch) {
-                jsonStr = fenceMatch[1].trim();
-              } else {
-                const firstBrace = jsonStr.indexOf('{');
-                const lastBrace = jsonStr.lastIndexOf('}');
-                if (firstBrace !== -1 && lastBrace > firstBrace) {
-                  jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
-                }
-              }
-
-              const parsed = JSON.parse(jsonStr);
-              const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
-
-              turnScores[lt] = {
-                turnIndex: lt + 1,
-                scores: parsed.scores,
-                overallScore: turnOverall,
-                summary: parsed.summary,
-              };
-
-              const dimScores = Object.entries(parsed.scores || {})
+              const holisticDimScores = Object.entries(holisticScores)
                 .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
                 .join(' ');
-              console.log(`${turnTag} ... ${turnOverall.toFixed(1)}  (${dimScores})`);
-
-              if (verbose && parsed.summary) {
-                console.log(`     Judge: ${parsed.summary}`);
+              console.log(`${holisticTag} ... ${holisticOverallScore.toFixed(1)}  (${holisticDimScores})`);
+              if (verbose && holisticSummary) {
+                console.log(`     Judge: ${holisticSummary}`);
               }
-
-              turnSucceeded++;
             } catch (err) {
               const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-              console.log(`${turnTag} ... FAIL: ${msg}`);
+              console.log(`${holisticTag} ... FAIL: ${msg}`);
               if (verbose) console.error(err);
+              holisticFailed = true;
             }
           }
 
-          if (turnSucceeded > 0) {
-            // Calculate dialogue-level learner score (average across turns)
-            const turnOveralls = Object.values(turnScores).map((ts) => ts.overallScore);
-            const dialogueLearnerScore = turnOveralls.reduce((a, b) => a + b, 0) / turnOveralls.length;
-
-            // Store in database on the evaluation_results row
-            evaluationStore.updateResultLearnerScores(result.id, {
-              scores: turnScores,
-              overallScore: dialogueLearnerScore,
-              judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
-            });
-
-            allScores.push(dialogueLearnerScore);
-            succeeded++;
-
-            console.log(
-              `  → Dialogue learner score: ${dialogueLearnerScore.toFixed(1)} (${turnSucceeded} turns scored)`,
-            );
-            console.log('');
-          } else {
-            failed++;
+          if (dialogueLearnerScore == null) {
+            return { ok: false };
           }
+
+          // Store in database on the evaluation_results row
+          evaluationStore.updateResultLearnerScores(result.id, {
+            scores: turnScores,
+            overallScore: dialogueLearnerScore,
+            judgeModel: result.learnerJudgeModel || learnerJudgeModel,
+            holisticScores,
+            holisticOverallScore,
+            holisticSummary,
+            holisticJudgeModel: holisticOverallScore != null ? learnerJudgeModel : result.learnerHolisticJudgeModel || null,
+          });
+
+          if (needsTurnEval) {
+            console.log(`  → Dialogue learner score: ${dialogueLearnerScore.toFixed(1)} (${turnSucceeded} turns scored)`);
+          } else {
+            console.log(`  → Dialogue learner score: ${dialogueLearnerScore.toFixed(1)} (existing turn scores)`);
+          }
+          if (holisticOverallScore != null) {
+            console.log(`  → Holistic learner score: ${holisticOverallScore.toFixed(1)}`);
+          } else if (needsHolisticEval) {
+            console.log('  → Holistic learner score: MISSING (judge failed; rerun to backfill)');
+          }
+          console.log('');
+
+          return {
+            ok: !holisticFailed || !needsHolisticEval,
+            score: dialogueLearnerScore,
+            holisticScore: holisticOverallScore,
+          };
+        };
+
+        if (parallelism === 1 || toEvaluate.length === 1) {
+          for (let i = 0; i < toEvaluate.length; i++) {
+            const outcome = await evaluateDialogue(toEvaluate[i], i);
+            if (outcome.ok) {
+              allScores.push(outcome.score);
+              if (outcome.holisticScore != null) allHolisticScores.push(outcome.holisticScore);
+              succeeded++;
+            } else {
+              failed++;
+            }
+          }
+        } else {
+          let nextIndex = 0;
+          const workerCount = Math.min(parallelism, toEvaluate.length);
+          const workers = Array.from({ length: workerCount }, async () => {
+            while (nextIndex < toEvaluate.length) {
+              const i = nextIndex++;
+              const outcome = await evaluateDialogue(toEvaluate[i], i);
+              if (outcome.ok) {
+                allScores.push(outcome.score);
+                if (outcome.holisticScore != null) allHolisticScores.push(outcome.holisticScore);
+                succeeded++;
+              } else {
+                failed++;
+              }
+            }
+          });
+          await Promise.all(workers);
         }
 
         // Summary
@@ -2918,6 +3151,16 @@ async function main() {
               ? Math.sqrt(allScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (allScores.length - 1))
               : 0;
           console.log(`  Avg learner score: ${avg.toFixed(1)} (SD=${sd.toFixed(1)})`);
+        }
+        if (allHolisticScores.length > 0) {
+          const avgHolistic = allHolisticScores.reduce((a, b) => a + b, 0) / allHolisticScores.length;
+          const sdHolistic =
+            allHolisticScores.length > 1
+              ? Math.sqrt(
+                  allHolisticScores.reduce((acc, s) => acc + (s - avgHolistic) ** 2, 0) / (allHolisticScores.length - 1),
+                )
+              : 0;
+          console.log(`  Avg learner holistic: ${avgHolistic.toFixed(1)} (SD=${sdHolistic.toFixed(1)})`);
         }
         console.log('');
         break;

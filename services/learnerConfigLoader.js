@@ -12,6 +12,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { configLoaderBase, modelResolver } from '@machinespirits/tutor-core';
+import { loadProviders as loadEvalProviders } from './evalConfigLoader.js';
 const { createConfigLoader, createPromptLoader } = configLoaderBase;
 const { createBoundResolver } = modelResolver;
 
@@ -25,11 +26,11 @@ const LOCAL_CONFIG_DIR = path.join(path.resolve(__dirname_local, '..'), 'config'
 // ============================================================================
 
 /**
- * Load merged providers from configLoaderBase (tutor-core defaults + eval-repo overrides).
+ * Load merged providers from evalConfigLoader (tutor-core defaults + eval-repo overrides).
  * No hardcoded model IDs — all model references are resolved through YAML config.
  */
 function getDefaultProviders() {
-  const merged = configLoaderBase.loadProviders();
+  const merged = loadEvalProviders()?.providers;
   if (merged) return merged;
   // Minimal structural fallback (no model IDs — callers must configure via YAML)
   return {

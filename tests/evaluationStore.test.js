@@ -32,6 +32,7 @@ import {
   getRunStats,
   deleteRun,
   listRuns,
+  updateResultLearnerScores,
 } from '../services/evaluationStore.js';
 
 // Track test runs for cleanup (still useful for in-test isolation)
@@ -325,6 +326,60 @@ describe('getResults', () => {
   });
 });
 
+describe('updateResultLearnerScores', () => {
+  it('stores learner turn and learner holistic scores on evaluation_results rows', () => {
+    const run = createRun({ description: 'learner score update test' });
+    testRunIds.push(run.id);
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'learner-score-test',
+      scenarioName: 'Learner Score Test',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_3_base_multi_unified',
+      overallScore: 78,
+      success: true,
+      dialogueId: 'dialogue-test-123',
+    });
+
+    updateResultLearnerScores(rowId, {
+      scores: {
+        0: {
+          turnIndex: 1,
+          overallScore: 70,
+          scores: {
+            learner_authenticity: { score: 4, reasoning: 'test' },
+          },
+        },
+      },
+      overallScore: 70,
+      judgeModel: 'claude-code/test-judge',
+      holisticScores: {
+        learner_authenticity: { score: 4, reasoning: 'test' },
+        question_quality: { score: 3, reasoning: 'test' },
+      },
+      holisticOverallScore: 72,
+      holisticSummary: 'Learner improves across turns.',
+      holisticJudgeModel: 'claude-code/test-judge',
+    });
+
+    const results = getResults(run.id);
+    assert.strictEqual(results.length, 1);
+    const r = results[0];
+
+    assert.strictEqual(r.learnerOverallScore, 70);
+    assert.strictEqual(r.learnerJudgeModel, 'claude-code/test-judge');
+    assert.ok(r.learnerScores, 'should have learnerScores JSON');
+    assert.strictEqual(r.learnerScores['0'].overallScore, 70);
+
+    assert.strictEqual(r.learnerHolisticOverallScore, 72);
+    assert.strictEqual(r.learnerHolisticSummary, 'Learner improves across turns.');
+    assert.strictEqual(r.learnerHolisticJudgeModel, 'claude-code/test-judge');
+    assert.ok(r.learnerHolisticScores, 'should have learnerHolisticScores JSON');
+    assert.strictEqual(r.learnerHolisticScores.learner_authenticity.score, 4);
+  });
+});
+
 // ============================================================================
 // parseResultRow (tested indirectly through getResults)
 // ============================================================================
@@ -606,5 +661,24 @@ describe('listRuns', () => {
     assert.ok(found, 'should find the run');
     assert.ok(found.completedResults >= 1, 'should count completed results');
     assert.ok(found.scenarioNames.includes('Enrich Test'), 'should include scenario name');
+  });
+
+  it('computes live elapsed duration for running runs even with stale completed_at', async () => {
+    const run = createRun({ description: 'resume duration regression test' });
+    testRunIds.push(run.id);
+
+    // Simulate a previously completed run that was resumed.
+    updateRun(run.id, { status: 'completed' });
+    updateRun(run.id, { status: 'running' });
+
+    const first = listRuns().find((r) => r.id === run.id);
+    assert.ok(first, 'should find resumed run');
+    assert.strictEqual(first.status, 'running');
+    assert.ok(first.durationMs != null, 'running run should have elapsed duration');
+
+    await new Promise((resolve) => setTimeout(resolve, 30));
+
+    const second = listRuns().find((r) => r.id === run.id);
+    assert.ok(second.durationMs > first.durationMs, 'elapsed duration should continue increasing while running');
   });
 });

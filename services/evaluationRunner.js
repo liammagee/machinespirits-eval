@@ -60,6 +60,17 @@ function getGitCommitHash() {
 import { isPidAlive } from './processUtils.js';
 
 /**
+ * Classify retriable/transient execution errors so failed rows are not persisted.
+ * These should be re-attempted by `resume` instead of counted as permanent failures.
+ */
+export function isTransientEvaluationError(errorMessage = '') {
+  const msg = String(errorMessage || '');
+  return /429|rate limit|too many requests|503|502|504|timeout|timed out|ECONNREFUSED|ECONNRESET|ETIMEDOUT|terminated|unavailable|fetch failed|failed to fetch|network error|socket hang up|failed to generate suggestions/i.test(
+    msg,
+  );
+}
+
+/**
  * Eval-only profile names that need remapping to tutor-core profiles.
  */
 export const EVAL_ONLY_PROFILES = [
@@ -1552,10 +1563,7 @@ export async function runEvaluation(options = {}) {
       // Skip storing for retriable/transient errors (rate limits, model unavailable, timeouts)
       // so that `resume` can retry them without needing manual cleanup.
       const errMsg = error.message || '';
-      const isTransient =
-        /429|rate limit|too many requests|503|502|timeout|ECONNREFUSED|ECONNRESET|ETIMEDOUT|terminated|unavailable|failed to generate suggestions/i.test(
-          errMsg,
-        );
+      const isTransient = isTransientEvaluationError(errMsg);
 
       if (!isTransient) {
         const failedResult = {
@@ -3029,6 +3037,8 @@ export async function resumeEvaluation(options = {}) {
   const runsPerConfig = metadata.runsPerConfig || 1;
   const skipRubricEval = metadata.skipRubricEval || false;
   const modelOverride = metadata.modelOverride || null;
+  const egoModelOverride = metadata.egoModelOverride || null;
+  const superegoModelOverride = metadata.superegoModelOverride || null;
   const learnerModelOverride = metadata.learnerModelOverride || null;
   const learnerEgoModelOverride = metadata.learnerEgoModelOverride || null;
   const learnerSuperegoModelOverride = metadata.learnerSuperegoModelOverride || null;
@@ -3076,6 +3086,12 @@ export async function resumeEvaluation(options = {}) {
   // 6. Re-apply model overrides if present in metadata
   if (modelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, modelOverride }));
+  }
+  if (egoModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, egoModelOverride }));
+  }
+  if (superegoModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, superegoModelOverride }));
   }
   if (learnerModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, learnerModelOverride }));
@@ -3136,6 +3152,8 @@ export async function resumeEvaluation(options = {}) {
   console.log(`  Profiles: ${profileNames.join(', ')}`);
   console.log(`  Scenarios: ${targetScenarios.length}`);
   if (modelOverride) console.log(`  Model override: ${modelOverride}`);
+  if (egoModelOverride) console.log(`  Ego model override: ${egoModelOverride}`);
+  if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
   if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
   if (learnerEgoModelOverride) console.log(`  Learner ego model override: ${learnerEgoModelOverride}`);
   if (learnerSuperegoModelOverride) console.log(`  Learner superego model override: ${learnerSuperegoModelOverride}`);
@@ -3229,6 +3247,7 @@ export async function resumeEvaluation(options = {}) {
       const result = await runSingleTest(scenario, config, {
         skipRubricEval,
         verbose,
+        runId,
       });
 
       evaluationStore.storeResult(runId, result);
@@ -3297,10 +3316,7 @@ export async function resumeEvaluation(options = {}) {
 
       // Only store failed results for permanent errors — skip transient/retriable ones
       const errMsg = error.message || '';
-      const isTransient =
-        /429|rate limit|too many requests|503|502|timeout|ECONNREFUSED|ECONNRESET|ETIMEDOUT|terminated|unavailable|failed to generate suggestions/i.test(
-          errMsg,
-        );
+      const isTransient = isTransientEvaluationError(errMsg);
 
       if (!isTransient) {
         const failedResult = {
@@ -3762,7 +3778,9 @@ export async function rejudgeRun(runId, options = {}) {
           throw new Error(`Scenario not found: ${result.scenarioId}`);
         }
 
-        const suggestion = result.suggestions[0];
+        const suggestion = result.dialogueId && result.suggestions.length > 1
+          ? result.suggestions[result.suggestions.length - 1]
+          : result.suggestions[0];
 
         // Load dialogue context for multi-turn results
         let dialogueContext = null;
@@ -3810,6 +3828,10 @@ export async function rejudgeRun(runId, options = {}) {
         if (evaluation.success) {
           // Map evaluationTimeMs → judgeLatencyMs for DB storage
           evaluation.judgeLatencyMs = evaluation.evaluationTimeMs ?? null;
+          // For multi-turn dialogues, the score reflects the last turn against full context — that IS the holistic score
+          if (result.dialogueId) {
+            evaluation.holisticOverallScore = evaluation.overallScore;
+          }
           if (overwrite) {
             // Old behavior: update in place (loses history)
             evaluationStore.updateResultScores(result.id, evaluation);

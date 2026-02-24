@@ -145,7 +145,21 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN scoring_method TEXT`
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_scores TEXT`, 'learner_scores');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_overall_score REAL`, 'learner_overall_score');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_judge_model TEXT`, 'learner_judge_model');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_holistic_scores TEXT`, 'learner_holistic_scores');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_holistic_overall_score REAL`,
+  'learner_holistic_overall_score',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_holistic_summary TEXT`,
+  'learner_holistic_summary',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_holistic_judge_model TEXT`,
+  'learner_holistic_judge_model',
+);
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN judge_latency_ms INTEGER`, 'judge_latency_ms');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN holistic_overall_score REAL`, 'holistic_overall_score');
 
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
@@ -231,6 +245,26 @@ try {
 }
 try {
   db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_judge_model TEXT`);
+} catch (e) {
+  /* Column already exists */
+}
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_holistic_scores TEXT`);
+} catch (e) {
+  /* Column already exists */
+}
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_holistic_overall_score REAL`);
+} catch (e) {
+  /* Column already exists */
+}
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_holistic_summary TEXT`);
+} catch (e) {
+  /* Column already exists */
+}
+try {
+  db.exec(`ALTER TABLE interaction_evaluations ADD COLUMN learner_holistic_judge_model TEXT`);
 } catch (e) {
   /* Column already exists */
 }
@@ -338,6 +372,7 @@ export function storeResult(runId, result) {
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
+      holistic_overall_score,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -351,6 +386,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?
     )
@@ -400,6 +436,7 @@ export function storeResult(runId, result) {
     result.factors?.multi_agent_learner != null ? (result.factors.multi_agent_learner ? 1 : 0) : null,
     result.learnerArchitecture || null,
     result.scoringMethod || null,
+    result.holisticDialogueScore?.overallScore ?? null,
     new Date().toISOString(),
   );
 
@@ -512,15 +549,15 @@ export function listRuns(options = {}) {
     const totalTests = row.total_tests || 0;
     const progressPct = totalTests > 0 ? Math.min(100, Math.round((completedResults / totalTests) * 100)) : null;
 
-    // Compute duration: for completed runs use completed_at - created_at;
-    // for running runs compute elapsed from now.
+    // Compute duration: running status always means "elapsed so far",
+    // even if completed_at is still present from a previous completed phase.
     let durationMs = null;
     if (row.created_at) {
       const start = new Date(row.created_at).getTime();
-      if (row.completed_at) {
-        durationMs = new Date(row.completed_at).getTime() - start;
-      } else if (row.status === 'running') {
+      if (row.status === 'running') {
         durationMs = Date.now() - start;
+      } else if (row.completed_at) {
+        durationMs = new Date(row.completed_at).getTime() - start;
       }
     }
 
@@ -1142,6 +1179,7 @@ function parseResultRow(row) {
     dialogueRounds: row.dialogue_rounds,
     apiCalls: row.api_calls,
     dialogueId: row.dialogue_id,
+    holisticOverallScore: row.holistic_overall_score != null ? row.holistic_overall_score : null,
     scores,
     overallScore: row.overall_score,
     scoringMethod: row.scoring_method || null,
@@ -1168,6 +1206,11 @@ function parseResultRow(row) {
     learnerScores: row.learner_scores ? JSON.parse(row.learner_scores) : null,
     learnerOverallScore: row.learner_overall_score != null ? row.learner_overall_score : null,
     learnerJudgeModel: row.learner_judge_model || null,
+    learnerHolisticScores: row.learner_holistic_scores ? JSON.parse(row.learner_holistic_scores) : null,
+    learnerHolisticOverallScore:
+      row.learner_holistic_overall_score != null ? row.learner_holistic_overall_score : null,
+    learnerHolisticSummary: row.learner_holistic_summary || null,
+    learnerHolisticJudgeModel: row.learner_holistic_judge_model || null,
   };
 }
 
@@ -1301,6 +1344,10 @@ export function getInteractionEval(evalId) {
     learnerScores: JSON.parse(row.learner_scores || 'null'),
     learnerOverallScore: row.learner_overall_score,
     learnerJudgeModel: row.learner_judge_model,
+    learnerHolisticScores: JSON.parse(row.learner_holistic_scores || 'null'),
+    learnerHolisticOverallScore: row.learner_holistic_overall_score,
+    learnerHolisticSummary: row.learner_holistic_summary,
+    learnerHolisticJudgeModel: row.learner_holistic_judge_model,
     createdAt: row.created_at,
   };
 }
@@ -1341,6 +1388,13 @@ export function getInteractionEvalByRunId(runId) {
     uniqueOutcomes: JSON.parse(row.unique_outcomes || '[]'),
     judgeOverallScore: row.judge_overall_score,
     judgeEvaluation: JSON.parse(row.judge_evaluation || 'null'),
+    learnerScores: JSON.parse(row.learner_scores || 'null'),
+    learnerOverallScore: row.learner_overall_score,
+    learnerJudgeModel: row.learner_judge_model,
+    learnerHolisticScores: JSON.parse(row.learner_holistic_scores || 'null'),
+    learnerHolisticOverallScore: row.learner_holistic_overall_score,
+    learnerHolisticSummary: row.learner_holistic_summary,
+    learnerHolisticJudgeModel: row.learner_holistic_judge_model,
     createdAt: row.created_at,
   };
 }
@@ -1406,6 +1460,7 @@ export function storeRejudgment(originalResult, evaluation) {
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
       judge_latency_ms,
+      holistic_overall_score,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -1419,6 +1474,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?,
       ?
@@ -1477,6 +1533,7 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.learnerArchitecture || null,
     'rubric', // Rejudgments only store successful rubric evaluations
     evaluation.judgeLatencyMs ?? null,
+    evaluation.holisticOverallScore ?? null,
     new Date().toISOString(),
   );
 
@@ -1507,7 +1564,8 @@ export function updateResultScores(resultId, evaluation) {
       evaluation_reasoning = ?,
       scores_with_reasoning = ?,
       scoring_method = ?,
-      judge_latency_ms = ?
+      judge_latency_ms = ?,
+      holistic_overall_score = ?
     WHERE id = ?
   `);
 
@@ -1531,6 +1589,7 @@ export function updateResultScores(resultId, evaluation) {
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
     'rubric', // Only called on successful evaluations
     evaluation.judgeLatencyMs ?? null,
+    evaluation.holisticOverallScore ?? null,
     resultId,
   );
 }
@@ -1543,17 +1602,34 @@ export function updateResultScores(resultId, evaluation) {
  * @param {Object} evaluation.scores - Per-turn learner scores (JSON-serializable)
  * @param {number} evaluation.overallScore - Weighted average learner score (0-100)
  * @param {string} evaluation.judgeModel - Model used for judging
+ * @param {Object} [evaluation.holisticScores] - Dialogue-level learner rubric scores
+ * @param {number} [evaluation.holisticOverallScore] - Dialogue-level learner score (0-100)
+ * @param {string} [evaluation.holisticSummary] - Judge summary for dialogue-level score
+ * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic learner judging
  */
 export function updateResultLearnerScores(resultId, evaluation) {
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       learner_scores = ?,
       learner_overall_score = ?,
-      learner_judge_model = ?
+      learner_judge_model = ?,
+      learner_holistic_scores = ?,
+      learner_holistic_overall_score = ?,
+      learner_holistic_summary = ?,
+      learner_holistic_judge_model = ?
     WHERE id = ?
   `);
 
-  stmt.run(JSON.stringify(evaluation.scores), evaluation.overallScore, evaluation.judgeModel || null, resultId);
+  stmt.run(
+    JSON.stringify(evaluation.scores ?? null),
+    evaluation.overallScore ?? null,
+    evaluation.judgeModel || null,
+    evaluation.holisticScores ? JSON.stringify(evaluation.holisticScores) : null,
+    evaluation.holisticOverallScore ?? null,
+    evaluation.holisticSummary || null,
+    evaluation.holisticJudgeModel || null,
+    resultId,
+  );
 }
 
 /**
@@ -1586,6 +1662,10 @@ export function listInteractionEvalsByRunId(runId) {
     learnerScores: JSON.parse(row.learner_scores || 'null'),
     learnerOverallScore: row.learner_overall_score,
     learnerJudgeModel: row.learner_judge_model,
+    learnerHolisticScores: JSON.parse(row.learner_holistic_scores || 'null'),
+    learnerHolisticOverallScore: row.learner_holistic_overall_score,
+    learnerHolisticSummary: row.learner_holistic_summary,
+    learnerHolisticJudgeModel: row.learner_holistic_judge_model,
     createdAt: row.created_at,
   }));
 }
@@ -1598,17 +1678,34 @@ export function listInteractionEvalsByRunId(runId) {
  * @param {Object} evaluation.scores - Per-turn scores: { turnIndex: { dimension: {score, reasoning} } }
  * @param {number} evaluation.overallScore - Weighted average learner score (0-100)
  * @param {string} evaluation.judgeModel - Model used for judging
+ * @param {Object} [evaluation.holisticScores] - Dialogue-level learner rubric scores
+ * @param {number} [evaluation.holisticOverallScore] - Dialogue-level learner score (0-100)
+ * @param {string} [evaluation.holisticSummary] - Judge summary for dialogue-level score
+ * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic learner judging
  */
 export function updateInteractionLearnerScores(evalId, evaluation) {
   const stmt = db.prepare(`
     UPDATE interaction_evaluations
     SET learner_scores = ?,
         learner_overall_score = ?,
-        learner_judge_model = ?
+        learner_judge_model = ?,
+        learner_holistic_scores = ?,
+        learner_holistic_overall_score = ?,
+        learner_holistic_summary = ?,
+        learner_holistic_judge_model = ?
     WHERE id = ?
   `);
 
-  stmt.run(JSON.stringify(evaluation.scores), evaluation.overallScore, evaluation.judgeModel || null, evalId);
+  stmt.run(
+    JSON.stringify(evaluation.scores ?? null),
+    evaluation.overallScore ?? null,
+    evaluation.judgeModel || null,
+    evaluation.holisticScores ? JSON.stringify(evaluation.holisticScores) : null,
+    evaluation.holisticOverallScore ?? null,
+    evaluation.holisticSummary || null,
+    evaluation.holisticJudgeModel || null,
+    evalId,
+  );
 }
 
 export default {

@@ -15,7 +15,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveEvalProfile, flattenConversationHistory } from '../services/evaluationRunner.js';
+import { resolveEvalProfile, flattenConversationHistory, isTransientEvaluationError } from '../services/evaluationRunner.js';
 
 describe('resolveEvalProfile', () => {
   // --- Recognition + Multi-agent cells (dialogue ON, recognition ON) ---
@@ -283,5 +283,23 @@ describe('flattenConversationHistory', () => {
     const flat = flattenConversationHistory(history);
     assert.strictEqual(flat[0].content, '', 'empty suggestion.message should default to empty string');
     assert.strictEqual(flat[1].content, 'A reply');
+  });
+});
+
+describe('isTransientEvaluationError', () => {
+  it('treats fetch-level transport failures as transient', () => {
+    assert.strictEqual(isTransientEvaluationError('fetch failed'), true);
+    assert.strictEqual(isTransientEvaluationError('TypeError: fetch failed'), true);
+  });
+
+  it('treats rate limits and timeout/network failures as transient', () => {
+    assert.strictEqual(isTransientEvaluationError('429 Too Many Requests'), true);
+    assert.strictEqual(isTransientEvaluationError('ETIMEDOUT while calling provider'), true);
+    assert.strictEqual(isTransientEvaluationError('socket hang up'), true);
+  });
+
+  it('does not classify deterministic config errors as transient', () => {
+    assert.strictEqual(isTransientEvaluationError('Scenario not found: bad_id'), false);
+    assert.strictEqual(isTransientEvaluationError('Invalid profile configuration'), false);
   });
 });

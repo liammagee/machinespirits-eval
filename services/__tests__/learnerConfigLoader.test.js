@@ -488,24 +488,41 @@ describe('No hardcoded model IDs (regression)', () => {
     );
   });
 
-  it('configLoaderBase.loadProviders() returns same merged providers as evalConfigLoader', () => {
-    // All consumers resolve through configLoaderBase.loadProviders() now.
-    // Verify it returns the same data as the evalConfigLoader wrapper.
+  it('evalConfigLoader provides merged eval overrides across tutor-core API versions', () => {
     const baseMerged = configLoaderBase.loadProviders(true);
     const evalWrapped = loadEvalProviders({ forceReload: true });
 
-    assert.ok(baseMerged, 'configLoaderBase should return merged providers');
+    assert.ok(baseMerged, 'configLoaderBase should return providers');
     assert.ok(evalWrapped?.providers, 'evalConfigLoader should return wrapped providers');
 
-    // The unwrapped base result should equal the eval wrapper's inner providers
     const baseNemotron = baseMerged?.openrouter?.models?.nemotron;
     const evalNemotron = evalWrapped?.providers?.openrouter?.models?.nemotron;
-
     assert.ok(baseNemotron, 'configLoaderBase should have nemotron');
+    assert.ok(evalNemotron, 'evalConfigLoader should have nemotron');
+
+    const providersYaml = readFileSync(join(PROJECT_ROOT, 'config', 'providers.yaml'), 'utf-8');
+    const expectedLine = providersYaml
+      .split('\n')
+      .find((line) => /^\s*nemotron:\s*/.test(line) && !line.trim().startsWith('#'));
+    const expectedNemotron = expectedLine?.split(':').slice(1).join(':').trim();
+
+    assert.ok(expectedNemotron, 'providers.yaml should define openrouter nemotron');
     assert.strictEqual(
-      baseNemotron,
       evalNemotron,
-      `configLoaderBase nemotron "${baseNemotron}" should match evalConfigLoader "${evalNemotron}"`,
+      expectedNemotron,
+      `evalConfigLoader nemotron "${evalNemotron}" should match providers.yaml "${expectedNemotron}"`,
     );
+
+    const hasOverlayAPI =
+      typeof configLoaderBase.registerClientConfigDir === 'function' ||
+      typeof configLoaderBase.default?.registerClientConfigDir === 'function';
+
+    if (hasOverlayAPI) {
+      assert.strictEqual(
+        baseNemotron,
+        evalNemotron,
+        `With overlay API available, configLoaderBase nemotron "${baseNemotron}" should match eval "${evalNemotron}"`,
+      );
+    }
   });
 });
