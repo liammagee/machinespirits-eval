@@ -1,6 +1,6 @@
 {
-  "version": "1.7.0",
-  "generated": "2026-02-23",
+  "version": "1.8.0",
+  "generated": "2026-02-25",
   "database": "data/evaluations.db",
   "paper": "docs/research/paper-full.md",
 
@@ -467,14 +467,34 @@
       "expected_attempts": 12,
       "expected_scored": 12,
       "note": "Haiku learner ego variant; confirms zero leakage on corrected codebase."
+    },
+    {
+      "run_ids": ["eval-2026-02-23-b5cd16e1"],
+      "label": "A2 mechanism sweep clean re-run (cells 72-77)",
+      "section": "6.10",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 36,
+      "expected_scored": 36,
+      "note": "Clean re-run after flatMap+leakage fix. Cells 72-77 (quantitative/erosion/tutor-profiling × base/recog). Nemotron ego. Replaces 03dd8434 for Table 19a."
+    },
+    {
+      "run_ids": ["eval-2026-02-23-b5e123b4"],
+      "label": "Authenticity superego clean re-run (cells 78-79)",
+      "section": "6.16.1",
+      "primary_judge_pattern": "claude-opus%",
+      "unit": "dialogue",
+      "expected_attempts": 12,
+      "expected_scored": 12,
+      "note": "Clean re-run after flatMap+leakage fix. Cells 78-79 (authenticity-focused superego × base/recog). A4 experiment data for §6.16.1."
     }
   ],
 
   "totals": {
-    "evaluations": 50,
-    "expected_attempts": 4280,
-    "expected_scored": 4264,
-    "opus_primary_count": 50,
+    "evaluations": 52,
+    "expected_attempts": 4328,
+    "expected_scored": 4312,
+    "opus_primary_count": 52,
     "sonnet_primary_count": 0,
     "sonnet_primary_runs": []
   },
