@@ -165,6 +165,34 @@ function formatDeliberation(deliberation) {
 }
 
 /**
+ * Build a full transcript for dialogue-level learner evaluation.
+ * For multi-agent learners, include internal deliberation under each learner turn.
+ *
+ * @param {Array} turns - All turns from the interaction
+ * @param {boolean} includeDeliberation - Whether to include learner internal traces
+ * @returns {string} Formatted full transcript
+ */
+function buildHolisticTranscript(turns, includeDeliberation = false) {
+  const lines = [];
+
+  for (const turn of turns || []) {
+    const role = turn.phase === 'learner' ? 'LEARNER' : 'TUTOR';
+    lines.push(`[Turn ${turn.turnNumber}, ${role}]`);
+    lines.push(turn.externalMessage || '(no message)');
+
+    if (includeDeliberation && turn.phase === 'learner' && turn.internalDeliberation?.length > 0) {
+      lines.push('');
+      lines.push('Internal deliberation:');
+      lines.push(formatDeliberation(turn.internalDeliberation));
+    }
+
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Build a complete learner evaluation prompt for a single learner turn.
  *
  * @param {Object} params
@@ -285,9 +313,106 @@ ${exampleScores}
 \`\`\``;
 }
 
+/**
+ * Build a dialogue-level learner evaluation prompt.
+ * Scores the learner trajectory across the full multi-turn dialogue.
+ *
+ * @param {Object} params
+ * @param {Array} params.turns - All turns from the interaction
+ * @param {string} params.personaId - Learner persona ID
+ * @param {string} params.personaDescription - Description of the learner persona
+ * @param {string} params.learnerArchitecture - 'unified' or 'multi_agent'
+ * @param {string} params.scenarioName - Name of the scenario
+ * @param {string} params.topic - Topic being discussed
+ * @returns {string} Complete judge prompt
+ */
+export function buildLearnerHolisticEvaluationPrompt(params) {
+  const {
+    turns,
+    personaId = 'unknown',
+    personaDescription = 'No persona description available',
+    learnerArchitecture = 'unified',
+    scenarioName = 'unknown',
+    topic = 'unknown',
+  } = params;
+
+  const isMultiAgent = learnerArchitecture === 'multi_agent' || learnerArchitecture === 'psychodynamic';
+  const dimensions = getLearnerDimensions({ isMultiAgent });
+  const dimensionCriteria = buildDimensionCriteria(dimensions);
+  const fullTranscript = buildHolisticTranscript(turns, isMultiAgent);
+
+  let deliberationDepthNote = '';
+  if (isMultiAgent) {
+    deliberationDepthNote =
+      'This is a multi-agent learner. Score ALL dimensions including deliberation_depth using the full-turn internal traces.';
+  } else {
+    deliberationDepthNote =
+      'This is a single-agent (unified) learner. OMIT the deliberation_depth dimension — do not include it in your scores.';
+  }
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map((key) => {
+      return `    "${key}": {"score": 3, "reasoning": "Brief reason"}`;
+    })
+    .join(',\n');
+
+  return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the LEARNER's quality ACROSS THE ENTIRE DIALOGUE, independent of tutor quality.
+
+You are NOT evaluating the tutor. Evaluate the learner's trajectory: authenticity, conceptual engagement, question depth, revision over turns, and consistency with assigned persona.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## LEARNER CONTEXT
+
+**Assigned Persona**: ${personaId}
+**Persona Description**: ${personaDescription}
+**Learner Architecture**: ${learnerArchitecture}
+**Scenario**: ${scenarioName}
+**Topic**: ${topic}
+
+## FULL DIALOGUE TRANSCRIPT
+
+${fullTranscript}
+
+## YOUR TASK
+
+${deliberationDepthNote}
+
+Evaluate the learner's performance across the full dialogue and provide:
+1. A score (1-5) for each applicable dimension with brief reasoning
+2. An overall score (weighted average, 0-100 scale)
+3. A short summary of the learner's overall trajectory
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief overall assessment of learner quality across the dialogue"
+}
+\`\`\``;
+}
+
 export default {
   loadLearnerRubric,
   getLearnerDimensions,
   calculateLearnerOverallScore,
   buildLearnerEvaluationPrompt,
+  buildLearnerHolisticEvaluationPrompt,
 };

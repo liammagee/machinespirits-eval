@@ -13,6 +13,7 @@ import {
   getLearnerDimensions,
   calculateLearnerOverallScore,
   buildLearnerEvaluationPrompt,
+  buildLearnerHolisticEvaluationPrompt,
 } from '../learnerRubricEvaluator.js';
 
 // ============================================================================
@@ -348,5 +349,70 @@ describe('buildLearnerEvaluationPrompt', () => {
 
     assert.ok(prompt.includes('deliberation_depth'));
     assert.ok(prompt.includes('Score ALL dimensions including deliberation_depth'));
+  });
+});
+
+// ============================================================================
+// buildLearnerHolisticEvaluationPrompt
+// ============================================================================
+
+describe('buildLearnerHolisticEvaluationPrompt', () => {
+  const sampleTurns = [
+    {
+      turnNumber: 0,
+      phase: 'tutor',
+      externalMessage: 'Let us examine what dialectics means in this text.',
+    },
+    {
+      turnNumber: 1,
+      phase: 'learner',
+      externalMessage: 'I thought it just meant arguing two sides.',
+      internalDeliberation: [
+        { role: 'ego_initial', content: 'I am still thinking in debate terms.' },
+        { role: 'superego', content: 'You are flattening the concept; push on transformation.' },
+        { role: 'ego_revision', content: 'Maybe the point is that both sides change.' },
+      ],
+    },
+    {
+      turnNumber: 1,
+      phase: 'tutor',
+      externalMessage: 'Good. How would that change your original view?',
+    },
+  ];
+
+  it('includes full transcript and trajectory framing', () => {
+    const prompt = buildLearnerHolisticEvaluationPrompt({
+      turns: sampleTurns,
+      personaId: 'productive_struggler',
+      learnerArchitecture: 'multi_agent',
+      scenarioName: 'Misconception Correction',
+      topic: 'Dialectics',
+    });
+
+    assert.ok(prompt.includes('FULL DIALOGUE TRANSCRIPT'));
+    assert.ok(prompt.includes('ACROSS THE ENTIRE DIALOGUE'));
+    assert.ok(prompt.includes('productive_struggler'));
+    assert.ok(prompt.includes('Misconception Correction'));
+    assert.ok(prompt.includes('Dialectics'));
+  });
+
+  it('includes deliberation_depth for multi-agent and includes traces', () => {
+    const prompt = buildLearnerHolisticEvaluationPrompt({
+      turns: sampleTurns,
+      learnerArchitecture: 'multi_agent',
+    });
+
+    assert.ok(prompt.includes('deliberation_depth'));
+    assert.ok(prompt.includes('Internal deliberation:'));
+    assert.ok(prompt.includes('Superego (critique)'));
+  });
+
+  it('omits deliberation_depth instruction for unified learners', () => {
+    const prompt = buildLearnerHolisticEvaluationPrompt({
+      turns: sampleTurns,
+      learnerArchitecture: 'unified',
+    });
+
+    assert.ok(prompt.includes('OMIT the deliberation_depth dimension'));
   });
 });

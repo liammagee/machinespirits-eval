@@ -16,10 +16,62 @@ import { configLoaderBase } from '@machinespirits/tutor-core';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.join(path.resolve(__dirname, '..'), 'config');
 
-// Register eval-repo's config dir as client overlay for provider merging.
-// This makes configLoaderBase.loadProviders() return tutor-core defaults
-// deep-merged with eval-repo overrides — single source of truth for all consumers.
-configLoaderBase.registerClientConfigDir(EVAL_CONFIG_DIR);
+// tutor-core API compatibility:
+// - Older versions exposed registerClientConfigDir() for provider overlays.
+// - Newer versions (e.g. 0.5.0) removed it.
+// We prefer explicit local merging below so this loader works across both APIs.
+const registerClientConfigDirFn =
+  configLoaderBase.registerClientConfigDir || configLoaderBase.default?.registerClientConfigDir;
+
+if (typeof registerClientConfigDirFn === 'function') {
+  try {
+    registerClientConfigDirFn(EVAL_CONFIG_DIR);
+  } catch (err) {
+    console.warn('[evalConfigLoader] registerClientConfigDir failed; falling back to manual provider merge:', err.message);
+  }
+}
+
+function isPlainObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function deepMerge(base, override) {
+  if (!isPlainObject(base)) return override ?? base;
+  if (!isPlainObject(override)) return override ?? base;
+
+  const merged = { ...base };
+  for (const [key, overrideValue] of Object.entries(override)) {
+    const baseValue = merged[key];
+    if (isPlainObject(baseValue) && isPlainObject(overrideValue)) {
+      merged[key] = deepMerge(baseValue, overrideValue);
+    } else {
+      merged[key] = overrideValue;
+    }
+  }
+  return merged;
+}
+
+let localProvidersCache = null;
+let localProvidersMtime = null;
+
+function loadLocalProviderOverrides(forceReload = false) {
+  const providersPath = path.join(EVAL_CONFIG_DIR, 'providers.yaml');
+  try {
+    const stats = fs.statSync(providersPath);
+    if (!forceReload && localProvidersCache && localProvidersMtime === stats.mtimeMs) {
+      return localProvidersCache;
+    }
+
+    const content = fs.readFileSync(providersPath, 'utf-8');
+    const parsed = yaml.parse(content);
+    localProvidersCache = parsed?.providers || {};
+    localProvidersMtime = stats.mtimeMs;
+    return localProvidersCache;
+  } catch (err) {
+    console.warn('[evalConfigLoader] providers.yaml not found in eval config dir:', err.message);
+    return null;
+  }
+}
 
 // Mtime-based caches
 let rubricCache = null;
@@ -110,12 +162,14 @@ export function loadSuggestionScenarios({ forceReload } = {}) {
 // Cache for the { providers: ... } wrapper (so callers get stable references)
 let providersWrapperCache = null;
 let providersWrapperRef = null; // track configLoaderBase's cache reference
+let providersWrapperSources = { shared: null, local: null };
 
 /**
  * Load merged providers (tutor-core defaults + eval-repo overrides).
  *
- * Delegates to configLoaderBase.loadProviders() which returns the deep-merged
- * provider map. Wraps the result in { providers: ... } for backward compatibility
+ * Loads tutor-core providers via configLoaderBase.loadProviders() and then
+ * deep-merges eval-repo local overrides from config/providers.yaml.
+ * Wraps the result in { providers: ... } for backward compatibility
  * with existing callers that expect the raw YAML structure.
  *
  * @param {Object} [options]
@@ -123,13 +177,26 @@ let providersWrapperRef = null; // track configLoaderBase's cache reference
  * @returns {Object|null} { providers: mergedProviders } or null
  */
 export function loadProviders({ forceReload } = {}) {
-  const merged = configLoaderBase.loadProviders(forceReload);
-  if (!merged) return null;
-  // Return cached wrapper if underlying reference hasn't changed
-  if (providersWrapperCache && providersWrapperRef === merged) {
+  const sharedProviders = configLoaderBase.loadProviders(forceReload);
+  const localOverrides = loadLocalProviderOverrides(Boolean(forceReload));
+
+  // Reuse wrapper when upstream provider refs are unchanged.
+  // This preserves reference stability expected by callers/tests.
+  if (
+    !forceReload &&
+    providersWrapperCache &&
+    providersWrapperSources.shared === sharedProviders &&
+    providersWrapperSources.local === localOverrides
+  ) {
     return providersWrapperCache;
   }
+
+  // Local eval providers should override tutor-core defaults.
+  const merged = deepMerge(sharedProviders || {}, localOverrides || {});
+  if (!merged || Object.keys(merged).length === 0) return null;
+
   providersWrapperRef = merged;
+  providersWrapperSources = { shared: sharedProviders, local: localOverrides };
   providersWrapperCache = { providers: merged };
   return providersWrapperCache;
 }
