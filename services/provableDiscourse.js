@@ -32,6 +32,8 @@ const ALLOWED_COLUMNS = new Set([
   'success',
   'error_message',
   'holistic_overall_score',
+  'scenario_id',
+  'prompt_id',
 ]);
 
 function stableSerialize(value) {
@@ -78,6 +80,97 @@ export function cohensD(groupA, groupB) {
     ((groupA.length - 1) * sA ** 2 + (groupB.length - 1) * sB ** 2) / (groupA.length + groupB.length - 2),
   );
   return pooled > 0 ? (mA - mB) / pooled : 0;
+}
+
+export function pearsonCorrelation(groupA, groupB) {
+  if (!Array.isArray(groupA) || !Array.isArray(groupB) || groupA.length !== groupB.length || groupA.length < 2) {
+    return 0;
+  }
+  const meanA = mean(groupA);
+  const meanB = mean(groupB);
+  let numerator = 0;
+  let denA = 0;
+  let denB = 0;
+  for (let i = 0; i < groupA.length; i++) {
+    const da = groupA[i] - meanA;
+    const db = groupB[i] - meanB;
+    numerator += da * db;
+    denA += da ** 2;
+    denB += db ** 2;
+  }
+  const denominator = Math.sqrt(denA * denB);
+  return denominator > 0 ? numerator / denominator : 0;
+}
+
+function fTest2x2(data) {
+  const allValues = [...data.a0b0, ...data.a0b1, ...data.a1b0, ...data.a1b1];
+  const n = allValues.length;
+  if (n < 8) {
+    return {
+      n,
+      mainA: { F: NaN, delta: NaN, marginals: [NaN, NaN] },
+      mainB: { F: NaN, delta: NaN, marginals: [NaN, NaN] },
+      interaction: { F: NaN, delta: NaN },
+      cellMeans: { a0b0: NaN, a0b1: NaN, a1b0: NaN, a1b1: NaN },
+      cellNs: { a0b0: data.a0b0.length, a0b1: data.a0b1.length, a1b0: data.a1b0.length, a1b1: data.a1b1.length },
+      dfW: n - 4,
+      msW: NaN,
+    };
+  }
+
+  const grandMean = mean(allValues);
+  const cellMeans = {
+    a0b0: mean(data.a0b0),
+    a0b1: mean(data.a0b1),
+    a1b0: mean(data.a1b0),
+    a1b1: mean(data.a1b1),
+  };
+  const cellNs = {
+    a0b0: data.a0b0.length,
+    a0b1: data.a0b1.length,
+    a1b0: data.a1b0.length,
+    a1b1: data.a1b1.length,
+  };
+
+  const margA0 = mean([...data.a0b0, ...data.a0b1]);
+  const margA1 = mean([...data.a1b0, ...data.a1b1]);
+  const margB0 = mean([...data.a0b0, ...data.a1b0]);
+  const margB1 = mean([...data.a0b1, ...data.a1b1]);
+
+  const ssA =
+    (cellNs.a0b0 + cellNs.a0b1) * (margA0 - grandMean) ** 2 +
+    (cellNs.a1b0 + cellNs.a1b1) * (margA1 - grandMean) ** 2;
+  const ssB =
+    (cellNs.a0b0 + cellNs.a1b0) * (margB0 - grandMean) ** 2 +
+    (cellNs.a0b1 + cellNs.a1b1) * (margB1 - grandMean) ** 2;
+
+  const ssAB =
+    cellNs.a0b0 * (cellMeans.a0b0 - margA0 - margB0 + grandMean) ** 2 +
+    cellNs.a0b1 * (cellMeans.a0b1 - margA0 - margB1 + grandMean) ** 2 +
+    cellNs.a1b0 * (cellMeans.a1b0 - margA1 - margB0 + grandMean) ** 2 +
+    cellNs.a1b1 * (cellMeans.a1b1 - margA1 - margB1 + grandMean) ** 2;
+
+  let ssW = 0;
+  for (const [key, arr] of Object.entries(data)) {
+    const m = cellMeans[key];
+    ssW += arr.reduce((sum, value) => sum + (value - m) ** 2, 0);
+  }
+  const dfW = n - 4;
+  const msW = ssW / dfW;
+
+  return {
+    n,
+    mainA: { F: ssA / msW, delta: margA1 - margA0, marginals: [margA0, margA1] },
+    mainB: { F: ssB / msW, delta: margB1 - margB0, marginals: [margB0, margB1] },
+    interaction: {
+      F: ssAB / msW,
+      delta: cellMeans.a1b1 - cellMeans.a1b0 - (cellMeans.a0b1 - cellMeans.a0b0),
+    },
+    cellMeans,
+    cellNs,
+    dfW,
+    msW,
+  };
 }
 
 function safeJsonParse(value) {
@@ -241,6 +334,58 @@ function computeLearnerMetric(row, metric) {
   if (metric === 'learning_arc') return summary.learningArc;
   if (metric === 'revision_arc') return summary.revisionArc;
   return null;
+}
+
+const TUTOR_METRICS = new Set(['response_length', 'ttr', 'dimension_variance_14']);
+const LEARNER_METRICS = new Set(['avg_composite', 'final_composite', 'learning_arc', 'revision_arc']);
+
+function requiredColumnsForMetric(metric) {
+  if (metric === 'overall_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
+    return [metric];
+  }
+  if (metric === 'response_length' || metric === 'ttr') {
+    return ['suggestions', 'raw_response'];
+  }
+  if (metric === 'dimension_variance_14') {
+    return [
+      'score_relevance',
+      'score_specificity',
+      'score_pedagogical',
+      'score_personalization',
+      'score_actionability',
+      'score_tone',
+      'scores_with_reasoning',
+    ];
+  }
+  if (LEARNER_METRICS.has(metric)) return ['learner_scores'];
+  return [];
+}
+
+function metricValueFromRow(row, metric) {
+  if (metric === 'overall_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
+    return row?.[metric];
+  }
+  if (TUTOR_METRICS.has(metric)) {
+    return computeTutorMetric(row, metric);
+  }
+  if (LEARNER_METRICS.has(metric)) {
+    return computeLearnerMetric(row, metric);
+  }
+  return null;
+}
+
+function profileMatches(profileName, patterns = [], exactList = []) {
+  const value = profileName || '';
+  if (Array.isArray(exactList) && exactList.includes(value)) return true;
+  if (!Array.isArray(patterns)) return false;
+  for (const pattern of patterns) {
+    try {
+      if (new RegExp(pattern, 'i').test(value)) return true;
+    } catch {
+      /* ignore invalid regex */
+    }
+  }
+  return false;
 }
 
 function mergeStatus(current, next) {
@@ -439,11 +584,317 @@ function evaluateEffectSize(db, evidence) {
   };
 }
 
+function evaluateManifestSectionTotal(manifest, evidence) {
+  const sections = Array.isArray(evidence?.sections)
+    ? evidence.sections
+    : evidence?.section
+      ? [evidence.section]
+      : [];
+  if (sections.length === 0) {
+    throw new Error('manifest_section_total evidence requires section or sections');
+  }
+
+  const field = evidence?.field || 'expected_scored';
+  if (!['expected_scored', 'expected_attempts'].includes(field)) {
+    throw new Error(`manifest_section_total unsupported field: ${field}`);
+  }
+
+  const matchMode = evidence?.match || 'exact';
+  const rows = Array.isArray(manifest?.key_evaluations) ? manifest.key_evaluations : [];
+  let value = 0;
+  let matchedRows = 0;
+  for (const row of rows) {
+    const section = row?.section;
+    if (!section) continue;
+    const matches = sections.some((target) => (matchMode === 'prefix' ? section.startsWith(String(target)) : section === target));
+    if (!matches) continue;
+    const cellValue = Number(row?.[field] || 0);
+    value += cellValue;
+    matchedRows++;
+  }
+
+  return {
+    value,
+    details: {
+      field,
+      sections,
+      match: matchMode,
+      matched_rows: matchedRows,
+      value,
+    },
+    fingerprint: {
+      source: 'manifest_section_total',
+      manifest_version: manifest?.version || null,
+      generated: manifest?.generated || null,
+      field,
+      sections,
+      match: matchMode,
+      value,
+    },
+  };
+}
+
+function evaluateProfileGroupEffectSize(db, evidence) {
+  const metric = evidence?.metric || 'overall_score';
+  const metricColumns = requiredColumnsForMetric(metric);
+  const columns = ['profile_name', 'created_at', ...metricColumns];
+  const { sql, params } = buildWhereClause(evidence?.filters || {});
+  const rows = db.prepare(`SELECT ${[...new Set(columns)].join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const group1Profiles = Array.isArray(evidence?.group1_profiles) ? evidence.group1_profiles : [];
+  const group0Profiles = Array.isArray(evidence?.group0_profiles) ? evidence.group0_profiles : [];
+  const group1Patterns = Array.isArray(evidence?.group1_patterns) ? evidence.group1_patterns : [];
+  const group0Patterns = Array.isArray(evidence?.group0_patterns) ? evidence.group0_patterns : [];
+
+  const group1 = [];
+  const group0 = [];
+  let skipped = 0;
+  let maxCreatedAt = null;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const value = metricValueFromRow(row, metric);
+    if (!isFiniteNumber(value)) continue;
+
+    const inGroup1 = profileMatches(row.profile_name, group1Patterns, group1Profiles);
+    const inGroup0 = profileMatches(row.profile_name, group0Patterns, group0Profiles);
+    if (inGroup1 && !inGroup0) group1.push(value);
+    else if (inGroup0 && !inGroup1) group0.push(value);
+    else skipped++;
+  }
+
+  return {
+    value: cohensD(group1, group0),
+    details: {
+      metric,
+      n_group1: group1.length,
+      n_group0: group0.length,
+      mean_group1: mean(group1),
+      mean_group0: mean(group0),
+      skipped_rows: skipped,
+    },
+    fingerprint: {
+      source: 'profile_group_effect_size',
+      metric,
+      n_rows: rows.length,
+      n_group1: group1.length,
+      n_group0: group0.length,
+      max_created_at: maxCreatedAt,
+      group1_profiles: group1Profiles,
+      group0_profiles: group0Profiles,
+      group1_patterns: group1Patterns,
+      group0_patterns: group0Patterns,
+    },
+  };
+}
+
+function evaluateAnova2x2Evidence(db, evidence) {
+  const metric = evidence?.metric || 'overall_score';
+  const term = evidence?.term || 'interaction';
+  const output = evidence?.output || 'F';
+  const metricColumns = requiredColumnsForMetric(metric);
+  const columns = ['profile_name', 'factor_recognition', 'factor_multi_agent_tutor', 'created_at', ...metricColumns];
+  const { sql, params } = buildWhereClause(evidence?.filters || {});
+  const rows = db.prepare(`SELECT ${[...new Set(columns)].join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const data = { a0b0: [], a0b1: [], a1b0: [], a1b1: [] };
+  let skipped = 0;
+  let maxCreatedAt = null;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const value = metricValueFromRow(row, metric);
+    if (!isFiniteNumber(value)) continue;
+
+    const flags = resolveRowFlags(row, 'tutor');
+    if (flags.recognition == null || flags.multi == null) {
+      skipped++;
+      continue;
+    }
+    const key = `a${flags.recognition ? 1 : 0}b${flags.multi ? 1 : 0}`;
+    data[key].push(value);
+  }
+
+  const anova = fTest2x2(data);
+  let value = NaN;
+  if (term === 'recognition') {
+    value = output === 'delta' ? anova.mainA.delta : anova.mainA.F;
+  } else if (term === 'architecture') {
+    value = output === 'delta' ? anova.mainB.delta : anova.mainB.F;
+  } else if (term === 'interaction') {
+    value = output === 'delta' ? anova.interaction.delta : anova.interaction.F;
+  } else {
+    throw new Error(`anova_2x2 unsupported term: ${term}`);
+  }
+
+  return {
+    value,
+    details: {
+      metric,
+      term,
+      output,
+      n: anova.n,
+      dfW: anova.dfW,
+      cell_ns: anova.cellNs,
+      cell_means: anova.cellMeans,
+      recognition: anova.mainA,
+      architecture: anova.mainB,
+      interaction: anova.interaction,
+      skipped_rows: skipped,
+    },
+    fingerprint: {
+      source: 'anova_2x2',
+      metric,
+      term,
+      output,
+      n_rows: rows.length,
+      n_used: anova.n,
+      max_created_at: maxCreatedAt,
+      cell_ns: anova.cellNs,
+    },
+  };
+}
+
+function evaluateJudgePairCorrelation(db, evidence) {
+  const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
+  if (runIds.length === 0) throw new Error('judge_pair_correlation requires run_ids');
+  const judgeALike = evidence?.judge_a_like || 'claude-opus%';
+  const judgeBLike = evidence?.judge_b_like || 'gpt-5.2%';
+  const metric = evidence?.metric || 'overall_score';
+  const keyFields = Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
+    ? evidence.key_fields
+    : ['run_id', 'scenario_id', 'profile_name', 'dialogue_id'];
+  for (const field of keyFields) ensureColumnName(field);
+  ensureColumnName(metric);
+
+  const where = buildWhereClause({
+    ...(evidence?.filters || {}),
+    run_ids: runIds,
+    not_null: [...(evidence?.filters?.not_null || []), metric],
+  });
+  const columns = [...new Set(['judge_model', metric, 'created_at', ...keyFields])];
+  const rows = db.prepare(`SELECT ${columns.join(', ')} FROM evaluation_results ${where.sql}`).all(...where.params);
+
+  const aMap = new Map();
+  const bMap = new Map();
+  let maxCreatedAt = null;
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const key = keyFields.map((field) => String(row[field] ?? '')).join('|');
+    if (new RegExp(judgeALike.replace(/%/g, '.*'), 'i').test(row.judge_model || '')) {
+      aMap.set(key, row[metric]);
+    } else if (new RegExp(judgeBLike.replace(/%/g, '.*'), 'i').test(row.judge_model || '')) {
+      bMap.set(key, row[metric]);
+    }
+  }
+
+  const aValues = [];
+  const bValues = [];
+  for (const [key, value] of aMap.entries()) {
+    if (!bMap.has(key)) continue;
+    const b = bMap.get(key);
+    if (!isFiniteNumber(value) || !isFiniteNumber(b)) continue;
+    aValues.push(value);
+    bValues.push(b);
+  }
+
+  return {
+    value: pearsonCorrelation(aValues, bValues),
+    details: {
+      metric,
+      judge_a_like: judgeALike,
+      judge_b_like: judgeBLike,
+      key_fields: keyFields,
+      n_pairs: aValues.length,
+      mean_a: mean(aValues),
+      mean_b: mean(bValues),
+    },
+    fingerprint: {
+      source: 'judge_pair_correlation',
+      run_ids: runIds,
+      metric,
+      key_fields: keyFields,
+      n_rows: rows.length,
+      n_pairs: aValues.length,
+      max_created_at: maxCreatedAt,
+    },
+  };
+}
+
+function evaluateLogTraceCoverage(db, evidence, rootDir) {
+  const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
+  if (runIds.length === 0) throw new Error('log_trace_coverage requires run_ids');
+  const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+  const where = buildWhereClause({
+    ...(evidence?.filters || {}),
+    run_ids: runIds,
+    not_null: [...(evidence?.filters?.not_null || []), 'dialogue_id'],
+  });
+  const rows = db
+    .prepare(`SELECT run_id, dialogue_id, created_at FROM evaluation_results ${where.sql}`)
+    .all(...where.params);
+
+  let maxCreatedAt = null;
+  let valid = 0;
+  let missing = 0;
+  let noTrace = 0;
+  let notMultiTurn = 0;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const filePath = path.join(logDir, `${row.dialogue_id}.json`);
+    if (!fs.existsSync(filePath)) {
+      missing++;
+      continue;
+    }
+    try {
+      const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const trace = Array.isArray(parsed?.dialogueTrace) ? parsed.dialogueTrace : [];
+      if (parsed?.isMultiTurn !== true) {
+        notMultiTurn++;
+      }
+      if (trace.length === 0) {
+        noTrace++;
+        continue;
+      }
+      valid++;
+    } catch {
+      missing++;
+    }
+  }
+
+  const value = rows.length > 0 ? valid / rows.length : 0;
+  return {
+    value,
+    details: {
+      run_ids: runIds,
+      total_rows: rows.length,
+      valid,
+      missing,
+      no_trace: noTrace,
+      not_multi_turn: notMultiTurn,
+      coverage_rate: value,
+    },
+    fingerprint: {
+      source: 'log_trace_coverage',
+      run_ids: runIds,
+      total_rows: rows.length,
+      valid,
+      max_created_at: maxCreatedAt,
+    },
+  };
+}
+
 function evaluateEvidence(db, manifest, evidence) {
   const type = evidence?.type;
   if (type === 'manifest_total') return evaluateManifestTotal(manifest, evidence);
+  if (type === 'manifest_section_total') return evaluateManifestSectionTotal(manifest, evidence);
   if (type === 'db_count') return evaluateDbCount(db, evidence);
   if (type === 'effect_size') return evaluateEffectSize(db, evidence);
+  if (type === 'profile_group_effect_size') return evaluateProfileGroupEffectSize(db, evidence);
+  if (type === 'anova_2x2') return evaluateAnova2x2Evidence(db, evidence);
+  if (type === 'judge_pair_correlation') return evaluateJudgePairCorrelation(db, evidence);
+  if (type === 'log_trace_coverage') throw new Error('log_trace_coverage requires rootDir context');
   throw new Error(`Unsupported evidence type: ${type}`);
 }
 
@@ -595,6 +1046,33 @@ function loadClaimInventory(inventoryPath) {
   }
 }
 
+function loadClaimsFromImportPath(importPath) {
+  if (!importPath || !fs.existsSync(importPath)) return { claims: [], symmetry_rules: [] };
+  const ext = path.extname(importPath).toLowerCase();
+  const raw = fs.readFileSync(importPath, 'utf8');
+  let parsed;
+  if (ext === '.json') parsed = JSON.parse(raw);
+  else parsed = YAML.parse(raw);
+
+  if (Array.isArray(parsed)) return { claims: parsed, symmetry_rules: [] };
+  if (!parsed || typeof parsed !== 'object') return { claims: [], symmetry_rules: [] };
+  return {
+    claims: Array.isArray(parsed.claims) ? parsed.claims : [],
+    symmetry_rules: Array.isArray(parsed.symmetry_rules) ? parsed.symmetry_rules : [],
+  };
+}
+
+function mergeUniqueById(...lists) {
+  const map = new Map();
+  for (const list of lists) {
+    for (const entry of list || []) {
+      if (!entry || !entry.id) continue;
+      if (!map.has(entry.id)) map.set(entry.id, entry);
+    }
+  }
+  return [...map.values()];
+}
+
 function evaluateInventoryCoverage(spec, claimResults, inventory) {
   if (!inventory) {
     return {
@@ -670,6 +1148,10 @@ export function runProvableDiscourseAudit({
   const baseDir = rootDir || process.cwd();
   const resolvedSpecPath = resolvePath(baseDir, specPath);
   const spec = YAML.parse(fs.readFileSync(resolvedSpecPath, 'utf8')) || {};
+  const importPaths = Array.isArray(spec.import_claims_from) ? spec.import_claims_from : [];
+  const imported = importPaths
+    .map((importPath) => resolvePath(baseDir, importPath))
+    .map((resolvedPath) => loadClaimsFromImportPath(resolvedPath));
 
   const resolvedPaperPath = resolvePath(baseDir, spec.paper_path);
   const resolvedManifestPath = resolvePath(baseDir, spec.manifest_path);
@@ -702,7 +1184,10 @@ export function runProvableDiscourseAudit({
     summary: { pass: 0, warn: 0, fail: 0, total: 0 },
   };
 
-  const claims = Array.isArray(spec.claims) ? spec.claims : [];
+  const claims = mergeUniqueById(
+    Array.isArray(spec.claims) ? spec.claims : [],
+    ...imported.map((part) => part.claims),
+  );
   const db = smokeMode ? null : new Database(resolvedDbPath, { readonly: true });
 
   try {
@@ -739,7 +1224,12 @@ export function runProvableDiscourseAudit({
 
       if (!smokeMode) {
         try {
-          const evidence = evaluateEvidence(db, manifest, claim.evidence || {});
+          let evidence;
+          if ((claim?.evidence?.type || '') === 'log_trace_coverage') {
+            evidence = evaluateLogTraceCoverage(db, claim.evidence || {}, baseDir);
+          } else {
+            evidence = evaluateEvidence(db, manifest, claim.evidence || {});
+          }
           result.actual_value = evidence.value;
           result.details = evidence.details || {};
 
@@ -794,7 +1284,10 @@ export function runProvableDiscourseAudit({
     }
 
     const claimById = new Map(report.claims.map((claim) => [claim.id, claim]));
-    const symmetryRules = Array.isArray(spec.symmetry_rules) ? spec.symmetry_rules : [];
+    const symmetryRules = mergeUniqueById(
+      Array.isArray(spec.symmetry_rules) ? spec.symmetry_rules : [],
+      ...imported.map((part) => part.symmetry_rules),
+    );
     for (const rule of symmetryRules) {
       if (smokeMode && (rule?.type || 'paired_presence') !== 'paired_presence') {
         report.symmetry.push({

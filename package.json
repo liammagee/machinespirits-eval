@@ -32,6 +32,7 @@
     "paper:integrity-audit": "node scripts/validate-bug-claims.js",
     "paper:provable-discourse": "node scripts/validate-provable-discourse.js",
     "paper:provable-discourse:sync-inventory": "node scripts/sync-provable-claim-inventory.js",
+    "paper:provable-discourse:bootstrap": "node scripts/bootstrap-provable-claims.js",
     "paper:bug-audit:chat": "node scripts/paper-bug-audit-chat.js",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",
