@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runProvableDiscourseAudit } from '../services/provableDiscourse.js';
@@ -27,12 +28,16 @@ Options:
   --strict                 Exit non-zero on warns (exit code 2)
   --smoke                  Validate statement anchors only (skip DB evidence)
   --refresh-snapshot       Persist current evidence fingerprints/values to snapshot file
+  --write-todo [path]      Write Markdown TODO list (default: notes/provable-discourse-todos-YYYY-MM-DD.md)
+  --todo-path <path>       Explicit TODO output path (same as --write-todo <path>)
   --color                  Force colorized output
   --no-color               Disable colorized output
   --help
 
 Examples:
   node scripts/validate-provable-discourse.js
+  node scripts/validate-provable-discourse.js --write-todo
+  node scripts/validate-provable-discourse.js --write-todo notes/paper-todos-2026-02-24.md
   node scripts/validate-provable-discourse.js --refresh-snapshot
   node scripts/validate-provable-discourse.js --json --strict
 `);
@@ -41,10 +46,18 @@ Examples:
 function getArgValue(argv, flag) {
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
-    if (token === flag) return i + 1 < argv.length ? argv[i + 1] : null;
+    if (token === flag) {
+      const next = i + 1 < argv.length ? argv[i + 1] : null;
+      if (next && !next.startsWith('--')) return next;
+      return null;
+    }
     if (token.startsWith(`${flag}=`)) return token.slice(flag.length + 1);
   }
   return null;
+}
+
+function hasFlag(argv, flag) {
+  return argv.includes(flag) || argv.some((token) => token.startsWith(`${flag}=`));
 }
 
 function paint(text, enabled, ...codes) {
@@ -68,6 +81,110 @@ function formatNumber(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return String(value);
   if (Number.isInteger(value)) return String(value);
   return value.toFixed(4);
+}
+
+function toLocalDateStamp(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function buildDefaultTodoPath() {
+  return path.join('notes', `provable-discourse-todos-${toLocalDateStamp()}.md`);
+}
+
+function collectEntries(report) {
+  return [...(report.claims || []), ...(report.symmetry || []), ...(report.coverage || [])];
+}
+
+function formatAssertion(entry) {
+  if (entry.actual_value == null) return null;
+  const expected = entry.assertion?.expected;
+  const op = entry.assertion?.op || null;
+  if (expected == null && !op) return `actual=${formatNumber(entry.actual_value)}`;
+  const expectedText = Array.isArray(expected) ? JSON.stringify(expected) : expected;
+  return `actual=${formatNumber(entry.actual_value)} op=${op || 'n/a'} expected=${expectedText}`;
+}
+
+function uniqueSteps(steps) {
+  return [...new Set((steps || []).map((s) => String(s || '').trim()).filter(Boolean))];
+}
+
+function buildTodoMarkdown(report) {
+  const entries = collectEntries(report);
+  const failed = entries.filter((entry) => entry.status === 'fail');
+  const warned = entries.filter((entry) => entry.status === 'warn');
+  const generatedAt = new Date().toISOString();
+  const lines = [
+    `# Provable Discourse TODOs - ${toLocalDateStamp()}`,
+    '',
+    `Generated: ${generatedAt}`,
+    `Spec: ${report.spec_path}`,
+    `Paper: ${report.paper_path}`,
+    `Summary: pass=${report.summary?.pass || 0}, warn=${report.summary?.warn || 0}, fail=${report.summary?.fail || 0}`,
+    '',
+    '## Priority Fixes (Fails)',
+  ];
+
+  if (failed.length === 0) {
+    lines.push('- None');
+  } else {
+    for (const entry of failed) {
+      lines.push(`- [ ] \`${entry.id}\`${entry.description ? ` - ${entry.description}` : ''}`);
+      const assertionText = formatAssertion(entry);
+      if (assertionText) lines.push(`  - ${assertionText}`);
+      if (entry.statement_occurrences != null && entry.statement_occurrences === 0) {
+        lines.push('  - statement not found in paper');
+      }
+      for (const message of entry.messages || []) {
+        lines.push(`  - note: ${message}`);
+      }
+      const remediations = uniqueSteps(entry.remediation);
+      if (remediations.length > 0) {
+        lines.push('  - remediation:');
+        for (const step of remediations) {
+          lines.push(`    - ${step}`);
+        }
+      }
+    }
+  }
+
+  lines.push('');
+  lines.push('## Secondary Follow-ups (Warns)');
+  if (warned.length === 0) {
+    lines.push('- None');
+  } else {
+    for (const entry of warned) {
+      lines.push(`- [ ] \`${entry.id}\`${entry.description ? ` - ${entry.description}` : ''}`);
+      const assertionText = formatAssertion(entry);
+      if (assertionText) lines.push(`  - ${assertionText}`);
+      for (const message of entry.messages || []) {
+        lines.push(`  - note: ${message}`);
+      }
+      const remediations = uniqueSteps(entry.remediation);
+      for (const step of remediations) {
+        lines.push(`  - ${step}`);
+      }
+    }
+  }
+
+  lines.push('');
+  lines.push('## Suggested Runbook');
+  lines.push('- `npm run paper:provable-discourse:bootstrap`');
+  lines.push('- `npm run paper:provable-discourse`');
+  lines.push('- `npm run paper:provable-discourse:augment` (launch Codex to review + patch evidence/assertions)');
+  lines.push('- `npm run paper:provable-discourse:refresh-snapshot` (after accepted claim updates)');
+  lines.push('- Re-run this command with `--write-todo` to refresh this checklist.');
+  lines.push('');
+  return `${lines.join('\n')}\n`;
+}
+
+function writeTodoFile({ baseDir, todoPath, report }) {
+  const resolvedTodoPath = path.isAbsolute(todoPath) ? todoPath : path.join(baseDir, todoPath);
+  fs.mkdirSync(path.dirname(resolvedTodoPath), { recursive: true });
+  fs.writeFileSync(resolvedTodoPath, buildTodoMarkdown(report), 'utf8');
+  return path.relative(baseDir, resolvedTodoPath);
 }
 
 function printEntry(entry, useColor) {
@@ -113,6 +230,10 @@ function main() {
   const jsonMode = args.includes('--json');
   const smokeMode = args.includes('--smoke');
   const refreshSnapshot = args.includes('--refresh-snapshot');
+  const writeTodoFlag = hasFlag(args, '--write-todo');
+  const writeTodoArg = getArgValue(args, '--write-todo');
+  const todoPathArg = getArgValue(args, '--todo-path');
+  const todoPath = todoPathArg || writeTodoArg || (writeTodoFlag ? buildDefaultTodoPath() : null);
   const forceColor = args.includes('--color');
   const noColor = args.includes('--no-color') || process.env.NO_COLOR != null;
   const useColor = !jsonMode && !noColor && (forceColor || Boolean(process.stdout.isTTY));
@@ -124,6 +245,13 @@ function main() {
     smokeMode,
     refreshSnapshot,
   });
+  if (todoPath) {
+    report.todo_written = writeTodoFile({
+      baseDir: ROOT,
+      todoPath,
+      report,
+    });
+  }
 
   if (jsonMode) {
     console.log(JSON.stringify(report, null, 2));
@@ -132,6 +260,9 @@ function main() {
     console.log(`spec=${report.spec_path} paper=${report.paper_path}`);
     if (report.snapshot_written) {
       console.log(`snapshot_updated=${report.snapshot_written}`);
+    }
+    if (report.todo_written) {
+      console.log(`todo_written=${report.todo_written}`);
     }
 
     console.log('\nClaims:');

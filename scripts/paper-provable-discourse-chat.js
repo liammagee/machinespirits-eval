@@ -10,6 +10,13 @@ const ROOT = path.join(__dirname, '..');
 const AUDIT_SCRIPT = path.join(ROOT, 'scripts', 'validate-provable-discourse.js');
 const DEFAULT_CODEX_MODEL = 'gpt-5.2-codex';
 
+function toLocalDateStamp(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function usage() {
   console.log(`Usage:
   node scripts/paper-provable-discourse-chat.js [options] [-- <extra-audit-args>]
@@ -20,16 +27,25 @@ Options:
   --refresh-snapshot
   --spec <path>               (default: config/provable-discourse.yaml)
   --audit-json <path>         (default: notes/provable-discourse.latest.json)
+  --todo-md <path>            (default: notes/provable-discourse-todos-YYYY-MM-DD.md)
+  --augment-evidence          (ask Codex to propose/patch evidence/assertions)
+  --no-augment-evidence       (analysis-only prompt; no augmentation tasking)
+  --take-action               (opt-in action mode: implies --augment-evidence + --full-auto)
+  --full-auto                 (pass --full-auto to Codex)
+  --allow-paper-edits         (allow Codex to edit docs/research/paper-full.md)
+  --no-paper-edits            (default; Codex must not edit paper text)
+  --no-todo                   (do not write TODO markdown output)
   --prompt <text>             (override default Codex seed prompt)
   --model <id>                (default: gpt-5.2-codex)
   --codex-arg <arg>           (repeatable; extra Codex CLI arg)
-  --no-full-auto              (do not add --full-auto)
+  --no-full-auto              (do not pass --full-auto)
   --no-codex                  (run audit + write JSON, but do not launch Codex)
   --help
 
 Examples:
   npm run paper:provable-discourse:chat
   npm run paper:provable-discourse:chat -- --smoke
+  npm run paper:provable-discourse:chat -- --take-action
   npm run paper:provable-discourse:chat -- --strict --refresh-snapshot
   npm run paper:provable-discourse:chat -- --model gpt-5.2-codex
   npm run paper:provable-discourse:chat -- --spec config/provable-discourse.yaml --codex-arg "-m" --codex-arg "gpt-5"
@@ -57,10 +73,14 @@ function parseArgs(argv) {
     refreshSnapshot: false,
     spec: 'config/provable-discourse.yaml',
     auditJson: path.join('notes', 'provable-discourse.latest.json'),
+    todoMd: path.join('notes', `provable-discourse-todos-${toLocalDateStamp()}.md`),
+    augmentEvidence: false,
+    allowPaperEdits: false,
     prompt: null,
     model: DEFAULT_CODEX_MODEL,
     codexArgs: [],
-    fullAuto: true,
+    fullAuto: false,
+    takeAction: false,
     noCodex: false,
     auditPassthrough: [],
   };
@@ -88,8 +108,38 @@ function parseArgs(argv) {
       opts.refreshSnapshot = true;
       continue;
     }
+    if (token === '--take-action') {
+      opts.takeAction = true;
+      opts.augmentEvidence = true;
+      opts.fullAuto = true;
+      continue;
+    }
+    if (token === '--full-auto') {
+      opts.fullAuto = true;
+      continue;
+    }
+    if (token === '--allow-paper-edits') {
+      opts.allowPaperEdits = true;
+      continue;
+    }
+    if (token === '--no-paper-edits') {
+      opts.allowPaperEdits = false;
+      continue;
+    }
     if (token === '--no-full-auto') {
       opts.fullAuto = false;
+      continue;
+    }
+    if (token === '--augment-evidence') {
+      opts.augmentEvidence = true;
+      continue;
+    }
+    if (token === '--no-augment-evidence') {
+      opts.augmentEvidence = false;
+      continue;
+    }
+    if (token === '--no-todo') {
+      opts.todoMd = null;
       continue;
     }
     if (token === '--no-codex') {
@@ -108,6 +158,12 @@ function parseArgs(argv) {
     if (auditJsonValue) {
       opts.auditJson = auditJsonValue.value;
       i = auditJsonValue.nextIndex;
+      continue;
+    }
+    const todoMdValue = takeValue(argv, i, '--todo-md');
+    if (todoMdValue) {
+      opts.todoMd = todoMdValue.value;
+      i = todoMdValue.nextIndex;
       continue;
     }
 
@@ -164,13 +220,24 @@ function summarizeAudit(parsed) {
   return { summary, failedChecks, warnedChecks };
 }
 
-function buildSeedPrompt({ auditPathRel, auditExitCode, summary, failedChecks, warnedChecks, override }) {
+function buildSeedPrompt({
+  auditPathRel,
+  todoPathRel,
+  auditExitCode,
+  summary,
+  failedChecks,
+  warnedChecks,
+  augmentEvidence,
+  allowPaperEdits,
+  override,
+}) {
   if (override && override.trim()) {
     return override.trim();
   }
-  return [
+  const lines = [
     'Analyze the latest provable-discourse audit and help me plan fixes.',
     `Audit JSON: ${auditPathRel}`,
+    `TODO Markdown: ${todoPathRel || '(not written)'}`,
     `Audit exit code: ${auditExitCode}`,
     `Summary: pass=${summary.pass || 0}, warn=${summary.warn || 0}, fail=${summary.fail || 0}`,
     `Failed IDs: ${failedChecks.join(', ') || '(none)'}`,
@@ -179,8 +246,24 @@ function buildSeedPrompt({ auditPathRel, auditExitCode, summary, failedChecks, w
     '1) Group failures by stale claim, mapping gap, or evidence mismatch.',
     '2) Propose an ordered fix plan with concrete files/commands.',
     '3) Highlight which fixes are textual (paper/manifest) vs code-level (evidence adapters/tests).',
-    'Then wait for my follow-up questions.',
-  ].join('\n');
+  ];
+
+  if (augmentEvidence) {
+    lines.push('4) Implement augmentation directly: update/add evidence + assertions for failing claims in provable-discourse configs.');
+    lines.push('5) Prioritize edits in config/provable-discourse.manual.yaml and config/provable-discourse.yaml; regenerate deterministic mappings only via bootstrap script.');
+    lines.push('6) Re-run `npm run paper:provable-discourse` and iterate until fail count decreases; summarize exact residual failures.');
+  } else {
+    lines.push('4) Review mode: focus on TODO quality and next-step recommendations.');
+    lines.push('Then wait for my follow-up questions.');
+  }
+
+  if (!allowPaperEdits) {
+    lines.push('Constraint: Do not modify docs/research/paper-full.md in this session.');
+  } else {
+    lines.push('Constraint relaxed: paper edits are allowed if explicitly needed.');
+  }
+
+  return lines.join('\n');
 }
 
 function main() {
@@ -199,6 +282,7 @@ function main() {
   if (opts.strict) auditArgs.push('--strict');
   if (opts.smoke) auditArgs.push('--smoke');
   if (opts.refreshSnapshot) auditArgs.push('--refresh-snapshot');
+  if (opts.todoMd) auditArgs.push('--write-todo', opts.todoMd);
   if (opts.auditPassthrough.length > 0) {
     auditArgs.push(...opts.auditPassthrough);
   }
@@ -241,6 +325,7 @@ function main() {
   const auditPathAbs = path.join(ROOT, auditPathRel);
   fs.mkdirSync(path.dirname(auditPathAbs), { recursive: true });
   fs.writeFileSync(auditPathAbs, JSON.stringify(parsed, null, 2), 'utf8');
+  const todoPathRel = parsed.todo_written ? toRepoRelative(parsed.todo_written) : null;
 
   const { summary, failedChecks, warnedChecks } = summarizeAudit(parsed);
   const auditExitCode = audit.status ?? 1;
@@ -249,6 +334,9 @@ function main() {
     `Audit complete (exit=${auditExitCode}) :: pass=${summary.pass || 0} warn=${summary.warn || 0} fail=${summary.fail || 0}`,
   );
   console.log(`Saved audit JSON: ${auditPathRel}`);
+  if (parsed.todo_written) {
+    console.log(`Saved TODO markdown: ${parsed.todo_written}`);
+  }
   if (stderr) {
     console.log('Audit stderr:');
     console.log(stderr);
@@ -270,10 +358,13 @@ function main() {
   codexArgs.push(
     buildSeedPrompt({
       auditPathRel,
+      todoPathRel,
       auditExitCode,
       summary,
       failedChecks,
       warnedChecks,
+      augmentEvidence: opts.augmentEvidence,
+      allowPaperEdits: opts.allowPaperEdits,
       override: opts.prompt,
     }),
   );
