@@ -6,6 +6,10 @@ import {
   isEgoSuperegoLearner,
   extractInitialLearnerMessage,
 } from '../rubricEvaluator.js';
+import {
+  buildMultiTurnContext,
+  formatTurnForContext,
+} from '../evaluationRunner.js';
 
 // ── Test fixtures ─────────────────────────────────────────────────────────
 
@@ -1006,5 +1010,156 @@ describe('transcript conformity', () => {
       assert.ok(agentLines[k].startsWith(expectedPrefixes[k]),
         `Line ${k}: expected "${expectedPrefixes[k]}...", got "${agentLines[k].slice(0, 40)}..."`);
     }
+  });
+});
+
+// ── Diagnostic: conversation history state ────────────────────────────────
+//
+// These tests verify that both tutor and learner messages are fully
+// preserved in the conversation history passed to the tutor at each turn.
+
+describe('diagnostic: conversation history state', () => {
+  // Realistic tutor responses (300+ chars each, as a real ego would produce)
+  const TUTOR_RESPONSES = [
+    {
+      message: "You raise Popper's classic challenge — if the 'negation of the negation' absorbs every counterexample, how is this different from pseudoscience? But consider: is the Master-Slave dialectic offering empirical predictions or describing necessary conditions for self-consciousness? When Hegel claims recognition requires mutual dependence, he is making a structural claim, not an empirical one.",
+      title: null,
+      action: 'navigate',
+      actionTarget: '479-lecture-7',
+    },
+    {
+      message: "Your 'heads-I-win' objection captures Popper's critique precisely. But consider: when Hegel describes death as the outcome of the struggle, he calls it dialectical failure, not another negation. And unhappy consciousness is not a triumph but an impasse the servant must work through. So the dialectic does distinguish outcomes — it is not heads-I-win after all. The question is whether these distinctions are principled or ad hoc.",
+      title: null,
+      action: 'navigate',
+      actionTarget: '479-lecture-7',
+    },
+    {
+      message: "Your thirty minutes of deep engagement and that sharp framing cuts to the heart of the critique. But what if the normative force emerges immanently from the dialectical process itself rather than being imported from outside? The servant does not choose to value labour — the experience of shaping objects under constraint transforms consciousness from within. That is Hegel's answer to the is-ought gap: normativity is a product of Bildung, not a premise smuggled in.",
+      title: null,
+      action: 'navigate',
+      actionTarget: '479-lecture-7',
+    },
+  ];
+
+  // Realistic learner messages (the epistemic resistance scenario)
+  const LEARNER_MESSAGES = [
+    "I've been reading Popper's critique alongside this lecture. I think he's right that Hegel's dialectic is unfalsifiable. The 'negation of the negation' just absorbs every counterexample. How is this different from pseudoscience?",
+    "Specifically, take the master-slave dialectic. You claim the slave achieves self-consciousness through labor. But any outcome would confirm the theory — if the slave rebels, that's 'negation'; if the slave submits, that's 'unhappy consciousness.' It's heads-I-win, tails-you-lose.",
+    "But that's exactly Popper's point — you're saying dialectic isn't empirical, it's 'developmental.' But that makes it a framework you impose on history, not something you discover in it. Russell called this 'the intellectual love of God dressed up in logical terminology.' How do you respond to that?",
+    "OK, I can see you're distinguishing phenomenological description from empirical prediction. But here's my real problem: if dialectic is descriptive, then it can't be normative.",
+  ];
+
+  const ORIGINAL_CONTEXT = [
+    '**Currently viewing**: 479-lecture-3 — The Master-Slave Dialectic',
+    '**Time on page**: 30 minutes',
+    '**Session history**: 7 sessions, 120 total events',
+    '**Learner made notes on**: three key concepts from the lecture',
+  ].join('\n');
+
+  it('preserves full tutor and learner messages at each turn', () => {
+    const conversationHistory = [];
+
+    // ── Turn 0: initial (no history) ──
+    const ctx0 = buildMultiTurnContext({
+      originalContext: ORIGINAL_CONTEXT,
+      conversationHistory: [],
+      currentTurn: null,
+    });
+    assert.ok(ctx0.includes('30 minutes'), 'Turn 0 should contain original context');
+    assert.ok(!ctx0.includes('Conversation History'), 'Turn 0 should have no history');
+
+    // ── Turn 1: one prior exchange ──
+    conversationHistory.push({
+      turnIndex: 0,
+      turnId: 'initial',
+      suggestion: TUTOR_RESPONSES[0],
+      learnerAction: 'asked_followup',
+      learnerMessage: LEARNER_MESSAGES[1],
+    });
+
+    const ctx1 = buildMultiTurnContext({
+      originalContext: ORIGINAL_CONTEXT,
+      conversationHistory,
+      currentTurn: { learner_action: 'asked_followup', action_details: { message: LEARNER_MESSAGES[1] } },
+    });
+
+    assert.ok(ctx1.includes('### Conversation History'), 'Turn 1 should have history section');
+    // Full tutor response preserved
+    assert.ok(ctx1.includes(TUTOR_RESPONSES[0].message),
+      'Turn 1 history should contain FULL tutor Turn 0 response');
+    // Full learner message preserved
+    assert.ok(ctx1.includes(LEARNER_MESSAGES[1]),
+      'Turn 1 history should contain FULL learner message');
+
+    // ── Turn 2: two prior exchanges ──
+    conversationHistory.push({
+      turnIndex: 1,
+      turnId: 'followup_1',
+      suggestion: TUTOR_RESPONSES[1],
+      learnerAction: 'asked_followup',
+      learnerMessage: LEARNER_MESSAGES[2],
+    });
+
+    const ctx2 = buildMultiTurnContext({
+      originalContext: ORIGINAL_CONTEXT,
+      conversationHistory,
+      currentTurn: { learner_action: 'asked_followup', action_details: { message: LEARNER_MESSAGES[2] } },
+    });
+
+    // Both full tutor responses preserved
+    assert.ok(ctx2.includes(TUTOR_RESPONSES[0].message),
+      'Turn 2 history should contain FULL tutor Turn 0 response');
+    assert.ok(ctx2.includes(TUTOR_RESPONSES[1].message),
+      'Turn 2 history should contain FULL tutor Turn 1 response');
+    // Both learner messages preserved
+    assert.ok(ctx2.includes(LEARNER_MESSAGES[1]),
+      'Learner Turn 1 message fully preserved');
+    assert.ok(ctx2.includes(LEARNER_MESSAGES[2]),
+      'Learner Turn 2 message fully preserved');
+
+    // ── Turn 3: three prior exchanges ──
+    conversationHistory.push({
+      turnIndex: 2,
+      turnId: 'followup_2',
+      suggestion: TUTOR_RESPONSES[2],
+      learnerAction: 'asked_followup',
+      learnerMessage: LEARNER_MESSAGES[3],
+    });
+
+    const ctx3 = buildMultiTurnContext({
+      originalContext: ORIGINAL_CONTEXT,
+      conversationHistory,
+      currentTurn: { learner_action: 'asked_followup', action_details: { message: LEARNER_MESSAGES[3] } },
+    });
+
+    // All three full tutor responses preserved
+    for (let i = 0; i < 3; i++) {
+      assert.ok(ctx3.includes(TUTOR_RESPONSES[i].message),
+        `Turn 3 history should contain FULL tutor Turn ${i} response`);
+    }
+    // All learner messages preserved
+    for (let i = 1; i <= 3; i++) {
+      assert.ok(ctx3.includes(LEARNER_MESSAGES[i]),
+        `Learner message ${i} fully preserved at Turn 3`);
+    }
+  });
+
+  it('formatTurnForContext preserves full tutor message', () => {
+    const turn = {
+      turnIndex: 0,
+      turnId: 'initial',
+      suggestion: TUTOR_RESPONSES[0],
+      learnerAction: 'asked_followup',
+      learnerMessage: LEARNER_MESSAGES[1],
+    };
+
+    const formatted = formatTurnForContext(turn);
+
+    // Full tutor message present
+    assert.ok(formatted.includes(TUTOR_RESPONSES[0].message),
+      'Should contain the FULL tutor message');
+    // Learner message preserved in full
+    assert.ok(formatted.includes(LEARNER_MESSAGES[1]),
+      'Should contain full learner message');
   });
 });
