@@ -1755,8 +1755,12 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
           lines.push(`[Learner] ${truncate(learnerMsg, 400)}`);
         }
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
-        // Skip — the delivered message is already visible as the last [Tutor Ego]
-        // or [Tutor Ego] (revised) line, symmetric with how [Learner Ego] works.
+        // Emit the delivered message as [Tutor Ego] — ensures every [Tutor Superego]
+        // is followed by a [Tutor Ego], symmetric with [Learner Superego] → [Learner Ego].
+        const deliveredMsg = deliveredByTurn[currentTurnIdx] || '';
+        if (deliveredMsg) {
+          lines.push(`[Tutor Ego] ${truncate(deliveredMsg, 300)}`);
+        }
       } else if (entry.agent === 'rejection_budget') {
         const text = entry.contextSummary || entry.detail || '';
         lines.push(`[Rejection Budget] ${truncate(text, 200)}`);

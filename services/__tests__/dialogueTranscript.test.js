@@ -300,9 +300,9 @@ describe('buildDialogueFullTranscript', () => {
     const transcript = buildDialogueFullTranscript(turns, trace, null);
     assert.ok(transcript.includes('[Tutor Ego] Initial draft about Popper'),
       'Ego label should show draft from suggestions[], not delivered message');
-    // No separate [Tutor → Learner] — the ego line IS the delivered message
-    assert.ok(!transcript.includes('[Tutor → Learner]'),
-      'Should NOT emit separate [Tutor → Learner] — ego line is the delivery');
+    // Delivery appears as [Tutor Ego] after superego — ensures TS always followed by TE
+    assert.ok(transcript.includes('[Tutor Ego] Final delivered message (different)'),
+      'Should emit [Tutor Ego] with the delivered message after superego approval');
   });
 
   it('shows ego revision between two superego reviews (no consecutive superego lines)', () => {
@@ -323,7 +323,7 @@ describe('buildDialogueFullTranscript', () => {
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
-    // Verify correct sequence: ego draft → superego reject → ego revised → superego approve
+    // Verify correct sequence: ego draft → superego reject → ego revised → superego approve → delivery
     assert.ok(transcript.includes('[Tutor Ego] You spent 30 minutes'),
       'Should show initial ego draft');
     assert.ok(transcript.includes('[Tutor Superego] 30 minutes is not evidenced'),
@@ -332,6 +332,8 @@ describe('buildDialogueFullTranscript', () => {
       'Should show ego revision between the two superego reviews');
     assert.ok(transcript.includes('[Tutor Superego] Excellent revision'),
       'Should show second superego review (approval)');
+    assert.ok(transcript.includes('[Tutor Ego] Over 120 events across 7 sessions'),
+      'Should show delivered [Tutor Ego] after approving superego');
 
     // Verify no consecutive superego lines (the original bug)
     const transcriptLines = transcript.split('\n').filter(l => l.trim());
@@ -425,10 +427,10 @@ describe('buildDialogueFullTranscript', () => {
       'Should fall back to deliveredByTurn when no suggestions on trace entry');
   });
 
-  it('never emits [Tutor → Learner] — ego line IS the delivery (symmetric with learner)', () => {
-    // Multi-agent tutor: the last [Tutor Ego] is the delivered message,
-    // symmetric with how the last [Learner Ego] is the learner's sent message.
-    // No separate delivery label needed.
+  it('emits [Tutor Ego] after final superego — symmetric with LE → LS → LE pattern', () => {
+    // Multi-agent tutor: after the superego approves, the delivered message
+    // must appear as [Tutor Ego]. This ensures every [Tutor Superego]
+    // is followed by [Tutor Ego], symmetric with [Learner Superego] → [Learner Ego].
     const trace = [
       { agent: 'user', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
@@ -439,12 +441,12 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Draft response about Hegel.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(!transcript.includes('[Tutor → Learner]'),
-      'Should NOT emit [Tutor → Learner] — ego line is the delivery');
-    assert.ok(transcript.includes('[Tutor Ego] Draft response about Hegel'),
-      'Ego draft should be visible as the delivered message');
-    assert.ok(transcript.includes('[Tutor Superego] Good approach'),
-      'Superego approval should be visible');
+    // Should have: TE (draft) → TS (approve) → TE (delivery)
+    const lines = transcript.split('\n').filter(l => l.startsWith('[Tutor'));
+    assert.equal(lines.length, 3, `Expected 3 tutor lines (TE→TS→TE), got ${lines.length}:\n${lines.join('\n')}`);
+    assert.ok(lines[0].startsWith('[Tutor Ego]'), 'First: TE draft');
+    assert.ok(lines[1].startsWith('[Tutor Superego]'), 'Second: TS approval');
+    assert.ok(lines[2].startsWith('[Tutor Ego]'), 'Third: TE delivery');
   });
 
   it('single-agent tutor: ego is the only tutor line per turn', () => {
@@ -609,12 +611,13 @@ describe('buildDialogueFullTranscript', () => {
     assert.ok(transcript.includes('[Tutor Superego] Good dialectical challenge'),
       'Turn 1 second superego review');
 
-    // Verify no consecutive superego lines
+    // Verify TS→TE invariant: every [Tutor Superego] followed by [Tutor Ego]
     const transcriptLines = transcript.split('\n').filter(l => l.trim());
-    for (let i = 0; i < transcriptLines.length - 1; i++) {
-      if (transcriptLines[i].startsWith('[Tutor Superego]') &&
-          transcriptLines[i + 1].startsWith('[Tutor Superego]')) {
-        assert.fail(`Consecutive [Tutor Superego] at lines ${i} and ${i+1}: "${transcriptLines[i]}" / "${transcriptLines[i+1]}"`);
+    const agentLines = transcriptLines.filter(l => /^\[(Tutor|Learner)/.test(l));
+    for (let i = 0; i < agentLines.length; i++) {
+      if (agentLines[i].startsWith('[Tutor Superego]')) {
+        assert.ok(i + 1 < agentLines.length && agentLines[i + 1].startsWith('[Tutor Ego]'),
+          `[Tutor Superego] at index ${i} not followed by [Tutor Ego]: next="${agentLines[i + 1]?.slice(0, 50)}"`);
       }
     }
   });
@@ -741,6 +744,55 @@ describe('transcript conformity', () => {
     }
   }
 
+  // ── Structural invariants: every Superego followed by Ego ────────────────
+
+  it('[full] every [Tutor Superego] is followed by [Tutor Ego] (TS→TE invariant)', () => {
+    // The core structural rule: TS must never be the last agent line in a turn.
+    // After every [Tutor Superego], there must be a [Tutor Ego] — either a
+    // revision (when superego rejects) or the delivery (from final_output).
+    const trace = [
+      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'ego', action: 'generate', round: 0,
+        suggestions: [{ message: 'Draft about Hegel.' }] },
+      { agent: 'superego', action: 'review', round: 1, approved: false,
+        feedback: 'Push harder on the paradox.' },
+      { agent: 'ego', action: 'revise', round: 1,
+        suggestions: [{ message: 'Revised: the paradox of recognition.' }] },
+      { agent: 'superego', action: 'review', round: 2, approved: true,
+        feedback: 'Good revision.' },
+      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Done' },
+    ];
+    const turns = [{ turnIndex: 0, suggestions: [{ message: 'Revised: the paradox of recognition.' }] }];
+    const transcript = buildDialogueFullTranscript(turns, trace, null);
+    const agentLines = transcript.split('\n')
+      .filter(l => /^\[(Tutor|Learner)/.test(l));
+
+    for (let i = 0; i < agentLines.length; i++) {
+      if (agentLines[i].startsWith('[Tutor Superego]')) {
+        assert.ok(i + 1 < agentLines.length,
+          `[Tutor Superego] at line ${i} is the last agent line — must be followed by [Tutor Ego]`);
+        assert.ok(agentLines[i + 1].startsWith('[Tutor Ego]'),
+          `[Tutor Superego] at line ${i} followed by "${agentLines[i + 1].slice(0, 40)}" — expected [Tutor Ego]`);
+      }
+    }
+  });
+
+  it('[full] every [Learner Superego] is followed by [Learner Ego] (LS→LE invariant)', () => {
+    // Symmetric with tutor: every [Learner Superego] must be followed by [Learner Ego].
+    const transcript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
+    const agentLines = transcript.split('\n')
+      .filter(l => /^\[(Tutor|Learner)/.test(l));
+
+    for (let i = 0; i < agentLines.length; i++) {
+      if (agentLines[i].startsWith('[Learner Superego]')) {
+        assert.ok(i + 1 < agentLines.length,
+          `[Learner Superego] at line ${i} is the last agent line — must be followed by [Learner Ego]`);
+        assert.ok(agentLines[i + 1].startsWith('[Learner Ego]'),
+          `[Learner Superego] at line ${i} followed by "${agentLines[i + 1].slice(0, 40)}" — expected [Learner Ego]`);
+      }
+    }
+  });
+
   // ── Full deliberation chain ordering (multi-agent tutor + learner) ──────
 
   it('[full/ego_superego] follows LE → LS → LE → TE → TS → TE chain in multi-agent turns', () => {
@@ -786,8 +838,9 @@ describe('transcript conformity', () => {
       .filter(l => l.trim())
       .filter(l => /^\[(Learner|Tutor)/.test(l));
 
-    // Expected order: symmetric learner + tutor deliberation chains
-    // LE → LS → LE(revised) mirrors TE → TS → TE(revised) → TS(approve)
+    // Expected order: symmetric deliberation chains
+    // Learner: LE → LS → LE(revised)
+    // Tutor:   TE → TS → TE(revised) → TS(approve) → TE(delivery)
     const expectedPrefixes = [
       '[Learner Ego]',
       '[Learner Superego]',
@@ -796,6 +849,7 @@ describe('transcript conformity', () => {
       '[Tutor Superego]',
       '[Tutor Ego] (revised)',
       '[Tutor Superego]',
+      '[Tutor Ego]',  // delivery after approval
     ];
 
     assert.equal(agentLines.length, expectedPrefixes.length,
@@ -849,25 +903,27 @@ describe('transcript conformity', () => {
 
     // Extract ordered markers — each must appear later in the transcript than the previous
     const markers = [
-      'Opening about recognition',           // Turn 1 tutor ego
+      'Opening about recognition',           // Turn 1 tutor ego (draft)
       'Solid opening approach',              // Turn 1 tutor superego
+      'Opening about recognition',           // Turn 1 tutor ego (delivery, same text)
       'I wonder about the master',           // Turn 2 learner ego
       'Dig into the asymmetry more',         // Turn 2 learner superego
       'The asymmetry of recognition is key', // Turn 2 learner ego (revised)
-      'Yes, asymmetry drives the dialectic', // Turn 2 tutor ego
+      'Yes, asymmetry drives the dialectic', // Turn 2 tutor ego (draft)
       'Challenge the learner more',          // Turn 2 tutor superego (reject)
       'Asymmetry drives the dialectic — but what if it collapses', // Turn 2 tutor ego (revised)
       'Good dialectical tension now',        // Turn 2 tutor superego (approve)
+      'Asymmetry drives the dialectic',      // Turn 2 tutor ego (delivery)
     ];
 
-    let prevPos = -1;
+    // Use line-by-line ordering for markers that repeat (delivery = same text as draft/revision)
+    const lines = transcript.split('\n').filter(l => l.trim());
+    let lineIdx = 0;
     for (const marker of markers) {
-      const pos = transcript.indexOf(marker);
-      assert.ok(pos >= 0,
-        `Marker "${marker}" not found in transcript`);
-      assert.ok(pos > prevPos,
-        `Chronological violation: "${marker}" (pos ${pos}) appears before previous marker (pos ${prevPos})`);
-      prevPos = pos;
+      const found = lines.findIndex((l, i) => i >= lineIdx && l.includes(marker));
+      assert.ok(found >= lineIdx,
+        `Marker "${marker}" not found at or after line ${lineIdx}`);
+      lineIdx = found + 1;
     }
   });
 
