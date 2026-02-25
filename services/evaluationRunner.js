@@ -2245,6 +2245,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       }
       consolidatedTrace.push(...genResult.dialogueTrace);
 
+      // Attach inputMessages to tutor trace entries (symmetric with learner deliberation entries)
+      for (let i = consolidatedTrace.length - genResult.dialogueTrace.length; i < consolidatedTrace.length; i++) {
+        const entry = consolidatedTrace[i];
+        if (entry.agent === 'ego' && (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')) {
+          entry.inputMessages = turnMessageHistory || null;
+        } else if (entry.agent === 'superego' && entry.action === 'review') {
+          entry.inputMessages = null; // superego uses single-prompt, not message chains
+        }
+      }
+
       // Add final delivery to user for multi-agent mode
       const hasSuperego = genResult.dialogueTrace.some((entry) => entry.agent === 'superego');
       if (hasSuperego) {
@@ -2797,6 +2807,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               provider: delibMetrics?.provider || null,
               metrics: delibMetrics,
               apiPayload: delib.apiPayload || null,
+              inputMessages: delib.inputMessages || null,
               timestamp: new Date().toISOString(),
             });
           }
@@ -2812,6 +2823,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
             provider: finalLearnerMetrics?.provider || null,
             metrics: finalLearnerMetrics,
             apiPayload: finalLearnerDelib?.apiPayload || null,
+            inputMessages: null, // synthesis is not a separate LLM call
             timestamp: new Date().toISOString(),
           });
         }
