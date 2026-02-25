@@ -76,6 +76,7 @@ import * as evaluationStore from '../services/evaluationStore.js';
 import {
   getAvailableJudge,
   buildEvaluationPrompt,
+  buildPerTurnTutorEvaluationPrompt,
   buildDialogueQualityPrompt,
   calculateOverallScore,
   calculateBaseScore,
@@ -90,7 +91,7 @@ import {
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
-import { formatTranscript } from '../services/transcriptFormatter.js';
+import { projectTranscriptArtifacts } from '../services/transcriptProjection.js';
 import theme from '../services/cliTheme.js';
 import { spawn } from 'child_process';
 import readline from 'readline';
@@ -406,12 +407,14 @@ function renderRunsTable(runs) {
       theme.header('ID'.padEnd(40)) +
       theme.header('Status'.padEnd(12)) +
       theme.header('Progress'.padEnd(18)) +
-      theme.header('Avg'.padEnd(7)) +
+      theme.header('Tutor'.padEnd(7)) +
+      theme.header('Lrnr'.padEnd(7)) +
+      theme.header('DlgQ'.padEnd(7)) +
       theme.header('Duration'.padEnd(10)) +
       theme.header('Created'.padEnd(24)) +
       theme.header('Description'),
   );
-  lines.push('  ' + theme.dim('-'.repeat(130)));
+  lines.push('  ' + theme.dim('-'.repeat(144)));
 
   for (const run of runs) {
     const created = run.createdAt ? new Date(run.createdAt).toLocaleString() : '--';
@@ -428,6 +431,8 @@ function renderRunsTable(runs) {
     }
     const activeTest = run.activeTest || run.metadata?.testProgress || null;
     const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
+    const avgLearner = run.avgLearnerScore != null ? run.avgLearnerScore.toFixed(1) : '--';
+    const avgDialogue = run.avgDialogueScore != null ? run.avgDialogueScore.toFixed(1) : '--';
     let duration = '--';
     if (run.durationMs != null) {
       const totalSec = Math.round(run.durationMs / 1000);
@@ -443,6 +448,8 @@ function renderRunsTable(runs) {
         theme.status((run.status || '--').padEnd(12)) +
         progress.padEnd(18) +
         theme.score(avg.padEnd(7)) +
+        theme.score(avgLearner.padEnd(7)) +
+        theme.score(avgDialogue.padEnd(7)) +
         duration.padEnd(10) +
         theme.dim(created.padEnd(24)) +
         desc,
@@ -1681,13 +1688,38 @@ async function main() {
                 const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
                 const trace = dialogue.dialogueTrace || [];
                 if (trace.length > 0) {
-                  const formatted = formatTranscript(trace, {
-                    detail: detailLevel,
+                  const projection = projectTranscriptArtifacts({
+                    trace,
+                    turnResults: dialogue.turnResults || [],
+                    learnerContext: dialogue.learnerContext || '',
                     scenarioName: result.scenarioName || result.scenarioId,
-                    profileName: result.profileName,
+                    profileName: result.profileName || '',
                     totalTurns: dialogue.totalTurns || 0,
+                    detail: detailLevel,
                   });
-                  console.log(formatted);
+
+                  console.log(projection.formatted);
+
+                  if (projection.judged?.publicTranscript || projection.judged?.fullTranscript) {
+                    console.log(theme.dim('Judge-visible transcript (public):'));
+                    console.log(projection.judged.publicTranscript || '(missing)');
+                    console.log('');
+                    console.log(theme.dim('Judge-visible transcript (full/internal):'));
+                    console.log(projection.judged.fullTranscript || '(missing)');
+                    console.log('');
+                  }
+
+                  if (projection.diagnostics?.effectCount > 0) {
+                    console.log(theme.warn('Projection Diagnostics:'));
+                    for (const effect of projection.diagnostics.effects) {
+                      const sev = effect.severity?.toUpperCase?.() || 'INFO';
+                      console.log(`  - [${sev}] ${effect.message}`);
+                      for (const step of effect.remedialSteps || []) {
+                        console.log(`      remediation: ${step}`);
+                      }
+                    }
+                    console.log('');
+                  }
                   printed = true;
                 }
               } catch (e) {
@@ -2106,7 +2138,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--follow] [--review] [--refresh <ms>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--follow] [--review] [--refresh <ms>] [--verbose]',
           );
           process.exit(1);
         }
@@ -2117,6 +2149,7 @@ async function main() {
         const review = getFlag('review');
         const multiturnOnly = getFlag('multiturn-only');
         const restoreTurn0 = getFlag('restore-turn0');
+        const tutorOnly = getFlag('tutor-only');
         const refreshMs = parseInt(getOption('refresh', '5000'), 10);
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
@@ -2334,6 +2367,475 @@ async function main() {
           }
 
           return tutorFirstTurnScore;
+        }
+
+        // Helper: call claude CLI as judge and parse JSON response
+        async function callClaudeJudge(prompt) {
+          const claudeArgs = ['-p', '-', '--output-format', 'text'];
+          if (modelOverride) claudeArgs.push('--model', modelOverride);
+
+          const stdout = await new Promise((resolve, reject) => {
+            const env = { ...process.env };
+            delete env.ANTHROPIC_API_KEY;
+            const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
+            let out = '';
+            let err = '';
+            child.stdout.on('data', (d) => { out += d; });
+            child.stderr.on('data', (d) => { err += d; });
+            child.on('error', reject);
+            child.on('close', (code) => {
+              if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+              else resolve(out);
+            });
+            child.stdin.write(prompt);
+            child.stdin.end();
+          });
+
+          let jsonStr = stdout.trim();
+          const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+          if (fenceMatch) {
+            jsonStr = fenceMatch[1].trim();
+          } else {
+            const firstBrace = jsonStr.indexOf('{');
+            const lastBrace = jsonStr.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+              jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+            }
+          }
+          return JSON.parse(jsonStr);
+        }
+
+        // Helper: evaluate a multi-turn result with per-turn tutor + learner scoring
+        async function evaluateMultiTurnResult(result, tag) {
+          const startTime = Date.now();
+          const scenarioId = result.scenarioId;
+          const profileName = result.profileName || `${result.provider}/${result.model}`;
+          const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+
+          const scenario = getScenario(scenarioId);
+          if (!scenario) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (scenario not found)`);
+            return null;
+          }
+
+          // Load dialogue log
+          const dialogueId = result.dialogueId;
+          const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
+          let dialogueLog;
+          try {
+            if (!fs.existsSync(logPath)) {
+              console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (dialogue log not found)`);
+              return null;
+            }
+            dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+          } catch (e) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (${e.message})`);
+            return null;
+          }
+
+          if (!dialogueLog.isMultiTurn) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (not multi-turn)`);
+            return null;
+          }
+
+          const turnResults = dialogueLog.turnResults || [];
+          const dialogueTrace = dialogueLog.dialogueTrace || [];
+          const totalTurns = turnResults.length;
+
+          if (totalTurns === 0) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (no turns)`);
+            return null;
+          }
+
+          console.log(`${tag} ${scenarioId} / ${profileName} ... per-turn scoring (${totalTurns} turns)`);
+
+          const scenarioContext = {
+            name: scenario.name,
+            description: scenario.description,
+            expectedBehavior: scenario.expected_behavior,
+            learnerContext: scenario.learner_context,
+            requiredElements: scenario.required_elements,
+            forbiddenElements: scenario.forbidden_elements,
+          };
+
+          const dimensionMap = {
+            relevance: 'relevance',
+            specificity: 'specificity',
+            pedagogical_soundness: 'pedagogical',
+            pedagogical: 'pedagogical',
+            personalization: 'personalization',
+            actionability: 'actionability',
+            tone: 'tone',
+          };
+
+          // ── Per-turn tutor scoring ──
+          const tutorTurnScores = {};
+          for (let i = 0; i < totalTurns; i++) {
+            const turnTag = `${tag}   tutor-turn-${i}`;
+            try {
+              const prompt = buildPerTurnTutorEvaluationPrompt({
+                turnResults,
+                dialogueTrace,
+                targetTurnIndex: i,
+                scenario: scenarioContext,
+              });
+
+              if (!prompt) {
+                if (verbose) console.log(`${turnTag} ... SKIP (no suggestion)`);
+                continue;
+              }
+
+              if (verbose) console.log(`${turnTag} ... calling claude`);
+              const parsed = await callClaudeJudge(prompt);
+
+              const normalizedScores = {};
+              for (const [key, value] of Object.entries(parsed.scores || {})) {
+                const normalizedKey = dimensionMap[key] || key;
+                if (typeof value === 'object' && value !== null) {
+                  normalizedScores[normalizedKey] = { score: value.score, reasoning: value.reasoning };
+                } else if (typeof value === 'number') {
+                  normalizedScores[normalizedKey] = { score: value, reasoning: null };
+                }
+              }
+
+              const overallScore = Object.keys(normalizedScores).length > 0
+                ? calculateOverallScore(normalizedScores)
+                : parsed.overall_score;
+
+              tutorTurnScores[i] = {
+                scores: normalizedScores,
+                overallScore,
+                baseScore: calculateBaseScore(normalizedScores),
+                recognitionScore: calculateRecognitionScore(normalizedScores),
+                summary: parsed.summary,
+              };
+
+              const dimScores = Object.entries(normalizedScores)
+                .map(([k, v]) => `${k}=${v.score}`)
+                .join(' ');
+              console.log(`${turnTag} ... ${overallScore.toFixed(1)}  (${dimScores})`);
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${turnTag} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+          }
+
+          // ── Per-turn learner scoring (unless --tutor-only) ──
+          let learnerTurnScores = {};
+          if (!tutorOnly) {
+            const learnerArch = dialogueLog.learnerArchitecture || 'unified';
+            const isMultiAgent = learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
+            const personaDescription = dialogueLog.learnerContext || 'No persona description available';
+            const scenarioName = scenario.name || scenarioId;
+
+            // Build reconstructed turns for learner prompt builder
+            const reconstructedTurns = [];
+            const trace = dialogueLog.dialogueTrace || [];
+            const turnActionEntries = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action');
+
+            // Turn 0: initial tutor suggestion
+            if (turnResults.length > 0) {
+              const sug = turnResults[0].suggestions?.[0];
+              reconstructedTurns.push({
+                turnNumber: 0,
+                phase: 'tutor',
+                externalMessage: sug?.message || sug?.text || JSON.stringify(sug),
+              });
+            }
+
+            // Extract learner turns
+            const learnerTurns = [];
+            for (const ta of turnActionEntries) {
+              const turnData = {
+                turnIndex: ta.turnIndex,
+                externalMessage: ta.contextSummary || '',
+                internalDeliberation: [],
+              };
+
+              if (isMultiAgent) {
+                const taIdx = trace.indexOf(ta);
+                for (let j = taIdx - 1; j >= 0; j--) {
+                  const entry = trace[j];
+                  if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
+                    turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
+                    break;
+                  } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
+                    turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
+                  } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
+                    turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
+                  } else if (entry.agent === 'ego' || entry.agent === 'system') {
+                    break;
+                  }
+                }
+              }
+
+              learnerTurns.push(turnData);
+            }
+
+            // Interleave learner turns with tutor turns
+            for (let lt = 0; lt < learnerTurns.length; lt++) {
+              reconstructedTurns.push({
+                turnNumber: lt + 1,
+                phase: 'learner',
+                externalMessage: learnerTurns[lt].externalMessage,
+                internalDeliberation: learnerTurns[lt].internalDeliberation,
+              });
+
+              const tutorTurn = turnResults[lt + 1];
+              if (tutorTurn) {
+                const sug = tutorTurn.suggestions?.[0];
+                reconstructedTurns.push({
+                  turnNumber: lt + 1,
+                  phase: 'tutor',
+                  externalMessage: sug?.message || sug?.text || JSON.stringify(sug),
+                });
+              }
+            }
+
+            // Score each learner turn
+            for (let lt = 0; lt < learnerTurns.length; lt++) {
+              const targetIdx = reconstructedTurns.findIndex(
+                (t, idx) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0,
+              );
+              if (targetIdx === -1) continue;
+
+              const turnTag = `${tag}   learner-turn-${lt}`;
+              try {
+                const prompt = buildLearnerEvaluationPrompt({
+                  turns: reconstructedTurns,
+                  targetTurnIndex: targetIdx,
+                  personaId: profileName,
+                  personaDescription,
+                  learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+                  scenarioName,
+                  topic: scenarioId,
+                });
+
+                if (verbose) console.log(`${turnTag} ... calling claude`);
+                const parsed = await callClaudeJudge(prompt);
+                const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
+
+                learnerTurnScores[lt] = {
+                  turnIndex: lt + 1,
+                  scores: parsed.scores,
+                  overallScore: turnOverall,
+                  summary: parsed.summary,
+                };
+
+                const dimScores = Object.entries(parsed.scores || {})
+                  .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
+                  .join(' ');
+                console.log(`${turnTag} ... ${turnOverall.toFixed(1)}  (${dimScores})`);
+              } catch (err) {
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${turnTag} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+              }
+            }
+
+            // Holistic learner evaluation
+            if (learnerTurns.length > 0) {
+              const holisticTag = `${tag}   learner-holistic`;
+              try {
+                const holisticPrompt = buildLearnerHolisticEvaluationPrompt({
+                  turns: reconstructedTurns,
+                  personaId: profileName,
+                  personaDescription,
+                  learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+                  scenarioName,
+                  topic: scenarioId,
+                });
+
+                if (verbose) console.log(`${holisticTag} ... calling claude`);
+                const parsedHolistic = await callClaudeJudge(holisticPrompt);
+                const holisticScores = parsedHolistic.scores || {};
+                const holisticOverallScore = calculateLearnerOverallScore(holisticScores, isMultiAgent);
+
+                evaluationStore.updateResultLearnerScores(result.id, {
+                  scores: learnerTurnScores,
+                  overallScore: Object.keys(learnerTurnScores).length > 0
+                    ? Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) / Object.values(learnerTurnScores).length
+                    : null,
+                  judgeModel: judgeModel,
+                  holisticScores,
+                  holisticOverallScore,
+                  holisticSummary: parsedHolistic.summary || null,
+                  holisticJudgeModel: judgeModel,
+                });
+
+                console.log(`${holisticTag} ... ${holisticOverallScore.toFixed(1)}`);
+              } catch (err) {
+                // Store per-turn learner scores even if holistic fails
+                if (Object.keys(learnerTurnScores).length > 0) {
+                  const avgLearner = Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) / Object.values(learnerTurnScores).length;
+                  evaluationStore.updateResultLearnerScores(result.id, {
+                    scores: learnerTurnScores,
+                    overallScore: avgLearner,
+                    judgeModel: judgeModel,
+                  });
+                }
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${holisticTag} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+              }
+            }
+          }
+
+          // ── Aggregate tutor scores ──
+          const tutorTurnOveralls = Object.values(tutorTurnScores).map((s) => s.overallScore);
+          if (tutorTurnOveralls.length === 0) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... NO tutor turns scored`);
+            return null;
+          }
+
+          const tutorOverall = tutorTurnOveralls.reduce((a, b) => a + b, 0) / tutorTurnOveralls.length;
+          const tutorFirst = tutorTurnScores[0]?.overallScore ?? null;
+          const lastTurnIdx = Math.max(...Object.keys(tutorTurnScores).map(Number));
+          const tutorLast = tutorTurnScores[lastTurnIdx]?.overallScore ?? null;
+          const tutorDevelopment = (tutorFirst != null && tutorLast != null) ? tutorLast - tutorFirst : null;
+
+          // Also write the first turn's per-dimension scores to the legacy dimension columns
+          const firstTurnScores = tutorTurnScores[0]?.scores || {};
+          evaluationStore.updateResultTutorScores(result.id, {
+            tutorScores: tutorTurnScores,
+            tutorOverallScore: tutorOverall,
+            tutorFirstTurnScore: tutorFirst,
+            tutorLastTurnScore: tutorLast,
+            tutorDevelopmentScore: tutorDevelopment,
+            judgeModel: judgeModel,
+            judgeLatencyMs: Date.now() - startTime,
+          });
+
+          // Also update the per-dimension columns from the first turn for backward compat
+          if (Object.keys(firstTurnScores).length > 0) {
+            const firstTurnEval = {
+              scores: firstTurnScores,
+              tutorFirstTurnScore: tutorFirst,
+              baseScore: tutorTurnScores[0]?.baseScore ?? null,
+              recognitionScore: tutorTurnScores[0]?.recognitionScore ?? null,
+              passesRequired: true,
+              passesForbidden: true,
+              requiredMissing: [],
+              forbiddenFound: [],
+              summary: tutorTurnScores[0]?.summary || null,
+              judgeModel: judgeModel,
+              judgeLatencyMs: Date.now() - startTime,
+              holisticOverallScore: tutorLast,
+            };
+            evaluationStore.updateResultScores(result.id, firstTurnEval);
+            // Re-apply the per-turn tutor scores (updateResultScores may have overwritten some fields)
+            evaluationStore.updateResultTutorScores(result.id, {
+              tutorScores: tutorTurnScores,
+              tutorOverallScore: tutorOverall,
+              tutorFirstTurnScore: tutorFirst,
+              tutorLastTurnScore: tutorLast,
+              tutorDevelopmentScore: tutorDevelopment,
+            });
+          }
+
+          console.log(
+            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}`,
+          );
+
+          return tutorOverall;
+        }
+
+        // Helper: run dialogue quality scoring for a multi-turn result
+        async function scoreDialogueQuality(result, tag) {
+          const scenarioId = result.scenarioId;
+          const profileName = result.profileName || `${result.provider}/${result.model}`;
+          const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+
+          const scenario = getScenario(scenarioId);
+          if (!scenario) return;
+
+          const dialogueId = result.dialogueId;
+          if (!dialogueId) return;
+
+          const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
+          let dialogueLog;
+          try {
+            if (!fs.existsSync(logPath)) return;
+            dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+          } catch (e) {
+            return;
+          }
+
+          const dialogueTrace = dialogueLog?.dialogueTrace || [];
+          const conversationHistory = (dialogueLog?.turnResults || []).map((t, idx) => ({
+            turnIndex: idx,
+            turnId: t.turnId,
+            suggestion: t.suggestions?.[0],
+            learnerAction: t.learnerAction,
+            learnerMessage: t.learnerMessage,
+          }));
+
+          const promptParams = {
+            turns: conversationHistory,
+            dialogueTrace,
+            scenarioName: scenario.name,
+            scenarioDescription: scenario.description,
+            topic: scenario.topic || scenario.name,
+            turnCount: result.suggestions?.length || conversationHistory.length,
+            learnerContext: dialogueLog?.learnerContext || null,
+          };
+
+          try {
+            // Public transcript
+            const publicPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'public' });
+            const publicParsed = await callClaudeJudge(publicPrompt);
+            const publicScores = {};
+            for (const [key, value] of Object.entries(publicParsed.scores || {})) {
+              if (typeof value === 'object' && value !== null) {
+                publicScores[key] = { score: value.score, reasoning: value.reasoning };
+              } else if (typeof value === 'number') {
+                publicScores[key] = { score: value, reasoning: null };
+              }
+            }
+            const publicOverall = Object.keys(publicScores).length > 0
+              ? calculateDialogueQualityScore(publicScores)
+              : publicParsed.overall_score;
+
+            evaluationStore.updateDialogueQualityScore(result.id, {
+              dialogueQualityScore: publicOverall,
+              dialogueQualitySummary: publicParsed.summary || null,
+              dialogueQualityJudgeModel: judgeModel,
+            });
+
+            console.log(`${tag}   dialogue-quality(public)=${publicOverall.toFixed(1)}`);
+
+            // Full transcript
+            const fullPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'full' });
+            const fullParsed = await callClaudeJudge(fullPrompt);
+            const fullScores = {};
+            for (const [key, value] of Object.entries(fullParsed.scores || {})) {
+              if (typeof value === 'object' && value !== null) {
+                fullScores[key] = { score: value.score, reasoning: value.reasoning };
+              } else if (typeof value === 'number') {
+                fullScores[key] = { score: value, reasoning: null };
+              }
+            }
+            const fullOverall = Object.keys(fullScores).length > 0
+              ? calculateDialogueQualityScore(fullScores)
+              : fullParsed.overall_score;
+
+            evaluationStore.updateDialogueQualityInternalScore(result.id, {
+              dialogueQualityInternalScore: fullOverall,
+              dialogueQualityInternalSummary: fullParsed.summary || null,
+            });
+
+            console.log(`${tag}   dialogue-quality(full)=${fullOverall.toFixed(1)}`);
+          } catch (err) {
+            const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+            console.log(`${tag}   dialogue-quality ... FAIL: ${msg}`);
+            if (verbose) console.error(err);
+          }
+        }
+
+        // Helper: determine if a result is multi-turn
+        function isMultiTurnResult(result) {
+          return result.dialogueId && Array.isArray(result.suggestions) && result.suggestions.length > 1;
         }
 
         // Helper: print summary
@@ -2671,6 +3173,7 @@ async function main() {
             // Process each new unevaluated result
             let batchIndex = 0;
             const batchSize = unevaluated.length;
+            const batchMultiTurnScored = [];
             for (const result of unevaluated) {
               if (interrupted) break;
               processedIds.add(result.id);
@@ -2680,7 +3183,13 @@ async function main() {
               const tag = `[${batchIndex}/${batchSize}] (${alreadyEvaluated + batchIndex}/${totalResults} scored)`;
 
               try {
-                const score = await evaluateOneResult(result, tag);
+                let score;
+                if (isMultiTurnResult(result)) {
+                  score = await evaluateMultiTurnResult(result, tag);
+                  if (score != null) batchMultiTurnScored.push(result);
+                } else {
+                  score = await evaluateOneResult(result, tag);
+                }
                 if (score != null) {
                   scores.push(score);
                   succeeded++;
@@ -2693,6 +3202,14 @@ async function main() {
                 const profileName = result.profileName || `${result.provider}/${result.model}`;
                 console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
                 if (verbose) console.error(err);
+              }
+            }
+
+            // Auto-trigger dialogue quality scoring for newly scored multi-turn results
+            if (!tutorOnly && batchMultiTurnScored.length > 0) {
+              for (let di = 0; di < batchMultiTurnScored.length; di++) {
+                const dTag = `[dq ${di + 1}/${batchMultiTurnScored.length}]`;
+                await scoreDialogueQuality(batchMultiTurnScored[di], dTag);
               }
             }
 
@@ -2727,14 +3244,16 @@ async function main() {
           process.removeListener('SIGINT', sigintHandler);
           printEvaluateSummary(succeeded, failed, succeeded + failed, scores);
 
-          // Holistic dialogue evaluation for multi-turn dialogues
-          const allResults = evaluationStore
-            .getResults(runId, {
-              scenarioId: scenarioFilter,
-              profileName: profileFilter,
-            })
-            .filter((r) => r.success && r.baseScore != null);
-          await evaluateHolisticDialogues(allResults);
+          // Legacy holistic dialogue evaluation (only for --multiturn-only / --restore-turn0 paths)
+          if (multiturnOnly || restoreTurn0) {
+            const allResults = evaluationStore
+              .getResults(runId, {
+                scenarioId: scenarioFilter,
+                profileName: profileFilter,
+              })
+              .filter((r) => r.success && r.baseScore != null);
+            await evaluateHolisticDialogues(allResults);
+          }
         } else {
           // ── One-shot mode (existing behavior) ──
 
@@ -2800,14 +3319,21 @@ async function main() {
             break;
           }
 
+          const singleTurn = toEvaluate.filter((r) => !isMultiTurnResult(r));
+          const multiTurn = toEvaluate.filter((r) => isMultiTurnResult(r));
+
           console.log(`\nEvaluating ${toEvaluate.length} result(s) for run: ${runId}`);
+          if (singleTurn.length > 0) console.log(`  Single-turn: ${singleTurn.length}`);
+          if (multiTurn.length > 0) console.log(`  Multi-turn:  ${multiTurn.length} (per-turn scoring)`);
+          if (tutorOnly) console.log('  --tutor-only: skipping learner + dialogue scoring');
           if (modelOverride) console.log(`  Model: ${modelOverride}`);
           console.log('');
 
-          for (let i = 0; i < toEvaluate.length; i++) {
-            const result = toEvaluate[i];
-            const tag = `[${i + 1}/${toEvaluate.length}]`;
-
+          // ── Score single-turn results (existing path) ──
+          let idx = 0;
+          for (const result of singleTurn) {
+            idx++;
+            const tag = `[${idx}/${toEvaluate.length}]`;
             try {
               const score = await evaluateOneResult(result, tag);
               if (score != null) {
@@ -2825,10 +3351,49 @@ async function main() {
             }
           }
 
+          // ── Score multi-turn results (per-turn tutor + learner) ──
+          const multiTurnScored = [];
+          for (const result of multiTurn) {
+            idx++;
+            const tag = `[${idx}/${toEvaluate.length}]`;
+            try {
+              const score = await evaluateMultiTurnResult(result, tag);
+              if (score != null) {
+                scores.push(score);
+                succeeded++;
+                multiTurnScored.push(result);
+              } else {
+                failed++;
+              }
+            } catch (err) {
+              failed++;
+              const profileName = result.profileName || `${result.provider}/${result.model}`;
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+          }
+
           printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
 
-          // Holistic dialogue evaluation for multi-turn dialogues
-          await evaluateHolisticDialogues(toEvaluate.filter((r) => r.success));
+          // ── Auto-trigger dialogue quality scoring for multi-turn results (unless --tutor-only) ──
+          if (!tutorOnly && multiTurnScored.length > 0) {
+            console.log(`\n${'─'.repeat(50)}`);
+            console.log(`  DIALOGUE QUALITY SCORING (${multiTurnScored.length} dialogue(s))`);
+            console.log(`${'─'.repeat(50)}\n`);
+
+            for (let i = 0; i < multiTurnScored.length; i++) {
+              const result = multiTurnScored[i];
+              const tag = `[${i + 1}/${multiTurnScored.length}]`;
+              await scoreDialogueQuality(result, tag);
+            }
+          }
+
+          // Legacy holistic dialogue evaluation for any remaining multi-turn results
+          // (kept for backward compat with evaluate --multiturn-only path)
+          if (multiturnOnly || restoreTurn0) {
+            await evaluateHolisticDialogues(toEvaluate.filter((r) => r.success));
+          }
         }
         break;
       }
@@ -3586,9 +4151,11 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate-dialogue');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate-dialogue <runId> [--model <model>] [--judge <judge>] [--force] [--verbose]',
+            'Usage: eval-cli.js evaluate-dialogue <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--verbose]',
           );
           console.error('  Scores multi-turn dialogues: tutor last-turn, development delta, and dialogue quality.');
+          console.error('  --scenario <id>  Filter to specific scenario(s) (comma-separated)');
+          console.error('  --profile <name> Filter to specific profile(s) (comma-separated)');
           process.exit(1);
         }
 
@@ -3596,6 +4163,8 @@ async function main() {
         const force = getFlag('force');
         const modelOverride = getOption('model') || null;
         const judgeFilter = getOption('judge') || null;
+        const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
+        const profileFilter = getOption('profile') || getOption('profiles') || null;
 
         // Restore env overrides from run metadata
         {
@@ -3611,8 +4180,11 @@ async function main() {
           }
         }
 
-        // Load all results for this run
-        const results = evaluationStore.getResults(runId);
+        // Load all results for this run (with optional filters)
+        const results = evaluationStore.getResults(runId, {
+          scenarioId: scenarioFilter?.split(',')[0] || null,
+          profileName: profileFilter?.split(',')[0] || null,
+        });
         if (results.length === 0) {
           console.error(`No results found for run: ${runId}`);
           process.exit(1);
@@ -3622,6 +4194,16 @@ async function main() {
         let toEvaluate = results.filter(
           (r) => r.success && Array.isArray(r.suggestions) && r.suggestions.length > 1,
         );
+
+        // Apply additional comma-separated scenario/profile filters
+        if (scenarioFilter) {
+          const scenarios = scenarioFilter.split(',').map((s) => s.trim());
+          toEvaluate = toEvaluate.filter((r) => scenarios.includes(r.scenarioId));
+        }
+        if (profileFilter) {
+          const profiles = profileFilter.split(',').map((p) => p.trim());
+          toEvaluate = toEvaluate.filter((r) => profiles.includes(r.profileName));
+        }
 
         if (toEvaluate.length === 0) {
           console.log('No multi-turn results found in this run. Nothing to evaluate.');

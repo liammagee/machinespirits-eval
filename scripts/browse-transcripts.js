@@ -16,6 +16,7 @@ import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
 import { exec } from 'child_process';
+import { projectTranscriptArtifacts } from '../services/transcriptProjection.js';
 
 const __dirname = import.meta.dirname;
 const DB_PATH = path.join(__dirname, '..', 'data', 'evaluations.db');
@@ -33,6 +34,7 @@ const shouldOpen = !args.includes('--no-open');
 
 const db = new Database(DB_PATH, { readonly: true });
 const app = express();
+app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
 // ── Learner config cache ────────────────────────────────────────────────────
 
@@ -66,6 +68,16 @@ app.get('/api/runs', (req, res) => {
   const rows = db
     .prepare(
       `
+    WITH latest AS (
+      SELECT er.*
+      FROM evaluation_results er
+      JOIN (
+        SELECT dialogue_id, MAX(id) AS max_id
+        FROM evaluation_results
+        WHERE dialogue_id IS NOT NULL
+        GROUP BY dialogue_id
+      ) ids ON ids.max_id = er.id
+    )
     SELECT run_id,
       COUNT(*) as dialogue_count,
       MIN(tutor_first_turn_score) as min_score,
@@ -73,8 +85,7 @@ app.get('/api/runs', (req, res) => {
       GROUP_CONCAT(DISTINCT profile_name) as profiles,
       GROUP_CONCAT(DISTINCT ego_model) as ego_models,
       MIN(created_at) as first_created
-    FROM evaluation_results
-    WHERE dialogue_id IS NOT NULL AND tutor_first_turn_score IS NOT NULL
+    FROM latest
     GROUP BY run_id
     ORDER BY first_created DESC
   `,
@@ -100,12 +111,17 @@ app.get('/api/runs/:runId', (req, res) => {
   const rows = db
     .prepare(
       `
-    SELECT id, dialogue_id, profile_name, scenario_id, tutor_first_turn_score,
-      ego_model, judge_model, learner_architecture, superego_model,
-      factor_recognition
-    FROM evaluation_results
-    WHERE run_id = ? AND dialogue_id IS NOT NULL AND tutor_first_turn_score IS NOT NULL
-    ORDER BY profile_name, scenario_id, tutor_first_turn_score DESC
+    SELECT er.id, er.dialogue_id, er.profile_name, er.scenario_id, er.tutor_first_turn_score,
+      er.ego_model, er.judge_model, er.learner_architecture, er.superego_model,
+      er.factor_recognition
+    FROM evaluation_results er
+    JOIN (
+      SELECT dialogue_id, MAX(id) AS max_id
+      FROM evaluation_results
+      WHERE run_id = ? AND dialogue_id IS NOT NULL
+      GROUP BY dialogue_id
+    ) latest ON latest.max_id = er.id
+    ORDER BY er.profile_name, er.scenario_id, er.tutor_first_turn_score DESC
   `,
     )
     .all(req.params.runId);
@@ -133,7 +149,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
       score_actionability, score_tone, scores_with_reasoning,
       qualitative_assessment, qualitative_model, factor_recognition
     FROM evaluation_results
-    WHERE dialogue_id = ? AND tutor_first_turn_score IS NOT NULL
+    WHERE dialogue_id = ?
     ORDER BY id DESC LIMIT 1
   `,
     )
@@ -144,11 +160,15 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
   // Load trace from log file
   let trace = [];
   let logMeta = {};
+  let turnResults = [];
+  let learnerContext = '';
   try {
     const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(req.params.dialogueId));
     if (files.length > 0) {
       const log = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf8'));
       trace = log.consolidatedTrace || log.dialogueTrace || [];
+      turnResults = log.turnResults || [];
+      learnerContext = log.learnerContext || '';
       logMeta = {
         totalTurns: log.totalTurns,
         learnerArchitecture: log.learnerArchitecture,
@@ -173,8 +193,24 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     /* ignored */
   }
 
+  const projection = projectTranscriptArtifacts({
+    trace,
+    turnResults,
+    learnerContext,
+    scenarioName: row.scenario_id || '',
+    profileName: row.profile_name || '',
+    totalTurns: logMeta.totalTurns || turnResults.length || 0,
+    detail: 'play',
+  });
+
   res.json({
     trace,
+    projection: {
+      steps: projection.steps,
+      messageChain: projection.messageChain,
+      judged: projection.judged,
+      diagnostics: projection.diagnostics,
+    },
     metadata: {
       runId: row.run_id,
       dialogueId: row.dialogue_id,
@@ -263,6 +299,7 @@ const PAGE_HTML = `<!DOCTYPE html>
   .score-high { background:rgba(76,175,80,0.2); color:#66bb6a; }
   .score-mid { background:rgba(255,152,0,0.2); color:#ffa726; }
   .score-low { background:rgba(244,67,54,0.2); color:#ef5350; }
+  .score-na { background:rgba(96,125,139,0.2); color:#90a4ae; }
   .recog-dot { width:6px; height:6px; border-radius:50%; background:#7c4dff; display:inline-block; margin-right:4px; flex-shrink:0; }
   .base-dot { width:6px; height:6px; border-radius:50%; background:#555; display:inline-block; margin-right:4px; flex-shrink:0; }
 
@@ -279,6 +316,15 @@ const PAGE_HTML = `<!DOCTYPE html>
   .legend { display:flex; gap:12px; justify-content:center; padding:6px; font-size:9px; color:var(--muted); flex-shrink:0; border-bottom:1px solid var(--border); }
   .legend span { display:flex; align-items:center; gap:3px; }
   .legend .sw { width:12px; height:3px; border-radius:2px; }
+
+  .view-controls { display:flex; align-items:center; gap:8px; padding:8px 16px; border-bottom:1px solid var(--border); background:#11161d; }
+  .view-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; }
+  .view-btn { background:#0d1117; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:4px 10px; font-size:10px; font-family:inherit; cursor:pointer; }
+  .view-btn.active { border-color:var(--accent); background:rgba(88,166,255,0.12); }
+  .view-btn:disabled { opacity:0.45; cursor:not-allowed; }
+  .view-divider { width:1px; height:14px; background:#2a3440; margin:0 4px; }
+  .view-check { display:flex; align-items:center; gap:4px; color:var(--muted); font-size:10px; cursor:pointer; user-select:none; }
+  .view-check input { accent-color:var(--accent); }
 
   .split { display:flex; flex:1; overflow:hidden; }
 
@@ -298,6 +344,16 @@ const PAGE_HTML = `<!DOCTYPE html>
   .entry-speaker { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
   .entry-model { font-weight:400; color:var(--muted); font-size:9px; }
   .entry-content { font-size:12px; line-height:1.6; color:#ccc; white-space:pre-wrap; word-wrap:break-word; }
+  .entry-subtitle { font-size:10px; color:var(--muted); margin-bottom:8px; }
+
+  .chain-card { border:1px solid #2a3442; border-radius:7px; padding:10px 12px; margin:8px 0; background:#0f1621; }
+  .chain-head { font-size:10px; color:#9fb3c8; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
+  .chain-section { margin-top:8px; }
+  .chain-title { font-size:10px; color:#90caf9; font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.4px; }
+  .chain-line { margin:4px 0; }
+  .chain-role { font-size:10px; color:#8b949e; font-weight:600; display:block; margin-bottom:2px; }
+  .chain-text { font-size:11px; line-height:1.55; color:#d0d7de; white-space:pre-wrap; word-wrap:break-word; background:#0d1117; border:1px solid #263241; border-radius:5px; padding:8px; }
+  .chain-muted { color:#6e7681; }
 
   .badge { font-size:9px; padding:1px 6px; border-radius:8px; font-weight:600; }
   .badge.approved { background:rgba(102,187,106,0.2); color:#66bb6a; }
@@ -361,6 +417,16 @@ const PAGE_HTML = `<!DOCTYPE html>
     </div>
   </div>
 
+  <div class="view-controls" id="viewControls" style="display:none">
+    <span class="view-label">View</span>
+    <button class="view-btn active" id="viewTranscriptBtn" onclick="setViewMode('transcript')">Transcript</button>
+    <button class="view-btn" id="viewMessageChainBtn" onclick="setViewMode('message-chain')">Message Chain</button>
+    <span class="view-divider"></span>
+    <label class="view-check"><input type="checkbox" id="toggleTutorInternal" checked onchange="setInternalVisibility('tutor', this.checked)">Tutor internals</label>
+    <label class="view-check"><input type="checkbox" id="toggleLearnerInternal" checked onchange="setInternalVisibility('learner', this.checked)">Learner internals</label>
+    <span class="view-label" id="viewHint"></span>
+  </div>
+
   <div class="legend" id="legendBar" style="display:none">
     <span><span class="sw" style="background:#78909c"></span> Front stage</span>
     <span><span class="sw" style="background:#ef5350"></span> L.Superego</span>
@@ -384,6 +450,15 @@ let runDialogues = {};  // runId → dialogue list
 let activeDialogueId = null;
 let activeStep = -1;
 let totalSteps = 0;
+let activeViewMode = 'transcript';
+let currentDialogueData = null;
+let currentSteps = [];
+let visibleSteps = [];
+let showTutorInternal = true;
+let showLearnerInternal = true;
+const query = new URLSearchParams(window.location.search);
+const initialRunId = query.get('run');
+const initialDialogueId = query.get('dialogue');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function escapeHtml(t) {
@@ -394,14 +469,23 @@ function shortModel(m) {
   if (!m) return '?';
   return String(m).replace(/^openrouter\\./, '').split('/').pop().split(':')[0];
 }
-function scoreClass(s) { return s >= 85 ? 'score-high' : s >= 65 ? 'score-mid' : 'score-low'; }
-function scoreBg(s) { return s >= 90 ? '#1b5e20' : s >= 70 ? '#e65100' : '#b71c1c'; }
+function scoreClass(s) { return s == null || Number.isNaN(s) ? 'score-na' : s >= 85 ? 'score-high' : s >= 65 ? 'score-mid' : 'score-low'; }
+function scoreBg(s) { return s == null || Number.isNaN(s) ? '#455a64' : s >= 90 ? '#1b5e20' : s >= 70 ? '#e65100' : '#b71c1c'; }
 
 // ── Sidebar: load runs ──────────────────────────────────────────────────────
 async function loadRuns() {
   const res = await fetch('/api/runs');
   allRuns = await res.json();
   renderSidebar();
+
+  if (initialRunId && allRuns.some((r) => r.runId === initialRunId)) {
+    await toggleRun(initialRunId, true);
+    const items = runDialogues[initialRunId] || [];
+    const target = initialDialogueId ? items.find((d) => d.dialogueId === initialDialogueId) : items[0];
+    if (target?.dialogueId) {
+      await loadDialogue(target.dialogueId);
+    }
+  }
 }
 
 function renderSidebar() {
@@ -419,7 +503,7 @@ function renderSidebar() {
     }
     const isOpen = runDialogues[run.runId] !== undefined;
     html += '<div class="run-item' + (isOpen ? ' open' : '') + '" data-run="' + escapeHtml(run.runId) + '">';
-    html += '<div class="run-header" onclick="toggleRun(\\'' + escapeHtml(run.runId) + '\\')">';
+    html += '<div class="run-header" onclick="toggleRun(&quot;' + escapeHtml(run.runId) + '&quot;)">';
     html += '<span class="run-date">' + escapeHtml(run.date) + '</span>';
     html += '<span class="run-count">N=' + run.dialogueCount + ' cells ' + escapeHtml(run.cellRange) + '</span>';
     html += '</div>';
@@ -455,7 +539,7 @@ function renderRunChildren(runId, search, cond) {
     const isRecog = items[0]?.isRecog;
     const cellNum = profile.replace(/^cell_(\\d+)_.*/, '$1');
     html += '<div class="cell-group open">';
-    html += '<div class="cell-label" onclick="this.parentElement.classList.toggle(\\'open\\')">';
+    html += '<div class="cell-label" onclick="this.parentElement.classList.toggle(&quot;open&quot;)">';
     html += '<span class="' + (isRecog ? 'recog-dot' : 'base-dot') + '"></span>';
     html += escapeHtml(profile) + ' (' + items.length + ')';
     html += '</div>';
@@ -464,7 +548,7 @@ function renderRunChildren(runId, search, cond) {
       const sc = d.score?.toFixed(0) || '--';
       const scn = d.scenario.replace(/_/g, ' ').substring(0, 25);
       const isActive = d.dialogueId === activeDialogueId;
-      html += '<div class="dlg-item' + (isActive ? ' active' : '') + '" onclick="loadDialogue(\\'' + escapeHtml(d.dialogueId) + '\\')">';
+      html += '<div class="dlg-item' + (isActive ? ' active' : '') + '" onclick="loadDialogue(&quot;' + escapeHtml(d.dialogueId) + '&quot;)">';
       html += '<span class="dlg-scenario">' + escapeHtml(scn) + '</span>';
       html += '<span class="dlg-score ' + scoreClass(d.score) + '">' + sc + '</span>';
       html += '</div>';
@@ -474,9 +558,13 @@ function renderRunChildren(runId, search, cond) {
   return html;
 }
 
-async function toggleRun(runId) {
-  if (runDialogues[runId]) {
+async function toggleRun(runId, forceOpen = false) {
+  if (runDialogues[runId] && !forceOpen) {
     delete runDialogues[runId];
+    renderSidebar();
+    return;
+  }
+  if (runDialogues[runId] && forceOpen) {
     renderSidebar();
     return;
   }
@@ -494,6 +582,7 @@ function applyFilter() { renderSidebar(); }
 async function loadDialogue(dialogueId) {
   activeDialogueId = dialogueId;
   activeStep = -1;
+  activeViewMode = 'transcript';
 
   // Update sidebar active state
   document.querySelectorAll('.dlg-item').forEach(el => el.classList.remove('active'));
@@ -502,17 +591,22 @@ async function loadDialogue(dialogueId) {
 
   const res = await fetch('/api/dialogue/' + encodeURIComponent(dialogueId));
   const data = await res.json();
+  currentDialogueData = data;
 
-  const steps = traceToSteps(data.trace);
-  totalSteps = steps.length;
+  currentSteps = data.projection?.steps || [];
+  data.messageChain = data.projection?.messageChain || { exchanges: [] };
+  data.judged = data.projection?.judged || null;
+  data.diagnostics = data.projection?.diagnostics || { effectCount: 0, effects: [] };
+  totalSteps = 0;
 
   renderTopBar(data);
-  renderDiagram(steps, data.metadata);
-  renderTranscript(steps);
+  renderViewControls(data);
+  renderCurrentView();
   renderJudgePanel(data.scores, data.qualitative);
 
   document.getElementById('legendBar').style.display = 'flex';
   document.getElementById('splitPane').style.display = 'flex';
+  document.getElementById('viewControls').style.display = 'flex';
 }
 
 // ── Top bar ─────────────────────────────────────────────────────────────────
@@ -521,6 +615,14 @@ function renderTopBar(data) {
   const score = data.scores.overall?.toFixed(1) || '--';
   const condLabel = m.isRecog ? 'Recognition' : 'Base';
   const scenario = (m.scenario || '').replace(/_/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+  const chain = data.messageChain || { exchanges: [] };
+  const captureCount = chain.exchanges.filter((e) => e.hasApiPayload).length;
+  const diagCount = data.diagnostics?.effectCount || 0;
+  const chainSummary =
+    chain.exchanges.length > 0
+      ? captureCount + '/' + chain.exchanges.length + ' message payloads'
+      : 'No model exchanges detected';
+  const projectionSummary = diagCount > 0 ? (diagCount + ' projection warning' + (diagCount === 1 ? '' : 's')) : 'projection clean';
 
   document.getElementById('topBar').innerHTML =
     '<div>' +
@@ -529,19 +631,175 @@ function renderTopBar(data) {
         '<span class="meta-label">Cell</span><span class="meta-value">' + escapeHtml(m.profile) + '</span><span class="meta-value">' + condLabel + (m.totalTurns ? ' · ' + m.totalTurns + ' turns' : '') + '</span>' +
         '<span class="meta-label">Tutor</span><span class="meta-value">ego ' + escapeHtml(shortModel(m.egoModel)) + '</span><span class="meta-value">superego ' + escapeHtml(shortModel(m.superegoModel) || shortModel(m.egoModel)) + '</span>' +
         '<span class="meta-label">Learner</span><span class="meta-value">ego ' + escapeHtml(shortModel(m.learnerEgoModel)) + '</span><span class="meta-value">superego ' + escapeHtml(shortModel(m.learnerSuperegoModel)) + '</span>' +
-        '<span class="meta-label">Judge</span><span class="meta-value">' + escapeHtml(shortModel(m.judgeModel)) + '</span><span></span>' +
+        '<span class="meta-label">Judge</span><span class="meta-value">' + escapeHtml(shortModel(m.judgeModel)) + '</span><span class="meta-value">' + escapeHtml(chainSummary) + '</span>' +
+        '<span class="meta-label">Trace</span><span class="meta-value">' + escapeHtml(projectionSummary) + '</span><span class="meta-value"></span>' +
       '</div>' +
       '<div class="meta-id">' + escapeHtml(m.runId) + ' · ' + escapeHtml(m.dialogueId) + '</div>' +
     '</div>' +
     '<span class="score-badge" style="background:' + scoreBg(parseFloat(score)) + '">' + score + '</span>';
 }
 
+function renderViewControls(data) {
+  const chain = data.messageChain || { exchanges: [] };
+  const hasRaw = chain.exchanges.some((e) => e.hasApiPayload);
+  const transcriptBtn = document.getElementById('viewTranscriptBtn');
+  const chainBtn = document.getElementById('viewMessageChainBtn');
+  const tutorToggle = document.getElementById('toggleTutorInternal');
+  const learnerToggle = document.getElementById('toggleLearnerInternal');
+  const hint = document.getElementById('viewHint');
+
+  transcriptBtn.classList.toggle('active', activeViewMode === 'transcript');
+  chainBtn.classList.toggle('active', activeViewMode === 'message-chain');
+  chainBtn.disabled = chain.exchanges.length === 0;
+  if (tutorToggle) tutorToggle.checked = showTutorInternal;
+  if (learnerToggle) learnerToggle.checked = showLearnerInternal;
+
+  if (activeViewMode === 'transcript') {
+    hint.textContent = visibleSteps.length + ' step' + (visibleSteps.length === 1 ? '' : 's') + ' visible';
+  } else if (chain.exchanges.length === 0) {
+    hint.textContent = 'No model-call entries in this trace';
+  } else if (!hasRaw) {
+    hint.textContent = 'Message chain is semantic-only (raw payload capture unavailable)';
+  } else {
+    hint.textContent = 'Message chain includes captured request/response payload content';
+  }
+}
+
+function updateLayoutForViewMode() {
+  const leftPane = document.getElementById('leftPane');
+  const rightPane = document.getElementById('rightPane');
+  const legend = document.getElementById('legendBar');
+  if (activeViewMode === 'message-chain') {
+    leftPane.style.display = 'none';
+    leftPane.style.width = '0';
+    rightPane.style.width = '100%';
+    legend.style.display = 'none';
+  } else {
+    leftPane.style.display = 'block';
+    leftPane.style.width = '50%';
+    rightPane.style.width = '50%';
+    legend.style.display = 'flex';
+  }
+}
+
+function setViewMode(mode) {
+  if (!currentDialogueData) return;
+  activeViewMode = mode === 'message-chain' ? 'message-chain' : 'transcript';
+  renderViewControls(currentDialogueData);
+  renderCurrentView();
+}
+
+function setInternalVisibility(kind, checked) {
+  if (kind === 'tutor') showTutorInternal = !!checked;
+  if (kind === 'learner') showLearnerInternal = !!checked;
+  if (!currentDialogueData) return;
+  renderCurrentView();
+}
+
+function isTutorInternalStep(step) {
+  if (!step) return false;
+  return (
+    (step.from === 'tutor_ego' && step.to === 'tutor_superego') ||
+    (step.from === 'tutor_superego' && step.to === 'tutor_ego')
+  );
+}
+
+function isLearnerInternalStep(step) {
+  if (!step) return false;
+  return (
+    (step.from === 'learner_ego' && step.to === 'learner_superego') ||
+    (step.from === 'learner_superego' && step.to === 'learner_ego')
+  );
+}
+
+function getFilteredSteps(steps) {
+  const all = Array.isArray(steps) ? steps : [];
+  return all.filter((s) => {
+    if (!showTutorInternal && isTutorInternalStep(s)) return false;
+    if (!showLearnerInternal && isLearnerInternalStep(s)) return false;
+    return true;
+  });
+}
+
+function getFilteredMessageChainExchanges(exchanges) {
+  const all = Array.isArray(exchanges) ? exchanges : [];
+  return all.filter((ex) => {
+    if (!showTutorInternal && ex.channel === 'tutor_ego_superego') return false;
+    if (!showLearnerInternal && ex.channel === 'learner_ego_superego') return false;
+    return true;
+  });
+}
+
+function renderCurrentView() {
+  if (!currentDialogueData) return;
+  updateLayoutForViewMode();
+  if (activeViewMode === 'message-chain') {
+    totalSteps = 0;
+    activeStep = -1;
+    const filteredExchanges = getFilteredMessageChainExchanges(currentDialogueData.messageChain?.exchanges || []);
+    renderMessageChain(currentDialogueData, filteredExchanges);
+    renderViewControls(currentDialogueData);
+    return;
+  }
+  visibleSteps = getFilteredSteps(currentSteps);
+  totalSteps = visibleSteps.length;
+  if (activeStep >= totalSteps) activeStep = totalSteps - 1;
+  renderDiagram(visibleSteps, currentDialogueData.metadata);
+  renderTranscript(visibleSteps);
+  renderViewControls(currentDialogueData);
+}
+
 // ── Trace → Steps (ported from render-sequence-diagram.js) ──────────────────
 function extractLearnerQuery(entry) {
   const raw = entry.rawContext || '';
-  const match = raw.match(/Learner Messages?:\\s*(.+?)(?:\\n<\\/|$)/s)
-    || raw.match(/Recent Chat History\\n-\\s*User:\\s*"(.+?)"/s);
+  const learnerMsgRe = new RegExp('Learner Messages?:\\\\s*(.+?)(?:\\\\n</|$)', 's');
+  const recentChatRe = new RegExp('Recent Chat History\\\\n-\\\\s*User:\\\\s*"(.+?)"', 's');
+  const match = raw.match(learnerMsgRe) || raw.match(recentChatRe);
   return match ? match[1].trim() : null;
+}
+
+function extractLearnerFollowupFromContext(rawContext) {
+  const raw = rawContext || '';
+  if (!raw) return null;
+
+  function normalizeSpaces(text) {
+    return String(text || '')
+      .replaceAll('\\n', ' ')
+      .replaceAll('\\t', ' ')
+      .replace(/ +/g, ' ')
+      .trim();
+  }
+
+  const saidMarker = '**Learner said**:';
+  const saidIndex = raw.indexOf(saidMarker);
+  if (saidIndex >= 0) {
+    let tail = raw.slice(saidIndex + saidMarker.length).trim();
+    if (tail.startsWith('"')) {
+      const closing = tail.indexOf('"', 1);
+      if (closing > 1) return tail.slice(1, closing).trim();
+    }
+
+    let end = tail.length;
+    const idxHeading = tail.indexOf('\\n###');
+    const idxClose = tail.indexOf('\\n</');
+    if (idxHeading >= 0 && idxHeading < end) end = idxHeading;
+    if (idxClose >= 0 && idxClose < end) end = idxClose;
+    return normalizeSpaces(tail.slice(0, end));
+  }
+
+  const actionMarker = '### Learner Action';
+  const actionIndex = raw.indexOf(actionMarker);
+  if (actionIndex >= 0) {
+    let block = raw.slice(actionIndex);
+    let end = block.length;
+    const idxHeading = block.indexOf('\\n###', actionMarker.length);
+    const idxClose = block.indexOf('\\n</');
+    if (idxHeading >= 0 && idxHeading < end) end = idxHeading;
+    if (idxClose >= 0 && idxClose < end) end = idxClose;
+    return normalizeSpaces(block.slice(0, end));
+  }
+
+  return null;
 }
 
 function fullContent(entry) {
@@ -567,6 +825,7 @@ function snippet(entry, maxLen) {
 function traceToSteps(trace) {
   const steps = [];
   let dialogueTurn = 0;
+  const hasTurnActions = trace.some((e) => e.agent === 'user' && e.action === 'turn_action');
 
   const learnerBlockStarts = new Set();
   trace.forEach((e, i) => { if (e.agent === 'learner_ego_initial') learnerBlockStarts.add(i); });
@@ -600,6 +859,17 @@ function traceToSteps(trace) {
         const query = extractLearnerQuery(e);
         const full = query || '(scenario prompt)';
         steps.push({ from: 'learner_ego', to: 'tutor_ego', label: 'Initial query', detail: full.substring(0, 120), fullDetail: full, type: 'front', speaker: 'LEARNER' });
+      } else if (!hasTurnActions) {
+        const followup = extractLearnerFollowupFromContext(e.rawContext) || extractLearnerQuery(e) || '(learner follow-up)';
+        steps.push({
+          from: 'learner_ego',
+          to: 'tutor_ego',
+          label: 'Turn ' + dialogueTurn,
+          detail: followup.substring(0, 120),
+          fullDetail: followup,
+          type: 'front',
+          speaker: 'LEARNER',
+        });
       }
       needsResponseArrow = true;
       continue;
@@ -667,6 +937,213 @@ function traceToSteps(trace) {
     }
   }
   return steps;
+}
+
+function safeJson(value) {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function extractContentField(content) {
+  if (content == null) return null;
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) {
+    const parts = content
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item?.text === 'string') return item.text;
+        if (typeof item?.content === 'string') return item.content;
+        return null;
+      })
+      .filter(Boolean);
+    return parts.length > 0 ? parts.join('\\n') : null;
+  }
+  if (typeof content === 'object') {
+    if (typeof content.text === 'string') return content.text;
+    if (typeof content.content === 'string') return content.content;
+  }
+  return safeJson(content);
+}
+
+function extractSystemPromptFromRequestBody(body) {
+  if (!body || typeof body !== 'object') return null;
+  if (typeof body.system === 'string') return body.system;
+  if (typeof body.systemInstruction === 'string') return body.systemInstruction;
+  if (typeof body.systemInstruction?.text === 'string') return body.systemInstruction.text;
+  if (Array.isArray(body.messages)) {
+    const sys = body.messages
+      .filter((m) => m?.role === 'system')
+      .map((m) => extractContentField(m?.content))
+      .filter(Boolean);
+    if (sys.length > 0) return sys.join('\\n\\n');
+  }
+  return null;
+}
+
+function extractUserRequestFromRequestBody(body) {
+  if (!body || typeof body !== 'object') return null;
+  if (Array.isArray(body.messages)) {
+    const users = body.messages
+      .filter((m) => m?.role === 'user')
+      .map((m) => extractContentField(m?.content))
+      .filter(Boolean);
+    if (users.length > 0) return users.join('\\n\\n');
+  }
+  if (Array.isArray(body.contents)) {
+    const users = body.contents
+      .map((c) => {
+        if (Array.isArray(c?.parts)) {
+          return c.parts.map((p) => p?.text).filter(Boolean).join('\\n');
+        }
+        return extractContentField(c?.content || c?.text || null);
+      })
+      .filter(Boolean);
+    if (users.length > 0) return users.join('\\n\\n');
+  }
+  return null;
+}
+
+function extractResponseTextFromResponseBody(body) {
+  if (body == null) return null;
+  if (typeof body === 'string') return body;
+  if (typeof body !== 'object') return safeJson(body);
+
+  if (Array.isArray(body.choices) && body.choices.length > 0) {
+    const first = body.choices[0];
+    const content = first?.message?.content ?? first?.delta?.content ?? first?.text ?? null;
+    const text = extractContentField(content);
+    if (text) return text;
+  }
+
+  if (Array.isArray(body.content) && body.content.length > 0) {
+    const text = extractContentField(body.content);
+    if (text) return text;
+  }
+
+  if (typeof body.output_text === 'string') return body.output_text;
+  if (body.candidates?.[0]?.content?.parts) {
+    const parts = body.candidates[0].content.parts.map((p) => p?.text).filter(Boolean);
+    if (parts.length > 0) return parts.join('\\n');
+  }
+
+  if (typeof body.text === 'string') return body.text;
+  return safeJson(body);
+}
+
+function tryParseJsonString(text) {
+  if (typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+function extractPrimaryMessage(value) {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const parsed = tryParseJsonString(value);
+    if (!parsed) return value;
+    return extractPrimaryMessage(parsed);
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return null;
+    return extractPrimaryMessage(value[0]);
+  }
+  if (typeof value === 'object') {
+    if (typeof value.message === 'string') return value.message;
+    if (typeof value.text === 'string') return value.text;
+    if (typeof value.content === 'string') return value.content;
+    if (typeof value.title === 'string') return value.title;
+    if (Array.isArray(value.suggestions) && value.suggestions.length > 0) {
+      const s = value.suggestions[0];
+      if (typeof s?.message === 'string') return s.message;
+      if (typeof s?.title === 'string') return s.title;
+      return safeJson(s);
+    }
+    if (Array.isArray(value.output) && value.output.length > 0) {
+      return extractPrimaryMessage(value.output[0]);
+    }
+  }
+  return safeJson(value);
+}
+
+function isModelCallEntry(entry) {
+  if (!entry || typeof entry !== 'object') return false;
+  if (entry.apiPayload || entry.api_payload) return true;
+  const key = (entry.agent || '') + ':' + (entry.action || '');
+  const candidates = new Set([
+    'ego:generate',
+    'ego:revise',
+    'ego:generate_final',
+    'ego:incorporate-feedback',
+    'superego:review',
+    'learner_ego_initial:deliberation',
+    'learner_superego:deliberation',
+    'learner_ego_revision:deliberation',
+    'learner_synthesis:response',
+  ]);
+  return candidates.has(key);
+}
+
+function classifyChannel(entry) {
+  const agent = entry?.agent || '';
+  if (agent.startsWith('learner_')) return 'learner_ego_superego';
+  if (agent === 'ego' || agent === 'superego') return 'tutor_ego_superego';
+  if (agent === 'user') return 'tutor_learner';
+  return 'unknown';
+}
+
+function buildMessageChain(trace) {
+  const exchanges = [];
+  if (!Array.isArray(trace)) return { exchanges };
+
+  for (let i = 0; i < trace.length; i++) {
+    const entry = trace[i];
+    if (!isModelCallEntry(entry)) continue;
+
+    const payload = entry?.apiPayload || entry?.api_payload || null;
+    const requestBody = payload?.request?.body ?? null;
+    const responseBody = payload?.response?.body ?? null;
+
+    const semanticSystem = null;
+    const semanticUser = entry.rawContext || entry.contextSummary || entry.detail || null;
+    const semanticAssistant = fullContent(entry) || null;
+
+    const rawSystem = extractSystemPromptFromRequestBody(requestBody);
+    const rawUser = extractUserRequestFromRequestBody(requestBody);
+    const rawAssistant = extractResponseTextFromResponseBody(responseBody);
+
+    exchanges.push({
+      sequence: exchanges.length + 1,
+      traceIndex: i,
+      agent: entry.agent || 'unknown',
+      action: entry.action || 'unknown',
+      channel: classifyChannel(entry),
+      model: entry.metrics?.model || entry.model || null,
+      provider: entry.provider || entry.metrics?.provider || null,
+      latencyMs: entry.metrics?.latencyMs ?? entry.latencyMs ?? null,
+      hasApiPayload: !!payload,
+      semantic: {
+        systemPrompt: extractPrimaryMessage(semanticSystem),
+        userRequest: extractPrimaryMessage(semanticUser),
+        assistantResponse: extractPrimaryMessage(semanticAssistant),
+      },
+      raw: {
+        systemPrompt: extractPrimaryMessage(rawSystem),
+        userRequest: extractPrimaryMessage(rawUser),
+        assistantResponse: extractPrimaryMessage(rawAssistant),
+      },
+    });
+  }
+
+  return { exchanges };
 }
 
 // ── SVG diagram ─────────────────────────────────────────────────────────────
@@ -765,8 +1242,17 @@ const speakerColors = {
   'LEARNER': '#78909c',
 };
 
+function clipText(text, maxChars) {
+  if (!text) return '';
+  const input = String(text);
+  if (input.length <= maxChars) return input;
+  return input.slice(0, maxChars) + ' ... [truncated ' + (input.length - maxChars) + ' chars]';
+}
+
 function renderTranscript(steps) {
   let html = '';
+  html += renderProjectionDiagnosticsCard(currentDialogueData?.diagnostics);
+  html += renderJudgeVisibilityCard(currentDialogueData?.judged);
   steps.forEach((step, i) => {
     const speaker = step.speaker || step.label;
     const color = speakerColors[speaker] || '#999';
@@ -784,6 +1270,113 @@ function renderTranscript(steps) {
       '<div class="entry-content">' + escapeHtml(content) + '</div>' +
     '</div>';
   });
+  document.getElementById('rightPane').innerHTML = html;
+}
+
+function renderChainLine(role, text, opts = {}) {
+  const maxChars = opts.maxChars || 2000;
+  const body = text ? clipText(text, maxChars) : '(missing)';
+  const mutedClass = text ? '' : ' chain-muted';
+  return (
+    '<div class="chain-line">' +
+      '<span class="chain-role">' + role + '</span>' +
+      '<div class="chain-text' + mutedClass + '">' + escapeHtml(body) + '</div>' +
+    '</div>'
+  );
+}
+
+function renderProjectionDiagnosticsCard(diag) {
+  if (!diag || !Array.isArray(diag.effects) || diag.effects.length === 0) return '';
+
+  let html = '<div class="chain-card">';
+  html += '<div class="chain-head">Projection Diagnostics</div>';
+  html += '<div class="chain-line"><div class="chain-text">' + escapeHtml(diag.summary || '') + '</div></div>';
+  for (const effect of diag.effects) {
+    const sev = (effect.severity || 'info').toUpperCase();
+    html += '<div class="chain-section">';
+    html += '<div class="chain-title">' + escapeHtml(sev + ' · ' + (effect.id || 'effect')) + '</div>';
+    html += '<div class="chain-line"><div class="chain-text">' + escapeHtml(effect.message || '') + '</div></div>';
+    if (Array.isArray(effect.remedialSteps) && effect.remedialSteps.length > 0) {
+      const remediation = effect.remedialSteps.map((s, i) => (i + 1) + '. ' + s).join('\\n');
+      html += '<div class="chain-line">';
+      html += '<span class="chain-role">Remediation</span>';
+      html += '<div class="chain-text">' + escapeHtml(remediation) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderJudgeVisibilityCard(judged) {
+  if (!judged) return '';
+  let html = '<div class="chain-card">';
+  html += '<div class="chain-head">What Is Being Judged</div>';
+  html += '<div class="chain-section">';
+  html += '<div class="chain-title">Public Transcript (dialogue_quality_score)</div>';
+  html += renderChainLine('Transcript:', judged.publicTranscript || '(missing)', { maxChars: 5000 });
+  html += '</div>';
+  html += '<div class="chain-section">';
+  html += '<div class="chain-title">Full Transcript (dialogue_quality_internal_score)</div>';
+  html += renderChainLine('Transcript:', judged.fullTranscript || '(missing)', { maxChars: 5000 });
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMessageChain(data, visibleExchanges = null) {
+  const chain = data.messageChain || { exchanges: [] };
+  const exchanges = Array.isArray(visibleExchanges) ? visibleExchanges : chain.exchanges || [];
+
+  let html = '';
+  html += renderProjectionDiagnosticsCard(data.diagnostics);
+  html += renderJudgeVisibilityCard(data.judged);
+
+  if (exchanges.length === 0) {
+    html += '<div class="entry">' +
+      '<div class="entry-speaker">MESSAGE CHAIN</div>' +
+      '<div class="entry-content">No message-chain entries visible for current filters.</div>' +
+    '</div>';
+    document.getElementById('rightPane').innerHTML = html;
+    return;
+  }
+
+  exchanges.forEach((ex) => {
+    const model = ex.model ? shortModel(ex.model) : '?';
+    const latency = ex.latencyMs == null ? '' : (ex.latencyMs < 1000 ? ex.latencyMs + 'ms' : (ex.latencyMs / 1000).toFixed(1) + 's');
+    const head =
+      '#' + ex.sequence +
+      ' · ' + ex.channel.replace(/_/g, ' ') +
+      ' · ' + ex.agent + '/' + ex.action +
+      ' · model=' + model +
+      (latency ? ' · ' + latency : '') +
+      ' · payload=' + (ex.hasApiPayload ? 'captured' : 'missing');
+
+    html += '<div class="chain-card">';
+    html += '<div class="chain-head">' + escapeHtml(head) + '</div>';
+
+    html += '<div class="chain-section">';
+    html += '<div class="chain-title">Semantic (Eval-Relevant)</div>';
+    html += renderChainLine('Sys:', ex.semantic?.systemPrompt, { maxChars: 600 });
+    html += renderChainLine('User:', ex.semantic?.userRequest, { maxChars: 1600 });
+    html += renderChainLine('Assistant:', ex.semantic?.assistantResponse, { maxChars: 1600 });
+    html += '</div>';
+
+    html += '<div class="chain-section">';
+    html += '<div class="chain-title">Raw API (Content Fields)</div>';
+    if (ex.hasApiPayload) {
+      html += renderChainLine('Req Sys:', ex.raw?.systemPrompt, { maxChars: 1200 });
+      html += renderChainLine('Req User:', ex.raw?.userRequest, { maxChars: 2000 });
+      html += renderChainLine('Res Assistant:', ex.raw?.assistantResponse, { maxChars: 2000 });
+    } else {
+      html += '<div class="chain-line"><div class="chain-text chain-muted">Raw request/response payload was not captured for this exchange.</div></div>';
+    }
+    html += '</div>';
+
+    html += '</div>';
+  });
+
   document.getElementById('rightPane').innerHTML = html;
 }
 
