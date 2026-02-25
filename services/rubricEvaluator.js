@@ -1471,16 +1471,12 @@ export function calculateDialogueQualityScore(scores) {
 function buildDialoguePublicTranscript(turns, dialogueTrace) {
   if (!turns?.length) return '(no transcript available)';
 
-  // Index learner messages by turnIndex: prefer learner_synthesis, fallback to turn_action
+  // Index learner_synthesis entries by turnIndex for dynamic learner messages
   const synthByTurn = {};
-  const actionByTurn = {};
   if (dialogueTrace?.length > 0) {
     for (const entry of dialogueTrace) {
       if (entry.agent === 'learner_synthesis' && entry.turnIndex !== undefined) {
         synthByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
-      }
-      if (entry.agent === 'user' && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
-        actionByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
       }
     }
   }
@@ -1490,8 +1486,8 @@ function buildDialoguePublicTranscript(turns, dialogueTrace) {
     const turn = turns[i];
     lines.push(`\n--- Turn ${i} ---`);
 
-    // Learner message: prefer learner_synthesis, then turn fields, then trace turn_action
-    const learnerText = synthByTurn[i] || turn.learnerMessage || turn.learnerAction || actionByTurn[i] || null;
+    // Learner message: prefer learner_synthesis from trace, then turn fields
+    const learnerText = synthByTurn[i] || turn.learnerMessage || null;
     if (learnerText) {
       lines.push(`[Learner] ${truncate(learnerText, 400)}`);
     }
