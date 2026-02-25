@@ -1578,8 +1578,8 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
  *   [Learner]                    — unified (ego-only) learner message
  *
  * Trace field schema (which field carries the actual text per agent type):
- *   ego/generate, ego/revise         — EMPTY (detail & contextSummary absent);
- *                                       actual text from turnResults[].suggestions[].message
+ *   ego/generate, ego/revise         — suggestions[].message on the trace entry itself
+ *                                       (detail & contextSummary are empty on tutor-core entries)
  *   superego/review                  — entry.feedback (NOT detail/contextSummary)
  *   ego_self_reflection/rewrite      — entry.detail
  *   superego_self_reflection/rewrite — entry.detail
@@ -1610,7 +1610,8 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
     const egoSuperego = isEgoSuperegoLearner(dialogueTrace);
     const initialMessage = extractInitialLearnerMessage(learnerContext);
 
-    // Index tutor delivered messages by turn for ego entries with empty content
+    // Index tutor delivered messages by turn for ego entries with empty content.
+    // Used as last-resort fallback when neither suggestions[] nor detail are available.
     const deliveredByTurn = {};
     if (turns?.length) {
       for (let i = 0; i < turns.length; i++) {
@@ -1619,14 +1620,37 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
       }
     }
 
+    // Pre-compute dialogue turn index for tutor-core entries that lack turnIndex.
+    // Tutor-core entries (ego/generate, superego/review, ego/revise) use `round`
+    // instead of `turnIndex`. We infer their dialogue turn from the next
+    // final_output entry's turnIndex.
+    const inferredTurnIdx = new Array(dialogueTrace.length).fill(-1);
+    // Walk backwards: each final_output marks the end of a tutor deliberation block
+    let nextFinalOutputTurn = -1;
+    for (let i = dialogueTrace.length - 1; i >= 0; i--) {
+      const e = dialogueTrace[i];
+      if (e.agent === 'user' && e.action === 'final_output' && e.turnIndex !== undefined) {
+        nextFinalOutputTurn = e.turnIndex;
+      }
+      if (e.turnIndex === undefined) {
+        inferredTurnIdx[i] = nextFinalOutputTurn;
+      } else {
+        inferredTurnIdx[i] = e.turnIndex;
+      }
+    }
+
     const lines = [];
     let currentTurnIdx = -1;
     let emittedInitial = false;
     let lastTutorEgoText = '';   // Track for dedup of ego/revise
     let lastLearnerEgoText = ''; // Track for dedup of synthesis
-    for (const entry of dialogueTrace) {
-      if (entry.turnIndex !== undefined && entry.turnIndex !== currentTurnIdx) {
-        currentTurnIdx = entry.turnIndex;
+    for (let idx = 0; idx < dialogueTrace.length; idx++) {
+      const entry = dialogueTrace[idx];
+      // Use explicit turnIndex if present, otherwise inferred from final_output
+      const effectiveTurn = entry.turnIndex ?? inferredTurnIdx[idx] ?? currentTurnIdx;
+
+      if (effectiveTurn !== currentTurnIdx && effectiveTurn >= 0) {
+        currentTurnIdx = effectiveTurn;
         lastTutorEgoText = '';
         lastLearnerEgoText = '';
         lines.push(`\n--- Turn ${currentTurnIdx} ---`);
@@ -1640,12 +1664,16 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
 
       // ── Tutor agents ──
       if (entry.agent === 'ego') {
-        // ego/generate and ego/revise have empty detail/contextSummary;
-        // actual text comes from turnResults delivered messages
-        const egoText = entry.detail || entry.contextSummary || deliveredByTurn[currentTurnIdx] || '';
+        // Tutor-core ego entries carry actual text in suggestions[].message;
+        // detail/contextSummary are empty. deliveredByTurn is the last-resort
+        // fallback (final delivered message for the turn).
+        const egoText = entry.suggestions?.[0]?.message
+          || entry.detail || entry.contextSummary
+          || deliveredByTurn[currentTurnIdx] || '';
         if (entry.action === 'revise' || entry.action === 'revision' || entry.action === 'final_revision') {
           if (egoText !== lastTutorEgoText) {
             lines.push(`[Tutor Ego] (revised) ${truncate(egoText, 300)}`);
+            lastTutorEgoText = egoText;
           }
         } else if (entry.action === 'incorporate-feedback') {
           // Ego incorporated superego suggestions — informational, skip
