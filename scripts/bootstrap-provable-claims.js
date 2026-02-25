@@ -116,6 +116,13 @@ function parseClaimLowerBound(claimText) {
   return { value, isLowerBound };
 }
 
+function sectionMajor(section) {
+  const raw = String(section || '').trim().toLowerCase();
+  if (raw === 'front matter') return 'front';
+  const m = raw.match(/^(\d+)/);
+  return m ? m[1] : null;
+}
+
 function groupEntries(entries) {
   const groups = new Map();
   for (const entry of entries) {
@@ -129,12 +136,116 @@ function groupEntries(entries) {
         expected: entry.expected,
         source_keys: [],
         sections: [],
+        items: [],
       });
     }
-    groups.get(key).source_keys.push(entry.source_key);
-    groups.get(key).sections.push(entry.section);
+    const group = groups.get(key);
+    group.source_keys.push(entry.source_key);
+    group.sections.push(entry.section);
+    group.items.push({
+      source_key: entry.source_key,
+      line_no: entry.line_no,
+      section: entry.section,
+      section_major: sectionMajor(entry.section),
+      claim_text: entry.claim_text,
+      kind: entry.kind,
+      expected: entry.expected,
+    });
   }
   return [...groups.values()];
+}
+
+function splitGroupBySection(group) {
+  const bySection = new Map();
+  for (const item of group.items || []) {
+    const key = item.section || 'unknown';
+    if (!bySection.has(key)) {
+      bySection.set(key, {
+        kind: group.kind,
+        claim_text: group.claim_text,
+        normalized_claim_text: group.normalized_claim_text,
+        expected: group.expected,
+        source_keys: [],
+        sections: [],
+        items: [],
+      });
+    }
+    const sectionGroup = bySection.get(key);
+    sectionGroup.source_keys.push(item.source_key);
+    sectionGroup.sections.push(item.section);
+    sectionGroup.items.push(item);
+  }
+  return [...bySection.values()];
+}
+
+function buildStatementPattern(claimText) {
+  const trimmed = String(claimText || '')
+    .trim()
+    .replace(/[,\.;:]+$/g, '');
+  if (!trimmed) return '.+';
+  return `${regexEscape(trimmed)}[\\.,;:]?`;
+}
+
+function cloneJson(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function buildTemplateIndexes(claims, inventory) {
+  const inventoryByCanonicalKey = new Map();
+  for (const entry of inventory.entries || []) {
+    const canonicalKey = canonicalSourceKeyFromParts(entry);
+    if (canonicalKey) inventoryByCanonicalKey.set(canonicalKey, entry);
+  }
+
+  const familyTemplates = new Map();
+  const familySectionTemplates = new Map();
+  for (const claim of claims) {
+    if (!claim?.evidence || !claim?.assertion) continue;
+    const sourceKeys = Array.isArray(claim.source_keys)
+      ? claim.source_keys
+      : claim.source_key
+        ? [claim.source_key]
+        : [];
+    if (sourceKeys.length === 0) continue;
+
+    const sectionMajors = new Set();
+    for (const sourceKey of sourceKeys) {
+      const parsed = parseSourceKey(sourceKey);
+      if (!parsed) continue;
+      const family = canonicalSourceFamilyFromParts(parsed);
+      if (!family) continue;
+      if (!familyTemplates.has(family)) {
+        familyTemplates.set(family, {
+          evidence: cloneJson(claim.evidence),
+          assertion: cloneJson(claim.assertion),
+          remediation: Array.isArray(claim.remediation) ? [...claim.remediation] : [],
+          origin_claim_id: claim.id || null,
+        });
+      }
+
+      const canonicalKey = canonicalSourceKeyFromParts(parsed);
+      const inv = canonicalKey ? inventoryByCanonicalKey.get(canonicalKey) : null;
+      const secMajor = sectionMajor(inv?.section);
+      if (secMajor) sectionMajors.add(secMajor);
+    }
+
+    const parsedFirst = parseSourceKey(sourceKeys[0]);
+    const family = parsedFirst ? canonicalSourceFamilyFromParts(parsedFirst) : null;
+    if (!family || sectionMajors.size === 0) continue;
+    for (const secMajor of sectionMajors) {
+      const sectionKey = `${family}|section:${secMajor}`;
+      if (!familySectionTemplates.has(sectionKey)) {
+        familySectionTemplates.set(sectionKey, {
+          evidence: cloneJson(claim.evidence),
+          assertion: cloneJson(claim.assertion),
+          remediation: Array.isArray(claim.remediation) ? [...claim.remediation] : [],
+          origin_claim_id: claim.id || null,
+        });
+      }
+    }
+  }
+
+  return { familyTemplates, familySectionTemplates };
 }
 
 function buildManifestExpectedIndex(manifest) {
@@ -200,8 +311,21 @@ function buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpec
 
   if (Number.isFinite(claimValue) && manifestExpectedIndex.has(claimValue)) {
     const rows = manifestExpectedIndex.get(claimValue);
-    if (rows.length === 1) {
-      const row = rows[0];
+    let selectedRows = rows;
+    if (rows.length > 1) {
+      const sectionHints = [...new Set(group.sections.filter((section) => /^\d+(\.\d+)*$/.test(String(section))))];
+      if (sectionHints.length > 0) {
+        const filtered = rows.filter((row) =>
+          sectionHints.some((hint) => row.section === hint || String(row.section || '').startsWith(`${hint}.`)),
+        );
+        if (filtered.length > 0) {
+          selectedRows = filtered;
+        }
+      }
+    }
+
+    if (selectedRows.length === 1) {
+      const row = selectedRows[0];
       const filters = {
         run_ids: row.run_ids || [],
         not_null: ['overall_score'],
@@ -271,18 +395,16 @@ function main() {
   db.close();
 
   const mappedCanonicalKeys = new Set();
-  const mappedFamilies = new Set();
   const importPaths = Array.isArray(spec.import_claims_from) ? spec.import_claims_from : [];
   const baseClaims = Array.isArray(spec.claims) ? spec.claims : [];
+  const importedClaims = [];
   for (const claim of baseClaims) {
     const keys = Array.isArray(claim.source_keys) ? claim.source_keys : claim.source_key ? [claim.source_key] : [];
     for (const key of keys) {
       const parsed = parseSourceKey(key);
       if (!parsed) continue;
       const canonicalKey = canonicalSourceKeyFromParts(parsed);
-      const canonicalFamily = canonicalSourceFamilyFromParts(parsed);
       if (canonicalKey) mappedCanonicalKeys.add(canonicalKey);
-      if (canonicalFamily) mappedFamilies.add(canonicalFamily);
     }
   }
   for (const importPath of importPaths) {
@@ -291,58 +413,118 @@ function main() {
       continue;
     }
     const claims = loadClaimsFile(resolvedImportPath);
+    importedClaims.push(...claims);
     for (const claim of claims) {
       const keys = Array.isArray(claim.source_keys) ? claim.source_keys : claim.source_key ? [claim.source_key] : [];
       for (const key of keys) {
         const parsed = parseSourceKey(key);
         if (!parsed) continue;
         const canonicalKey = canonicalSourceKeyFromParts(parsed);
-        const canonicalFamily = canonicalSourceFamilyFromParts(parsed);
         if (canonicalKey) mappedCanonicalKeys.add(canonicalKey);
-        if (canonicalFamily) mappedFamilies.add(canonicalFamily);
       }
     }
   }
 
-  const majorDeterministic = (inventory.entries || []).filter((entry) => entry.is_major && entry.kind === 'n');
-  const unmappedDeterministic = majorDeterministic.filter((entry) => {
+  const templateCandidateClaims = [
+    ...baseClaims,
+    ...importedClaims.filter((claim) => !String(claim?.id || '').startsWith('manual.')),
+  ];
+  const { familyTemplates, familySectionTemplates } = buildTemplateIndexes(templateCandidateClaims, inventory);
+
+  const majorCandidates = (inventory.entries || []).filter((entry) => entry.is_major && ['n', 'stat'].includes(entry.kind));
+  const exactUnmappedCandidates = majorCandidates.filter((entry) => {
     const canonicalKey = canonicalSourceKeyFromParts(entry);
-    const canonicalFamily = canonicalSourceFamilyFromParts(entry);
     if (canonicalKey && mappedCanonicalKeys.has(canonicalKey)) return false;
-    if (canonicalFamily && mappedFamilies.has(canonicalFamily)) return false;
     return true;
   });
-  const grouped = groupEntries(unmappedDeterministic);
+  const grouped = groupEntries(exactUnmappedCandidates);
   const manifestExpectedIndex = buildManifestExpectedIndex(manifest);
 
   const generatedClaims = [];
+  let generatedFromTemplates = 0;
+  let generatedFromInference = 0;
   let skipped = 0;
-  for (const group of grouped) {
-    const mapping = buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpectedIndex);
-    if (!mapping) {
-      skipped++;
-      continue;
-    }
+  const generatedIdSet = new Set();
 
-    const claimId = `auto.inventory.${normalizeIdPart(group.kind)}.${normalizeIdPart(group.claim_text)}.${normalizeIdPart(group.expected)}.${shortHash(
+  function pushGeneratedClaim(group, mapping, mode) {
+    const claimId = `auto.inventory.${mode}.${normalizeIdPart(group.kind)}.${normalizeIdPart(group.claim_text)}.${normalizeIdPart(group.expected)}.${shortHash(
       [...group.source_keys].sort().join('|'),
     )}`;
+    if (generatedIdSet.has(claimId)) return;
+    generatedIdSet.add(claimId);
     generatedClaims.push({
       id: claimId,
-      description: `Auto-mapped deterministic inventory claim: ${group.claim_text}`,
-      source_keys: group.source_keys.sort(),
+      description:
+        mode === 'template'
+          ? `Auto-template mapped inventory claim: ${group.claim_text}`
+          : `Auto-inferred inventory claim: ${group.claim_text}`,
+      source_keys: [...new Set(group.source_keys)].sort(),
       statement: {
-        pattern: regexEscape(group.claim_text),
+        pattern: buildStatementPattern(group.claim_text),
         flags: 'i',
         min_occurrences: 1,
       },
-      evidence: mapping.evidence,
-      assertion: mapping.assertion,
+      evidence: cloneJson(mapping.evidence),
+      assertion: cloneJson(mapping.assertion),
       remediation: [
+        ...(Array.isArray(mapping.remediation) ? mapping.remediation : []),
         'If this auto-mapped claim fails, replace it with a hand-authored claim using run-scoped DB evidence.',
         'Re-run inventory sync and bootstrap after paper claim edits.',
       ],
     });
+  }
+
+  for (const group of grouped) {
+    const family = `${group.kind}|${group.normalized_claim_text}`;
+    const sectionMajors = [...new Set((group.items || []).map((item) => item.section_major).filter(Boolean))];
+
+    let template = null;
+    if (sectionMajors.length === 1) {
+      template = familySectionTemplates.get(`${family}|section:${sectionMajors[0]}`) || null;
+    }
+    if (!template) {
+      template = familyTemplates.get(family) || null;
+    }
+
+    if (template) {
+      pushGeneratedClaim(
+        group,
+        {
+          evidence: template.evidence,
+          assertion: template.assertion,
+          remediation: template.remediation,
+        },
+        'template',
+      );
+      generatedFromTemplates++;
+      continue;
+    }
+
+    if (group.kind !== 'n') {
+      skipped++;
+      continue;
+    }
+
+    const mapping = buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpectedIndex);
+    if (mapping) {
+      pushGeneratedClaim(group, mapping, 'inferred');
+      generatedFromInference++;
+      continue;
+    }
+
+    let matchedSectionInference = false;
+    const sectionGroups = splitGroupBySection(group);
+    for (const sectionGroup of sectionGroups) {
+      const sectionMapping = buildEvidenceAndAssertion(sectionGroup, manifest, dbScoredTotal, manifestExpectedIndex);
+      if (!sectionMapping) continue;
+      pushGeneratedClaim(sectionGroup, sectionMapping, 'inferred');
+      generatedFromInference++;
+      matchedSectionInference = true;
+    }
+
+    if (!matchedSectionInference) {
+      skipped++;
+    }
   }
 
   const output = {
@@ -351,9 +533,13 @@ function main() {
     source_inventory: path.relative(ROOT, inventoryPath),
     source_db: path.relative(ROOT, dbPath),
     totals: {
-      major_deterministic: majorDeterministic.length,
-      unmapped_deterministic: unmappedDeterministic.length,
+      major_candidates: majorCandidates.length,
+      exact_unmapped_candidates: exactUnmappedCandidates.length,
+      template_families: familyTemplates.size,
+      template_section_families: familySectionTemplates.size,
       generated_claims: generatedClaims.length,
+      generated_from_templates: generatedFromTemplates,
+      generated_from_inference: generatedFromInference,
       skipped_groups: skipped,
     },
     claims: generatedClaims,
@@ -363,7 +549,7 @@ function main() {
   fs.writeFileSync(outPath, YAML.stringify(output), 'utf8');
 
   console.log(
-    `Wrote ${path.relative(ROOT, outPath)} :: deterministic=${majorDeterministic.length} generated=${generatedClaims.length} skipped=${skipped}`,
+    `Wrote ${path.relative(ROOT, outPath)} :: candidates=${majorCandidates.length} exact_unmapped=${exactUnmappedCandidates.length} generated=${generatedClaims.length} skipped=${skipped}`,
   );
 }
 

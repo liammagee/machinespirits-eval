@@ -1124,9 +1124,16 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
   const policy = spec?.inventory_policy || {};
   const majorOnly = policy.major_only !== false;
   const includeKinds = Array.isArray(policy.include_kinds) && policy.include_kinds.length > 0 ? new Set(policy.include_kinds) : null;
-  const maxUnmapped = Number.isFinite(policy.max_unmapped_major) ? policy.max_unmapped_major : 0;
-  const maxUnmappedRate = Number.isFinite(policy.max_unmapped_major_rate) ? policy.max_unmapped_major_rate : 0.05;
   const expandMappedFamilies = policy.expand_mapped_families !== false;
+  const statusMode = policy.coverage_status_mode === 'strict' ? 'strict' : 'expanded';
+  const maxUnmappedExpanded = Number.isFinite(policy.max_unmapped_major) ? policy.max_unmapped_major : 0;
+  const maxUnmappedRateExpanded = Number.isFinite(policy.max_unmapped_major_rate) ? policy.max_unmapped_major_rate : 0.05;
+  const maxUnmappedStrict = Number.isFinite(policy.max_unmapped_major_strict)
+    ? policy.max_unmapped_major_strict
+    : maxUnmappedExpanded;
+  const maxUnmappedRateStrict = Number.isFinite(policy.max_unmapped_major_rate_strict)
+    ? policy.max_unmapped_major_rate_strict
+    : maxUnmappedRateExpanded;
 
   const candidates = inventory.entries.filter((entry) => {
     if (majorOnly && !entry.is_major) return false;
@@ -1154,25 +1161,43 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
 
   let mappedByExact = 0;
   let mappedByFamily = 0;
-  const unmapped = [];
+  const strictUnmapped = [];
+  const expandedUnmapped = [];
   for (const entry of candidates) {
     const canonicalKey = canonicalSourceKeyFromParts(entry);
     const canonicalFamily = canonicalSourceFamilyFromParts(entry);
-    if (canonicalKey && mappedCanonicalKeys.has(canonicalKey)) {
+    const exactMapped = canonicalKey && mappedCanonicalKeys.has(canonicalKey);
+    const familyMapped = expandMappedFamilies && canonicalFamily && mappedFamilies.has(canonicalFamily);
+
+    if (exactMapped) {
       mappedByExact++;
       continue;
     }
-    if (expandMappedFamilies && canonicalFamily && mappedFamilies.has(canonicalFamily)) {
+    strictUnmapped.push(entry);
+
+    if (familyMapped) {
       mappedByFamily++;
       continue;
     }
-    unmapped.push(entry);
+    expandedUnmapped.push(entry);
   }
 
-  const mapped = candidates.length - unmapped.length;
-  const unmappedRate = candidates.length > 0 ? unmapped.length / candidates.length : 0;
+  const mappedStrict = mappedByExact;
+  const mappedExpanded = mappedByExact + mappedByFamily;
+  const strictUnmappedRate = candidates.length > 0 ? strictUnmapped.length / candidates.length : 0;
+  const expandedUnmappedRate = candidates.length > 0 ? expandedUnmapped.length / candidates.length : 0;
 
-  const status = unmapped.length > maxUnmapped || unmappedRate > maxUnmappedRate ? 'fail' : unmapped.length > 0 ? 'warn' : 'pass';
+  const activeUnmapped = statusMode === 'strict' ? strictUnmapped : expandedUnmapped;
+  const activeUnmappedRate = statusMode === 'strict' ? strictUnmappedRate : expandedUnmappedRate;
+  const activeMaxUnmapped = statusMode === 'strict' ? maxUnmappedStrict : maxUnmappedExpanded;
+  const activeMaxUnmappedRate = statusMode === 'strict' ? maxUnmappedRateStrict : maxUnmappedRateExpanded;
+
+  const status =
+    activeUnmapped.length > activeMaxUnmapped || activeUnmappedRate > activeMaxUnmappedRate
+      ? 'fail'
+      : activeUnmapped.length > 0
+        ? 'warn'
+        : 'pass';
   return {
     id: 'inventory.coverage',
     status,
@@ -1180,15 +1205,21 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
       inventory_generated_at: inventory.generated_at,
       source_claim_audit: inventory.source_claim_audit,
       candidate_total: candidates.length,
-      mapped,
+      coverage_status_mode: statusMode,
+      mapped_strict: mappedStrict,
+      unmapped_strict: strictUnmapped.length,
+      unmapped_rate_strict: strictUnmappedRate,
+      mapped_expanded: mappedExpanded,
       mapped_exact: mappedByExact,
       mapped_family: mappedByFamily,
-      unmapped: unmapped.length,
-      unmapped_rate: unmappedRate,
+      unmapped_expanded: expandedUnmapped.length,
+      unmapped_rate_expanded: expandedUnmappedRate,
       expand_mapped_families: expandMappedFamilies,
-      max_unmapped_major: maxUnmapped,
-      max_unmapped_major_rate: maxUnmappedRate,
-      sample_unmapped: unmapped.slice(0, 25).map((entry) => ({
+      max_unmapped_major: maxUnmappedExpanded,
+      max_unmapped_major_rate: maxUnmappedRateExpanded,
+      max_unmapped_major_strict: maxUnmappedStrict,
+      max_unmapped_major_rate_strict: maxUnmappedRateStrict,
+      sample_unmapped: activeUnmapped.slice(0, 25).map((entry) => ({
         source_key: entry.source_key,
         canonical_source_key: canonicalSourceKeyFromParts(entry),
         section: entry.section,
