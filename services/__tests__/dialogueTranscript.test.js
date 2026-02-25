@@ -424,10 +424,9 @@ describe('buildDialogueFullTranscript', () => {
       'Should fall back to deliveredByTurn when no suggestions on trace entry');
   });
 
-  it('approved-without-revision produces 2 tutor lines (TE → TS), no duplicate text', () => {
-    // When TS approves the initial draft, no final TE is emitted to avoid
-    // duplicate text. The 2-line pattern (TE → TS) means "approved as-is".
-    // Contrast with the 3-line pattern (TE → TS → TE revised) when TS caused a change.
+  it('approved-without-revision still emits final TE (TS must never conclude a turn)', () => {
+    // Even when TS approves the initial draft unchanged, the ego must have the
+    // final word — TS never concludes a turn. Pattern: TE → TS → TE (same text).
     const trace = [
       { agent: 'user', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
@@ -439,9 +438,12 @@ describe('buildDialogueFullTranscript', () => {
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Draft response about Hegel.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
     const lines = transcript.split('\n').filter(l => l.startsWith('[Tutor'));
-    assert.equal(lines.length, 2, `Expected 2 tutor lines (TE→TS, approved), got ${lines.length}:\n${lines.join('\n')}`);
+    assert.equal(lines.length, 3, `Expected 3 tutor lines (TE→TS→TE), got ${lines.length}:\n${lines.join('\n')}`);
     assert.ok(lines[0].startsWith('[Tutor Ego]'), 'First: TE draft');
-    assert.ok(lines[1].startsWith('[Tutor Superego]'), 'Second: TS approval');
+    assert.ok(lines[1].startsWith('[Tutor Superego]'), 'Second: TS review');
+    assert.ok(lines[2].startsWith('[Tutor Ego]'), 'Third: TE final (same text, not revised)');
+    // Not labelled "(revised)" since text unchanged
+    assert.ok(!lines[2].includes('(revised)'), 'Should not say (revised) when text unchanged');
   });
 
   it('single-agent tutor: ego is the only tutor line per turn', () => {
@@ -606,6 +608,16 @@ describe('buildDialogueFullTranscript', () => {
     // Second superego review is collapsed (not shown)
     assert.ok(!transcript.includes('Good dialectical challenge'),
       'Should NOT show second superego review (collapsed)');
+
+    // Verify TS→TE invariant: every [Tutor Superego] followed by [Tutor Ego]
+    const transcriptLines = transcript.split('\n').filter(l => l.trim());
+    const agentLines = transcriptLines.filter(l => /^\[(Tutor|Learner)/.test(l));
+    for (let i = 0; i < agentLines.length; i++) {
+      if (agentLines[i].startsWith('[Tutor Superego]')) {
+        assert.ok(i + 1 < agentLines.length && agentLines[i + 1].startsWith('[Tutor Ego]'),
+          `[Tutor Superego] at index ${i} not followed by [Tutor Ego]: next="${agentLines[i + 1]?.slice(0, 50)}"`);
+      }
+    }
   });
 });
 
@@ -888,8 +900,9 @@ describe('transcript conformity', () => {
     // Extract ordered markers — each must appear later in the transcript than the previous
     // Intermediate deliberation rounds (ego/revise, second superego) are collapsed
     const markers = [
-      'Opening about recognition',           // Turn 1 tutor ego (draft; approved = no final TE)
+      'Opening about recognition',           // Turn 1 tutor ego (draft)
       'Solid opening approach',              // Turn 1 tutor superego
+      'Opening about recognition',           // Turn 1 tutor ego (final, same text = approved)
       'I wonder about the master',           // Turn 2 learner ego
       'Dig into the asymmetry more',         // Turn 2 learner superego
       'The asymmetry of recognition is key', // Turn 2 learner ego (revised)
