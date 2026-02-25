@@ -3377,15 +3377,16 @@ profiles:
     superego: null
 
   # ===========================================================================
-  # MESSAGE CHAIN MODE (cells 80-81)
+  # MESSAGE CHAIN MODE — 2×2×2 FACTORIAL (cells 80-87)
   # ===========================================================================
-  # Tests multi-turn message chain vs flat single-prompt approach.
-  # conversation_mode: messages uses proper assistant/user role alternation
-  # instead of serializing conversation history as text in a single user message.
+  # Mirrors cells 1-8 with conversation_mode: messages.
+  # Uses proper assistant/user role alternation instead of serializing
+  # conversation history as text in a single user message.
+  # Factor A: base vs recognition | Factor B: single vs multi-agent tutor | Factor C: unified vs ego_superego learner
 
-  # Cell 80: Base × Single Agent × Unified Learner (message chain mode)
+  # Cell 80: Base × Single Agent × Unified Learner (= cell 1 + messages)
   cell_80_messages_base_single_unified:
-    description: "Message chain mode: baseline single-agent tutor, unified learner — uses proper message alternation"
+    description: "Message chain 2×2×2: baseline single-agent tutor, unified learner"
     conversation_mode: messages
     factors:
       prompt_type: base
@@ -3406,9 +3407,96 @@ profiles:
         max_tokens: 8000
     superego: null
 
-  # Cell 81: Recognition × Single Agent × Unified Learner (message chain mode)
-  cell_81_messages_recog_single_unified:
-    description: "Message chain mode: recognition single-agent tutor, unified learner — uses proper message alternation"
+  # Cell 81: Base × Single Agent × Ego/Superego Learner (= cell 2 + messages)
+  cell_81_messages_base_single_psycho:
+    description: "Message chain 2×2×2: baseline single-agent tutor, ego/superego learner"
+    conversation_mode: messages
+    factors:
+      prompt_type: base
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 82: Base × Multi-Agent Tutor × Unified Learner (= cell 3 + messages)
+  cell_82_messages_base_multi_unified:
+    description: "Message chain 2×2×2: baseline ego+superego tutor, unified learner"
+    conversation_mode: messages
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 83: Base × Multi-Agent Tutor × Ego/Superego Learner (= cell 4 + messages)
+  cell_83_messages_base_multi_psycho:
+    description: "Message chain 2×2×2: baseline ego+superego tutor, ego/superego learner"
+    conversation_mode: messages
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.8
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+
+  # Cell 84: Recognition × Single Agent × Unified Learner (= cell 5 + messages)
+  cell_84_messages_recog_single_unified:
+    description: "Message chain 2×2×2: recognition single-agent tutor, unified learner"
     conversation_mode: messages
     factors:
       prompt_type: recognition
@@ -3428,3 +3516,98 @@ profiles:
         temperature: 0.6
         max_tokens: 8000
     superego: null
+
+  # Cell 85: Recognition × Single Agent × Ego/Superego Learner (= cell 6 + messages)
+  cell_85_messages_recog_single_psycho:
+    description: "Message chain 2×2×2: recognition single-agent tutor, ego/superego learner"
+    conversation_mode: messages
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: false
+      multi_agent_learner: true
+    learner_architecture: ego_superego_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 86: Recognition × Multi-Agent Tutor × Unified Learner (= cell 7 + messages)
+  cell_86_messages_recog_multi_unified:
+    description: "Message chain 2×2×2: recognition ego+superego tutor, unified learner"
+    conversation_mode: messages
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 87: Recognition × Multi-Agent Tutor × Ego/Superego Learner (= cell 8 + messages)
+  cell_87_messages_recog_multi_psycho:
+    description: "Message chain 2×2×2: recognition ego+superego tutor, ego/superego learner"
+    conversation_mode: messages
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: true
+      max_rounds: 2
+      convergence_threshold: 0.7
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-recognition.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true

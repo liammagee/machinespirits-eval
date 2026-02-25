@@ -165,7 +165,13 @@ export const EVAL_ONLY_PROFILES = [
   'cell_78_base_dialectical_selfreflect_psycho_authentic',
   'cell_79_recog_dialectical_selfreflect_psycho_authentic',
   'cell_80_messages_base_single_unified',
-  'cell_81_messages_recog_single_unified',
+  'cell_81_messages_base_single_psycho',
+  'cell_82_messages_base_multi_unified',
+  'cell_83_messages_base_multi_psycho',
+  'cell_84_messages_recog_single_unified',
+  'cell_85_messages_recog_single_psycho',
+  'cell_86_messages_recog_multi_unified',
+  'cell_87_messages_recog_multi_psycho',
 ];
 
 /**
