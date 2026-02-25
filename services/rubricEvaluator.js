@@ -1468,6 +1468,24 @@ function isDynamicLearner(dialogueTrace) {
 }
 
 /**
+ * Extract the initial learner message from the learner_context string.
+ * The learner_context includes a "Recent Chat History" section with lines like:
+ *   - User: "I've been stuck on this dialectic stuff for an hour."
+ *
+ * @param {string} learnerContext - Raw learner_context from scenario/dialogue log
+ * @returns {string|null} The extracted initial learner message, or null
+ */
+function extractInitialLearnerMessage(learnerContext) {
+  if (!learnerContext) return null;
+  // Match - User: "..." (double-quoted) — greedy within the quotes to handle apostrophes
+  const dq = learnerContext.match(/[-–]\s*User:\s*"([^"]+)"/);
+  if (dq) return dq[1];
+  // Fallback: - User: '...' (single-quoted)
+  const sq = learnerContext.match(/[-–]\s*User:\s*'([^']+)'/);
+  return sq ? sq[1] : null;
+}
+
+/**
  * Build a public-facing dialogue transcript — ego roles only.
  *
  * Shows only the final ego outputs from each side:
@@ -1479,12 +1497,14 @@ function isDynamicLearner(dialogueTrace) {
  *
  * @param {Array} turns - Turn objects from turnResults
  * @param {Array} [dialogueTrace] - Consolidated trace
+ * @param {string} [learnerContext] - Raw learner_context (contains initial learner message)
  * @returns {string} Formatted public transcript
  */
-function buildDialoguePublicTranscript(turns, dialogueTrace) {
+function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   if (!turns?.length) return '(no transcript available)';
 
   const dynamic = isDynamicLearner(dialogueTrace);
+  const initialMessage = extractInitialLearnerMessage(learnerContext);
 
   // Index trace entries by turnIndex
   const synthByTurn = {};
@@ -1506,7 +1526,11 @@ function buildDialoguePublicTranscript(turns, dialogueTrace) {
     lines.push(`\n--- Turn ${i} ---`);
 
     // Learner side
-    if (dynamic) {
+    if (i === 0 && initialMessage) {
+      // Turn 0: initial learner message from scenario context
+      const label = dynamic ? '[Learner Ego]' : '[Learner]';
+      lines.push(`${label} ${truncate(initialMessage, 400)}`);
+    } else if (dynamic) {
       // Dynamic learner: show ego synthesis only
       const text = synthByTurn[i] || turn.learnerMessage || null;
       if (text) {
@@ -1548,11 +1572,13 @@ function buildDialoguePublicTranscript(turns, dialogueTrace) {
  *
  * @param {Array} turns - Turn objects from dialogue log
  * @param {Array} [dialogueTrace] - Consolidated trace with internal deliberation
+ * @param {string} [learnerContext] - Raw learner_context (contains initial learner message)
  * @returns {string} Formatted transcript
  */
-function buildDialogueFullTranscript(turns, dialogueTrace) {
+function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
   if (dialogueTrace?.length > 0) {
     const dynamic = isDynamicLearner(dialogueTrace);
+    const initialMessage = extractInitialLearnerMessage(learnerContext);
 
     // Index tutor delivered messages by turn for ego entries with empty content
     const deliveredByTurn = {};
@@ -1565,10 +1591,17 @@ function buildDialogueFullTranscript(turns, dialogueTrace) {
 
     const lines = [];
     let currentTurnIdx = -1;
+    let emittedInitial = false;
     for (const entry of dialogueTrace) {
       if (entry.turnIndex !== undefined && entry.turnIndex !== currentTurnIdx) {
         currentTurnIdx = entry.turnIndex;
         lines.push(`\n--- Turn ${currentTurnIdx} ---`);
+        // Emit initial learner message at start of Turn 0
+        if (currentTurnIdx === 0 && initialMessage && !emittedInitial) {
+          const label = dynamic ? '[Learner Ego]' : '[Learner]';
+          lines.push(`${label} ${truncate(initialMessage, 400)}`);
+          emittedInitial = true;
+        }
       }
 
       const text = entry.detail || entry.contextSummary || '';
@@ -1620,11 +1653,14 @@ function buildDialogueFullTranscript(turns, dialogueTrace) {
   // Fallback: build from turn objects when no trace is available
   if (!turns?.length) return '(no transcript available)';
 
+  const initialMessage = extractInitialLearnerMessage(learnerContext);
   const lines = [];
   for (let i = 0; i < turns.length; i++) {
     const turn = turns[i];
     lines.push(`\n--- Turn ${i} ---`);
-    if (turn.learnerMessage) {
+    if (i === 0 && initialMessage) {
+      lines.push(`[Learner] ${truncate(initialMessage, 400)}`);
+    } else if (turn.learnerMessage) {
       lines.push(`[Learner Ego] ${truncate(turn.learnerMessage, 400)}`);
     } else if (turn.learnerAction) {
       lines.push(`[Learner Action] ${turn.learnerAction}`);
@@ -1652,6 +1688,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace) {
  * @param {string} [params.topic] - Topic being discussed
  * @param {number} params.turnCount - Number of dialogue turns
  * @param {string} [params.transcriptMode='public'] - 'public' for externally visible only, 'full' for internal deliberation
+ * @param {string} [params.learnerContext] - Raw learner_context string (contains initial learner message)
  * @returns {string} Complete judge prompt
  */
 export function buildDialogueQualityPrompt(params) {
@@ -1663,6 +1700,7 @@ export function buildDialogueQualityPrompt(params) {
     topic = 'unknown',
     turnCount = 0,
     transcriptMode = 'public',
+    learnerContext,
   } = params;
 
   const dimensions = getDialogueDimensions();
@@ -1680,8 +1718,8 @@ ${criteriaText}`;
 
   const isPublic = transcriptMode !== 'full';
   const transcript = isPublic
-    ? buildDialoguePublicTranscript(turns, dialogueTrace)
-    : buildDialogueFullTranscript(turns, dialogueTrace);
+    ? buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext)
+    : buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
 
   const transcriptHeader = isPublic
     ? '## PUBLIC DIALOGUE TRANSCRIPT'
