@@ -1654,8 +1654,14 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
     const lines = [];
     let currentTurnIdx = -1;
     let emittedInitial = false;
-    let lastTutorEgoText = '';   // Track for dedup of ego/revise
     let lastLearnerEgoText = ''; // Track for dedup of synthesis
+    // Tutor deliberation is collapsed to exactly 3 lines per turn:
+    //   [Tutor Ego] initial draft → [Tutor Superego] review → [Tutor Ego] final
+    // This mirrors the learner pattern: LE → LS → LE (revised).
+    // Intermediate rounds (reject/revise/re-approve) are skipped.
+    let tutorEgoShown = false;      // Has the first [Tutor Ego] been emitted this turn?
+    let tutorSuperegoShown = false;  // Has the first [Tutor Superego] been emitted this turn?
+    let tutorInitialEgoText = '';    // Initial draft text, for comparing with final
     for (let idx = 0; idx < dialogueTrace.length; idx++) {
       const entry = dialogueTrace[idx];
       // Use explicit turnIndex if present, otherwise inferred from final_output
@@ -1663,8 +1669,10 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
 
       if (effectiveTurn !== currentTurnIdx && effectiveTurn >= 0) {
         currentTurnIdx = effectiveTurn;
-        lastTutorEgoText = '';
         lastLearnerEgoText = '';
+        tutorEgoShown = false;
+        tutorSuperegoShown = false;
+        tutorInitialEgoText = '';
         lines.push(`\n--- Turn ${currentTurnIdx + 1} ---`);
         // Emit initial learner message at start of Turn 0
         if (currentTurnIdx === 0 && initialMessage && !emittedInitial) {
@@ -1674,29 +1682,26 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         }
       }
 
-      // ── Tutor agents ──
+      // ── Tutor agents (collapsed: initial TE → first TS → final TE) ──
       if (entry.agent === 'ego') {
-        // Tutor-core ego entries carry actual text in suggestions[].message;
-        // detail/contextSummary are empty. deliveredByTurn is the last-resort
-        // fallback (final delivered message for the turn).
-        const egoText = entry.suggestions?.[0]?.message
-          || entry.detail || entry.contextSummary
-          || deliveredByTurn[currentTurnIdx] || '';
-        if (entry.action === 'revise' || entry.action === 'revision' || entry.action === 'final_revision') {
-          if (egoText !== lastTutorEgoText) {
-            lines.push(`[Tutor Ego] (revised) ${truncate(egoText, 300)}`);
-            lastTutorEgoText = egoText;
-          }
-        } else if (entry.action === 'incorporate-feedback') {
-          // Ego incorporated superego suggestions — informational, skip
-        } else {
+        if (!tutorEgoShown) {
+          // First ego entry this turn = initial draft
+          const egoText = entry.suggestions?.[0]?.message
+            || entry.detail || entry.contextSummary
+            || deliveredByTurn[currentTurnIdx] || '';
           lines.push(`[Tutor Ego] ${truncate(egoText, 300)}`);
-          lastTutorEgoText = egoText;
+          tutorEgoShown = true;
+          tutorInitialEgoText = egoText;
         }
+        // Skip subsequent ego/revise entries — the final version comes from final_output
       } else if (entry.agent === 'superego') {
-        // superego/review stores text in feedback, NOT detail/contextSummary
-        const reviewText = entry.feedback || entry.detail || entry.contextSummary || '';
-        lines.push(`[Tutor Superego] ${truncate(reviewText, 300)}`);
+        if (!tutorSuperegoShown) {
+          // First superego entry this turn = the substantive review
+          const reviewText = entry.feedback || entry.detail || entry.contextSummary || '';
+          lines.push(`[Tutor Superego] ${truncate(reviewText, 300)}`);
+          tutorSuperegoShown = true;
+        }
+        // Skip subsequent superego reviews (approval after revision)
       } else if (entry.agent === 'ego_self_reflection') {
         const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Tutor Self-Reflection] ${truncate(text, 300)}`);
@@ -1755,11 +1760,12 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
           lines.push(`[Learner] ${truncate(learnerMsg, 400)}`);
         }
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
-        // Emit the delivered message as [Tutor Ego] — ensures every [Tutor Superego]
-        // is followed by a [Tutor Ego], symmetric with [Learner Superego] → [Learner Ego].
+        // Final TE: emitted ONLY when the superego caused a revision.
+        // 2-line pattern (TE → TS) = approved as-is.
+        // 3-line pattern (TE → TS → TE revised) = superego changed the output.
         const deliveredMsg = deliveredByTurn[currentTurnIdx] || '';
-        if (deliveredMsg) {
-          lines.push(`[Tutor Ego] ${truncate(deliveredMsg, 300)}`);
+        if (deliveredMsg && tutorSuperegoShown && deliveredMsg !== tutorInitialEgoText) {
+          lines.push(`[Tutor Ego] (revised) ${truncate(deliveredMsg, 300)}`);
         }
       } else if (entry.agent === 'rejection_budget') {
         const text = entry.contextSummary || entry.detail || '';
