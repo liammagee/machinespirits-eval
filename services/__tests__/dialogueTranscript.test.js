@@ -175,6 +175,22 @@ describe('buildDialogueFullTranscript', () => {
     assert.ok(transcript.includes('thesis plus antithesis equals synthesis'),
       'Should include initial learner message at Turn 0');
   });
+
+  it('renders tutor superego feedback from feedback field (not just detail/contextSummary)', () => {
+    // Real superego trace entries store review text in `feedback`, not `detail` or `contextSummary`
+    const traceWithFeedback = [
+      { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+      { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Here is my response.', contextSummary: '' },
+      { agent: 'superego', action: 'review', turnIndex: 0, feedback: 'Push harder on the paradox of recognition.' },
+      { agent: 'ego', action: 'revise', turnIndex: 0, detail: 'Revised response with more depth.', contextSummary: '' },
+    ];
+    const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Revised response with more depth.' }] }];
+    const transcript = buildDialogueFullTranscript(turns, traceWithFeedback, null);
+    assert.ok(transcript.includes('Push harder on the paradox'),
+      'Should render superego feedback from the feedback field');
+    assert.ok(transcript.includes('[Tutor Superego]'),
+      'Should have Tutor Superego label');
+  });
 });
 
 // ── extractInitialLearnerMessage ──────────────────────────────────────────
