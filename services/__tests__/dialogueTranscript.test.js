@@ -807,7 +807,127 @@ describe('transcript conformity', () => {
     }
   });
 
-  it('[full/unified] follows [Learner] → [Tutor Ego] chain in single-agent turns', () => {
+  // ── Chronological ordering ──────────────────────────────────────────────
+
+  it('[full/ego_superego] transcript lines follow trace chronological order', () => {
+    // The transcript must preserve the order of the trace — if entry A precedes
+    // entry B in the trace, A's line must precede B's line in the transcript.
+    const trace = [
+      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'ego', action: 'generate', round: 0,
+        suggestions: [{ message: 'Opening about recognition.' }] },
+      { agent: 'superego', action: 'review', round: 1, approved: true,
+        feedback: 'Solid opening approach.' },
+      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Done' },
+      // Turn 1
+      { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1,
+        detail: 'I wonder about the master.' },
+      { agent: 'learner_superego', action: 'deliberation', turnIndex: 1,
+        detail: 'Dig into the asymmetry more.' },
+      { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
+        detail: 'The asymmetry of recognition is key.' },
+      { agent: 'learner_synthesis', action: 'response', turnIndex: 1,
+        detail: 'The asymmetry of recognition is key.' },
+      { agent: 'user', action: 'turn_action', turnIndex: 1,
+        contextSummary: 'The asymmetry of recognition is key.', detail: 'Learner: asked_followup' },
+      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'ego', action: 'generate', round: 0,
+        suggestions: [{ message: 'Yes, asymmetry drives the dialectic.' }] },
+      { agent: 'superego', action: 'review', round: 1, approved: false,
+        feedback: 'Challenge the learner more.' },
+      { agent: 'ego', action: 'revise', round: 1,
+        suggestions: [{ message: 'Asymmetry drives the dialectic — but what if it collapses?' }] },
+      { agent: 'superego', action: 'review', round: 2, approved: true,
+        feedback: 'Good dialectical tension now.' },
+      { agent: 'user', action: 'final_output', turnIndex: 1, detail: 'Done' },
+    ];
+    const turns = [
+      { turnIndex: 0, suggestions: [{ message: 'Opening about recognition.' }] },
+      { turnIndex: 1, suggestions: [{ message: 'Asymmetry drives the dialectic — but what if it collapses?' }] },
+    ];
+    const transcript = buildDialogueFullTranscript(turns, trace, 'User: "What is recognition?"');
+
+    // Extract ordered markers — each must appear later in the transcript than the previous
+    const markers = [
+      'Opening about recognition',           // Turn 1 tutor ego
+      'Solid opening approach',              // Turn 1 tutor superego
+      'I wonder about the master',           // Turn 2 learner ego
+      'Dig into the asymmetry more',         // Turn 2 learner superego
+      'The asymmetry of recognition is key', // Turn 2 learner ego (revised)
+      'Yes, asymmetry drives the dialectic', // Turn 2 tutor ego
+      'Challenge the learner more',          // Turn 2 tutor superego (reject)
+      'Asymmetry drives the dialectic — but what if it collapses', // Turn 2 tutor ego (revised)
+      'Good dialectical tension now',        // Turn 2 tutor superego (approve)
+    ];
+
+    let prevPos = -1;
+    for (const marker of markers) {
+      const pos = transcript.indexOf(marker);
+      assert.ok(pos >= 0,
+        `Marker "${marker}" not found in transcript`);
+      assert.ok(pos > prevPos,
+        `Chronological violation: "${marker}" (pos ${pos}) appears before previous marker (pos ${prevPos})`);
+      prevPos = pos;
+    }
+  });
+
+  it('[full/unified] transcript lines follow trace chronological order', () => {
+    // Single-agent tutor + unified learner: simpler but same invariant
+    const trace = [
+      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'ego', action: 'generate', turnIndex: 0 },
+      { agent: 'user', action: 'turn_action', turnIndex: 1,
+        detail: 'Learner: asked_followup', contextSummary: 'But what about Popper?' },
+      { agent: 'ego', action: 'generate', turnIndex: 1 },
+      { agent: 'user', action: 'turn_action', turnIndex: 2,
+        detail: 'Learner: asked_followup', contextSummary: 'I see the phenomenological point.' },
+      { agent: 'ego', action: 'generate', turnIndex: 2 },
+    ];
+    const turns = [
+      { turnIndex: 0, suggestions: [{ message: 'Welcome to Hegel.' }] },
+      { turnIndex: 1, suggestions: [{ message: 'Popper raises a good critique.' }] },
+      { turnIndex: 2, suggestions: [{ message: 'Yes, the phenomenological claim is distinct.' }] },
+    ];
+    const transcript = buildDialogueFullTranscript(turns, trace, '- User: "Is the dialectic scientific?"');
+
+    const markers = [
+      'Is the dialectic scientific',          // Turn 1 learner
+      'Welcome to Hegel',                     // Turn 1 tutor ego
+      'But what about Popper',                // Turn 2 learner
+      'Popper raises a good critique',        // Turn 2 tutor ego
+      'I see the phenomenological point',     // Turn 3 learner
+      'Yes, the phenomenological claim',      // Turn 3 tutor ego
+    ];
+
+    let prevPos = -1;
+    for (const marker of markers) {
+      const pos = transcript.indexOf(marker);
+      assert.ok(pos >= 0,
+        `Marker "${marker}" not found in transcript`);
+      assert.ok(pos > prevPos,
+        `Chronological violation: "${marker}" (pos ${pos}) appears before previous marker (pos ${prevPos})`);
+      prevPos = pos;
+    }
+  });
+
+  it('[full] turn headers appear in strictly ascending order', () => {
+    // Verify turn headers themselves are monotonically increasing
+    for (const arch of ARCHITECTURES) {
+      const transcript = buildDialogueFullTranscript(arch.turns, arch.trace, LEARNER_CONTEXT);
+      const turnHeaders = [...transcript.matchAll(/--- Turn (\d+) ---/g)];
+      for (let j = 1; j < turnHeaders.length; j++) {
+        const prev = parseInt(turnHeaders[j - 1][1], 10);
+        const curr = parseInt(turnHeaders[j][1], 10);
+        assert.ok(curr > prev,
+          `${arch.name}: Turn headers not ascending at positions ${j-1}/${j}: Turn ${prev} → Turn ${curr}`);
+        // Headers appear at increasing string positions
+        assert.ok(turnHeaders[j].index > turnHeaders[j - 1].index,
+          `${arch.name}: Turn ${curr} header appears before Turn ${prev} header in string`);
+      }
+    }
+  });
+
+  it('[full/ego_superego] follows LE → LS → LE → TE → TS → TE chain in multi-agent turns', () => {
     // Single-agent tutor + unified learner: simplest ordering
     const trace = [
       { agent: 'user', action: 'context_input', turnIndex: 0 },
