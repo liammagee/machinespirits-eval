@@ -103,10 +103,10 @@ describe('buildDialoguePublicTranscript', () => {
       'Public transcript must not contain [Learner Action] for ego_superego learners');
   });
 
-  it('shows initial learner message at Turn 0', () => {
+  it('shows initial learner message at Turn 1', () => {
     const transcript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
     assert.ok(transcript.includes('thesis plus antithesis equals synthesis'),
-      'Should include initial learner message from learnerContext at Turn 0');
+      'Should include initial learner message from learnerContext at Turn 1');
   });
 
   it('does not show superego or internal deliberation', () => {
@@ -170,10 +170,10 @@ describe('buildDialogueFullTranscript', () => {
       'Synthesis identical to revision should be suppressed');
   });
 
-  it('shows initial learner message at Turn 0', () => {
+  it('shows initial learner message at Turn 1', () => {
     const transcript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
     assert.ok(transcript.includes('thesis plus antithesis equals synthesis'),
-      'Should include initial learner message at Turn 0');
+      'Should include initial learner message at Turn 1');
   });
 
   it('renders tutor superego feedback from feedback field (not just detail/contextSummary)', () => {
@@ -369,23 +369,23 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
-    // Turn 0 should have the tutor ego and superego
-    assert.ok(transcript.includes('--- Turn 0 ---'),
-      'Should have Turn 0 header');
-    assert.ok(transcript.includes('[Tutor Ego] Welcome to Hegel'),
-      'Turn 0 ego should appear under Turn 0');
-    assert.ok(transcript.includes('[Tutor Superego] Good opening'),
-      'Turn 0 superego should appear under Turn 0');
-
-    // Turn 1 should have the learner message and tutor response
+    // Turn 1 (display) should have the tutor ego and superego
     assert.ok(transcript.includes('--- Turn 1 ---'),
       'Should have Turn 1 header');
+    assert.ok(transcript.includes('[Tutor Ego] Welcome to Hegel'),
+      'Turn 1 ego should appear under Turn 1');
+    assert.ok(transcript.includes('[Tutor Superego] Good opening'),
+      'Turn 1 superego should appear under Turn 1');
 
-    // Verify Turn 0 content appears before Turn 1 content
-    const turn0Pos = transcript.indexOf('Welcome to Hegel');
-    const turn1Pos = transcript.indexOf('Popper raises a fair critique');
-    assert.ok(turn0Pos < turn1Pos,
-      'Turn 0 content should appear before Turn 1 content');
+    // Turn 2 (display) should have the learner message and tutor response
+    assert.ok(transcript.includes('--- Turn 2 ---'),
+      'Should have Turn 2 header');
+
+    // Verify Turn 1 content appears before Turn 2 content
+    const turn1Pos = transcript.indexOf('Welcome to Hegel');
+    const turn2Pos = transcript.indexOf('Popper raises a fair critique');
+    assert.ok(turn1Pos < turn2Pos,
+      'Turn 1 content should appear before Turn 2 content');
   });
 
   it('handles Turn 0 tutor-core entries before any final_output (no empty ego text)', () => {
@@ -540,4 +540,78 @@ describe('extractInitialLearnerMessage', () => {
     assert.equal(extractInitialLearnerMessage(null), null);
     assert.equal(extractInitialLearnerMessage('no user message here'), null);
   });
+});
+
+// ── Transcript conformity ─────────────────────────────────────────────────
+
+describe('transcript conformity', () => {
+  const MODES = [
+    { name: 'public', build: buildDialoguePublicTranscript },
+    { name: 'full', build: buildDialogueFullTranscript },
+  ];
+  const ARCHITECTURES = [
+    { name: 'unified', turns: TURNS, trace: UNIFIED_TRACE },
+    { name: 'ego_superego', turns: TURNS_EGO_SUPEREGO, trace: EGO_SUPEREGO_TRACE },
+  ];
+
+  for (const mode of MODES) {
+    for (const arch of ARCHITECTURES) {
+      const label = `${mode.name}/${arch.name}`;
+      const transcript = mode.build(arch.turns, arch.trace, LEARNER_CONTEXT);
+
+      it(`[${label}] never contains Turn 0`, () => {
+        assert.equal(transcript.includes('--- Turn 0 ---'), false,
+          `${label}: must not contain --- Turn 0 ---`);
+      });
+
+      it(`[${label}] starts at Turn 1`, () => {
+        const firstTurnMatch = transcript.match(/--- Turn (\d+) ---/);
+        assert.ok(firstTurnMatch, `${label}: should have at least one turn header`);
+        assert.equal(firstTurnMatch[1], '1',
+          `${label}: first turn header should be Turn 1, got Turn ${firstTurnMatch?.[1]}`);
+      });
+
+      it(`[${label}] has sequential turn numbers`, () => {
+        const turnNumbers = [...transcript.matchAll(/--- Turn (\d+) ---/g)]
+          .map(m => parseInt(m[1], 10));
+        assert.ok(turnNumbers.length > 0, `${label}: should have turn headers`);
+        for (let j = 1; j < turnNumbers.length; j++) {
+          assert.equal(turnNumbers[j], turnNumbers[j - 1] + 1,
+            `${label}: turns not sequential at position ${j}: ${turnNumbers[j - 1]} → ${turnNumbers[j]}`);
+        }
+      });
+
+      it(`[${label}] has no empty agent labels`, () => {
+        const emptyLabelPattern = /\[(Tutor|Learner)[^\]]*\]\s*$/m;
+        const match = transcript.match(emptyLabelPattern);
+        assert.equal(match, null,
+          `${label}: found empty agent label: "${match?.[0]}"`);
+      });
+
+      it(`[${label}] never contains [Learner Action]`, () => {
+        assert.equal(transcript.includes('[Learner Action]'), false,
+          `${label}: must not contain [Learner Action]`);
+      });
+
+      it(`[${label}] every turn has learner + tutor content`, () => {
+        const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+        for (let j = 0; j < sections.length; j++) {
+          const section = sections[j];
+          assert.ok(/\[Learner/.test(section),
+            `${label}: Turn ${j + 1} missing [Learner...] line`);
+          assert.ok(/\[Tutor/.test(section),
+            `${label}: Turn ${j + 1} missing [Tutor...] line`);
+        }
+      });
+
+      it(`[${label}] has no raw action labels`, () => {
+        const rawActions = ['asked_followup', 'asked_question', 'expressed_confusion',
+          'provided_answer', 'changed_topic', 'requested_hint'];
+        for (const action of rawActions) {
+          assert.equal(transcript.includes(action), false,
+            `${label}: must not contain raw action label "${action}"`);
+        }
+      });
+    }
+  }
 });
