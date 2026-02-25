@@ -1350,7 +1350,11 @@ export async function generateLearnerResponse(options) {
       'learner_ego_initial',
       useMessageChains ? learnerExternalHistory : null,
     );
-    internalDeliberation.push(makeDeliberationEntry('ego_initial', egoInitialResponse, egoConfig));
+    const egoInitialEntry = makeDeliberationEntry('ego_initial', egoInitialResponse, egoConfig);
+    egoInitialEntry.inputMessages = useMessageChains && learnerExternalHistory
+      ? [...learnerExternalHistory, { role: 'user', content: "React to the tutor's message." }]
+      : null;
+    internalDeliberation.push(egoInitialEntry);
 
     // Record ego initial output in internal chain (for ego revision)
     if (useMessageChains) {
@@ -1385,7 +1389,9 @@ export async function generateLearnerResponse(options) {
       "Critique the EGO's reaction.",
       'learner_superego',
     );
-    internalDeliberation.push(makeDeliberationEntry('superego', superegoResponse, superegoConfig));
+    const superegoEntry = makeDeliberationEntry('superego', superegoResponse, superegoConfig);
+    superegoEntry.inputMessages = null; // superego uses single-prompt, not message chains
+    internalDeliberation.push(superegoEntry);
     tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
@@ -1421,7 +1427,11 @@ export async function generateLearnerResponse(options) {
       'learner_ego_revision',
       egoRevisionMsgHistory,
     );
-    internalDeliberation.push(makeDeliberationEntry('ego_revision', egoFinalResponse, egoConfig));
+    const egoRevisionEntry = makeDeliberationEntry('ego_revision', egoFinalResponse, egoConfig);
+    egoRevisionEntry.inputMessages = egoRevisionMsgHistory
+      ? [...egoRevisionMsgHistory, { role: 'user', content: 'Produce your final response to the tutor.' }]
+      : null;
+    internalDeliberation.push(egoRevisionEntry);
     tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;

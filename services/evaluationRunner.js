@@ -1861,6 +1861,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       success: false,
       errorMessage: genResult.error,
       latencyMs: genResult.metadata?.latencyMs,
+      conversationMode: null,
     };
   }
 
@@ -1885,6 +1886,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     apiCalls: genResult.metadata?.apiCalls,
     cost: genResult.metadata?.totalCost,
     dialogueId: genResult.metadata?.dialogueId,
+    conversationMode: null,
     scores:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
         ? {
@@ -2990,6 +2992,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       turnId: t.turnId,
       suggestions: t.suggestion ? [t.suggestion] : [],
     })),
+    // Conversation mode audit trail
+    conversationMode,
+    conversationHistory,
     // Holistic dialogue evaluation
     holisticDialogueScore,
     // Bilateral transformation analysis
@@ -3053,6 +3058,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     forbiddenFound,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    conversationMode,
     // Holistic dialogue evaluation (full transcript scored as single unit)
     holisticDialogueScore,
     // Bilateral transformation metrics
@@ -3955,7 +3961,7 @@ export async function rejudgeRun(runId, options = {}) {
 }
 
 // Named exports for unit testing (these are internal helpers not part of the public API)
-export { structureLearnerContext, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext };
+export { structureLearnerContext, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext, buildMessageChain };
 
 export default {
   runEvaluation,

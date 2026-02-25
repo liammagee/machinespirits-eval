@@ -19,7 +19,12 @@
  *   --limit <n>            Max rows in run mode (default: unlimited)
  *   --include-learner      Include learner internal API calls (learner_*)
  *   --full-prompts         Include full reconstructed prompt text (default: excerpt)
+ *   --line-mode            Compact dialogue view: Sys/User/Assistant lines per exchange
  *   --max-chars <n>        Excerpt length for text mode and compact JSON fields (default: 1200)
+ *   --system-prompt-max-chars <n>  Excerpt length for system prompts only (default: 240)
+ *   --show-raw-api         Include raw API request/response payload excerpts
+ *   --raw-api-max-chars <n> Excerpt length for raw API payload blocks (default: 220)
+ *   --no-color             Disable ANSI colors in text output
  *   --json                 Emit JSON instead of human-readable text
  *   --out <path>           Write output to a file
  */
@@ -29,8 +34,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import Database from 'better-sqlite3';
+import chalk from 'chalk';
 import YAML from 'yaml';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import { buildMessageChain } from '../services/evaluationRunner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -60,9 +67,11 @@ function parseInteger(value, fallback = null) {
 function usageAndExit(message = null, code = 1) {
   if (message) console.error(`Error: ${message}\n`);
   console.error('Usage:');
-  console.error('  node scripts/audit-message-chain.js --result-id <id> [--json] [--out <path>]');
   console.error(
-    '  node scripts/audit-message-chain.js --run-id <runId> [--scenario <id>] [--profile <name>] [--limit <n>] [--include-learner] [--json] [--out <path>]',
+    '  node scripts/audit-message-chain.js --result-id <id> [--json] [--line-mode] [--show-raw-api] [--raw-api-max-chars <n>] [--no-color] [--system-prompt-max-chars <n>] [--out <path>]',
+  );
+  console.error(
+    '  node scripts/audit-message-chain.js --run-id <runId> [--scenario <id>] [--profile <name>] [--limit <n>] [--include-learner] [--json] [--line-mode] [--show-raw-api] [--raw-api-max-chars <n>] [--no-color] [--system-prompt-max-chars <n>] [--out <path>]',
   );
   process.exit(code);
 }
@@ -74,9 +83,25 @@ const profileFilter = getOption('profile');
 const limit = parseInteger(getOption('limit'));
 const includeLearner = getFlag('include-learner');
 const fullPrompts = getFlag('full-prompts');
+const lineMode = getFlag('line-mode');
+const showRawApi = getFlag('show-raw-api') || lineMode;
 const jsonMode = getFlag('json');
 const outPath = getOption('out');
 const maxChars = parseInteger(getOption('max-chars'), 1200);
+const systemPromptMaxChars = parseInteger(getOption('system-prompt-max-chars'), 240);
+const rawApiMaxChars = parseInteger(getOption('raw-api-max-chars'), 220);
+const noColor = getFlag('no-color');
+const colorEnabled = !jsonMode && !noColor && process.stdout.isTTY && !process.env.NO_COLOR && !outPath;
+const C = {
+  title: (s) => (colorEnabled ? chalk.bold.cyan(s) : s),
+  key: (s) => (colorEnabled ? chalk.bold.white(s) : s),
+  meta: (s) => (colorEnabled ? chalk.gray(s) : s),
+  ok: (s) => (colorEnabled ? chalk.green(s) : s),
+  warn: (s) => (colorEnabled ? chalk.yellow(s) : s),
+  bad: (s) => (colorEnabled ? chalk.red(s) : s),
+  seq: (s) => (colorEnabled ? chalk.bold.blue(s) : s),
+  divider: (s) => (colorEnabled ? chalk.gray(s) : s),
+};
 
 if (!resultId && !runId) {
   usageAndExit('Provide either --result-id or --run-id.');
@@ -340,6 +365,54 @@ function extractResponseTextFromResponseBody(body) {
 
   if (typeof body.text === 'string') return body.text;
   return safeJson(body);
+}
+
+function tryParseJsonString(text) {
+  if (typeof text !== 'string') return null;
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+function extractPrimaryMessage(value) {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    const parsed = tryParseJsonString(value);
+    if (!parsed) return value;
+    return extractPrimaryMessage(parsed);
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return null;
+    const first = value[0];
+    if (typeof first?.message === 'string') return first.message;
+    if (typeof first?.content === 'string') return first.content;
+    if (typeof first?.text === 'string') return first.text;
+    return extractPrimaryMessage(first);
+  }
+  if (typeof value === 'object') {
+    if (typeof value.message === 'string') return value.message;
+    if (typeof value.content === 'string') return value.content;
+    if (typeof value.text === 'string') return value.text;
+    if (Array.isArray(value.candidate_suggestions) && value.candidate_suggestions.length > 0) {
+      const msg = extractPrimaryMessage(value.candidate_suggestions[0]);
+      if (msg) return msg;
+    }
+    if (Array.isArray(value.suggestions) && value.suggestions.length > 0) {
+      const msg = extractPrimaryMessage(value.suggestions[0]);
+      if (msg) return msg;
+    }
+    if (Array.isArray(value.choices) && value.choices.length > 0) {
+      const choice = value.choices[0];
+      const msg = extractPrimaryMessage(choice?.message || choice?.delta || choice?.text || null);
+      if (msg) return msg;
+    }
+  }
+  return null;
 }
 
 function extractObservedPayloadSegments(entry) {
@@ -621,53 +694,239 @@ function buildExchangesForResult(resultRow, dialogueLog, options = {}) {
   };
 }
 
-function formatTextReport(audit, maxTextChars = 1200, showFullPrompts = false) {
+function colorStatus(status) {
+  const s = status || 'unknown';
+  if (s === 'observed') return C.ok(s);
+  if (s === 'reconstructed') return C.warn(s);
+  if (s === 'missing') return C.bad(s);
+  return C.meta(s);
+}
+
+function colorChannel(channel) {
+  const c = channel || 'unknown';
+  if (c === 'tutor_ego_superego') return C.title(c);
+  if (c === 'learner_ego_superego') return C.warn(c);
+  if (c === 'tutor_learner') return C.ok(c);
+  return C.meta(c);
+}
+
+function indentBlock(text, indent = '    ') {
+  if (text == null || text === '') return `${indent}(missing)`;
+  return String(text)
+    .split('\n')
+    .map((line) => `${indent}${line}`)
+    .join('\n');
+}
+
+function channelSceneTitle(channel) {
+  if (channel === 'tutor_ego_superego') return 'Scene: Tutor Ego ↔ Superego';
+  if (channel === 'learner_ego_superego') return 'Scene: Learner Ego ↔ Superego';
+  if (channel === 'tutor_learner') return 'Scene: Tutor ↔ Learner';
+  return `Scene: ${channel || 'unknown'}`;
+}
+
+function valueToExcerpt(value, maxChars = 220) {
+  if (value == null) return null;
+  if (typeof value === 'string') return clip(value, maxChars);
+  return clip(safeJson(value), maxChars);
+}
+
+function pushRawApiBlock(lines, ex, maxChars = 220, baseIndent = '', contentOnly = false) {
+  lines.push(`${baseIndent}${C.key('Raw API:')}`);
+  if (!ex.api_payload) {
+    lines.push(`${baseIndent}  ${C.meta('(unavailable for this exchange)')}`);
+    return;
+  }
+
+  const endpoint = ex.api_payload.endpoint || '?';
+  const method = ex.api_payload.request?.method || 'POST';
+  const requestBodyObj = ex.api_payload.request?.body ?? null;
+  const responseBodyObj = ex.api_payload.response?.body ?? null;
+
+  lines.push(`${baseIndent}  ${C.meta(`${method} ${endpoint}`)}`);
+  if (contentOnly) {
+    const reqSystem = extractSystemPromptFromRequestBody(requestBodyObj);
+    const reqUser = extractUserRequestFromRequestBody(requestBodyObj);
+    const respAssistant = extractResponseTextFromResponseBody(responseBodyObj);
+
+    lines.push(`${baseIndent}  ${C.key('Req Sys:')}`);
+    lines.push(indentBlock(clip(reqSystem || '(missing)', maxChars), `${baseIndent}    `));
+    lines.push(`${baseIndent}  ${C.key('Req User:')}`);
+    lines.push(indentBlock(clip(reqUser || '(missing)', maxChars), `${baseIndent}    `));
+    lines.push(`${baseIndent}  ${C.key('Res Assistant:')}`);
+    lines.push(indentBlock(clip(respAssistant || '(missing)', maxChars), `${baseIndent}    `));
+    return;
+  }
+
+  const requestBody = valueToExcerpt(requestBodyObj, maxChars) || '(missing)';
+  const responseBody = valueToExcerpt(responseBodyObj, maxChars) || '(missing)';
+  lines.push(`${baseIndent}  ${C.key('Request:')}`);
+  lines.push(indentBlock(requestBody, `${baseIndent}    `));
+  lines.push(`${baseIndent}  ${C.key('Response:')}`);
+  lines.push(indentBlock(responseBody, `${baseIndent}    `));
+}
+
+function formatTextReport(
+  audit,
+  maxTextChars = 1200,
+  showFullPrompts = false,
+  systemPromptChars = 240,
+  includeRawApi = false,
+  rawApiChars = 220,
+) {
   const lines = [];
-  lines.push(`Result ${audit.result.id} | run=${audit.result.run_id} | profile=${audit.result.profile_name} | scenario=${audit.result.scenario_id}`);
-  lines.push(`Dialogue: ${audit.result.dialogue_id}`);
-  lines.push(`Log: ${audit.log_path || '(missing)'}`);
   lines.push(
-    `Exchanges: ${audit.exchange_count} | Trace entries: ${audit.trace_count} | includeLearner=${audit.include_learner_calls ? 'yes' : 'no'}`,
+    `${C.key('Result')} ${audit.result.id} | run=${audit.result.run_id} | profile=${audit.result.profile_name} | scenario=${audit.result.scenario_id}`,
+  );
+  lines.push(`${C.key('Dialogue')} ${audit.result.dialogue_id}`);
+  lines.push(`${C.key('Log')} ${audit.log_path || '(missing)'}`);
+  lines.push(`${C.key('Conversation Mode')} ${audit.conversation_mode || C.meta('(unknown)')}`);
+  lines.push(
+    `${C.key('Exchanges')} ${audit.exchange_count} | trace=${audit.trace_count} | includeLearner=${audit.include_learner_calls ? C.ok('yes') : C.meta('no')}`,
   );
   const channelSummary = Object.entries(audit.dialogue_channel_counts || {})
-    .map(([k, v]) => `${k}=${v}`)
+    .map(([k, v]) => `${colorChannel(k)}=${v}`)
     .join(', ');
-  lines.push(`Channels: ${channelSummary || '(none)'}`);
+  lines.push(`${C.key('Channels')} ${channelSummary || '(none)'}`);
+  if (audit.conversation_history) {
+    lines.push(`${C.key('Conversation History')} ${audit.conversation_history.length} turn(s) stored`);
+  }
+  if (audit.tutor_message_chain) {
+    lines.push(`${C.key('Tutor Message Chain')} ${audit.tutor_message_chain.length} message(s) derived`);
+  }
   if (audit.gaps.length > 0) {
-    lines.push(`Gaps: ${audit.gaps.join(' ')}`);
+    lines.push(`${C.bad('Gaps')} ${audit.gaps.join(' ')}`);
   }
   lines.push('');
 
+  const channelOrder = ['tutor_ego_superego', 'learner_ego_superego', 'tutor_learner', 'unknown'];
+  const grouped = new Map();
   for (const ex of audit.exchanges) {
+    const key = ex.dialogue_channel || 'unknown';
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(ex);
+  }
+
+  const renderExchange = (ex) => {
     lines.push(
-      `[${ex.sequence}] [${ex.dialogue_channel || 'unknown'}] ${ex.agent}/${ex.action} turn=${ex.turn_index ?? '-'} model=${ex.model || '?'} provider=${ex.provider || '?'} latency=${ex.latency_ms ?? '?'}ms`,
+      `${C.seq(`[${ex.sequence}]`)} ${C.meta('[')}${colorChannel(ex.dialogue_channel || 'unknown')}${C.meta(']')} ${ex.agent}/${ex.action} turn=${ex.turn_index ?? '-'} model=${ex.model || '?'} provider=${ex.provider || '?'} latency=${ex.latency_ms ?? '?'}ms`,
     );
 
     const sysText = ex.system_prompt?.text || null;
-    const sysShown = showFullPrompts ? sysText : clip(sysText, maxTextChars);
-    lines.push(`SYSTEM_PROMPT (${ex.system_prompt?.status || 'missing'} | ${ex.system_prompt?.source || 'unknown'}):`);
-    lines.push(sysShown || '(missing)');
+    const sysShown = showFullPrompts ? sysText : clip(sysText, systemPromptChars);
+    lines.push(
+      `${C.key('SYSTEM_PROMPT')} (${colorStatus(ex.system_prompt?.status || 'missing')} | ${C.meta(ex.system_prompt?.source || 'unknown')}):`,
+    );
+    lines.push(sysShown || C.bad('(missing)'));
 
     const reqText = ex.user_request?.text || null;
-    lines.push(`USER_REQUEST (${ex.user_request?.status || 'missing'} | ${ex.user_request?.source || 'unknown'}):`);
-    lines.push(clip(reqText, maxTextChars) || '(missing)');
+    lines.push(
+      `${C.key('USER_REQUEST')} (${colorStatus(ex.user_request?.status || 'missing')} | ${C.meta(ex.user_request?.source || 'unknown')}):`,
+    );
+    lines.push(clip(reqText, maxTextChars) || C.bad('(missing)'));
 
     const respText = ex.api_response?.text || null;
-    lines.push(`API_RESPONSE (${ex.api_response?.status || 'unknown'}):`);
-    lines.push(clip(respText, maxTextChars) || '(missing)');
-    lines.push(`PAYLOAD_CAPTURE: ${ex.api_payload ? 'yes' : 'no'}`);
+    lines.push(
+      `${C.key('API_RESPONSE')} (${colorStatus(ex.api_response?.status || 'unknown')} | ${C.meta(ex.api_response?.source || 'unknown')}):`,
+    );
+    lines.push(clip(respText, maxTextChars) || C.bad('(missing)'));
+    lines.push(`${C.key('PAYLOAD_CAPTURE')} ${ex.api_payload ? C.ok('yes') : C.warn('no')}`);
+    if (includeRawApi) {
+      pushRawApiBlock(lines, ex, rawApiChars);
+    }
+    lines.push(C.divider('-'.repeat(88)));
+    lines.push('');
+  };
+
+  for (const channel of channelOrder) {
+    const items = grouped.get(channel) || [];
+    if (items.length === 0) continue;
+    lines.push(`${C.key('=== CHANNEL ===')} ${colorChannel(channel)} ${C.meta(`(${items.length})`)}`);
+    lines.push('');
+    for (const ex of items) renderExchange(ex);
+  }
+
+  return lines.join('\n');
+}
+
+function formatLineModeReport(
+  audit,
+  maxTextChars = 1200,
+  showFullPrompts = false,
+  systemPromptChars = 240,
+  includeRawApi = true,
+  rawApiChars = 220,
+) {
+  const lines = [];
+  lines.push(
+    `${C.key('Result')} ${audit.result.id} | run=${audit.result.run_id} | profile=${audit.result.profile_name} | scenario=${audit.result.scenario_id}`,
+  );
+  lines.push(`${C.key('Dialogue')} ${audit.result.dialogue_id}`);
+  lines.push(`${C.key('Log')} ${audit.log_path || '(missing)'}`);
+  lines.push(`${C.key('Conversation Mode')} ${audit.conversation_mode || C.meta('(unknown)')}`);
+  lines.push(
+    `${C.key('Exchanges')} ${audit.exchange_count} | trace=${audit.trace_count} | includeLearner=${audit.include_learner_calls ? C.ok('yes') : C.meta('no')}`,
+  );
+  if (audit.conversation_history) {
+    lines.push(`${C.key('Conversation History')} ${audit.conversation_history.length} turn(s) stored`);
+  }
+  lines.push('');
+
+  const channelOrder = ['tutor_ego_superego', 'learner_ego_superego', 'tutor_learner', 'unknown'];
+  const grouped = new Map();
+  for (const ex of audit.exchanges) {
+    const key = ex.dialogue_channel || 'unknown';
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key).push(ex);
+  }
+
+  for (const channel of channelOrder) {
+    const items = grouped.get(channel) || [];
+    if (items.length === 0) continue;
+    lines.push(`${C.key(channelSceneTitle(channel))} ${C.meta(`(${items.length} exchange${items.length === 1 ? '' : 's'})`)}`);
+    lines.push(`${C.divider('  ' + '─'.repeat(72))}`);
+    lines.push('');
+
+    for (const ex of items) {
+      const sysText = ex.system_prompt?.text || null;
+      const sysShown = showFullPrompts ? sysText : clip(sysText, systemPromptChars);
+      const reqRaw = ex.user_request?.text || null;
+      const respRaw = ex.api_response?.text || null;
+      const reqText = extractPrimaryMessage(reqRaw) || reqRaw;
+      const respText = extractPrimaryMessage(respRaw) || respRaw;
+
+      lines.push(
+        `${C.seq(`[${ex.sequence}]`)} ${C.meta(`${ex.agent}/${ex.action}`)} ${C.meta(`turn=${ex.turn_index ?? '-'}`)} ${C.meta(`model=${ex.model || '?'}`)}`,
+      );
+      lines.push(`  ${C.key('Semantic:')}`);
+      lines.push(`  ${C.key('Sys:')}`);
+      lines.push(indentBlock(sysShown || C.bad('(missing)'), '    '));
+      lines.push(`  ${C.key('User:')}`);
+      lines.push(indentBlock(clip(reqText, maxTextChars) || C.bad('(missing)'), '    '));
+      lines.push(`  ${C.key('Assistant:')}`);
+      lines.push(indentBlock(clip(respText, maxTextChars) || C.bad('(missing)'), '    '));
+      if (includeRawApi) {
+        // Line mode favors readability: show only content-bearing message fields from raw payload.
+        pushRawApiBlock(lines, ex, rawApiChars, '  ', true);
+      }
+      lines.push('');
+    }
+  }
+
+  if (audit.gaps.length > 0) {
+    lines.push(`${C.bad('Gaps')} ${audit.gaps.join(' ')}`);
     lines.push('');
   }
 
   return lines.join('\n');
 }
 
-function compactForJson(auditObj, maxTextChars = 1200, showFullPrompts = false) {
+function compactForJson(auditObj, maxTextChars = 1200, showFullPrompts = false, systemPromptChars = 240) {
   if (showFullPrompts) return auditObj;
 
   const out = structuredClone(auditObj);
   for (const ex of out.exchanges || []) {
-    if (ex.system_prompt?.text) ex.system_prompt.text = clip(ex.system_prompt.text, maxTextChars);
+    if (ex.system_prompt?.text) ex.system_prompt.text = clip(ex.system_prompt.text, systemPromptChars);
     if (ex.user_request?.text) ex.user_request.text = clip(ex.user_request.text, maxTextChars);
     if (ex.api_response?.text) ex.api_response.text = clip(ex.api_response.text, maxTextChars);
     if (ex.api_payload) ex.api_payload = compactValue(ex.api_payload, maxTextChars);
@@ -687,7 +946,7 @@ function queryResults(db) {
       .prepare(
         `
         SELECT id, run_id, scenario_id, profile_name, dialogue_id, provider, model,
-               ego_model, superego_model, learner_architecture, created_at
+               ego_model, superego_model, learner_architecture, conversation_mode, created_at
         FROM evaluation_results
         WHERE id = ?
       `,
@@ -709,7 +968,7 @@ function queryResults(db) {
   }
   let sql = `
     SELECT id, run_id, scenario_id, profile_name, dialogue_id, provider, model,
-           ego_model, superego_model, learner_architecture, created_at
+           ego_model, superego_model, learner_architecture, conversation_mode, created_at
     FROM evaluation_results
     WHERE ${where.join(' AND ')}
     ORDER BY created_at ASC
@@ -742,11 +1001,20 @@ const audits = rows.map((row) => {
   }
 
   const built = buildExchangesForResult(row, log.json, { includeLearnerCalls: includeLearner });
+
+  // Extract conversation mode and history from dialogue log or DB row
+  const conversationMode = log.json.conversationMode || row.conversation_mode || null;
+  const conversationHistory = log.json.conversationHistory || null;
+  const tutorMessageChain = conversationHistory ? buildMessageChain(conversationHistory) : null;
+
   return {
     result: row,
     include_learner_calls: includeLearner,
     log_path: log.path,
     prompt_dirs_checked: promptDirs,
+    conversation_mode: conversationMode,
+    conversation_history: conversationHistory,
+    tutor_message_chain: tutorMessageChain,
     ...built,
   };
 });
@@ -761,8 +1029,12 @@ const outputPayload = {
     profile: profileFilter || null,
     limit: Number.isFinite(limit) ? limit : null,
     include_learner: includeLearner,
+    line_mode: lineMode,
+    show_raw_api: showRawApi,
+    system_prompt_max_chars: systemPromptMaxChars,
+    raw_api_max_chars: rawApiMaxChars,
   },
-  audits: audits.map((a) => compactForJson(a, maxChars, fullPrompts)),
+  audits: audits.map((a) => compactForJson(a, maxChars, fullPrompts, systemPromptMaxChars)),
 };
 
 let rendered;
@@ -770,14 +1042,21 @@ if (jsonMode) {
   rendered = JSON.stringify(outputPayload, null, 2);
 } else {
   const blocks = [];
-  blocks.push(`API Message Chain Audit`);
-  blocks.push(`Generated: ${outputPayload.generated_at}`);
-  blocks.push(`Rows: ${audits.length}`);
-  blocks.push(`Prompt dirs: ${promptDirs.length > 0 ? promptDirs.join(', ') : '(none found)'}`);
+  blocks.push(C.title('API Message Chain Audit'));
+  blocks.push(`${C.key('Generated')} ${outputPayload.generated_at}`);
+  blocks.push(`${C.key('Rows')} ${audits.length}`);
+  blocks.push(`${C.key('Mode')} ${lineMode ? 'line-mode' : 'detailed'}`);
+  blocks.push(`${C.key('Raw API')} ${showRawApi ? `on (${rawApiMaxChars} chars)` : 'off'}`);
+  blocks.push(`${C.key('Prompt dirs')} ${promptDirs.length > 0 ? promptDirs.join(', ') : '(none found)'}`);
+  blocks.push(`${C.key('System prompt max chars')} ${systemPromptMaxChars}`);
   blocks.push('');
   for (const audit of audits) {
-    blocks.push(formatTextReport(audit, maxChars, fullPrompts));
-    blocks.push('-'.repeat(100));
+    blocks.push(
+      lineMode
+        ? formatLineModeReport(audit, maxChars, fullPrompts, systemPromptMaxChars, showRawApi, rawApiMaxChars)
+        : formatTextReport(audit, maxChars, fullPrompts, systemPromptMaxChars, showRawApi, rawApiMaxChars),
+    );
+    blocks.push(C.divider('-'.repeat(100)));
   }
   rendered = blocks.join('\n');
 }
