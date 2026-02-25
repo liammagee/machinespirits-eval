@@ -49,12 +49,12 @@ function percentile(values, p) {
 const allScores = db
   .prepare(
     `
-  SELECT overall_score FROM evaluation_results
-  WHERE run_id = ? AND overall_score IS NOT NULL
+  SELECT tutor_first_turn_score FROM evaluation_results
+  WHERE run_id = ? AND tutor_first_turn_score IS NOT NULL
 `,
   )
   .all(RUN_ID)
-  .map((r) => r.overall_score);
+  .map((r) => r.tutor_first_turn_score);
 
 const mean = allScores.reduce((a, b) => a + b, 0) / allScores.length;
 const sd = std(allScores);
@@ -76,7 +76,7 @@ const models = db
   .prepare(
     `
   SELECT DISTINCT model FROM evaluation_results
-  WHERE run_id = ? AND overall_score IS NOT NULL
+  WHERE run_id = ? AND tutor_first_turn_score IS NOT NULL
 `,
   )
   .all(RUN_ID)
@@ -87,12 +87,12 @@ for (const m of models) {
   const scores = db
     .prepare(
       `
-    SELECT overall_score FROM evaluation_results
-    WHERE run_id = ? AND model = ? AND overall_score IS NOT NULL
+    SELECT tutor_first_turn_score FROM evaluation_results
+    WHERE run_id = ? AND model = ? AND tutor_first_turn_score IS NOT NULL
   `,
     )
     .all(RUN_ID, m)
-    .map((r) => r.overall_score);
+    .map((r) => r.tutor_first_turn_score);
   modelData[m] = scores;
   const mn = scores.reduce((a, b) => a + b, 0) / scores.length;
   const s = std(scores);
@@ -169,10 +169,10 @@ const scenarioStats = db
   .prepare(
     `
   SELECT scenario_id,
-    AVG(overall_score) as mean,
+    AVG(tutor_first_turn_score) as mean,
     COUNT(*) as n
   FROM evaluation_results
-  WHERE run_id = ? AND overall_score IS NOT NULL
+  WHERE run_id = ? AND tutor_first_turn_score IS NOT NULL
   GROUP BY scenario_id
   ORDER BY mean ASC
 `,
@@ -183,12 +183,12 @@ for (const s of scenarioStats) {
   const scores = db
     .prepare(
       `
-    SELECT overall_score FROM evaluation_results
-    WHERE run_id = ? AND scenario_id = ? AND overall_score IS NOT NULL
+    SELECT tutor_first_turn_score FROM evaluation_results
+    WHERE run_id = ? AND scenario_id = ? AND tutor_first_turn_score IS NOT NULL
   `,
     )
     .all(RUN_ID, s.scenario_id)
-    .map((r) => r.overall_score);
+    .map((r) => r.tutor_first_turn_score);
   const s_sd = std(scores);
   const bar = '█'.repeat(Math.round(s.mean / 5));
   console.log(
@@ -204,7 +204,7 @@ const scenarios = db
   .prepare(
     `
   SELECT DISTINCT scenario_id FROM evaluation_results
-  WHERE run_id = ? AND overall_score IS NOT NULL
+  WHERE run_id = ? AND tutor_first_turn_score IS NOT NULL
 `,
   )
   .all(RUN_ID)
@@ -217,15 +217,15 @@ for (let i = 0; i < modelNames.length; i++) {
     for (const s of scenarios) {
       const s1 = db
         .prepare(
-          `SELECT overall_score FROM evaluation_results WHERE run_id = ? AND model = ? AND scenario_id = ? AND overall_score IS NOT NULL`,
+          `SELECT tutor_first_turn_score FROM evaluation_results WHERE run_id = ? AND model = ? AND scenario_id = ? AND tutor_first_turn_score IS NOT NULL`,
         )
         .get(RUN_ID, modelNames[i], s);
       const s2 = db
         .prepare(
-          `SELECT overall_score FROM evaluation_results WHERE run_id = ? AND model = ? AND scenario_id = ? AND overall_score IS NOT NULL`,
+          `SELECT tutor_first_turn_score FROM evaluation_results WHERE run_id = ? AND model = ? AND scenario_id = ? AND tutor_first_turn_score IS NOT NULL`,
         )
         .get(RUN_ID, modelNames[j], s);
-      if (s1 && s2) pairs.push([s1.overall_score, s2.overall_score]);
+      if (s1 && s2) pairs.push([s1.tutor_first_turn_score, s2.tutor_first_turn_score]);
     }
     if (pairs.length >= 3) {
       // Spearman rank correlation
@@ -252,7 +252,7 @@ console.log('\n=== BASE vs RECOGNITION SCORE ANALYSIS ===');
 const dualRows = db
   .prepare(
     `
-  SELECT model, base_score, recognition_score, overall_score
+  SELECT model, base_score, recognition_score, tutor_first_turn_score
   FROM evaluation_results
   WHERE run_id = ? AND base_score IS NOT NULL AND recognition_score IS NOT NULL
 `,
@@ -262,7 +262,7 @@ const dualRows = db
 if (dualRows.length > 0) {
   const bases = dualRows.map((r) => r.base_score);
   const recogs = dualRows.map((r) => r.recognition_score);
-  const overalls = dualRows.map((r) => r.overall_score);
+  const overalls = dualRows.map((r) => r.tutor_first_turn_score);
 
   console.log(`N (with both scores): ${dualRows.length}`);
   console.log(
@@ -338,12 +338,12 @@ for (const s of scenarios) {
   const scores = db
     .prepare(
       `
-    SELECT overall_score FROM evaluation_results
-    WHERE run_id = ? AND scenario_id = ? AND overall_score IS NOT NULL
+    SELECT tutor_first_turn_score FROM evaluation_results
+    WHERE run_id = ? AND scenario_id = ? AND tutor_first_turn_score IS NOT NULL
   `,
     )
     .all(RUN_ID, s)
-    .map((r) => r.overall_score);
+    .map((r) => r.tutor_first_turn_score);
   if (scores.length >= 2) {
     const sv = std(scores);
     scenarioVariance.push({ id: s, sd: sv, range: Math.max(...scores) - Math.min(...scores) });

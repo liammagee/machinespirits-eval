@@ -204,7 +204,7 @@ function loadDialogues(db, runId) {
   const rows = db
     .prepare(
       `
-    SELECT id, scenario_id, profile_name, overall_score, suggestions,
+    SELECT id, scenario_id, profile_name, tutor_first_turn_score, suggestions,
            scores_with_reasoning, evaluation_reasoning, dialogue_rounds,
            factor_recognition, factor_multi_agent_tutor
     FROM evaluation_results
@@ -230,7 +230,7 @@ function loadDialogues(db, runId) {
       id: row.id,
       scenario_id: row.scenario_id,
       profile_name: row.profile_name,
-      overall_score: row.overall_score,
+      tutor_first_turn_score: row.tutor_first_turn_score,
       condition: isRecognition ? 'recognition' : 'base',
       architecture: isMultiAgent ? 'multi' : 'single',
       suggestions,
@@ -997,7 +997,7 @@ async function main() {
             profile_name: d.profile_name,
             condition: d.condition,
             architecture: d.architecture,
-            overall_score: d.overall_score,
+            tutor_first_turn_score: d.tutor_first_turn_score,
             turn,
             coding: parsed,
           });
@@ -1113,7 +1113,7 @@ async function main() {
           profile_name: d.profile_name,
           condition: d.condition,
           architecture: d.architecture,
-          overall_score: d.overall_score,
+          tutor_first_turn_score: d.tutor_first_turn_score,
           coding: parsed,
         });
 

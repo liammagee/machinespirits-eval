@@ -7,7 +7,7 @@ const RUN_ID = 'eval-2026-02-17-25aaae85';
 // 1. Extended dimension analysis by cell
 const rows = db
   .prepare(
-    'SELECT profile_name, scenario_name, scores_with_reasoning, overall_score FROM evaluation_results WHERE run_id = ? AND overall_score IS NOT NULL',
+    'SELECT profile_name, scenario_name, scores_with_reasoning, tutor_first_turn_score FROM evaluation_results WHERE run_id = ? AND tutor_first_turn_score IS NOT NULL',
   )
   .all(RUN_ID);
 
@@ -127,22 +127,22 @@ Object.entries(failPatterns)
 
 // 4. High vs low score qualitative comparison
 console.log('\n=== High vs Low Score Comparison ===\n');
-const highRows = rows.filter((r) => r.overall_score >= 70).sort((a, b) => b.overall_score - a.overall_score);
-const lowRows = rows.filter((r) => r.overall_score <= 35).sort((a, b) => a.overall_score - b.overall_score);
+const highRows = rows.filter((r) => r.tutor_first_turn_score >= 70).sort((a, b) => b.tutor_first_turn_score - a.tutor_first_turn_score);
+const lowRows = rows.filter((r) => r.tutor_first_turn_score <= 35).sort((a, b) => a.tutor_first_turn_score - b.tutor_first_turn_score);
 
-console.log(`High scorers (>=70): N=${highRows.length}, mean=${avg(highRows.map((r) => r.overall_score))}`);
+console.log(`High scorers (>=70): N=${highRows.length}, mean=${avg(highRows.map((r) => r.tutor_first_turn_score))}`);
 highRows.slice(0, 3).forEach((r) => {
   const s = JSON.parse(r.scores_with_reasoning);
-  console.log(`  Score ${r.overall_score.toFixed(1)}:`);
+  console.log(`  Score ${r.tutor_first_turn_score.toFixed(1)}:`);
   console.log(`    tutor_adaptation: ${s.tutor_adaptation?.score} — "${s.tutor_adaptation?.reasoning}"`);
   console.log(`    mutual_recognition: ${s.mutual_recognition?.score} — "${s.mutual_recognition?.reasoning}"`);
   console.log(`    dialectical: ${s.dialectical_responsiveness?.score} — "${s.dialectical_responsiveness?.reasoning}"`);
 });
 
-console.log(`\nLow scorers (<=35): N=${lowRows.length}, mean=${avg(lowRows.map((r) => r.overall_score))}`);
+console.log(`\nLow scorers (<=35): N=${lowRows.length}, mean=${avg(lowRows.map((r) => r.tutor_first_turn_score))}`);
 lowRows.slice(0, 3).forEach((r) => {
   const s = JSON.parse(r.scores_with_reasoning);
-  console.log(`  Score ${r.overall_score.toFixed(1)}:`);
+  console.log(`  Score ${r.tutor_first_turn_score.toFixed(1)}:`);
   console.log(`    tutor_adaptation: ${s.tutor_adaptation?.score} — "${s.tutor_adaptation?.reasoning}"`);
   console.log(`    mutual_recognition: ${s.mutual_recognition?.score} — "${s.mutual_recognition?.reasoning}"`);
   console.log(`    dialectical: ${s.dialectical_responsiveness?.score} — "${s.dialectical_responsiveness?.reasoning}"`);
@@ -152,7 +152,7 @@ lowRows.slice(0, 3).forEach((r) => {
 console.log('\n\n=== Score Distribution (bins of 10) ===\n');
 const bins = {};
 rows.forEach((r) => {
-  const bin = Math.floor(r.overall_score / 10) * 10;
+  const bin = Math.floor(r.tutor_first_turn_score / 10) * 10;
   bins[bin] = (bins[bin] || 0) + 1;
 });
 Object.keys(bins)

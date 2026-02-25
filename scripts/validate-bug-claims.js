@@ -505,7 +505,7 @@ function checkManifestLogIntegrity(db, scopeRunIds) {
        FROM evaluation_results
        WHERE run_id IN (${inClause})
          AND judge_model LIKE 'claude-opus%'
-         AND overall_score IS NOT NULL
+         AND tutor_first_turn_score IS NOT NULL
          AND dialogue_id IS NOT NULL
          AND json_array_length(suggestions) > 1`,
     )
@@ -575,7 +575,7 @@ function checkJudgeVersionDrift(manifest, db, scopeRunIds) {
       `SELECT judge_model, COUNT(*) as rows
        FROM evaluation_results
        WHERE run_id IN (${inClause})
-         AND overall_score IS NOT NULL
+         AND tutor_first_turn_score IS NOT NULL
          AND judge_model LIKE 'claude-opus%'
        GROUP BY judge_model
        ORDER BY rows DESC`,
@@ -899,11 +899,11 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
   const inClause = makeInClause(scopeRunIds);
   const rows = db
     .prepare(
-      `SELECT id, run_id, scenario_id, profile_name, suggestions, overall_score, holistic_overall_score
+      `SELECT id, run_id, scenario_id, profile_name, suggestions, tutor_first_turn_score, holistic_overall_score
        FROM evaluation_results
        WHERE run_id IN (${inClause})
          AND judge_model LIKE 'claude-opus%'
-         AND overall_score IS NOT NULL
+         AND tutor_first_turn_score IS NOT NULL
          AND json_array_length(suggestions) > 1`,
     )
     .all(...scopeRunIds);
@@ -1001,7 +1001,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
         `SELECT
            COUNT(*) as snapshot_rows,
            SUM(CASE WHEN er.holistic_overall_score IS NOT NULL THEN 1 ELSE 0 END) as with_holistic,
-           SUM(CASE WHEN ABS(er.overall_score - m.old_overall_score) > 0.01 THEN 1 ELSE 0 END) as score_changed
+           SUM(CASE WHEN ABS(er.tutor_first_turn_score - m.old_overall_score) > 0.01 THEN 1 ELSE 0 END) as score_changed
          FROM multiturn_rescore_snapshot m
          JOIN evaluation_results er ON er.id = m.result_id
          WHERE er.run_id IN (${inClause})`,
@@ -1738,14 +1738,14 @@ function buildRunEvidenceIndex(db, runIds, manifestRunMeta) {
   const statsStmt = db.prepare(
     `SELECT
        COUNT(*) as total_rows,
-       SUM(CASE WHEN overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored_rows,
+       SUM(CASE WHEN tutor_first_turn_score IS NOT NULL THEN 1 ELSE 0 END) as scored_rows,
        SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as learner_scored_rows,
        SUM(CASE WHEN dialogue_id IS NOT NULL THEN 1 ELSE 0 END) as dialogue_rows,
        SUM(CASE WHEN dialogue_id IS NOT NULL AND json_array_length(suggestions) > 1 THEN 1 ELSE 0 END) as multiturn_rows,
        SUM(CASE WHEN dialogue_id IS NOT NULL AND json_array_length(suggestions) > 1 AND holistic_overall_score IS NOT NULL THEN 1 ELSE 0 END) as multiturn_with_holistic,
        SUM(
          CASE
-           WHEN overall_score IS NOT NULL
+           WHEN tutor_first_turn_score IS NOT NULL
              AND (scenario_id LIKE '%grounded%' OR profile_name LIKE '%grounded%')
            THEN 1 ELSE 0
          END
@@ -2210,7 +2210,7 @@ function collectRunLogBacktrace(db, runId) {
        FROM evaluation_results
        WHERE run_id = ?
          AND dialogue_id IS NOT NULL
-         AND overall_score IS NOT NULL
+         AND tutor_first_turn_score IS NOT NULL
          AND json_array_length(suggestions) > 1`,
     )
     .all(runId);
@@ -2305,7 +2305,7 @@ function checkPaperClaimsSuite(manifest, paperText, db) {
       .prepare(
         `SELECT
            COUNT(*) as attempts,
-           SUM(CASE WHEN overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored,
+           SUM(CASE WHEN tutor_first_turn_score IS NOT NULL THEN 1 ELSE 0 END) as scored,
            SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as learner_scored,
            COUNT(DISTINCT run_id) as runs
          FROM evaluation_results`,

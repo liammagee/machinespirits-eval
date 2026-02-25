@@ -135,10 +135,10 @@ const factorialRows = db
   SELECT profile_name, suggestions, dialogue_rounds,
          score_relevance, score_specificity, score_pedagogical,
          score_personalization, score_actionability, score_tone,
-         overall_score, scores_with_reasoning, scenario_name
+         tutor_first_turn_score, scores_with_reasoning, scenario_name
   FROM evaluation_results
   WHERE run_id IN ('eval-2026-02-03-f5d4dd93', 'eval-2026-02-06-a933d745')
-    AND overall_score IS NOT NULL
+    AND tutor_first_turn_score IS NOT NULL
     AND judge_model LIKE '%claude%'
 `,
   )
@@ -205,7 +205,7 @@ for (const row of factorialRows) {
     wordCount: messageText.split(/\s+/).filter((w) => w.length > 0).length,
     ttr: ttr(messageText),
     dialogueRounds: row.dialogue_rounds || 0,
-    overallScore: row.overall_score,
+    tutorFirstTurnScore: row.tutor_first_turn_score,
     dimScoreVariance: std(dimScores),
     extDimScoreVariance: std(extDimScores),
     scenario: row.scenario_name,
@@ -266,7 +266,7 @@ for (const [key, items] of Object.entries(conditions)) {
 // ── Report: Within-Scenario Response Diversity ───────────────────────────
 
 console.log('\n─── Within-Scenario Response Diversity ─────────────────────');
-console.log('CV of overall_score within each (condition × scenario) cell');
+console.log('CV of tutor_first_turn_score within each (condition × scenario) cell');
 console.log('Higher CV = more varied quality across attempts = modulation\n');
 
 const scenarioMap = {};
@@ -274,7 +274,7 @@ for (const [key, items] of Object.entries(conditions)) {
   for (const item of items) {
     const cellKey = `${key}|${item.scenario}`;
     if (!scenarioMap[cellKey]) scenarioMap[cellKey] = [];
-    scenarioMap[cellKey].push(item.overallScore);
+    scenarioMap[cellKey].push(item.tutorFirstTurnScore);
   }
 }
 
@@ -413,7 +413,7 @@ const bilateralRows = db
   SELECT profile_name, learner_scores, learner_overall_score, scenario_name
   FROM evaluation_results
   WHERE run_id = 'eval-2026-02-07-b6d75e87'
-    AND overall_score IS NOT NULL
+    AND tutor_first_turn_score IS NOT NULL
     AND learner_scores IS NOT NULL
 `,
   )

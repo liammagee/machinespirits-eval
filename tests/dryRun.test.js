@@ -119,8 +119,8 @@ describe('eval-cli --dry-run', () => {
     const { stdout, stderr, code } = await runCli(['quick', '--dry-run']);
     assert.strictEqual(code, 0, `should exit 0, stderr: ${stderr}`);
     assert.ok(stdout.includes('dry-run'), 'output should mention dry-run');
-    // Should contain a JSON result with overallScore
-    assert.ok(stdout.includes('overallScore'), 'should include overallScore in output');
+    // Should contain a JSON result with tutorFirstTurnScore
+    assert.ok(stdout.includes('tutorFirstTurnScore'), 'should include tutorFirstTurnScore in output');
   });
 
   it('quick --dry-run result has valid structure', async () => {
@@ -132,7 +132,7 @@ describe('eval-cli --dry-run', () => {
     const result = JSON.parse(jsonMatch[1]);
     assert.strictEqual(result.success, true, 'result should be success');
     assert.ok(result.suggestions?.length > 0, 'should have suggestions');
-    assert.ok(typeof result.overallScore === 'number', 'overallScore should be number');
+    assert.ok(typeof result.tutorFirstTurnScore === 'number', 'tutorFirstTurnScore should be number');
     assert.ok(result.scores, 'should have dimension scores');
     assert.strictEqual(result.judgeModel, 'dry-run/mock-judge-v1', 'judge model should be dry-run');
   });
@@ -149,8 +149,8 @@ describe('eval-cli --dry-run', () => {
     const recogJson = JSON.parse(recogRun.stdout.match(/Result:\s*\n([\s\S]+)/)[1]);
 
     assert.ok(
-      recogJson.overallScore > baseJson.overallScore,
-      `recognition (${recogJson.overallScore}) should score higher than base (${baseJson.overallScore})`,
+      recogJson.tutorFirstTurnScore > baseJson.tutorFirstTurnScore,
+      `recognition (${recogJson.tutorFirstTurnScore}) should score higher than base (${baseJson.tutorFirstTurnScore})`,
     );
   });
 });

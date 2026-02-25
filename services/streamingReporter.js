@@ -49,7 +49,7 @@ export class StreamingReporter {
     const elapsed = Date.now() - this.startTime;
     const bar = progressBar(this.completedCount, this.totalTests);
     const count = `${this.completedCount}/${this.totalTests}`;
-    const score = result.overallScore != null ? result.overallScore.toFixed(1) : ' -- ';
+    const score = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : ' -- ';
     const status = result.success ? '\u2713' : '\u2717';
     const profile = result.profileName || '';
     const scenario = result.scenarioName || result.scenarioId || '';

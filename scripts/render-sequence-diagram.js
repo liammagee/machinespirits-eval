@@ -85,7 +85,7 @@ if (!runId) {
 
 const db = new Database(DB_PATH, { readonly: true });
 
-let query = `SELECT id, profile_name, scenario_id, dialogue_id, overall_score, judge_model,
+let query = `SELECT id, profile_name, scenario_id, dialogue_id, tutor_first_turn_score, judge_model,
   ego_model, superego_model,
   score_relevance, score_specificity, score_pedagogical, score_personalization,
   score_actionability, score_tone, scores_with_reasoning, qualitative_assessment, qualitative_model
@@ -106,7 +106,7 @@ if (profileFilter) {
   params.push('%' + profileFilter + '%');
 }
 
-query += ' ORDER BY overall_score DESC';
+query += ' ORDER BY tutor_first_turn_score DESC';
 if (limit) {
   query += ' LIMIT ?';
   params.push(limit);
@@ -392,7 +392,7 @@ function escapeHtml(text) {
 function generateHtml(result, steps, trace, meta = {}) {
   const profile = result.profile_name;
   const scenario = result.scenario_id;
-  const score = result.overall_score?.toFixed(1) || '--';
+  const score = result.tutor_first_turn_score?.toFixed(1) || '--';
 
   let judgeScores = {};
   try {
@@ -821,12 +821,12 @@ for (const result of results) {
   };
 
   const html = generateHtml(result, steps, trace, meta);
-  const filename = `sequence-${result.profile_name}-${result.scenario_id}-${result.overall_score?.toFixed(0) || '0'}.html`;
+  const filename = `sequence-${result.profile_name}-${result.scenario_id}-${result.tutor_first_turn_score?.toFixed(0) || '0'}.html`;
   const outPath = path.join(outputDir, filename);
 
   fs.writeFileSync(outPath, html);
   rendered.push(outPath);
-  console.log(`  ✓ ${filename} (${steps.length} steps, score ${result.overall_score?.toFixed(1)})`);
+  console.log(`  ✓ ${filename} (${steps.length} steps, score ${result.tutor_first_turn_score?.toFixed(1)})`);
 }
 
 console.log(`\nRendered ${rendered.length} diagram(s) to ${outputDir}/`);

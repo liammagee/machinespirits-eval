@@ -22,7 +22,7 @@ console.log(`Total test completions: ${strugglingTests.length}\n`);
 const byProfile = {};
 for (const t of strugglingTests) {
   if (!byProfile[t.profileName]) byProfile[t.profileName] = [];
-  byProfile[t.profileName].push(t.overallScore);
+  byProfile[t.profileName].push(t.tutorFirstTurnScore);
 }
 
 console.log('Scores by profile:');
@@ -42,7 +42,7 @@ console.log(`Total test completions: ${confusionTests.length}\n`);
 const byProfile2 = {};
 for (const t of confusionTests) {
   if (!byProfile2[t.profileName]) byProfile2[t.profileName] = [];
-  byProfile2[t.profileName].push(t.overallScore);
+  byProfile2[t.profileName].push(t.tutorFirstTurnScore);
 }
 
 console.log('Scores by profile:');
@@ -74,7 +74,7 @@ try {
 
 // Now analyze all scenarios to find the pattern
 console.log('\n=== Score Distribution Analysis ===');
-const allTests = events.filter((e) => e.eventType === 'test_complete' && e.success && e.overallScore != null);
+const allTests = events.filter((e) => e.eventType === 'test_complete' && e.success && e.tutorFirstTurnScore != null);
 
 // Compare scores between base and recognition profiles
 const baseProfiles = [
@@ -101,12 +101,12 @@ let recogFifties = 0,
 for (const t of allTests) {
   if (baseProfiles.includes(t.profileName)) {
     baseTotal++;
-    if (t.overallScore === 50) baseFifties++;
-    else if (t.overallScore === 100) baseHundreds++;
+    if (t.tutorFirstTurnScore === 50) baseFifties++;
+    else if (t.tutorFirstTurnScore === 100) baseHundreds++;
   } else if (recogProfiles.includes(t.profileName)) {
     recogTotal++;
-    if (t.overallScore === 50) recogFifties++;
-    else if (t.overallScore === 100) recogHundreds++;
+    if (t.tutorFirstTurnScore === 50) recogFifties++;
+    else if (t.tutorFirstTurnScore === 100) recogHundreds++;
   }
 }
 
@@ -129,8 +129,8 @@ for (const s of scenarios) {
   const baseTests = allTests.filter((t) => baseProfiles.includes(t.profileName) && t.scenarioId === s);
   const recogTests = allTests.filter((t) => recogProfiles.includes(t.profileName) && t.scenarioId === s);
 
-  const basePassRate = baseTests.filter((t) => t.overallScore === 100).length / baseTests.length;
-  const recogPassRate = recogTests.filter((t) => t.overallScore === 100).length / recogTests.length;
+  const basePassRate = baseTests.filter((t) => t.tutorFirstTurnScore === 100).length / baseTests.length;
+  const recogPassRate = recogTests.filter((t) => t.tutorFirstTurnScore === 100).length / recogTests.length;
 
   results.push({
     scenario: s,

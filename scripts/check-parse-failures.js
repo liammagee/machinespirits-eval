@@ -5,7 +5,7 @@ const db = new Database('data/evaluations.db');
 const runId = process.argv[2] || 'eval-2026-02-17-25aaae85';
 const rows = db
   .prepare(
-    'SELECT dialogue_id, profile_name, overall_score FROM evaluation_results WHERE run_id = ? AND dialogue_id IS NOT NULL AND overall_score IS NOT NULL',
+    'SELECT dialogue_id, profile_name, tutor_first_turn_score FROM evaluation_results WHERE run_id = ? AND dialogue_id IS NOT NULL AND tutor_first_turn_score IS NOT NULL',
   )
   .all(runId);
 
@@ -85,7 +85,7 @@ Object.entries(byCell)
       const c = r.profile_name.includes('66') ? '66_desc' : r.profile_name.includes('67') ? '67_presc' : '68_adv';
       return c === cell;
     });
-    const meanScore = cellRows.reduce((s, r) => s + r.overall_score, 0) / cellRows.length;
+    const meanScore = cellRows.reduce((s, r) => s + r.tutor_first_turn_score, 0) / cellRows.length;
     console.log(
       cell + ': fail_rate=' + ((d.parseFail / d.total) * 100).toFixed(1) + '%, mean_score=' + meanScore.toFixed(1),
     );

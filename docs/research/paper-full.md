@@ -2411,11 +2411,11 @@ node scripts/assess-transcripts.js --run-id eval-2026-02-07-b6d75e87
 -- Factor effect analysis query
 SELECT
   profile_name,
-  ROUND(AVG(overall_score), 1) as avg_score,
+  ROUND(AVG(tutor_first_turn_score), 1) as avg_score,
   COUNT(*) as n
 FROM evaluation_results
 WHERE run_id = '<run-id>'
-  AND overall_score IS NOT NULL
+  AND tutor_first_turn_score IS NOT NULL
 GROUP BY profile_name
 ORDER BY avg_score DESC
 ```

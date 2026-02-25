@@ -27,6 +27,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
  *   node scripts/eval-cli.js evaluate <runId> --follow  # Poll & judge results as they appear
  *   node scripts/eval-cli.js evaluate-learner <runId>  # Score learner turns + holistic learner quality from multi-turn interactions
+ *   node scripts/eval-cli.js evaluate-dialogue <runId>  # Score multi-turn dialogues: tutor last-turn, development delta, dialogue quality
  *   node scripts/eval-cli.js validate-config          # Validate all config files (profiles, providers, scenarios)
  *   node scripts/eval-cli.js chat            # AI conversational interface
  *   node scripts/eval-cli.js play            # Human-in-the-loop role-playing
@@ -73,9 +74,11 @@ import * as evaluationStore from '../services/evaluationStore.js';
 import {
   getAvailableJudge,
   buildEvaluationPrompt,
+  buildDialogueQualityPrompt,
   calculateOverallScore,
   calculateBaseScore,
   calculateRecognitionScore,
+  calculateDialogueQualityScore,
 } from '../services/rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -209,7 +212,7 @@ function buildGridFromEvents(events) {
       const pName = ev.profileName || '?';
       if (!grid[sName]) grid[sName] = {};
       grid[sName][pName] = {
-        score: ev.overallScore,
+        score: ev.tutorFirstTurnScore ?? ev.overallScore,
         success: ev.success,
         latencyMs: ev.latencyMs,
       };
@@ -647,7 +650,7 @@ async function executeTool(name, params) {
       const lines = [];
       for (const r of results) {
         lines.push(
-          `--- ${r.scenarioName || r.scenarioId} | ${r.profileName} | score=${r.overallScore?.toFixed(1) ?? '--'} ---`,
+          `--- ${r.scenarioName || r.scenarioId} | ${r.profileName} | score=${r.tutorFirstTurnScore?.toFixed(1) ?? '--'} ---`,
         );
         let printed = false;
         if (r.dialogueId) {
@@ -677,7 +680,7 @@ async function executeTool(name, params) {
     }
     case 'run_anova': {
       const scoreTypes = [
-        { column: 'overall_score', label: 'Overall Score' },
+        { column: 'tutor_first_turn_score', label: 'Tutor First-Turn Score' },
         { column: 'base_score', label: 'Base Score' },
         { column: 'recognition_score', label: 'Recognition Score' },
       ];
@@ -1189,7 +1192,7 @@ async function main() {
         // Factorial post-analysis: print cell means and ANOVA for each score type
         if (result.runId) {
           const scoreTypes = [
-            { column: 'overall_score', label: 'Overall Score' },
+            { column: 'tutor_first_turn_score', label: 'Tutor First-Turn Score' },
             { column: 'base_score', label: 'Base Score' },
             { column: 'recognition_score', label: 'Recognition Score' },
           ];
@@ -1458,7 +1461,7 @@ async function main() {
               const pName = r.profileName || `${r.provider}/${r.model}`;
               if (!grid[sName]) grid[sName] = {};
               grid[sName][pName] = {
-                score: r.overallScore,
+                score: r.tutorFirstTurnScore,
                 success: r.success,
                 latencyMs: r.latencyMs,
               };
@@ -1561,7 +1564,7 @@ async function main() {
           console.log(`Scenario: ${theme.header(result.scenarioName || result.scenarioId)}`);
           console.log(`Profile:  ${theme.model(result.profileName || `${result.provider}/${result.model}`)}`);
           console.log(
-            `Score:    ${theme.score(result.overallScore != null ? result.overallScore.toFixed(1) : '--')}  |  Success: ${result.success ? theme.success('true') : theme.error('false')}`,
+            `Score:    ${theme.score(result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : '--')}  |  Success: ${result.success ? theme.success('true') : theme.error('false')}`,
           );
           console.log(theme.dim('-'.repeat(80)));
 
@@ -1735,7 +1738,7 @@ async function main() {
         // Factorial post-analysis (same as `run` command)
         if (result.runId) {
           const scoreTypes = [
-            { column: 'overall_score', label: 'Overall Score' },
+            { column: 'tutor_first_turn_score', label: 'Tutor First-Turn Score' },
             { column: 'base_score', label: 'Base Score' },
             { column: 'recognition_score', label: 'Recognition Score' },
           ];
@@ -1906,7 +1909,7 @@ async function main() {
           if (result.egoModel || result.superegoModel) {
             lines.push(`Ego: ${result.egoModel || 'N/A'}  Superego: ${result.superegoModel || 'N/A'}`);
           }
-          lines.push(`Score:    ${result.overallScore != null ? result.overallScore.toFixed(1) : 'NOT EVALUATED'}`);
+          lines.push(`Score:    ${result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'NOT EVALUATED'}`);
           lines.push('='.repeat(80));
           lines.push('');
 
@@ -2166,7 +2169,7 @@ async function main() {
             }
           }
 
-          const overallScore =
+          const tutorFirstTurnScore =
             Object.keys(normalizedScores).length > 0 ? calculateOverallScore(normalizedScores) : parsed.overall_score;
           const baseScore = calculateBaseScore(normalizedScores);
           const recognitionScore = calculateRecognitionScore(normalizedScores);
@@ -2174,7 +2177,7 @@ async function main() {
           const judgeLatencyMs = Date.now() - startTime;
           const evaluation = {
             scores: normalizedScores,
-            overallScore,
+            tutorFirstTurnScore,
             baseScore,
             recognitionScore,
             passesRequired: parsed.validation?.passes_required ?? true,
@@ -2188,15 +2191,15 @@ async function main() {
 
           // For multi-turn dialogues, the score reflects the last turn against full context — that IS the holistic score
           if (result.dialogueId && !restoreTurn0) {
-            evaluation.holisticOverallScore = evaluation.overallScore;
+            evaluation.holisticOverallScore = evaluation.tutorFirstTurnScore;
           }
 
           if (restoreTurn0) {
-            // --restore-turn0: re-score suggestions[0] and write to overall_score, preserving existing holistic_overall_score
+            // --restore-turn0: re-score suggestions[0] and write to tutor_first_turn_score, preserving existing holistic_overall_score
             evaluation.holisticOverallScore = result.holisticOverallScore;
             evaluationStore.updateResultScores(result.id, evaluation);
           } else if (multiturnOnly) {
-            // --multiturn-only: write ONLY holistic_overall_score, preserving the original overall_score (Turn 0)
+            // --multiturn-only: write ONLY holistic_overall_score, preserving the original tutor_first_turn_score (Turn 0)
             evaluationStore.updateResultHolisticOnly(result.id, evaluation);
           } else {
             evaluationStore.updateResultScores(result.id, evaluation);
@@ -2206,7 +2209,7 @@ async function main() {
           const dimScores = Object.entries(normalizedScores)
             .map(([k, v]) => `${k}=${v.score}`)
             .join(' ');
-          console.log(`${tag} ${scenarioId} / ${profileName} ... ${overallScore.toFixed(1)}  (${dimScores})`);
+          console.log(`${tag} ${scenarioId} / ${profileName} ... ${tutorFirstTurnScore.toFixed(1)}  (${dimScores})`);
 
           if (verbose) {
             // Truncated suggestion excerpt
@@ -2229,7 +2232,7 @@ async function main() {
             console.log('');
           }
 
-          return overallScore;
+          return tutorFirstTurnScore;
         }
 
         // Helper: print summary
@@ -2461,7 +2464,7 @@ async function main() {
               .join(' ');
 
             console.log(
-              `[${i + 1}/${evaluated.length}] ${r.scenarioId} / ${profileName} ... ${r.overallScore?.toFixed(1) ?? '--'}  (${dimScores})`,
+              `[${i + 1}/${evaluated.length}] ${r.scenarioId} / ${profileName} ... ${r.tutorFirstTurnScore?.toFixed(1) ?? '--'}  (${dimScores})`,
             );
 
             // Suggestion excerpt
@@ -2505,7 +2508,7 @@ async function main() {
           }
 
           // Quick stats
-          const reviewScores = evaluated.map((r) => r.overallScore).filter((s) => s != null);
+          const reviewScores = evaluated.map((r) => r.tutorFirstTurnScore).filter((s) => s != null);
           if (reviewScores.length > 0) {
             const avg = reviewScores.reduce((a, b) => a + b, 0) / reviewScores.length;
             const sd = Math.sqrt(reviewScores.reduce((acc, s) => acc + (s - avg) ** 2, 0) / (reviewScores.length - 1));
@@ -2646,7 +2649,7 @@ async function main() {
           }
 
           // Filter to unevaluated results unless --force
-          // Use baseScore == null to detect skip-rubric results (overallScore=100 but no rubric dims)
+          // Use baseScore == null to detect skip-rubric results (tutorFirstTurnScore=100 but no rubric dims)
           let toEvaluate = force ? results : results.filter((r) => r.baseScore == null && r.success);
 
           // --judge: only process rows from a specific judge model
@@ -3206,6 +3209,269 @@ async function main() {
                 )
               : 0;
           console.log(`  Avg learner holistic: ${avgHolistic.toFixed(1)} (SD=${sdHolistic.toFixed(1)})`);
+        }
+        console.log('');
+        break;
+      }
+
+      case 'evaluate-dialogue': {
+        // ── Dialogue-level evaluation: score multi-turn dialogues on three axes ──
+        //
+        // For each multi-turn row:
+        //   1. tutor_first_turn_score (Turn 0) — already populated by 'evaluate'
+        //   2. Copy holistic_overall_score → tutor_last_turn_score (no judge call)
+        //   3. Compute delta → tutor_development_score (arithmetic, no judge call)
+        //   4. Run dialogue quality prompt → dialogue_quality_score (ONE judge call)
+        //
+        // Single-turn rows are skipped (NULL for all new columns).
+
+        const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate-dialogue');
+        if (!runId) {
+          console.error(
+            'Usage: eval-cli.js evaluate-dialogue <runId> [--model <model>] [--judge <judge>] [--force] [--verbose]',
+          );
+          console.error('  Scores multi-turn dialogues: tutor last-turn, development delta, and dialogue quality.');
+          process.exit(1);
+        }
+
+        const verbose = getFlag('verbose');
+        const force = getFlag('force');
+        const modelOverride = getOption('model') || null;
+        const judgeFilter = getOption('judge') || null;
+
+        // Restore env overrides from run metadata
+        {
+          const runData = evaluationStore.getRun(runId);
+          const meta = typeof runData?.metadata === 'string' ? JSON.parse(runData.metadata) : runData?.metadata;
+          if (meta?.scenariosFile && !process.env.EVAL_SCENARIOS_FILE) {
+            process.env.EVAL_SCENARIOS_FILE = meta.scenariosFile;
+            console.log(`[evaluate-dialogue] Restored EVAL_SCENARIOS_FILE from run metadata: ${meta.scenariosFile}`);
+          }
+          if (meta?.contentPath && !process.env.EVAL_CONTENT_PATH) {
+            process.env.EVAL_CONTENT_PATH = meta.contentPath;
+            console.log(`[evaluate-dialogue] Restored EVAL_CONTENT_PATH from run metadata: ${meta.contentPath}`);
+          }
+        }
+
+        // Load all results for this run
+        const results = evaluationStore.getResults(runId);
+        if (results.length === 0) {
+          console.error(`No results found for run: ${runId}`);
+          process.exit(1);
+        }
+
+        // Filter to multi-turn rows only (suggestions array with >1 entry)
+        let toEvaluate = results.filter(
+          (r) => r.success && Array.isArray(r.suggestions) && r.suggestions.length > 1,
+        );
+
+        if (toEvaluate.length === 0) {
+          console.log('No multi-turn results found in this run. Nothing to evaluate.');
+          break;
+        }
+
+        // --force: re-evaluate everything; otherwise only rows missing dialogue scores
+        if (!force) {
+          toEvaluate = toEvaluate.filter(
+            (r) => r.tutorLastTurnScore == null || r.dialogueQualityScore == null,
+          );
+        }
+
+        // --judge: only process rows from a specific judge model
+        if (judgeFilter) {
+          const before = toEvaluate.length;
+          toEvaluate = toEvaluate.filter((r) => r.judgeModel === judgeFilter);
+          if (before !== toEvaluate.length) {
+            console.log(`  --judge ${judgeFilter}: filtered ${before} → ${toEvaluate.length} rows`);
+          }
+        }
+
+        if (toEvaluate.length === 0) {
+          console.log('All multi-turn results already have dialogue scores. Use --force to re-evaluate.');
+          break;
+        }
+
+        console.log(`\nEvaluating ${toEvaluate.length} multi-turn dialogue(s) for run: ${runId}`);
+        if (modelOverride) console.log(`  Model: ${modelOverride}`);
+        console.log('');
+
+        let succeeded = 0;
+        let failed = 0;
+        const lastTurnScores = [];
+        const dialogueQualityScores = [];
+        const developmentScores = [];
+
+        for (let i = 0; i < toEvaluate.length; i++) {
+          const result = toEvaluate[i];
+          const tag = `[${i + 1}/${toEvaluate.length}]`;
+          const scenarioId = result.scenarioId;
+          const profileName = result.profileName || `${result.provider}/${result.model}`;
+
+          const scenario = getScenario(scenarioId);
+          if (!scenario) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (scenario not found)`);
+            failed++;
+            continue;
+          }
+
+          // Load dialogue log for full transcript
+          let dialogueLog = null;
+          const dialogueId = result.dialogueId;
+          if (dialogueId) {
+            const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
+            try {
+              if (fs.existsSync(logPath)) {
+                dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+              }
+            } catch (e) {
+              if (verbose) console.log(`${tag}   could not load dialogue log: ${e.message}`);
+            }
+          }
+
+          const dialogueTrace = dialogueLog?.dialogueTrace || [];
+          const conversationHistory = (dialogueLog?.turnResults || []).map((t, idx) => ({
+            turnIndex: idx,
+            turnId: t.turnId,
+            suggestion: t.suggestions?.[0],
+            learnerAction: t.learnerAction,
+            learnerMessage: t.learnerMessage,
+          }));
+          const dialogueContext = dialogueTrace.length > 0 || conversationHistory.length > 0
+            ? { consolidatedTrace: dialogueTrace, conversationHistory }
+            : null;
+
+          try {
+            // ── Step A: Copy holistic_overall_score → tutor_last_turn_score (no judge call) ──
+            // holistic_overall_score already contains the tutor rubric score on the last turn,
+            // populated by 'evaluate --multiturn-only'. We just copy it and compute the delta.
+            const tutorLastTurnScore = result.holisticOverallScore ?? null;
+            const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+
+            const claudeArgs = ['-p', '-', '--output-format', 'text'];
+            if (modelOverride) claudeArgs.push('--model', modelOverride);
+
+            if (tutorLastTurnScore != null) {
+              evaluationStore.updateTutorLastTurnScore(result.id, { tutorLastTurnScore });
+              lastTurnScores.push(tutorLastTurnScore);
+
+              // Read back development score
+              const updatedRow = evaluationStore.getResults(runId).find((r) => r.id === result.id);
+              const devScore = updatedRow?.tutorDevelopmentScore;
+              if (devScore != null) developmentScores.push(devScore);
+
+              const devLabel = devScore != null ? `Δ=${devScore >= 0 ? '+' : ''}${devScore.toFixed(1)}` : 'Δ=?';
+              console.log(
+                `${tag} ${scenarioId} / ${profileName} ... last-turn=${tutorLastTurnScore.toFixed(1)} ${devLabel} (from holistic)`,
+              );
+            } else {
+              console.log(
+                `${tag} ${scenarioId} / ${profileName} ... last-turn=NULL (holistic_overall_score not populated — run 'evaluate --multiturn-only' first)`,
+              );
+            }
+
+            // ── Step B: Score dialogue quality → dialogue_quality_score ──
+            if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality`);
+
+            const dialogueQualityPrompt = buildDialogueQualityPrompt({
+              turns: conversationHistory,
+              dialogueTrace,
+              scenarioName: scenario.name,
+              scenarioDescription: scenario.description,
+              topic: scenario.topic || scenario.name,
+              turnCount: result.suggestions.length,
+            });
+
+            const dqRaw = await new Promise((resolve, reject) => {
+              const env = { ...process.env };
+              delete env.ANTHROPIC_API_KEY;
+              const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
+              let out = '';
+              let err = '';
+              child.stdout.on('data', (d) => { out += d; });
+              child.stderr.on('data', (d) => { err += d; });
+              child.on('error', reject);
+              child.on('close', (code) => {
+                if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+                else resolve(out);
+              });
+              child.stdin.write(dialogueQualityPrompt);
+              child.stdin.end();
+            });
+
+            let dqJsonStr = dqRaw.trim();
+            fenceMatch = dqJsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+            if (fenceMatch) {
+              dqJsonStr = fenceMatch[1].trim();
+            } else {
+              const firstBrace = dqJsonStr.indexOf('{');
+              const lastBrace = dqJsonStr.lastIndexOf('}');
+              if (firstBrace !== -1 && lastBrace > firstBrace) {
+                dqJsonStr = dqJsonStr.slice(firstBrace, lastBrace + 1);
+              }
+            }
+
+            const dqParsed = JSON.parse(dqJsonStr);
+
+            const dqScores = {};
+            for (const [key, value] of Object.entries(dqParsed.scores || {})) {
+              if (typeof value === 'object' && value !== null) {
+                dqScores[key] = { score: value.score, reasoning: value.reasoning };
+              } else if (typeof value === 'number') {
+                dqScores[key] = { score: value, reasoning: null };
+              }
+            }
+
+            const dialogueQuality =
+              Object.keys(dqScores).length > 0
+                ? calculateDialogueQualityScore(dqScores)
+                : dqParsed.overall_score;
+
+            evaluationStore.updateDialogueQualityScore(result.id, {
+              dialogueQualityScore: dialogueQuality,
+              dialogueQualitySummary: dqParsed.summary || null,
+              dialogueQualityJudgeModel: judgeModel,
+            });
+            dialogueQualityScores.push(dialogueQuality);
+
+            console.log(
+              `${tag} ${scenarioId} / ${profileName} ... dialogue-quality=${dialogueQuality.toFixed(1)}`,
+            );
+
+            if (verbose && dqParsed.summary) {
+              const truncSummary =
+                dqParsed.summary.length > 300
+                  ? dqParsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                  : dqParsed.summary.replace(/\n/g, ' ');
+              console.log(`     Judge: ${truncSummary}\n`);
+            }
+
+            succeeded++;
+          } catch (err) {
+            failed++;
+            const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+            console.log(`${tag} ${scenarioId} / ${profileName} ... FAIL: ${msg}`);
+            if (verbose) console.error(err);
+          }
+        }
+
+        // Summary
+        console.log('\n' + '='.repeat(50));
+        console.log('  EVALUATE-DIALOGUE SUMMARY');
+        console.log('='.repeat(50));
+        console.log(`  Total:     ${toEvaluate.length}`);
+        console.log(`  Succeeded: ${succeeded}`);
+        console.log(`  Failed:    ${failed}`);
+        if (lastTurnScores.length > 0) {
+          const avgLast = lastTurnScores.reduce((a, b) => a + b, 0) / lastTurnScores.length;
+          console.log(`  Avg tutor last-turn:   ${avgLast.toFixed(1)}`);
+        }
+        if (developmentScores.length > 0) {
+          const avgDev = developmentScores.reduce((a, b) => a + b, 0) / developmentScores.length;
+          console.log(`  Avg tutor development: ${avgDev >= 0 ? '+' : ''}${avgDev.toFixed(1)}`);
+        }
+        if (dialogueQualityScores.length > 0) {
+          const avgDQ = dialogueQualityScores.reduce((a, b) => a + b, 0) / dialogueQualityScores.length;
+          console.log(`  Avg dialogue quality:  ${avgDQ.toFixed(1)}`);
         }
         console.log('');
         break;
