@@ -670,6 +670,7 @@ function buildExchangesForResult(resultRow, dialogueLog, options = {}) {
       },
       api_payload: payloadSegments?.payload || null,
       dynamic_extensions: priorExtensions,
+      input_messages: entry.inputMessages || null,
     });
   }
 
@@ -831,6 +832,9 @@ function formatTextReport(
     );
     lines.push(clip(respText, maxTextChars) || C.bad('(missing)'));
     lines.push(`${C.key('PAYLOAD_CAPTURE')} ${ex.api_payload ? C.ok('yes') : C.warn('no')}`);
+    if (ex.input_messages) {
+      lines.push(`${C.key('INPUT_MESSAGES')} ${ex.input_messages.length} message(s) in chain`);
+    }
     if (includeRawApi) {
       pushRawApiBlock(lines, ex, rawApiChars);
     }
@@ -905,6 +909,9 @@ function formatLineModeReport(
       lines.push(indentBlock(clip(reqText, maxTextChars) || C.bad('(missing)'), '    '));
       lines.push(`  ${C.key('Assistant:')}`);
       lines.push(indentBlock(clip(respText, maxTextChars) || C.bad('(missing)'), '    '));
+      if (ex.input_messages) {
+        lines.push(`  ${C.key('Message Chain:')} ${ex.input_messages.length} message(s)`);
+      }
       if (includeRawApi) {
         // Line mode favors readability: show only content-bearing message fields from raw payload.
         pushRawApiBlock(lines, ex, rawApiChars, '  ', true);
