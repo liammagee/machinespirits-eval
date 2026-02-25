@@ -207,6 +207,9 @@ migrateAddColumn(
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_score REAL`, 'dialogue_quality_internal_score');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_summary TEXT`, 'dialogue_quality_internal_summary');
 
+// Conversation mode: 'single-prompt' | 'messages' (how tutor context was delivered)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN conversation_mode TEXT`, 'conversation_mode');
+
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`, 'package_version');
@@ -419,6 +422,7 @@ export function storeResult(runId, result) {
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
       holistic_overall_score,
+      conversation_mode,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -432,6 +436,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?,
       ?
@@ -484,6 +489,7 @@ export function storeResult(runId, result) {
     result.learnerArchitecture || null,
     result.scoringMethod || null,
     result.holisticDialogueScore?.overallScore ?? null,
+    result.conversationMode || null,
     new Date().toISOString(),
   );
 
@@ -1267,6 +1273,7 @@ function parseResultRow(row) {
     dialogueQualityJudgeModel: row.dialogue_quality_judge_model || null,
     dialogueQualityInternalScore: row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
+    conversationMode: row.conversation_mode || null,
   };
 }
 
