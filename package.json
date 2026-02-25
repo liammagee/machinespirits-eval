@@ -37,6 +37,7 @@
     "paper:provable-discourse:sync-inventory": "node scripts/sync-provable-claim-inventory.js",
     "paper:provable-discourse:bootstrap": "node scripts/bootstrap-provable-claims.js",
     "paper:provable-discourse:test": "node --test tests/provableDiscourse.test.js",
+    "paper:provable-discourse:reconstruct": "node scripts/reconstruct-provable-paper.js",
     "paper:provable-discourse:all": "npm run paper:provable-discourse:bootstrap && npm run paper:provable-discourse && npm run paper:provable-discourse:test",
     "paper:provable-discourse:chat": "node scripts/paper-provable-discourse-chat.js",
     "paper:provable-discourse:review": "node scripts/paper-provable-discourse-chat.js --no-augment-evidence --no-paper-edits",
