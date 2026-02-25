@@ -26,6 +26,7 @@ import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
 import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
+import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 
@@ -163,6 +164,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_77_recog_dialectical_profile_tutor_psycho',
   'cell_78_base_dialectical_selfreflect_psycho_authentic',
   'cell_79_recog_dialectical_selfreflect_psycho_authentic',
+  'cell_80_messages_base_single_unified',
+  'cell_81_messages_recog_single_unified',
 ];
 
 /**
@@ -591,6 +594,27 @@ function flattenConversationHistory(conversationHistory) {
   ]);
 }
 
+/**
+ * Build a proper message chain from conversation history for multi-turn
+ * message mode. From the tutor's perspective: tutor suggestions = assistant,
+ * learner messages = user.
+ *
+ * @param {Array} conversationHistory - Array of turn history objects
+ * @returns {Array<{role: string, content: string}>} Alternating user/assistant messages
+ */
+function buildMessageChain(conversationHistory) {
+  const messages = [];
+  for (const h of (conversationHistory || [])) {
+    if (h.suggestion?.message) {
+      messages.push({ role: 'assistant', content: h.suggestion.message });
+    }
+    if (h.learnerMessage) {
+      messages.push({ role: 'user', content: h.learnerMessage });
+    }
+  }
+  return messages;
+}
+
 // ---------------------------------------------------------------------------
 // Multi-turn context-building utilities (moved from multiTurnRunner.js)
 // ---------------------------------------------------------------------------
@@ -606,6 +630,7 @@ function buildMultiTurnContext(options) {
     _previousSuggestion,
     priorSuperegoAssessments = [],
     learnerTrajectory = null,
+    conversationMode = 'single-prompt',
   } = options;
 
   const contextParts = [];
@@ -615,7 +640,10 @@ function buildMultiTurnContext(options) {
 
   contextParts.push(originalContext);
 
-  if (conversationHistory.length > 0) {
+  // In message chain mode, conversation history is carried as proper message
+  // arrays (assistant/user roles) rather than serialized text in the context.
+  // Only include the text serialization in single-prompt mode.
+  if (conversationMode !== 'messages' && conversationHistory.length > 0) {
     contextParts.push('\n### Conversation History');
     for (const turn of conversationHistory) {
       contextParts.push(formatTurnForContext(turn));
@@ -1049,6 +1077,8 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     dialecticalNegotiation = false, // Phase 2: AI-powered dialectical struggle
     behavioralOverrides = null, // Quantitative params from superego self-reflection
     dryRun = false,
+    captureApiPayloads = process.env.EVAL_CAPTURE_API_PAYLOADS !== 'false',
+    conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
   } = options;
 
   // Dry-run mode: return canned results without any API calls
@@ -1081,38 +1111,48 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
   // Note: retryWithBackoff handles thrown errors, but tutorApi.generateSuggestions()
   // catches its own errors and returns { success: false }. We need to also handle
   // 429 rate limit errors returned in the result (not thrown).
-  const genResult = await retryWithBackoff(
-    async () => {
-      const result = await tutorApi.generateSuggestions(context, {
-        provider: resolvedConfig.provider,
-        model: resolvedConfig.model,
-        egoModel: resolvedConfig.egoModel,
-        superegoModel: resolvedConfig.superegoModel || null,
-        profileName: resolvedConfig.profileName,
-        hyperparameters: resolvedConfig.hyperparameters || {},
-        trace: true,
-        superegoStrategy,
-        outputSize,
-        useDialogue,
-        maxRounds,
-        systemPromptExtension,
-        superegoPromptExtension, // Dynamic disposition adjustments for superego
-        learnerId, // Activates Writing Pad three-layer memory
-        dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
-        behavioralOverrides, // Quantitative params from superego self-reflection
-      });
-      // Re-throw 429 errors so retryWithBackoff can handle them
-      if (
-        !result.success &&
-        result.error &&
-        (result.error.includes('429') || result.error.toLowerCase().includes('rate limit'))
-      ) {
-        throw new Error(result.error);
-      }
-      return result;
-    },
-    { log },
+  const { result: genResultRaw, records: capturedApiRecords } = await captureApiCalls(
+    () =>
+      retryWithBackoff(
+        async () => {
+          const result = await tutorApi.generateSuggestions(context, {
+            provider: resolvedConfig.provider,
+            model: resolvedConfig.model,
+            egoModel: resolvedConfig.egoModel,
+            superegoModel: resolvedConfig.superegoModel || null,
+            profileName: resolvedConfig.profileName,
+            hyperparameters: resolvedConfig.hyperparameters || {},
+            trace: true,
+            superegoStrategy,
+            outputSize,
+            useDialogue,
+            maxRounds,
+            systemPromptExtension,
+            superegoPromptExtension, // Dynamic disposition adjustments for superego
+            learnerId, // Activates Writing Pad three-layer memory
+            dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+            behavioralOverrides, // Quantitative params from superego self-reflection
+            conversationMode, // 'messages' for multi-turn message chains
+          });
+          // Re-throw 429 errors so retryWithBackoff can handle them
+          if (
+            !result.success &&
+            result.error &&
+            (result.error.includes('429') || result.error.toLowerCase().includes('rate limit'))
+          ) {
+            throw new Error(result.error);
+          }
+          return result;
+        },
+        { log },
+      ),
+    { enabled: captureApiPayloads },
   );
+
+  const genResult = genResultRaw;
+  if (captureApiPayloads && Array.isArray(genResult?.dialogueTrace) && genResult.dialogueTrace.length > 0) {
+    genResult.dialogueTrace = attachApiPayloadsToTrace(genResult.dialogueTrace, capturedApiRecords);
+  }
 
   if (!genResult.success) {
     log(`Generation failed: ${genResult.error}`, 'error');
@@ -2005,6 +2045,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const otherEgoProfilingEnabled = rawProfile?.other_ego_profiling?.enabled ?? false;
   const otherEgoBidirectional = rawProfile?.other_ego_profiling?.bidirectional ?? false;
   const strategyPlanningEnabled = rawProfile?.other_ego_profiling?.strategy_planning ?? false;
+  const conversationMode = rawProfile?.conversation_mode ?? 'single-prompt';
 
   const sharedTurnOptions = {
     skipRubricEval,
@@ -2018,6 +2059,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     learnerId,
     dialecticalNegotiation,
     dryRun,
+    conversationMode,
   };
   let sessionEvolution = null;
   let superegoEvolution = null;
@@ -2087,11 +2129,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         previousSuggestion,
         priorSuperegoAssessments,
         learnerTrajectory,
+        conversationMode,
       });
     }
 
     const structuredContextStr = structureLearnerContext(contextStr);
-    const context = tutorApi.buildContext(structuredContextStr, curriculumContext);
+    // Build message chain for message mode (from accumulated conversation history)
+    const turnMessageHistory = (conversationMode === 'messages' && conversationHistory.length > 0)
+      ? buildMessageChain(conversationHistory)
+      : null;
+    const context = tutorApi.buildContext(structuredContextStr, curriculumContext, null, turnMessageHistory);
     context.isNewUser = isInitialTurn ? fullScenario.is_new_user : false;
 
     // Build turn-specific rubric metadata
@@ -2713,6 +2760,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
             otherEgoBidirectional && learnerProfileOfTutor
               ? promptRewriter.formatProfileForInjection(learnerProfileOfTutor, 'tutor')
               : null,
+          conversationMode,
         });
 
         // Override scripted message with LLM-generated one
@@ -2730,21 +2778,32 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         // Add learner deliberation to consolidated trace
         if (learnerResponse.internalDeliberation?.length > 0) {
           for (const delib of learnerResponse.internalDeliberation) {
+            const delibMetrics = delib.metrics || null;
             consolidatedTrace.push({
               agent: `learner_${delib.role}`,
               action: 'deliberation',
               turnIndex: turnIdx + 1,
               contextSummary: delib.content.substring(0, 100),
               detail: delib.content,
+              latencyMs: delibMetrics?.latencyMs ?? null,
+              provider: delibMetrics?.provider || null,
+              metrics: delibMetrics,
+              apiPayload: delib.apiPayload || null,
               timestamp: new Date().toISOString(),
             });
           }
+          const finalLearnerDelib = learnerResponse.internalDeliberation[learnerResponse.internalDeliberation.length - 1];
+          const finalLearnerMetrics = finalLearnerDelib?.metrics || null;
           consolidatedTrace.push({
             agent: 'learner_synthesis',
             action: 'response',
             turnIndex: turnIdx + 1,
             contextSummary: learnerResponse.message.substring(0, 100),
             detail: learnerResponse.message,
+            latencyMs: finalLearnerMetrics?.latencyMs ?? null,
+            provider: finalLearnerMetrics?.provider || null,
+            metrics: finalLearnerMetrics,
+            apiPayload: finalLearnerDelib?.apiPayload || null,
             timestamp: new Date().toISOString(),
           });
         }

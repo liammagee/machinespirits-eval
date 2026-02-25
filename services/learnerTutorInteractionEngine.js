@@ -17,6 +17,42 @@ import * as tutorWritingPad from './memory/tutorWritingPad.js';
 // ============================================================================
 
 const DEFAULT_MAX_TURNS = 10;
+const API_PAYLOAD_MAX_CHARS = Number.parseInt(process.env.EVAL_CAPTURE_API_PAYLOAD_MAX_CHARS || '120000', 10);
+
+function clipPayloadText(text, limit = API_PAYLOAD_MAX_CHARS) {
+  if (text == null) return null;
+  const str = String(text);
+  if (!Number.isFinite(limit) || limit <= 0 || str.length <= limit) return str;
+  return `${str.slice(0, limit)}... [truncated ${str.length - limit} chars]`;
+}
+
+function truncatePayload(value, limit = API_PAYLOAD_MAX_CHARS) {
+  if (value == null) return null;
+  if (typeof value === 'string') return clipPayloadText(value, limit);
+  if (typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map((item) => truncatePayload(item, limit));
+  const out = {};
+  for (const [key, item] of Object.entries(value)) {
+    out[key] = truncatePayload(item, limit);
+  }
+  return out;
+}
+
+function makeDeliberationEntry(role, response, agentConfig = null) {
+  return {
+    role,
+    content: response?.content || '',
+    metrics: {
+      model: response?.model || agentConfig?.model || null,
+      provider: response?.provider || agentConfig?.provider || null,
+      latencyMs: response?.latencyMs ?? null,
+      inputTokens: response?.usage?.inputTokens ?? 0,
+      outputTokens: response?.usage?.outputTokens ?? 0,
+      generationId: response?.generationId || null,
+    },
+    apiPayload: response?.apiPayload || null,
+  };
+}
 
 // Interaction outcomes for tracking
 const INTERACTION_OUTCOMES = {
@@ -280,10 +316,7 @@ Generate this agent's internal voice as the learner approaches this topic for th
       },
     );
 
-    internalDeliberation.push({
-      role,
-      content: response.content,
-    });
+    internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
 
     trace.metrics.learnerInputTokens += response.usage?.inputTokens || 0;
     trace.metrics.learnerOutputTokens += response.usage?.outputTokens || 0;
@@ -337,7 +370,7 @@ Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
       },
     );
 
-    internalDeliberation.push({ role: 'ego_revision', content: externalResponse.content });
+    internalDeliberation.push(makeDeliberationEntry('ego_revision', externalResponse, egoConfig));
     trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
     trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
 
@@ -473,10 +506,7 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   trace.metrics.tutorOutputTokens += egoResponse.usage?.outputTokens || 0;
 
   const egoDraft = egoResponse.content || '';
-  internalDeliberation.push({
-    role: 'ego',
-    content: egoDraft,
-  });
+  internalDeliberation.push(makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }));
 
   // ===== T.SUPEREGO: Critique and refine =====
   const superegoPrompt = `${superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.'}
@@ -518,10 +548,9 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
   trace.metrics.tutorOutputTokens += superegoResponse.usage?.outputTokens || 0;
 
   const superegoContent = superegoResponse.content || '';
-  internalDeliberation.push({
-    role: 'superego',
-    content: superegoContent,
-  });
+  internalDeliberation.push(
+    makeDeliberationEntry('superego', superegoResponse, { model: superegoModel, provider: superegoConfig?.provider }),
+  );
 
   // Parse superego response for improved version
   let externalMessage = egoDraft;
@@ -822,11 +851,11 @@ const LEARNER_RETRY_DELAYS = [2000, 4000, 8000];
  * @param {string} agentRole - For logging (e.g. 'ego', 'superego', 'synthesis')
  * @returns {Promise<Object>} { content, usage: { inputTokens, outputTokens }, latencyMs }
  */
-async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner') {
+async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
   let lastError;
   for (let attempt = 0; attempt <= LEARNER_RETRY_DELAYS.length; attempt++) {
     try {
-      return await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole);
+      return await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory);
     } catch (error) {
       lastError = error;
       const is429 = error?.message?.includes('429') || error?.message?.toLowerCase()?.includes('rate limit');
@@ -846,7 +875,7 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
  * fetch logic: same headers, same body format, same error parsing.
  * Accepts system and user prompts separately for provider-level caching.
  */
-async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole) {
+async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory = null) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
   const { temperature = 0.7, top_p } = hyperparameters;
   let { max_tokens = 300 } = hyperparameters;
@@ -866,12 +895,26 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
 
   // --- Anthropic ---
   if (provider === 'anthropic') {
+    // Anthropic requires strictly alternating user/assistant roles
+    let messages;
+    if (messageHistory?.length) {
+      messages = [...messageHistory];
+      const last = messages[messages.length - 1];
+      if (last.role === 'user') {
+        messages[messages.length - 1] = { role: 'user', content: `${last.content}\n\n${userPrompt}` };
+      } else {
+        messages.push({ role: 'user', content: userPrompt });
+      }
+    } else {
+      messages = [{ role: 'user', content: userPrompt }];
+    }
+
     const bodyParams = {
       model,
       max_tokens,
       temperature,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages,
     };
     if (top_p !== undefined) {
       delete bodyParams.temperature;
@@ -897,34 +940,53 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     }
 
     const data = await res.json();
+    const content = data?.content?.[0]?.text?.trim() || '';
     return {
-      content: data?.content?.[0]?.text?.trim() || '',
+      content,
       usage: {
         inputTokens: data?.usage?.input_tokens || 0,
         outputTokens: data?.usage?.output_tokens || 0,
       },
       latencyMs: Date.now() - startTime,
+      model,
+      provider,
+      generationId: data?.id || null,
+      apiPayload: {
+        captureVersion: 1,
+        source: 'learner_call',
+        endpoint: providerConfig.base_url,
+        request: {
+          method: 'POST',
+          body: truncatePayload(bodyParams),
+        },
+        response: {
+          status: res.status,
+          body: truncatePayload(data),
+        },
+      },
     };
   }
 
   // --- OpenAI ---
   if (provider === 'openai') {
+    const openaiMessages = messageHistory?.length
+      ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
+      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
+
+    const requestBody = {
+      model,
+      temperature,
+      max_tokens,
+      top_p,
+      messages: openaiMessages,
+    };
     const res = await fetch(providerConfig.base_url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${providerConfig.apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        temperature,
-        max_tokens,
-        top_p,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!res.ok) {
@@ -936,18 +998,46 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     }
 
     const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content?.trim() || '';
     return {
-      content: data?.choices?.[0]?.message?.content?.trim() || '',
+      content,
       usage: {
         inputTokens: data?.usage?.prompt_tokens || 0,
         outputTokens: data?.usage?.completion_tokens || 0,
       },
       latencyMs: Date.now() - startTime,
+      model,
+      provider,
+      generationId: data?.id || null,
+      apiPayload: {
+        captureVersion: 1,
+        source: 'learner_call',
+        endpoint: providerConfig.base_url,
+        request: {
+          method: 'POST',
+          body: truncatePayload(requestBody),
+        },
+        response: {
+          status: res.status,
+          body: truncatePayload(data),
+        },
+      },
     };
   }
 
   // --- OpenRouter ---
   if (provider === 'openrouter') {
+    const orMessages = messageHistory?.length
+      ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
+      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
+
+    const requestBody = {
+      model,
+      temperature,
+      max_tokens,
+      top_p,
+      messages: orMessages,
+    };
     const res = await fetch(providerConfig.base_url, {
       method: 'POST',
       headers: {
@@ -956,16 +1046,7 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
         'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
         'X-Title': 'Machine Spirits Tutor',
       },
-      body: JSON.stringify({
-        model,
-        temperature,
-        max_tokens,
-        top_p,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!res.ok) {
@@ -992,6 +1073,22 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
         outputTokens: data?.usage?.completion_tokens || 0,
       },
       latencyMs: Date.now() - startTime,
+      model,
+      provider,
+      generationId: data?.id || null,
+      apiPayload: {
+        captureVersion: 1,
+        source: 'learner_call',
+        endpoint: providerConfig.base_url,
+        request: {
+          method: 'POST',
+          body: truncatePayload(requestBody),
+        },
+        response: {
+          status: res.status,
+          body: truncatePayload(data),
+        },
+      },
     };
   }
 
@@ -1000,35 +1097,76 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     const { GoogleGenAI } = await import('@google/genai');
     const gemini = new GoogleGenAI({ apiKey: providerConfig.apiKey });
 
-    const result = await gemini.models.generateContent({
+    let geminiContents;
+    if (messageHistory?.length) {
+      geminiContents = [];
+      for (const msg of messageHistory) {
+        const geminiRole = msg.role === 'assistant' ? 'model' : 'user';
+        const last = geminiContents[geminiContents.length - 1];
+        if (last && last.role === geminiRole) {
+          last.parts[0].text += '\n\n' + msg.content;
+        } else {
+          geminiContents.push({ role: geminiRole, parts: [{ text: msg.content }] });
+        }
+      }
+      const last = geminiContents[geminiContents.length - 1];
+      if (last && last.role === 'user') {
+        last.parts[0].text += '\n\n' + userPrompt;
+      } else {
+        geminiContents.push({ role: 'user', parts: [{ text: userPrompt }] });
+      }
+    } else {
+      geminiContents = [{ role: 'user', parts: [{ text: userPrompt }] }];
+    }
+
+    const requestBody = {
       model,
       systemInstruction: systemPrompt,
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      contents: geminiContents,
       config: { temperature, maxOutputTokens: max_tokens, topP: top_p },
-    });
+    };
+    const result = await gemini.models.generateContent(requestBody);
 
     const content = result?.text?.() || result?.response?.text?.() || '';
     return {
       content,
       usage: { inputTokens: 0, outputTokens: 0 },
       latencyMs: Date.now() - startTime,
+      model,
+      provider,
+      generationId: null,
+      apiPayload: {
+        captureVersion: 1,
+        source: 'learner_call',
+        endpoint: providerConfig.base_url || 'gemini.models.generateContent',
+        request: {
+          method: 'POST',
+          body: truncatePayload(requestBody),
+        },
+        response: {
+          status: 200,
+          body: truncatePayload({ content }),
+        },
+      },
     };
   }
 
   // --- Local (LM Studio / Ollama / llama.cpp) ---
   if (provider === 'local') {
+    const localMessages = messageHistory?.length
+      ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
+      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
+
+    const requestBody = {
+      model,
+      temperature,
+      max_tokens,
+      messages: localMessages,
+    };
     const res = await fetch(providerConfig.base_url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model,
-        temperature,
-        max_tokens,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!res.ok) {
@@ -1040,13 +1178,30 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     }
 
     const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content?.trim() || '';
     return {
-      content: data?.choices?.[0]?.message?.content?.trim() || '',
+      content,
       usage: {
         inputTokens: data?.usage?.prompt_tokens || 0,
         outputTokens: data?.usage?.completion_tokens || 0,
       },
       latencyMs: Date.now() - startTime,
+      model,
+      provider,
+      generationId: data?.id || null,
+      apiPayload: {
+        captureVersion: 1,
+        source: 'learner_call',
+        endpoint: providerConfig.base_url,
+        request: {
+          method: 'POST',
+          body: truncatePayload(requestBody),
+        },
+        response: {
+          status: res.status,
+          body: truncatePayload(data),
+        },
+      },
     };
   }
 
@@ -1089,6 +1244,7 @@ export async function generateLearnerResponse(options) {
     llmCall = null,
     memoryContext = null,
     trace = null,
+    conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
   } = options;
 
   // Resolve model overrides. Priority: specific (ego/superego) > general (modelOverride) > YAML default
@@ -1119,16 +1275,39 @@ export async function generateLearnerResponse(options) {
     };
   };
 
+  // Build learner's external message chain (roles inverted: tutor = user, learner = assistant)
+  // Only used when conversationMode is 'messages'
+  const useMessageChains = conversationMode === 'messages';
+  let learnerExternalHistory = null;
+  if (useMessageChains && conversationHistory.length > 0) {
+    learnerExternalHistory = conversationHistory.map(m => ({
+      role: m.role === 'tutor' ? 'user' : 'assistant',
+      content: m.content,
+    }));
+  }
+
+  // Internal chains for ego-superego deliberation (within this turn)
+  let learnerEgoInternalHistory = [];
+
   // Build LLM call adapter so both interactive (injected llmCall) and
   // eval (callLearnerAI) paths use the same pipeline.
+  // The 5th argument is messageHistory for message chain mode.
   const callLLM = llmCall
-    ? async (agentConfig, systemPrompt, userPrompt, _role) => {
+    ? async (agentConfig, systemPrompt, userPrompt, _role, _msgHistory = null) => {
         const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
           temperature: agentConfig.hyperparameters?.temperature || 0.7,
           maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
           agentRole: _role,
         });
-        return { content: response.content, usage: response.usage };
+        return {
+          content: response.content,
+          usage: response.usage,
+          model: response.model || agentConfig.model,
+          provider: response.provider || agentConfig.provider || null,
+          latencyMs: response.latencyMs || null,
+          generationId: response.generationId || null,
+          apiPayload: response.apiPayload || null,
+        };
       }
     : callLearnerAI;
 
@@ -1169,8 +1348,16 @@ export async function generateLearnerResponse(options) {
       egoSystemPrompt,
       "React to the tutor's message.",
       'learner_ego_initial',
+      useMessageChains ? learnerExternalHistory : null,
     );
-    internalDeliberation.push({ role: 'ego_initial', content: egoInitialResponse.content });
+    internalDeliberation.push(makeDeliberationEntry('ego_initial', egoInitialResponse, egoConfig));
+
+    // Record ego initial output in internal chain (for ego revision)
+    if (useMessageChains) {
+      learnerEgoInternalHistory.push(
+        { role: 'assistant', content: egoInitialResponse.content },
+      );
+    }
     tokenUsage.inputTokens += egoInitialResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoInitialResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
@@ -1198,7 +1385,7 @@ export async function generateLearnerResponse(options) {
       "Critique the EGO's reaction.",
       'learner_superego',
     );
-    internalDeliberation.push({ role: 'superego', content: superegoResponse.content });
+    internalDeliberation.push(makeDeliberationEntry('superego', superegoResponse, superegoConfig));
     tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += superegoResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
@@ -1217,13 +1404,24 @@ export async function generateLearnerResponse(options) {
     egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nYour initial reaction was:\n"${egoInitialResponse.content}"\n\nInternal review feedback:\n"${superegoResponse.content}"\n\nConsider this feedback. You have final authority — accept, reject, or modify as you see fit.\n\nRespond with ONLY what the learner would say out loud to the tutor (1-4 sentences). Do NOT include internal thoughts, meta-commentary, or references to any review process.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
+    // Build combined history for ego revision: external + ego internal + superego feedback
+    let egoRevisionMsgHistory = null;
+    if (useMessageChains) {
+      egoRevisionMsgHistory = [
+        ...(learnerExternalHistory || []),
+        ...learnerEgoInternalHistory,
+        { role: 'user', content: `Internal review feedback:\n${superegoResponse.content}` },
+      ];
+    }
+
     const egoFinalResponse = await callLLM(
       egoConfig,
       egoRevisionSystemPrompt,
       'Produce your final response to the tutor.',
       'learner_ego_revision',
+      egoRevisionMsgHistory,
     );
-    internalDeliberation.push({ role: 'ego_revision', content: egoFinalResponse.content });
+    internalDeliberation.push(makeDeliberationEntry('ego_revision', egoFinalResponse, egoConfig));
     tokenUsage.inputTokens += egoFinalResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoFinalResponse.usage?.outputTokens || 0;
     tokenUsage.apiCalls++;
@@ -1263,7 +1461,7 @@ export async function generateLearnerResponse(options) {
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
       const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
 
-      internalDeliberation.push({ role, content: response.content });
+      internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
       tokenUsage.inputTokens += response.usage?.inputTokens || 0;
       tokenUsage.outputTokens += response.usage?.outputTokens || 0;
       tokenUsage.apiCalls++;

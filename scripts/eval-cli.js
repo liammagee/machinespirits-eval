@@ -39,6 +39,7 @@ import 'dotenv/config';
  *   --cluster <name>       Scenario cluster filter: single-turn, multi-turn, core, mood, benchmark, recognition, multi_turn (comma-separated OK)
  *   --profile <name>       Override profile(s) — comma-separated or single name
  *   --all-profiles         Use ALL profiles instead of the 8 factorial cells
+ *   --allow-model-mix      Allow mixed tutor ego models in canonical factorial cell runs
  *   --skip-rubric          Skip AI-based rubric evaluation
  *   --verbose              Enable verbose output
  *   --runs <n>             Replications per cell (for 'run' command, default: 1)
@@ -102,6 +103,17 @@ const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith('--')) || 'list';
+const FACTORIAL_2X2X2_PROFILES = [
+  'cell_1_base_single_unified',
+  'cell_2_base_single_psycho',
+  'cell_3_base_multi_unified',
+  'cell_4_base_multi_psycho',
+  'cell_5_recog_single_unified',
+  'cell_6_recog_single_psycho',
+  'cell_7_recog_multi_unified',
+  'cell_8_recog_multi_psycho',
+];
+const FACTORIAL_2X2X2_PROFILE_SET = new Set(FACTORIAL_2X2X2_PROFILES);
 
 function getFlag(name) {
   return args.includes(`--${name}`);
@@ -111,6 +123,53 @@ function getOption(name, defaultValue = undefined) {
   const idx = args.indexOf(`--${name}`);
   if (idx === -1 || idx + 1 >= args.length) return defaultValue;
   return args[idx + 1];
+}
+
+function validateCanonicalFactorialTutorEgoModels({
+  profileNames,
+  modelOverride = null,
+  egoModelOverride = null,
+  allowModelMix = false,
+}) {
+  if (allowModelMix) return { ok: true, skipped: 'allow-model-mix' };
+  if (!Array.isArray(profileNames) || profileNames.length < 2) return { ok: true, skipped: 'not-enough-profiles' };
+  if (!profileNames.every((name) => FACTORIAL_2X2X2_PROFILE_SET.has(name))) {
+    return { ok: true, skipped: 'non-canonical-profile-set' };
+  }
+
+  let overrideModel = null;
+  let overrideSource = null;
+  if (modelOverride) {
+    const resolved = evalConfigLoader.resolveModel(modelOverride);
+    overrideModel = resolved.model;
+    overrideSource = '--model';
+  } else if (egoModelOverride) {
+    const resolved = evalConfigLoader.resolveModel(egoModelOverride);
+    overrideModel = resolved.model;
+    overrideSource = '--ego-model';
+  }
+
+  const rows = profileNames.map((profileName) => {
+    const profile = evalConfigLoader.getTutorProfile(profileName);
+    if (!profile?.ego?.provider || !profile?.ego?.model) {
+      throw new Error(`Profile "${profileName}" is missing tutor ego provider/model.`);
+    }
+
+    return {
+      profileName,
+      model: overrideModel || profile.ego.resolvedModel || profile.ego.model,
+      source: overrideSource || `${profile.ego.provider}.${profile.ego.model}`,
+    };
+  });
+
+  const uniqueModels = [...new Set(rows.map((row) => row.model))];
+  if (uniqueModels.length <= 1) return { ok: true, rows };
+
+  return {
+    ok: false,
+    uniqueModels,
+    rows,
+  };
 }
 
 import { isPidAlive } from '../services/processUtils.js';
@@ -1006,6 +1065,7 @@ async function main() {
         const clusterOpt = getOption('cluster');
         const scenarioOpt = getOption('scenario') || getOption('scenarios');
         const allProfiles = getFlag('all-profiles');
+        const allowModelMix = getFlag('allow-model-mix');
         const modelOverride = getOption('model');
         const egoModelOverride = getOption('ego-model');
         const superegoModelOverride = getOption('superego-model');
@@ -1028,10 +1088,12 @@ async function main() {
         const profileOpt = getOption('config') || getOption('profile') || getOption('profiles');
         let configurations;
         let isFactorial = false;
+        let selectedProfileNames = [];
 
         if (profileOpt) {
           // Explicit profile selection (single or comma-separated)
           const profileNames = profileOpt.includes(',') ? profileOpt.split(',').map((s) => s.trim()) : [profileOpt];
+          selectedProfileNames = profileNames;
           configurations = profileNames.map((name) => ({
             provider: null,
             model: null,
@@ -1046,6 +1108,44 @@ async function main() {
           // Default: 2×2×2 factorial design
           isFactorial = true;
           configurations = 'factorial';
+          selectedProfileNames = [...FACTORIAL_2X2X2_PROFILES];
+        }
+
+        const shouldGuardFactorialModels =
+          selectedProfileNames.length > 1 && selectedProfileNames.every((name) => FACTORIAL_2X2X2_PROFILE_SET.has(name));
+
+        if (shouldGuardFactorialModels) {
+          const yamlOverrides = evalConfigLoader.getTutorModelOverrides();
+          const effectiveModelOverride = modelOverride || yamlOverrides.modelOverride || null;
+          const effectiveEgoModelOverride = egoModelOverride || yamlOverrides.egoModelOverride || null;
+          let modelGuard;
+
+          try {
+            modelGuard = validateCanonicalFactorialTutorEgoModels({
+              profileNames: selectedProfileNames,
+              modelOverride: effectiveModelOverride,
+              egoModelOverride: effectiveEgoModelOverride,
+              allowModelMix,
+            });
+          } catch (err) {
+            console.error('\nFactorial model consistency check failed.');
+            console.error(`  ${err.message}`);
+            process.exit(1);
+          }
+
+          if (!modelGuard.ok) {
+            console.error('\nError: Canonical 2x2x2 factorial run has mixed tutor ego models.');
+            console.error('This introduces a model confound across cells (e.g., 6/8 vs others).');
+            console.error('\nDetected tutor ego models by profile:');
+            for (const row of modelGuard.rows) {
+              console.error(`  - ${row.profileName}: ${row.model} (source: ${row.source})`);
+            }
+            console.error('\nFix options:');
+            console.error('  1) Align profile ego models in config/tutor-agents.yaml');
+            console.error('  2) Run with --model <provider.alias> or --ego-model <provider.alias>');
+            console.error('  3) Bypass explicitly with --allow-model-mix');
+            process.exit(1);
+          }
         }
 
         if (isFactorial) {

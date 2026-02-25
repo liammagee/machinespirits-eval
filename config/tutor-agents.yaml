@@ -239,7 +239,7 @@ profiles:
       max_rounds: 0
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
@@ -297,7 +297,7 @@ profiles:
       convergence_threshold: 0.7
     ego:
       provider: openrouter
-      model: kimi-k2.5
+      model: nemotron
       staging: front
       prompt_file: tutor-ego-recognition.md
       hyperparameters:
@@ -3371,6 +3371,59 @@ profiles:
       provider: openrouter
       model: haiku
       prompt_file: tutor-ego-naive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # ===========================================================================
+  # MESSAGE CHAIN MODE (cells 80-81)
+  # ===========================================================================
+  # Tests multi-turn message chain vs flat single-prompt approach.
+  # conversation_mode: messages uses proper assistant/user role alternation
+  # instead of serializing conversation history as text in a single user message.
+
+  # Cell 80: Base × Single Agent × Unified Learner (message chain mode)
+  cell_80_messages_base_single_unified:
+    description: "Message chain mode: baseline single-agent tutor, unified learner — uses proper message alternation"
+    conversation_mode: messages
+    factors:
+      prompt_type: base
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: false
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 81: Recognition × Single Agent × Unified Learner (message chain mode)
+  cell_81_messages_recog_single_unified:
+    description: "Message chain mode: recognition single-agent tutor, unified learner — uses proper message alternation"
+    conversation_mode: messages
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      prompt_file: tutor-ego-recognition.md
       hyperparameters:
         temperature: 0.6
         max_tokens: 8000
