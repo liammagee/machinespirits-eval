@@ -1624,17 +1624,21 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
     // Tutor-core entries (ego/generate, superego/review, ego/revise) use `round`
     // instead of `turnIndex`. We infer their dialogue turn from the next entry
     // that has an explicit turnIndex (final_output for multi-agent tutor,
-    // turn_action for single-agent tutor).
+    // turn_action or learner_* for single-agent tutor).
     const inferredTurnIdx = new Array(dialogueTrace.length).fill(-1);
     // Walk backwards: find the next entry with turnIndex
     let nextKnownTurn = -1;
     for (let i = dialogueTrace.length - 1; i >= 0; i--) {
       const e = dialogueTrace[i];
       if (e.turnIndex !== undefined) {
-        // For turn_action entries (learner response), the preceding tutor-core
-        // entries belong to the PREVIOUS dialogue turn (turn_action.turnIndex - 1).
-        // For final_output entries, tutor-core entries belong to the same turn.
-        if (e.agent === 'user' && e.action === 'turn_action') {
+        // Learner entries (turn_action, learner_ego_initial, etc.) at turnIndex N
+        // mark the START of the learner's turn N. The preceding tutor-core entries
+        // belong to the PREVIOUS dialogue turn (N - 1).
+        // For final_output and ego_self_reflection, tutor-core entries belong to
+        // the same turn.
+        const isLearnerBoundary = (e.agent === 'user' && e.action === 'turn_action')
+          || e.agent?.startsWith('learner_');
+        if (isLearnerBoundary) {
           nextKnownTurn = Math.max(0, e.turnIndex - 1);
         } else {
           nextKnownTurn = e.turnIndex;
@@ -1751,7 +1755,13 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
           lines.push(`[Learner] ${truncate(learnerMsg, 400)}`);
         }
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
-        // Delivered response — content already shown via [Tutor Ego]; skip
+        // Show the message that was actually delivered to the learner.
+        // This closes the tutor deliberation section so the reader isn't left
+        // hanging after the superego's internal approval feedback.
+        const delivered = deliveredByTurn[currentTurnIdx];
+        if (delivered) {
+          lines.push(`[Tutor → Learner] ${truncate(delivered, 400)}`);
+        }
       } else if (entry.agent === 'rejection_budget') {
         const text = entry.contextSummary || entry.detail || '';
         lines.push(`[Rejection Budget] ${truncate(text, 200)}`);
