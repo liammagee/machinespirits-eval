@@ -2002,7 +2002,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--follow] [--review] [--refresh <ms>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--follow] [--review] [--refresh <ms>] [--verbose]',
           );
           process.exit(1);
         }
@@ -2012,6 +2012,7 @@ async function main() {
         const follow = getFlag('follow');
         const review = getFlag('review');
         const multiturnOnly = getFlag('multiturn-only');
+        const restoreTurn0 = getFlag('restore-turn0');
         const refreshMs = parseInt(getOption('refresh', '5000'), 10);
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
@@ -2044,9 +2045,11 @@ async function main() {
             return null;
           }
 
-          const suggestion = result.dialogueId && result.suggestions?.length > 1
-            ? result.suggestions[result.suggestions.length - 1]
-            : result.suggestions?.[0];
+          const suggestion = restoreTurn0
+            ? result.suggestions?.[0]
+            : result.dialogueId && result.suggestions?.length > 1
+              ? result.suggestions[result.suggestions.length - 1]
+              : result.suggestions?.[0];
           if (!suggestion) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (no suggestion)`);
             return null;
@@ -2184,10 +2187,20 @@ async function main() {
           };
 
           // For multi-turn dialogues, the score reflects the last turn against full context — that IS the holistic score
-          if (result.dialogueId) {
+          if (result.dialogueId && !restoreTurn0) {
             evaluation.holisticOverallScore = evaluation.overallScore;
           }
-          evaluationStore.updateResultScores(result.id, evaluation);
+
+          if (restoreTurn0) {
+            // --restore-turn0: re-score suggestions[0] and write to overall_score, preserving existing holistic_overall_score
+            evaluation.holisticOverallScore = result.holisticOverallScore;
+            evaluationStore.updateResultScores(result.id, evaluation);
+          } else if (multiturnOnly) {
+            // --multiturn-only: write ONLY holistic_overall_score, preserving the original overall_score (Turn 0)
+            evaluationStore.updateResultHolisticOnly(result.id, evaluation);
+          } else {
+            evaluationStore.updateResultScores(result.id, evaluation);
+          }
 
           // Score line
           const dimScores = Object.entries(normalizedScores)
@@ -2643,6 +2656,15 @@ async function main() {
             if (before !== toEvaluate.length) {
               console.log(`  --judge ${judgeFilter}: filtered ${before} → ${toEvaluate.length} rows`);
             }
+          }
+
+          // --restore-turn0: only target damaged rows (multi-turn with holistic already set = overwritten by previous --force)
+          if (restoreTurn0) {
+            const before = toEvaluate.length;
+            toEvaluate = toEvaluate.filter(
+              (r) => Array.isArray(r.suggestions) && r.suggestions.length > 1 && r.holisticOverallScore != null,
+            );
+            console.log(`  --restore-turn0: filtered ${before} → ${toEvaluate.length} damaged rows (multi-turn with holistic already set)`);
           }
 
           // --multiturn-only: only re-score rows with multiple suggestions (actual multi-turn)

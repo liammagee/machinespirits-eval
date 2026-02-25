@@ -1595,6 +1595,25 @@ export function updateResultScores(resultId, evaluation) {
 }
 
 /**
+ * Update ONLY the holistic score columns for an existing result row.
+ * Preserves overall_score (Turn 0) intact — used by --multiturn-only to add
+ * last-turn scoring without destroying the original per-turn score.
+ */
+export function updateResultHolisticOnly(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      holistic_overall_score = ?,
+      scores_with_reasoning = COALESCE(?, scores_with_reasoning)
+    WHERE id = ?
+  `);
+  stmt.run(
+    evaluation.holisticOverallScore ?? null,
+    evaluation.scores ? JSON.stringify(evaluation.scores) : null,
+    resultId,
+  );
+}
+
+/**
  * Update learner-side evaluation scores on an evaluation_results row.
  *
  * @param {string} resultId - The evaluation result ID
@@ -1714,6 +1733,7 @@ export default {
   storeResult,
   storeRejudgment,
   updateResultScores,
+  updateResultHolisticOnly,
   updateResultLearnerScores,
   getRun,
   listRuns,
