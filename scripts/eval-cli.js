@@ -2002,7 +2002,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--force] [--multiturn-only] [--follow] [--review] [--refresh <ms>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--follow] [--review] [--refresh <ms>] [--verbose]',
           );
           process.exit(1);
         }
@@ -2016,6 +2016,7 @@ async function main() {
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const modelOverride = getOption('model') || null;
+        const judgeFilter = getOption('judge') || null;
 
         // Restore env overrides from run metadata (e.g. EVAL_SCENARIOS_FILE for domain generalizability runs)
         {
@@ -2635,12 +2636,34 @@ async function main() {
           // Use baseScore == null to detect skip-rubric results (overallScore=100 but no rubric dims)
           let toEvaluate = force ? results : results.filter((r) => r.baseScore == null && r.success);
 
-          // --multiturn-only: only re-score rows with a dialogueId (multi-turn dialogues)
+          // --judge: only process rows from a specific judge model
+          if (judgeFilter) {
+            const before = toEvaluate.length;
+            toEvaluate = toEvaluate.filter((r) => r.judgeModel === judgeFilter);
+            if (before !== toEvaluate.length) {
+              console.log(`  --judge ${judgeFilter}: filtered ${before} → ${toEvaluate.length} rows`);
+            }
+          }
+
+          // --multiturn-only: only re-score rows with multiple suggestions (actual multi-turn)
           if (multiturnOnly) {
             const before = toEvaluate.length;
-            toEvaluate = toEvaluate.filter((r) => r.dialogueId);
+            toEvaluate = toEvaluate.filter((r) => Array.isArray(r.suggestions) && r.suggestions.length > 1);
             if (before !== toEvaluate.length) {
-              console.log(`  --multiturn-only: filtered ${before} → ${toEvaluate.length} multi-turn rows`);
+              console.log(`  --multiturn-only: filtered ${before} → ${toEvaluate.length} rows with >1 turn`);
+            }
+          }
+
+          // Safeguard: warn if --force would overwrite rows from multiple judges without --judge
+          if (force && !judgeFilter) {
+            const judges = [...new Set(toEvaluate.map((r) => r.judgeModel).filter(Boolean))];
+            if (judges.length > 1) {
+              console.error(
+                `\n⚠  SAFETY: --force targets rows from ${judges.length} different judges: ${judges.join(', ')}`,
+              );
+              console.error('  This will overwrite ALL of them with the current judge (Opus).');
+              console.error('  Use --judge <model> to scope to a single judge. Aborting.\n');
+              process.exit(1);
             }
           }
 
