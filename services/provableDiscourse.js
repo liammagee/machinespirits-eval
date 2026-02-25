@@ -1073,6 +1073,44 @@ function mergeUniqueById(...lists) {
   return [...map.values()];
 }
 
+function normalizeClaimTextForKey(claimText) {
+  let text = String(claimText || '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase();
+  text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/\s*([=<>≈])\s*/g, '$1');
+  text = text.replace(/[,\.;:]+$/g, '');
+  return text;
+}
+
+function parseSourceKey(sourceKey) {
+  const raw = String(sourceKey || '');
+  const first = raw.indexOf('|');
+  if (first < 0) return null;
+  const second = raw.indexOf('|', first + 1);
+  if (second < 0) return null;
+  const kind = raw.slice(0, first);
+  const lineNo = Number(raw.slice(first + 1, second));
+  const claimText = raw.slice(second + 1);
+  return {
+    kind,
+    line_no: Number.isFinite(lineNo) ? lineNo : null,
+    claim_text: claimText,
+  };
+}
+
+function canonicalSourceKeyFromParts({ kind, line_no, claim_text }) {
+  if (!kind || !Number.isFinite(line_no)) return null;
+  return `${kind}|${line_no}|${normalizeClaimTextForKey(claim_text)}`;
+}
+
+function canonicalSourceFamilyFromParts({ kind, claim_text }) {
+  if (!kind) return null;
+  return `${kind}|${normalizeClaimTextForKey(claim_text)}`;
+}
+
 function evaluateInventoryCoverage(spec, claimResults, inventory) {
   if (!inventory) {
     return {
@@ -1088,6 +1126,7 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
   const includeKinds = Array.isArray(policy.include_kinds) && policy.include_kinds.length > 0 ? new Set(policy.include_kinds) : null;
   const maxUnmapped = Number.isFinite(policy.max_unmapped_major) ? policy.max_unmapped_major : 0;
   const maxUnmappedRate = Number.isFinite(policy.max_unmapped_major_rate) ? policy.max_unmapped_major_rate : 0.05;
+  const expandMappedFamilies = policy.expand_mapped_families !== false;
 
   const candidates = inventory.entries.filter((entry) => {
     if (majorOnly && !entry.is_major) return false;
@@ -1095,17 +1134,41 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
     return true;
   });
 
-  const mappedKeys = new Set();
+  const mappedCanonicalKeys = new Set();
+  const mappedFamilies = new Set();
   for (const claim of claimResults) {
     const sourceKeys = Array.isArray(claim.source_keys)
       ? claim.source_keys
       : claim.source_key
         ? [claim.source_key]
         : [];
-    for (const key of sourceKeys) mappedKeys.add(key);
+    for (const key of sourceKeys) {
+      const parsed = parseSourceKey(key);
+      if (!parsed) continue;
+      const canonicalKey = canonicalSourceKeyFromParts(parsed);
+      const canonicalFamily = canonicalSourceFamilyFromParts(parsed);
+      if (canonicalKey) mappedCanonicalKeys.add(canonicalKey);
+      if (canonicalFamily) mappedFamilies.add(canonicalFamily);
+    }
   }
 
-  const unmapped = candidates.filter((entry) => !mappedKeys.has(entry.source_key));
+  let mappedByExact = 0;
+  let mappedByFamily = 0;
+  const unmapped = [];
+  for (const entry of candidates) {
+    const canonicalKey = canonicalSourceKeyFromParts(entry);
+    const canonicalFamily = canonicalSourceFamilyFromParts(entry);
+    if (canonicalKey && mappedCanonicalKeys.has(canonicalKey)) {
+      mappedByExact++;
+      continue;
+    }
+    if (expandMappedFamilies && canonicalFamily && mappedFamilies.has(canonicalFamily)) {
+      mappedByFamily++;
+      continue;
+    }
+    unmapped.push(entry);
+  }
+
   const mapped = candidates.length - unmapped.length;
   const unmappedRate = candidates.length > 0 ? unmapped.length / candidates.length : 0;
 
@@ -1118,12 +1181,16 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
       source_claim_audit: inventory.source_claim_audit,
       candidate_total: candidates.length,
       mapped,
+      mapped_exact: mappedByExact,
+      mapped_family: mappedByFamily,
       unmapped: unmapped.length,
       unmapped_rate: unmappedRate,
+      expand_mapped_families: expandMappedFamilies,
       max_unmapped_major: maxUnmapped,
       max_unmapped_major_rate: maxUnmappedRate,
       sample_unmapped: unmapped.slice(0, 25).map((entry) => ({
         source_key: entry.source_key,
+        canonical_source_key: canonicalSourceKeyFromParts(entry),
         section: entry.section,
         line_no: entry.line_no,
         claim_text: entry.claim_text,
