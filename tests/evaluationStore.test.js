@@ -33,6 +33,8 @@ import {
   deleteRun,
   listRuns,
   updateResultLearnerScores,
+  updateResultScores,
+  updateResultHolisticOnly,
 } from '../services/evaluationStore.js';
 
 // Track test runs for cleanup (still useful for in-test isolation)
@@ -680,5 +682,90 @@ describe('listRuns', () => {
 
     const second = listRuns().find((r) => r.id === run.id);
     assert.ok(second.durationMs > first.durationMs, 'elapsed duration should continue increasing while running');
+  });
+});
+
+// ============================================================================
+// Score update safety — prevent cross-judge overwrites and holistic clobbering
+// ============================================================================
+
+describe('updateResultHolisticOnly', () => {
+  it('writes holistic_overall_score without touching overall_score or judge_model', () => {
+    const run = createRun({ description: 'holistic safety test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'test_scenario',
+      scenarioName: 'Test',
+      provider: 'test',
+      model: 'test-model',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'turn 0' }, { text: 'turn 1' }],
+      dialogueId: 'dlg-test-1',
+    });
+
+    // Simulate initial judging (Turn 0 score)
+    updateResultScores(resultId, {
+      scores: { relevance: { score: 4, reasoning: null } },
+      overallScore: 75.0,
+      baseScore: 70.0,
+      judgeModel: 'claude-opus-4.6',
+      holisticOverallScore: null,
+    });
+
+    const before = getResults(run.id, {}).find((r) => r.id === resultId);
+    assert.strictEqual(before.overallScore, 75.0);
+    assert.strictEqual(before.judgeModel, 'claude-opus-4.6');
+    assert.strictEqual(before.holisticOverallScore, null);
+
+    // Now use holistic-only update (simulating --multiturn-only)
+    updateResultHolisticOnly(resultId, {
+      holisticOverallScore: 85.0,
+      scores: { relevance: { score: 5, reasoning: 'last turn better' } },
+    });
+
+    const after = getResults(run.id, {}).find((r) => r.id === resultId);
+    assert.strictEqual(after.overallScore, 75.0, 'overall_score must be preserved');
+    assert.strictEqual(after.judgeModel, 'claude-opus-4.6', 'judge_model must be preserved');
+    assert.strictEqual(after.holisticOverallScore, 85.0, 'holistic_overall_score should be updated');
+  });
+});
+
+describe('updateResultScores cross-judge safety', () => {
+  it('overwrites judge_model when updateResultScores is called', () => {
+    const run = createRun({ description: 'cross-judge overwrite test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'test_scenario',
+      scenarioName: 'Test',
+      provider: 'test',
+      model: 'test-model',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'response' }],
+    });
+
+    // Initial judge: GPT
+    updateResultScores(resultId, {
+      scores: { relevance: { score: 3, reasoning: null } },
+      overallScore: 65.0,
+      baseScore: 60.0,
+      judgeModel: 'gpt-5.2',
+    });
+
+    const before = getResults(run.id, {}).find((r) => r.id === resultId);
+    assert.strictEqual(before.judgeModel, 'gpt-5.2');
+
+    // Danger: updateResultScores with Opus overwrites the GPT label
+    updateResultScores(resultId, {
+      scores: { relevance: { score: 4, reasoning: null } },
+      overallScore: 80.0,
+      baseScore: 75.0,
+      judgeModel: 'claude-opus-4.6',
+    });
+
+    const after = getResults(run.id, {}).find((r) => r.id === resultId);
+    assert.strictEqual(after.judgeModel, 'claude-opus-4.6', 'judge_model IS overwritten by updateResultScores — use --judge filter to prevent');
+    assert.strictEqual(after.overallScore, 80.0);
   });
 });
