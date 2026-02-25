@@ -56,6 +56,44 @@ function regexEscape(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function normalizeClaimTextForKey(claimText) {
+  let text = String(claimText || '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase();
+  text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/\s*([=<>≈])\s*/g, '$1');
+  text = text.replace(/[,\.;:]+$/g, '');
+  return text;
+}
+
+function parseSourceKey(sourceKey) {
+  const raw = String(sourceKey || '');
+  const first = raw.indexOf('|');
+  if (first < 0) return null;
+  const second = raw.indexOf('|', first + 1);
+  if (second < 0) return null;
+  const kind = raw.slice(0, first);
+  const lineNo = Number(raw.slice(first + 1, second));
+  const claimText = raw.slice(second + 1);
+  return {
+    kind,
+    line_no: Number.isFinite(lineNo) ? lineNo : null,
+    claim_text: claimText,
+  };
+}
+
+function canonicalSourceKeyFromParts({ kind, line_no, claim_text }) {
+  if (!kind || !Number.isFinite(line_no)) return null;
+  return `${kind}|${line_no}|${normalizeClaimTextForKey(claim_text)}`;
+}
+
+function canonicalSourceFamilyFromParts({ kind, claim_text }) {
+  if (!kind) return null;
+  return `${kind}|${normalizeClaimTextForKey(claim_text)}`;
+}
+
 function loadClaimsFile(filePath) {
   if (!filePath || !fs.existsSync(filePath)) return [];
   const ext = path.extname(filePath).toLowerCase();
@@ -81,11 +119,13 @@ function parseClaimLowerBound(claimText) {
 function groupEntries(entries) {
   const groups = new Map();
   for (const entry of entries) {
-    const key = `${entry.kind}|${entry.claim_text}|${entry.expected}`;
+    const normalizedClaimText = normalizeClaimTextForKey(entry.claim_text);
+    const key = `${entry.kind}|${normalizedClaimText}|${entry.expected}`;
     if (!groups.has(key)) {
       groups.set(key, {
         kind: entry.kind,
         claim_text: entry.claim_text,
+        normalized_claim_text: normalizedClaimText,
         expected: entry.expected,
         source_keys: [],
         sections: [],
@@ -230,12 +270,20 @@ function main() {
   );
   db.close();
 
-  const mappedSourceKeys = new Set();
+  const mappedCanonicalKeys = new Set();
+  const mappedFamilies = new Set();
   const importPaths = Array.isArray(spec.import_claims_from) ? spec.import_claims_from : [];
   const baseClaims = Array.isArray(spec.claims) ? spec.claims : [];
   for (const claim of baseClaims) {
     const keys = Array.isArray(claim.source_keys) ? claim.source_keys : claim.source_key ? [claim.source_key] : [];
-    for (const key of keys) mappedSourceKeys.add(key);
+    for (const key of keys) {
+      const parsed = parseSourceKey(key);
+      if (!parsed) continue;
+      const canonicalKey = canonicalSourceKeyFromParts(parsed);
+      const canonicalFamily = canonicalSourceFamilyFromParts(parsed);
+      if (canonicalKey) mappedCanonicalKeys.add(canonicalKey);
+      if (canonicalFamily) mappedFamilies.add(canonicalFamily);
+    }
   }
   for (const importPath of importPaths) {
     const resolvedImportPath = path.isAbsolute(importPath) ? importPath : path.join(ROOT, importPath);
@@ -245,12 +293,25 @@ function main() {
     const claims = loadClaimsFile(resolvedImportPath);
     for (const claim of claims) {
       const keys = Array.isArray(claim.source_keys) ? claim.source_keys : claim.source_key ? [claim.source_key] : [];
-      for (const key of keys) mappedSourceKeys.add(key);
+      for (const key of keys) {
+        const parsed = parseSourceKey(key);
+        if (!parsed) continue;
+        const canonicalKey = canonicalSourceKeyFromParts(parsed);
+        const canonicalFamily = canonicalSourceFamilyFromParts(parsed);
+        if (canonicalKey) mappedCanonicalKeys.add(canonicalKey);
+        if (canonicalFamily) mappedFamilies.add(canonicalFamily);
+      }
     }
   }
 
   const majorDeterministic = (inventory.entries || []).filter((entry) => entry.is_major && entry.kind === 'n');
-  const unmappedDeterministic = majorDeterministic.filter((entry) => !mappedSourceKeys.has(entry.source_key));
+  const unmappedDeterministic = majorDeterministic.filter((entry) => {
+    const canonicalKey = canonicalSourceKeyFromParts(entry);
+    const canonicalFamily = canonicalSourceFamilyFromParts(entry);
+    if (canonicalKey && mappedCanonicalKeys.has(canonicalKey)) return false;
+    if (canonicalFamily && mappedFamilies.has(canonicalFamily)) return false;
+    return true;
+  });
   const grouped = groupEntries(unmappedDeterministic);
   const manifestExpectedIndex = buildManifestExpectedIndex(manifest);
 

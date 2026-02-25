@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-02-24T10:32:01.343Z",
+  "generated_at": "2026-02-25T00:38:53.491Z",
   "source_claim_audit": "notes/paper-claim-audit.json",
   "summary": {
-    "total": 355,
-    "n_claims": 198,
+    "total": 354,
+    "n_claims": 197,
     "stat_claims": 157,
-    "major_total": 238,
-    "major_n": 176,
+    "major_total": 237,
+    "major_n": 175,
     "major_stat": 62,
     "status_counts": {
       "pass": 133,
-      "warn": 156,
+      "warn": 155,
       "fail": 66
     }
   },
   "entries": [
     {
-      "source_key": "n|10|N=120",
+      "source_key": "n|10|n=120",
       "kind": "n",
       "line_no": 10,
       "section": "front matter",
@@ -29,7 +29,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|10|N=4,264",
+      "source_key": "n|10|n=4,264",
       "kind": "n",
       "line_no": 10,
       "section": "front matter",
@@ -42,7 +42,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|10|N=655",
+      "source_key": "n|10|n=655",
       "kind": "n",
       "line_no": 10,
       "section": "front matter",
@@ -55,7 +55,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|10|N=7,000+",
+      "source_key": "n|10|n=7,000+",
       "kind": "n",
       "line_no": 10,
       "section": "front matter",
@@ -68,7 +68,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|44|N=116",
+      "source_key": "n|44|n=116",
       "kind": "n",
       "line_no": 44,
       "section": "1",
@@ -81,7 +81,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|44|N=118",
+      "source_key": "n|44|n=118",
       "kind": "n",
       "line_no": 44,
       "section": "1",
@@ -94,7 +94,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|44|N=120",
+      "source_key": "n|44|n=120",
       "kind": "n",
       "line_no": 44,
       "section": "1",
@@ -107,7 +107,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|44|N=4,264",
+      "source_key": "n|44|n=4,264",
       "kind": "n",
       "line_no": 44,
       "section": "1",
@@ -120,7 +120,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|44|N=7,000+",
+      "source_key": "n|44|n=7,000+",
       "kind": "n",
       "line_no": 44,
       "section": "1",
@@ -133,7 +133,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|46|N=350",
+      "source_key": "n|46|n=350",
       "kind": "n",
       "line_no": 46,
       "section": "1",
@@ -146,7 +146,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|46|N=655",
+      "source_key": "n|46|n=655",
       "kind": "n",
       "line_no": 46,
       "section": "1",
@@ -159,7 +159,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|48|N=60",
+      "source_key": "n|48|n=60",
       "kind": "n",
       "line_no": 48,
       "section": "1",
@@ -172,7 +172,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|55|N=120",
+      "source_key": "n|55|n=120",
       "kind": "n",
       "line_no": 55,
       "section": "1",
@@ -185,7 +185,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|56|N=116",
+      "source_key": "n|56|n=116",
       "kind": "n",
       "line_no": 56,
       "section": "1",
@@ -198,7 +198,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|56|N=118",
+      "source_key": "n|56|n=118",
       "kind": "n",
       "line_no": 56,
       "section": "1",
@@ -211,7 +211,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|57|N=36",
+      "source_key": "n|57|n=36",
       "kind": "n",
       "line_no": 57,
       "section": "1",
@@ -224,7 +224,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|58|N=118,",
+      "source_key": "n|58|n=118",
       "kind": "n",
       "line_no": 58,
       "section": "1",
@@ -237,7 +237,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|59|N=350",
+      "source_key": "n|59|n=350",
       "kind": "n",
       "line_no": 59,
       "section": "1",
@@ -250,7 +250,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|60|N=118",
+      "source_key": "n|60|n=118",
       "kind": "n",
       "line_no": 60,
       "section": "1",
@@ -263,7 +263,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|63|N=72",
+      "source_key": "n|63|n=72",
       "kind": "n",
       "line_no": 63,
       "section": "1",
@@ -276,7 +276,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|64|N=174",
+      "source_key": "n|64|n=174",
       "kind": "n",
       "line_no": 64,
       "section": "1",
@@ -289,7 +289,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|65|N=90",
+      "source_key": "n|65|n=90",
       "kind": "n",
       "line_no": 65,
       "section": "1",
@@ -302,7 +302,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|66|N=300",
+      "source_key": "n|66|n=300",
       "kind": "n",
       "line_no": 66,
       "section": "1",
@@ -315,7 +315,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|66|N=360",
+      "source_key": "n|66|n=360",
       "kind": "n",
       "line_no": 66,
       "section": "1",
@@ -328,7 +328,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|68|N=90",
+      "source_key": "n|68|n=90",
       "kind": "n",
       "line_no": 68,
       "section": "1",
@@ -341,7 +341,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|421|N=88",
+      "source_key": "n|421|n=88",
       "kind": "n",
       "line_no": 421,
       "section": "5.1",
@@ -367,7 +367,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|465|N=120",
+      "source_key": "n|465|n=120",
       "kind": "n",
       "line_no": 465,
       "section": "5.3",
@@ -406,7 +406,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|488|N=262",
+      "source_key": "n|488|n=262",
       "kind": "n",
       "line_no": 488,
       "section": "5.4",
@@ -419,7 +419,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|489|N=88",
+      "source_key": "n|489|n=88",
       "kind": "n",
       "line_no": 489,
       "section": "5.4",
@@ -432,7 +432,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|490|N=60",
+      "source_key": "n|490|n=60",
       "kind": "n",
       "line_no": 490,
       "section": "5.4",
@@ -445,7 +445,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|495|N=655,",
+      "source_key": "n|495|n=655",
       "kind": "n",
       "line_no": 495,
       "section": "5.4",
@@ -458,7 +458,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|495|F=0.26",
+      "source_key": "stat|495|f=0.26",
       "kind": "stat",
       "line_no": 495,
       "section": "5.4",
@@ -484,7 +484,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|507|N=36,",
+      "source_key": "n|507|n=36",
       "kind": "n",
       "line_no": 507,
       "section": "5.6",
@@ -497,7 +497,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|509|N=262",
+      "source_key": "n|509|n=262",
       "kind": "n",
       "line_no": 509,
       "section": "5.6",
@@ -510,7 +510,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|509|N=350",
+      "source_key": "n|509|n=350",
       "kind": "n",
       "line_no": 509,
       "section": "5.6",
@@ -523,7 +523,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|509|N=88",
+      "source_key": "n|509|n=88",
       "kind": "n",
       "line_no": 509,
       "section": "5.6",
@@ -536,7 +536,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|511|N=60",
+      "source_key": "n|511|n=60",
       "kind": "n",
       "line_no": 511,
       "section": "5.6",
@@ -549,7 +549,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|511|N=655",
+      "source_key": "n|511|n=655",
       "kind": "n",
       "line_no": 511,
       "section": "5.6",
@@ -562,7 +562,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|513|N=60",
+      "source_key": "n|513|n=60",
       "kind": "n",
       "line_no": 513,
       "section": "5.6",
@@ -575,7 +575,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|585|N=4,264",
+      "source_key": "n|585|n=4,264",
       "kind": "n",
       "line_no": 585,
       "section": "5.7",
@@ -588,7 +588,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|587|N=120",
+      "source_key": "n|587|n=120",
       "kind": "n",
       "line_no": 587,
       "section": "5.7",
@@ -601,7 +601,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|587|N=36",
+      "source_key": "n|587|n=36",
       "kind": "n",
       "line_no": 587,
       "section": "5.7",
@@ -614,7 +614,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|587|N=4,264",
+      "source_key": "n|587|n=4,264",
       "kind": "n",
       "line_no": 587,
       "section": "5.7",
@@ -627,7 +627,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|587|N=7,000+",
+      "source_key": "n|587|n=7,000+",
       "kind": "n",
       "line_no": 587,
       "section": "5.7",
@@ -640,7 +640,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|593|N=36",
+      "source_key": "n|593|n=36",
       "kind": "n",
       "line_no": 593,
       "section": "5.8",
@@ -731,7 +731,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|649|F(2,33) = 12.97",
+      "source_key": "stat|649|f(2,33)=12.97",
       "kind": "stat",
       "line_no": 649,
       "section": "unknown",
@@ -744,7 +744,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|649|p < .001",
+      "source_key": "stat|649|p<.001",
       "kind": "stat",
       "line_no": 649,
       "section": "unknown",
@@ -770,7 +770,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|657|N=120",
+      "source_key": "n|657|n=120",
       "kind": "n",
       "line_no": 657,
       "section": "6.2",
@@ -783,7 +783,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|657|N=30",
+      "source_key": "n|657|n=30",
       "kind": "n",
       "line_no": 657,
       "section": "6.2",
@@ -796,7 +796,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|657|N=60",
+      "source_key": "n|657|n=60",
       "kind": "n",
       "line_no": 657,
       "section": "6.2",
@@ -809,7 +809,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|657|N=62",
+      "source_key": "n|657|n=62",
       "kind": "n",
       "line_no": 657,
       "section": "6.2",
@@ -822,7 +822,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|659|N=120,",
+      "source_key": "n|659|n=120",
       "kind": "n",
       "line_no": 659,
       "section": "6.2",
@@ -835,7 +835,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|663|N=30",
+      "source_key": "n|663|n=30",
       "kind": "n",
       "line_no": 663,
       "section": "6.2",
@@ -848,7 +848,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|664|N=30",
+      "source_key": "n|664|n=30",
       "kind": "n",
       "line_no": 664,
       "section": "6.2",
@@ -926,7 +926,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|677|N=118",
+      "source_key": "n|677|n=118",
       "kind": "n",
       "line_no": 677,
       "section": "6.2",
@@ -939,7 +939,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|677|N=467",
+      "source_key": "n|677|n=467",
       "kind": "n",
       "line_no": 677,
       "section": "6.2",
@@ -952,7 +952,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|679|N=216,",
+      "source_key": "n|679|n=216",
       "kind": "n",
       "line_no": 679,
       "section": "6.2",
@@ -965,7 +965,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|691|N=15",
+      "source_key": "n|691|n=15",
       "kind": "n",
       "line_no": 691,
       "section": "6.2",
@@ -978,7 +978,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|691|N=21",
+      "source_key": "n|691|n=21",
       "kind": "n",
       "line_no": 691,
       "section": "6.2",
@@ -1017,7 +1017,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|701|N=119",
+      "source_key": "n|701|n=119",
       "kind": "n",
       "line_no": 701,
       "section": "6.2",
@@ -1030,7 +1030,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|705|N=30",
+      "source_key": "n|705|n=30",
       "kind": "n",
       "line_no": 705,
       "section": "6.2",
@@ -1043,7 +1043,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|706|N=29",
+      "source_key": "n|706|n=29",
       "kind": "n",
       "line_no": 706,
       "section": "6.2",
@@ -1056,7 +1056,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|706|N=30",
+      "source_key": "n|706|n=30",
       "kind": "n",
       "line_no": 706,
       "section": "6.2",
@@ -1069,7 +1069,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|709|N=119",
+      "source_key": "n|709|n=119",
       "kind": "n",
       "line_no": 709,
       "section": "6.2",
@@ -1173,7 +1173,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|721|N=350",
+      "source_key": "n|721|n=350",
       "kind": "n",
       "line_no": 721,
       "section": "6.3",
@@ -1212,7 +1212,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|753|d = 1.11",
+      "source_key": "stat|753|d=1.11",
       "kind": "stat",
       "line_no": 753,
       "section": "unknown",
@@ -1225,7 +1225,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|753|F=110.04",
+      "source_key": "stat|753|f=110.04",
       "kind": "stat",
       "line_no": 753,
       "section": "unknown",
@@ -1238,7 +1238,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|753|p < .001",
+      "source_key": "stat|753|p<.001",
       "kind": "stat",
       "line_no": 753,
       "section": "unknown",
@@ -1277,7 +1277,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|758|F=0.97",
+      "source_key": "stat|758|f=0.97",
       "kind": "stat",
       "line_no": 758,
       "section": "unknown",
@@ -1329,7 +1329,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|764|N=60",
+      "source_key": "n|764|n=60",
       "kind": "n",
       "line_no": 764,
       "section": "6.4",
@@ -1342,7 +1342,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|766|N=179",
+      "source_key": "n|766|n=179",
       "kind": "n",
       "line_no": 766,
       "section": "6.4",
@@ -1355,7 +1355,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|770|N=655",
+      "source_key": "n|770|n=655",
       "kind": "n",
       "line_no": 770,
       "section": "6.4",
@@ -1368,7 +1368,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|782|N=119",
+      "source_key": "n|782|n=119",
       "kind": "n",
       "line_no": 782,
       "section": "6.4",
@@ -1381,7 +1381,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|782|N=17,",
+      "source_key": "n|782|n=17",
       "kind": "n",
       "line_no": 782,
       "section": "6.4",
@@ -1394,7 +1394,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|790|N=60,",
+      "source_key": "n|790|n=60",
       "kind": "n",
       "line_no": 790,
       "section": "6.5",
@@ -1407,7 +1407,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|803|N=60",
+      "source_key": "n|803|n=60",
       "kind": "n",
       "line_no": 803,
       "section": "6.5",
@@ -1420,7 +1420,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|866|N=72,",
+      "source_key": "n|866|n=72",
       "kind": "n",
       "line_no": 866,
       "section": "6.7",
@@ -1433,7 +1433,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|866|N=9",
+      "source_key": "n|866|n=9",
       "kind": "n",
       "line_no": 866,
       "section": "6.7",
@@ -1446,7 +1446,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|868|N=72,",
+      "source_key": "n|868|n=72",
       "kind": "n",
       "line_no": 868,
       "section": "6.7",
@@ -1459,7 +1459,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|887|N=84,",
+      "source_key": "n|887|n=84",
       "kind": "n",
       "line_no": 887,
       "section": "Standard Divergent Superego (cells 22–27)",
@@ -1472,7 +1472,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|895|N=30,",
+      "source_key": "n|895|n=30",
       "kind": "n",
       "line_no": 895,
       "section": "Standard Divergent Superego (cells 22–27)",
@@ -1485,7 +1485,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|895|N=54,",
+      "source_key": "n|895|n=54",
       "kind": "n",
       "line_no": 895,
       "section": "Standard Divergent Superego (cells 22–27)",
@@ -1498,7 +1498,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|903|N=90,",
+      "source_key": "n|903|n=90",
       "kind": "n",
       "line_no": 903,
       "section": "Dialectical Multi-Turn Results (cells 28–33)",
@@ -1511,7 +1511,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|905|N=15",
+      "source_key": "n|905|n=15",
       "kind": "n",
       "line_no": 905,
       "section": "Dialectical Multi-Turn Results (cells 28–33)",
@@ -1524,7 +1524,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|916|N=90",
+      "source_key": "n|916|n=90",
       "kind": "n",
       "line_no": 916,
       "section": "Dialectical Multi-Turn Results (cells 28–33)",
@@ -1537,7 +1537,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|918|N=45",
+      "source_key": "n|918|n=45",
       "kind": "n",
       "line_no": 918,
       "section": "Dialectical Multi-Turn Results (cells 28–33)",
@@ -1550,7 +1550,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|925|N=90",
+      "source_key": "n|925|n=90",
       "kind": "n",
       "line_no": 925,
       "section": "Dialectical Multi-Turn Results (cells 28–33)",
@@ -1563,7 +1563,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|943|N=90,",
+      "source_key": "n|943|n=90",
       "kind": "n",
       "line_no": 943,
       "section": "6.9",
@@ -1576,7 +1576,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|945|N=90",
+      "source_key": "n|945|n=90",
       "kind": "n",
       "line_no": 945,
       "section": "6.9",
@@ -1589,7 +1589,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|947|N=15",
+      "source_key": "n|947|n=15",
       "kind": "n",
       "line_no": 947,
       "section": "6.9",
@@ -1602,7 +1602,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|954|d = 0.38",
+      "source_key": "stat|954|d=0.38",
       "kind": "stat",
       "line_no": 954,
       "section": "unknown",
@@ -1615,7 +1615,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|954|d = 0.91",
+      "source_key": "stat|954|d=0.91",
       "kind": "stat",
       "line_no": 954,
       "section": "unknown",
@@ -1628,7 +1628,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|954|d = 1.11",
+      "source_key": "stat|954|d=1.11",
       "kind": "stat",
       "line_no": 954,
       "section": "unknown",
@@ -1641,7 +1641,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|956|N=90",
+      "source_key": "n|956|n=90",
       "kind": "n",
       "line_no": 956,
       "section": "6.9",
@@ -1654,7 +1654,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|969|d = 0.91",
+      "source_key": "stat|969|d=0.91",
       "kind": "stat",
       "line_no": 969,
       "section": "unknown",
@@ -1667,7 +1667,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|969|d = 1.11",
+      "source_key": "stat|969|d=1.11",
       "kind": "stat",
       "line_no": 969,
       "section": "unknown",
@@ -1680,7 +1680,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|971|N=60,",
+      "source_key": "n|971|n=60",
       "kind": "n",
       "line_no": 971,
       "section": "6.9",
@@ -1693,7 +1693,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|977|N=360,",
+      "source_key": "n|977|n=360",
       "kind": "n",
       "line_no": 977,
       "section": "6.10",
@@ -1706,7 +1706,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|991|d = 0.86",
+      "source_key": "stat|991|d=0.86",
       "kind": "stat",
       "line_no": 991,
       "section": "unknown",
@@ -1719,7 +1719,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|993|d = 0.86",
+      "source_key": "stat|993|d=0.86",
       "kind": "stat",
       "line_no": 993,
       "section": "unknown",
@@ -1732,7 +1732,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1001|N=240,",
+      "source_key": "n|1001|n=240",
       "kind": "n",
       "line_no": 1001,
       "section": "Dynamic Learner $\\times$ Mechanism (cells 60–65, 69–70)",
@@ -1745,7 +1745,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1023|N=36,",
+      "source_key": "n|1023|n=36",
       "kind": "n",
       "line_no": 1023,
       "section": "A2 Mechanism Sweep Extension (cells 72–77)",
@@ -1758,7 +1758,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1025|N=36,",
+      "source_key": "n|1025|n=36",
       "kind": "n",
       "line_no": 1025,
       "section": "A2 Mechanism Sweep Extension (cells 72–77)",
@@ -1771,7 +1771,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1037|N=360,",
+      "source_key": "n|1037|n=360",
       "kind": "n",
       "line_no": 1037,
       "section": "Cross-Model Replication: Nemotron (eval-2026-02-14-49b33fdd)",
@@ -1784,7 +1784,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1041|N=90,",
+      "source_key": "n|1041|n=90",
       "kind": "n",
       "line_no": 1041,
       "section": "Cognitive Prosthesis Test (cells 66–68)",
@@ -1797,7 +1797,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1043|N=90,",
+      "source_key": "n|1043|n=90",
       "kind": "n",
       "line_no": 1043,
       "section": "Cognitive Prosthesis Test (cells 66–68)",
@@ -1810,7 +1810,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1057|N=6,",
+      "source_key": "n|1057|n=6",
       "kind": "n",
       "line_no": 1057,
       "section": "Cognitive Prosthesis Test (cells 66–68)",
@@ -1823,7 +1823,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1063|N=118,",
+      "source_key": "n|1063|n=118",
       "kind": "n",
       "line_no": 1063,
       "section": "6.11",
@@ -1836,7 +1836,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1063|N=360,",
+      "source_key": "n|1063|n=360",
       "kind": "n",
       "line_no": 1063,
       "section": "6.11",
@@ -1849,7 +1849,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1065|N=118",
+      "source_key": "n|1065|n=118",
       "kind": "n",
       "line_no": 1065,
       "section": "6.11",
@@ -1862,7 +1862,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1077|N=360",
+      "source_key": "n|1077|n=360",
       "kind": "n",
       "line_no": 1077,
       "section": "6.11",
@@ -1875,7 +1875,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1102|N=118",
+      "source_key": "n|1102|n=118",
       "kind": "n",
       "line_no": 1102,
       "section": "6.11",
@@ -1888,7 +1888,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1137|d = 1.11",
+      "source_key": "stat|1137|d=1.11",
       "kind": "stat",
       "line_no": 1137,
       "section": "6.12",
@@ -1901,7 +1901,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1137|d = 1.39",
+      "source_key": "stat|1137|d=1.39",
       "kind": "stat",
       "line_no": 1137,
       "section": "6.12",
@@ -1914,7 +1914,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1137|d = 1.82",
+      "source_key": "stat|1137|d=1.82",
       "kind": "stat",
       "line_no": 1137,
       "section": "6.12",
@@ -1927,7 +1927,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1163|N=161,",
+      "source_key": "n|1163|n=161",
       "kind": "n",
       "line_no": 1163,
       "section": "6.14",
@@ -1940,7 +1940,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1173|d = 0.59",
+      "source_key": "stat|1173|d=0.59",
       "kind": "stat",
       "line_no": 1173,
       "section": "6.14",
@@ -1953,7 +1953,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1173|d = 0.85",
+      "source_key": "stat|1173|d=0.85",
       "kind": "stat",
       "line_no": 1173,
       "section": "6.14",
@@ -1966,7 +1966,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1189|N=58",
+      "source_key": "n|1189|n=58",
       "kind": "n",
       "line_no": 1189,
       "section": "6.15",
@@ -1979,7 +1979,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1189|N=60",
+      "source_key": "n|1189|n=60",
       "kind": "n",
       "line_no": 1189,
       "section": "6.15",
@@ -1992,7 +1992,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1195|N=118",
+      "source_key": "n|1195|n=118",
       "kind": "n",
       "line_no": 1195,
       "section": "6.15",
@@ -2005,7 +2005,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1207|N=359",
+      "source_key": "n|1207|n=359",
       "kind": "n",
       "line_no": 1207,
       "section": "6.15",
@@ -2018,7 +2018,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1207|d = 3.05",
+      "source_key": "stat|1207|d=3.05",
       "kind": "stat",
       "line_no": 1207,
       "section": "unknown",
@@ -2031,7 +2031,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1213|N=350",
+      "source_key": "n|1213|n=350",
       "kind": "n",
       "line_no": 1213,
       "section": "6.15.1",
@@ -2044,7 +2044,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1215|N=350",
+      "source_key": "n|1215|n=350",
       "kind": "n",
       "line_no": 1215,
       "section": "6.15.1",
@@ -2083,7 +2083,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1227|d = -1.00",
+      "source_key": "stat|1227|d=-1.00",
       "kind": "stat",
       "line_no": 1227,
       "section": "unknown",
@@ -2096,7 +2096,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1227|F = 87.69",
+      "source_key": "stat|1227|f=87.69",
       "kind": "stat",
       "line_no": 1227,
       "section": "unknown",
@@ -2109,7 +2109,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1227|p < .001",
+      "source_key": "stat|1227|p<.001",
       "kind": "stat",
       "line_no": 1227,
       "section": "unknown",
@@ -2122,7 +2122,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1233|N=118",
+      "source_key": "n|1233|n=118",
       "kind": "n",
       "line_no": 1233,
       "section": "6.15.2",
@@ -2161,7 +2161,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1244|F=3.02",
+      "source_key": "stat|1244|f=3.02",
       "kind": "stat",
       "line_no": 1244,
       "section": "unknown",
@@ -2174,7 +2174,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1246|d = 0.09",
+      "source_key": "stat|1246|d=0.09",
       "kind": "stat",
       "line_no": 1246,
       "section": "unknown",
@@ -2187,7 +2187,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1252|N=48",
+      "source_key": "n|1252|n=48",
       "kind": "n",
       "line_no": 1252,
       "section": "6.16",
@@ -2200,7 +2200,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1271|d = 1.43",
+      "source_key": "stat|1271|d=1.43",
       "kind": "stat",
       "line_no": 1271,
       "section": "unknown",
@@ -2213,7 +2213,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1271|d = 3.05",
+      "source_key": "stat|1271|d=3.05",
       "kind": "stat",
       "line_no": 1271,
       "section": "unknown",
@@ -2226,7 +2226,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1271|eta^2 = .708",
+      "source_key": "stat|1271|eta^2=.708",
       "kind": "stat",
       "line_no": 1271,
       "section": "unknown",
@@ -2239,7 +2239,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1273|d = 0.08",
+      "source_key": "stat|1273|d=0.08",
       "kind": "stat",
       "line_no": 1273,
       "section": "unknown",
@@ -2252,7 +2252,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1273|d = 0.21",
+      "source_key": "stat|1273|d=0.21",
       "kind": "stat",
       "line_no": 1273,
       "section": "unknown",
@@ -2265,7 +2265,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1273|F = 0.12",
+      "source_key": "stat|1273|f=0.12",
       "kind": "stat",
       "line_no": 1273,
       "section": "unknown",
@@ -2278,7 +2278,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1273|F = 11.50",
+      "source_key": "stat|1273|f=11.50",
       "kind": "stat",
       "line_no": 1273,
       "section": "unknown",
@@ -2291,7 +2291,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1273|p < .001",
+      "source_key": "stat|1273|p<.001",
       "kind": "stat",
       "line_no": 1273,
       "section": "unknown",
@@ -2304,7 +2304,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1273|p = .736",
+      "source_key": "stat|1273|p=.736",
       "kind": "stat",
       "line_no": 1273,
       "section": "unknown",
@@ -2317,7 +2317,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1285|d = 2.04",
+      "source_key": "stat|1285|d=2.04",
       "kind": "stat",
       "line_no": 1285,
       "section": "unknown",
@@ -2330,7 +2330,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1285|d = 2.42",
+      "source_key": "stat|1285|d=2.42",
       "kind": "stat",
       "line_no": 1285,
       "section": "unknown",
@@ -2343,7 +2343,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1285|d = 2.75",
+      "source_key": "stat|1285|d=2.75",
       "kind": "stat",
       "line_no": 1285,
       "section": "unknown",
@@ -2356,7 +2356,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1293|N=120",
+      "source_key": "n|1293|n=120",
       "kind": "n",
       "line_no": 1293,
       "section": "6.16.1",
@@ -2369,7 +2369,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1304|N = 181",
+      "source_key": "n|1304|n=181",
       "kind": "n",
       "line_no": 1304,
       "section": "6.16.1",
@@ -2382,7 +2382,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1304|r = -0.023",
+      "source_key": "stat|1304|r=-0.023",
       "kind": "stat",
       "line_no": 1304,
       "section": "unknown",
@@ -2395,7 +2395,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1318|N = 12",
+      "source_key": "n|1318|n=12",
       "kind": "n",
       "line_no": 1318,
       "section": "6.16.1",
@@ -2408,7 +2408,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1382|N=2,365",
+      "source_key": "n|1382|n=2,365",
       "kind": "n",
       "line_no": 1382,
       "section": "6.17.2",
@@ -2421,7 +2421,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1382|N=2,510",
+      "source_key": "n|1382|n=2,510",
       "kind": "n",
       "line_no": 1382,
       "section": "6.17.2",
@@ -2434,7 +2434,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1416|N=2,365",
+      "source_key": "n|1416|n=2,365",
       "kind": "n",
       "line_no": 1416,
       "section": "6.17.3",
@@ -2447,7 +2447,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1416|N=2,510",
+      "source_key": "n|1416|n=2,510",
       "kind": "n",
       "line_no": 1416,
       "section": "6.17.3",
@@ -2460,7 +2460,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1416|p < .05",
+      "source_key": "stat|1416|p<.05",
       "kind": "stat",
       "line_no": 1416,
       "section": "6.17.3",
@@ -2473,7 +2473,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1426|N=300",
+      "source_key": "n|1426|n=300",
       "kind": "n",
       "line_no": 1426,
       "section": "6.17.4",
@@ -2486,7 +2486,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1443|N=21",
+      "source_key": "n|1443|n=21",
       "kind": "n",
       "line_no": 1443,
       "section": "6.17.4",
@@ -2499,7 +2499,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1443|N=35",
+      "source_key": "n|1443|n=35",
       "kind": "n",
       "line_no": 1443,
       "section": "6.17.4",
@@ -2512,7 +2512,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1445|N=300",
+      "source_key": "n|1445|n=300",
       "kind": "n",
       "line_no": 1445,
       "section": "6.17.4",
@@ -2525,7 +2525,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1455|N=300",
+      "source_key": "n|1455|n=300",
       "kind": "n",
       "line_no": 1455,
       "section": "6.17.4",
@@ -2538,7 +2538,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1468|N=172",
+      "source_key": "n|1468|n=172",
       "kind": "n",
       "line_no": 1468,
       "section": "6.17.4",
@@ -2551,7 +2551,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1468|N=178",
+      "source_key": "n|1468|n=178",
       "kind": "n",
       "line_no": 1468,
       "section": "6.17.4",
@@ -2564,7 +2564,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1468|N=350",
+      "source_key": "n|1468|n=350",
       "kind": "n",
       "line_no": 1468,
       "section": "6.17.4",
@@ -2590,7 +2590,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1539|N=120",
+      "source_key": "n|1539|n=120",
       "kind": "n",
       "line_no": 1539,
       "section": "6.19",
@@ -2603,7 +2603,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1539|p < .001",
+      "source_key": "stat|1539|p<.001",
       "kind": "stat",
       "line_no": 1539,
       "section": "6.19",
@@ -2616,7 +2616,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1539|r = 0.44",
+      "source_key": "stat|1539|r=0.44",
       "kind": "stat",
       "line_no": 1539,
       "section": "6.19",
@@ -2629,7 +2629,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1539|r = 0.64",
+      "source_key": "stat|1539|r=0.64",
       "kind": "stat",
       "line_no": 1539,
       "section": "6.19",
@@ -2642,7 +2642,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1539|r = 0.92",
+      "source_key": "stat|1539|r=0.92",
       "kind": "stat",
       "line_no": 1539,
       "section": "6.19",
@@ -2655,7 +2655,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1545|N=224",
+      "source_key": "n|1545|n=224",
       "kind": "n",
       "line_no": 1545,
       "section": "6.19",
@@ -2668,7 +2668,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1546|N=36",
+      "source_key": "n|1546|n=36",
       "kind": "n",
       "line_no": 1546,
       "section": "6.19",
@@ -2694,7 +2694,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1547|N=36",
+      "source_key": "n|1547|n=36",
       "kind": "n",
       "line_no": 1547,
       "section": "6.19",
@@ -2720,7 +2720,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1549|N=60",
+      "source_key": "n|1549|n=60",
       "kind": "n",
       "line_no": 1549,
       "section": "6.19",
@@ -2733,7 +2733,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1550|N=119",
+      "source_key": "n|1550|n=119",
       "kind": "n",
       "line_no": 1550,
       "section": "6.19",
@@ -2772,7 +2772,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1551|N=119",
+      "source_key": "n|1551|n=119",
       "kind": "n",
       "line_no": 1551,
       "section": "6.19",
@@ -2811,7 +2811,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1552|N=119",
+      "source_key": "n|1552|n=119",
       "kind": "n",
       "line_no": 1552,
       "section": "6.19",
@@ -2824,7 +2824,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1553|N=360",
+      "source_key": "n|1553|n=360",
       "kind": "n",
       "line_no": 1553,
       "section": "6.19",
@@ -2837,7 +2837,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1554|N=360",
+      "source_key": "n|1554|n=360",
       "kind": "n",
       "line_no": 1554,
       "section": "6.19",
@@ -2850,7 +2850,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1555|N=216",
+      "source_key": "n|1555|n=216",
       "kind": "n",
       "line_no": 1555,
       "section": "6.19",
@@ -2863,7 +2863,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1557|N=119",
+      "source_key": "n|1557|n=119",
       "kind": "n",
       "line_no": 1557,
       "section": "6.19",
@@ -2876,7 +2876,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1557|N=120",
+      "source_key": "n|1557|n=120",
       "kind": "n",
       "line_no": 1557,
       "section": "6.19",
@@ -2889,7 +2889,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1559|d = 0.91",
+      "source_key": "stat|1559|d=0.91",
       "kind": "stat",
       "line_no": 1559,
       "section": "6.19",
@@ -2928,24 +2928,11 @@
       "is_major": true
     },
     {
-      "source_key": "n|1567|N=88",
+      "source_key": "n|1567|n=88",
       "kind": "n",
       "line_no": 1567,
       "section": "6.19",
       "claim_text": "N=88",
-      "status": "warn",
-      "reason": "unresolved",
-      "has_expected": false,
-      "expected": null,
-      "value": 88,
-      "is_major": true
-    },
-    {
-      "source_key": "n|1567|N=88,",
-      "kind": "n",
-      "line_no": 1567,
-      "section": "6.19",
-      "claim_text": "N=88,",
       "status": "warn",
       "reason": "unresolved",
       "has_expected": false,
@@ -2980,7 +2967,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1569|N=90",
+      "source_key": "n|1569|n=90",
       "kind": "n",
       "line_no": 1569,
       "section": "6.19",
@@ -2993,7 +2980,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1569|d = 0.38",
+      "source_key": "stat|1569|d=0.38",
       "kind": "stat",
       "line_no": 1569,
       "section": "unknown",
@@ -3006,7 +2993,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1569|p < .001",
+      "source_key": "stat|1569|p<.001",
       "kind": "stat",
       "line_no": 1569,
       "section": "unknown",
@@ -3019,7 +3006,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1569|r = 0.51",
+      "source_key": "stat|1569|r=0.51",
       "kind": "stat",
       "line_no": 1569,
       "section": "unknown",
@@ -3032,7 +3019,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1571|N=360",
+      "source_key": "n|1571|n=360",
       "kind": "n",
       "line_no": 1571,
       "section": "6.19",
@@ -3045,7 +3032,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1571|p < .001",
+      "source_key": "stat|1571|p<.001",
       "kind": "stat",
       "line_no": 1571,
       "section": "unknown",
@@ -3058,7 +3045,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1571|r = 0.59",
+      "source_key": "stat|1571|r=0.59",
       "kind": "stat",
       "line_no": 1571,
       "section": "unknown",
@@ -3071,7 +3058,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1573|N=120",
+      "source_key": "n|1573|n=120",
       "kind": "n",
       "line_no": 1573,
       "section": "6.19",
@@ -3084,7 +3071,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1573|p < .001",
+      "source_key": "stat|1573|p<.001",
       "kind": "stat",
       "line_no": 1573,
       "section": "unknown",
@@ -3097,7 +3084,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1573|r = 0.44",
+      "source_key": "stat|1573|r=0.44",
       "kind": "stat",
       "line_no": 1573,
       "section": "unknown",
@@ -3110,7 +3097,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1573|r = 0.64",
+      "source_key": "stat|1573|r=0.64",
       "kind": "stat",
       "line_no": 1573,
       "section": "unknown",
@@ -3123,7 +3110,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1589|N=4",
+      "source_key": "n|1589|n=4",
       "kind": "n",
       "line_no": 1589,
       "section": "6.20",
@@ -3136,7 +3123,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1617|N=12",
+      "source_key": "n|1617|n=12",
       "kind": "n",
       "line_no": 1617,
       "section": "Resolution Strategy Coding",
@@ -3149,7 +3136,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1653|N=12",
+      "source_key": "n|1653|n=12",
       "kind": "n",
       "line_no": 1653,
       "section": "Per-Turn Strategy Evolution",
@@ -3162,7 +3149,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1654|N=12",
+      "source_key": "n|1654|n=12",
       "kind": "n",
       "line_no": 1654,
       "section": "Per-Turn Strategy Evolution",
@@ -3175,7 +3162,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1655|N=12",
+      "source_key": "n|1655|n=12",
       "kind": "n",
       "line_no": 1655,
       "section": "Per-Turn Strategy Evolution",
@@ -3188,7 +3175,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1656|N=12",
+      "source_key": "n|1656|n=12",
       "kind": "n",
       "line_no": 1656,
       "section": "Per-Turn Strategy Evolution",
@@ -3201,7 +3188,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1681|N=2",
+      "source_key": "n|1681|n=2",
       "kind": "n",
       "line_no": 1681,
       "section": "Cross-Judge Validation of Strategy Coding",
@@ -3214,7 +3201,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1681|N=24",
+      "source_key": "n|1681|n=24",
       "kind": "n",
       "line_no": 1681,
       "section": "Cross-Judge Validation of Strategy Coding",
@@ -3227,7 +3214,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1687|N=72",
+      "source_key": "n|1687|n=72",
       "kind": "n",
       "line_no": 1687,
       "section": "6.21",
@@ -3240,7 +3227,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1689|N=144,",
+      "source_key": "n|1689|n=144",
       "kind": "n",
       "line_no": 1689,
       "section": "6.21",
@@ -3253,7 +3240,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1708|N=126",
+      "source_key": "n|1708|n=126",
       "kind": "n",
       "line_no": 1708,
       "section": "6.22",
@@ -3266,7 +3253,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1724|N=12",
+      "source_key": "n|1724|n=12",
       "kind": "n",
       "line_no": 1724,
       "section": "6.22",
@@ -3279,7 +3266,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1728|N=12",
+      "source_key": "n|1728|n=12",
       "kind": "n",
       "line_no": 1728,
       "section": "6.22",
@@ -3292,7 +3279,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1756|N=119",
+      "source_key": "n|1756|n=119",
       "kind": "n",
       "line_no": 1756,
       "section": "7.2",
@@ -3305,7 +3292,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1756|N=17,",
+      "source_key": "n|1756|n=17",
       "kind": "n",
       "line_no": 1756,
       "section": "7.2",
@@ -3318,7 +3305,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1756|N=655",
+      "source_key": "n|1756|n=655",
       "kind": "n",
       "line_no": 1756,
       "section": "7.2",
@@ -3331,7 +3318,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1760|N=174",
+      "source_key": "n|1760|n=174",
       "kind": "n",
       "line_no": 1760,
       "section": "7.2",
@@ -3344,7 +3331,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1760|N=360",
+      "source_key": "n|1760|n=360",
       "kind": "n",
       "line_no": 1760,
       "section": "7.2",
@@ -3357,7 +3344,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1791|N=350",
+      "source_key": "n|1791|n=350",
       "kind": "n",
       "line_no": 1791,
       "section": "7.4",
@@ -3370,7 +3357,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1791|d = -1.00",
+      "source_key": "stat|1791|d=-1.00",
       "kind": "stat",
       "line_no": 1791,
       "section": "7.4",
@@ -3383,7 +3370,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1791|d = 0.05",
+      "source_key": "stat|1791|d=0.05",
       "kind": "stat",
       "line_no": 1791,
       "section": "7.4",
@@ -3396,7 +3383,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1805|d = 3.05",
+      "source_key": "stat|1805|d=3.05",
       "kind": "stat",
       "line_no": 1805,
       "section": "7.5",
@@ -3409,7 +3396,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1805|eta^2 = .708",
+      "source_key": "stat|1805|eta^2=.708",
       "kind": "stat",
       "line_no": 1805,
       "section": "7.5",
@@ -3422,7 +3409,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1805|F(1,44) = 107.68",
+      "source_key": "stat|1805|f(1,44)=107.68",
       "kind": "stat",
       "line_no": 1805,
       "section": "7.5",
@@ -3435,7 +3422,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1805|F=5.52",
+      "source_key": "stat|1805|f=5.52",
       "kind": "stat",
       "line_no": 1805,
       "section": "7.5",
@@ -3448,7 +3435,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1805|p < .001",
+      "source_key": "stat|1805|p<.001",
       "kind": "stat",
       "line_no": 1805,
       "section": "7.5",
@@ -3474,7 +3461,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1807|d = 1.52",
+      "source_key": "stat|1807|d=1.52",
       "kind": "stat",
       "line_no": 1807,
       "section": "7.5",
@@ -3487,7 +3474,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1807|d = 2.04",
+      "source_key": "stat|1807|d=2.04",
       "kind": "stat",
       "line_no": 1807,
       "section": "7.5",
@@ -3500,7 +3487,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1807|d = 2.42",
+      "source_key": "stat|1807|d=2.42",
       "kind": "stat",
       "line_no": 1807,
       "section": "7.5",
@@ -3513,7 +3500,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1807|d = 2.75",
+      "source_key": "stat|1807|d=2.75",
       "kind": "stat",
       "line_no": 1807,
       "section": "7.5",
@@ -3526,7 +3513,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1809|d = 0.08",
+      "source_key": "stat|1809|d=0.08",
       "kind": "stat",
       "line_no": 1809,
       "section": "7.5",
@@ -3539,7 +3526,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1809|d = 0.21",
+      "source_key": "stat|1809|d=0.21",
       "kind": "stat",
       "line_no": 1809,
       "section": "7.5",
@@ -3552,7 +3539,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1809|F(1,114) = 11.50",
+      "source_key": "stat|1809|f(1,114)=11.50",
       "kind": "stat",
       "line_no": 1809,
       "section": "7.5",
@@ -3565,7 +3552,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1809|F(1,44) = 0.12",
+      "source_key": "stat|1809|f(1,44)=0.12",
       "kind": "stat",
       "line_no": 1809,
       "section": "7.5",
@@ -3578,7 +3565,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1809|p < .001",
+      "source_key": "stat|1809|p<.001",
       "kind": "stat",
       "line_no": 1809,
       "section": "7.5",
@@ -3591,7 +3578,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1809|p = .736",
+      "source_key": "stat|1809|p=.736",
       "kind": "stat",
       "line_no": 1809,
       "section": "7.5",
@@ -3604,7 +3591,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1813|N = 47",
+      "source_key": "n|1813|n=47",
       "kind": "n",
       "line_no": 1813,
       "section": "7.5",
@@ -3617,7 +3604,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1826|N=118",
+      "source_key": "n|1826|n=118",
       "kind": "n",
       "line_no": 1826,
       "section": "7.6",
@@ -3630,7 +3617,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1839|N=118",
+      "source_key": "n|1839|n=118",
       "kind": "n",
       "line_no": 1839,
       "section": "7.7",
@@ -3643,7 +3630,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1883|p < .05",
+      "source_key": "stat|1883|p<.05",
       "kind": "stat",
       "line_no": 1883,
       "section": "7.9",
@@ -3656,7 +3643,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1889|N=350",
+      "source_key": "n|1889|n=350",
       "kind": "n",
       "line_no": 1889,
       "section": "7.10",
@@ -3669,7 +3656,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1889|N=360",
+      "source_key": "n|1889|n=360",
       "kind": "n",
       "line_no": 1889,
       "section": "7.10",
@@ -3682,7 +3669,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1891|N=120",
+      "source_key": "n|1891|n=120",
       "kind": "n",
       "line_no": 1891,
       "section": "7.10",
@@ -3695,7 +3682,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1897|N=4,264",
+      "source_key": "n|1897|n=4,264",
       "kind": "n",
       "line_no": 1897,
       "section": "7.11",
@@ -3708,7 +3695,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1899|d = 0.91",
+      "source_key": "stat|1899|d=0.91",
       "kind": "stat",
       "line_no": 1899,
       "section": "7.11",
@@ -3721,7 +3708,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1927|N=120",
+      "source_key": "n|1927|n=120",
       "kind": "n",
       "line_no": 1927,
       "section": "8.1",
@@ -3773,7 +3760,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1929|N=120",
+      "source_key": "n|1929|n=120",
       "kind": "n",
       "line_no": 1929,
       "section": "8.1",
@@ -3838,7 +3825,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1931|N=116",
+      "source_key": "n|1931|n=116",
       "kind": "n",
       "line_no": 1931,
       "section": "8.1",
@@ -3851,7 +3838,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1931|N=118",
+      "source_key": "n|1931|n=118",
       "kind": "n",
       "line_no": 1931,
       "section": "8.1",
@@ -3864,7 +3851,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1933|N=17,",
+      "source_key": "n|1933|n=17",
       "kind": "n",
       "line_no": 1933,
       "section": "8.1",
@@ -3877,7 +3864,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1933|N=655,",
+      "source_key": "n|1933|n=655",
       "kind": "n",
       "line_no": 1933,
       "section": "8.1",
@@ -3890,7 +3877,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1941|N=118",
+      "source_key": "n|1941|n=118",
       "kind": "n",
       "line_no": 1941,
       "section": "8.1",
@@ -3903,7 +3890,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1945|N=300",
+      "source_key": "n|1945|n=300",
       "kind": "n",
       "line_no": 1945,
       "section": "8.1",
@@ -3916,7 +3903,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1945|N=360",
+      "source_key": "n|1945|n=360",
       "kind": "n",
       "line_no": 1945,
       "section": "8.1",
@@ -3929,7 +3916,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1947|N=48",
+      "source_key": "n|1947|n=48",
       "kind": "n",
       "line_no": 1947,
       "section": "8.1",
@@ -3942,7 +3929,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1947|d = 1.43",
+      "source_key": "stat|1947|d=1.43",
       "kind": "stat",
       "line_no": 1947,
       "section": "unknown",
@@ -3955,7 +3942,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1947|d = 3.05",
+      "source_key": "stat|1947|d=3.05",
       "kind": "stat",
       "line_no": 1947,
       "section": "unknown",
@@ -3968,7 +3955,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1947|F = 0.12",
+      "source_key": "stat|1947|f=0.12",
       "kind": "stat",
       "line_no": 1947,
       "section": "unknown",
@@ -3981,7 +3968,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1947|F = 11.50",
+      "source_key": "stat|1947|f=11.50",
       "kind": "stat",
       "line_no": 1947,
       "section": "unknown",
@@ -3994,7 +3981,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|1947|p < .001",
+      "source_key": "stat|1947|p<.001",
       "kind": "stat",
       "line_no": 1947,
       "section": "unknown",
@@ -4007,7 +3994,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|1963|N = 47",
+      "source_key": "n|1963|n=47",
       "kind": "n",
       "line_no": 1963,
       "section": "8.2",
@@ -4020,7 +4007,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1985|N=4,264",
+      "source_key": "n|1985|n=4,264",
       "kind": "n",
       "line_no": 1985,
       "section": "9",
@@ -4033,7 +4020,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1985|N=7,000+",
+      "source_key": "n|1985|n=7,000+",
       "kind": "n",
       "line_no": 1985,
       "section": "9",
@@ -4046,7 +4033,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1987|N=116",
+      "source_key": "n|1987|n=116",
       "kind": "n",
       "line_no": 1987,
       "section": "9",
@@ -4059,7 +4046,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1987|N=118",
+      "source_key": "n|1987|n=118",
       "kind": "n",
       "line_no": 1987,
       "section": "9",
@@ -4072,7 +4059,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1987|N=120",
+      "source_key": "n|1987|n=120",
       "kind": "n",
       "line_no": 1987,
       "section": "9",
@@ -4085,7 +4072,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1987|N=350",
+      "source_key": "n|1987|n=350",
       "kind": "n",
       "line_no": 1987,
       "section": "9",
@@ -4150,7 +4137,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1989|N=17,",
+      "source_key": "n|1989|n=17",
       "kind": "n",
       "line_no": 1989,
       "section": "9",
@@ -4163,7 +4150,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1989|N=655",
+      "source_key": "n|1989|n=655",
       "kind": "n",
       "line_no": 1989,
       "section": "9",
@@ -4176,7 +4163,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1989|d = 0.09",
+      "source_key": "stat|1989|d=0.09",
       "kind": "stat",
       "line_no": 1989,
       "section": "9",
@@ -4189,7 +4176,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1989|d = 3.05",
+      "source_key": "stat|1989|d=3.05",
       "kind": "stat",
       "line_no": 1989,
       "section": "9",
@@ -4202,7 +4189,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|1989|F = 0.12",
+      "source_key": "stat|1989|f=0.12",
       "kind": "stat",
       "line_no": 1989,
       "section": "9",
@@ -4215,7 +4202,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1991|N=118",
+      "source_key": "n|1991|n=118",
       "kind": "n",
       "line_no": 1991,
       "section": "9",
@@ -4228,7 +4215,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1993|N=60",
+      "source_key": "n|1993|n=60",
       "kind": "n",
       "line_no": 1993,
       "section": "9",
@@ -4241,7 +4228,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|1997|N=82",
+      "source_key": "n|1997|n=82",
       "kind": "n",
       "line_no": 1997,
       "section": "9",
@@ -4267,7 +4254,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2001|N=24",
+      "source_key": "n|2001|n=24",
       "kind": "n",
       "line_no": 2001,
       "section": "9",
@@ -4280,7 +4267,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2001|p < .001",
+      "source_key": "stat|2001|p<.001",
       "kind": "stat",
       "line_no": 2001,
       "section": "unknown",
@@ -4293,7 +4280,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|2003|N=48",
+      "source_key": "n|2003|n=48",
       "kind": "n",
       "line_no": 2003,
       "section": "9",
@@ -4306,7 +4293,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2003|d = 0.09",
+      "source_key": "stat|2003|d=0.09",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4319,7 +4306,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|d = 1.43",
+      "source_key": "stat|2003|d=1.43",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4332,7 +4319,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|d = 2.04",
+      "source_key": "stat|2003|d=2.04",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4345,7 +4332,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|d = 2.42",
+      "source_key": "stat|2003|d=2.42",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4358,7 +4345,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|d = 2.75",
+      "source_key": "stat|2003|d=2.75",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4371,7 +4358,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|d = 3.05",
+      "source_key": "stat|2003|d=3.05",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4384,7 +4371,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|F = 0.30",
+      "source_key": "stat|2003|f=0.30",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4397,7 +4384,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|F = 11.50",
+      "source_key": "stat|2003|f=11.50",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4410,7 +4397,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|F(1,44) = 107.68",
+      "source_key": "stat|2003|f(1,44)=107.68",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4423,7 +4410,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|p < .001",
+      "source_key": "stat|2003|p<.001",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4436,7 +4423,7 @@
       "is_major": false
     },
     {
-      "source_key": "stat|2003|p = .586",
+      "source_key": "stat|2003|p=.586",
       "kind": "stat",
       "line_no": 2003,
       "section": "unknown",
@@ -4449,7 +4436,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|2005|N=174",
+      "source_key": "n|2005|n=174",
       "kind": "n",
       "line_no": 2005,
       "section": "9",
@@ -4462,7 +4449,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2005|d = -2.01",
+      "source_key": "stat|2005|d=-2.01",
       "kind": "stat",
       "line_no": 2005,
       "section": "unknown",
@@ -4475,7 +4462,7 @@
       "is_major": false
     },
     {
-      "source_key": "n|2007|N=90",
+      "source_key": "n|2007|n=90",
       "kind": "n",
       "line_no": 2007,
       "section": "9",
@@ -4488,7 +4475,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2007|d = 0.38",
+      "source_key": "stat|2007|d=0.38",
       "kind": "stat",
       "line_no": 2007,
       "section": "9",
@@ -4501,7 +4488,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2007|d = 0.91",
+      "source_key": "stat|2007|d=0.91",
       "kind": "stat",
       "line_no": 2007,
       "section": "9",
@@ -4514,7 +4501,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2009|N=36,",
+      "source_key": "n|2009|n=36",
       "kind": "n",
       "line_no": 2009,
       "section": "9",
@@ -4527,7 +4514,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2009|N=360",
+      "source_key": "n|2009|n=360",
       "kind": "n",
       "line_no": 2009,
       "section": "9",
@@ -4540,7 +4527,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2011|N=144",
+      "source_key": "n|2011|n=144",
       "kind": "n",
       "line_no": 2011,
       "section": "9",
@@ -4553,7 +4540,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2013|N=6",
+      "source_key": "n|2013|n=6",
       "kind": "n",
       "line_no": 2013,
       "section": "9",
@@ -4566,7 +4553,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2013|N=90",
+      "source_key": "n|2013|n=90",
       "kind": "n",
       "line_no": 2013,
       "section": "9",
@@ -4579,7 +4566,7 @@
       "is_major": true
     },
     {
-      "source_key": "n|2015|N=12",
+      "source_key": "n|2015|n=12",
       "kind": "n",
       "line_no": 2015,
       "section": "9",
@@ -4592,7 +4579,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2015|r = -0.023",
+      "source_key": "stat|2015|r=-0.023",
       "kind": "stat",
       "line_no": 2015,
       "section": "9",
@@ -4605,7 +4592,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2017|d = 3.05",
+      "source_key": "stat|2017|d=3.05",
       "kind": "stat",
       "line_no": 2017,
       "section": "9",
@@ -4618,7 +4605,7 @@
       "is_major": true
     },
     {
-      "source_key": "stat|2021|d = 3.05",
+      "source_key": "stat|2021|d=3.05",
       "kind": "stat",
       "line_no": 2021,
       "section": "9",

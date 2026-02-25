@@ -45,8 +45,20 @@ function classifyMajor(section, claimText) {
   return inCoreSection && quantPattern.test(claimText || '');
 }
 
+function normalizeClaimTextForKey(claimText) {
+  let text = String(claimText || '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase();
+  text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/\s*([=<>≈])\s*/g, '$1');
+  text = text.replace(/[,\.;:]+$/g, '');
+  return text;
+}
+
 function buildSourceKey(kind, lineNo, claimText) {
-  return `${kind}|${lineNo}|${claimText}`;
+  return `${kind}|${lineNo}|${normalizeClaimTextForKey(claimText)}`;
 }
 
 function normalizeOutcome(kind, outcome) {
@@ -145,4 +157,3 @@ function main() {
 }
 
 main();
-

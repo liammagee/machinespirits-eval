@@ -1,20 +1,20 @@
-generated_at: 2026-02-24T18:52:50.827Z
+generated_at: 2026-02-25T00:38:53.557Z
 source_spec: config/provable-discourse.yaml
 source_inventory: config/provable-claim-inventory.json
 source_db: data/evaluations.db
 totals:
-  major_deterministic: 176
-  unmapped_deterministic: 166
-  generated_claims: 15
-  skipped_groups: 44
+  major_deterministic: 175
+  unmapped_deterministic: 116
+  generated_claims: 9
+  skipped_groups: 31
 claims:
-  - id: auto.inventory.n.n_7_000.8781.1pygiu1
+  - id: auto.inventory.n.n_7_000.8781.1m56od5
     description: "Auto-mapped deterministic inventory claim: N=7,000+"
     source_keys:
-      - n|10|N=7,000+
-      - n|1985|N=7,000+
-      - n|44|N=7,000+
-      - n|587|N=7,000+
+      - n|10|n=7,000+
+      - n|1985|n=7,000+
+      - n|44|n=7,000+
+      - n|587|n=7,000+
     statement:
       pattern: N=7,000\+
       flags: i
@@ -31,11 +31,11 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_262.null.8ddruh
+  - id: auto.inventory.n.n_262.null.ybauex
     description: "Auto-mapped deterministic inventory claim: N=262"
     source_keys:
-      - n|488|N=262
-      - n|509|N=262
+      - n|488|n=262
+      - n|509|n=262
     statement:
       pattern: N=262
       flags: i
@@ -56,56 +56,10 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_88.null.75i96e
-    description: "Auto-mapped deterministic inventory claim: N=88"
-    source_keys:
-      - n|1567|N=88
-      - n|489|N=88
-      - n|509|N=88
-    statement:
-      pattern: N=88
-      flags: i
-      min_occurrences: 1
-    evidence:
-      type: db_count
-      filters:
-        run_ids: &a2
-          - eval-2026-02-06-a933d745
-        not_null:
-          - overall_score
-        like:
-          judge_model: claude-opus%
-    assertion:
-      op: eq
-      expected: 88
-    remediation:
-      - If this auto-mapped claim fails, replace it with a hand-authored claim
-        using run-scoped DB evidence.
-      - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_4_264.4264.1icsna9
-    description: "Auto-mapped deterministic inventory claim: N=4,264"
-    source_keys:
-      - n|1985|N=4,264
-      - n|585|N=4,264
-      - n|587|N=4,264
-    statement:
-      pattern: N=4,264
-      flags: i
-      min_occurrences: 1
-    evidence:
-      type: manifest_total
-      field: expected_scored
-    assertion:
-      op: eq
-      expected: 4264
-    remediation:
-      - If this auto-mapped claim fails, replace it with a hand-authored claim
-        using run-scoped DB evidence.
-      - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_62.null.1c499k0
+  - id: auto.inventory.n.n_62.null.1c4xww0
     description: "Auto-mapped deterministic inventory claim: N=62"
     source_keys:
-      - n|657|N=62
+      - n|657|n=62
     statement:
       pattern: N=62
       flags: i
@@ -126,10 +80,11 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_216.null.xnr2rl
+  - id: auto.inventory.n.n_216.null.1htg94b
     description: "Auto-mapped deterministic inventory claim: N=216,"
     source_keys:
-      - n|679|N=216,
+      - n|1555|n=216
+      - n|679|n=216
     statement:
       pattern: N=216,
       flags: i
@@ -137,7 +92,7 @@ claims:
     evidence:
       type: db_count
       filters:
-        run_ids: &a1
+        run_ids:
           - eval-2026-02-19-f2263b04
         not_null:
           - overall_score
@@ -150,17 +105,17 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_119.null.141dt9n
+  - id: auto.inventory.n.n_119.null.1xkcy23
     description: "Auto-mapped deterministic inventory claim: N=119"
     source_keys:
-      - n|1550|N=119
-      - n|1551|N=119
-      - n|1552|N=119
-      - n|1557|N=119
-      - n|1756|N=119
-      - n|701|N=119
-      - n|709|N=119
-      - n|782|N=119
+      - n|1550|n=119
+      - n|1551|n=119
+      - n|1552|n=119
+      - n|1557|n=119
+      - n|1756|n=119
+      - n|701|n=119
+      - n|709|n=119
+      - n|782|n=119
     statement:
       pattern: N=119
       flags: i
@@ -181,10 +136,10 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_29.null.68bwda
+  - id: auto.inventory.n.n_29.null.690jpa
     description: "Auto-mapped deterministic inventory claim: N=29"
     source_keys:
-      - n|706|N=29
+      - n|706|n=29
     statement:
       pattern: N=29
       flags: i
@@ -205,31 +160,10 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_72.null.tabh4n
-    description: "Auto-mapped deterministic inventory claim: N=72,"
-    source_keys:
-      - n|866|N=72,
-      - n|868|N=72,
-    statement:
-      pattern: N=72,
-      flags: i
-      min_occurrences: 1
-    evidence:
-      type: manifest_section_total
-      section: "6.7"
-      field: expected_scored
-      match: exact
-    assertion:
-      op: eq
-      expected: 72
-    remediation:
-      - If this auto-mapped claim fails, replace it with a hand-authored claim
-        using run-scoped DB evidence.
-      - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_35.null.16t5c96
+  - id: auto.inventory.n.n_35.null.16ttzl6
     description: "Auto-mapped deterministic inventory claim: N=35"
     source_keys:
-      - n|1443|N=35
+      - n|1443|n=35
     statement:
       pattern: N=35
       flags: i
@@ -250,56 +184,11 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_216.null.1pnsokf
-    description: "Auto-mapped deterministic inventory claim: N=216"
-    source_keys:
-      - n|1555|N=216
-    statement:
-      pattern: N=216
-      flags: i
-      min_occurrences: 1
-    evidence:
-      type: db_count
-      filters:
-        run_ids: *a1
-        not_null:
-          - overall_score
-        like:
-          judge_model: claude-opus%
-    assertion:
-      op: eq
-      expected: 216
-    remediation:
-      - If this auto-mapped claim fails, replace it with a hand-authored claim
-        using run-scoped DB evidence.
-      - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_88.null.rvan8l
-    description: "Auto-mapped deterministic inventory claim: N=88,"
-    source_keys:
-      - n|1567|N=88,
-    statement:
-      pattern: N=88,
-      flags: i
-      min_occurrences: 1
-    evidence:
-      type: db_count
-      filters:
-        run_ids: *a2
-        not_null:
-          - overall_score
-        like:
-          judge_model: claude-opus%
-    assertion:
-      op: eq
-      expected: 88
-    remediation:
-      - If this auto-mapped claim fails, replace it with a hand-authored claim
-        using run-scoped DB evidence.
-      - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_144.null.1f36wqb
+  - id: auto.inventory.n.n_144.null.1vl2j81
     description: "Auto-mapped deterministic inventory claim: N=144,"
     source_keys:
-      - n|1689|N=144,
+      - n|1689|n=144
+      - n|2011|n=144
     statement:
       pattern: N=144,
       flags: i
@@ -307,7 +196,7 @@ claims:
     evidence:
       type: db_count
       filters:
-        run_ids: &a3
+        run_ids:
           - eval-2026-02-20-25c78e91
         not_null:
           - overall_score
@@ -320,33 +209,10 @@ claims:
       - If this auto-mapped claim fails, replace it with a hand-authored claim
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_144.null.1eqymfn
-    description: "Auto-mapped deterministic inventory claim: N=144"
-    source_keys:
-      - n|2011|N=144
-    statement:
-      pattern: N=144
-      flags: i
-      min_occurrences: 1
-    evidence:
-      type: db_count
-      filters:
-        run_ids: *a3
-        not_null:
-          - overall_score
-        like:
-          judge_model: claude-opus%
-    assertion:
-      op: eq
-      expected: 144
-    remediation:
-      - If this auto-mapped claim fails, replace it with a hand-authored claim
-        using run-scoped DB evidence.
-      - Re-run inventory sync and bootstrap after paper claim edits.
-  - id: auto.inventory.n.n_6.null.szb71u
+  - id: auto.inventory.n.n_6.null.szbxxu
     description: "Auto-mapped deterministic inventory claim: N=6"
     source_keys:
-      - n|2013|N=6
+      - n|2013|n=6
     statement:
       pattern: N=6
       flags: i

@@ -62,6 +62,44 @@ function resolvePath(baseDir, value) {
   return path.isAbsolute(value) ? value : path.join(baseDir, value);
 }
 
+function normalizeClaimTextForKey(claimText) {
+  let text = String(claimText || '')
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase();
+  text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+  text = text.replace(/\s+/g, ' ');
+  text = text.replace(/\s*([=<>≈])\s*/g, '$1');
+  text = text.replace(/[,\.;:]+$/g, '');
+  return text;
+}
+
+function parseSourceKey(sourceKey) {
+  const raw = String(sourceKey || '');
+  const first = raw.indexOf('|');
+  if (first < 0) return null;
+  const second = raw.indexOf('|', first + 1);
+  if (second < 0) return null;
+  const kind = raw.slice(0, first);
+  const lineNo = Number(raw.slice(first + 1, second));
+  const claimText = raw.slice(second + 1);
+  return {
+    kind,
+    line_no: Number.isFinite(lineNo) ? lineNo : null,
+    claim_text: claimText,
+  };
+}
+
+function canonicalSourceKeyFromParts({ kind, line_no, claim_text }) {
+  if (!kind || !Number.isFinite(line_no)) return null;
+  return `${kind}|${line_no}|${normalizeClaimTextForKey(claim_text)}`;
+}
+
+function canonicalSourceFamilyFromParts({ kind, claim_text }) {
+  if (!kind) return null;
+  return `${kind}|${normalizeClaimTextForKey(claim_text)}`;
+}
+
 function addLineReason(map, lineNo, reason) {
   if (!Number.isInteger(lineNo) || lineNo < 1) return;
   if (!map.has(lineNo)) map.set(lineNo, new Set());
@@ -148,10 +186,16 @@ function main() {
     }
   }
 
-  const mappedSourceKeys = new Set();
+  const mappedCanonicalKeys = new Set();
+  const mappedFamilies = new Set();
   for (const claim of audit.claims || []) {
     for (const key of claim.source_keys || []) {
-      mappedSourceKeys.add(key);
+      const parsed = parseSourceKey(key);
+      if (!parsed) continue;
+      const canonicalKey = canonicalSourceKeyFromParts(parsed);
+      const canonicalFamily = canonicalSourceFamilyFromParts(parsed);
+      if (canonicalKey) mappedCanonicalKeys.add(canonicalKey);
+      if (canonicalFamily) mappedFamilies.add(canonicalFamily);
     }
   }
 
@@ -162,7 +206,10 @@ function main() {
     const policy = parseInventoryPolicy(spec);
     for (const entry of entries) {
       if (!shouldIncludeInventoryEntry(entry, policy)) continue;
-      if (mappedSourceKeys.has(entry.source_key)) continue;
+      const canonicalKey = canonicalSourceKeyFromParts(entry);
+      const canonicalFamily = canonicalSourceFamilyFromParts(entry);
+      if (canonicalKey && mappedCanonicalKeys.has(canonicalKey)) continue;
+      if (canonicalFamily && mappedFamilies.has(canonicalFamily)) continue;
       unmappedMajorCount++;
       addLineReason(lineReasons, entry.line_no, `inventory_unmapped:${entry.source_key}`);
     }
