@@ -8,6 +8,7 @@ import { spawn, spawnSync } from 'child_process';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const AUDIT_SCRIPT = path.join(ROOT, 'scripts', 'validate-provable-discourse.js');
+const RECONSTRUCT_SCRIPT = path.join(ROOT, 'scripts', 'reconstruct-provable-paper.js');
 const DEFAULT_CODEX_MODEL = 'gpt-5.2-codex';
 
 function toLocalDateStamp(date = new Date()) {
@@ -28,6 +29,9 @@ Options:
   --spec <path>               (default: config/provable-discourse.yaml)
   --audit-json <path>         (default: notes/provable-discourse.latest.json)
   --todo-md <path>            (default: notes/provable-discourse-todos-YYYY-MM-DD.md)
+  --reconstruct-paper [path]  Build validatable-only reconstructed paper (optional out path)
+  --reconstruct-diff <path>   Diff output path for reconstruction
+  --no-reconstruct-paper      Disable reconstruction
   --augment-evidence          (ask Codex to propose/patch evidence/assertions)
   --no-augment-evidence       (analysis-only prompt; no augmentation tasking)
   --take-action               (opt-in action mode: implies --augment-evidence + --full-auto)
@@ -45,6 +49,7 @@ Options:
 Examples:
   npm run paper:provable-discourse:chat
   npm run paper:provable-discourse:chat -- --smoke
+  npm run paper:provable-discourse:chat -- --reconstruct-paper
   npm run paper:provable-discourse:chat -- --take-action
   npm run paper:provable-discourse:chat -- --strict --refresh-snapshot
   npm run paper:provable-discourse:chat -- --model gpt-5.2-codex
@@ -74,6 +79,9 @@ function parseArgs(argv) {
     spec: 'config/provable-discourse.yaml',
     auditJson: path.join('notes', 'provable-discourse.latest.json'),
     todoMd: path.join('notes', `provable-discourse-todos-${toLocalDateStamp()}.md`),
+    reconstructPaper: false,
+    reconstructOutPath: null,
+    reconstructDiffPath: null,
     augmentEvidence: false,
     allowPaperEdits: false,
     prompt: null,
@@ -112,6 +120,25 @@ function parseArgs(argv) {
       opts.takeAction = true;
       opts.augmentEvidence = true;
       opts.fullAuto = true;
+      continue;
+    }
+    if (token.startsWith('--reconstruct-paper=')) {
+      opts.reconstructPaper = true;
+      opts.reconstructOutPath = token.slice('--reconstruct-paper='.length) || null;
+      continue;
+    }
+    if (token === '--reconstruct-paper') {
+      opts.reconstructPaper = true;
+      const next = argv[i + 1];
+      if (next != null && !next.startsWith('--')) {
+        opts.reconstructOutPath = next;
+        i++;
+      }
+      continue;
+    }
+    if (token === '--no-reconstruct-paper') {
+      opts.reconstructPaper = false;
+      opts.reconstructOutPath = null;
       continue;
     }
     if (token === '--full-auto') {
@@ -158,6 +185,12 @@ function parseArgs(argv) {
     if (auditJsonValue) {
       opts.auditJson = auditJsonValue.value;
       i = auditJsonValue.nextIndex;
+      continue;
+    }
+    const reconstructDiffValue = takeValue(argv, i, '--reconstruct-diff');
+    if (reconstructDiffValue) {
+      opts.reconstructDiffPath = reconstructDiffValue.value;
+      i = reconstructDiffValue.nextIndex;
       continue;
     }
     const todoMdValue = takeValue(argv, i, '--todo-md');
@@ -229,6 +262,8 @@ function buildSeedPrompt({
   warnedChecks,
   augmentEvidence,
   allowPaperEdits,
+  reconstructionPathRel,
+  reconstructionDiffPathRel,
   override,
 }) {
   if (override && override.trim()) {
@@ -242,6 +277,8 @@ function buildSeedPrompt({
     `Summary: pass=${summary.pass || 0}, warn=${summary.warn || 0}, fail=${summary.fail || 0}`,
     `Failed IDs: ${failedChecks.join(', ') || '(none)'}`,
     `Warn IDs: ${warnedChecks.join(', ') || '(none)'}`,
+    `Reconstructed paper: ${reconstructionPathRel || '(not generated)'}`,
+    `Reconstruction diff: ${reconstructionDiffPathRel || '(not generated)'}`,
     'Tasks:',
     '1) Group failures by stale claim, mapping gap, or evidence mismatch.',
     '2) Propose an ordered fix plan with concrete files/commands.',
@@ -275,6 +312,10 @@ function main() {
 
   if (!fs.existsSync(AUDIT_SCRIPT)) {
     console.error(`Audit script not found: ${AUDIT_SCRIPT}`);
+    process.exit(1);
+  }
+  if (opts.reconstructPaper && !fs.existsSync(RECONSTRUCT_SCRIPT)) {
+    console.error(`Reconstruct script not found: ${RECONSTRUCT_SCRIPT}`);
     process.exit(1);
   }
 
@@ -329,6 +370,36 @@ function main() {
 
   const { summary, failedChecks, warnedChecks } = summarizeAudit(parsed);
   const auditExitCode = audit.status ?? 1;
+  let reconstructionSummary = null;
+
+  if (opts.reconstructPaper) {
+    const reconstructArgs = [RECONSTRUCT_SCRIPT, '--spec', opts.spec, '--json'];
+    if (opts.reconstructOutPath) reconstructArgs.push('--out', opts.reconstructOutPath);
+    if (opts.reconstructDiffPath) reconstructArgs.push('--diff-out', opts.reconstructDiffPath);
+    const reconstruct = spawnSync(process.execPath, reconstructArgs, {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 20 * 1024 * 1024,
+    });
+    if (reconstruct.error) {
+      console.error(`Reconstruction failed: ${reconstruct.error.message}`);
+      process.exit(1);
+    }
+    const reconStdout = (reconstruct.stdout || '').trim();
+    if (!reconStdout) {
+      const reconErr = (reconstruct.stderr || '').trim();
+      console.error(reconErr || 'Reconstruction produced no output.');
+      process.exit(1);
+    }
+    try {
+      reconstructionSummary = JSON.parse(reconStdout);
+    } catch (error) {
+      const reconErr = (reconstruct.stderr || '').trim();
+      if (reconErr) console.error(reconErr);
+      console.error(`Could not parse reconstruction JSON: ${error.message}`);
+      process.exit(1);
+    }
+  }
 
   console.log(
     `Audit complete (exit=${auditExitCode}) :: pass=${summary.pass || 0} warn=${summary.warn || 0} fail=${summary.fail || 0}`,
@@ -336,6 +407,12 @@ function main() {
   console.log(`Saved audit JSON: ${auditPathRel}`);
   if (parsed.todo_written) {
     console.log(`Saved TODO markdown: ${parsed.todo_written}`);
+  }
+  if (reconstructionSummary?.out_path) {
+    console.log(`Saved reconstructed paper: ${reconstructionSummary.out_path}`);
+  }
+  if (reconstructionSummary?.diff_out_path) {
+    console.log(`Saved reconstruction diff: ${reconstructionSummary.diff_out_path}`);
   }
   if (stderr) {
     console.log('Audit stderr:');
@@ -365,6 +442,8 @@ function main() {
       warnedChecks,
       augmentEvidence: opts.augmentEvidence,
       allowPaperEdits: opts.allowPaperEdits,
+      reconstructionPathRel: reconstructionSummary?.out_path || null,
+      reconstructionDiffPathRel: reconstructionSummary?.diff_out_path || null,
       override: opts.prompt,
     }),
   );
