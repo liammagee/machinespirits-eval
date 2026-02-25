@@ -88,7 +88,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - CLI model format uses **dot notation**: `openrouter.gpt`, NOT `openrouter/gpt`
 - CLI uses `--runs` NOT `--repeats` for runsPerConfig
 - Database: `data/evaluations.db` (SQLite)
-- DB score column: `overall_score` (NOT `base_score`)
+- DB tutor score column: `tutor_first_turn_score` (Turn 0 score; `overall_score` is deprecated alias)
 - Always filter by `judge_model` when querying — runs can have rows from multiple judges
 - `evaluate --force` only processes rows with NULL scores
 - `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
@@ -128,6 +128,7 @@ The primary interface for all evaluation workflows:
 node scripts/eval-cli.js run --profiles <cells> --runs N   # Run evaluation
 node scripts/eval-cli.js evaluate <runId> [--force]        # Judge with Opus
 node scripts/eval-cli.js evaluate-learner <runId>          # Score learner quality
+node scripts/eval-cli.js evaluate-dialogue <runId>         # Dialogue quality + tutor last-turn
 node scripts/eval-cli.js rejudge <runId> --judge <model>   # Re-judge (e.g. openrouter.gpt)
 node scripts/eval-cli.js resume <runId> [--skip-rubric]    # Resume incomplete run
 node scripts/eval-cli.js export <runId> --format csv       # Export results

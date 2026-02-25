@@ -68,13 +68,13 @@ app.get('/api/runs', (req, res) => {
       `
     SELECT run_id,
       COUNT(*) as dialogue_count,
-      MIN(overall_score) as min_score,
-      MAX(overall_score) as max_score,
+      MIN(tutor_first_turn_score) as min_score,
+      MAX(tutor_first_turn_score) as max_score,
       GROUP_CONCAT(DISTINCT profile_name) as profiles,
       GROUP_CONCAT(DISTINCT ego_model) as ego_models,
       MIN(created_at) as first_created
     FROM evaluation_results
-    WHERE dialogue_id IS NOT NULL AND overall_score IS NOT NULL
+    WHERE dialogue_id IS NOT NULL AND tutor_first_turn_score IS NOT NULL
     GROUP BY run_id
     ORDER BY first_created DESC
   `,
@@ -100,12 +100,12 @@ app.get('/api/runs/:runId', (req, res) => {
   const rows = db
     .prepare(
       `
-    SELECT id, dialogue_id, profile_name, scenario_id, overall_score,
+    SELECT id, dialogue_id, profile_name, scenario_id, tutor_first_turn_score,
       ego_model, judge_model, learner_architecture, superego_model,
       factor_recognition
     FROM evaluation_results
-    WHERE run_id = ? AND dialogue_id IS NOT NULL AND overall_score IS NOT NULL
-    ORDER BY profile_name, scenario_id, overall_score DESC
+    WHERE run_id = ? AND dialogue_id IS NOT NULL AND tutor_first_turn_score IS NOT NULL
+    ORDER BY profile_name, scenario_id, tutor_first_turn_score DESC
   `,
     )
     .all(req.params.runId);
@@ -114,7 +114,7 @@ app.get('/api/runs/:runId', (req, res) => {
     dialogueId: r.dialogue_id,
     profile: r.profile_name,
     scenario: r.scenario_id,
-    score: r.overall_score,
+    score: r.tutor_first_turn_score,
     egoModel: r.ego_model,
     judgeModel: r.judge_model,
     isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
@@ -127,13 +127,13 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
   const row = db
     .prepare(
       `
-    SELECT id, run_id, profile_name, scenario_id, dialogue_id, overall_score,
+    SELECT id, run_id, profile_name, scenario_id, dialogue_id, tutor_first_turn_score,
       ego_model, superego_model, judge_model, learner_architecture,
       score_relevance, score_specificity, score_pedagogical, score_personalization,
       score_actionability, score_tone, scores_with_reasoning,
       qualitative_assessment, qualitative_model, factor_recognition
     FROM evaluation_results
-    WHERE dialogue_id = ? AND overall_score IS NOT NULL
+    WHERE dialogue_id = ? AND tutor_first_turn_score IS NOT NULL
     ORDER BY id DESC LIMIT 1
   `,
     )
@@ -190,7 +190,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
       isRecog: !!row.factor_recognition || /recog/i.test(row.profile_name),
     },
     scores: {
-      overall: row.overall_score,
+      overall: row.tutor_first_turn_score,
       dimensions: judgeScores,
     },
     qualitative,

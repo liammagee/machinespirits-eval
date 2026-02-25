@@ -459,13 +459,13 @@ function loadData(db, cells, _sampleSize) {
   const placeholders = allCells.map(() => '?').join(',');
 
   const query = `
-    SELECT id, scenario_id, profile_name, overall_score, suggestions,
+    SELECT id, scenario_id, profile_name, tutor_first_turn_score, suggestions,
       CASE WHEN profile_name LIKE 'cell_1_%' OR profile_name LIKE 'cell_2_%'
            OR profile_name LIKE 'cell_3_%' OR profile_name LIKE 'cell_4_%'
       THEN 'base' ELSE 'recognition' END as condition
     FROM evaluation_results
     WHERE success = 1
-      AND overall_score IS NOT NULL
+      AND tutor_first_turn_score IS NOT NULL
       AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
       AND profile_name IN (${placeholders})
@@ -494,7 +494,7 @@ function loadData(db, cells, _sampleSize) {
         id: row.id,
         scenario_id: row.scenario_id,
         profile_name: row.profile_name,
-        overall_score: row.overall_score,
+        tutor_first_turn_score: row.tutor_first_turn_score,
         condition: row.condition,
         messageText: messages.join('\n\n'),
         reasoningText: reasonings.join('\n\n'),
@@ -516,13 +516,13 @@ function printCostEstimate(db) {
     .prepare(
       `
     SELECT COUNT(*) as n FROM evaluation_results
-    WHERE success = 1 AND overall_score IS NOT NULL AND suggestions IS NOT NULL
+    WHERE success = 1 AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
       AND (profile_name LIKE 'cell_1_%' OR profile_name LIKE 'cell_2_%'
        OR profile_name LIKE 'cell_3_%' OR profile_name LIKE 'cell_4_%'
        OR profile_name LIKE 'cell_5_%' OR profile_name LIKE 'cell_6_%'
        OR profile_name LIKE 'cell_7_%' OR profile_name LIKE 'cell_8_%')
-  `,
+`,
     )
     .get().n;
 
@@ -530,9 +530,9 @@ function printCostEstimate(db) {
     .prepare(
       `
     SELECT COUNT(*) as n FROM evaluation_results
-    WHERE success = 1 AND overall_score IS NOT NULL AND suggestions IS NOT NULL
+    WHERE success = 1 AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
-  `,
+`,
     )
     .get().n;
 
@@ -816,7 +816,7 @@ async function runClassification(
           scenario_id: item.scenario_id,
           profile_name: item.profile_name,
           condition: item.condition,
-          overall_score: item.overall_score,
+          tutor_first_turn_score: item.tutor_first_turn_score,
           ai_categories: parsed.categories || {},
           dominant_theme: parsed.dominant_theme,
           quality_note: parsed.overall_quality_note,
@@ -910,7 +910,7 @@ async function runDiscovery(data, modelKey, concurrency, checkpointFile, { pause
           scenario_id: item.scenario_id,
           profile_name: item.profile_name,
           condition: item.condition,
-          overall_score: item.overall_score,
+          tutor_first_turn_score: item.tutor_first_turn_score,
           themes: parsed.themes || [],
           pedagogical_stance: parsed.pedagogical_stance,
           epistemic_orientation: parsed.epistemic_orientation,

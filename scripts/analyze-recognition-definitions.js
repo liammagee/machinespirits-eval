@@ -147,11 +147,11 @@ function loadCellRows(db, { runIds, judgePattern, profileMap }) {
   const profilePlaceholders = profileNames.map(() => '?').join(',');
 
   const sql = `
-    SELECT id, run_id, profile_name, overall_score, judge_model
+    SELECT id, run_id, profile_name, tutor_first_turn_score, judge_model
     FROM evaluation_results
     WHERE run_id IN (${runPlaceholders})
       AND success = 1
-      AND overall_score IS NOT NULL
+      AND tutor_first_turn_score IS NOT NULL
       AND judge_model LIKE ?
       AND profile_name IN (${profilePlaceholders})
     ORDER BY id
@@ -178,7 +178,7 @@ function loadCellRows(db, { runIds, judgePattern, profileMap }) {
 }
 
 function buildReport(byCell, balancedPerCell) {
-  const toScores = (rows) => rows.map((r) => r.overall_score).filter(Number.isFinite);
+  const toScores = (rows) => rows.map((r) => r.tutor_first_turn_score).filter(Number.isFinite);
 
   const rawScores = {
     base_nomem: toScores(byCell.base_nomem),

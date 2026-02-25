@@ -76,13 +76,13 @@ function loadDialogue(dialogueId) {
     .prepare(
       `
     SELECT id, run_id, profile_name, scenario_id, dialogue_id,
-      overall_score, judge_model, ego_model, superego_model,
+      tutor_first_turn_score, judge_model, ego_model, superego_model,
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone,
       scores_with_reasoning, qualitative_assessment, suggestions
     FROM evaluation_results
     WHERE dialogue_id = ? AND judge_model = 'claude-opus-4.6'
-    ORDER BY overall_score DESC LIMIT 1
+    ORDER BY tutor_first_turn_score DESC LIMIT 1
   `,
     )
     .get(dialogueId);
@@ -113,8 +113,8 @@ function loadByRunScenario(runId, scenarioId) {
       `
     SELECT dialogue_id FROM evaluation_results
     WHERE run_id = ? AND scenario_id LIKE ? AND judge_model = 'claude-opus-4.6'
-      AND overall_score IS NOT NULL
-    ORDER BY overall_score DESC
+      AND tutor_first_turn_score IS NOT NULL
+    ORDER BY tutor_first_turn_score DESC
   `,
     )
     .all(runId, '%' + scenarioId + '%');
@@ -450,7 +450,7 @@ function buildSingleTurnHtml(data) {
   }
 
   const cond = conditionLabel(row.profile_name);
-  const score = row.overall_score?.toFixed(1) || '--';
+  const score = row.tutor_first_turn_score?.toFixed(1) || '--';
 
   let scoresHtml = '';
   try {
@@ -505,7 +505,7 @@ function buildMultiTurnHtml(data) {
   const { row, trace } = data;
   const steps = traceToSteps(trace);
   const cond = conditionLabel(row.profile_name);
-  const score = row.overall_score?.toFixed(1) || '--';
+  const score = row.tutor_first_turn_score?.toFixed(1) || '--';
 
   // Select key moments: initial query, responses, learner turns
   const keySteps = steps.filter(
@@ -709,7 +709,7 @@ if (isCompare) {
     if (!data) continue;
 
     const isMultiTurn = data.isMultiTurn;
-    const title = `${scenarioLabel(data.row.scenario_id)} — ${conditionLabel(data.row.profile_name)} (${data.row.overall_score?.toFixed(1)})`;
+    const title = `${scenarioLabel(data.row.scenario_id)} — ${conditionLabel(data.row.profile_name)} (${data.row.tutor_first_turn_score?.toFixed(1)})`;
 
     let svgHtml = '';
     if (!transcriptOnly && isMultiTurn) {
@@ -724,11 +724,11 @@ if (isCompare) {
     const panel = isMultiTurn ? buildMultiTurnHtml(data) : buildSingleTurnHtml(data);
     const html = wrapPage(title, `<div class="figure-single">${panel}</div>`, svgHtml);
 
-    const baseName = `figure-${data.row.profile_name}-${data.row.scenario_id}-${data.row.overall_score?.toFixed(0) || '0'}`;
+    const baseName = `figure-${data.row.profile_name}-${data.row.scenario_id}-${data.row.tutor_first_turn_score?.toFixed(0) || '0'}`;
     const htmlPath = path.join(outputDir, `${baseName}.html`);
     fs.writeFileSync(htmlPath, html);
     rendered.push(htmlPath);
-    console.log(`  ✓ ${baseName}.html (score ${data.row.overall_score?.toFixed(1)})`);
+    console.log(`  ✓ ${baseName}.html (score ${data.row.tutor_first_turn_score?.toFixed(1)})`);
 
     if (format === 'png' || format === 'both') {
       const pngPath = path.join(outputDir, `${baseName}.png`);
@@ -752,7 +752,7 @@ if (isCompare) {
   if (!data) process.exit(1);
 
   const isMultiTurn = data.isMultiTurn;
-  const title = `${scenarioLabel(data.row.scenario_id)} — ${conditionLabel(data.row.profile_name)} (${data.row.overall_score?.toFixed(1)})`;
+  const title = `${scenarioLabel(data.row.scenario_id)} — ${conditionLabel(data.row.profile_name)} (${data.row.tutor_first_turn_score?.toFixed(1)})`;
 
   let svgHtml = '';
   if (!transcriptOnly && isMultiTurn) {
@@ -767,7 +767,7 @@ if (isCompare) {
   const panel = isMultiTurn ? buildMultiTurnHtml(data) : buildSingleTurnHtml(data);
   const html = wrapPage(title, `<div class="figure-single">${panel}</div>`, svgHtml);
 
-  const baseName = `figure-${data.row.profile_name}-${data.row.scenario_id}-${data.row.overall_score?.toFixed(0) || '0'}`;
+  const baseName = `figure-${data.row.profile_name}-${data.row.scenario_id}-${data.row.tutor_first_turn_score?.toFixed(0) || '0'}`;
   const htmlPath = path.join(outputDir, `${baseName}.html`);
   fs.writeFileSync(htmlPath, html);
   rendered.push(htmlPath);

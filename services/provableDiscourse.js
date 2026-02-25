@@ -19,7 +19,7 @@ const ALLOWED_COLUMNS = new Set([
   'profile_name',
   'scenario_name',
   'judge_model',
-  'overall_score',
+  'tutor_first_turn_score',
   'learner_scores',
   'learner_overall_score',
   'factor_recognition',
@@ -340,7 +340,7 @@ const TUTOR_METRICS = new Set(['response_length', 'ttr', 'dimension_variance_14'
 const LEARNER_METRICS = new Set(['avg_composite', 'final_composite', 'learning_arc', 'revision_arc']);
 
 function requiredColumnsForMetric(metric) {
-  if (metric === 'overall_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
+  if (metric === 'tutor_first_turn_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
     return [metric];
   }
   if (metric === 'response_length' || metric === 'ttr') {
@@ -362,7 +362,7 @@ function requiredColumnsForMetric(metric) {
 }
 
 function metricValueFromRow(row, metric) {
-  if (metric === 'overall_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
+  if (metric === 'tutor_first_turn_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
     return row?.[metric];
   }
   if (TUTOR_METRICS.has(metric)) {
@@ -530,7 +530,7 @@ function evaluateEffectSize(db, evidence) {
 
   const filters = {
     ...(evidence?.filters || {}),
-    not_null: [...(evidence?.filters?.not_null || []), domain === 'tutor' ? 'overall_score' : 'learner_scores'],
+    not_null: [...(evidence?.filters?.not_null || []), domain === 'tutor' ? 'tutor_first_turn_score' : 'learner_scores'],
   };
   const { sql, params } = buildWhereClause(filters);
   const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
@@ -635,7 +635,7 @@ function evaluateManifestSectionTotal(manifest, evidence) {
 }
 
 function evaluateProfileGroupEffectSize(db, evidence) {
-  const metric = evidence?.metric || 'overall_score';
+  const metric = evidence?.metric || 'tutor_first_turn_score';
   const metricColumns = requiredColumnsForMetric(metric);
   const columns = ['profile_name', 'created_at', ...metricColumns];
   const { sql, params } = buildWhereClause(evidence?.filters || {});
@@ -689,7 +689,7 @@ function evaluateProfileGroupEffectSize(db, evidence) {
 }
 
 function evaluateAnova2x2Evidence(db, evidence) {
-  const metric = evidence?.metric || 'overall_score';
+  const metric = evidence?.metric || 'tutor_first_turn_score';
   const term = evidence?.term || 'interaction';
   const output = evidence?.output || 'F';
   const metricColumns = requiredColumnsForMetric(metric);
@@ -760,7 +760,7 @@ function evaluateJudgePairCorrelation(db, evidence) {
   if (runIds.length === 0) throw new Error('judge_pair_correlation requires run_ids');
   const judgeALike = evidence?.judge_a_like || 'claude-opus%';
   const judgeBLike = evidence?.judge_b_like || 'gpt-5.2%';
-  const metric = evidence?.metric || 'overall_score';
+  const metric = evidence?.metric || 'tutor_first_turn_score';
   const keyFields = Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
     ? evidence.key_fields
     : ['run_id', 'scenario_id', 'profile_name', 'dialogue_id'];

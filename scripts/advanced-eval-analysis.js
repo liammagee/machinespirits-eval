@@ -88,11 +88,11 @@ async function main() {
   ];
 
   const query = `
-    SELECT scenario_id, profile_name, overall_score, created_at
+    SELECT scenario_id, profile_name, tutor_first_turn_score, created_at
     FROM evaluation_results
     WHERE scenario_id IN (${extendedScenarios.map(() => '?').join(',')})
       AND success = 1
-      AND overall_score IS NOT NULL
+      AND tutor_first_turn_score IS NOT NULL
     ORDER BY scenario_id, profile_name
   `;
 
@@ -108,7 +108,7 @@ async function main() {
     if (!data[row.scenario_id][row.profile_name]) {
       data[row.scenario_id][row.profile_name] = [];
     }
-    data[row.scenario_id][row.profile_name].push(row.overall_score);
+    data[row.scenario_id][row.profile_name].push(row.tutor_first_turn_score);
   }
 
   // Scenario descriptions
@@ -225,18 +225,18 @@ async function main() {
 
   // Compare single-turn vs multi-turn
   const singleTurnQuery = `
-    SELECT profile_name, AVG(overall_score) as mean, COUNT(*) as n
+    SELECT profile_name, AVG(tutor_first_turn_score) as mean, COUNT(*) as n
     FROM evaluation_results
     WHERE scenario_id NOT IN (${extendedScenarios.map(() => '?').join(',')})
-      AND success = 1 AND overall_score IS NOT NULL
+      AND success = 1 AND tutor_first_turn_score IS NOT NULL
     GROUP BY profile_name
   `;
 
   const multiTurnQuery = `
-    SELECT profile_name, AVG(overall_score) as mean, COUNT(*) as n
+    SELECT profile_name, AVG(tutor_first_turn_score) as mean, COUNT(*) as n
     FROM evaluation_results
     WHERE scenario_id IN (${extendedScenarios.map(() => '?').join(',')})
-      AND success = 1 AND overall_score IS NOT NULL
+      AND success = 1 AND tutor_first_turn_score IS NOT NULL
     GROUP BY profile_name
   `;
 

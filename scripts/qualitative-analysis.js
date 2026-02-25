@@ -506,13 +506,13 @@ async function main() {
     const bestRecog = db
       .prepare(
         `
-      SELECT id, scenario_id, profile_name, overall_score, suggestions
+      SELECT id, scenario_id, profile_name, tutor_first_turn_score, suggestions
       FROM evaluation_results
-      WHERE success = 1 AND overall_score IS NOT NULL
+      WHERE success = 1 AND tutor_first_turn_score IS NOT NULL
         AND scenario_id = ?
         AND profile_name IN (${recogCells.map(() => '?').join(',')})
         AND suggestions IS NOT NULL
-      ORDER BY overall_score DESC
+      ORDER BY tutor_first_turn_score DESC
       LIMIT 1
     `,
       )
@@ -522,13 +522,13 @@ async function main() {
     const worstBase = db
       .prepare(
         `
-      SELECT id, scenario_id, profile_name, overall_score, suggestions
+      SELECT id, scenario_id, profile_name, tutor_first_turn_score, suggestions
       FROM evaluation_results
-      WHERE success = 1 AND overall_score IS NOT NULL AND overall_score > 0
+      WHERE success = 1 AND tutor_first_turn_score IS NOT NULL AND tutor_first_turn_score > 0
         AND scenario_id = ?
         AND profile_name IN (${baseCells.map(() => '?').join(',')})
         AND suggestions IS NOT NULL
-      ORDER BY overall_score ASC
+      ORDER BY tutor_first_turn_score ASC
       LIMIT 1
     `,
       )
@@ -543,18 +543,18 @@ async function main() {
         recognition: {
           id: bestRecog.id,
           profile: bestRecog.profile_name,
-          score: bestRecog.overall_score,
+          score: bestRecog.tutor_first_turn_score,
           message: recTexts.messages.join('\n\n'),
           reasoning: recTexts.reasonings.join('\n\n'),
         },
         base: {
           id: worstBase.id,
           profile: worstBase.profile_name,
-          score: worstBase.overall_score,
+          score: worstBase.tutor_first_turn_score,
           message: baseTexts.messages.join('\n\n'),
           reasoning: baseTexts.reasonings.join('\n\n'),
         },
-        scoreDiff: bestRecog.overall_score - worstBase.overall_score,
+        scoreDiff: bestRecog.tutor_first_turn_score - worstBase.tutor_first_turn_score,
       };
       pairs.push(pair);
 

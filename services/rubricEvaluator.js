@@ -6,6 +6,10 @@
  * Provider details are resolved from config/providers.yaml
  */
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import yaml from 'yaml';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { jsonrepair } from 'jsonrepair';
 
@@ -1382,6 +1386,236 @@ export function calculateRecognitionMetrics(scores) {
   return metrics;
 }
 
+// ============================================================================
+// Dialogue Quality Evaluation
+// ============================================================================
+
+const __rubricFilename = fileURLToPath(import.meta.url);
+const __rubricDirname = path.dirname(__rubricFilename);
+const EVAL_CONFIG_DIR = path.resolve(__rubricDirname, '..', 'config');
+
+let dialogueRubricCache = null;
+let dialogueRubricMtime = null;
+
+/**
+ * Load the dialogue quality rubric YAML with mtime-based caching.
+ */
+export function loadDialogueRubric({ forceReload } = {}) {
+  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-dialogue.yaml');
+
+  try {
+    const stats = fs.statSync(rubricPath);
+    if (!forceReload && dialogueRubricCache && dialogueRubricMtime === stats.mtimeMs) {
+      return dialogueRubricCache;
+    }
+    dialogueRubricMtime = stats.mtimeMs;
+  } catch (err) {
+    console.warn('[rubricEvaluator] Dialogue rubric file not found:', err.message);
+    return null;
+  }
+
+  const raw = fs.readFileSync(rubricPath, 'utf-8');
+  dialogueRubricCache = yaml.parse(raw);
+  return dialogueRubricCache;
+}
+
+/**
+ * Get dialogue quality rubric dimensions.
+ * @returns {Object} Map of dimension key → dimension config
+ */
+export function getDialogueDimensions() {
+  const rubric = loadDialogueRubric();
+  if (!rubric?.dimensions) return {};
+  return { ...rubric.dimensions };
+}
+
+/**
+ * Calculate dialogue quality overall score from per-dimension scores.
+ * Uses weights from the dialogue rubric YAML.
+ *
+ * @param {Object} scores - { dimension_key: { score: 1-5, reasoning: string } }
+ * @returns {number} 0-100 score
+ */
+export function calculateDialogueQualityScore(scores) {
+  const dimensions = getDialogueDimensions();
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dimensions)) {
+    const scoreData = scores[key];
+    const score = scoreData?.score ?? scoreData;
+
+    if (typeof score === 'number') {
+      weightedSum += score * (dim.weight || 0);
+      totalWeight += dim.weight || 0;
+    }
+  }
+
+  if (totalWeight === 0) return 0;
+  const avgScore = weightedSum / totalWeight;
+  return ((avgScore - 1) / 4) * 100;
+}
+
+/**
+ * Build a full-dialogue transcript for the dialogue quality judge.
+ * Renders all turns with both tutor and learner contributions.
+ *
+ * @param {Array} turns - Array of turn objects from dialogue log
+ * @param {Array} [dialogueTrace] - Consolidated trace with internal deliberation
+ * @returns {string} Formatted transcript
+ */
+function buildDialogueFullTranscript(turns, dialogueTrace) {
+  if (dialogueTrace?.length > 0) {
+    // Use consolidated trace for richest representation
+    const lines = [];
+    let currentTurnIdx = -1;
+    for (const entry of dialogueTrace) {
+      if (entry.turnIndex !== undefined && entry.turnIndex !== currentTurnIdx) {
+        currentTurnIdx = entry.turnIndex;
+        lines.push(`\n--- Turn ${currentTurnIdx} ---`);
+      }
+
+      if (entry.agent === 'user' && entry.action === 'turn_action') {
+        lines.push(`[Learner Action] ${entry.detail || entry.contextSummary || ''}`);
+      } else if (entry.agent === 'learner_ego') {
+        lines.push(`  (Learner thinking: ${truncate(entry.detail || entry.contextSummary, 200)})`);
+      } else if (entry.agent === 'learner_superego') {
+        lines.push(`  (Learner reflection: ${truncate(entry.detail || entry.contextSummary, 200)})`);
+      } else if (entry.agent === 'learner_synthesis') {
+        lines.push(`[Learner] ${truncate(entry.detail || entry.contextSummary, 400)}`);
+      } else if (entry.agent === 'ego' && entry.action === 'initial_draft') {
+        lines.push(`  (Tutor drafting: ${truncate(entry.contextSummary || '', 150)})`);
+      } else if (entry.agent === 'superego') {
+        lines.push(`  (Tutor reviewing: ${truncate(entry.contextSummary || '', 150)})`);
+      } else if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'final_revision')) {
+        lines.push(`[Tutor] (revised response after internal review)`);
+      } else if (entry.agent === 'user' && entry.action === 'final_output') {
+        lines.push(`[Tutor → Learner] Delivered response`);
+      } else if (entry.agent === 'ego') {
+        lines.push(`[Tutor] ${truncate(entry.contextSummary || '', 200)}`);
+      }
+    }
+    return lines.join('\n');
+  }
+
+  // Fallback: build from turn objects
+  if (!turns?.length) return '(no transcript available)';
+
+  const lines = [];
+  for (let i = 0; i < turns.length; i++) {
+    const turn = turns[i];
+    lines.push(`\n--- Turn ${i} ---`);
+    if (turn.learnerMessage) {
+      lines.push(`[Learner] ${truncate(turn.learnerMessage, 400)}`);
+    } else if (turn.learnerAction) {
+      lines.push(`[Learner Action] ${turn.learnerAction}`);
+    }
+    const suggestion = turn.suggestion || turn.suggestions?.[0];
+    if (suggestion) {
+      const msg = suggestion.message || suggestion.title || JSON.stringify(suggestion);
+      lines.push(`[Tutor] ${truncate(msg, 400)}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Build the dialogue quality evaluation prompt.
+ *
+ * Evaluates the interaction as a whole pedagogical encounter — not just the
+ * tutor or learner individually, but the emergent quality of their exchange.
+ *
+ * @param {Object} params
+ * @param {Array} params.turns - Turn objects from dialogue log
+ * @param {Array} [params.dialogueTrace] - Consolidated trace with internal deliberation
+ * @param {string} params.scenarioName - Name of the scenario
+ * @param {string} [params.scenarioDescription] - Description of the scenario
+ * @param {string} [params.topic] - Topic being discussed
+ * @param {number} params.turnCount - Number of dialogue turns
+ * @returns {string} Complete judge prompt
+ */
+export function buildDialogueQualityPrompt(params) {
+  const {
+    turns,
+    dialogueTrace,
+    scenarioName = 'unknown',
+    scenarioDescription = '',
+    topic = 'unknown',
+    turnCount = 0,
+  } = params;
+
+  const dimensions = getDialogueDimensions();
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([_key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  const transcript = buildDialogueFullTranscript(turns, dialogueTrace);
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
+    .join(',\n');
+
+  return `You are an expert evaluator of pedagogical dialogues. Your task is to evaluate the OVERALL QUALITY OF THE INTERACTION — not just the tutor or the learner individually, but the emergent quality of their exchange as a pedagogical encounter.
+
+Think of this like evaluating a dance, not individual dancers. A great dialogue has qualities that neither party could produce alone: responsive turns, collaborative knowledge building, productive use of difficulty, and observable development.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## DIALOGUE CONTEXT
+
+**Scenario**: ${scenarioName}
+**Description**: ${scenarioDescription}
+**Topic**: ${topic}
+**Turn count**: ${turnCount}
+
+## FULL DIALOGUE TRANSCRIPT
+
+${transcript}
+
+## YOUR TASK
+
+Evaluate the dialogue as a whole and provide:
+1. A score (1-5) for each dimension with brief reasoning
+2. An overall score (weighted average, 0-100 scale)
+3. A short summary of the dialogue's quality as a pedagogical encounter
+
+CRITICAL: Do NOT simply average tutor quality + learner quality. Focus on EMERGENT interaction properties: Does the dialogue build? Do the parties truly respond to each other? Does understanding develop collaboratively? Is difficulty used productively?
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief assessment of the dialogue as a pedagogical encounter"
+}
+\`\`\``;
+}
+
 export { buildEvaluationPrompt };
 
 export default {
@@ -1392,6 +1626,10 @@ export default {
   calculateBaseScore,
   calculateRecognitionScore,
   calculateRecognitionMetrics,
+  calculateDialogueQualityScore,
   getAvailableJudge,
   buildEvaluationPrompt,
+  buildDialogueQualityPrompt,
+  loadDialogueRubric,
+  getDialogueDimensions,
 };

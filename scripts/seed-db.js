@@ -68,7 +68,7 @@ for (const cell of cells) {
       actionability: Math.min(5, Math.max(1, Math.round(base + (Math.random() - 0.5)))),
       tone: Math.min(5, Math.max(1, Math.round(base + (Math.random() - 0.5)))),
     },
-    overallScore: cell.score,
+    tutorFirstTurnScore: cell.score,
     judgeModel: 'seed-data',
     success: true,
     factors: {

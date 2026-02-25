@@ -35,6 +35,8 @@ import {
   updateResultLearnerScores,
   updateResultScores,
   updateResultHolisticOnly,
+  updateTutorLastTurnScore,
+  updateDialogueQualityScore,
 } from '../services/evaluationStore.js';
 
 // Track test runs for cleanup (still useful for in-test isolation)
@@ -199,7 +201,7 @@ describe('storeResult', () => {
       model: 'test-model',
       profileName: 'cell_1_base_single_unified',
       suggestions: [{ title: 'Test', message: 'Hello' }],
-      overallScore: 75.5,
+      tutorFirstTurnScore: 75.5,
       baseScore: 80.0,
       recognitionScore: 60.0,
       scores: { relevance: 4, specificity: 3, pedagogical: 4, personalization: 3, actionability: 5, tone: 4 },
@@ -229,7 +231,7 @@ describe('storeResult', () => {
       profileName: 'cell_1_base_single_unified',
       success: false,
       errorMessage: 'API timeout',
-      overallScore: null,
+      tutorFirstTurnScore: null,
     });
 
     assert.ok(rowId > 0);
@@ -245,7 +247,7 @@ describe('storeResult', () => {
       provider: 'test-provider',
       model: 'test-model',
       profileName: 'cell_7_recog_multi_unified',
-      overallScore: 85,
+      tutorFirstTurnScore: 85,
       factors: {
         recognition: true,
         multi_agent_tutor: true,
@@ -269,7 +271,7 @@ describe('getResults', () => {
       provider: 'test-provider',
       model: 'test-model',
       profileName: 'cell_1_base_single_unified',
-      overallScore: 70,
+      tutorFirstTurnScore: 70,
       success: true,
     });
 
@@ -279,7 +281,7 @@ describe('getResults', () => {
       provider: 'test-provider',
       model: 'test-model',
       profileName: 'cell_1_base_single_unified',
-      overallScore: 85,
+      tutorFirstTurnScore: 85,
       success: true,
     });
 
@@ -299,7 +301,7 @@ describe('getResults', () => {
       provider: 'test-provider',
       model: 'test-model',
       profileName: 'cell_1',
-      overallScore: 90,
+      tutorFirstTurnScore: 90,
       success: true,
     });
 
@@ -309,14 +311,14 @@ describe('getResults', () => {
       provider: 'test-provider',
       model: 'test-model',
       profileName: 'cell_1',
-      overallScore: 60,
+      tutorFirstTurnScore: 60,
       success: true,
     });
 
     const results = getResults(run.id, { scenarioId: 'target' });
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].scenarioId, 'target');
-    assert.strictEqual(results[0].overallScore, 90);
+    assert.strictEqual(results[0].tutorFirstTurnScore, 90);
   });
 
   it('returns empty array for run with no results', () => {
@@ -339,7 +341,7 @@ describe('updateResultLearnerScores', () => {
       provider: 'test-provider',
       model: 'test-model',
       profileName: 'cell_3_base_multi_unified',
-      overallScore: 78,
+      tutorFirstTurnScore: 78,
       success: true,
       dialogueId: 'dialogue-test-123',
     });
@@ -399,7 +401,7 @@ describe('parseResultRow (via getResults)', () => {
       profileName: 'cell_5_recog_single_unified',
       hyperparameters: { temperature: 0.3, max_tokens: 2000 },
       suggestions: [{ title: 'Test', message: 'Hello world' }],
-      overallScore: 82,
+      tutorFirstTurnScore: 82,
       baseScore: 85,
       recognitionScore: 70,
       scores: { relevance: 4, specificity: 5, pedagogical: 4, personalization: 3, actionability: 5, tone: 4 },
@@ -427,7 +429,7 @@ describe('parseResultRow (via getResults)', () => {
     assert.strictEqual(r.provider, 'test-provider');
     assert.strictEqual(r.model, 'test-model');
     assert.strictEqual(r.profileName, 'cell_5_recog_single_unified');
-    assert.strictEqual(r.overallScore, 82);
+    assert.strictEqual(r.tutorFirstTurnScore, 82);
     assert.strictEqual(r.baseScore, 85);
     assert.strictEqual(r.recognitionScore, 70);
     assert.strictEqual(r.passesRequired, true);
@@ -459,7 +461,7 @@ describe('parseResultRow (via getResults)', () => {
       model: 'test-model',
       profileName: 'cell_1',
       success: true,
-      overallScore: null,
+      tutorFirstTurnScore: null,
     });
 
     const results = getResults(run.id);
@@ -469,7 +471,7 @@ describe('parseResultRow (via getResults)', () => {
     assert.ok(Array.isArray(r.suggestions), 'should have empty suggestions array');
     assert.ok(Array.isArray(r.requiredMissing), 'should have empty requiredMissing array');
     assert.ok(Array.isArray(r.forbiddenFound), 'should have empty forbiddenFound array');
-    assert.strictEqual(r.overallScore, null);
+    assert.strictEqual(r.tutorFirstTurnScore, null);
   });
 
   it('maps boolean fields correctly', () => {
@@ -512,7 +514,7 @@ describe('completeRun', () => {
       provider: 'test',
       model: 'test',
       profileName: 'cell_1',
-      overallScore: 80,
+      tutorFirstTurnScore: 80,
       success: true,
     });
 
@@ -563,7 +565,7 @@ describe('deleteRun', () => {
       provider: 'test',
       model: 'test',
       profileName: 'cell_1',
-      overallScore: 50,
+      tutorFirstTurnScore: 50,
       success: true,
     });
 
@@ -595,7 +597,7 @@ describe('getRunStats', () => {
         provider: 'test-provider',
         model: 'test-model',
         profileName: 'cell_1',
-        overallScore: 70 + i * 10,
+        tutorFirstTurnScore: 70 + i * 10,
         scores: { relevance: 3 + i, specificity: 4, pedagogical: 3, personalization: 3, actionability: 4, tone: 4 },
         passesRequired: true,
         passesForbidden: true,
@@ -654,7 +656,7 @@ describe('listRuns', () => {
       provider: 'test',
       model: 'test',
       profileName: 'cell_1',
-      overallScore: 75,
+      tutorFirstTurnScore: 75,
       success: true,
     });
 
@@ -707,14 +709,14 @@ describe('updateResultHolisticOnly', () => {
     // Simulate initial judging (Turn 0 score)
     updateResultScores(resultId, {
       scores: { relevance: { score: 4, reasoning: null } },
-      overallScore: 75.0,
+      tutorFirstTurnScore: 75.0,
       baseScore: 70.0,
       judgeModel: 'claude-opus-4.6',
       holisticOverallScore: null,
     });
 
     const before = getResults(run.id, {}).find((r) => r.id === resultId);
-    assert.strictEqual(before.overallScore, 75.0);
+    assert.strictEqual(before.tutorFirstTurnScore, 75.0);
     assert.strictEqual(before.judgeModel, 'claude-opus-4.6');
     assert.strictEqual(before.holisticOverallScore, null);
 
@@ -725,7 +727,7 @@ describe('updateResultHolisticOnly', () => {
     });
 
     const after = getResults(run.id, {}).find((r) => r.id === resultId);
-    assert.strictEqual(after.overallScore, 75.0, 'overall_score must be preserved');
+    assert.strictEqual(after.tutorFirstTurnScore, 75.0, 'tutor_first_turn_score must be preserved');
     assert.strictEqual(after.judgeModel, 'claude-opus-4.6', 'judge_model must be preserved');
     assert.strictEqual(after.holisticOverallScore, 85.0, 'holistic_overall_score should be updated');
   });
@@ -748,7 +750,7 @@ describe('updateResultScores cross-judge safety', () => {
     // Initial judge: GPT
     updateResultScores(resultId, {
       scores: { relevance: { score: 3, reasoning: null } },
-      overallScore: 65.0,
+      tutorFirstTurnScore: 65.0,
       baseScore: 60.0,
       judgeModel: 'gpt-5.2',
     });
@@ -759,13 +761,178 @@ describe('updateResultScores cross-judge safety', () => {
     // Danger: updateResultScores with Opus overwrites the GPT label
     updateResultScores(resultId, {
       scores: { relevance: { score: 4, reasoning: null } },
-      overallScore: 80.0,
+      tutorFirstTurnScore: 80.0,
       baseScore: 75.0,
       judgeModel: 'claude-opus-4.6',
     });
 
     const after = getResults(run.id, {}).find((r) => r.id === resultId);
     assert.strictEqual(after.judgeModel, 'claude-opus-4.6', 'judge_model IS overwritten by updateResultScores — use --judge filter to prevent');
-    assert.strictEqual(after.overallScore, 80.0);
+    assert.strictEqual(after.tutorFirstTurnScore, 80.0);
+  });
+});
+
+// ============================================================================
+// updateTutorLastTurnScore
+// ============================================================================
+
+describe('updateTutorLastTurnScore', () => {
+  it('stores tutor last-turn score and computes development delta', () => {
+    const run = createRun({ description: 'tutor last turn test' });
+    testRunIds.push(run.id);
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'multi-turn-test',
+      scenarioName: 'Multi Turn Test',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_60',
+      suggestions: [{ title: 'Turn 0' }, { title: 'Turn 1' }, { title: 'Turn 2' }],
+      tutorFirstTurnScore: 65.0, // tutor first-turn score
+      success: true,
+    });
+
+    updateTutorLastTurnScore(rowId, {
+      tutorLastTurnScore: 82.5,
+    });
+
+    const results = getResults(run.id);
+    assert.strictEqual(results.length, 1);
+    const r = results[0];
+
+    assert.strictEqual(r.tutorLastTurnScore, 82.5, 'should store last-turn score');
+    assert.strictEqual(r.tutorDevelopmentScore, 17.5, 'should compute development delta (82.5 - 65.0)');
+    assert.strictEqual(r.tutorFirstTurnScore, 65.0, 'should NOT alter tutor_first_turn_score');
+  });
+
+  it('computes negative development delta when tutor regresses', () => {
+    const run = createRun({ description: 'negative dev test' });
+    testRunIds.push(run.id);
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'regress-test',
+      scenarioName: 'Regress Test',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_60',
+      suggestions: [{ title: 'Turn 0' }, { title: 'Turn 1' }],
+      tutorFirstTurnScore: 80.0,
+      success: true,
+    });
+
+    updateTutorLastTurnScore(rowId, { tutorLastTurnScore: 70.0 });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.tutorDevelopmentScore, -10.0, 'should be negative when tutor gets worse');
+  });
+
+  it('handles NULL tutor_first_turn_score (first-turn not yet scored)', () => {
+    const run = createRun({ description: 'null first-turn test' });
+    testRunIds.push(run.id);
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'null-first-turn',
+      scenarioName: 'Null First Turn',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_60',
+      suggestions: [{ title: 'Turn 0' }, { title: 'Turn 1' }],
+      tutorFirstTurnScore: null, // not yet scored
+      success: true,
+    });
+
+    updateTutorLastTurnScore(rowId, { tutorLastTurnScore: 75.0 });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.tutorLastTurnScore, 75.0, 'should store last-turn score');
+    assert.strictEqual(r.tutorDevelopmentScore, null, 'delta should be NULL when first-turn is NULL');
+  });
+});
+
+// ============================================================================
+// updateDialogueQualityScore
+// ============================================================================
+
+describe('updateDialogueQualityScore', () => {
+  it('stores dialogue quality score with summary and judge model', () => {
+    const run = createRun({ description: 'dialogue quality test' });
+    testRunIds.push(run.id);
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'dq-test',
+      scenarioName: 'Dialogue Quality Test',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_60',
+      suggestions: [{ title: 'Turn 0' }, { title: 'Turn 1' }],
+      tutorFirstTurnScore: 70.0,
+      success: true,
+    });
+
+    updateDialogueQualityScore(rowId, {
+      dialogueQualityScore: 78.5,
+      dialogueQualitySummary: 'Good collaborative knowledge building with some missed connections.',
+      dialogueQualityJudgeModel: 'claude-opus-4.6',
+    });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.dialogueQualityScore, 78.5, 'should store dialogue quality score');
+    assert.strictEqual(r.dialogueQualitySummary, 'Good collaborative knowledge building with some missed connections.');
+    assert.strictEqual(r.dialogueQualityJudgeModel, 'claude-opus-4.6');
+    assert.strictEqual(r.tutorFirstTurnScore, 70.0, 'should NOT alter tutor_first_turn_score');
+  });
+
+  it('stores dialogue quality without summary', () => {
+    const run = createRun({ description: 'dq minimal test' });
+    testRunIds.push(run.id);
+
+    const rowId = storeResult(run.id, {
+      scenarioId: 'dq-minimal',
+      scenarioName: 'DQ Minimal',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_60',
+      suggestions: [{ title: 'Turn 0' }],
+      tutorFirstTurnScore: 80.0,
+      success: true,
+    });
+
+    updateDialogueQualityScore(rowId, {
+      dialogueQualityScore: 65.0,
+    });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.dialogueQualityScore, 65.0);
+    assert.strictEqual(r.dialogueQualitySummary, null, 'summary should be null when not provided');
+    assert.strictEqual(r.dialogueQualityJudgeModel, null, 'judge model should be null when not provided');
+  });
+});
+
+// ============================================================================
+// parseResultRow: new dialogue scoring columns
+// ============================================================================
+
+describe('parseResultRow — dialogue scoring columns', () => {
+  it('returns NULL for new columns on single-turn rows (never populated)', () => {
+    const run = createRun({ description: 'single-turn nulls test' });
+    testRunIds.push(run.id);
+
+    storeResult(run.id, {
+      scenarioId: 'single-turn',
+      scenarioName: 'Single Turn',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_1',
+      suggestions: [{ title: 'Only suggestion' }],
+      tutorFirstTurnScore: 85.0,
+      success: true,
+    });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.tutorLastTurnScore, null, 'should be NULL for single-turn');
+    assert.strictEqual(r.tutorDevelopmentScore, null, 'should be NULL for single-turn');
+    assert.strictEqual(r.dialogueQualityScore, null, 'should be NULL for single-turn');
+    assert.strictEqual(r.dialogueQualitySummary, null, 'should be NULL for single-turn');
+    assert.strictEqual(r.dialogueQualityJudgeModel, null, 'should be NULL for single-turn');
   });
 });

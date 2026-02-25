@@ -176,7 +176,7 @@ function ensureColumns(db) {
 
 function loadMultiTurnResults(db, runId, filters = {}) {
   let sql = `
-    SELECT id, scenario_id, scenario_name, profile_name, overall_score,
+    SELECT id, scenario_id, scenario_name, profile_name, tutor_first_turn_score,
            dialogue_id, dialogue_rounds, factor_recognition,
            factor_multi_agent_tutor, learner_architecture,
            judge_model, ego_model, superego_model,
@@ -268,7 +268,7 @@ function buildAssessmentPrompt(row, transcript, { blinded = false } = {}) {
   if (!blinded) metadataLines.push(`- Recognition condition: ${condition}`);
   metadataLines.push(`- Mechanism: ${mechanism}`);
   if (!blinded)
-    metadataLines.push(`- Numeric score: ${row.overall_score != null ? row.overall_score.toFixed(1) : 'N/A'}/100`);
+    metadataLines.push(`- Numeric score: ${row.tutor_first_turn_score != null ? row.tutor_first_turn_score.toFixed(1) : 'N/A'}/100`);
   metadataLines.push(`- Turns: ${row.dialogue_rounds || 'unknown'}`);
 
   return `You are analyzing a multi-turn AI tutoring dialogue. The dialogue uses an
@@ -354,7 +354,7 @@ Generated: ${new Date().toISOString().slice(0, 10)} | Model: ${modelKey} | N=${s
     const a = scored[i];
     const shortProfile = a.profile_name?.replace(/^cell_\d+_/, '') || '';
     const tags = (a.assessment.tags || []).join(', ');
-    const score = a.overall_score != null ? a.overall_score.toFixed(1) : '--';
+    const score = a.tutor_first_turn_score != null ? a.tutor_first_turn_score.toFixed(1) : '--';
     md += `| ${i + 1} | ${a.scenario_id} | ${shortProfile} | ${a.condition} | ${score} | ${tags} |\n`;
   }
 
@@ -392,7 +392,7 @@ Generated: ${new Date().toISOString().slice(0, 10)} | Model: ${modelKey} | N=${s
   if (baseNarratives.length > 0) {
     const baseScores = scored
       .filter((a) => a.condition === 'base')
-      .map((a) => a.overall_score)
+      .map((a) => a.tutor_first_turn_score)
       .filter((s) => s != null);
     const baseMean =
       baseScores.length > 0 ? (baseScores.reduce((a, b) => a + b, 0) / baseScores.length).toFixed(1) : '--';
@@ -402,7 +402,7 @@ Generated: ${new Date().toISOString().slice(0, 10)} | Model: ${modelKey} | N=${s
   if (recogNarratives.length > 0) {
     const recogScores = scored
       .filter((a) => a.condition === 'recognition')
-      .map((a) => a.overall_score)
+      .map((a) => a.tutor_first_turn_score)
       .filter((s) => s != null);
     const recogMean =
       recogScores.length > 0 ? (recogScores.reduce((a, b) => a + b, 0) / recogScores.length).toFixed(1) : '--';
@@ -415,7 +415,7 @@ Generated: ${new Date().toISOString().slice(0, 10)} | Model: ${modelKey} | N=${s
     const a = scored[i];
     md += `---\n\n`;
     md += `## Dialogue ${i + 1}: ${a.profile_name} × ${a.scenario_id}`;
-    md += ` (Score: ${a.overall_score != null ? a.overall_score.toFixed(1) : '--'})\n\n`;
+    md += ` (Score: ${a.tutor_first_turn_score != null ? a.tutor_first_turn_score.toFixed(1) : '--'})\n\n`;
 
     const ax = a.assessment;
     md += `**Pedagogical Arc**: ${ax.pedagogical_arc}\n\n`;
@@ -786,7 +786,7 @@ async function main() {
             id: d.row.id,
             scenario_id: d.row.scenario_id,
             profile_name: d.row.profile_name,
-            overall_score: d.row.overall_score,
+            tutor_first_turn_score: d.row.tutor_first_turn_score,
             condition: d.condition,
             mechanism: d.mechanism,
             assessment,
@@ -808,7 +808,7 @@ async function main() {
             id: d.row.id,
             scenario_id: d.row.scenario_id,
             profile_name: d.row.profile_name,
-            overall_score: d.row.overall_score,
+            tutor_first_turn_score: d.row.tutor_first_turn_score,
             condition: d.condition,
             mechanism: d.mechanism,
             error: err.message,
@@ -827,7 +827,7 @@ async function main() {
   const allAssessments = db
     .prepare(
       `
-    SELECT id, scenario_id, profile_name, overall_score, factor_recognition,
+    SELECT id, scenario_id, profile_name, tutor_first_turn_score, factor_recognition,
            ${assessCol} AS qualitative_assessment, ${modelCol} AS qualitative_model
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND ${assessCol} IS NOT NULL
@@ -839,7 +839,7 @@ async function main() {
       id: row.id,
       scenario_id: row.scenario_id,
       profile_name: row.profile_name,
-      overall_score: row.overall_score,
+      tutor_first_turn_score: row.tutor_first_turn_score,
       condition: detectCondition(row),
       mechanism: detectMechanism(row.profile_name),
       assessment: JSON.parse(row.qualitative_assessment),
@@ -898,8 +898,8 @@ async function main() {
   // Score comparison by condition
   const byCondition = { base: [], recognition: [] };
   for (const a of allAssessments) {
-    if (a.overall_score != null && a.condition) {
-      byCondition[a.condition]?.push(a.overall_score);
+    if (a.tutor_first_turn_score != null && a.condition) {
+      byCondition[a.condition]?.push(a.tutor_first_turn_score);
     }
   }
   if (byCondition.base.length > 0 || byCondition.recognition.length > 0) {

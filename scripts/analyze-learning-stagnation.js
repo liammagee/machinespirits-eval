@@ -576,7 +576,7 @@ const sourceRows = db
         learner_scores,
         learner_overall_score,
         learner_holistic_overall_score,
-        overall_score
+        tutor_first_turn_score
       FROM evaluation_results
       WHERE success = 1
         AND dialogue_id IS NOT NULL
@@ -638,7 +638,7 @@ for (const row of sourceRows) {
     recognition: row.factor_recognition == null ? null : Number(row.factor_recognition),
     learnerTurnScore: safeNumber(row.learner_overall_score),
     learnerHolisticScore: safeNumber(row.learner_holistic_overall_score),
-    tutorScore: safeNumber(row.overall_score),
+    tutorScore: safeNumber(row.tutor_first_turn_score),
     learnerRubricFirst: rubricMetrics?.first ?? null,
     learnerRubricLast: rubricMetrics?.last ?? null,
     learnerRubricDelta: rubricMetrics?.delta ?? null,

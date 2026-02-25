@@ -711,7 +711,7 @@ function main() {
   const rows = db
     .prepare(
       `
-    SELECT id, scenario_id, profile_name, overall_score, dialogue_id, dialogue_rounds
+    SELECT id, scenario_id, profile_name, tutor_first_turn_score, dialogue_id, dialogue_rounds
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND dialogue_id IS NOT NULL
     ORDER BY profile_name, scenario_id
@@ -758,7 +758,7 @@ function main() {
       dialogueId: row.dialogue_id,
       profileName: row.profile_name,
       scenarioId: row.scenario_id,
-      score: row.overall_score,
+      score: row.tutor_first_turn_score,
       mechanism,
       condition,
       revisionMagnitude,

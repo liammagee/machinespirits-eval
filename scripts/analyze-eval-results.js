@@ -233,7 +233,7 @@ function parseArgs() {
     runId: null,
     scenarios: [],
     dimensions: [
-      'overall_score',
+      'tutor_first_turn_score',
       'score_relevance',
       'score_specificity',
       'score_pedagogical',
@@ -304,7 +304,7 @@ async function analyzeResults(options) {
     SELECT
       profile_name,
       scenario_id,
-      overall_score,
+      tutor_first_turn_score,
       score_relevance,
       score_specificity,
       score_pedagogical,
@@ -314,7 +314,7 @@ async function analyzeResults(options) {
       created_at
     FROM evaluation_results
     WHERE success = 1
-      AND overall_score IS NOT NULL
+      AND tutor_first_turn_score IS NOT NULL
   `;
 
   const params = [];
@@ -381,7 +381,7 @@ async function analyzeResults(options) {
 
   const profileStats = {};
   for (const profile of profiles) {
-    const scores = byProfile[profile].map((r) => r.overall_score);
+    const scores = byProfile[profile].map((r) => r.tutor_first_turn_score);
     const ci = confidenceInterval(scores);
     profileStats[profile] = { scores, ci, n: scores.length };
 
@@ -397,7 +397,7 @@ async function analyzeResults(options) {
 
   // Pairwise comparisons
   if (profiles.length >= 2) {
-    console.log(`${c.bold}PAIRWISE COMPARISONS (Overall Score)${c.reset}`);
+    console.log(`${c.bold}PAIRWISE COMPARISONS (Tutor First-Turn Score)${c.reset}`);
     console.log(`${'─'.repeat(90)}`);
     console.log(
       `${'Comparison'.padEnd(30)} ` +
@@ -522,8 +522,8 @@ async function analyzeResults(options) {
         for (let j = i + 1; j < availableProfiles.length; j++) {
           const p1 = availableProfiles[i];
           const p2 = availableProfiles[j];
-          const s1 = scenarioData[p1].map((r) => r.overall_score);
-          const s2 = scenarioData[p2].map((r) => r.overall_score);
+          const s1 = scenarioData[p1].map((r) => r.tutor_first_turn_score);
+          const s2 = scenarioData[p2].map((r) => r.tutor_first_turn_score);
 
           const d = cohensD(s1, s2);
           const ttest = welchTTest(s1, s2);

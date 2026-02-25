@@ -306,7 +306,7 @@ function loadRows(db, runId) {
   return db
     .prepare(
       `
-    SELECT id, dialogue_id, scenario_id, profile_name, overall_score,
+    SELECT id, dialogue_id, scenario_id, profile_name, tutor_first_turn_score,
            dialogue_rounds, suggestions
     FROM evaluation_results
     WHERE run_id = ? AND success = 1 AND dialogue_id IS NOT NULL
@@ -797,7 +797,7 @@ function buildModulationProfile(row, dialogueLog, structural, llmCoded) {
     profileName: row.profile_name,
     condition,
     persona,
-    overallScore: row.overall_score,
+    tutorFirstTurnScore: row.tutor_first_turn_score,
     dialogueRounds: row.dialogue_rounds,
     structural,
     llmCoded: llmCoded || null,
@@ -985,25 +985,25 @@ function analyzeAggregateResults(profiles) {
     };
   }
 
-  // ── Correlations: modulation metrics vs overall_score ──────────────
+  // ── Correlations: modulation metrics vs tutor_first_turn_score ──────────────
 
-  const scores = profiles.map((p) => p.overallScore).filter((v) => v != null);
+  const scores = profiles.map((p) => p.tutorFirstTurnScore).filter((v) => v != null);
   const _negDepths = profiles.map((p) => p.structural.aggregate.meanNegationDepth);
   const _convergeSpeeds = profiles.map((p) => p.structural.aggregate.meanRoundsToConverge);
   const _feedbackLens = profiles.map((p) => p.structural.aggregate.meanFeedbackLength);
 
   if (scores.length >= 5) {
     analysis.correlations.negationDepth_score = pearsonR(
-      profiles.filter((p) => p.overallScore != null).map((p) => p.structural.aggregate.meanNegationDepth),
-      profiles.filter((p) => p.overallScore != null).map((p) => p.overallScore),
+      profiles.filter((p) => p.tutorFirstTurnScore != null).map((p) => p.structural.aggregate.meanNegationDepth),
+      profiles.filter((p) => p.tutorFirstTurnScore != null).map((p) => p.tutorFirstTurnScore),
     );
     analysis.correlations.convergenceSpeed_score = pearsonR(
-      profiles.filter((p) => p.overallScore != null).map((p) => p.structural.aggregate.meanRoundsToConverge),
-      profiles.filter((p) => p.overallScore != null).map((p) => p.overallScore),
+      profiles.filter((p) => p.tutorFirstTurnScore != null).map((p) => p.structural.aggregate.meanRoundsToConverge),
+      profiles.filter((p) => p.tutorFirstTurnScore != null).map((p) => p.tutorFirstTurnScore),
     );
     analysis.correlations.feedbackLength_score = pearsonR(
-      profiles.filter((p) => p.overallScore != null).map((p) => p.structural.aggregate.meanFeedbackLength),
-      profiles.filter((p) => p.overallScore != null).map((p) => p.overallScore),
+      profiles.filter((p) => p.tutorFirstTurnScore != null).map((p) => p.structural.aggregate.meanFeedbackLength),
+      profiles.filter((p) => p.tutorFirstTurnScore != null).map((p) => p.tutorFirstTurnScore),
     );
   }
 
@@ -1129,7 +1129,7 @@ function generateReport(profiles, analysis, opts) {
   md += `| Cell | N | Mean Score | Mean Neg Depth | Mean Rounds | Mean Confidence |\n`;
   md += `|------|---|------------|----------------|-------------|------------------|\n`;
   for (const [cellKey, cellProfiles] of Object.entries(analysis.byCell)) {
-    const scores = cellProfiles.map((p) => p.overallScore).filter((v) => v != null);
+    const scores = cellProfiles.map((p) => p.tutorFirstTurnScore).filter((v) => v != null);
     const negDepths = cellProfiles.map((p) => p.structural.aggregate.meanNegationDepth);
     const rounds = cellProfiles.map((p) => p.structural.aggregate.meanRoundsToConverge);
     const confs = cellProfiles.map((p) => p.structural.aggregate.meanConfidence).filter((v) => v != null);
@@ -1146,10 +1146,10 @@ function generateReport(profiles, analysis, opts) {
     const high = sorted[0];
     const low = sorted[sorted.length - 1];
     md += `**Highest negation depth** (${high.structural.aggregate.totalNegations} total negations):\n`;
-    md += `- ID: ${high.id}, ${high.condition}/${high.persona}, score=${high.overallScore?.toFixed(1)}\n`;
+    md += `- ID: ${high.id}, ${high.condition}/${high.persona}, score=${high.tutorFirstTurnScore?.toFixed(1)}\n`;
     md += `- Turns: ${high.structural.totalTurns}, convergence trajectory: ${high.structural.aggregate.convergenceTrajectory}\n\n`;
     md += `**Lowest negation depth** (${low.structural.aggregate.totalNegations} total negations):\n`;
-    md += `- ID: ${low.id}, ${low.condition}/${low.persona}, score=${low.overallScore?.toFixed(1)}\n`;
+    md += `- ID: ${low.id}, ${low.condition}/${low.persona}, score=${low.tutorFirstTurnScore?.toFixed(1)}\n`;
     md += `- Turns: ${low.structural.totalTurns}, convergence trajectory: ${low.structural.aggregate.convergenceTrajectory}\n`;
   }
 

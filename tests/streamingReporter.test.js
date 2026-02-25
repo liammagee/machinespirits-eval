@@ -19,12 +19,12 @@ describe('StreamingReporter', () => {
 
   describe('onTestComplete', () => {
     it('increments completed count', () => {
-      reporter.onTestComplete({ overallScore: 85.5, success: true, profileName: 'cell_1', scenarioId: 's1' });
+      reporter.onTestComplete({ tutorFirstTurnScore: 85.5, success: true, profileName: 'cell_1', scenarioId: 's1' });
       assert.equal(reporter.completedCount, 1);
     });
 
     it('prints progress bar with score', () => {
-      reporter.onTestComplete({ overallScore: 85.5, success: true, profileName: 'cell_1', scenarioId: 's1' });
+      reporter.onTestComplete({ tutorFirstTurnScore: 85.5, success: true, profileName: 'cell_1', scenarioId: 's1' });
       assert.equal(logOutput.length, 1);
       assert.ok(logOutput[0].includes('85.5'), 'should contain score');
       assert.ok(logOutput[0].includes('1/10'), 'should contain count');
@@ -32,7 +32,7 @@ describe('StreamingReporter', () => {
     });
 
     it('handles null score', () => {
-      reporter.onTestComplete({ overallScore: null, success: true });
+      reporter.onTestComplete({ tutorFirstTurnScore: null, success: true });
       assert.ok(logOutput[0].includes('--'), 'should show -- for null score');
     });
   });

@@ -1502,7 +1502,7 @@ export async function runEvaluation(options = {}) {
         scenarioName: scenario.name || scenario.id,
         profileName: profileLabel,
         success: result.success,
-        overallScore: result.overallScore,
+        overallScore: result.tutorFirstTurnScore,
         baseScore: result.baseScore ?? null,
         recognitionScore: result.recognitionScore ?? null,
         latencyMs: result.latencyMs,
@@ -1518,7 +1518,7 @@ export async function runEvaluation(options = {}) {
       });
 
       log(
-        `  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`,
+        `  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.tutorFirstTurnScore?.toFixed(1)}` : 'FAILED'}`,
       );
 
       // Update monitoring session with progress
@@ -1534,7 +1534,7 @@ export async function runEvaluation(options = {}) {
       // Track scenario completion
       const sp = scenarioProgress.get(scenario.id);
       sp.completed++;
-      if (result.overallScore != null) sp.scores.push(result.overallScore);
+      if (result.tutorFirstTurnScore != null) sp.scores.push(result.tutorFirstTurnScore);
       if (sp.completed >= sp.total) {
         completedScenarios++;
         const avgScore = sp.scores.length > 0 ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length : null;
@@ -1773,7 +1773,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     _suggestion,
     validation,
     rubricResult,
-    turnScore: overallScore,
+    turnScore: tutorFirstTurnScore,
     scoringMethod,
   } = await generateAndEvaluateTurn(
     context,
@@ -1852,7 +1852,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
         : null,
     scoresWithReasoning:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
-    overallScore,
+    tutorFirstTurnScore,
     scoringMethod,
     baseScore: rubricResult?.baseScore ?? null,
     recognitionScore: rubricResult?.recognitionScore ?? null,
@@ -2056,7 +2056,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
 
     // Show learner action in transcript mode (for follow-up turns)
-    if (!isInitialTurn && dialogueEngine.isTranscriptMode()) {
+    // Skip for dynamic learner — the LLM-generated response replaces the scripted action
+    if (!isInitialTurn && dialogueEngine.isTranscriptMode() && !resolvedConfig.learnerArchitecture?.includes('ego_superego')) {
       dialogueEngine.transcript('LEARNER ACTION', formatLearnerActionForTranscript(turnDef));
     }
 
@@ -2066,11 +2067,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       contextStr = fullScenario.learner_context;
     } else {
       // Add previous turn to conversation history
+      // For dynamic learner, omit the scripted learner_action — the LLM message is the action
+      const isDynamicLearner = resolvedConfig.learnerArchitecture?.includes('ego_superego');
       conversationHistory.push({
         turnIndex: turnIdx - 1,
         turnId: turnIdx === 1 ? 'initial' : turns[turnIdx - 2]?.id,
         suggestion: previousSuggestion,
-        learnerAction: turnDef.learner_action,
+        learnerAction: isDynamicLearner ? undefined : turnDef.learner_action,
         learnerMessage: turnDef.action_details?.message,
       });
 
@@ -2094,7 +2097,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // Build turn-specific rubric metadata
     const turnMeta = {
       scenarioName: isInitialTurn ? fullScenario.name : `${fullScenario.name} - Turn ${turnIdx}`,
-      description: isInitialTurn ? fullScenario.description : `Turn: ${turnDef.learner_action}`,
+      description: isInitialTurn
+        ? fullScenario.description
+        : resolvedConfig.learnerArchitecture?.includes('ego_superego')
+          ? `Turn ${turnIdx}: dynamic learner response`
+          : `Turn: ${turnDef.learner_action}`,
       expectedBehavior: isInitialTurn ? fullScenario.expected_behavior : turnDef.expected_behavior,
       learnerContext: contextStr,
       requiredElements: isInitialTurn ? fullScenario.required_elements || [] : turnDef.required_elements || [],
@@ -2167,7 +2174,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // Accumulate dialogue traces
     if (genResult.dialogueTrace && genResult.dialogueTrace.length > 0) {
       // Insert user turn action entry before each turn (except initial)
-      if (!isInitialTurn) {
+      // For dynamic learner (ego_superego), skip the scripted action label —
+      // the learner's LLM-generated response is already in the trace via
+      // learner_ego_initial / learner_superego / learner_synthesis entries.
+      if (!isInitialTurn && !resolvedConfig.learnerArchitecture?.includes('ego_superego')) {
         const histEntry = conversationHistory[conversationHistory.length - 1];
         consolidatedTrace.push({
           agent: 'user',
@@ -2239,7 +2249,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     turnResults.push({
       turnIndex: turnIdx,
       turnId: isInitialTurn ? 'initial' : turnDef.id,
-      learnerAction: isInitialTurn ? undefined : turnDef.learner_action,
+      learnerAction: isInitialTurn || resolvedConfig.learnerArchitecture?.includes('ego_superego') ? undefined : turnDef.learner_action,
       learnerMessage: isInitialTurn ? undefined : turnDef.action_details?.message, // Include generated learner message for growth tracking
       expectedBehavior: turnMeta.expectedBehavior,
       suggestion,
@@ -2771,7 +2781,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // 5. Aggregate scores across turns
   const validTurnScores = turnResults.filter((t) => t.turnScore !== null).map((t) => t.turnScore);
-  const overallScore =
+  const tutorFirstTurnScore =
     validTurnScores.length > 0 ? validTurnScores.reduce((sum, s) => sum + s, 0) / validTurnScores.length : null;
 
   const aggregateDimensions = {};
@@ -2931,7 +2941,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
   fs.writeFileSync(logPath, JSON.stringify(consolidatedDialogue, null, 2));
 
-  log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${overallScore?.toFixed(1)}`);
+  log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${tutorFirstTurnScore?.toFixed(1)}`);
 
   // Aggregate requiredMissing/forbiddenFound from all turns
   const requiredMissing = [...new Set(turnResults.flatMap((t) => t.requiredMissing || []))];
@@ -2962,7 +2972,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueId,
     dialogueRounds: totalDialogueRounds,
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
-    overallScore,
+    tutorFirstTurnScore,
     scoringMethod: turnResults.some((t) => t.scoringMethod === 'judge_failed')
       ? 'partial_judge_failure'
       : turnResults.every((t) => t.scoringMethod === 'rubric')
@@ -3259,7 +3269,7 @@ export async function resumeEvaluation(options = {}) {
         scenarioName: scenario.name || scenario.id,
         profileName: profileLabel,
         success: result.success,
-        overallScore: result.overallScore,
+        overallScore: result.tutorFirstTurnScore,
         baseScore: result.baseScore ?? null,
         recognitionScore: result.recognitionScore ?? null,
         latencyMs: result.latencyMs,
@@ -3274,7 +3284,7 @@ export async function resumeEvaluation(options = {}) {
       });
 
       log(
-        `  ${formatProgress(completedTests, totalRemainingTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.overallScore?.toFixed(1)}` : 'FAILED'}`,
+        `  ${formatProgress(completedTests, totalRemainingTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.tutorFirstTurnScore?.toFixed(1)}` : 'FAILED'}`,
       );
 
       monitoringService.recordEvent(runId, {
@@ -3289,7 +3299,7 @@ export async function resumeEvaluation(options = {}) {
       // Track scenario completion
       const sp = scenarioProgress.get(scenario.id);
       sp.completed++;
-      if (result.overallScore != null) sp.scores.push(result.overallScore);
+      if (result.tutorFirstTurnScore != null) sp.scores.push(result.tutorFirstTurnScore);
       if (sp.completed >= sp.total) {
         completedScenarios++;
         const avgScore = sp.scores.length > 0 ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length : null;
@@ -3622,7 +3632,7 @@ export function generateReport(runId) {
 
   // ANOVA analysis — if factorial data is available, run for each score type
   const scoreTypes = [
-    { column: 'overall_score', label: 'Overall Score' },
+    { column: 'tutor_first_turn_score', label: 'Overall Score' },
     { column: 'base_score', label: 'Base Score' },
     { column: 'recognition_score', label: 'Recognition Score' },
   ];
@@ -3751,7 +3761,7 @@ export async function rejudgeRun(runId, options = {}) {
   if (scenarioFilter) log(`  Scenario filter: ${scenarioFilter}`);
 
   // Capture old scores for before/after comparison
-  const oldScores = results.map((r) => r.overallScore).filter((s) => s != null);
+  const oldScores = results.map((r) => r.tutorFirstTurnScore).filter((s) => s != null);
   const oldAvg = oldScores.length > 0 ? oldScores.reduce((a, b) => a + b, 0) / oldScores.length : null;
 
   let completed = 0;
@@ -3843,7 +3853,7 @@ export async function rejudgeRun(runId, options = {}) {
           if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
           const modeLabel = overwrite ? 'replaced' : 'added';
           log(
-            `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.overallScore?.toFixed(1) ?? '--'})`,
+            `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.tutorFirstTurnScore?.toFixed(1) ?? '--'})`,
           );
         } else {
           failed++;

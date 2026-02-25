@@ -288,7 +288,7 @@ function buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpec
       evidence: {
         type: 'db_count',
         filters: {
-          not_null: ['overall_score'],
+          not_null: ['tutor_first_turn_score'],
         },
       },
       assertion: claimInfo?.isLowerBound
@@ -302,7 +302,7 @@ function buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpec
       evidence: {
         type: 'db_count',
         filters: {
-          not_null: ['overall_score'],
+          not_null: ['tutor_first_turn_score'],
         },
       },
       assertion: { op: 'gte', expected: claimInfo.value },
@@ -328,7 +328,7 @@ function buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpec
       const row = selectedRows[0];
       const filters = {
         run_ids: row.run_ids || [],
-        not_null: ['overall_score'],
+        not_null: ['tutor_first_turn_score'],
       };
       if (row.primary_judge_pattern) {
         filters.like = { judge_model: row.primary_judge_pattern };
@@ -390,7 +390,7 @@ function main() {
 
   const db = new Database(dbPath, { readonly: true });
   const dbScoredTotal = Number(
-    db.prepare('SELECT COUNT(*) AS value FROM evaluation_results WHERE overall_score IS NOT NULL').get()?.value || 0,
+    db.prepare('SELECT COUNT(*) AS value FROM evaluation_results WHERE tutor_first_turn_score IS NOT NULL').get()?.value || 0,
   );
   db.close();
 

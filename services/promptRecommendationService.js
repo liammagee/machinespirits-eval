@@ -107,10 +107,10 @@ function analyzeResults(results) {
   };
 
   // Calculate average and find low scores
-  const scores = results.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+  const scores = results.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
   if (scores.length > 0) {
     analysis.avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-    analysis.lowScoreResults = results.filter((r) => r.overallScore != null && r.overallScore < 70).slice(0, 10); // Top 10 low scorers
+    analysis.lowScoreResults = results.filter((r) => r.tutorFirstTurnScore != null && r.tutorFirstTurnScore < 70).slice(0, 10); // Top 10 low scorers
   }
 
   // Find validation failures
@@ -223,7 +223,7 @@ ${analysis.lowScoreResults
   .slice(0, 5)
   .map(
     (r) => `
-### ${r.scenarioName} (score: ${r.overallScore?.toFixed(1)})
+### ${r.scenarioName} (score: ${r.tutorFirstTurnScore?.toFixed(1)})
 - Suggestion: "${r.suggestions?.[0]?.title || 'N/A'}"
 - Message: ${r.suggestions?.[0]?.message?.substring(0, 150) || 'N/A'}...
 - Evaluation reasoning: ${r.evaluationReasoning?.substring(0, 200) || 'N/A'}...

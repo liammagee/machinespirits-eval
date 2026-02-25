@@ -22,6 +22,10 @@ import {
   calculateRecognitionScore,
   calculateOverallScore,
   calculateRecognitionMetrics,
+  calculateDialogueQualityScore,
+  buildDialogueQualityPrompt,
+  loadDialogueRubric,
+  getDialogueDimensions,
 } from '../services/rubricEvaluator.js';
 
 // parseJudgeResponse, repairUnescapedQuotes, and regexScoreRescue are not
@@ -719,5 +723,144 @@ describe('parseJudgeResponse — full evaluation response', () => {
     assert.strictEqual(result.scores.specificity.score, 5);
     assert.strictEqual(result.validation.passes_required, true);
     assert.deepStrictEqual(result.validation.required_missing, []);
+  });
+});
+
+// ============================================================================
+// Dialogue Quality Rubric Tests
+// ============================================================================
+
+describe('loadDialogueRubric', () => {
+  it('loads the dialogue rubric YAML', () => {
+    const rubric = loadDialogueRubric({ forceReload: true });
+    assert.ok(rubric, 'should load rubric');
+    assert.strictEqual(rubric.name, 'Dialogue Quality Rubric');
+    assert.ok(rubric.dimensions, 'should have dimensions');
+  });
+
+  it('has exactly 6 dimensions', () => {
+    const rubric = loadDialogueRubric();
+    const dimKeys = Object.keys(rubric.dimensions);
+    assert.strictEqual(dimKeys.length, 6, `expected 6 dimensions, got ${dimKeys.length}: ${dimKeys.join(', ')}`);
+  });
+
+  it('dimension weights sum to ~1.0', () => {
+    const rubric = loadDialogueRubric();
+    const totalWeight = Object.values(rubric.dimensions).reduce((sum, d) => sum + d.weight, 0);
+    assert.ok(Math.abs(totalWeight - 1.0) < 0.01, `weights sum to ${totalWeight}, expected ~1.0`);
+  });
+});
+
+describe('getDialogueDimensions', () => {
+  it('returns all 6 dimensions', () => {
+    const dims = getDialogueDimensions();
+    const keys = Object.keys(dims);
+    assert.strictEqual(keys.length, 6);
+    assert.ok(keys.includes('pedagogical_progression'), 'should have pedagogical_progression');
+    assert.ok(keys.includes('dialogical_responsiveness'), 'should have dialogical_responsiveness');
+    assert.ok(keys.includes('knowledge_co_construction'), 'should have knowledge_co_construction');
+    assert.ok(keys.includes('productive_tension_management'), 'should have productive_tension_management');
+    assert.ok(keys.includes('transformation_evidence'), 'should have transformation_evidence');
+    assert.ok(keys.includes('interactional_coherence'), 'should have interactional_coherence');
+  });
+});
+
+describe('calculateDialogueQualityScore', () => {
+  it('calculates a score from all-3s (midpoint) as 50', () => {
+    const scores = makeScores({
+      pedagogical_progression: 3,
+      dialogical_responsiveness: 3,
+      knowledge_co_construction: 3,
+      productive_tension_management: 3,
+      transformation_evidence: 3,
+      interactional_coherence: 3,
+    });
+    const result = calculateDialogueQualityScore(scores);
+    assertApprox(result, 50, 'all-3s should yield ~50', 0.5);
+  });
+
+  it('calculates a score from all-5s (maximum) as 100', () => {
+    const scores = makeScores({
+      pedagogical_progression: 5,
+      dialogical_responsiveness: 5,
+      knowledge_co_construction: 5,
+      productive_tension_management: 5,
+      transformation_evidence: 5,
+      interactional_coherence: 5,
+    });
+    const result = calculateDialogueQualityScore(scores);
+    assertApprox(result, 100, 'all-5s should yield ~100', 0.5);
+  });
+
+  it('calculates a score from all-1s (minimum) as 0', () => {
+    const scores = makeScores({
+      pedagogical_progression: 1,
+      dialogical_responsiveness: 1,
+      knowledge_co_construction: 1,
+      productive_tension_management: 1,
+      transformation_evidence: 1,
+      interactional_coherence: 1,
+    });
+    const result = calculateDialogueQualityScore(scores);
+    assertApprox(result, 0, 'all-1s should yield ~0', 0.5);
+  });
+
+  it('returns 0 for empty scores', () => {
+    const result = calculateDialogueQualityScore({});
+    assert.strictEqual(result, 0);
+  });
+});
+
+describe('buildDialogueQualityPrompt', () => {
+  it('builds a prompt with all required sections', () => {
+    const prompt = buildDialogueQualityPrompt({
+      turns: [
+        { learnerMessage: 'What is dialectics?', suggestion: { message: 'Great question!' } },
+        { learnerMessage: 'Can you explain more?', suggestion: { message: 'Dialectics involves...' } },
+      ],
+      scenarioName: 'Test Scenario',
+      scenarioDescription: 'A test dialogue',
+      topic: 'Hegel',
+      turnCount: 2,
+    });
+
+    assert.ok(prompt.includes('EVALUATION RUBRIC'), 'should include rubric section');
+    assert.ok(prompt.includes('DIALOGUE CONTEXT'), 'should include context section');
+    assert.ok(prompt.includes('FULL DIALOGUE TRANSCRIPT'), 'should include transcript section');
+    assert.ok(prompt.includes('Test Scenario'), 'should include scenario name');
+    assert.ok(prompt.includes('**Turn count**: 2'), 'should include turn count');
+    assert.ok(prompt.includes('pedagogical_progression'), 'should include dimension keys in example');
+    assert.ok(prompt.includes('dance'), 'should include dance metaphor');
+  });
+
+  it('includes all 6 dimension names in the prompt', () => {
+    const prompt = buildDialogueQualityPrompt({
+      turns: [],
+      scenarioName: 'empty',
+      turnCount: 0,
+    });
+
+    assert.ok(prompt.includes('Pedagogical Progression'), 'should mention Pedagogical Progression');
+    assert.ok(prompt.includes('Dialogical Responsiveness'), 'should mention Dialogical Responsiveness');
+    assert.ok(prompt.includes('Knowledge Co-Construction'), 'should mention Knowledge Co-Construction');
+    assert.ok(prompt.includes('Productive Tension Management'), 'should mention Productive Tension Management');
+    assert.ok(prompt.includes('Transformation Evidence'), 'should mention Transformation Evidence');
+    assert.ok(prompt.includes('Interactional Coherence'), 'should mention Interactional Coherence');
+  });
+
+  it('uses dialogueTrace when provided (consolidated trace)', () => {
+    const prompt = buildDialogueQualityPrompt({
+      turns: [],
+      dialogueTrace: [
+        { turnIndex: 0, agent: 'user', action: 'turn_action', detail: 'Learner asks a question' },
+        { turnIndex: 0, agent: 'ego', action: 'initial_draft', contextSummary: 'Drafting response' },
+        { turnIndex: 0, agent: 'learner_synthesis', detail: 'I think I understand now' },
+      ],
+      scenarioName: 'Trace Test',
+      turnCount: 1,
+    });
+
+    assert.ok(prompt.includes('Learner asks a question'), 'should include trace detail');
+    assert.ok(prompt.includes('Turn 0'), 'should include turn markers');
   });
 });

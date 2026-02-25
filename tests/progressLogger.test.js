@@ -87,7 +87,7 @@ describe('ProgressLogger', () => {
       scenarioName: 'New User',
       profileName: 'cell_1',
       success: true,
-      overallScore: 85.5,
+      tutorFirstTurnScore: 85.5,
       baseScore: 80.0,
       recognitionScore: 91.0,
       latencyMs: 1234,
@@ -96,7 +96,7 @@ describe('ProgressLogger', () => {
     });
     const events = readProgressLog(testRunId);
     assert.equal(events[0].eventType, 'test_complete');
-    assert.equal(events[0].overallScore, 85.5);
+    assert.equal(events[0].tutorFirstTurnScore, 85.5);
     assert.equal(events[0].latencyMs, 1234);
     assert.equal(events[0].success, true);
   });
@@ -190,7 +190,7 @@ describe('readProgressLog', () => {
       scenarioName: 'S1',
       profileName: 'p1',
       success: true,
-      overallScore: 90,
+      tutorFirstTurnScore: 90,
       latencyMs: 500,
       completedCount: 1,
       totalTests: 5,

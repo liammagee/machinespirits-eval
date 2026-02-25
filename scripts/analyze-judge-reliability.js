@@ -166,7 +166,7 @@ function analyzeJudgeReliability() {
 
   // Find paired judgments - must be SAME response content judged by different models
   // Match on suggestions content (the actual tutor response), not just scenario/profile
-  let whereClause = 'WHERE judge_model IS NOT NULL AND overall_score IS NOT NULL AND suggestions IS NOT NULL';
+  let whereClause = 'WHERE judge_model IS NOT NULL AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL';
   if (runIdFilter) {
     whereClause += ` AND run_id = '${runIdFilter}'`;
   }
@@ -177,7 +177,7 @@ function analyzeJudgeReliability() {
       scenario_id,
       profile_name,
       judge_model,
-      overall_score,
+      tutor_first_turn_score,
       score_relevance,
       score_specificity,
       score_pedagogical,
@@ -270,9 +270,9 @@ function analyzeJudgeReliability() {
           judgePairs.get(pairKey).push({
             judge1: judgeList[i],
             judge2: judgeList[j],
-            score1: s1.overall_score,
-            score2: s2.overall_score,
-            diff: Math.abs(s1.overall_score - s2.overall_score),
+            score1: s1.tutor_first_turn_score,
+            score2: s2.tutor_first_turn_score,
+            diff: Math.abs(s1.tutor_first_turn_score - s2.tutor_first_turn_score),
             dimensions: {
               relevance: [s1.score_relevance, s2.score_relevance],
               specificity: [s1.score_specificity, s2.score_specificity],

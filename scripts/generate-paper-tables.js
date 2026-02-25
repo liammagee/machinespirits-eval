@@ -121,7 +121,7 @@ function main() {
         .prepare(
           `
         SELECT COUNT(*) as total,
-               SUM(CASE WHEN overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
+               SUM(CASE WHEN tutor_first_turn_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
         WHERE run_id IN (${placeholders}) AND judge_model LIKE ?${profileClause}
       `,

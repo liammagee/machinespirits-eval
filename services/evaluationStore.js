@@ -3,6 +3,29 @@
  *
  * SQLite-based storage for AI tutor evaluation results.
  * Supports querying, aggregation, comparison, and export.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * COLUMN SEMANTIC MAPPING (multi-turn dialogue scoring)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * For multi-turn dialogue rows, five distinct scores answer different questions:
+ *
+ *   DB Column                     │ Question
+ *   ──────────────────────────────┼───────────────────────────────────
+ *   tutor_first_turn_score        │ How good is the tutor's cold-start response?
+ *   tutor_last_turn_score         │ How good is the tutor after adaptation?
+ *   tutor_development_score       │ How much did the tutor improve? (last - first)
+ *   learner_overall_score         │ Average of per-turn learner scores
+ *   learner_holistic_overall_score│ Holistic learner dialogue evaluation
+ *   dialogue_quality_score        │ Overall pedagogical encounter quality
+ *
+ * DEPRECATED columns (kept for backward compatibility):
+ *   - overall_score: DEPRECATED alias for tutor_first_turn_score (synced on write)
+ *   - holistic_overall_score: DEPRECATED alias for tutor_last_turn_score
+ *
+ * For single-turn rows: tutor_last_turn_score, tutor_development_score,
+ *   and dialogue_quality_score are NULL (these metrics are meaningless).
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 
 import Database from 'better-sqlite3';
@@ -160,6 +183,25 @@ migrateAddColumn(
 );
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN judge_latency_ms INTEGER`, 'judge_latency_ms');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN holistic_overall_score REAL`, 'holistic_overall_score');
+
+// Rename: overall_score → tutor_first_turn_score (keep overall_score as deprecated alias)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_first_turn_score REAL`, 'tutor_first_turn_score');
+// Backfill tutor_first_turn_score from overall_score for existing rows
+try {
+  db.exec(`UPDATE evaluation_results SET tutor_first_turn_score = overall_score WHERE tutor_first_turn_score IS NULL AND overall_score IS NOT NULL`);
+} catch (e) {
+  // Ignore if column doesn't exist yet
+}
+
+// Dialogue scoring columns (multi-turn evaluation redesign)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_last_turn_score REAL`, 'tutor_last_turn_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_development_score REAL`, 'tutor_development_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_score REAL`, 'dialogue_quality_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_summary TEXT`, 'dialogue_quality_summary');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_judge_model TEXT`,
+  'dialogue_quality_judge_model',
+);
 
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
@@ -366,7 +408,7 @@ export function storeResult(runId, result) {
       suggestions, raw_response,
       latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
       score_relevance, score_specificity, score_pedagogical,
-      score_personalization, score_actionability, score_tone, overall_score,
+      score_personalization, score_actionability, score_tone, overall_score, tutor_first_turn_score,
       base_score, recognition_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
@@ -381,7 +423,7 @@ export function storeResult(runId, result) {
       ?, ?,
       ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
-      ?, ?, ?, ?,
+      ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
@@ -419,7 +461,8 @@ export function storeResult(runId, result) {
     result.scores?.personalization,
     result.scores?.actionability,
     result.scores?.tone,
-    result.overallScore,
+    result.tutorFirstTurnScore ?? result.overallScore ?? null,
+    result.tutorFirstTurnScore ?? result.overallScore ?? null, // tutor_first_turn_score (same value, synced)
     result.baseScore,
     result.recognitionScore,
     result.passesRequired ? 1 : 0,
@@ -500,7 +543,7 @@ export function listRuns(options = {}) {
   const resultCountStmt = db.prepare(`
     SELECT COUNT(*) as completed,
            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
-           AVG(overall_score) as avg_score,
+           AVG(COALESCE(tutor_first_turn_score, overall_score)) as avg_score,
            COUNT(DISTINCT judge_model) as judge_count
     FROM evaluation_results
     WHERE run_id = ?
@@ -633,7 +676,7 @@ export function getRunStats(runId) {
       superego_model,
       COUNT(*) as total_tests,
       SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful_tests,
-      AVG(overall_score) as avg_score,
+      AVG(COALESCE(tutor_first_turn_score, overall_score)) as avg_score,
       AVG(score_relevance) as avg_relevance,
       AVG(score_specificity) as avg_specificity,
       AVG(score_pedagogical) as avg_pedagogical,
@@ -697,7 +740,7 @@ export function getScenarioStats(runId) {
       profile_name,
       ego_model,
       superego_model,
-      AVG(overall_score) as avg_score,
+      AVG(COALESCE(tutor_first_turn_score, overall_score)) as avg_score,
       AVG(base_score) as avg_base_score,
       AVG(recognition_score) as avg_recognition_score,
       AVG(latency_ms) as avg_latency,
@@ -747,7 +790,7 @@ export function compareConfigs(runId, config1, config2) {
     const stmt = db.prepare(`
       SELECT
         scenario_id,
-        AVG(overall_score) as avg_score,
+        AVG(COALESCE(tutor_first_turn_score, overall_score)) as avg_score,
         AVG(score_relevance) as relevance,
         AVG(score_specificity) as specificity,
         AVG(score_pedagogical) as pedagogical,
@@ -824,7 +867,7 @@ export function exportToCsv(runId) {
     'scenario_name',
     'provider',
     'model',
-    'overall_score',
+    'tutor_first_turn_score',
     'relevance',
     'specificity',
     'pedagogical',
@@ -844,7 +887,7 @@ export function exportToCsv(runId) {
     r.scenarioName,
     r.provider,
     r.model,
-    r.overallScore,
+    r.tutorFirstTurnScore,
     r.scores?.relevance,
     r.scores?.specificity,
     r.scores?.pedagogical,
@@ -1181,7 +1224,8 @@ function parseResultRow(row) {
     dialogueId: row.dialogue_id,
     holisticOverallScore: row.holistic_overall_score != null ? row.holistic_overall_score : null,
     scores,
-    overallScore: row.overall_score,
+    tutorFirstTurnScore: row.tutor_first_turn_score ?? row.overall_score ?? null,
+    overallScore: row.tutor_first_turn_score ?? row.overall_score ?? null, // DEPRECATED alias
     scoringMethod: row.scoring_method || null,
     baseScore: row.base_score,
     recognitionScore: row.recognition_score,
@@ -1211,6 +1255,12 @@ function parseResultRow(row) {
       row.learner_holistic_overall_score != null ? row.learner_holistic_overall_score : null,
     learnerHolisticSummary: row.learner_holistic_summary || null,
     learnerHolisticJudgeModel: row.learner_holistic_judge_model || null,
+    // Dialogue scoring columns
+    tutorLastTurnScore: row.tutor_last_turn_score != null ? row.tutor_last_turn_score : null,
+    tutorDevelopmentScore: row.tutor_development_score != null ? row.tutor_development_score : null,
+    dialogueQualityScore: row.dialogue_quality_score != null ? row.dialogue_quality_score : null,
+    dialogueQualitySummary: row.dialogue_quality_summary || null,
+    dialogueQualityJudgeModel: row.dialogue_quality_judge_model || null,
   };
 }
 
@@ -1407,15 +1457,15 @@ export function getInteractionEvalByRunId(runId) {
  *
  * @param {string} runId - The run ID
  * @param {Object} [options] - Options
- * @param {string} [options.scoreColumn='overall_score'] - Which score to use
+ * @param {string} [options.scoreColumn='tutor_first_turn_score'] - Which score to use
  * @returns {Object} Map of cellKey → [score, ...]
  */
 export function getFactorialCellData(runId, options = {}) {
-  const { scoreColumn = 'overall_score' } = options;
+  const { scoreColumn = 'tutor_first_turn_score' } = options;
 
   // Whitelist valid score columns to prevent SQL injection
-  const validColumns = ['overall_score', 'base_score', 'recognition_score'];
-  const col = validColumns.includes(scoreColumn) ? scoreColumn : 'overall_score';
+  const validColumns = ['tutor_first_turn_score', 'overall_score', 'base_score', 'recognition_score'];
+  const col = validColumns.includes(scoreColumn) ? scoreColumn : 'tutor_first_turn_score';
 
   const stmt = db.prepare(`
     SELECT factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, ${col} as score
@@ -1453,7 +1503,7 @@ export function storeRejudgment(originalResult, evaluation) {
       suggestions, raw_response,
       latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
       score_relevance, score_specificity, score_pedagogical,
-      score_personalization, score_actionability, score_tone, overall_score,
+      score_personalization, score_actionability, score_tone, overall_score, tutor_first_turn_score,
       base_score, recognition_score,
       passes_required, passes_forbidden, required_missing, forbidden_found,
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
@@ -1469,7 +1519,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?,
       ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
-      ?, ?, ?, ?,
+      ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
@@ -1482,6 +1532,7 @@ export function storeRejudgment(originalResult, evaluation) {
   `);
 
   const scores = evaluation.scores || {};
+  const firstTurnScore = evaluation.tutorFirstTurnScore ?? evaluation.overallScore ?? null;
 
   const info = stmt.run(
     originalResult.runId,
@@ -1515,7 +1566,8 @@ export function storeRejudgment(originalResult, evaluation) {
     scores.personalization?.score ?? scores.personalization ?? null,
     scores.actionability?.score ?? scores.actionability ?? null,
     scores.tone?.score ?? scores.tone ?? null,
-    evaluation.overallScore ?? null,
+    firstTurnScore, // overall_score (deprecated)
+    firstTurnScore, // tutor_first_turn_score
     evaluation.baseScore ?? null,
     evaluation.recognitionScore ?? null,
     evaluation.passesRequired ? 1 : 0,
@@ -1554,6 +1606,7 @@ export function updateResultScores(resultId, evaluation) {
       score_actionability = ?,
       score_tone = ?,
       overall_score = ?,
+      tutor_first_turn_score = ?,
       base_score = ?,
       recognition_score = ?,
       passes_required = ?,
@@ -1577,7 +1630,8 @@ export function updateResultScores(resultId, evaluation) {
     scores.personalization?.score ?? scores.personalization ?? null,
     scores.actionability?.score ?? scores.actionability ?? null,
     scores.tone?.score ?? scores.tone ?? null,
-    evaluation.overallScore ?? null,
+    evaluation.tutorFirstTurnScore ?? evaluation.overallScore ?? null, // overall_score (deprecated)
+    evaluation.tutorFirstTurnScore ?? evaluation.overallScore ?? null, // tutor_first_turn_score
     evaluation.baseScore ?? null,
     evaluation.recognitionScore ?? null,
     evaluation.passesRequired ? 1 : 0,
@@ -1596,7 +1650,7 @@ export function updateResultScores(resultId, evaluation) {
 
 /**
  * Update ONLY the holistic score columns for an existing result row.
- * Preserves overall_score (Turn 0) intact — used by --multiturn-only to add
+ * Preserves tutor_first_turn_score (Turn 0) intact — used by --multiturn-only to add
  * last-turn scoring without destroying the original per-turn score.
  */
 export function updateResultHolisticOnly(resultId, evaluation) {
@@ -1609,6 +1663,58 @@ export function updateResultHolisticOnly(resultId, evaluation) {
   stmt.run(
     evaluation.holisticOverallScore ?? null,
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
+    resultId,
+  );
+}
+
+/**
+ * Update tutor last-turn score for a multi-turn dialogue result.
+ * Sets tutor_last_turn_score and computes tutor_development_score = last - first.
+ *
+ * @param {number} resultId - The evaluation result row ID
+ * @param {Object} evaluation - Evaluation data
+ * @param {number} evaluation.tutorLastTurnScore - Tutor rubric score on last turn (0-100)
+ * @param {string} [evaluation.judgeModel] - Judge model used
+ * @param {number} [evaluation.judgeLatencyMs] - Judge latency
+ */
+export function updateTutorLastTurnScore(resultId, evaluation) {
+  // Read existing tutor_first_turn_score to compute development delta
+  const row = db.prepare('SELECT tutor_first_turn_score, overall_score FROM evaluation_results WHERE id = ?').get(resultId);
+  const firstTurnScore = row?.tutor_first_turn_score ?? row?.overall_score ?? null;
+  const lastTurnScore = evaluation.tutorLastTurnScore ?? null;
+  const developmentScore =
+    firstTurnScore != null && lastTurnScore != null ? lastTurnScore - firstTurnScore : null;
+
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      tutor_last_turn_score = ?,
+      tutor_development_score = ?
+    WHERE id = ?
+  `);
+  stmt.run(lastTurnScore, developmentScore, resultId);
+}
+
+/**
+ * Update dialogue quality score for a multi-turn dialogue result.
+ *
+ * @param {number} resultId - The evaluation result row ID
+ * @param {Object} evaluation - Dialogue quality evaluation data
+ * @param {number} evaluation.dialogueQualityScore - Overall dialogue quality (0-100)
+ * @param {string} [evaluation.dialogueQualitySummary] - Judge narrative summary
+ * @param {string} [evaluation.dialogueQualityJudgeModel] - Judge model used
+ */
+export function updateDialogueQualityScore(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      dialogue_quality_score = ?,
+      dialogue_quality_summary = ?,
+      dialogue_quality_judge_model = ?
+    WHERE id = ?
+  `);
+  stmt.run(
+    evaluation.dialogueQualityScore ?? null,
+    evaluation.dialogueQualitySummary || null,
+    evaluation.dialogueQualityJudgeModel || null,
     resultId,
   );
 }
@@ -1734,6 +1840,8 @@ export default {
   storeRejudgment,
   updateResultScores,
   updateResultHolisticOnly,
+  updateTutorLastTurnScore,
+  updateDialogueQualityScore,
   updateResultLearnerScores,
   getRun,
   listRuns,

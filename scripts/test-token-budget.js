@@ -159,7 +159,7 @@ function buildReport(runIds) {
 
     for (const r of results) {
       const profile = r.profile_name || r.profileName;
-      const score = r.overall_score;
+      const score = r.tutor_first_turn_score;
       const outTokens = r.output_tokens || r.outputTokens || 0;
       const apiCalls = r.api_calls || r.apiCalls || 1;
 

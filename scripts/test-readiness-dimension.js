@@ -208,7 +208,7 @@ async function main() {
   const baseRows = db
     .prepare(
       `
-    SELECT dialogue_id, profile_name, learner_overall_score, overall_score
+    SELECT dialogue_id, profile_name, learner_overall_score, tutor_first_turn_score
     FROM evaluation_results
     WHERE run_id = 'eval-2026-02-20-0fbca69e'
     AND learner_overall_score IS NOT NULL
@@ -223,7 +223,7 @@ async function main() {
   const recogRows = db
     .prepare(
       `
-    SELECT dialogue_id, profile_name, learner_overall_score, overall_score
+    SELECT dialogue_id, profile_name, learner_overall_score, tutor_first_turn_score
     FROM evaluation_results
     WHERE run_id = 'eval-2026-02-20-0fbca69e'
     AND learner_overall_score IS NOT NULL
@@ -264,7 +264,7 @@ async function main() {
         condition: row.condition,
         dialogue_id: row.dialogue_id,
         existing_learner_score: row.learner_overall_score,
-        tutor_score: row.overall_score,
+        tutor_score: row.tutor_first_turn_score,
         conceptual_engagement: scores.conceptual_engagement.score,
         epistemic_readiness: scores.epistemic_readiness.score,
         ce_reasoning: scores.conceptual_engagement.reasoning,
@@ -272,7 +272,7 @@ async function main() {
       });
 
       console.log(
-        `${row.condition.padEnd(10)}| ${row.dialogue_id.padEnd(34)}| ${String(Math.round(row.learner_overall_score)).padEnd(16)}| ${String(Math.round(row.overall_score)).padEnd(6)}| ${String(scores.conceptual_engagement.score).padEnd(12)}| ${scores.epistemic_readiness.score}`,
+        `${row.condition.padEnd(10)}| ${row.dialogue_id.padEnd(34)}| ${String(Math.round(row.learner_overall_score)).padEnd(16)}| ${String(Math.round(row.tutor_first_turn_score)).padEnd(6)}| ${String(scores.conceptual_engagement.score).padEnd(12)}| ${scores.epistemic_readiness.score}`,
       );
     } catch (err) {
       console.error(`  ERROR on ${row.dialogue_id}: ${err.message}`);

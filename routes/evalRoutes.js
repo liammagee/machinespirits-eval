@@ -614,7 +614,7 @@ router.post('/quick', async (req, res) => {
         provider: result.provider,
         model: result.model,
         passed: result.success,
-        overallScore: result.overallScore,
+        tutorFirstTurnScore: result.tutorFirstTurnScore,
         latencyMs: result.latencyMs,
         scores: result.scoresWithReasoning || result.scores, // Prefer detailed scores
         validation: {
@@ -747,7 +747,7 @@ router.get('/stream/quick', async (req, res) => {
     });
 
     sendEvent('log', {
-      message: `Test completed: score=${result.overallScore?.toFixed(1) || 'N/A'}`,
+      message: `Test completed: score=${result.tutorFirstTurnScore?.toFixed(1) || 'N/A'}`,
       level: 'success',
     });
     sendEvent('log', { message: `Saved to history: ${run.id}`, level: 'info' });
@@ -760,7 +760,7 @@ router.get('/stream/quick', async (req, res) => {
       provider: result.provider,
       model: result.model,
       passed: result.success,
-      overallScore: result.overallScore,
+      tutorFirstTurnScore: result.tutorFirstTurnScore,
       latencyMs: result.latencyMs,
       scores: result.scoresWithReasoning || result.scores, // Prefer detailed scores
       validation: {
@@ -1020,7 +1020,7 @@ router.post('/matrix', async (req, res) => {
       .map((profile) => {
         const profileResults = results[profile] || [];
         const successCount = profileResults.filter((r) => r.success !== false).length;
-        const scores = profileResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+        const scores = profileResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
         const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
         const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
         const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
@@ -1203,7 +1203,7 @@ router.get('/stream/matrix', async (req, res) => {
             }
           }
 
-          const scoreStr = result.overallScore != null ? result.overallScore.toFixed(1) : 'N/A';
+          const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
           const status = result.success !== false ? '✓' : '✗';
           sendEvent('log', {
             message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
@@ -1215,7 +1215,7 @@ router.get('/stream/matrix', async (req, res) => {
             scenarioId: scenario.id,
             scenarioName: scenario.name,
             passed: result.success !== false,
-            score: result.overallScore,
+            score: result.tutorFirstTurnScore,
             latencyMs: result.latencyMs,
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
@@ -1264,7 +1264,7 @@ router.get('/stream/matrix', async (req, res) => {
       .map((profile) => {
         const profileResults = results[profile] || [];
         const successCount = profileResults.filter((r) => r.success !== false).length;
-        const scores = profileResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+        const scores = profileResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
         const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
         const latencies = profileResults.filter((r) => r.latencyMs != null).map((r) => r.latencyMs);
         const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : null;
@@ -1656,7 +1656,7 @@ router.get('/stream/interact', async (req, res) => {
       tutorTokens: result.metrics.tutorTokens,
       latencyMs: result.metrics.totalLatencyMs,
       passed: true, // No judge score yet
-      overallScore: null,
+      tutorFirstTurnScore: null,
     });
 
     sendEvent('complete', {
@@ -1789,8 +1789,8 @@ router.get('/runs/:runId', (req, res) => {
             tutorProfile: evalData.tutorProfile || 'default',
             model: `${evalData.turnCount} turns`,
             passed: evalData.judgeOverallScore >= 3,
-            overallScore: evalData.judgeOverallScore,
-            overall_score: evalData.judgeOverallScore,
+            tutorFirstTurnScore: evalData.judgeOverallScore,
+            tutor_first_turn_score: evalData.judgeOverallScore,
             inputTokens: evalData.learnerTokens || 0,
             outputTokens: evalData.tutorTokens || 0,
             latencyMs: evalData.latencyMs || 0,
@@ -1854,8 +1854,8 @@ router.get('/runs/:runId', (req, res) => {
               tutorProfile: interactionEval.tutorProfile || 'default',
               model: `${interactionEval.turnCount} turns`,
               passed: interactionEval.judgeOverallScore >= 3,
-              overallScore: interactionEval.judgeOverallScore,
-              overall_score: interactionEval.judgeOverallScore,
+              tutorFirstTurnScore: interactionEval.judgeOverallScore,
+              tutor_first_turn_score: interactionEval.judgeOverallScore,
               inputTokens: interactionEval.learnerTokens || 0,
               outputTokens: interactionEval.tutorTokens || 0,
               latencyMs: interactionEval.latencyMs || 0,
@@ -2343,7 +2343,7 @@ router.get('/stream/run', async (req, res) => {
 
           results.push(result);
 
-          const scoreStr = result.overallScore != null ? result.overallScore.toFixed(1) : 'N/A';
+          const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
           const status = result.success !== false ? '✓' : '✗';
           sendEvent('log', {
             message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
@@ -2355,7 +2355,7 @@ router.get('/stream/run', async (req, res) => {
             scenarioId: scenario.id,
             scenarioName: scenario.name,
             passed: result.success,
-            score: result.overallScore,
+            score: result.tutorFirstTurnScore,
             latencyMs: result.latencyMs,
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
@@ -2374,7 +2374,7 @@ router.get('/stream/run', async (req, res) => {
 
     // Calculate summary
     const successCount = results.filter((r) => r.success !== false).length;
-    const scores = results.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+    const scores = results.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
     const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
 
     sendEvent('log', { message: `\n=== Batch Complete ===`, level: 'success' });
@@ -2473,8 +2473,8 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
       let scoreCount = 0;
 
       results.forEach((r) => {
-        if (r.overall_score != null) {
-          totalScore += r.overall_score;
+        if (r.tutor_first_turn_score != null) {
+          totalScore += r.tutor_first_turn_score;
           scoreCount++;
         }
         dims.forEach((d) => {
@@ -2492,7 +2492,7 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
       });
 
       return {
-        overallScore: scoreCount > 0 ? totalScore / scoreCount : null,
+        tutorFirstTurnScore: scoreCount > 0 ? totalScore / scoreCount : null,
         dimensions: dimAverages,
         testCount: results.length,
         successCount: results.filter((r) => r.success).length,
@@ -2504,8 +2504,8 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
 
     // Calculate deltas
     const deltas = {
-      overallScore:
-        avg2.overallScore != null && avg1.overallScore != null ? avg2.overallScore - avg1.overallScore : null,
+      tutorFirstTurnScore:
+        avg2.tutorFirstTurnScore != null && avg1.tutorFirstTurnScore != null ? avg2.tutorFirstTurnScore - avg1.tutorFirstTurnScore : null,
       dimensions: {},
     };
 
@@ -2522,7 +2522,7 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
       run1: { id: runId1, ...avg1 },
       run2: { id: runId2, ...avg2 },
       deltas,
-      improved: deltas.overallScore != null && deltas.overallScore > 0,
+      improved: deltas.tutorFirstTurnScore != null && deltas.tutorFirstTurnScore > 0,
     });
   } catch (error) {
     console.error('[EvalRoutes] Compare runs error:', error);
@@ -2594,7 +2594,7 @@ router.get('/trends', (req, res) => {
           runType,
           profileName: r.profileName,
           scenarioName: r.scenarioName,
-          overallScore: extractNumericScore(r.overallScore),
+          tutorFirstTurnScore: extractNumericScore(r.tutorFirstTurnScore),
           dimensions: dimScores,
           // Include testCount for the table display (how many tests in this run)
           testCount: results.length,
@@ -3167,7 +3167,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
             }
           }
 
-          const scoreStr = result.overallScore != null ? result.overallScore.toFixed(1) : 'N/A';
+          const scoreStr = result.tutorFirstTurnScore != null ? result.tutorFirstTurnScore.toFixed(1) : 'N/A';
           const status = result.success !== false ? '✓' : '✗';
           sendEvent('log', {
             message: `  ${status} Score: ${scoreStr} (${result.latencyMs}ms)`,
@@ -3179,7 +3179,7 @@ router.get('/stream/recognition-ab', async (req, res) => {
             scenarioId: scenario.id,
             scenarioName: scenario.name,
             passed: result.success !== false,
-            score: result.overallScore,
+            score: result.tutorFirstTurnScore,
             latencyMs: result.latencyMs,
             inputTokens: result.inputTokens,
             outputTokens: result.outputTokens,
@@ -3263,8 +3263,8 @@ router.get('/stream/recognition-ab', async (req, res) => {
     const baselineResults = results.baseline || [];
     const recognitionResults = results.recognition || [];
 
-    const baselineScores = baselineResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
-    const recognitionScores = recognitionResults.filter((r) => r.overallScore != null).map((r) => r.overallScore);
+    const baselineScores = baselineResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
+    const recognitionScores = recognitionResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
 
     const baselineAvgScore =
       baselineScores.length > 0 ? baselineScores.reduce((a, b) => a + b, 0) / baselineScores.length : null;
