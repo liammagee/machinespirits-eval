@@ -349,7 +349,7 @@ function formatDialogueTranscript(dialogueContext) {
       } else if (entry.agent === 'ego' && entry.action === 'initial_draft') {
         lines.push(`  (Tutor Ego draft: ${truncate(entry.contextSummary || '', 150)})`);
       } else if (entry.agent === 'superego') {
-        lines.push(`  (Tutor Superego: ${truncate(entry.contextSummary || '', 150)})`);
+        lines.push(`  (Tutor Superego: ${truncate(entry.feedback || entry.contextSummary || '', 150)})`);
       } else if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'final_revision')) {
         lines.push(`[Tutor] (revised after superego feedback)`);
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
@@ -1616,7 +1616,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         }
       }
 
-      const text = entry.detail || entry.contextSummary || '';
+      const text = entry.detail || entry.contextSummary || entry.feedback || '';
 
       // ── Tutor agents ──
       if (entry.agent === 'ego') {
