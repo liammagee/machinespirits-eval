@@ -1760,12 +1760,14 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
           lines.push(`[Learner] ${truncate(learnerMsg, 400)}`);
         }
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
-        // Final TE: emitted ONLY when the superego caused a revision.
-        // 2-line pattern (TE → TS) = approved as-is.
-        // 3-line pattern (TE → TS → TE revised) = superego changed the output.
+        // Final TE: ALWAYS emitted when superego was shown — TS must never
+        // conclude a turn. The ego always has the final word.
+        // Label as "(revised)" when the superego caused a text change.
         const deliveredMsg = deliveredByTurn[currentTurnIdx] || '';
-        if (deliveredMsg && tutorSuperegoShown && deliveredMsg !== tutorInitialEgoText) {
-          lines.push(`[Tutor Ego] (revised) ${truncate(deliveredMsg, 300)}`);
+        if (deliveredMsg && tutorSuperegoShown) {
+          const revised = deliveredMsg !== tutorInitialEgoText;
+          const label = revised ? '[Tutor Ego] (revised)' : '[Tutor Ego]';
+          lines.push(`${label} ${truncate(deliveredMsg, 300)}`);
         }
       } else if (entry.agent === 'rejection_budget') {
         const text = entry.contextSummary || entry.detail || '';
