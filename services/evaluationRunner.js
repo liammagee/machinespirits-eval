@@ -867,7 +867,7 @@ function formatTurnForContext(turn) {
   lines.push(`\n**Turn ${turn.turnIndex + 1}** (${turn.turnId})`);
 
   if (turn.suggestion) {
-    lines.push(`- Tutor suggested: "${turn.suggestion.title || turn.suggestion.message?.substring(0, 100)}..."`);
+    lines.push(`- Tutor responded: "${turn.suggestion.message || turn.suggestion.title || ''}"`);
     if (turn.suggestion.actionTarget) {
       lines.push(`  - Action: ${turn.suggestion.action} → ${turn.suggestion.actionTarget}`);
     }
@@ -3890,7 +3890,7 @@ export async function rejudgeRun(runId, options = {}) {
 }
 
 // Named exports for unit testing (these are internal helpers not part of the public API)
-export { structureLearnerContext, resolveConfigModels, flattenConversationHistory };
+export { structureLearnerContext, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext };
 
 export default {
   runEvaluation,
