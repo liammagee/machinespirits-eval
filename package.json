@@ -43,6 +43,8 @@
     "paper:provable-discourse:review": "node scripts/paper-provable-discourse-chat.js --no-augment-evidence --no-paper-edits",
     "paper:provable-discourse:augment": "node scripts/paper-provable-discourse-chat.js --take-action",
     "paper:bug-audit:chat": "node scripts/paper-bug-audit-chat.js",
+    "audit:message-chain": "node scripts/audit-message-chain.js",
+    "audit:message-chain:json": "node scripts/audit-message-chain.js --json",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "content:validate": "node scripts/validate-content.js",
     "lint": "eslint .",
