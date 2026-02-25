@@ -1458,8 +1458,58 @@ export function calculateDialogueQualityScore(scores) {
 }
 
 /**
+ * Build a public-facing dialogue transcript for fair cross-architecture comparison.
+ * Contains ONLY the externally visible messages — tutor delivered responses and
+ * learner replies. No internal reasoning, ego drafts, superego reviews, or
+ * self-reflections. This levels the playing field between unified (single-agent)
+ * and multi-agent architectures.
+ *
+ * @param {Array} turns - Array of turn objects from dialogue log (from turnResults)
+ * @param {Array} [dialogueTrace] - Consolidated trace (used only for learner_synthesis)
+ * @returns {string} Formatted public transcript
+ */
+function buildDialoguePublicTranscript(turns, dialogueTrace) {
+  if (!turns?.length) return '(no transcript available)';
+
+  // Index learner messages by turnIndex: prefer learner_synthesis, fallback to turn_action
+  const synthByTurn = {};
+  const actionByTurn = {};
+  if (dialogueTrace?.length > 0) {
+    for (const entry of dialogueTrace) {
+      if (entry.agent === 'learner_synthesis' && entry.turnIndex !== undefined) {
+        synthByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
+      }
+      if (entry.agent === 'user' && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
+        actionByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
+      }
+    }
+  }
+
+  const lines = [];
+  for (let i = 0; i < turns.length; i++) {
+    const turn = turns[i];
+    lines.push(`\n--- Turn ${i} ---`);
+
+    // Learner message: prefer learner_synthesis, then turn fields, then trace turn_action
+    const learnerText = synthByTurn[i] || turn.learnerMessage || turn.learnerAction || actionByTurn[i] || null;
+    if (learnerText) {
+      lines.push(`[Learner] ${truncate(learnerText, 400)}`);
+    }
+
+    // Tutor message: from the delivered suggestion (the actual message the learner sees)
+    const suggestion = turn.suggestion || turn.suggestions?.[0];
+    if (suggestion) {
+      const msg = suggestion.message || suggestion.title || JSON.stringify(suggestion);
+      lines.push(`[Tutor] ${truncate(msg, 400)}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/**
  * Build a full-dialogue transcript for the dialogue quality judge.
- * Renders all turns with both tutor and learner contributions.
+ * Renders all turns with both tutor and learner contributions,
+ * INCLUDING internal deliberation (ego drafts, superego reviews, etc.).
  *
  * @param {Array} turns - Array of turn objects from dialogue log
  * @param {Array} [dialogueTrace] - Consolidated trace with internal deliberation
@@ -1533,6 +1583,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace) {
  * @param {string} [params.scenarioDescription] - Description of the scenario
  * @param {string} [params.topic] - Topic being discussed
  * @param {number} params.turnCount - Number of dialogue turns
+ * @param {string} [params.transcriptMode='public'] - 'public' for externally visible only, 'full' for internal deliberation
  * @returns {string} Complete judge prompt
  */
 export function buildDialogueQualityPrompt(params) {
@@ -1543,6 +1594,7 @@ export function buildDialogueQualityPrompt(params) {
     scenarioDescription = '',
     topic = 'unknown',
     turnCount = 0,
+    transcriptMode = 'public',
   } = params;
 
   const dimensions = getDialogueDimensions();
@@ -1558,7 +1610,18 @@ ${criteriaText}`;
     })
     .join('\n\n');
 
-  const transcript = buildDialogueFullTranscript(turns, dialogueTrace);
+  const isPublic = transcriptMode !== 'full';
+  const transcript = isPublic
+    ? buildDialoguePublicTranscript(turns, dialogueTrace)
+    : buildDialogueFullTranscript(turns, dialogueTrace);
+
+  const transcriptHeader = isPublic
+    ? '## PUBLIC DIALOGUE TRANSCRIPT'
+    : '## FULL DIALOGUE TRANSCRIPT (including internal deliberation)';
+
+  const transcriptNote = isPublic
+    ? '\nNote: You are seeing only the externally visible dialogue — the messages actually exchanged between tutor and learner. No internal reasoning or deliberation is shown.\n'
+    : '';
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
@@ -1587,8 +1650,8 @@ ${dimensionCriteria}
 **Topic**: ${topic}
 **Turn count**: ${turnCount}
 
-## FULL DIALOGUE TRANSCRIPT
-
+${transcriptHeader}
+${transcriptNote}
 ${transcript}
 
 ## YOUR TASK
