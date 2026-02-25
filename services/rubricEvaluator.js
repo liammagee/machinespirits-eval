@@ -335,7 +335,7 @@ function formatDialogueTranscript(dialogueContext) {
       // Turn separator
       if (entry.turnIndex !== undefined && entry.turnIndex !== currentTurnIdx) {
         currentTurnIdx = entry.turnIndex;
-        lines.push(`\n--- Turn ${currentTurnIdx} ---`);
+        lines.push(`\n--- Turn ${currentTurnIdx + 1} ---`);
       }
 
       if (entry.agent === 'user' && entry.action === 'turn_action') {
@@ -362,7 +362,7 @@ function formatDialogueTranscript(dialogueContext) {
   } else if (history) {
     // Format from conversation history (less detail, no internal deliberation)
     for (const turn of history) {
-      lines.push(`\n--- Turn ${turn.turnIndex} ---`);
+      lines.push(`\n--- Turn ${turn.turnIndex + 1} ---`);
       if (turn.learnerMessage) {
         lines.push(`[Learner] "${truncate(turn.learnerMessage, 300)}"`);
       } else if (turn.learnerAction) {
@@ -1529,7 +1529,7 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   const lines = [];
   for (let i = 0; i < turns.length; i++) {
     const turn = turns[i];
-    lines.push(`\n--- Turn ${i} ---`);
+    lines.push(`\n--- Turn ${i + 1} ---`);
 
     // Learner side
     if (i === 0 && initialMessage) {
@@ -1622,18 +1622,26 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
 
     // Pre-compute dialogue turn index for tutor-core entries that lack turnIndex.
     // Tutor-core entries (ego/generate, superego/review, ego/revise) use `round`
-    // instead of `turnIndex`. We infer their dialogue turn from the next
-    // final_output entry's turnIndex.
+    // instead of `turnIndex`. We infer their dialogue turn from the next entry
+    // that has an explicit turnIndex (final_output for multi-agent tutor,
+    // turn_action for single-agent tutor).
     const inferredTurnIdx = new Array(dialogueTrace.length).fill(-1);
-    // Walk backwards: each final_output marks the end of a tutor deliberation block
-    let nextFinalOutputTurn = -1;
+    // Walk backwards: find the next entry with turnIndex
+    let nextKnownTurn = -1;
     for (let i = dialogueTrace.length - 1; i >= 0; i--) {
       const e = dialogueTrace[i];
-      if (e.agent === 'user' && e.action === 'final_output' && e.turnIndex !== undefined) {
-        nextFinalOutputTurn = e.turnIndex;
+      if (e.turnIndex !== undefined) {
+        // For turn_action entries (learner response), the preceding tutor-core
+        // entries belong to the PREVIOUS dialogue turn (turn_action.turnIndex - 1).
+        // For final_output entries, tutor-core entries belong to the same turn.
+        if (e.agent === 'user' && e.action === 'turn_action') {
+          nextKnownTurn = Math.max(0, e.turnIndex - 1);
+        } else {
+          nextKnownTurn = e.turnIndex;
+        }
       }
       if (e.turnIndex === undefined) {
-        inferredTurnIdx[i] = nextFinalOutputTurn;
+        inferredTurnIdx[i] = nextKnownTurn;
       } else {
         inferredTurnIdx[i] = e.turnIndex;
       }
@@ -1653,7 +1661,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         currentTurnIdx = effectiveTurn;
         lastTutorEgoText = '';
         lastLearnerEgoText = '';
-        lines.push(`\n--- Turn ${currentTurnIdx} ---`);
+        lines.push(`\n--- Turn ${currentTurnIdx + 1} ---`);
         // Emit initial learner message at start of Turn 0
         if (currentTurnIdx === 0 && initialMessage && !emittedInitial) {
           const label = egoSuperego ? '[Learner Ego]' : '[Learner]';
@@ -1760,7 +1768,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
   const lines = [];
   for (let i = 0; i < turns.length; i++) {
     const turn = turns[i];
-    lines.push(`\n--- Turn ${i} ---`);
+    lines.push(`\n--- Turn ${i + 1} ---`);
     if (i === 0 && initialMessage) {
       lines.push(`[Learner] ${truncate(initialMessage, 400)}`);
     } else if (turn.learnerMessage) {
