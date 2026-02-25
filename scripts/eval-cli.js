@@ -3273,7 +3273,7 @@ async function main() {
         // --force: re-evaluate everything; otherwise only rows missing dialogue scores
         if (!force) {
           toEvaluate = toEvaluate.filter(
-            (r) => r.tutorLastTurnScore == null || r.dialogueQualityScore == null,
+            (r) => r.tutorLastTurnScore == null || r.dialogueQualityScore == null || r.dialogueQualityInternalScore == null,
           );
         }
 
@@ -3299,6 +3299,7 @@ async function main() {
         let failed = 0;
         const lastTurnScores = [];
         const dialogueQualityScores = [];
+        const dialogueQualityInternalScores = [];
         const developmentScores = [];
 
         for (let i = 0; i < toEvaluate.length; i++) {
@@ -3369,80 +3370,111 @@ async function main() {
               );
             }
 
-            // ── Step B: Score dialogue quality → dialogue_quality_score ──
-            if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality`);
+            // ── Helper: call judge and parse JSON response ──
+            async function callDialogueJudge(prompt) {
+              const raw = await new Promise((resolve, reject) => {
+                const env = { ...process.env };
+                delete env.ANTHROPIC_API_KEY;
+                const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
+                let out = '';
+                let err = '';
+                child.stdout.on('data', (d) => { out += d; });
+                child.stderr.on('data', (d) => { err += d; });
+                child.on('error', reject);
+                child.on('close', (code) => {
+                  if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+                  else resolve(out);
+                });
+                child.stdin.write(prompt);
+                child.stdin.end();
+              });
 
-            const dialogueQualityPrompt = buildDialogueQualityPrompt({
+              let jsonStr = raw.trim();
+              const fm = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+              if (fm) {
+                jsonStr = fm[1].trim();
+              } else {
+                const firstBrace = jsonStr.indexOf('{');
+                const lastBrace = jsonStr.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace > firstBrace) {
+                  jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+                }
+              }
+
+              const parsed = JSON.parse(jsonStr);
+              const scores = {};
+              for (const [key, value] of Object.entries(parsed.scores || {})) {
+                if (typeof value === 'object' && value !== null) {
+                  scores[key] = { score: value.score, reasoning: value.reasoning };
+                } else if (typeof value === 'number') {
+                  scores[key] = { score: value, reasoning: null };
+                }
+              }
+
+              const overall =
+                Object.keys(scores).length > 0
+                  ? calculateDialogueQualityScore(scores)
+                  : parsed.overall_score;
+
+              return { overall, summary: parsed.summary || null };
+            }
+
+            const promptParams = {
               turns: conversationHistory,
               dialogueTrace,
               scenarioName: scenario.name,
               scenarioDescription: scenario.description,
               topic: scenario.topic || scenario.name,
               turnCount: result.suggestions.length,
-            });
+            };
 
-            const dqRaw = await new Promise((resolve, reject) => {
-              const env = { ...process.env };
-              delete env.ANTHROPIC_API_KEY;
-              const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
-              let out = '';
-              let err = '';
-              child.stdout.on('data', (d) => { out += d; });
-              child.stderr.on('data', (d) => { err += d; });
-              child.on('error', reject);
-              child.on('close', (code) => {
-                if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-                else resolve(out);
-              });
-              child.stdin.write(dialogueQualityPrompt);
-              child.stdin.end();
-            });
+            // ── Step B: Score dialogue quality (PUBLIC transcript) → dialogue_quality_score ──
+            if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality (public)`);
 
-            let dqJsonStr = dqRaw.trim();
-            fenceMatch = dqJsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-            if (fenceMatch) {
-              dqJsonStr = fenceMatch[1].trim();
-            } else {
-              const firstBrace = dqJsonStr.indexOf('{');
-              const lastBrace = dqJsonStr.lastIndexOf('}');
-              if (firstBrace !== -1 && lastBrace > firstBrace) {
-                dqJsonStr = dqJsonStr.slice(firstBrace, lastBrace + 1);
-              }
-            }
-
-            const dqParsed = JSON.parse(dqJsonStr);
-
-            const dqScores = {};
-            for (const [key, value] of Object.entries(dqParsed.scores || {})) {
-              if (typeof value === 'object' && value !== null) {
-                dqScores[key] = { score: value.score, reasoning: value.reasoning };
-              } else if (typeof value === 'number') {
-                dqScores[key] = { score: value, reasoning: null };
-              }
-            }
-
-            const dialogueQuality =
-              Object.keys(dqScores).length > 0
-                ? calculateDialogueQualityScore(dqScores)
-                : dqParsed.overall_score;
+            const publicPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'public' });
+            const publicResult = await callDialogueJudge(publicPrompt);
 
             evaluationStore.updateDialogueQualityScore(result.id, {
-              dialogueQualityScore: dialogueQuality,
-              dialogueQualitySummary: dqParsed.summary || null,
+              dialogueQualityScore: publicResult.overall,
+              dialogueQualitySummary: publicResult.summary,
               dialogueQualityJudgeModel: judgeModel,
             });
-            dialogueQualityScores.push(dialogueQuality);
+            dialogueQualityScores.push(publicResult.overall);
 
             console.log(
-              `${tag} ${scenarioId} / ${profileName} ... dialogue-quality=${dialogueQuality.toFixed(1)}`,
+              `${tag} ${scenarioId} / ${profileName} ... dialogue-quality(public)=${publicResult.overall.toFixed(1)}`,
             );
 
-            if (verbose && dqParsed.summary) {
+            if (verbose && publicResult.summary) {
               const truncSummary =
-                dqParsed.summary.length > 300
-                  ? dqParsed.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
-                  : dqParsed.summary.replace(/\n/g, ' ');
-              console.log(`     Judge: ${truncSummary}\n`);
+                publicResult.summary.length > 300
+                  ? publicResult.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                  : publicResult.summary.replace(/\n/g, ' ');
+              console.log(`     Public judge: ${truncSummary}`);
+            }
+
+            // ── Step C: Score dialogue quality (FULL transcript) → dialogue_quality_internal_score ──
+            if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality (full)`);
+
+            const fullPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'full' });
+            const fullResult = await callDialogueJudge(fullPrompt);
+
+            evaluationStore.updateDialogueQualityInternalScore(result.id, {
+              dialogueQualityInternalScore: fullResult.overall,
+              dialogueQualityInternalSummary: fullResult.summary,
+            });
+            dialogueQualityInternalScores.push(fullResult.overall);
+
+            console.log(
+              `${tag} ${scenarioId} / ${profileName} ... dialogue-quality(full)=${fullResult.overall.toFixed(1)}`,
+            );
+
+            if (verbose && fullResult.summary) {
+              const truncSummary =
+                fullResult.summary.length > 300
+                  ? fullResult.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                  : fullResult.summary.replace(/\n/g, ' ');
+              console.log(`     Full judge: ${truncSummary}\n`);
             }
 
             succeeded++;
@@ -3471,7 +3503,11 @@ async function main() {
         }
         if (dialogueQualityScores.length > 0) {
           const avgDQ = dialogueQualityScores.reduce((a, b) => a + b, 0) / dialogueQualityScores.length;
-          console.log(`  Avg dialogue quality:  ${avgDQ.toFixed(1)}`);
+          console.log(`  Avg dialogue quality (public):   ${avgDQ.toFixed(1)}`);
+        }
+        if (dialogueQualityInternalScores.length > 0) {
+          const avgDQI = dialogueQualityInternalScores.reduce((a, b) => a + b, 0) / dialogueQualityInternalScores.length;
+          console.log(`  Avg dialogue quality (full):     ${avgDQI.toFixed(1)}`);
         }
         console.log('');
         break;

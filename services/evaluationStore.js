@@ -17,7 +17,8 @@
  *   tutor_development_score       │ How much did the tutor improve? (last - first)
  *   learner_overall_score         │ Average of per-turn learner scores
  *   learner_holistic_overall_score│ Holistic learner dialogue evaluation
- *   dialogue_quality_score        │ Overall pedagogical encounter quality
+ *   dialogue_quality_score        │ Overall pedagogical encounter quality (PUBLIC transcript)
+ *   dialogue_quality_internal_score│ Overall pedagogical encounter quality (FULL transcript w/ internal deliberation)
  *
  * DEPRECATED columns (kept for backward compatibility):
  *   - overall_score: DEPRECATED alias for tutor_first_turn_score (synced on write)
@@ -202,6 +203,9 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_judge_model TEXT`,
   'dialogue_quality_judge_model',
 );
+// Internal (full-trace) dialogue quality columns — separate from public-transcript score
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_score REAL`, 'dialogue_quality_internal_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_summary TEXT`, 'dialogue_quality_internal_summary');
 
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
@@ -1261,6 +1265,8 @@ function parseResultRow(row) {
     dialogueQualityScore: row.dialogue_quality_score != null ? row.dialogue_quality_score : null,
     dialogueQualitySummary: row.dialogue_quality_summary || null,
     dialogueQualityJudgeModel: row.dialogue_quality_judge_model || null,
+    dialogueQualityInternalScore: row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
+    dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
   };
 }
 
@@ -1720,6 +1726,29 @@ export function updateDialogueQualityScore(resultId, evaluation) {
 }
 
 /**
+ * Update dialogue quality INTERNAL (full-trace) score for a multi-turn dialogue result.
+ * This is the score from the full transcript including internal deliberation.
+ *
+ * @param {number} resultId - The evaluation result row ID
+ * @param {Object} evaluation - Internal dialogue quality evaluation data
+ * @param {number} evaluation.dialogueQualityInternalScore - Full-trace dialogue quality (0-100)
+ * @param {string} [evaluation.dialogueQualityInternalSummary] - Judge narrative summary
+ */
+export function updateDialogueQualityInternalScore(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      dialogue_quality_internal_score = ?,
+      dialogue_quality_internal_summary = ?
+    WHERE id = ?
+  `);
+  stmt.run(
+    evaluation.dialogueQualityInternalScore ?? null,
+    evaluation.dialogueQualityInternalSummary || null,
+    resultId,
+  );
+}
+
+/**
  * Update learner-side evaluation scores on an evaluation_results row.
  *
  * @param {string} resultId - The evaluation result ID
@@ -1842,6 +1871,7 @@ export default {
   updateResultHolisticOnly,
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
+  updateDialogueQualityInternalScore,
   updateResultLearnerScores,
   getRun,
   listRuns,
