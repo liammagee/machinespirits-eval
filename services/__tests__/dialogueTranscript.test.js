@@ -300,9 +300,9 @@ describe('buildDialogueFullTranscript', () => {
     const transcript = buildDialogueFullTranscript(turns, trace, null);
     assert.ok(transcript.includes('[Tutor Ego] Initial draft about Popper'),
       'Ego label should show draft from suggestions[], not delivered message');
-    // The delivered message appears separately under [Tutor → Learner]
-    assert.ok(transcript.includes('[Tutor → Learner] Final delivered message'),
-      'Delivered message should appear under [Tutor → Learner] label');
+    // No separate [Tutor → Learner] — the ego line IS the delivered message
+    assert.ok(!transcript.includes('[Tutor → Learner]'),
+      'Should NOT emit separate [Tutor → Learner] — ego line is the delivery');
   });
 
   it('shows ego revision between two superego reviews (no consecutive superego lines)', () => {
@@ -425,9 +425,10 @@ describe('buildDialogueFullTranscript', () => {
       'Should fall back to deliveredByTurn when no suggestions on trace entry');
   });
 
-  it('emits [Tutor → Learner] after superego approval on final_output', () => {
-    // Multi-agent tutor: after ego draft → superego approve → final_output,
-    // the delivered message should appear to close the deliberation section
+  it('never emits [Tutor → Learner] — ego line IS the delivery (symmetric with learner)', () => {
+    // Multi-agent tutor: the last [Tutor Ego] is the delivered message,
+    // symmetric with how the last [Learner Ego] is the learner's sent message.
+    // No separate delivery label needed.
     const trace = [
       { agent: 'user', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
@@ -438,18 +439,16 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Draft response about Hegel.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    // After superego approval, the delivered message should be visible
-    assert.ok(transcript.includes('[Tutor → Learner]'),
-      'Should emit [Tutor → Learner] label for delivered message');
-    const lines = transcript.split('\n').filter(l => l.trim());
-    const superegoIdx = lines.findIndex(l => l.includes('Good approach to the dialectic'));
-    const deliveryIdx = lines.findIndex(l => l.includes('[Tutor → Learner]'));
-    assert.ok(deliveryIdx > superegoIdx,
-      'Delivered message should appear after superego approval');
+    assert.ok(!transcript.includes('[Tutor → Learner]'),
+      'Should NOT emit [Tutor → Learner] — ego line is the delivery');
+    assert.ok(transcript.includes('[Tutor Ego] Draft response about Hegel'),
+      'Ego draft should be visible as the delivered message');
+    assert.ok(transcript.includes('[Tutor Superego] Good approach'),
+      'Superego approval should be visible');
   });
 
-  it('does not emit [Tutor → Learner] for single-agent tutor (no final_output)', () => {
-    // Single-agent tutor has no superego or final_output — ego IS the delivery
+  it('single-agent tutor: ego is the only tutor line per turn', () => {
+    // Single-agent tutor has no superego or final_output — just [Tutor Ego]
     const trace = [
       { agent: 'user', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
@@ -466,14 +465,17 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
     assert.ok(!transcript.includes('[Tutor → Learner]'),
-      'Single-agent tutor should not have [Tutor → Learner] — ego IS the delivery');
+      'Single-agent tutor should not have [Tutor → Learner]');
+    assert.ok(!transcript.includes('[Tutor Superego]'),
+      'Single-agent tutor should not have superego lines');
     assert.ok(transcript.includes('[Tutor Ego] Direct response'),
-      'Should still show the ego message');
-    // Verify proper turn structure
+      'Turn 1 ego message');
+    assert.ok(transcript.includes('[Tutor Ego] Popper raises'),
+      'Turn 2 ego message');
     assert.ok(transcript.includes('--- Turn 1 ---'),
-      'Single-agent should start at Turn 1');
+      'Should start at Turn 1');
     assert.ok(transcript.includes('--- Turn 2 ---'),
-      'Single-agent should have Turn 2');
+      'Should have Turn 2');
   });
 
   it('infers turnIndex from turn_action for single-agent cells (no final_output)', () => {
@@ -784,7 +786,8 @@ describe('transcript conformity', () => {
       .filter(l => l.trim())
       .filter(l => /^\[(Learner|Tutor)/.test(l));
 
-    // Expected order: LE, LS, LE(revised), TE, TS, TE(revised), TS, [Tutor → Learner]
+    // Expected order: symmetric learner + tutor deliberation chains
+    // LE → LS → LE(revised) mirrors TE → TS → TE(revised) → TS(approve)
     const expectedPrefixes = [
       '[Learner Ego]',
       '[Learner Superego]',
@@ -793,7 +796,6 @@ describe('transcript conformity', () => {
       '[Tutor Superego]',
       '[Tutor Ego] (revised)',
       '[Tutor Superego]',
-      '[Tutor → Learner]',
     ];
 
     assert.equal(agentLines.length, expectedPrefixes.length,
