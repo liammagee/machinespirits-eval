@@ -1458,25 +1458,44 @@ export function calculateDialogueQualityScore(scores) {
 }
 
 /**
- * Build a public-facing dialogue transcript for fair cross-architecture comparison.
- * Contains ONLY the externally visible messages — tutor delivered responses and
- * learner replies. No internal reasoning, ego drafts, superego reviews, or
- * self-reflections. This levels the playing field between unified (single-agent)
- * and multi-agent architectures.
+ * Detect whether a dialogue trace represents a dynamic (ego_superego) learner.
+ * Dynamic learners have learner_synthesis or learner_ego_initial trace entries.
+ */
+function isDynamicLearner(dialogueTrace) {
+  return dialogueTrace?.some(
+    (e) => e.agent === 'learner_synthesis' || e.agent === 'learner_ego_initial',
+  ) ?? false;
+}
+
+/**
+ * Build a public-facing dialogue transcript — ego roles only.
  *
- * @param {Array} turns - Array of turn objects from dialogue log (from turnResults)
- * @param {Array} [dialogueTrace] - Consolidated trace (used only for learner_synthesis)
+ * Shows only the final ego outputs from each side:
+ * - [Tutor Ego]: the delivered tutor response
+ * - [Learner Ego]: the learner's synthesised reply (dynamic learner)
+ * - [Learner Action]: the scripted learner action (scripted/unified learner)
+ *
+ * No superego, self-reflection, or other internal deliberation.
+ *
+ * @param {Array} turns - Turn objects from turnResults
+ * @param {Array} [dialogueTrace] - Consolidated trace
  * @returns {string} Formatted public transcript
  */
 function buildDialoguePublicTranscript(turns, dialogueTrace) {
   if (!turns?.length) return '(no transcript available)';
 
-  // Index learner_synthesis entries by turnIndex for dynamic learner messages
+  const dynamic = isDynamicLearner(dialogueTrace);
+
+  // Index trace entries by turnIndex
   const synthByTurn = {};
+  const actionByTurn = {};
   if (dialogueTrace?.length > 0) {
     for (const entry of dialogueTrace) {
       if (entry.agent === 'learner_synthesis' && entry.turnIndex !== undefined) {
         synthByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
+      }
+      if (entry.agent === 'user' && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
+        actionByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
       }
     }
   }
@@ -1486,34 +1505,64 @@ function buildDialoguePublicTranscript(turns, dialogueTrace) {
     const turn = turns[i];
     lines.push(`\n--- Turn ${i} ---`);
 
-    // Learner message: prefer learner_synthesis from trace, then turn fields
-    const learnerText = synthByTurn[i] || turn.learnerMessage || null;
-    if (learnerText) {
-      lines.push(`[Learner] ${truncate(learnerText, 400)}`);
+    // Learner side
+    if (dynamic) {
+      // Dynamic learner: show ego synthesis only
+      const text = synthByTurn[i] || turn.learnerMessage || null;
+      if (text) {
+        lines.push(`[Learner Ego] ${truncate(text, 400)}`);
+      }
+    } else {
+      // Scripted/unified learner: show action or message
+      const text = turn.learnerMessage || actionByTurn[i] || null;
+      if (text) {
+        lines.push(`[Learner Action] ${truncate(text, 400)}`);
+      }
     }
 
-    // Tutor message: from the delivered suggestion (the actual message the learner sees)
+    // Tutor side: delivered ego output
     const suggestion = turn.suggestion || turn.suggestions?.[0];
     if (suggestion) {
       const msg = suggestion.message || suggestion.title || JSON.stringify(suggestion);
-      lines.push(`[Tutor] ${truncate(msg, 400)}`);
+      lines.push(`[Tutor Ego] ${truncate(msg, 400)}`);
     }
   }
   return lines.join('\n');
 }
 
 /**
- * Build a full-dialogue transcript for the dialogue quality judge.
- * Renders all turns with both tutor and learner contributions,
- * INCLUDING internal deliberation (ego drafts, superego reviews, etc.).
+ * Build a full-dialogue transcript with all internal deliberation, formatted by role.
  *
- * @param {Array} turns - Array of turn objects from dialogue log
+ * Role labels used:
+ *   [Tutor Ego]                  — ego generate / revise
+ *   [Tutor Superego]             — superego review
+ *   [Tutor Self-Reflection]      — ego self-reflection rewrite
+ *   [Tutor Superego Reflection]  — superego self-reflection rewrite
+ *   [Tutor Other-Ego]            — other-ego learner profiling
+ *   [Behavioral Overrides]       — parsed behavioral overrides
+ *   [Learner Ego]                — learner ego initial / revision / synthesis
+ *   [Learner Superego]           — learner superego deliberation
+ *   [Learner Action]             — scripted learner action (scripted only)
+ *
+ * For dynamic learners, [Learner Action] is suppressed (replaced by [Learner Ego]).
+ *
+ * @param {Array} turns - Turn objects from dialogue log
  * @param {Array} [dialogueTrace] - Consolidated trace with internal deliberation
  * @returns {string} Formatted transcript
  */
 function buildDialogueFullTranscript(turns, dialogueTrace) {
   if (dialogueTrace?.length > 0) {
-    // Use consolidated trace for richest representation
+    const dynamic = isDynamicLearner(dialogueTrace);
+
+    // Index tutor delivered messages by turn for ego entries with empty content
+    const deliveredByTurn = {};
+    if (turns?.length) {
+      for (let i = 0; i < turns.length; i++) {
+        const s = turns[i].suggestion || turns[i].suggestions?.[0];
+        if (s) deliveredByTurn[i] = s.message || s.title || '';
+      }
+    }
+
     const lines = [];
     let currentTurnIdx = -1;
     for (const entry of dialogueTrace) {
@@ -1522,30 +1571,53 @@ function buildDialogueFullTranscript(turns, dialogueTrace) {
         lines.push(`\n--- Turn ${currentTurnIdx} ---`);
       }
 
-      if (entry.agent === 'user' && entry.action === 'turn_action') {
-        lines.push(`[Learner Action] ${entry.detail || entry.contextSummary || ''}`);
-      } else if (entry.agent === 'learner_ego') {
-        lines.push(`  (Learner thinking: ${truncate(entry.detail || entry.contextSummary, 200)})`);
-      } else if (entry.agent === 'learner_superego') {
-        lines.push(`  (Learner reflection: ${truncate(entry.detail || entry.contextSummary, 200)})`);
-      } else if (entry.agent === 'learner_synthesis') {
-        lines.push(`[Learner] ${truncate(entry.detail || entry.contextSummary, 400)}`);
-      } else if (entry.agent === 'ego' && entry.action === 'initial_draft') {
-        lines.push(`  (Tutor drafting: ${truncate(entry.contextSummary || '', 150)})`);
+      const text = entry.detail || entry.contextSummary || '';
+
+      // ── Tutor agents ──
+      if (entry.agent === 'ego') {
+        const egoText = text || deliveredByTurn[currentTurnIdx] || '';
+        if (entry.action === 'revise' || entry.action === 'revision' || entry.action === 'final_revision') {
+          lines.push(`[Tutor Ego] (revised) ${truncate(egoText, 300)}`);
+        } else {
+          lines.push(`[Tutor Ego] ${truncate(egoText, 300)}`);
+        }
       } else if (entry.agent === 'superego') {
-        lines.push(`  (Tutor reviewing: ${truncate(entry.contextSummary || '', 150)})`);
-      } else if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'final_revision')) {
-        lines.push(`[Tutor] (revised response after internal review)`);
+        lines.push(`[Tutor Superego] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'ego_self_reflection') {
+        lines.push(`[Tutor Self-Reflection] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'superego_self_reflection') {
+        lines.push(`[Tutor Superego Reflection] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'tutor_other_ego') {
+        lines.push(`[Tutor Other-Ego] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'behavioral_overrides') {
+        lines.push(`[Behavioral Overrides] ${truncate(text, 300)}`);
+
+      // ── Learner agents ──
+      } else if (entry.agent === 'learner_ego_initial') {
+        lines.push(`[Learner Ego] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'learner_ego_revision') {
+        lines.push(`[Learner Ego] (revised) ${truncate(text, 300)}`);
+      } else if (entry.agent === 'learner_superego') {
+        lines.push(`[Learner Superego] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'learner_synthesis') {
+        lines.push(`[Learner Ego] (synthesis) ${truncate(text, 400)}`);
+
+      // ── Protocol entries ──
+      } else if (entry.agent === 'user' && entry.action === 'turn_action') {
+        // Only include for scripted learners — dynamic learners use [Learner Ego] instead
+        if (!dynamic) {
+          lines.push(`[Learner Action] ${truncate(text, 400)}`);
+        }
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
-        lines.push(`[Tutor → Learner] Delivered response`);
-      } else if (entry.agent === 'ego') {
-        lines.push(`[Tutor] ${truncate(entry.contextSummary || '', 200)}`);
+        // Delivered response — content already shown via [Tutor Ego]
+        // Skip to avoid duplication
       }
+      // Skip: user/context_input, system/memory_cycle (metadata, not dialogue)
     }
     return lines.join('\n');
   }
 
-  // Fallback: build from turn objects
+  // Fallback: build from turn objects when no trace is available
   if (!turns?.length) return '(no transcript available)';
 
   const lines = [];
@@ -1553,14 +1625,14 @@ function buildDialogueFullTranscript(turns, dialogueTrace) {
     const turn = turns[i];
     lines.push(`\n--- Turn ${i} ---`);
     if (turn.learnerMessage) {
-      lines.push(`[Learner] ${truncate(turn.learnerMessage, 400)}`);
+      lines.push(`[Learner Ego] ${truncate(turn.learnerMessage, 400)}`);
     } else if (turn.learnerAction) {
       lines.push(`[Learner Action] ${turn.learnerAction}`);
     }
     const suggestion = turn.suggestion || turn.suggestions?.[0];
     if (suggestion) {
       const msg = suggestion.message || suggestion.title || JSON.stringify(suggestion);
-      lines.push(`[Tutor] ${truncate(msg, 400)}`);
+      lines.push(`[Tutor Ego] ${truncate(msg, 400)}`);
     }
   }
   return lines.join('\n');
