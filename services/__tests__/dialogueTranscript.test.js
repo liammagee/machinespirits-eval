@@ -191,6 +191,97 @@ describe('buildDialogueFullTranscript', () => {
     assert.ok(transcript.includes('[Tutor Superego]'),
       'Should have Tutor Superego label');
   });
+
+  it('does not render empty superego when feedback/detail/contextSummary all absent', () => {
+    // Superego entry with no text fields at all should still render (empty is valid, but not garbled)
+    const trace = [
+      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'ego', action: 'generate', turnIndex: 0 },
+      { agent: 'superego', action: 'review', turnIndex: 0, approved: true },
+      { agent: 'ego', action: 'revise', turnIndex: 0 },
+    ];
+    const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Response.' }] }];
+    const transcript = buildDialogueFullTranscript(turns, trace, null);
+    assert.ok(transcript.includes('[Tutor Superego]'),
+      'Should still emit the label for superego');
+  });
+
+  it('renders ego text from turnResults when detail/contextSummary are empty', () => {
+    // Real ego/generate entries have empty detail and contextSummary;
+    // text must come from turnResults delivered messages
+    const trace = [
+      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'ego', action: 'generate', turnIndex: 0 },
+    ];
+    const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome to Hegel.' }] }];
+    const transcript = buildDialogueFullTranscript(turns, trace, null);
+    assert.ok(transcript.includes('Welcome to Hegel'),
+      'Should fall back to turnResults when ego detail/contextSummary are empty');
+  });
+
+  it('renders all tutor agent types with correct labels', () => {
+    const trace = [
+      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Initial response.' },
+      { agent: 'superego', action: 'review', turnIndex: 0, feedback: 'Consider the dialectic.' },
+      { agent: 'ego', action: 'revise', turnIndex: 0, detail: 'Revised response.' },
+      { agent: 'ego_self_reflection', action: 'rewrite', turnIndex: 0, detail: 'I reflected on my approach.' },
+      { agent: 'superego_self_reflection', action: 'rewrite', turnIndex: 0, detail: 'My critiquing was too soft.' },
+      { agent: 'ego_intersubjective', action: 'respond_to_critic', turnIndex: 0, detail: 'I agree with the self-reflection.' },
+      { agent: 'ego_strategy', action: 'plan', turnIndex: 0, detail: 'Strategy: push on paradox.' },
+      { agent: 'tutor_other_ego', action: 'profile_learner', turnIndex: 0, detail: 'Learner is a strong critic.' },
+      { agent: 'behavioral_overrides', action: 'parse', turnIndex: 0, contextSummary: 'Threshold=0.6' },
+      { agent: 'superego_disposition', action: 'rewrite', turnIndex: 0, detail: 'Disposition evolved toward advocacy.' },
+    ];
+    const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Revised response.' }] }];
+    const transcript = buildDialogueFullTranscript(turns, trace, null);
+
+    assert.ok(transcript.includes('[Tutor Ego] Initial response'), 'ego generate');
+    assert.ok(transcript.includes('[Tutor Superego] Consider the dialectic'), 'superego review');
+    assert.ok(transcript.includes('[Tutor Ego] (revised) Revised response'), 'ego revise');
+    assert.ok(transcript.includes('[Tutor Self-Reflection] I reflected'), 'ego self-reflection');
+    assert.ok(transcript.includes('[Tutor Superego Reflection] My critiquing'), 'superego self-reflection');
+    assert.ok(transcript.includes('[Tutor Intersubjective] I agree'), 'ego intersubjective');
+    assert.ok(transcript.includes('[Tutor Strategy] Strategy: push'), 'ego strategy');
+    assert.ok(transcript.includes('[Tutor Other-Ego] Learner is a strong'), 'tutor other-ego');
+    assert.ok(transcript.includes('[Behavioral Overrides] Threshold=0.6'), 'behavioral overrides');
+    assert.ok(transcript.includes('[Tutor Superego Disposition] Disposition evolved'), 'superego disposition');
+  });
+
+  it('renders learner_other_ego with correct label', () => {
+    const trace = [
+      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'ego', action: 'generate', turnIndex: 0 },
+      { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'My initial thought.' },
+      { agent: 'learner_other_ego', action: 'profile_tutor', turnIndex: 1, detail: 'Tutor seems Socratic.' },
+      { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Dig deeper.' },
+      { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Revised thought.' },
+      { agent: 'learner_synthesis', action: 'response', turnIndex: 1, detail: 'Final message.' },
+      { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Final message.' },
+      { agent: 'ego', action: 'generate', turnIndex: 1 },
+    ];
+    const turns = [
+      { turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome.' }] },
+      { turnIndex: 1, turnId: 'turn_1', suggestions: [{ message: 'Good point.' }] },
+    ];
+    const transcript = buildDialogueFullTranscript(turns, trace, null);
+    assert.ok(transcript.includes('[Learner Other-Ego] Tutor seems Socratic'),
+      'Should render learner other-ego profile');
+  });
+
+  it('prefers contextSummary over detail for behavioral_overrides', () => {
+    const trace = [
+      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'behavioral_overrides', action: 'parse', turnIndex: 0,
+        contextSummary: 'Quantitative behavioral params: threshold=0.6',
+        detail: '{"rejection_threshold":0.6}' },
+      { agent: 'ego', action: 'generate', turnIndex: 0 },
+    ];
+    const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Hello.' }] }];
+    const transcript = buildDialogueFullTranscript(turns, trace, null);
+    assert.ok(transcript.includes('Quantitative behavioral params'),
+      'Should use contextSummary (human-readable) not detail (raw JSON)');
+  });
 });
 
 // ── extractInitialLearnerMessage ──────────────────────────────────────────

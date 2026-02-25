@@ -1565,14 +1565,36 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
  *
  * Role labels used:
  *   [Tutor Ego]                  — ego generate / revise
- *   [Tutor Superego]             — superego review
+ *   [Tutor Superego]             — superego review feedback
  *   [Tutor Self-Reflection]      — ego self-reflection rewrite
  *   [Tutor Superego Reflection]  — superego self-reflection rewrite
- *   [Tutor Other-Ego]            — other-ego learner profiling
+ *   [Tutor Intersubjective]      — ego intersubjective response to critic
+ *   [Tutor Strategy]             — ego strategy plan
+ *   [Tutor Other-Ego]            — tutor other-ego learner profiling
  *   [Behavioral Overrides]       — parsed behavioral overrides
  *   [Learner Ego]                — learner ego initial / revision / synthesis (ego_superego learner)
  *   [Learner Superego]           — learner superego deliberation (ego_superego learner)
+ *   [Learner Other-Ego]          — learner other-ego tutor profiling
  *   [Learner]                    — unified (ego-only) learner message
+ *
+ * Trace field schema (which field carries the actual text per agent type):
+ *   ego/generate, ego/revise         — EMPTY (detail & contextSummary absent);
+ *                                       actual text from turnResults[].suggestions[].message
+ *   superego/review                  — entry.feedback (NOT detail/contextSummary)
+ *   ego_self_reflection/rewrite      — entry.detail
+ *   superego_self_reflection/rewrite — entry.detail
+ *   ego_intersubjective/respond_to_critic — entry.detail
+ *   ego_strategy/plan                — entry.detail
+ *   tutor_other_ego/profile_learner  — entry.detail
+ *   learner_other_ego/profile_tutor  — entry.detail
+ *   behavioral_overrides/parse       — entry.contextSummary (human-readable summary)
+ *   user/turn_action                 — entry.contextSummary (actual message);
+ *                                       entry.detail is just an action type label
+ *   user/final_output                — both are status labels, not content; skip
+ *   user/context_input               — entry.rawContext (metadata, not rendered)
+ *   learner_ego_{initial,revision}/deliberation — entry.detail or entry.contextSummary (identical)
+ *   learner_superego/deliberation    — entry.detail or entry.contextSummary (identical)
+ *   learner_synthesis/response       — entry.detail or entry.contextSummary (identical)
  *
  * [Learner Action] is never used — all learners are LLM-powered agents.
  * For ego_superego learners, user/turn_action is suppressed (redundant with learner_synthesis).
@@ -1616,59 +1638,89 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         }
       }
 
-      const text = entry.detail || entry.contextSummary || entry.feedback || '';
-
       // ── Tutor agents ──
       if (entry.agent === 'ego') {
-        const egoText = text || deliveredByTurn[currentTurnIdx] || '';
+        // ego/generate and ego/revise have empty detail/contextSummary;
+        // actual text comes from turnResults delivered messages
+        const egoText = entry.detail || entry.contextSummary || deliveredByTurn[currentTurnIdx] || '';
         if (entry.action === 'revise' || entry.action === 'revision' || entry.action === 'final_revision') {
-          // Skip if revision is identical to the initial ego generate
           if (egoText !== lastTutorEgoText) {
             lines.push(`[Tutor Ego] (revised) ${truncate(egoText, 300)}`);
           }
+        } else if (entry.action === 'incorporate-feedback') {
+          // Ego incorporated superego suggestions — informational, skip
         } else {
           lines.push(`[Tutor Ego] ${truncate(egoText, 300)}`);
           lastTutorEgoText = egoText;
         }
       } else if (entry.agent === 'superego') {
-        lines.push(`[Tutor Superego] ${truncate(text, 300)}`);
+        // superego/review stores text in feedback, NOT detail/contextSummary
+        const reviewText = entry.feedback || entry.detail || entry.contextSummary || '';
+        lines.push(`[Tutor Superego] ${truncate(reviewText, 300)}`);
       } else if (entry.agent === 'ego_self_reflection') {
+        const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Tutor Self-Reflection] ${truncate(text, 300)}`);
       } else if (entry.agent === 'superego_self_reflection') {
+        const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Tutor Superego Reflection] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'ego_intersubjective') {
+        const text = entry.detail || entry.contextSummary || '';
+        lines.push(`[Tutor Intersubjective] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'ego_strategy') {
+        const text = entry.detail || entry.contextSummary || '';
+        lines.push(`[Tutor Strategy] ${truncate(text, 300)}`);
       } else if (entry.agent === 'tutor_other_ego') {
+        const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Tutor Other-Ego] ${truncate(text, 300)}`);
       } else if (entry.agent === 'behavioral_overrides') {
+        // contextSummary has human-readable summary; detail has raw JSON
+        const text = entry.contextSummary || entry.detail || '';
         lines.push(`[Behavioral Overrides] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'superego_disposition') {
+        const text = entry.detail || entry.contextSummary || '';
+        lines.push(`[Tutor Superego Disposition] ${truncate(text, 300)}`);
 
       // ── Learner agents (ego_superego only) ──
       } else if (entry.agent === 'learner_ego_initial') {
+        const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Ego] ${truncate(text, 300)}`);
         lastLearnerEgoText = text;
       } else if (entry.agent === 'learner_ego_revision') {
+        const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Ego] (revised) ${truncate(text, 300)}`);
         lastLearnerEgoText = text;
       } else if (entry.agent === 'learner_superego') {
+        const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Superego] ${truncate(text, 300)}`);
       } else if (entry.agent === 'learner_synthesis') {
+        const text = entry.detail || entry.contextSummary || '';
         // Skip if synthesis is identical to the preceding revision/initial
         if (text !== lastLearnerEgoText) {
           lines.push(`[Learner Ego] (synthesis) ${truncate(text, 400)}`);
         }
+      } else if (entry.agent === 'learner_ego') {
+        // Legacy unified learner ego entries (early runs)
+        const text = entry.detail || entry.contextSummary || '';
+        lines.push(`[Learner Ego] ${truncate(text, 300)}`);
+      } else if (entry.agent === 'learner_other_ego') {
+        const text = entry.detail || entry.contextSummary || '';
+        lines.push(`[Learner Other-Ego] ${truncate(text, 300)}`);
 
       // ── Protocol entries ──
       } else if (entry.agent === 'user' && entry.action === 'turn_action') {
         // For ego_superego learners: suppress (redundant with learner_synthesis)
-        // For unified learners: render contextSummary as [Learner] (it's the actual message)
+        // For unified learners: contextSummary is the actual message; detail is action type label
         if (!egoSuperego) {
           const learnerMsg = entry.contextSummary || entry.detail || '';
           lines.push(`[Learner] ${truncate(learnerMsg, 400)}`);
         }
       } else if (entry.agent === 'user' && entry.action === 'final_output') {
-        // Delivered response — content already shown via [Tutor Ego]
-        // Skip to avoid duplication
+        // Delivered response — content already shown via [Tutor Ego]; skip
+      } else if (entry.agent === 'rejection_budget') {
+        const text = entry.contextSummary || entry.detail || '';
+        lines.push(`[Rejection Budget] ${truncate(text, 200)}`);
       }
-      // Skip: user/context_input, system/memory_cycle (metadata, not dialogue)
+      // Skip: user/context_input (raw context metadata), system/memory_cycle (infra)
     }
     return lines.join('\n');
   }
