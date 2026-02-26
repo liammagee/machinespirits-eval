@@ -32,6 +32,7 @@ import { formatApiMessages } from './apiMessageFormatter.js';
 import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
+import { chalk } from './cliTheme.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -649,6 +650,22 @@ function buildMessageChain(conversationHistory) {
   return messages;
 }
 
+/**
+ * Strip the "### Recent Chat History" section from learner context.
+ *
+ * In messages-mode multi-turn dialogues, the initial learner utterance is
+ * embedded in the scenario's learner_context under this heading.  On Turn 1+
+ * the real conversation history is carried as a proper message chain, so the
+ * static chat history causes the tutor to anchor on the opening message
+ * instead of the learner's evolving questions.
+ *
+ * The regex matches from the heading to the next `### ` heading or end-of-string.
+ */
+function stripRecentChatHistory(context) {
+  if (!context) return context;
+  return context.replace(/### Recent Chat History\n[\s\S]*?(?=\n###|$)/g, '').trim();
+}
+
 // ---------------------------------------------------------------------------
 // Multi-turn context-building utilities (moved from multiTurnRunner.js)
 // ---------------------------------------------------------------------------
@@ -672,7 +689,17 @@ function buildMultiTurnContext(options) {
   // sessionEvolution is now injected into the system prompt (not user context).
   // See systemPromptExtension threading through generateAndEvaluateTurn → tutor-core.
 
-  contextParts.push(originalContext);
+  // In messages mode (Turn 1+), strip the static "### Recent Chat History"
+  // section so the tutor engages with the evolving message chain rather than
+  // anchoring on the initial learner utterance baked into the scenario YAML.
+  let effectiveContext = originalContext;
+  if (conversationMode === 'messages' && conversationHistory.length > 0) {
+    effectiveContext = stripRecentChatHistory(originalContext);
+    effectiveContext += '\n\n### Conversation Context\n'
+      + 'The learner\'s ongoing messages are provided as conversation history. '
+      + 'Focus your response on their most recent message.';
+  }
+  contextParts.push(effectiveContext);
 
   // In message chain mode, conversation history is carried as proper message
   // arrays (assistant/user roles) rather than serialized text in the context.
@@ -2122,25 +2149,124 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const consolidatedTrace = cs?.consolidatedTrace || [];
   const priorSuperegoAssessments = cs?.priorSuperegoAssessments || []; // Cross-turn superego memory
 
-  // Helper: append new trace entries to transcript file and optionally console
+  // Helper: append new trace entries to transcript file and optionally console.
+  // Always prints live chat-style lines for public-facing messages (User/Assistant).
+  // --transcript mode additionally writes play-format to file + compact console lines.
   // On resume, skip entries already flushed in the previous session.
   let lastTranscriptIdx = cs ? consolidatedTrace.length : 0;
+  const isDynamicLearnerArch = resolvedConfig.learnerArchitecture?.includes('ego_superego');
+  const printedLearnerTurns = new Set(); // dedup: track which learner turns have been printed
+
   function flushTranscript() {
-    if (!transcriptMode || !transcriptPath) return;
     const newEntries = consolidatedTrace.slice(lastTranscriptIdx);
     if (newEntries.length === 0) return;
     lastTranscriptIdx = consolidatedTrace.length;
-    const lines = [];
+
+    // --- Always: print live chat lines for public-facing messages ---
     for (const entry of newEntries) {
-      const formatted = formatEntry(entry, { detail: 'play' });
-      if (formatted) lines.push(formatted + '\n');
-      // Also print compact line to console in transcript mode
-      const compactLine = formatCompactLine(entry);
-      if (compactLine) console.log(compactLine);
+      const chatLine = formatChatLine(entry, isDynamicLearnerArch, printedLearnerTurns);
+      if (chatLine) console.log(chatLine);
     }
-    if (lines.length > 0) {
-      fs.appendFileSync(transcriptPath, lines.join('\n'));
+
+    // --- --transcript only: write play-format file + compact console lines ---
+    if (transcriptMode && transcriptPath) {
+      const lines = [];
+      for (const entry of newEntries) {
+        const formatted = formatEntry(entry, { detail: 'play' });
+        if (formatted) lines.push(formatted + '\n');
+        const compactLine = formatCompactLine(entry);
+        if (compactLine) console.log(compactLine);
+      }
+      if (lines.length > 0) {
+        fs.appendFileSync(transcriptPath, lines.join('\n'));
+      }
     }
+  }
+
+  /**
+   * Format a trace entry as a live chat line (User/Assistant/System).
+   * Returns null for internal entries (superego reviews, reflections, etc.).
+   */
+  function formatChatLine(entry, isDynamic, printed) {
+    const { agent, action } = entry;
+    const ROLE_WIDTH = 11; // "Assistant  " padded width
+    const pad = (label) => label.padEnd(ROLE_WIDTH);
+
+    // --- User (learner) messages ---
+    // For ego_superego learners: use final_output (the synthesized message)
+    if (isDynamic && agent === 'learner' && action === 'final_output') {
+      const turnKey = `learner-${entry.turnIndex}`;
+      if (printed.has(turnKey)) return null;
+      printed.add(turnKey);
+      const text = (entry.detail || entry.contextSummary || '').substring(0, 500);
+      if (!text) return null;
+      return '\n' + chalk.green.bold(pad('User')) + wrapChatText(text, ROLE_WIDTH);
+    }
+    // For unified learners: use turn_action
+    if (!isDynamic && (agent === 'learner' || agent === 'user') && action === 'turn_action') {
+      const turnKey = `learner-${entry.turnIndex}`;
+      if (printed.has(turnKey)) return null;
+      printed.add(turnKey);
+      const text = (entry.contextSummary || entry.detail || '').substring(0, 500);
+      if (!text) return null;
+      return '\n' + chalk.green.bold(pad('User')) + wrapChatText(text, ROLE_WIDTH);
+    }
+
+    // --- Assistant (tutor) messages ---
+    // Revised output (final after superego review) or generate_final (legacy)
+    if (agent === 'ego' && (action === 'revise' || action === 'generate_final')) {
+      return formatAssistantLine(entry, ROLE_WIDTH, pad);
+    }
+    // Generate without revision (single-agent or superego approved first draft)
+    if (agent === 'ego' && action === 'generate') {
+      // Check if a revision follows in the remaining new entries — if so, skip this draft
+      const laterInTrace = consolidatedTrace.slice(consolidatedTrace.indexOf(entry) + 1);
+      const hasRevision = laterInTrace.some(
+        (e) => e.turnIndex === entry.turnIndex && e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final'),
+      );
+      if (hasRevision) return null;
+      return formatAssistantLine(entry, ROLE_WIDTH, pad);
+    }
+
+    return null;
+  }
+
+  function formatAssistantLine(entry, roleWidth, pad) {
+    const msg = (entry.suggestions || []).map((s) => s.message || s.title || '').join('\n\n').substring(0, 500);
+    if (!msg) return null;
+    // Metadata line: model · latency · tokens
+    const m = entry.metrics || {};
+    const metaParts = [];
+    if (m.model) {
+      const name = m.model.includes('/') ? m.model.split('/').pop() : m.model;
+      metaParts.push(name.split(':')[0].substring(0, 22));
+    }
+    if (m.latencyMs != null) metaParts.push(m.latencyMs < 1000 ? `${m.latencyMs}ms` : `${(m.latencyMs / 1000).toFixed(1)}s`);
+    if (m.inputTokens != null || m.outputTokens != null) metaParts.push(`${m.inputTokens ?? '?'}→${m.outputTokens ?? '?'}`);
+    const metaStr = metaParts.length > 0 ? '\n' + ' '.repeat(roleWidth) + chalk.dim(metaParts.join(' · ')) : '';
+    return '\n' + chalk.cyan.bold(pad('Assistant')) + wrapChatText(msg, roleWidth) + metaStr;
+  }
+
+  /** Word-wrap text with continuation-line indentation matching role label width. */
+  function wrapChatText(text, indent) {
+    const maxWidth = 90;
+    const lines = text.split('\n');
+    const result = [];
+    for (const line of lines) {
+      if (line.trim() === '') { result.push(''); continue; }
+      const words = line.split(/\s+/);
+      let current = '';
+      for (const word of words) {
+        if (current.length + word.length + 1 > maxWidth - indent && current.length > 0) {
+          result.push(current);
+          current = ' '.repeat(indent) + word;
+        } else {
+          current = current ? current + ' ' + word : word;
+        }
+      }
+      if (current) result.push(current);
+    }
+    return result.join('\n');
   }
 
   // Check profile-level feature flags
@@ -2219,6 +2345,17 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   if (cs) {
     log(`[evaluationRunner] Checkpoint: resuming from turn ${startTurnIdx}/${totalTurnCount - 1} (${turnResults.length} turns already completed)`, 'info');
   }
+
+  // Print live chat System context at dialogue start (shows the learner scenario)
+  if (startTurnIdx === 0) {
+    const systemText = fullScenario.learner_context || fullScenario.description || '';
+    if (systemText) {
+      const truncated = systemText.length > 300 ? systemText.substring(0, 297) + '...' : systemText;
+      console.log('\n' + chalk.dim('─'.repeat(60)));
+      console.log(chalk.gray.bold('System'.padEnd(11)) + chalk.dim(truncated.replace(/\n/g, '\n' + ' '.repeat(11))));
+    }
+  }
+
   for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
     // Update live reporter with current turn index
     if (liveReporter) liveReporter.setTurnIdx(turnIdx);
@@ -3005,6 +3142,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalDialogueRounds,
       });
     }
+  }
+
+  // Print closing separator for live chat transcript
+  if (consolidatedTrace.length > 0) {
+    console.log(chalk.dim('─'.repeat(60)));
   }
 
   // Multi-turn loop completed successfully — clean up checkpoint
@@ -4171,7 +4313,7 @@ export async function rejudgeRun(runId, options = {}) {
 }
 
 // Named exports for unit testing (these are internal helpers not part of the public API)
-export { structureLearnerContext, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext, buildMessageChain, writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints };
+export { structureLearnerContext, stripRecentChatHistory, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext, buildMessageChain, writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints };
 
 export default {
   runEvaluation,

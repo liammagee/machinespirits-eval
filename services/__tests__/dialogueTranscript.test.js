@@ -9,6 +9,8 @@ import {
 import {
   buildMultiTurnContext,
   formatTurnForContext,
+  stripRecentChatHistory,
+  structureLearnerContext,
 } from '../evaluationRunner.js';
 
 // ── Test fixtures ─────────────────────────────────────────────────────────
@@ -1251,5 +1253,235 @@ describe('diagnostic: conversation history state', () => {
     // Learner message preserved in full
     assert.ok(formatted.includes(LEARNER_MESSAGES[1]),
       'Should contain full learner message');
+  });
+});
+
+// ── stripRecentChatHistory ────────────────────────────────────────────────
+
+const CONTEXT_WITH_CHAT_HISTORY = `### User Profile
+- **Returning user** - 4 sessions, 35 total events
+
+### Current Session
+- **Currently viewing**: 479-lecture-3
+- **Struggle signals detected**: 5
+
+### Recent Chat History
+- User: "I've been stuck on this dialectic stuff for an hour. Nothing makes sense!"`;
+
+const CONTEXT_WITH_TRAILING_SECTION = `### User Profile
+- **Returning user** - 4 sessions, 35 total events
+
+### Recent Chat History
+- User: "I've been stuck on this dialectic stuff for an hour. Nothing makes sense!"
+
+### Recent Activity
+- Viewed lecture 3
+- Attempted quiz twice`;
+
+const CONTEXT_WITH_MULTI_CHAT = `### User Profile
+- **Returning user**
+
+### Recent Chat History
+- User: "I've been stuck on this dialectic stuff for an hour. Nothing makes sense!"
+- User: "Can you explain recognition theory?"
+- User: "I think I'm getting it now"
+
+### Recent Activity
+- Viewed lecture 3`;
+
+const CONTEXT_WITHOUT_CHAT_HISTORY = `### User Profile
+- **Returning user** - 4 sessions, 35 total events
+
+### Current Session
+- **Currently viewing**: 479-lecture-3
+- **Struggle signals detected**: 5`;
+
+describe('stripRecentChatHistory', () => {
+  it('removes chat history section at end of string', () => {
+    const result = stripRecentChatHistory(CONTEXT_WITH_CHAT_HISTORY);
+    assert.ok(!result.includes('Recent Chat History'),
+      'Should not contain Recent Chat History heading');
+    assert.ok(!result.includes('stuck on this dialectic'),
+      'Should not contain chat message');
+    assert.ok(result.includes('User Profile'),
+      'Should preserve User Profile section');
+    assert.ok(result.includes('Struggle signals detected'),
+      'Should preserve struggle signals');
+  });
+
+  it('removes chat history with trailing section preserved', () => {
+    const result = stripRecentChatHistory(CONTEXT_WITH_TRAILING_SECTION);
+    assert.ok(!result.includes('Recent Chat History'),
+      'Should not contain Recent Chat History heading');
+    assert.ok(!result.includes('stuck on this dialectic'),
+      'Should not contain chat message');
+    assert.ok(result.includes('### Recent Activity'),
+      'Should preserve trailing Recent Activity section');
+    assert.ok(result.includes('Viewed lecture 3'),
+      'Should preserve trailing section content');
+  });
+
+  it('handles multiple User: lines', () => {
+    const result = stripRecentChatHistory(CONTEXT_WITH_MULTI_CHAT);
+    assert.ok(!result.includes('Recent Chat History'),
+      'Should not contain Recent Chat History heading');
+    assert.ok(!result.includes('stuck on this dialectic'),
+      'Should not contain first chat message');
+    assert.ok(!result.includes('explain recognition theory'),
+      'Should not contain second chat message');
+    assert.ok(!result.includes('getting it now'),
+      'Should not contain third chat message');
+    assert.ok(result.includes('### Recent Activity'),
+      'Should preserve trailing section');
+  });
+
+  it('returns context unchanged when no chat history section', () => {
+    const result = stripRecentChatHistory(CONTEXT_WITHOUT_CHAT_HISTORY);
+    assert.equal(result, CONTEXT_WITHOUT_CHAT_HISTORY);
+  });
+
+  it('handles null/undefined gracefully', () => {
+    assert.equal(stripRecentChatHistory(null), null);
+    assert.equal(stripRecentChatHistory(undefined), undefined);
+    assert.equal(stripRecentChatHistory(''), '');
+  });
+});
+
+// ── buildMultiTurnContext messages-mode ────────────────────────────────────
+
+describe('buildMultiTurnContext messages-mode chat history stripping', () => {
+  const MESSAGES_MODE_CONTEXT = CONTEXT_WITH_CHAT_HISTORY;
+
+  const SAMPLE_HISTORY = [
+    {
+      turnIndex: 0,
+      turnId: 'initial',
+      suggestion: { message: 'Let me help you understand dialectics.' },
+      learnerAction: 'asked_followup',
+      learnerMessage: 'Can you explain thesis-antithesis-synthesis?',
+    },
+  ];
+
+  it('Turn 0 messages mode: preserves Recent Chat History', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: MESSAGES_MODE_CONTEXT,
+      conversationHistory: [],
+      currentTurn: { learner_action: 'initial' },
+      conversationMode: 'messages',
+    });
+    assert.ok(ctx.includes('Recent Chat History'),
+      'Turn 0 should preserve Recent Chat History');
+    assert.ok(ctx.includes('stuck on this dialectic'),
+      'Turn 0 should preserve the initial chat message');
+  });
+
+  it('Turn 1+ messages mode: strips Recent Chat History', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: MESSAGES_MODE_CONTEXT,
+      conversationHistory: SAMPLE_HISTORY,
+      currentTurn: { learner_action: 'asked_followup' },
+      conversationMode: 'messages',
+    });
+    assert.ok(!ctx.includes('Recent Chat History'),
+      'Turn 1+ should strip Recent Chat History');
+    assert.ok(!ctx.includes('stuck on this dialectic'),
+      'Turn 1+ should strip the initial chat message');
+  });
+
+  it('Turn 1+ messages mode: preserves static context', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: MESSAGES_MODE_CONTEXT,
+      conversationHistory: SAMPLE_HISTORY,
+      currentTurn: { learner_action: 'asked_followup' },
+      conversationMode: 'messages',
+    });
+    assert.ok(ctx.includes('User Profile'),
+      'Should preserve User Profile');
+    assert.ok(ctx.includes('Struggle signals detected'),
+      'Should preserve struggle signals');
+    assert.ok(ctx.includes('Currently viewing'),
+      'Should preserve current content');
+  });
+
+  it('Turn 1+ messages mode: adds Conversation Context annotation', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: MESSAGES_MODE_CONTEXT,
+      conversationHistory: SAMPLE_HISTORY,
+      currentTurn: { learner_action: 'asked_followup' },
+      conversationMode: 'messages',
+    });
+    assert.ok(ctx.includes('### Conversation Context'),
+      'Should add Conversation Context heading');
+    assert.ok(ctx.includes('Focus your response on their most recent message'),
+      'Should include focus instruction');
+  });
+
+  it('Turn 1+ single-prompt mode: preserves Recent Chat History', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: MESSAGES_MODE_CONTEXT,
+      conversationHistory: SAMPLE_HISTORY,
+      currentTurn: { learner_action: 'asked_followup' },
+      conversationMode: 'single-prompt',
+    });
+    assert.ok(ctx.includes('Recent Chat History'),
+      'Single-prompt mode should preserve Recent Chat History');
+    assert.ok(ctx.includes('stuck on this dialectic'),
+      'Single-prompt mode should preserve chat message');
+  });
+
+  it('handles context with trailing section after chat history', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: CONTEXT_WITH_TRAILING_SECTION,
+      conversationHistory: SAMPLE_HISTORY,
+      currentTurn: { learner_action: 'asked_followup' },
+      conversationMode: 'messages',
+    });
+    assert.ok(!ctx.includes('Recent Chat History'),
+      'Should strip chat history');
+    assert.ok(ctx.includes('### Recent Activity'),
+      'Should preserve trailing Recent Activity section');
+    assert.ok(ctx.includes('Viewed lecture 3'),
+      'Should preserve trailing section content');
+  });
+
+  it('handles context without Recent Chat History section', () => {
+    const ctx = buildMultiTurnContext({
+      originalContext: CONTEXT_WITHOUT_CHAT_HISTORY,
+      conversationHistory: SAMPLE_HISTORY,
+      currentTurn: { learner_action: 'asked_followup' },
+      conversationMode: 'messages',
+    });
+    // Should still add annotation even when no chat history to strip
+    assert.ok(ctx.includes('### Conversation Context'),
+      'Should add Conversation Context annotation');
+    assert.ok(ctx.includes('Struggle signals detected'),
+      'Should preserve all original context');
+  });
+});
+
+// ── structureLearnerContext integration with stripped chat history ──────────
+
+describe('structureLearnerContext with pre-stripped chat history', () => {
+  it('does not produce Learner Messages field when chat history is stripped', () => {
+    const stripped = stripRecentChatHistory(CONTEXT_WITH_CHAT_HISTORY);
+    const structured = structureLearnerContext(stripped);
+
+    assert.ok(!structured.includes('Learner Messages'),
+      'Should not contain Learner Messages field after chat history stripping');
+    // Other fields should still be extracted
+    assert.ok(structured.includes('Struggle Signals'),
+      'Should still extract Struggle Signals');
+    assert.ok(structured.includes('Current Content'),
+      'Should still extract Current Content');
+    assert.ok(structured.includes('Learner Type'),
+      'Should still extract Learner Type');
+  });
+
+  it('structureLearnerContext with original context DOES produce Learner Messages', () => {
+    const structured = structureLearnerContext(CONTEXT_WITH_CHAT_HISTORY);
+    assert.ok(structured.includes('Learner Messages'),
+      'Un-stripped context should produce Learner Messages field');
+    assert.ok(structured.includes('stuck on this dialectic'),
+      'Should contain the chat message in Learner Messages');
   });
 });
