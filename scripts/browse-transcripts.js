@@ -53,11 +53,18 @@ const db = new Database(DB_PATH, { readonly: true });
 const app = express();
 app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
-// ── Learner config cache ────────────────────────────────────────────────────
+// ── Config caches ─────────────────────────────────────────────────────────
 
 let learnerConfig = null;
 try {
   learnerConfig = YAML.parse(fs.readFileSync(LEARNER_CONFIG, 'utf8'));
+} catch {
+  /* ignored */
+}
+
+let tutorAgentsConfig = null;
+try {
+  tutorAgentsConfig = YAML.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'tutor-agents.yaml'), 'utf8'));
 } catch {
   /* ignored */
 }
@@ -80,11 +87,15 @@ function resolvelearnerModelsFromYaml(arch) {
 }
 
 /**
- * Extract actual learner models from the dialogue trace (runtime truth).
- * Falls back to static YAML config if trace doesn't contain learner entries.
+ * Extract actual learner models used at runtime.
+ *
+ * Resolution order:
+ * 1. Dialogue trace entries (runtime truth — actual API call model)
+ * 2. Cell YAML `learner.model` override (e.g. cell_88 specifies haiku)
+ * 3. Default learner profile YAML (ego_superego_recognition defaults)
  */
-function resolvelearnerModels(arch, trace) {
-  // Try to extract from trace first — this reflects actual runtime models
+function resolvelearnerModels(arch, trace, profileName) {
+  // 1. Try to extract from trace first — this reflects actual runtime models
   if (trace?.length > 0) {
     let egoModel = null;
     let superegoModel = null;
@@ -101,7 +112,15 @@ function resolvelearnerModels(arch, trace) {
       return { ego: egoModel || superegoModel || '?', superego: superegoModel || egoModel || '?' };
     }
   }
-  // Fall back to static YAML config
+
+  // 2. Check cell's learner.model override in tutor-agents.yaml
+  if (profileName && tutorAgentsConfig?.profiles?.[profileName]?.learner?.model) {
+    const cellLearner = tutorAgentsConfig.profiles[profileName].learner;
+    const m = (cellLearner.provider || 'openrouter') + '.' + cellLearner.model;
+    return { ego: m, superego: m };
+  }
+
+  // 3. Fall back to default learner profile YAML
   return resolvelearnerModelsFromYaml(arch);
 }
 
@@ -221,7 +240,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     /* ignored */
   }
 
-  const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified', trace);
+  const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified', trace, row.profile_name);
 
   let judgeScores = {};
   try {
