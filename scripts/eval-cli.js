@@ -3031,16 +3031,91 @@ async function main() {
             }
           }
 
+          // ── Dialogue quality scoring: DgP (public) and DgI (internal) ──
+          // Inlined here so all 6 metrics share the same loaded dialogue data.
+          let dgpScore = null;
+          let dgiScore = null;
+          if (!tutorOnly) {
+            const dqPromptParams = {
+              turns: transcriptTurns,
+              dialogueTrace,
+              scenarioName: scenario.name,
+              scenarioDescription: scenario.description,
+              topic: scenario.topic || scenario.name,
+              turnCount: totalTurns,
+              learnerContext: learnerCtx,
+            };
+
+            // DgP — public transcript dialogue quality
+            try {
+              const publicPrompt = buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'public' });
+              const publicParsed = await callClaudeJudge(publicPrompt);
+              const publicScores = {};
+              for (const [key, value] of Object.entries(publicParsed.scores || {})) {
+                if (typeof value === 'object' && value !== null) {
+                  publicScores[key] = { score: value.score, reasoning: value.reasoning };
+                } else if (typeof value === 'number') {
+                  publicScores[key] = { score: value, reasoning: null };
+                }
+              }
+              dgpScore = Object.keys(publicScores).length > 0
+                ? calculateDialogueQualityScore(publicScores)
+                : publicParsed.overall_score;
+
+              evaluationStore.updateDialogueQualityScore(result.id, {
+                dialogueQualityScore: dgpScore,
+                dialogueQualitySummary: publicParsed.summary || null,
+                dialogueQualityJudgeModel: judgeModel,
+              });
+
+              console.log(`${tag}   dialogue-quality(public)=${dgpScore.toFixed(1)}`);
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${tag}   dialogue-quality(public) ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+
+            // DgI — full (internal) transcript dialogue quality
+            try {
+              const fullPrompt = buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'full' });
+              const fullParsed = await callClaudeJudge(fullPrompt);
+              const fullScores = {};
+              for (const [key, value] of Object.entries(fullParsed.scores || {})) {
+                if (typeof value === 'object' && value !== null) {
+                  fullScores[key] = { score: value.score, reasoning: value.reasoning };
+                } else if (typeof value === 'number') {
+                  fullScores[key] = { score: value, reasoning: null };
+                }
+              }
+              dgiScore = Object.keys(fullScores).length > 0
+                ? calculateDialogueQualityScore(fullScores)
+                : fullParsed.overall_score;
+
+              evaluationStore.updateDialogueQualityInternalScore(result.id, {
+                dialogueQualityInternalScore: dgiScore,
+                dialogueQualityInternalSummary: fullParsed.summary || null,
+              });
+
+              console.log(`${tag}   dialogue-quality(full)=${dgiScore.toFixed(1)}`);
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${tag}   dialogue-quality(full) ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+          }
+
           const tutorHolisticPart = tutorHolistic != null ? ` holistic=${tutorHolistic.toFixed(1)}` : '';
           const learnerPart = learnerAvg != null
             ? `  learner: avg=${learnerAvg.toFixed(1)}${learnerHolistic != null ? ` holistic=${learnerHolistic.toFixed(1)}` : ''}`
             : '';
+          const dgPart = dgpScore != null ? `  DgP=${dgpScore.toFixed(1)}` : '';
+          const dgiPart = dgiScore != null ? ` DgI=${dgiScore.toFixed(1)}` : '';
           const overallPart = learnerAvg != null
             ? `  overall=${((tutorOverall + learnerAvg) / 2).toFixed(1)}`
             : '';
 
           console.log(
-            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)}${tutorHolisticPart} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}${learnerPart}${overallPart}`,
+            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)}${tutorHolisticPart} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}${learnerPart}${dgPart}${dgiPart}${overallPart}`,
           );
 
           return tutorOverall;
@@ -3500,10 +3575,6 @@ async function main() {
                 let score;
                 if (isMultiTurnResult(result)) {
                   score = await evaluateMultiTurnResult(result, tag);
-                  // Immediately score dialogue quality so each dialogue is fully scored before moving on
-                  if (score != null && !tutorOnly) {
-                    await scoreDialogueQuality(result, tag);
-                  }
                 } else {
                   score = await evaluateOneResult(result, tag);
                 }
@@ -3669,10 +3740,6 @@ async function main() {
               if (score != null) {
                 scores.push(score);
                 succeeded++;
-                // Immediately score dialogue quality so each dialogue is fully scored before moving on
-                if (!tutorOnly) {
-                  await scoreDialogueQuality(result, tag);
-                }
               } else {
                 failed++;
               }
