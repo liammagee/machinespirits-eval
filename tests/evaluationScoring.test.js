@@ -1735,6 +1735,88 @@ describe('evaluate-dialogue multi-turn filter', () => {
 });
 
 // ============================================================================
+// DgP/DgI consolidation into evaluateMultiTurnResult
+// ============================================================================
+
+describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
+  const evalCliSource = fs.readFileSync(
+    path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'scripts', 'eval-cli.js'),
+    'utf-8',
+  );
+
+  it('evaluate loops do NOT call scoreDialogueQuality after evaluateMultiTurnResult', () => {
+    // The evaluate loops (follow-mode and one-shot) should no longer call
+    // scoreDialogueQuality separately — DgP/DgI are now inlined.
+    // We check that no "scoreDialogueQuality(result" appears near "evaluateMultiTurnResult"
+    // by searching for the old caller pattern.
+    const callerPattern = /evaluateMultiTurnResult\(result[\s\S]{0,300}scoreDialogueQuality\(result/g;
+    const matches = evalCliSource.match(callerPattern);
+    assert.strictEqual(matches, null,
+      'scoreDialogueQuality should NOT be called after evaluateMultiTurnResult in evaluate loops — DgP/DgI are now inlined');
+  });
+
+  it('evaluateMultiTurnResult contains all 6 metric store writes', () => {
+    // Extract the evaluateMultiTurnResult function body.
+    // It starts with "async function evaluateMultiTurnResult" and ends before
+    // "// Helper: run dialogue quality scoring" or the next top-level function.
+    const funcStart = evalCliSource.indexOf('async function evaluateMultiTurnResult');
+    assert.ok(funcStart !== -1, 'evaluateMultiTurnResult should exist in eval-cli.js');
+
+    // Find a reliable end boundary: the scoreDialogueQuality helper that follows it.
+    const funcEnd = evalCliSource.indexOf('async function scoreDialogueQuality', funcStart);
+    assert.ok(funcEnd !== -1, 'scoreDialogueQuality should still exist (used by standalone evaluate-dialogue)');
+
+    const funcBody = evalCliSource.slice(funcStart, funcEnd);
+
+    // All 6 metric store writes must appear inside this function:
+    const requiredStoreWrites = [
+      'updateResultScores',                  // TuPT (legacy per-dimension)
+      'updateResultTutorScores',             // TuPT (per-turn JSON)
+      'updateResultTutorHolisticScores',     // TuH
+      'updateResultLearnerScores',           // LrPT + LrH
+      'updateDialogueQualityScore',          // DgP
+      'updateDialogueQualityInternalScore',  // DgI
+    ];
+
+    for (const storeFn of requiredStoreWrites) {
+      assert.ok(
+        funcBody.includes(`evaluationStore.${storeFn}(`),
+        `evaluateMultiTurnResult must call evaluationStore.${storeFn}()`,
+      );
+    }
+  });
+
+  it('DgP/DgI are guarded by tutorOnly flag', () => {
+    // Verify that dialogue quality scoring is inside the !tutorOnly guard.
+    // The pattern: "if (!tutorOnly)" block should contain both DgP and DgI calls.
+    const funcStart = evalCliSource.indexOf('async function evaluateMultiTurnResult');
+    const funcEnd = evalCliSource.indexOf('async function scoreDialogueQuality', funcStart);
+    const funcBody = evalCliSource.slice(funcStart, funcEnd);
+
+    // Find the DgP/DgI section — it should be inside a !tutorOnly block
+    const dgpIdx = funcBody.indexOf('updateDialogueQualityScore');
+    const dgiIdx = funcBody.indexOf('updateDialogueQualityInternalScore');
+    assert.ok(dgpIdx !== -1, 'DgP store write must exist');
+    assert.ok(dgiIdx !== -1, 'DgI store write must exist');
+
+    // Walk backwards from DgP to find the nearest !tutorOnly guard
+    const beforeDgp = funcBody.slice(0, dgpIdx);
+    const tutorOnlyGuardIdx = beforeDgp.lastIndexOf('if (!tutorOnly)');
+    assert.ok(tutorOnlyGuardIdx !== -1,
+      'DgP/DgI must be inside an if (!tutorOnly) guard');
+
+    // The guard should be closer to DgP than the learner section's guard
+    // (there's another !tutorOnly for learner scoring earlier in the function).
+    // Check that DgI also comes after this guard.
+    const afterGuard = funcBody.slice(tutorOnlyGuardIdx);
+    assert.ok(afterGuard.includes('updateDialogueQualityScore'),
+      'DgP must be inside the !tutorOnly block');
+    assert.ok(afterGuard.includes('updateDialogueQualityInternalScore'),
+      'DgI must be inside the !tutorOnly block');
+  });
+});
+
+// ============================================================================
 // CLAUDECODE env stripping (Bug fix: nested claude sessions blocked judge calls)
 // ============================================================================
 
