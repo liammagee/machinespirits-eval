@@ -401,8 +401,12 @@ function enrichRunsWithActiveTests(runs) {
 
 /**
  * Render the runs table as a formatted string (reusable for one-shot and --live).
+ * Automatically switches to compact layout when terminal is narrower than 120 columns.
  */
 function renderRunsTable(runs) {
+  const termWidth = process.stdout.columns || 120;
+  if (termWidth < 120) return renderRunsCompact(runs, termWidth);
+
   const lines = [];
   lines.push(
     '  ' +
@@ -462,6 +466,90 @@ function renderRunsTable(runs) {
     if (run.status === 'running' && activeTest) {
       const activeLabel = formatActiveTestProgress(activeTest);
       if (activeLabel) lines.push('  ' + `  Active: ${theme.dim(activeLabel)}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Compact runs table for narrow terminals (<120 columns).
+ * Uses shortened IDs (MM-DD-hash) and drops Created/Description to a second line.
+ */
+function renderRunsCompact(runs, termWidth) {
+  const lines = [];
+  // Compact header: ~76 chars
+  lines.push(
+    '  ' +
+      theme.header('Run'.padEnd(16)) +
+      theme.header('Status'.padEnd(10)) +
+      theme.header('Progress'.padEnd(14)) +
+      theme.header('Tutor'.padEnd(6)) +
+      theme.header('Lrnr'.padEnd(6)) +
+      theme.header('DlgQ'.padEnd(6)) +
+      theme.header('Duration'),
+  );
+  lines.push('  ' + theme.dim('─'.repeat(Math.min(74, termWidth - 4))));
+
+  for (const run of runs) {
+    // Short ID: extract MM-DD-hash from eval-YYYY-MM-DD-hash
+    const shortId = run.id.replace(/^eval-\d{4}-/, '');
+
+    const status = (run.status || '--').replace('completed', 'done');
+
+    let progress = '--';
+    if (run.totalTests > 0) {
+      const pct = run.progressPct != null ? run.progressPct : 100;
+      progress = `${run.completedResults}/${run.totalTests} (${pct}%)`;
+    } else if (run.completedResults > 0) {
+      progress = `${run.completedResults} done`;
+    }
+    const turnProgress = run.metadata?.turnProgress;
+    if (run.status === 'running' && turnProgress) {
+      progress += ` T${turnProgress.current}/${turnProgress.total}`;
+    }
+
+    const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
+    const avgL = run.avgLearnerScore != null ? run.avgLearnerScore.toFixed(1) : '--';
+    const avgD = run.avgDialogueScore != null ? run.avgDialogueScore.toFixed(1) : '--';
+
+    let duration = '--';
+    if (run.durationMs != null) {
+      const totalSec = Math.round(run.durationMs / 1000);
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      duration = m > 0 ? `${m}m${s}s` : `${s}s`;
+    }
+
+    lines.push(
+      '  ' +
+        theme.id(shortId.padEnd(16)) +
+        theme.status(status.padEnd(10)) +
+        progress.padEnd(14) +
+        theme.score(avg.padEnd(6)) +
+        theme.score(avgL.padEnd(6)) +
+        theme.score(avgD.padEnd(6)) +
+        duration,
+    );
+
+    // Second line: models + description (truncated to terminal width)
+    const models = run.models?.length > 0 ? run.models.join(', ') : '';
+    const desc = run.description || '';
+    const detail = [models, desc].filter(Boolean).join(' · ');
+    if (detail) {
+      const maxDetail = termWidth - 6;
+      lines.push('    ' + theme.dim(detail.length > maxDetail ? detail.slice(0, maxDetail - 1) + '…' : detail));
+    }
+
+    // Active test line
+    if (run.status === 'running') {
+      const activeTest = run.activeTest || run.metadata?.testProgress || null;
+      if (activeTest) {
+        const activeLabel = formatActiveTestProgress(activeTest);
+        if (activeLabel) {
+          const maxActive = termWidth - 8;
+          lines.push('    ' + theme.dim('> ' + (activeLabel.length > maxActive ? activeLabel.slice(0, maxActive - 1) + '…' : activeLabel)));
+        }
+      }
     }
   }
   return lines.join('\n');
