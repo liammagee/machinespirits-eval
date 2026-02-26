@@ -8,17 +8,21 @@
  * COLUMN SEMANTIC MAPPING (multi-turn dialogue scoring)
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * For multi-turn dialogue rows, five distinct scores answer different questions:
+ * For multi-turn dialogue rows, six distinct score types answer different questions:
  *
- *   DB Column                     │ Question
- *   ──────────────────────────────┼───────────────────────────────────
- *   tutor_first_turn_score        │ How good is the tutor's cold-start response?
- *   tutor_last_turn_score         │ How good is the tutor after adaptation?
- *   tutor_development_score       │ How much did the tutor improve? (last - first)
- *   learner_overall_score         │ Average of per-turn learner scores
- *   learner_holistic_overall_score│ Holistic learner dialogue evaluation
- *   dialogue_quality_score        │ Overall pedagogical encounter quality (PUBLIC transcript)
- *   dialogue_quality_internal_score│ Overall pedagogical encounter quality (FULL transcript w/ internal deliberation)
+ *   DB Column                       │ Question
+ *   ────────────────────────────────┼───────────────────────────────────
+ *   tutor_overall_score             │ Average of per-turn tutor scores
+ *   tutor_holistic_overall_score    │ Holistic tutor dialogue trajectory evaluation
+ *   learner_overall_score           │ Average of per-turn learner scores
+ *   learner_holistic_overall_score  │ Holistic learner dialogue evaluation
+ *   dialogue_quality_score          │ Overall pedagogical encounter quality (PUBLIC transcript)
+ *   dialogue_quality_internal_score │ Overall pedagogical encounter quality (FULL transcript w/ internal deliberation)
+ *
+ *   Additional tutor per-turn detail:
+ *   tutor_first_turn_score          │ How good is the tutor's cold-start response?
+ *   tutor_last_turn_score           │ How good is the tutor after adaptation?
+ *   tutor_development_score         │ How much did the tutor improve? (last - first)
  *
  * DEPRECATED columns (kept for backward compatibility):
  *   - overall_score: DEPRECATED alias for tutor_first_turn_score (synced on write)
@@ -209,6 +213,21 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_int
 
 // Conversation mode: 'single-prompt' | 'messages' (how tutor context was delivered)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN conversation_mode TEXT`, 'conversation_mode');
+
+// Holistic tutor evaluation (full-dialogue trajectory — mirrors learner holistic)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_scores TEXT`, 'tutor_holistic_scores');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_overall_score REAL`,
+  'tutor_holistic_overall_score',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_summary TEXT`,
+  'tutor_holistic_summary',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_judge_model TEXT`,
+  'tutor_holistic_judge_model',
+);
 
 // Per-turn tutor scores (unified scoring pipeline)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_scores TEXT`, 'tutor_scores');
@@ -555,8 +574,11 @@ export function listRuns(options = {}) {
     SELECT COUNT(*) as completed,
            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
            AVG(COALESCE(tutor_overall_score, tutor_first_turn_score, overall_score)) as avg_score,
+           AVG(tutor_holistic_overall_score) as avg_tutor_holistic_score,
            AVG(learner_overall_score) as avg_learner_score,
+           AVG(learner_holistic_overall_score) as avg_learner_holistic_score,
            AVG(dialogue_quality_score) as avg_dialogue_score,
+           AVG(dialogue_quality_internal_score) as avg_dialogue_internal_score,
            COUNT(DISTINCT judge_model) as judge_count
     FROM evaluation_results
     WHERE run_id = ?
@@ -627,8 +649,11 @@ export function listRuns(options = {}) {
       completedResults,
       successfulResults: counts?.successful || 0,
       avgScore: counts?.avg_score || null,
+      avgTutorHolisticScore: counts?.avg_tutor_holistic_score || null,
       avgLearnerScore: counts?.avg_learner_score || null,
+      avgLearnerHolisticScore: counts?.avg_learner_holistic_score || null,
       avgDialogueScore: counts?.avg_dialogue_score || null,
+      avgDialogueInternalScore: counts?.avg_dialogue_internal_score || null,
       judgeCount: counts?.judge_count || 1,
       progressPct,
       durationMs,
@@ -1280,6 +1305,11 @@ function parseResultRow(row) {
     conversationMode: row.conversation_mode || null,
     tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
     tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
+    tutorHolisticScores: row.tutor_holistic_scores ? JSON.parse(row.tutor_holistic_scores) : null,
+    tutorHolisticOverallScore:
+      row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
+    tutorHolisticSummary: row.tutor_holistic_summary || null,
+    tutorHolisticJudgeModel: row.tutor_holistic_judge_model || null,
   };
 }
 
@@ -1817,6 +1847,36 @@ export function updateResultTutorScores(resultId, evaluation) {
 }
 
 /**
+ * Update holistic tutor evaluation scores on an evaluation_results row.
+ * Writes ONLY the 4 holistic tutor columns — no clobbering of per-turn tutor data.
+ *
+ * @param {string} resultId - The evaluation result ID
+ * @param {Object} evaluation - Holistic tutor evaluation data
+ * @param {Object} evaluation.holisticScores - Per-dimension holistic scores (JSON-serializable)
+ * @param {number} evaluation.holisticOverallScore - Weighted overall (0-100)
+ * @param {string} [evaluation.holisticSummary] - Judge narrative summary
+ * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic judging
+ */
+export function updateResultTutorHolisticScores(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      tutor_holistic_scores = ?,
+      tutor_holistic_overall_score = ?,
+      tutor_holistic_summary = ?,
+      tutor_holistic_judge_model = ?
+    WHERE id = ?
+  `);
+
+  stmt.run(
+    evaluation.holisticScores ? JSON.stringify(evaluation.holisticScores) : null,
+    evaluation.holisticOverallScore ?? null,
+    evaluation.holisticSummary || null,
+    evaluation.holisticJudgeModel || null,
+    resultId,
+  );
+}
+
+/**
  * List all interaction evaluations for a given run ID.
  *
  * @param {string} runId - The run ID
@@ -1902,6 +1962,7 @@ export default {
   updateDialogueQualityScore,
   updateDialogueQualityInternalScore,
   updateResultLearnerScores,
+  updateResultTutorHolisticScores,
   getRun,
   listRuns,
   getResults,

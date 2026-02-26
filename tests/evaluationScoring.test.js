@@ -30,6 +30,7 @@ const {
   deleteRun,
   listRuns,
   updateResultTutorScores,
+  updateResultTutorHolisticScores,
   updateResultLearnerScores,
   updateResultScores,
   updateDialogueQualityScore,
@@ -39,7 +40,10 @@ const {
 const {
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
+  buildTutorHolisticEvaluationPrompt,
   calculateOverallScore,
+  calculateTutorHolisticScore,
+  getTutorHolisticDimensions,
 } = await import('../services/rubricEvaluator.js');
 
 const testRunIds = [];
@@ -1132,11 +1136,255 @@ describe('listRuns reflects all score types', () => {
 });
 
 // ============================================================================
-// Full pipeline end-to-end: all 5 score types populated
+// updateResultTutorHolisticScores — DB round-trip
+// ============================================================================
+
+describe('updateResultTutorHolisticScores', () => {
+  it('stores holistic tutor scores without clobbering per-turn tutor columns', () => {
+    const runId = makeRun('tutor holistic DB');
+    storeResult(runId, makeResult({
+      dialogueId: 'dlg-tutor-holistic-1',
+      dialogueRounds: 3,
+    }));
+
+    const results = getResults(runId);
+    const id = results[0].id;
+
+    // Write per-turn tutor scores first
+    updateResultTutorScores(id, {
+      tutorScores: { 0: { overallScore: 70 }, 1: { overallScore: 80 } },
+      tutorOverallScore: 75,
+      tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 80,
+      tutorDevelopmentScore: 10,
+      judgeModel: 'test-judge',
+    });
+
+    // Then write holistic tutor scores
+    updateResultTutorHolisticScores(id, {
+      holisticScores: { scaffolding_arc: { score: 4, reasoning: 'Good progression' }, adaptive_responsiveness: { score: 3, reasoning: 'Moderate' } },
+      holisticOverallScore: 68.5,
+      holisticSummary: 'Strong scaffolding arc with moderate responsiveness',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    const scored = getResults(runId)[0];
+
+    // Holistic fields populated
+    assert.strictEqual(scored.tutorHolisticOverallScore, 68.5, 'holistic overall score');
+    assert.ok(scored.tutorHolisticSummary.includes('scaffolding'), 'holistic summary');
+    assert.strictEqual(scored.tutorHolisticJudgeModel, 'test-judge', 'holistic judge model');
+    assert.ok(scored.tutorHolisticScores.scaffolding_arc, 'holistic scores JSON parsed');
+    assert.strictEqual(scored.tutorHolisticScores.scaffolding_arc.score, 4, 'dimension score');
+
+    // Per-turn tutor scores NOT clobbered
+    assert.strictEqual(scored.tutorOverallScore, 75, 'per-turn tutor overall preserved');
+    assert.strictEqual(scored.tutorFirstTurnScore, 70, 'first turn preserved');
+    assert.strictEqual(scored.tutorLastTurnScore, 80, 'last turn preserved');
+  });
+
+  it('per-turn and holistic coexist with distinct values', () => {
+    const runId = makeRun('tutor holistic coexist');
+    storeResult(runId, makeResult({ dialogueId: 'dlg-tutor-holistic-2', dialogueRounds: 2 }));
+
+    const results = getResults(runId);
+    const id = results[0].id;
+
+    updateResultTutorScores(id, {
+      tutorScores: { 0: { overallScore: 60 }, 1: { overallScore: 90 } },
+      tutorOverallScore: 75,
+      tutorFirstTurnScore: 60,
+      tutorLastTurnScore: 90,
+      tutorDevelopmentScore: 30,
+      judgeModel: 'test-judge',
+    });
+
+    updateResultTutorHolisticScores(id, {
+      holisticScores: { conceptual_coherence: { score: 5, reasoning: 'Excellent' } },
+      holisticOverallScore: 95,
+      holisticSummary: 'Exceptional coherence',
+      holisticJudgeModel: 'test-judge-holistic',
+    });
+
+    const scored = getResults(runId)[0];
+    assert.notStrictEqual(scored.tutorOverallScore, scored.tutorHolisticOverallScore,
+      'per-turn and holistic tutor scores should be distinct');
+    assert.strictEqual(scored.tutorOverallScore, 75);
+    assert.strictEqual(scored.tutorHolisticOverallScore, 95);
+  });
+});
+
+// ============================================================================
+// listRuns returns all 6 avg columns
+// ============================================================================
+
+describe('listRuns returns all 6 score columns', () => {
+  it('returns all 6 avg score columns when populated', () => {
+    const runId = makeRun('6-column listing');
+    storeResult(runId, makeResult({ dialogueId: 'dlg-6col', dialogueRounds: 3 }));
+
+    const results = getResults(runId);
+    const id = results[0].id;
+
+    updateResultTutorScores(id, {
+      tutorScores: { 0: { overallScore: 70 } },
+      tutorOverallScore: 70,
+      tutorFirstTurnScore: 70,
+      judgeModel: 'test-judge',
+    });
+    updateResultTutorHolisticScores(id, {
+      holisticScores: {},
+      holisticOverallScore: 72,
+      holisticJudgeModel: 'test-judge',
+    });
+    updateResultLearnerScores(id, {
+      scores: {},
+      overallScore: 55,
+      judgeModel: 'test-judge',
+      holisticScores: {},
+      holisticOverallScore: 60,
+      holisticJudgeModel: 'test-judge',
+    });
+    updateDialogueQualityScore(id, {
+      dialogueQualityScore: 80,
+      dialogueQualityJudgeModel: 'test-judge',
+    });
+    updateDialogueQualityInternalScore(id, {
+      dialogueQualityInternalScore: 75,
+    });
+
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.ok(run, 'should find test run');
+
+    assert.strictEqual(run.avgScore, 70, 'TutPT');
+    assert.strictEqual(run.avgTutorHolisticScore, 72, 'TutH');
+    assert.strictEqual(run.avgLearnerScore, 55, 'LrnPT');
+    assert.strictEqual(run.avgLearnerHolisticScore, 60, 'LrnH');
+    assert.strictEqual(run.avgDialogueScore, 80, 'DlgP');
+    assert.strictEqual(run.avgDialogueInternalScore, 75, 'DlgI');
+  });
+
+  it('returns null for missing holistic/dialogue scores', () => {
+    const runId = makeRun('6-column null');
+    storeResult(runId, makeResult({ dialogueId: 'dlg-6col-null', dialogueRounds: 1 }));
+
+    const results = getResults(runId);
+    const id = results[0].id;
+
+    // Only set per-turn tutor score
+    updateResultTutorScores(id, {
+      tutorScores: { 0: { overallScore: 65 } },
+      tutorOverallScore: 65,
+      tutorFirstTurnScore: 65,
+      judgeModel: 'test-judge',
+    });
+
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.ok(run);
+
+    assert.strictEqual(run.avgScore, 65, 'TutPT populated');
+    assert.strictEqual(run.avgTutorHolisticScore, null, 'TutH null when missing');
+    assert.strictEqual(run.avgLearnerScore, null, 'LrnPT null when missing');
+    assert.strictEqual(run.avgLearnerHolisticScore, null, 'LrnH null when missing');
+    assert.strictEqual(run.avgDialogueScore, null, 'DlgP null when missing');
+    assert.strictEqual(run.avgDialogueInternalScore, null, 'DlgI null when missing');
+  });
+});
+
+// ============================================================================
+// Tutor holistic rubric and scoring
+// ============================================================================
+
+describe('tutor holistic rubric', () => {
+  it('loads dimensions from YAML with recognition_depth for recognition cells', () => {
+    const dims = getTutorHolisticDimensions({ hasRecognition: true });
+    assert.ok(dims.scaffolding_arc, 'has scaffolding_arc');
+    assert.ok(dims.adaptive_responsiveness, 'has adaptive_responsiveness');
+    assert.ok(dims.conceptual_coherence, 'has conceptual_coherence');
+    assert.ok(dims.recognition_depth, 'has recognition_depth for recognition cells');
+    assert.ok(dims.productive_challenge, 'has productive_challenge');
+    assert.ok(dims.pedagogical_closure, 'has pedagogical_closure');
+    assert.strictEqual(Object.keys(dims).length, 6, '6 dimensions for recognition');
+  });
+
+  it('omits recognition_depth for base cells', () => {
+    const dims = getTutorHolisticDimensions({ hasRecognition: false });
+    assert.ok(!dims.recognition_depth, 'no recognition_depth for base cells');
+    assert.strictEqual(Object.keys(dims).length, 5, '5 dimensions for base');
+  });
+
+  it('calculateTutorHolisticScore produces correct 0-100 score', () => {
+    // All 3s with recognition
+    const scores = {
+      scaffolding_arc: { score: 3 },
+      adaptive_responsiveness: { score: 3 },
+      conceptual_coherence: { score: 3 },
+      recognition_depth: { score: 3 },
+      productive_challenge: { score: 3 },
+      pedagogical_closure: { score: 3 },
+    };
+    const result = calculateTutorHolisticScore(scores, true);
+    assert.ok(Math.abs(result - 50) < 0.01, `all 3s → ~50 (got ${result})`);
+
+    // All 5s
+    const perfect = {};
+    for (const key of Object.keys(scores)) {
+      perfect[key] = { score: 5 };
+    }
+    const perfectResult = calculateTutorHolisticScore(perfect, true);
+    assert.ok(Math.abs(perfectResult - 100) < 0.01, `all 5s → ~100 (got ${perfectResult})`);
+
+    // All 1s
+    const lowest = {};
+    for (const key of Object.keys(scores)) {
+      lowest[key] = { score: 1 };
+    }
+    const lowestResult = calculateTutorHolisticScore(lowest, true);
+    assert.ok(Math.abs(lowestResult - 0) < 0.01, `all 1s → ~0 (got ${lowestResult})`);
+  });
+
+  it('buildTutorHolisticEvaluationPrompt includes rubric dimensions', () => {
+    const prompt = buildTutorHolisticEvaluationPrompt({
+      turns: [{ turnIndex: 0, suggestion: { message: 'Hello' } }],
+      dialogueTrace: [],
+      scenarioName: 'test-scenario',
+      scenarioDescription: 'A test scenario',
+      hasRecognition: true,
+    });
+
+    assert.ok(prompt.includes('scaffolding_arc'), 'includes scaffolding_arc');
+    assert.ok(prompt.includes('recognition_depth'), 'includes recognition_depth for recog');
+    assert.ok(prompt.includes('TUTOR'), 'mentions TUTOR');
+    assert.ok(prompt.includes('ENTIRE DIALOGUE'), 'emphasizes full dialogue');
+  });
+
+  it('omits recognition_depth dimension criteria from prompt for base cells', () => {
+    const prompt = buildTutorHolisticEvaluationPrompt({
+      turns: [{ turnIndex: 0, suggestion: { message: 'Hello' } }],
+      dialogueTrace: [],
+      scenarioName: 'test-scenario',
+      scenarioDescription: 'A test scenario',
+      hasRecognition: false,
+    });
+
+    // The rubric criteria section should not include recognition_depth as a scored dimension
+    assert.ok(!prompt.includes('key: recognition_depth'), 'no recognition_depth in rubric criteria for base');
+    // But the instruction text tells the judge to omit it
+    assert.ok(prompt.includes('OMIT the recognition_depth'), 'instructs to omit');
+    // Should have 5 dimensions, not 6
+    assert.ok(prompt.includes('scaffolding_arc'), 'has scaffolding_arc');
+    assert.ok(!prompt.includes('"recognition_depth": {"score"'), 'no recognition_depth in example scores');
+  });
+});
+
+// ============================================================================
+// Full pipeline end-to-end: all 6 score types populated
 // ============================================================================
 
 describe('full pipeline end-to-end', () => {
-  it('multi-turn row gets all 5 score types populated without clobbering', () => {
+  it('multi-turn row gets all 6 score types populated without clobbering', () => {
     const runId = makeRun('full pipeline E2E');
     storeResult(runId, makeResult({
       dialogueId: 'dlg-e2e-full',
@@ -1173,14 +1421,22 @@ describe('full pipeline end-to-end', () => {
       holisticJudgeModel: 'test-judge',
     });
 
-    // Stage 3: Dialogue quality — public transcript
+    // Stage 3: Holistic tutor evaluation (full dialogue trajectory)
+    updateResultTutorHolisticScores(id, {
+      holisticScores: { scaffolding_arc: { score: 4 }, conceptual_coherence: { score: 4 } },
+      holisticOverallScore: 71.5,
+      holisticSummary: 'Good scaffolding progression with strong coherence',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    // Stage 4: Dialogue quality — public transcript
     updateDialogueQualityScore(id, {
       dialogueQualityScore: 82.5,
       dialogueQualitySummary: 'Strong pedagogical exchange',
       dialogueQualityJudgeModel: 'test-judge',
     });
 
-    // Stage 4: Dialogue quality — internal transcript
+    // Stage 5: Dialogue quality — internal transcript
     updateDialogueQualityInternalScore(id, {
       dialogueQualityInternalScore: 74.2,
       dialogueQualityInternalSummary: 'Good ego-superego deliberation visible',
@@ -1201,11 +1457,16 @@ describe('full pipeline end-to-end', () => {
     assert.strictEqual(scored.learnerHolisticOverallScore, 64, 'learner holistic');
     assert.deepStrictEqual(Object.keys(scored.learnerScores).sort(), ['0', '1'], 'learner 2 per-turn entries');
 
-    // Dialogue quality — public (Stage 3)
+    // Tutor holistic (Stage 3)
+    assert.strictEqual(scored.tutorHolisticOverallScore, 71.5, 'tutor holistic overall');
+    assert.ok(scored.tutorHolisticSummary.includes('scaffolding'), 'tutor holistic summary');
+    assert.strictEqual(scored.tutorHolisticJudgeModel, 'test-judge', 'tutor holistic judge model');
+
+    // Dialogue quality — public (Stage 4)
     assert.strictEqual(scored.dialogueQualityScore, 82.5, 'public DQ score');
     assert.ok(scored.dialogueQualitySummary.includes('pedagogical'), 'public DQ summary');
 
-    // Dialogue quality — internal (Stage 4)
+    // Dialogue quality — internal (Stage 5)
     assert.strictEqual(scored.dialogueQualityInternalScore, 74.2, 'internal DQ score');
     assert.ok(scored.dialogueQualityInternalSummary.includes('ego-superego'), 'internal DQ summary');
 
@@ -1214,5 +1475,7 @@ describe('full pipeline end-to-end', () => {
       'public and internal DQ should be distinct');
     assert.notStrictEqual(scored.tutorOverallScore, scored.learnerOverallScore,
       'tutor and learner overall should be distinct');
+    assert.notStrictEqual(scored.tutorOverallScore, scored.tutorHolisticOverallScore,
+      'tutor per-turn and holistic should be distinct');
   });
 });
