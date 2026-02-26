@@ -2196,21 +2196,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     const pad = (label) => label.padEnd(ROLE_WIDTH);
 
     // --- User (learner) messages ---
-    // For ego_superego learners: use final_output (the synthesized message)
-    if (isDynamic && agent === 'learner' && action === 'final_output') {
+    // final_output: synthesized message from any LLM learner (ego_superego or unified)
+    // turn_action: scripted learner action (single-prompt unified) — fallback for messages-mode too
+    // Both use the same turnKey for deduplication, so whichever appears first wins.
+    if ((agent === 'learner' || agent === 'user') && (action === 'final_output' || action === 'turn_action')) {
       const turnKey = `learner-${entry.turnIndex}`;
       if (printed.has(turnKey)) return null;
       printed.add(turnKey);
       const text = (entry.detail || entry.contextSummary || '').substring(0, 500);
-      if (!text) return null;
-      return '\n' + chalk.green.bold(pad('User')) + wrapChatText(text, ROLE_WIDTH);
-    }
-    // For unified learners: use turn_action
-    if (!isDynamic && (agent === 'learner' || agent === 'user') && action === 'turn_action') {
-      const turnKey = `learner-${entry.turnIndex}`;
-      if (printed.has(turnKey)) return null;
-      printed.add(turnKey);
-      const text = (entry.contextSummary || entry.detail || '').substring(0, 500);
       if (!text) return null;
       return '\n' + chalk.green.bold(pad('User')) + wrapChatText(text, ROLE_WIDTH);
     }
