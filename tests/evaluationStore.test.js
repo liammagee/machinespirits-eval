@@ -36,8 +36,11 @@ const {
   listRuns,
   updateResultLearnerScores,
   updateResultScores,
+  updateResultTutorScores,
+  updateResultTutorHolisticScores,
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
+  updateDialogueQualityInternalScore,
 } = await import('../services/evaluationStore.js');
 
 // Track test runs for cleanup (still useful for in-test isolation)
@@ -932,5 +935,346 @@ describe('parseResultRow — dialogue scoring columns', () => {
     assert.strictEqual(r.dialogueQualityScore, null, 'should be NULL for single-turn');
     assert.strictEqual(r.dialogueQualitySummary, null, 'should be NULL for single-turn');
     assert.strictEqual(r.dialogueQualityJudgeModel, null, 'should be NULL for single-turn');
+  });
+});
+
+// ============================================================================
+// listRuns metric semantics — verify the six compact-table columns measure
+// what they claim to measure.
+//
+// Each evaluation_results row = one dialogue (one scenario × cell combination).
+// "Per-turn" metrics score each turn individually, then average within a dialogue.
+// "Holistic" metrics score the entire dialogue trajectory in a single judge call.
+// The run-level AVG aggregates across dialogues for the compact runs table.
+//
+//   TuPT = AVG(tutor per-turn avg per dialogue)     — mean of per-turn tutor rubric scores
+//   TuH  = AVG(tutor holistic per dialogue)         — mean of whole-dialogue tutor trajectory assessments
+//   LrPT = AVG(learner per-turn avg per dialogue)   — mean of per-turn learner rubric scores
+//   LrH  = AVG(learner holistic per dialogue)       — mean of whole-dialogue learner trajectory assessments
+//   DgP  = AVG(dialogue quality public per dialogue) — mean of public (ego-only) dialogue quality scores
+//   DgI  = AVG(dialogue quality internal per dialogue) — mean of full (ego+superego) dialogue quality scores
+// ============================================================================
+
+describe('listRuns metric semantics', () => {
+  // Helper: create a run with N results (dialogues), each populated with specific metric values.
+  // Each result represents one dialogue (scenario × cell). Returns the run id.
+  function createScoredRun(description, results) {
+    const run = createRun({ description });
+    testRunIds.push(run.id);
+
+    for (const r of results) {
+      const resultId = storeResult(run.id, {
+        scenarioId: r.scenarioId || 'scenario-1',
+        scenarioName: r.scenarioName || 'Test Scenario',
+        provider: 'test',
+        model: 'test-model',
+        profileName: r.profileName || 'cell_1',
+        suggestions: r.suggestions || [{ text: 'suggestion' }],
+        tutorFirstTurnScore: r.tutorFirstTurnScore ?? null,
+        success: true,
+        judgeModel: r.judgeModel || 'test-judge',
+      });
+
+      // TuPT: per-turn tutor scores → tutor_overall_score
+      if (r.tutorOverallScore != null) {
+        updateResultTutorScores(resultId, {
+          tutorScores: r.tutorScores || { 0: { overallScore: r.tutorOverallScore } },
+          tutorOverallScore: r.tutorOverallScore,
+          tutorFirstTurnScore: r.tutorFirstTurnScore ?? r.tutorOverallScore,
+          tutorLastTurnScore: r.tutorLastTurnScore ?? r.tutorOverallScore,
+          tutorDevelopmentScore: r.tutorDevelopmentScore ?? 0,
+        });
+      }
+
+      // TuH: holistic tutor trajectory score
+      if (r.tutorHolisticScore != null) {
+        updateResultTutorHolisticScores(resultId, {
+          holisticScores: { trajectory: { score: r.tutorHolisticScore } },
+          holisticOverallScore: r.tutorHolisticScore,
+          holisticSummary: 'test holistic summary',
+          holisticJudgeModel: 'test-judge',
+        });
+      }
+
+      // LrPT + LrH: learner per-turn and holistic scores (both via same update fn)
+      if (r.learnerOverallScore != null || r.learnerHolisticScore != null) {
+        updateResultLearnerScores(resultId, {
+          scores: r.learnerScores || { 0: { overallScore: r.learnerOverallScore || 0 } },
+          overallScore: r.learnerOverallScore ?? null,
+          judgeModel: 'test-judge',
+          holisticScores: r.learnerHolisticScore != null
+            ? { trajectory: { score: r.learnerHolisticScore } }
+            : null,
+          holisticOverallScore: r.learnerHolisticScore ?? null,
+          holisticSummary: r.learnerHolisticScore != null ? 'learner holistic summary' : null,
+          holisticJudgeModel: r.learnerHolisticScore != null ? 'test-judge' : null,
+        });
+      }
+
+      // DgP: public dialogue quality (ego-only transcript)
+      if (r.dialoguePublicScore != null) {
+        updateDialogueQualityScore(resultId, {
+          dialogueQualityScore: r.dialoguePublicScore,
+          dialogueQualitySummary: 'public dialogue summary',
+          dialogueQualityJudgeModel: 'test-judge',
+        });
+      }
+
+      // DgI: internal dialogue quality (full ego+superego transcript)
+      if (r.dialogueInternalScore != null) {
+        updateDialogueQualityInternalScore(resultId, {
+          dialogueQualityInternalScore: r.dialogueInternalScore,
+          dialogueQualityInternalSummary: 'internal dialogue summary',
+        });
+      }
+    }
+
+    return run.id;
+  }
+
+  function findRun(runId) {
+    return listRuns().find((r) => r.id === runId);
+  }
+
+  // ── TuPT: tutor per-turn average ──────────────────────────────────────
+  // Each dialogue's tutor_overall_score = average of individual tutor turn rubric scores.
+  // TuPT aggregates these per-dialogue averages across the run.
+
+  it('TuPT averages per-dialogue tutor turn scores across all dialogues in the run', () => {
+    const runId = createScoredRun('TuPT average test', [
+      { tutorOverallScore: 80, tutorFirstTurnScore: 80 },  // dialogue 1: tutor avg = 80
+      { tutorOverallScore: 60, tutorFirstTurnScore: 60 },  // dialogue 2: tutor avg = 60
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgScore, 70.0, 'TuPT should be AVG across dialogues: (80 + 60) / 2 = 70');
+  });
+
+  it('TuPT falls back to tutor_first_turn_score when tutor_overall_score is NULL', () => {
+    const runId = createScoredRun('TuPT fallback test', [
+      { tutorFirstTurnScore: 90 },  // no tutorOverallScore → column is NULL
+      { tutorFirstTurnScore: 70 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgScore, 80.0, 'TuPT should fall back to AVG(tutor_first_turn_score) = 80');
+  });
+
+  // ── TuH: tutor holistic trajectory score ──────────────────────────────
+  // Each dialogue gets a single holistic tutor score — one judge call that evaluates
+  // the tutor's entire contribution across the dialogue, not an average of turn scores.
+  // TuH aggregates these per-dialogue holistic scores across the run.
+
+  it('TuH averages per-dialogue holistic tutor trajectory assessments across the run', () => {
+    const runId = createScoredRun('TuH holistic test', [
+      { tutorOverallScore: 80, tutorFirstTurnScore: 80, tutorHolisticScore: 90 },  // dialogue 1: holistic = 90
+      { tutorOverallScore: 60, tutorFirstTurnScore: 60, tutorHolisticScore: 70 },  // dialogue 2: holistic = 70
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgTutorHolisticScore, 80.0, 'TuH should be AVG across dialogues: (90 + 70) / 2 = 80');
+  });
+
+  it('TuH (holistic trajectory) is independent of TuPT (per-turn average)', () => {
+    // Same per-turn average but different holistic trajectory scores — the metrics diverge
+    const runId = createScoredRun('TuH independence test', [
+      { tutorOverallScore: 50, tutorFirstTurnScore: 50, tutorHolisticScore: 95 },
+      { tutorOverallScore: 50, tutorFirstTurnScore: 50, tutorHolisticScore: 85 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgScore, 50.0, 'TuPT = 50 (per-turn rubric average)');
+    assert.strictEqual(run.avgTutorHolisticScore, 90.0, 'TuH = 90 (whole-dialogue trajectory assessment)');
+  });
+
+  it('TuH falls back to tutor_last_turn_score when no holistic judge has run', () => {
+    const runId = createScoredRun('TuH fallback test', [
+      { tutorOverallScore: 70, tutorFirstTurnScore: 60, tutorLastTurnScore: 80 },
+      { tutorOverallScore: 70, tutorFirstTurnScore: 60, tutorLastTurnScore: 90 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgTutorHolisticScore, 85.0,
+      'TuH should fall back to AVG(tutor_last_turn_score) = 85 when holistic is NULL');
+  });
+
+  // ── LrPT: learner per-turn average ────────────────────────────────────
+  // Each dialogue's learner_overall_score = average of individual learner turn rubric scores.
+  // LrPT aggregates these per-dialogue averages across the run.
+
+  it('LrPT averages per-dialogue learner turn scores across all dialogues in the run', () => {
+    const runId = createScoredRun('LrPT average test', [
+      { tutorFirstTurnScore: 80, learnerOverallScore: 70 },  // dialogue 1: learner avg = 70
+      { tutorFirstTurnScore: 80, learnerOverallScore: 50 },  // dialogue 2: learner avg = 50
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgLearnerScore, 60.0, 'LrPT should be AVG across dialogues: (70 + 50) / 2 = 60');
+  });
+
+  it('LrPT and TuPT are independent — tutor and learner per-turn scores are separate axes', () => {
+    const runId = createScoredRun('LrPT/TuPT independence', [
+      { tutorOverallScore: 90, tutorFirstTurnScore: 90, learnerOverallScore: 40 },
+      { tutorOverallScore: 80, tutorFirstTurnScore: 80, learnerOverallScore: 60 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgScore, 85.0, 'TuPT = 85 (tutor axis)');
+    assert.strictEqual(run.avgLearnerScore, 50.0, 'LrPT = 50 (learner axis, independent of tutor)');
+  });
+
+  // ── LrH: learner holistic trajectory score ────────────────────────────
+  // Each dialogue gets a single holistic learner score — one judge call that evaluates
+  // the learner's entire arc across the dialogue (engagement growth, deepening inquiry,
+  // revision of misconceptions), not an average of turn scores.
+  // LrH aggregates these per-dialogue holistic scores across the run.
+
+  it('LrH averages per-dialogue holistic learner trajectory assessments across the run', () => {
+    const runId = createScoredRun('LrH holistic test', [
+      { tutorFirstTurnScore: 80, learnerOverallScore: 60, learnerHolisticScore: 75 },  // dialogue 1: holistic = 75
+      { tutorFirstTurnScore: 80, learnerOverallScore: 60, learnerHolisticScore: 55 },  // dialogue 2: holistic = 55
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgLearnerHolisticScore, 65.0, 'LrH should be AVG across dialogues: (75 + 55) / 2 = 65');
+  });
+
+  it('LrH (holistic trajectory) is independent of LrPT (per-turn average)', () => {
+    // Same per-turn average but different holistic trajectory scores — the metrics diverge
+    const runId = createScoredRun('LrH independence test', [
+      { tutorFirstTurnScore: 80, learnerOverallScore: 40, learnerHolisticScore: 80 },
+      { tutorFirstTurnScore: 80, learnerOverallScore: 40, learnerHolisticScore: 90 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgLearnerScore, 40.0, 'LrPT = 40 (per-turn rubric average)');
+    assert.strictEqual(run.avgLearnerHolisticScore, 85.0, 'LrH = 85 (whole-dialogue trajectory assessment)');
+  });
+
+  // ── DgP: public dialogue quality (ego-only transcript) ─────────────────
+  // Each dialogue gets a DgP score from a judge that sees only the public transcript
+  // (what tutor and learner actually said to each other — ego outputs only).
+  // DgP aggregates these per-dialogue scores across the run.
+
+  it('DgP averages per-dialogue public-transcript quality scores across the run', () => {
+    const runId = createScoredRun('DgP public test', [
+      { tutorFirstTurnScore: 80, dialoguePublicScore: 60 },  // dialogue 1: public quality = 60
+      { tutorFirstTurnScore: 80, dialoguePublicScore: 80 },  // dialogue 2: public quality = 80
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgDialogueScore, 70.0, 'DgP should be AVG across dialogues: (60 + 80) / 2 = 70');
+  });
+
+  // ── DgI: internal dialogue quality (ego+superego transcript) ──────────
+  // Each dialogue gets a DgI score from a judge that sees the full trace including
+  // internal superego deliberation, ego revision reasoning, and learner internal monologue.
+  // DgI aggregates these per-dialogue scores across the run.
+
+  it('DgI averages per-dialogue full-trace quality scores across the run', () => {
+    const runId = createScoredRun('DgI internal test', [
+      { tutorFirstTurnScore: 80, dialogueInternalScore: 55 },  // dialogue 1: full-trace quality = 55
+      { tutorFirstTurnScore: 80, dialogueInternalScore: 75 },  // dialogue 2: full-trace quality = 75
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgDialogueInternalScore, 65.0, 'DgI should be AVG across dialogues: (55 + 75) / 2 = 65');
+  });
+
+  // ── DgP vs DgI: public and internal transcripts can diverge ───────────
+
+  it('DgP and DgI diverge because they judge different transcript views of the same dialogue', () => {
+    // A dialogue can look polished externally (high DgP) while having poor internal
+    // deliberation (low DgI), or vice versa.
+    const runId = createScoredRun('DgP/DgI divergence test', [
+      { tutorFirstTurnScore: 80, dialoguePublicScore: 90, dialogueInternalScore: 50 },
+      { tutorFirstTurnScore: 80, dialoguePublicScore: 80, dialogueInternalScore: 40 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgDialogueScore, 85.0, 'DgP = 85 (public ego-only transcript)');
+    assert.strictEqual(run.avgDialogueInternalScore, 45.0, 'DgI = 45 (full ego+superego transcript)');
+  });
+
+  // ── All six metrics populated simultaneously ──────────────────────────
+  // Each metric reads from a distinct DB column and is aggregated independently.
+  // Two dialogues with known values verify all six columns are wired correctly.
+
+  it('all six metrics are independent — each reads from its own DB column per dialogue', () => {
+    const runId = createScoredRun('all-six-metrics test', [
+      {   // dialogue 1
+        tutorOverallScore: 80, tutorFirstTurnScore: 80,  // per-turn tutor avg
+        tutorHolisticScore: 70,                          // whole-dialogue tutor trajectory
+        learnerOverallScore: 60,                         // per-turn learner avg
+        learnerHolisticScore: 50,                        // whole-dialogue learner trajectory
+        dialoguePublicScore: 40,                         // public transcript quality
+        dialogueInternalScore: 30,                       // full-trace transcript quality
+      },
+      {   // dialogue 2
+        tutorOverallScore: 90, tutorFirstTurnScore: 90,
+        tutorHolisticScore: 80,
+        learnerOverallScore: 70, learnerHolisticScore: 60,
+        dialoguePublicScore: 50, dialogueInternalScore: 40,
+      },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgScore, 85.0, 'TuPT = (80+90)/2 — per-turn tutor avg across dialogues');
+    assert.strictEqual(run.avgTutorHolisticScore, 75.0, 'TuH = (70+80)/2 — holistic tutor trajectory across dialogues');
+    assert.strictEqual(run.avgLearnerScore, 65.0, 'LrPT = (60+70)/2 — per-turn learner avg across dialogues');
+    assert.strictEqual(run.avgLearnerHolisticScore, 55.0, 'LrH = (50+60)/2 — holistic learner trajectory across dialogues');
+    assert.strictEqual(run.avgDialogueScore, 45.0, 'DgP = (40+50)/2 — public dialogue quality across dialogues');
+    assert.strictEqual(run.avgDialogueInternalScore, 35.0, 'DgI = (30+40)/2 — full-trace dialogue quality across dialogues');
+  });
+
+  // ── NULL metrics show as null, not zero ───────────────────────────────
+
+  it('unpopulated metrics return null (not zero or NaN)', () => {
+    const runId = createScoredRun('null-metrics test', [
+      { tutorOverallScore: 75, tutorFirstTurnScore: 75 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgScore, 75.0, 'TuPT should be populated');
+    assert.strictEqual(run.avgLearnerScore, null, 'LrPT should be null when no learner scores');
+    assert.strictEqual(run.avgLearnerHolisticScore, null, 'LrH should be null');
+    assert.strictEqual(run.avgDialogueScore, null, 'DgP should be null');
+    assert.strictEqual(run.avgDialogueInternalScore, null, 'DgI should be null');
+  });
+
+  // ── Primary judge filter: rejudged rows are excluded ──────────────────
+
+  it('averages only the primary judge when multiple judges exist', () => {
+    const run = createRun({ description: 'primary judge filter test' });
+    testRunIds.push(run.id);
+
+    // Result 1: primary judge (judge-A)
+    const id1 = storeResult(run.id, {
+      scenarioId: 'scenario-1', scenarioName: 'S1',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'first' }], tutorFirstTurnScore: 80,
+      success: true, judgeModel: 'judge-A',
+    });
+    updateResultTutorScores(id1, {
+      tutorScores: { 0: { overallScore: 80 } },
+      tutorOverallScore: 80, tutorFirstTurnScore: 80,
+      tutorLastTurnScore: 80, tutorDevelopmentScore: 0,
+    });
+
+    // Result 2: primary judge (judge-A)
+    const id2 = storeResult(run.id, {
+      scenarioId: 'scenario-2', scenarioName: 'S2',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'second' }], tutorFirstTurnScore: 60,
+      success: true, judgeModel: 'judge-A',
+    });
+    updateResultTutorScores(id2, {
+      tutorScores: { 0: { overallScore: 60 } },
+      tutorOverallScore: 60, tutorFirstTurnScore: 60,
+      tutorLastTurnScore: 60, tutorDevelopmentScore: 0,
+    });
+
+    // Result 3: rejudge row (judge-B) — should be EXCLUDED from average
+    const id3 = storeResult(run.id, {
+      scenarioId: 'scenario-1', scenarioName: 'S1',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'first' }], tutorFirstTurnScore: 99,
+      success: true, judgeModel: 'judge-B',
+    });
+    updateResultTutorScores(id3, {
+      tutorScores: { 0: { overallScore: 99 } },
+      tutorOverallScore: 99, tutorFirstTurnScore: 99,
+      tutorLastTurnScore: 99, tutorDevelopmentScore: 0,
+    });
+
+    const found = findRun(run.id);
+    assert.strictEqual(found.avgScore, 70.0,
+      'TuPT should average only judge-A rows (80, 60) = 70, excluding judge-B row (99)');
   });
 });

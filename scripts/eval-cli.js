@@ -416,7 +416,7 @@ function renderRunsTable(runs) {
     '  ' +
       theme.header('ID'.padEnd(40)) +
       theme.header('Status'.padEnd(12)) +
-      theme.header('Progress'.padEnd(14)) +
+      theme.header('Progress'.padEnd(20)) +
       theme.header('TutPT'.padEnd(6)) +
       theme.header('TutH'.padEnd(6)) +
       theme.header('LrnPT'.padEnd(6)) +
@@ -462,7 +462,7 @@ function renderRunsTable(runs) {
       '  ' +
         theme.id(run.id.padEnd(40)) +
         theme.status((run.status || '--').padEnd(12)) +
-        progress.padEnd(14) +
+        progress.padEnd(20) +
         theme.score(tutPT.padEnd(6)) +
         theme.score(tutH.padEnd(6)) +
         theme.score(lrnPT.padEnd(6)) +
@@ -487,7 +487,7 @@ function renderRunsTable(runs) {
     '  ' +
       theme.header('ID'.padEnd(40)) +
       theme.header('Status'.padEnd(12)) +
-      theme.header('Progress'.padEnd(14)) +
+      theme.header('Progress'.padEnd(20)) +
       theme.header('TutPT'.padEnd(6)) +
       theme.header('TutH'.padEnd(6)) +
       theme.header('LrnPT'.padEnd(6)) +
@@ -507,12 +507,12 @@ function renderRunsTable(runs) {
  */
 function renderRunsCompact(runs, termWidth) {
   const lines = [];
-  // Compact header: ~92 chars
+  // Compact header: ~98 chars
   lines.push(
     '  ' +
       theme.header('Run'.padEnd(16)) +
       theme.header('Status'.padEnd(10)) +
-      theme.header('Progress'.padEnd(12)) +
+      theme.header('Progress'.padEnd(18)) +
       theme.header('TuPT'.padEnd(5)) +
       theme.header('TuH'.padEnd(5)) +
       theme.header('LrPT'.padEnd(5)) +
@@ -521,7 +521,7 @@ function renderRunsCompact(runs, termWidth) {
       theme.header('DgI'.padEnd(5)) +
       theme.header('Duration'),
   );
-  lines.push('  ' + theme.dim('─'.repeat(Math.min(92, termWidth - 4))));
+  lines.push('  ' + theme.dim('─'.repeat(Math.min(98, termWidth - 4))));
 
   for (const run of runs) {
     // Short ID: extract MM-DD-hash from eval-YYYY-MM-DD-hash
@@ -560,7 +560,7 @@ function renderRunsCompact(runs, termWidth) {
       '  ' +
         theme.id(shortId.padEnd(16)) +
         theme.status(status.padEnd(10)) +
-        progress.padEnd(12) +
+        progress.padEnd(18) +
         theme.score(tutPT.padEnd(5)) +
         theme.score(tutH.padEnd(5)) +
         theme.score(lrnPT.padEnd(5)) +
@@ -592,12 +592,12 @@ function renderRunsCompact(runs, termWidth) {
     }
   }
   // Repeat header at bottom for easy reference
-  lines.push('  ' + theme.dim('─'.repeat(Math.min(92, termWidth - 4))));
+  lines.push('  ' + theme.dim('─'.repeat(Math.min(98, termWidth - 4))));
   lines.push(
     '  ' +
       theme.header('Run'.padEnd(16)) +
       theme.header('Status'.padEnd(10)) +
-      theme.header('Progress'.padEnd(12)) +
+      theme.header('Progress'.padEnd(18)) +
       theme.header('TuPT'.padEnd(5)) +
       theme.header('TuH'.padEnd(5)) +
       theme.header('LrPT'.padEnd(5)) +
@@ -2590,6 +2590,16 @@ async function main() {
             evaluationStore.updateTutorLastTurnScore(result.id, { tutorLastTurnScore: evaluation.tutorFirstTurnScore });
           } else {
             evaluationStore.updateResultScores(result.id, evaluation);
+
+            // For single-turn results, also populate the tutor_scores/tutor_overall_score/tutor_last_turn_score
+            // columns so that downstream queries (TuH fallback, runs display) see consistent data.
+            evaluationStore.updateResultTutorScores(result.id, {
+              tutorScores: { 0: { scores: normalizedScores, overallScore: tutorFirstTurnScore, summary: parsed.summary } },
+              tutorOverallScore: tutorFirstTurnScore,
+              tutorFirstTurnScore,
+              tutorLastTurnScore: tutorFirstTurnScore,
+              tutorDevelopmentScore: 0,
+            });
           }
 
           // Score line
