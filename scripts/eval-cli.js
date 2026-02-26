@@ -701,8 +701,9 @@ function truncate(str, maxLen = 4000) {
  * Extract learner turns from a dialogue trace, handling both conversation modes.
  *
  * Single-prompt mode: learner turns are `user/turn_action` or `learner/turn_action` entries.
- * Messages mode: no turn_action entries exist; use `learner_synthesis/response` entries
- * as learner turn markers, with conversationHistory providing message content.
+ * Messages mode: no turn_action entries exist; use `learner/final_output` entries
+ * (or legacy `learner_synthesis/response`) as learner turn markers,
+ * with conversationHistory providing message content.
  *
  * @param {Array} trace - dialogueTrace array
  * @param {boolean} isMultiAgent - whether the learner is ego_superego
@@ -718,7 +719,7 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
   );
 
   // Strategy 2: fall back to learner final output entries (messages mode, ego_superego learner).
-  // Matches both current (learner_synthesis/response) and renamed (learner/final_output) schemas.
+  // Matches both current (learner/final_output) and legacy (learner_synthesis/response) schemas.
   if (turnMarkers.length === 0 && isMultiAgent) {
     turnMarkers = trace.filter(
       (t) => (t.agent === 'learner_synthesis' && t.action === 'response')

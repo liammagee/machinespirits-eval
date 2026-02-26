@@ -2311,7 +2311,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       // Insert user turn action entry before each turn (except initial)
       // For dynamic learner (ego_superego), skip the scripted action label —
       // the learner's LLM-generated response is already in the trace via
-      // learner_ego_initial / learner_superego / learner_synthesis entries.
+      // learner_ego_initial / learner_superego / learner/final_output entries.
       if (!isInitialTurn && !resolvedConfig.learnerArchitecture?.includes('ego_superego')) {
         const histEntry = conversationHistory[conversationHistory.length - 1];
         consolidatedTrace.push({
@@ -2894,8 +2894,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           const finalLearnerDelib = learnerResponse.internalDeliberation[learnerResponse.internalDeliberation.length - 1];
           const finalLearnerMetrics = finalLearnerDelib?.metrics || null;
           consolidatedTrace.push({
-            agent: 'learner_synthesis',
-            action: 'response',
+            agent: 'learner',
+            action: 'final_output',
             turnIndex: turnIdx + 1,
             contextSummary: learnerResponse.message.substring(0, 100),
             detail: learnerResponse.message,
