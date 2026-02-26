@@ -33,15 +33,17 @@ Related services:
 Always aim for absolute symmetry between tutor and learner trace labels, scoring pipelines, and data structures. When adding or modifying one side, mirror the change on the other.
 
 **Trace agent/action labels** must be symmetric:
-- Tutor: `ego/generate` → `superego/review` → `user/final_output`
-- Learner: `learner_ego_initial/deliberation` → `learner_superego/deliberation` → `learner_ego_revision/deliberation` → `learner/final_output`
+- Tutor: `tutor/context_input` → `ego/generate` → `superego/review` → `tutor/final_output`
+- Learner: `learner/turn_action` → `learner_ego_initial/deliberation` → `learner_superego/deliberation` → `learner_ego_revision/deliberation` → `learner/final_output`
+
+**Backward compat**: consumers must accept both old (`user`) and new (`tutor`/`learner`) agent labels, since existing dialogue log files on disk use the old format. Pattern: `(entry.agent === 'tutor' || entry.agent === 'user')`.
 
 **Scoring pipeline** must be symmetric:
 - Every tutor turn gets scored with the tutor rubric
 - Every learner turn gets scored with the learner rubric
 - Both aggregate to per-turn scores, first/last/overall/development metrics
 
-Do NOT use asymmetric names (e.g. `learner_synthesis/response` was wrong — the tutor equivalent was `user/final_output`, so the learner must also use `learner/final_output`).
+Do NOT use asymmetric names. When in doubt, check the other side's labels and mirror them exactly.
 
 ## Configuration
 
