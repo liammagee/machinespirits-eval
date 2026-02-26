@@ -1277,4 +1277,220 @@ describe('listRuns metric semantics', () => {
     assert.strictEqual(found.avgScore, 70.0,
       'TuPT should average only judge-A rows (80, 60) = 70, excluding judge-B row (99)');
   });
+
+  // ── TuH / LrH COALESCE fallback symmetry ─────────────────────────────
+  // Both holistic metrics should fall back to their per-turn counterpart when
+  // no holistic judge has run, so neither shows "--" while the other has a value.
+
+  it('LrH falls back to learner_overall_score when no holistic learner judge has run', () => {
+    const runId = createScoredRun('LrH fallback test', [
+      { tutorFirstTurnScore: 80, learnerOverallScore: 70 },  // no learnerHolisticScore
+      { tutorFirstTurnScore: 80, learnerOverallScore: 50 },
+    ]);
+    const run = findRun(runId);
+    assert.strictEqual(run.avgLearnerHolisticScore, 60.0,
+      'LrH should fall back to AVG(learner_overall_score) = 60 when holistic is NULL');
+  });
+
+  it('TuH and LrH both degrade gracefully (fallback) when only per-turn scores exist', () => {
+    const runId = createScoredRun('bilateral fallback symmetry', [
+      {
+        tutorOverallScore: 80, tutorFirstTurnScore: 75, tutorLastTurnScore: 85,
+        learnerOverallScore: 60,
+        // no tutorHolisticScore, no learnerHolisticScore
+      },
+    ]);
+    const run = findRun(runId);
+    assert.ok(run.avgTutorHolisticScore != null, 'TuH should have a fallback value');
+    assert.ok(run.avgLearnerHolisticScore != null, 'LrH should have a fallback value (symmetric with TuH)');
+    assert.strictEqual(run.avgTutorHolisticScore, 85.0, 'TuH falls back to tutor_last_turn_score');
+    assert.strictEqual(run.avgLearnerHolisticScore, 60.0, 'LrH falls back to learner_overall_score');
+  });
+});
+
+// ============================================================================
+// TuH / LrH bilateral symmetry — structural consistency tests
+//
+// Per CLAUDE.md: "Always aim for absolute symmetry between tutor and learner
+// trace labels, scoring pipelines, and data structures."
+//
+// These tests verify the holistic scoring infrastructure is structurally
+// symmetric, even though tutor and learner use different rubric dimensions
+// (which is domain-appropriate — the symmetry principle applies to naming,
+// pipeline structure, and data contracts, not rubric content).
+// ============================================================================
+
+describe('TuH / LrH bilateral symmetry', () => {
+
+  // ── DB column naming: 4 holistic columns each, mirror pattern ─────────
+
+  it('tutor and learner holistic DB columns follow the same naming pattern', () => {
+    const run = createRun({ description: 'holistic column symmetry test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'symmetry-test', scenarioName: 'Symmetry',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+    });
+
+    // Populate tutor holistic
+    updateResultTutorHolisticScores(resultId, {
+      holisticScores: { dim_a: { score: 4 } },
+      holisticOverallScore: 80,
+      holisticSummary: 'tutor summary',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    // Populate learner holistic (bundled with per-turn via updateResultLearnerScores)
+    updateResultLearnerScores(resultId, {
+      scores: { 0: { overallScore: 60 } },
+      overallScore: 60,
+      judgeModel: 'test-judge',
+      holisticScores: { dim_b: { score: 3 } },
+      holisticOverallScore: 55,
+      holisticSummary: 'learner summary',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    const r = getResults(run.id)[0];
+
+    // Tutor holistic fields
+    assert.ok('tutorHolisticScores' in r, 'tutorHolisticScores field exists');
+    assert.ok('tutorHolisticOverallScore' in r, 'tutorHolisticOverallScore field exists');
+    assert.ok('tutorHolisticSummary' in r, 'tutorHolisticSummary field exists');
+    assert.ok('tutorHolisticJudgeModel' in r, 'tutorHolisticJudgeModel field exists');
+
+    // Learner holistic fields — same 4-field pattern
+    assert.ok('learnerHolisticScores' in r, 'learnerHolisticScores field exists');
+    assert.ok('learnerHolisticOverallScore' in r, 'learnerHolisticOverallScore field exists');
+    assert.ok('learnerHolisticSummary' in r, 'learnerHolisticSummary field exists');
+    assert.ok('learnerHolisticJudgeModel' in r, 'learnerHolisticJudgeModel field exists');
+
+    // Values round-trip correctly
+    assert.strictEqual(r.tutorHolisticOverallScore, 80);
+    assert.strictEqual(r.learnerHolisticOverallScore, 55);
+    assert.strictEqual(r.tutorHolisticSummary, 'tutor summary');
+    assert.strictEqual(r.learnerHolisticSummary, 'learner summary');
+    assert.deepStrictEqual(r.tutorHolisticScores, { dim_a: { score: 4 } });
+    assert.deepStrictEqual(r.learnerHolisticScores, { dim_b: { score: 3 } });
+  });
+
+  // ── Store independence: holistic update does not clobber per-turn ──────
+
+  it('tutor holistic update does not clobber tutor per-turn scores', () => {
+    const run = createRun({ description: 'tutor holistic isolation test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'isolation', scenarioName: 'Isolation',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+    });
+
+    // Set per-turn scores first
+    updateResultTutorScores(resultId, {
+      tutorScores: { 0: { overallScore: 70 } },
+      tutorOverallScore: 70, tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 70, tutorDevelopmentScore: 0,
+    });
+
+    // Now set holistic — should NOT overwrite per-turn
+    updateResultTutorHolisticScores(resultId, {
+      holisticScores: { scaffolding_arc: { score: 5 } },
+      holisticOverallScore: 95,
+      holisticSummary: 'excellent trajectory',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.tutorOverallScore, 70, 'per-turn tutor_overall_score preserved');
+    assert.strictEqual(r.tutorHolisticOverallScore, 95, 'holistic score written separately');
+  });
+
+  it('learner holistic update writes alongside per-turn scores in one call', () => {
+    const run = createRun({ description: 'learner holistic bundled test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'bundled', scenarioName: 'Bundled',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+    });
+
+    // Both per-turn and holistic in one call
+    updateResultLearnerScores(resultId, {
+      scores: { 0: { overallScore: 50 } },
+      overallScore: 50,
+      judgeModel: 'test-judge',
+      holisticScores: { learner_authenticity: { score: 4 } },
+      holisticOverallScore: 75,
+      holisticSummary: 'good learner trajectory',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.learnerOverallScore, 50, 'per-turn learner_overall_score set');
+    assert.strictEqual(r.learnerHolisticOverallScore, 75, 'holistic learner score set alongside');
+  });
+
+  // ── listRuns aggregation: symmetric COALESCE fallback ─────────────────
+
+  it('listRuns SQL uses symmetric COALESCE fallback for both TuH and LrH', () => {
+    // Both holistic columns NULL → both should fall back to per-turn equivalents
+    const run = createRun({ description: 'symmetric COALESCE test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'coalesce', scenarioName: 'COALESCE',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+    });
+
+    // Set only per-turn scores, no holistic for either side
+    updateResultTutorScores(resultId, {
+      tutorScores: { 0: { overallScore: 70 } },
+      tutorOverallScore: 70, tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 85, tutorDevelopmentScore: 15,
+    });
+    updateResultLearnerScores(resultId, {
+      scores: { 0: { overallScore: 55 } },
+      overallScore: 55, judgeModel: 'test-judge',
+    });
+
+    const found = listRuns().find((r) => r.id === run.id);
+
+    // TuH falls back to tutor_last_turn_score
+    assert.strictEqual(found.avgTutorHolisticScore, 85.0, 'TuH COALESCE → tutor_last_turn_score');
+    // LrH falls back to learner_overall_score (symmetric pattern)
+    assert.strictEqual(found.avgLearnerHolisticScore, 55.0, 'LrH COALESCE → learner_overall_score');
+  });
+
+  // ── Score range symmetry: both use 0-100 scale ───────────────────────
+
+  it('both holistic scores use the same 0-100 scale in the DB', () => {
+    const run = createRun({ description: 'score range symmetry' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'range', scenarioName: 'Range',
+      provider: 'test', model: 'test', profileName: 'cell_1',
+      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+    });
+
+    // Edge values
+    updateResultTutorHolisticScores(resultId, {
+      holisticScores: {}, holisticOverallScore: 0,
+      holisticSummary: 'minimum', holisticJudgeModel: 'test-judge',
+    });
+    updateResultLearnerScores(resultId, {
+      scores: {}, overallScore: null, judgeModel: 'test-judge',
+      holisticScores: {}, holisticOverallScore: 100,
+      holisticSummary: 'maximum', holisticJudgeModel: 'test-judge',
+    });
+
+    const r = getResults(run.id)[0];
+    assert.strictEqual(r.tutorHolisticOverallScore, 0, 'TuH accepts 0');
+    assert.strictEqual(r.learnerHolisticOverallScore, 100, 'LrH accepts 100');
+  });
 });
