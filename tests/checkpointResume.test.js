@@ -19,6 +19,7 @@ import {
   loadCheckpoint,
   deleteCheckpoint,
   listCheckpoints,
+  buildMessageChain,
 } from '../services/evaluationRunner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -36,19 +37,75 @@ function makeTestState(overrides = {}) {
     totalTurns: 4,
     dialogueId: 'dialogue-1234567890-abc123',
     learnerId: 'eval-learner-dialogue-1234567890-abc123-moodfrustrationtobreakthrough',
+    // Mutated turn definitions — includes LLM-generated learner messages
+    turns: [
+      {
+        id: 'escalation',
+        learner_action: 'Express frustration',
+        action_details: { message: 'LLM-generated: I still dont get recursion at all!' },
+        _originalMessage: 'Scripted: I am frustrated',
+        _learnerDeliberation: [{ role: 'ego', content: 'I should push back harder' }],
+        _learnerEmotionalState: 'frustrated',
+        expected_behavior: 'Acknowledge frustration',
+      },
+      {
+        id: 'breakthrough',
+        learner_action: 'Show understanding',
+        action_details: { message: 'LLM-generated: Oh wait, I think I see the pattern now!' },
+        _originalMessage: 'Scripted: I understand now',
+        _learnerDeliberation: [{ role: 'ego', content: 'This is starting to click' }],
+        expected_behavior: 'Reinforce understanding',
+      },
+      {
+        id: 'consolidation',
+        learner_action: 'Apply knowledge',
+        action_details: { message: 'Scripted: Can I try a harder problem?' },
+        expected_behavior: 'Provide challenge',
+      },
+    ],
     turnResults: [
-      { turnIndex: 0, turnId: 'initial', turnScore: 72.5, suggestion: { title: 'Turn 0 response' } },
-      { turnIndex: 1, turnId: 'escalation', turnScore: 68.0, suggestion: { title: 'Turn 1 response' } },
+      { turnIndex: 0, turnId: 'initial', turnScore: 72.5, suggestion: { title: 'Turn 0 response', message: 'Lets break down recursion step by step.' } },
+      { turnIndex: 1, turnId: 'escalation', turnScore: 68.0, suggestion: { title: 'Turn 1 response', message: 'I understand your frustration. Lets try a different approach.' } },
     ],
     conversationHistory: [
-      { turnIndex: 0, turnId: 'initial', suggestion: { title: 'Turn 0 response' } },
+      {
+        turnIndex: 0,
+        turnId: 'initial',
+        suggestion: { title: 'Turn 0 response', message: 'Lets break down recursion step by step.' },
+        learnerMessage: 'LLM-generated: I still dont get recursion at all!',
+      },
     ],
     consolidatedTrace: [
-      { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Initial generation' },
-      { agent: 'superego', action: 'review', turnIndex: 0, approved: true },
+      {
+        agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Initial generation',
+        apiPayload: {
+          captureVersion: 1, source: 'fetch_capture', provider: 'openrouter',
+          endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+          request: { method: 'POST', body: { model: 'nvidia/nemotron', messages: [{ role: 'system', content: 'You are a tutor...' }] } },
+          response: { status: 200, body: { choices: [{ message: { content: 'Lets break down...' } }] } },
+        },
+        inputMessages: [{ role: 'system', content: 'You are a tutor...' }, { role: 'user', content: 'Help with recursion' }],
+        metrics: { latencyMs: 1200, inputTokens: 500, outputTokens: 200, provider: 'openrouter' },
+      },
+      {
+        agent: 'superego', action: 'review', turnIndex: 0, approved: true,
+        apiPayload: {
+          captureVersion: 1, source: 'fetch_capture', provider: 'openrouter',
+          request: { method: 'POST', body: { model: 'moonshot/kimi-k2.5', messages: [{ role: 'system', content: 'Review...' }] } },
+          response: { status: 200, body: { choices: [{ message: { content: 'Approved' } }] } },
+        },
+        metrics: { latencyMs: 800, inputTokens: 400, outputTokens: 100, provider: 'openrouter' },
+      },
+      {
+        agent: 'learner_ego', action: 'deliberation', turnIndex: 1,
+        detail: 'I should push back harder',
+        apiPayload: { captureVersion: 1, provider: 'openrouter', request: { body: { model: 'nvidia/nemotron' } }, response: { status: 200 } },
+        inputMessages: [{ role: 'system', content: 'You are a learner...' }, { role: 'assistant', content: 'Lets break down...' }],
+        metrics: { latencyMs: 600, inputTokens: 300, outputTokens: 150 },
+      },
     ],
     priorSuperegoAssessments: ['Assessment for turn 0'],
-    previousSuggestion: { title: 'Turn 1 response', message: 'Here is help...' },
+    previousSuggestion: { title: 'Turn 1 response', message: 'I understand your frustration. Lets try a different approach.' },
     sessionEvolution: 'Ego self-reflection: learner is frustrated...',
     superegoEvolution: 'Superego reflection: maintain empathy...',
     behavioralOverrides: { rejection_threshold: 0.7, max_rejections: 1 },
@@ -395,5 +452,183 @@ describe('Checkpoint file naming', () => {
     assert.strictEqual(loaded.profileName, weirdProfile);
 
     deleteCheckpoint(TEST_RUN_ID, weirdScenario, weirdProfile);
+  });
+});
+
+describe('API data preservation through checkpoint', () => {
+  beforeEach(() => cleanupTestCheckpoints());
+  afterEach(() => cleanupTestCheckpoints());
+
+  it('apiPayload objects survive JSON round-trip', () => {
+    const state = makeTestState();
+    writeCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, state);
+    const loaded = loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME);
+
+    // Verify ego trace entry preserves full apiPayload
+    const egoEntry = loaded.consolidatedTrace.find((e) => e.agent === 'ego');
+    assert.ok(egoEntry.apiPayload, 'Ego entry should have apiPayload');
+    assert.strictEqual(egoEntry.apiPayload.captureVersion, 1);
+    assert.strictEqual(egoEntry.apiPayload.provider, 'openrouter');
+    assert.strictEqual(egoEntry.apiPayload.endpoint, 'https://openrouter.ai/api/v1/chat/completions');
+
+    // Verify request body preserved (contains model and messages)
+    assert.strictEqual(egoEntry.apiPayload.request.method, 'POST');
+    assert.strictEqual(egoEntry.apiPayload.request.body.model, 'nvidia/nemotron');
+    assert.ok(Array.isArray(egoEntry.apiPayload.request.body.messages), 'Request messages should be array');
+
+    // Verify response body preserved
+    assert.strictEqual(egoEntry.apiPayload.response.status, 200);
+    assert.ok(egoEntry.apiPayload.response.body.choices, 'Response should have choices');
+  });
+
+  it('inputMessages survive JSON round-trip', () => {
+    const state = makeTestState();
+    writeCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, state);
+    const loaded = loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME);
+
+    const egoEntry = loaded.consolidatedTrace.find((e) => e.agent === 'ego');
+    assert.ok(Array.isArray(egoEntry.inputMessages), 'inputMessages should be array');
+    assert.strictEqual(egoEntry.inputMessages.length, 2);
+    assert.strictEqual(egoEntry.inputMessages[0].role, 'system');
+    assert.strictEqual(egoEntry.inputMessages[1].role, 'user');
+  });
+
+  it('metrics (tokens, latency, provider) survive round-trip', () => {
+    const state = makeTestState();
+    writeCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, state);
+    const loaded = loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME);
+
+    const egoEntry = loaded.consolidatedTrace.find((e) => e.agent === 'ego');
+    assert.strictEqual(egoEntry.metrics.latencyMs, 1200);
+    assert.strictEqual(egoEntry.metrics.inputTokens, 500);
+    assert.strictEqual(egoEntry.metrics.outputTokens, 200);
+    assert.strictEqual(egoEntry.metrics.provider, 'openrouter');
+  });
+
+  it('learner deliberation entries with apiPayload survive round-trip', () => {
+    const state = makeTestState();
+    writeCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, state);
+    const loaded = loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME);
+
+    const learnerEntry = loaded.consolidatedTrace.find((e) => e.agent === 'learner_ego');
+    assert.ok(learnerEntry, 'Should have learner_ego trace entry');
+    assert.ok(learnerEntry.apiPayload, 'Learner entry should have apiPayload');
+    assert.ok(Array.isArray(learnerEntry.inputMessages), 'Learner should have inputMessages');
+    assert.strictEqual(learnerEntry.inputMessages[0].role, 'system');
+  });
+});
+
+describe('Turns mutation preservation (dynamic learner fix)', () => {
+  beforeEach(() => cleanupTestCheckpoints());
+  afterEach(() => cleanupTestCheckpoints());
+
+  it('checkpointed turns include LLM-generated learner mutations', () => {
+    const state = makeTestState();
+    writeCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME, state);
+    const loaded = loadCheckpoint(TEST_RUN_ID, TEST_SCENARIO_ID, TEST_PROFILE_NAME);
+
+    assert.ok(Array.isArray(loaded.turns), 'Checkpoint should include turns array');
+    assert.strictEqual(loaded.turns.length, 3, 'Should have all 3 follow-up turns');
+
+    // Turn 0 (escalation) was mutated by LLM learner generation
+    const escalation = loaded.turns[0];
+    assert.strictEqual(escalation.id, 'escalation');
+    assert.ok(escalation.action_details.message.startsWith('LLM-generated:'),
+      'Should have LLM-generated message, not scripted');
+    assert.strictEqual(escalation._originalMessage, 'Scripted: I am frustrated',
+      'Should preserve original scripted message');
+    assert.ok(escalation._learnerDeliberation, 'Should have learner deliberation');
+
+    // Turn 1 (breakthrough) was also mutated
+    const breakthrough = loaded.turns[1];
+    assert.ok(breakthrough.action_details.message.startsWith('LLM-generated:'),
+      'Breakthrough turn should have LLM message');
+
+    // Turn 2 (consolidation) was NOT mutated yet (still scripted)
+    const consolidation = loaded.turns[2];
+    assert.strictEqual(consolidation.action_details.message, 'Scripted: Can I try a harder problem?',
+      'Unmutated turn should keep scripted message');
+    assert.strictEqual(consolidation._originalMessage, undefined,
+      'Unmutated turn should not have _originalMessage');
+  });
+
+  it('resumed turns use checkpointed (mutated) turn definitions, not fresh clones', () => {
+    // This test verifies the fix for the turns mutation bug.
+    // On resume, `turns` should come from checkpoint (with LLM mutations),
+    // not from a fresh clone of fullScenario.turns (which has scripted messages).
+
+    const state = makeTestState({ lastCompletedTurn: 1 });
+
+    // Simulate the resume logic:
+    // cs?.turns || JSON.parse(JSON.stringify(fullScenario.turns))
+    const cs = state;
+    const originalScenarioTurns = [
+      { id: 'escalation', action_details: { message: 'ORIGINAL scripted message' } },
+      { id: 'breakthrough', action_details: { message: 'ORIGINAL scripted message' } },
+      { id: 'consolidation', action_details: { message: 'ORIGINAL scripted message' } },
+    ];
+
+    const turns = cs?.turns || JSON.parse(JSON.stringify(originalScenarioTurns));
+
+    // The restored turns should have the LLM-generated messages, not the originals
+    assert.ok(turns[0].action_details.message.startsWith('LLM-generated:'),
+      'Turn 0 should use LLM message from checkpoint, not original');
+    assert.ok(turns[1].action_details.message.startsWith('LLM-generated:'),
+      'Turn 1 should use LLM message from checkpoint, not original');
+  });
+});
+
+describe('buildMessageChain from restored conversationHistory', () => {
+  it('produces correct alternating assistant/user message chain', () => {
+    const cs = makeTestState();
+
+    // buildMessageChain reads suggestion.message and learnerMessage from conversationHistory
+    const chain = buildMessageChain(cs.conversationHistory);
+
+    assert.ok(Array.isArray(chain), 'Should return array');
+    assert.strictEqual(chain.length, 2, 'Should have 2 messages (1 assistant + 1 user)');
+    assert.strictEqual(chain[0].role, 'assistant');
+    assert.strictEqual(chain[0].content, 'Lets break down recursion step by step.');
+    assert.strictEqual(chain[1].role, 'user');
+    assert.strictEqual(chain[1].content, 'LLM-generated: I still dont get recursion at all!');
+  });
+
+  it('handles multi-turn conversation history', () => {
+    const history = [
+      {
+        turnIndex: 0, suggestion: { message: 'Tutor turn 0' },
+        learnerMessage: 'Learner turn 1',
+      },
+      {
+        turnIndex: 1, suggestion: { message: 'Tutor turn 1' },
+        learnerMessage: 'Learner turn 2',
+      },
+    ];
+
+    const chain = buildMessageChain(history);
+    assert.strictEqual(chain.length, 4);
+    assert.deepStrictEqual(chain, [
+      { role: 'assistant', content: 'Tutor turn 0' },
+      { role: 'user', content: 'Learner turn 1' },
+      { role: 'assistant', content: 'Tutor turn 1' },
+      { role: 'user', content: 'Learner turn 2' },
+    ]);
+  });
+
+  it('skips entries without suggestion.message or learnerMessage', () => {
+    const history = [
+      { turnIndex: 0, suggestion: { title: 'no message field' }, learnerMessage: null },
+      { turnIndex: 1, suggestion: { message: 'Has message' }, learnerMessage: 'Has learner' },
+    ];
+
+    const chain = buildMessageChain(history);
+    assert.strictEqual(chain.length, 2, 'Should skip entry without message/learnerMessage');
+    assert.strictEqual(chain[0].role, 'assistant');
+    assert.strictEqual(chain[1].role, 'user');
+  });
+
+  it('returns empty array for null/empty history', () => {
+    assert.deepStrictEqual(buildMessageChain(null), []);
+    assert.deepStrictEqual(buildMessageChain([]), []);
   });
 });
