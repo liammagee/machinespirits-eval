@@ -574,9 +574,9 @@ export function listRuns(options = {}) {
     SELECT COUNT(*) as completed,
            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
            AVG(COALESCE(tutor_overall_score, tutor_first_turn_score, overall_score)) as avg_score,
-           AVG(COALESCE(tutor_holistic_overall_score, tutor_last_turn_score)) as avg_tutor_holistic_score,
+           AVG(tutor_holistic_overall_score) as avg_tutor_holistic_score,
            AVG(learner_overall_score) as avg_learner_score,
-           AVG(COALESCE(learner_holistic_overall_score, learner_overall_score)) as avg_learner_holistic_score,
+           AVG(learner_holistic_overall_score) as avg_learner_holistic_score,
            AVG(dialogue_quality_score) as avg_dialogue_score,
            AVG(dialogue_quality_internal_score) as avg_dialogue_internal_score,
            COUNT(DISTINCT judge_model) as judge_count
