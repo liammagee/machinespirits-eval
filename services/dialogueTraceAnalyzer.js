@@ -166,7 +166,7 @@ export function extractTransformationSignals(dialogueTrace) {
     }
 
     // Check learner entries for growth signals
-    if (entry.agent === 'user' || entry.agent?.startsWith('learner')) {
+    if (entry.agent === 'learner' || entry.agent === 'user' || entry.agent?.startsWith('learner')) {
       const text = entry.detail || entry.contextSummary || '';
 
       for (const pattern of learnerTransformationPatterns) {

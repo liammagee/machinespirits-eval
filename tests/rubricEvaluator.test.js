@@ -852,7 +852,7 @@ describe('buildDialogueQualityPrompt', () => {
     const prompt = buildDialogueQualityPrompt({
       turns: [],
       dialogueTrace: [
-        { turnIndex: 0, agent: 'user', action: 'turn_action', detail: 'Learner asks a question' },
+        { turnIndex: 0, agent: 'learner', action: 'turn_action', detail: 'Learner asks a question' },
         { turnIndex: 0, agent: 'ego', action: 'initial_draft', contextSummary: 'Drafting response' },
         { turnIndex: 0, agent: 'learner', detail: 'I think I understand now' },
       ],

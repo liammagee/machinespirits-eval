@@ -15,23 +15,23 @@ import {
 
 /** Unified (ego-only) learner trace — no learner/ego_initial entries */
 const UNIFIED_TRACE = [
-  { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
-  { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'But Popper would say this is unfalsifiable. How do you respond?' },
+  { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'But Popper would say this is unfalsifiable. How do you respond?' },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: '', contextSummary: '' },
-  { agent: 'user', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I see the distinction between empirical and phenomenological claims.' },
+  { agent: 'learner', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I see the distinction between empirical and phenomenological claims.' },
   { agent: 'ego', action: 'generate', turnIndex: 2, detail: '', contextSummary: '' },
 ];
 
 /** Ego+superego learner trace — has learner deliberation chain */
 const EGO_SUPEREGO_TRACE = [
-  { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think this is about recognition...', contextSummary: '' },
   { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'The ego is avoiding the harder question about asymmetry.', contextSummary: '' },
   { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
   { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
-  { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'OK the real question is about asymmetric recognition.' },
+  { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'OK the real question is about asymmetric recognition.' },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: 'Good insight on asymmetry.', contextSummary: '' },
   { agent: 'superego', action: 'review', turnIndex: 1, detail: 'Push harder on the paradox.', contextSummary: '' },
   { agent: 'ego', action: 'revise', turnIndex: 1, detail: 'You identified asymmetry - now what happens when the master wins?', contextSummary: '' },
@@ -39,18 +39,61 @@ const EGO_SUPEREGO_TRACE = [
 
 /** Ego+superego learner trace variant where learner/final_output is missing after turn 1 */
 const EGO_SUPEREGO_TRACE_NO_SYNTH = [
-  { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'Initial learner ego thought', contextSummary: '' },
   { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Initial learner critique', contextSummary: '' },
   { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Initial learner revision', contextSummary: '' },
-  { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Could we unpack fear and labour more slowly?' },
+  { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Could we unpack fear and labour more slowly?' },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: '', contextSummary: '' },
   { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 2, detail: 'Second learner ego thought', contextSummary: '' },
   { agent: 'learner_superego', action: 'deliberation', turnIndex: 2, detail: 'Second learner critique', contextSummary: '' },
   { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 2, detail: 'Second learner revision', contextSummary: '' },
-  { agent: 'user', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I can track paragraph 196 now, but still not the negation of negation.' },
+  { agent: 'learner', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I can track paragraph 196 now, but still not the negation of negation.' },
   { agent: 'ego', action: 'generate', turnIndex: 2, detail: '', contextSummary: '' },
+];
+
+/** Ego+superego learner trace using current learner_synthesis/response schema */
+const EGO_SUPEREGO_TRACE_SYNTHESIS_RESPONSE = [
+  { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think this is about recognition...', contextSummary: '' },
+  { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'The ego is avoiding the harder question about asymmetry.', contextSummary: '' },
+  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
+  { agent: 'learner_synthesis', action: 'response', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
+  { agent: 'ego', action: 'generate', turnIndex: 1, detail: 'Good insight on asymmetry.', contextSummary: '' },
+];
+
+/** Ego+superego trace with no turn_action and no learner/final_output; follow-ups are in context_input.rawContext */
+const EGO_SUPEREGO_TRACE_CONTEXT_ONLY = [
+  {
+    agent: 'tutor',
+    action: 'context_input',
+    detail: '',
+    contextSummary: '',
+    rawContext: "### Recent Chat History\n- User: \"I'm stuck and nothing makes sense.\"",
+  },
+  { agent: 'ego', action: 'generate', detail: '', contextSummary: '' },
+  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think I am confused', contextSummary: '' },
+  {
+    agent: 'tutor',
+    action: 'context_input',
+    detail: '',
+    contextSummary: '',
+    rawContext:
+      '### Learner Action\\nLearner **asked a follow-up question**\\n\\n**Learner said**: "Could we unpack fear and labour more slowly?"\\n\\n### Learner Response',
+  },
+  { agent: 'ego', action: 'generate', detail: '', contextSummary: '' },
+  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 2, detail: 'Still unclear', contextSummary: '' },
+  {
+    agent: 'tutor',
+    action: 'context_input',
+    detail: '',
+    contextSummary: '',
+    rawContext:
+      '### Learner Action\\nLearner **asked a follow-up question**\\n\\n**Learner said**: "I can track paragraph 196 now, but still not the negation of negation."\\n\\n### Learner Response',
+  },
+  { agent: 'ego', action: 'generate', detail: '', contextSummary: '' },
 ];
 
 const TURNS = [
@@ -82,6 +125,16 @@ describe('isEgoSuperegoLearner', () => {
   it('returns true when trace has learner_ego_initial', () => {
     const trace = [{ agent: 'learner_ego_initial', action: 'deliberation' }];
     assert.equal(isEgoSuperegoLearner(trace), true);
+  });
+
+  it('returns true when trace has learner_synthesis/response', () => {
+    const trace = [{ agent: 'learner_synthesis', action: 'response' }];
+    assert.equal(isEgoSuperegoLearner(trace), true);
+  });
+
+  it('returns false for learner turn_action only (unified learner)', () => {
+    const trace = [{ agent: 'learner', action: 'turn_action' }];
+    assert.equal(isEgoSuperegoLearner(trace), false);
   });
 
   it('returns false for unified learner trace', () => {
@@ -150,8 +203,33 @@ describe('buildDialoguePublicTranscript', () => {
       'Should include turn_action contextSummary for turn 3 when learner/final_output is missing');
   });
 
+  it('reads learner synthesis from learner_synthesis/response schema', () => {
+    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE_SYNTHESIS_RESPONSE, LEARNER_CONTEXT);
+    assert.ok(transcript.includes('OK the real question is about asymmetric recognition.'),
+      'Should include learner message from learner_synthesis/response entry');
+  });
+
   it('stays balanced across turns for ego_superego traces without learner/final_output', () => {
     const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
+    const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+    assert.equal(sections.length, 3, 'Expected 3 turn sections');
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      assert.ok(/\[Learner/.test(section), `Turn ${i + 1} missing learner line`);
+      assert.ok(/\[Tutor/.test(section), `Turn ${i + 1} missing tutor line`);
+    }
+  });
+
+  it('reconstructs learner follow-ups from context_input when turn_action is missing', () => {
+    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_CONTEXT_ONLY, LEARNER_CONTEXT);
+    assert.ok(transcript.includes('Could we unpack fear and labour more slowly?'),
+      'Should recover turn 2 learner message from context_input rawContext');
+    assert.ok(transcript.includes('I can track paragraph 196 now, but still not the negation of negation.'),
+      'Should recover turn 3 learner message from context_input rawContext');
+  });
+
+  it('remains turn-balanced when only context_input follow-ups are available', () => {
+    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_CONTEXT_ONLY, LEARNER_CONTEXT);
     const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
     assert.equal(sections.length, 3, 'Expected 3 turn sections');
     for (let i = 0; i < sections.length; i++) {
@@ -224,7 +302,7 @@ describe('buildDialogueFullTranscript', () => {
   it('renders tutor superego feedback from feedback field (not just detail/contextSummary)', () => {
     // Real superego trace entries store review text in `feedback`, not `detail` or `contextSummary`
     const traceWithFeedback = [
-      { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
       { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Here is my response.', contextSummary: '' },
       { agent: 'superego', action: 'review', turnIndex: 0, feedback: 'Push harder on the paradox of recognition.' },
       { agent: 'ego', action: 'revise', turnIndex: 0, detail: 'Revised response with more depth.', contextSummary: '' },
@@ -240,7 +318,7 @@ describe('buildDialogueFullTranscript', () => {
   it('does not render empty superego when feedback/detail/contextSummary all absent', () => {
     // Superego entry with no text fields at all should still render (empty is valid, but not garbled)
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
       { agent: 'superego', action: 'review', turnIndex: 0, approved: true },
       { agent: 'ego', action: 'revise', turnIndex: 0 },
@@ -255,7 +333,7 @@ describe('buildDialogueFullTranscript', () => {
     // Real ego/generate entries have empty detail and contextSummary;
     // text must come from turnResults delivered messages
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
     ];
     const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome to Hegel.' }] }];
@@ -266,11 +344,11 @@ describe('buildDialogueFullTranscript', () => {
 
   it('renders all tutor agent types with correct labels', () => {
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Initial response.' },
       { agent: 'superego', action: 'review', turnIndex: 0, feedback: 'Consider the dialectic.' },
       { agent: 'ego', action: 'revise', turnIndex: 0, detail: 'Revised response.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       { agent: 'ego_self_reflection', action: 'rewrite', turnIndex: 0, detail: 'I reflected on my approach.' },
       { agent: 'superego_self_reflection', action: 'rewrite', turnIndex: 0, detail: 'My critiquing was too soft.' },
       { agent: 'ego_intersubjective', action: 'respond_to_critic', turnIndex: 0, detail: 'I agree with the self-reflection.' },
@@ -296,14 +374,14 @@ describe('buildDialogueFullTranscript', () => {
 
   it('renders learner_other_ego with correct label', () => {
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
       { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'My initial thought.' },
       { agent: 'learner_other_ego', action: 'profile_tutor', turnIndex: 1, detail: 'Tutor seems Socratic.' },
       { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Dig deeper.' },
       { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Revised thought.' },
       { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'Final message.' },
-      { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Final message.' },
+      { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Final message.' },
       { agent: 'ego', action: 'generate', turnIndex: 1 },
     ];
     const turns = [
@@ -317,7 +395,7 @@ describe('buildDialogueFullTranscript', () => {
 
   it('prefers contextSummary over detail for behavioral_overrides', () => {
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'behavioral_overrides', action: 'parse', turnIndex: 0,
         contextSummary: 'Quantitative behavioral params: threshold=0.6',
         detail: '{"rejection_threshold":0.6}' },
@@ -335,12 +413,12 @@ describe('buildDialogueFullTranscript', () => {
     // Tutor-core ego/generate entries carry draft text in suggestions[],
     // NOT in detail/contextSummary. The draft may differ from the final delivered message.
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Initial draft about Popper.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Good approach.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Final delivered message (different).' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -355,7 +433,7 @@ describe('buildDialogueFullTranscript', () => {
     // Multi-round: ego/generate → superego reject → ego/revise → superego approve → final_output
     // Collapsed output: only initial draft, first review, and final delivery (when revised)
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'You spent 30 minutes on this.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: false,
@@ -364,7 +442,7 @@ describe('buildDialogueFullTranscript', () => {
         suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }] },
       { agent: 'superego', action: 'review', round: 2, approved: true,
         feedback: 'Excellent revision. Data specificity maintained.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -392,21 +470,21 @@ describe('buildDialogueFullTranscript', () => {
     // The function must infer turn from the subsequent final_output entry.
     const trace = [
       // Turn 0 tutor deliberation (no turnIndex on tutor-core entries)
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Welcome to Hegel.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Good opening.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       // Turn 1 learner + tutor
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup', contextSummary: 'What about Popper?' },
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Popper raises a fair critique.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Addresses the question.' },
-      { agent: 'user', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
     ];
     const turns = [
       { turnIndex: 0, suggestions: [{ message: 'Welcome to Hegel.' }] },
@@ -437,12 +515,12 @@ describe('buildDialogueFullTranscript', () => {
     // Before the fix, Turn 0 tutor-core entries had currentTurnIdx=-1,
     // causing deliveredByTurn[-1]=undefined and empty [Tutor Ego] output
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Your dialectic analogy breaks down.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Directly addresses the misconception.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Your dialectic analogy breaks down.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -460,7 +538,7 @@ describe('buildDialogueFullTranscript', () => {
     // Backward compatibility: if trace entries have detail (eval-runner style)
     // or neither detail nor suggestions, deliveredByTurn is the fallback
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Fallback delivered text.' }] }];
@@ -473,12 +551,12 @@ describe('buildDialogueFullTranscript', () => {
     // Even when TS approves the initial draft unchanged, the ego must have the
     // final word — TS never concludes a turn. Pattern: TE → TS → TE (same text).
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Draft response about Hegel.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Good approach to the dialectic.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Draft response about Hegel.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -494,12 +572,12 @@ describe('buildDialogueFullTranscript', () => {
   it('single-agent tutor: ego is the only tutor line per turn', () => {
     // Single-agent tutor has no superego or final_output — just [Tutor Ego]
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Direct response to learner.' }] },
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup', contextSummary: 'What about Popper?' },
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Popper raises a valid point.' }] },
     ];
@@ -526,18 +604,18 @@ describe('buildDialogueFullTranscript', () => {
     // Single-agent cells have NO final_output entries.
     // Turn inference must use turn_action: preceding tutor entries belong to turnIndex-1.
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Welcome to the course.' }] },
       // turn_action at turnIndex=1 means the preceding ego is Turn 0
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup', contextSummary: 'Tell me about Hegel.' },
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Hegel is a key figure.' }] },
-      { agent: 'user', action: 'turn_action', turnIndex: 2,
+      { agent: 'learner', action: 'turn_action', turnIndex: 2,
         detail: 'Learner: asked_followup', contextSummary: 'What about Popper?' },
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Popper critiques unfalsifiability.' }] },
     ];
@@ -574,11 +652,11 @@ describe('buildDialogueFullTranscript', () => {
     // If both suggestions[] and detail exist, suggestions takes priority
     // (detail on ego entries is typically empty, but test the precedence)
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0,
         detail: 'detail text',
         suggestions: [{ message: 'suggestions text' }] },
-      { agent: 'user', action: 'final_output', turnIndex: 0 },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0 },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'delivered text' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -593,12 +671,12 @@ describe('buildDialogueFullTranscript', () => {
     // eval-runner entries (turnIndex), ego_superego learner architecture
     const trace = [
       // Turn 0: tutor deliberation
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Consider the master-servant dialectic.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Appropriate level.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       { agent: 'ego_self_reflection', action: 'rewrite', turnIndex: 0,
         detail: 'I should push harder on the paradox.' },
       // Turn 1: learner deliberation + tutor response
@@ -610,11 +688,11 @@ describe('buildDialogueFullTranscript', () => {
         detail: 'The real question is asymmetric recognition.' },
       { agent: 'learner', action: 'final_output', turnIndex: 1,
         detail: 'The real question is asymmetric recognition.' },
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup',
         contextSummary: 'The real question is asymmetric recognition.' },
       // Turn 1: tutor deliberation (no turnIndex on tutor-core entries)
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Draft: you are right about asymmetry.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: false,
@@ -623,7 +701,7 @@ describe('buildDialogueFullTranscript', () => {
         suggestions: [{ message: 'Asymmetry is key, but what happens when the master wins?' }] },
       { agent: 'superego', action: 'review', round: 2, approved: true,
         feedback: 'Good dialectical challenge.' },
-      { agent: 'user', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
     ];
     const turns = [
       { turnIndex: 0, suggestions: [{ message: 'Consider the master-servant dialectic.' }] },
@@ -794,7 +872,7 @@ describe('transcript conformity', () => {
     // After every [Tutor Superego], there must be a [Tutor Ego] — either a
     // revision (when superego rejects) or the delivery (from final_output).
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Draft about Hegel.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: false,
@@ -803,7 +881,7 @@ describe('transcript conformity', () => {
         suggestions: [{ message: 'Revised: the paradox of recognition.' }] },
       { agent: 'superego', action: 'review', round: 2, approved: true,
         feedback: 'Good revision.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Done' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Done' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Revised: the paradox of recognition.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -841,12 +919,12 @@ describe('transcript conformity', () => {
   it('[full/ego_superego] follows LE → LS → LE → TE → TS → TE chain in multi-agent turns', () => {
     // Build a trace with complete deliberation chains for both sides
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Opening about the dialectic.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Good opening.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       // Turn 1: full learner chain + full tutor chain
       { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1,
         detail: 'Initial learner thought.' },
@@ -856,9 +934,9 @@ describe('transcript conformity', () => {
         detail: 'Revised learner thought.' },
       { agent: 'learner', action: 'final_output', turnIndex: 1,
         detail: 'Revised learner thought.' },  // Same as revision → deduped
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         contextSummary: 'Revised learner thought.', detail: 'Learner: asked_followup' },
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Tutor draft response.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: false,
@@ -867,7 +945,7 @@ describe('transcript conformity', () => {
         suggestions: [{ message: 'Tutor revised response.' }] },
       { agent: 'superego', action: 'review', round: 2, approved: true,
         feedback: 'Good revision.' },
-      { agent: 'user', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
     ];
     const turns = [
       { turnIndex: 0, suggestions: [{ message: 'Opening about the dialectic.' }] },
@@ -908,12 +986,12 @@ describe('transcript conformity', () => {
     // The transcript must preserve the order of the trace — if entry A precedes
     // entry B in the trace, A's line must precede B's line in the transcript.
     const trace = [
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Opening about recognition.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: true,
         feedback: 'Solid opening approach.' },
-      { agent: 'user', action: 'final_output', turnIndex: 0, detail: 'Done' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Done' },
       // Turn 1
       { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1,
         detail: 'I wonder about the master.' },
@@ -923,9 +1001,9 @@ describe('transcript conformity', () => {
         detail: 'The asymmetry of recognition is key.' },
       { agent: 'learner', action: 'final_output', turnIndex: 1,
         detail: 'The asymmetry of recognition is key.' },
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         contextSummary: 'The asymmetry of recognition is key.', detail: 'Learner: asked_followup' },
-      { agent: 'user', action: 'context_input', round: 0 },
+      { agent: 'tutor', action: 'context_input', round: 0 },
       { agent: 'ego', action: 'generate', round: 0,
         suggestions: [{ message: 'Yes, asymmetry drives the dialectic.' }] },
       { agent: 'superego', action: 'review', round: 1, approved: false,
@@ -934,7 +1012,7 @@ describe('transcript conformity', () => {
         suggestions: [{ message: 'Asymmetry drives the dialectic — but what if it collapses?' }] },
       { agent: 'superego', action: 'review', round: 2, approved: true,
         feedback: 'Good dialectical tension now.' },
-      { agent: 'user', action: 'final_output', turnIndex: 1, detail: 'Done' },
+      { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Done' },
     ];
     const turns = [
       { turnIndex: 0, suggestions: [{ message: 'Opening about recognition.' }] },
@@ -970,12 +1048,12 @@ describe('transcript conformity', () => {
   it('[full/unified] transcript lines follow trace chronological order', () => {
     // Single-agent tutor + unified learner: simpler but same invariant
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup', contextSummary: 'But what about Popper?' },
       { agent: 'ego', action: 'generate', turnIndex: 1 },
-      { agent: 'user', action: 'turn_action', turnIndex: 2,
+      { agent: 'learner', action: 'turn_action', turnIndex: 2,
         detail: 'Learner: asked_followup', contextSummary: 'I see the phenomenological point.' },
       { agent: 'ego', action: 'generate', turnIndex: 2 },
     ];
@@ -1026,9 +1104,9 @@ describe('transcript conformity', () => {
   it('[full/ego_superego] follows LE → LS → LE → TE → TS → TE chain in multi-agent turns', () => {
     // Single-agent tutor + unified learner: simplest ordering
     const trace = [
-      { agent: 'user', action: 'context_input', turnIndex: 0 },
+      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
-      { agent: 'user', action: 'turn_action', turnIndex: 1,
+      { agent: 'learner', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup', contextSummary: 'What about Popper?' },
       { agent: 'ego', action: 'generate', turnIndex: 1 },
     ];

@@ -169,7 +169,7 @@ function classifyChannel(entry) {
   const agent = entry?.agent || '';
   if (agent.startsWith('learner_')) return 'learner_ego_superego';
   if (agent === 'ego' || agent === 'superego') return 'tutor_ego_superego';
-  if (agent === 'user') return 'tutor_learner';
+  if (agent === 'tutor' || agent === 'learner' || agent === 'user') return 'tutor_learner';
   return 'unknown';
 }
 
@@ -232,10 +232,10 @@ function fullContent(entry) {
   if (entry.suggestions?.length > 0) {
     return entry.suggestions.map((s) => s.message || s.text || s.title || '').join('\n\n');
   }
-  if (entry.agent === 'user' && entry.action === 'context_input') {
+  if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input') {
     return extractLearnerQuery(entry) || '(scenario context)';
   }
-  if (entry.agent === 'user' && entry.action === 'turn_action') {
+  if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
     return entry.contextSummary || entry.detail || '';
   }
   return entry.detail || entry.contextSummary || '';
@@ -296,7 +296,7 @@ export function traceToSteps(trace) {
   if (!Array.isArray(trace) || trace.length === 0) return steps;
 
   let dialogueTurn = 0;
-  const hasTurnActions = trace.some((e) => e.agent === 'user' && e.action === 'turn_action');
+  const hasTurnActions = trace.some((e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action');
 
   const learnerBlockStarts = new Set();
   trace.forEach((e, i) => {
@@ -331,10 +331,10 @@ export function traceToSteps(trace) {
     }
 
     if (agent === 'system') continue;
-    if (agent === 'user' && action === 'final_output') continue;
+    if ((agent === 'tutor' || agent === 'user') && action === 'final_output') continue;
     if (agent === 'learner') continue;
 
-    if (agent === 'user' && action === 'context_input') {
+    if ((agent === 'tutor' || agent === 'user') && action === 'context_input') {
       dialogueTurn++;
       if (dialogueTurn === 1) {
         const query = extractLearnerQuery(e);
@@ -373,7 +373,7 @@ export function traceToSteps(trace) {
           break;
         }
         if (learnerBlockStarts.has(j)) break;
-        if (trace[j].agent === 'user' && trace[j].action === 'context_input') break;
+        if ((trace[j].agent === 'tutor' || trace[j].agent === 'user') && trace[j].action === 'context_input') break;
       }
 
       if (action !== 'generate' && !superegoFollows) {
@@ -487,7 +487,7 @@ export function traceToSteps(trace) {
 
     if (agent === 'learner_ego_revision') continue;
 
-    if (agent === 'user' && action === 'turn_action') {
+    if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
       const full = fullContent(e);
       steps.push({
         from: 'learner_ego',
@@ -511,8 +511,8 @@ export function buildProjectionDiagnostics({ trace = [], steps = [], messageChai
   const modelCallCount = exchanges.length;
   const missingPayloadCount = exchanges.filter((e) => !e.hasApiPayload).length;
   const missingTurnIndexCount = trace.filter((e) => e?.turnIndex === undefined).length;
-  const contextInputs = trace.filter((e) => e.agent === 'user' && e.action === 'context_input').length;
-  const turnActions = trace.filter((e) => e.agent === 'user' && e.action === 'turn_action').length;
+  const contextInputs = trace.filter((e) => (e.agent === 'tutor' || e.agent === 'user') && e.action === 'context_input').length;
+  const turnActions = trace.filter((e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action').length;
   const heuristicFollowups = Math.max(0, contextInputs - 1 - turnActions);
 
   const effects = [];

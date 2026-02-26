@@ -102,7 +102,7 @@ function loadDialogue(dialogueId) {
   }
 
   // Detect multi-turn: look for turn_action events (learner followups)
-  const isMultiTurn = trace.some((e) => e.agent === 'user' && e.action === 'turn_action');
+  const isMultiTurn = trace.some((e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action');
 
   return { row, trace, log, isMultiTurn };
 }
@@ -262,10 +262,10 @@ function fullContent(entry) {
   if (entry.suggestions?.length > 0) {
     return entry.suggestions.map((s) => s.message || s.text || s.title || '').join('\n\n');
   }
-  if (entry.agent === 'user' && entry.action === 'context_input') {
+  if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input') {
     return extractLearnerQuery(entry) || '(scenario context)';
   }
-  if (entry.agent === 'user' && entry.action === 'turn_action') {
+  if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
     return entry.contextSummary || entry.detail || '';
   }
   return entry.detail || entry.contextSummary || '';
@@ -307,10 +307,10 @@ function traceToSteps(trace) {
       needsResponseArrow = false;
     }
 
-    if (agent === 'system' || (agent === 'user' && action === 'final_output') || agent === 'learner')
+    if (agent === 'system' || ((agent === 'tutor' || agent === 'user') && action === 'final_output') || agent === 'learner')
       continue;
 
-    if (agent === 'user' && action === 'context_input') {
+    if ((agent === 'tutor' || agent === 'user') && action === 'context_input') {
       dialogueTurn++;
       if (dialogueTurn === 1) {
         const query = extractLearnerQuery(e);
@@ -336,7 +336,7 @@ function traceToSteps(trace) {
           superegoFollows = true;
           break;
         }
-        if (learnerBlockStarts.has(j) || (trace[j].agent === 'user' && trace[j].action === 'context_input')) break;
+        if (learnerBlockStarts.has(j) || ((trace[j].agent === 'tutor' || trace[j].agent === 'user') && trace[j].action === 'context_input')) break;
       }
       if (action !== 'generate' && !superegoFollows) {
         steps.push({
@@ -422,7 +422,7 @@ function traceToSteps(trace) {
       continue;
     }
     if (agent === 'learner_ego_revision') continue;
-    if (agent === 'user' && action === 'turn_action') {
+    if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
       steps.push({
         from: 'learner_ego',
         to: 'tutor_ego',

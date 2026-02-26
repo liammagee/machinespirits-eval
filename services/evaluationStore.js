@@ -537,7 +537,7 @@ export function listRuns(options = {}) {
     params.push(status);
   }
 
-  query += ' ORDER BY created_at ASC';
+  query += ' ORDER BY created_at DESC';
   if (limit) {
     query += ' LIMIT ?';
     params.push(limit);
