@@ -27,6 +27,7 @@ import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
+import { formatApiMessages } from './apiMessageFormatter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 
@@ -1086,6 +1087,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     dryRun = false,
     captureApiPayloads = process.env.EVAL_CAPTURE_API_PAYLOADS !== 'false',
     conversationMode = 'single-prompt', // 'messages' for multi-turn message chains
+    showMessages = false, // true for truncated, 'full' for untruncated API message display
   } = options;
 
   // Dry-run mode: return canned results without any API calls
@@ -1153,10 +1155,15 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
         },
         { log },
       ),
-    { enabled: captureApiPayloads },
+    { enabled: captureApiPayloads || Boolean(showMessages) },
   );
 
   const genResult = genResultRaw;
+
+  // Display API messages if --show-messages is active
+  if (showMessages && Array.isArray(capturedApiRecords) && capturedApiRecords.length > 0) {
+    formatApiMessages(capturedApiRecords, { showMessages });
+  }
   if (captureApiPayloads && Array.isArray(genResult?.dialogueTrace) && genResult.dialogueTrace.length > 0) {
     genResult.dialogueTrace = attachApiPayloadsToTrace(genResult.dialogueTrace, capturedApiRecords);
   }
@@ -1288,6 +1295,7 @@ export async function runEvaluation(options = {}) {
     dryRun = false, // Use mock data instead of API calls
     transcriptMode = false, // Write play-format transcript files during multi-turn runs
     maxTokensOverride = null, // CLI --max-tokens override (replaces ego max_tokens hyperparameter)
+    showMessages = false, // true for truncated, 'full' for untruncated API message display
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -1534,6 +1542,7 @@ export async function runEvaluation(options = {}) {
         verbose,
         dryRun,
         transcriptMode,
+        showMessages,
         runId: run.id,
       });
 
@@ -1775,6 +1784,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     superegoStrategy = null,
     judgeOverride = null,
     dryRun = false,
+    showMessages = false,
   } = options;
 
   // Resolve model aliases through eval's providers.yaml
@@ -1844,6 +1854,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       log,
       scenarioId: scenario.id,
       dryRun,
+      showMessages,
     },
   );
 
@@ -1940,6 +1951,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dryRun = false,
     transcriptMode = false,
     runId = null,
+    showMessages = false,
   } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -2069,6 +2081,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialecticalNegotiation,
     dryRun,
     conversationMode,
+    showMessages,
   };
   let sessionEvolution = null;
   let superegoEvolution = null;

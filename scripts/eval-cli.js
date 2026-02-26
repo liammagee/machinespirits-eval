@@ -51,6 +51,8 @@ import 'dotenv/config';
  *   --force                Actually complete stale runs (for 'cleanup'; dry-run without it)
  *   --older-than <min>     Staleness threshold in minutes (for 'cleanup', default: 30)
  *   --dry-run              Use mock data instead of API calls (no API keys required)
+ *   --show-messages        Print API messages during 'run' (system prompts truncated to 200 chars)
+ *   --show-messages=full   Print API messages untruncated
  *   --live                 Auto-refresh mode for 'runs' command
  *   --as <side>            For 'play': tutor or learner (default: tutor)
  *   --role <role>          For 'play': ego, superego, or both (default: ego)
@@ -1082,6 +1084,14 @@ async function main() {
         const transcriptMode = getFlag('transcript');
         const maxTokensOverride = getOption('max-tokens');
 
+        // --show-messages or --show-messages=full
+        const showMessagesRaw = args.find((a) => a === '--show-messages' || a.startsWith('--show-messages='));
+        const showMessages = showMessagesRaw === '--show-messages'
+          ? true
+          : showMessagesRaw?.startsWith('--show-messages=')
+            ? showMessagesRaw.split('=')[1] || true
+            : false;
+
         // --cluster and --scenario are mutually exclusive
         if (clusterOpt && scenarioOpt) {
           console.error('Error: --cluster and --scenario are mutually exclusive.');
@@ -1205,6 +1215,7 @@ async function main() {
           dryRun,
           transcriptMode,
           maxTokensOverride: maxTokensOverride ? parseInt(maxTokensOverride, 10) : null,
+          showMessages,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
