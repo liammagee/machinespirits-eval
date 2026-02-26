@@ -2043,7 +2043,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   // Helper: append new trace entries to transcript file and optionally console
-  let lastTranscriptIdx = 0;
+  // On resume, skip entries already flushed in the previous session.
+  let lastTranscriptIdx = cs ? consolidatedTrace.length : 0;
   function flushTranscript() {
     if (!transcriptMode || !transcriptPath) return;
     const newEntries = consolidatedTrace.slice(lastTranscriptIdx);
@@ -2062,10 +2063,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
   }
 
-  // Deep-clone turns to prevent mutation of shared scenario objects across profiles
-  const turns = JSON.parse(JSON.stringify(fullScenario.turns || []));
   // Initialize state variables — restore from checkpoint if resuming
   const cs = checkpointState; // alias for brevity
+
+  // Deep-clone turns to prevent mutation of shared scenario objects across profiles.
+  // On resume, restore the checkpointed turns (which include LLM-generated learner mutations).
+  const turns = cs?.turns || JSON.parse(JSON.stringify(fullScenario.turns || []));
   const turnResults = cs?.turnResults || [];
   let totalLatencyMs = cs?.totalLatencyMs || 0;
   let totalInputTokens = cs?.totalInputTokens || 0;
@@ -2307,7 +2310,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       if (!isInitialTurn && !resolvedConfig.learnerArchitecture?.includes('ego_superego')) {
         const histEntry = conversationHistory[conversationHistory.length - 1];
         consolidatedTrace.push({
-          agent: 'user',
+          agent: 'learner',
           action: 'turn_action',
           turnIndex: turnIdx,
           contextSummary: histEntry?.learnerMessage || `${histEntry?.learnerAction || 'Action'}`,
@@ -2327,16 +2330,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         }
       }
 
-      // Add final delivery to user for multi-agent mode
+      // Add final delivery marker for multi-agent mode
       const hasSuperego = genResult.dialogueTrace.some((entry) => entry.agent === 'superego');
       if (hasSuperego) {
         const suggCount = genResult.suggestions?.length || 0;
         consolidatedTrace.push({
-          agent: 'user',
+          agent: 'tutor',
           action: 'final_output',
           turnIndex: turnIdx,
           from: 'ego',
-          to: 'user',
+          to: 'tutor',
           direction: 'response',
           suggestionCount: suggCount,
           contextSummary: `Delivered ${suggCount} suggestion${suggCount !== 1 ? 's' : ''}`,
@@ -2917,6 +2920,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalTurns: totalTurnCount,
         dialogueId,
         learnerId,
+        turns,
         turnResults,
         conversationHistory,
         consolidatedTrace,
