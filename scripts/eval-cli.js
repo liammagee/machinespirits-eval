@@ -468,6 +468,20 @@ function renderRunsTable(runs) {
       if (activeLabel) lines.push('  ' + `  Active: ${theme.dim(activeLabel)}`);
     }
   }
+  // Repeat header at bottom for easy reference
+  lines.push('  ' + theme.dim('-'.repeat(144)));
+  lines.push(
+    '  ' +
+      theme.header('ID'.padEnd(40)) +
+      theme.header('Status'.padEnd(12)) +
+      theme.header('Progress'.padEnd(18)) +
+      theme.header('Tutor'.padEnd(7)) +
+      theme.header('Lrnr'.padEnd(7)) +
+      theme.header('DlgQ'.padEnd(7)) +
+      theme.header('Duration'.padEnd(10)) +
+      theme.header('Created'.padEnd(24)) +
+      theme.header('Description'),
+  );
   return lines.join('\n');
 }
 
@@ -552,6 +566,18 @@ function renderRunsCompact(runs, termWidth) {
       }
     }
   }
+  // Repeat header at bottom for easy reference
+  lines.push('  ' + theme.dim('─'.repeat(Math.min(74, termWidth - 4))));
+  lines.push(
+    '  ' +
+      theme.header('Run'.padEnd(16)) +
+      theme.header('Status'.padEnd(10)) +
+      theme.header('Progress'.padEnd(14)) +
+      theme.header('Tutor'.padEnd(6)) +
+      theme.header('Lrnr'.padEnd(6)) +
+      theme.header('DlgQ'.padEnd(6)) +
+      theme.header('Duration'),
+  );
   return lines.join('\n');
 }
 
@@ -3001,7 +3027,10 @@ async function main() {
 
         // Helper: determine if a result is multi-turn
         function isMultiTurnResult(result) {
-          return result.dialogueId && Array.isArray(result.suggestions) && result.suggestions.length > 1;
+          if (!result.dialogueId) return false;
+          // Messages-mode stores only Turn 0 in suggestions; check dialogueRounds or conversationMode
+          if (result.conversationMode === 'messages' && result.dialogueRounds > 1) return true;
+          return Array.isArray(result.suggestions) && result.suggestions.length > 1;
         }
 
         // Helper: print summary
