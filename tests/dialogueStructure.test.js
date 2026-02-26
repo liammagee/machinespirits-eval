@@ -42,9 +42,7 @@ const SYSTEM_AGENTS = new Set(['system']);
 /** True if this entry is a learner-side entry (any learner agent label). */
 function isLearnerEntry(entry) {
   return entry.agent === 'learner' ||
-    entry.agent === 'learner_ego_initial' ||
-    entry.agent === 'learner_superego' ||
-    entry.agent === 'learner_ego_revision';
+    entry.agent.startsWith('learner_');
 }
 
 /** True if this entry is a tutor-side entry (tutor, ego, superego). */
@@ -284,17 +282,42 @@ describe('Group 3: multi-agent learner deliberation', { skip: multiTurnLogs.leng
           }
         });
       } else {
-        it('unified learner: each learner block is a single learner/turn_action', () => {
-          const segments = segmentTrace(trace).filter(s => s.type === 'learner');
-          for (let si = 0; si < segments.length; si++) {
-            const entries = segments[si].entries;
-            assert.strictEqual(entries.length, 1,
-              `unified learner block ${si} has ${entries.length} entries, expected 1`);
-            assert.strictEqual(entries[0].agent, 'learner');
-            assert.strictEqual(entries[0].action, 'turn_action',
-              `expected learner/turn_action, got ${entries[0].agent}/${entries[0].action}`);
-          }
-        });
+        const isMessagesMode = data.conversationMode === 'messages';
+
+        // Unified learners have two valid trace patterns:
+        // - YAML-scripted (single-prompt, or pre-fix messages): 1 entry (learner/turn_action)
+        // - LLM single-agent (messages-mode post-fix): 2 entries (learner_*/deliberation + learner/final_output)
+        const hasLLMLearnerEntries = trace.some(e => e.agent.startsWith('learner_') && e.agent !== 'learner');
+
+        if (hasLLMLearnerEntries) {
+          it('unified learner (LLM): each learner block has deliberation + final_output', () => {
+            const segments = segmentTrace(trace).filter(s => s.type === 'learner');
+            for (let si = 0; si < segments.length; si++) {
+              const entries = segments[si].entries;
+              assert.strictEqual(entries.length, 2,
+                `unified learner block ${si} has ${entries.length} entries, expected 2`);
+              assert.ok(entries[0].agent.startsWith('learner_'),
+                `entry 0 agent should start with learner_, got ${entries[0].agent}`);
+              assert.strictEqual(entries[0].action, 'deliberation',
+                `entry 0 should be deliberation, got ${entries[0].action}`);
+              assert.strictEqual(entries[1].agent, 'learner');
+              assert.strictEqual(entries[1].action, 'final_output',
+                `entry 1 should be learner/final_output, got ${entries[1].agent}/${entries[1].action}`);
+            }
+          });
+        } else {
+          it('unified learner (scripted): each learner block is a single learner/turn_action', () => {
+            const segments = segmentTrace(trace).filter(s => s.type === 'learner');
+            for (let si = 0; si < segments.length; si++) {
+              const entries = segments[si].entries;
+              assert.strictEqual(entries.length, 1,
+                `unified learner block ${si} has ${entries.length} entries, expected 1`);
+              assert.strictEqual(entries[0].agent, 'learner');
+              assert.strictEqual(entries[0].action, 'turn_action',
+                `expected learner/turn_action, got ${entries[0].agent}/${entries[0].action}`);
+            }
+          });
+        }
 
         it('no ego_superego learner entries in trace', () => {
           const egoEntries = trace.filter(e =>

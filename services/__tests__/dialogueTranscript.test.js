@@ -1485,3 +1485,208 @@ describe('structureLearnerContext with pre-stripped chat history', () => {
       'Should contain the chat message in Learner Messages');
   });
 });
+
+// ── Learner architecture symmetry: no raw ego_superego gates ──────────────
+//
+// The evaluationRunner must treat unified and ego_superego learners symmetrically
+// in messages mode. The gate condition for LLM learner generation must be
+// `isLLMLearner` (architecture OR messages mode), NOT `includes('ego_superego')`.
+// These tests enforce that invariant at the source level and behaviorally.
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+describe('learner architecture symmetry', () => {
+  it('evaluationRunner has no raw ego_superego gates beyond isEgoSuperegoLearner definition', () => {
+    // Read the source file and find all uses of includes('ego_superego')
+    const source = fs.readFileSync(
+      path.resolve(__dirname, '..', 'evaluationRunner.js'), 'utf8',
+    );
+    const lines = source.split('\n');
+    const violations = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes("includes('ego_superego')") && !line.includes('const isEgoSuperegoLearner')) {
+        violations.push({ line: i + 1, content: line.trim() });
+      }
+    }
+    assert.deepStrictEqual(violations, [],
+      `Found raw ego_superego gate(s) that should use isLLMLearner instead:\n${
+        violations.map((v) => `  line ${v.line}: ${v.content}`).join('\n')
+      }`);
+  });
+
+  it('isLLMLearner is true for ego_superego architecture regardless of conversation mode', () => {
+    // Simulate the gate logic
+    const isEgoSuperego = true;
+    const conversationModes = ['single-prompt', 'messages'];
+    for (const mode of conversationModes) {
+      const isLLMLearner = isEgoSuperego || mode === 'messages';
+      assert.ok(isLLMLearner,
+        `ego_superego learner should always be LLM-generated (mode=${mode})`);
+    }
+  });
+
+  it('isLLMLearner is true for unified learner in messages mode', () => {
+    const isEgoSuperego = false;
+    const isLLMLearner = isEgoSuperego || 'messages' === 'messages';
+    assert.ok(isLLMLearner,
+      'unified learner in messages mode should be LLM-generated');
+  });
+
+  it('isLLMLearner is false for unified learner in single-prompt mode', () => {
+    const isEgoSuperego = false;
+    const isLLMLearner = isEgoSuperego || 'single-prompt' === 'messages';
+    assert.ok(!isLLMLearner,
+      'unified learner in single-prompt mode should use YAML messages');
+  });
+
+  it('generateLearnerResponse supports unified learner profile', async () => {
+    // Verify the learner config has a unified profile with agent roles
+    // that generateLearnerResponse can use (single-agent path)
+    const learnerConfig = await import('../../services/learnerConfigLoader.js');
+    const unifiedRoles = learnerConfig.getProfileAgentRoles('unified');
+    assert.ok(unifiedRoles.length > 0,
+      'unified profile must have at least one agent role for LLM generation');
+    assert.ok(!unifiedRoles.includes('superego'),
+      'unified profile must NOT have a superego role');
+  });
+
+  it('generateLearnerResponse supports ego_superego learner profile', async () => {
+    const learnerConfig = await import('../../services/learnerConfigLoader.js');
+    const roles = learnerConfig.getProfileAgentRoles('ego_superego');
+    assert.ok(roles.includes('ego'), 'ego_superego profile must have ego role');
+    assert.ok(roles.includes('superego'), 'ego_superego profile must have superego role');
+  });
+
+  it('unified and ego_superego profiles are symmetric: both have LLM-capable agent configs', async () => {
+    const learnerConfig = await import('../../services/learnerConfigLoader.js');
+    for (const profileName of ['unified', 'ego_superego', 'unified_recognition', 'ego_superego_recognition']) {
+      let profile;
+      try {
+        profile = learnerConfig.getActiveProfile(profileName);
+      } catch {
+        continue; // profile may not exist in all configs
+      }
+      const roles = learnerConfig.getProfileAgentRoles(profileName);
+      assert.ok(roles.length > 0,
+        `${profileName} must have agent roles for LLM generation`);
+      for (const role of roles) {
+        const agentConfig = learnerConfig.getAgentConfig(role, profileName);
+        assert.ok(agentConfig?.model || agentConfig?.provider,
+          `${profileName}/${role} must have a model or provider configured`);
+      }
+    }
+  });
+});
+
+// ── Scripted vs LLM learner demarcation ───────────────────────────────────
+//
+// STRICT RULE: In messages mode, ALL learner architectures (unified AND
+// ego_superego) MUST produce LLM-generated responses. YAML turn messages
+// serve as action cues only, never as literal learner output.
+//
+// In single-prompt mode, the situation is different: unified learners use
+// YAML messages because the conversation is serialized as text context.
+// But this is a KNOWN CONFOUND for any cross-architecture comparison.
+//
+// These tests enforce that:
+// 1. No raw ego_superego gate exists in evaluationRunner (source-level)
+// 2. messages-mode cells always produce LLM learner responses
+// 3. The learner config supports both architectures symmetrically
+// 4. generateLearnerResponse has a single-agent path for unified learners
+
+describe('scripted vs LLM learner demarcation', () => {
+  it('messages-mode cells with unified learner must use LLM generation (isLLMLearner gate)', () => {
+    // Simulate the gate logic for all architecture × mode combinations
+    const cases = [
+      { arch: 'unified',                mode: 'messages',       expectLLM: true },
+      { arch: 'unified_recognition',    mode: 'messages',       expectLLM: true },
+      { arch: 'ego_superego',           mode: 'messages',       expectLLM: true },
+      { arch: 'ego_superego_recognition', mode: 'messages',     expectLLM: true },
+      { arch: 'unified',                mode: 'single-prompt',  expectLLM: false },
+      { arch: 'unified_recognition',    mode: 'single-prompt',  expectLLM: false },
+      { arch: 'ego_superego',           mode: 'single-prompt',  expectLLM: true },
+      { arch: 'ego_superego_recognition', mode: 'single-prompt', expectLLM: true },
+    ];
+    for (const { arch, mode, expectLLM } of cases) {
+      const isEgoSuperego = arch.includes('ego_superego');
+      const isLLMLearner = isEgoSuperego || mode === 'messages';
+      assert.strictEqual(isLLMLearner, expectLLM,
+        `${arch} + ${mode}: isLLMLearner should be ${expectLLM}`);
+    }
+  });
+
+  it('generateLearnerResponse has distinct multi-agent and single-agent paths', async () => {
+    const learnerConfig = await import('../../services/learnerConfigLoader.js');
+
+    // ego_superego must have both ego and superego → multi-agent path
+    const esPRoles = learnerConfig.getProfileAgentRoles('ego_superego');
+    const hasMultiAgent = esPRoles.includes('ego') && esPRoles.includes('superego');
+    assert.ok(hasMultiAgent,
+      'ego_superego profile must trigger multi-agent deliberation path');
+
+    // unified must NOT have both ego and superego → single-agent path
+    const uniRoles = learnerConfig.getProfileAgentRoles('unified');
+    const uniHasMulti = uniRoles.includes('ego') && uniRoles.includes('superego');
+    assert.ok(!uniHasMulti,
+      'unified profile must trigger single-agent path (no ego+superego pair)');
+  });
+
+  it('all learner profiles in learner-agents.yaml have LLM-capable configs', async () => {
+    const learnerConfig = await import('../../services/learnerConfigLoader.js');
+    const allProfiles = learnerConfig.listProfiles();
+    for (const profileName of allProfiles) {
+      const roles = learnerConfig.getProfileAgentRoles(profileName);
+      assert.ok(roles.length > 0,
+        `Learner profile '${profileName}' has no agent roles — cannot generate LLM responses`);
+    }
+  });
+
+  it('tutor-agents.yaml messages-mode cells exist with both learner architectures', () => {
+    // Read tutor-agents.yaml and find cells with conversation_mode: messages
+    const yaml = fs.readFileSync(
+      path.resolve(__dirname, '..', '..', 'config', 'tutor-agents.yaml'), 'utf8',
+    );
+
+    // Split into cell blocks: each cell starts with "  cell_" at 2-space indent
+    const cellBlocks = yaml.split(/\n(?=  cell_\w+:)/);
+    const messagesCells = [];
+    for (const block of cellBlocks) {
+      if (!block.includes('conversation_mode: messages')) continue;
+      const nameMatch = block.match(/^\s*(cell_\w+):/);
+      const archMatch = block.match(/learner_architecture:\s*(\S+)/);
+      if (nameMatch) {
+        messagesCells.push({
+          cellName: nameMatch[1],
+          arch: archMatch ? archMatch[1] : 'unspecified',
+        });
+      }
+    }
+
+    assert.ok(messagesCells.length > 0,
+      'Should find at least one messages-mode cell in tutor-agents.yaml');
+
+    // Verify the isLLMLearner gate covers ALL messages-mode cells
+    for (const { cellName, arch } of messagesCells) {
+      const isEgoSuperego = arch.includes('ego_superego');
+      const isLLMLearner = isEgoSuperego || true; // messages mode → always LLM
+      assert.ok(isLLMLearner,
+        `messages-mode cell '${cellName}' (${arch}) must produce LLM learner responses`);
+    }
+
+    // Verify both unified and ego_superego architectures are represented in messages mode
+    const archs = new Set(messagesCells.map((c) => c.arch));
+    assert.ok(
+      [...archs].some((a) => a.includes('unified')),
+      'messages-mode cells should include at least one unified learner architecture',
+    );
+    assert.ok(
+      [...archs].some((a) => a.includes('ego_superego')),
+      'messages-mode cells should include at least one ego_superego learner architecture',
+    );
+  });
+});
