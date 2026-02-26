@@ -338,7 +338,7 @@ function formatDialogueTranscript(dialogueContext) {
         lines.push(`\n--- Turn ${currentTurnIdx + 1} ---`);
       }
 
-      if (entry.agent === 'user' && entry.action === 'turn_action') {
+      if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
         lines.push(`[Learner Action] ${entry.detail || entry.contextSummary}`);
       } else if (entry.agent === 'learner_ego') {
         lines.push(`  (Learner Ego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
@@ -1512,8 +1512,8 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   const initialMessage = extractInitialLearnerMessage(learnerContext);
 
   // Index trace entries by turnIndex
-  const synthByTurn = {};       // ego_superego learner final output
-  const learnerMsgByTurn = {};  // unified learner message (from turn_action contextSummary)
+  const synthByTurn = {};       // ego_superego learner final output (when available)
+  const learnerMsgByTurn = {};  // learner external message from turn_action contextSummary
   if (dialogueTrace?.length > 0) {
     for (const entry of dialogueTrace) {
       if (entry.agent === 'learner' && entry.turnIndex !== undefined) {
@@ -1529,6 +1529,7 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   const lines = [];
   for (let i = 0; i < turns.length; i++) {
     const turn = turns[i];
+    const turnIndex = Number.isInteger(turn?.turnIndex) ? turn.turnIndex : i;
     lines.push(`\n--- Turn ${i + 1} ---`);
 
     // Learner side
@@ -1537,14 +1538,15 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
       const label = egoSuperego ? '[Learner Ego]' : '[Learner]';
       lines.push(`${label} ${truncate(initialMessage, 400)}`);
     } else if (egoSuperego) {
-      // Ego+superego learner: show synthesis (final output after deliberation)
-      const text = synthByTurn[i] || turn.learnerMessage || null;
+      // Ego+superego learner: prefer synthesis; if absent in trace, fall back to
+      // external turn_action message so public transcript remains learner+tutor balanced.
+      const text = synthByTurn[turnIndex] || learnerMsgByTurn[turnIndex] || turn.learnerMessage || null;
       if (text) {
         lines.push(`[Learner Ego] ${truncate(text, 400)}`);
       }
     } else {
       // Unified (ego-only) learner: message from turn_action contextSummary
-      const text = turn.learnerMessage || learnerMsgByTurn[i] || null;
+      const text = turn.learnerMessage || learnerMsgByTurn[turnIndex] || null;
       if (text) {
         lines.push(`[Learner] ${truncate(text, 400)}`);
       }
