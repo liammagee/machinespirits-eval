@@ -317,6 +317,13 @@ function resolveConfigModels(config) {
       resolved.superegoModel = null;
       resolved.superegoHyperparameters = undefined;
     }
+
+    // Explicit disable flag for tutor-core: when the eval cell has no superego,
+    // tell tutor-core to skip superego review even if its own profile has one configured.
+    // This prevents phantom superego calls when eval cells remap to tutor-core profiles
+    // that have a superego (e.g., cell 90 → recognition profile).
+    resolved.disableSuperego = !profile?.superego || rawProfile?.factors?.multi_agent_tutor === false;
+
     if (rawProfile?.factors) {
       resolved.factors = { ...rawProfile.factors };
       // Normalize prompt_type → recognition boolean for DB storage
@@ -1148,6 +1155,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
             model: resolvedConfig.model,
             egoModel: resolvedConfig.egoModel,
             superegoModel: resolvedConfig.superegoModel || null,
+            disableSuperego: resolvedConfig.disableSuperego || false,
             profileName: resolvedConfig.profileName,
             hyperparameters: resolvedConfig.hyperparameters || {},
             trace: true,
