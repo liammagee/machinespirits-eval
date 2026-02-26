@@ -1434,6 +1434,7 @@ export async function runEvaluation(options = {}) {
       learnerEgoModelOverride: effectiveLearnerEgoModelOverride || null,
       learnerSuperegoModelOverride: effectiveLearnerSuperegoModelOverride || null,
       maxTokensOverride: maxTokensOverride || null,
+      dryRun: dryRun || false,
       // Store scenario IDs and profile names for accurate resume
       scenarioIds: targetScenarios.map((s) => s.id),
       profileNames: targetConfigs.map((c) => c.profileName).filter(Boolean),
@@ -2049,6 +2050,22 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   // Initialize state variables — restore from checkpoint if resuming
   const cs = checkpointState; // alias for brevity
 
+  // Deep-clone turns to prevent mutation of shared scenario objects across profiles.
+  // On resume, restore the checkpointed turns (which include LLM-generated learner mutations).
+  const turns = cs?.turns || JSON.parse(JSON.stringify(fullScenario.turns || []));
+  const turnResults = cs?.turnResults || [];
+  let totalLatencyMs = cs?.totalLatencyMs || 0;
+  let totalInputTokens = cs?.totalInputTokens || 0;
+  let totalOutputTokens = cs?.totalOutputTokens || 0;
+  let totalApiCalls = cs?.totalApiCalls || 0;
+  let totalCost = cs?.totalCost || 0;
+  let totalDialogueRounds = cs?.totalDialogueRounds || 0;
+
+  const conversationHistory = cs?.conversationHistory || [];
+  let previousSuggestion = cs?.previousSuggestion || null;
+  const consolidatedTrace = cs?.consolidatedTrace || [];
+  const priorSuperegoAssessments = cs?.priorSuperegoAssessments || []; // Cross-turn superego memory
+
   // Helper: append new trace entries to transcript file and optionally console
   // On resume, skip entries already flushed in the previous session.
   let lastTranscriptIdx = cs ? consolidatedTrace.length : 0;
@@ -2069,22 +2086,6 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       fs.appendFileSync(transcriptPath, lines.join('\n'));
     }
   }
-
-  // Deep-clone turns to prevent mutation of shared scenario objects across profiles.
-  // On resume, restore the checkpointed turns (which include LLM-generated learner mutations).
-  const turns = cs?.turns || JSON.parse(JSON.stringify(fullScenario.turns || []));
-  const turnResults = cs?.turnResults || [];
-  let totalLatencyMs = cs?.totalLatencyMs || 0;
-  let totalInputTokens = cs?.totalInputTokens || 0;
-  let totalOutputTokens = cs?.totalOutputTokens || 0;
-  let totalApiCalls = cs?.totalApiCalls || 0;
-  let totalCost = cs?.totalCost || 0;
-  let totalDialogueRounds = cs?.totalDialogueRounds || 0;
-
-  const conversationHistory = cs?.conversationHistory || [];
-  let previousSuggestion = cs?.previousSuggestion || null;
-  const consolidatedTrace = cs?.consolidatedTrace || [];
-  const priorSuperegoAssessments = cs?.priorSuperegoAssessments || []; // Cross-turn superego memory
 
   // Check profile-level feature flags
   const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
@@ -3242,6 +3243,7 @@ export async function resumeEvaluation(options = {}) {
   const metadata = run.metadata || {};
   const runsPerConfig = metadata.runsPerConfig || 1;
   const skipRubricEval = metadata.skipRubricEval || false;
+  const dryRun = metadata.dryRun || false;
   const modelOverride = metadata.modelOverride || null;
   const egoModelOverride = metadata.egoModelOverride || null;
   const superegoModelOverride = metadata.superegoModelOverride || null;
@@ -3472,6 +3474,7 @@ export async function resumeEvaluation(options = {}) {
     try {
       const result = await runSingleTest(scenario, config, {
         skipRubricEval,
+        dryRun,
         verbose,
         runId,
         checkpointState: checkpointState || null,
