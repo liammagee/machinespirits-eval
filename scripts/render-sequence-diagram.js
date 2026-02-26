@@ -151,10 +151,10 @@ function fullContent(entry) {
   if (entry.suggestions?.length > 0) {
     return entry.suggestions.map((s) => s.message || s.text || s.title || '').join('\n\n');
   }
-  if (entry.agent === 'user' && entry.action === 'context_input') {
+  if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input') {
     return extractLearnerQuery(entry) || '(scenario context)';
   }
-  if (entry.agent === 'user' && entry.action === 'turn_action') {
+  if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
     return entry.contextSummary || entry.detail || '';
   }
   return entry.detail || entry.contextSummary || '';
@@ -204,11 +204,11 @@ function traceToSteps(trace) {
     }
 
     if (agent === 'system') continue;
-    if (agent === 'user' && action === 'final_output') continue;
+    if ((agent === 'tutor' || agent === 'user') && action === 'final_output') continue;
     if (agent === 'learner') continue;
 
     // Context input
-    if (agent === 'user' && action === 'context_input') {
+    if ((agent === 'tutor' || agent === 'user') && action === 'context_input') {
       dialogueTurn++;
       if (dialogueTurn === 1) {
         const query = extractLearnerQuery(e);
@@ -239,7 +239,7 @@ function traceToSteps(trace) {
           break;
         }
         if (learnerBlockStarts.has(j)) break; // hit learner block first — no review coming
-        if (trace[j].agent === 'user' && trace[j].action === 'context_input') break;
+        if ((trace[j].agent === 'tutor' || trace[j].agent === 'user') && trace[j].action === 'context_input') break;
       }
 
       if (action !== 'generate' && !superegoFollows) {
@@ -363,7 +363,7 @@ function traceToSteps(trace) {
     if (agent === 'learner_ego_revision') continue;
 
     // Turn action = learner's external message
-    if (agent === 'user' && action === 'turn_action') {
+    if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
       const full = fullContent(e);
       steps.push({
         from: 'learner_ego',

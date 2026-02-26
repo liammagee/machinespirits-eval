@@ -131,7 +131,7 @@ function getSpeakerLabel(entry) {
   const { agent, action } = entry;
 
   // Learner-related entries
-  if (agent === 'user' && action === 'turn_action') return 'LEARNER';
+  if ((agent === 'learner' || agent === 'user') && action === 'turn_action') return 'LEARNER';
   if (agent === 'learner_ego' && action === 'deliberation') return 'LEARNER EGO';
   if (agent === 'learner_superego' && action === 'deliberation') return 'LEARNER SUPEREGO';
   if (agent === 'learner' && action === 'final_output') return 'LEARNER';
@@ -156,8 +156,8 @@ function getSpeakerLabel(entry) {
   // System/meta
   if (agent === 'behavioral_overrides') return 'SYSTEM';
   if (agent === 'rejection_budget') return 'SYSTEM';
-  if (agent === 'user' && action === 'context_input') return 'CONTEXT';
-  if (agent === 'user' && action === 'final_output') return null; // skip in output
+  if ((agent === 'tutor' || agent === 'user') && action === 'context_input') return 'CONTEXT';
+  if ((agent === 'tutor' || agent === 'user') && action === 'final_output') return null; // skip in output
 
   return (agent || 'UNKNOWN').toUpperCase();
 }
@@ -205,12 +205,12 @@ function getEntryContent(entry) {
   }
 
   // Learner turn action
-  if (agent === 'user' && action === 'turn_action') {
+  if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
     return entry.contextSummary || entry.detail || '';
   }
 
   // Context input
-  if (agent === 'user' && action === 'context_input') {
+  if ((agent === 'tutor' || agent === 'user') && action === 'context_input') {
     const ctx = entry.contextData || {};
     const parts = [];
     if (ctx.currentPage) parts.push(ctx.currentPage.replace(/^\*+:\s*/, ''));
@@ -276,11 +276,11 @@ function isReflectionEntry(entry) {
 function isCompactVisible(entry) {
   const { agent, action } = entry;
   // Show: learner messages, final tutor output, superego verdicts
-  if (agent === 'user' && action === 'turn_action') return true;
+  if ((agent === 'learner' || agent === 'user') && action === 'turn_action') return true;
   if (action === 'revise' || action === 'generate_final') return true;
   if (agent === 'ego' && action === 'generate' && !entry._hasRevision) return true;
   if (agent === 'superego' && action === 'review') return true;
-  if (agent === 'user' && action === 'final_output') return false;
+  if ((agent === 'tutor' || agent === 'user') && action === 'final_output') return false;
   return false;
 }
 
@@ -289,7 +289,7 @@ function isCompactVisible(entry) {
  */
 function isMessageVisible(entry) {
   const { agent, action } = entry;
-  if (agent === 'user' && action === 'turn_action') return true;
+  if ((agent === 'learner' || agent === 'user') && action === 'turn_action') return true;
   if (action === 'revise') return true;
   if (agent === 'ego' && action === 'generate' && !entry._hasRevision) return true;
   if (agent === 'learner' && action === 'final_output') return true;
@@ -486,7 +486,7 @@ function isTutorEntry(entry) {
   ]);
   if (tutorAgents.has(entry.agent)) return true;
   // context_input and final_output are tutor-phase bookends
-  if (entry.agent === 'user' && (entry.action === 'context_input' || entry.action === 'final_output')) return true;
+  if ((entry.agent === 'tutor' || entry.agent === 'user') && (entry.action === 'context_input' || entry.action === 'final_output')) return true;
   // system entries (memory_cycle, etc.) belong to tutor phase
   if (entry.agent === 'system') return true;
   return false;
@@ -539,7 +539,7 @@ function formatBilateralTranscript(trace, options = {}) {
     currentEntries.push(entry);
 
     // turn_action marks the end of a full dialogue turn (tutor + learner)
-    if (entry.agent === 'user' && entry.action === 'turn_action') {
+    if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
       dialogueTurns.push(currentEntries);
       currentEntries = [];
     }
@@ -589,7 +589,7 @@ function formatBilateralTranscript(trace, options = {}) {
     for (const entry of entries) {
       if (isReflectionEntry(entry)) {
         reflections.push(entry);
-      } else if (entry.agent === 'user' && entry.action === 'turn_action') {
+      } else if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
         learnerMessage = entry;
       } else if (isTutorEntry(entry)) {
         tutorEntries.push(entry);
@@ -606,9 +606,9 @@ function formatBilateralTranscript(trace, options = {}) {
 
       for (const entry of tutorEntries) {
         // Skip final_output markers (they're structural, not content)
-        if (entry.agent === 'user' && entry.action === 'final_output') continue;
+        if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'final_output') continue;
         // Skip repeated context_input after the first turn — it's the same scenario data re-injected
-        if (entry.agent === 'user' && entry.action === 'context_input' && turnNum > 0) continue;
+        if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input' && turnNum > 0) continue;
 
         const formatted = formatEntry(entry, { detail: 'play' });
         if (formatted) {
@@ -677,7 +677,7 @@ export function formatCompactLine(entry) {
   const metaSuffix = meta ? `  (${meta})` : '';
 
   // Learner message
-  if (agent === 'user' && action === 'turn_action') {
+  if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
     const msg = (entry.contextSummary || entry.detail || '').substring(0, 120);
     return `  [LEARNER] ${msg}`;
   }

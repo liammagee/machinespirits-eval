@@ -4,7 +4,7 @@ import { buildMessageChain, buildProjectionDiagnostics, projectTranscriptArtifac
 
 const sampleTrace = [
   {
-    agent: 'user',
+    agent: 'tutor',
     action: 'context_input',
     rawContext: '### Recent Chat History\n- User: "I am stuck on this concept."',
   },
@@ -37,7 +37,7 @@ const sampleTrace = [
     feedback: 'Approved with minor wording change.',
   },
   {
-    agent: 'user',
+    agent: 'learner',
     action: 'turn_action',
     turnIndex: 1,
     contextSummary: 'Can we go slower and define negation of negation?',

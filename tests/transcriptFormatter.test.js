@@ -5,7 +5,7 @@ import { formatTranscript, formatEntry, formatCompactLine, wrapText } from '../s
 // Sample trace data mimicking real consolidatedTrace entries
 const sampleTrace = [
   {
-    agent: 'user',
+    agent: 'tutor',
     action: 'context_input',
     round: 1,
     turnIndex: 0,
@@ -45,7 +45,7 @@ const sampleTrace = [
     metrics: { model: 'moonshot-ai/kimi-k2.5', inputTokens: 9200, outputTokens: 1500, latencyMs: 2800, cost: 0.0038 },
   },
   {
-    agent: 'user',
+    agent: 'tutor',
     action: 'final_output',
     turnIndex: 0,
     contextSummary: 'Delivered 1 suggestion',
@@ -62,7 +62,7 @@ const sampleTrace = [
   },
   // Turn 2
   {
-    agent: 'user',
+    agent: 'learner',
     action: 'turn_action',
     turnIndex: 1,
     contextSummary: 'That helped a little but I am still confused about how thesis becomes antithesis.',

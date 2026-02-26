@@ -472,18 +472,18 @@ function collectPriorExtensions(trace, idx, agent) {
 
 function deriveUserRequest(trace, idx, entry) {
   if (entry.agent === 'ego') {
-    const contextIdx = findLastIndex(trace, idx - 1, (e) => e.agent === 'user' && e.action === 'context_input');
+    const contextIdx = findLastIndex(trace, idx - 1, (e) => (e.agent === 'tutor' || e.agent === 'user') && e.action === 'context_input');
     if (contextIdx !== -1) {
       return {
         status: 'observed',
-        source: 'trace:user/context_input',
+        source: 'trace:tutor/context_input',
         trace_index: contextIdx,
         text: trace[contextIdx].rawContext || trace[contextIdx].contextSummary || null,
       };
     }
     return {
       status: 'missing',
-      source: 'trace:user/context_input',
+      source: 'trace:tutor/context_input',
       trace_index: null,
       text: null,
       note: 'No preceding context_input entry found for ego call.',

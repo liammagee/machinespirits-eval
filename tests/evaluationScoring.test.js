@@ -377,9 +377,9 @@ describe('buildPerTurnTutorEvaluationPrompt', () => {
   it('truncates dialogue trace to target turn', () => {
     const mockTrace = [
       { turnIndex: 0, agent: 'ego', action: 'initial_draft', contextSummary: 'Turn 0 draft' },
-      { turnIndex: 1, agent: 'user', action: 'turn_action', contextSummary: 'Learner asks about recursion' },
+      { turnIndex: 1, agent: 'learner', action: 'turn_action', contextSummary: 'Learner asks about recursion' },
       { turnIndex: 1, agent: 'ego', action: 'initial_draft', contextSummary: 'Turn 1 draft' },
-      { turnIndex: 2, agent: 'user', action: 'turn_action', contextSummary: 'Learner asks for example' },
+      { turnIndex: 2, agent: 'learner', action: 'turn_action', contextSummary: 'Learner asks for example' },
       { turnIndex: 2, agent: 'ego', action: 'initial_draft', contextSummary: 'Turn 2 draft' },
     ];
 
@@ -396,5 +396,178 @@ describe('buildPerTurnTutorEvaluationPrompt', () => {
       'should include earlier turn content');
     // Turn 2 trace entry should NOT appear
     assert.ok(!prompt.includes('Turn 2 draft'), 'should NOT include future turn trace');
+  });
+});
+
+// ============================================================================
+// Scoring completeness: all three dimensions populated
+// ============================================================================
+
+describe('scoring completeness — all dimensions populated after full evaluation', () => {
+  it('multi-turn result has tutor, learner, and dialogue scores after full scoring', () => {
+    const runId = makeRun('completeness test');
+    storeResult(runId, makeResult({
+      dialogueId: 'dlg-complete-1',
+      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
+      dialogueRounds: 3,
+    }));
+
+    const results = getResults(runId);
+    const id = results[0].id;
+
+    // Phase 1: tutor per-turn scoring
+    updateResultTutorScores(id, {
+      tutorScores: {
+        0: { overallScore: 65, scores: { relevance: { score: 3 } }, summary: 'OK' },
+        1: { overallScore: 78, scores: { relevance: { score: 4 } }, summary: 'Better' },
+        2: { overallScore: 88, scores: { relevance: { score: 5 } }, summary: 'Great' },
+      },
+      tutorOverallScore: 77,
+      tutorFirstTurnScore: 65,
+      tutorLastTurnScore: 88,
+      tutorDevelopmentScore: 23,
+      judgeModel: 'test-judge',
+    });
+
+    // Phase 2: learner scoring
+    updateResultLearnerScores(id, {
+      scores: { 0: { overallScore: 55 }, 1: { overallScore: 70 } },
+      overallScore: 62.5,
+      judgeModel: 'test-judge',
+      holisticScores: { engagement: 4, depth: 3 },
+      holisticOverallScore: 68,
+      holisticSummary: 'Learner showed growth',
+      holisticJudgeModel: 'test-judge',
+    });
+
+    // Phase 3: dialogue quality scoring
+    updateDialogueQualityScore(id, {
+      dialogueQualityScore: 82,
+      dialogueQualitySummary: 'Strong pedagogical encounter',
+      dialogueQualityJudgeModel: 'test-judge',
+    });
+
+    // Verify all dimensions are populated
+    const scored = getResults(runId)[0];
+    assert.ok(scored.tutorFirstTurnScore != null, 'tutor first turn score should be set');
+    assert.ok(scored.tutorLastTurnScore != null, 'tutor last turn score should be set');
+    assert.ok(scored.tutorOverallScore != null, 'tutor overall score should be set');
+    assert.ok(scored.tutorDevelopmentScore != null, 'tutor development score should be set');
+    assert.ok(scored.learnerOverallScore != null, 'learner overall score should be set');
+    assert.ok(scored.learnerHolisticOverallScore != null, 'learner holistic score should be set');
+    assert.ok(scored.dialogueQualityScore != null, 'dialogue quality score should be set');
+  });
+
+  it('missing learner score is detectable via null check', () => {
+    const runId = makeRun('missing learner test');
+    storeResult(runId, makeResult({
+      dialogueId: 'dlg-missing-1',
+      suggestions: [{ message: 'T0' }, { message: 'T1' }],
+      dialogueRounds: 2,
+    }));
+
+    const results = getResults(runId);
+    const id = results[0].id;
+
+    // Only score tutor — skip learner
+    updateResultTutorScores(id, {
+      tutorScores: { 0: { overallScore: 70 }, 1: { overallScore: 80 } },
+      tutorOverallScore: 75,
+      tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 80,
+      tutorDevelopmentScore: 10,
+      judgeModel: 'test-judge',
+    });
+
+    const scored = getResults(runId)[0];
+    assert.ok(scored.tutorFirstTurnScore != null, 'tutor score should be set');
+    assert.strictEqual(scored.learnerOverallScore, null, 'learner score should be NULL (not scored)');
+    assert.strictEqual(scored.dialogueQualityScore, null, 'dialogue score should be NULL (not scored)');
+  });
+});
+
+// ============================================================================
+// listRuns average correctness — tutor, learner, dialogue
+// ============================================================================
+
+describe('listRuns computes correct averages across multiple results', () => {
+  it('avgScore is the mean of tutor_first_turn_score values', () => {
+    const runId = makeRun('tutor avg test');
+
+    storeResult(runId, makeResult({ scenarioId: 's1' }));
+    storeResult(runId, makeResult({ scenarioId: 's2' }));
+    storeResult(runId, makeResult({ scenarioId: 's3' }));
+
+    const results = getResults(runId);
+
+    // Score with 60, 80, 100
+    updateResultScores(results[0].id, {
+      scores: {}, tutorFirstTurnScore: 60, baseScore: 60,
+      passesRequired: true, passesForbidden: true, judgeModel: 'test',
+    });
+    updateResultScores(results[1].id, {
+      scores: {}, tutorFirstTurnScore: 80, baseScore: 80,
+      passesRequired: true, passesForbidden: true, judgeModel: 'test',
+    });
+    updateResultScores(results[2].id, {
+      scores: {}, tutorFirstTurnScore: 100, baseScore: 100,
+      passesRequired: true, passesForbidden: true, judgeModel: 'test',
+    });
+
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.ok(run, 'should find test run');
+    assert.strictEqual(run.avgScore, 80, 'avgScore should be mean of [60, 80, 100] = 80');
+  });
+
+  it('avgLearnerScore is the mean of learner_overall_score values', () => {
+    const runId = makeRun('learner avg test');
+
+    storeResult(runId, makeResult({ scenarioId: 's1', dialogueId: 'dlg-la-1' }));
+    storeResult(runId, makeResult({ scenarioId: 's2', dialogueId: 'dlg-la-2' }));
+
+    const results = getResults(runId);
+
+    // Score tutor (required for judge_model filter in listRuns)
+    for (const r of results) {
+      updateResultScores(r.id, {
+        scores: {}, tutorFirstTurnScore: 70, baseScore: 70,
+        passesRequired: true, passesForbidden: true, judgeModel: 'test',
+      });
+    }
+
+    // Score learner with 50 and 90
+    updateResultLearnerScores(results[0].id, { scores: {}, overallScore: 50, judgeModel: 'test' });
+    updateResultLearnerScores(results[1].id, { scores: {}, overallScore: 90, judgeModel: 'test' });
+
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.ok(run, 'should find test run');
+    assert.strictEqual(run.avgLearnerScore, 70, 'avgLearnerScore should be mean of [50, 90] = 70');
+  });
+
+  it('avgDialogueScore is the mean of dialogue_quality_score values', () => {
+    const runId = makeRun('dialogue avg test');
+
+    storeResult(runId, makeResult({ scenarioId: 's1', dialogueId: 'dlg-da-1' }));
+    storeResult(runId, makeResult({ scenarioId: 's2', dialogueId: 'dlg-da-2' }));
+
+    const results = getResults(runId);
+
+    for (const r of results) {
+      updateResultScores(r.id, {
+        scores: {}, tutorFirstTurnScore: 70, baseScore: 70,
+        passesRequired: true, passesForbidden: true, judgeModel: 'test',
+      });
+    }
+
+    // Score dialogue with 85 and 75
+    updateDialogueQualityScore(results[0].id, { dialogueQualityScore: 85, dialogueQualityJudgeModel: 'test' });
+    updateDialogueQualityScore(results[1].id, { dialogueQualityScore: 75, dialogueQualityJudgeModel: 'test' });
+
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.ok(run, 'should find test run');
+    assert.strictEqual(run.avgDialogueScore, 80, 'avgDialogueScore should be mean of [85, 75] = 80');
   });
 });

@@ -368,7 +368,7 @@ function extractLearnerTurnMaps(log) {
     }
   }
   for (const e of trace) {
-    if (e?.agent === 'user' && e?.action === 'turn_action' && Number.isFinite(e?.turnIndex)) {
+    if ((e?.agent === 'learner' || e?.agent === 'user') && e?.action === 'turn_action' && Number.isFinite(e?.turnIndex)) {
       const ctx = String(e?.contextSummary || e?.message || '').trim();
       const detail = String(e?.detail || '').trim();
       byIdxUserCtx.set(e.turnIndex, ctx);

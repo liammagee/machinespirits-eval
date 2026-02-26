@@ -352,7 +352,7 @@ function formatDialogueTranscript(dialogueContext) {
         lines.push(`  (Tutor Superego: ${truncate(entry.feedback || entry.contextSummary || '', 150)})`);
       } else if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'final_revision')) {
         lines.push(`[Tutor] (revised after superego feedback)`);
-      } else if (entry.agent === 'user' && entry.action === 'final_output') {
+      } else if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'final_output') {
         lines.push(`[Tutor → Learner] Delivered ${entry.suggestionCount} suggestion(s)`);
       } else if (entry.agent === 'ego') {
         // Single-agent tutor response
@@ -1459,7 +1459,8 @@ export function calculateDialogueQualityScore(scores) {
 
 /**
  * Detect whether a dialogue trace represents an ego_superego (multi-agent) learner.
- * These learners have learner or learner_ego_initial trace entries
+ * These learners have learner_ego_* / learner_superego / learner_synthesis
+ * (or legacy learner/final_output) trace entries
  * representing their internal ego→superego→revision deliberation cycle.
  *
  * Unified (ego-only) learners do NOT have these entries — their messages
@@ -1467,7 +1468,11 @@ export function calculateDialogueQualityScore(scores) {
  */
 function isEgoSuperegoLearner(dialogueTrace) {
   return dialogueTrace?.some(
-    (e) => e.agent === 'learner' || e.agent === 'learner_ego_initial',
+    (e) => e.agent === 'learner_ego_initial'
+      || e.agent === 'learner_ego_revision'
+      || e.agent === 'learner_superego'
+      || e.agent === 'learner_synthesis'
+      || (e.agent === 'learner' && (e.action === 'final_output' || e.action === 'response')),
   ) ?? false;
 }
 
@@ -1487,6 +1492,70 @@ function extractInitialLearnerMessage(learnerContext) {
   // Fallback: - User: '...' (single-quoted)
   const sq = learnerContext.match(/[-–]\s*User:\s*'([^']+)'/);
   return sq ? sq[1] : null;
+}
+
+/**
+ * Extract a follow-up learner message from raw context_input text.
+ * Used when logs are missing explicit user/turn_action entries.
+ *
+ * Prefers explicit `**Learner said**:` blocks; falls back to the learner-action block.
+ *
+ * @param {string} rawContext
+ * @returns {string|null}
+ */
+function extractLearnerFollowupFromContext(rawContext) {
+  const raw = rawContext || '';
+  if (!raw) return null;
+
+  const normalize = (text) =>
+    String(text || '')
+      .replaceAll('\n', ' ')
+      .replaceAll('\t', ' ')
+      .replace(/ +/g, ' ')
+      .trim();
+
+  const saidMarker = '**Learner said**:';
+  const saidIndex = raw.indexOf(saidMarker);
+  if (saidIndex >= 0) {
+    let tail = raw.slice(saidIndex + saidMarker.length).trim();
+    if (tail.startsWith('"')) {
+      const closing = tail.indexOf('"', 1);
+      if (closing > 1) return tail.slice(1, closing).trim();
+    }
+
+    let end = tail.length;
+    const idxHeading = tail.indexOf('\n###');
+    const idxClose = tail.indexOf('\n</');
+    if (idxHeading >= 0 && idxHeading < end) end = idxHeading;
+    if (idxClose >= 0 && idxClose < end) end = idxClose;
+    return normalize(tail.slice(0, end));
+  }
+
+  const actionMarker = '### Learner Action';
+  const actionIndex = raw.indexOf(actionMarker);
+  if (actionIndex >= 0) {
+    let block = raw.slice(actionIndex);
+    let end = block.length;
+    const idxHeading = block.indexOf('\n###', actionMarker.length);
+    const idxClose = block.indexOf('\n</');
+    if (idxHeading >= 0 && idxHeading < end) end = idxHeading;
+    if (idxClose >= 0 && idxClose < end) end = idxClose;
+    return normalize(block.slice(0, end));
+  }
+
+  return null;
+}
+
+/**
+ * Back/forward-compatible detection of learner synthesis/final output entries.
+ *
+ * Historical schema: agent='learner', action='final_output'
+ * Current schema:    agent='learner_synthesis', action='response'
+ */
+function isLearnerSynthesisEntry(entry) {
+  if (!entry) return false;
+  if (entry.agent === 'learner_synthesis' && entry.action === 'response') return true;
+  return entry.agent === 'learner' && (entry.action === 'final_output' || entry.action === 'response');
 }
 
 /**
@@ -1515,11 +1584,27 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   const synthByTurn = {};       // ego_superego learner final output (when available)
   const learnerMsgByTurn = {};  // learner external message from turn_action contextSummary
   if (dialogueTrace?.length > 0) {
+    let contextInputOrdinal = 0;
     for (const entry of dialogueTrace) {
-      if (entry.agent === 'learner' && entry.turnIndex !== undefined) {
+      if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input') {
+        contextInputOrdinal++;
+        let turnKey = entry.turnIndex;
+        // Heuristic fallback for traces that omit turnIndex:
+        // first context_input is turn 0 seed; subsequent ones map to turn 1..N.
+        if (turnKey === undefined && contextInputOrdinal > 1) {
+          turnKey = contextInputOrdinal - 1;
+        }
+        if (turnKey !== undefined && turnKey > 0) {
+          const followup = extractLearnerFollowupFromContext(entry.rawContext || '');
+          if (followup && !learnerMsgByTurn[turnKey]) {
+            learnerMsgByTurn[turnKey] = followup;
+          }
+        }
+      }
+      if (isLearnerSynthesisEntry(entry) && entry.turnIndex !== undefined) {
         synthByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
       }
-      if (entry.agent === 'user' && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
+      if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
         // contextSummary holds the actual learner message; detail is just the action type label
         learnerMsgByTurn[entry.turnIndex] = entry.contextSummary || entry.detail || '';
       }
@@ -1596,7 +1681,8 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
  *   user/context_input               — entry.rawContext (metadata, not rendered)
  *   learner_ego_{initial,revision}/deliberation — entry.detail or entry.contextSummary (identical)
  *   learner_superego/deliberation    — entry.detail or entry.contextSummary (identical)
- *   learner/final_output   — entry.detail or entry.contextSummary (identical)
+ *   learner_synthesis/response        — entry.detail or entry.contextSummary (identical)
+ *   learner/final_output (legacy)     — entry.detail or entry.contextSummary (identical)
  *
  * [Learner Action] is never used — all learners are LLM-powered agents.
  * For ego_superego learners, user/turn_action is suppressed (redundant with learner).
@@ -1638,7 +1724,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         // belong to the PREVIOUS dialogue turn (N - 1).
         // For final_output and ego_self_reflection, tutor-core entries belong to
         // the same turn.
-        const isLearnerBoundary = (e.agent === 'user' && e.action === 'turn_action')
+        const isLearnerBoundary = ((e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action')
           || e.agent?.startsWith('learner_');
         if (isLearnerBoundary) {
           nextKnownTurn = Math.max(0, e.turnIndex - 1);
@@ -1739,7 +1825,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
       } else if (entry.agent === 'learner_superego') {
         const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Superego] ${truncate(text, 300)}`);
-      } else if (entry.agent === 'learner') {
+      } else if (isLearnerSynthesisEntry(entry)) {
         const text = entry.detail || entry.contextSummary || '';
         // Skip if final output is identical to the preceding revision/initial
         if (text !== lastLearnerEgoText) {
@@ -1754,14 +1840,14 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         lines.push(`[Learner Other-Ego] ${truncate(text, 300)}`);
 
       // ── Protocol entries ──
-      } else if (entry.agent === 'user' && entry.action === 'turn_action') {
+      } else if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
         // For ego_superego learners: suppress (redundant with learner)
         // For unified learners: contextSummary is the actual message; detail is action type label
         if (!egoSuperego) {
           const learnerMsg = entry.contextSummary || entry.detail || '';
           lines.push(`[Learner] ${truncate(learnerMsg, 400)}`);
         }
-      } else if (entry.agent === 'user' && entry.action === 'final_output') {
+      } else if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'final_output') {
         // Final TE: ALWAYS emitted when superego was shown — TS must never
         // conclude a turn. The ego always has the final word.
         // Label as "(revised)" when the superego caused a text change.

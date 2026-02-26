@@ -83,7 +83,7 @@ for (let i = 0; i < toEvaluate.length; i++) {
 
   // Extract learner turns
   const learnerTurns = [];
-  const turnActionEntries = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action');
+  const turnActionEntries = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
 
   for (const ta of turnActionEntries) {
     const turnData = {

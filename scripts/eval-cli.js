@@ -2564,7 +2564,7 @@ async function main() {
             // Build reconstructed turns for learner prompt builder
             const reconstructedTurns = [];
             const trace = dialogueLog.dialogueTrace || [];
-            const turnActionEntries = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action');
+            const turnActionEntries = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
 
             // Turn 0: initial tutor suggestion
             if (turnResults.length > 0) {
@@ -3755,7 +3755,7 @@ async function main() {
                 if (fs.existsSync(logPath)) {
                   const log = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
                   const trace = log.dialogueTrace || [];
-                  const expectedTurns = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action').length;
+                  const expectedTurns = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action').length;
                   const scoredTurns = Object.keys(r.learnerScores || {}).length;
                   if (scoredTurns < expectedTurns) {
                     hasCompleteTurnScores = false;
@@ -3880,7 +3880,7 @@ async function main() {
           //   - turn_action entry (contextSummary = external message)
           //   - For multi-agent: preceding learner_ego_initial, learner_superego, learner_ego_revision entries
           const learnerTurns = [];
-          const turnActionEntries = trace.filter((t) => t.agent === 'user' && t.action === 'turn_action');
+          const turnActionEntries = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
 
           for (const ta of turnActionEntries) {
             const turnData = {

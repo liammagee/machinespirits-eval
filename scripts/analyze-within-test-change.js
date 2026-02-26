@@ -269,7 +269,7 @@ function extractLearnerTurnTextMap(log) {
   }
 
   // Fill gaps from user turn actions.
-  const userActions = trace.filter((e) => e?.agent === 'user' && e?.action === 'turn_action');
+  const userActions = trace.filter((e) => (e?.agent === 'learner' || e?.agent === 'user') && e?.action === 'turn_action');
   for (const e of userActions) {
     const idx = Number.isFinite(e?.turnIndex) ? e.turnIndex : null;
     if (idx == null || byTurn.has(idx)) continue;
