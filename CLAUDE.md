@@ -47,28 +47,72 @@ Do NOT use asymmetric names. When in doubt, check the other side's labels and mi
 
 ## Configuration
 
+### How to Read a Cell's Architecture
+
+**RULE: Never guess a cell's architecture from its number or name. Always check `config/tutor-agents.yaml`.**
+
+A cell's architecture is determined by these YAML fields:
+
+| Field | What it controls |
+|-------|-----------------|
+| `factors.multi_agent_tutor` | Whether tutor has ego+superego (true) or ego-only (false) |
+| `superego:` | `null` = no superego agent; configured block = superego present |
+| `learner_architecture:` | `unified` = scripted learner; `ego_superego` = dynamic LLM learner |
+| `factors.prompt_type:` | `base`, `recognition`, `enhanced`, `placebo`, `dialectical_*`, `naive` |
+| `conversation_mode:` | absent = single-prompt; `messages` = multi-turn message chain |
+| `dialogue.enabled:` | Whether ego-superego deliberation loop is active |
+| `recognition_mode:` | Whether Hegelian recognition theory is in prompts |
+
+**Key relationships:**
+- `multi_agent_tutor: false` + `superego: null` = single-agent tutor (ego only, no deliberation)
+- `multi_agent_tutor: true` + `superego: null` = tutor has self-reflection/profiling mechanisms but no separate superego agent
+- `multi_agent_tutor: true` + `superego:` configured = tutor has distinct superego agent
+- `learner_architecture: unified*` = learner messages come from scenario YAML (scripted)
+- `learner_architecture: ego_superego*` = learner is a full LLM agent with internal deliberation
+
 ### Tutor Agent Cells (config/tutor-agents.yaml)
 
-- Cells 1-4: Base (no recognition theory)
-- Cells 5-8: Recognition theory enabled
-- Cells 9-12: Enhanced prompts (longer, more pedagogical detail)
-- Cells 13-14: Hardwired rules (superego rules embedded in ego prompt)
-- Cells 15-18: Placebo control (length-matched, no recognition theory)
-- Cells 19-20: Memory isolation (recognition vs memory disentangling)
-- Cell 21: Dynamic prompt rewriting with Writing Pad
-- Cells 22-27: Standard ego + divergent superego (suspicious/adversary/advocate × base/recog)
-- Cells 28-33: Dialectical ego + divergent superego
-- Cells 34-39: Full-feature dialectical (cross-turn memory, prompt rewriting, learner signals)
-- Cells 40-45: Self-reflective evolution (suspicious/adversary/advocate × base/recog)
-- Cells 46-47: Quantitative disposition (base/recog)
-- Cells 48-49: Prompt erosion (base/recog)
-- Cells 50-51: Intersubjective recognition (base/recog)
-- Cells 52-53: Combined mechanisms (base/recog)
-- Cells 54-59: Other-ego profiling (tutor-only/bidirectional/full-suite/strategy)
-- Cells 60-63: Dynamic learner (ego_superego) × self-reflection/profiling × base/recog
-- Cells 64-65: Dynamic learner × intersubjective/combined (recognition only)
+**Cells 1-8: 2×2×2 factorial** (base/recog × single/multi × unified/ego_superego)
+- Odd cells: unified learner. Even cells: ego_superego learner.
+- Cells 1-2: base, single. Cells 3-4: base, multi (superego configured). Cells 5-6: recog, single. Cells 7-8: recog, multi (superego configured).
 
-**Learner architecture**: Cells 1-59 use `learner_architecture: unified` (scripted — learner messages from scenario YAML). Cells 60-65 use `learner_architecture: ego_superego` (dynamic — LLM-generated learner with internal ego-superego deliberation). Mechanism effects only differentiate with dynamic learners.
+**Cells 9-20: Prompt ablations** (all unified learner)
+- 9-12: Enhanced prompts (single/multi × unified/psycho)
+- 13-14: Hardwired rules (superego rules embedded in ego prompt)
+- 15-18: Placebo control (length-matched, no recognition theory)
+- 19-20: Memory isolation (recognition vs memory disentangling)
+
+**Cell 21: Dynamic prompt rewriting** with Writing Pad
+
+**Cells 22-33: Divergent superego variants** (superego configured, unified learner)
+- 22-27: Standard ego + divergent superego (suspicious/adversary/advocate × base/recog)
+- 28-33: Dialectical ego + divergent superego
+
+**Cells 34-39: Full-feature dialectical** (superego null, unified learner, DEPRECATED)
+
+**Cells 40-59: Mechanism variants** (superego null, unified learner)
+- 40-45: Self-reflective evolution (suspicious/adversary/advocate × base/recog)
+- 46-47: Quantitative disposition (base/recog)
+- 48-49: Prompt erosion (base/recog)
+- 50-51: Intersubjective recognition (base/recog)
+- 52-53: Combined mechanisms (base/recog)
+- 54-59: Other-ego profiling (tutor-only/bidirectional/full-suite/strategy)
+
+**Cells 60-70, 72-79: Dynamic learner mechanism variants** (superego null, ego_superego learner)
+- 60-63: Self-reflection/profiling × base/recog
+- 64-65: Intersubjective/combined (recognition only)
+- 66-68: Cognitive prosthesis variants
+- 69-70: Base intersubjective/combined
+- 72-77: A2 sweep (quantitative/erosion/tutor-profiling × base/recog)
+- 78-79: Authentic learner variants
+
+**Cell 71: Naive baseline** (no recognition, no superego, minimal prompt)
+
+**Cells 80-90: Messages-mode variants** (conversation_mode: messages)
+- 80-83: Base (single/multi × unified/psycho) — 82-83 have superego configured
+- 84-90: Recognition — 86-89 have superego configured; 84, 85, 90 are single-agent (superego null)
+
+**Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90) have `superego: null`.
 
 ### Adding New Cells
 
