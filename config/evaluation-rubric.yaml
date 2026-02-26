@@ -558,6 +558,12 @@ configurations:
 # Evaluator model configuration
 # Models use "provider.alias" format, resolved via config/providers.yaml
 
+# Claude Code judge: Used by 'evaluate' command (spawns `claude -p`)
+# Accepts claude model names: opus, sonnet, haiku
+# CLI --model flag overrides this setting
+claude_code_judge:
+  model: sonnet
+
 # Suggestion judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
 judge:
   model: openrouter.sonnet

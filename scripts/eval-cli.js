@@ -2415,6 +2415,16 @@ async function main() {
         const modelOverride = getOption('model') || null;
         const judgeFilter = getOption('judge') || null;
 
+        // Resolve effective Claude Code judge model: CLI --model > YAML config > opus default
+        const yamlJudgeModel = (() => {
+          try {
+            const rubric = evalConfigLoader.loadRubric();
+            return rubric?.claude_code_judge?.model || null;
+          } catch { return null; }
+        })();
+        const effectiveJudgeModel = modelOverride || yamlJudgeModel || null;
+        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+
         // Restore env overrides from run metadata (e.g. EVAL_SCENARIOS_FILE for domain generalizability runs)
         {
           const runData = evaluationStore.getRun(runId);
@@ -2496,8 +2506,8 @@ async function main() {
           );
 
           const claudeArgs = ['-p', '-', '--output-format', 'text'];
-          if (modelOverride) {
-            claudeArgs.push('--model', modelOverride);
+          if (effectiveJudgeModel) {
+            claudeArgs.push('--model', effectiveJudgeModel);
           }
 
           if (verbose) {
@@ -2578,7 +2588,7 @@ async function main() {
             requiredMissing: parsed.validation?.required_missing || [],
             forbiddenFound: parsed.validation?.forbidden_found || [],
             summary: parsed.summary,
-            judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
+            judgeModel: judgeModelLabel,
             judgeLatencyMs,
           };
 
@@ -2635,7 +2645,7 @@ async function main() {
         // Helper: call claude CLI as judge and parse JSON response
         async function callClaudeJudge(prompt) {
           const claudeArgs = ['-p', '-', '--output-format', 'text'];
-          if (modelOverride) claudeArgs.push('--model', modelOverride);
+          if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
 
           const stdout = await new Promise((resolve, reject) => {
             const env = { ...process.env };
@@ -2673,7 +2683,7 @@ async function main() {
           const startTime = Date.now();
           const scenarioId = result.scenarioId;
           const profileName = result.profileName || `${result.provider}/${result.model}`;
-          const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+          const judgeModel = judgeModelLabel;
 
           const scenario = getScenario(scenarioId);
           if (!scenario) {
@@ -3038,7 +3048,7 @@ async function main() {
         async function scoreDialogueQuality(result, tag) {
           const scenarioId = result.scenarioId;
           const profileName = result.profileName || `${result.provider}/${result.model}`;
-          const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+          const judgeModel = judgeModelLabel;
 
           const scenario = getScenario(scenarioId);
           if (!scenario) return;
@@ -3232,7 +3242,7 @@ async function main() {
 
             try {
               const claudeArgs = ['-p', '-', '--output-format', 'text'];
-              if (modelOverride) claudeArgs.push('--model', modelOverride);
+              if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
 
               const stdout = await new Promise((resolve, reject) => {
                 const env = { ...process.env };
@@ -3304,7 +3314,7 @@ async function main() {
                 recognitionScore,
                 scores: normalizedScores,
                 summary: parsed.summary,
-                judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
+                judgeModel: judgeModelLabel,
               };
 
               // Save to dialogue log
@@ -3697,6 +3707,10 @@ async function main() {
         const createdAfter = getOption('created-after') || null;
         const createdBefore = getOption('created-before') || null;
 
+        // Resolve effective judge model: CLI --model > YAML config > opus default
+        const effectiveJudgeModel = modelOverride || (() => { try { return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null; } catch { return null; } })();
+        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+
         // Restore env overrides from run metadata (e.g. domain generalizability runs)
         {
           const runData = evaluationStore.getRun(runId);
@@ -3800,7 +3814,7 @@ async function main() {
             );
 
             const claudeArgs = ['-p', '-', '--output-format', 'text'];
-            if (modelOverride) claudeArgs.push('--model', modelOverride);
+            if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
 
             const stdout = await new Promise((resolve, reject) => {
               const env = { ...process.env };
@@ -3878,7 +3892,7 @@ async function main() {
               requiredMissing: parsed.validation?.required_missing || [],
               forbiddenFound: parsed.validation?.forbidden_found || [],
               summary: parsed.summary,
-              judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
+              judgeModel: judgeModelLabel,
               judgeLatencyMs,
             };
 
@@ -3963,6 +3977,10 @@ async function main() {
         const archFilter = getOption('arch') || null;
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
         const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
+
+        // Resolve effective judge model: CLI --model > YAML config > opus default
+        const effectiveJudgeModel = modelOverride || (() => { try { return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null; } catch { return null; } })();
+        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
 
         // Load results with dialogue IDs (multi-turn data)
         const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
@@ -4049,12 +4067,12 @@ async function main() {
         let failed = 0;
         const allScores = [];
         const allHolisticScores = [];
-        const learnerJudgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+        const learnerJudgeModel = judgeModelLabel;
 
         const callLearnerJudge = async (prompt) => {
           const claudeArgs = ['-p', '-', '--output-format', 'text'];
-          if (modelOverride) {
-            claudeArgs.push('--model', modelOverride);
+          if (effectiveJudgeModel) {
+            claudeArgs.push('--model', effectiveJudgeModel);
           }
 
           const stdout = await new Promise((resolve, reject) => {
@@ -4412,6 +4430,10 @@ async function main() {
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
 
+        // Resolve judge model: CLI --model > YAML claude_code_judge.model > default (opus)
+        const effectiveJudgeModel = modelOverride || (() => { try { return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null; } catch { return null; } })();
+        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+
         // Restore env overrides from run metadata
         {
           const runData = evaluationStore.getRun(runId);
@@ -4530,10 +4552,10 @@ async function main() {
           try {
             // ── Step A: Read tutor_last_turn_score (already populated by per-turn scoring) ──
             const tutorLastTurnScore = result.tutorLastTurnScore ?? null;
-            const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+            const judgeModel = judgeModelLabel;
 
             const claudeArgs = ['-p', '-', '--output-format', 'text'];
-            if (modelOverride) claudeArgs.push('--model', modelOverride);
+            if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
 
             if (tutorLastTurnScore != null) {
               lastTurnScores.push(tutorLastTurnScore);
