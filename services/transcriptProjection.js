@@ -178,7 +178,9 @@ function extractLearnerQuery(entry) {
   const learnerMsgRe = /Learner Messages?:\s*(.+?)(?:\n<\/|$)/s;
   const recentChatRe = /Recent Chat History\n-\s*User:\s*"(.+?)"/s;
   const match = raw.match(learnerMsgRe) || raw.match(recentChatRe);
-  return match ? match[1].trim() : null;
+  if (match) return match[1].trim();
+  const fallback = raw.trim();
+  return fallback || null;
 }
 
 function extractLearnerFollowupFromContext(rawContext) {
@@ -624,4 +626,3 @@ export default {
   buildProjectionDiagnostics,
   projectTranscriptArtifacts,
 };
-
