@@ -132,6 +132,7 @@ export function getAvailableJudge(overrides = {}) {
         apiKey: resolved.apiKey,
         baseUrl: resolved.baseUrl,
         hyperparameters: evalConfig.hyperparameters || {},
+        reasoningEffort: evalConfig.reasoning_effort || null,
       };
     }
   } catch (e) {
@@ -150,6 +151,7 @@ export function getAvailableJudge(overrides = {}) {
           apiKey: fallback.apiKey,
           baseUrl: fallback.baseUrl,
           hyperparameters: evalConfig.fallback.hyperparameters || evalConfig.hyperparameters || {},
+          reasoningEffort: evalConfig.fallback.reasoning_effort || evalConfig.reasoning_effort || null,
         };
       }
     } catch (e) {
@@ -163,6 +165,7 @@ export function getAvailableJudge(overrides = {}) {
     provider: resolved.provider,
     model: resolved.model,
     hyperparameters: evalConfig.hyperparameters || {},
+    reasoningEffort: evalConfig.reasoning_effort || null,
   };
 }
 
@@ -184,6 +187,7 @@ function getFallbackJudge() {
         apiKey: fallback.apiKey,
         baseUrl: fallback.baseUrl,
         hyperparameters: evalConfig.fallback.hyperparameters || evalConfig.hyperparameters || {},
+        reasoningEffort: evalConfig.fallback.reasoning_effort || evalConfig.reasoning_effort || null,
       };
     }
   } catch (e) {
@@ -196,7 +200,7 @@ function getFallbackJudge() {
  * Call judge model with explicit config
  */
 async function callJudgeModelWithConfig(prompt, config) {
-  const { provider, model, hyperparameters } = config;
+  const { provider, model, hyperparameters, reasoningEffort } = config;
   const temperature = hyperparameters?.temperature ?? 0.2;
   const maxTokens = hyperparameters?.max_tokens ?? 1500;
 
@@ -213,19 +217,24 @@ async function callJudgeModelWithConfig(prompt, config) {
       const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS); // 60 second timeout
 
       try {
+        const body = {
+          model,
+          max_tokens: maxTokens,
+          temperature,
+          include_reasoning: false,
+          messages: [{ role: 'user', content: prompt }],
+        };
+        if (reasoningEffort) {
+          body.reasoning = { effort: reasoningEffort };
+        }
+
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiKey}`,
           },
-          body: JSON.stringify({
-            model,
-            max_tokens: maxTokens,
-            temperature,
-            include_reasoning: false,
-            messages: [{ role: 'user', content: prompt }],
-          }),
+          body: JSON.stringify(body),
           signal: controller.signal,
         });
 
@@ -516,7 +525,7 @@ function supportsJsonMode(model) {
 
 async function callJudgeModel(prompt, overrides = {}) {
   const judge = getAvailableJudge(overrides);
-  const { provider, model, hyperparameters } = judge;
+  const { provider, model, hyperparameters, reasoningEffort } = judge;
   const temperature = hyperparameters?.temperature ?? 0.2;
   const maxTokens = hyperparameters?.max_tokens ?? 1500;
 
@@ -582,6 +591,9 @@ async function callJudgeModel(prompt, overrides = {}) {
         include_reasoning: false,
         messages: [{ role: 'user', content: prompt }],
       };
+      if (reasoningEffort) {
+        body.reasoning = { effort: reasoningEffort };
+      }
       if (supportsJsonMode(model)) {
         body.response_format = { type: 'json_object' };
       }
