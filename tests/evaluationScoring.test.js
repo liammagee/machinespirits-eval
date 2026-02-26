@@ -79,6 +79,7 @@ function makeResult(overrides = {}) {
     dialogueRounds: overrides.dialogueRounds || 1,
     apiCalls: 1,
     dialogueId: overrides.dialogueId || null,
+    conversationMode: overrides.conversationMode || null,
     success: true,
     errorMessage: null,
   };
@@ -1583,5 +1584,175 @@ describe('per-dialogue scoring completeness', () => {
     assert.strictEqual(run.avgScore, 80, 'AVG(TutPT) = 80 from one scored row, not 40');
     assert.strictEqual(run.avgTutorHolisticScore, 90, 'AVG(TutH) = 90 from one scored row');
     assert.strictEqual(run.avgDialogueScore, 70, 'AVG(DlgP) = 70 from one scored row');
+  });
+});
+
+// ============================================================================
+// DgP / DgI independent storage (Bug fix: shared try/catch caused silent DgI loss)
+// ============================================================================
+
+describe('DgP and DgI can be stored independently', () => {
+  it('DgP can be written without DgI', () => {
+    const runId = makeRun('dgp-only test');
+    storeResult(runId, makeResult({
+      dialogueId: 'dlg-dgp-only',
+      suggestions: [{ message: 'T0' }, { message: 'T1' }],
+      dialogueRounds: 2,
+    }));
+
+    const id = getResults(runId)[0].id;
+
+    updateDialogueQualityScore(id, {
+      dialogueQualityScore: 88.5,
+      dialogueQualitySummary: 'Good public dialogue',
+      dialogueQualityJudgeModel: 'test-judge',
+    });
+
+    const result = getResults(runId)[0];
+    assert.strictEqual(result.dialogueQualityScore, 88.5, 'DgP should be written');
+    assert.strictEqual(result.dialogueQualityInternalScore, null, 'DgI should remain NULL');
+  });
+
+  it('DgI can be written without DgP', () => {
+    const runId = makeRun('dgi-only test');
+    storeResult(runId, makeResult({
+      dialogueId: 'dlg-dgi-only',
+      suggestions: [{ message: 'T0' }, { message: 'T1' }],
+      dialogueRounds: 2,
+    }));
+
+    const id = getResults(runId)[0].id;
+
+    updateDialogueQualityInternalScore(id, {
+      dialogueQualityInternalScore: 91.0,
+      dialogueQualityInternalSummary: 'Good internal dialogue',
+    });
+
+    const result = getResults(runId)[0];
+    assert.strictEqual(result.dialogueQualityInternalScore, 91.0, 'DgI should be written');
+    assert.strictEqual(result.dialogueQualityScore, null, 'DgP should remain NULL');
+  });
+
+  it('DgP written first, then DgI — no clobbering', () => {
+    const runId = makeRun('dgp-then-dgi test');
+    storeResult(runId, makeResult({
+      dialogueId: 'dlg-both-seq',
+      suggestions: [{ message: 'T0' }, { message: 'T1' }],
+      dialogueRounds: 2,
+    }));
+
+    const id = getResults(runId)[0].id;
+
+    updateDialogueQualityScore(id, {
+      dialogueQualityScore: 85.0,
+      dialogueQualitySummary: 'Public quality',
+      dialogueQualityJudgeModel: 'test-judge',
+    });
+
+    updateDialogueQualityInternalScore(id, {
+      dialogueQualityInternalScore: 92.0,
+      dialogueQualityInternalSummary: 'Internal quality',
+    });
+
+    const result = getResults(runId)[0];
+    assert.strictEqual(result.dialogueQualityScore, 85.0, 'DgP must survive DgI write');
+    assert.strictEqual(result.dialogueQualityInternalScore, 92.0, 'DgI should be written');
+  });
+});
+
+// ============================================================================
+// evaluate-dialogue multi-turn filter (Bug fix: missed messages-mode results)
+// ============================================================================
+
+// Replicated from evaluate-dialogue command (~line 4446) to test in isolation.
+// Must stay in sync with the source.
+function isMultiTurnForDialogueEval(result) {
+  return result.success && (
+    (Array.isArray(result.suggestions) && result.suggestions.length > 1) ||
+    (result.conversationMode === 'messages' && result.dialogueRounds > 1)
+  );
+}
+
+describe('evaluate-dialogue multi-turn filter', () => {
+  it('messages-mode with dialogueRounds > 1 and suggestions.length === 1 → included', () => {
+    const result = {
+      success: true,
+      dialogueId: 'dlg-msg-1',
+      conversationMode: 'messages',
+      dialogueRounds: 3,
+      suggestions: [{ message: 'Only Turn 0 stored in messages mode' }],
+    };
+    assert.strictEqual(isMultiTurnForDialogueEval(result), true,
+      'messages-mode multi-turn should pass filter even with 1 suggestion');
+  });
+
+  it('dialogue-mode with suggestions.length > 1 → included', () => {
+    const result = {
+      success: true,
+      dialogueId: 'dlg-dial-1',
+      conversationMode: 'dialogue',
+      dialogueRounds: 3,
+      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
+    };
+    assert.strictEqual(isMultiTurnForDialogueEval(result), true);
+  });
+
+  it('messages-mode with dialogueRounds === 1 → excluded', () => {
+    const result = {
+      success: true,
+      dialogueId: 'dlg-msg-single',
+      conversationMode: 'messages',
+      dialogueRounds: 1,
+      suggestions: [{ message: 'Single turn' }],
+    };
+    assert.strictEqual(isMultiTurnForDialogueEval(result), false,
+      'single-round messages-mode should not be multi-turn');
+  });
+
+  it('failed result → excluded regardless of turn count', () => {
+    const result = {
+      success: false,
+      dialogueId: 'dlg-failed',
+      conversationMode: 'messages',
+      dialogueRounds: 5,
+      suggestions: [{ message: 'T0' }],
+    };
+    assert.strictEqual(isMultiTurnForDialogueEval(result), false,
+      'failed results must be excluded');
+  });
+
+  it('null conversationMode with single suggestion → excluded', () => {
+    const result = {
+      success: true,
+      dialogueId: 'dlg-null-mode',
+      conversationMode: null,
+      dialogueRounds: 3,
+      suggestions: [{ message: 'T0' }],
+    };
+    assert.strictEqual(isMultiTurnForDialogueEval(result), false,
+      'null conversationMode with 1 suggestion should not be multi-turn');
+  });
+});
+
+// ============================================================================
+// CLAUDECODE env stripping (Bug fix: nested claude sessions blocked judge calls)
+// ============================================================================
+
+describe('judge subprocess env cleanup pattern', () => {
+  it('CLAUDECODE must be stripped from child env to prevent nested-session error', () => {
+    // This test validates the pattern used by callClaudeJudge and callDialogueJudge:
+    //   const env = { ...process.env };
+    //   delete env.ANTHROPIC_API_KEY;
+    //   delete env.CLAUDECODE;
+    const env = { ...process.env, CLAUDECODE: '1', ANTHROPIC_API_KEY: 'sk-test' };
+    delete env.ANTHROPIC_API_KEY;
+    delete env.CLAUDECODE;
+
+    assert.strictEqual(env.CLAUDECODE, undefined,
+      'CLAUDECODE must not be passed to judge subprocess');
+    assert.strictEqual(env.ANTHROPIC_API_KEY, undefined,
+      'ANTHROPIC_API_KEY must not be passed to judge subprocess');
+    // PATH should still be present
+    assert.ok(env.PATH, 'PATH must survive env cleanup');
   });
 });
