@@ -697,6 +697,85 @@ function truncate(str, maxLen = 4000) {
   return str.slice(0, maxLen) + `\n... (truncated, ${str.length - maxLen} chars omitted)`;
 }
 
+/**
+ * Extract learner turns from a dialogue trace, handling both conversation modes.
+ *
+ * Single-prompt mode: learner turns are `user/turn_action` or `learner/turn_action` entries.
+ * Messages mode: no turn_action entries exist; use `learner_synthesis/response` entries
+ * as learner turn markers, with conversationHistory providing message content.
+ *
+ * @param {Array} trace - dialogueTrace array
+ * @param {boolean} isMultiAgent - whether the learner is ego_superego
+ * @param {Array} [conversationHistory] - optional conversationHistory from dialogue log
+ * @returns {Array} learnerTurns: [{turnIndex, externalMessage, internalDeliberation}]
+ */
+function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) {
+  const learnerTurns = [];
+
+  // Strategy 1: look for explicit turn_action entries (single-prompt mode)
+  let turnMarkers = trace.filter(
+    (t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action',
+  );
+
+  // Strategy 2: fall back to learner final output entries (messages mode, ego_superego learner).
+  // Matches both current (learner_synthesis/response) and renamed (learner/final_output) schemas.
+  if (turnMarkers.length === 0 && isMultiAgent) {
+    turnMarkers = trace.filter(
+      (t) => (t.agent === 'learner_synthesis' && t.action === 'response')
+        || (t.agent === 'learner' && t.action === 'final_output'),
+    );
+  }
+
+  // Build conversationHistory lookup for supplementing empty messages
+  const convHistByTurn = {};
+  if (Array.isArray(conversationHistory)) {
+    conversationHistory.forEach((ch, i) => {
+      if (ch.learnerMessage) convHistByTurn[i] = ch.learnerMessage;
+    });
+  }
+
+  for (const ta of turnMarkers) {
+    const turnData = {
+      turnIndex: ta.turnIndex,
+      externalMessage: ta.contextSummary || '',
+      internalDeliberation: [],
+    };
+
+    // If message is empty, try conversationHistory (turn indices are offset by 1 since
+    // convHistory[0] is the learner response after tutor Turn 0 → maps to turnIndex 1)
+    if (!turnData.externalMessage && ta.turnIndex != null) {
+      turnData.externalMessage = convHistByTurn[ta.turnIndex - 1] || '';
+    }
+
+    // Collect internal deliberation entries for multi-agent learners
+    if (isMultiAgent) {
+      const taIdx = trace.indexOf(ta);
+      for (let j = taIdx - 1; j >= 0; j--) {
+        const entry = trace[j];
+        if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
+          turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
+          break;
+        } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
+          turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
+        } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
+          turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
+        } else if (
+          (entry.agent === 'learner_synthesis' && entry.action === 'response')
+          || (entry.agent === 'learner' && entry.action === 'final_output')
+        ) {
+          // final learner output — if this IS our marker, skip it
+        } else if (entry.agent === 'ego' || entry.agent === 'system' || entry.agent === 'superego') {
+          break;
+        }
+      }
+    }
+
+    learnerTurns.push(turnData);
+  }
+
+  return learnerTurns;
+}
+
 async function executeTool(name, params) {
   switch (name) {
     case 'list_runs': {
@@ -2564,46 +2643,7 @@ async function main() {
             // Build reconstructed turns for learner prompt builder
             const reconstructedTurns = [];
             const trace = dialogueLog.dialogueTrace || [];
-            const turnActionEntries = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
-
-            // Turn 0: initial tutor suggestion
-            if (turnResults.length > 0) {
-              const sug = turnResults[0].suggestions?.[0];
-              reconstructedTurns.push({
-                turnNumber: 0,
-                phase: 'tutor',
-                externalMessage: sug?.message || sug?.text || JSON.stringify(sug),
-              });
-            }
-
-            // Extract learner turns
-            const learnerTurns = [];
-            for (const ta of turnActionEntries) {
-              const turnData = {
-                turnIndex: ta.turnIndex,
-                externalMessage: ta.contextSummary || '',
-                internalDeliberation: [],
-              };
-
-              if (isMultiAgent) {
-                const taIdx = trace.indexOf(ta);
-                for (let j = taIdx - 1; j >= 0; j--) {
-                  const entry = trace[j];
-                  if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
-                    turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
-                    break;
-                  } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
-                    turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
-                  } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
-                    turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
-                  } else if (entry.agent === 'ego' || entry.agent === 'system') {
-                    break;
-                  }
-                }
-              }
-
-              learnerTurns.push(turnData);
-            }
+            const learnerTurns = extractLearnerTurnsFromTrace(trace, isMultiAgent, dialogueLog.conversationHistory);
 
             // Interleave learner turns with tutor turns
             for (let lt = 0; lt < learnerTurns.length; lt++) {
@@ -3755,7 +3795,13 @@ async function main() {
                 if (fs.existsSync(logPath)) {
                   const log = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
                   const trace = log.dialogueTrace || [];
-                  const expectedTurns = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action').length;
+                  let expectedTurns = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action').length;
+                  if (expectedTurns === 0) {
+                    expectedTurns = trace.filter((t) =>
+                      (t.agent === 'learner_synthesis' && t.action === 'response')
+                      || (t.agent === 'learner' && t.action === 'final_output'),
+                    ).length;
+                  }
                   const scoredTurns = Object.keys(r.learnerScores || {}).length;
                   if (scoredTurns < expectedTurns) {
                     hasCompleteTurnScores = false;
@@ -3875,44 +3921,7 @@ async function main() {
             learnerArch === 'multi_agent' ||
             learnerArch.includes('psychodynamic');
 
-          // Extract learner turns from dialogue trace.
-          // Each learner turn consists of:
-          //   - turn_action entry (contextSummary = external message)
-          //   - For multi-agent: preceding learner_ego_initial, learner_superego, learner_ego_revision entries
-          const learnerTurns = [];
-          const turnActionEntries = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
-
-          for (const ta of turnActionEntries) {
-            const turnData = {
-              turnIndex: ta.turnIndex,
-              externalMessage: ta.contextSummary || '',
-              internalDeliberation: [],
-            };
-
-            // Find deliberation entries associated with this turn action
-            // They appear before the turn_action in the trace and after the previous tutor turn
-            if (isMultiAgent) {
-              const taIdx = trace.indexOf(ta);
-              // Walk backward from turn_action to find learner deliberation entries
-              for (let j = taIdx - 1; j >= 0; j--) {
-                const entry = trace[j];
-                if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
-                  turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
-                  break; // ego_initial is the first step, stop here
-                } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
-                  turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
-                } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
-                  turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
-                } else if (entry.agent === 'learner_synthesis' && entry.action === 'response') {
-                  // synthesis is the final merged output, skip (same as external message)
-                } else if (entry.agent === 'ego' || entry.agent === 'system') {
-                  break; // Reached the tutor's turn, stop
-                }
-              }
-            }
-
-            learnerTurns.push(turnData);
-          }
+          const learnerTurns = extractLearnerTurnsFromTrace(trace, isMultiAgent, dialogueLog.conversationHistory);
 
           if (learnerTurns.length === 0) {
             console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP (no learner turns in trace)`);
