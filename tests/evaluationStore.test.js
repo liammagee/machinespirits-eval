@@ -36,7 +36,6 @@ const {
   listRuns,
   updateResultLearnerScores,
   updateResultScores,
-  updateResultHolisticOnly,
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
 } = await import('../services/evaluationStore.js');
@@ -693,9 +692,9 @@ describe('listRuns', () => {
 // Score update safety — prevent cross-judge overwrites and holistic clobbering
 // ============================================================================
 
-describe('updateResultHolisticOnly', () => {
-  it('writes holistic_overall_score without touching overall_score or judge_model', () => {
-    const run = createRun({ description: 'holistic safety test' });
+describe('updateTutorLastTurnScore', () => {
+  it('writes tutor_last_turn_score and development delta without touching first-turn score or judge_model', () => {
+    const run = createRun({ description: 'last-turn score safety test' });
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
@@ -714,24 +713,21 @@ describe('updateResultHolisticOnly', () => {
       tutorFirstTurnScore: 75.0,
       baseScore: 70.0,
       judgeModel: 'claude-opus-4.6',
-      holisticOverallScore: null,
     });
 
     const before = getResults(run.id, {}).find((r) => r.id === resultId);
     assert.strictEqual(before.tutorFirstTurnScore, 75.0);
     assert.strictEqual(before.judgeModel, 'claude-opus-4.6');
-    assert.strictEqual(before.holisticOverallScore, null);
+    assert.strictEqual(before.tutorLastTurnScore, null);
 
-    // Now use holistic-only update (simulating --multiturn-only)
-    updateResultHolisticOnly(resultId, {
-      holisticOverallScore: 85.0,
-      scores: { relevance: { score: 5, reasoning: 'last turn better' } },
-    });
+    // Now use last-turn-only update (simulating --multiturn-only)
+    updateTutorLastTurnScore(resultId, { tutorLastTurnScore: 85.0 });
 
     const after = getResults(run.id, {}).find((r) => r.id === resultId);
     assert.strictEqual(after.tutorFirstTurnScore, 75.0, 'tutor_first_turn_score must be preserved');
     assert.strictEqual(after.judgeModel, 'claude-opus-4.6', 'judge_model must be preserved');
-    assert.strictEqual(after.holisticOverallScore, 85.0, 'holistic_overall_score should be updated');
+    assert.strictEqual(after.tutorLastTurnScore, 85.0, 'tutor_last_turn_score should be updated');
+    assert.strictEqual(after.tutorDevelopmentScore, 10.0, 'development score should be last - first');
   });
 });
 

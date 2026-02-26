@@ -22,7 +22,7 @@
  *
  * DEPRECATED columns (kept for backward compatibility):
  *   - overall_score: DEPRECATED alias for tutor_first_turn_score (synced on write)
- *   - holistic_overall_score: DEPRECATED alias for tutor_last_turn_score
+ *   - holistic_overall_score: DEAD column, no longer read or written (was alias for tutor_last_turn_score)
  *
  * For single-turn rows: tutor_last_turn_score, tutor_development_score,
  *   and dialogue_quality_score are NULL (these metrics are meaningless).
@@ -425,7 +425,6 @@ export function storeResult(runId, result) {
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
-      holistic_overall_score,
       conversation_mode,
       created_at
     ) VALUES (
@@ -440,7 +439,6 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
-      ?,
       ?,
       ?,
       ?
@@ -492,7 +490,6 @@ export function storeResult(runId, result) {
     result.factors?.multi_agent_learner != null ? (result.factors.multi_agent_learner ? 1 : 0) : null,
     result.learnerArchitecture || null,
     result.scoringMethod || null,
-    result.holisticDialogueScore?.overallScore ?? null,
     result.conversationMode || null,
     new Date().toISOString(),
   );
@@ -1240,7 +1237,6 @@ function parseResultRow(row) {
     dialogueRounds: row.dialogue_rounds,
     apiCalls: row.api_calls,
     dialogueId: row.dialogue_id,
-    holisticOverallScore: row.holistic_overall_score != null ? row.holistic_overall_score : null,
     scores,
     tutorFirstTurnScore: row.tutor_first_turn_score ?? row.overall_score ?? null,
     overallScore: row.tutor_first_turn_score ?? row.overall_score ?? null, // DEPRECATED alias
@@ -1533,7 +1529,6 @@ export function storeRejudgment(originalResult, evaluation) {
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
       judge_latency_ms,
-      holistic_overall_score,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -1547,7 +1542,6 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
-      ?,
       ?,
       ?,
       ?
@@ -1608,7 +1602,6 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.learnerArchitecture || null,
     'rubric', // Rejudgments only store successful rubric evaluations
     evaluation.judgeLatencyMs ?? null,
-    evaluation.holisticOverallScore ?? null,
     new Date().toISOString(),
   );
 
@@ -1640,8 +1633,7 @@ export function updateResultScores(resultId, evaluation) {
       evaluation_reasoning = ?,
       scores_with_reasoning = ?,
       scoring_method = ?,
-      judge_latency_ms = ?,
-      holistic_overall_score = ?
+      judge_latency_ms = ?
     WHERE id = ?
   `);
 
@@ -1666,26 +1658,6 @@ export function updateResultScores(resultId, evaluation) {
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
     'rubric', // Only called on successful evaluations
     evaluation.judgeLatencyMs ?? null,
-    evaluation.holisticOverallScore ?? null,
-    resultId,
-  );
-}
-
-/**
- * Update ONLY the holistic score columns for an existing result row.
- * Preserves tutor_first_turn_score (Turn 0) intact — used by --multiturn-only to add
- * last-turn scoring without destroying the original per-turn score.
- */
-export function updateResultHolisticOnly(resultId, evaluation) {
-  const stmt = db.prepare(`
-    UPDATE evaluation_results SET
-      holistic_overall_score = ?,
-      scores_with_reasoning = COALESCE(?, scores_with_reasoning)
-    WHERE id = ?
-  `);
-  stmt.run(
-    evaluation.holisticOverallScore ?? null,
-    evaluation.scores ? JSON.stringify(evaluation.scores) : null,
     resultId,
   );
 }
@@ -1826,7 +1798,6 @@ export function updateResultTutorScores(resultId, evaluation) {
       overall_score = ?,
       tutor_last_turn_score = ?,
       tutor_development_score = ?,
-      holistic_overall_score = ?,
       judge_model = COALESCE(?, judge_model),
       judge_latency_ms = COALESCE(?, judge_latency_ms)
     WHERE id = ?
@@ -1839,7 +1810,6 @@ export function updateResultTutorScores(resultId, evaluation) {
     evaluation.tutorFirstTurnScore ?? null, // overall_score (deprecated alias)
     evaluation.tutorLastTurnScore ?? null,
     evaluation.tutorDevelopmentScore ?? null,
-    evaluation.tutorLastTurnScore ?? null, // holistic_overall_score (backward compat alias)
     evaluation.judgeModel || null,
     evaluation.judgeLatencyMs ?? null,
     resultId,
@@ -1928,7 +1898,6 @@ export default {
   storeResult,
   storeRejudgment,
   updateResultScores,
-  updateResultHolisticOnly,
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
   updateDialogueQualityInternalScore,

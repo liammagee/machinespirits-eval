@@ -34,7 +34,6 @@ const {
   updateResultScores,
   updateDialogueQualityScore,
   updateDialogueQualityInternalScore,
-  updateResultHolisticOnly,
 } = await import('../services/evaluationStore.js');
 
 const {
@@ -138,7 +137,7 @@ describe('updateResultTutorScores', () => {
     assert.strictEqual(updated[0].tutorFirstTurnScore, 72, 'tutor_first_turn_score should be 72');
     assert.strictEqual(updated[0].tutorLastTurnScore, 90, 'tutor_last_turn_score should be 90');
     assert.strictEqual(updated[0].tutorDevelopmentScore, 18, 'tutor_development_score should be 18');
-    assert.strictEqual(updated[0].holisticOverallScore, 90, 'holistic_overall_score should = last turn');
+    assert.strictEqual(updated[0].tutorLastTurnScore, 90, 'tutor_last_turn_score should = last turn');
   });
 
   it('handles negative development score (regression)', () => {

@@ -208,7 +208,7 @@ function remediationForCheck(check) {
     case 'multiturn-turn0-risk':
       return [
         'Re-score rows where first vs last suggestions diverge by using `evaluate --force --multiturn-only` on affected runs.',
-        'Confirm `holistic_overall_score` is populated for multi-suggestion rows.',
+        'Confirm `tutor_last_turn_score` is populated for multi-suggestion rows.',
         'Re-run audit and ensure `materially_different_without_holistic` is 0.',
       ];
 
@@ -235,7 +235,7 @@ function remediationForCheck(check) {
 
     case 'paper-disclosure-bug4':
       return [
-        'Add an explicit Bug 4 paragraph to `docs/research/paper-full.md` documenting `suggestions[0]` mis-scoring, last-turn fix, and `holistic_overall_score` backfill.',
+        'Add an explicit Bug 4 paragraph to `docs/research/paper-full.md` documenting `suggestions[0]` mis-scoring, last-turn fix, and `tutor_last_turn_score` backfill.',
         'Update findings/tables that depend on multi-turn scores to reflect post-rescore values.',
         'Re-run audit to confirm `paper-disclosure-bug4` passes.',
       ];
@@ -285,7 +285,7 @@ function remediationForCheck(check) {
     case 'paper-claims-log-trace':
       return [
         'Repair missing or unreadable multi-turn logs for paper-cited runs in `logs/tutor-dialogues/`.',
-        'Backfill `holistic_overall_score` for multi-turn rows where narrative claims depend on whole-dialogue quality.',
+        'Backfill `tutor_last_turn_score` for multi-turn rows where narrative claims depend on whole-dialogue quality.',
         'Re-run claim audit to confirm run-level log and holistic coverage.',
       ];
 
@@ -899,7 +899,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
   const inClause = makeInClause(scopeRunIds);
   const rows = db
     .prepare(
-      `SELECT id, run_id, scenario_id, profile_name, suggestions, tutor_first_turn_score, holistic_overall_score
+      `SELECT id, run_id, scenario_id, profile_name, suggestions, tutor_first_turn_score, tutor_last_turn_score
        FROM evaluation_results
        WHERE run_id IN (${inClause})
          AND judge_model LIKE 'claude-opus%'
@@ -920,7 +920,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
   const riskyRowSamples = [];
 
   for (const row of rows) {
-    if (row.holistic_overall_score != null) {
+    if (row.tutor_last_turn_score != null) {
       holisticPresent++;
     } else {
       missingByRun.set(row.run_id, (missingByRun.get(row.run_id) || 0) + 1);
@@ -934,7 +934,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
     const materiallyDifferent = similarity < 0.85;
     if (materiallyDifferent) {
       materiallyDifferentFirstLast++;
-      if (row.holistic_overall_score == null) {
+      if (row.tutor_last_turn_score == null) {
         materiallyDifferentWithoutHolistic++;
         if (riskyRowSamples.length < 5) {
           riskyRowSamples.push({
@@ -1000,7 +1000,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
       .prepare(
         `SELECT
            COUNT(*) as snapshot_rows,
-           SUM(CASE WHEN er.holistic_overall_score IS NOT NULL THEN 1 ELSE 0 END) as with_holistic,
+           SUM(CASE WHEN er.tutor_last_turn_score IS NOT NULL THEN 1 ELSE 0 END) as with_holistic,
            SUM(CASE WHEN ABS(er.tutor_first_turn_score - m.old_overall_score) > 0.01 THEN 1 ELSE 0 END) as score_changed
          FROM multiturn_rescore_snapshot m
          JOIN evaluation_results er ON er.id = m.result_id
@@ -1069,7 +1069,7 @@ function checkPaperDisclosureCoverage(paperText) {
   const hasMultiturnScoringDisclosure =
     /suggestions\[0\]/i.test(paperText) ||
     /\bTurn 0\b/i.test(paperText) ||
-    /holistic_overall_score/i.test(paperText) ||
+    /tutor_last_turn_score/i.test(paperText) ||
     /rescoring ongoing/i.test(paperText) ||
     /8,631|8631/i.test(paperText);
 
@@ -1742,7 +1742,7 @@ function buildRunEvidenceIndex(db, runIds, manifestRunMeta) {
        SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as learner_scored_rows,
        SUM(CASE WHEN dialogue_id IS NOT NULL THEN 1 ELSE 0 END) as dialogue_rows,
        SUM(CASE WHEN dialogue_id IS NOT NULL AND json_array_length(suggestions) > 1 THEN 1 ELSE 0 END) as multiturn_rows,
-       SUM(CASE WHEN dialogue_id IS NOT NULL AND json_array_length(suggestions) > 1 AND holistic_overall_score IS NOT NULL THEN 1 ELSE 0 END) as multiturn_with_holistic,
+       SUM(CASE WHEN dialogue_id IS NOT NULL AND json_array_length(suggestions) > 1 AND tutor_last_turn_score IS NOT NULL THEN 1 ELSE 0 END) as multiturn_with_holistic,
        SUM(
          CASE
            WHEN tutor_first_turn_score IS NOT NULL

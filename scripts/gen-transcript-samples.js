@@ -72,7 +72,7 @@ function rowToResult(row) {
     superegoModel: row.superego_model,
     judgeModel: row.judge_model,
     tutorFirstTurnScore: row.tutor_first_turn_score,
-    holisticScore: row.holistic_overall_score,
+    tutorLastTurnScore: row.tutor_last_turn_score,
     createdAt: row.created_at,
   };
 }
@@ -161,7 +161,7 @@ function generateForResult(result, outDir, filenameBase, scenarioData) {
     superego_model: result.superegoModel || null,
     judge_model: result.judgeModel,
     tutor_first_turn_score: result.tutorFirstTurnScore,
-    holistic_overall_score: result.holisticScore,
+    tutor_last_turn_score: result.tutorLastTurnScore,
     created_at: result.createdAt,
     learner_architecture: dialogueLog.learnerArchitecture || null,
     turn_count: turns.length,

@@ -31,7 +31,7 @@ const ALLOWED_COLUMNS = new Set([
   'scenario_type',
   'success',
   'error_message',
-  'holistic_overall_score',
+  'tutor_last_turn_score',
   'scenario_id',
   'prompt_id',
 ]);
@@ -340,7 +340,7 @@ const TUTOR_METRICS = new Set(['response_length', 'ttr', 'dimension_variance_14'
 const LEARNER_METRICS = new Set(['avg_composite', 'final_composite', 'learning_arc', 'revision_arc']);
 
 function requiredColumnsForMetric(metric) {
-  if (metric === 'tutor_first_turn_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
+  if (metric === 'tutor_first_turn_score' || metric === 'tutor_last_turn_score' || metric === 'learner_overall_score') {
     return [metric];
   }
   if (metric === 'response_length' || metric === 'ttr') {
@@ -362,7 +362,7 @@ function requiredColumnsForMetric(metric) {
 }
 
 function metricValueFromRow(row, metric) {
-  if (metric === 'tutor_first_turn_score' || metric === 'holistic_overall_score' || metric === 'learner_overall_score') {
+  if (metric === 'tutor_first_turn_score' || metric === 'tutor_last_turn_score' || metric === 'learner_overall_score') {
     return row?.[metric];
   }
   if (TUTOR_METRICS.has(metric)) {
