@@ -316,6 +316,10 @@ function resolveConfigModels(config) {
     if (rawProfile?.learner_architecture) {
       resolved.learnerArchitecture = rawProfile.learner_architecture;
     }
+    // Per-profile learner model override (YAML `learner.model`); CLI --learner-model takes priority
+    if (rawProfile?.learner?.model && !config.learnerModelOverride) {
+      resolved.learnerModelOverride = `${rawProfile.learner.provider || 'openrouter'}.${rawProfile.learner.model}`;
+    }
   }
 
   // Apply CLI --max-tokens override (overrides ego max_tokens hyperparameter)
@@ -2042,6 +2046,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     log(`[evaluationRunner] Transcript: ${transcriptPath}`, 'info');
   }
 
+  // Initialize state variables — restore from checkpoint if resuming
+  const cs = checkpointState; // alias for brevity
+
   // Helper: append new trace entries to transcript file and optionally console
   // On resume, skip entries already flushed in the previous session.
   let lastTranscriptIdx = cs ? consolidatedTrace.length : 0;
@@ -2062,9 +2069,6 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       fs.appendFileSync(transcriptPath, lines.join('\n'));
     }
   }
-
-  // Initialize state variables — restore from checkpoint if resuming
-  const cs = checkpointState; // alias for brevity
 
   // Deep-clone turns to prevent mutation of shared scenario objects across profiles.
   // On resume, restore the checkpointed turns (which include LLM-generated learner mutations).
@@ -2846,7 +2850,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           conversationHistory: flattenConversationHistory(conversationHistory),
           learnerProfile: resolvedConfig.learnerArchitecture,
           personaId: fullScenario.learner_persona || 'eager_novice',
-          modelOverride: config.learnerModelOverride || config.modelOverride || null,
+          modelOverride: config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
           egoModelOverride: config.learnerEgoModelOverride || null,
           superegoModelOverride: config.learnerSuperegoModelOverride || null,
           profileContext:
