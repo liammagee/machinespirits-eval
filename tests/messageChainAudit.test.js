@@ -18,17 +18,19 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-// Set up isolated test database BEFORE importing evaluationStore
+// Set up isolated test database BEFORE importing evaluationStore.
+// MUST use dynamic import() — static `import` is hoisted above this assignment,
+// so evaluationStore.js would open the production DB instead of the temp one.
 const testDbPath = path.join(os.tmpdir(), `eval-audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`);
 process.env.EVAL_DB_PATH = testDbPath;
 
-import { buildMessageChain } from '../services/evaluationRunner.js';
-import {
+const { buildMessageChain } = await import('../services/evaluationRunner.js');
+const {
   createRun,
   storeResult,
   getResults,
   deleteRun,
-} from '../services/evaluationStore.js';
+} = await import('../services/evaluationStore.js');
 
 // Track test runs for cleanup
 const testRunIds = [];
