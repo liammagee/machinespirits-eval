@@ -1387,12 +1387,196 @@ export function calculateRecognitionMetrics(scores) {
 }
 
 // ============================================================================
-// Dialogue Quality Evaluation
+// Holistic Tutor Evaluation (full-dialogue trajectory)
 // ============================================================================
 
 const __rubricFilename = fileURLToPath(import.meta.url);
 const __rubricDirname = path.dirname(__rubricFilename);
 const EVAL_CONFIG_DIR = path.resolve(__rubricDirname, '..', 'config');
+
+let tutorHolisticRubricCache = null;
+let tutorHolisticRubricMtime = null;
+
+/**
+ * Load the holistic tutor rubric YAML with mtime-based caching.
+ */
+export function loadTutorHolisticRubric({ forceReload } = {}) {
+  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-tutor-holistic.yaml');
+
+  try {
+    const stats = fs.statSync(rubricPath);
+    if (!forceReload && tutorHolisticRubricCache && tutorHolisticRubricMtime === stats.mtimeMs) {
+      return tutorHolisticRubricCache;
+    }
+    tutorHolisticRubricMtime = stats.mtimeMs;
+  } catch (err) {
+    console.warn('[rubricEvaluator] Tutor holistic rubric file not found:', err.message);
+    return null;
+  }
+
+  const raw = fs.readFileSync(rubricPath, 'utf-8');
+  tutorHolisticRubricCache = yaml.parse(raw);
+  return tutorHolisticRubricCache;
+}
+
+/**
+ * Get tutor holistic rubric dimensions, optionally excluding recognition_depth
+ * for base (non-recognition) cells.
+ *
+ * @param {Object} options
+ * @param {boolean} options.hasRecognition - Whether the cell uses recognition theory
+ * @returns {Object} Map of dimension key → dimension config
+ */
+export function getTutorHolisticDimensions({ hasRecognition = false } = {}) {
+  const rubric = loadTutorHolisticRubric();
+  if (!rubric?.dimensions) return {};
+
+  const dims = { ...rubric.dimensions };
+
+  if (!hasRecognition) {
+    delete dims.recognition_depth;
+  }
+
+  return dims;
+}
+
+/**
+ * Calculate the overall tutor holistic score from per-dimension scores.
+ *
+ * @param {Object} scores - Map of dimension → { score, reasoning }
+ * @param {boolean} hasRecognition - Whether recognition_depth is included
+ * @returns {number} Overall score on 0-100 scale
+ */
+export function calculateTutorHolisticScore(scores, hasRecognition = false) {
+  const dims = getTutorHolisticDimensions({ hasRecognition });
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dims)) {
+    const scoreEntry = scores[key];
+    if (!scoreEntry) continue;
+
+    const score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
+    if (typeof score !== 'number' || score < 1 || score > 5) continue;
+
+    weightedSum += score * dim.weight;
+    totalWeight += dim.weight;
+  }
+
+  if (totalWeight === 0) return 0;
+
+  const weightedAvg = weightedSum / totalWeight;
+  return ((weightedAvg - 1) / 4) * 100;
+}
+
+/**
+ * Build the holistic tutor evaluation prompt for a full dialogue.
+ * Mirrors buildLearnerHolisticEvaluationPrompt() for bilateral symmetry.
+ *
+ * @param {Object} params
+ * @param {Array} params.turns - Reconstructed turn objects
+ * @param {Array} [params.dialogueTrace] - Full dialogue trace
+ * @param {string} [params.scenarioName] - Scenario name
+ * @param {string} [params.scenarioDescription] - Scenario description
+ * @param {string} [params.learnerContext] - Learner context info
+ * @param {boolean} [params.hasRecognition] - Whether recognition theory is enabled
+ * @returns {string} Complete judge prompt
+ */
+export function buildTutorHolisticEvaluationPrompt(params) {
+  const {
+    turns,
+    dialogueTrace = [],
+    scenarioName = 'unknown',
+    scenarioDescription = 'No description available',
+    learnerContext = null,
+    hasRecognition = false,
+  } = params;
+
+  const dimensions = getTutorHolisticDimensions({ hasRecognition });
+
+  // Build dimension criteria section
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  // Use the full transcript builder (includes internal deliberation)
+  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+
+  let recognitionNote = '';
+  if (hasRecognition) {
+    recognitionNote =
+      'This tutor uses recognition theory. Score ALL dimensions including recognition_depth, evaluating the depth of mutual recognition across the dialogue.';
+  } else {
+    recognitionNote =
+      'This is a base (non-recognition) tutor. OMIT the recognition_depth dimension — do not include it in your scores.';
+  }
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
+    .join(',\n');
+
+  return `You are an expert evaluator of AI tutoring dialogues. Your task is to evaluate the TUTOR's quality ACROSS THE ENTIRE DIALOGUE as a holistic trajectory, independent of individual turn quality.
+
+You are NOT evaluating individual turns. Evaluate the tutor's arc: scaffolding progression, adaptive responsiveness, conceptual coherence, challenge balance, and pedagogical closure across the full dialogue.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## SCENARIO CONTEXT
+
+**Scenario**: ${scenarioName}
+**Description**: ${scenarioDescription}
+
+## FULL DIALOGUE TRANSCRIPT
+
+${fullTranscript}
+
+## YOUR TASK
+
+${recognitionNote}
+
+Evaluate the tutor's holistic trajectory across the full dialogue and provide:
+1. A score (1-5) for each applicable dimension with brief reasoning
+2. An overall score (weighted average, 0-100 scale)
+3. A short summary of the tutor's overall dialogue trajectory
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief overall assessment of tutor trajectory across the dialogue"
+}
+\`\`\``;
+}
+
+// ============================================================================
+// Dialogue Quality Evaluation
+// ============================================================================
 
 let dialogueRubricCache = null;
 let dialogueRubricMtime = null;
@@ -2082,14 +2266,18 @@ export default {
   calculateRecognitionScore,
   calculateRecognitionMetrics,
   calculateDialogueQualityScore,
+  calculateTutorHolisticScore,
   getAvailableJudge,
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
+  buildTutorHolisticEvaluationPrompt,
   buildDialogueQualityPrompt,
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,
   isEgoSuperegoLearner,
   extractInitialLearnerMessage,
+  loadTutorHolisticRubric,
+  getTutorHolisticDimensions,
   loadDialogueRubric,
   getDialogueDimensions,
 };

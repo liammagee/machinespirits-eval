@@ -79,11 +79,15 @@ import {
   getAvailableJudge,
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
+  buildTutorHolisticEvaluationPrompt,
   buildDialogueQualityPrompt,
   calculateOverallScore,
   calculateBaseScore,
   calculateRecognitionScore,
   calculateDialogueQualityScore,
+  calculateTutorHolisticScore,
+  buildDialoguePublicTranscript,
+  buildDialogueFullTranscript,
 } from '../services/rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -412,15 +416,18 @@ function renderRunsTable(runs) {
     '  ' +
       theme.header('ID'.padEnd(40)) +
       theme.header('Status'.padEnd(12)) +
-      theme.header('Progress'.padEnd(18)) +
-      theme.header('Tutor'.padEnd(7)) +
-      theme.header('Lrnr'.padEnd(7)) +
-      theme.header('DlgQ'.padEnd(7)) +
+      theme.header('Progress'.padEnd(14)) +
+      theme.header('TutPT'.padEnd(6)) +
+      theme.header('TutH'.padEnd(6)) +
+      theme.header('LrnPT'.padEnd(6)) +
+      theme.header('LrnH'.padEnd(6)) +
+      theme.header('DlgP'.padEnd(6)) +
+      theme.header('DlgI'.padEnd(6)) +
       theme.header('Duration'.padEnd(10)) +
       theme.header('Created'.padEnd(24)) +
       theme.header('Description'),
   );
-  lines.push('  ' + theme.dim('-'.repeat(144)));
+  lines.push('  ' + theme.dim('-'.repeat(160)));
 
   for (const run of runs) {
     const created = run.createdAt ? new Date(run.createdAt).toLocaleString() : '--';
@@ -436,9 +443,12 @@ function renderRunsTable(runs) {
       progress += ` T${turnProgress.current}/${turnProgress.total}`;
     }
     const activeTest = run.activeTest || run.metadata?.testProgress || null;
-    const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
-    const avgLearner = run.avgLearnerScore != null ? run.avgLearnerScore.toFixed(1) : '--';
-    const avgDialogue = run.avgDialogueScore != null ? run.avgDialogueScore.toFixed(1) : '--';
+    const tutPT = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
+    const tutH = run.avgTutorHolisticScore != null ? run.avgTutorHolisticScore.toFixed(1) : '--';
+    const lrnPT = run.avgLearnerScore != null ? run.avgLearnerScore.toFixed(1) : '--';
+    const lrnH = run.avgLearnerHolisticScore != null ? run.avgLearnerHolisticScore.toFixed(1) : '--';
+    const dlgP = run.avgDialogueScore != null ? run.avgDialogueScore.toFixed(1) : '--';
+    const dlgI = run.avgDialogueInternalScore != null ? run.avgDialogueInternalScore.toFixed(1) : '--';
     let duration = '--';
     if (run.durationMs != null) {
       const totalSec = Math.round(run.durationMs / 1000);
@@ -452,10 +462,13 @@ function renderRunsTable(runs) {
       '  ' +
         theme.id(run.id.padEnd(40)) +
         theme.status((run.status || '--').padEnd(12)) +
-        progress.padEnd(18) +
-        theme.score(avg.padEnd(7)) +
-        theme.score(avgLearner.padEnd(7)) +
-        theme.score(avgDialogue.padEnd(7)) +
+        progress.padEnd(14) +
+        theme.score(tutPT.padEnd(6)) +
+        theme.score(tutH.padEnd(6)) +
+        theme.score(lrnPT.padEnd(6)) +
+        theme.score(lrnH.padEnd(6)) +
+        theme.score(dlgP.padEnd(6)) +
+        theme.score(dlgI.padEnd(6)) +
         duration.padEnd(10) +
         theme.dim(created.padEnd(24)) +
         desc,
@@ -469,15 +482,18 @@ function renderRunsTable(runs) {
     }
   }
   // Repeat header at bottom for easy reference
-  lines.push('  ' + theme.dim('-'.repeat(144)));
+  lines.push('  ' + theme.dim('-'.repeat(160)));
   lines.push(
     '  ' +
       theme.header('ID'.padEnd(40)) +
       theme.header('Status'.padEnd(12)) +
-      theme.header('Progress'.padEnd(18)) +
-      theme.header('Tutor'.padEnd(7)) +
-      theme.header('Lrnr'.padEnd(7)) +
-      theme.header('DlgQ'.padEnd(7)) +
+      theme.header('Progress'.padEnd(14)) +
+      theme.header('TutPT'.padEnd(6)) +
+      theme.header('TutH'.padEnd(6)) +
+      theme.header('LrnPT'.padEnd(6)) +
+      theme.header('LrnH'.padEnd(6)) +
+      theme.header('DlgP'.padEnd(6)) +
+      theme.header('DlgI'.padEnd(6)) +
       theme.header('Duration'.padEnd(10)) +
       theme.header('Created'.padEnd(24)) +
       theme.header('Description'),
@@ -491,18 +507,21 @@ function renderRunsTable(runs) {
  */
 function renderRunsCompact(runs, termWidth) {
   const lines = [];
-  // Compact header: ~76 chars
+  // Compact header: ~92 chars
   lines.push(
     '  ' +
       theme.header('Run'.padEnd(16)) +
       theme.header('Status'.padEnd(10)) +
-      theme.header('Progress'.padEnd(14)) +
-      theme.header('Tutor'.padEnd(6)) +
-      theme.header('Lrnr'.padEnd(6)) +
-      theme.header('DlgQ'.padEnd(6)) +
+      theme.header('Progress'.padEnd(12)) +
+      theme.header('TuPT'.padEnd(5)) +
+      theme.header('TuH'.padEnd(5)) +
+      theme.header('LrPT'.padEnd(5)) +
+      theme.header('LrH'.padEnd(5)) +
+      theme.header('DgP'.padEnd(5)) +
+      theme.header('DgI'.padEnd(5)) +
       theme.header('Duration'),
   );
-  lines.push('  ' + theme.dim('─'.repeat(Math.min(74, termWidth - 4))));
+  lines.push('  ' + theme.dim('─'.repeat(Math.min(92, termWidth - 4))));
 
   for (const run of runs) {
     // Short ID: extract MM-DD-hash from eval-YYYY-MM-DD-hash
@@ -522,9 +541,12 @@ function renderRunsCompact(runs, termWidth) {
       progress += ` T${turnProgress.current}/${turnProgress.total}`;
     }
 
-    const avg = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
-    const avgL = run.avgLearnerScore != null ? run.avgLearnerScore.toFixed(1) : '--';
-    const avgD = run.avgDialogueScore != null ? run.avgDialogueScore.toFixed(1) : '--';
+    const tutPT = run.avgScore != null ? run.avgScore.toFixed(1) : '--';
+    const tutH = run.avgTutorHolisticScore != null ? run.avgTutorHolisticScore.toFixed(1) : '--';
+    const lrnPT = run.avgLearnerScore != null ? run.avgLearnerScore.toFixed(1) : '--';
+    const lrnH = run.avgLearnerHolisticScore != null ? run.avgLearnerHolisticScore.toFixed(1) : '--';
+    const dlgP = run.avgDialogueScore != null ? run.avgDialogueScore.toFixed(1) : '--';
+    const dlgI = run.avgDialogueInternalScore != null ? run.avgDialogueInternalScore.toFixed(1) : '--';
 
     let duration = '--';
     if (run.durationMs != null) {
@@ -538,10 +560,13 @@ function renderRunsCompact(runs, termWidth) {
       '  ' +
         theme.id(shortId.padEnd(16)) +
         theme.status(status.padEnd(10)) +
-        progress.padEnd(14) +
-        theme.score(avg.padEnd(6)) +
-        theme.score(avgL.padEnd(6)) +
-        theme.score(avgD.padEnd(6)) +
+        progress.padEnd(12) +
+        theme.score(tutPT.padEnd(5)) +
+        theme.score(tutH.padEnd(5)) +
+        theme.score(lrnPT.padEnd(5)) +
+        theme.score(lrnH.padEnd(5)) +
+        theme.score(dlgP.padEnd(5)) +
+        theme.score(dlgI.padEnd(5)) +
         duration,
     );
 
@@ -2674,6 +2699,28 @@ async function main() {
 
           console.log(`${tag} ${scenarioId} / ${profileName} ... per-turn scoring (${totalTurns} turns)`);
 
+          // ── Print transcripts ──
+          const transcriptTurns = turnResults.map((t, idx) => ({
+            turnIndex: idx,
+            turnId: t.turnId,
+            suggestion: t.suggestions?.[0],
+            learnerAction: t.learnerAction,
+            learnerMessage: t.learnerMessage,
+          }));
+          const learnerCtx = dialogueLog.learnerContext || null;
+
+          const publicTranscript = buildDialoguePublicTranscript(transcriptTurns, dialogueTrace, learnerCtx);
+          console.log(`──── Public Transcript (${totalTurns} turns) ────────────────`);
+          console.log(publicTranscript);
+
+          if (verbose) {
+            const fullTranscript = buildDialogueFullTranscript(transcriptTurns, dialogueTrace, learnerCtx);
+            console.log(`──── Full Transcript (with internals) ──────────`);
+            console.log(fullTranscript);
+          }
+
+          console.log(`─────────────────────────────────────────────────`);
+
           const scenarioContext = {
             name: scenario.name,
             description: scenario.description,
@@ -2748,6 +2795,8 @@ async function main() {
 
           // ── Per-turn learner scoring (unless --tutor-only) ──
           let learnerTurnScores = {};
+          let learnerAvg = null;
+          let learnerHolistic = null;
           if (!tutorOnly) {
             const learnerArch = dialogueLog.learnerArchitecture || 'unified';
             const isMultiAgent = learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
@@ -2838,11 +2887,14 @@ async function main() {
                 const holisticScores = parsedHolistic.scores || {};
                 const holisticOverallScore = calculateLearnerOverallScore(holisticScores, isMultiAgent);
 
+                learnerAvg = Object.keys(learnerTurnScores).length > 0
+                  ? Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) / Object.values(learnerTurnScores).length
+                  : null;
+                learnerHolistic = holisticOverallScore;
+
                 evaluationStore.updateResultLearnerScores(result.id, {
                   scores: learnerTurnScores,
-                  overallScore: Object.keys(learnerTurnScores).length > 0
-                    ? Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) / Object.values(learnerTurnScores).length
-                    : null,
+                  overallScore: learnerAvg,
                   judgeModel: judgeModel,
                   holisticScores,
                   holisticOverallScore,
@@ -2854,10 +2906,10 @@ async function main() {
               } catch (err) {
                 // Store per-turn learner scores even if holistic fails
                 if (Object.keys(learnerTurnScores).length > 0) {
-                  const avgLearner = Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) / Object.values(learnerTurnScores).length;
+                  learnerAvg = Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) / Object.values(learnerTurnScores).length;
                   evaluationStore.updateResultLearnerScores(result.id, {
                     scores: learnerTurnScores,
-                    overallScore: avgLearner,
+                    overallScore: learnerAvg,
                     judgeModel: judgeModel,
                   });
                 }
@@ -2919,8 +2971,51 @@ async function main() {
             });
           }
 
+          // ── Holistic tutor evaluation (full dialogue trajectory) ──
+          let tutorHolistic = null;
+          if (Object.keys(tutorTurnScores).length > 1 && !tutorOnly) {
+            const holisticTutorTag = `${tag}   tutor-holistic`;
+            const hasRecognition = result.factors?.recognition || profileName.includes('recog');
+            try {
+              const holisticPrompt = buildTutorHolisticEvaluationPrompt({
+                turns: transcriptTurns,
+                dialogueTrace,
+                scenarioName: scenario.name || scenarioId,
+                scenarioDescription: scenario.description,
+                learnerContext: learnerCtx,
+                hasRecognition,
+              });
+
+              if (verbose) console.log(`${holisticTutorTag} ... calling claude`);
+              const parsedHolistic = await callClaudeJudge(holisticPrompt);
+              const holisticScores = parsedHolistic.scores || {};
+              tutorHolistic = calculateTutorHolisticScore(holisticScores, hasRecognition);
+
+              evaluationStore.updateResultTutorHolisticScores(result.id, {
+                holisticScores,
+                holisticOverallScore: tutorHolistic,
+                holisticSummary: parsedHolistic.summary || null,
+                holisticJudgeModel: judgeModel,
+              });
+
+              console.log(`${holisticTutorTag} ... ${tutorHolistic.toFixed(1)}`);
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${holisticTutorTag} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+            }
+          }
+
+          const tutorHolisticPart = tutorHolistic != null ? ` holistic=${tutorHolistic.toFixed(1)}` : '';
+          const learnerPart = learnerAvg != null
+            ? `  learner: avg=${learnerAvg.toFixed(1)}${learnerHolistic != null ? ` holistic=${learnerHolistic.toFixed(1)}` : ''}`
+            : '';
+          const overallPart = learnerAvg != null
+            ? `  overall=${((tutorOverall + learnerAvg) / 2).toFixed(1)}`
+            : '';
+
           console.log(
-            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}`,
+            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)}${tutorHolisticPart} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}${learnerPart}${overallPart}`,
           );
 
           return tutorOverall;
