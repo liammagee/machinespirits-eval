@@ -29,7 +29,7 @@ describe('resolveConfigModels — superegoModel resolution', () => {
 
   it('cell_1 (base+single) has no superegoModel', () => {
     const resolved = resolveConfigModels({ profileName: 'cell_1_base_single_unified' });
-    assert.strictEqual(resolved.superegoModel, undefined, 'cell_1 should have no superegoModel');
+    assert.strictEqual(resolved.superegoModel, null, 'cell_1 should have no superegoModel');
   });
 });
 
@@ -98,7 +98,7 @@ describe('resolveConfigModels — superegoModel presence matches multi-agent fac
   for (const cell of singleAgentCells) {
     it(`${cell} (single-agent) has no superegoModel`, () => {
       const resolved = resolveConfigModels({ profileName: cell });
-      assert.strictEqual(resolved.superegoModel, undefined);
+      assert.strictEqual(resolved.superegoModel, null);
     });
   }
 });
@@ -230,7 +230,7 @@ describe('resolveConfigModels — modelOverride', () => {
       profileName: 'cell_5_recog_single_unified',
       modelOverride: 'openrouter.nemotron',
     });
-    assert.strictEqual(resolved.superegoModel, undefined);
+    assert.strictEqual(resolved.superegoModel, null);
   });
 
   it('throws on invalid modelOverride', () => {
