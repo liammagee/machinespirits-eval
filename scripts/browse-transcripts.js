@@ -62,7 +62,7 @@ try {
   /* ignored */
 }
 
-function resolvelearnerModels(arch) {
+function resolvelearnerModelsFromYaml(arch) {
   if (!learnerConfig) return { ego: '?', superego: '?' };
   const prof = learnerConfig.profiles?.[arch] || learnerConfig.profiles?.unified;
   if (prof?.ego) {
@@ -77,6 +77,32 @@ function resolvelearnerModels(arch) {
     return { ego: m, superego: m };
   }
   return { ego: '?', superego: '?' };
+}
+
+/**
+ * Extract actual learner models from the dialogue trace (runtime truth).
+ * Falls back to static YAML config if trace doesn't contain learner entries.
+ */
+function resolvelearnerModels(arch, trace) {
+  // Try to extract from trace first — this reflects actual runtime models
+  if (trace?.length > 0) {
+    let egoModel = null;
+    let superegoModel = null;
+    for (const e of trace) {
+      if (!egoModel && e.agent === 'learner_ego_initial' && e.metrics?.model) {
+        egoModel = e.metrics.model;
+      }
+      if (!superegoModel && e.agent === 'learner_superego' && e.metrics?.model) {
+        superegoModel = e.metrics.model;
+      }
+      if (egoModel && superegoModel) break;
+    }
+    if (egoModel || superegoModel) {
+      return { ego: egoModel || superegoModel || '?', superego: superegoModel || egoModel || '?' };
+    }
+  }
+  // Fall back to static YAML config
+  return resolvelearnerModelsFromYaml(arch);
 }
 
 // ── API endpoints ───────────────────────────────────────────────────────────
@@ -195,7 +221,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     /* ignored */
   }
 
-  const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified');
+  const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified', trace);
 
   let judgeScores = {};
   try {
@@ -219,6 +245,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     totalTurns: logMeta.totalTurns || turnResults.length || 0,
     detail: 'play',
   });
+  const scenarioPrompt = extractScenarioPromptForMetadata(trace, learnerContext);
 
   res.json({
     trace,
@@ -241,6 +268,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
       learnerSuperegoModel: learnerModels.superego,
       totalTurns: logMeta.totalTurns || '',
       isRecog: !!row.factor_recognition || /recog/i.test(row.profile_name),
+      scenarioPrompt,
     },
     scores: {
       overall: row.tutor_first_turn_score,
@@ -259,6 +287,19 @@ function shortModel(m) {
     .split('/')
     .pop()
     .split(':')[0];
+}
+
+function extractScenarioPromptForMetadata(trace, learnerContext) {
+  const fromLearnerContext = String(learnerContext || '').trim();
+  if (fromLearnerContext) return fromLearnerContext;
+
+  const firstContextInput = (Array.isArray(trace) ? trace : []).find(
+    (e) => (e?.agent === 'tutor' || e?.agent === 'user')
+      && e?.action === 'context_input'
+      && String(e?.rawContext || '').trim(),
+  );
+
+  return String(firstContextInput?.rawContext || '').trim();
 }
 
 // ── Serve inline HTML page ──────────────────────────────────────────────────
@@ -504,6 +545,7 @@ const PAGE_HTML = `<!DOCTYPE html>
     <span class="view-divider"></span>
     <label class="view-check"><input type="checkbox" id="toggleTutorInternal" checked onchange="setInternalVisibility('tutor', this.checked)">Tutor internals</label>
     <label class="view-check"><input type="checkbox" id="toggleLearnerInternal" checked onchange="setInternalVisibility('learner', this.checked)">Learner internals</label>
+    <label class="view-check"><input type="checkbox" id="toggleProjectionDiagnostics" checked onchange="setProjectionDiagnosticsVisibility(this.checked)">Diagnostics</label>
     <span class="view-divider" id="chainFilterDivider" style="display:none"></span>
     <span class="chain-filter" id="chainFilterGroup" style="display:none">
       <button class="view-btn" id="chainFilterAllBtn" onclick="setMessageChainChannelFilter('all')">All chains</button>
@@ -545,6 +587,7 @@ let currentSteps = [];
 let visibleSteps = [];
 let showTutorInternal = true;
 let showLearnerInternal = true;
+let showProjectionDiagnostics = true;
 let messageChainChannelFilter = 'all';
 let activeTheme = 'dark';
 const query = new URLSearchParams(window.location.search);
@@ -844,6 +887,7 @@ function renderViewControls(data) {
   const chainBtn = document.getElementById('viewMessageChainBtn');
   const tutorToggle = document.getElementById('toggleTutorInternal');
   const learnerToggle = document.getElementById('toggleLearnerInternal');
+  const diagnosticsToggle = document.getElementById('toggleProjectionDiagnostics');
   const hint = document.getElementById('viewHint');
 
   transcriptBtn.classList.toggle('active', activeViewMode === 'transcript');
@@ -851,6 +895,7 @@ function renderViewControls(data) {
   chainBtn.disabled = chain.exchanges.length === 0;
   if (tutorToggle) tutorToggle.checked = showTutorInternal;
   if (learnerToggle) learnerToggle.checked = showLearnerInternal;
+  if (diagnosticsToggle) diagnosticsToggle.checked = showProjectionDiagnostics;
   syncThemeControl();
   syncLegendToggles();
   syncMessageChainFilterControls(chain);
@@ -895,6 +940,12 @@ function setViewMode(mode) {
 function setInternalVisibility(kind, checked) {
   if (kind === 'tutor') showTutorInternal = !!checked;
   if (kind === 'learner') showLearnerInternal = !!checked;
+  if (!currentDialogueData) return;
+  renderCurrentView();
+}
+
+function setProjectionDiagnosticsVisibility(checked) {
+  showProjectionDiagnostics = !!checked;
   if (!currentDialogueData) return;
   renderCurrentView();
 }
@@ -974,7 +1025,9 @@ function extractLearnerQuery(entry) {
   const learnerMsgRe = new RegExp('Learner Messages?:\\\\s*(.+?)(?:\\\\n</|$)', 's');
   const recentChatRe = new RegExp('Recent Chat History\\\\n-\\\\s*User:\\\\s*"(.+?)"', 's');
   const match = raw.match(learnerMsgRe) || raw.match(recentChatRe);
-  return match ? match[1].trim() : null;
+  if (match) return match[1].trim();
+  const fallback = raw.trim();
+  return fallback || null;
 }
 
 function extractLearnerFollowupFromContext(rawContext) {
@@ -1489,7 +1542,7 @@ function clipText(text, maxChars) {
 function renderTranscript(steps) {
   let html = '';
   html += renderProjectionDiagnosticsCard(currentDialogueData?.diagnostics);
-  html += renderJudgeVisibilityCard(currentDialogueData?.judged);
+  html += renderJudgeVisibilityCard(currentDialogueData?.judged, steps, currentDialogueData);
   steps.forEach((step, i) => {
     const speaker = step.speaker || step.label;
     const color = speakerColors[speaker] || '#999';
@@ -1572,6 +1625,7 @@ function getExchangeApiPayload(data, ex) {
 }
 
 function renderProjectionDiagnosticsCard(diag) {
+  if (!showProjectionDiagnostics) return '';
   if (!diag || !Array.isArray(diag.effects) || diag.effects.length === 0) return '';
 
   let html = '<div class="chain-card">';
@@ -1595,17 +1649,112 @@ function renderProjectionDiagnosticsCard(diag) {
   return html;
 }
 
-function renderJudgeVisibilityCard(judged) {
-  if (!judged) return '';
+function buildTranscriptFromSteps(steps) {
+  const safeSteps = Array.isArray(steps) ? steps : [];
+  if (safeSteps.length === 0) return '(no transcript available)';
+
+  const lines = [];
+  let activeTurn = 0;
+  for (const step of safeSteps) {
+    const content = step?.fullDetail || step?.detail || '';
+    if (!content && step?.type === 'response') continue;
+
+    let declaredTurn = null;
+    if (step?.label === 'Initial query') declaredTurn = 1;
+    if (typeof step?.label === 'string' && /^Turn\\s+\\d+$/.test(step.label)) {
+      declaredTurn = parseInt(step.label.replace('Turn ', ''), 10) || null;
+    }
+
+    if (declaredTurn && declaredTurn !== activeTurn) {
+      activeTurn = declaredTurn;
+      lines.push('');
+      lines.push('--- Turn ' + activeTurn + ' ---');
+    } else if (!activeTurn) {
+      activeTurn = 1;
+      lines.push('');
+      lines.push('--- Turn 1 ---');
+    }
+
+    const speaker = step?.speaker || step?.label || 'STEP';
+    lines.push('[' + speaker + '] ' + String(content).trim());
+  }
+
+  const text = lines.join('\\n').trim();
+  return text || '(no transcript available)';
+}
+
+function resolveVisibleTranscript(judged, steps) {
+  const hasMeaningfulText = (value) => {
+    const text = String(value || '').trim();
+    return text && text !== '(no transcript available)';
+  };
+
+  const mode = showTutorInternal
+    ? (showLearnerInternal ? 'full' : 'partial')
+    : (showLearnerInternal ? 'partial' : 'public');
+
+  if (mode === 'full') {
+    return {
+      mode,
+      title: 'Full Transcript (all roles visible)',
+      metric: 'dialogue_quality_internal_score',
+      note: null,
+      transcript: hasMeaningfulText(judged?.fullTranscript) ? judged.fullTranscript : buildTranscriptFromSteps(steps),
+    };
+  }
+
+  if (mode === 'public') {
+    return {
+      mode,
+      title: 'Public Transcript (both superego lanes hidden)',
+      metric: 'dialogue_quality_score',
+      note: null,
+      transcript: hasMeaningfulText(judged?.publicTranscript) ? judged.publicTranscript : buildTranscriptFromSteps(steps),
+    };
+  }
+
+  return {
+    mode,
+    title: 'Partial Transcript (role-filtered)',
+    metric: null,
+    note: 'Derived from visible roles only; this mixed view is for inspection, not a direct judge input.',
+    transcript: buildTranscriptFromSteps(steps),
+  };
+}
+
+function resolveScenarioPrompt(data, steps) {
+  const fromMetadata = String(data?.metadata?.scenarioPrompt || '').trim();
+  if (fromMetadata) return fromMetadata;
+
+  const firstFrontStep = (Array.isArray(steps) ? steps : []).find(
+    (s) => s?.label === 'Initial query' && (s?.speaker === 'LEARNER' || s?.speaker === 'Learner'),
+  );
+  const fromSteps = String(firstFrontStep?.fullDetail || firstFrontStep?.detail || '').trim();
+  if (fromSteps && fromSteps !== '(scenario prompt)') return fromSteps;
+
+  const firstContextInput = (Array.isArray(data?.trace) ? data.trace : []).find(
+    (e) => (e?.agent === 'tutor' || e?.agent === 'user') && e?.action === 'context_input' && String(e?.rawContext || '').trim(),
+  );
+  return String(firstContextInput?.rawContext || '').trim();
+}
+
+function renderJudgeVisibilityCard(judged, steps, data) {
+  if (!judged && (!steps || steps.length === 0)) return '';
+  const visible = resolveVisibleTranscript(judged, steps);
+  const scenarioPrompt = resolveScenarioPrompt(data, steps);
   let html = '<div class="chain-card">';
-  html += '<div class="chain-head">What Is Being Judged</div>';
+  html += '<div class="chain-head">Visible Transcript</div>';
   html += '<div class="chain-section">';
-  html += '<div class="chain-title">Public Transcript (dialogue_quality_score)</div>';
-  html += renderChainLine('Transcript:', judged.publicTranscript || '(missing)', { maxChars: 5000 });
-  html += '</div>';
-  html += '<div class="chain-section">';
-  html += '<div class="chain-title">Full Transcript (dialogue_quality_internal_score)</div>';
-  html += renderChainLine('Transcript:', judged.fullTranscript || '(missing)', { maxChars: 5000 });
+  html += '<div class="chain-title">' + escapeHtml(visible.title) + '</div>';
+  if (visible.metric) {
+    html += '<div class="chain-line"><div class="chain-text chain-muted">Judge input: ' + escapeHtml(visible.metric) + '</div></div>';
+  } else if (visible.note) {
+    html += '<div class="chain-line"><div class="chain-text chain-muted">' + escapeHtml(visible.note) + '</div></div>';
+  }
+  if (scenarioPrompt) {
+    html += renderChainLine('Scenario prompt:', scenarioPrompt, { maxChars: 5000 });
+  }
+  html += renderChainLine('Transcript:', visible.transcript || '(missing)', { maxChars: 5000 });
   html += '</div>';
   html += '</div>';
   return html;
@@ -1614,10 +1763,11 @@ function renderJudgeVisibilityCard(judged) {
 function renderMessageChain(data, visibleExchanges = null) {
   const chain = data.messageChain || { exchanges: [] };
   const exchanges = Array.isArray(visibleExchanges) ? visibleExchanges : chain.exchanges || [];
+  const filteredSteps = getFilteredSteps(currentSteps);
 
   let html = '';
   html += renderProjectionDiagnosticsCard(data.diagnostics);
-  html += renderJudgeVisibilityCard(data.judged);
+  html += renderJudgeVisibilityCard(data.judged, filteredSteps, data);
 
   const counts = { tutor_learner: 0, tutor_ego_superego: 0, learner_ego_superego: 0, unknown: 0 };
   for (const ex of chain.exchanges || []) {
