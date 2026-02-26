@@ -2242,7 +2242,14 @@ function buildPerTurnTutorEvaluationPrompt(params) {
     ...scenario,
     description: `${scenario.description}\n\n[PER-TURN SCORING] You are scoring the tutor's response at ${turnLabel}. ` +
       `The dialogue transcript is truncated to this point — you do NOT see future turns. ` +
-      `Evaluate this response on its own merits within the dialogue context so far.`,
+      `Evaluate this response on its own merits within the dialogue context so far.\n\n` +
+      `CROSS-TURN CALIBRATION: For modulation dimensions (tutor_adaptation, learner_growth, ` +
+      `dialectical_responsiveness), a score of 4 or 5 requires EVIDENCE OF CHANGE compared ` +
+      `to prior turns — not just presence of adaptive language. At Turn 1, there are no prior ` +
+      `turns to compare against, so base your score on the quality of the tutor's initial ` +
+      `responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's ` +
+      `approach changed since the previous turn? What specific evidence shows adaptation?" ` +
+      `A score of 5 requires explicit cross-turn development, not just good single-turn quality.`,
   };
 
   return buildEvaluationPrompt(suggestion, perTurnScenario, { dialogueContext });

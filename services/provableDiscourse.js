@@ -264,7 +264,10 @@ function learnerCompositeFromTurnScores(scores) {
   const revision = scores?.revision_signals?.score || 0;
   const question = scores?.question_quality?.score || 0;
   const conceptual = scores?.conceptual_engagement?.score || 0;
-  return ((revision * 0.35 + question * 0.3 + conceptual * 0.35 - 1) / 4) * 100;
+  const progression = scores?.conceptual_progression?.score || 0;
+  const metacognitive = scores?.metacognitive_development?.score || 0;
+  return ((revision * 0.20 + question * 0.20 + conceptual * 0.20
+         + progression * 0.25 + metacognitive * 0.15 - 1) / 4) * 100;
 }
 
 export function computeLearnerSummaryFromScores(rawLearnerScores) {

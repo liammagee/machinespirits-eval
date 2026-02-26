@@ -295,6 +295,13 @@ ${internalDeliberationSection}
 
 ${deliberationDepthNote}
 
+CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
+conceptual_progression, metacognitive_development), a score of 4 or 5 requires
+EVIDENCE OF CHANGE compared to prior turns. At Turn 1, base your score on the
+quality of the learner's initial engagement. From Turn 2 onward, ask: "How has
+the learner's thinking evolved since the previous turn?" A score of 5 requires
+the learner to demonstrate growth that builds on earlier exchanges.
+
 Evaluate the learner's turn and provide:
 1. A score (1-5) for each applicable dimension with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
@@ -395,6 +402,11 @@ ${fullTranscript}
 ## YOUR TASK
 
 ${deliberationDepthNote}
+
+CROSS-TURN CALIBRATION: When scoring development dimensions (revision_signals,
+conceptual_progression, metacognitive_development), require evidence of CUMULATIVE
+change across the full dialogue, not just isolated moments. A score of 5 means the
+learner's trajectory shows clear arc of development from first to last turn.
 
 Evaluate the learner's performance across the full dialogue and provide:
 1. A score (1-5) for each applicable dimension with brief reasoning

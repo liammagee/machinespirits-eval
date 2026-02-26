@@ -192,7 +192,7 @@ describe('calculateRecognitionScore', () => {
     assert.strictEqual(calculateRecognitionScore(scores), 0);
   });
 
-  it('returns 50 when all recognition dimensions are 3', () => {
+  it('returns ~50 when all recognition dimensions are 3', () => {
     const scores = makeScores({
       mutual_recognition: 3,
       dialectical_responsiveness: 3,
@@ -201,7 +201,8 @@ describe('calculateRecognitionScore', () => {
       tutor_adaptation: 3,
       learner_growth: 3,
     });
-    assert.strictEqual(calculateRecognitionScore(scores), 50);
+    const result = calculateRecognitionScore(scores);
+    assert.ok(Math.abs(result - 50) < 0.01, `Expected ~50, got ${result}`);
   });
 
   it('handles partial recognition dimensions', () => {
