@@ -97,22 +97,27 @@ describe('TuH / LrH holistic scoring symmetry', () => {
 
   // ── Both dimension sets have the same number of dimensions ────────────
 
-  it('tutor and learner holistic have the same dimension count (full and reduced)', () => {
+  it('tutor and learner holistic have expected dimension counts', () => {
     const tutorFull = getTutorHolisticDimensions({ hasRecognition: true });
     const tutorReduced = getTutorHolisticDimensions({ hasRecognition: false });
     const learnerFull = getLearnerDimensions({ isMultiAgent: true });
     const learnerReduced = getLearnerDimensions({ isMultiAgent: false });
 
-    assert.strictEqual(
-      Object.keys(tutorFull).length,
-      Object.keys(learnerFull).length,
-      `full dimension count should match: tutor=${Object.keys(tutorFull).length}, learner=${Object.keys(learnerFull).length}`,
-    );
-    assert.strictEqual(
-      Object.keys(tutorReduced).length,
-      Object.keys(learnerReduced).length,
-      `reduced dimension count should match: tutor=${Object.keys(tutorReduced).length}, learner=${Object.keys(learnerReduced).length}`,
-    );
+    // Tutor holistic: 6 with recognition, 5 without
+    assert.strictEqual(Object.keys(tutorFull).length, 6,
+      `tutor full should have 6 dims, got ${Object.keys(tutorFull).length}`);
+    assert.strictEqual(Object.keys(tutorReduced).length, 5,
+      `tutor reduced should have 5 dims, got ${Object.keys(tutorReduced).length}`);
+    // Learner: 8 with deliberation_depth, 7 without
+    assert.strictEqual(Object.keys(learnerFull).length, 8,
+      `learner full should have 8 dims, got ${Object.keys(learnerFull).length}`);
+    assert.strictEqual(Object.keys(learnerReduced).length, 7,
+      `learner reduced should have 7 dims, got ${Object.keys(learnerReduced).length}`);
+    // Both have a conditional dimension that can be omitted
+    assert.ok(Object.keys(tutorFull).length > Object.keys(tutorReduced).length,
+      'tutor full should have more dims than reduced');
+    assert.ok(Object.keys(learnerFull).length > Object.keys(learnerReduced).length,
+      'learner full should have more dims than reduced');
   });
 
   // ── Both dimension sets have weights summing to 1.0 ───────────────────

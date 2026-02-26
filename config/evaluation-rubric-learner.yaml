@@ -23,7 +23,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Learner Quality Rubric"
-version: "1.0.0"
+version: "2.0.0"
 description: "Rubric for evaluating synthetic learner turn quality in multi-turn tutoring dialogues"
 
 scale:
@@ -40,23 +40,25 @@ scale:
 # LEARNER EVALUATION DIMENSIONS
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# ┌─────────────────────────┬────────┬───────────────────────────────────────────────┐
-# │ Dimension               │ Weight │ What it measures                              │
-# ├─────────────────────────┼────────┼───────────────────────────────────────────────┤
-# │ Learner Authenticity    │  20%   │ Genuine student-like reactions and engagement  │
-# │ Question Quality        │  20%   │ Depth and substance of learner questions       │
-# │ Conceptual Engagement   │  20%   │ Engagement with ideas, not just process        │
-# │ Revision Signals        │  15%   │ Evidence of changing mind / integrating new    │
-# │ Deliberation Depth      │  15%   │ Quality of internal ego/superego process       │
-# │ Persona Consistency     │  10%   │ Maintaining assigned persona while evolving    │
-# └─────────────────────────┴────────┴───────────────────────────────────────────────┘
+# ┌───────────────────────────────┬────────┬───────────────────────────────────────────────┐
+# │ Dimension                     │ Weight │ What it measures                              │
+# ├───────────────────────────────┼────────┼───────────────────────────────────────────────┤
+# │ Learner Authenticity          │  18%   │ Genuine student-like reactions and engagement  │
+# │ Question Quality              │  15%   │ Depth and substance of learner questions       │
+# │ Conceptual Engagement         │  17%   │ Engagement with ideas, not just process        │
+# │ Revision Signals              │  12%   │ Evidence of changing mind / integrating new    │
+# │ Deliberation Depth            │  13%   │ Quality of internal ego/superego process       │
+# │ Persona Consistency           │   5%   │ Maintaining assigned persona while evolving    │
+# │ Conceptual Progression        │  12%   │ Cross-turn intellectual development            │
+# │ Metacognitive Development     │   8%   │ Awareness of own learning process              │
+# └───────────────────────────────┴────────┴───────────────────────────────────────────────┘
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
 dimensions:
   learner_authenticity:
     name: "Learner Authenticity"
-    weight: 0.20
+    weight: 0.18
     description: "Does the learner's response feel like a genuine student reaction? Is the confusion real, the engagement authentic, the resistance plausible?"
     theoretical_basis: |
       Grounded in ecological validity of simulated learner agents. A synthetic
@@ -88,7 +90,7 @@ dimensions:
 
   question_quality:
     name: "Question Quality"
-    weight: 0.20
+    weight: 0.15
     description: "Does the learner ask substantive questions that reveal genuine engagement with the material? Deep questions vs surface-level 'what do I do next?'"
     theoretical_basis: |
       Based on research on question asking as a metacognitive skill (Graesser &
@@ -100,7 +102,7 @@ dimensions:
     criteria:
       5: "Asks penetrating questions that reveal deep engagement: challenges assumptions, explores implications, connects to broader issues"
       4: "Asks substantive questions that show real thinking about the concepts; goes beyond comprehension to analysis"
-      3: "Asks reasonable questions but mostly at comprehension level; some procedural questions mixed with substantive ones"
+      3: "Asks questions that show engagement with the material; may be concise or focused on clarification rather than deep analysis, but shows genuine curiosity"
       2: "Mostly procedural or surface questions: 'what should I do next?', 'can you explain that again?'"
       1: "No questions asked, or only trivial/irrelevant questions that show no engagement with the material"
     question_markers:
@@ -120,7 +122,7 @@ dimensions:
 
   conceptual_engagement:
     name: "Conceptual Engagement"
-    weight: 0.20
+    weight: 0.17
     description: "Does the learner engage with the concepts themselves rather than just the process of learning? Evidence of thinking about ideas, not just following instructions."
     theoretical_basis: |
       Grounded in the distinction between surface and deep approaches to learning
@@ -153,7 +155,7 @@ dimensions:
 
   revision_signals:
     name: "Revision Signals"
-    weight: 0.15
+    weight: 0.12
     description: "Does the learner show evidence of changing their mind, revising prior understanding, or integrating new information into their existing framework?"
     theoretical_basis: |
       Based on conceptual change theory (Posner et al., 1982) and Piaget's
@@ -186,7 +188,7 @@ dimensions:
 
   deliberation_depth:
     name: "Deliberation Depth"
-    weight: 0.15
+    weight: 0.13
     description: "For multi-agent learners: Does the internal ego/superego dialogue produce genuine reflection, or is it performative? Score the quality of the internal deliberation process."
     theoretical_basis: |
       Based on the bilateral ego/superego architecture where the learner's
@@ -228,7 +230,7 @@ dimensions:
 
   persona_consistency:
     name: "Persona Consistency"
-    weight: 0.10
+    weight: 0.05
     description: "Does the learner maintain the assigned persona (frustrated student, returning learner, etc.) while still showing genuine evolution?"
     theoretical_basis: |
       The evaluation framework assigns learner personas (e.g., productive_struggler,
@@ -260,18 +262,84 @@ dimensions:
       good: "(frustrated student persona, turn 3): 'Okay fine, I'll admit the dialectic thing is less stupid than I thought. But I still don't see why I need to know this for my major. Can you at least show me why it matters outside philosophy?'"
       bad: "(frustrated student persona, turn 3): 'This is fascinating! I'm really enjoying learning about dialectics. The way Hegel connects thesis and antithesis is truly elegant.'"
 
+  conceptual_progression:
+    name: "Conceptual Progression"
+    weight: 0.12
+    description: "Does the learner's conceptual framework develop across turns? Evidence of ideas building on each other, not just responding to the latest tutor input in isolation."
+    theoretical_basis: |
+      Based on learning trajectory research. Genuine learning shows
+      cumulative development — ideas in Turn 3 should build on and
+      transform ideas from Turn 1, not exist in isolation. This
+      dimension captures cross-turn intellectual development that
+      revision_signals (single-turn change markers) cannot.
+    criteria:
+      5: "Clear conceptual arc: ideas build cumulatively across turns; Turn N references and extends ideas from Turn N-2; framework visibly developing"
+      4: "Good progression: most turns build on prior ideas; occasional isolation but overall trajectory clear"
+      3: "Some progression but ideas often feel turn-isolated; new insights don't always connect to prior ones"
+      2: "Minimal cross-turn development; each response mostly self-contained"
+      1: "No progression: responses are independent of each other; no evidence of accumulating understanding"
+    progression_markers:
+      positive:
+        - "References ideas from earlier turns"
+        - "Builds on prior insights rather than starting fresh"
+        - "Conceptual framework becomes more nuanced across turns"
+        - "Later turns integrate and extend earlier ideas"
+      negative:
+        - "Each turn responds only to the immediately preceding tutor turn"
+        - "No callbacks to earlier ideas"
+        - "Conceptual framework resets each turn"
+        - "Later responses ignore earlier insights"
+    examples:
+      good: "Earlier I said dialectics was just arguing, then you showed me it's about transformation — now I'm realizing my own understanding has gone through that same process. The concept is demonstrating itself in how I'm learning it."
+      bad: "That's interesting. Tell me more about dialectics. [Turn 3, no reference to ideas from Turns 1-2]"
+
+  metacognitive_development:
+    name: "Metacognitive Development"
+    weight: 0.08
+    description: "Does the learner show evolving awareness of their own learning process? Evidence of monitoring comprehension, identifying confusion, and strategically seeking clarification."
+    theoretical_basis: |
+      Based on Flavell's metacognition framework and self-regulated
+      learning theory (Zimmerman). Effective learners monitor their
+      own understanding and adapt their learning strategies. This
+      dimension captures the learner's growing awareness of what
+      they do and don't understand, which is distinct from conceptual
+      engagement (thinking about ideas) and revision_signals (changing
+      conclusions).
+    criteria:
+      5: "Explicit metacognitive awareness: identifies own confusion, monitors comprehension, strategically redirects learning; says things like 'I think I understand X but not Y'"
+      4: "Good self-monitoring: recognizes gaps in understanding; adjusts approach based on what's working"
+      3: "Some metacognitive signals but mostly implicit; occasionally identifies confusion without acting on it"
+      2: "Minimal self-awareness: rarely identifies own comprehension state; follows tutor passively"
+      1: "No metacognition: no evidence of monitoring own understanding; never identifies confusion or gaps"
+    metacognitive_markers:
+      positive:
+        - "Identifies specific areas of confusion"
+        - "Monitors own comprehension ('I get X but not Y')"
+        - "Strategically asks for clarification on weak points"
+        - "Reflects on own learning process"
+      negative:
+        - "Responds uniformly without self-assessment"
+        - "Follows tutor passively without monitoring understanding"
+        - "Never identifies own confusion or gaps"
+        - "No evidence of learning strategy adjustment"
+    examples:
+      good: "I think I understand the basic idea of Aufhebung — that something is preserved and overcome at the same time. But what I'm not getting is how you know when that's happened vs when you've just moved on to a new idea. That distinction is where I keep getting stuck."
+      bad: "Okay, I understand. What should we talk about next?"
+
 # ══════════════════════════════════════════════════════════════════════════════
 # WEIGHT REDISTRIBUTION FOR SINGLE-AGENT LEARNERS
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# When deliberation_depth is N/A (single-agent learners), redistribute its 15%:
+# When deliberation_depth is N/A (single-agent learners), redistribute its 13%:
 #
-# Original weights:                    Redistributed weights:
-#   learner_authenticity:  0.20   →    0.2353   (0.20 / 0.85)
-#   question_quality:      0.20   →    0.2353   (0.20 / 0.85)
-#   conceptual_engagement: 0.20   →    0.2353   (0.20 / 0.85)
-#   revision_signals:      0.15   →    0.1765   (0.15 / 0.85)
-#   deliberation_depth:    0.15   →    OMITTED
-#   persona_consistency:   0.10   →    0.1176   (0.10 / 0.85)
+# Original weights:                        Redistributed weights:
+#   learner_authenticity:       0.18   →    0.2069   (0.18 / 0.87)
+#   question_quality:           0.15   →    0.1724   (0.15 / 0.87)
+#   conceptual_engagement:      0.17   →    0.1954   (0.17 / 0.87)
+#   revision_signals:           0.12   →    0.1379   (0.12 / 0.87)
+#   deliberation_depth:         0.13   →    OMITTED
+#   persona_consistency:        0.05   →    0.0575   (0.05 / 0.87)
+#   conceptual_progression:     0.12   →    0.1379   (0.12 / 0.87)
+#   metacognitive_development:  0.08   →    0.0920   (0.08 / 0.87)
 #
 # ══════════════════════════════════════════════════════════════════════════════
