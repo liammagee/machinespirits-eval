@@ -568,8 +568,11 @@ claude_code_judge:
   model: sonnet
 
 # Suggestion judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
+# reasoning_effort: controls thinking depth for reasoning models (low/medium/high)
+# Only affects reasoning-capable models (DeepSeek R1, Gemini 3 Flash, etc.)
 judge:
   model: openrouter.sonnet
+  reasoning_effort: low
   hyperparameters:
     temperature: 0.2
     max_tokens: 8000
