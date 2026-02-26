@@ -3613,7 +3613,7 @@ profiles:
       assess_transformative_potential: true
 
   cell_88_messages_recog_multi_psycho_haiku:
-    description: "Fast variant of cell 87: Haiku ego+superego, ego/superego learner, message chain"
+    description: "Fast variant of cell 87: Haiku throughout (tutor ego+superego + learner), message chain"
     conversation_mode: messages
     factors:
       prompt_type: recognition
@@ -3642,6 +3642,9 @@ profiles:
       hyperparameters:
         temperature: 0.2
         max_tokens: 8000
+    learner:
+      provider: openrouter
+      model: haiku
     intervention_strategies:
       enforce_mutual_recognition: true
       require_memory_integration: true
