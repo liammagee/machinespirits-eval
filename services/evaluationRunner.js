@@ -14,6 +14,7 @@ import {
   tutorConfigLoader,
   monitoringService,
   tutorDialogueEngine as dialogueEngine,
+  setQuietMode,
 } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
@@ -28,6 +29,7 @@ import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
 import { formatApiMessages } from './apiMessageFormatter.js';
+import { LiveApiReporter } from './liveApiReporter.js';
 import { mockGenerateResult, mockJudgeResult } from './mockProvider.js';
 import { formatEntry, formatTranscript, formatCompactLine } from './transcriptFormatter.js';
 
@@ -175,6 +177,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_86_messages_recog_multi_unified',
   'cell_87_messages_recog_multi_psycho',
   'cell_88_messages_recog_multi_psycho_haiku',
+  'cell_89_messages_recog_multi_psycho_gemflash',
+  'cell_90_messages_recog_single_unified',
 ];
 
 /**
@@ -300,10 +304,19 @@ function resolveConfigModels(config) {
       if (profile.superego.hyperparameters && !resolved.superegoHyperparameters) {
         resolved.superegoHyperparameters = profile.superego.hyperparameters;
       }
+    } else {
+      resolved.superegoModel = null;
     }
 
     // Extract factorial factor tags and learner architecture from profile
     const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[resolved.profileName];
+
+    // Honor multi_agent_tutor factor: if false, force superego off even if
+    // a superego section was accidentally configured.
+    if (rawProfile?.factors?.multi_agent_tutor === false) {
+      resolved.superegoModel = null;
+      resolved.superegoHyperparameters = undefined;
+    }
     if (rawProfile?.factors) {
       resolved.factors = { ...rawProfile.factors };
       // Normalize prompt_type → recognition boolean for DB storage
@@ -392,9 +405,10 @@ const REQUEST_DELAY_MS = 200;
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 2000; // Start with 2 seconds
 
-// Debug logging helper - suppressed in transcript mode for clean output
+// Debug logging helper - suppressed in quiet/transcript mode for clean output
+let _liveQuiet = false;
 function debugLog(...args) {
-  if (process.env.TUTOR_TRANSCRIPT !== 'true') {
+  if (!_liveQuiet && process.env.TUTOR_TRANSCRIPT !== 'true') {
     console.log(...args);
   }
 }
@@ -1301,9 +1315,20 @@ export async function runEvaluation(options = {}) {
     transcriptMode = false, // Write play-format transcript files during multi-turn runs
     maxTokensOverride = null, // CLI --max-tokens override (replaces ego max_tokens hyperparameter)
     showMessages = false, // true for truncated, 'full' for untruncated API message display
+    liveApi = false, // --live: stream one-line display per API call in real time
   } = options;
 
   const log = verbose ? console.log : () => {};
+
+  // Install live API reporter if --live is active
+  // Suppress tutor-core verbose dialogue output (TUTOR DIALOGUE boxes, learner context, etc.)
+  let liveApiReporter = null;
+  if (liveApi) {
+    liveApiReporter = new LiveApiReporter();
+    liveApiReporter.install();
+    setQuietMode(true);
+    _liveQuiet = true;
+  }
 
   // Log domain override env vars (always visible, not gated on verbose)
   if (process.env.EVAL_CONTENT_PATH || process.env.EVAL_SCENARIOS_FILE) {
@@ -1535,6 +1560,8 @@ export async function runEvaluation(options = {}) {
   await processQueue(allTests, parallelism, async ({ config, scenario }) => {
     const profileLabel = config.label || config.profileName || '';
 
+    // Wrap in live API conversation context if --live is active
+    const runTest = async () => {
     // Emit test_start
     progressLogger.testStart({
       scenarioId: scenario.id,
@@ -1550,6 +1577,7 @@ export async function runEvaluation(options = {}) {
         transcriptMode,
         showMessages,
         runId: run.id,
+        liveApiReporter,
       });
 
       // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
@@ -1704,7 +1732,24 @@ export async function runEvaluation(options = {}) {
         });
       }
     }
+    }; // end runTest
+
+    if (liveApiReporter) {
+      await liveApiReporter.withConversation(
+        { profileName: profileLabel, scenarioId: scenario.id },
+        runTest,
+      );
+    } else {
+      await runTest();
+    }
   });
+
+  // Uninstall live API reporter
+  if (liveApiReporter) {
+    liveApiReporter.uninstall();
+    setQuietMode(false);
+    _liveQuiet = false;
+  }
 
   const durationMs = Date.now() - runStartTime;
   const successfulTests = results.filter((r) => r.success).length;
@@ -1817,7 +1862,7 @@ async function runSingleTest(scenario, config, options = {}) {
 
   if (isMultiTurn) {
     log('Detected multi-turn scenario', 'info');
-    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride, checkpointState });
+    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride, checkpointState, liveApiReporter: options.liveApiReporter });
   }
 
   // Single-turn evaluation (original logic)
@@ -2005,6 +2050,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     runId = null,
     showMessages = false,
     checkpointState = null,
+    liveApiReporter: liveReporter = null,
   } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -2164,6 +2210,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     log(`[evaluationRunner] Checkpoint: resuming from turn ${startTurnIdx}/${totalTurnCount - 1} (${turnResults.length} turns already completed)`, 'info');
   }
   for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
+    // Update live reporter with current turn index
+    if (liveReporter) liveReporter.setTurnIdx(turnIdx);
+
     const isInitialTurn = turnIdx === 0;
     const turnDef = isInitialTurn ? null : turns[turnIdx - 1];
 

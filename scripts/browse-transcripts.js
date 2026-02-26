@@ -245,6 +245,7 @@ app.get('/api/runs/:runId', (req, res) => {
       er.tutor_holistic_overall_score,
       er.learner_overall_score, er.learner_holistic_overall_score,
       er.dialogue_quality_score, er.dialogue_quality_internal_score, er.holistic_overall_score,
+      er.dialogue_rounds,
       er.ego_model, er.judge_model, er.learner_architecture, er.superego_model,
       er.factor_recognition
     FROM evaluation_results er
@@ -283,6 +284,7 @@ app.get('/api/runs/:runId', (req, res) => {
       judgeModel: r.judge_model,
       isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
       learnerArch: r.learner_architecture,
+      turns: Number.isFinite(Number(r.dialogue_rounds)) ? Number(r.dialogue_rounds) : null,
     };
   });
   res.json(dialogues);
@@ -533,10 +535,14 @@ const PAGE_HTML = `<!DOCTYPE html>
   .cell-dialogues { display:none; }
   .cell-group.open > .cell-dialogues { display:block; }
 
-  .dlg-item { padding:3px 8px 3px 16px; cursor:pointer; font-size:10px; display:flex; justify-content:space-between; align-items:center; border-radius:3px; }
+  .dlg-item { padding:3px 8px 3px 16px; cursor:pointer; font-size:10px; display:flex; justify-content:flex-start; align-items:center; border-radius:3px; gap:6px; }
   .dlg-item:hover { background:var(--hover); }
   .dlg-item.active { background:var(--selected); color:var(--text); }
   .dlg-scenario { color:var(--text-soft); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dlg-meta { display:flex; align-items:center; gap:5px; margin-left:6px; flex-shrink:0; }
+  .dlg-turn { font-weight:700; padding:1px 5px; border-radius:8px; font-size:9px; border:1px solid var(--border-soft); color:var(--muted); background:var(--surface-2); min-width:24px; text-align:center; }
+  .dlg-turn.single { color:#42a5f5; border-color:rgba(66,165,245,0.45); background:rgba(66,165,245,0.12); }
+  .dlg-turn.multi { color:#66bb6a; border-color:rgba(102,187,106,0.45); background:rgba(102,187,106,0.12); }
   .dlg-score { font-weight:700; margin-left:6px; padding:1px 5px; border-radius:8px; font-size:9px; }
   .score-high { background:rgba(76,175,80,0.2); color:#66bb6a; }
   .score-mid { background:rgba(255,152,0,0.2); color:#ffa726; }
@@ -780,6 +786,15 @@ function scoreClass(s) { return s == null || Number.isNaN(s) ? 'score-na' : s >=
 function scoreBg(s) { return s == null || Number.isNaN(s) ? '#455a64' : s >= 90 ? '#1b5e20' : s >= 70 ? '#e65100' : '#b71c1c'; }
 function formatScore(value, digits = 1) {
   return value == null || Number.isNaN(Number(value)) ? '--' : Number(value).toFixed(digits);
+}
+function turnBadgeText(turns) {
+  const n = Number(turns);
+  return Number.isFinite(n) && n > 0 ? (Math.round(n) + 'T') : '?T';
+}
+function turnBadgeClass(turns) {
+  const n = Number(turns);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  return Math.round(n) > 1 ? 'multi' : 'single';
 }
 function scoreMetricLabel(metric) {
   const labels = {
@@ -1242,13 +1257,15 @@ function renderRunChildren(runId, search, cond) {
     html += '<div class="cell-dialogues">';
     for (const d of items) {
       const sc = formatScore(d.score, 0);
-      const metricShort = scoreMetricShortLabel(d.scoreMetric);
       const scoreTitle = buildScoreTooltip(d.scores, d.scoreMetric);
       const scn = d.scenario.replace(/_/g, ' ').substring(0, 25);
       const isActive = d.dialogueId === activeDialogueId;
+      const turnText = turnBadgeText(d.turns);
+      const turnClass = turnBadgeClass(d.turns);
       html += '<div class="dlg-item' + (isActive ? ' active' : '') + '" onclick="loadDialogue(&quot;' + escapeHtml(d.dialogueId) + '&quot;)">';
+      html += '<span class="dlg-turn ' + escapeHtml(turnClass) + '">' + escapeHtml(turnText) + '</span>';
       html += '<span class="dlg-scenario">' + escapeHtml(scn) + '</span>';
-      html += '<span class="dlg-score ' + scoreClass(d.score) + '" title="' + escapeHtml(scoreTitle) + '">' + escapeHtml(metricShort + ' ' + sc) + '</span>';
+      html += '<span class="dlg-score ' + scoreClass(d.score) + '" title="' + escapeHtml(scoreTitle) + '">' + escapeHtml(sc) + '</span>';
       html += '</div>';
     }
     html += '</div></div>';
@@ -1314,7 +1331,6 @@ function renderTopBar(data) {
   const scoreValue = data?.scores?.overall;
   const score = formatScore(scoreValue, 1);
   const primaryScoreMetric = data?.scores?.primaryMetric || m?.primaryScoreMetric || 'dialogue_quality_score';
-  const primaryScoreMetricShort = scoreMetricShortLabel(primaryScoreMetric);
   const primaryScoreMetricLabel = scoreMetricLabel(primaryScoreMetric);
   const scoreTooltip = buildScoreTooltip(data?.scores || null, primaryScoreMetric);
   const condLabel = m.isRecog ? 'Recognition' : 'Base';
@@ -1341,7 +1357,7 @@ function renderTopBar(data) {
       '</div>' +
       '<div class="meta-id">' + escapeHtml(m.runId) + ' | ' + escapeHtml(m.dialogueId) + '</div>' +
     '</div>' +
-    '<span class="score-badge" title="' + escapeHtml(scoreTooltip) + '" style="background:' + scoreBg(scoreValue) + '">' + escapeHtml(primaryScoreMetricShort + ' ' + score) + '</span>';
+    '<span class="score-badge" title="' + escapeHtml(scoreTooltip) + '" style="background:' + scoreBg(scoreValue) + '">' + escapeHtml(score) + '</span>';
 }
 
 function renderViewControls(data) {
@@ -1587,6 +1603,15 @@ function traceToSteps(trace) {
 
     if (agent === 'system') continue;
     if ((agent === 'tutor' || agent === 'user') && action === 'final_output') continue;
+
+    // Handle learner turn_action BEFORE the blanket learner skip
+    if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
+      const full = fullContent(e);
+      steps.push({ from: 'learner_ego', to: 'tutor_ego', label: 'Turn ' + (dialogueTurn + 1), detail: snippet(e, 120), fullDetail: full, type: 'front', speaker: 'LEARNER' });
+      needsResponseArrow = true;
+      continue;
+    }
+
     if (agent === 'learner') continue;
 
     if ((agent === 'tutor' || agent === 'user') && action === 'context_input') {
@@ -1665,12 +1690,6 @@ function traceToSteps(trace) {
 
     if (agent === 'learner_ego_revision') continue;
 
-    if ((agent === 'learner' || agent === 'user') && action === 'turn_action') {
-      const full = fullContent(e);
-      steps.push({ from: 'learner_ego', to: 'tutor_ego', label: 'Turn ' + (dialogueTurn + 1), detail: snippet(e, 120), fullDetail: full, type: 'front', speaker: 'LEARNER' });
-      needsResponseArrow = true;
-      continue;
-    }
   }
   return steps;
 }
