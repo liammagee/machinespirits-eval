@@ -592,15 +592,18 @@ function renderRunsCompact(runs, termWidth) {
     }
   }
   // Repeat header at bottom for easy reference
-  lines.push('  ' + theme.dim('─'.repeat(Math.min(74, termWidth - 4))));
+  lines.push('  ' + theme.dim('─'.repeat(Math.min(92, termWidth - 4))));
   lines.push(
     '  ' +
       theme.header('Run'.padEnd(16)) +
       theme.header('Status'.padEnd(10)) +
-      theme.header('Progress'.padEnd(14)) +
-      theme.header('Tutor'.padEnd(6)) +
-      theme.header('Lrnr'.padEnd(6)) +
-      theme.header('DlgQ'.padEnd(6)) +
+      theme.header('Progress'.padEnd(12)) +
+      theme.header('TuPT'.padEnd(5)) +
+      theme.header('TuH'.padEnd(5)) +
+      theme.header('LrPT'.padEnd(5)) +
+      theme.header('LrH'.padEnd(5)) +
+      theme.header('DgP'.padEnd(5)) +
+      theme.header('DgI'.padEnd(5)) +
       theme.header('Duration'),
   );
   return lines.join('\n');
