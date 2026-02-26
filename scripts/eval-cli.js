@@ -861,9 +861,9 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
     (t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action',
   );
 
-  // Strategy 2: fall back to learner final output entries (messages mode, ego_superego learner).
+  // Strategy 2: fall back to learner final output entries (messages mode — any learner architecture).
   // Matches both current (learner/final_output) and legacy (learner_synthesis/response) schemas.
-  if (turnMarkers.length === 0 && isMultiAgent) {
+  if (turnMarkers.length === 0) {
     turnMarkers = trace.filter(
       (t) => (t.agent === 'learner_synthesis' && t.action === 'response')
         || (t.agent === 'learner' && t.action === 'final_output'),
@@ -879,9 +879,18 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
   }
 
   for (const ta of turnMarkers) {
+    // For final_output entries, contextSummary is truncated to 100 chars — use detail instead
+    let rawMessage = (ta.action === 'final_output')
+      ? (ta.detail || ta.contextSummary || '')
+      : (ta.contextSummary || '');
+
+    // Strip [INTERNAL] section from unified learner output (prompt requests [INTERNAL]/[EXTERNAL] format)
+    const externalMatch = rawMessage.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
+    if (externalMatch) rawMessage = externalMatch[1].trim();
+
     const turnData = {
       turnIndex: ta.turnIndex,
-      externalMessage: ta.contextSummary || '',
+      externalMessage: rawMessage,
       internalDeliberation: [],
     };
 

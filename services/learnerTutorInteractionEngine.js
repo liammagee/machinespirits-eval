@@ -592,6 +592,18 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
 }
 
 /**
+ * Extract the [EXTERNAL] section from unified learner output.
+ * The unified learner prompt requests [INTERNAL]/[EXTERNAL] structured format.
+ * Returns just the external speech; if no tags found, returns full text unchanged.
+ */
+function extractExternalSection(text) {
+  if (!text) return '';
+  const match = text.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
+  if (match) return match[1].trim();
+  return text;
+}
+
+/**
  * Extract the message from tutor's response (handles JSON or plain text)
  */
 function extractTutorMessage(content) {
@@ -1487,9 +1499,14 @@ export async function generateLearnerResponse(options) {
   const finalDeliberation = internalDeliberation[internalDeliberation.length - 1];
   const emotionalState = detectEmotionalState(internalDeliberation);
 
+  // Unified learner prompt requests [INTERNAL]/[EXTERNAL] format.
+  // Parse out the [EXTERNAL] section for what the tutor sees; keep full text in deliberation.
+  const rawContent = finalDeliberation.content;
+  const externalOnly = extractExternalSection(rawContent);
+
   return {
-    message: finalDeliberation.content,
-    externalMessage: finalDeliberation.content,
+    message: externalOnly,
+    externalMessage: externalOnly,
     internalDeliberation,
     emotionalState,
     understandingLevel: detectUnderstandingLevel(internalDeliberation),
@@ -1508,6 +1525,7 @@ export {
   detectUnderstandingLevel,
   detectTutorStrategy,
   extractTutorMessage,
+  extractExternalSection,
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,
