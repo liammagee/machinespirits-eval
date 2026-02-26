@@ -1479,3 +1479,109 @@ describe('full pipeline end-to-end', () => {
       'tutor per-turn and holistic should be distinct');
   });
 });
+
+// ============================================================================
+// Per-dialogue scoring completeness: all stages populate atomically
+// ============================================================================
+
+describe('per-dialogue scoring completeness', () => {
+  it('a fully scored multi-turn row has all 6 score types — no NULLs', () => {
+    // Simulates the inline pipeline: after each dialogue, ALL stages run before moving on.
+    // If any stage were deferred to a batch, partially-scored rows would exist.
+    const runId = makeRun('inline completeness');
+    // Two multi-turn rows — simulates two dialogues being scored sequentially
+    storeResult(runId, makeResult({ scenarioId: 's1', dialogueId: 'dlg-inline-1', dialogueRounds: 3 }));
+    storeResult(runId, makeResult({ scenarioId: 's2', dialogueId: 'dlg-inline-2', dialogueRounds: 4 }));
+
+    const results = getResults(runId);
+    assert.strictEqual(results.length, 2);
+
+    // Score first dialogue fully (all 6 stages)
+    const id1 = results[0].id;
+    updateResultTutorScores(id1, {
+      tutorScores: { 0: { overallScore: 70 }, 1: { overallScore: 80 }, 2: { overallScore: 85 } },
+      tutorOverallScore: 78.3,
+      tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 85,
+      tutorDevelopmentScore: 15,
+      judgeModel: 'test-judge',
+    });
+    updateResultLearnerScores(id1, {
+      scores: { 0: { overallScore: 55 }, 1: { overallScore: 62 } },
+      overallScore: 58.5,
+      judgeModel: 'test-judge',
+      holisticScores: { engagement: { score: 4 } },
+      holisticOverallScore: 66,
+      holisticJudgeModel: 'test-judge',
+    });
+    updateResultTutorHolisticScores(id1, {
+      holisticScores: { scaffolding_arc: { score: 4 } },
+      holisticOverallScore: 72,
+      holisticJudgeModel: 'test-judge',
+    });
+    updateDialogueQualityScore(id1, {
+      dialogueQualityScore: 80,
+      dialogueQualityJudgeModel: 'test-judge',
+    });
+    updateDialogueQualityInternalScore(id1, {
+      dialogueQualityInternalScore: 77,
+    });
+
+    // Verify: first dialogue is FULLY scored before second dialogue starts
+    const afterFirst = getResults(runId);
+    const row1 = afterFirst.find((r) => r.id === id1);
+    assert.ok(row1.tutorOverallScore != null, 'row1 TutPT');
+    assert.ok(row1.tutorHolisticOverallScore != null, 'row1 TutH');
+    assert.ok(row1.learnerOverallScore != null, 'row1 LrnPT');
+    assert.ok(row1.learnerHolisticOverallScore != null, 'row1 LrnH');
+    assert.ok(row1.dialogueQualityScore != null, 'row1 DlgP');
+    assert.ok(row1.dialogueQualityInternalScore != null, 'row1 DlgI');
+
+    // Second dialogue is still unscored
+    const row2 = afterFirst.find((r) => r.id !== id1);
+    assert.strictEqual(row2.tutorOverallScore, null, 'row2 TutPT null');
+    assert.strictEqual(row2.tutorHolisticOverallScore, null, 'row2 TutH null');
+    assert.strictEqual(row2.dialogueQualityScore, null, 'row2 DlgP null');
+
+    // listRuns should show averages from the one fully-scored row
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.ok(run);
+    assert.ok(run.avgScore != null, 'listRuns TutPT visible from partially-scored run');
+    assert.ok(run.avgTutorHolisticScore != null, 'listRuns TutH visible');
+    assert.ok(run.avgDialogueScore != null, 'listRuns DlgP visible');
+    assert.ok(run.avgDialogueInternalScore != null, 'listRuns DlgI visible');
+  });
+
+  it('listRuns averages reflect only scored rows, not NULLs', () => {
+    const runId = makeRun('partial scoring avg');
+    storeResult(runId, makeResult({ scenarioId: 's1', dialogueId: 'dlg-partial-1', dialogueRounds: 3 }));
+    storeResult(runId, makeResult({ scenarioId: 's2', dialogueId: 'dlg-partial-2', dialogueRounds: 3 }));
+
+    const results = getResults(runId);
+
+    // Score only first row with known values
+    updateResultTutorScores(results[0].id, {
+      tutorScores: { 0: { overallScore: 80 } },
+      tutorOverallScore: 80,
+      tutorFirstTurnScore: 80,
+      judgeModel: 'test-judge',
+    });
+    updateResultTutorHolisticScores(results[0].id, {
+      holisticScores: {},
+      holisticOverallScore: 90,
+      holisticJudgeModel: 'test-judge',
+    });
+    updateDialogueQualityScore(results[0].id, {
+      dialogueQualityScore: 70,
+      dialogueQualityJudgeModel: 'test-judge',
+    });
+
+    // Second row is unscored — AVG should NOT be dragged down by NULLs
+    const runs = listRuns();
+    const run = runs.find((r) => r.id === runId);
+    assert.strictEqual(run.avgScore, 80, 'AVG(TutPT) = 80 from one scored row, not 40');
+    assert.strictEqual(run.avgTutorHolisticScore, 90, 'AVG(TutH) = 90 from one scored row');
+    assert.strictEqual(run.avgDialogueScore, 70, 'AVG(DlgP) = 70 from one scored row');
+  });
+});
