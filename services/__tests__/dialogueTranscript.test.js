@@ -37,6 +37,22 @@ const EGO_SUPEREGO_TRACE = [
   { agent: 'ego', action: 'revise', turnIndex: 1, detail: 'You identified asymmetry - now what happens when the master wins?', contextSummary: '' },
 ];
 
+/** Ego+superego learner trace variant where learner/final_output is missing after turn 1 */
+const EGO_SUPEREGO_TRACE_NO_SYNTH = [
+  { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
+  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'Initial learner ego thought', contextSummary: '' },
+  { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Initial learner critique', contextSummary: '' },
+  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Initial learner revision', contextSummary: '' },
+  { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Could we unpack fear and labour more slowly?' },
+  { agent: 'ego', action: 'generate', turnIndex: 1, detail: '', contextSummary: '' },
+  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 2, detail: 'Second learner ego thought', contextSummary: '' },
+  { agent: 'learner_superego', action: 'deliberation', turnIndex: 2, detail: 'Second learner critique', contextSummary: '' },
+  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 2, detail: 'Second learner revision', contextSummary: '' },
+  { agent: 'user', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I can track paragraph 196 now, but still not the negation of negation.' },
+  { agent: 'ego', action: 'generate', turnIndex: 2, detail: '', contextSummary: '' },
+];
+
 const TURNS = [
   { turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome to the dialectic.' }] },
   { turnIndex: 1, turnId: 'turn_1', suggestions: [{ message: 'Good point about Popper.' }] },
@@ -46,6 +62,12 @@ const TURNS = [
 const TURNS_EGO_SUPEREGO = [
   { turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome to recognition theory.' }] },
   { turnIndex: 1, turnId: 'turn_1', suggestions: [{ message: 'You identified asymmetry - now what happens when the master wins?' }] },
+];
+
+const TURNS_EGO_SUPEREGO_THREE = [
+  { turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Turn 1 tutor response.' }] },
+  { turnIndex: 1, turnId: 'turn_1', suggestions: [{ message: 'Turn 2 tutor response.' }] },
+  { turnIndex: 2, turnId: 'turn_2', suggestions: [{ message: 'Turn 3 tutor response.' }] },
 ];
 
 const LEARNER_CONTEXT = '### Recent Chat History\n- User: "I think the dialectic is just thesis plus antithesis equals synthesis"';
@@ -118,6 +140,25 @@ describe('buildDialoguePublicTranscript', () => {
     assert.equal(transcript.includes('[Learner Superego]'), false);
     assert.equal(transcript.includes('avoiding the harder question'), false,
       'Should not leak superego critique into public transcript');
+  });
+
+  it('falls back to turn_action learner message when ego_superego synthesis entries are missing', () => {
+    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
+    assert.ok(transcript.includes('Could we unpack fear and labour more slowly?'),
+      'Should include turn_action contextSummary for turn 2 when learner/final_output is missing');
+    assert.ok(transcript.includes('I can track paragraph 196 now, but still not the negation of negation.'),
+      'Should include turn_action contextSummary for turn 3 when learner/final_output is missing');
+  });
+
+  it('stays balanced across turns for ego_superego traces without learner/final_output', () => {
+    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
+    const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+    assert.equal(sections.length, 3, 'Expected 3 turn sections');
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      assert.ok(/\[Learner/.test(section), `Turn ${i + 1} missing learner line`);
+      assert.ok(/\[Tutor/.test(section), `Turn ${i + 1} missing tutor line`);
+    }
   });
 });
 
