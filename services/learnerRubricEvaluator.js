@@ -259,6 +259,10 @@ You are NOT evaluating the tutor. You are evaluating whether the learner agent p
 
 You are shown the dialogue history UP TO AND INCLUDING the learner turn being evaluated. You do NOT see subsequent tutor responses. Evaluate the learner turn on its own merits.
 
+## IMPORTANT: RESPONSE COMPLETENESS
+
+All learner responses shown below are COMPLETE as generated — they are NOT truncated. Some learner models produce concise output (1-3 sentences). This is the full response, not a fragment. Evaluate what is present. Never penalize brevity itself, never assume missing content, and never describe a response as "truncated." If text ends with an em-dash or ellipsis, that is the model's stylistic choice, not truncation.
+
 ## EVALUATION RUBRIC
 
 Score each dimension from 1-5:
@@ -360,6 +364,10 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the LEARNER's quality ACROSS THE ENTIRE DIALOGUE, independent of tutor quality.
 
 You are NOT evaluating the tutor. Evaluate the learner's trajectory: authenticity, conceptual engagement, question depth, revision over turns, and consistency with assigned persona.
+
+## IMPORTANT: RESPONSE COMPLETENESS
+
+All learner responses shown below are COMPLETE as generated — they are NOT truncated. Some learner models produce concise output (1-3 sentences). This is the full response, not a fragment. Evaluate what is present. Never penalize brevity itself, never assume missing content, and never describe a response as "truncated." If text ends with an em-dash or ellipsis, that is the model's stylistic choice, not truncation.
 
 ## EVALUATION RUBRIC
 
