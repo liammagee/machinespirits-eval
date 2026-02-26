@@ -298,7 +298,6 @@ export function traceToSteps(trace) {
   if (!Array.isArray(trace) || trace.length === 0) return steps;
 
   let dialogueTurn = 0;
-  const hasTurnActions = trace.some((e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action');
 
   const learnerBlockStarts = new Set();
   trace.forEach((e, i) => {
@@ -350,7 +349,7 @@ export function traceToSteps(trace) {
           type: 'front',
           speaker: 'LEARNER',
         });
-      } else if (!hasTurnActions) {
+      } else {
         const followup = extractLearnerFollowupFromContext(e.rawContext) || extractLearnerQuery(e) || '(learner follow-up)';
         steps.push({
           from: 'learner_ego',
