@@ -35,6 +35,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
 const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
 const TRANSCRIPTS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
+const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
 
 // Redirect tutor-core logs to this repo's logs/ directory (if available)
 import('@machinespirits/tutor-core')
@@ -1732,6 +1733,51 @@ export async function runEvaluation(options = {}) {
   };
 }
 
+// ── Checkpoint helpers for mid-dialogue resume ──────────────────────────────
+
+const CHECKPOINT_VERSION = 1;
+
+function writeCheckpoint(runId, scenarioId, profileName, state) {
+  const dir = path.join(CHECKPOINTS_DIR, runId);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filePath = path.join(dir, `${safeName}.json`);
+  const payload = { version: CHECKPOINT_VERSION, runId, scenarioId, profileName, timestamp: new Date().toISOString(), ...state };
+  fs.writeFileSync(filePath, JSON.stringify(payload));
+  return filePath;
+}
+
+function loadCheckpoint(runId, scenarioId, profileName) {
+  const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const filePath = path.join(CHECKPOINTS_DIR, runId, `${safeName}.json`);
+  if (!fs.existsSync(filePath)) return null;
+  try { return JSON.parse(fs.readFileSync(filePath, 'utf-8')); } catch { return null; }
+}
+
+function deleteCheckpoint(runId, scenarioId, profileName) {
+  const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const dir = path.join(CHECKPOINTS_DIR, runId);
+  const filePath = path.join(dir, `${safeName}.json`);
+  try {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
+  } catch { /* best-effort cleanup */ }
+}
+
+function listCheckpoints(runId) {
+  const dir = path.join(CHECKPOINTS_DIR, runId);
+  if (!fs.existsSync(dir)) return [];
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+  const checkpoints = [];
+  for (const file of files) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf-8'));
+      if (data.version === CHECKPOINT_VERSION) checkpoints.push(data);
+    } catch { /* skip corrupt */ }
+  }
+  return checkpoints;
+}
+
 /**
  * Run a single test (scenario + config combination)
  * Handles both single-turn and multi-turn scenarios
@@ -1745,6 +1791,7 @@ async function runSingleTest(scenario, config, options = {}) {
     _superegoStrategy = null,
     judgeOverride = null,
     _dryRun = false,
+    checkpointState = null,
   } = options;
 
   // Create a log function that calls both console and onLog callback
@@ -1765,7 +1812,7 @@ async function runSingleTest(scenario, config, options = {}) {
 
   if (isMultiTurn) {
     log('Detected multi-turn scenario', 'info');
-    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride });
+    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride, checkpointState });
   }
 
   // Single-turn evaluation (original logic)
@@ -1952,6 +1999,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     transcriptMode = false,
     runId = null,
     showMessages = false,
+    checkpointState = null,
   } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -1967,13 +2015,17 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     ? contentResolver.buildCurriculumContext(contentResolver.resolveScenarioContent(fullScenario))
     : null;
 
-  // 3. Generate dialogue ID for the session
-  const dialogueId = `dialogue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  // 3. Generate dialogue ID for the session (or restore from checkpoint)
+  const dialogueId = checkpointState?.dialogueId || `dialogue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   dialogueEngine.setCurrentDialogueId(dialogueId);
 
-  // Generate synthetic learnerId for Writing Pad persistence across turns
-  const learnerId = `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
-  log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
+  // Generate synthetic learnerId for Writing Pad persistence across turns (or restore)
+  const learnerId = checkpointState?.learnerId || `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
+  if (checkpointState) {
+    log(`[evaluationRunner] Resuming from checkpoint: turn ${checkpointState.lastCompletedTurn + 1} (dialogueId=${dialogueId})`, 'info');
+  } else {
+    log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
+  }
 
   // Set up transcript file for incremental writing (tail -f friendly)
   let transcriptPath = null;
@@ -2012,18 +2064,20 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // Deep-clone turns to prevent mutation of shared scenario objects across profiles
   const turns = JSON.parse(JSON.stringify(fullScenario.turns || []));
-  const turnResults = [];
-  let totalLatencyMs = 0;
-  let totalInputTokens = 0;
-  let totalOutputTokens = 0;
-  let totalApiCalls = 0;
-  let totalCost = 0;
-  let totalDialogueRounds = 0;
+  // Initialize state variables — restore from checkpoint if resuming
+  const cs = checkpointState; // alias for brevity
+  const turnResults = cs?.turnResults || [];
+  let totalLatencyMs = cs?.totalLatencyMs || 0;
+  let totalInputTokens = cs?.totalInputTokens || 0;
+  let totalOutputTokens = cs?.totalOutputTokens || 0;
+  let totalApiCalls = cs?.totalApiCalls || 0;
+  let totalCost = cs?.totalCost || 0;
+  let totalDialogueRounds = cs?.totalDialogueRounds || 0;
 
-  const conversationHistory = [];
-  let previousSuggestion = null;
-  const consolidatedTrace = [];
-  const priorSuperegoAssessments = []; // Cross-turn superego memory
+  const conversationHistory = cs?.conversationHistory || [];
+  let previousSuggestion = cs?.previousSuggestion || null;
+  const consolidatedTrace = cs?.consolidatedTrace || [];
+  const priorSuperegoAssessments = cs?.priorSuperegoAssessments || []; // Cross-turn superego memory
 
   // Check profile-level feature flags
   const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[config.profileName];
@@ -2083,21 +2137,25 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     conversationMode,
     showMessages,
   };
-  let sessionEvolution = null;
-  let superegoEvolution = null;
-  let behavioralOverrides = null; // Parsed quantitative params from superego self-reflection
-  let tutorProfileOfLearner = null; // Other-ego: tutor's mental model of learner
-  let learnerProfileOfTutor = null; // Other-ego: learner's mental model of tutor
-  let strategyPlan = null; // Other-ego: ego's explicit strategy plan
+  let sessionEvolution = cs?.sessionEvolution ?? null;
+  let superegoEvolution = cs?.superegoEvolution ?? null;
+  let behavioralOverrides = cs?.behavioralOverrides ?? null; // Parsed quantitative params from superego self-reflection
+  let tutorProfileOfLearner = cs?.tutorProfileOfLearner ?? null; // Other-ego: tutor's mental model of learner
+  let learnerProfileOfTutor = cs?.learnerProfileOfTutor ?? null; // Other-ego: learner's mental model of tutor
+  let strategyPlan = cs?.strategyPlan ?? null; // Other-ego: ego's explicit strategy plan
 
   // Per-dialogue rejection budget: limits total superego rejections across all turns
   // to prevent worst-case cascade (e.g., 3 rejections × 5 turns = 15 total)
   const rejectionBudget = rawProfile?.dialogue?.rejection_budget ?? null; // null = unlimited (backwards-compatible)
-  let totalRejections = 0;
+  let totalRejections = cs?.totalRejections ?? 0;
 
   // 4. Loop through turns (initial turn 0 + follow-up turns)
   const totalTurnCount = 1 + turns.length;
-  for (let turnIdx = 0; turnIdx < totalTurnCount; turnIdx++) {
+  const startTurnIdx = cs ? cs.lastCompletedTurn + 1 : 0;
+  if (cs) {
+    log(`[evaluationRunner] Checkpoint: resuming from turn ${startTurnIdx}/${totalTurnCount - 1} (${turnResults.length} turns already completed)`, 'info');
+  }
+  for (let turnIdx = startTurnIdx; turnIdx < totalTurnCount; turnIdx++) {
     const isInitialTurn = turnIdx === 0;
     const turnDef = isInitialTurn ? null : turns[turnIdx - 1];
 
@@ -2851,6 +2909,39 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         flushTranscript();
       }
     }
+
+    // Write mid-dialogue checkpoint after each completed turn
+    if (runId) {
+      writeCheckpoint(runId, scenario.id, config.profileName, {
+        lastCompletedTurn: turnIdx,
+        totalTurns: totalTurnCount,
+        dialogueId,
+        learnerId,
+        turnResults,
+        conversationHistory,
+        consolidatedTrace,
+        priorSuperegoAssessments,
+        previousSuggestion,
+        sessionEvolution,
+        superegoEvolution,
+        behavioralOverrides,
+        tutorProfileOfLearner,
+        learnerProfileOfTutor,
+        strategyPlan,
+        totalRejections,
+        totalLatencyMs,
+        totalInputTokens,
+        totalOutputTokens,
+        totalApiCalls,
+        totalCost,
+        totalDialogueRounds,
+      });
+    }
+  }
+
+  // Multi-turn loop completed successfully — clean up checkpoint
+  if (runId) {
+    deleteCheckpoint(runId, scenario.id, config.profileName);
   }
 
   // Clear turn progress from run metadata now that all turns are complete
@@ -3233,6 +3324,25 @@ export async function resumeEvaluation(options = {}) {
     }
   }
 
+  // Scan for mid-dialogue checkpoints
+  const checkpoints = listCheckpoints(runId);
+  let checkpointCount = 0;
+  if (checkpoints.length > 0) {
+    const checkpointMap = new Map();
+    for (const cp of checkpoints) {
+      checkpointMap.set(`${cp.profileName}:${cp.scenarioId}`, cp);
+    }
+    for (const test of remainingTests) {
+      const key = `${test.config.profileName}:${test.scenario.id}`;
+      const cp = checkpointMap.get(key);
+      if (cp) {
+        test.checkpointState = cp;
+        checkpointMap.delete(key);
+        checkpointCount++;
+      }
+    }
+  }
+
   if (remainingTests.length === 0) {
     console.log(`\nRun ${runId}: all tests completed (${runsPerConfig} reps each). Nothing to resume.`);
     return {
@@ -3256,6 +3366,7 @@ export async function resumeEvaluation(options = {}) {
   console.log(`\nResuming run: ${runId}`);
   console.log(`  Previously completed: ${existingResults.length} tests`);
   console.log(`  Remaining: ${totalRemainingTests} tests`);
+  if (checkpointCount > 0) console.log(`  Mid-dialogue checkpoints: ${checkpointCount} (will resume mid-turn)`);
   console.log(`  Profiles: ${profileNames.join(', ')}`);
   console.log(`  Scenarios: ${targetScenarios.length}`);
   if (modelOverride) console.log(`  Model override: ${modelOverride}`);
@@ -3341,7 +3452,7 @@ export async function resumeEvaluation(options = {}) {
 
   const runStartTime = Date.now();
 
-  await processQueue(remainingTests, parallelism, async ({ config, scenario }) => {
+  await processQueue(remainingTests, parallelism, async ({ config, scenario, checkpointState }) => {
     const profileLabel = config.label || config.profileName || '';
 
     progressLogger.testStart({
@@ -3355,6 +3466,7 @@ export async function resumeEvaluation(options = {}) {
         skipRubricEval,
         verbose,
         runId,
+        checkpointState: checkpointState || null,
       });
 
       evaluationStore.storeResult(runId, result);
@@ -3987,7 +4099,7 @@ export async function rejudgeRun(runId, options = {}) {
 }
 
 // Named exports for unit testing (these are internal helpers not part of the public API)
-export { structureLearnerContext, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext, buildMessageChain };
+export { structureLearnerContext, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext, buildMessageChain, writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints };
 
 export default {
   runEvaluation,
