@@ -3469,7 +3469,6 @@ async function main() {
             // Process each new unevaluated result
             let batchIndex = 0;
             const batchSize = unevaluated.length;
-            const batchMultiTurnScored = [];
             for (const result of unevaluated) {
               if (interrupted) break;
               processedIds.add(result.id);
@@ -3482,7 +3481,10 @@ async function main() {
                 let score;
                 if (isMultiTurnResult(result)) {
                   score = await evaluateMultiTurnResult(result, tag);
-                  if (score != null) batchMultiTurnScored.push(result);
+                  // Immediately score dialogue quality so each dialogue is fully scored before moving on
+                  if (score != null && !tutorOnly) {
+                    await scoreDialogueQuality(result, tag);
+                  }
                 } else {
                   score = await evaluateOneResult(result, tag);
                 }
@@ -3498,14 +3500,6 @@ async function main() {
                 const profileName = result.profileName || `${result.provider}/${result.model}`;
                 console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
                 if (verbose) console.error(err);
-              }
-            }
-
-            // Auto-trigger dialogue quality scoring for newly scored multi-turn results
-            if (!tutorOnly && batchMultiTurnScored.length > 0) {
-              for (let di = 0; di < batchMultiTurnScored.length; di++) {
-                const dTag = `[dq ${di + 1}/${batchMultiTurnScored.length}]`;
-                await scoreDialogueQuality(batchMultiTurnScored[di], dTag);
               }
             }
 
@@ -3647,8 +3641,7 @@ async function main() {
             }
           }
 
-          // ── Score multi-turn results (per-turn tutor + learner) ──
-          const multiTurnScored = [];
+          // ── Score multi-turn results (per-turn tutor + learner + DQ, all inline) ──
           for (const result of multiTurn) {
             idx++;
             const tag = `[${idx}/${toEvaluate.length}]`;
@@ -3657,7 +3650,10 @@ async function main() {
               if (score != null) {
                 scores.push(score);
                 succeeded++;
-                multiTurnScored.push(result);
+                // Immediately score dialogue quality so each dialogue is fully scored before moving on
+                if (!tutorOnly) {
+                  await scoreDialogueQuality(result, tag);
+                }
               } else {
                 failed++;
               }
@@ -3671,19 +3667,6 @@ async function main() {
           }
 
           printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
-
-          // ── Auto-trigger dialogue quality scoring for multi-turn results (unless --tutor-only) ──
-          if (!tutorOnly && multiTurnScored.length > 0) {
-            console.log(`\n${'─'.repeat(50)}`);
-            console.log(`  DIALOGUE QUALITY SCORING (${multiTurnScored.length} dialogue(s))`);
-            console.log(`${'─'.repeat(50)}\n`);
-
-            for (let i = 0; i < multiTurnScored.length; i++) {
-              const result = multiTurnScored[i];
-              const tag = `[${i + 1}/${multiTurnScored.length}]`;
-              await scoreDialogueQuality(result, tag);
-            }
-          }
 
           // Legacy holistic dialogue evaluation for any remaining multi-turn results
           // (kept for backward compat with evaluate --multiturn-only path)
