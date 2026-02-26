@@ -53,7 +53,7 @@ import 'dotenv/config';
  *   --dry-run              Use mock data instead of API calls (no API keys required)
  *   --show-messages        Print API messages during 'run' (system prompts truncated to 200 chars)
  *   --show-messages=full   Print API messages untruncated
- *   --live                 Auto-refresh mode for 'runs' command
+ *   --live                 Auto-refresh mode for 'runs' command (default: 20 most recent; override with --limit)
  *   --as <side>            For 'play': tutor or learner (default: tutor)
  *   --role <role>          For 'play': ego, superego, or both (default: ego)
  *
@@ -1441,15 +1441,17 @@ async function main() {
         const refreshMs = parseInt(getOption('refresh', '3000'), 10);
 
         if (isLive) {
-          // Live auto-refreshing mode
+          // Live auto-refreshing mode — use alternate screen buffer (like top/htop)
+          const liveLimit = limit || 20;
           let lastOutput = '';
+          process.stdout.write('\x1b[?1049h'); // enter alternate screen buffer
           const poll = () => {
-            const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit, status: statusFilter }));
+            const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit: liveLimit, status: statusFilter }));
             if (runs.length === 0) {
               const output = '\nNo evaluation runs found.';
               if (output !== lastOutput) {
-                process.stdout.write('\x1b[2J\x1b[H');
-                console.log(theme.dim(`Runs  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms)`));
+                process.stdout.write('\x1b[H\x1b[2J');
+                console.log(theme.dim(`Runs  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms, Ctrl+C to exit)`));
                 console.log(output);
                 lastOutput = output;
               }
@@ -1457,9 +1459,9 @@ async function main() {
             }
             const output = renderRunsTable(runs);
             if (output !== lastOutput) {
-              process.stdout.write('\x1b[2J\x1b[H');
+              process.stdout.write('\x1b[H\x1b[2J');
               console.log(
-                theme.dim(`Runs: ${runs.length} total  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms)`),
+                theme.dim(`Runs: ${runs.length} most recent  (${new Date().toLocaleTimeString()}, refresh ${refreshMs}ms, Ctrl+C to exit)`),
               );
               console.log('');
               console.log(output);
@@ -1471,7 +1473,8 @@ async function main() {
           const interval = setInterval(poll, refreshMs);
           process.on('SIGINT', () => {
             clearInterval(interval);
-            console.log('\nStopped watching.');
+            process.stdout.write('\x1b[?1049l'); // leave alternate screen buffer
+            console.log('Stopped watching.');
             process.exit(0);
           });
           await new Promise(() => {});
