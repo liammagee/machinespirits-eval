@@ -50,8 +50,8 @@ const TRACE_WITH_TRANSFORMATION = [
     verdict: { feedback: 'Mutual recognition is evident. Both parties have adapted.', confidence: 0.95 },
   },
   {
-    agent: 'learner_synthesis',
-    action: 'response',
+    agent: 'learner',
+    action: 'final_output',
     turnIndex: 2,
     detail: 'The whole way I think about this has shifted.',
   },
@@ -70,8 +70,8 @@ const TRACE_TUTOR_ONLY_TRANSFORM = [
 const TRACE_LEARNER_ONLY_TRANSFORM = [
   { agent: 'learner_ego', action: 'deliberation', turnIndex: 0, detail: 'Oh wait, I think I was wrong about this.' },
   {
-    agent: 'learner_synthesis',
-    action: 'response',
+    agent: 'learner',
+    action: 'final_output',
     turnIndex: 1,
     detail: 'I see now that my understanding has changed.',
   },

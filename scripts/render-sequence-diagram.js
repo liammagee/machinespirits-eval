@@ -205,7 +205,7 @@ function traceToSteps(trace) {
 
     if (agent === 'system') continue;
     if (agent === 'user' && action === 'final_output') continue;
-    if (agent === 'learner_synthesis') continue;
+    if (agent === 'learner') continue;
 
     // Context input
     if (agent === 'user' && action === 'context_input') {

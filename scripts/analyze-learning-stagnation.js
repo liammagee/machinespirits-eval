@@ -362,7 +362,7 @@ function extractLearnerTurnMaps(log) {
   const byIdxUserDetail = new Map();
 
   for (const e of trace) {
-    if (e?.agent === 'learner_synthesis' && e?.action === 'response' && Number.isFinite(e?.turnIndex)) {
+    if (e?.agent === 'learner' && e?.action === 'final_output' && Number.isFinite(e?.turnIndex)) {
       const txt = String(e?.detail || e?.contextSummary || e?.message || '').trim();
       byIdxSynth.set(e.turnIndex, txt);
     }

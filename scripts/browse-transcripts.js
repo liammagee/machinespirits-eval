@@ -507,9 +507,9 @@ const PAGE_HTML = `<!DOCTYPE html>
     <span class="view-divider" id="chainFilterDivider" style="display:none"></span>
     <span class="chain-filter" id="chainFilterGroup" style="display:none">
       <button class="view-btn" id="chainFilterAllBtn" onclick="setMessageChainChannelFilter('all')">All chains</button>
-      <button class="view-btn" id="chainFilterFrontBtn" onclick="setMessageChainChannelFilter('tutor_learner')">Tutor↔Learner</button>
-      <button class="view-btn" id="chainFilterTutorBtn" onclick="setMessageChainChannelFilter('tutor_ego_superego')">Tutor↔Superego</button>
-      <button class="view-btn" id="chainFilterLearnerBtn" onclick="setMessageChainChannelFilter('learner_ego_superego')">Learner↔Superego</button>
+      <button class="view-btn" id="chainFilterFrontBtn" onclick="setMessageChainChannelFilter('tutor_learner')">Tutor&lt;-&gt;Learner</button>
+      <button class="view-btn" id="chainFilterTutorBtn" onclick="setMessageChainChannelFilter('tutor_ego_superego')">Tutor&lt;-&gt;Superego</button>
+      <button class="view-btn" id="chainFilterLearnerBtn" onclick="setMessageChainChannelFilter('learner_ego_superego')">Learner&lt;-&gt;Superego</button>
     </span>
     <span class="view-divider"></span>
     <button class="view-btn theme-btn" id="themeToggleBtn" onclick="toggleTheme()">Light</button>
@@ -565,9 +565,9 @@ function shortModel(m) {
 function scoreClass(s) { return s == null || Number.isNaN(s) ? 'score-na' : s >= 85 ? 'score-high' : s >= 65 ? 'score-mid' : 'score-low'; }
 function scoreBg(s) { return s == null || Number.isNaN(s) ? '#455a64' : s >= 90 ? '#1b5e20' : s >= 70 ? '#e65100' : '#b71c1c'; }
 function channelLabel(channel) {
-  if (channel === 'tutor_learner') return 'Tutor↔Learner';
-  if (channel === 'tutor_ego_superego') return 'Tutor↔Superego';
-  if (channel === 'learner_ego_superego') return 'Learner↔Superego';
+  if (channel === 'tutor_learner') return 'Tutor<->Learner';
+  if (channel === 'tutor_ego_superego') return 'Tutor<->Superego';
+  if (channel === 'learner_ego_superego') return 'Learner<->Superego';
   return 'Unknown';
 }
 function normalizeScenarioKey(v) {
@@ -826,13 +826,13 @@ function renderTopBar(data) {
     '<div>' +
       '<h2>' + escapeHtml(scenario) + '</h2>' +
       '<div class="meta-grid">' +
-        '<span class="meta-label">Cell</span><span class="meta-value">' + escapeHtml(m.profile) + '</span><span class="meta-value">' + condLabel + (m.totalTurns ? ' · ' + m.totalTurns + ' turns' : '') + '</span>' +
+        '<span class="meta-label">Cell</span><span class="meta-value">' + escapeHtml(m.profile) + '</span><span class="meta-value">' + condLabel + (m.totalTurns ? ' | ' + m.totalTurns + ' turns' : '') + '</span>' +
         '<span class="meta-label">Tutor</span><span class="meta-value">ego ' + escapeHtml(shortModel(m.egoModel)) + '</span><span class="meta-value">superego ' + escapeHtml(shortModel(m.superegoModel) || shortModel(m.egoModel)) + '</span>' +
         '<span class="meta-label">Learner</span><span class="meta-value">ego ' + escapeHtml(shortModel(m.learnerEgoModel)) + '</span><span class="meta-value">superego ' + escapeHtml(shortModel(m.learnerSuperegoModel)) + '</span>' +
         '<span class="meta-label">Judge</span><span class="meta-value">' + escapeHtml(shortModel(m.judgeModel)) + '</span><span class="meta-value">' + escapeHtml(chainSummary) + '</span>' +
         '<span class="meta-label">Trace</span><span class="meta-value">' + escapeHtml(projectionSummary) + '</span><span class="meta-value"></span>' +
       '</div>' +
-      '<div class="meta-id">' + escapeHtml(m.runId) + ' · ' + escapeHtml(m.dialogueId) + '</div>' +
+      '<div class="meta-id">' + escapeHtml(m.runId) + ' | ' + escapeHtml(m.dialogueId) + '</div>' +
     '</div>' +
     '<span class="score-badge" style="background:' + scoreBg(parseFloat(score)) + '">' + score + '</span>';
 }
@@ -864,7 +864,7 @@ function renderViewControls(data) {
   } else {
     hint.textContent =
       'Message chain includes captured payloads' +
-      (messageChainChannelFilter === 'all' ? '' : (' · filter: ' + channelLabel(messageChainChannelFilter)));
+      (messageChainChannelFilter === 'all' ? '' : (' | filter: ' + channelLabel(messageChainChannelFilter)));
   }
 }
 
@@ -1070,7 +1070,7 @@ function traceToSteps(trace) {
 
     if (agent === 'system') continue;
     if (agent === 'user' && action === 'final_output') continue;
-    if (agent === 'learner_synthesis') continue;
+    if (agent === 'learner') continue;
 
     if (agent === 'user' && action === 'context_input') {
       dialogueTurn++;
@@ -1306,7 +1306,7 @@ function isModelCallEntry(entry) {
     'learner_ego_initial:deliberation',
     'learner_superego:deliberation',
     'learner_ego_revision:deliberation',
-    'learner_synthesis:response',
+    'learner:final_output',
   ]);
   return candidates.has(key);
 }
@@ -1556,7 +1556,7 @@ function toMessageStackLines(requestBody) {
       const role = (c?.role || 'user').toString();
       let text = null;
       if (Array.isArray(c?.parts)) {
-        text = c.parts.map((p) => p?.text).filter(Boolean).join('\n');
+        text = c.parts.map((p) => p?.text).filter(Boolean).join('\\\\n');
       }
       if (!text) text = extractContentField(c?.content || c?.text || null);
       lines.push({ role: role === 'model' ? 'Assistant' : role === 'system' ? 'Sys' : 'User', text: text || safeJson(c) });
@@ -1580,7 +1580,7 @@ function renderProjectionDiagnosticsCard(diag) {
   for (const effect of diag.effects) {
     const sev = (effect.severity || 'info').toUpperCase();
     html += '<div class="chain-section">';
-    html += '<div class="chain-title">' + escapeHtml(sev + ' · ' + (effect.id || 'effect')) + '</div>';
+    html += '<div class="chain-title">' + escapeHtml(sev + ' | ' + (effect.id || 'effect')) + '</div>';
     html += '<div class="chain-line"><div class="chain-text">' + escapeHtml(effect.message || '') + '</div></div>';
     if (Array.isArray(effect.remedialSteps) && effect.remedialSteps.length > 0) {
       const remediation = effect.remedialSteps.map((s, i) => (i + 1) + '. ' + s).join('\\n');
@@ -1627,7 +1627,7 @@ function renderMessageChain(data, visibleExchanges = null) {
   html += '<div class="chain-card">';
   html += '<div class="chain-head">API Message Chains</div>';
   const chainSummary =
-    'Visible ' + exchanges.length + '/' + (chain.exchanges || []).length + ' exchanges · ' +
+    'Visible ' + exchanges.length + '/' + (chain.exchanges || []).length + ' exchanges | ' +
     channelLabel('tutor_learner') + ': ' + (counts.tutor_learner || 0) + ', ' +
     channelLabel('tutor_ego_superego') + ': ' + (counts.tutor_ego_superego || 0) + ', ' +
     channelLabel('learner_ego_superego') + ': ' + (counts.learner_ego_superego || 0);
@@ -1662,11 +1662,11 @@ function renderMessageChain(data, visibleExchanges = null) {
     const latency = ex.latencyMs == null ? '' : (ex.latencyMs < 1000 ? ex.latencyMs + 'ms' : (ex.latencyMs / 1000).toFixed(1) + 's');
     const head =
       '#' + ex.sequence +
-      ' · ' + channelLabel(ex.channel) +
-      ' · ' + ex.agent + '/' + ex.action +
-      ' · model=' + model +
-      (latency ? ' · ' + latency : '') +
-      ' · payload=' + (ex.hasApiPayload ? 'captured' : 'missing');
+      ' | ' + channelLabel(ex.channel) +
+      ' | ' + ex.agent + '/' + ex.action +
+      ' | model=' + model +
+      (latency ? ' | ' + latency : '') +
+      ' | payload=' + (ex.hasApiPayload ? 'captured' : 'missing');
 
     html += '<div class="chain-card">';
     html += '<div class="chain-head">' + escapeHtml(head) + '<span class="channel-tag">' + escapeHtml(ex.channel || 'unknown') + '</span></div>';
@@ -1682,7 +1682,7 @@ function renderMessageChain(data, visibleExchanges = null) {
     html += '<div class="chain-title">Raw API (Content Fields)</div>';
     if (ex.hasApiPayload) {
       if (requestMeta || responseMeta) {
-        html += '<div class="chain-line"><div class="chain-text">' + escapeHtml([requestMeta, responseMeta].filter(Boolean).join(' · ')) + '</div></div>';
+        html += '<div class="chain-line"><div class="chain-text">' + escapeHtml([requestMeta, responseMeta].filter(Boolean).join(' | ')) + '</div></div>';
       }
       html += renderChainLine('Req Sys:', ex.raw?.systemPrompt, { maxChars: 1200 });
       html += renderChainLine('Req User:', ex.raw?.userRequest, { maxChars: 2000 });
@@ -1764,7 +1764,7 @@ function renderJudgePanel(scores, qualitative) {
   const scoreStr = scores?.overall?.toFixed(1) || '--';
   document.getElementById('judgePanel').innerHTML =
     '<details class="judge-panel">' +
-    '<summary class="judge-toggle">Judge Adjudication — ' + scoreStr + '/100</summary>' +
+    '<summary class="judge-toggle">Judge Adjudication - ' + scoreStr + '/100</summary>' +
     '<div class="judge-body">' +
       (judgeRows ? '<table class="judge-table">' + judgeRows + '</table>' : '') +
       (qualHtml ? '<div style="margin-top:16px">' + qualHtml + '</div>' : '') +

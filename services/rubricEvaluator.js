@@ -344,7 +344,7 @@ function formatDialogueTranscript(dialogueContext) {
         lines.push(`  (Learner Ego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
       } else if (entry.agent === 'learner_superego') {
         lines.push(`  (Learner Superego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
-      } else if (entry.agent === 'learner_synthesis') {
+      } else if (entry.agent === 'learner') {
         lines.push(`[Learner] "${truncate(entry.detail || entry.contextSummary, 300)}"`);
       } else if (entry.agent === 'ego' && entry.action === 'initial_draft') {
         lines.push(`  (Tutor Ego draft: ${truncate(entry.contextSummary || '', 150)})`);
@@ -1459,7 +1459,7 @@ export function calculateDialogueQualityScore(scores) {
 
 /**
  * Detect whether a dialogue trace represents an ego_superego (multi-agent) learner.
- * These learners have learner_synthesis or learner_ego_initial trace entries
+ * These learners have learner or learner_ego_initial trace entries
  * representing their internal ego→superego→revision deliberation cycle.
  *
  * Unified (ego-only) learners do NOT have these entries — their messages
@@ -1467,7 +1467,7 @@ export function calculateDialogueQualityScore(scores) {
  */
 function isEgoSuperegoLearner(dialogueTrace) {
   return dialogueTrace?.some(
-    (e) => e.agent === 'learner_synthesis' || e.agent === 'learner_ego_initial',
+    (e) => e.agent === 'learner' || e.agent === 'learner_ego_initial',
   ) ?? false;
 }
 
@@ -1512,11 +1512,11 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   const initialMessage = extractInitialLearnerMessage(learnerContext);
 
   // Index trace entries by turnIndex
-  const synthByTurn = {};       // ego_superego learner synthesis
+  const synthByTurn = {};       // ego_superego learner final output
   const learnerMsgByTurn = {};  // unified learner message (from turn_action contextSummary)
   if (dialogueTrace?.length > 0) {
     for (const entry of dialogueTrace) {
-      if (entry.agent === 'learner_synthesis' && entry.turnIndex !== undefined) {
+      if (entry.agent === 'learner' && entry.turnIndex !== undefined) {
         synthByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
       }
       if (entry.agent === 'user' && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
@@ -1594,10 +1594,10 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
  *   user/context_input               — entry.rawContext (metadata, not rendered)
  *   learner_ego_{initial,revision}/deliberation — entry.detail or entry.contextSummary (identical)
  *   learner_superego/deliberation    — entry.detail or entry.contextSummary (identical)
- *   learner_synthesis/response       — entry.detail or entry.contextSummary (identical)
+ *   learner/final_output   — entry.detail or entry.contextSummary (identical)
  *
  * [Learner Action] is never used — all learners are LLM-powered agents.
- * For ego_superego learners, user/turn_action is suppressed (redundant with learner_synthesis).
+ * For ego_superego learners, user/turn_action is suppressed (redundant with learner).
  * For unified learners, user/turn_action contextSummary is rendered as [Learner].
  *
  * @param {Array} turns - Turn objects from dialogue log
@@ -1737,11 +1737,11 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
       } else if (entry.agent === 'learner_superego') {
         const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Superego] ${truncate(text, 300)}`);
-      } else if (entry.agent === 'learner_synthesis') {
+      } else if (entry.agent === 'learner') {
         const text = entry.detail || entry.contextSummary || '';
-        // Skip if synthesis is identical to the preceding revision/initial
+        // Skip if final output is identical to the preceding revision/initial
         if (text !== lastLearnerEgoText) {
-          lines.push(`[Learner Ego] (synthesis) ${truncate(text, 400)}`);
+          lines.push(`[Learner] (final output) ${truncate(text, 400)}`);
         }
       } else if (entry.agent === 'learner_ego') {
         // Legacy unified learner ego entries (early runs)
@@ -1753,7 +1753,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
 
       // ── Protocol entries ──
       } else if (entry.agent === 'user' && entry.action === 'turn_action') {
-        // For ego_superego learners: suppress (redundant with learner_synthesis)
+        // For ego_superego learners: suppress (redundant with learner)
         // For unified learners: contextSummary is the actual message; detail is action type label
         if (!egoSuperego) {
           const learnerMsg = entry.contextSummary || entry.detail || '';
@@ -1913,8 +1913,72 @@ ${exampleScores}
 \`\`\``;
 }
 
+/**
+ * Build a per-turn tutor evaluation prompt for multi-turn dialogues.
+ * Mirrors the learner evaluator's truncated-transcript pattern to prevent future-bias.
+ *
+ * @param {Object} params
+ * @param {Array} params.turnResults - Turn results from the dialogue log (each has suggestions, learnerMessage, etc.)
+ * @param {Array} params.dialogueTrace - Full dialogue trace entries from the log
+ * @param {number} params.targetTurnIndex - Index of the tutor turn to score (0-based)
+ * @param {Object} params.scenario - Scenario context { name, description, expectedBehavior, learnerContext, requiredElements, forbiddenElements }
+ * @returns {string} Complete judge prompt for scoring a single tutor turn
+ */
+function buildPerTurnTutorEvaluationPrompt(params) {
+  const {
+    turnResults,
+    dialogueTrace = [],
+    targetTurnIndex,
+    scenario,
+  } = params;
+
+  const targetTurn = turnResults[targetTurnIndex];
+  if (!targetTurn) return null;
+
+  const suggestion = targetTurn.suggestions?.[0];
+  if (!suggestion) return null;
+
+  // Build truncated conversation history up to and including the target turn
+  const truncatedHistory = turnResults.slice(0, targetTurnIndex + 1).map((t, i) => ({
+    turnIndex: i,
+    turnId: t.turnId,
+    suggestion: t.suggestions?.[0],
+    learnerAction: t.learnerAction,
+    learnerMessage: t.learnerMessage,
+  }));
+
+  // Build truncated dialogue trace up to the target turn's entries
+  let truncatedTrace = dialogueTrace;
+  if (dialogueTrace.length > 0) {
+    // Find the last trace entry for the target turn
+    const lastTraceIdx = dialogueTrace.findLastIndex(
+      (e) => e.turnIndex !== undefined && e.turnIndex <= targetTurnIndex,
+    );
+    if (lastTraceIdx >= 0) {
+      truncatedTrace = dialogueTrace.slice(0, lastTraceIdx + 1);
+    }
+  }
+
+  const dialogueContext = (truncatedTrace.length > 0 || truncatedHistory.length > 0)
+    ? { consolidatedTrace: truncatedTrace, conversationHistory: truncatedHistory }
+    : null;
+
+  // Add per-turn framing to the scenario description
+  const totalTurns = turnResults.length;
+  const turnLabel = `Turn ${targetTurnIndex + 1} of ${totalTurns}`;
+  const perTurnScenario = {
+    ...scenario,
+    description: `${scenario.description}\n\n[PER-TURN SCORING] You are scoring the tutor's response at ${turnLabel}. ` +
+      `The dialogue transcript is truncated to this point — you do NOT see future turns. ` +
+      `Evaluate this response on its own merits within the dialogue context so far.`,
+  };
+
+  return buildEvaluationPrompt(suggestion, perTurnScenario, { dialogueContext });
+}
+
 export {
   buildEvaluationPrompt,
+  buildPerTurnTutorEvaluationPrompt,
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,
   isEgoSuperegoLearner,
@@ -1932,6 +1996,7 @@ export default {
   calculateDialogueQualityScore,
   getAvailableJudge,
   buildEvaluationPrompt,
+  buildPerTurnTutorEvaluationPrompt,
   buildDialogueQualityPrompt,
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,

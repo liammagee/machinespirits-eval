@@ -854,7 +854,7 @@ describe('buildDialogueQualityPrompt', () => {
       dialogueTrace: [
         { turnIndex: 0, agent: 'user', action: 'turn_action', detail: 'Learner asks a question' },
         { turnIndex: 0, agent: 'ego', action: 'initial_draft', contextSummary: 'Drafting response' },
-        { turnIndex: 0, agent: 'learner_synthesis', detail: 'I think I understand now' },
+        { turnIndex: 0, agent: 'learner', detail: 'I think I understand now' },
       ],
       scenarioName: 'Trace Test',
       turnCount: 1,
