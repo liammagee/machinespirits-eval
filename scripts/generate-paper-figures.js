@@ -307,7 +307,7 @@ function traceToSteps(trace) {
       needsResponseArrow = false;
     }
 
-    if (agent === 'system' || (agent === 'user' && action === 'final_output') || agent === 'learner_synthesis')
+    if (agent === 'system' || (agent === 'user' && action === 'final_output') || agent === 'learner')
       continue;
 
     if (agent === 'user' && action === 'context_input') {

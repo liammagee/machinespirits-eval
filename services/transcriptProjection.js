@@ -160,7 +160,7 @@ function isModelCallEntry(entry) {
     'learner_ego_initial:deliberation',
     'learner_superego:deliberation',
     'learner_ego_revision:deliberation',
-    'learner_synthesis:response',
+    'learner:final_output',
   ]);
   return candidates.has(key);
 }
@@ -332,7 +332,7 @@ export function traceToSteps(trace) {
 
     if (agent === 'system') continue;
     if (agent === 'user' && action === 'final_output') continue;
-    if (agent === 'learner_synthesis') continue;
+    if (agent === 'learner') continue;
 
     if (agent === 'user' && action === 'context_input') {
       dialogueTurn++;

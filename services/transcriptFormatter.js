@@ -134,7 +134,7 @@ function getSpeakerLabel(entry) {
   if (agent === 'user' && action === 'turn_action') return 'LEARNER';
   if (agent === 'learner_ego' && action === 'deliberation') return 'LEARNER EGO';
   if (agent === 'learner_superego' && action === 'deliberation') return 'LEARNER SUPEREGO';
-  if (agent === 'learner_synthesis' && action === 'response') return 'LEARNER';
+  if (agent === 'learner' && action === 'final_output') return 'LEARNER';
 
   // Tutor ego/superego
   if (agent === 'ego' && action === 'generate') return 'TUTOR EGO (draft)';
@@ -238,8 +238,8 @@ function getEntryContent(entry) {
     return entry.detail || entry.contextSummary || '';
   }
 
-  // Learner deliberation
-  if (action === 'deliberation' || action === 'response') {
+  // Learner deliberation / final output
+  if (action === 'deliberation' || action === 'final_output') {
     return entry.detail || entry.contextSummary || '';
   }
 
@@ -292,7 +292,7 @@ function isMessageVisible(entry) {
   if (agent === 'user' && action === 'turn_action') return true;
   if (action === 'revise') return true;
   if (agent === 'ego' && action === 'generate' && !entry._hasRevision) return true;
-  if (agent === 'learner_synthesis' && action === 'response') return true;
+  if (agent === 'learner' && action === 'final_output') return true;
   return false;
 }
 
@@ -502,7 +502,7 @@ function isTutorEntry(entry) {
  *     ── TUTOR DELIBERATION ──
  *     context_input → ego generate → superego review → ...
  *     ── LEARNER DELIBERATION ──
- *     learner_ego → learner_superego → learner_ego_revision → learner_synthesis
+ *     learner_ego → learner_superego → learner_ego_revision → learner
  *     ── LEARNER MESSAGE ──
  *     (the external turn_action)
  *   TURN 2
@@ -594,7 +594,7 @@ function formatBilateralTranscript(trace, options = {}) {
       } else if (isTutorEntry(entry)) {
         tutorEntries.push(entry);
       } else {
-        // Learner ego/superego/synthesis deliberation
+        // Learner ego/superego deliberation + final_output
         learnerDeliberation.push(entry);
       }
     }
@@ -619,9 +619,9 @@ function formatBilateralTranscript(trace, options = {}) {
     }
 
     // ── LEARNER DELIBERATION ──
-    // Skip learner_synthesis — it duplicates the turn_action content shown in LEARNER MESSAGE
+    // Skip learner — it duplicates the turn_action content shown in LEARNER MESSAGE
     const deliberationOnly = learnerDeliberation.filter(
-      (e) => !(e.agent === 'learner_synthesis' && e.action === 'response'),
+      (e) => !(e.agent === 'learner' && e.action === 'final_output'),
     );
     if (deliberationOnly.length > 0) {
       lines.push(INDENT + `\u2500\u2500 LEARNER DELIBERATION ${PHASE_LINE}`);

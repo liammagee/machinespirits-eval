@@ -391,7 +391,7 @@ function loadLearnerTurnsFromLog(logPath) {
   try {
     const log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
     const traceTurns = (log.dialogueTrace || [])
-      .filter((entry) => entry.agent === 'learner_synthesis' && typeof entry.detail === 'string')
+      .filter((entry) => entry.agent === 'learner' && typeof entry.detail === 'string')
       .map((entry) => entry.detail.trim())
       .filter(Boolean);
 

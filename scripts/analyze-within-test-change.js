@@ -260,7 +260,7 @@ function extractLearnerTurnTextMap(log) {
   const trace = Array.isArray(log?.dialogueTrace) ? log.dialogueTrace : [];
 
   // Prefer synthesized learner responses when present.
-  const synthResponses = trace.filter((e) => e?.agent === 'learner_synthesis' && e?.action === 'response');
+  const synthResponses = trace.filter((e) => e?.agent === 'learner' && e?.action === 'final_output');
   for (const e of synthResponses) {
     const idx = Number.isFinite(e?.turnIndex) ? e.turnIndex : null;
     if (idx == null) continue;

@@ -28,6 +28,21 @@ Related services:
 - `services/dialogueTraceAnalyzer.js` — Superego feedback incorporation analysis
 - `services/learnerConfigLoader.js` — Learner personas and profiles
 
+### Tutor-Learner Symmetry (Design Principle)
+
+Always aim for absolute symmetry between tutor and learner trace labels, scoring pipelines, and data structures. When adding or modifying one side, mirror the change on the other.
+
+**Trace agent/action labels** must be symmetric:
+- Tutor: `ego/generate` → `superego/review` → `user/final_output`
+- Learner: `learner_ego_initial/deliberation` → `learner_superego/deliberation` → `learner_ego_revision/deliberation` → `learner/final_output`
+
+**Scoring pipeline** must be symmetric:
+- Every tutor turn gets scored with the tutor rubric
+- Every learner turn gets scored with the learner rubric
+- Both aggregate to per-turn scores, first/last/overall/development metrics
+
+Do NOT use asymmetric names (e.g. `learner_synthesis/response` was wrong — the tutor equivalent was `user/final_output`, so the learner must also use `learner/final_output`).
+
 ## Configuration
 
 ### Tutor Agent Cells (config/tutor-agents.yaml)
@@ -87,7 +102,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 
 **There is NO `trace` column.** Do not reference `trace` in SQL queries.
 
-Key columns: `id`, `run_id`, `scenario_id`, `scenario_name`, `provider`, `model`, `profile_name`, `hyperparameters` (JSON), `prompt_id`, `suggestions` (JSON array), `raw_response`, `latency_ms`, `input_tokens`, `output_tokens`, `cost`, `dialogue_rounds`, `api_calls`, `dialogue_id`, `score_relevance`, `score_specificity`, `score_pedagogical`, `score_personalization`, `score_actionability`, `score_tone`, `overall_score`, `passes_required`, `passes_forbidden`, `required_missing` (JSON), `forbidden_found` (JSON), `created_at`, `judge_model`, `evaluation_reasoning`, `success`, `error_message`, `scores_with_reasoning`, `scenario_type`, `base_score`, `recognition_score`, `ego_model`, `superego_model`, `factor_recognition`, `factor_multi_agent_tutor`, `factor_multi_agent_learner`, `learner_architecture`, `scoring_method`, `learner_scores`, `learner_overall_score`, `learner_judge_model`, `qualitative_assessment`, `qualitative_model`, `blinded_qualitative_assessment`, `blinded_qualitative_model`, `judge_latency_ms`, `holistic_overall_score`, `learner_holistic_scores`, `learner_holistic_overall_score`, `learner_holistic_summary`, `learner_holistic_judge_model`, `tutor_last_turn_score`, `tutor_development_score`, `dialogue_quality_score`, `dialogue_quality_summary`, `dialogue_quality_judge_model`, `tutor_first_turn_score`, `dialogue_quality_internal_score`, `dialogue_quality_internal_summary`, `conversation_mode`
+Key columns: `id`, `run_id`, `scenario_id`, `scenario_name`, `provider`, `model`, `profile_name`, `hyperparameters` (JSON), `prompt_id`, `suggestions` (JSON array), `raw_response`, `latency_ms`, `input_tokens`, `output_tokens`, `cost`, `dialogue_rounds`, `api_calls`, `dialogue_id`, `score_relevance`, `score_specificity`, `score_pedagogical`, `score_personalization`, `score_actionability`, `score_tone`, `overall_score`, `passes_required`, `passes_forbidden`, `required_missing` (JSON), `forbidden_found` (JSON), `created_at`, `judge_model`, `evaluation_reasoning`, `success`, `error_message`, `scores_with_reasoning`, `scenario_type`, `base_score`, `recognition_score`, `ego_model`, `superego_model`, `factor_recognition`, `factor_multi_agent_tutor`, `factor_multi_agent_learner`, `learner_architecture`, `scoring_method`, `learner_scores`, `learner_overall_score`, `learner_judge_model`, `qualitative_assessment`, `qualitative_model`, `blinded_qualitative_assessment`, `blinded_qualitative_model`, `judge_latency_ms`, `holistic_overall_score`, `learner_holistic_scores`, `learner_holistic_overall_score`, `learner_holistic_summary`, `learner_holistic_judge_model`, `tutor_last_turn_score`, `tutor_development_score`, `dialogue_quality_score`, `dialogue_quality_summary`, `dialogue_quality_judge_model`, `tutor_first_turn_score`, `dialogue_quality_internal_score`, `dialogue_quality_internal_summary`, `conversation_mode`, `tutor_scores` (JSON), `tutor_overall_score`
 
 **evaluation_runs columns**: `id` (TEXT PK), `created_at`, `description`, `total_scenarios`, `total_configurations`, `total_tests`, `status`, `completed_at`, `metadata` (JSON), `git_commit`, `package_version`
 
@@ -134,9 +149,10 @@ The primary interface for all evaluation workflows:
 
 ```bash
 node scripts/eval-cli.js run --profiles <cells> --runs N   # Run evaluation
-node scripts/eval-cli.js evaluate <runId> [--force]        # Judge with Opus
-node scripts/eval-cli.js evaluate-learner <runId>          # Score learner quality
-node scripts/eval-cli.js evaluate-dialogue <runId>         # Dialogue quality + tutor last-turn
+node scripts/eval-cli.js evaluate <runId> [--force]        # Unified: per-turn tutor + learner + dialogue quality
+node scripts/eval-cli.js evaluate <runId> --tutor-only     # Per-turn tutor scoring only (skip learner + dialogue)
+node scripts/eval-cli.js evaluate-learner <runId>          # Score learner quality (standalone, legacy)
+node scripts/eval-cli.js evaluate-dialogue <runId>         # Dialogue quality (standalone, now accepts --scenario/--profile)
 node scripts/eval-cli.js rejudge <runId> --judge <model>   # Re-judge (e.g. openrouter.gpt)
 node scripts/eval-cli.js resume <runId> [--skip-rubric]    # Resume incomplete run
 node scripts/eval-cli.js export <runId> --format csv       # Export results

@@ -210,6 +210,10 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_int
 // Conversation mode: 'single-prompt' | 'messages' (how tutor context was delivered)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN conversation_mode TEXT`, 'conversation_mode');
 
+// Per-turn tutor scores (unified scoring pipeline)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_scores TEXT`, 'tutor_scores');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_overall_score REAL`, 'tutor_overall_score');
+
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`, 'package_version');
@@ -554,6 +558,8 @@ export function listRuns(options = {}) {
     SELECT COUNT(*) as completed,
            SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
            AVG(COALESCE(tutor_first_turn_score, overall_score)) as avg_score,
+           AVG(learner_overall_score) as avg_learner_score,
+           AVG(dialogue_quality_score) as avg_dialogue_score,
            COUNT(DISTINCT judge_model) as judge_count
     FROM evaluation_results
     WHERE run_id = ?
@@ -624,6 +630,8 @@ export function listRuns(options = {}) {
       completedResults,
       successfulResults: counts?.successful || 0,
       avgScore: counts?.avg_score || null,
+      avgLearnerScore: counts?.avg_learner_score || null,
+      avgDialogueScore: counts?.avg_dialogue_score || null,
       judgeCount: counts?.judge_count || 1,
       progressPct,
       durationMs,
@@ -1274,6 +1282,8 @@ function parseResultRow(row) {
     dialogueQualityInternalScore: row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
     conversationMode: row.conversation_mode || null,
+    tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
+    tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
   };
 }
 
@@ -1789,6 +1799,49 @@ export function updateResultLearnerScores(resultId, evaluation) {
     evaluation.holisticOverallScore ?? null,
     evaluation.holisticSummary || null,
     evaluation.holisticJudgeModel || null,
+    resultId,
+  );
+}
+
+/**
+ * Update per-turn tutor scores for a multi-turn dialogue result.
+ * Stores per-turn JSON scores and computes aggregate metrics.
+ *
+ * @param {string} resultId - The evaluation result row ID
+ * @param {Object} evaluation - Tutor scoring data
+ * @param {Object} evaluation.tutorScores - Per-turn tutor scores: { "0": {scores, overallScore, summary}, ... }
+ * @param {number} evaluation.tutorOverallScore - Average across all tutor turns (0-100)
+ * @param {number} evaluation.tutorFirstTurnScore - Turn 0 score (0-100)
+ * @param {number} evaluation.tutorLastTurnScore - Turn N score (0-100)
+ * @param {number} evaluation.tutorDevelopmentScore - last - first delta
+ * @param {string} [evaluation.judgeModel] - Judge model used
+ * @param {number} [evaluation.judgeLatencyMs] - Total judge latency
+ */
+export function updateResultTutorScores(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      tutor_scores = ?,
+      tutor_overall_score = ?,
+      tutor_first_turn_score = ?,
+      overall_score = ?,
+      tutor_last_turn_score = ?,
+      tutor_development_score = ?,
+      holistic_overall_score = ?,
+      judge_model = COALESCE(?, judge_model),
+      judge_latency_ms = COALESCE(?, judge_latency_ms)
+    WHERE id = ?
+  `);
+
+  stmt.run(
+    evaluation.tutorScores ? JSON.stringify(evaluation.tutorScores) : null,
+    evaluation.tutorOverallScore ?? null,
+    evaluation.tutorFirstTurnScore ?? null,
+    evaluation.tutorFirstTurnScore ?? null, // overall_score (deprecated alias)
+    evaluation.tutorLastTurnScore ?? null,
+    evaluation.tutorDevelopmentScore ?? null,
+    evaluation.tutorLastTurnScore ?? null, // holistic_overall_score (backward compat alias)
+    evaluation.judgeModel || null,
+    evaluation.judgeLatencyMs ?? null,
     resultId,
   );
 }

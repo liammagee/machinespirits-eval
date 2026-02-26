@@ -226,9 +226,9 @@ function resolveSystemPromptSource({ agent, resultRow, priorExtensions }) {
   } else if (agent === 'learner_superego') {
     promptFile = learnerProfile?.superego?.prompt_file || null;
     role = 'learner_superego';
-  } else if (agent === 'learner_synthesis') {
+  } else if (agent === 'learner') {
     promptFile = learnerProfile?.synthesis?.prompt_file || learnerProfile?.unified_learner?.prompt_file || null;
-    role = 'learner_synthesis';
+    role = 'learner';
   }
 
   const promptObj = readPromptFile(promptFile);
@@ -559,8 +559,8 @@ function isApiTraceEntry(entry, includeLearnerCalls) {
   if (entry.agent === 'superego' && entry.action === 'review') return true;
   if (
     includeLearnerCalls &&
-    entry.agent.startsWith('learner_') &&
-    (entry.action === 'deliberation' || entry.action === 'response')
+    (entry.agent === 'learner' || entry.agent.startsWith('learner_')) &&
+    (entry.action === 'deliberation' || entry.action === 'final_output')
   ) {
     return true;
   }
@@ -580,11 +580,11 @@ function classifyDialogueChannel(entry) {
     return 'tutor_ego_superego';
   }
 
-  if (entry.agent.startsWith('learner_')) {
+  if (entry.agent === 'learner' || entry.agent.startsWith('learner_')) {
     // Learner internal deliberation chain
     if (entry.action === 'deliberation') return 'learner_ego_superego';
-    // Learner synthesized outward response
-    if (entry.action === 'response') return 'tutor_learner';
+    // Learner final outward response
+    if (entry.action === 'final_output') return 'tutor_learner';
     return 'learner_ego_superego';
   }
 

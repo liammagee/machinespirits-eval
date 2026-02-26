@@ -13,7 +13,7 @@ import {
 
 // ── Test fixtures ─────────────────────────────────────────────────────────
 
-/** Unified (ego-only) learner trace — no learner_synthesis/ego_initial entries */
+/** Unified (ego-only) learner trace — no learner/ego_initial entries */
 const UNIFIED_TRACE = [
   { agent: 'user', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
@@ -30,7 +30,7 @@ const EGO_SUPEREGO_TRACE = [
   { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think this is about recognition...', contextSummary: '' },
   { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'The ego is avoiding the harder question about asymmetry.', contextSummary: '' },
   { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
-  { agent: 'learner_synthesis', action: 'response', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
+  { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
   { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'OK the real question is about asymmetric recognition.' },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: 'Good insight on asymmetry.', contextSummary: '' },
   { agent: 'superego', action: 'review', turnIndex: 1, detail: 'Push harder on the paradox.', contextSummary: '' },
@@ -53,7 +53,7 @@ const LEARNER_CONTEXT = '### Recent Chat History\n- User: "I think the dialectic
 // ── isEgoSuperegoLearner ──────────────────────────────────────────────────
 
 describe('isEgoSuperegoLearner', () => {
-  it('returns true when trace has learner_synthesis', () => {
+  it('returns true when trace has learner', () => {
     assert.equal(isEgoSuperegoLearner(EGO_SUPEREGO_TRACE), true);
   });
 
@@ -261,7 +261,7 @@ describe('buildDialogueFullTranscript', () => {
       { agent: 'learner_other_ego', action: 'profile_tutor', turnIndex: 1, detail: 'Tutor seems Socratic.' },
       { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Dig deeper.' },
       { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Revised thought.' },
-      { agent: 'learner_synthesis', action: 'response', turnIndex: 1, detail: 'Final message.' },
+      { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'Final message.' },
       { agent: 'user', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Final message.' },
       { agent: 'ego', action: 'generate', turnIndex: 1 },
     ];
@@ -567,7 +567,7 @@ describe('buildDialogueFullTranscript', () => {
         detail: 'Too simplistic, dig into asymmetry.' },
       { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
         detail: 'The real question is asymmetric recognition.' },
-      { agent: 'learner_synthesis', action: 'response', turnIndex: 1,
+      { agent: 'learner', action: 'final_output', turnIndex: 1,
         detail: 'The real question is asymmetric recognition.' },
       { agent: 'user', action: 'turn_action', turnIndex: 1,
         detail: 'Learner: asked_followup',
@@ -813,7 +813,7 @@ describe('transcript conformity', () => {
         detail: 'Learner superego critique.' },
       { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
         detail: 'Revised learner thought.' },
-      { agent: 'learner_synthesis', action: 'response', turnIndex: 1,
+      { agent: 'learner', action: 'final_output', turnIndex: 1,
         detail: 'Revised learner thought.' },  // Same as revision → deduped
       { agent: 'user', action: 'turn_action', turnIndex: 1,
         contextSummary: 'Revised learner thought.', detail: 'Learner: asked_followup' },
@@ -880,7 +880,7 @@ describe('transcript conformity', () => {
         detail: 'Dig into the asymmetry more.' },
       { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
         detail: 'The asymmetry of recognition is key.' },
-      { agent: 'learner_synthesis', action: 'response', turnIndex: 1,
+      { agent: 'learner', action: 'final_output', turnIndex: 1,
         detail: 'The asymmetry of recognition is key.' },
       { agent: 'user', action: 'turn_action', turnIndex: 1,
         contextSummary: 'The asymmetry of recognition is key.', detail: 'Learner: asked_followup' },

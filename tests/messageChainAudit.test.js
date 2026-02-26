@@ -297,10 +297,10 @@ describe('inputMessages trace annotation', () => {
           timestamp: new Date().toISOString(),
         });
       }
-      // Synthesis entry
+      // Learner final output entry
       consolidatedTrace.push({
-        agent: 'learner_synthesis',
-        action: 'response',
+        agent: 'learner',
+        action: 'final_output',
         turnIndex: 1,
         contextSummary: 'Final learner message',
         detail: 'Final learner message',
@@ -314,7 +314,7 @@ describe('inputMessages trace annotation', () => {
       assert.equal(consolidatedTrace[1].inputMessages, null);
       // learner_ego_revision carries inputMessages
       assert.deepStrictEqual(consolidatedTrace[2].inputMessages, learnerMessages);
-      // learner_synthesis has null
+      // learner has null
       assert.equal(consolidatedTrace[3].inputMessages, null);
     });
   });
@@ -370,8 +370,8 @@ describe('inputMessages trace annotation', () => {
         });
       }
       trace.push({
-        agent: 'learner_synthesis',
-        action: 'response',
+        agent: 'learner',
+        action: 'final_output',
         turnIndex: 1,
         detail: 'Final',
         inputMessages: null,
@@ -428,7 +428,7 @@ describe('inputMessages trace annotation', () => {
         const llmEntries = trace.filter(e =>
           (e.agent === 'ego' && ['generate', 'revise', 'incorporate-feedback'].includes(e.action)) ||
           (e.agent === 'superego' && e.action === 'review') ||
-          (e.agent.startsWith('learner_') && (e.action === 'deliberation' || e.action === 'response')),
+          ((e.agent === 'learner' || e.agent.startsWith('learner_')) && (e.action === 'deliberation' || e.action === 'final_output')),
         );
         assert.ok(llmEntries.length >= 6, `Expected at least 6 LLM entries, got ${llmEntries.length}`);
         for (const e of llmEntries) {
