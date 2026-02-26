@@ -1545,6 +1545,7 @@ async function main() {
               }
               return;
             }
+            runs.reverse(); // oldest first → newest at bottom (nearest to cursor)
             const output = renderRunsTable(runs);
             if (output !== lastOutput) {
               process.stdout.write('\x1b[H\x1b[2J');
@@ -1573,6 +1574,7 @@ async function main() {
             console.log('\nNo evaluation runs found.');
             break;
           }
+          runs.reverse(); // oldest first → newest at bottom
           console.log(`\nEvaluation runs (${runs.length} total):\n`);
           console.log(renderRunsTable(runs));
           console.log('');
