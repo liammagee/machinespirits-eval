@@ -378,7 +378,8 @@ export function traceToSteps(trace) {
         if ((trace[j].agent === 'tutor' || trace[j].agent === 'user') && trace[j].action === 'context_input') break;
       }
 
-      if (action !== 'generate' && !superegoFollows) {
+      if (!superegoFollows) {
+        // No superego review follows → this is the final response (single-agent or last round)
         steps.push({
           from: 'tutor_ego',
           to: 'learner_ego',
