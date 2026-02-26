@@ -172,6 +172,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_85_messages_recog_single_psycho',
   'cell_86_messages_recog_multi_unified',
   'cell_87_messages_recog_multi_psycho',
+  'cell_88_messages_recog_multi_psycho_haiku',
 ];
 
 /**
