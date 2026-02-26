@@ -2554,18 +2554,12 @@ async function main() {
             judgeLatencyMs,
           };
 
-          // For multi-turn dialogues, the score reflects the last turn against full context — that IS the holistic score
-          if (result.dialogueId && !restoreTurn0) {
-            evaluation.holisticOverallScore = evaluation.tutorFirstTurnScore;
-          }
-
           if (restoreTurn0) {
-            // --restore-turn0: re-score suggestions[0] and write to tutor_first_turn_score, preserving existing holistic_overall_score
-            evaluation.holisticOverallScore = result.holisticOverallScore;
+            // --restore-turn0: re-score suggestions[0] and write to tutor_first_turn_score
             evaluationStore.updateResultScores(result.id, evaluation);
           } else if (multiturnOnly) {
-            // --multiturn-only: write ONLY holistic_overall_score, preserving the original tutor_first_turn_score (Turn 0)
-            evaluationStore.updateResultHolisticOnly(result.id, evaluation);
+            // --multiturn-only: write ONLY tutor_last_turn_score, preserving the original tutor_first_turn_score (Turn 0)
+            evaluationStore.updateTutorLastTurnScore(result.id, { tutorLastTurnScore: evaluation.tutorFirstTurnScore });
           } else {
             evaluationStore.updateResultScores(result.id, evaluation);
           }
@@ -2913,7 +2907,6 @@ async function main() {
               summary: tutorTurnScores[0]?.summary || null,
               judgeModel: judgeModel,
               judgeLatencyMs: Date.now() - startTime,
-              holisticOverallScore: tutorLast,
             };
             evaluationStore.updateResultScores(result.id, firstTurnEval);
             // Re-apply the per-turn tutor scores (updateResultScores may have overwritten some fields)
@@ -3480,7 +3473,7 @@ async function main() {
           if (restoreTurn0) {
             const before = toEvaluate.length;
             toEvaluate = toEvaluate.filter(
-              (r) => Array.isArray(r.suggestions) && r.suggestions.length > 1 && r.holisticOverallScore != null,
+              (r) => Array.isArray(r.suggestions) && r.suggestions.length > 1 && r.tutorLastTurnScore != null,
             );
             console.log(`  --restore-turn0: filtered ${before} → ${toEvaluate.length} damaged rows (multi-turn with holistic already set)`);
           }
@@ -3600,7 +3593,7 @@ async function main() {
             'Usage: eval-cli.js backfill-first-turn <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--created-after <iso>] [--created-before <iso>] [--dry-run] [--verbose]',
           );
           console.error('  Rejudges suggestions[0] (turn 0) with NO dialogue context.');
-          console.error('  Updates both overall_score and tutor_first_turn_score, preserving holistic_overall_score.');
+          console.error('  Updates both overall_score and tutor_first_turn_score.');
           process.exit(1);
         }
 
@@ -3796,8 +3789,6 @@ async function main() {
               summary: parsed.summary,
               judgeModel: modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6',
               judgeLatencyMs,
-              // Preserve existing last-turn/holistic score.
-              holisticOverallScore: result.holisticOverallScore ?? null,
             };
 
             if (!dryRun) {
@@ -4306,7 +4297,7 @@ async function main() {
         //
         // For each multi-turn row:
         //   1. tutor_first_turn_score (Turn 0) — already populated by 'evaluate'
-        //   2. Copy holistic_overall_score → tutor_last_turn_score (no judge call)
+        //   2. Read tutor_last_turn_score (already populated by per-turn scoring)
         //   3. Compute delta → tutor_development_score (arithmetic, no judge call)
         //   4. Run dialogue quality prompt → dialogue_quality_score (ONE judge call)
         //
@@ -4446,31 +4437,26 @@ async function main() {
             : null;
 
           try {
-            // ── Step A: Copy holistic_overall_score → tutor_last_turn_score (no judge call) ──
-            // holistic_overall_score already contains the tutor rubric score on the last turn,
-            // populated by 'evaluate --multiturn-only'. We just copy it and compute the delta.
-            const tutorLastTurnScore = result.holisticOverallScore ?? null;
+            // ── Step A: Read tutor_last_turn_score (already populated by per-turn scoring) ──
+            const tutorLastTurnScore = result.tutorLastTurnScore ?? null;
             const judgeModel = modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
 
             const claudeArgs = ['-p', '-', '--output-format', 'text'];
             if (modelOverride) claudeArgs.push('--model', modelOverride);
 
             if (tutorLastTurnScore != null) {
-              evaluationStore.updateTutorLastTurnScore(result.id, { tutorLastTurnScore });
               lastTurnScores.push(tutorLastTurnScore);
 
-              // Read back development score
-              const updatedRow = evaluationStore.getResults(runId).find((r) => r.id === result.id);
-              const devScore = updatedRow?.tutorDevelopmentScore;
+              const devScore = result.tutorDevelopmentScore ?? null;
               if (devScore != null) developmentScores.push(devScore);
 
               const devLabel = devScore != null ? `Δ=${devScore >= 0 ? '+' : ''}${devScore.toFixed(1)}` : 'Δ=?';
               console.log(
-                `${tag} ${scenarioId} / ${profileName} ... last-turn=${tutorLastTurnScore.toFixed(1)} ${devLabel} (from holistic)`,
+                `${tag} ${scenarioId} / ${profileName} ... last-turn=${tutorLastTurnScore.toFixed(1)} ${devLabel}`,
               );
             } else {
               console.log(
-                `${tag} ${scenarioId} / ${profileName} ... last-turn=NULL (holistic_overall_score not populated — run 'evaluate --multiturn-only' first)`,
+                `${tag} ${scenarioId} / ${profileName} ... last-turn=NULL (run 'evaluate' with per-turn scoring first)`,
               );
             }
 

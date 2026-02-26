@@ -4058,10 +4058,6 @@ export async function rejudgeRun(runId, options = {}) {
         if (evaluation.success) {
           // Map evaluationTimeMs → judgeLatencyMs for DB storage
           evaluation.judgeLatencyMs = evaluation.evaluationTimeMs ?? null;
-          // For multi-turn dialogues, the score reflects the last turn against full context — that IS the holistic score
-          if (result.dialogueId) {
-            evaluation.holisticOverallScore = evaluation.overallScore;
-          }
           if (overwrite) {
             // Old behavior: update in place (loses history)
             evaluationStore.updateResultScores(result.id, evaluation);
