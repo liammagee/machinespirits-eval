@@ -2154,7 +2154,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   // --transcript mode additionally writes play-format to file + compact console lines.
   // On resume, skip entries already flushed in the previous session.
   let lastTranscriptIdx = cs ? consolidatedTrace.length : 0;
-  const isDynamicLearnerArch = resolvedConfig.learnerArchitecture?.includes('ego_superego');
+  const isEgoSuperegoLearner = resolvedConfig.learnerArchitecture?.includes('ego_superego');
+  // isLLMLearner is set after conversationMode is resolved (below). All closures
+  // that reference it (flushTranscript, formatChatLine) are called lazily.
+  let isLLMLearner = isEgoSuperegoLearner; // provisional; updated after conversationMode
   const printedLearnerTurns = new Set(); // dedup: track which learner turns have been printed
 
   function flushTranscript() {
@@ -2164,7 +2167,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     // --- Always: print live chat lines for public-facing messages ---
     for (const entry of newEntries) {
-      const chatLine = formatChatLine(entry, isDynamicLearnerArch, printedLearnerTurns);
+      const chatLine = formatChatLine(entry, isLLMLearner, printedLearnerTurns);
       if (chatLine) console.log(chatLine);
     }
 
@@ -2312,6 +2315,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const strategyPlanningEnabled = rawProfile?.other_ego_profiling?.strategy_planning ?? false;
   const conversationMode = rawProfile?.conversation_mode ?? 'single-prompt';
 
+  // In messages mode, ALL learners are LLM-generated (unified uses single-agent path,
+  // ego_superego uses deliberation chain). In single-prompt mode, only ego_superego
+  // learners are LLM-generated; unified learners use YAML turn messages.
+  isLLMLearner = isEgoSuperegoLearner || conversationMode === 'messages';
+
   const sharedTurnOptions = {
     skipRubricEval,
     outputSize,
@@ -2382,8 +2390,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     }
 
     // Show learner action in transcript mode (for follow-up turns)
-    // Skip for dynamic learner — the LLM-generated response replaces the scripted action
-    if (!isInitialTurn && dialogueEngine.isTranscriptMode() && !resolvedConfig.learnerArchitecture?.includes('ego_superego')) {
+    // Skip for LLM learner — the LLM-generated response replaces the YAML action
+    if (!isInitialTurn && dialogueEngine.isTranscriptMode() && !isLLMLearner) {
       dialogueEngine.transcript('LEARNER ACTION', formatLearnerActionForTranscript(turnDef));
     }
 
@@ -2393,13 +2401,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       contextStr = fullScenario.learner_context;
     } else {
       // Add previous turn to conversation history
-      // For dynamic learner, omit the scripted learner_action — the LLM message is the action
-      const isDynamicLearner = resolvedConfig.learnerArchitecture?.includes('ego_superego');
+      // For LLM learner, omit the YAML learner_action — the LLM message is the action
       conversationHistory.push({
         turnIndex: turnIdx - 1,
         turnId: turnIdx === 1 ? 'initial' : turns[turnIdx - 2]?.id,
         suggestion: previousSuggestion,
-        learnerAction: isDynamicLearner ? undefined : turnDef.learner_action,
+        learnerAction: isLLMLearner ? undefined : turnDef.learner_action,
         learnerMessage: turnDef.action_details?.message,
       });
 
@@ -2430,8 +2437,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       scenarioName: isInitialTurn ? fullScenario.name : `${fullScenario.name} - Turn ${turnIdx}`,
       description: isInitialTurn
         ? fullScenario.description
-        : resolvedConfig.learnerArchitecture?.includes('ego_superego')
-          ? `Turn ${turnIdx}: dynamic learner response`
+        : isLLMLearner
+          ? `Turn ${turnIdx}: LLM learner response`
           : `Turn: ${turnDef.learner_action}`,
       expectedBehavior: isInitialTurn ? fullScenario.expected_behavior : turnDef.expected_behavior,
       learnerContext: contextStr,
@@ -2508,7 +2515,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       // For dynamic learner (ego_superego), skip the scripted action label —
       // the learner's LLM-generated response is already in the trace via
       // learner_ego_initial / learner_superego / learner/final_output entries.
-      if (!isInitialTurn && !resolvedConfig.learnerArchitecture?.includes('ego_superego')) {
+      if (!isInitialTurn && !isLLMLearner) {
         const histEntry = conversationHistory[conversationHistory.length - 1];
         consolidatedTrace.push({
           agent: 'learner',
@@ -2590,7 +2597,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     turnResults.push({
       turnIndex: turnIdx,
       turnId: isInitialTurn ? 'initial' : turnDef.id,
-      learnerAction: isInitialTurn || resolvedConfig.learnerArchitecture?.includes('ego_superego') ? undefined : turnDef.learner_action,
+      learnerAction: isInitialTurn || isLLMLearner ? undefined : turnDef.learner_action,
       learnerMessage: isInitialTurn ? undefined : turnDef.action_details?.message, // Include generated learner message for growth tracking
       expectedBehavior: turnMeta.expectedBehavior,
       suggestion,
@@ -3036,9 +3043,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // Flush transcript: reflections (self-reflection, disposition, profiling, etc.)
     flushTranscript();
 
-    // Generate LLM learner response for next turn if ego_superego architecture
-    // Note: check includes() to handle both 'ego_superego' and 'ego_superego_recognition'
-    if (resolvedConfig.learnerArchitecture?.includes('ego_superego') && turnIdx < totalTurnCount - 1) {
+    // Generate LLM learner response for next turn.
+    // Both architectures go through generateLearnerResponse():
+    //   - ego_superego: ego → superego → ego_revision deliberation chain
+    //   - unified (messages mode): single-agent LLM call
+    // In single-prompt mode, unified learners use the YAML turn messages directly.
+    if (isLLMLearner && turnIdx < totalTurnCount - 1) {
       const nextTurnDef = turns[turnIdx]; // turnIdx is 0-based into the loop; turns[turnIdx] is the next follow-up turn
       if (nextTurnDef) {
         const learnerResponse = await generateLearnerResponse({
@@ -3057,7 +3067,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           conversationMode,
         });
 
-        // Override scripted message with LLM-generated one
+        // Override YAML message with LLM-generated one
         nextTurnDef._originalMessage = nextTurnDef.action_details?.message;
         nextTurnDef.action_details = nextTurnDef.action_details || {};
         nextTurnDef.action_details.message = learnerResponse.message;
@@ -3069,7 +3079,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalOutputTokens += learnerResponse.tokenUsage?.outputTokens || 0;
         totalApiCalls += learnerResponse.tokenUsage?.apiCalls || 0;
 
-        // Add learner deliberation to consolidated trace
+        // Add learner deliberation to consolidated trace.
+        // ego_superego: multiple deliberation entries (ego_initial, superego, ego_revision)
+        // unified: single deliberation entry (unified_learner)
+        // Both produce a learner/final_output trace entry for symmetric transcript rendering.
         if (learnerResponse.internalDeliberation?.length > 0) {
           for (const delib of learnerResponse.internalDeliberation) {
             const delibMetrics = delib.metrics || null;
@@ -3104,8 +3117,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           });
         }
 
+        const archLabel = isEgoSuperegoLearner ? 'ego_superego' : 'unified';
         log(
-          `[evaluationRunner] Generated LLM learner response (ego_superego): "${learnerResponse.message.substring(0, 80)}..."`,
+          `[evaluationRunner] Generated LLM learner response (${archLabel}): "${learnerResponse.message.substring(0, 80)}..."`,
           'info',
         );
 
