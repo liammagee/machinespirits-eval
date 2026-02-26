@@ -14,7 +14,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js run              # Run 2x2x2 factorial evaluation (default)
  *   node scripts/eval-cli.js runs              # List past evaluation runs
  *   node scripts/eval-cli.js report <runId>   # Show report for a previous run
- *   node scripts/eval-cli.js transcript <runId> # Show full transcripts for a run
+ *   node scripts/eval-cli.js transcript <runId> # Show transcripts for a run (filterable by scenario/profile/dialogue)
  *   node scripts/eval-cli.js status <runId>   # Quick snapshot of a run's state
  *   node scripts/eval-cli.js watch <runId>    # Live-updating progress table
  *   node scripts/eval-cli.js export <runId>   # Export results to file for offline review
@@ -1643,12 +1643,15 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'transcript');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js transcript <runId> [--scenario <id>] [--detail play|compact|messages-only|full|bilateral]',
+            'Usage: eval-cli.js transcript <runId> [--scenario <id>] [--profile <name>] [--dialogue <id>] [--all-matches] [--detail play|compact|messages-only|full|bilateral]',
           );
           process.exit(1);
         }
 
-        const scenarioFilter = getOption('scenario');
+        const scenarioFilter = getOption('scenario') || getOption('test') || null;
+        const profileFilter = getOption('profile') || null;
+        const dialogueFilter = getOption('dialogue') || getOption('dialogue-id') || null;
+        const showAllMatches = getFlag('all-matches');
         // Determine detail level: --compact and --messages-only are shortcuts, --detail is explicit
         let detailLevel = getOption('detail') || 'play';
         if (getFlag('compact')) detailLevel = 'compact';
@@ -1656,16 +1659,34 @@ async function main() {
         if (getFlag('full')) detailLevel = 'full';
         if (getFlag('bilateral')) detailLevel = 'bilateral';
 
-        const results = evaluationStore.getResults(runId, {
-          scenarioId: scenarioFilter || null,
+        let results = evaluationStore.getResults(runId, {
+          scenarioId: scenarioFilter,
+          profileName: profileFilter,
         });
+
+        if (dialogueFilter) {
+          const exact = results.filter((r) => (r.dialogueId || '') === dialogueFilter);
+          results = exact.length > 0 ? exact : results.filter((r) => (r.dialogueId || '').includes(dialogueFilter));
+          if (!showAllMatches && results.length > 1) {
+            results = [results[results.length - 1]];
+          }
+        }
 
         if (results.length === 0) {
           console.log(`\nNo results found for run: ${runId}`);
+          if (scenarioFilter) console.log(`  scenario filter: ${scenarioFilter}`);
+          if (profileFilter) console.log(`  profile filter: ${profileFilter}`);
+          if (dialogueFilter) console.log(`  dialogue filter: ${dialogueFilter}`);
           break;
         }
 
         console.log(`\nTranscripts for run: ${theme.id(runId)} (${results.length} results, detail: ${detailLevel})\n`);
+        if (scenarioFilter) console.log(`${theme.dim('scenario filter:')} ${scenarioFilter}`);
+        if (profileFilter) console.log(`${theme.dim('profile filter:')} ${profileFilter}`);
+        if (dialogueFilter) {
+          console.log(`${theme.dim('dialogue filter:')} ${dialogueFilter}${showAllMatches ? '' : ' (latest match only)'}`);
+        }
+        if (scenarioFilter || profileFilter || dialogueFilter) console.log('');
 
         for (const result of results) {
           console.log(theme.dim('='.repeat(80)));

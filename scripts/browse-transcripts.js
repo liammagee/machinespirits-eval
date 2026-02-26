@@ -7,7 +7,8 @@
  * transcripts with sequence diagram + transcript split-pane view.
  *
  * Usage:
- *   node scripts/browse-transcripts.js [--port 3456] [--no-open]
+ *   node scripts/browse-transcripts.js [--port 3456] [--no-open] [--run <runId>|--run-id <runId>] [--scenario <scenario_id>] [--dialogue <dialogueId>|--dialogue-id <dialogueId>] [--theme light|dark]
+ *   or open /?run=<runId>&scenario=<scenario_id> (or &dialogue=<dialogueId>)
  */
 
 import express from 'express';
@@ -31,6 +32,22 @@ function getOption(name) {
 
 const PORT = parseInt(getOption('port') || '3456');
 const shouldOpen = !args.includes('--no-open');
+const initialRunQuery = getOption('run') || getOption('run-id');
+const initialScenarioQuery = getOption('scenario');
+const initialDialogueQuery = getOption('dialogue') || getOption('dialogue-id');
+const initialThemeQuery = getOption('theme');
+
+function buildLaunchUrl(port) {
+  const params = new URLSearchParams();
+  if (initialRunQuery) params.set('run', initialRunQuery);
+  if (initialScenarioQuery) params.set('scenario', initialScenarioQuery);
+  if (initialDialogueQuery) params.set('dialogue', initialDialogueQuery);
+  if (initialThemeQuery === 'light' || initialThemeQuery === 'dark') {
+    params.set('theme', initialThemeQuery);
+  }
+  const query = params.toString();
+  return `http://localhost:${port}${query ? `/?${query}` : ''}`;
+}
 
 const db = new Database(DB_PATH, { readonly: true });
 const app = express();
@@ -259,7 +276,54 @@ const PAGE_HTML = `<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Transcript Browser</title>
 <style>
-  :root { --bg:#0d1117; --surface:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; }
+  :root {
+    --bg:#0d1117;
+    --surface:#161b22;
+    --surface-2:#11161d;
+    --panel:#0f1621;
+    --bg-alt:#0d1117;
+    --border:#30363d;
+    --border-soft:#263241;
+    --text:#e6edf3;
+    --text-soft:#c7d1db;
+    --muted:#8b949e;
+    --muted-soft:#6e7681;
+    --muted-dim:#555;
+    --accent:#58a6ff;
+    --accent-soft:#90caf9;
+    --hover:rgba(255,255,255,0.04);
+    --selected:rgba(88,166,255,0.10);
+    --info-bg:#1a237e;
+    --tag-bg:#263238;
+    --tag-fg:#80cbc4;
+    --hint:#444;
+    --table-rule:#1e1e1e;
+    --bar-bg:#262626;
+  }
+  body.theme-light {
+    --bg:#f7fafc;
+    --surface:#ffffff;
+    --surface-2:#f3f7fb;
+    --panel:#f8fbff;
+    --bg-alt:#ffffff;
+    --border:#d0d7e2;
+    --border-soft:#d8e0ea;
+    --text:#102235;
+    --text-soft:#24374a;
+    --muted:#5f7388;
+    --muted-soft:#6f8194;
+    --muted-dim:#708091;
+    --accent:#0f6ad6;
+    --accent-soft:#0f6ad6;
+    --hover:rgba(15,106,214,0.06);
+    --selected:rgba(15,106,214,0.10);
+    --info-bg:#e6f0ff;
+    --tag-bg:#e7eff7;
+    --tag-fg:#194d80;
+    --hint:#6e8091;
+    --table-rule:#d8e1ea;
+    --bar-bg:#e4eaf1;
+  }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { font-family:'SF Mono','Fira Code','JetBrains Mono',monospace; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; display:flex; }
 
@@ -268,20 +332,20 @@ const PAGE_HTML = `<!DOCTYPE html>
   .sidebar-header { padding:14px 16px 10px; border-bottom:1px solid var(--border); flex-shrink:0; }
   .sidebar-header h1 { font-size:13px; font-weight:700; letter-spacing:0.5px; margin-bottom:8px; }
   .filter-row { display:flex; gap:6px; margin-bottom:6px; }
-  .filter-input { flex:1; background:#0d1117; border:1px solid var(--border); border-radius:4px; padding:4px 8px; color:var(--text); font-size:11px; font-family:inherit; outline:none; }
+  .filter-input { flex:1; background:var(--bg-alt); border:1px solid var(--border); border-radius:4px; padding:4px 8px; color:var(--text); font-size:11px; font-family:inherit; outline:none; }
   .filter-input:focus { border-color:var(--accent); }
   .filter-toggles { display:flex; gap:8px; font-size:10px; color:var(--muted); }
   .filter-toggles label { cursor:pointer; display:flex; align-items:center; gap:3px; }
   .filter-toggles input { accent-color:var(--accent); }
   .sidebar-list { flex:1; overflow-y:auto; padding:4px 0; }
 
-  .run-item { padding:6px 16px; cursor:pointer; font-size:11px; border-bottom:1px solid #1c2128; }
-  .run-item:hover { background:rgba(255,255,255,0.03); }
-  .run-item.open { background:rgba(88,166,255,0.06); }
+  .run-item { padding:6px 16px; cursor:pointer; font-size:11px; border-bottom:1px solid var(--border-soft); }
+  .run-item:hover { background:var(--hover); }
+  .run-item.open { background:var(--selected); }
   .run-header { display:flex; justify-content:space-between; align-items:center; }
   .run-date { font-weight:600; color:var(--text); }
   .run-count { color:var(--muted); font-size:10px; }
-  .run-models { font-size:9px; color:#555; margin-top:2px; }
+  .run-models { font-size:9px; color:var(--muted-dim); margin-top:2px; }
   .run-children { padding-left:8px; display:none; }
   .run-item.open > .run-children { display:block; }
 
@@ -292,9 +356,9 @@ const PAGE_HTML = `<!DOCTYPE html>
   .cell-group.open > .cell-dialogues { display:block; }
 
   .dlg-item { padding:3px 8px 3px 16px; cursor:pointer; font-size:10px; display:flex; justify-content:space-between; align-items:center; border-radius:3px; }
-  .dlg-item:hover { background:rgba(255,255,255,0.04); }
-  .dlg-item.active { background:rgba(88,166,255,0.12); color:#fff; }
-  .dlg-scenario { color:#aaa; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dlg-item:hover { background:var(--hover); }
+  .dlg-item.active { background:var(--selected); color:var(--text); }
+  .dlg-scenario { color:var(--text-soft); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .dlg-score { font-weight:700; margin-left:6px; padding:1px 5px; border-radius:8px; font-size:9px; }
   .score-high { background:rgba(76,175,80,0.2); color:#66bb6a; }
   .score-mid { background:rgba(255,152,0,0.2); color:#ffa726; }
@@ -310,21 +374,27 @@ const PAGE_HTML = `<!DOCTYPE html>
   .meta-grid { display:grid; grid-template-columns:auto auto auto; gap:1px 14px; font-size:10px; }
   .meta-label { color:var(--muted); }
   .meta-value { color:var(--text); font-weight:500; }
-  .meta-id { font-size:9px; color:#555; margin-top:2px; }
+  .meta-id { font-size:9px; color:var(--muted-soft); margin-top:2px; }
   .score-badge { padding:3px 12px; border-radius:12px; font-weight:700; font-size:14px; color:#fff; }
 
   .legend { display:flex; gap:12px; justify-content:center; padding:6px; font-size:9px; color:var(--muted); flex-shrink:0; border-bottom:1px solid var(--border); }
   .legend span { display:flex; align-items:center; gap:3px; }
   .legend .sw { width:12px; height:3px; border-radius:2px; }
+  .legend-toggle { cursor:pointer; border-radius:4px; padding:1px 4px; user-select:none; }
+  .legend-toggle:hover { background:var(--hover); }
+  .legend-toggle.off { opacity:0.45; text-decoration:line-through; }
 
-  .view-controls { display:flex; align-items:center; gap:8px; padding:8px 16px; border-bottom:1px solid var(--border); background:#11161d; }
+  .view-controls { display:flex; align-items:center; gap:8px; padding:8px 16px; border-bottom:1px solid var(--border); background:var(--surface-2); }
   .view-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:1px; }
-  .view-btn { background:#0d1117; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:4px 10px; font-size:10px; font-family:inherit; cursor:pointer; }
+  .view-btn { background:var(--bg-alt); border:1px solid var(--border); color:var(--text); border-radius:4px; padding:4px 10px; font-size:10px; font-family:inherit; cursor:pointer; }
   .view-btn.active { border-color:var(--accent); background:rgba(88,166,255,0.12); }
   .view-btn:disabled { opacity:0.45; cursor:not-allowed; }
-  .view-divider { width:1px; height:14px; background:#2a3440; margin:0 4px; }
+  .view-divider { width:1px; height:14px; background:var(--border-soft); margin:0 4px; }
   .view-check { display:flex; align-items:center; gap:4px; color:var(--muted); font-size:10px; cursor:pointer; user-select:none; }
   .view-check input { accent-color:var(--accent); }
+  .theme-btn { min-width:72px; }
+  .chain-filter { display:inline-flex; align-items:center; gap:4px; }
+  .chain-filter .view-btn { padding:3px 8px; font-size:9px; }
 
   .split { display:flex; flex:1; overflow:hidden; }
 
@@ -335,25 +405,35 @@ const PAGE_HTML = `<!DOCTYPE html>
   .arrow-group:hover .arrow-line { stroke-width:3 !important; }
   .arrow-group.active .arrow-line { stroke-width:3.5 !important; filter:drop-shadow(0 0 4px currentColor); }
   .arrow-group.active text { font-weight:700 !important; }
+  .actor-header.clickable { cursor:pointer; }
+  .actor-header.clickable:hover rect { filter:drop-shadow(0 0 2px rgba(88,166,255,0.55)); }
+  .actor-header.off { opacity:0.45; }
 
   .right-pane { width:50%; overflow-y:auto; padding:12px 16px; }
 
   .entry { padding:10px 12px; margin:4px 0; border-radius:6px; border:1px solid transparent; cursor:pointer; transition:all 0.15s; }
-  .entry:hover { background:rgba(255,255,255,0.03); border-color:var(--border); }
+  .entry:hover { background:var(--hover); border-color:var(--border); }
   .entry.active { background:rgba(88,166,255,0.08); border-color:#58a6ff; box-shadow:0 0 12px rgba(88,166,255,0.15); }
   .entry-speaker { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
   .entry-model { font-weight:400; color:var(--muted); font-size:9px; }
-  .entry-content { font-size:12px; line-height:1.6; color:#ccc; white-space:pre-wrap; word-wrap:break-word; }
+  .entry-content { font-size:12px; line-height:1.6; color:var(--text-soft); white-space:pre-wrap; word-wrap:break-word; }
   .entry-subtitle { font-size:10px; color:var(--muted); margin-bottom:8px; }
 
-  .chain-card { border:1px solid #2a3442; border-radius:7px; padding:10px 12px; margin:8px 0; background:#0f1621; }
-  .chain-head { font-size:10px; color:#9fb3c8; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
+  .chain-card { border:1px solid var(--border-soft); border-radius:7px; padding:10px 12px; margin:8px 0; background:var(--panel); }
+  .chain-head { font-size:10px; color:var(--accent-soft); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
   .chain-section { margin-top:8px; }
-  .chain-title { font-size:10px; color:#90caf9; font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.4px; }
+  .chain-title { font-size:10px; color:var(--accent-soft); font-weight:600; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.4px; }
   .chain-line { margin:4px 0; }
-  .chain-role { font-size:10px; color:#8b949e; font-weight:600; display:block; margin-bottom:2px; }
-  .chain-text { font-size:11px; line-height:1.55; color:#d0d7de; white-space:pre-wrap; word-wrap:break-word; background:#0d1117; border:1px solid #263241; border-radius:5px; padding:8px; }
-  .chain-muted { color:#6e7681; }
+  .chain-role { font-size:10px; color:var(--muted); font-weight:600; display:block; margin-bottom:2px; }
+  .chain-text { font-size:11px; line-height:1.55; color:var(--text-soft); white-space:pre-wrap; word-wrap:break-word; background:var(--bg-alt); border:1px solid var(--border-soft); border-radius:5px; padding:8px; }
+  .chain-muted { color:var(--muted-soft); }
+  .chain-details { margin-top:8px; border:1px solid var(--border-soft); border-radius:5px; background:var(--surface-2); }
+  .chain-details > summary { cursor:pointer; list-style:none; padding:7px 9px; font-size:10px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; }
+  .chain-details > summary::-webkit-details-marker { display:none; }
+  .chain-details > summary::before { content:'\\25B8 '; }
+  .chain-details[open] > summary::before { content:'\\25BE '; }
+  .chain-details .chain-line { margin:0; padding:0 9px 8px; }
+  .channel-tag { display:inline-block; margin-left:6px; padding:1px 6px; border-radius:10px; border:1px solid var(--border-soft); color:var(--muted); font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.35px; }
 
   .badge { font-size:9px; padding:1px 6px; border-radius:8px; font-weight:600; }
   .badge.approved { background:rgba(102,187,106,0.2); color:#66bb6a; }
@@ -367,24 +447,24 @@ const PAGE_HTML = `<!DOCTYPE html>
   .judge-panel[open] .judge-toggle::before { content:'\\25BE '; }
   .judge-body { padding:4px 20px 16px; max-height:45vh; overflow-y:auto; }
   table.judge-table { width:100%; border-collapse:collapse; font-size:11px; }
-  table.judge-table tr { border-bottom:1px solid #1e1e1e; }
-  .jd { padding:5px 8px; font-weight:500; white-space:nowrap; color:#ccc; }
+  table.judge-table tr { border-bottom:1px solid var(--table-rule); }
+  .jd { padding:5px 8px; font-weight:500; white-space:nowrap; color:var(--text-soft); }
   .js { padding:5px 6px; text-align:center; font-weight:700; }
   .jb { padding:5px 8px; }
   .jr { padding:5px 8px; color:var(--muted); font-size:10px; }
-  .bar-bg { background:#262626; border-radius:3px; height:5px; width:80px; }
+  .bar-bg { background:var(--bar-bg); border-radius:3px; height:5px; width:80px; }
   .bar-fg { border-radius:3px; height:5px; }
 
   .qual-item { margin-bottom:12px; }
-  .qual-label { font-weight:600; color:#90caf9; font-size:11px; margin-bottom:3px; }
-  .qual-text { color:#aaa; font-size:11px; line-height:1.6; }
-  .qual-ktp { margin:12px 0; padding:10px; background:#1a237e; border-radius:6px; }
+  .qual-label { font-weight:600; color:var(--accent-soft); font-size:11px; margin-bottom:3px; }
+  .qual-text { color:var(--text-soft); font-size:11px; line-height:1.6; }
+  .qual-ktp { margin:12px 0; padding:10px; background:var(--info-bg); border-radius:6px; }
   .qual-tags { margin-top:8px; }
-  .tag { display:inline-block; padding:2px 8px; margin:2px; border-radius:10px; font-size:10px; font-weight:600; background:#263238; color:#80cbc4; }
+  .tag { display:inline-block; padding:2px 8px; margin:2px; border-radius:10px; font-size:10px; font-weight:600; background:var(--tag-bg); color:var(--tag-fg); }
 
   /* Empty state */
   .empty-state { display:flex; align-items:center; justify-content:center; flex:1; color:var(--muted); font-size:12px; flex-direction:column; gap:8px; }
-  .empty-state .hint { font-size:10px; color:#444; }
+  .empty-state .hint { font-size:10px; color:var(--hint); }
 
   /* Loading */
   .loading { color:var(--muted); font-size:11px; padding:12px 16px; }
@@ -424,15 +504,24 @@ const PAGE_HTML = `<!DOCTYPE html>
     <span class="view-divider"></span>
     <label class="view-check"><input type="checkbox" id="toggleTutorInternal" checked onchange="setInternalVisibility('tutor', this.checked)">Tutor internals</label>
     <label class="view-check"><input type="checkbox" id="toggleLearnerInternal" checked onchange="setInternalVisibility('learner', this.checked)">Learner internals</label>
+    <span class="view-divider" id="chainFilterDivider" style="display:none"></span>
+    <span class="chain-filter" id="chainFilterGroup" style="display:none">
+      <button class="view-btn" id="chainFilterAllBtn" onclick="setMessageChainChannelFilter('all')">All chains</button>
+      <button class="view-btn" id="chainFilterFrontBtn" onclick="setMessageChainChannelFilter('tutor_learner')">Tutor↔Learner</button>
+      <button class="view-btn" id="chainFilterTutorBtn" onclick="setMessageChainChannelFilter('tutor_ego_superego')">Tutor↔Superego</button>
+      <button class="view-btn" id="chainFilterLearnerBtn" onclick="setMessageChainChannelFilter('learner_ego_superego')">Learner↔Superego</button>
+    </span>
+    <span class="view-divider"></span>
+    <button class="view-btn theme-btn" id="themeToggleBtn" onclick="toggleTheme()">Light</button>
     <span class="view-label" id="viewHint"></span>
   </div>
 
   <div class="legend" id="legendBar" style="display:none">
     <span><span class="sw" style="background:#78909c"></span> Front stage</span>
-    <span><span class="sw" style="background:#ef5350"></span> L.Superego</span>
+    <span class="legend-toggle" id="legendLearnerSuperego" onclick="toggleLaneFromHeader('learner')" title="Toggle learner superego lane"><span class="sw" style="background:#ef5350"></span> L.Superego</span>
     <span><span class="sw" style="background:#ab47bc"></span> L.Ego</span>
     <span><span class="sw" style="background:#42a5f5"></span> T.Ego</span>
-    <span><span class="sw" style="background:#66bb6a"></span> T.Superego</span>
+    <span class="legend-toggle" id="legendTutorSuperego" onclick="toggleLaneFromHeader('tutor')" title="Toggle tutor superego lane"><span class="sw" style="background:#66bb6a"></span> T.Superego</span>
   </div>
 
   <div class="split" id="splitPane" style="display:none">
@@ -456,9 +545,13 @@ let currentSteps = [];
 let visibleSteps = [];
 let showTutorInternal = true;
 let showLearnerInternal = true;
+let messageChainChannelFilter = 'all';
+let activeTheme = 'dark';
 const query = new URLSearchParams(window.location.search);
 const initialRunId = query.get('run');
 const initialDialogueId = query.get('dialogue');
+const initialScenario = query.get('scenario');
+const initialTheme = query.get('theme');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function escapeHtml(t) {
@@ -471,6 +564,108 @@ function shortModel(m) {
 }
 function scoreClass(s) { return s == null || Number.isNaN(s) ? 'score-na' : s >= 85 ? 'score-high' : s >= 65 ? 'score-mid' : 'score-low'; }
 function scoreBg(s) { return s == null || Number.isNaN(s) ? '#455a64' : s >= 90 ? '#1b5e20' : s >= 70 ? '#e65100' : '#b71c1c'; }
+function channelLabel(channel) {
+  if (channel === 'tutor_learner') return 'Tutor↔Learner';
+  if (channel === 'tutor_ego_superego') return 'Tutor↔Superego';
+  if (channel === 'learner_ego_superego') return 'Learner↔Superego';
+  return 'Unknown';
+}
+function normalizeScenarioKey(v) {
+  return String(v || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s-]+/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
+}
+
+function findScenarioDialogue(items, scenarioQuery) {
+  const wanted = normalizeScenarioKey(scenarioQuery);
+  if (!wanted || !Array.isArray(items)) return null;
+  const exact = items.find((d) => normalizeScenarioKey(d.scenario) === wanted);
+  if (exact) return exact;
+  return items.find((d) => normalizeScenarioKey(d.scenario).includes(wanted)) || null;
+}
+
+function loadSavedTheme() {
+  if (initialTheme === 'light' || initialTheme === 'dark') return initialTheme;
+  try {
+    const stored = window.localStorage.getItem('transcriptBrowserTheme');
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch {
+    // ignore storage failures
+  }
+  return 'dark';
+}
+
+function applyTheme(theme, persist = true) {
+  activeTheme = theme === 'light' ? 'light' : 'dark';
+  document.body.classList.toggle('theme-light', activeTheme === 'light');
+  if (persist) {
+    try {
+      window.localStorage.setItem('transcriptBrowserTheme', activeTheme);
+    } catch {
+      // ignore storage failures
+    }
+  }
+  syncThemeControl();
+  if (currentDialogueData) {
+    renderCurrentView();
+  }
+}
+
+function syncThemeControl() {
+  const btn = document.getElementById('themeToggleBtn');
+  if (!btn) return;
+  btn.textContent = activeTheme === 'light' ? 'Dark' : 'Light';
+  btn.title = activeTheme === 'light' ? 'Switch to dark theme' : 'Switch to light theme';
+}
+
+function toggleTheme() {
+  applyTheme(activeTheme === 'light' ? 'dark' : 'light');
+}
+
+function syncLegendToggles() {
+  const learner = document.getElementById('legendLearnerSuperego');
+  const tutor = document.getElementById('legendTutorSuperego');
+  if (learner) learner.classList.toggle('off', !showLearnerInternal);
+  if (tutor) tutor.classList.toggle('off', !showTutorInternal);
+}
+
+function syncMessageChainFilterControls(chain) {
+  const group = document.getElementById('chainFilterGroup');
+  const divider = document.getElementById('chainFilterDivider');
+  const show = activeViewMode === 'message-chain';
+  if (group) group.style.display = show ? 'inline-flex' : 'none';
+  if (divider) divider.style.display = show ? 'block' : 'none';
+
+  const counts = { tutor_learner: 0, tutor_ego_superego: 0, learner_ego_superego: 0, unknown: 0 };
+  for (const ex of chain?.exchanges || []) {
+    const key = ex.channel || 'unknown';
+    counts[key] = (counts[key] || 0) + 1;
+  }
+
+  const allCount = (chain?.exchanges || []).length;
+  const specs = [
+    { id: 'chainFilterAllBtn', channel: 'all', label: 'All chains', count: allCount },
+    { id: 'chainFilterFrontBtn', channel: 'tutor_learner', label: channelLabel('tutor_learner'), count: counts.tutor_learner || 0 },
+    { id: 'chainFilterTutorBtn', channel: 'tutor_ego_superego', label: channelLabel('tutor_ego_superego'), count: counts.tutor_ego_superego || 0 },
+    { id: 'chainFilterLearnerBtn', channel: 'learner_ego_superego', label: channelLabel('learner_ego_superego'), count: counts.learner_ego_superego || 0 },
+  ];
+
+  for (const spec of specs) {
+    const btn = document.getElementById(spec.id);
+    if (!btn) continue;
+    btn.textContent = spec.label + ' (' + spec.count + ')';
+    btn.classList.toggle('active', messageChainChannelFilter === spec.channel);
+  }
+}
+
+function setMessageChainChannelFilter(channel) {
+  const allowed = new Set(['all', 'tutor_learner', 'tutor_ego_superego', 'learner_ego_superego']);
+  messageChainChannelFilter = allowed.has(channel) ? channel : 'all';
+  if (!currentDialogueData) return;
+  renderCurrentView();
+}
 
 // ── Sidebar: load runs ──────────────────────────────────────────────────────
 async function loadRuns() {
@@ -481,7 +676,10 @@ async function loadRuns() {
   if (initialRunId && allRuns.some((r) => r.runId === initialRunId)) {
     await toggleRun(initialRunId, true);
     const items = runDialogues[initialRunId] || [];
-    const target = initialDialogueId ? items.find((d) => d.dialogueId === initialDialogueId) : items[0];
+    const target =
+      (initialDialogueId ? items.find((d) => d.dialogueId === initialDialogueId) : null) ||
+      (initialScenario ? findScenarioDialogue(items, initialScenario) : null) ||
+      items[0];
     if (target?.dialogueId) {
       await loadDialogue(target.dialogueId);
     }
@@ -653,6 +851,9 @@ function renderViewControls(data) {
   chainBtn.disabled = chain.exchanges.length === 0;
   if (tutorToggle) tutorToggle.checked = showTutorInternal;
   if (learnerToggle) learnerToggle.checked = showLearnerInternal;
+  syncThemeControl();
+  syncLegendToggles();
+  syncMessageChainFilterControls(chain);
 
   if (activeViewMode === 'transcript') {
     hint.textContent = visibleSteps.length + ' step' + (visibleSteps.length === 1 ? '' : 's') + ' visible';
@@ -661,7 +862,9 @@ function renderViewControls(data) {
   } else if (!hasRaw) {
     hint.textContent = 'Message chain is semantic-only (raw payload capture unavailable)';
   } else {
-    hint.textContent = 'Message chain includes captured request/response payload content';
+    hint.textContent =
+      'Message chain includes captured payloads' +
+      (messageChainChannelFilter === 'all' ? '' : (' · filter: ' + channelLabel(messageChainChannelFilter)));
   }
 }
 
@@ -696,6 +899,21 @@ function setInternalVisibility(kind, checked) {
   renderCurrentView();
 }
 
+function toggleLaneFromHeader(kind) {
+  if (kind === 'tutor') {
+    showTutorInternal = !showTutorInternal;
+    const tutorToggle = document.getElementById('toggleTutorInternal');
+    if (tutorToggle) tutorToggle.checked = showTutorInternal;
+  }
+  if (kind === 'learner') {
+    showLearnerInternal = !showLearnerInternal;
+    const learnerToggle = document.getElementById('toggleLearnerInternal');
+    if (learnerToggle) learnerToggle.checked = showLearnerInternal;
+  }
+  if (!currentDialogueData) return;
+  renderCurrentView();
+}
+
 function isTutorInternalStep(step) {
   if (!step) return false;
   return (
@@ -726,6 +944,7 @@ function getFilteredMessageChainExchanges(exchanges) {
   return all.filter((ex) => {
     if (!showTutorInternal && ex.channel === 'tutor_ego_superego') return false;
     if (!showLearnerInternal && ex.channel === 'learner_ego_superego') return false;
+    if (messageChainChannelFilter !== 'all' && ex.channel !== messageChainChannelFilter) return false;
     return true;
   });
 }
@@ -1148,6 +1367,13 @@ function buildMessageChain(trace) {
 
 // ── SVG diagram ─────────────────────────────────────────────────────────────
 function renderDiagram(steps, meta) {
+  const isLight = activeTheme === 'light';
+  const lifelineColor = isLight ? '#a7b5c5' : '#333';
+  const turnSeparatorColor = isLight ? '#c6d1de' : '#444';
+  const turnTextColor = isLight ? '#7a8898' : '#666';
+  const defaultLabelColor = isLight ? '#4f5f73' : '#bbb';
+  const latencyColor = isLight ? '#7a8898' : '#555';
+
   const actors = [
     { id: 'learner_superego', label: 'L.Superego', model: shortModel(meta.learnerSuperegoModel), color: '#fce4ec', textColor: '#c62828', stroke: '#ef5350' },
     { id: 'learner_ego', label: 'L.Ego', model: shortModel(meta.learnerEgoModel), color: '#f3e5f5', textColor: '#6a1b9a', stroke: '#ab47bc' },
@@ -1170,10 +1396,21 @@ function renderDiagram(steps, meta) {
   actors.forEach((a, i) => {
     const x = padding + i * colWidth;
     const cx = x + colWidth / 2;
+    const laneKind = a.id === 'learner_superego' ? 'learner' : (a.id === 'tutor_superego' ? 'tutor' : null);
+    const laneEnabled = laneKind === 'learner' ? showLearnerInternal : (laneKind === 'tutor' ? showTutorInternal : true);
+    const clickAttr = laneKind ? ' onclick="toggleLaneFromHeader(&quot;' + laneKind + '&quot;)"' : '';
+    const headerClass = laneKind ? ('actor-header clickable' + (laneEnabled ? '' : ' off')) : 'actor-header';
+    const hint = laneKind ? (laneEnabled ? 'click to hide' : 'click to show') : '';
+
+    svg += '<g class="' + headerClass + '"' + clickAttr + '>';
     svg += '<rect x="' + (x+8) + '" y="4" width="' + (colWidth-16) + '" height="40" rx="5" fill="' + a.color + '" stroke="' + a.stroke + '" stroke-width="1"/>';
     svg += '<text x="' + cx + '" y="21" text-anchor="middle" font-size="11" font-weight="600" fill="' + a.textColor + '">' + a.label + '</text>';
     svg += '<text x="' + cx + '" y="36" text-anchor="middle" font-size="8.5" fill="' + a.textColor + '" opacity="0.65">' + a.model + '</text>';
-    svg += '<line x1="' + cx + '" y1="' + headerHeight + '" x2="' + cx + '" y2="' + (svgHeight-10) + '" stroke="#333" stroke-width="1" stroke-dasharray="3,3"/>';
+    if (hint) {
+      svg += '<text x="' + cx + '" y="47" text-anchor="middle" font-size="7.5" fill="' + a.textColor + '" opacity="0.6">' + hint + '</text>';
+    }
+    svg += '</g>';
+    svg += '<line x1="' + cx + '" y1="' + headerHeight + '" x2="' + cx + '" y2="' + (svgHeight-10) + '" stroke="' + lifelineColor + '" stroke-width="1" stroke-dasharray="3,3"/>';
   });
 
   // Turn separators
@@ -1183,8 +1420,8 @@ function renderDiagram(steps, meta) {
       const num = s.label === 'Initial query' ? 1 : parseInt(s.label.replace('Turn ', ''));
       if (num !== prevTurn) {
         const y = headerHeight + i * rowHeight;
-        svg += '<line x1="' + padding + '" y1="' + y + '" x2="' + (svgWidth-padding) + '" y2="' + y + '" stroke="#444" stroke-width="0.5"/>';
-        svg += '<text x="' + (svgWidth-padding+3) + '" y="' + (y+12) + '" font-size="9" fill="#666" font-weight="600">T' + num + '</text>';
+        svg += '<line x1="' + padding + '" y1="' + y + '" x2="' + (svgWidth-padding) + '" y2="' + y + '" stroke="' + turnSeparatorColor + '" stroke-width="0.5"/>';
+        svg += '<text x="' + (svgWidth-padding+3) + '" y="' + (y+12) + '" font-size="9" fill="' + turnTextColor + '" font-weight="600">T' + num + '</text>';
         prevTurn = num;
       }
     }
@@ -1219,14 +1456,14 @@ function renderDiagram(steps, meta) {
     }
 
     const labelX = (fromX + toX) / 2;
-    let labelColor = '#bbb';
+    let labelColor = defaultLabelColor;
     if (step.approved === true) labelColor = '#66bb6a';
     if (step.approved === false) labelColor = '#ff7043';
 
     svg += '<text x="' + labelX + '" y="' + (y-6) + '" text-anchor="middle" font-size="9.5" font-weight="500" fill="' + labelColor + '">' + escapeHtml(step.label) + '</text>';
     if (step.latency) {
       const lat = step.latency < 1000 ? step.latency + 'ms' : (step.latency / 1000).toFixed(1) + 's';
-      svg += '<text x="' + labelX + '" y="' + (y+13) + '" text-anchor="middle" font-size="8" fill="#555">' + lat + '</text>';
+      svg += '<text x="' + labelX + '" y="' + (y+13) + '" text-anchor="middle" font-size="8" fill="' + latencyColor + '">' + lat + '</text>';
     }
     svg += '</g>';
   });
@@ -1285,6 +1522,55 @@ function renderChainLine(role, text, opts = {}) {
   );
 }
 
+function formatJsonForCard(value) {
+  if (value == null) return null;
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
+function toMessageStackLines(requestBody) {
+  if (!requestBody || typeof requestBody !== 'object') return [];
+  const lines = [];
+
+  if (typeof requestBody.system === 'string') {
+    lines.push({ role: 'Sys', text: requestBody.system });
+  }
+  if (typeof requestBody.systemInstruction === 'string') {
+    lines.push({ role: 'Sys', text: requestBody.systemInstruction });
+  }
+  if (typeof requestBody.systemInstruction?.text === 'string') {
+    lines.push({ role: 'Sys', text: requestBody.systemInstruction.text });
+  }
+  if (Array.isArray(requestBody.messages)) {
+    for (const m of requestBody.messages) {
+      const role = (m?.role || 'msg').toString();
+      const content = extractContentField(m?.content);
+      lines.push({ role: role === 'assistant' ? 'Assistant' : role === 'system' ? 'Sys' : 'User', text: content || safeJson(m) });
+    }
+  }
+  if (Array.isArray(requestBody.contents)) {
+    for (const c of requestBody.contents) {
+      const role = (c?.role || 'user').toString();
+      let text = null;
+      if (Array.isArray(c?.parts)) {
+        text = c.parts.map((p) => p?.text).filter(Boolean).join('\n');
+      }
+      if (!text) text = extractContentField(c?.content || c?.text || null);
+      lines.push({ role: role === 'model' ? 'Assistant' : role === 'system' ? 'Sys' : 'User', text: text || safeJson(c) });
+    }
+  }
+  return lines;
+}
+
+function getExchangeApiPayload(data, ex) {
+  const trace = Array.isArray(data?.trace) ? data.trace : [];
+  const entry = Number.isInteger(ex?.traceIndex) ? trace[ex.traceIndex] : null;
+  return entry?.apiPayload || entry?.api_payload || null;
+}
+
 function renderProjectionDiagnosticsCard(diag) {
   if (!diag || !Array.isArray(diag.effects) || diag.effects.length === 0) return '';
 
@@ -1333,6 +1619,24 @@ function renderMessageChain(data, visibleExchanges = null) {
   html += renderProjectionDiagnosticsCard(data.diagnostics);
   html += renderJudgeVisibilityCard(data.judged);
 
+  const counts = { tutor_learner: 0, tutor_ego_superego: 0, learner_ego_superego: 0, unknown: 0 };
+  for (const ex of chain.exchanges || []) {
+    const key = ex.channel || 'unknown';
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  html += '<div class="chain-card">';
+  html += '<div class="chain-head">API Message Chains</div>';
+  const chainSummary =
+    'Visible ' + exchanges.length + '/' + (chain.exchanges || []).length + ' exchanges · ' +
+    channelLabel('tutor_learner') + ': ' + (counts.tutor_learner || 0) + ', ' +
+    channelLabel('tutor_ego_superego') + ': ' + (counts.tutor_ego_superego || 0) + ', ' +
+    channelLabel('learner_ego_superego') + ': ' + (counts.learner_ego_superego || 0);
+  html += '<div class="chain-line"><div class="chain-text">' +
+    escapeHtml(chainSummary) +
+    '</div></div>';
+  html += '<div class="chain-line"><div class="chain-text chain-muted">Use the channel buttons above to isolate one dialogue lane. Click a superego role label in the legend (L.Superego/T.Superego) to hide or show that lane.</div></div>';
+  html += '</div>';
+
   if (exchanges.length === 0) {
     html += '<div class="entry">' +
       '<div class="entry-speaker">MESSAGE CHAIN</div>' +
@@ -1343,18 +1647,29 @@ function renderMessageChain(data, visibleExchanges = null) {
   }
 
   exchanges.forEach((ex) => {
+    const payload = getExchangeApiPayload(data, ex);
+    const requestBody = payload?.request?.body ?? null;
+    const responseBody = payload?.response?.body ?? null;
+    const requestMeta = payload?.request
+      ? (payload.request.method || 'POST') + ' ' + (payload.request.url || '(url unavailable)')
+      : null;
+    const responseMeta = payload?.response
+      ? 'status=' + (payload.response.status ?? '?')
+      : null;
+    const messageStack = toMessageStackLines(requestBody);
+
     const model = ex.model ? shortModel(ex.model) : '?';
     const latency = ex.latencyMs == null ? '' : (ex.latencyMs < 1000 ? ex.latencyMs + 'ms' : (ex.latencyMs / 1000).toFixed(1) + 's');
     const head =
       '#' + ex.sequence +
-      ' · ' + ex.channel.replace(/_/g, ' ') +
+      ' · ' + channelLabel(ex.channel) +
       ' · ' + ex.agent + '/' + ex.action +
       ' · model=' + model +
       (latency ? ' · ' + latency : '') +
       ' · payload=' + (ex.hasApiPayload ? 'captured' : 'missing');
 
     html += '<div class="chain-card">';
-    html += '<div class="chain-head">' + escapeHtml(head) + '</div>';
+    html += '<div class="chain-head">' + escapeHtml(head) + '<span class="channel-tag">' + escapeHtml(ex.channel || 'unknown') + '</span></div>';
 
     html += '<div class="chain-section">';
     html += '<div class="chain-title">Semantic (Eval-Relevant)</div>';
@@ -1366,6 +1681,9 @@ function renderMessageChain(data, visibleExchanges = null) {
     html += '<div class="chain-section">';
     html += '<div class="chain-title">Raw API (Content Fields)</div>';
     if (ex.hasApiPayload) {
+      if (requestMeta || responseMeta) {
+        html += '<div class="chain-line"><div class="chain-text">' + escapeHtml([requestMeta, responseMeta].filter(Boolean).join(' · ')) + '</div></div>';
+      }
       html += renderChainLine('Req Sys:', ex.raw?.systemPrompt, { maxChars: 1200 });
       html += renderChainLine('Req User:', ex.raw?.userRequest, { maxChars: 2000 });
       html += renderChainLine('Res Assistant:', ex.raw?.assistantResponse, { maxChars: 2000 });
@@ -1373,6 +1691,29 @@ function renderMessageChain(data, visibleExchanges = null) {
       html += '<div class="chain-line"><div class="chain-text chain-muted">Raw request/response payload was not captured for this exchange.</div></div>';
     }
     html += '</div>';
+
+    html += '<div class="chain-section">';
+    html += '<div class="chain-title">Raw API Message Stack</div>';
+    if (ex.hasApiPayload && messageStack.length > 0) {
+      for (const line of messageStack) {
+        html += renderChainLine(line.role + ':', line.text, { maxChars: 200000 });
+      }
+    } else if (ex.hasApiPayload) {
+      html += '<div class="chain-line"><div class="chain-text chain-muted">No request messages array detected in payload body.</div></div>';
+    } else {
+      html += '<div class="chain-line"><div class="chain-text chain-muted">Unavailable (payload missing).</div></div>';
+    }
+    html += '</div>';
+
+    if (ex.hasApiPayload) {
+      const reqJson = formatJsonForCard(requestBody);
+      const resJson = formatJsonForCard(responseBody);
+      html += '<details class="chain-details">';
+      html += '<summary>Full request/response JSON</summary>';
+      html += renderChainLine('Request JSON:', reqJson, { maxChars: 250000 });
+      html += renderChainLine('Response JSON:', resJson, { maxChars: 250000 });
+      html += '</details>';
+    }
 
     html += '</div>';
   });
@@ -1462,6 +1803,7 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Init ────────────────────────────────────────────────────────────────────
+applyTheme(loadSavedTheme(), false);
 loadRuns();
 </script>
 </body>
@@ -1470,9 +1812,10 @@ loadRuns();
 // ── Start server ────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {
-  console.log(`Transcript Browser running at http://localhost:${PORT}`);
+  const launchUrl = buildLaunchUrl(PORT);
+  console.log(`Transcript Browser running at ${launchUrl}`);
   if (shouldOpen) {
     const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
-    exec(`${cmd} http://localhost:${PORT}`);
+    exec(`${cmd} "${launchUrl}"`);
   }
 });
