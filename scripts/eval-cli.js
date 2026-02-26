@@ -2517,6 +2517,7 @@ async function main() {
           const stdout = await new Promise((resolve, reject) => {
             const env = { ...process.env };
             delete env.ANTHROPIC_API_KEY;
+            delete env.CLAUDECODE;
             const child = spawn('claude', claudeArgs, {
               stdio: ['pipe', 'pipe', 'pipe'],
               env,
@@ -2650,6 +2651,7 @@ async function main() {
           const stdout = await new Promise((resolve, reject) => {
             const env = { ...process.env };
             delete env.ANTHROPIC_API_KEY;
+            delete env.CLAUDECODE;
             const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
             let out = '';
             let err = '';
@@ -3084,8 +3086,9 @@ async function main() {
             learnerContext: dialogueLog?.learnerContext || null,
           };
 
+          // DgP and DgI use independent try/catch so a transient failure
+          // in one judge call doesn't silently skip the other.
           try {
-            // Public transcript
             const publicPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'public' });
             const publicParsed = await callClaudeJudge(publicPrompt);
             const publicScores = {};
@@ -3107,8 +3110,13 @@ async function main() {
             });
 
             console.log(`${tag}   dialogue-quality(public)=${publicOverall.toFixed(1)}`);
+          } catch (err) {
+            const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+            console.log(`${tag}   dialogue-quality(public) ... FAIL: ${msg}`);
+            if (verbose) console.error(err);
+          }
 
-            // Full transcript
+          try {
             const fullPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'full' });
             const fullParsed = await callClaudeJudge(fullPrompt);
             const fullScores = {};
@@ -3131,7 +3139,7 @@ async function main() {
             console.log(`${tag}   dialogue-quality(full)=${fullOverall.toFixed(1)}`);
           } catch (err) {
             const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-            console.log(`${tag}   dialogue-quality ... FAIL: ${msg}`);
+            console.log(`${tag}   dialogue-quality(full) ... FAIL: ${msg}`);
             if (verbose) console.error(err);
           }
         }
@@ -3247,6 +3255,7 @@ async function main() {
               const stdout = await new Promise((resolve, reject) => {
                 const env = { ...process.env };
                 delete env.ANTHROPIC_API_KEY;
+            delete env.CLAUDECODE;
                 const child = spawn('claude', claudeArgs, {
                   stdio: ['pipe', 'pipe', 'pipe'],
                   env,
@@ -3819,6 +3828,7 @@ async function main() {
             const stdout = await new Promise((resolve, reject) => {
               const env = { ...process.env };
               delete env.ANTHROPIC_API_KEY;
+            delete env.CLAUDECODE;
               const child = spawn('claude', claudeArgs, {
                 stdio: ['pipe', 'pipe', 'pipe'],
                 env,
@@ -4078,6 +4088,7 @@ async function main() {
           const stdout = await new Promise((resolve, reject) => {
             const env = { ...process.env };
             delete env.ANTHROPIC_API_KEY;
+            delete env.CLAUDECODE;
             const child = spawn('claude', claudeArgs, {
               stdio: ['pipe', 'pipe', 'pipe'],
               env,
@@ -4458,9 +4469,13 @@ async function main() {
           process.exit(1);
         }
 
-        // Filter to multi-turn rows only (suggestions array with >1 entry)
+        // Filter to multi-turn rows only (suggestions array with >1 entry,
+        // OR messages-mode with >1 dialogue round)
         let toEvaluate = results.filter(
-          (r) => r.success && Array.isArray(r.suggestions) && r.suggestions.length > 1,
+          (r) => r.success && (
+            (Array.isArray(r.suggestions) && r.suggestions.length > 1) ||
+            (r.conversationMode === 'messages' && r.dialogueRounds > 1)
+          ),
         );
 
         // Apply additional comma-separated scenario/profile filters
@@ -4578,6 +4593,7 @@ async function main() {
               const raw = await new Promise((resolve, reject) => {
                 const env = { ...process.env };
                 delete env.ANTHROPIC_API_KEY;
+            delete env.CLAUDECODE;
                 const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
                 let out = '';
                 let err = '';
@@ -4628,57 +4644,71 @@ async function main() {
               scenarioName: scenario.name,
               scenarioDescription: scenario.description,
               topic: scenario.topic || scenario.name,
-              turnCount: result.suggestions.length,
+              turnCount: result.suggestions?.length > 1
+                ? result.suggestions.length
+                : (result.dialogueRounds || conversationHistory.length),
               learnerContext: dialogueLog?.learnerContext || null,
             };
 
             // ── Step B: Score dialogue quality (PUBLIC transcript) → dialogue_quality_score ──
-            if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality (public)`);
+            try {
+              if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality (public)`);
 
-            const publicPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'public' });
-            const publicResult = await callDialogueJudge(publicPrompt);
+              const publicPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'public' });
+              const publicResult = await callDialogueJudge(publicPrompt);
 
-            evaluationStore.updateDialogueQualityScore(result.id, {
-              dialogueQualityScore: publicResult.overall,
-              dialogueQualitySummary: publicResult.summary,
-              dialogueQualityJudgeModel: judgeModel,
-            });
-            dialogueQualityScores.push(publicResult.overall);
+              evaluationStore.updateDialogueQualityScore(result.id, {
+                dialogueQualityScore: publicResult.overall,
+                dialogueQualitySummary: publicResult.summary,
+                dialogueQualityJudgeModel: judgeModel,
+              });
+              dialogueQualityScores.push(publicResult.overall);
 
-            console.log(
-              `${tag} ${scenarioId} / ${profileName} ... dialogue-quality(public)=${publicResult.overall.toFixed(1)}`,
-            );
+              console.log(
+                `${tag} ${scenarioId} / ${profileName} ... dialogue-quality(public)=${publicResult.overall.toFixed(1)}`,
+              );
 
-            if (verbose && publicResult.summary) {
-              const truncSummary =
-                publicResult.summary.length > 300
-                  ? publicResult.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
-                  : publicResult.summary.replace(/\n/g, ' ');
-              console.log(`     Public judge: ${truncSummary}`);
+              if (verbose && publicResult.summary) {
+                const truncSummary =
+                  publicResult.summary.length > 300
+                    ? publicResult.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                    : publicResult.summary.replace(/\n/g, ' ');
+                console.log(`     Public judge: ${truncSummary}`);
+              }
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${tag} ${scenarioId} / ${profileName} ... dialogue-quality(public) FAIL: ${msg}`);
+              if (verbose) console.error(err);
             }
 
             // ── Step C: Score dialogue quality (FULL transcript) → dialogue_quality_internal_score ──
-            if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality (full)`);
+            try {
+              if (verbose) console.log(`${tag} ${scenarioId} / ${profileName} ... scoring dialogue quality (full)`);
 
-            const fullPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'full' });
-            const fullResult = await callDialogueJudge(fullPrompt);
+              const fullPrompt = buildDialogueQualityPrompt({ ...promptParams, transcriptMode: 'full' });
+              const fullResult = await callDialogueJudge(fullPrompt);
 
-            evaluationStore.updateDialogueQualityInternalScore(result.id, {
-              dialogueQualityInternalScore: fullResult.overall,
-              dialogueQualityInternalSummary: fullResult.summary,
-            });
-            dialogueQualityInternalScores.push(fullResult.overall);
+              evaluationStore.updateDialogueQualityInternalScore(result.id, {
+                dialogueQualityInternalScore: fullResult.overall,
+                dialogueQualityInternalSummary: fullResult.summary,
+              });
+              dialogueQualityInternalScores.push(fullResult.overall);
 
-            console.log(
-              `${tag} ${scenarioId} / ${profileName} ... dialogue-quality(full)=${fullResult.overall.toFixed(1)}`,
-            );
+              console.log(
+                `${tag} ${scenarioId} / ${profileName} ... dialogue-quality(full)=${fullResult.overall.toFixed(1)}`,
+              );
 
-            if (verbose && fullResult.summary) {
-              const truncSummary =
-                fullResult.summary.length > 300
-                  ? fullResult.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
-                  : fullResult.summary.replace(/\n/g, ' ');
-              console.log(`     Full judge: ${truncSummary}\n`);
+              if (verbose && fullResult.summary) {
+                const truncSummary =
+                  fullResult.summary.length > 300
+                    ? fullResult.summary.slice(0, 300).replace(/\n/g, ' ') + '...'
+                    : fullResult.summary.replace(/\n/g, ' ');
+                console.log(`     Full judge: ${truncSummary}\n`);
+              }
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${tag} ${scenarioId} / ${profileName} ... dialogue-quality(full) FAIL: ${msg}`);
+              if (verbose) console.error(err);
             }
 
             succeeded++;
