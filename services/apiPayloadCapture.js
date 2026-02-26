@@ -17,6 +17,18 @@ const SENSITIVE_HEADERS = new Set([
 const captureContext = new AsyncLocalStorage();
 let installed = false;
 let originalFetch = null;
+let globalOnRecord = null;
+
+/**
+ * Register a global callback fired for every captured LLM API record.
+ * Called even when there is no active captureApiCalls() scope.
+ * Pass null to unregister.
+ */
+export function setGlobalOnRecord(fn) {
+  globalOnRecord = typeof fn === 'function' ? fn : null;
+  // Ensure the fetch wrapper is installed so unscoped calls are intercepted
+  if (globalOnRecord) ensureInstalled();
+}
 
 function clip(text, limit = MAX_CHARS) {
   if (text == null) return null;
@@ -149,15 +161,17 @@ function ensureInstalled() {
   globalThis.fetch = async function wrappedFetch(input, init) {
     const scope = captureContext.getStore();
     const url = extractUrl(input);
-    const captureEnabled = Boolean(scope?.enabled) && shouldCapture(url);
-    if (!captureEnabled) {
+    const scopeEnabled = Boolean(scope?.enabled) && shouldCapture(url);
+    const globalEnabled = Boolean(globalOnRecord) && shouldCapture(url);
+    if (!scopeEnabled && !globalEnabled) {
       return originalFetch(input, init);
     }
 
+    const maxChars = scope?.maxChars || MAX_CHARS;
     const startedAt = Date.now();
     const method = extractMethod(input, init);
-    const requestBodyText = await extractRequestBody(input, init, scope.maxChars);
-    const requestBodyJson = requestBodyText ? truncateValue(safeJsonParse(requestBodyText), scope.maxChars) : null;
+    const requestBodyText = await extractRequestBody(input, init, maxChars);
+    const requestBodyJson = requestBodyText ? truncateValue(safeJsonParse(requestBodyText), maxChars) : null;
     const requestHeaders = sanitizeHeaders(init?.headers || input?.headers);
 
     let response;
@@ -165,7 +179,7 @@ function ensureInstalled() {
     let error = null;
     try {
       response = await originalFetch(input, init);
-      responseSnapshot = await snapshotResponse(response, scope.maxChars);
+      responseSnapshot = await snapshotResponse(response, maxChars);
       return response;
     } catch (err) {
       error = err;
@@ -173,7 +187,7 @@ function ensureInstalled() {
     } finally {
       const durationMs = Date.now() - startedAt;
       const generationId = extractGenerationId(responseSnapshot?.json);
-      scope.records.push({
+      const record = {
         timestamp: new Date().toISOString(),
         durationMs,
         provider: inferProvider(url),
@@ -185,8 +199,14 @@ function ensureInstalled() {
           body: requestBodyJson ?? requestBodyText,
         },
         response: responseSnapshot || null,
-        error: error ? clip(error.message || String(error), scope.maxChars) : null,
-      });
+        error: error ? clip(error.message || String(error), maxChars) : null,
+      };
+      if (scopeEnabled) {
+        scope.records.push(record);
+      }
+      if (globalOnRecord) {
+        try { globalOnRecord(record); } catch { /* swallow display errors */ }
+      }
     }
   };
   installed = true;

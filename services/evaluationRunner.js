@@ -1320,13 +1320,15 @@ export async function runEvaluation(options = {}) {
 
   const log = verbose ? console.log : () => {};
 
+  // Always suppress tutor-core verbose dialogue output during eval runs
+  // (TUTOR DIALOGUE boxes, learner context, model overrides, etc.)
+  setQuietMode(true);
+
   // Install live API reporter if --live is active
-  // Suppress tutor-core verbose dialogue output (TUTOR DIALOGUE boxes, learner context, etc.)
   let liveApiReporter = null;
   if (liveApi) {
     liveApiReporter = new LiveApiReporter();
     liveApiReporter.install();
-    setQuietMode(true);
     _liveQuiet = true;
   }
 
@@ -1744,10 +1746,10 @@ export async function runEvaluation(options = {}) {
     }
   });
 
-  // Uninstall live API reporter
+  // Restore tutor-core output and uninstall live API reporter
+  setQuietMode(false);
   if (liveApiReporter) {
     liveApiReporter.uninstall();
-    setQuietMode(false);
     _liveQuiet = false;
   }
 
@@ -3507,6 +3509,9 @@ export async function resumeEvaluation(options = {}) {
     await Promise.all(workers);
   }
 
+  // Suppress tutor-core verbose dialogue output during eval runs
+  setQuietMode(true);
+
   log(`\nRunning ${totalRemainingTests} remaining tests with parallelism=${parallelism}...\n`);
 
   const runStartTime = Date.now();
@@ -3673,6 +3678,9 @@ export async function resumeEvaluation(options = {}) {
       }
     }
   });
+
+  // Restore tutor-core output
+  setQuietMode(false);
 
   const durationMs = Date.now() - runStartTime;
   const successfulTests = results.filter((r) => r.success).length;
