@@ -1083,14 +1083,14 @@ describe('listRuns metric semantics', () => {
     assert.strictEqual(run.avgTutorHolisticScore, 90.0, 'TuH = 90 (whole-dialogue trajectory assessment)');
   });
 
-  it('TuH falls back to tutor_last_turn_score when no holistic judge has run', () => {
-    const runId = createScoredRun('TuH fallback test', [
+  it('TuH is NULL when no holistic judge has run (no fallback)', () => {
+    const runId = createScoredRun('TuH no-fallback test', [
       { tutorOverallScore: 70, tutorFirstTurnScore: 60, tutorLastTurnScore: 80 },
       { tutorOverallScore: 70, tutorFirstTurnScore: 60, tutorLastTurnScore: 90 },
     ]);
     const run = findRun(runId);
-    assert.strictEqual(run.avgTutorHolisticScore, 85.0,
-      'TuH should fall back to AVG(tutor_last_turn_score) = 85 when holistic is NULL');
+    assert.strictEqual(run.avgTutorHolisticScore, null,
+      'TuH should be NULL when holistic is NULL — no fallback to per-turn');
   });
 
   // ── LrPT: learner per-turn average ────────────────────────────────────
@@ -1282,18 +1282,18 @@ describe('listRuns metric semantics', () => {
   // Both holistic metrics should fall back to their per-turn counterpart when
   // no holistic judge has run, so neither shows "--" while the other has a value.
 
-  it('LrH falls back to learner_overall_score when no holistic learner judge has run', () => {
-    const runId = createScoredRun('LrH fallback test', [
+  it('LrH is NULL when no holistic learner judge has run (no fallback)', () => {
+    const runId = createScoredRun('LrH no-fallback test', [
       { tutorFirstTurnScore: 80, learnerOverallScore: 70 },  // no learnerHolisticScore
       { tutorFirstTurnScore: 80, learnerOverallScore: 50 },
     ]);
     const run = findRun(runId);
-    assert.strictEqual(run.avgLearnerHolisticScore, 60.0,
-      'LrH should fall back to AVG(learner_overall_score) = 60 when holistic is NULL');
+    assert.strictEqual(run.avgLearnerHolisticScore, null,
+      'LrH should be NULL when holistic is NULL — no fallback to per-turn');
   });
 
-  it('TuH and LrH both degrade gracefully (fallback) when only per-turn scores exist', () => {
-    const runId = createScoredRun('bilateral fallback symmetry', [
+  it('TuH and LrH are both NULL when only per-turn scores exist (no fallback)', () => {
+    const runId = createScoredRun('bilateral no-fallback symmetry', [
       {
         tutorOverallScore: 80, tutorFirstTurnScore: 75, tutorLastTurnScore: 85,
         learnerOverallScore: 60,
@@ -1301,10 +1301,8 @@ describe('listRuns metric semantics', () => {
       },
     ]);
     const run = findRun(runId);
-    assert.ok(run.avgTutorHolisticScore != null, 'TuH should have a fallback value');
-    assert.ok(run.avgLearnerHolisticScore != null, 'LrH should have a fallback value (symmetric with TuH)');
-    assert.strictEqual(run.avgTutorHolisticScore, 85.0, 'TuH falls back to tutor_last_turn_score');
-    assert.strictEqual(run.avgLearnerHolisticScore, 60.0, 'LrH falls back to learner_overall_score');
+    assert.strictEqual(run.avgTutorHolisticScore, null, 'TuH should be NULL without holistic scores');
+    assert.strictEqual(run.avgLearnerHolisticScore, null, 'LrH should be NULL without holistic scores');
   });
 });
 
@@ -1436,9 +1434,9 @@ describe('TuH / LrH bilateral symmetry', () => {
 
   // ── listRuns aggregation: symmetric COALESCE fallback ─────────────────
 
-  it('listRuns SQL uses symmetric COALESCE fallback for both TuH and LrH', () => {
-    // Both holistic columns NULL → both should fall back to per-turn equivalents
-    const run = createRun({ description: 'symmetric COALESCE test' });
+  it('listRuns shows NULL for TuH and LrH when only per-turn scores exist', () => {
+    // No COALESCE fallback: holistic columns NULL → display shows NULL (not per-turn)
+    const run = createRun({ description: 'no holistic fallback test' });
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
@@ -1460,10 +1458,9 @@ describe('TuH / LrH bilateral symmetry', () => {
 
     const found = listRuns().find((r) => r.id === run.id);
 
-    // TuH falls back to tutor_last_turn_score
-    assert.strictEqual(found.avgTutorHolisticScore, 85.0, 'TuH COALESCE → tutor_last_turn_score');
-    // LrH falls back to learner_overall_score (symmetric pattern)
-    assert.strictEqual(found.avgLearnerHolisticScore, 55.0, 'LrH COALESCE → learner_overall_score');
+    // TuH and LrH should be NULL — no fallback to per-turn scores
+    assert.strictEqual(found.avgTutorHolisticScore, null, 'TuH should be NULL without holistic scores');
+    assert.strictEqual(found.avgLearnerHolisticScore, null, 'LrH should be NULL without holistic scores');
   });
 
   // ── Score range symmetry: both use 0-100 scale ───────────────────────
