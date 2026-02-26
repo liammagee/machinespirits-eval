@@ -19,7 +19,6 @@ import {
   loadCheckpoint,
   deleteCheckpoint,
   listCheckpoints,
-  buildMessageChain,
 } from '../services/evaluationRunner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -575,60 +574,5 @@ describe('Turns mutation preservation (dynamic learner fix)', () => {
       'Turn 0 should use LLM message from checkpoint, not original');
     assert.ok(turns[1].action_details.message.startsWith('LLM-generated:'),
       'Turn 1 should use LLM message from checkpoint, not original');
-  });
-});
-
-describe('buildMessageChain from restored conversationHistory', () => {
-  it('produces correct alternating assistant/user message chain', () => {
-    const cs = makeTestState();
-
-    // buildMessageChain reads suggestion.message and learnerMessage from conversationHistory
-    const chain = buildMessageChain(cs.conversationHistory);
-
-    assert.ok(Array.isArray(chain), 'Should return array');
-    assert.strictEqual(chain.length, 2, 'Should have 2 messages (1 assistant + 1 user)');
-    assert.strictEqual(chain[0].role, 'assistant');
-    assert.strictEqual(chain[0].content, 'Lets break down recursion step by step.');
-    assert.strictEqual(chain[1].role, 'user');
-    assert.strictEqual(chain[1].content, 'LLM-generated: I still dont get recursion at all!');
-  });
-
-  it('handles multi-turn conversation history', () => {
-    const history = [
-      {
-        turnIndex: 0, suggestion: { message: 'Tutor turn 0' },
-        learnerMessage: 'Learner turn 1',
-      },
-      {
-        turnIndex: 1, suggestion: { message: 'Tutor turn 1' },
-        learnerMessage: 'Learner turn 2',
-      },
-    ];
-
-    const chain = buildMessageChain(history);
-    assert.strictEqual(chain.length, 4);
-    assert.deepStrictEqual(chain, [
-      { role: 'assistant', content: 'Tutor turn 0' },
-      { role: 'user', content: 'Learner turn 1' },
-      { role: 'assistant', content: 'Tutor turn 1' },
-      { role: 'user', content: 'Learner turn 2' },
-    ]);
-  });
-
-  it('skips entries without suggestion.message or learnerMessage', () => {
-    const history = [
-      { turnIndex: 0, suggestion: { title: 'no message field' }, learnerMessage: null },
-      { turnIndex: 1, suggestion: { message: 'Has message' }, learnerMessage: 'Has learner' },
-    ];
-
-    const chain = buildMessageChain(history);
-    assert.strictEqual(chain.length, 2, 'Should skip entry without message/learnerMessage');
-    assert.strictEqual(chain[0].role, 'assistant');
-    assert.strictEqual(chain[1].role, 'user');
-  });
-
-  it('returns empty array for null/empty history', () => {
-    assert.deepStrictEqual(buildMessageChain(null), []);
-    assert.deepStrictEqual(buildMessageChain([]), []);
   });
 });

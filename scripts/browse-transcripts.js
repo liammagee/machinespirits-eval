@@ -124,6 +124,40 @@ function resolvelearnerModels(arch, trace, profileName) {
   return resolvelearnerModelsFromYaml(arch);
 }
 
+function collectScoreBundle(row) {
+  return {
+    tutorFirstTurn: row?.tutor_first_turn_score ?? null,
+    tutorOverall: row?.tutor_overall_score ?? null,
+    tutorLastTurn: row?.tutor_last_turn_score ?? null,
+    tutorDevelopment: row?.tutor_development_score ?? null,
+    tutorHolisticOverall: row?.holistic_overall_score ?? null,
+    learnerOverall: row?.learner_overall_score ?? null,
+    learnerHolisticOverall: row?.learner_holistic_overall_score ?? null,
+    dialogueQualityPublic: row?.dialogue_quality_score ?? null,
+    dialogueQualityInternal: row?.dialogue_quality_internal_score ?? null,
+  };
+}
+
+function pickPrimaryScore(row) {
+  const scoreBundle = collectScoreBundle(row);
+  const orderedCandidates = [
+    ['dialogue_quality_score', scoreBundle.dialogueQualityPublic],
+    ['tutor_first_turn_score', scoreBundle.tutorFirstTurn],
+    ['tutor_overall_score', scoreBundle.tutorOverall],
+    ['learner_overall_score', scoreBundle.learnerOverall],
+    ['learner_holistic_overall_score', scoreBundle.learnerHolisticOverall],
+    ['tutor_last_turn_score', scoreBundle.tutorLastTurn],
+    ['dialogue_quality_internal_score', scoreBundle.dialogueQualityInternal],
+    ['holistic_overall_score', scoreBundle.tutorHolisticOverall],
+  ];
+  const found = orderedCandidates.find(([, value]) => value != null && !Number.isNaN(Number(value)));
+  return {
+    metric: found ? found[0] : null,
+    value: found ? Number(found[1]) : null,
+    all: scoreBundle,
+  };
+}
+
 // ── API endpoints ───────────────────────────────────────────────────────────
 
 app.get('/api/runs', (req, res) => {
@@ -142,8 +176,30 @@ app.get('/api/runs', (req, res) => {
     )
     SELECT run_id,
       COUNT(*) as dialogue_count,
-      MIN(tutor_first_turn_score) as min_score,
-      MAX(tutor_first_turn_score) as max_score,
+      MIN(
+        COALESCE(
+          dialogue_quality_score,
+          tutor_first_turn_score,
+          tutor_overall_score,
+          learner_overall_score,
+          learner_holistic_overall_score,
+          tutor_last_turn_score,
+          dialogue_quality_internal_score,
+          holistic_overall_score
+        )
+      ) as min_score,
+      MAX(
+        COALESCE(
+          dialogue_quality_score,
+          tutor_first_turn_score,
+          tutor_overall_score,
+          learner_overall_score,
+          learner_holistic_overall_score,
+          tutor_last_turn_score,
+          dialogue_quality_internal_score,
+          holistic_overall_score
+        )
+      ) as max_score,
       GROUP_CONCAT(DISTINCT profile_name) as profiles,
       GROUP_CONCAT(DISTINCT ego_model) as ego_models,
       MIN(created_at) as first_created
@@ -173,7 +229,10 @@ app.get('/api/runs/:runId', (req, res) => {
   const rows = db
     .prepare(
       `
-    SELECT er.id, er.dialogue_id, er.profile_name, er.scenario_id, er.tutor_first_turn_score,
+    SELECT er.id, er.dialogue_id, er.profile_name, er.scenario_id,
+      er.tutor_first_turn_score, er.tutor_overall_score, er.tutor_last_turn_score, er.tutor_development_score,
+      er.learner_overall_score, er.learner_holistic_overall_score,
+      er.dialogue_quality_score, er.dialogue_quality_internal_score, er.holistic_overall_score,
       er.ego_model, er.judge_model, er.learner_architecture, er.superego_model,
       er.factor_recognition
     FROM evaluation_results er
@@ -183,21 +242,35 @@ app.get('/api/runs/:runId', (req, res) => {
       WHERE run_id = ? AND dialogue_id IS NOT NULL
       GROUP BY dialogue_id
     ) latest ON latest.max_id = er.id
-    ORDER BY er.profile_name, er.scenario_id, er.tutor_first_turn_score DESC
+    ORDER BY er.profile_name, er.scenario_id,
+      COALESCE(
+        er.dialogue_quality_score,
+        er.tutor_first_turn_score,
+        er.tutor_overall_score,
+        er.learner_overall_score,
+        er.learner_holistic_overall_score,
+        er.tutor_last_turn_score,
+        er.dialogue_quality_internal_score
+      ) DESC
   `,
     )
     .all(req.params.runId);
 
-  const dialogues = rows.map((r) => ({
-    dialogueId: r.dialogue_id,
-    profile: r.profile_name,
-    scenario: r.scenario_id,
-    score: r.tutor_first_turn_score,
-    egoModel: r.ego_model,
-    judgeModel: r.judge_model,
-    isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
-    learnerArch: r.learner_architecture,
-  }));
+  const dialogues = rows.map((r) => {
+    const primary = pickPrimaryScore(r);
+    return {
+      dialogueId: r.dialogue_id,
+      profile: r.profile_name,
+      scenario: r.scenario_id,
+      score: primary.value,
+      scoreMetric: primary.metric,
+      scores: primary.all,
+      egoModel: r.ego_model,
+      judgeModel: r.judge_model,
+      isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
+      learnerArch: r.learner_architecture,
+    };
+  });
   res.json(dialogues);
 });
 
@@ -205,7 +278,10 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
   const row = db
     .prepare(
       `
-    SELECT id, run_id, profile_name, scenario_id, dialogue_id, tutor_first_turn_score,
+    SELECT id, run_id, profile_name, scenario_id, dialogue_id,
+      tutor_first_turn_score, tutor_overall_score, tutor_last_turn_score, tutor_development_score,
+      learner_overall_score, learner_holistic_overall_score,
+      dialogue_quality_score, dialogue_quality_internal_score, holistic_overall_score,
       ego_model, superego_model, judge_model, learner_architecture,
       score_relevance, score_specificity, score_pedagogical, score_personalization,
       score_actionability, score_tone, scores_with_reasoning,
@@ -265,6 +341,7 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     detail: 'play',
   });
   const scenarioPrompt = extractScenarioPromptForMetadata(trace, learnerContext);
+  const primaryScore = pickPrimaryScore(row);
 
   res.json({
     trace,
@@ -288,9 +365,20 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
       totalTurns: logMeta.totalTurns || '',
       isRecog: !!row.factor_recognition || /recog/i.test(row.profile_name),
       scenarioPrompt,
+      primaryScoreMetric: primaryScore.metric,
     },
     scores: {
-      overall: row.tutor_first_turn_score,
+      overall: primaryScore.value,
+      primaryMetric: primaryScore.metric,
+      tutorFirstTurn: row.tutor_first_turn_score,
+      tutorOverall: row.tutor_overall_score,
+      tutorLastTurn: row.tutor_last_turn_score,
+      tutorDevelopment: row.tutor_development_score,
+      tutorHolisticOverall: row.holistic_overall_score,
+      learnerOverall: row.learner_overall_score,
+      learnerHolisticOverall: row.learner_holistic_overall_score,
+      dialogueQualityPublic: row.dialogue_quality_score,
+      dialogueQualityInternal: row.dialogue_quality_internal_score,
       dimensions: judgeScores,
     },
     qualitative,
@@ -506,6 +594,34 @@ const PAGE_HTML = `<!DOCTYPE html>
   .judge-toggle::before { content:'\\25B8 '; }
   .judge-panel[open] .judge-toggle::before { content:'\\25BE '; }
   .judge-body { padding:4px 20px 16px; max-height:45vh; overflow-y:auto; }
+  .judge-score-wrap { border:1px solid var(--border-soft); border-radius:7px; background:var(--panel); margin:6px 0 12px; overflow:hidden; }
+  .judge-score-title { padding:7px 10px; border-bottom:1px solid var(--border-soft); font-size:10px; color:var(--accent-soft); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .judge-score-grid { width:100%; border-collapse:collapse; font-size:10px; }
+  .judge-score-grid tr { border-bottom:1px solid var(--border-soft); }
+  .judge-score-grid tr:last-child { border-bottom:none; }
+  .judge-score-grid td { padding:6px 10px; }
+  .judge-score-row { cursor:pointer; user-select:none; }
+  .judge-score-row:hover { background:var(--hover); }
+  .judge-score-row.active { background:var(--selected); }
+  .judge-score-metric { color:var(--text-soft); }
+  .judge-score-value { text-align:right; font-weight:700; color:var(--text); white-space:nowrap; }
+  .judge-score-primary { color:var(--accent-soft); font-weight:700; }
+  .judge-score-barcell { width:42%; }
+  .judge-score-barbg { background:var(--bar-bg); border-radius:999px; height:6px; width:100%; }
+  .judge-score-barfg { background:#4caf50; border-radius:999px; height:6px; }
+  .judge-focus-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px; border:1px solid var(--border-soft); border-radius:7px; margin:8px 0 10px; background:var(--panel); }
+  .judge-focus-text { font-size:10px; color:var(--muted); }
+  .judge-focus-btn { font-family:inherit; font-size:9px; color:var(--text); background:var(--bg-alt); border:1px solid var(--border-soft); border-radius:4px; padding:3px 7px; cursor:pointer; }
+  .judge-focus-btn:hover { border-color:var(--accent); }
+  .mini-graph { border:1px solid var(--border-soft); border-radius:7px; background:var(--panel); margin:8px 0 12px; overflow:hidden; }
+  .mini-graph-title { padding:7px 10px; border-bottom:1px solid var(--border-soft); font-size:10px; color:var(--accent-soft); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .mini-graph-body { padding:8px 10px; display:flex; flex-direction:column; gap:6px; }
+  .mini-row { display:grid; grid-template-columns:170px 1fr 42px; gap:8px; align-items:center; font-size:10px; }
+  .mini-label { color:var(--text-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .mini-label.active { color:var(--accent-soft); font-weight:700; }
+  .mini-value { text-align:right; color:var(--text); font-weight:700; }
+  .mini-bar-bg { background:var(--bar-bg); border-radius:999px; height:6px; width:100%; }
+  .mini-bar-fg { background:#4caf50; border-radius:999px; height:6px; }
   table.judge-table { width:100%; border-collapse:collapse; font-size:11px; }
   table.judge-table tr { border-bottom:1px solid var(--table-rule); }
   .jd { padding:5px 8px; font-weight:500; white-space:nowrap; color:var(--text-soft); }
@@ -609,6 +725,7 @@ let showLearnerInternal = true;
 let showProjectionDiagnostics = true;
 let messageChainChannelFilter = 'all';
 let activeTheme = 'dark';
+let judgeFocusedMetric = null;
 const query = new URLSearchParams(window.location.search);
 const initialRunId = query.get('run');
 const initialDialogueId = query.get('dialogue');
@@ -626,6 +743,159 @@ function shortModel(m) {
 }
 function scoreClass(s) { return s == null || Number.isNaN(s) ? 'score-na' : s >= 85 ? 'score-high' : s >= 65 ? 'score-mid' : 'score-low'; }
 function scoreBg(s) { return s == null || Number.isNaN(s) ? '#455a64' : s >= 90 ? '#1b5e20' : s >= 70 ? '#e65100' : '#b71c1c'; }
+function formatScore(value, digits = 1) {
+  return value == null || Number.isNaN(Number(value)) ? '--' : Number(value).toFixed(digits);
+}
+function scoreMetricLabel(metric) {
+  const labels = {
+    tutor_first_turn_score: 'Tutor First Turn',
+    tutor_overall_score: 'Tutor Overall',
+    tutor_last_turn_score: 'Tutor Last Turn',
+    tutor_development_score: 'Tutor Development Delta',
+    holistic_overall_score: 'Tutor Holistic Overall',
+    learner_overall_score: 'Learner Overall',
+    learner_holistic_overall_score: 'Learner Holistic Overall',
+    dialogue_quality_score: 'Dialogue Quality (Public)',
+    dialogue_quality_internal_score: 'Dialogue Quality (Internal)',
+  };
+  return labels[metric] || metric || 'Score';
+}
+function scoreMetricShortLabel(metric) {
+  const labels = {
+    tutor_first_turn_score: 'T1',
+    tutor_overall_score: 'Tavg',
+    tutor_last_turn_score: 'Tlast',
+    tutor_development_score: 'TΔ',
+    holistic_overall_score: 'Th',
+    learner_overall_score: 'L',
+    learner_holistic_overall_score: 'Lh',
+    dialogue_quality_score: 'DQ',
+    dialogue_quality_internal_score: 'DQi',
+  };
+  return labels[metric] || 'S';
+}
+function buildScoreTooltip(scores, primaryMetric) {
+  const src = scores || {};
+  const rows = [
+    ['Tutor first-turn', src.tutorFirstTurn],
+    ['Tutor overall', src.tutorOverall],
+    ['Tutor last-turn', src.tutorLastTurn],
+    ['Tutor development', src.tutorDevelopment],
+    ['Tutor holistic', src.tutorHolisticOverall],
+    ['Learner overall', src.learnerOverall],
+    ['Learner holistic', src.learnerHolisticOverall],
+    ['Dialogue public', src.dialogueQualityPublic],
+    ['Dialogue internal', src.dialogueQualityInternal],
+  ].filter(([, value]) => value != null && !Number.isNaN(Number(value)));
+  if (rows.length === 0) return 'No scores available';
+  const header = primaryMetric ? ('Primary: ' + scoreMetricLabel(primaryMetric)) : 'Primary: none';
+  return [header, ...rows.map(([label, value]) => label + ': ' + formatScore(value, 1))].join(' | ');
+}
+function scoreRows(scores) {
+  if (!scores) return [];
+  const fields = [
+    ['tutor_first_turn_score', scores.tutorFirstTurn],
+    ['tutor_overall_score', scores.tutorOverall],
+    ['tutor_last_turn_score', scores.tutorLastTurn],
+    ['tutor_development_score', scores.tutorDevelopment],
+    ['holistic_overall_score', scores.tutorHolisticOverall],
+    ['learner_overall_score', scores.learnerOverall],
+    ['learner_holistic_overall_score', scores.learnerHolisticOverall],
+    ['dialogue_quality_score', scores.dialogueQualityPublic],
+    ['dialogue_quality_internal_score', scores.dialogueQualityInternal],
+  ];
+  return fields
+    .filter(([, value]) => value != null && !Number.isNaN(Number(value)))
+    .map(([metric, value]) => ({
+      metric,
+      label: scoreMetricLabel(metric),
+      value: Number(value),
+    }));
+}
+function normalizeDimensionKey(key) {
+  return String(key || '').replace(/^score_/, '').trim().toLowerCase();
+}
+function dimensionLabelFromKey(key) {
+  return String(key || '').replace(/^score_/, '').replace(/_/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
+}
+function dimensionRows(dimensions) {
+  if (!dimensions || typeof dimensions !== 'object') return [];
+  const entries = [];
+  for (const [rawKey, rawValue] of Object.entries(dimensions)) {
+    const key = normalizeDimensionKey(rawKey);
+    if (!key) continue;
+    let scoreValue = null;
+    let reasoning = '';
+    if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+      scoreValue = Number(rawValue.score);
+      reasoning = String(rawValue.reasoning || '');
+    } else {
+      scoreValue = Number(rawValue);
+    }
+    if (Number.isNaN(scoreValue)) continue;
+    entries.push({
+      key,
+      rawKey,
+      label: dimensionLabelFromKey(rawKey),
+      score: scoreValue,
+      reasoning,
+    });
+  }
+  const order = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'mutual_recognition'];
+  return entries.sort((a, b) => {
+    const ai = order.indexOf(a.key);
+    const bi = order.indexOf(b.key);
+    if (ai === -1 && bi === -1) return a.label.localeCompare(b.label);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+function metricDimensionFocus(metric, allDimensionRows) {
+  const allKeys = allDimensionRows.map((row) => row.key);
+  const available = new Set(allKeys);
+  const pick = (preferred) => preferred.filter((key, idx) => preferred.indexOf(key) === idx && available.has(key));
+  const defaultKeys = allKeys.slice();
+
+  if (!metric) {
+    return { keys: defaultKeys, note: '' };
+  }
+  if (metric === 'dialogue_quality_score' || metric === 'dialogue_quality_internal_score') {
+    return { keys: defaultKeys, note: '' };
+  }
+  if (
+    metric === 'tutor_first_turn_score'
+    || metric === 'tutor_overall_score'
+    || metric === 'tutor_last_turn_score'
+    || metric === 'holistic_overall_score'
+  ) {
+    const focusKeys = pick(['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone', 'mutual_recognition']);
+    return { keys: focusKeys.length ? focusKeys : defaultKeys, note: '' };
+  }
+  if (metric === 'tutor_development_score') {
+    const focusKeys = pick(['pedagogical', 'actionability', 'personalization', 'mutual_recognition', 'relevance', 'specificity', 'tone']);
+    return { keys: focusKeys.length ? focusKeys : defaultKeys, note: 'Heuristic focus for development delta.' };
+  }
+  if (metric === 'learner_overall_score' || metric === 'learner_holistic_overall_score') {
+    const focusKeys = pick(['pedagogical', 'actionability', 'mutual_recognition', 'relevance', 'specificity']);
+    return {
+      keys: focusKeys.length ? focusKeys : defaultKeys,
+      note: 'Learner aggregate scores have no dedicated numeric dimension bundle; this focus is heuristic.',
+    };
+  }
+  return { keys: defaultKeys, note: '' };
+}
+function scoreBarColor(value, maxValue) {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return '#607d8b';
+  if (maxValue <= 5) return numeric >= 4 ? '#4caf50' : numeric >= 3 ? '#ff9800' : '#f44336';
+  return numeric >= 85 ? '#4caf50' : numeric >= 70 ? '#ff9800' : '#f44336';
+}
+function setJudgeMetricFocus(metric) {
+  judgeFocusedMetric = metric || null;
+  if (!currentDialogueData) return;
+  renderJudgePanel(currentDialogueData.scores, currentDialogueData.qualitative);
+}
 function channelLabel(channel) {
   if (channel === 'tutor_learner') return 'Tutor<->Learner';
   if (channel === 'tutor_ego_superego') return 'Tutor<->Superego';
@@ -805,12 +1075,14 @@ function renderRunChildren(runId, search, cond) {
     html += '</div>';
     html += '<div class="cell-dialogues">';
     for (const d of items) {
-      const sc = d.score?.toFixed(0) || '--';
+      const sc = formatScore(d.score, 0);
+      const metricShort = scoreMetricShortLabel(d.scoreMetric);
+      const scoreTitle = buildScoreTooltip(d.scores, d.scoreMetric);
       const scn = d.scenario.replace(/_/g, ' ').substring(0, 25);
       const isActive = d.dialogueId === activeDialogueId;
       html += '<div class="dlg-item' + (isActive ? ' active' : '') + '" onclick="loadDialogue(&quot;' + escapeHtml(d.dialogueId) + '&quot;)">';
       html += '<span class="dlg-scenario">' + escapeHtml(scn) + '</span>';
-      html += '<span class="dlg-score ' + scoreClass(d.score) + '">' + sc + '</span>';
+      html += '<span class="dlg-score ' + scoreClass(d.score) + '" title="' + escapeHtml(scoreTitle) + '">' + escapeHtml(metricShort + ' ' + sc) + '</span>';
       html += '</div>';
     }
     html += '</div></div>';
@@ -843,6 +1115,7 @@ async function loadDialogue(dialogueId) {
   activeDialogueId = dialogueId;
   activeStep = -1;
   activeViewMode = 'transcript';
+  judgeFocusedMetric = null;
 
   // Update sidebar active state
   document.querySelectorAll('.dlg-item').forEach(el => el.classList.remove('active'));
@@ -872,7 +1145,12 @@ async function loadDialogue(dialogueId) {
 // ── Top bar ─────────────────────────────────────────────────────────────────
 function renderTopBar(data) {
   const m = data.metadata;
-  const score = data.scores.overall?.toFixed(1) || '--';
+  const scoreValue = data?.scores?.overall;
+  const score = formatScore(scoreValue, 1);
+  const primaryScoreMetric = data?.scores?.primaryMetric || m?.primaryScoreMetric || 'dialogue_quality_score';
+  const primaryScoreMetricShort = scoreMetricShortLabel(primaryScoreMetric);
+  const primaryScoreMetricLabel = scoreMetricLabel(primaryScoreMetric);
+  const scoreTooltip = buildScoreTooltip(data?.scores || null, primaryScoreMetric);
   const condLabel = m.isRecog ? 'Recognition' : 'Base';
   const scenario = (m.scenario || '').replace(/_/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
   const chain = data.messageChain || { exchanges: [] };
@@ -893,10 +1171,11 @@ function renderTopBar(data) {
         '<span class="meta-label">Learner</span><span class="meta-value">ego ' + escapeHtml(shortModel(m.learnerEgoModel)) + '</span><span class="meta-value">superego ' + escapeHtml(shortModel(m.learnerSuperegoModel)) + '</span>' +
         '<span class="meta-label">Judge</span><span class="meta-value">' + escapeHtml(shortModel(m.judgeModel)) + '</span><span class="meta-value">' + escapeHtml(chainSummary) + '</span>' +
         '<span class="meta-label">Trace</span><span class="meta-value">' + escapeHtml(projectionSummary) + '</span><span class="meta-value"></span>' +
+        '<span class="meta-label">Score</span><span class="meta-value">' + escapeHtml(primaryScoreMetricLabel) + '</span><span class="meta-value">see Judge Adjudication for full score set</span>' +
       '</div>' +
       '<div class="meta-id">' + escapeHtml(m.runId) + ' | ' + escapeHtml(m.dialogueId) + '</div>' +
     '</div>' +
-    '<span class="score-badge" style="background:' + scoreBg(parseFloat(score)) + '">' + score + '</span>';
+    '<span class="score-badge" title="' + escapeHtml(scoreTooltip) + '" style="background:' + scoreBg(scoreValue) + '">' + escapeHtml(primaryScoreMetricShort + ' ' + score) + '</span>';
 }
 
 function renderViewControls(data) {
@@ -1892,23 +2171,33 @@ function renderMessageChain(data, visibleExchanges = null) {
 
 // ── Judge panel ─────────────────────────────────────────────────────────────
 function renderJudgePanel(scores, qualitative) {
-  if (!scores?.dimensions && !qualitative) {
+  const aggregateRows = scoreRows(scores);
+  const allDimensionRows = dimensionRows(scores?.dimensions);
+  if (!qualitative && aggregateRows.length === 0 && allDimensionRows.length === 0) {
     document.getElementById('judgePanel').innerHTML = '';
     return;
   }
 
+  const primaryMetric = scores?.primaryMetric || null;
+  const metricSet = new Set(aggregateRows.map((row) => row.metric));
+  const selectedMetric = judgeFocusedMetric && metricSet.has(judgeFocusedMetric)
+    ? judgeFocusedMetric
+    : (primaryMetric && metricSet.has(primaryMetric) ? primaryMetric : null);
+  const focus = metricDimensionFocus(selectedMetric, allDimensionRows);
+  const focusedKeys = new Set(focus.keys);
+  const visibleDimensionRows = focus.keys.length
+    ? focus.keys.map((key) => allDimensionRows.find((row) => row.key === key)).filter(Boolean)
+    : allDimensionRows;
+
   let judgeRows = '';
-  if (scores?.dimensions) {
-    for (const [dim, data] of Object.entries(scores.dimensions)) {
-      const label = dim.replace(/_/g, ' ').replace(/\\b\\w/g, c => c.toUpperCase());
-      const sv = data.score || 0;
-      const reasoning = escapeHtml(data.reasoning || '');
-      const barW = (sv / 5) * 100;
-      const barC = sv >= 4 ? '#4caf50' : sv >= 3 ? '#ff9800' : '#f44336';
-      judgeRows += '<tr><td class="jd">' + label + '</td><td class="js" style="color:' + barC + '">' + sv + '</td>' +
-        '<td class="jb"><div class="bar-bg"><div class="bar-fg" style="width:' + barW + '%;background:' + barC + '"></div></div></td>' +
-        '<td class="jr">' + reasoning + '</td></tr>';
-    }
+  for (const row of visibleDimensionRows) {
+    const sv = row.score;
+    const reasoning = escapeHtml(row.reasoning || '');
+    const barW = (sv / 5) * 100;
+    const barC = scoreBarColor(sv, 5);
+    judgeRows += '<tr><td class="jd">' + escapeHtml(row.label) + '</td><td class="js" style="color:' + barC + '">' + formatScore(sv, 1) + '</td>' +
+      '<td class="jb"><div class="bar-bg"><div class="bar-fg" style="width:' + barW + '%;background:' + barC + '"></div></div></td>' +
+      '<td class="jr">' + reasoning + '</td></tr>';
   }
 
   let qualHtml = '';
@@ -1930,11 +2219,86 @@ function renderJudgePanel(scores, qualitative) {
     qualHtml += '<div class="qual-tags">' + qualitative.tags.map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('') + '</div>';
   }
 
-  const scoreStr = scores?.overall?.toFixed(1) || '--';
+  const scoreStr = formatScore(scores?.overall, 1);
+  const summaryMetric = selectedMetric || primaryMetric;
+  const summaryLabel = scoreMetricLabel(summaryMetric);
+  const scoreInventoryHtml = aggregateRows.length
+    ? (
+      '<div class="judge-score-wrap">' +
+      '<div class="judge-score-title">Score Inventory</div>' +
+      '<table class="judge-score-grid">' +
+      aggregateRows.map((row) => {
+        const isActive = row.metric === summaryMetric;
+        const barColor = scoreBarColor(row.value, 100);
+        const barWidth = Math.max(0, Math.min(100, row.value));
+        return '<tr class="judge-score-row' + (isActive ? ' active' : '') + '" onclick="setJudgeMetricFocus(\'' + row.metric + '\')">' +
+          '<td class="judge-score-metric' + (isActive ? ' judge-score-primary' : '') + '">' +
+            escapeHtml(row.label) +
+          '</td>' +
+          '<td class="judge-score-barcell"><div class="judge-score-barbg"><div class="judge-score-barfg" style="width:' + barWidth + '%;background:' + barColor + '"></div></div></td>' +
+          '<td class="judge-score-value' + (isActive ? ' judge-score-primary' : '') + '">' +
+            escapeHtml(formatScore(row.value, 1)) +
+          '</td>' +
+        '</tr>';
+      }).join('') +
+      '</table>' +
+      '</div>'
+    )
+    : '';
+  const aggregateGraphHtml = aggregateRows.length
+    ? (
+      '<div class="mini-graph">' +
+      '<div class="mini-graph-title">Aggregate Score Graph</div>' +
+      '<div class="mini-graph-body">' +
+      aggregateRows.map((row) => {
+        const isActive = row.metric === summaryMetric;
+        const barColor = scoreBarColor(row.value, 100);
+        const barWidth = Math.max(0, Math.min(100, row.value));
+        return '<div class="mini-row">' +
+          '<div class="mini-label' + (isActive ? ' active' : '') + '">' + escapeHtml(row.label) + '</div>' +
+          '<div class="mini-bar-bg"><div class="mini-bar-fg" style="width:' + barWidth + '%;background:' + barColor + '"></div></div>' +
+          '<div class="mini-value">' + escapeHtml(formatScore(row.value, 1)) + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>' +
+      '</div>'
+    )
+    : '';
+  const dimensionGraphHtml = visibleDimensionRows.length
+    ? (
+      '<div class="mini-graph">' +
+      '<div class="mini-graph-title">Dimension Graph</div>' +
+      '<div class="mini-graph-body">' +
+      visibleDimensionRows.map((row) => {
+        const barColor = scoreBarColor(row.score, 5);
+        const barWidth = Math.max(0, Math.min(100, (row.score / 5) * 100));
+        return '<div class="mini-row">' +
+          '<div class="mini-label' + (focusedKeys.has(row.key) ? ' active' : '') + '">' + escapeHtml(row.label) + '</div>' +
+          '<div class="mini-bar-bg"><div class="mini-bar-fg" style="width:' + barWidth + '%;background:' + barColor + '"></div></div>' +
+          '<div class="mini-value">' + escapeHtml(formatScore(row.score, 1)) + '</div>' +
+        '</div>';
+      }).join('') +
+      '</div>' +
+      '</div>'
+    )
+    : '';
+  const focusNote = focus.note ? (' | ' + focus.note) : '';
+  const focusHeadHtml = visibleDimensionRows.length
+    ? (
+      '<div class="judge-focus-head">' +
+      '<div class="judge-focus-text">Showing ' + visibleDimensionRows.length + '/' + allDimensionRows.length + ' rubric dimensions for ' + escapeHtml(scoreMetricLabel(summaryMetric)) + escapeHtml(focusNote) + '</div>' +
+      '<button class="judge-focus-btn" onclick="setJudgeMetricFocus(null)">Show all dimensions</button>' +
+      '</div>'
+    )
+    : '';
   document.getElementById('judgePanel').innerHTML =
     '<details class="judge-panel">' +
-    '<summary class="judge-toggle">Judge Adjudication - ' + scoreStr + '/100</summary>' +
+    '<summary class="judge-toggle">Judge Adjudication - ' + escapeHtml(summaryLabel) + ': ' + scoreStr + '/100</summary>' +
     '<div class="judge-body">' +
+      scoreInventoryHtml +
+      aggregateGraphHtml +
+      focusHeadHtml +
+      dimensionGraphHtml +
       (judgeRows ? '<table class="judge-table">' + judgeRows + '</table>' : '') +
       (qualHtml ? '<div style="margin-top:16px">' + qualHtml + '</div>' : '') +
     '</div></details>';

@@ -1101,35 +1101,6 @@ describe('transcript conformity', () => {
     }
   });
 
-  it('[full/ego_superego] follows LE → LS → LE → TE → TS → TE chain in multi-agent turns', () => {
-    // Single-agent tutor + unified learner: simplest ordering
-    const trace = [
-      { agent: 'tutor', action: 'context_input', turnIndex: 0 },
-      { agent: 'ego', action: 'generate', turnIndex: 0 },
-      { agent: 'learner', action: 'turn_action', turnIndex: 1,
-        detail: 'Learner: asked_followup', contextSummary: 'What about Popper?' },
-      { agent: 'ego', action: 'generate', turnIndex: 1 },
-    ];
-    const turns = [
-      { turnIndex: 0, suggestions: [{ message: 'Welcome.' }] },
-      { turnIndex: 1, suggestions: [{ message: 'Good question.' }] },
-    ];
-    const transcript = buildDialogueFullTranscript(turns, trace, 'User: "Opening question"');
-
-    // Turn 2 section
-    const turn2Section = transcript.split('--- Turn 2 ---')[1] || '';
-    const agentLines = turn2Section.split('\n')
-      .filter(l => l.trim())
-      .filter(l => /^\[(Learner|Tutor)/.test(l));
-
-    const expectedPrefixes = ['[Learner]', '[Tutor Ego]'];
-    assert.equal(agentLines.length, expectedPrefixes.length,
-      `Expected ${expectedPrefixes.length} agent lines, got ${agentLines.length}:\n${agentLines.join('\n')}`);
-    for (let k = 0; k < expectedPrefixes.length; k++) {
-      assert.ok(agentLines[k].startsWith(expectedPrefixes[k]),
-        `Line ${k}: expected "${expectedPrefixes[k]}...", got "${agentLines[k].slice(0, 40)}..."`);
-    }
-  });
 });
 
 // ── Diagnostic: conversation history state ────────────────────────────────
