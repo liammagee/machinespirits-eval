@@ -73,15 +73,19 @@ function loadLocalProviderOverrides(forceReload = false) {
   }
 }
 
-// Mtime-based caches
-let rubricCache = null;
-let rubricMtime = null;
+// Mtime-based caches (Map<path, {data, mtime}> for multi-version support)
+const rubricCacheMap = new Map();
 let scenariosCache = null;
 let scenariosMtime = null;
 let tutorAgentsCache = null;
 let tutorAgentsMtime = null;
 let evalSettingsCache = null;
 let evalSettingsMtime = null;
+
+// Module-level rubric path override (set by --rubric-version, cleared after scoring)
+let _rubricPathOverride = null;
+export function setRubricPathOverride(p) { _rubricPathOverride = p; }
+export function clearRubricPathOverride() { _rubricPathOverride = null; }
 
 /**
  * Load the evaluation rubric YAML from the eval repo's config directory.
@@ -92,25 +96,24 @@ let evalSettingsMtime = null;
  * @returns {Object|null} Parsed rubric object, or null if file not found
  */
 export function loadRubric({ rubricPath, forceReload } = {}) {
-  const effectivePath = rubricPath || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric.yaml');
+  const effectivePath = rubricPath || _rubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric.yaml');
 
   try {
     const stats = fs.statSync(effectivePath);
-    if (!forceReload && rubricCache && rubricMtime === stats.mtimeMs) {
-      return rubricCache;
+    const cached = rubricCacheMap.get(effectivePath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
     }
-    rubricMtime = stats.mtimeMs;
-  } catch (err) {
-    console.warn('[evalConfigLoader] Rubric file not found:', err.message);
-    return null;
-  }
-
-  try {
     const content = fs.readFileSync(effectivePath, 'utf-8');
-    rubricCache = yaml.parse(content);
-    return rubricCache;
+    const data = yaml.parse(content);
+    rubricCacheMap.set(effectivePath, { data, mtime: stats.mtimeMs });
+    return data;
   } catch (err) {
-    console.error('[evalConfigLoader] Failed to parse rubric:', err.message);
+    if (err.code === 'ENOENT') {
+      console.warn('[evalConfigLoader] Rubric file not found:', err.message);
+    } else {
+      console.error('[evalConfigLoader] Failed to parse rubric:', err.message);
+    }
     return null;
   }
 }
@@ -651,6 +654,8 @@ export function loadCustomScenarios(scenariosPath) {
 
 export default {
   loadRubric,
+  setRubricPathOverride,
+  clearRubricPathOverride,
   loadSuggestionScenarios,
   loadCustomScenarios,
   loadProviders,

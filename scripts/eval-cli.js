@@ -26,6 +26,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js rejudge <runId> --overwrite  # Re-run AI judge (replaces existing)
  *   node scripts/eval-cli.js evaluate <runId> # Judge skip-rubric results via claude CLI
  *   node scripts/eval-cli.js evaluate <runId> --follow  # Poll & judge results as they appear
+ *   node scripts/eval-cli.js evaluate <runId> --rubric-version 2.2  # Score with versioned rubric (clones into derived run)
  *   node scripts/eval-cli.js backfill-first-turn <runId>  # Rejudge suggestions[0] and write first-turn scores
  *   node scripts/eval-cli.js evaluate-learner <runId>  # Score learner turns + holistic learner quality from multi-turn interactions
  *   node scripts/eval-cli.js evaluate-dialogue <runId>  # Score multi-turn dialogues: tutor last-turn, development delta, dialogue quality
@@ -93,12 +94,24 @@ import {
   buildTutorDeliberationPrompt,
   buildLearnerDeliberationPrompt,
   calculateDeliberationScore,
+  setTutorHolisticRubricPathOverride,
+  clearTutorHolisticRubricPathOverride,
+  setDialogueRubricPathOverride,
+  clearDialogueRubricPathOverride,
+  setDeliberationRubricPathOverride,
+  clearDeliberationRubricPathOverride,
 } from '../services/rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
   buildLearnerHolisticEvaluationPrompt,
   calculateLearnerOverallScore,
+  setLearnerRubricPathOverride,
+  clearLearnerRubricPathOverride,
 } from '../services/learnerRubricEvaluator.js';
+import {
+  setRubricPathOverride,
+  clearRubricPathOverride,
+} from '../services/evalConfigLoader.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
@@ -112,6 +125,54 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
+const RUBRICS_DIR = path.resolve(__dirname, '..', 'config', 'rubrics');
+
+/**
+ * Resolve versioned rubric file paths for --rubric-version.
+ * @param {string} version - Rubric version (e.g. "2.2")
+ * @returns {{ tutor, learner, tutorHolistic, dialogue, deliberation }} Absolute paths
+ */
+function resolveRubricPaths(version) {
+  const dir = path.join(RUBRICS_DIR, `v${version}`);
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Rubric version directory not found: ${dir}`);
+  }
+  const files = {
+    tutor: path.join(dir, 'evaluation-rubric.yaml'),
+    learner: path.join(dir, 'evaluation-rubric-learner.yaml'),
+    tutorHolistic: path.join(dir, 'evaluation-rubric-tutor-holistic.yaml'),
+    dialogue: path.join(dir, 'evaluation-rubric-dialogue.yaml'),
+    deliberation: path.join(dir, 'evaluation-rubric-deliberation.yaml'),
+  };
+  for (const [key, filePath] of Object.entries(files)) {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Rubric file missing for ${key}: ${filePath}`);
+    }
+  }
+  return files;
+}
+
+/**
+ * Set all 5 rubric path overrides for versioned scoring.
+ */
+function setAllRubricOverrides(paths) {
+  setRubricPathOverride(paths.tutor);
+  setLearnerRubricPathOverride(paths.learner);
+  setTutorHolisticRubricPathOverride(paths.tutorHolistic);
+  setDialogueRubricPathOverride(paths.dialogue);
+  setDeliberationRubricPathOverride(paths.deliberation);
+}
+
+/**
+ * Clear all 5 rubric path overrides.
+ */
+function clearAllRubricOverrides() {
+  clearRubricPathOverride();
+  clearLearnerRubricPathOverride();
+  clearTutorHolisticRubricPathOverride();
+  clearDialogueRubricPathOverride();
+  clearDeliberationRubricPathOverride();
+}
 
 const args = process.argv.slice(2);
 const command = args.find((a) => !a.startsWith('--')) || 'list';
@@ -2402,7 +2463,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--rubric-version <ver>] [--verbose]',
           );
           process.exit(1);
         }
@@ -2420,6 +2481,7 @@ async function main() {
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const modelOverride = getOption('model') || null;
         const judgeFilter = getOption('judge') || null;
+        const rubricVersionOpt = getOption('rubric-version') || null;
 
         // Resolve effective Claude Code judge model: CLI --model > YAML config > opus default
         const yamlJudgeModel = (() => {
@@ -3873,6 +3935,30 @@ async function main() {
             }
           }
 
+          // ── Rubric version override: clone rows into derived run ──
+          let effectiveRunId = runId;
+          if (rubricVersionOpt) {
+            const rubricPaths = resolveRubricPaths(rubricVersionOpt);
+            console.log(`\n  --rubric-version ${rubricVersionOpt}: scoring with versioned rubrics from config/rubrics/v${rubricVersionOpt}/`);
+
+            // Clone source rows into derived run (idempotent)
+            const { derivedRunId, clonedIds } = evaluationStore.cloneRowsForRubricVersion(runId, toEvaluate, rubricVersionOpt);
+            effectiveRunId = derivedRunId;
+            if (clonedIds.length > 0) {
+              console.log(`  Cloned ${clonedIds.length} row(s) into derived run: ${derivedRunId}`);
+            } else {
+              console.log(`  Derived run already exists: ${derivedRunId} (reusing cloned rows)`);
+            }
+
+            // Re-fetch from derived run so scoring writes to the clones
+            const derivedResults = evaluationStore.getResults(derivedRunId, {
+              scenarioId: scenarioFilter,
+              profileName: profileFilter,
+            });
+            // Always force-evaluate cloned rows (they have NULL scores)
+            toEvaluate = derivedResults.filter((r) => r.success);
+          }
+
           if (toEvaluate.length === 0) {
             console.log(
               'All results already have rubric scores. Use --review to inspect reasoning, or --force to re-evaluate.',
@@ -3883,63 +3969,82 @@ async function main() {
           const singleTurn = toEvaluate.filter((r) => !isMultiTurnResult(r));
           const multiTurn = toEvaluate.filter((r) => isMultiTurnResult(r));
 
-          console.log(`\nEvaluating ${toEvaluate.length} result(s) for run: ${runId}`);
+          console.log(`\nEvaluating ${toEvaluate.length} result(s) for run: ${effectiveRunId}`);
           if (singleTurn.length > 0) console.log(`  Single-turn: ${singleTurn.length}`);
           if (multiTurn.length > 0) console.log(`  Multi-turn:  ${multiTurn.length} (per-turn scoring)`);
           if (tutorOnly) console.log('  --tutor-only: skipping learner + dialogue scoring');
           if (skipDeliberation) console.log('  --skip-deliberation: skipping deliberation quality scoring');
+          if (rubricVersionOpt) console.log(`  Rubric version: v${rubricVersionOpt}`);
           if (modelOverride) console.log(`  Model: ${modelOverride}`);
           console.log('');
 
-          // ── Score single-turn results (existing path) ──
-          let idx = 0;
-          for (const result of singleTurn) {
-            idx++;
-            const tag = `[${idx}/${toEvaluate.length}]`;
-            try {
-              const score = await evaluateOneResult(result, tag);
-              if (score != null) {
-                scores.push(score);
-                succeeded++;
-              } else {
-                failed++;
-              }
-            } catch (err) {
-              failed++;
-              const profileName = result.profileName || `${result.provider}/${result.model}`;
-              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-              console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
-              if (verbose) console.error(err);
-            }
+          // ── Set rubric overrides if --rubric-version was specified ──
+          if (rubricVersionOpt) {
+            setAllRubricOverrides(resolveRubricPaths(rubricVersionOpt));
           }
 
-          // ── Score multi-turn results (per-turn tutor + learner + DQ, all inline) ──
-          for (const result of multiTurn) {
-            idx++;
-            const tag = `[${idx}/${toEvaluate.length}]`;
-            try {
-              const score = await evaluateMultiTurnResult(result, tag);
-              if (score != null) {
-                scores.push(score);
-                succeeded++;
-              } else {
+          try {
+            // ── Score single-turn results (existing path) ──
+            let idx = 0;
+            for (const result of singleTurn) {
+              idx++;
+              const tag = `[${idx}/${toEvaluate.length}]`;
+              try {
+                const score = await evaluateOneResult(result, tag);
+                if (score != null) {
+                  scores.push(score);
+                  succeeded++;
+                } else {
+                  failed++;
+                }
+              } catch (err) {
                 failed++;
+                const profileName = result.profileName || `${result.provider}/${result.model}`;
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
               }
-            } catch (err) {
-              failed++;
-              const profileName = result.profileName || `${result.provider}/${result.model}`;
-              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-              console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
-              if (verbose) console.error(err);
             }
-          }
 
-          printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
+            // ── Score multi-turn results (per-turn tutor + learner + DQ, all inline) ──
+            for (const result of multiTurn) {
+              idx++;
+              const tag = `[${idx}/${toEvaluate.length}]`;
+              try {
+                const score = await evaluateMultiTurnResult(result, tag);
+                if (score != null) {
+                  scores.push(score);
+                  succeeded++;
+                } else {
+                  failed++;
+                }
+              } catch (err) {
+                failed++;
+                const profileName = result.profileName || `${result.provider}/${result.model}`;
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+              }
+            }
 
-          // Legacy holistic dialogue evaluation for any remaining multi-turn results
-          // (kept for backward compat with evaluate --multiturn-only path)
-          if (multiturnOnly || restoreTurn0) {
-            await evaluateHolisticDialogues(toEvaluate.filter((r) => r.success));
+            printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
+
+            // Legacy holistic dialogue evaluation for any remaining multi-turn results
+            // (kept for backward compat with evaluate --multiturn-only path)
+            if (multiturnOnly || restoreTurn0) {
+              await evaluateHolisticDialogues(toEvaluate.filter((r) => r.success));
+            }
+
+            // Mark derived run as complete
+            if (rubricVersionOpt) {
+              evaluationStore.completeRun(effectiveRunId);
+              console.log(`\nDerived run ${effectiveRunId} marked complete.`);
+            }
+          } finally {
+            // Always clear overrides, even on error
+            if (rubricVersionOpt) {
+              clearAllRubricOverrides();
+            }
           }
         }
         break;

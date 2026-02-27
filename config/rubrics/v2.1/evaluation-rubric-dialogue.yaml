@@ -1,0 +1,188 @@
+# Dialogue Quality Evaluation Rubric
+# Evaluates the overall quality of a pedagogical encounter as an interaction,
+# independent of either individual party's performance in isolation.
+#
+# Companion to:
+#   config/evaluation-rubric.yaml (tutor-side rubric, per-turn)
+#   config/evaluation-rubric-learner.yaml (learner-side rubric)
+#
+# This rubric is THEORY-NEUTRAL: it measures general pedagogical interaction
+# quality without presupposing any particular theoretical framework (e.g.,
+# recognition theory). This allows it to detect effects of treatment variables
+# without contaminating the measurement instrument.
+#
+# Only applicable to multi-turn dialogues (single-turn rows get NULL).
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall score as tutor/learner rubrics.
+#
+#   Overall Score = ((weighted_avg - 1) / 4) x 100
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Dialogue Quality Rubric"
+version: "2.1"
+description: "Rubric for evaluating the overall quality of pedagogical encounters as interactions"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Weak, significant issues"
+    3: "Adequate, meets basic expectations"
+    4: "Good, exceeds expectations"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DIALOGUE QUALITY DIMENSIONS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌──────────────────────────────┬────────┬──────────────────────────────────────────┐
+# │ Dimension                    │ Weight │ What it measures                         │
+# ├──────────────────────────────┼────────┼──────────────────────────────────────────┤
+# │ Pedagogical Progression      │  20%   │ Movement toward deeper understanding     │
+# │ Dialogical Responsiveness    │  20%   │ Both parties respond to each other       │
+# │ Knowledge Co-Construction    │  20%   │ Understanding built collaboratively      │
+# │ Productive Tension Management│  15%   │ Impasses handled generatively            │
+# │ Transformation Evidence      │  15%   │ Observable change in stance/understanding│
+# │ Interactional Coherence      │  10%   │ Dialogue holds together as exchange      │
+# └──────────────────────────────┴────────┴──────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  pedagogical_progression:
+    name: "Pedagogical Progression"
+    weight: 0.20
+    description: "Does the dialogue move toward deeper understanding over successive turns, or does it stagnate, circle, or regress?"
+    criteria:
+      5: "Clear trajectory from surface-level to deep understanding; each turn builds meaningfully on the previous; new conceptual territory opened across the dialogue"
+      4: "Generally progressive with occasional plateaus; understanding deepens across most turns"
+      3: "Some progression but with significant stagnation or repetition; mixed signals of depth"
+      2: "Mostly stagnant; conversation circles around the same level without deepening"
+      1: "No progression or regression; later turns add nothing beyond early turns; understanding may actually decrease"
+    markers:
+      positive:
+        - "Successive turns show increasing specificity or nuance"
+        - "New questions arise from previous answers"
+        - "Learner applies ideas to new contexts later in the dialogue"
+        - "Vocabulary evolves to reflect deeper understanding"
+      negative:
+        - "Same question asked in different words across turns"
+        - "Later turns repeat content from early turns"
+        - "Complexity decreases over the dialogue"
+        - "Both parties converge on surface agreement"
+
+  dialogical_responsiveness:
+    name: "Dialogical Responsiveness"
+    weight: 0.20
+    description: "Do both parties genuinely respond to each other's actual contributions, or do they talk past each other?"
+    criteria:
+      5: "Both parties consistently pick up, extend, and respond to the other's specific contributions; dialogue feels genuinely co-produced"
+      4: "Good mutual responsiveness with occasional generic or scripted moves"
+      3: "Some responsiveness but frequent missed connections; one or both parties sometimes ignore what the other said"
+      2: "Largely parallel monologues; contributions rarely build on the other's input"
+      1: "Complete disconnect; parties talk past each other; no evidence of genuine listening"
+    markers:
+      positive:
+        - "Tutor references specific words or ideas from learner's previous turn"
+        - "Learner engages with tutor's specific suggestions rather than ignoring them"
+        - "Both parties modify their approach based on what the other said"
+        - "Follow-up questions address specific gaps identified in previous responses"
+      negative:
+        - "Tutor repeats same advice regardless of learner's input"
+        - "Learner asks questions already answered"
+        - "Responses could be generated without reading the other's turn"
+        - "Generic acknowledgments (great question!) without substantive engagement"
+
+  knowledge_co_construction:
+    name: "Knowledge Co-Construction"
+    weight: 0.20
+    description: "Is understanding built collaboratively through the interaction, or merely transmitted from one party to the other?"
+    criteria:
+      5: "Understanding emerges from the interaction that neither party could have produced alone; both contribute substantively to the final insight"
+      4: "Collaborative building with both parties contributing; some moments where understanding is simply transferred"
+      3: "Mostly one-directional transfer with occasional collaborative moments"
+      2: "Almost entirely transmission; one party gives information, the other receives it"
+      1: "Pure information transfer; no collaboration; dialogue could be replaced by a textbook"
+    markers:
+      positive:
+        - "Learner's question changes the direction of the tutor's explanation"
+        - "An idea is articulated across multiple turns by both parties"
+        - "Tutor builds on learner's analogy or formulation"
+        - "Final understanding reflects contributions from both sides"
+      negative:
+        - "Tutor delivers prepared content regardless of learner input"
+        - "Learner only asks for clarification of tutor's points"
+        - "All conceptual content originates from one party"
+        - "Interaction is Q&A rather than collaborative exploration"
+
+  productive_tension_management:
+    name: "Productive Tension Management"
+    weight: 0.15
+    description: "When confusion, resistance, disagreement, or impasses arise, are they handled generatively — producing new understanding — or destructively or avoidantly?"
+    criteria:
+      5: "Tension becomes the engine of learning; confusion is explored rather than resolved; disagreement leads to deeper insight; impasses produce breakthroughs"
+      4: "Most tensions handled well; some productive outcomes from confusion or disagreement"
+      3: "Tensions acknowledged but often resolved too quickly or avoided; some productive handling"
+      2: "Tensions either avoided entirely or handled clumsily; confusion dismissed or explained away"
+      1: "All tension suppressed; confusion met with reassurance; disagreement shut down; no generative use of difficulty"
+    markers:
+      positive:
+        - "Confusion is explored rather than immediately dispelled"
+        - "Disagreement leads to a more nuanced position"
+        - "An impasse is reframed as a productive question"
+        - "Resistance leads to a better explanation"
+      negative:
+        - "Confusion immediately met with 'Let me clarify'"
+        - "All disagreement resolved by one party yielding"
+        - "Impasses bypassed by changing the topic"
+        - "Frustration or confusion dismissed with reassurance"
+
+  transformation_evidence:
+    name: "Transformation Evidence"
+    weight: 0.15
+    description: "Is there observable change in either party's stance, understanding, approach, or framing across the dialogue?"
+    criteria:
+      5: "Clear evidence of transformation in one or both parties; positions evolve visibly; later turns show genuinely different thinking than early turns"
+      4: "Some transformation visible; at least one party shows clear evolution in thinking"
+      3: "Minor shifts but no fundamental change; positions soften but don't transform"
+      2: "Both parties maintain initial positions throughout; dialogue confirms rather than transforms"
+      1: "No change whatsoever; dialogue ends exactly where it started; positions may even harden"
+    markers:
+      positive:
+        - "A party explicitly revises an earlier statement"
+        - "Vocabulary or framing shifts across the dialogue"
+        - "Later turns show increased complexity or nuance"
+        - "A party acknowledges learning something new"
+      negative:
+        - "Same formulations used at start and end"
+        - "No revision of initial positions"
+        - "Dialogue ends with a summary that could have been written at the start"
+        - "Change is claimed but not visible in the actual responses"
+
+  interactional_coherence:
+    name: "Interactional Coherence"
+    weight: 0.10
+    description: "Does the dialogue hold together as a meaningful exchange, with a discernible arc and logical flow between turns?"
+    criteria:
+      5: "Dialogue has a clear arc: opening, development, and resolution/deepening; each turn connects naturally to the previous; the exchange feels purposeful"
+      4: "Generally coherent with clear flow; occasional tangents that are recovered"
+      3: "Mostly coherent but with some disjointed transitions or abandoned threads"
+      2: "Fragmented; turns feel loosely connected; threads started and dropped"
+      1: "No coherence; turns seem unrelated; no discernible arc or purpose to the exchange"
+    markers:
+      positive:
+        - "Transitions between turns feel natural"
+        - "Threads introduced early are developed or resolved"
+        - "The dialogue has a discernible beginning, middle, and end"
+        - "Both parties seem to be in the same conversation"
+      negative:
+        - "Topics change abruptly without connection"
+        - "Questions raised but never addressed"
+        - "Turns could be reordered without losing meaning"
+        - "No sense of cumulative development"

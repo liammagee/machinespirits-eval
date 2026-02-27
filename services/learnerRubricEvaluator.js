@@ -20,29 +20,31 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.resolve(__dirname, '..', 'config');
 const _PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
 
-let rubricCache = null;
-let rubricMtime = null;
+const learnerCacheMap = new Map();
+let _learnerRubricPathOverride = null;
+export function setLearnerRubricPathOverride(p) { _learnerRubricPathOverride = p; }
+export function clearLearnerRubricPathOverride() { _learnerRubricPathOverride = null; }
 
 /**
  * Load the learner rubric YAML with mtime-based caching.
  */
 export function loadLearnerRubric({ forceReload } = {}) {
-  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-learner.yaml');
+  const rubricPath = _learnerRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-learner.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);
-    if (!forceReload && rubricCache && rubricMtime === stats.mtimeMs) {
-      return rubricCache;
+    const cached = learnerCacheMap.get(rubricPath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
     }
-    rubricMtime = stats.mtimeMs;
+    const raw = fs.readFileSync(rubricPath, 'utf-8');
+    const data = yaml.parse(raw);
+    learnerCacheMap.set(rubricPath, { data, mtime: stats.mtimeMs });
+    return data;
   } catch (err) {
     console.warn('[learnerRubricEvaluator] Learner rubric file not found:', err.message);
     return null;
   }
-
-  const raw = fs.readFileSync(rubricPath, 'utf-8');
-  rubricCache = yaml.parse(raw);
-  return rubricCache;
 }
 
 /**
@@ -401,6 +403,8 @@ ${exampleScores}
 
 export default {
   loadLearnerRubric,
+  setLearnerRubricPathOverride,
+  clearLearnerRubricPathOverride,
   getLearnerDimensions,
   calculateLearnerOverallScore,
   buildLearnerEvaluationPrompt,
