@@ -93,6 +93,7 @@ scale:
 dimensions:
   relevance:
     name: "Relevance"
+    group: base
     weight: 0.15
     description: "How well does the suggestion match the learner's current context and needs?"
     theoretical_basis: |
@@ -111,6 +112,7 @@ dimensions:
 
   specificity:
     name: "Specificity"
+    group: base
     weight: 0.15
     description: "Does the suggestion reference specific content rather than vague advice?"
     theoretical_basis: |
@@ -137,6 +139,7 @@ dimensions:
 
   pedagogical_soundness:
     name: "Pedagogical Soundness"
+    group: base
     weight: 0.15
     description: "Does it follow good teaching practices?"
     theoretical_basis: |
@@ -162,6 +165,7 @@ dimensions:
 
   personalization:
     name: "Personalization"
+    group: base
     weight: 0.10
     description: "Is it tailored to this specific learner's history, struggles, and progress?"
     theoretical_basis: |
@@ -186,6 +190,7 @@ dimensions:
 
   actionability:
     name: "Actionability"
+    group: base
     weight: 0.08
     description: "Can the learner immediately act on this suggestion?"
     theoretical_basis: |
@@ -209,6 +214,7 @@ dimensions:
 
   tone:
     name: "Tone"
+    group: base
     weight: 0.08
     description: "Is the tone supportive, encouraging, and appropriate?"
     theoretical_basis: |
@@ -256,6 +262,7 @@ dimensions:
 
   mutual_recognition:
     name: "Mutual Recognition"
+    group: treatment
     weight: 0.083
     description: "Does the tutor acknowledge the learner as a distinct subject with their own understanding?"
     theoretical_basis: |
@@ -288,6 +295,7 @@ dimensions:
 
   dialectical_responsiveness:
     name: "Dialectical Responsiveness"
+    group: treatment
     weight: 0.083
     description: "Does the response show genuine engagement with the learner's position, including productive tension?"
     theoretical_basis: |
@@ -320,6 +328,7 @@ dimensions:
 
   memory_integration:
     name: "Memory Integration"
+    group: treatment
     weight: 0.05
     description: "Does the suggestion reference and build on previous interactions?"
     theoretical_basis: |
@@ -353,6 +362,7 @@ dimensions:
 
   transformative_potential:
     name: "Transformative Potential"
+    group: treatment
     weight: 0.083
     description: "Does the response create conditions for genuine conceptual transformation?"
     theoretical_basis: |
@@ -385,6 +395,7 @@ dimensions:
 
   tutor_adaptation:
     name: "Tutor Adaptation"
+    group: treatment
     weight: 0.05
     description: "Does the tutor's approach evolve in response to learner input?"
     theoretical_basis: |
@@ -417,6 +428,7 @@ dimensions:
 
   learner_growth:
     name: "Learner Growth"
+    group: treatment
     weight: 0.05
     description: "Does the learner show evidence of conceptual development through the dialogue?"
     theoretical_basis: |
@@ -467,6 +479,7 @@ dimensions:
 
   productive_struggle:
     name: "Productive Struggle"
+    group: base
     weight: 0.05
     description: "Does the tutor sustain appropriate cognitive tension rather than resolving it prematurely?"
     theoretical_basis: |
@@ -502,6 +515,7 @@ dimensions:
 
   epistemic_honesty:
     name: "Epistemic Honesty"
+    group: base
     weight: 0.05
     description: "Does the tutor represent complexity honestly rather than oversimplifying for smooth delivery?"
     theoretical_basis: |

@@ -74,6 +74,7 @@ dimensions:
   # ── PERCEPTION PHASE (GuideEval P) ──────────────────────────────────────
   perception_quality:
     name: "Perception Quality"
+    group: base
     weight: 0.15
     description: "Does the tutor accurately perceive and respond to the learner's current state — their understanding, confusion, emotional position, and learning history?"
     theoretical_basis: |
@@ -102,6 +103,7 @@ dimensions:
   # ── ORCHESTRATION PHASE (GuideEval O) ───────────────────────────────────
   pedagogical_craft:
     name: "Pedagogical Craft"
+    group: base
     weight: 0.20
     description: "Does the tutor apply sound teaching practices — scaffolding, concrete guidance, clear structure, and appropriate level of detail?"
     theoretical_basis: |
@@ -130,6 +132,7 @@ dimensions:
   # ── ELICITATION PHASE (GuideEval E) ─────────────────────────────────────
   elicitation_quality:
     name: "Elicitation Quality"
+    group: base
     weight: 0.15
     description: "Does the tutor stimulate the learner's own thinking — through questions, provocations, and invitations to reason — rather than simply delivering content?"
     theoretical_basis: |
@@ -156,6 +159,7 @@ dimensions:
 
   adaptive_responsiveness:
     name: "Adaptive Responsiveness"
+    group: base
     weight: 0.15
     description: "Does the tutor's approach evolve in response to learner input? Evidence that the tutor adjusts strategy, not just content, based on what the learner says and does."
     theoretical_basis: |
@@ -182,6 +186,7 @@ dimensions:
 
   recognition_quality:
     name: "Recognition Quality"
+    group: treatment
     weight: 0.15
     description: "Does the tutor treat the learner as an autonomous subject with their own valid perspective, or as a passive recipient of knowledge?"
     theoretical_basis: |
@@ -208,6 +213,7 @@ dimensions:
 
   productive_difficulty:
     name: "Productive Difficulty"
+    group: base
     weight: 0.10
     description: "Does the tutor sustain appropriate cognitive tension — maintaining productive struggle rather than resolving difficulty prematurely or making everything seem easy?"
     theoretical_basis: |
@@ -233,6 +239,7 @@ dimensions:
 
   epistemic_integrity:
     name: "Epistemic Integrity"
+    group: base
     weight: 0.05
     description: "Does the tutor represent the difficulty and uncertainty of knowledge honestly? Includes both epistemic honesty (complexity) and appropriate tone (warmth without condescension)."
     theoretical_basis: |
@@ -260,6 +267,7 @@ dimensions:
   # ── NEW DIMENSION ───────────────────────────────────────────────────────
   content_accuracy:
     name: "Content Accuracy"
+    group: base
     weight: 0.05
     description: "Is the tutor's explanation factually correct? Does the content accurately represent the subject matter, or are there errors, distortions, or misleading simplifications?"
     theoretical_basis: |
