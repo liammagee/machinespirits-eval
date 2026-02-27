@@ -7,19 +7,19 @@ node_modules/
 .env.*.local
 .venv/
 
+# Private research artifacts (symlinked from ../machinespirits-eval-private/)
+data
+logs
+notes
+exports
+
 # SQLite databases and temp files
 *.db
 *.db-shm
 *.db-wal
 *.db.bak*
-data/*.db
-data/*.db-shm
-data/*.db-wal
-
-# DB files are symlinked from ~/.machinespirits-data/ (not in repo)
 
 # Logs
-logs/
 *.log
 npm-debug.log*
 
@@ -53,8 +53,6 @@ temp/
 
 # Evaluation results (large/generated files)
 results/
-exports/*
-!exports/PROVENANCE.md
 *.csv
 *.xlsx
 
@@ -62,7 +60,6 @@ exports/*
 scratchpad/
 
 # Research working files (local only)
-notes/
 liams-paper/
 docs/research/archive/
 docs/research/eval-2-0/
