@@ -212,6 +212,10 @@ node scripts/eval-cli.js export <runId> --format csv       # Export results
 | `analyze-eval-results.js` | ANOVA, effect sizes, marginal means across conditions |
 | `analyze-judge-reliability.js` | Inter-judge correlation (requires rejudged paired data) |
 | `analyze-mechanism-traces.js <runId>` | Process measures (RevΔ, EgoSpec, AdaptΔ, RunVar) |
+| `analyze-trajectory-curves.js <runId...>` | Per-dimension turn-by-turn trajectory curves (§6.12) |
+| `analyze-within-test-change.js [<runId>]` | Symmetric first-to-last delta (rubric + text-proxy) (§6.15) |
+| `analyze-learning-stagnation.js [<runId>]` | Learning stagnation detection in multi-turn dialogues (§6.15) |
+| `analyze-rubric-consistency.js` | 5-level cross-rubric consistency checks (§5.4) |
 | `analyze-eval-costs.js` | Token usage and cost breakdown |
 | `analyze-interaction-evals.js` | Bilateral interaction scoring |
 | `analyze-modulation-learning.js` | Modulation metrics and learning outcomes |
@@ -222,12 +226,40 @@ node scripts/eval-cli.js export <runId> --format csv       # Export results
 
 | Script | Usage |
 |--------|-------|
-| `assess-transcripts.js <runId>` | AI narrative assessment (`--blinded`, `--force`, `--model`) |
+| `assess-transcripts.js <runId>` | AI narrative assessment (`--blinded`, `--force`, `--model`) — **API** |
 | `qualitative-analysis.js` | Rule-based thematic coding with chi-square tests |
-| `qualitative-analysis-ai.js` | LLM-based theme discovery (`--mode classify\|discover`) |
-| `code-impasse-strategies.js` | Code dialogues into 5 Hegelian resolution strategies |
-| `code-dialectical-modulation.js` | Code superego modulation (structural + semantic) |
+| `qualitative-analysis-ai.js` | LLM-based theme discovery (`--mode classify\|discover`) — **API** |
+| `code-impasse-strategies.js` | Code dialogues into 5 Hegelian resolution strategies — **API** |
+| `code-dialectical-modulation.js` | Code superego modulation (structural + semantic) — **API** |
 | `browse-transcripts.js` | Interactive transcript browser (web UI on localhost) |
+| `calibrate-rubric.js` | Rubric version calibration (synthetic or `--live` re-scoring) |
+
+### Post-Hoc Analysis Workflow
+
+Standard pipeline after a new run (all pure computation except where noted):
+
+```bash
+# 1. Score all rows
+node scripts/eval-cli.js evaluate <runId>
+
+# 2. Factorial effects
+npm run analyze:effects                        # or: node scripts/analyze-eval-results.js --run-id <runId>
+
+# 3. Process measures from dialogue logs
+npm run analyze:traces -- <runId>
+
+# 4. Trajectory curves (per-dimension)
+npm run analyze:trajectories -- <runId>        # or: --all-multiturn
+
+# 5. Within-test change (symmetric delta)
+npm run analyze:change
+
+# Cross-judge validation (requires rejudged data)
+node scripts/eval-cli.js rejudge <runId> --judge openrouter.gpt
+npm run analyze:reliability
+```
+
+Full registry: `scripts/ANALYSIS-SCRIPTS.md`. Workflow guide: `notes/paper-2-0/analysis-toolkit-guide.md`. Claude skill: `/analyze-data`.
 
 ### Paper & Validation
 
