@@ -3355,10 +3355,16 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   if (!fs.existsSync(LOGS_DIR)) {
     fs.mkdirSync(LOGS_DIR, { recursive: true });
   }
-  const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
   const logContent = JSON.stringify(consolidatedDialogue, null, 2);
-  fs.writeFileSync(logPath, logContent);
   const dialogueContentHash = createHash('sha256').update(logContent).digest('hex');
+
+  // Phase 3a: Content-addressable log storage
+  // Hash-named file = immutable evidence snapshot (write-once)
+  // DialogueId-named file = working copy (may be updated with holistic scores later)
+  const hashPath = path.join(LOGS_DIR, `${dialogueContentHash}.json`);
+  const dialoguePath = path.join(LOGS_DIR, `${dialogueId}.json`);
+  fs.writeFileSync(hashPath, logContent);
+  fs.writeFileSync(dialoguePath, logContent);
 
   log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${tutorFirstTurnScore?.toFixed(1)}`);
 
