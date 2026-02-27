@@ -303,6 +303,23 @@ export function getRubricDimensions(options = {}) {
 }
 
 /**
+ * Get dimension keys belonging to a specific group.
+ * Reads the `group` field from each dimension in the rubric YAML.
+ * Dimensions without a `group` field default to 'base'.
+ *
+ * @param {string} groupName - Group name to filter by (e.g., 'base', 'treatment')
+ * @param {Object} [options]
+ * @param {string} [options.rubricPath] - Override rubric path
+ * @returns {string[]} Array of dimension keys in the specified group
+ */
+export function getDimensionsByGroup(groupName, options = {}) {
+  const dimensions = getRubricDimensions(options);
+  return Object.entries(dimensions)
+    .filter(([_, dim]) => (dim.group || 'base') === groupName)
+    .map(([key]) => key);
+}
+
+/**
  * Get a single scenario by ID.
  *
  * Tries the dedicated suggestion-scenarios.yaml first, then falls back

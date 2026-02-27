@@ -3186,47 +3186,18 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const tutorFirstTurnScore =
     validTurnScores.length > 0 ? validTurnScores.reduce((sum, s) => sum + s, 0) / validTurnScores.length : null;
 
+  // Aggregate per-dimension scores across turns, using YAML-driven dimension keys
+  const allDimKeys = Object.keys(evalConfigLoader.getRubricDimensions());
   const aggregateDimensions = {};
-  const baseDims = [
-    'relevance',
-    'specificity',
-    'pedagogical',
-    'personalization',
-    'actionability',
-    'tone',
-    'productive_struggle',
-    'epistemic_honesty',
-  ];
-  const recognitionDims = [
-    'mutual_recognition',
-    'dialectical_responsiveness',
-    'memory_integration',
-    'transformative_potential',
-    'tutor_adaptation',
-    'learner_growth',
-  ];
-  const allDims = [...baseDims, ...recognitionDims];
-  for (const dim of allDims) {
+  for (const dim of allDimKeys) {
     const dimScores = turnResults.filter((t) => t.scores?.[dim] !== undefined).map((t) => t.scores[dim]);
     if (dimScores.length > 0) {
       aggregateDimensions[dim] = dimScores.reduce((sum, s) => sum + s, 0) / dimScores.length;
     }
   }
 
-  const baseScoreValues = baseDims
-    .filter((d) => aggregateDimensions[d] !== undefined)
-    .map((d) => aggregateDimensions[d]);
-  const recognitionScoreValues = recognitionDims
-    .filter((d) => aggregateDimensions[d] !== undefined)
-    .map((d) => aggregateDimensions[d]);
-  const baseScore =
-    baseScoreValues.length > 0
-      ? ((baseScoreValues.reduce((s, v) => s + v, 0) / baseScoreValues.length - 1) / 4) * 100
-      : null;
-  const recognitionScore =
-    recognitionScoreValues.length > 0
-      ? ((recognitionScoreValues.reduce((s, v) => s + v, 0) / recognitionScoreValues.length - 1) / 4) * 100
-      : null;
+  const baseScore = rubricEvaluator.calculateBaseScore(aggregateDimensions);
+  const recognitionScore = rubricEvaluator.calculateRecognitionScore(aggregateDimensions);
 
   const allTurnsPassed = turnResults.every((t) => {
     if (t.turnScore === null) return false;

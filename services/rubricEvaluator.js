@@ -778,22 +778,7 @@ function repairUnescapedQuotes(jsonStr) {
  * Returns a partial result object or null if too few scores found.
  */
 function regexScoreRescue(text) {
-  const dimensionNames = [
-    'relevance',
-    'specificity',
-    'pedagogical_soundness',
-    'personalization',
-    'actionability',
-    'tone',
-    'mutual_recognition',
-    'dialectical_responsiveness',
-    'memory_integration',
-    'transformative_potential',
-    'tutor_adaptation',
-    'learner_growth',
-    'productive_struggle',
-    'epistemic_honesty',
-  ];
+  const dimensionNames = Object.keys(evalConfigLoader.getRubricDimensions());
 
   const scores = {};
   for (const dim of dimensionNames) {
@@ -1202,34 +1187,16 @@ export function quickValidate(suggestion, scenario) {
   return result;
 }
 
-// Dimension groups for dual scoring
-const BASE_DIMENSIONS = [
-  'relevance',
-  'specificity',
-  'pedagogical',
-  'personalization',
-  'actionability',
-  'tone',
-  'productive_struggle',
-  'epistemic_honesty',
-];
-const RECOGNITION_DIMENSIONS = [
-  'mutual_recognition',
-  'dialectical_responsiveness',
-  'memory_integration',
-  'transformative_potential',
-  'tutor_adaptation',
-  'learner_growth',
-];
-
 /**
- * Calculate base score from the 6 core pedagogical dimensions.
- * Weights are re-normalized to sum to 1.0 across only the base dimensions.
+ * Calculate score for a specific dimension group.
+ * Reads group membership from the rubric YAML `group` field.
+ * Weights are re-normalized to sum to 1.0 across only the group's dimensions.
  *
  * @param {Object} scores - Scores object from evaluation
+ * @param {string} groupName - Group name (e.g., 'base', 'treatment')
  * @returns {number} 0-100 score
  */
-export function calculateBaseScore(scores) {
+export function calculateGroupScore(scores, groupName) {
   const dimensions = evalConfigLoader.getRubricDimensions();
   const keyMap = { pedagogical_soundness: 'pedagogical' };
 
@@ -1237,12 +1204,10 @@ export function calculateBaseScore(scores) {
   let totalWeight = 0;
 
   for (const [key, dim] of Object.entries(dimensions)) {
+    if ((dim.group || 'base') !== groupName) continue;
     const normalizedKey = keyMap[key] || key;
-    if (!BASE_DIMENSIONS.includes(normalizedKey)) continue;
-
     const scoreData = scores[normalizedKey] || scores[key];
     const score = scoreData?.score ?? scoreData;
-
     if (typeof score === 'number') {
       weightedSum += score * (dim.weight || 0);
       totalWeight += dim.weight || 0;
@@ -1250,38 +1215,25 @@ export function calculateBaseScore(scores) {
   }
 
   if (totalWeight === 0) return 0;
-  const avgScore = weightedSum / totalWeight;
-  return ((avgScore - 1) / 4) * 100;
+  return ((weightedSum / totalWeight - 1) / 4) * 100;
 }
 
 /**
- * Calculate recognition score from the 4 recognition dimensions.
- * Weights are re-normalized to sum to 1.0 across only the recognition dimensions.
- *
+ * Calculate base score from pedagogical dimensions (group: base).
+ * @param {Object} scores - Scores object from evaluation
+ * @returns {number} 0-100 score
+ */
+export function calculateBaseScore(scores) {
+  return calculateGroupScore(scores, 'base');
+}
+
+/**
+ * Calculate recognition/treatment score from treatment dimensions (group: treatment).
  * @param {Object} scores - Scores object from evaluation
  * @returns {number} 0-100 score
  */
 export function calculateRecognitionScore(scores) {
-  const dimensions = evalConfigLoader.getRubricDimensions();
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dimensions)) {
-    if (!RECOGNITION_DIMENSIONS.includes(key)) continue;
-
-    const scoreData = scores[key];
-    const score = scoreData?.score ?? scoreData;
-
-    if (typeof score === 'number') {
-      weightedSum += score * (dim.weight || 0);
-      totalWeight += dim.weight || 0;
-    }
-  }
-
-  if (totalWeight === 0) return 0;
-  const avgScore = weightedSum / totalWeight;
-  return ((avgScore - 1) / 4) * 100;
+  return calculateGroupScore(scores, 'treatment');
 }
 
 /**
