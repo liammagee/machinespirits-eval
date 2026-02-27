@@ -16,13 +16,13 @@
 #
 #   Overall Score = ((weighted_avg - 1) / 4) x 100
 #
-# v2.1.0: deliberation_depth moved to evaluation-rubric-deliberation.yaml.
+# v2.1: deliberation_depth moved to evaluation-rubric-deliberation.yaml.
 # All 7 remaining dimensions apply uniformly to all learner architectures.
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Learner Quality Rubric"
-version: "2.0"
+version: "2.1"
 description: "Rubric for evaluating synthetic learner turn quality in multi-turn tutoring dialogues"
 
 scale:
