@@ -9,6 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { createHash } from 'crypto';
 import {
   tutorApiService as tutorApi,
   tutorConfigLoader,
@@ -3321,11 +3322,22 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     isMultiTurn: true,
     learnerArchitecture: resolvedConfig.learnerArchitecture || 'unified',
     totalTurns: turnResults.length,
-    turnResults: turnResults.map((t) => ({
-      turnIndex: t.turnIndex,
-      turnId: t.turnId,
-      suggestions: t.suggestion ? [t.suggestion] : [],
-    })),
+    turnResults: turnResults.map((t) => {
+      const turnContent = JSON.stringify({
+        turnIndex: t.turnIndex,
+        suggestion: t.suggestion ? [t.suggestion] : [],
+        turnId: t.turnId,
+      });
+      const contentTurnId = createHash('sha256')
+        .update(dialogueId + ':' + t.turnIndex + ':' + turnContent)
+        .digest('hex').slice(0, 16);
+      return {
+        turnIndex: t.turnIndex,
+        turnId: t.turnId,
+        contentTurnId,
+        suggestions: t.suggestion ? [t.suggestion] : [],
+      };
+    }),
     // Conversation mode audit trail
     conversationMode,
     conversationHistory,
@@ -3343,7 +3355,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     fs.mkdirSync(LOGS_DIR, { recursive: true });
   }
   const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
-  fs.writeFileSync(logPath, JSON.stringify(consolidatedDialogue, null, 2));
+  const logContent = JSON.stringify(consolidatedDialogue, null, 2);
+  fs.writeFileSync(logPath, logContent);
+  const dialogueContentHash = createHash('sha256').update(logContent).digest('hex');
 
   log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${tutorFirstTurnScore?.toFixed(1)}`);
 
@@ -3393,6 +3407,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     conversationMode,
+    dialogueContentHash,
     // Holistic dialogue evaluation (full transcript scored as single unit)
     holisticDialogueScore,
     // Bilateral transformation metrics
