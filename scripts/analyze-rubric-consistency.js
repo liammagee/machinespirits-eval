@@ -100,10 +100,10 @@ function pearsonCorrelation(x, y) {
  * Uses the Abramowitz and Stegun approximation.
  */
 function tDistributionPValue(t, df) {
-  const x = df / (df + t * t);
+  const _x = df / (df + t * t);
   // Regularized incomplete beta function approximation
-  const a = df / 2;
-  const b = 0.5;
+  const _a = df / 2;
+  const _b = 0.5;
   // Simple approximation via normal for df > 30
   if (df > 30) {
     const z = Math.abs(t);
@@ -524,7 +524,7 @@ function summaryMatrix(results) {
 
 // ── Main ──
 
-const counts = dataSummary();
+const _counts = dataSummary();
 
 const results = {
   check1: check1_perTurnToHolistic(),
