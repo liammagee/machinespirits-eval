@@ -8,6 +8,7 @@ inventory_path: config/provable-claim-inventory.json
 import_claims_from:
   - config/provable-discourse.generated.yaml
   - config/provable-discourse.manual.yaml
+  - config/provable-discourse-mechanisms.yaml
 
 inventory_policy:
   major_only: true

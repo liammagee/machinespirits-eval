@@ -34,6 +34,17 @@ const ALLOWED_COLUMNS = new Set([
   'tutor_last_turn_score',
   'scenario_id',
   'prompt_id',
+  'scores_with_reasoning',
+  'tutor_scores',
+  'tutor_overall_score',
+  'tutor_rubric_version',
+  'learner_rubric_version',
+  'dialogue_rubric_version',
+  'deliberation_rubric_version',
+  'conversation_mode',
+  'suggestions',
+  'tutor_deliberation_scores',
+  'learner_deliberation_scores',
 ]);
 
 function stableSerialize(value) {
@@ -100,6 +111,30 @@ export function pearsonCorrelation(groupA, groupB) {
   }
   const denominator = Math.sqrt(denA * denB);
   return denominator > 0 ? numerator / denominator : 0;
+}
+
+export function linearRegression(xs, ys) {
+  if (!Array.isArray(xs) || !Array.isArray(ys) || xs.length !== ys.length || xs.length < 2) {
+    return { slope: 0, intercept: 0, rSquared: 0 };
+  }
+  const n = xs.length;
+  const meanX = mean(xs);
+  const meanY = mean(ys);
+  let ssXX = 0;
+  let ssXY = 0;
+  let ssYY = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = xs[i] - meanX;
+    const dy = ys[i] - meanY;
+    ssXX += dx * dx;
+    ssXY += dx * dy;
+    ssYY += dy * dy;
+  }
+  if (ssXX === 0) return { slope: 0, intercept: meanY, rSquared: 0 };
+  const slope = ssXY / ssXX;
+  const intercept = meanY - slope * meanX;
+  const rSquared = ssYY > 0 ? (ssXY * ssXY) / (ssXX * ssYY) : 0;
+  return { slope, intercept, rSquared };
 }
 
 function fTest2x2(data) {
@@ -299,6 +334,35 @@ export function computeLearnerSummaryFromScores(rawLearnerScores) {
     learningArc: turns.length > 1 ? last.composite - first.composite : 0,
     revisionArc: turns.length > 1 ? last.revision - first.revision : 0,
   };
+}
+
+function extractTurnSequence(rawScoresJson) {
+  const parsed = safeJsonParse(rawScoresJson);
+  if (!parsed || typeof parsed !== 'object') return [];
+  const turns = [];
+  for (const [turnKey, turnValue] of Object.entries(parsed)) {
+    const scores = turnValue?.scores;
+    if (!scores) continue;
+    const turnIndexFromKey = Number(String(turnKey).replace(/[^0-9]/g, ''));
+    const turnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0
+      ? turnIndexFromKey
+      : turnValue?.turnIndex || 0;
+    const dimScores = Object.values(scores)
+      .map((d) => d?.score)
+      .filter((s) => isFiniteNumber(s));
+    const overallScore = dimScores.length > 0 ? mean(dimScores) : 0;
+    turns.push({ turnIndex, overallScore, scores });
+  }
+  turns.sort((a, b) => a.turnIndex - b.turnIndex);
+  return turns;
+}
+
+function getTurnDimScore(turns, index, dimension) {
+  if (!Array.isArray(turns) || index < 0 || index >= turns.length) return null;
+  const turn = turns[index];
+  if (dimension === 'overall') return turn.overallScore;
+  const dimScore = turn.scores?.[dimension]?.score;
+  return isFiniteNumber(dimScore) ? dimScore : null;
 }
 
 function resolveRowFlags(row, domain) {
@@ -888,6 +952,371 @@ function evaluateLogTraceCoverage(db, evidence, rootDir) {
   };
 }
 
+function evaluateDimensionVariance(db, evidence) {
+  const groupBy = evidence?.group_by || 'recognition';
+  const output = evidence?.output || 'cohens_d';
+  const scope = evidence?.scope || 'all';
+
+  if (!['recognition', 'architecture'].includes(groupBy)) {
+    throw new Error('dimension_variance requires group_by=recognition|architecture');
+  }
+
+  const selectColumns = [
+    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
+    'factor_multi_agent_learner', 'created_at',
+    'score_relevance', 'score_specificity', 'score_pedagogical',
+    'score_personalization', 'score_actionability', 'score_tone',
+    'scores_with_reasoning',
+  ];
+
+  const filters = {
+    ...(evidence?.filters || {}),
+    not_null: [...(evidence?.filters?.not_null || []), 'tutor_first_turn_score'],
+  };
+  const { sql, params } = buildWhereClause(filters);
+  const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const group1 = [];
+  const group0 = [];
+  let maxCreatedAt = null;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const flags = resolveRowFlags(row, 'tutor');
+    if (scope === 'multi_only' && flags.multi !== true) continue;
+    if (scope === 'single_only' && flags.multi !== false) continue;
+
+    const value = computeDimensionVariance14(row);
+    if (!isFiniteNumber(value)) continue;
+
+    const bucket = groupBy === 'recognition' ? flags.recognition : flags.multi;
+    if (bucket === true) group1.push(value);
+    else if (bucket === false) group0.push(value);
+  }
+
+  let value;
+  if (output === 'mean_variance_group1') value = mean(group1);
+  else if (output === 'mean_variance_group0') value = mean(group0);
+  else if (output === 'delta') value = mean(group1) - mean(group0);
+  else value = cohensD(group1, group0);
+
+  return {
+    value,
+    details: {
+      group_by: groupBy, output, scope,
+      n_group1: group1.length, n_group0: group0.length,
+      mean_group1: mean(group1), mean_group0: mean(group0),
+    },
+    fingerprint: {
+      source: 'dimension_variance', group_by: groupBy, output, scope,
+      n_group1: group1.length, n_group0: group0.length,
+      n_rows: rows.length, max_created_at: maxCreatedAt,
+    },
+  };
+}
+
+function evaluateDimensionClusterEffect(db, evidence) {
+  const cluster = evidence?.cluster;
+  const dimensionClusters = evidence?.dimension_clusters;
+  const groupBy = evidence?.group_by || 'recognition';
+
+  if (!cluster || !dimensionClusters || !dimensionClusters[cluster]) {
+    throw new Error('dimension_cluster_effect requires cluster and dimension_clusters map');
+  }
+  if (!['recognition', 'architecture'].includes(groupBy)) {
+    throw new Error('dimension_cluster_effect requires group_by=recognition|architecture');
+  }
+
+  const clusterDims = dimensionClusters[cluster];
+  if (!Array.isArray(clusterDims) || clusterDims.length === 0) {
+    throw new Error(`dimension_cluster_effect: cluster "${cluster}" has no dimensions`);
+  }
+
+  const selectColumns = [
+    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
+    'factor_multi_agent_learner', 'created_at',
+    'score_relevance', 'score_specificity', 'score_pedagogical',
+    'score_personalization', 'score_actionability', 'score_tone',
+    'scores_with_reasoning',
+  ];
+
+  const filters = {
+    ...(evidence?.filters || {}),
+    not_null: [...(evidence?.filters?.not_null || []), 'tutor_first_turn_score'],
+  };
+  const { sql, params } = buildWhereClause(filters);
+  const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const baseScoreToName = {
+    score_relevance: 'relevance', score_specificity: 'specificity',
+    score_pedagogical: 'pedagogical', score_personalization: 'personalization',
+    score_actionability: 'actionability', score_tone: 'tone',
+  };
+  const nameToBaseCol = {};
+  for (const [col, name] of Object.entries(baseScoreToName)) nameToBaseCol[name] = col;
+
+  const perDimResults = [];
+  for (const dim of clusterDims) {
+    const g1 = [];
+    const g0 = [];
+
+    for (const row of rows) {
+      const flags = resolveRowFlags(row, 'tutor');
+      const bucket = groupBy === 'recognition' ? flags.recognition : flags.multi;
+      if (bucket !== true && bucket !== false) continue;
+
+      let score = null;
+      if (nameToBaseCol[dim]) score = row[nameToBaseCol[dim]];
+      if (score == null) {
+        const parsed = safeJsonParse(row.scores_with_reasoning);
+        if (parsed?.[dim]?.score != null) score = parsed[dim].score;
+      }
+      if (!isFiniteNumber(score)) continue;
+      if (bucket === true) g1.push(score);
+      else g0.push(score);
+    }
+
+    perDimResults.push({ dimension: dim, d: cohensD(g1, g0), n_group1: g1.length, n_group0: g0.length });
+  }
+
+  const clusterDs = perDimResults.map((r) => r.d).filter(isFiniteNumber);
+  const value = clusterDs.length > 0 ? mean(clusterDs) : 0;
+
+  return {
+    value,
+    details: {
+      cluster, group_by: groupBy,
+      dimensions: clusterDims,
+      per_dimension: perDimResults,
+      n_dimensions: clusterDims.length,
+    },
+    fingerprint: {
+      source: 'dimension_cluster_effect', cluster, group_by: groupBy,
+      n_dimensions: clusterDims.length, n_rows: rows.length,
+    },
+  };
+}
+
+function evaluateTrajectorySlope(db, evidence) {
+  const side = evidence?.side || 'learner';
+  const dimension = evidence?.dimension || 'overall';
+  const groupBy = evidence?.group_by;
+  const output = evidence?.output || 'mean_slope';
+  const minTurns = evidence?.min_turns || 3;
+
+  if (!['tutor', 'learner'].includes(side)) {
+    throw new Error('trajectory_slope requires side=tutor|learner');
+  }
+
+  const scoreColumn = side === 'tutor' ? 'tutor_scores' : 'learner_scores';
+  const selectColumns = [
+    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
+    'factor_multi_agent_learner', 'created_at', 'dialogue_id', scoreColumn,
+  ];
+
+  const filters = {
+    ...(evidence?.filters || {}),
+    not_null: [...(evidence?.filters?.not_null || []), scoreColumn],
+  };
+  const { sql, params } = buildWhereClause(filters);
+  const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const allSlopes = [];
+  const group1Slopes = [];
+  const group0Slopes = [];
+  let maxCreatedAt = null;
+  let skippedTooFew = 0;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const turns = extractTurnSequence(row[scoreColumn]);
+    if (turns.length < minTurns) { skippedTooFew++; continue; }
+
+    const xValues = [];
+    const yValues = [];
+    for (let i = 0; i < turns.length; i++) {
+      const y = getTurnDimScore(turns, i, dimension);
+      if (y != null) { xValues.push(i); yValues.push(y); }
+    }
+    if (xValues.length < 2) continue;
+
+    const { slope } = linearRegression(xValues, yValues);
+    allSlopes.push(slope);
+
+    if (groupBy) {
+      const flags = resolveRowFlags(row, side);
+      const bucket = groupBy === 'recognition' ? flags.recognition : flags.multi;
+      if (bucket === true) group1Slopes.push(slope);
+      else if (bucket === false) group0Slopes.push(slope);
+    }
+  }
+
+  let value;
+  if (output === 'mean_slope_group1') value = mean(group1Slopes);
+  else if (output === 'mean_slope_group0') value = mean(group0Slopes);
+  else if (output === 'cohens_d') value = cohensD(group1Slopes, group0Slopes);
+  else value = mean(allSlopes);
+
+  return {
+    value,
+    details: {
+      side, dimension, group_by: groupBy || null, output, min_turns: minTurns,
+      n_dialogues: allSlopes.length, mean_slope: mean(allSlopes),
+      n_group1: group1Slopes.length, n_group0: group0Slopes.length,
+      mean_slope_group1: mean(group1Slopes), mean_slope_group0: mean(group0Slopes),
+      skipped_too_few_turns: skippedTooFew,
+    },
+    fingerprint: {
+      source: 'trajectory_slope', side, dimension, group_by: groupBy || null, output,
+      min_turns: minTurns, n_rows: rows.length, n_dialogues: allSlopes.length,
+      max_created_at: maxCreatedAt,
+    },
+  };
+}
+
+function evaluateConditionalDelta(db, evidence) {
+  const eventDimension = evidence?.event_dimension || 'revision_signals';
+  const eventThreshold = evidence?.event_threshold ?? 2;
+  const eventDirection = evidence?.event_direction || 'below';
+  const responseDimension = evidence?.response_dimension || 'overall';
+  const output = evidence?.output || 'mean_delta_event';
+  const minTurns = evidence?.min_turns || 3;
+
+  const selectColumns = [
+    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
+    'factor_multi_agent_learner', 'created_at', 'dialogue_id',
+    'tutor_scores', 'learner_scores',
+  ];
+
+  const filters = {
+    ...(evidence?.filters || {}),
+    not_null: [...(evidence?.filters?.not_null || []), 'tutor_scores', 'learner_scores'],
+  };
+  const { sql, params } = buildWhereClause(filters);
+  const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const eventDeltas = [];
+  const nonEventDeltas = [];
+  let maxCreatedAt = null;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const tutorTurns = extractTurnSequence(row.tutor_scores);
+    const learnerTurns = extractTurnSequence(row.learner_scores);
+    if (tutorTurns.length < minTurns || learnerTurns.length < minTurns) continue;
+
+    const maxPairs = Math.min(learnerTurns.length, tutorTurns.length - 1);
+    for (let i = 0; i < maxPairs; i++) {
+      const learnerScore = getTurnDimScore(learnerTurns, i, eventDimension);
+      if (learnerScore == null) continue;
+      const isEvent = eventDirection === 'below'
+        ? learnerScore <= eventThreshold
+        : learnerScore >= eventThreshold;
+
+      const tutorBefore = getTurnDimScore(tutorTurns, i, responseDimension);
+      const tutorAfter = getTurnDimScore(tutorTurns, i + 1, responseDimension);
+      if (tutorBefore == null || tutorAfter == null) continue;
+
+      const delta = tutorAfter - tutorBefore;
+      if (isEvent) eventDeltas.push(delta);
+      else nonEventDeltas.push(delta);
+    }
+  }
+
+  let value;
+  if (output === 'mean_delta_event') value = mean(eventDeltas);
+  else if (output === 'mean_delta_non_event') value = mean(nonEventDeltas);
+  else if (output === 'cohens_d') value = cohensD(eventDeltas, nonEventDeltas);
+  else value = mean(eventDeltas);
+
+  return {
+    value,
+    details: {
+      event_dimension: eventDimension, event_threshold: eventThreshold,
+      event_direction: eventDirection, response_dimension: responseDimension,
+      output, min_turns: minTurns,
+      n_event_deltas: eventDeltas.length, n_non_event_deltas: nonEventDeltas.length,
+      mean_event_delta: mean(eventDeltas), mean_non_event_delta: mean(nonEventDeltas),
+    },
+    fingerprint: {
+      source: 'conditional_delta',
+      event_dimension: eventDimension, event_threshold: eventThreshold,
+      event_direction: eventDirection, response_dimension: responseDimension,
+      output, n_rows: rows.length, n_event_deltas: eventDeltas.length,
+      max_created_at: maxCreatedAt,
+    },
+  };
+}
+
+function evaluateRubricVersionComparison(db, evidence) {
+  const versionA = evidence?.version_a;
+  const versionB = evidence?.version_b;
+  const versionColumn = evidence?.version_column || 'tutor_rubric_version';
+  const metric = evidence?.metric || 'tutor_first_turn_score';
+  const output = evidence?.output || 'correlation';
+  const keyFields = Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
+    ? evidence.key_fields
+    : ['dialogue_id', 'scenario_id', 'profile_name'];
+
+  if (!versionA || !versionB) {
+    throw new Error('rubric_version_comparison requires version_a and version_b');
+  }
+
+  ensureColumnName(versionColumn);
+  ensureColumnName(metric);
+  for (const field of keyFields) ensureColumnName(field);
+
+  const filters = {
+    ...(evidence?.filters || {}),
+    not_null: [...(evidence?.filters?.not_null || []), metric, versionColumn],
+  };
+  const { sql, params } = buildWhereClause(filters);
+  const columns = [...new Set([versionColumn, metric, 'created_at', ...keyFields])];
+  const rows = db.prepare(`SELECT ${columns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
+
+  const aMap = new Map();
+  const bMap = new Map();
+  let maxCreatedAt = null;
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+    const key = keyFields.map((f) => String(row[f] ?? '')).join('|');
+    const version = String(row[versionColumn] || '');
+    if (version === versionA) aMap.set(key, row[metric]);
+    else if (version === versionB) bMap.set(key, row[metric]);
+  }
+
+  const aValues = [];
+  const bValues = [];
+  for (const [key, aVal] of aMap.entries()) {
+    if (!bMap.has(key)) continue;
+    const bVal = bMap.get(key);
+    if (!isFiniteNumber(aVal) || !isFiniteNumber(bVal)) continue;
+    aValues.push(aVal);
+    bValues.push(bVal);
+  }
+
+  let value;
+  if (output === 'mean_delta') value = mean(aValues.map((a, i) => a - bValues[i]));
+  else if (output === 'cohens_d') value = cohensD(aValues, bValues);
+  else value = pearsonCorrelation(aValues, bValues);
+
+  return {
+    value,
+    details: {
+      version_column: versionColumn, version_a: versionA, version_b: versionB,
+      metric, output, key_fields: keyFields,
+      n_pairs: aValues.length, mean_a: mean(aValues), mean_b: mean(bValues),
+    },
+    fingerprint: {
+      source: 'rubric_version_comparison',
+      version_column: versionColumn, version_a: versionA, version_b: versionB,
+      metric, output, n_rows: rows.length, n_pairs: aValues.length,
+      max_created_at: maxCreatedAt,
+    },
+  };
+}
+
 function evaluateEvidence(db, manifest, evidence) {
   const type = evidence?.type;
   if (type === 'manifest_total') return evaluateManifestTotal(manifest, evidence);
@@ -897,6 +1326,11 @@ function evaluateEvidence(db, manifest, evidence) {
   if (type === 'profile_group_effect_size') return evaluateProfileGroupEffectSize(db, evidence);
   if (type === 'anova_2x2') return evaluateAnova2x2Evidence(db, evidence);
   if (type === 'judge_pair_correlation') return evaluateJudgePairCorrelation(db, evidence);
+  if (type === 'dimension_variance') return evaluateDimensionVariance(db, evidence);
+  if (type === 'dimension_cluster_effect') return evaluateDimensionClusterEffect(db, evidence);
+  if (type === 'trajectory_slope') return evaluateTrajectorySlope(db, evidence);
+  if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence);
+  if (type === 'rubric_version_comparison') return evaluateRubricVersionComparison(db, evidence);
   if (type === 'log_trace_coverage') throw new Error('log_trace_coverage requires rootDir context');
   throw new Error(`Unsupported evidence type: ${type}`);
 }
