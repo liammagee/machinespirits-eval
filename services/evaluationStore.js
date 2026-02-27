@@ -40,7 +40,7 @@ import { fileURLToPath } from 'url';
 import { randomBytes } from 'crypto';
 import { isPidAlive } from './processUtils.js';
 import { loadRubric } from './evalConfigLoader.js';
-import { loadTutorHolisticRubric, loadDialogueRubric } from './rubricEvaluator.js';
+import { loadTutorHolisticRubric, loadDialogueRubric, loadDeliberationRubric } from './rubricEvaluator.js';
 import { loadLearnerRubric } from './learnerRubricEvaluator.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -246,6 +246,7 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_score REAL`, 'learner_deliberation_score');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_summary TEXT`, 'learner_deliberation_summary');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_judge_model TEXT`, 'learner_deliberation_judge_model');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN deliberation_rubric_version TEXT`, 'deliberation_rubric_version');
 
 // Process measures from dialogue logs (turnComparisonAnalyzer + dialogueTraceAnalyzer)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN adaptation_index REAL`, 'adaptation_index');
@@ -388,6 +389,9 @@ function getLearnerRubricVersion() {
 }
 function getDialogueRubricVersion() {
   return loadDialogueRubric()?.version || null;
+}
+function getDeliberationRubricVersion() {
+  return loadDeliberationRubric()?.version || null;
 }
 
 /**
@@ -1833,7 +1837,8 @@ export function updateTutorDeliberationScores(resultId, evaluation) {
       tutor_deliberation_scores = ?,
       tutor_deliberation_score = ?,
       tutor_deliberation_summary = ?,
-      tutor_deliberation_judge_model = ?
+      tutor_deliberation_judge_model = ?,
+      deliberation_rubric_version = ?
     WHERE id = ?
   `);
   stmt.run(
@@ -1841,6 +1846,7 @@ export function updateTutorDeliberationScores(resultId, evaluation) {
     evaluation.deliberationScore ?? null,
     evaluation.deliberationSummary || null,
     evaluation.deliberationJudgeModel || null,
+    getDeliberationRubricVersion(),
     resultId,
   );
 }
@@ -1862,7 +1868,8 @@ export function updateLearnerDeliberationScores(resultId, evaluation) {
       learner_deliberation_scores = ?,
       learner_deliberation_score = ?,
       learner_deliberation_summary = ?,
-      learner_deliberation_judge_model = ?
+      learner_deliberation_judge_model = ?,
+      deliberation_rubric_version = ?
     WHERE id = ?
   `);
   stmt.run(
@@ -1870,6 +1877,7 @@ export function updateLearnerDeliberationScores(resultId, evaluation) {
     evaluation.deliberationScore ?? null,
     evaluation.deliberationSummary || null,
     evaluation.deliberationJudgeModel || null,
+    getDeliberationRubricVersion(),
     resultId,
   );
 }
