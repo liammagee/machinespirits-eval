@@ -247,6 +247,14 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_summary TEXT`, 'learner_deliberation_summary');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_judge_model TEXT`, 'learner_deliberation_judge_model');
 
+// Process measures from dialogue logs (turnComparisonAnalyzer + dialogueTraceAnalyzer)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN adaptation_index REAL`, 'adaptation_index');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_growth_index REAL`, 'learner_growth_index');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN bilateral_transformation_index REAL`, 'bilateral_transformation_index');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN incorporation_rate REAL`, 'incorporation_rate');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dimension_convergence REAL`, 'dimension_convergence');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN transformation_quality REAL`, 'transformation_quality');
+
 // Rubric version tracking (auto-resolved from YAML at write time)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_rubric_version TEXT`, 'tutor_rubric_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_rubric_version TEXT`, 'learner_rubric_version');
@@ -1867,6 +1875,41 @@ export function updateLearnerDeliberationScores(resultId, evaluation) {
 }
 
 /**
+ * Update process measures extracted from dialogue logs.
+ * These are non-rubric metrics computed by turnComparisonAnalyzer and dialogueTraceAnalyzer.
+ *
+ * @param {string} resultId - The evaluation result ID
+ * @param {Object} metrics - Process measure data
+ * @param {number} [metrics.adaptationIndex] - Tutor approach change 0-1
+ * @param {number} [metrics.learnerGrowthIndex] - Learner sophistication evolution 0-1
+ * @param {number} [metrics.bilateralTransformationIndex] - Average of adaptation + growth 0-1
+ * @param {number} [metrics.incorporationRate] - Ego revision following superego feedback 0-1
+ * @param {number} [metrics.dimensionConvergence] - Score variance reduction 0-1
+ * @param {number} [metrics.transformationQuality] - Overall transformation quality 0-100
+ */
+export function updateProcessMeasures(resultId, metrics) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      adaptation_index = ?,
+      learner_growth_index = ?,
+      bilateral_transformation_index = ?,
+      incorporation_rate = ?,
+      dimension_convergence = ?,
+      transformation_quality = ?
+    WHERE id = ?
+  `);
+  stmt.run(
+    metrics.adaptationIndex ?? null,
+    metrics.learnerGrowthIndex ?? null,
+    metrics.bilateralTransformationIndex ?? null,
+    metrics.incorporationRate ?? null,
+    metrics.dimensionConvergence ?? null,
+    metrics.transformationQuality ?? null,
+    resultId,
+  );
+}
+
+/**
  * Update learner-side evaluation scores on an evaluation_results row.
  *
  * @param {string} resultId - The evaluation result ID
@@ -2135,6 +2178,8 @@ export default {
   getInteractionEval,
   getInteractionEvalByRunId,
   updateInteractionLearnerScores,
+  // Process measures
+  updateProcessMeasures,
   // Dialogue log loading
   loadDialogueLog,
 };

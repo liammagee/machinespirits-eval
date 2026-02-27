@@ -163,6 +163,7 @@ Key columns: `id`, `run_id`, `scenario_id`, `scenario_name`, `provider`, `model`
 - `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
 - Rejudge creates new rows by default; `--overwrite` replaces
 - **Legacy cell names**: Early runs used shorthand `cell_1`, later runs use canonical `cell_1_base_single_unified`. Both coexist in the DB. Analysis scripts should match on prefix or use `LIKE 'cell_1%'` when querying across runs.
+- **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = all pre-v3 rows, `"2.0"` = v3+ (public-only scoring, deliberation rubric).
 
 ### Test Directory Convention
 

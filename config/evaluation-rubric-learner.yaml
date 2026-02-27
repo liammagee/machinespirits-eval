@@ -22,7 +22,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Learner Quality Rubric"
-version: "2.1.0"
+version: "2.0"
 description: "Rubric for evaluating synthetic learner turn quality in multi-turn tutoring dialogues"
 
 scale:
