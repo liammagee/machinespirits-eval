@@ -1409,29 +1409,31 @@ const __rubricFilename = fileURLToPath(import.meta.url);
 const __rubricDirname = path.dirname(__rubricFilename);
 const EVAL_CONFIG_DIR = path.resolve(__rubricDirname, '..', 'config');
 
-let tutorHolisticRubricCache = null;
-let tutorHolisticRubricMtime = null;
+const tutorHolisticCacheMap = new Map();
+let _tutorHolisticRubricPathOverride = null;
+export function setTutorHolisticRubricPathOverride(p) { _tutorHolisticRubricPathOverride = p; }
+export function clearTutorHolisticRubricPathOverride() { _tutorHolisticRubricPathOverride = null; }
 
 /**
  * Load the holistic tutor rubric YAML with mtime-based caching.
  */
 export function loadTutorHolisticRubric({ forceReload } = {}) {
-  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-tutor-holistic.yaml');
+  const rubricPath = _tutorHolisticRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-tutor-holistic.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);
-    if (!forceReload && tutorHolisticRubricCache && tutorHolisticRubricMtime === stats.mtimeMs) {
-      return tutorHolisticRubricCache;
+    const cached = tutorHolisticCacheMap.get(rubricPath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
     }
-    tutorHolisticRubricMtime = stats.mtimeMs;
+    const raw = fs.readFileSync(rubricPath, 'utf-8');
+    const data = yaml.parse(raw);
+    tutorHolisticCacheMap.set(rubricPath, { data, mtime: stats.mtimeMs });
+    return data;
   } catch (err) {
     console.warn('[rubricEvaluator] Tutor holistic rubric file not found:', err.message);
     return null;
   }
-
-  const raw = fs.readFileSync(rubricPath, 'utf-8');
-  tutorHolisticRubricCache = yaml.parse(raw);
-  return tutorHolisticRubricCache;
 }
 
 /**
@@ -1595,29 +1597,31 @@ ${exampleScores}
 // Dialogue Quality Evaluation
 // ============================================================================
 
-let dialogueRubricCache = null;
-let dialogueRubricMtime = null;
+const dialogueCacheMap = new Map();
+let _dialogueRubricPathOverride = null;
+export function setDialogueRubricPathOverride(p) { _dialogueRubricPathOverride = p; }
+export function clearDialogueRubricPathOverride() { _dialogueRubricPathOverride = null; }
 
 /**
  * Load the dialogue quality rubric YAML with mtime-based caching.
  */
 export function loadDialogueRubric({ forceReload } = {}) {
-  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-dialogue.yaml');
+  const rubricPath = _dialogueRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-dialogue.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);
-    if (!forceReload && dialogueRubricCache && dialogueRubricMtime === stats.mtimeMs) {
-      return dialogueRubricCache;
+    const cached = dialogueCacheMap.get(rubricPath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
     }
-    dialogueRubricMtime = stats.mtimeMs;
+    const raw = fs.readFileSync(rubricPath, 'utf-8');
+    const data = yaml.parse(raw);
+    dialogueCacheMap.set(rubricPath, { data, mtime: stats.mtimeMs });
+    return data;
   } catch (err) {
     console.warn('[rubricEvaluator] Dialogue rubric file not found:', err.message);
     return null;
   }
-
-  const raw = fs.readFileSync(rubricPath, 'utf-8');
-  dialogueRubricCache = yaml.parse(raw);
-  return dialogueRubricCache;
 }
 
 /**
@@ -2206,29 +2210,31 @@ ${exampleScores}
 // Deliberation Quality Evaluation
 // ============================================================================
 
-let deliberationRubricCache = null;
-let deliberationRubricMtime = null;
+const deliberationCacheMap = new Map();
+let _deliberationRubricPathOverride = null;
+export function setDeliberationRubricPathOverride(p) { _deliberationRubricPathOverride = p; }
+export function clearDeliberationRubricPathOverride() { _deliberationRubricPathOverride = null; }
 
 /**
  * Load the deliberation quality rubric YAML with mtime-based caching.
  */
 export function loadDeliberationRubric({ forceReload } = {}) {
-  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-deliberation.yaml');
+  const rubricPath = _deliberationRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-deliberation.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);
-    if (!forceReload && deliberationRubricCache && deliberationRubricMtime === stats.mtimeMs) {
-      return deliberationRubricCache;
+    const cached = deliberationCacheMap.get(rubricPath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
     }
-    deliberationRubricMtime = stats.mtimeMs;
+    const raw = fs.readFileSync(rubricPath, 'utf-8');
+    const data = yaml.parse(raw);
+    deliberationCacheMap.set(rubricPath, { data, mtime: stats.mtimeMs });
+    return data;
   } catch (err) {
     console.warn('[rubricEvaluator] Deliberation rubric file not found:', err.message);
     return null;
   }
-
-  const raw = fs.readFileSync(rubricPath, 'utf-8');
-  deliberationRubricCache = yaml.parse(raw);
-  return deliberationRubricCache;
 }
 
 /**
@@ -2584,10 +2590,16 @@ export default {
   isEgoSuperegoLearner,
   extractInitialLearnerMessage,
   loadTutorHolisticRubric,
+  setTutorHolisticRubricPathOverride,
+  clearTutorHolisticRubricPathOverride,
   getTutorHolisticDimensions,
   loadDialogueRubric,
+  setDialogueRubricPathOverride,
+  clearDialogueRubricPathOverride,
   getDialogueDimensions,
   loadDeliberationRubric,
+  setDeliberationRubricPathOverride,
+  clearDeliberationRubricPathOverride,
   getDeliberationDimensions,
   calculateDeliberationScore,
   hasTutorSuperego,

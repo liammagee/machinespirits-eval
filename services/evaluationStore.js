@@ -2152,6 +2152,127 @@ export function loadDialogueLog(dialogueId) {
   }
 }
 
+/**
+ * Get a single result by its row ID.
+ */
+export function getResultById(id) {
+  const stmt = db.prepare('SELECT * FROM evaluation_results WHERE id = ?');
+  const row = stmt.get(id);
+  if (!row) return null;
+  return parseResultRow(row);
+}
+
+/**
+ * Clone evaluation result rows into a derived run for rubric version comparison.
+ *
+ * Creates a new run record `{runId}_rubric-v{ver}` (if not already present),
+ * then copies each target row with all generation columns preserved and all
+ * score columns NULLed so they can be re-scored with the new rubric.
+ *
+ * @param {string} sourceRunId - The original run ID
+ * @param {Array} sourceResults - Array of parsed result objects to clone
+ * @param {string} rubricVersion - The target rubric version (e.g. "2.2")
+ * @returns {{ derivedRunId: string, clonedIds: number[] }}
+ */
+export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVersion) {
+  const derivedRunId = `${sourceRunId}_rubric-v${rubricVersion}`;
+
+  // Ensure derived run record exists
+  const existingRun = getRun(derivedRunId);
+  if (!existingRun) {
+    const sourceRun = getRun(sourceRunId);
+    const now = new Date().toISOString();
+    const meta = {
+      sourceRunId,
+      rubricVersion,
+      derivedFrom: 'rubric-version-comparison',
+      ...(sourceRun?.metadata || {}),
+    };
+    db.prepare(`
+      INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, metadata, status)
+      VALUES (?, ?, ?, ?, ?, ?, 'running')
+    `).run(
+      derivedRunId,
+      now,
+      `Rubric v${rubricVersion} re-score of ${sourceRunId}`,
+      sourceRun?.totalScenarios || 0,
+      sourceRun?.totalConfigurations || 0,
+      JSON.stringify(meta),
+    );
+  }
+
+  // Check for existing clones (idempotent: skip rows already cloned)
+  const existingDialogueIds = new Set(
+    db.prepare('SELECT dialogue_id FROM evaluation_results WHERE run_id = ?')
+      .all(derivedRunId)
+      .map((r) => r.dialogue_id),
+  );
+
+  const clonedIds = [];
+  const insertStmt = db.prepare(`
+    INSERT INTO evaluation_results (
+      run_id, scenario_id, scenario_name, scenario_type,
+      provider, model, profile_name, hyperparameters, prompt_id,
+      ego_model, superego_model,
+      suggestions, raw_response,
+      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
+      success, error_message,
+      factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
+      scoring_method, conversation_mode,
+      created_at
+    ) VALUES (
+      ?, ?, ?, ?,
+      ?, ?, ?, ?, ?,
+      ?, ?,
+      ?, ?,
+      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?,
+      ?, ?, ?, ?,
+      ?, ?,
+      ?
+    )
+  `);
+
+  for (const r of sourceResults) {
+    if (existingDialogueIds.has(r.dialogueId)) continue;
+
+    const info = insertStmt.run(
+      derivedRunId,
+      r.scenarioId,
+      r.scenarioName,
+      r.scenarioType || 'suggestion',
+      r.provider,
+      r.model,
+      r.profileName,
+      JSON.stringify(r.hyperparameters || {}),
+      r.promptId,
+      r.egoModel || null,
+      r.superegoModel || null,
+      JSON.stringify(r.suggestions || []),
+      r.rawResponse,
+      r.latencyMs,
+      r.inputTokens,
+      r.outputTokens,
+      r.cost,
+      r.dialogueRounds,
+      r.apiCalls,
+      r.dialogueId,
+      r.success ? 1 : 0,
+      r.errorMessage || null,
+      r.factors?.recognition != null ? (r.factors.recognition ? 1 : 0) : null,
+      r.factors?.multi_agent_tutor != null ? (r.factors.multi_agent_tutor ? 1 : 0) : null,
+      r.factors?.multi_agent_learner != null ? (r.factors.multi_agent_learner ? 1 : 0) : null,
+      r.learnerArchitecture || null,
+      r.scoringMethod || null,
+      r.conversationMode || null,
+      new Date().toISOString(),
+    );
+    clonedIds.push(info.lastInsertRowid);
+  }
+
+  return { derivedRunId, clonedIds };
+}
+
 export default {
   createRun,
   updateRun,
@@ -2190,4 +2311,7 @@ export default {
   updateProcessMeasures,
   // Dialogue log loading
   loadDialogueLog,
+  // Rubric version comparison
+  getResultById,
+  cloneRowsForRubricVersion,
 };
