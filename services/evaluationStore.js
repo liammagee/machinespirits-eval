@@ -37,7 +37,7 @@ import fs from 'fs';
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { isPidAlive } from './processUtils.js';
 import { loadRubric } from './evalConfigLoader.js';
 import { loadTutorHolisticRubric, loadDialogueRubric, loadDeliberationRubric } from './rubricEvaluator.js';
@@ -261,6 +261,26 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_rubric_version
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_rubric_version TEXT`, 'learner_rubric_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_rubric_version TEXT`, 'dialogue_rubric_version');
 
+// P0 Provenance: dialogue content hash (SHA-256 of dialogue log JSON at write time)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_content_hash TEXT`, 'dialogue_content_hash');
+
+// P0 Provenance: score audit trail (append-only)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS score_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    result_id TEXT NOT NULL,
+    column_name TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    operation TEXT NOT NULL,
+    judge_model TEXT,
+    rubric_version TEXT,
+    timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+  )
+`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_score_audit_result ON score_audit(result_id)`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_score_audit_timestamp ON score_audit(timestamp)`);
+
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`, 'package_version');
@@ -394,6 +414,78 @@ function getDeliberationRubricVersion() {
   return loadDeliberationRubric()?.version || null;
 }
 
+// ── P0 Provenance: audit trail helpers ────────────────────────────────
+
+/**
+ * Coerce a value to a string suitable for audit storage.
+ * Objects/arrays are JSON-stringified; null/undefined stay null.
+ */
+function stringifyAudit(val) {
+  if (val === null || val === undefined) return null;
+  return typeof val === 'object' ? JSON.stringify(val) : String(val);
+}
+
+/**
+ * Capture before-state of columns about to be UPDATEd, then return a
+ * function that—when called after the UPDATE—diffs and writes audit rows.
+ *
+ * @param {string|number} resultId - Row ID in evaluation_results
+ * @param {string[]} columns - Column names being modified
+ * @param {string} operation - Name of the calling function (audit label)
+ * @param {{ judgeModel?: string, rubricVersion?: string }} [metadata]
+ * @returns {() => void} Call this AFTER the UPDATE statement runs
+ */
+function withAuditTrail(resultId, columns, operation, metadata = {}) {
+  const colList = columns.map((c) => `"${c}"`).join(', ');
+  const before = db.prepare(`SELECT ${colList} FROM evaluation_results WHERE id = ?`).get(resultId);
+
+  return function recordAudit() {
+    const after = db.prepare(`SELECT ${colList} FROM evaluation_results WHERE id = ?`).get(resultId);
+    const auditStmt = db.prepare(`
+      INSERT INTO score_audit (result_id, column_name, old_value, new_value, operation, judge_model, rubric_version)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const col of columns) {
+      const oldVal = before?.[col];
+      const newVal = after?.[col];
+      if (stringifyAudit(oldVal) !== stringifyAudit(newVal)) {
+        auditStmt.run(
+          String(resultId),
+          col,
+          stringifyAudit(oldVal),
+          stringifyAudit(newVal),
+          operation,
+          metadata.judgeModel || null,
+          metadata.rubricVersion || null,
+        );
+      }
+    }
+  };
+}
+
+/**
+ * Retrieve the full score audit trail for a single evaluation result.
+ * @param {string|number} resultId
+ * @returns {Array} Ordered audit entries
+ */
+export function getScoreAudit(resultId) {
+  return db.prepare('SELECT * FROM score_audit WHERE result_id = ? ORDER BY timestamp').all(String(resultId));
+}
+
+/**
+ * Retrieve all audit entries for results belonging to a run.
+ * @param {string} runId
+ * @returns {Array} Ordered audit entries
+ */
+export function getScoreAuditByRun(runId) {
+  return db.prepare(`
+    SELECT sa.* FROM score_audit sa
+    JOIN evaluation_results er ON sa.result_id = CAST(er.id AS TEXT)
+    WHERE er.run_id = ?
+    ORDER BY sa.timestamp
+  `).all(runId);
+}
+
 /**
  * Create a new evaluation run
  *
@@ -489,6 +581,7 @@ export function storeResult(runId, result) {
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
       conversation_mode,
+      dialogue_content_hash,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -502,6 +595,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?,
       ?
@@ -554,6 +648,7 @@ export function storeResult(runId, result) {
     result.learnerArchitecture || null,
     result.scoringMethod || null,
     result.conversationMode || null,
+    result.dialogueContentHash || null,
     new Date().toISOString(),
   );
 
@@ -1347,6 +1442,7 @@ function parseResultRow(row) {
     dialogueQualityInternalScore: row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
     conversationMode: row.conversation_mode || null,
+    dialogueContentHash: row.dialogue_content_hash || null,
     tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
     tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
     tutorHolisticScores: row.tutor_holistic_scores ? JSON.parse(row.tutor_holistic_scores) : null,
@@ -1690,6 +1786,14 @@ export function storeRejudgment(originalResult, evaluation) {
  * @deprecated Use storeRejudgment() to preserve judgment history for reliability analysis
  */
 export function updateResultScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['score_relevance', 'score_specificity', 'score_pedagogical', 'score_personalization',
+     'score_actionability', 'score_tone', 'overall_score', 'tutor_first_turn_score',
+     'judge_model', 'tutor_rubric_version'],
+    'updateResultScores',
+    { judgeModel: evaluation.judgeModel, rubricVersion: getTutorRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       score_relevance = ?,
@@ -1739,6 +1843,8 @@ export function updateResultScores(resultId, evaluation) {
     getTutorRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1752,6 +1858,11 @@ export function updateResultScores(resultId, evaluation) {
  * @param {number} [evaluation.judgeLatencyMs] - Judge latency
  */
 export function updateTutorLastTurnScore(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['tutor_last_turn_score', 'tutor_development_score'],
+    'updateTutorLastTurnScore',
+  );
+
   // Read existing tutor_first_turn_score to compute development delta
   const row = db.prepare('SELECT tutor_first_turn_score, overall_score FROM evaluation_results WHERE id = ?').get(resultId);
   const firstTurnScore = row?.tutor_first_turn_score ?? row?.overall_score ?? null;
@@ -1766,6 +1877,8 @@ export function updateTutorLastTurnScore(resultId, evaluation) {
     WHERE id = ?
   `);
   stmt.run(lastTurnScore, developmentScore, resultId);
+
+  recordAudit();
 }
 
 /**
@@ -1778,6 +1891,12 @@ export function updateTutorLastTurnScore(resultId, evaluation) {
  * @param {string} [evaluation.dialogueQualityJudgeModel] - Judge model used
  */
 export function updateDialogueQualityScore(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['dialogue_quality_score', 'dialogue_quality_summary', 'dialogue_quality_judge_model', 'dialogue_rubric_version'],
+    'updateDialogueQualityScore',
+    { judgeModel: evaluation.dialogueQualityJudgeModel, rubricVersion: getDialogueRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       dialogue_quality_score = ?,
@@ -1793,6 +1912,8 @@ export function updateDialogueQualityScore(resultId, evaluation) {
     getDialogueRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1805,6 +1926,12 @@ export function updateDialogueQualityScore(resultId, evaluation) {
  * @param {string} [evaluation.dialogueQualityInternalSummary] - Judge narrative summary
  */
 export function updateDialogueQualityInternalScore(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['dialogue_quality_internal_score', 'dialogue_quality_internal_summary', 'dialogue_rubric_version'],
+    'updateDialogueQualityInternalScore',
+    { rubricVersion: getDialogueRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       dialogue_quality_internal_score = ?,
@@ -1818,6 +1945,8 @@ export function updateDialogueQualityInternalScore(resultId, evaluation) {
     getDialogueRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1832,6 +1961,13 @@ export function updateDialogueQualityInternalScore(resultId, evaluation) {
  * @param {string} [evaluation.deliberationJudgeModel] - Judge model used
  */
 export function updateTutorDeliberationScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['tutor_deliberation_scores', 'tutor_deliberation_score', 'tutor_deliberation_summary',
+     'tutor_deliberation_judge_model', 'deliberation_rubric_version'],
+    'updateTutorDeliberationScores',
+    { judgeModel: evaluation.deliberationJudgeModel, rubricVersion: getDeliberationRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       tutor_deliberation_scores = ?,
@@ -1849,6 +1985,8 @@ export function updateTutorDeliberationScores(resultId, evaluation) {
     getDeliberationRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1863,6 +2001,13 @@ export function updateTutorDeliberationScores(resultId, evaluation) {
  * @param {string} [evaluation.deliberationJudgeModel] - Judge model used
  */
 export function updateLearnerDeliberationScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['learner_deliberation_scores', 'learner_deliberation_score', 'learner_deliberation_summary',
+     'learner_deliberation_judge_model', 'deliberation_rubric_version'],
+    'updateLearnerDeliberationScores',
+    { judgeModel: evaluation.deliberationJudgeModel, rubricVersion: getDeliberationRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       learner_deliberation_scores = ?,
@@ -1880,6 +2025,8 @@ export function updateLearnerDeliberationScores(resultId, evaluation) {
     getDeliberationRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1896,6 +2043,12 @@ export function updateLearnerDeliberationScores(resultId, evaluation) {
  * @param {number} [metrics.transformationQuality] - Overall transformation quality 0-100
  */
 export function updateProcessMeasures(resultId, metrics) {
+  const recordAudit = withAuditTrail(resultId,
+    ['adaptation_index', 'learner_growth_index', 'bilateral_transformation_index',
+     'incorporation_rate', 'dimension_convergence', 'transformation_quality'],
+    'updateProcessMeasures',
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       adaptation_index = ?,
@@ -1915,6 +2068,8 @@ export function updateProcessMeasures(resultId, metrics) {
     metrics.transformationQuality ?? null,
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1931,6 +2086,14 @@ export function updateProcessMeasures(resultId, metrics) {
  * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic learner judging
  */
 export function updateResultLearnerScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['learner_scores', 'learner_overall_score', 'learner_judge_model',
+     'learner_holistic_scores', 'learner_holistic_overall_score', 'learner_holistic_summary',
+     'learner_holistic_judge_model', 'learner_rubric_version'],
+    'updateResultLearnerScores',
+    { judgeModel: evaluation.judgeModel, rubricVersion: getLearnerRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       learner_scores = ?,
@@ -1955,6 +2118,8 @@ export function updateResultLearnerScores(resultId, evaluation) {
     getLearnerRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -1972,6 +2137,13 @@ export function updateResultLearnerScores(resultId, evaluation) {
  * @param {number} [evaluation.judgeLatencyMs] - Total judge latency
  */
 export function updateResultTutorScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['tutor_scores', 'tutor_overall_score', 'tutor_first_turn_score', 'tutor_last_turn_score',
+     'tutor_development_score', 'judge_model', 'tutor_rubric_version'],
+    'updateResultTutorScores',
+    { judgeModel: evaluation.judgeModel, rubricVersion: getTutorRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       tutor_scores = ?,
@@ -1998,6 +2170,8 @@ export function updateResultTutorScores(resultId, evaluation) {
     getTutorRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -2012,6 +2186,13 @@ export function updateResultTutorScores(resultId, evaluation) {
  * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic judging
  */
 export function updateResultTutorHolisticScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(resultId,
+    ['tutor_holistic_scores', 'tutor_holistic_overall_score', 'tutor_holistic_summary',
+     'tutor_holistic_judge_model', 'tutor_rubric_version'],
+    'updateResultTutorHolisticScores',
+    { judgeModel: evaluation.holisticJudgeModel, rubricVersion: getTutorRubricVersion() },
+  );
+
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       tutor_holistic_scores = ?,
@@ -2030,6 +2211,8 @@ export function updateResultTutorHolisticScores(resultId, evaluation) {
     getTutorRubricVersion(),
     resultId,
   );
+
+  recordAudit();
 }
 
 /**
@@ -2314,4 +2497,7 @@ export default {
   // Rubric version comparison
   getResultById,
   cloneRowsForRubricVersion,
+  // P0 Provenance
+  getScoreAudit,
+  getScoreAuditByRun,
 };

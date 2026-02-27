@@ -118,6 +118,7 @@ const { getScenario } = evalConfigLoader;
 import { projectTranscriptArtifacts } from '../services/transcriptProjection.js';
 import theme from '../services/cliTheme.js';
 import { spawn } from 'child_process';
+import { createHash } from 'crypto';
 import readline from 'readline';
 import fs from 'fs';
 import path from 'path';
@@ -2769,6 +2770,20 @@ async function main() {
             return null;
           }
 
+          // P0 Provenance: verify dialogue log integrity
+          if (result.dialogueContentHash) {
+            const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
+            try {
+              const logContent = fs.readFileSync(logPath, 'utf8');
+              const loadedHash = createHash('sha256').update(logContent).digest('hex');
+              if (loadedHash !== result.dialogueContentHash) {
+                console.error(`[PROVENANCE] Hash mismatch for ${dialogueId}: expected ${result.dialogueContentHash.slice(0, 12)}..., got ${loadedHash.slice(0, 12)}...`);
+              }
+            } catch {
+              // File loaded via fallback path — skip hash check
+            }
+          }
+
           if (!dialogueLog.isMultiTurn) {
             console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (not multi-turn)`);
             return null;
@@ -2910,6 +2925,9 @@ async function main() {
                   return { turnIndex, skipped: true };
                 }
 
+                // P0 Provenance: hash the judge input
+                const judgeInputHash = createHash('sha256').update(prompt).digest('hex');
+
                 if (verbose) console.log(`${turnTag} ... calling claude`);
                 const parsed = await callClaudeJudge(prompt);
 
@@ -2935,6 +2953,8 @@ async function main() {
                   baseScore: calculateBaseScore(normalizedScores),
                   recognitionScore: calculateRecognitionScore(normalizedScores),
                   summary: parsed.summary,
+                  judgeInputHash,
+                  judgeTimestamp: new Date().toISOString(),
                 };
               } catch (err) {
                 const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
@@ -2960,6 +2980,9 @@ async function main() {
                   topic: scenarioId,
                 });
 
+                // P0 Provenance: hash the judge input
+                const judgeInputHash = createHash('sha256').update(prompt).digest('hex');
+
                 if (verbose) console.log(`${turnTag} ... calling claude`);
                 const parsed = await callClaudeJudge(prompt);
                 const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
@@ -2971,6 +2994,8 @@ async function main() {
                   scores: parsed.scores,
                   overallScore: turnOverall,
                   summary: parsed.summary,
+                  judgeInputHash,
+                  judgeTimestamp: new Date().toISOString(),
                 };
               } catch (err) {
                 const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
@@ -2985,6 +3010,7 @@ async function main() {
           const dgpPromise = dqPromptParams ? (async () => {
             try {
               const publicPrompt = buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'public' });
+              const judgeInputHash = createHash('sha256').update(publicPrompt).digest('hex');
               const publicParsed = await callClaudeJudge(publicPrompt);
               const publicScores = {};
               for (const [key, value] of Object.entries(publicParsed.scores || {})) {
@@ -2997,7 +3023,7 @@ async function main() {
               const score = Object.keys(publicScores).length > 0
                 ? calculateDialogueQualityScore(publicScores)
                 : publicParsed.overall_score;
-              return { success: true, score, summary: publicParsed.summary };
+              return { success: true, score, summary: publicParsed.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
             } catch (err) {
               const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
               console.log(`${tag}   dialogue-quality(public) ... FAIL: ${msg}`);
@@ -3009,6 +3035,7 @@ async function main() {
           const dgiPromise = dqPromptParams ? (async () => {
             try {
               const fullPrompt = buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'full' });
+              const judgeInputHash = createHash('sha256').update(fullPrompt).digest('hex');
               const fullParsed = await callClaudeJudge(fullPrompt);
               const fullScores = {};
               for (const [key, value] of Object.entries(fullParsed.scores || {})) {
@@ -3021,7 +3048,7 @@ async function main() {
               const score = Object.keys(fullScores).length > 0
                 ? calculateDialogueQualityScore(fullScores)
                 : fullParsed.overall_score;
-              return { success: true, score, summary: fullParsed.summary };
+              return { success: true, score, summary: fullParsed.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
             } catch (err) {
               const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
               console.log(`${tag}   dialogue-quality(full) ... FAIL: ${msg}`);
@@ -3045,13 +3072,14 @@ async function main() {
             const delibTag = `${tag}   tutor-deliberation`;
             try {
               const prompt = buildTutorDeliberationPrompt(deliberationPromptParams);
+              const judgeInputHash = createHash('sha256').update(prompt).digest('hex');
               if (verbose) console.log(`${delibTag} ... calling claude`);
               const parsed = await callClaudeJudge(prompt);
               const scores = parsed.scores || {};
               const score = Object.keys(scores).length > 0
                 ? calculateDeliberationScore(scores)
                 : parsed.overall_score;
-              return { success: true, scores, score, summary: parsed.summary };
+              return { success: true, scores, score, summary: parsed.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
             } catch (err) {
               const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
               console.log(`${delibTag} ... FAIL: ${msg}`);
@@ -3064,13 +3092,14 @@ async function main() {
             const delibTag = `${tag}   learner-deliberation`;
             try {
               const prompt = buildLearnerDeliberationPrompt(deliberationPromptParams);
+              const judgeInputHash = createHash('sha256').update(prompt).digest('hex');
               if (verbose) console.log(`${delibTag} ... calling claude`);
               const parsed = await callClaudeJudge(prompt);
               const scores = parsed.scores || {};
               const score = Object.keys(scores).length > 0
                 ? calculateDeliberationScore(scores)
                 : parsed.overall_score;
-              return { success: true, scores, score, summary: parsed.summary };
+              return { success: true, scores, score, summary: parsed.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
             } catch (err) {
               const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
               console.log(`${delibTag} ... FAIL: ${msg}`);
@@ -3089,6 +3118,14 @@ async function main() {
             learnerDelibPromise,
           ]);
 
+          // ── P0 Provenance: build contentTurnId map from dialogue log ──
+          const turnContentIds = {};
+          for (const tr of turnResults) {
+            if (tr.contentTurnId) {
+              turnContentIds[tr.turnIndex ?? turnResults.indexOf(tr)] = tr.contentTurnId;
+            }
+          }
+
           // ── Process Wave 1: tutor per-turn results ──
           const tutorTurnScores = {};
           for (const settled of tutorSettled) {
@@ -3100,6 +3137,10 @@ async function main() {
               baseScore: r.baseScore,
               recognitionScore: r.recognitionScore,
               summary: r.summary,
+              judgeInputHash: r.judgeInputHash,
+              judgeTimestamp: r.judgeTimestamp,
+              judgeModel,
+              contentTurnId: turnContentIds[r.turnIndex] || null,
             };
             const dimScores = Object.entries(r.scores)
               .map(([k, v]) => `${k}=${v.score}`)
@@ -3117,6 +3158,9 @@ async function main() {
               scores: r.scores,
               overallScore: r.overallScore,
               summary: r.summary,
+              judgeInputHash: r.judgeInputHash,
+              judgeTimestamp: r.judgeTimestamp,
+              judgeModel,
             };
             const dimScores = Object.entries(r.scores || {})
               .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
@@ -3242,12 +3286,13 @@ async function main() {
                     hasRecognition,
                   });
 
+                  const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
                   if (verbose) console.log(`${holisticTutorTag} ... calling claude`);
                   const parsedHolistic = await callClaudeJudge(holisticPrompt);
                   const holisticScores = parsedHolistic.scores || {};
                   const score = calculateTutorHolisticScore(holisticScores, hasRecognition);
 
-                  return { success: true, score, holisticScores, summary: parsedHolistic.summary };
+                  return { success: true, score, holisticScores, summary: parsedHolistic.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
                 } catch (err) {
                   const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
                   console.log(`${holisticTutorTag} ... FAIL: ${msg}`);
@@ -3270,12 +3315,13 @@ async function main() {
                     topic: scenarioId,
                   });
 
+                  const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
                   if (verbose) console.log(`${holisticTag} ... calling claude`);
                   const parsedHolistic = await callClaudeJudge(holisticPrompt);
                   const holisticScores = parsedHolistic.scores || {};
                   const holisticOverallScore = calculateLearnerOverallScore(holisticScores, isMultiAgent);
 
-                  return { success: true, score: holisticOverallScore, holisticScores, summary: parsedHolistic.summary };
+                  return { success: true, score: holisticOverallScore, holisticScores, summary: parsedHolistic.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
                 } catch (err) {
                   const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
                   console.log(`${holisticTag} ... FAIL: ${msg}`);
