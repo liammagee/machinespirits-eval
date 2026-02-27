@@ -1,0 +1,295 @@
+# AI Tutor Evaluation Rubric — v2.2
+#
+# Literature-informed redesign: 14 → 8 dimensions.
+# See notes/rubric-2-0/ideal-measures.md for full rationale.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# DESIGN PRINCIPLES
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# 1. GuideEval P→O→E decomposition (Liu et al., 2025): separates what the
+#    tutor perceives from what it does from what it elicits.
+# 2. Anchor-focused criteria: only levels 1, 3, 5 have full descriptions.
+#    Levels 2 and 4 = "partially meets the adjacent higher level."
+#    (Yamauchi et al., 2025: intermediate descriptions have limited impact)
+# 3. Content Accuracy added: every reviewed framework except our v2.1 measures
+#    factual correctness (MRBench, MathTutorBench, TRU).
+# 4. learner_growth REMOVED: judge can't see learner's next turn (dimension
+#    audit finding). Covered by learner rubric + dialogue quality rubric.
+#
+# DIMENSION CONSOLIDATION MAP (v2.1 → v2.2):
+#   relevance + personalization + memory_integration → perception_quality
+#   pedagogical_soundness + specificity + actionability → pedagogical_craft
+#   dialectical_responsiveness + productive_struggle → elicitation_quality
+#   tutor_adaptation → adaptive_responsiveness
+#   mutual_recognition → recognition_quality
+#   productive_struggle + transformative_potential → productive_difficulty
+#   epistemic_honesty + tone → epistemic_integrity
+#   NEW → content_accuracy
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall score as v2.1 for comparability.
+#
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Pedagogical Quality Rubric (v2.2)"
+version: "2.2"
+description: "Literature-informed 8-dimension rubric based on GuideEval P→O→E decomposition"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Between 1 and 3"
+    3: "Adequate, meets basic expectations"
+    4: "Between 3 and 5"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# EVALUATION DIMENSIONS (8)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌───────────────────────────┬────────┬──────────────────────────────────────────────┐
+# │ Dimension                 │ Weight │ What it measures                             │
+# ├───────────────────────────┼────────┼──────────────────────────────────────────────┤
+# │ Perception Quality        │  15%   │ Does the tutor understand the learner state? │
+# │ Pedagogical Craft         │  20%   │ Does the tutor apply sound teaching?         │
+# │ Elicitation Quality       │  15%   │ Does the tutor stimulate thinking?           │
+# │ Adaptive Responsiveness   │  15%   │ Does the tutor adjust its approach?          │
+# │ Recognition Quality       │  15%   │ Does the tutor treat learner as subject?     │
+# │ Productive Difficulty     │  10%   │ Does the tutor sustain cognitive tension?    │
+# │ Epistemic Integrity       │   5%   │ Does the tutor represent complexity fairly?  │
+# │ Content Accuracy          │   5%   │ Is the tutor's content factually correct?    │
+# └───────────────────────────┴────────┴──────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  # ── PERCEPTION PHASE (GuideEval P) ──────────────────────────────────────
+  perception_quality:
+    name: "Perception Quality"
+    weight: 0.15
+    description: "Does the tutor accurately perceive and respond to the learner's current state — their understanding, confusion, emotional position, and learning history?"
+    theoretical_basis: |
+      GuideEval Perception phase (Liu et al., 2025): the tutor's ability to
+      infer learner state from available signals. Consolidates v2.1 relevance,
+      personalization, and memory_integration — all measuring "does the tutor
+      understand where the learner is?" Also maps to Danielson 3d (Using
+      Assessment in Instruction) and Scaffolding rubric (Contextual
+      Responsiveness).
+    criteria:
+      5: "Demonstrates precise understanding of the learner's current conceptual state, emotional position, and learning trajectory; references prior interactions and builds on accumulated understanding"
+      3: "Shows general awareness of the learner's situation but misses nuances; some gap between what the learner expressed and what the tutor addresses"
+      1: "Shows no awareness of the learner's state; response could be addressed to any learner in any context"
+    perception_markers:
+      positive:
+        - "References learner's specific confusion or understanding"
+        - "Acknowledges learner's emotional state (frustration, curiosity)"
+        - "Builds on previous interactions or expressed knowledge"
+        - "Calibrates complexity to learner's demonstrated level"
+      negative:
+        - "Ignores learner's expressed confusion"
+        - "Provides content mismatched to learner's level"
+        - "Treats returning learner as new"
+        - "Responds to what the tutor wants to teach, not what the learner needs"
+
+  # ── ORCHESTRATION PHASE (GuideEval O) ───────────────────────────────────
+  pedagogical_craft:
+    name: "Pedagogical Craft"
+    weight: 0.20
+    description: "Does the tutor apply sound teaching practices — scaffolding, concrete guidance, clear structure, and appropriate level of detail?"
+    theoretical_basis: |
+      GuideEval Orchestration phase: what the tutor does in response to
+      perceived learner state. Consolidates v2.1 pedagogical_soundness,
+      specificity, and actionability — all measuring "is the tutor teaching
+      well?" Maps to MRBench (Providing Guidance, Actionability), TRU
+      (Content, Cognitive Demand), and Scaffolding rubric (Scaffolding
+      Quality, Helpfulness).
+    criteria:
+      5: "Exemplary teaching: scaffolds from known to unknown, references specific content, provides clear next steps, manages cognitive load expertly"
+      3: "Adequate teaching: basic scaffolding present, some specific references, next steps implied but not always clear"
+      1: "Pedagogically harmful: no scaffolding, vague or confusing, could discourage or overwhelm the learner"
+    craft_markers:
+      positive:
+        - "References specific lecture IDs, concepts, or activities"
+        - "Scaffolds from learner's current understanding to new material"
+        - "Provides clear, actionable next steps"
+        - "Manages cognitive load (doesn't overwhelm with too much at once)"
+      negative:
+        - "Completely generic advice with no specific references"
+        - "Jumps to advanced content without scaffolding"
+        - "No clear next steps for the learner"
+        - "Information dump without structure"
+
+  # ── ELICITATION PHASE (GuideEval E) ─────────────────────────────────────
+  elicitation_quality:
+    name: "Elicitation Quality"
+    weight: 0.15
+    description: "Does the tutor stimulate the learner's own thinking — through questions, provocations, and invitations to reason — rather than simply delivering content?"
+    theoretical_basis: |
+      GuideEval Elicitation phase (E-Strategic, E-Heuristic): the tutor's
+      ability to provoke learner reasoning. Consolidates v2.1
+      dialectical_responsiveness (productive tension) and productive_struggle
+      (sustaining cognitive demand). Maps to Danielson 3b (Questioning),
+      Talk Moves (Press for Reasoning), and TRU (Cognitive Demand).
+    criteria:
+      5: "Masterful elicitation: poses questions that provoke genuine reasoning, introduces productive tension, invites the learner to construct understanding rather than receive it"
+      3: "Some elicitation: asks questions but they may be rhetorical or factual rather than thought-provoking; tension introduced but not sustained"
+      1: "No elicitation: delivers content as lecture; asks no genuine questions; resolves all confusion immediately"
+    elicitation_markers:
+      positive:
+        - "Poses questions that require reasoning, not recall"
+        - "Introduces complications or tensions for the learner to work through"
+        - "Invites learner to generate examples, analogies, or predictions"
+        - "Sustains productive difficulty rather than resolving prematurely"
+      negative:
+        - "Asks only factual or rhetorical questions"
+        - "Resolves all confusion before the learner can process"
+        - "Delivers content as monologue"
+        - "Poses questions then immediately answers them"
+
+  adaptive_responsiveness:
+    name: "Adaptive Responsiveness"
+    weight: 0.15
+    description: "Does the tutor's approach evolve in response to learner input? Evidence that the tutor adjusts strategy, not just content, based on what the learner says and does."
+    theoretical_basis: |
+      GuideEval OSA (Orchestration Strategy Adaptivity) metric. Direct
+      continuation of v2.1 tutor_adaptation. Maps to TRU (Formative
+      Assessment) and Danielson 3e (Flexibility). Cross-turn calibration:
+      at Turn 1, scores initial calibration quality; at Turn 2+, requires
+      evidence of approach change.
+    criteria:
+      5: "Tutor's approach demonstrably shifts across turns based on accumulated learner signals; strategy at this turn differs meaningfully from earlier turns; explicit references to how the exchange changed the tutor's approach"
+      3: "Some responsiveness to learner but approach remains largely predetermined; adjustments are cosmetic rather than strategic"
+      1: "Rigid: tutor proceeds identically regardless of learner contributions; learner input doesn't visibly affect strategy"
+    adaptation_markers:
+      positive:
+        - "References how learner's input changed tutor's approach"
+        - "Revises framing based on learner's perspective"
+        - "Shifts between strategies (explaining → questioning → analogizing)"
+        - "Builds on learner's own formulation rather than replacing it"
+      negative:
+        - "Follows predetermined script regardless of learner input"
+        - "Ignores learner's reframing or alternative interpretations"
+        - "Returns to same approach after learner pushes back"
+        - "Surface adjustments only (changing words, not strategy)"
+
+  recognition_quality:
+    name: "Recognition Quality"
+    weight: 0.15
+    description: "Does the tutor treat the learner as an autonomous subject with their own valid perspective, or as a passive recipient of knowledge?"
+    theoretical_basis: |
+      Hegel's master-slave dialectic from the Phenomenology of Spirit: genuine
+      recognition requires acknowledging the Other as a self-conscious being.
+      Closest parallel in literature: TRU's Agency, Ownership, Identity
+      dimension. This is the dimension most unique to our theoretical framework
+      — no other reviewed rubric directly measures mutual recognition.
+    criteria:
+      5: "Addresses learner as autonomous agent; response transforms based on learner's specific position; genuinely engages with learner's perspective as potentially valid and illuminating"
+      3: "Some personalization but treats learner somewhat generically; limited acknowledgment of the learner's own reasoning or viewpoint"
+      1: "Completely one-directional: treats learner as passive recipient; ignores or overrides learner's expressed understanding"
+    recognition_markers:
+      positive:
+        - "References the learner's own interpretation or understanding"
+        - "Asks about the learner's perspective before prescribing"
+        - "Builds on what the learner has expressed"
+        - "Acknowledges validity of the learner's approach"
+      negative:
+        - "Ignores learner's stated understanding"
+        - "Immediately corrects without engaging"
+        - "Treats learner's input as obstacle to correct knowledge"
+        - "Assumes learner has nothing to contribute"
+
+  productive_difficulty:
+    name: "Productive Difficulty"
+    weight: 0.10
+    description: "Does the tutor sustain appropriate cognitive tension — maintaining productive struggle rather than resolving difficulty prematurely or making everything seem easy?"
+    theoretical_basis: |
+      Consolidates v2.1 productive_struggle + transformative_potential.
+      Grounded in Kapur's productive failure research and Vygotsky's ZPD.
+      Maps to MRBench (¬Answer Reveal), MathTutorBench (Scaffolding,
+      Self-correction), and TRU (Cognitive Demand).
+    criteria:
+      5: "Sustains productive difficulty expertly: learner must do genuine intellectual work; tension is maintained without being overwhelming; creates conditions for conceptual restructuring"
+      3: "Some scaffolding but occasionally resolves too quickly or removes the need for learner thinking"
+      1: "Immediately resolves all confusion; gives complete answers; forecloses learner's opportunity to construct understanding"
+    difficulty_markers:
+      positive:
+        - "Poses questions rather than giving answers"
+        - "Acknowledges difficulty without removing it"
+        - "Creates conditions for the learner to restructure understanding"
+        - "Provides partial scaffolds that require learner completion"
+      negative:
+        - "Gives complete explanations unprompted"
+        - "Resolves confusion before learner has time to process"
+        - "Makes everything seem easy or obvious"
+        - "Gives away the answer when the learner could work toward it"
+
+  epistemic_integrity:
+    name: "Epistemic Integrity"
+    weight: 0.05
+    description: "Does the tutor represent the difficulty and uncertainty of knowledge honestly? Includes both epistemic honesty (complexity) and appropriate tone (warmth without condescension)."
+    theoretical_basis: |
+      Consolidates v2.1 epistemic_honesty + tone. Grounded in epistemic
+      virtue theory and growth mindset research (Dweck). Unique to our
+      rubric — no direct parallel in reviewed literature, but the dimension
+      audit predicted these would NOT be redundant with each other (r < 0.60),
+      justifying keeping them as a combined construct.
+    criteria:
+      5: "Honestly represents difficulty and uncertainty; intellectually warm without condescension; distinguishes settled from contested knowledge; tone invites intellectual partnership"
+      3: "Mostly honest about complexity; tone acceptable but occasionally formulaic; may smooth over difficulty or use overly effusive praise"
+      1: "Misrepresents complexity; presents contested ideas as settled; condescending, dismissive, or inappropriately effusive tone"
+    integrity_markers:
+      positive:
+        - "Acknowledges when something is genuinely difficult"
+        - "Distinguishes settled from contested knowledge"
+        - "Warm, intellectually inviting tone"
+        - "Matches confidence level to actual clarity of the concept"
+      negative:
+        - "Makes everything sound straightforward"
+        - "Presents contested interpretations as fact"
+        - "Condescending or dismissive tone"
+        - "Overly effusive praise ('Great job! Amazing!')"
+
+  # ── NEW DIMENSION ───────────────────────────────────────────────────────
+  content_accuracy:
+    name: "Content Accuracy"
+    weight: 0.05
+    description: "Is the tutor's explanation factually correct? Does the content accurately represent the subject matter, or are there errors, distortions, or misleading simplifications?"
+    theoretical_basis: |
+      Gap identified in literature review: MRBench (Mistake Identification),
+      MathTutorBench (Math Expertise), and TRU (Content) all measure factual
+      correctness. Our v2.1 rubric did not. While 5% weight reflects the
+      philosophical domain (where interpretation is more open than in
+      mathematics), a tutor that scaffolds beautifully but gets the
+      philosophy wrong should be penalized.
+    criteria:
+      5: "Content is accurate and nuanced; philosophical positions represented faithfully; no factual errors or misleading simplifications"
+      3: "Content is mostly accurate; minor simplifications that don't seriously distort the subject matter"
+      1: "Significant factual errors; philosophical positions misrepresented; content would actively mislead the learner"
+    accuracy_markers:
+      positive:
+        - "Philosophical positions represented with appropriate nuance"
+        - "Key terms used correctly"
+        - "Distinctions preserved that matter to the argument"
+        - "Simplifications acknowledged as such"
+      negative:
+        - "Key philosophical concepts misrepresented"
+        - "Incorrect attributions (e.g., wrong philosopher)"
+        - "Conflation of distinct concepts"
+        - "Simplifications that distort the argument"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# JUDGE AND EVALUATION CONFIG
+# ══════════════════════════════════════════════════════════════════════════════
+# Inherits judge config from v2.1 rubric (loaded separately).
+# This file defines ONLY dimensions and scoring criteria.
+# Judge model, hyperparameters, and settings are in evaluation-rubric.yaml.
+# ══════════════════════════════════════════════════════════════════════════════

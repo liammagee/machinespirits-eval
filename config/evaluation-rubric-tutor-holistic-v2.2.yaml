@@ -1,0 +1,153 @@
+# Holistic Tutor Evaluation Rubric — v2.2
+#
+# Literature-informed redesign: 6 → 3 dimensions.
+# See notes/rubric-2-0/ideal-measures.md for full rationale.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# DESIGN RATIONALE
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Consistency analysis found r = 0.907 between tutor per-turn average and
+# tutor holistic score — near-redundant. This v2.2 redesign radically
+# simplifies to 3 dimensions that capture ONLY trajectory-level patterns
+# invisible to per-turn scoring:
+#
+#   1. Pedagogical Arc — does the dialogue tell a coherent pedagogical story?
+#   2. Adaptive Trajectory — does the tutor's approach meaningfully evolve?
+#   3. Pedagogical Closure — does the dialogue end well?
+#
+# Dimensions that merely aggregate per-turn signals (productive_challenge,
+# adaptive_responsiveness as moment-to-moment, recognition_depth) are removed.
+#
+# DIMENSION MAP (v2.1 → v2.2):
+#   scaffolding_arc + conceptual_coherence → pedagogical_arc
+#   adaptive_responsiveness + recognition_depth → adaptive_trajectory
+#   pedagogical_closure → pedagogical_closure (kept)
+#   productive_challenge → REMOVED (captured by per-turn)
+#
+# Recognition sensitivity: The "Recognition Depth" v2.1 dimension is absorbed
+# into Adaptive Trajectory. For recognition cells, the trajectory criteria
+# specifically require evidence of deepening mutual recognition across turns.
+# No separate recognition dimension or weight redistribution needed.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall score.
+#
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Holistic Tutor Evaluation Rubric (v2.2)"
+version: "2.2"
+description: "Arc-focused 3-dimension rubric for evaluating tutor trajectory across full multi-turn interactions"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Between 1 and 3"
+    3: "Adequate, meets basic expectations"
+    4: "Between 3 and 5"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TUTOR HOLISTIC DIMENSIONS (3)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌──────────────────────────┬────────┬──────────────────────────────────────────────┐
+# │ Dimension                │ Weight │ What it measures                             │
+# ├──────────────────────────┼────────┼──────────────────────────────────────────────┤
+# │ Pedagogical Arc          │  40%   │ Coherent pedagogical story across dialogue   │
+# │ Adaptive Trajectory      │  35%   │ Meaningful evolution of tutor approach       │
+# │ Pedagogical Closure      │  25%   │ Appropriate ending + learning consolidation  │
+# └──────────────────────────┴────────┴──────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  pedagogical_arc:
+    name: "Pedagogical Arc"
+    weight: 0.40
+    description: "Does the dialogue tell a coherent pedagogical story? Is there a logical progression from opening to development, with scaffolding that builds meaningfully across turns rather than repeating or circling?"
+    theoretical_basis: |
+      Consolidates v2.1 scaffolding_arc + conceptual_coherence. These
+      two dimensions both measure "does the dialogue have a coherent
+      trajectory?" — scaffolding from the teaching perspective, coherence
+      from the content perspective. Maps to Alexander's Cumulative and
+      Purposeful principles, and Danielson Domain 1 (Planning). This
+      construct can ONLY be assessed by seeing the full dialogue, making
+      it genuinely distinct from per-turn scoring.
+    criteria:
+      5: "Masterful pedagogical arc: clear opening that establishes direction, development that builds scaffolding progressively, content that connects logically across turns; the dialogue feels purposeful and cumulative — each turn extends the previous"
+      3: "Recognizable arc but with gaps: some turns feel disconnected or repetitive; scaffolding present but not always progressive; the dialogue generally moves forward but has detours"
+      1: "No arc: turns are disconnected; scaffolding resets each turn; no sense of cumulative building; the dialogue could be rearranged without loss"
+    arc_markers:
+      positive:
+        - "Clear opening that sets direction"
+        - "Each turn builds on previous scaffolding"
+        - "Content references connect across turns"
+        - "Gradual release of responsibility"
+      negative:
+        - "Repeats same level of scaffolding each turn"
+        - "Content disconnected between turns"
+        - "No sense of progression or direction"
+        - "Could remove turns without affecting coherence"
+
+  adaptive_trajectory:
+    name: "Adaptive Trajectory"
+    weight: 0.35
+    description: "Does the tutor's approach meaningfully evolve across the dialogue in response to learner signals? Not moment-to-moment responsiveness (per-turn), but the arc of adaptation."
+    theoretical_basis: |
+      Consolidates v2.1 adaptive_responsiveness + recognition_depth. Both
+      measure "does the tutor's approach change across the dialogue?" —
+      one from a general pedagogical lens, the other from a recognition
+      theory lens. Maps to GuideEval OSA measured over time. For recognition
+      cells, the trajectory should show deepening mutual recognition (not
+      just surface-level adaptation). This is the arc-level counterpart
+      to per-turn Adaptive Responsiveness.
+    criteria:
+      5: "Clear trajectory of adaptation: early turns exploratory, later turns strategically adjusted to what the tutor has learned about this specific learner; for recognition cells, mutual recognition visibly deepens across the dialogue"
+      3: "Some adaptation across the dialogue but approach is largely consistent; strategy adjustments are minor rather than substantive"
+      1: "No trajectory: tutor's approach at the end is identical to the beginning; no evidence the exchange changed the tutor's strategy"
+    trajectory_markers:
+      positive:
+        - "Strategy at turn N differs visibly from turn 1"
+        - "Tutor references earlier exchanges as informing current approach"
+        - "Scaffolding strategy evolves based on learner's demonstrated needs"
+        - "For recognition cells: recognition deepens across the dialogue"
+      negative:
+        - "Same approach applied regardless of learner's evolution"
+        - "No reference to how earlier turns inform later strategy"
+        - "Surface changes only (different words, same approach)"
+        - "Adaptation happens within turns but not across them"
+
+  pedagogical_closure:
+    name: "Pedagogical Closure"
+    weight: 0.25
+    description: "Does the dialogue end appropriately? Is learning consolidated, are gaps identified, and are clear next steps provided? This is the only rubric dimension that evaluates how a dialogue concludes."
+    theoretical_basis: |
+      Unique to holistic rubric — no per-turn rubric can capture whether a
+      dialogue ends well. Pedagogical closure involves consolidating what
+      was learned, identifying remaining gaps, and providing clear direction
+      for continued learning. Elevated from 10% in v2.1 to 25% in v2.2
+      to reflect its unique status as the only closure-measuring dimension
+      across all rubrics.
+    criteria:
+      5: "Excellent closure: learning is explicitly consolidated; gaps are identified and named; clear next steps provided; the learner leaves knowing what they've learned and what comes next"
+      3: "Adequate closure: dialogue doesn't end abruptly; some summary or next steps present but may be generic; gaps not explicitly identified"
+      1: "No closure: dialogue ends mid-thread; no consolidation, no next steps; learner has no clear picture of progress or direction"
+    closure_markers:
+      positive:
+        - "Explicit summary of what was covered and learned"
+        - "Identification of remaining gaps or questions"
+        - "Clear, specific next steps"
+        - "Invites learner to articulate their own takeaways"
+      negative:
+        - "Dialogue ends mid-exchange"
+        - "No summary or consolidation"
+        - "Generic next steps ('keep studying')"
+        - "No acknowledgment of what was accomplished"

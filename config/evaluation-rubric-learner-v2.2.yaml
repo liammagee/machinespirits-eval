@@ -1,0 +1,202 @@
+# Learner-Side Evaluation Rubric — v2.2
+#
+# Literature-informed redesign: 7 → 5 dimensions.
+# See notes/rubric-2-0/ideal-measures.md for full rationale.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# DESIGN PRINCIPLES
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# 1. ICAP anchoring (Chi & Wylie, 2014): Engagement Quality explicitly mapped
+#    to Passive → Active → Constructive → Interactive hierarchy.
+# 2. Consolidation: question_quality absorbed into Engagement Quality (ICAP
+#    framework is broader — questions are one form of constructive engagement).
+# 3. persona_consistency REMOVED: 6% weight, creates tension with revision_signals.
+#    The underlying concern (learner feels real) is covered by Authenticity.
+# 4. Anchor-focused criteria: levels 1, 3, 5 fully defined.
+#
+# DIMENSION MAP (v2.1 → v2.2):
+#   conceptual_engagement + question_quality → engagement_quality (ICAP)
+#   learner_authenticity → learner_authenticity (kept)
+#   revision_signals → revision_signals (kept)
+#   conceptual_progression + metacognitive_development → conceptual_progression (merged)
+#   metacognitive_development → metacognitive_awareness (kept, reweighted)
+#   persona_consistency → REMOVED
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall score as v2.1 for comparability.
+#
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Learner Quality Rubric (v2.2)"
+version: "2.2"
+description: "ICAP-anchored 5-dimension rubric for evaluating synthetic learner turn quality"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Between 1 and 3"
+    3: "Adequate, meets basic expectations"
+    4: "Between 3 and 5"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LEARNER EVALUATION DIMENSIONS (5)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌───────────────────────────────┬────────┬─────────────────────────────────────────────┐
+# │ Dimension                     │ Weight │ What it measures                            │
+# ├───────────────────────────────┼────────┼─────────────────────────────────────────────┤
+# │ Engagement Quality (ICAP)     │  25%   │ Depth of intellectual engagement (P→A→C→I)  │
+# │ Learner Authenticity          │  25%   │ Genuine student-like reactions               │
+# │ Revision Signals              │  20%   │ Evidence of changing mind                    │
+# │ Conceptual Progression        │  20%   │ Cross-turn intellectual development          │
+# │ Metacognitive Awareness       │  10%   │ Self-monitoring of own understanding         │
+# └───────────────────────────────┴────────┴─────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  engagement_quality:
+    name: "Engagement Quality"
+    weight: 0.25
+    description: "Depth of the learner's intellectual engagement, anchored to the ICAP framework (Chi & Wylie, 2014). Encompasses both the quality of ideas expressed and the quality of questions asked."
+    theoretical_basis: |
+      Grounded in the ICAP framework (Chi & Wylie, 2014), which orders learning
+      activities by effectiveness: Interactive > Constructive > Active > Passive.
+      Consolidates v2.1 conceptual_engagement and question_quality — both measure
+      depth of intellectual engagement from different angles. ICAP provides
+      empirically validated anchors with 3,000+ citation backing. Also maps to
+      Talk Moves student codes (MClaim, ProEvi, AskMI).
+    criteria:
+      5: "Interactive: co-constructs understanding with tutor; challenges tutor's framing; integrates multiple perspectives; asks questions that redirect the inquiry; generates novel examples or applications"
+      4: "Constructive: creates own interpretations, analogies, or predictions; self-explains; asks penetrating questions that reveal deep engagement with ideas"
+      3: "Active: takes notes in own words; summarizes; asks clarification questions; engages with surface features of concepts"
+      2: "Active/Passive: minimal processing; paraphrases tutor's explanation back; asks only procedural questions ('what should I do next?')"
+      1: "Passive: receives information without processing; confirms understanding without demonstrating it; no questions or only trivial ones"
+    icap_mapping:
+      5: "Interactive — co-constructing, challenging, integrating"
+      4: "Constructive — generating, self-explaining, deep questioning"
+      3: "Active — summarizing, clarifying, engaging"
+      2: "Active/Passive — paraphrasing, procedural"
+      1: "Passive — receiving, confirming, no engagement"
+    engagement_markers:
+      positive:
+        - "Offers own interpretation or analogy"
+        - "Asks why/how/what-if questions"
+        - "Challenges the tutor's framing"
+        - "Relates concept to personal experience or other domains"
+      negative:
+        - "Paraphrases tutor's explanation back"
+        - "Asks only 'what do I do next?'"
+        - "Treats concepts as definitions to memorize"
+        - "No questions or only factual recall questions"
+
+  learner_authenticity:
+    name: "Learner Authenticity"
+    weight: 0.25
+    description: "Does the learner's response feel like a genuine student reaction? Is the confusion real, the engagement authentic, the resistance plausible?"
+    theoretical_basis: |
+      Grounded in ecological validity of simulated learner agents. A synthetic
+      learner that produces formulaic or performatively confused responses fails
+      to create the conditions for genuine pedagogical interaction. Maps to
+      MRBench (Humanlikeness). Unchanged from v2.1 except for absorbing
+      persona_consistency concerns: a learner that feels real inherently
+      maintains character-consistent behavior.
+    criteria:
+      5: "Response reads like a real student: authentic confusion, genuine curiosity, plausible emotional reactions; unpredictable in ways that reflect genuine thinking; maintains character-consistent evolution"
+      3: "Somewhat authentic but contains noticeable LLM patterns: hedging, over-qualification, artificial balance; persona present but inconsistently applied"
+      1: "Completely artificial: reads like an AI performing a student role with no authentic engagement; no evidence of assigned persona"
+    authenticity_markers:
+      positive:
+        - "Unexpected connections or tangents that feel student-like"
+        - "Imprecise language that reflects genuine confusion"
+        - "Emotional reactions proportionate to difficulty"
+        - "Character-consistent growth over the dialogue"
+      negative:
+        - "Perfectly structured responses to confused prompts"
+        - "Hedging phrases like 'that's a great question'"
+        - "Abrupt personality shifts between turns"
+        - "All learner personas sounding identical"
+
+  revision_signals:
+    name: "Revision Signals"
+    weight: 0.20
+    description: "Does the learner show evidence of changing their mind, revising prior understanding, or integrating new information into their existing framework?"
+    theoretical_basis: |
+      Based on conceptual change theory (Posner et al., 1982) and Piaget's
+      accommodation. Maps to T-SEDA B-cluster (Build on ideas). Unchanged
+      from v2.1 — this dimension had good discriminant validity.
+    criteria:
+      5: "Explicitly revises earlier positions: 'I was wrong about X', 'now I see it differently'; integrates new information into restructured understanding"
+      3: "Some revision signals but mostly additive: 'oh, and also...' rather than 'oh, instead of what I said before...'"
+      1: "No revision: maintains original position despite new information, or simply agrees without processing"
+    revision_markers:
+      positive:
+        - "'Wait, actually...'"
+        - "'I was thinking about it wrong'"
+        - "'So that means what I said before needs to change'"
+        - "'Oh! That's completely different from what I thought'"
+      negative:
+        - "'Okay, got it' (without elaboration)"
+        - "Repeating original position unchanged"
+        - "Accepting correction without integrating it"
+        - "Moving to next topic without processing"
+
+  conceptual_progression:
+    name: "Conceptual Progression"
+    weight: 0.20
+    description: "Does the learner's conceptual framework develop cumulatively across turns? Evidence of ideas building on each other, not just responding to the latest tutor input in isolation."
+    theoretical_basis: |
+      Based on learning trajectory research. Consolidates v2.1
+      conceptual_progression with elements of metacognitive_development
+      (strategic self-monitoring feeds into progression). Maps to ICAP's
+      Interactive level (sustained co-construction) and T-SEDA R-cluster
+      (Make reasoning explicit). Alexander's Cumulative principle.
+    criteria:
+      5: "Clear conceptual arc: ideas build cumulatively across turns; Turn N references and extends ideas from Turn N-2; framework visibly developing; learner tracks own progression"
+      3: "Some progression but ideas often feel turn-isolated; new insights don't always connect to prior ones"
+      1: "No progression: responses are independent of each other; no evidence of accumulating understanding"
+    progression_markers:
+      positive:
+        - "References ideas from earlier turns"
+        - "Builds on prior insights rather than starting fresh"
+        - "Conceptual framework becomes more nuanced across turns"
+        - "Reflects on how own understanding has changed"
+      negative:
+        - "Each turn responds only to the immediately preceding tutor turn"
+        - "No callbacks to earlier ideas"
+        - "Conceptual framework resets each turn"
+        - "Later responses ignore earlier insights"
+
+  metacognitive_awareness:
+    name: "Metacognitive Awareness"
+    weight: 0.10
+    description: "Does the learner show awareness of their own learning process — monitoring comprehension, identifying confusion, and strategically seeking clarification?"
+    theoretical_basis: |
+      Based on Flavell's metacognition framework and self-regulated learning
+      theory (Zimmerman). Distinctive construct: measures awareness of learning
+      process, not learning content. Maps to ICAP's self-monitoring as marker
+      of constructive engagement.
+    criteria:
+      5: "Explicit metacognitive awareness: identifies own confusion areas, monitors comprehension, strategically redirects learning; says 'I think I understand X but not Y'"
+      3: "Some metacognitive signals but mostly implicit; occasionally identifies confusion without acting on it"
+      1: "No metacognition: no evidence of monitoring own understanding; never identifies confusion or gaps"
+    metacognitive_markers:
+      positive:
+        - "Identifies specific areas of confusion"
+        - "Monitors own comprehension ('I get X but not Y')"
+        - "Strategically asks for clarification on weak points"
+        - "Reflects on own learning process"
+      negative:
+        - "Responds uniformly without self-assessment"
+        - "Follows tutor passively without monitoring understanding"
+        - "Never identifies own confusion or gaps"
+        - "No evidence of learning strategy adjustment"
