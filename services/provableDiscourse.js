@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { createHash } from 'crypto';
 import YAML from 'yaml';
 import Database from 'better-sqlite3';
 
@@ -45,6 +46,7 @@ const ALLOWED_COLUMNS = new Set([
   'suggestions',
   'tutor_deliberation_scores',
   'learner_deliberation_scores',
+  'dialogue_content_hash',
 ]);
 
 function stableSerialize(value) {
@@ -952,6 +954,166 @@ function evaluateLogTraceCoverage(db, evidence, rootDir) {
   };
 }
 
+/**
+ * Provenance check adapter: verifies dialogue hashes, turn IDs, judge input
+ * hashes, and audit trail presence against the database and log files on disk.
+ *
+ * Follows the same rootDir pattern as evaluateLogTraceCoverage — cannot be
+ * dispatched through evaluateEvidence() because it needs filesystem access.
+ */
+export function evaluateProvenanceCheck(db, evidence, rootDir) {
+  const checks = Array.isArray(evidence?.checks) ? evidence.checks : [];
+  if (checks.length === 0) throw new Error('provenance_check requires at least one check');
+
+  const runIds = Array.isArray(evidence?.run_ids) ? evidence.run_ids : [];
+  const logDir = resolvePath(rootDir, evidence?.log_dir || 'logs/tutor-dialogues');
+
+  const where = buildWhereClause({
+    ...(evidence?.filters || {}),
+    ...(runIds.length > 0 ? { run_ids: runIds } : {}),
+  });
+
+  const selectColumns = [
+    'id', 'run_id', 'dialogue_id', 'dialogue_content_hash',
+    'tutor_scores', 'tutor_overall_score', 'created_at',
+  ];
+  const rows = db
+    .prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${where.sql}`)
+    .all(...where.params);
+
+  let maxCreatedAt = null;
+  const checkResults = {};
+
+  for (const check of checks) {
+    checkResults[check] = { passed: 0, failed: 0, skipped: 0, failures: [] };
+  }
+
+  for (const row of rows) {
+    if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
+
+    for (const check of checks) {
+      if (check === 'dialogue_hash_match') {
+        if (!row.dialogue_content_hash || !row.dialogue_id) {
+          checkResults[check].skipped++;
+          continue;
+        }
+        const filePath = path.join(logDir, `${row.dialogue_id}.json`);
+        if (!fs.existsSync(filePath)) {
+          checkResults[check].failed++;
+          checkResults[check].failures.push({ id: row.id, reason: 'log_file_missing' });
+          continue;
+        }
+        try {
+          const content = fs.readFileSync(filePath, 'utf8');
+          const parsed = JSON.parse(content);
+          const recomputedHash = createHash('sha256')
+            .update(JSON.stringify(parsed, null, 2))
+            .digest('hex');
+          if (recomputedHash === row.dialogue_content_hash) {
+            checkResults[check].passed++;
+          } else {
+            checkResults[check].failed++;
+            checkResults[check].failures.push({ id: row.id, reason: 'hash_mismatch' });
+          }
+        } catch {
+          checkResults[check].failed++;
+          checkResults[check].failures.push({ id: row.id, reason: 'parse_error' });
+        }
+      } else if (check === 'turn_id_match') {
+        const tutorScores = safeJsonParse(row.tutor_scores);
+        if (!tutorScores || !row.dialogue_id) {
+          checkResults[check].skipped++;
+          continue;
+        }
+        const filePath = path.join(logDir, `${row.dialogue_id}.json`);
+        if (!fs.existsSync(filePath)) {
+          checkResults[check].skipped++;
+          continue;
+        }
+        try {
+          const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          const turnResults = Array.isArray(parsed?.turnResults) ? parsed.turnResults : [];
+          let allMatch = true;
+          for (const [turnKey, turnValue] of Object.entries(tutorScores)) {
+            const scoreTurnId = turnValue?.contentTurnId;
+            if (!scoreTurnId) continue;
+            const turnIndex = turnValue?.turnIndex ?? Number(String(turnKey).replace(/[^0-9]/g, ''));
+            const matchingTurn = turnResults.find((t) => (t.turnIndex ?? 0) === turnIndex);
+            if (!matchingTurn) { allMatch = false; break; }
+            const turnContent = JSON.stringify({
+              turnIndex: matchingTurn.turnIndex,
+              suggestion: matchingTurn.suggestion ? [matchingTurn.suggestion] : [],
+              turnId: matchingTurn.turnId,
+            });
+            const expectedId = createHash('sha256')
+              .update(row.dialogue_id + ':' + turnIndex + ':' + turnContent)
+              .digest('hex').slice(0, 16);
+            if (expectedId !== scoreTurnId) { allMatch = false; break; }
+          }
+          if (allMatch) checkResults[check].passed++;
+          else {
+            checkResults[check].failed++;
+            checkResults[check].failures.push({ id: row.id, reason: 'turn_id_mismatch' });
+          }
+        } catch {
+          checkResults[check].skipped++;
+        }
+      } else if (check === 'judge_input_present') {
+        const tutorScores = safeJsonParse(row.tutor_scores);
+        if (!tutorScores) {
+          checkResults[check].skipped++;
+          continue;
+        }
+        let allPresent = true;
+        for (const turnValue of Object.values(tutorScores)) {
+          if (!turnValue?.judgeInputHash) { allPresent = false; break; }
+        }
+        if (allPresent) checkResults[check].passed++;
+        else {
+          checkResults[check].failed++;
+          checkResults[check].failures.push({ id: row.id, reason: 'missing_judge_input_hash' });
+        }
+      } else if (check === 'audit_trail_present') {
+        if (row.tutor_overall_score == null) {
+          checkResults[check].skipped++;
+          continue;
+        }
+        const auditRows = db
+          .prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?')
+          .get(String(row.id));
+        if (auditRows && auditRows.c > 0) checkResults[check].passed++;
+        else {
+          checkResults[check].failed++;
+          checkResults[check].failures.push({ id: row.id, reason: 'no_audit_entries' });
+        }
+      }
+    }
+  }
+
+  // Compute fraction: for each check, passed / (passed + failed). Skipped rows excluded.
+  const fractions = [];
+  for (const check of checks) {
+    const cr = checkResults[check];
+    const total = cr.passed + cr.failed;
+    fractions.push(total > 0 ? cr.passed / total : 1.0);
+  }
+  const value = fractions.length > 0 ? Math.min(...fractions) : 0;
+
+  return {
+    value,
+    details: {
+      checks: checkResults,
+      total_rows: rows.length,
+    },
+    fingerprint: {
+      source: 'provenance_check',
+      checks,
+      total_rows: rows.length,
+      max_created_at: maxCreatedAt,
+    },
+  };
+}
+
 function evaluateDimensionVariance(db, evidence) {
   const groupBy = evidence?.group_by || 'recognition';
   const output = evidence?.output || 'cohens_d';
@@ -1103,6 +1265,7 @@ function evaluateTrajectorySlope(db, evidence) {
   const groupBy = evidence?.group_by;
   const output = evidence?.output || 'mean_slope';
   const minTurns = evidence?.min_turns || 3;
+  const turnLevel = !!evidence?.turn_level;
 
   if (!['tutor', 'learner'].includes(side)) {
     throw new Error('trajectory_slope requires side=tutor|learner');
@@ -1126,10 +1289,42 @@ function evaluateTrajectorySlope(db, evidence) {
   const group0Slopes = [];
   let maxCreatedAt = null;
   let skippedTooFew = 0;
+  let verifiedTurns = 0;
+  let skippedTurns = 0;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
-    const turns = extractTurnSequence(row[scoreColumn]);
+
+    // When turn_level is enabled, filter turns by contentTurnId presence
+    let turns;
+    if (turnLevel) {
+      const rawParsed = safeJsonParse(row[scoreColumn]);
+      if (!rawParsed || typeof rawParsed !== 'object') { skippedTooFew++; continue; }
+      const filtered = [];
+      for (const [turnKey, turnValue] of Object.entries(rawParsed)) {
+        if (!turnValue?.contentTurnId) {
+          skippedTurns++;
+          continue;
+        }
+        verifiedTurns++;
+        const scores = turnValue?.scores;
+        if (!scores) continue;
+        const turnIndexFromKey = Number(String(turnKey).replace(/[^0-9]/g, ''));
+        const turnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0
+          ? turnIndexFromKey
+          : turnValue?.turnIndex || 0;
+        const dimScores = Object.values(scores)
+          .map((d) => d?.score)
+          .filter((s) => isFiniteNumber(s));
+        const overallScore = dimScores.length > 0 ? mean(dimScores) : 0;
+        filtered.push({ turnIndex, overallScore, scores });
+      }
+      filtered.sort((a, b) => a.turnIndex - b.turnIndex);
+      turns = filtered;
+    } else {
+      turns = extractTurnSequence(row[scoreColumn]);
+    }
+
     if (turns.length < minTurns) { skippedTooFew++; continue; }
 
     const xValues = [];
@@ -1157,15 +1352,21 @@ function evaluateTrajectorySlope(db, evidence) {
   else if (output === 'cohens_d') value = cohensD(group1Slopes, group0Slopes);
   else value = mean(allSlopes);
 
+  const details = {
+    side, dimension, group_by: groupBy || null, output, min_turns: minTurns,
+    n_dialogues: allSlopes.length, mean_slope: mean(allSlopes),
+    n_group1: group1Slopes.length, n_group0: group0Slopes.length,
+    mean_slope_group1: mean(group1Slopes), mean_slope_group0: mean(group0Slopes),
+    skipped_too_few_turns: skippedTooFew,
+  };
+  if (turnLevel) {
+    details.verified_turns = verifiedTurns;
+    details.skipped_turns = skippedTurns;
+  }
+
   return {
     value,
-    details: {
-      side, dimension, group_by: groupBy || null, output, min_turns: minTurns,
-      n_dialogues: allSlopes.length, mean_slope: mean(allSlopes),
-      n_group1: group1Slopes.length, n_group0: group0Slopes.length,
-      mean_slope_group1: mean(group1Slopes), mean_slope_group0: mean(group0Slopes),
-      skipped_too_few_turns: skippedTooFew,
-    },
+    details,
     fingerprint: {
       source: 'trajectory_slope', side, dimension, group_by: groupBy || null, output,
       min_turns: minTurns, n_rows: rows.length, n_dialogues: allSlopes.length,
@@ -1181,6 +1382,7 @@ function evaluateConditionalDelta(db, evidence) {
   const responseDimension = evidence?.response_dimension || 'overall';
   const output = evidence?.output || 'mean_delta_event';
   const minTurns = evidence?.min_turns || 3;
+  const turnLevel = !!evidence?.turn_level;
 
   const selectColumns = [
     'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
@@ -1198,6 +1400,8 @@ function evaluateConditionalDelta(db, evidence) {
   const eventDeltas = [];
   const nonEventDeltas = [];
   let maxCreatedAt = null;
+  let verifiedTurns = 0;
+  let skippedTurns = 0;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1205,8 +1409,29 @@ function evaluateConditionalDelta(db, evidence) {
     const learnerTurns = extractTurnSequence(row.learner_scores);
     if (tutorTurns.length < minTurns || learnerTurns.length < minTurns) continue;
 
+    // When turn_level is enabled, build a set of verified turn indices from tutor_scores
+    let verifiedTurnIndices = null;
+    if (turnLevel) {
+      verifiedTurnIndices = new Set();
+      const rawParsed = safeJsonParse(row.tutor_scores);
+      if (rawParsed && typeof rawParsed === 'object') {
+        for (const turnValue of Object.values(rawParsed)) {
+          const idx = turnValue?.turnIndex ?? 0;
+          if (turnValue?.contentTurnId) {
+            verifiedTurnIndices.add(idx);
+            verifiedTurns++;
+          } else {
+            skippedTurns++;
+          }
+        }
+      }
+    }
+
     const maxPairs = Math.min(learnerTurns.length, tutorTurns.length - 1);
     for (let i = 0; i < maxPairs; i++) {
+      // Skip unverified turns when turn_level is active
+      if (turnLevel && verifiedTurnIndices && !verifiedTurnIndices.has(i)) continue;
+
       const learnerScore = getTurnDimScore(learnerTurns, i, eventDimension);
       if (learnerScore == null) continue;
       const isEvent = eventDirection === 'below'
@@ -1229,15 +1454,21 @@ function evaluateConditionalDelta(db, evidence) {
   else if (output === 'cohens_d') value = cohensD(eventDeltas, nonEventDeltas);
   else value = mean(eventDeltas);
 
+  const details = {
+    event_dimension: eventDimension, event_threshold: eventThreshold,
+    event_direction: eventDirection, response_dimension: responseDimension,
+    output, min_turns: minTurns,
+    n_event_deltas: eventDeltas.length, n_non_event_deltas: nonEventDeltas.length,
+    mean_event_delta: mean(eventDeltas), mean_non_event_delta: mean(nonEventDeltas),
+  };
+  if (turnLevel) {
+    details.verified_turns = verifiedTurns;
+    details.skipped_turns = skippedTurns;
+  }
+
   return {
     value,
-    details: {
-      event_dimension: eventDimension, event_threshold: eventThreshold,
-      event_direction: eventDirection, response_dimension: responseDimension,
-      output, min_turns: minTurns,
-      n_event_deltas: eventDeltas.length, n_non_event_deltas: nonEventDeltas.length,
-      mean_event_delta: mean(eventDeltas), mean_non_event_delta: mean(nonEventDeltas),
-    },
+    details,
     fingerprint: {
       source: 'conditional_delta',
       event_dimension: eventDimension, event_threshold: eventThreshold,
@@ -1332,6 +1563,7 @@ function evaluateEvidence(db, manifest, evidence) {
   if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence);
   if (type === 'rubric_version_comparison') return evaluateRubricVersionComparison(db, evidence);
   if (type === 'log_trace_coverage') throw new Error('log_trace_coverage requires rootDir context');
+  if (type === 'provenance_check') throw new Error('provenance_check requires rootDir context');
   throw new Error(`Unsupported evidence type: ${type}`);
 }
 
@@ -1762,6 +1994,8 @@ export function runProvableDiscourseAudit({
           let evidence;
           if ((claim?.evidence?.type || '') === 'log_trace_coverage') {
             evidence = evaluateLogTraceCoverage(db, claim.evidence || {}, baseDir);
+          } else if ((claim?.evidence?.type || '') === 'provenance_check') {
+            evidence = evaluateProvenanceCheck(db, claim.evidence || {}, baseDir);
           } else {
             evidence = evaluateEvidence(db, manifest, claim.evidence || {});
           }

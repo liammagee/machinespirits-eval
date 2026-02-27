@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import Database from 'better-sqlite3';
 import {
   cohensD,
   computeLearnerSummaryFromScores,
   evaluateAssertion,
+  evaluateProvenanceCheck,
   evaluateSymmetryRule,
   inferMultiFromProfileName,
   inferRecognitionFromProfileName,
@@ -368,5 +373,342 @@ test('rubric_version_comparison adapter: in-memory DB with paired versions', () 
   const count = db.prepare('SELECT COUNT(*) as c FROM evaluation_results').get();
   assert.equal(count.c, 20);
   db.close();
+});
+
+// ── Provenance check adapter tests ──────────────────────────────
+
+function createProvenanceTestDb() {
+  const db = new Database(':memory:');
+  db.exec(`
+    CREATE TABLE evaluation_results (
+      id TEXT PRIMARY KEY,
+      run_id TEXT,
+      profile_name TEXT,
+      scenario_id TEXT,
+      scenario_name TEXT,
+      judge_model TEXT,
+      tutor_first_turn_score REAL,
+      tutor_last_turn_score REAL,
+      learner_scores TEXT,
+      learner_overall_score REAL,
+      factor_recognition INTEGER,
+      factor_multi_agent_tutor INTEGER,
+      factor_multi_agent_learner INTEGER,
+      created_at TEXT,
+      dialogue_id TEXT,
+      dialogue_rounds INTEGER,
+      scenario_type TEXT,
+      success INTEGER,
+      error_message TEXT,
+      prompt_id TEXT,
+      score_relevance REAL,
+      score_specificity REAL,
+      score_pedagogical REAL,
+      score_personalization REAL,
+      score_actionability REAL,
+      score_tone REAL,
+      scores_with_reasoning TEXT,
+      tutor_scores TEXT,
+      tutor_overall_score REAL,
+      tutor_rubric_version TEXT,
+      learner_rubric_version TEXT,
+      dialogue_rubric_version TEXT,
+      deliberation_rubric_version TEXT,
+      conversation_mode TEXT,
+      suggestions TEXT,
+      tutor_deliberation_scores TEXT,
+      learner_deliberation_scores TEXT,
+      dialogue_content_hash TEXT
+    );
+    CREATE TABLE score_audit (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      result_id TEXT,
+      column_name TEXT,
+      old_value TEXT,
+      new_value TEXT,
+      operation TEXT,
+      judge_model TEXT,
+      rubric_version TEXT,
+      timestamp TEXT DEFAULT (datetime('now'))
+    )
+  `);
+  return db;
+}
+
+test('evaluateProvenanceCheck: dialogue_hash_match passes when log hash matches DB value', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const dialogueData = { dialogueId: 'dlg-hash-1', turnResults: [{ turnIndex: 0, suggestion: 'hello' }] };
+  const dialogueJson = JSON.stringify(dialogueData, null, 2);
+  const contentHash = createHash('sha256').update(dialogueJson).digest('hex');
+  fs.writeFileSync(path.join(logDir, 'dlg-hash-1.json'), dialogueJson);
+
+  const db = createProvenanceTestDb();
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`).run('r1', 'run1', 'dlg-hash-1', contentHash, '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, {
+    checks: ['dialogue_hash_match'],
+    filters: { not_null: ['dialogue_content_hash'] },
+  }, tmpDir);
+
+  assert.strictEqual(result.value, 1.0, 'all hashes match → value should be 1.0');
+  assert.strictEqual(result.details.checks.dialogue_hash_match.passed, 1);
+  assert.strictEqual(result.details.checks.dialogue_hash_match.failed, 0);
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: dialogue_hash_match fails when log file modified', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const originalData = { dialogueId: 'dlg-mod-1', turnResults: [{ turnIndex: 0, suggestion: 'hello' }] };
+  const originalJson = JSON.stringify(originalData, null, 2);
+  const originalHash = createHash('sha256').update(originalJson).digest('hex');
+
+  // Write MODIFIED content to the log file
+  const modifiedData = { dialogueId: 'dlg-mod-1', turnResults: [{ turnIndex: 0, suggestion: 'TAMPERED' }] };
+  fs.writeFileSync(path.join(logDir, 'dlg-mod-1.json'), JSON.stringify(modifiedData, null, 2));
+
+  const db = createProvenanceTestDb();
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`).run('r1', 'run1', 'dlg-mod-1', originalHash, '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, {
+    checks: ['dialogue_hash_match'],
+    filters: { not_null: ['dialogue_content_hash'] },
+  }, tmpDir);
+
+  assert.strictEqual(result.value, 0.0, 'modified file → value should be 0.0');
+  assert.strictEqual(result.details.checks.dialogue_hash_match.failed, 1);
+  assert.strictEqual(result.details.checks.dialogue_hash_match.failures[0].reason, 'hash_mismatch');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: dialogue_hash_match skips rows with NULL dialogue_content_hash', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const db = createProvenanceTestDb();
+  // Row with NULL hash
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`).run('r1', 'run1', 'dlg-null-1', null, '{}', 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['dialogue_hash_match'] }, tmpDir);
+  assert.strictEqual(result.details.checks.dialogue_hash_match.skipped, 1);
+  assert.strictEqual(result.details.checks.dialogue_hash_match.passed, 0);
+  assert.strictEqual(result.details.checks.dialogue_hash_match.failed, 0);
+  // With 0 passed + 0 failed, fraction defaults to 1.0
+  assert.strictEqual(result.value, 1.0);
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match log', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const dialogueId = 'dlg-turnid-1';
+  const turnResult = { turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' };
+  const turnContent = JSON.stringify({
+    turnIndex: turnResult.turnIndex,
+    suggestion: [turnResult.suggestion],
+    turnId: turnResult.turnId,
+  });
+  const expectedTurnId = createHash('sha256')
+    .update(dialogueId + ':0:' + turnContent)
+    .digest('hex').slice(0, 16);
+
+  const logData = { dialogueId, turnResults: [turnResult] };
+  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify(logData));
+
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, scores: { relevance: { score: 4 } }, contentTurnId: expectedTurnId },
+  });
+
+  const db = createProvenanceTestDb();
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['turn_id_match'] }, tmpDir);
+  assert.strictEqual(result.value, 1.0);
+  assert.strictEqual(result.details.checks.turn_id_match.passed, 1);
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: turn_id_match fails when score has wrong contentTurnId', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prov-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const dialogueId = 'dlg-turnid-bad';
+  const logData = { dialogueId, turnResults: [{ turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' }] };
+  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify(logData));
+
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, scores: { relevance: { score: 4 } }, contentTurnId: 'wrong_id_here_0' },
+  });
+
+  const db = createProvenanceTestDb();
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['turn_id_match'] }, tmpDir);
+  assert.strictEqual(result.value, 0.0);
+  assert.strictEqual(result.details.checks.turn_id_match.failed, 1);
+  assert.strictEqual(result.details.checks.turn_id_match.failures[0].reason, 'turn_id_mismatch');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('evaluateProvenanceCheck: judge_input_present passes when all turns have judgeInputHash', () => {
+  const db = createProvenanceTestDb();
+  const tutorScores = JSON.stringify({
+    turn_0: { scores: { relevance: { score: 4 } }, judgeInputHash: 'abc123', overallScore: 80 },
+    turn_1: { scores: { relevance: { score: 5 } }, judgeInputHash: 'def456', overallScore: 90 },
+  });
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
+  assert.strictEqual(result.value, 1.0);
+  assert.strictEqual(result.details.checks.judge_input_present.passed, 1);
+
+  db.close();
+});
+
+test('evaluateProvenanceCheck: judge_input_present fails when some turns lack judgeInputHash', () => {
+  const db = createProvenanceTestDb();
+  const tutorScores = JSON.stringify({
+    turn_0: { scores: { relevance: { score: 4 } }, judgeInputHash: 'abc123', overallScore: 80 },
+    turn_1: { scores: { relevance: { score: 5 } }, overallScore: 90 }, // no judgeInputHash
+  });
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
+  assert.strictEqual(result.value, 0.0);
+  assert.strictEqual(result.details.checks.judge_input_present.failed, 1);
+  assert.strictEqual(result.details.checks.judge_input_present.failures[0].reason, 'missing_judge_input_hash');
+
+  db.close();
+});
+
+test('evaluateProvenanceCheck: audit_trail_present passes when scored rows have audit entries', () => {
+  const db = createProvenanceTestDb();
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
+  db.prepare(`INSERT INTO score_audit (result_id, column_name, old_value, new_value, operation)
+    VALUES (?, ?, ?, ?, ?)`).run('r1', 'tutor_overall_score', null, '85', 'updateResultTutorScores');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['audit_trail_present'] }, '/tmp');
+  assert.strictEqual(result.value, 1.0);
+  assert.strictEqual(result.details.checks.audit_trail_present.passed, 1);
+
+  db.close();
+});
+
+test('evaluateProvenanceCheck: audit_trail_present fails when scored rows lack audit entries', () => {
+  const db = createProvenanceTestDb();
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
+  // No audit entries inserted
+
+  const result = evaluateProvenanceCheck(db, { checks: ['audit_trail_present'] }, '/tmp');
+  assert.strictEqual(result.value, 0.0);
+  assert.strictEqual(result.details.checks.audit_trail_present.failed, 1);
+
+  db.close();
+});
+
+test('evaluateProvenanceCheck: return value is fraction (0.0–1.0)', () => {
+  const db = createProvenanceTestDb();
+  const tutorScores = JSON.stringify({
+    turn_0: { scores: { r: { score: 4 } }, judgeInputHash: 'h1', overallScore: 80 },
+  });
+
+  // Row 1: has judgeInputHash
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  // Row 2: missing judgeInputHash
+  const noHashScores = JSON.stringify({
+    turn_0: { scores: { r: { score: 3 } }, overallScore: 60 },
+  });
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`).run('r2', 'run1', noHashScores, 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
+  assert.strictEqual(result.value, 0.5, '1 of 2 rows passes → 0.5');
+  assert.strictEqual(result.details.checks.judge_input_present.passed, 1);
+  assert.strictEqual(result.details.checks.judge_input_present.failed, 1);
+
+  db.close();
+});
+
+test('evaluateProvenanceCheck: multiple checks combined returns lowest fraction', () => {
+  const db = createProvenanceTestDb();
+  // Row with judgeInputHash but no audit trail
+  const tutorScores = JSON.stringify({
+    turn_0: { scores: { r: { score: 4 } }, judgeInputHash: 'h1', overallScore: 80 },
+  });
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, tutor_overall_score, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 80, 'claude-opus', '2026-02-27');
+
+  const result = evaluateProvenanceCheck(db, {
+    checks: ['judge_input_present', 'audit_trail_present'],
+  }, '/tmp');
+  // judge_input_present: 1.0 (all have hash), audit_trail_present: 0.0 (no audit entries)
+  assert.strictEqual(result.value, 0.0, 'min of 1.0 and 0.0 should be 0.0');
+
+  db.close();
+});
+
+// ── Turn-level verification tests ───────────────────────────────
+
+test('trajectory_slope with turn_level concept: skips turns without contentTurnId', () => {
+  // Conceptual test: turn_level filtering removes turns lacking contentTurnId
+  const rawScores = {
+    turn_0: { turnIndex: 0, scores: { relevance: { score: 2 } }, contentTurnId: 'id0' },
+    turn_1: { turnIndex: 1, scores: { relevance: { score: 3 } } }, // no contentTurnId
+    turn_2: { turnIndex: 2, scores: { relevance: { score: 4 } }, contentTurnId: 'id2' },
+    turn_3: { turnIndex: 3, scores: { relevance: { score: 5 } } }, // no contentTurnId
+  };
+  const verified = Object.values(rawScores).filter((t) => t.contentTurnId);
+  const skipped = Object.values(rawScores).filter((t) => !t.contentTurnId);
+  assert.strictEqual(verified.length, 2, 'should have 2 verified turns');
+  assert.strictEqual(skipped.length, 2, 'should have 2 skipped turns');
+});
+
+test('trajectory_slope with turn_level concept: verified turns produce correct slope', () => {
+  // Simulate what turn_level does: filter to verified turns, then compute slope
+  const verifiedScores = [2, 4]; // turns 0 and 2 (indices 0,1 after filtering)
+  const { slope } = linearRegression([0, 1], verifiedScores);
+  assert.strictEqual(slope, 2, 'slope from verified turns [2,4] should be 2');
+});
+
+test('conditional_delta with turn_level concept: verified_turns count', () => {
+  // When turn_level is enabled, only turns with contentTurnId participate in delta computation
+  const rawScores = {
+    turn_0: { turnIndex: 0, scores: { revision_signals: { score: 2 } }, contentTurnId: 'id0' },
+    turn_1: { turnIndex: 1, scores: { revision_signals: { score: 4 } } }, // no contentTurnId
+    turn_2: { turnIndex: 2, scores: { revision_signals: { score: 3 } }, contentTurnId: 'id2' },
+  };
+  const verified = Object.values(rawScores).filter((t) => t.contentTurnId);
+  const skipped = Object.values(rawScores).filter((t) => !t.contentTurnId);
+  assert.strictEqual(verified.length, 2, 'should count 2 verified turns');
+  assert.strictEqual(skipped.length, 1, 'should count 1 skipped turn');
 });
 

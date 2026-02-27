@@ -257,6 +257,73 @@ claims:
     remediation:
       - "If mean delta exceeds 15 points, rubric versions may not be comparable for cross-version claims."
 
+  # ── Provenance verification ────────────────────────────────────
+  - id: paper2.provenance.dialogue_hashes
+    description: "All scored dialogues have matching content hashes."
+    source_keys:
+      - "stat|0|dialogue provenance"
+    statement:
+      pattern: "content.hash"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: provenance_check
+      checks:
+        - dialogue_hash_match
+      filters:
+        not_null: [dialogue_content_hash, tutor_scores]
+        like:
+          judge_model: "%claude%"
+    assertion:
+      op: gte
+      expected: 0.95
+    remediation:
+      - "If hash match rate drops below 95%, investigate log file modifications."
+
+  - id: paper2.provenance.judge_input_hashes
+    description: "All per-turn scores include judge input hashes."
+    source_keys:
+      - "stat|0|judge input provenance"
+    statement:
+      pattern: "judge.input.hash"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: provenance_check
+      checks:
+        - judge_input_present
+      filters:
+        not_null: [tutor_scores]
+        like:
+          judge_model: "%claude%"
+    assertion:
+      op: gte
+      expected: 0.95
+    remediation:
+      - "Rows scored before provenance implementation will lack hashes. Only new runs should reach 100%."
+
+  - id: paper2.provenance.audit_trail
+    description: "All scored rows have audit trail entries."
+    source_keys:
+      - "stat|0|audit trail coverage"
+    statement:
+      pattern: "audit trail"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: provenance_check
+      checks:
+        - audit_trail_present
+      filters:
+        not_null: [tutor_overall_score]
+        like:
+          judge_model: "%claude%"
+    assertion:
+      op: gte
+      expected: 0.90
+    remediation:
+      - "Rows scored before provenance implementation lack audit entries. Only new scoring operations create them."
+
 symmetry_rules:
   - id: symmetry.calibration.cluster_gradient
     type: difference_gte
