@@ -10,7 +10,6 @@ import {
   inferRecognitionFromProfileName,
   linearRegression,
   pearsonCorrelation,
-  runProvableDiscourseAudit,
 } from '../services/provableDiscourse.js';
 
 test('inferRecognitionFromProfileName classifies canonical names', () => {

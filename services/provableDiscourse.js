@@ -1518,7 +1518,7 @@ function normalizeClaimTextForKey(claimText) {
   text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
   text = text.replace(/\s+/g, ' ');
   text = text.replace(/\s*([=<>≈])\s*/g, '$1');
-  text = text.replace(/[,\.;:]+$/g, '');
+  text = text.replace(/[,.;:]+$/g, '');
   return text;
 }
 
