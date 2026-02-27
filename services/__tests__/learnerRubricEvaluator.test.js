@@ -34,18 +34,18 @@ describe('loadLearnerRubric', () => {
     assert.strictEqual(first, second, 'should return same cached reference');
   });
 
-  it('contains all 8 expected dimensions', () => {
+  it('contains all 7 expected dimensions (deliberation_depth moved to deliberation rubric)', () => {
     const rubric = loadLearnerRubric({ forceReload: true });
     const keys = Object.keys(rubric.dimensions);
     assert.ok(keys.includes('learner_authenticity'));
     assert.ok(keys.includes('question_quality'));
     assert.ok(keys.includes('conceptual_engagement'));
     assert.ok(keys.includes('revision_signals'));
-    assert.ok(keys.includes('deliberation_depth'));
+    assert.ok(!keys.includes('deliberation_depth'), 'deliberation_depth should not be in learner rubric');
     assert.ok(keys.includes('persona_consistency'));
     assert.ok(keys.includes('conceptual_progression'));
     assert.ok(keys.includes('metacognitive_development'));
-    assert.strictEqual(keys.length, 8);
+    assert.strictEqual(keys.length, 7);
   });
 
   it('each dimension has name, weight, description, and criteria', () => {
@@ -70,35 +70,34 @@ describe('loadLearnerRubric', () => {
 // ============================================================================
 
 describe('getLearnerDimensions', () => {
-  it('returns all 8 dimensions for multi-agent learners', () => {
-    const dims = getLearnerDimensions({ isMultiAgent: true });
-    assert.strictEqual(Object.keys(dims).length, 8);
-    assert.ok('deliberation_depth' in dims);
-    assert.ok('conceptual_progression' in dims);
-    assert.ok('metacognitive_development' in dims);
+  it('returns 7 dimensions for all architectures (deliberation_depth moved to deliberation rubric)', () => {
+    const multiDims = getLearnerDimensions({ isMultiAgent: true });
+    const singleDims = getLearnerDimensions({ isMultiAgent: false });
+    assert.strictEqual(Object.keys(multiDims).length, 7);
+    assert.strictEqual(Object.keys(singleDims).length, 7);
+    assert.ok(!('deliberation_depth' in multiDims));
+    assert.ok(!('deliberation_depth' in singleDims));
+    assert.ok('conceptual_progression' in multiDims);
+    assert.ok('metacognitive_development' in multiDims);
   });
 
-  it('returns 7 dimensions for single-agent learners (excludes deliberation_depth)', () => {
-    const dims = getLearnerDimensions({ isMultiAgent: false });
-    assert.strictEqual(Object.keys(dims).length, 7);
-    assert.ok(!('deliberation_depth' in dims));
-    assert.ok('conceptual_progression' in dims);
-    assert.ok('metacognitive_development' in dims);
+  it('returns same dimensions regardless of isMultiAgent flag', () => {
+    const multi = getLearnerDimensions({ isMultiAgent: true });
+    const single = getLearnerDimensions({ isMultiAgent: false });
+    assert.deepStrictEqual(Object.keys(multi), Object.keys(single));
   });
 
-  it('defaults to single-agent when no options provided', () => {
+  it('defaults to 7 dimensions when no options provided', () => {
     const dims = getLearnerDimensions();
     assert.strictEqual(Object.keys(dims).length, 7);
     assert.ok(!('deliberation_depth' in dims));
   });
 
   it('does not mutate the cached rubric', () => {
-    // Get single-agent dims (which deletes deliberation_depth from a copy)
     getLearnerDimensions({ isMultiAgent: false });
-    // Then get multi-agent — should still have all 8
     const multiDims = getLearnerDimensions({ isMultiAgent: true });
-    assert.strictEqual(Object.keys(multiDims).length, 8);
-    assert.ok('deliberation_depth' in multiDims);
+    assert.strictEqual(Object.keys(multiDims).length, 7);
+    assert.ok('learner_authenticity' in multiDims);
   });
 });
 
@@ -107,33 +106,33 @@ describe('getLearnerDimensions', () => {
 // ============================================================================
 
 describe('calculateLearnerOverallScore', () => {
-  // Rubric weights are 0.20, 0.20, 0.20, 0.15, 0.15, 0.10 — these don't sum
-  // to exactly 1.0 in IEEE 754, so use approximate comparison for score results.
   const approxEqual = (actual, expected, msg) => {
     assert.ok(Math.abs(actual - expected) < 0.01, `${msg || 'approxEqual'}: expected ~${expected}, got ${actual}`);
   };
 
-  it('returns ~100 when all scores are 5 (multi-agent)', () => {
+  it('returns ~100 when all scores are 5', () => {
     const scores = {
       learner_authenticity: { score: 5, reasoning: 'test' },
       question_quality: { score: 5, reasoning: 'test' },
       conceptual_engagement: { score: 5, reasoning: 'test' },
       revision_signals: { score: 5, reasoning: 'test' },
-      deliberation_depth: { score: 5, reasoning: 'test' },
       persona_consistency: { score: 5, reasoning: 'test' },
+      conceptual_progression: { score: 5, reasoning: 'test' },
+      metacognitive_development: { score: 5, reasoning: 'test' },
     };
     const result = calculateLearnerOverallScore(scores, true);
     approxEqual(result, 100);
   });
 
-  it('returns 0 when all scores are 1 (multi-agent)', () => {
+  it('returns 0 when all scores are 1', () => {
     const scores = {
       learner_authenticity: { score: 1, reasoning: 'test' },
       question_quality: { score: 1, reasoning: 'test' },
       conceptual_engagement: { score: 1, reasoning: 'test' },
       revision_signals: { score: 1, reasoning: 'test' },
-      deliberation_depth: { score: 1, reasoning: 'test' },
       persona_consistency: { score: 1, reasoning: 'test' },
+      conceptual_progression: { score: 1, reasoning: 'test' },
+      metacognitive_development: { score: 1, reasoning: 'test' },
     };
     const result = calculateLearnerOverallScore(scores, true);
     approxEqual(result, 0);
@@ -145,35 +144,42 @@ describe('calculateLearnerOverallScore', () => {
       question_quality: { score: 3, reasoning: 'test' },
       conceptual_engagement: { score: 3, reasoning: 'test' },
       revision_signals: { score: 3, reasoning: 'test' },
-      deliberation_depth: { score: 3, reasoning: 'test' },
       persona_consistency: { score: 3, reasoning: 'test' },
+      conceptual_progression: { score: 3, reasoning: 'test' },
+      metacognitive_development: { score: 3, reasoning: 'test' },
     };
     const result = calculateLearnerOverallScore(scores, true);
     approxEqual(result, 50);
   });
 
-  it('returns ~100 when all scores are 5 (single-agent, no deliberation_depth)', () => {
+  it('returns same result for multi-agent and single-agent (same dimensions now)', () => {
     const scores = {
-      learner_authenticity: { score: 5, reasoning: 'test' },
-      question_quality: { score: 5, reasoning: 'test' },
-      conceptual_engagement: { score: 5, reasoning: 'test' },
-      revision_signals: { score: 5, reasoning: 'test' },
-      persona_consistency: { score: 5, reasoning: 'test' },
+      learner_authenticity: { score: 4, reasoning: 'test' },
+      question_quality: { score: 4, reasoning: 'test' },
+      conceptual_engagement: { score: 4, reasoning: 'test' },
+      revision_signals: { score: 4, reasoning: 'test' },
+      persona_consistency: { score: 4, reasoning: 'test' },
+      conceptual_progression: { score: 4, reasoning: 'test' },
+      metacognitive_development: { score: 4, reasoning: 'test' },
     };
-    const result = calculateLearnerOverallScore(scores, false);
-    approxEqual(result, 100);
+    const multiResult = calculateLearnerOverallScore(scores, true);
+    const singleResult = calculateLearnerOverallScore(scores, false);
+    approxEqual(multiResult, singleResult, 'same scores should produce same result');
+    approxEqual(multiResult, 75); // (4-1)/4 * 100 = 75
   });
 
-  it('ignores deliberation_depth for single-agent even if provided', () => {
+  it('ignores deliberation_depth if provided (no longer in rubric)', () => {
     const scores = {
       learner_authenticity: { score: 5, reasoning: 'test' },
       question_quality: { score: 5, reasoning: 'test' },
       conceptual_engagement: { score: 5, reasoning: 'test' },
       revision_signals: { score: 5, reasoning: 'test' },
       persona_consistency: { score: 5, reasoning: 'test' },
+      conceptual_progression: { score: 5, reasoning: 'test' },
+      metacognitive_development: { score: 5, reasoning: 'test' },
       deliberation_depth: { score: 1, reasoning: 'should be ignored' },
     };
-    // Single-agent: deliberation_depth excluded, so all 5s → ~100
+    // deliberation_depth not in rubric dims, so it's skipped → all 5s → ~100
     const result = calculateLearnerOverallScore(scores, false);
     approxEqual(result, 100);
   });
@@ -209,23 +215,22 @@ describe('calculateLearnerOverallScore', () => {
   });
 
   it('correctly applies weights for mixed scores', () => {
-    // Multi-agent: weights are 0.18, 0.15, 0.17, 0.12, 0.13, 0.05, 0.12, 0.08
+    // v2.1.0 weights: 0.21, 0.17, 0.20, 0.14, 0.06, 0.14, 0.08
     const scores = {
-      learner_authenticity: { score: 5, reasoning: '' },       // 0.18
-      question_quality: { score: 5, reasoning: '' },            // 0.15
-      conceptual_engagement: { score: 5, reasoning: '' },       // 0.17
-      revision_signals: { score: 1, reasoning: '' },            // 0.12
-      deliberation_depth: { score: 1, reasoning: '' },          // 0.13
-      persona_consistency: { score: 1, reasoning: '' },         // 0.05
-      conceptual_progression: { score: 5, reasoning: '' },      // 0.12
-      metacognitive_development: { score: 5, reasoning: '' },   // 0.08
+      learner_authenticity: { score: 5, reasoning: '' },         // 0.21
+      question_quality: { score: 5, reasoning: '' },              // 0.17
+      conceptual_engagement: { score: 5, reasoning: '' },         // 0.20
+      revision_signals: { score: 1, reasoning: '' },              // 0.14
+      persona_consistency: { score: 1, reasoning: '' },           // 0.06
+      conceptual_progression: { score: 5, reasoning: '' },        // 0.14
+      metacognitive_development: { score: 5, reasoning: '' },     // 0.08
     };
-    // High dims (0.18+0.15+0.17+0.12+0.08 = 0.70): score 5
-    // Low dims (0.12+0.13+0.05 = 0.30): score 1
-    // weighted avg = (5*0.70 + 1*0.30) / 1.0 = 3.80
-    // overall = (3.80 - 1) / 4 * 100 = 70
+    // High dims (0.21+0.17+0.20+0.14+0.08 = 0.80): score 5
+    // Low dims (0.14+0.06 = 0.20): score 1
+    // weighted avg = (5*0.80 + 1*0.20) / 1.0 = 4.20
+    // overall = (4.20 - 1) / 4 * 100 = 80
     const result = calculateLearnerOverallScore(scores, true);
-    approxEqual(result, 70);
+    approxEqual(result, 80);
   });
 });
 
@@ -278,7 +283,7 @@ describe('buildLearnerEvaluationPrompt', () => {
     assert.ok(prompt.includes('Hegelian dialectics'));
   });
 
-  it('includes all 8 dimension keys for multi-agent', () => {
+  it('includes all 7 dimension keys (deliberation_depth moved to deliberation rubric)', () => {
     const prompt = buildLearnerEvaluationPrompt({
       turns: sampleTurns,
       targetTurnIndex: 2,
@@ -289,35 +294,37 @@ describe('buildLearnerEvaluationPrompt', () => {
     assert.ok(prompt.includes('question_quality'));
     assert.ok(prompt.includes('conceptual_engagement'));
     assert.ok(prompt.includes('revision_signals'));
-    assert.ok(prompt.includes('deliberation_depth'));
     assert.ok(prompt.includes('persona_consistency'));
     assert.ok(prompt.includes('conceptual_progression'));
     assert.ok(prompt.includes('metacognitive_development'));
+    // deliberation_depth moved to dedicated deliberation rubric
+    assert.ok(!prompt.includes('deliberation_depth'));
   });
 
-  it('excludes deliberation_depth for unified learner', () => {
+  it('same dimensions for unified learner (no conditional dimension)', () => {
     const prompt = buildLearnerEvaluationPrompt({
       turns: sampleTurns,
       targetTurnIndex: 2,
       learnerArchitecture: 'unified',
     });
 
-    // The dimension key should NOT appear in the JSON example section
     assert.ok(prompt.includes('learner_authenticity'));
-    assert.ok(prompt.includes('OMIT the deliberation_depth dimension'));
+    assert.ok(!prompt.includes('deliberation_depth'));
+    assert.ok(!prompt.includes('OMIT'));
   });
 
-  it('includes internal deliberation section for multi-agent learners', () => {
+  it('does not include internal deliberation (scored separately in deliberation rubric)', () => {
     const prompt = buildLearnerEvaluationPrompt({
       turns: sampleTurns,
       targetTurnIndex: 2,
       learnerArchitecture: 'multi_agent',
     });
 
-    assert.ok(prompt.includes('Internal deliberation'));
-    assert.ok(prompt.includes('Ego (initial reaction)'));
-    assert.ok(prompt.includes('Superego (critique)'));
-    assert.ok(prompt.includes('Ego (revision'));
+    // No deliberation content rendered in transcript (ego/superego traces)
+    assert.ok(!prompt.includes('Ego (initial reaction)'));
+    assert.ok(!prompt.includes('Superego (critique)'));
+    assert.ok(!prompt.includes('Ego (revision)'));
+    assert.ok(prompt.includes('external message only'));
   });
 
   it('truncates transcript at targetTurnIndex (no future turns)', () => {
@@ -351,15 +358,17 @@ describe('buildLearnerEvaluationPrompt', () => {
     assert.ok(prompt.includes('(no message)'));
   });
 
-  it('recognizes psychodynamic as multi-agent', () => {
+  it('recognizes psychodynamic as multi-agent (same 7 dimensions)', () => {
     const prompt = buildLearnerEvaluationPrompt({
       turns: sampleTurns,
       targetTurnIndex: 2,
       learnerArchitecture: 'psychodynamic',
     });
 
-    assert.ok(prompt.includes('deliberation_depth'));
-    assert.ok(prompt.includes('Score ALL dimensions including deliberation_depth'));
+    // psychodynamic is treated as multi-agent — same 7 dims, no deliberation_depth
+    assert.ok(prompt.includes('learner_authenticity'));
+    assert.ok(prompt.includes('metacognitive_development'));
+    assert.ok(!prompt.includes('deliberation_depth'));
   });
 });
 
@@ -391,7 +400,7 @@ describe('buildLearnerHolisticEvaluationPrompt', () => {
     },
   ];
 
-  it('includes full transcript and trajectory framing', () => {
+  it('includes public transcript and trajectory framing', () => {
     const prompt = buildLearnerHolisticEvaluationPrompt({
       turns: sampleTurns,
       personaId: 'productive_struggler',
@@ -400,30 +409,32 @@ describe('buildLearnerHolisticEvaluationPrompt', () => {
       topic: 'Dialectics',
     });
 
-    assert.ok(prompt.includes('FULL DIALOGUE TRANSCRIPT'));
+    assert.ok(prompt.includes('PUBLIC DIALOGUE TRANSCRIPT'));
     assert.ok(prompt.includes('ACROSS THE ENTIRE DIALOGUE'));
     assert.ok(prompt.includes('productive_struggler'));
     assert.ok(prompt.includes('Misconception Correction'));
     assert.ok(prompt.includes('Dialectics'));
   });
 
-  it('includes deliberation_depth for multi-agent and includes traces', () => {
+  it('does not include deliberation_depth or internal traces (scored separately)', () => {
     const prompt = buildLearnerHolisticEvaluationPrompt({
       turns: sampleTurns,
       learnerArchitecture: 'multi_agent',
     });
 
-    assert.ok(prompt.includes('deliberation_depth'));
-    assert.ok(prompt.includes('Internal deliberation:'));
-    assert.ok(prompt.includes('Superego (critique)'));
+    assert.ok(!prompt.includes('deliberation_depth'));
+    assert.ok(!prompt.includes('Internal deliberation:'));
+    assert.ok(!prompt.includes('Superego (critique)'));
+    assert.ok(prompt.includes('external messages only'));
   });
 
-  it('omits deliberation_depth instruction for unified learners', () => {
+  it('same dimensions for unified learners (no conditional dimension)', () => {
     const prompt = buildLearnerHolisticEvaluationPrompt({
       turns: sampleTurns,
       learnerArchitecture: 'unified',
     });
 
-    assert.ok(prompt.includes('OMIT the deliberation_depth dimension'));
+    assert.ok(!prompt.includes('deliberation_depth'));
+    assert.ok(!prompt.includes('OMIT'));
   });
 });

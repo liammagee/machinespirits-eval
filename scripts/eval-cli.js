@@ -89,6 +89,10 @@ import {
   calculateTutorHolisticScore,
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,
+  hasTutorSuperego,
+  buildTutorDeliberationPrompt,
+  buildLearnerDeliberationPrompt,
+  calculateDeliberationScore,
 } from '../services/rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -2398,7 +2402,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--follow] [--review] [--refresh <ms>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--verbose]',
           );
           process.exit(1);
         }
@@ -2410,6 +2414,7 @@ async function main() {
         const multiturnOnly = getFlag('multiturn-only');
         const restoreTurn0 = getFlag('restore-turn0');
         const tutorOnly = getFlag('tutor-only');
+        const skipDeliberation = getFlag('skip-deliberation');
         const refreshMs = parseInt(getOption('refresh', '5000'), 10);
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
@@ -2835,6 +2840,7 @@ async function main() {
                   dialogueTrace,
                   targetTurnIndex: turnIndex,
                   scenario: scenarioContext,
+                  learnerContext: learnerCtx,
                 });
 
                 if (!prompt) {
@@ -2962,12 +2968,63 @@ async function main() {
             }
           })() : Promise.resolve(null);
 
+          // Deliberation quality promises (tutor + learner, multi-agent only)
+          const hasTutorDelib = !skipDeliberation && !tutorOnly && hasTutorSuperego(dialogueTrace);
+          const hasLearnerDelib = !skipDeliberation && !tutorOnly && isMultiAgent;
+          const deliberationPromptParams = {
+            turns: transcriptTurns,
+            dialogueTrace,
+            scenarioName: scenario.name || scenarioId,
+            scenarioDescription: scenario.description,
+            learnerContext: learnerCtx,
+          };
+
+          const tutorDelibPromise = hasTutorDelib ? (async () => {
+            const delibTag = `${tag}   tutor-deliberation`;
+            try {
+              const prompt = buildTutorDeliberationPrompt(deliberationPromptParams);
+              if (verbose) console.log(`${delibTag} ... calling claude`);
+              const parsed = await callClaudeJudge(prompt);
+              const scores = parsed.scores || {};
+              const score = Object.keys(scores).length > 0
+                ? calculateDeliberationScore(scores)
+                : parsed.overall_score;
+              return { success: true, scores, score, summary: parsed.summary };
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${delibTag} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+              return { success: false };
+            }
+          })() : Promise.resolve(null);
+
+          const learnerDelibPromise = hasLearnerDelib ? (async () => {
+            const delibTag = `${tag}   learner-deliberation`;
+            try {
+              const prompt = buildLearnerDeliberationPrompt(deliberationPromptParams);
+              if (verbose) console.log(`${delibTag} ... calling claude`);
+              const parsed = await callClaudeJudge(prompt);
+              const scores = parsed.scores || {};
+              const score = Object.keys(scores).length > 0
+                ? calculateDeliberationScore(scores)
+                : parsed.overall_score;
+              return { success: true, scores, score, summary: parsed.summary };
+            } catch (err) {
+              const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+              console.log(`${delibTag} ... FAIL: ${msg}`);
+              if (verbose) console.error(err);
+              return { success: false };
+            }
+          })() : Promise.resolve(null);
+
           // Fire Wave 1: all independent calls concurrently
-          const [tutorSettled, learnerSettled, dgpResult, dgiResult] = await Promise.all([
+          const [tutorSettled, learnerSettled, dgpResult, dgiResult, tutorDelibResult, learnerDelibResult] = await Promise.all([
             Promise.allSettled(tutorPromises),
             Promise.allSettled(learnerPromises),
             dgpPromise,
             dgiPromise,
+            tutorDelibPromise,
+            learnerDelibPromise,
           ]);
 
           // ── Process Wave 1: tutor per-turn results ──
@@ -3024,6 +3081,30 @@ async function main() {
               dialogueQualityInternalSummary: dgiResult.summary || null,
             });
             console.log(`${tag}   dialogue-quality(full)=${dgiScore.toFixed(1)}`);
+          }
+
+          // ── Process Wave 1: deliberation quality ──
+          let tutorDelibScore = null;
+          let learnerDelibScore = null;
+          if (tutorDelibResult?.success) {
+            tutorDelibScore = tutorDelibResult.score;
+            evaluationStore.updateTutorDeliberationScores(result.id, {
+              deliberationScores: tutorDelibResult.scores,
+              deliberationScore: tutorDelibScore,
+              deliberationSummary: tutorDelibResult.summary || null,
+              deliberationJudgeModel: judgeModel,
+            });
+            console.log(`${tag}   tutor-deliberation=${tutorDelibScore.toFixed(1)}`);
+          }
+          if (learnerDelibResult?.success) {
+            learnerDelibScore = learnerDelibResult.score;
+            evaluationStore.updateLearnerDeliberationScores(result.id, {
+              deliberationScores: learnerDelibResult.scores,
+              deliberationScore: learnerDelibScore,
+              deliberationSummary: learnerDelibResult.summary || null,
+              deliberationJudgeModel: judgeModel,
+            });
+            console.log(`${tag}   learner-deliberation=${learnerDelibScore.toFixed(1)}`);
           }
 
           // ── Aggregate tutor scores ──
@@ -3194,12 +3275,15 @@ async function main() {
             : '';
           const dgPart = dgpScore != null ? `  DgP=${dgpScore.toFixed(1)}` : '';
           const dgiPart = dgiScore != null ? ` DgI=${dgiScore.toFixed(1)}` : '';
+          const delibPart = (tutorDelibScore != null || learnerDelibScore != null)
+            ? `  delib: ${tutorDelibScore != null ? `T=${tutorDelibScore.toFixed(1)}` : ''}${learnerDelibScore != null ? ` L=${learnerDelibScore.toFixed(1)}` : ''}`
+            : '';
           const overallPart = learnerAvg != null
             ? `  overall=${((tutorOverall + learnerAvg) / 2).toFixed(1)}`
             : '';
 
           console.log(
-            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)}${tutorHolisticPart} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}${learnerPart}${dgPart}${dgiPart}${overallPart}`,
+            `${tag} ${scenarioId} / ${profileName} ... tutor: avg=${tutorOverall.toFixed(1)}${tutorHolisticPart} first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} Δ=${tutorDevelopment != null ? (tutorDevelopment >= 0 ? '+' : '') + tutorDevelopment.toFixed(1) : '?'}${learnerPart}${dgPart}${dgiPart}${delibPart}${overallPart}`,
           );
 
           return tutorOverall;
@@ -3790,6 +3874,7 @@ async function main() {
           if (singleTurn.length > 0) console.log(`  Single-turn: ${singleTurn.length}`);
           if (multiTurn.length > 0) console.log(`  Multi-turn:  ${multiTurn.length} (per-turn scoring)`);
           if (tutorOnly) console.log('  --tutor-only: skipping learner + dialogue scoring');
+          if (skipDeliberation) console.log('  --skip-deliberation: skipping deliberation quality scoring');
           if (modelOverride) console.log(`  Model: ${modelOverride}`);
           console.log('');
 

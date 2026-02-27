@@ -55,7 +55,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Pedagogical Quality Rubric"
-version: "2.0.0"
+version: "2.1.0"
 description: "Multidimensional rubric for evaluating AI tutor suggestions based on learning science"
 
 # Scoring scale

@@ -416,11 +416,14 @@ ${criteriaText}`;
     .join('\n\n');
 
   // Build optional dialogue transcript section
-  const dialogueTranscript = formatDialogueTranscript(context.dialogueContext);
+  // If prebuiltTranscript is provided (e.g. public-only transcript), use it directly
+  const dialogueTranscript = context.prebuiltTranscript || formatDialogueTranscript(context.dialogueContext);
   const dialogueSection = dialogueTranscript
     ? `\n## DIALOGUE TRANSCRIPT
 
-The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner's actual engagement, struggle, and development.
+${context.prebuiltTranscript
+    ? 'This is the externally visible exchange between tutor and learner. Evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'
+    : 'The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'}
 
 ${dialogueTranscript}
 `
@@ -1520,8 +1523,8 @@ ${criteriaText}`;
     })
     .join('\n\n');
 
-  // Use the full transcript builder (includes internal deliberation)
-  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+  // Use public-only transcript (no internal deliberation) for fair cross-architecture comparison
+  const fullTranscript = buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext);
 
   let recognitionNote = '';
   if (hasRecognition) {
@@ -1557,7 +1560,9 @@ ${dimensionCriteria}
 **Scenario**: ${scenarioName}
 **Description**: ${scenarioDescription}
 
-## FULL DIALOGUE TRANSCRIPT
+## PUBLIC DIALOGUE TRANSCRIPT
+
+Only externally visible messages are shown. Internal deliberation (if any) is scored separately.
 
 ${fullTranscript}
 
@@ -2197,15 +2202,298 @@ ${exampleScores}
 \`\`\``;
 }
 
+// ============================================================================
+// Deliberation Quality Evaluation
+// ============================================================================
+
+let deliberationRubricCache = null;
+let deliberationRubricMtime = null;
+
+/**
+ * Load the deliberation quality rubric YAML with mtime-based caching.
+ */
+export function loadDeliberationRubric({ forceReload } = {}) {
+  const rubricPath = path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-deliberation.yaml');
+
+  try {
+    const stats = fs.statSync(rubricPath);
+    if (!forceReload && deliberationRubricCache && deliberationRubricMtime === stats.mtimeMs) {
+      return deliberationRubricCache;
+    }
+    deliberationRubricMtime = stats.mtimeMs;
+  } catch (err) {
+    console.warn('[rubricEvaluator] Deliberation rubric file not found:', err.message);
+    return null;
+  }
+
+  const raw = fs.readFileSync(rubricPath, 'utf-8');
+  deliberationRubricCache = yaml.parse(raw);
+  return deliberationRubricCache;
+}
+
+/**
+ * Get deliberation quality rubric dimensions.
+ * @returns {Object} Map of dimension key → dimension config
+ */
+export function getDeliberationDimensions() {
+  const rubric = loadDeliberationRubric();
+  if (!rubric?.dimensions) return {};
+  return { ...rubric.dimensions };
+}
+
+/**
+ * Calculate deliberation quality overall score from per-dimension scores.
+ * Uses weights from the deliberation rubric YAML.
+ *
+ * @param {Object} scores - { dimension_key: { score: 1-5, reasoning: string } }
+ * @returns {number} 0-100 score
+ */
+export function calculateDeliberationScore(scores) {
+  const dimensions = getDeliberationDimensions();
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dimensions)) {
+    const scoreData = scores[key];
+    const score = scoreData?.score ?? scoreData;
+
+    if (typeof score === 'number') {
+      weightedSum += score * (dim.weight || 0);
+      totalWeight += dim.weight || 0;
+    }
+  }
+
+  if (totalWeight === 0) return 0;
+  const avgScore = weightedSum / totalWeight;
+  return ((avgScore - 1) / 4) * 100;
+}
+
+/**
+ * Check whether a dialogue trace contains tutor superego entries.
+ * Used to gate tutor deliberation scoring (cells without a configured
+ * superego have no tutor deliberation to evaluate).
+ *
+ * @param {Array} dialogueTrace - Consolidated dialogue trace
+ * @returns {boolean} true if trace contains superego/review entries
+ */
+export function hasTutorSuperego(dialogueTrace) {
+  if (!dialogueTrace?.length) return false;
+  return dialogueTrace.some(
+    (entry) => entry.agent === 'superego' && (entry.action === 'review' || entry.action === 'approve' || entry.action === 'reject'),
+  );
+}
+
+/**
+ * Build the tutor deliberation quality evaluation prompt.
+ * Judges the quality of the tutor's ego/superego deliberation process
+ * using the full transcript (with internal deliberation visible).
+ *
+ * @param {Object} params
+ * @param {Array} params.turns - Reconstructed turn objects
+ * @param {Array} [params.dialogueTrace] - Full dialogue trace
+ * @param {string} [params.scenarioName] - Scenario name
+ * @param {string} [params.scenarioDescription] - Scenario description
+ * @param {string} [params.learnerContext] - Learner context info
+ * @returns {string} Complete judge prompt
+ */
+export function buildTutorDeliberationPrompt(params) {
+  const {
+    turns,
+    dialogueTrace = [],
+    scenarioName = 'unknown',
+    scenarioDescription = 'No description available',
+    learnerContext = null,
+  } = params;
+
+  const dimensions = getDeliberationDimensions();
+
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  // Full transcript WITH internal deliberation — this IS where internals should be shown
+  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
+    .join(',\n');
+
+  return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the TUTOR's internal ego/superego deliberation process — NOT the quality of the tutor's output (which is scored separately).
+
+Focus ONLY on the tutor's deliberation: [Tutor Ego] initial drafts, [Tutor Superego] reviews, and [Tutor Ego] (revised) entries. Ignore the learner's messages and deliberation — those are scored separately.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## SCENARIO CONTEXT
+
+**Scenario**: ${scenarioName}
+**Description**: ${scenarioDescription}
+
+## FULL DIALOGUE TRANSCRIPT (with internal deliberation)
+
+${fullTranscript}
+
+## YOUR TASK
+
+Evaluate ONLY the tutor's ego/superego deliberation process. Focus on:
+- [Tutor Ego] initial draft quality and how it sets up productive critique
+- [Tutor Superego] review — is the critique substantive and specific?
+- [Tutor Ego] (revised) — does the revision materially improve on the initial draft?
+- Cross-turn evolution — does the deliberation adapt across the dialogue?
+
+Provide:
+1. A score (1-5) for each dimension with brief reasoning
+2. An overall score (weighted average, 0-100 scale)
+3. A short summary of the tutor's deliberation quality
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief assessment of the tutor's deliberation process quality"
+}
+\`\`\``;
+}
+
+/**
+ * Build the learner deliberation quality evaluation prompt.
+ * Judges the quality of the learner's ego/superego deliberation process
+ * using the full transcript (with internal deliberation visible).
+ *
+ * Uses the same rubric dimensions as tutor deliberation for symmetry.
+ *
+ * @param {Object} params
+ * @param {Array} params.turns - Reconstructed turn objects
+ * @param {Array} [params.dialogueTrace] - Full dialogue trace
+ * @param {string} [params.scenarioName] - Scenario name
+ * @param {string} [params.scenarioDescription] - Scenario description
+ * @param {string} [params.learnerContext] - Learner context info
+ * @returns {string} Complete judge prompt
+ */
+export function buildLearnerDeliberationPrompt(params) {
+  const {
+    turns,
+    dialogueTrace = [],
+    scenarioName = 'unknown',
+    scenarioDescription = 'No description available',
+    learnerContext = null,
+  } = params;
+
+  const dimensions = getDeliberationDimensions();
+
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  // Full transcript WITH internal deliberation
+  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
+    .join(',\n');
+
+  return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the LEARNER's internal ego/superego deliberation process — NOT the quality of the learner's output (which is scored separately).
+
+Focus ONLY on the learner's deliberation: [Learner Ego] initial reactions, [Learner Superego] critiques, and [Learner Ego] (revised) entries. Ignore the tutor's messages and deliberation — those are scored separately.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## SCENARIO CONTEXT
+
+**Scenario**: ${scenarioName}
+**Description**: ${scenarioDescription}
+
+## FULL DIALOGUE TRANSCRIPT (with internal deliberation)
+
+${fullTranscript}
+
+## YOUR TASK
+
+Evaluate ONLY the learner's ego/superego deliberation process. Focus on:
+- [Learner Ego] initial reaction quality and authenticity
+- [Learner Superego] critique — does it push the ego beyond superficial responses?
+- [Learner Ego] (revised) — does the revision produce a materially better learner response?
+- Cross-turn evolution — does the deliberation adapt as the dialogue develops?
+
+Provide:
+1. A score (1-5) for each dimension with brief reasoning
+2. An overall score (weighted average, 0-100 scale)
+3. A short summary of the learner's deliberation quality
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief assessment of the learner's deliberation process quality"
+}
+\`\`\``;
+}
+
 /**
  * Build a per-turn tutor evaluation prompt for multi-turn dialogues.
  * Mirrors the learner evaluator's truncated-transcript pattern to prevent future-bias.
+ *
+ * v2.1.0: Uses public-only transcript (no internal deliberation) for fair
+ * cross-architecture comparison. Internal deliberation is scored separately
+ * via the deliberation rubric.
  *
  * @param {Object} params
  * @param {Array} params.turnResults - Turn results from the dialogue log (each has suggestions, learnerMessage, etc.)
  * @param {Array} params.dialogueTrace - Full dialogue trace entries from the log
  * @param {number} params.targetTurnIndex - Index of the tutor turn to score (0-based)
  * @param {Object} params.scenario - Scenario context { name, description, expectedBehavior, learnerContext, requiredElements, forbiddenElements }
+ * @param {string} [params.learnerContext] - Raw learner context (contains initial learner message)
  * @returns {string} Complete judge prompt for scoring a single tutor turn
  */
 function buildPerTurnTutorEvaluationPrompt(params) {
@@ -2214,6 +2502,7 @@ function buildPerTurnTutorEvaluationPrompt(params) {
     dialogueTrace = [],
     targetTurnIndex,
     scenario,
+    learnerContext = null,
   } = params;
 
   const targetTurn = turnResults[targetTurnIndex];
@@ -2223,7 +2512,7 @@ function buildPerTurnTutorEvaluationPrompt(params) {
   if (!suggestion) return null;
 
   // Build truncated conversation history up to and including the target turn
-  const truncatedHistory = turnResults.slice(0, targetTurnIndex + 1).map((t, i) => ({
+  const truncatedTurns = turnResults.slice(0, targetTurnIndex + 1).map((t, i) => ({
     turnIndex: i,
     turnId: t.turnId,
     suggestion: t.suggestions?.[0],
@@ -2243,9 +2532,8 @@ function buildPerTurnTutorEvaluationPrompt(params) {
     }
   }
 
-  const dialogueContext = (truncatedTrace.length > 0 || truncatedHistory.length > 0)
-    ? { consolidatedTrace: truncatedTrace, conversationHistory: truncatedHistory }
-    : null;
+  // Build public-only transcript (no internal deliberation)
+  const publicTranscript = buildDialoguePublicTranscript(truncatedTurns, truncatedTrace, learnerContext);
 
   // Add per-turn framing to the scenario description
   const totalTurns = turnResults.length;
@@ -2264,7 +2552,7 @@ function buildPerTurnTutorEvaluationPrompt(params) {
       `A score of 5 requires explicit cross-turn development, not just good single-turn quality.`,
   };
 
-  return buildEvaluationPrompt(suggestion, perTurnScenario, { dialogueContext });
+  return buildEvaluationPrompt(suggestion, perTurnScenario, { prebuiltTranscript: publicTranscript });
 }
 
 export {
@@ -2299,4 +2587,10 @@ export default {
   getTutorHolisticDimensions,
   loadDialogueRubric,
   getDialogueDimensions,
+  loadDeliberationRubric,
+  getDeliberationDimensions,
+  calculateDeliberationScore,
+  hasTutorSuperego,
+  buildTutorDeliberationPrompt,
+  buildLearnerDeliberationPrompt,
 };

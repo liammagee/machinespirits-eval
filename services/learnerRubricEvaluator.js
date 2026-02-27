@@ -6,8 +6,9 @@
  *
  * Key design decisions:
  * - Truncates transcript at the learner's turn to prevent retrospective bias
- * - Includes internal deliberation traces for multi-agent learners
- * - Omits deliberation_depth dimension for single-agent (unified) learners
+ * - v2.1.0: Judges see public messages ONLY (no internal deliberation)
+ *   for fair cross-architecture comparison. Deliberation quality is scored
+ *   separately via the deliberation rubric.
  */
 
 import fs from 'fs';
@@ -45,24 +46,19 @@ export function loadLearnerRubric({ forceReload } = {}) {
 }
 
 /**
- * Get learner rubric dimensions, optionally excluding deliberation_depth
- * for single-agent learners.
+ * Get learner rubric dimensions.
+ * Since v2.1.0, all 7 dimensions apply uniformly to all architectures
+ * (deliberation_depth moved to the deliberation rubric).
  *
  * @param {Object} options
- * @param {boolean} options.isMultiAgent - Whether the learner uses ego/superego architecture
+ * @param {boolean} options.isMultiAgent - Kept for backward compat (no-op since v2.1.0)
  * @returns {Object} Map of dimension key → dimension config
  */
 export function getLearnerDimensions({ isMultiAgent = false } = {}) {
   const rubric = loadLearnerRubric();
   if (!rubric?.dimensions) return {};
 
-  const dims = { ...rubric.dimensions };
-
-  if (!isMultiAgent) {
-    delete dims.deliberation_depth;
-  }
-
-  return dims;
+  return { ...rubric.dimensions };
 }
 
 /**
@@ -223,26 +219,6 @@ export function buildLearnerEvaluationPrompt(params) {
   const targetTurn = turns[targetTurnIndex];
   const truncatedTranscript = buildTruncatedTranscript(turns, targetTurnIndex);
 
-  // Internal deliberation section (multi-agent only)
-  let internalDeliberationSection = '';
-  if (isMultiAgent && targetTurn.internalDeliberation?.length > 0) {
-    internalDeliberationSection = `
-**Internal deliberation** (the learner's ego/superego process — not visible to the tutor):
-
-${formatDeliberation(targetTurn.internalDeliberation)}
-`;
-  }
-
-  // Note about deliberation_depth dimension
-  let deliberationDepthNote = '';
-  if (isMultiAgent) {
-    deliberationDepthNote =
-      'This is a multi-agent learner. Score ALL dimensions including deliberation_depth (evaluate the quality of the internal ego/superego process shown above).';
-  } else {
-    deliberationDepthNote =
-      'This is a single-agent (unified) learner. OMIT the deliberation_depth dimension — do not include it in your scores.';
-  }
-
   // Build dimension keys for JSON example
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
@@ -290,10 +266,10 @@ ${truncatedTranscript}
 
 **External message** (what the tutor sees):
 ${targetTurn.externalMessage || '(no message)'}
-${internalDeliberationSection}
+
 ## YOUR TASK
 
-${deliberationDepthNote}
+Evaluate based on the learner's external message only. Internal deliberation (if any) is scored separately.
 
 CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
 conceptual_progression, metacognitive_development), a score of 4 or 5 requires
@@ -350,16 +326,8 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
   const isMultiAgent = learnerArchitecture === 'multi_agent' || learnerArchitecture === 'psychodynamic';
   const dimensions = getLearnerDimensions({ isMultiAgent });
   const dimensionCriteria = buildDimensionCriteria(dimensions);
-  const fullTranscript = buildHolisticTranscript(turns, isMultiAgent);
-
-  let deliberationDepthNote = '';
-  if (isMultiAgent) {
-    deliberationDepthNote =
-      'This is a multi-agent learner. Score ALL dimensions including deliberation_depth using the full-turn internal traces.';
-  } else {
-    deliberationDepthNote =
-      'This is a single-agent (unified) learner. OMIT the deliberation_depth dimension — do not include it in your scores.';
-  }
+  // Always pass false — public messages only (internal deliberation scored separately)
+  const fullTranscript = buildHolisticTranscript(turns, false);
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
@@ -395,13 +363,15 @@ ${dimensionCriteria}
 **Scenario**: ${scenarioName}
 **Topic**: ${topic}
 
-## FULL DIALOGUE TRANSCRIPT
+## PUBLIC DIALOGUE TRANSCRIPT
+
+Only externally visible messages are shown. Internal deliberation (if any) is scored separately.
 
 ${fullTranscript}
 
 ## YOUR TASK
 
-${deliberationDepthNote}
+Evaluate based on the learner's external messages only.
 
 CROSS-TURN CALIBRATION: When scoring development dimensions (revision_signals,
 conceptual_progression, metacognitive_development), require evidence of CUMULATIVE

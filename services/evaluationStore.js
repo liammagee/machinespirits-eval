@@ -39,6 +39,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { randomBytes } from 'crypto';
 import { isPidAlive } from './processUtils.js';
+import { loadRubric } from './evalConfigLoader.js';
+import { loadTutorHolisticRubric, loadDialogueRubric } from './rubricEvaluator.js';
+import { loadLearnerRubric } from './learnerRubricEvaluator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -234,6 +237,21 @@ migrateAddColumn(
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_scores TEXT`, 'tutor_scores');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_overall_score REAL`, 'tutor_overall_score');
 
+// Deliberation quality columns (ego/superego process scoring — multi-agent only)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_scores TEXT`, 'tutor_deliberation_scores');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_score REAL`, 'tutor_deliberation_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_summary TEXT`, 'tutor_deliberation_summary');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_judge_model TEXT`, 'tutor_deliberation_judge_model');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_scores TEXT`, 'learner_deliberation_scores');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_score REAL`, 'learner_deliberation_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_summary TEXT`, 'learner_deliberation_summary');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_judge_model TEXT`, 'learner_deliberation_judge_model');
+
+// Rubric version tracking (auto-resolved from YAML at write time)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_rubric_version TEXT`, 'tutor_rubric_version');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_rubric_version TEXT`, 'learner_rubric_version');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_rubric_version TEXT`, 'dialogue_rubric_version');
+
 // Migrations: Add columns to evaluation_runs
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN git_commit TEXT`, 'git_commit');
 migrateAddColumn(`ALTER TABLE evaluation_runs ADD COLUMN package_version TEXT`, 'package_version');
@@ -349,6 +367,19 @@ function generateRunId() {
   const timestamp = new Date().toISOString().slice(0, 10);
   const suffix = randomBytes(4).toString('hex');
   return `eval-${timestamp}-${suffix}`;
+}
+
+// ── Rubric version resolvers ──────────────────────────────────────────
+// Auto-resolve rubric versions from YAML at write time.
+// Tutor per-turn and holistic rubrics are versioned together (use per-turn as primary).
+function getTutorRubricVersion() {
+  return loadRubric()?.version || loadTutorHolisticRubric()?.version || null;
+}
+function getLearnerRubricVersion() {
+  return loadLearnerRubric()?.version || null;
+}
+function getDialogueRubricVersion() {
+  return loadDialogueRubric()?.version || null;
 }
 
 /**
@@ -1560,6 +1591,7 @@ export function storeRejudgment(originalResult, evaluation) {
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
       judge_latency_ms,
+      tutor_rubric_version,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -1573,6 +1605,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?,
       ?
@@ -1633,6 +1666,7 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.learnerArchitecture || null,
     'rubric', // Rejudgments only store successful rubric evaluations
     evaluation.judgeLatencyMs ?? null,
+    getTutorRubricVersion(),
     new Date().toISOString(),
   );
 
@@ -1664,7 +1698,8 @@ export function updateResultScores(resultId, evaluation) {
       evaluation_reasoning = ?,
       scores_with_reasoning = ?,
       scoring_method = ?,
-      judge_latency_ms = ?
+      judge_latency_ms = ?,
+      tutor_rubric_version = ?
     WHERE id = ?
   `);
 
@@ -1689,6 +1724,7 @@ export function updateResultScores(resultId, evaluation) {
     evaluation.scores ? JSON.stringify(evaluation.scores) : null,
     'rubric', // Only called on successful evaluations
     evaluation.judgeLatencyMs ?? null,
+    getTutorRubricVersion(),
     resultId,
   );
 }
@@ -1734,13 +1770,15 @@ export function updateDialogueQualityScore(resultId, evaluation) {
     UPDATE evaluation_results SET
       dialogue_quality_score = ?,
       dialogue_quality_summary = ?,
-      dialogue_quality_judge_model = ?
+      dialogue_quality_judge_model = ?,
+      dialogue_rubric_version = ?
     WHERE id = ?
   `);
   stmt.run(
     evaluation.dialogueQualityScore ?? null,
     evaluation.dialogueQualitySummary || null,
     evaluation.dialogueQualityJudgeModel || null,
+    getDialogueRubricVersion(),
     resultId,
   );
 }
@@ -1758,12 +1796,72 @@ export function updateDialogueQualityInternalScore(resultId, evaluation) {
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       dialogue_quality_internal_score = ?,
-      dialogue_quality_internal_summary = ?
+      dialogue_quality_internal_summary = ?,
+      dialogue_rubric_version = ?
     WHERE id = ?
   `);
   stmt.run(
     evaluation.dialogueQualityInternalScore ?? null,
     evaluation.dialogueQualityInternalSummary || null,
+    getDialogueRubricVersion(),
+    resultId,
+  );
+}
+
+/**
+ * Update tutor deliberation quality scores for a multi-turn dialogue result.
+ * Only applicable to multi-agent tutor cells with a configured superego.
+ *
+ * @param {number} resultId - The evaluation result row ID
+ * @param {Object} evaluation - Deliberation evaluation data
+ * @param {Object} evaluation.deliberationScores - Per-dimension scores (JSON-serializable)
+ * @param {number} evaluation.deliberationScore - Overall deliberation quality (0-100)
+ * @param {string} [evaluation.deliberationSummary] - Judge narrative summary
+ * @param {string} [evaluation.deliberationJudgeModel] - Judge model used
+ */
+export function updateTutorDeliberationScores(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      tutor_deliberation_scores = ?,
+      tutor_deliberation_score = ?,
+      tutor_deliberation_summary = ?,
+      tutor_deliberation_judge_model = ?
+    WHERE id = ?
+  `);
+  stmt.run(
+    evaluation.deliberationScores ? JSON.stringify(evaluation.deliberationScores) : null,
+    evaluation.deliberationScore ?? null,
+    evaluation.deliberationSummary || null,
+    evaluation.deliberationJudgeModel || null,
+    resultId,
+  );
+}
+
+/**
+ * Update learner deliberation quality scores for a multi-turn dialogue result.
+ * Only applicable to ego_superego learner architecture cells.
+ *
+ * @param {number} resultId - The evaluation result row ID
+ * @param {Object} evaluation - Deliberation evaluation data
+ * @param {Object} evaluation.deliberationScores - Per-dimension scores (JSON-serializable)
+ * @param {number} evaluation.deliberationScore - Overall deliberation quality (0-100)
+ * @param {string} [evaluation.deliberationSummary] - Judge narrative summary
+ * @param {string} [evaluation.deliberationJudgeModel] - Judge model used
+ */
+export function updateLearnerDeliberationScores(resultId, evaluation) {
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      learner_deliberation_scores = ?,
+      learner_deliberation_score = ?,
+      learner_deliberation_summary = ?,
+      learner_deliberation_judge_model = ?
+    WHERE id = ?
+  `);
+  stmt.run(
+    evaluation.deliberationScores ? JSON.stringify(evaluation.deliberationScores) : null,
+    evaluation.deliberationScore ?? null,
+    evaluation.deliberationSummary || null,
+    evaluation.deliberationJudgeModel || null,
     resultId,
   );
 }
@@ -1790,7 +1888,8 @@ export function updateResultLearnerScores(resultId, evaluation) {
       learner_holistic_scores = ?,
       learner_holistic_overall_score = ?,
       learner_holistic_summary = ?,
-      learner_holistic_judge_model = ?
+      learner_holistic_judge_model = ?,
+      learner_rubric_version = ?
     WHERE id = ?
   `);
 
@@ -1802,6 +1901,7 @@ export function updateResultLearnerScores(resultId, evaluation) {
     evaluation.holisticOverallScore ?? null,
     evaluation.holisticSummary || null,
     evaluation.holisticJudgeModel || null,
+    getLearnerRubricVersion(),
     resultId,
   );
 }
@@ -1830,7 +1930,8 @@ export function updateResultTutorScores(resultId, evaluation) {
       tutor_last_turn_score = ?,
       tutor_development_score = ?,
       judge_model = COALESCE(?, judge_model),
-      judge_latency_ms = COALESCE(?, judge_latency_ms)
+      judge_latency_ms = COALESCE(?, judge_latency_ms),
+      tutor_rubric_version = ?
     WHERE id = ?
   `);
 
@@ -1843,6 +1944,7 @@ export function updateResultTutorScores(resultId, evaluation) {
     evaluation.tutorDevelopmentScore ?? null,
     evaluation.judgeModel || null,
     evaluation.judgeLatencyMs ?? null,
+    getTutorRubricVersion(),
     resultId,
   );
 }
@@ -1864,7 +1966,8 @@ export function updateResultTutorHolisticScores(resultId, evaluation) {
       tutor_holistic_scores = ?,
       tutor_holistic_overall_score = ?,
       tutor_holistic_summary = ?,
-      tutor_holistic_judge_model = ?
+      tutor_holistic_judge_model = ?,
+      tutor_rubric_version = ?
     WHERE id = ?
   `);
 
@@ -1873,6 +1976,7 @@ export function updateResultTutorHolisticScores(resultId, evaluation) {
     evaluation.holisticOverallScore ?? null,
     evaluation.holisticSummary || null,
     evaluation.holisticJudgeModel || null,
+    getTutorRubricVersion(),
     resultId,
   );
 }
@@ -2006,6 +2110,8 @@ export default {
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
   updateDialogueQualityInternalScore,
+  updateTutorDeliberationScores,
+  updateLearnerDeliberationScores,
   updateResultLearnerScores,
   updateResultTutorHolisticScores,
   getRun,
