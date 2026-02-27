@@ -24,9 +24,9 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 const DB_PATH = path.join(import.meta.dirname, '..', 'data', 'evaluations.db');
-const LOGS_DIR = path.join(import.meta.dirname, '..', 'logs', 'tutor-dialogues');
 const DEFAULT_OUTPUT = path.join(import.meta.dirname, '..', 'exports', 'paper-figures');
 
 // ── CLI parsing ──────────────────────────────────────────────────────────────
@@ -93,13 +93,8 @@ function loadDialogue(dialogueId) {
   }
 
   // Load trace from log file
-  const logFiles = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
-  let trace = [];
-  let log = {};
-  if (logFiles.length > 0) {
-    log = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, logFiles[0]), 'utf8'));
-    trace = log.consolidatedTrace || log.dialogueTrace || [];
-  }
+  const log = evaluationStore.loadDialogueLog(dialogueId) || {};
+  const trace = log.consolidatedTrace || log.dialogueTrace || [];
 
   // Detect multi-turn: look for turn_action events (learner followups)
   const isMultiTurn = trace.some((e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action');

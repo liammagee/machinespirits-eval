@@ -33,6 +33,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
+import fs from 'fs';
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -1952,6 +1953,50 @@ export function updateInteractionLearnerScores(evalId, evaluation) {
   );
 }
 
+// ── Dialogue log loading ───────────────────────────────────────────────────
+
+const DIALOGUE_LOGS_DIR = path.join(ROOT_DIR, 'logs', 'tutor-dialogues');
+
+/**
+ * Load a dialogue log file from disk by its dialogueId.
+ *
+ * Uses a hybrid lookup strategy: tries the exact path first
+ * (`{dialogueId}.json`), then falls back to a partial-match scan of the
+ * logs directory.  Returns the parsed JSON object, or null if the file
+ * cannot be found or parsed.
+ *
+ * @param {string} dialogueId - The dialogue identifier (e.g. "dialogue-1771310299522-ys1c3i")
+ * @returns {{ [key: string]: any } | null} Parsed dialogue log, or null
+ */
+export function loadDialogueLog(dialogueId) {
+  if (!dialogueId) return null;
+
+  // 1. Try exact path
+  const direct = path.join(DIALOGUE_LOGS_DIR, `${dialogueId}.json`);
+  if (fs.existsSync(direct)) {
+    try {
+      return JSON.parse(fs.readFileSync(direct, 'utf-8'));
+    } catch {
+      return null;
+    }
+  }
+
+  // 2. Fallback: partial-match scan (handles legacy naming)
+  let files;
+  try {
+    files = fs.readdirSync(DIALOGUE_LOGS_DIR).filter((f) => f.includes(dialogueId) && f.endsWith('.json'));
+  } catch {
+    return null; // directory doesn't exist
+  }
+  if (files.length === 0) return null;
+
+  try {
+    return JSON.parse(fs.readFileSync(path.join(DIALOGUE_LOGS_DIR, files[0]), 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
 export default {
   createRun,
   updateRun,
@@ -1984,4 +2029,6 @@ export default {
   getInteractionEval,
   getInteractionEvalByRunId,
   updateInteractionLearnerScores,
+  // Dialogue log loading
+  loadDialogueLog,
 };

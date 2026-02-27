@@ -29,9 +29,9 @@ import path from 'path';
 import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
 import YAML from 'yaml';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 const DB_PATH = path.join(import.meta.dirname, '..', 'data', 'evaluations.db');
-const LOGS_DIR = path.join(import.meta.dirname, '..', 'logs', 'tutor-dialogues');
 const DEFAULT_OUTPUT = path.join(import.meta.dirname, '..', 'exports');
 
 // ── CLI parsing ──────────────────────────────────────────────────────────────
@@ -765,15 +765,13 @@ const rendered = [];
 
 for (const result of results) {
   const dialogueId = result.dialogue_id;
-  const logFiles = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
+  const log = evaluationStore.loadDialogueLog(dialogueId);
 
-  if (logFiles.length === 0) {
+  if (!log) {
     console.log(`  ⚠ No log file for ${dialogueId}, skipping`);
     continue;
   }
 
-  const logPath = path.join(LOGS_DIR, logFiles[0]);
-  const log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
   const trace = log.consolidatedTrace || log.dialogueTrace || [];
 
   if (trace.length === 0) {
