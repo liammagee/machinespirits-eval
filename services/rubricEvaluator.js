@@ -486,20 +486,7 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 \`\`\`json
 {
   "scores": {
-    "relevance": {"score": 4, "reasoning": "Matches idle state well"},
-    "specificity": {"score": 5, "reasoning": "Names exact lecture"},
-    "pedagogical_soundness": {"score": 4, "reasoning": "Uses scaffolding"},
-    "personalization": {"score": 3, "reasoning": "Generic advice"},
-    "actionability": {"score": 5, "reasoning": "Clear next step"},
-    "tone": {"score": 4, "reasoning": "Encouraging tone"},
-    "mutual_recognition": {"score": 4, "reasoning": "Acknowledges interpretation"},
-    "dialectical_responsiveness": {"score": 3, "reasoning": "Responds without tension"},
-    "memory_integration": {"score": 4, "reasoning": "References prior session"},
-    "transformative_potential": {"score": 3, "reasoning": "Informative not transformative"},
-    "tutor_adaptation": {"score": 3, "reasoning": "Some adjustment to input"},
-    "learner_growth": {"score": 4, "reasoning": "Shows conceptual development"},
-    "productive_struggle": {"score": 4, "reasoning": "Sustains appropriate tension"},
-    "epistemic_honesty": {"score": 4, "reasoning": "Represents complexity fairly"}
+${Object.entries(dimensions).map(([key], i, arr) => `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}${i < arr.length - 1 ? ',' : ''}`).join('\n')}
   },
   "validation": {
     "passes_required": true,
