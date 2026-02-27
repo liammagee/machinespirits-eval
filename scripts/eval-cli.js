@@ -2882,7 +2882,7 @@ async function main() {
             // Pre-compute target indices for learner turn scoring
             for (let lt = 0; lt < learnerTurns.length; lt++) {
               const targetIdx = reconstructedTurns.findIndex(
-                (t, idx) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0,
+                (t) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage,
               );
               if (targetIdx !== -1) {
                 learnerTurnTargets.push({ lt, targetIdx });
@@ -4624,7 +4624,7 @@ async function main() {
             for (let lt = 0; lt < learnerTurns.length; lt++) {
               // Find the learner turn's index in reconstructedTurns
               const targetIdx = reconstructedTurns.findIndex(
-                (t, idx) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage && idx > 0,
+                (t) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage,
               );
 
               if (targetIdx === -1) continue;
