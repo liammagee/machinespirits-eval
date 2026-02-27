@@ -2464,7 +2464,7 @@ async function main() {
         const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--rubric-version <ver>] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--rubric-version <ver>] [--parallelism N] [--verbose]',
           );
           process.exit(1);
         }
@@ -2483,6 +2483,8 @@ async function main() {
         const modelOverride = getOption('model') || null;
         const judgeFilter = getOption('judge') || null;
         const rubricVersionOpt = getOption('rubric-version') || null;
+        const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
+        const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
 
         // Resolve effective Claude Code judge model: CLI --model > YAML config > opus default
         const yamlJudgeModel = (() => {
@@ -3849,38 +3851,39 @@ async function main() {
             const totalResults = results.filter((r) => r.success).length;
             const alreadyEvaluated = results.filter((r) => r.baseScore != null && r.success).length;
 
-            // Process each new unevaluated result
-            let batchIndex = 0;
+            // Process each new unevaluated result (work-stealing queue)
             const batchSize = unevaluated.length;
-            for (const result of unevaluated) {
-              if (interrupted) break;
-              processedIds.add(result.id);
-              _evalCounter++;
-              batchIndex++;
-              // Show: [batch progress] (overall: evaluated/total)
-              const tag = `[${batchIndex}/${batchSize}] (${alreadyEvaluated + batchIndex}/${totalResults} scored)`;
+            // Mark all as processed upfront to avoid re-fetching in next poll
+            for (const result of unevaluated) processedIds.add(result.id);
+            let batchNext = 0;
+            const batchWorkerCount = Math.min(parallelism, batchSize);
+            const batchWorkers = Array.from({ length: batchWorkerCount }, async () => {
+              while (batchNext < batchSize && !interrupted) {
+                const bi = batchNext++;
+                const result = unevaluated[bi];
+                _evalCounter++;
+                const tag = `[${bi + 1}/${batchSize}] (${alreadyEvaluated + bi + 1}/${totalResults} scored)`;
 
-              try {
-                let score;
-                if (isMultiTurnResult(result)) {
-                  score = await evaluateMultiTurnResult(result, tag);
-                } else {
-                  score = await evaluateOneResult(result, tag);
-                }
-                if (score != null) {
-                  scores.push(score);
-                  succeeded++;
-                } else {
+                try {
+                  const score = isMultiTurnResult(result)
+                    ? await evaluateMultiTurnResult(result, tag)
+                    : await evaluateOneResult(result, tag);
+                  if (score != null) {
+                    scores.push(score);
+                    succeeded++;
+                  } else {
+                    failed++;
+                  }
+                } catch (err) {
                   failed++;
+                  const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                  const profileName = result.profileName || `${result.provider}/${result.model}`;
+                  console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+                  if (verbose) console.error(err);
                 }
-              } catch (err) {
-                failed++;
-                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-                const profileName = result.profileName || `${result.provider}/${result.model}`;
-                console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
-                if (verbose) console.error(err);
               }
-            }
+            });
+            await Promise.all(batchWorkers);
 
             // Check if run is done and no unevaluated results remain
             const run = evaluationStore.getRun(runId);
@@ -4030,48 +4033,37 @@ async function main() {
           }
 
           try {
-            // ── Score single-turn results (existing path) ──
-            let idx = 0;
-            for (const result of singleTurn) {
-              idx++;
-              const tag = `[${idx}/${toEvaluate.length}]`;
-              try {
-                const score = await evaluateOneResult(result, tag);
-                if (score != null) {
-                  scores.push(score);
-                  succeeded++;
-                } else {
+            // ── Score single-turn + multi-turn results via work-stealing queue ──
+            const toProcess = [
+              ...singleTurn.map((r) => ({ r, mt: false })),
+              ...multiTurn.map((r) => ({ r, mt: true })),
+            ];
+            let nextIndex = 0;
+            const workerCount = Math.min(parallelism, toProcess.length);
+            if (parallelism > 1) console.log(`  Parallelism: ${workerCount} workers\n`);
+            const workers = Array.from({ length: workerCount }, async () => {
+              while (nextIndex < toProcess.length) {
+                const i = nextIndex++;
+                const { r, mt } = toProcess[i];
+                const tag = `[${i + 1}/${toProcess.length}]`;
+                try {
+                  const score = mt ? await evaluateMultiTurnResult(r, tag) : await evaluateOneResult(r, tag);
+                  if (score != null) {
+                    scores.push(score);
+                    succeeded++;
+                  } else {
+                    failed++;
+                  }
+                } catch (err) {
                   failed++;
+                  const profileName = r.profileName || `${r.provider}/${r.model}`;
+                  const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                  console.log(`${tag} ${r.scenarioId} / ${profileName} ... FAIL: ${msg}`);
+                  if (verbose) console.error(err);
                 }
-              } catch (err) {
-                failed++;
-                const profileName = result.profileName || `${result.provider}/${result.model}`;
-                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-                console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
-                if (verbose) console.error(err);
               }
-            }
-
-            // ── Score multi-turn results (per-turn tutor + learner + DQ, all inline) ──
-            for (const result of multiTurn) {
-              idx++;
-              const tag = `[${idx}/${toEvaluate.length}]`;
-              try {
-                const score = await evaluateMultiTurnResult(result, tag);
-                if (score != null) {
-                  scores.push(score);
-                  succeeded++;
-                } else {
-                  failed++;
-                }
-              } catch (err) {
-                failed++;
-                const profileName = result.profileName || `${result.provider}/${result.model}`;
-                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-                console.log(`${tag} ${result.scenarioId} / ${profileName} ... FAIL: ${msg}`);
-                if (verbose) console.error(err);
-              }
-            }
+            });
+            await Promise.all(workers);
 
             printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
 
