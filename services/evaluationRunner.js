@@ -259,6 +259,29 @@ export function resolveEvalProfile(profileName) {
 }
 
 /**
+ * Compute a deterministic SHA-256 hash of the fully-resolved cell configuration.
+ * Detects config drift — if YAML is edited between generation and analysis,
+ * or if CLI overrides aren't recorded, the hash will mismatch.
+ */
+function computeConfigHash(resolvedConfig) {
+  const snapshot = {
+    profileName: resolvedConfig.profileName || null,
+    provider: resolvedConfig.provider || null,
+    model: resolvedConfig.model || null,
+    egoModel: resolvedConfig.egoModel || null,
+    superegoModel: resolvedConfig.superegoModel || null,
+    hyperparameters: resolvedConfig.hyperparameters || null,
+    superegoHyperparameters: resolvedConfig.superegoHyperparameters || null,
+    factors: resolvedConfig.factors || null,
+    learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    learnerModelOverride: resolvedConfig.learnerModelOverride || null,
+    disableSuperego: resolvedConfig.disableSuperego || false,
+    conversationMode: resolvedConfig.conversationMode || null,
+  };
+  return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
+}
+
+/**
  * Resolve provider/model references in a config object through eval's providers.yaml.
  * This ensures eval controls which model IDs get sent to tutorApi.
  */
@@ -1942,6 +1965,9 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   const { useDialogue, maxRounds, recognitionMode } = profileResolution;
   resolvedConfig.profileName = profileResolution.resolvedProfileName;
 
+  // P1c Provenance: snapshot the fully-resolved config
+  const configHash = computeConfigHash(resolvedConfig);
+
   // Log config info
   log(
     `Generating suggestions with profile: ${resolvedConfig.profileName} (dialogue=${useDialogue}, rounds=${maxRounds}, recognition=${recognitionMode})`,
@@ -2059,6 +2085,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     evaluationReasoning: rubricResult?.summary,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    configHash,
     dialogueResult: {
       dialogueTrace: genResult.dialogueTrace,
       dialogueRounds: genResult.metadata?.dialogueRounds,
@@ -2098,6 +2125,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const profileResolution = resolveEvalProfile(resolvedConfig.profileName);
   const { useDialogue, maxRounds } = profileResolution;
   resolvedConfig.profileName = profileResolution.resolvedProfileName;
+
+  // P1c Provenance: snapshot the fully-resolved config
+  const configHash = computeConfigHash(resolvedConfig);
 
   // 2. Build curriculum context — same as single-turn
   const curriculumContext = contentResolver.isConfigured()
@@ -3379,6 +3409,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     conversationMode,
     dialogueContentHash,
+    configHash,
     // Holistic dialogue evaluation (full transcript scored as single unit)
     holisticDialogueScore,
     // Bilateral transformation metrics

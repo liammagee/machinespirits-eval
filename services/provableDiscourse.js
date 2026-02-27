@@ -47,6 +47,7 @@ const ALLOWED_COLUMNS = new Set([
   'tutor_deliberation_scores',
   'learner_deliberation_scores',
   'dialogue_content_hash',
+  'config_hash',
 ]);
 
 function stableSerialize(value) {

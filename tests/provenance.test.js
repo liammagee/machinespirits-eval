@@ -758,3 +758,62 @@ describe('Backward compatibility extensions', () => {
     assert.strictEqual(overallEntry.new_value, '88', 'new value should be 88');
   });
 });
+
+// ============================================================================
+// Config hash (P1c Provenance)
+// ============================================================================
+
+describe('Config hash in storeResult', () => {
+  it('stores config_hash when provided', () => {
+    const testHash = createHash('sha256').update(JSON.stringify({ profileName: 'cell_1' })).digest('hex');
+    const { runId } = createTestResult({ configHash: testHash });
+    const results = getResults(runId);
+    assert.strictEqual(results.length, 1);
+    assert.strictEqual(results[0].configHash, testHash);
+  });
+
+  it('stores NULL when configHash not provided', () => {
+    const { runId } = createTestResult();
+    const results = getResults(runId);
+    assert.strictEqual(results[0].configHash, null);
+  });
+
+  it('same config object produces same hash (determinism)', () => {
+    const config = {
+      profileName: 'cell_5_recog_single_unified',
+      provider: 'openrouter',
+      model: 'nvidia/llama-3.1-nemotron-ultra-253b-v1:free',
+      egoModel: null,
+      superegoModel: null,
+      hyperparameters: { max_tokens: 4000, temperature: 0.7 },
+      superegoHyperparameters: null,
+      factors: { recognition: true, multi_agent_tutor: false },
+      learnerArchitecture: 'unified',
+      learnerModelOverride: null,
+      disableSuperego: false,
+      conversationMode: null,
+    };
+    const hash1 = createHash('sha256').update(JSON.stringify(config)).digest('hex');
+    const hash2 = createHash('sha256').update(JSON.stringify(config)).digest('hex');
+    assert.strictEqual(hash1, hash2, 'identical config should produce identical hash');
+    assert.strictEqual(hash1.length, 64, 'SHA-256 hex should be 64 chars');
+  });
+
+  it('different config objects produce different hashes', () => {
+    const configA = {
+      profileName: 'cell_1_base_single_unified',
+      provider: 'openrouter',
+      model: 'nemotron',
+      factors: { recognition: false },
+    };
+    const configB = {
+      profileName: 'cell_5_recog_single_unified',
+      provider: 'openrouter',
+      model: 'nemotron',
+      factors: { recognition: true },
+    };
+    const hashA = createHash('sha256').update(JSON.stringify(configA)).digest('hex');
+    const hashB = createHash('sha256').update(JSON.stringify(configB)).digest('hex');
+    assert.notStrictEqual(hashA, hashB, 'different configs should produce different hashes');
+  });
+});
