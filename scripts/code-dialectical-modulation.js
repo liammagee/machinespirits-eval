@@ -26,6 +26,7 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -329,9 +330,7 @@ function parseCondition(profileName) {
 }
 
 function loadDialogueLog(dialogueId) {
-  const logPath = path.join(process.cwd(), 'logs', 'tutor-dialogues', `${dialogueId}.json`);
-  if (!fs.existsSync(logPath)) return null;
-  return JSON.parse(fs.readFileSync(logPath, 'utf8'));
+  return evaluationStore.loadDialogueLog(dialogueId);
 }
 
 // ── Tier 1: Structural Metrics ───────────────────────────────────────────

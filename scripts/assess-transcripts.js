@@ -33,9 +33,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { formatTranscript } from '../services/transcriptFormatter.js';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
 
 // ── Assessment Tags ──────────────────────────────────────────────────────
@@ -213,21 +213,13 @@ function loadMultiTurnResults(db, runId, filters = {}) {
 }
 
 function loadDialogueTrace(dialogueId) {
-  if (!dialogueId || !fs.existsSync(LOGS_DIR)) return null;
-
-  const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
-  if (files.length === 0) return null;
-
-  try {
-    const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
-    return {
-      trace: dialogue.dialogueTrace || [],
-      totalTurns: dialogue.totalTurns || 0,
-      profileName: dialogue.profileName,
-    };
-  } catch {
-    return null;
-  }
+  const dialogue = evaluationStore.loadDialogueLog(dialogueId);
+  if (!dialogue) return null;
+  return {
+    trace: dialogue.dialogueTrace || [],
+    totalTurns: dialogue.totalTurns || 0,
+    profileName: dialogue.profileName,
+  };
 }
 
 // ── Condition / Mechanism Detection ──────────────────────────────────────

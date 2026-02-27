@@ -38,6 +38,7 @@ import chalk from 'chalk';
 import YAML from 'yaml';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import { buildMessageChain } from '../services/evaluationRunner.js';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -592,15 +593,9 @@ function classifyDialogueChannel(entry) {
 }
 
 function loadDialogueLog(dialogueId) {
-  if (!dialogueId) return null;
-  const direct = path.join(DIALOGUE_LOGS_DIR, `${dialogueId}.json`);
-  if (fs.existsSync(direct)) {
-    return { path: direct, json: JSON.parse(fs.readFileSync(direct, 'utf8')) };
-  }
-  const files = fs.readdirSync(DIALOGUE_LOGS_DIR).filter((f) => f.includes(dialogueId) && f.endsWith('.json'));
-  if (files.length === 0) return null;
-  const fp = path.join(DIALOGUE_LOGS_DIR, files[0]);
-  return { path: fp, json: JSON.parse(fs.readFileSync(fp, 'utf8')) };
+  const json = evaluationStore.loadDialogueLog(dialogueId);
+  if (!json) return null;
+  return { path: `${dialogueId}.json`, json };
 }
 
 function buildExchangesForResult(resultRow, dialogueLog, options = {}) {

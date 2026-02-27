@@ -18,6 +18,7 @@ import path from 'path';
 import YAML from 'yaml';
 import { exec } from 'child_process';
 import { projectTranscriptArtifacts } from '../services/transcriptProjection.js';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 const __dirname = import.meta.dirname;
 const DB_PATH = path.join(__dirname, '..', 'data', 'evaluations.db');
@@ -318,20 +319,15 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
   let logMeta = {};
   let turnResults = [];
   let learnerContext = '';
-  try {
-    const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(req.params.dialogueId));
-    if (files.length > 0) {
-      const log = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf8'));
-      trace = log.consolidatedTrace || log.dialogueTrace || [];
-      turnResults = log.turnResults || [];
-      learnerContext = log.learnerContext || '';
-      logMeta = {
-        totalTurns: log.totalTurns,
-        learnerArchitecture: log.learnerArchitecture,
-      };
-    }
-  } catch {
-    /* ignored */
+  const log = evaluationStore.loadDialogueLog(req.params.dialogueId);
+  if (log) {
+    trace = log.consolidatedTrace || log.dialogueTrace || [];
+    turnResults = log.turnResults || [];
+    learnerContext = log.learnerContext || '';
+    logMeta = {
+      totalTurns: log.totalTurns,
+      learnerArchitecture: log.learnerArchitecture,
+    };
   }
 
   const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified', trace, row.profile_name);

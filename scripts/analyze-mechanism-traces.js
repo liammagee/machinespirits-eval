@@ -28,9 +28,9 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as evaluationStore from '../services/evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
 
 // ── Text Similarity ─────────────────────────────────────────────────────
@@ -433,16 +433,9 @@ function measureBehavioralEvolution(trace) {
 // ── Data Loading ────────────────────────────────────────────────────────
 
 function loadDialogueTrace(dialogueId) {
-  if (!dialogueId) return null;
-  const files = fs.readdirSync(LOGS_DIR).filter((f) => f.includes(dialogueId));
-  if (files.length === 0) return null;
-
-  try {
-    const data = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
-    return data.dialogueTrace || [];
-  } catch {
-    return null;
-  }
+  const data = evaluationStore.loadDialogueLog(dialogueId);
+  if (!data) return null;
+  return data.dialogueTrace || [];
 }
 
 // ── Aggregation ─────────────────────────────────────────────────────────

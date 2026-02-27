@@ -955,17 +955,12 @@ async function executeTool(name, params) {
         );
         let printed = false;
         if (r.dialogueId) {
-          const files = fs.existsSync(LOGS_DIR) ? fs.readdirSync(LOGS_DIR).filter((f) => f.includes(r.dialogueId)) : [];
-          if (files.length > 0) {
-            try {
-              const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
-              for (const entry of dialogue.dialogueTrace || []) {
-                lines.push(`[${(entry.role || 'unknown').toUpperCase()}] ${entry.content || ''}`);
-              }
-              printed = true;
-            } catch (e) {
-              /* fall through */
+          const dialogue = evaluationStore.loadDialogueLog(r.dialogueId);
+          if (dialogue) {
+            for (const entry of dialogue.dialogueTrace || []) {
+              lines.push(`[${(entry.role || 'unknown').toUpperCase()}] ${entry.content || ''}`);
             }
+            printed = true;
           }
         }
         if (!printed && r.suggestions?.length > 0) {
@@ -1952,51 +1947,43 @@ async function main() {
           // Try dialogue log file first (rich trace with metadata)
           let printed = false;
           if (result.dialogueId) {
-            const files = fs.existsSync(LOGS_DIR)
-              ? fs.readdirSync(LOGS_DIR).filter((f) => f.includes(result.dialogueId))
-              : [];
+            const dialogue = evaluationStore.loadDialogueLog(result.dialogueId);
+            if (dialogue) {
+              const trace = dialogue.dialogueTrace || [];
+              if (trace.length > 0) {
+                const projection = projectTranscriptArtifacts({
+                  trace,
+                  turnResults: dialogue.turnResults || [],
+                  learnerContext: dialogue.learnerContext || '',
+                  scenarioName: result.scenarioName || result.scenarioId,
+                  profileName: result.profileName || '',
+                  totalTurns: dialogue.totalTurns || 0,
+                  detail: detailLevel,
+                });
 
-            if (files.length > 0) {
-              try {
-                const dialogue = JSON.parse(fs.readFileSync(path.join(LOGS_DIR, files[0]), 'utf-8'));
-                const trace = dialogue.dialogueTrace || [];
-                if (trace.length > 0) {
-                  const projection = projectTranscriptArtifacts({
-                    trace,
-                    turnResults: dialogue.turnResults || [],
-                    learnerContext: dialogue.learnerContext || '',
-                    scenarioName: result.scenarioName || result.scenarioId,
-                    profileName: result.profileName || '',
-                    totalTurns: dialogue.totalTurns || 0,
-                    detail: detailLevel,
-                  });
+                console.log(projection.formatted);
 
-                  console.log(projection.formatted);
-
-                  if (projection.judged?.publicTranscript || projection.judged?.fullTranscript) {
-                    console.log(theme.dim('Judge-visible transcript (public):'));
-                    console.log(projection.judged.publicTranscript || '(missing)');
-                    console.log('');
-                    console.log(theme.dim('Judge-visible transcript (full/internal):'));
-                    console.log(projection.judged.fullTranscript || '(missing)');
-                    console.log('');
-                  }
-
-                  if (projection.diagnostics?.effectCount > 0) {
-                    console.log(theme.warn('Projection Diagnostics:'));
-                    for (const effect of projection.diagnostics.effects) {
-                      const sev = effect.severity?.toUpperCase?.() || 'INFO';
-                      console.log(`  - [${sev}] ${effect.message}`);
-                      for (const step of effect.remedialSteps || []) {
-                        console.log(`      remediation: ${step}`);
-                      }
-                    }
-                    console.log('');
-                  }
-                  printed = true;
+                if (projection.judged?.publicTranscript || projection.judged?.fullTranscript) {
+                  console.log(theme.dim('Judge-visible transcript (public):'));
+                  console.log(projection.judged.publicTranscript || '(missing)');
+                  console.log('');
+                  console.log(theme.dim('Judge-visible transcript (full/internal):'));
+                  console.log(projection.judged.fullTranscript || '(missing)');
+                  console.log('');
                 }
-              } catch (e) {
-                // Fall through to legacy format
+
+                if (projection.diagnostics?.effectCount > 0) {
+                  console.log(theme.warn('Projection Diagnostics:'));
+                  for (const effect of projection.diagnostics.effects) {
+                    const sev = effect.severity?.toUpperCase?.() || 'INFO';
+                    console.log(`  - [${sev}] ${effect.message}`);
+                    for (const step of effect.remedialSteps || []) {
+                      console.log(`      remediation: ${step}`);
+                    }
+                  }
+                  console.log('');
+                }
+                printed = true;
               }
             }
           }
@@ -2709,16 +2696,9 @@ async function main() {
 
           // Load dialogue log
           const dialogueId = result.dialogueId;
-          const logPath = path.join(LOGS_DIR, `${dialogueId}.json`);
-          let dialogueLog;
-          try {
-            if (!fs.existsSync(logPath)) {
-              console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (dialogue log not found)`);
-              return null;
-            }
-            dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
-          } catch (e) {
-            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (${e.message})`);
+          const dialogueLog = evaluationStore.loadDialogueLog(dialogueId);
+          if (!dialogueLog) {
+            console.log(`${tag} ${scenarioId} / ${profileName} ... SKIP (dialogue log not found)`);
             return null;
           }
 
