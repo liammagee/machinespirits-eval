@@ -10,9 +10,12 @@
  *
  * The symmetry principle applies to:
  *   - Score formula: both use weighted (1-5) → 0-100 conversion
- *   - Dimension structure: same count, weights summing to 1.0, one conditional each
+ *   - Dimension structure: weights summing to 1.0; tutor has one conditional (recognition_depth)
  *   - Prompt contract: same JSON format, same 1-5 scale, same evaluation framing
  *   - Agent targeting: each prompt evaluates only its own agent
+ *
+ * Note: Since v2.1.0, learner rubric has no conditional dimension — deliberation_depth
+ * moved to the dedicated deliberation rubric. All 7 learner dims apply uniformly.
  */
 
 import { describe, it } from 'node:test';
@@ -85,12 +88,16 @@ describe('TuH / LrH holistic scoring symmetry', () => {
     assert.ok('scaffolding_arc' in withoutRecog);
   });
 
-  it('learner holistic has a conditional dimension (deliberation_depth) gated by isMultiAgent', () => {
+  it('learner dimensions are uniform across architectures (deliberation_depth moved to deliberation rubric)', () => {
     const withMulti = getLearnerDimensions({ isMultiAgent: true });
     const withoutMulti = getLearnerDimensions({ isMultiAgent: false });
 
-    assert.ok('deliberation_depth' in withMulti, 'deliberation_depth present when isMultiAgent=true');
-    assert.ok(!('deliberation_depth' in withoutMulti), 'deliberation_depth absent when isMultiAgent=false');
+    // Since v2.1.0, deliberation_depth is in the dedicated deliberation rubric
+    assert.ok(!('deliberation_depth' in withMulti), 'deliberation_depth should not be in learner rubric');
+    assert.ok(!('deliberation_depth' in withoutMulti), 'deliberation_depth should not be in learner rubric');
+    // Same dimensions for both architectures
+    assert.deepStrictEqual(Object.keys(withMulti), Object.keys(withoutMulti),
+      'same dimensions for multi-agent and unified');
     assert.ok('learner_authenticity' in withMulti);
     assert.ok('learner_authenticity' in withoutMulti);
   });
@@ -108,16 +115,14 @@ describe('TuH / LrH holistic scoring symmetry', () => {
       `tutor full should have 6 dims, got ${Object.keys(tutorFull).length}`);
     assert.strictEqual(Object.keys(tutorReduced).length, 5,
       `tutor reduced should have 5 dims, got ${Object.keys(tutorReduced).length}`);
-    // Learner: 8 with deliberation_depth, 7 without
-    assert.strictEqual(Object.keys(learnerFull).length, 8,
-      `learner full should have 8 dims, got ${Object.keys(learnerFull).length}`);
+    // Learner: 7 for all architectures (deliberation_depth moved to deliberation rubric)
+    assert.strictEqual(Object.keys(learnerFull).length, 7,
+      `learner full should have 7 dims, got ${Object.keys(learnerFull).length}`);
     assert.strictEqual(Object.keys(learnerReduced).length, 7,
       `learner reduced should have 7 dims, got ${Object.keys(learnerReduced).length}`);
-    // Both have a conditional dimension that can be omitted
+    // Tutor still has a conditional dimension (recognition_depth)
     assert.ok(Object.keys(tutorFull).length > Object.keys(tutorReduced).length,
       'tutor full should have more dims than reduced');
-    assert.ok(Object.keys(learnerFull).length > Object.keys(learnerReduced).length,
-      'learner full should have more dims than reduced');
   });
 
   // ── Both dimension sets have weights summing to 1.0 ───────────────────

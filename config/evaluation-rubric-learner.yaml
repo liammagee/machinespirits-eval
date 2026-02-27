@@ -16,14 +16,13 @@
 #
 #   Overall Score = ((weighted_avg - 1) / 4) x 100
 #
-# The "Deliberation Depth" dimension is scored only for multi-agent learners
-# (those with ego/superego internal deliberation). For single-agent (unified)
-# learners, the weight is redistributed proportionally across other dimensions.
+# v2.1.0: deliberation_depth moved to evaluation-rubric-deliberation.yaml.
+# All 7 remaining dimensions apply uniformly to all learner architectures.
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Learner Quality Rubric"
-version: "2.0.0"
+version: "2.1.0"
 description: "Rubric for evaluating synthetic learner turn quality in multi-turn tutoring dialogues"
 
 scale:
@@ -43,13 +42,12 @@ scale:
 # ┌───────────────────────────────┬────────┬───────────────────────────────────────────────┐
 # │ Dimension                     │ Weight │ What it measures                              │
 # ├───────────────────────────────┼────────┼───────────────────────────────────────────────┤
-# │ Learner Authenticity          │  18%   │ Genuine student-like reactions and engagement  │
-# │ Question Quality              │  15%   │ Depth and substance of learner questions       │
-# │ Conceptual Engagement         │  17%   │ Engagement with ideas, not just process        │
-# │ Revision Signals              │  12%   │ Evidence of changing mind / integrating new    │
-# │ Deliberation Depth            │  13%   │ Quality of internal ego/superego process       │
-# │ Persona Consistency           │   5%   │ Maintaining assigned persona while evolving    │
-# │ Conceptual Progression        │  12%   │ Cross-turn intellectual development            │
+# │ Learner Authenticity          │  21%   │ Genuine student-like reactions and engagement  │
+# │ Question Quality              │  17%   │ Depth and substance of learner questions       │
+# │ Conceptual Engagement         │  20%   │ Engagement with ideas, not just process        │
+# │ Revision Signals              │  14%   │ Evidence of changing mind / integrating new    │
+# │ Persona Consistency           │   6%   │ Maintaining assigned persona while evolving    │
+# │ Conceptual Progression        │  14%   │ Cross-turn intellectual development            │
 # │ Metacognitive Development     │   8%   │ Awareness of own learning process              │
 # └───────────────────────────────┴────────┴───────────────────────────────────────────────┘
 #
@@ -58,7 +56,7 @@ scale:
 dimensions:
   learner_authenticity:
     name: "Learner Authenticity"
-    weight: 0.18
+    weight: 0.21
     description: "Does the learner's response feel like a genuine student reaction? Is the confusion real, the engagement authentic, the resistance plausible?"
     theoretical_basis: |
       Grounded in ecological validity of simulated learner agents. A synthetic
@@ -90,7 +88,7 @@ dimensions:
 
   question_quality:
     name: "Question Quality"
-    weight: 0.15
+    weight: 0.17
     description: "Does the learner ask substantive questions that reveal genuine engagement with the material? Deep questions vs surface-level 'what do I do next?'"
     theoretical_basis: |
       Based on research on question asking as a metacognitive skill (Graesser &
@@ -122,7 +120,7 @@ dimensions:
 
   conceptual_engagement:
     name: "Conceptual Engagement"
-    weight: 0.17
+    weight: 0.20
     description: "Does the learner engage with the concepts themselves rather than just the process of learning? Evidence of thinking about ideas, not just following instructions."
     theoretical_basis: |
       Grounded in the distinction between surface and deep approaches to learning
@@ -155,7 +153,7 @@ dimensions:
 
   revision_signals:
     name: "Revision Signals"
-    weight: 0.12
+    weight: 0.14
     description: "Does the learner show evidence of changing their mind, revising prior understanding, or integrating new information into their existing framework?"
     theoretical_basis: |
       Based on conceptual change theory (Posner et al., 1982) and Piaget's
@@ -186,51 +184,9 @@ dimensions:
       good: "Oh wait -- so when I said dialectics was just arguing, I was thinking about it too statically. It's not that you have two sides and pick one. The whole framework shifts. So my original analogy about debates totally breaks down."
       bad: "Okay, I see. So dialectics isn't just arguing. Got it. What's the next topic?"
 
-  deliberation_depth:
-    name: "Deliberation Depth"
-    weight: 0.13
-    description: "For multi-agent learners: Does the internal ego/superego dialogue produce genuine reflection, or is it performative? Score the quality of the internal deliberation process."
-    theoretical_basis: |
-      Based on the bilateral ego/superego architecture where the learner's
-      internal process involves: (1) ego initial reaction, (2) superego critique,
-      and (3) ego revision. This dimension measures whether the multi-agent
-      architecture produces genuine internal dialogue that improves the final
-      output, or whether the superego critique is pro forma and the ego revision
-      is trivial. This is the dimension most directly affected by Factor C
-      (learner architecture) and should show the clearest architecture effect.
-    applies_to: "multi-agent only"
-    weight_redistribution: |
-      For single-agent (unified) learners who lack internal deliberation traces,
-      this dimension is omitted and its weight (15%) is redistributed proportionally
-      across the remaining five dimensions.
-    criteria:
-      5: "Superego critique is substantive and specific; ego revision materially changes the response; internal process produces insight not present in initial reaction"
-      4: "Superego identifies real issues; ego revision shows genuine consideration; final output is measurably improved by the process"
-      3: "Superego makes reasonable but generic observations; ego revision makes minor adjustments; some value added by the process"
-      2: "Superego critique is superficial or formulaic; ego revision is trivial (rephrasing without substance); internal process adds little"
-      1: "Performative deliberation: superego agrees with ego, ego revision is cosmetic, internal process is pure theater"
-    deliberation_markers:
-      positive:
-        - "Superego identifies specific weakness in ego's initial reaction"
-        - "Ego revision addresses superego's critique substantively"
-        - "Final message contains insights not in initial reaction"
-        - "Superego pushes ego beyond comfort zone"
-      negative:
-        - "Superego says 'good response' or 'looks fine'"
-        - "Ego revision is same content with different wording"
-        - "Superego critique is generic ('be more specific')"
-        - "Internal process doesn't improve the external message"
-    examples:
-      good_ego_initial: "Dialectics seems like it's about conflict and resolution."
-      good_superego: "Your response is too passive -- you're just restating what the tutor said. Push back on the 'resolution' framing. Does Hegel actually resolve tension, or does he transform it? Also, connect this to something from your own experience."
-      good_ego_revision: "Hmm, but I'm not sure 'resolution' is the right word. When I think about arguments I've had, the best ones don't get 'resolved' -- they change how I think about the whole issue. Is that closer to what Hegel means?"
-      bad_ego_initial: "I find dialectics interesting."
-      bad_superego: "Good start. Maybe add a question."
-      bad_ego_revision: "I find dialectics interesting. What can you tell me more about it?"
-
   persona_consistency:
     name: "Persona Consistency"
-    weight: 0.05
+    weight: 0.06
     description: "Does the learner maintain the assigned persona (frustrated student, returning learner, etc.) while still showing genuine evolution?"
     theoretical_basis: |
       The evaluation framework assigns learner personas (e.g., productive_struggler,
@@ -264,7 +220,7 @@ dimensions:
 
   conceptual_progression:
     name: "Conceptual Progression"
-    weight: 0.12
+    weight: 0.14
     description: "Does the learner's conceptual framework develop across turns? Evidence of ideas building on each other, not just responding to the latest tutor input in isolation."
     theoretical_basis: |
       Based on learning trajectory research. Genuine learning shows
@@ -327,19 +283,11 @@ dimensions:
       bad: "Okay, I understand. What should we talk about next?"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# WEIGHT REDISTRIBUTION FOR SINGLE-AGENT LEARNERS
+# CHANGE LOG
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# When deliberation_depth is N/A (single-agent learners), redistribute its 13%:
-#
-# Original weights:                        Redistributed weights:
-#   learner_authenticity:       0.18   →    0.2069   (0.18 / 0.87)
-#   question_quality:           0.15   →    0.1724   (0.15 / 0.87)
-#   conceptual_engagement:      0.17   →    0.1954   (0.17 / 0.87)
-#   revision_signals:           0.12   →    0.1379   (0.12 / 0.87)
-#   deliberation_depth:         0.13   →    OMITTED
-#   persona_consistency:        0.05   →    0.0575   (0.05 / 0.87)
-#   conceptual_progression:     0.12   →    0.1379   (0.12 / 0.87)
-#   metacognitive_development:  0.08   →    0.0920   (0.08 / 0.87)
+# v2.1.0: Removed deliberation_depth dimension (moved to evaluation-rubric-
+#          deliberation.yaml). Weights redistributed proportionally across
+#          remaining 7 dimensions. Same dimensions now apply to all architectures.
 #
 # ══════════════════════════════════════════════════════════════════════════════
