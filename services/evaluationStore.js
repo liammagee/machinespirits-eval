@@ -1102,6 +1102,81 @@ export function exportToCsv(runId) {
 /**
  * Complete an incomplete evaluation run
  *
+ * Phase 3c: Write run snapshot manifest to logs/run-manifests/{runId}.json.
+ * Records the complete provenance anchor for a run: every row's dialogue hash,
+ * config hash, and scoring metadata.
+ */
+const MANIFESTS_DIR = path.join(ROOT_DIR, 'logs', 'run-manifests');
+
+function writeRunManifest(runId, run, results, completedAt) {
+  try {
+    if (!fs.existsSync(MANIFESTS_DIR)) {
+      fs.mkdirSync(MANIFESTS_DIR, { recursive: true });
+    }
+
+    // Collect per-row provenance data
+    const rows = {};
+    const configHashes = {};
+    const profiles = new Set();
+    const scenarios = new Set();
+    const judgeModels = new Set();
+
+    // Query rubric versions directly (not in parsed results)
+    const rubricVersionMap = {};
+    try {
+      const versionRows = db.prepare(
+        'SELECT id, tutor_rubric_version FROM evaluation_results WHERE run_id = ?'
+      ).all(runId);
+      for (const vr of versionRows) rubricVersionMap[String(vr.id)] = vr.tutor_rubric_version || null;
+    } catch { /* ignore */ }
+
+    for (const r of results) {
+      const rowIdStr = String(r.id);
+      rows[rowIdStr] = {
+        dialogueId: r.dialogueId || null,
+        dialogueContentHash: r.dialogueContentHash || null,
+        configHash: r.configHash || null,
+        profileName: r.profileName || null,
+        scenarioId: r.scenarioId || null,
+        judgeModel: r.judgeModel || null,
+        tutorRubricVersion: rubricVersionMap[rowIdStr] || null,
+      };
+
+      if (r.configHash && r.profileName) {
+        configHashes[r.profileName] = r.configHash;
+      }
+      if (r.profileName) profiles.add(r.profileName);
+      if (r.scenarioId) scenarios.add(r.scenarioId);
+      if (r.judgeModel) judgeModels.add(r.judgeModel);
+    }
+
+    const rubricVersions = [...new Set(Object.values(rubricVersionMap).filter(Boolean))].sort();
+
+    const manifest = {
+      run_id: runId,
+      created_at: run.createdAt,
+      completed_at: completedAt,
+      git_commit: run.gitCommit || null,
+      package_version: run.packageVersion || null,
+      description: run.description || null,
+      total_rows: results.length,
+      expected_tests: (run.totalScenarios || 0) * (run.totalConfigurations || 0),
+      profiles: [...profiles].sort(),
+      scenarios: [...scenarios].sort(),
+      judge_models: [...judgeModels].sort(),
+      rubric_versions: rubricVersions,
+      config_hashes: configHashes,
+      rows,
+    };
+
+    const manifestPath = path.join(MANIFESTS_DIR, `${runId}.json`);
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  } catch {
+    // Non-fatal: manifest write failure should not block run completion
+  }
+}
+
+/**
  * Marks a stuck/interrupted run as completed with whatever results exist.
  * Returns summary of what was completed.
  *
@@ -1170,6 +1245,9 @@ export function completeRun(runId) {
     }
     profileBreakdown[profile]++;
   }
+
+  // Phase 3c: Write run snapshot manifest
+  writeRunManifest(runId, run, results, completedAt);
 
   return {
     runId,
@@ -2343,6 +2421,28 @@ export function loadDialogueLog(dialogueId) {
 }
 
 /**
+ * Load a dialogue log from the content-addressed (immutable) copy.
+ * Phase 3a: hash-named files are the write-once evidence snapshot.
+ * Returns { log, verified } where verified indicates the content matches the hash filename.
+ */
+export function loadImmutableDialogueLog(contentHash) {
+  if (!contentHash) return { log: null, verified: false };
+
+  const hashPath = path.join(DIALOGUE_LOGS_DIR, `${contentHash}.json`);
+  if (!fs.existsSync(hashPath)) return { log: null, verified: false };
+
+  try {
+    const content = fs.readFileSync(hashPath, 'utf-8');
+    const log = JSON.parse(content);
+    // Verify content matches filename hash
+    const recomputed = createHash('sha256').update(JSON.stringify(log, null, 2)).digest('hex');
+    return { log, verified: recomputed === contentHash };
+  } catch {
+    return { log: null, verified: false };
+  }
+}
+
+/**
  * Get a single result by its row ID.
  */
 export function getResultById(id) {
@@ -2501,6 +2601,7 @@ export default {
   updateProcessMeasures,
   // Dialogue log loading
   loadDialogueLog,
+  loadImmutableDialogueLog,
   // Rubric version comparison
   getResultById,
   cloneRowsForRubricVersion,
