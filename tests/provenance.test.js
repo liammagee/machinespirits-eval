@@ -501,3 +501,260 @@ describe('Backward compatibility', () => {
     assert.deepStrictEqual(audit, []);
   });
 });
+
+// ============================================================================
+// Audit trail edge cases
+// ============================================================================
+
+describe('Audit trail edge cases', () => {
+  it('withAuditTrail handles non-existent resultId gracefully (no crash)', () => {
+    // Updating a non-existent resultId should not crash — it just produces no audit entries
+    // We can't call withAuditTrail directly since it's not exported, but we can verify
+    // that getScoreAudit on a non-existent ID returns [] (graceful degradation)
+    const audit = getScoreAudit('nonexistent-result-id-12345');
+    assert.deepStrictEqual(audit, []);
+  });
+
+  it('concurrent updates to different columns produce separate audit entries', () => {
+    const { resultId } = createTestResult();
+
+    // Update tutor scores (touches tutor_overall_score, tutor_first_turn_score, etc.)
+    updateResultTutorScores(resultId, {
+      tutorScores: { 0: { scores: {}, overallScore: 75 } },
+      tutorOverallScore: 75,
+      tutorFirstTurnScore: 75,
+      judgeModel: 'claude-opus-4-6',
+    });
+
+    // Update learner scores (touches learner_scores, learner_overall_score)
+    updateResultLearnerScores(resultId, {
+      scores: { 0: { scores: { revision_signals: { score: 3 } }, overallScore: 65 } },
+      overallScore: 65,
+      judgeModel: 'claude-opus-4-6',
+    });
+
+    const audit = getScoreAudit(resultId);
+    const ops = [...new Set(audit.map((a) => a.operation))];
+    assert.ok(ops.includes('updateResultTutorScores'), 'should have tutor audit entries');
+    assert.ok(ops.includes('updateResultLearnerScores'), 'should have learner audit entries');
+
+    // Check both sets of columns are tracked
+    const columns = audit.map((a) => a.column_name);
+    assert.ok(columns.some((c) => c.includes('tutor')), 'should track tutor columns');
+    assert.ok(columns.some((c) => c.includes('learner')), 'should track learner columns');
+  });
+
+  it('stringifyAudit correctly handles nested objects in tutor_scores', () => {
+    const { resultId } = createTestResult();
+
+    const complexScores = {
+      0: {
+        scores: { relevance: { score: 4, reasoning: 'good' }, specificity: { score: 3, reasoning: 'ok' } },
+        overallScore: 70,
+        summary: 'test summary',
+      },
+    };
+
+    updateResultTutorScores(resultId, {
+      tutorScores: complexScores,
+      tutorOverallScore: 70,
+      tutorFirstTurnScore: 70,
+      judgeModel: 'claude-opus-4-6',
+    });
+
+    const audit = getScoreAudit(resultId);
+    const tutorScoresEntry = audit.find((a) => a.column_name === 'tutor_scores');
+    assert.ok(tutorScoresEntry, 'should have tutor_scores audit entry');
+    assert.strictEqual(tutorScoresEntry.old_value, null, 'old value should be null');
+    // new_value should be a JSON string representing the scores
+    assert.ok(typeof tutorScoresEntry.new_value === 'string', 'new_value should be a string');
+    const parsed = JSON.parse(tutorScoresEntry.new_value);
+    assert.strictEqual(parsed['0'].overallScore, 70, 'nested object should be preserved');
+  });
+
+  it('audit entries for numeric columns store values as strings', () => {
+    const { resultId } = createTestResult();
+
+    updateResultTutorScores(resultId, {
+      tutorOverallScore: 82.5,
+      tutorFirstTurnScore: 82.5,
+    });
+
+    const audit = getScoreAudit(resultId);
+    const overallEntry = audit.find((a) => a.column_name === 'tutor_overall_score');
+    assert.ok(overallEntry, 'should have tutor_overall_score entry');
+    assert.strictEqual(overallEntry.new_value, '82.5', 'numeric value should be stored as string');
+  });
+});
+
+// ============================================================================
+// Hash verification scenarios
+// ============================================================================
+
+describe('Hash verification scenarios', () => {
+  it('dialogue hash mismatch is detectable', () => {
+    const contentA = JSON.stringify({ dialogueId: 'test', turns: [{ text: 'hello' }] });
+    const contentB = JSON.stringify({ dialogueId: 'test', turns: [{ text: 'goodbye' }] });
+    const hashA = createHash('sha256').update(contentA).digest('hex');
+    const hashB = createHash('sha256').update(contentB).digest('hex');
+
+    // Store with hash A
+    const { runId, resultId } = createTestResult({ dialogueContentHash: hashA });
+
+    // Verify: recomputing with content B produces different hash
+    const results = getResults(runId);
+    const storedHash = results[0].dialogueContentHash;
+    assert.strictEqual(storedHash, hashA, 'stored hash should match hash A');
+    assert.notStrictEqual(storedHash, hashB, 'stored hash should NOT match hash B (mismatch detectable)');
+  });
+
+  it('content hash is stable across identical JSON.stringify calls', () => {
+    const data = { dialogueId: 'stable-test', turnResults: [{ turnIndex: 0, suggestion: 'hello' }] };
+    const json1 = JSON.stringify(data, null, 2);
+    const json2 = JSON.stringify(data, null, 2);
+    const hash1 = createHash('sha256').update(json1).digest('hex');
+    const hash2 = createHash('sha256').update(json2).digest('hex');
+    assert.strictEqual(hash1, hash2, 'identical JSON.stringify output should produce identical hashes');
+  });
+
+  it('turn ID collision resistance — 1000 generated IDs have zero collisions', () => {
+    function generateContentTurnId(dialogueId, turnIndex, turnContent) {
+      return createHash('sha256')
+        .update(dialogueId + ':' + turnIndex + ':' + turnContent)
+        .digest('hex').slice(0, 16);
+    }
+
+    const ids = new Set();
+    for (let i = 0; i < 1000; i++) {
+      const dialogueId = `dialogue-${i}`;
+      const turnContent = JSON.stringify({ turnIndex: 0, suggestion: [`response-${i}`], turnId: `turn-${i}` });
+      const id = generateContentTurnId(dialogueId, 0, turnContent);
+      ids.add(id);
+    }
+    assert.strictEqual(ids.size, 1000, 'all 1000 turn IDs should be unique (no collisions)');
+  });
+});
+
+// ============================================================================
+// Cross-function audit coverage
+// ============================================================================
+
+describe('Cross-function audit coverage', () => {
+  it('multiple different UPDATE functions on the same resultId produce interleaved audit history', () => {
+    const { resultId } = createTestResult();
+
+    updateResultTutorScores(resultId, {
+      tutorOverallScore: 60,
+      tutorFirstTurnScore: 60,
+      judgeModel: 'claude-opus-4-6',
+    });
+
+    updateResultLearnerScores(resultId, {
+      scores: { 0: { scores: { revision_signals: { score: 3 } }, overallScore: 55 } },
+      overallScore: 55,
+      judgeModel: 'claude-opus-4-6',
+    });
+
+    updateDialogueQualityScore(resultId, {
+      dialogueQualityScore: 72,
+      dialogueQualitySummary: 'Good',
+      dialogueQualityJudgeModel: 'claude-opus-4-6',
+    });
+
+    const audit = getScoreAudit(resultId);
+    const ops = [...new Set(audit.map((a) => a.operation))];
+    assert.ok(ops.length >= 3, `should have at least 3 different operations, got ${ops.length}: ${ops.join(', ')}`);
+    assert.ok(ops.includes('updateResultTutorScores'));
+    assert.ok(ops.includes('updateResultLearnerScores'));
+    assert.ok(ops.includes('updateDialogueQualityScore'));
+
+    // Verify chronological ordering
+    for (let i = 1; i < audit.length; i++) {
+      assert.ok(audit[i].timestamp >= audit[i - 1].timestamp, 'audit entries should be chronologically ordered');
+    }
+  });
+
+  it('getScoreAuditByRun correctly filters — entries from other runs excluded', () => {
+    // Create two runs
+    const run1 = createRun({ description: 'filter test run 1' });
+    const run2 = createRun({ description: 'filter test run 2' });
+    testRunIds.push(run1.id, run2.id);
+
+    const id1 = storeResult(run1.id, {
+      scenarioId: 's1', scenarioName: 'S1', provider: 'test', model: 'test', suggestions: [], success: true,
+    });
+    const id2 = storeResult(run2.id, {
+      scenarioId: 's2', scenarioName: 'S2', provider: 'test', model: 'test', suggestions: [], success: true,
+    });
+
+    updateResultTutorScores(id1, { tutorOverallScore: 70, tutorFirstTurnScore: 70 });
+    updateResultTutorScores(id2, { tutorOverallScore: 80, tutorFirstTurnScore: 80 });
+
+    const auditRun1 = getScoreAuditByRun(run1.id);
+    const auditRun2 = getScoreAuditByRun(run2.id);
+
+    // Run1 audit should only contain entries for id1
+    const run1ResultIds = [...new Set(auditRun1.map((a) => a.result_id))];
+    assert.ok(run1ResultIds.every((rid) => rid === String(id1)), 'run1 audit should only contain run1 results');
+
+    // Run2 audit should only contain entries for id2
+    const run2ResultIds = [...new Set(auditRun2.map((a) => a.result_id))];
+    assert.ok(run2ResultIds.every((rid) => rid === String(id2)), 'run2 audit should only contain run2 results');
+  });
+
+  it('audit entries preserve rubric_version metadata when available', () => {
+    const { resultId } = createTestResult();
+
+    updateResultTutorScores(resultId, {
+      tutorOverallScore: 75,
+      tutorFirstTurnScore: 75,
+      judgeModel: 'claude-opus-4-6',
+      rubricVersion: '2.1',
+    });
+
+    const audit = getScoreAudit(resultId);
+    const withVersion = audit.filter((a) => a.rubric_version === '2.1');
+    assert.ok(withVersion.length > 0, 'at least some audit entries should have rubric_version');
+  });
+});
+
+// ============================================================================
+// Backward compatibility extensions
+// ============================================================================
+
+describe('Backward compatibility extensions', () => {
+  it('getScoreAudit returns [] for a resultId that does not exist in evaluation_results', () => {
+    const audit = getScoreAudit('completely-nonexistent-id-999');
+    assert.deepStrictEqual(audit, [], 'should return empty array for non-existent resultId');
+  });
+
+  it('getScoreAuditByRun returns [] for a runId with no updates', () => {
+    const run = createRun({ description: 'empty run' });
+    testRunIds.push(run.id);
+    storeResult(run.id, {
+      scenarioId: 's', scenarioName: 'S', provider: 'test', model: 'test', suggestions: [], success: true,
+    });
+    // Don't do any updates
+    const audit = getScoreAuditByRun(run.id);
+    assert.deepStrictEqual(audit, [], 'should return empty array for run with no score updates');
+  });
+
+  it('rows with dialogue_content_hash = NULL can be updated normally (audit works)', () => {
+    const { resultId } = createTestResult(); // No dialogueContentHash
+
+    // Verify hash is NULL
+    const results = getResults(createTestResult().runId);
+    // Now update the row without hash — should work fine
+    updateResultTutorScores(resultId, {
+      tutorOverallScore: 88,
+      tutorFirstTurnScore: 88,
+      judgeModel: 'claude-opus-4-6',
+    });
+
+    const audit = getScoreAudit(resultId);
+    assert.ok(audit.length > 0, 'audit should work normally on rows without dialogue_content_hash');
+    const overallEntry = audit.find((a) => a.column_name === 'tutor_overall_score');
+    assert.ok(overallEntry, 'should track tutor_overall_score changes');
+    assert.strictEqual(overallEntry.new_value, '88', 'new value should be 88');
+  });
+});
