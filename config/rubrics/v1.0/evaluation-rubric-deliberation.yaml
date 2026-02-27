@@ -1,0 +1,237 @@
+# Deliberation Quality Rubric
+# Scores the quality of internal ego/superego deliberation processes.
+# Applied symmetrically to both tutor and learner multi-agent architectures.
+#
+# This rubric evaluates the PROCESS of deliberation, not the output quality
+# (which is scored by the per-turn and holistic rubrics). It answers:
+# "Does the ego/superego exchange produce genuine intellectual work, or is
+# it performative theater?"
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# APPLICABILITY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Tutor deliberation: Only for cells with an active superego agent
+#   (multi_agent_tutor: true AND superego configured — cells 3-4, 7-8, 11-12,
+#    17-18, 22-33, 82-83, 86-89)
+#
+# Learner deliberation: Only for cells with ego_superego learner architecture
+#   (even-numbered factorial cells 2, 4, 6, 8 and cells 60-70, 72-79)
+#
+# Single-agent cells receive NULL deliberation scores (nothing to evaluate).
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall score as other rubrics for comparability.
+#
+#   Overall Score = ((weighted_avg - 1) / 4) x 100
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Deliberation Quality Rubric"
+version: "1.0"
+description: "Rubric for evaluating the quality of internal ego/superego deliberation processes in multi-agent architectures"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Weak, significant issues"
+    3: "Adequate, meets basic expectations"
+    4: "Good, exceeds expectations"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DELIBERATION QUALITY DIMENSIONS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌───────────────────────────────┬────────┬───────────────────────────────────────────────┐
+# │ Dimension                     │ Weight │ What it measures                              │
+# ├───────────────────────────────┼────────┼───────────────────────────────────────────────┤
+# │ Critique Substance            │  20%   │ Does superego provide specific critique?       │
+# │ Revision Impact               │  20%   │ Does ego revision materially change output?    │
+# │ Deliberation Depth            │  15%   │ Genuine engagement vs performative exchange?   │
+# │ Insight Generation            │  15%   │ Does deliberation produce novel insights?      │
+# │ Process Coherence             │  15%   │ Does each step build on the previous?          │
+# │ Cross-Turn Evolution          │  15%   │ Does deliberation quality evolve across turns? │
+# └───────────────────────────────┴────────┴───────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  critique_substance:
+    name: "Critique Substance"
+    weight: 0.20
+    description: "Does the superego provide substantive, specific critique rather than generic approval or vague suggestions? A high-quality critique identifies concrete issues with the ego's draft and offers actionable direction."
+    theoretical_basis: |
+      The superego's value depends entirely on the quality of its feedback.
+      Generic praise ('good response') or vague direction ('be more specific')
+      adds no value to the deliberation process. Substantive critique identifies
+      specific gaps, misalignments, or missed opportunities in the ego's draft
+      and provides concrete suggestions for improvement.
+    criteria:
+      5: "Superego identifies specific, non-obvious issues; critique is substantive, actionable, and targets genuine weaknesses rather than surface features"
+      4: "Superego provides concrete feedback on identifiable issues; most critiques are specific and actionable"
+      3: "Superego offers reasonable but somewhat generic observations; mix of specific and vague feedback"
+      2: "Superego critique is mostly formulaic: 'be more specific', 'add examples'; little substantive engagement with the ego's actual content"
+      1: "Superego rubber-stamps ego output ('looks good') or provides purely cosmetic suggestions with no intellectual substance"
+    markers:
+      positive:
+        - "Identifies specific conceptual gaps in the ego's draft"
+        - "Points to misalignment between learner needs and ego response"
+        - "Suggests concrete additions or reframings"
+        - "Challenges assumptions in the ego's approach"
+      negative:
+        - "'Good response, maybe add more detail'"
+        - "'Consider being more specific'"
+        - "Repeats the ego's own language back as feedback"
+        - "Approves without engaging with content"
+
+  revision_impact:
+    name: "Revision Impact"
+    weight: 0.20
+    description: "Does the ego's revision materially change the output in response to the superego's critique? A meaningful revision addresses the critique's substance, not just its surface."
+    theoretical_basis: |
+      The deliberation process is only valuable if the ego actually incorporates
+      the superego's feedback into a meaningfully different output. Cosmetic
+      revisions (rephrasing, minor additions) indicate the process is theater.
+      Material revisions (restructured approach, new content, changed emphasis)
+      indicate genuine iterative improvement.
+    criteria:
+      5: "Revision fundamentally restructures or enriches the response; clear before/after difference traceable to superego critique; new substantive content appears"
+      4: "Revision makes meaningful changes that address the critique's core points; output is noticeably improved"
+      3: "Revision makes some adjustments in response to critique; partially addresses feedback but some key points ignored"
+      2: "Revision is mostly cosmetic: rephrasing, minor additions, or superficial adjustments that don't address the critique's substance"
+      1: "No meaningful revision: ego output is essentially unchanged despite critique, or changes are purely cosmetic (word swaps, sentence reordering)"
+    markers:
+      positive:
+        - "New content appears that directly addresses superego's specific critique"
+        - "Response structure changes to accommodate feedback"
+        - "Emphasis or framing shifts in response to critique"
+        - "Ego explicitly engages with superego's reasoning"
+      negative:
+        - "Same content with different words"
+        - "Adding a sentence but not addressing the critique"
+        - "Superficial 'acknowledgment' of critique without change"
+        - "Revision introduces new issues not flagged by superego"
+
+  deliberation_depth:
+    name: "Deliberation Depth"
+    weight: 0.15
+    description: "Does the ego/superego exchange reflect genuine intellectual engagement, or is it a performative ritual? Depth means the deliberation grapples with real tension rather than going through the motions."
+    theoretical_basis: |
+      Multi-agent architectures are designed to create productive internal tension.
+      The superego should genuinely challenge the ego, and the ego should genuinely
+      wrestle with that challenge. When both agents are merely performing their
+      roles without real intellectual friction, the architecture provides no benefit
+      over a single-agent approach. Depth is measured by the presence of genuine
+      disagreement, considered response, and resolution through reasoning.
+    criteria:
+      5: "Genuine intellectual tension: superego raises non-trivial concerns; ego engages seriously with them; resolution involves real reasoning, not just compliance"
+      4: "Substantive exchange with some real tension; ego and superego engage on matters of substance rather than style"
+      3: "Adequate depth: exchange covers relevant ground but lacks genuine tension; feels more like checklist review than intellectual debate"
+      2: "Shallow exchange: deliberation follows predictable patterns; superego raises obvious points; ego makes expected adjustments"
+      1: "Performative theater: no genuine tension; superego agrees or nitpicks; ego complies or ignores; the process adds nothing"
+    markers:
+      positive:
+        - "Superego raises a point the ego hadn't considered"
+        - "Ego pushes back on superego with reasoning"
+        - "Deliberation reveals genuine trade-offs"
+        - "Resolution requires weighing competing concerns"
+      negative:
+        - "Predictable critique-comply pattern"
+        - "No evidence of genuine disagreement"
+        - "Superego echoes ego's own concerns"
+        - "Exchange could be predicted from the prompt alone"
+
+  insight_generation:
+    name: "Insight Generation"
+    weight: 0.15
+    description: "Does the deliberation produce insights, ideas, or approaches that were absent from the ego's initial draft? The deliberation should add intellectual value beyond what a single pass would achieve."
+    theoretical_basis: |
+      The justification for multi-agent architecture is that it produces better
+      output than a single agent. This dimension directly measures that claim:
+      does the final output contain substantive content (ideas, framings,
+      examples, approaches) that was not present in the initial ego draft and
+      would likely not have emerged without the superego's intervention?
+    criteria:
+      5: "Deliberation produces genuinely novel insights: new framings, unexpected connections, or approaches that transform the initial draft's quality"
+      4: "Deliberation adds valuable content not in the initial draft; final output is measurably enriched by the process"
+      3: "Some new content emerges from deliberation but it's incremental rather than transformative; adds detail without changing substance"
+      2: "Minimal new content: deliberation mostly polishes existing ideas rather than generating new ones"
+      1: "No insight generation: final output contains nothing that wasn't already in or implied by the initial draft"
+    markers:
+      positive:
+        - "New example or analogy appears after superego feedback"
+        - "Different pedagogical approach adopted after deliberation"
+        - "Connection to learner's specific situation deepened"
+        - "Conceptual framing changed in a way that improves clarity"
+      negative:
+        - "Final output is a polished version of the initial draft"
+        - "New content is generic filler, not substantive insight"
+        - "Deliberation reinforces initial approach rather than enriching it"
+        - "Superego's suggestions are ignored in the revision"
+
+  process_coherence:
+    name: "Process Coherence"
+    weight: 0.15
+    description: "Does each step in the deliberation reference and build on the previous? Coherent deliberation has a clear thread from ego initial → superego critique → ego revision."
+    theoretical_basis: |
+      A coherent deliberation process shows clear causal links: the superego's
+      critique directly engages with the ego's specific output, and the ego's
+      revision directly addresses the superego's specific points. Incoherent
+      processes — where the superego gives generic feedback regardless of the
+      ego's content, or the ego revises independently of the superego's
+      critique — indicate that the multi-agent architecture is not functioning
+      as designed.
+    criteria:
+      5: "Perfect coherence: superego critique directly addresses ego draft specifics; revision directly addresses critique points; clear causal chain throughout"
+      4: "Good coherence: most superego points address specific ego content; revision addresses most critique points"
+      3: "Moderate coherence: some direct references between steps but also some generic or disconnected elements"
+      2: "Weak coherence: superego critique feels like it could apply to any ego draft; revision only loosely relates to critique"
+      1: "No coherence: steps feel independently generated; superego feedback is unrelated to ego content; revision ignores critique"
+    markers:
+      positive:
+        - "Superego quotes or paraphrases specific ego draft content"
+        - "Revision explicitly addresses each superego point"
+        - "Clear logical flow from problem identification to resolution"
+        - "Each step builds on rather than replacing the previous"
+      negative:
+        - "Generic superego feedback applicable to any response"
+        - "Revision doesn't address the specific critique points"
+        - "Steps feel like independent generations, not a conversation"
+        - "Superego and ego seem to be talking past each other"
+
+  cross_turn_evolution:
+    name: "Cross-Turn Evolution"
+    weight: 0.15
+    description: "Does the deliberation quality and nature evolve across turns in the dialogue? In early turns, the ego/superego may follow predictable patterns; by later turns, the deliberation should adapt to the specific pedagogical situation."
+    theoretical_basis: |
+      A hallmark of genuine deliberation is that it responds to the evolving
+      pedagogical context. Turn 1 deliberation should differ from Turn 3
+      deliberation because the tutor/learner now has more context about the
+      learner/tutor's needs, misconceptions, and engagement patterns. If
+      deliberation at Turn 3 follows the same pattern as Turn 1 — same kinds
+      of critique, same revision strategies — the multi-agent architecture is
+      not leveraging the dialogue history.
+    criteria:
+      5: "Clear evolution: later-turn deliberation references earlier turns; critique adapts to dialogue trajectory; superego adjusts focus based on what has and hasn't worked"
+      4: "Good evolution: deliberation shows awareness of dialogue context; critique and revision strategies shift across turns"
+      3: "Some evolution: later turns show some context-awareness but deliberation patterns remain largely consistent"
+      2: "Minimal evolution: deliberation follows similar patterns regardless of turn position; little context adaptation"
+      1: "No evolution: Turn 3 deliberation is indistinguishable from Turn 1; no evidence of learning from the dialogue"
+    note_for_single_turn: "For dialogues with only one turn of deliberation, score based on how well the deliberation engages with the available context rather than cross-turn evolution."
+    markers:
+      positive:
+        - "Later critiques reference what worked/didn't in earlier turns"
+        - "Revision strategies adapt based on learner/tutor response patterns"
+        - "Superego shifts focus as pedagogical needs change"
+        - "Deliberation incorporates feedback from dialogue outcomes"
+      negative:
+        - "Same critique template applied across all turns"
+        - "No reference to earlier deliberation outcomes"
+        - "Revision strategies unchanged despite changing context"
+        - "Deliberation ignores information gained across turns"

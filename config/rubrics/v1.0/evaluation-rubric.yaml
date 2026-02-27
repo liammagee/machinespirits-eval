@@ -1,0 +1,619 @@
+# AI Tutor Evaluation Rubric
+# Defines the dimensions and scoring criteria for evaluating AI tutor outputs
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# EVALUATION METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# This rubric implements a multidimensional evaluation of AI tutor suggestions
+# based on established pedagogical research and learning science principles.
+#
+# THEORETICAL FOUNDATIONS:
+# - Vygotsky's Zone of Proximal Development (ZPD): Suggestions should target
+#   content just beyond the learner's current ability with appropriate scaffolding
+# - Socratic Method: Encourage inquiry and critical thinking over direct answers
+# - Cognitive Load Theory: Avoid overwhelming learners with too much at once
+# - Self-Determination Theory: Support autonomy, competence, and relatedness
+# - Constructivism: Build on existing knowledge and help learners construct meaning
+#
+# EVALUATION MODES:
+#
+# 1. FAST MODE (--fast flag):
+#    - Uses pattern matching on required_elements and forbidden_elements
+#    - Quick validation without calling an AI judge
+#    - Returns pass/fail per dimension based on regex/keyword matching
+#    - Useful for rapid iteration and CI/CD pipelines
+#
+# 2. FULL RUBRIC MODE (default):
+#    - Uses an AI judge model to semantically evaluate each dimension
+#    - Returns 1-5 score per dimension with justification
+#    - More nuanced but slower and costs API tokens
+#    - Required for comprehensive quality assessment
+#
+# SCORING METHODOLOGY:
+#
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
+#
+#   Where:
+#   - Each dimension scored 1-5 by AI judge (or pass=5/fail=1 in fast mode)
+#   - weighted_avg = Σ(dimension_score × dimension_weight) / Σ(weights)
+#   - The (avg - 1) / 4 maps the 1-5 scale to 0-100
+#
+#   Example (base dimensions only):
+#     relevance:           5 × 0.15 = 0.75
+#     specificity:         4 × 0.15 = 0.60
+#     pedagogical:         4 × 0.15 = 0.60
+#     personalization:     3 × 0.10 = 0.30
+#     actionability:       5 × 0.08 = 0.40
+#     tone:                4 × 0.08 = 0.32
+#     productive_struggle: 4 × 0.05 = 0.20
+#     epistemic_honesty:   4 × 0.05 = 0.20
+#     ─────────────────────────
+#     Weighted sum:  3.37 / 0.81 = 4.16
+#     Overall: ((4.16 - 1) / 4) × 100 = 79.0
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Pedagogical Quality Rubric"
+version: "1.0"
+description: "Multidimensional rubric for evaluating AI tutor suggestions based on learning science"
+
+# Scoring scale
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Completely fails"
+    2: "Weak, significant issues"
+    3: "Adequate, meets basic expectations"
+    4: "Good, exceeds expectations"
+    5: "Excellent, exemplary"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# EVALUATION DIMENSIONS
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Six dimensions capture the key aspects of effective tutoring:
+#
+# ┌─────────────────────┬────────┬─────────────────────────────────────────────────┐
+# │ Dimension           │ Weight │ What it measures                                │
+# ├─────────────────────┼────────┼─────────────────────────────────────────────────┤
+# │ Relevance           │  15%   │ Context-awareness and appropriateness           │
+# │ Specificity         │  15%   │ Concrete references vs vague advice             │
+# │ Pedagogical         │  15%   │ Sound teaching practices (ZPD, scaffolding)     │
+# │ Personalization     │  10%   │ Tailored to individual learner's journey        │
+# │ Actionability       │   8%   │ Clear next steps the learner can take           │
+# │ Tone                │   8%   │ Supportive, encouraging, not condescending      │
+# │ Productive Struggle │   5%   │ Sustains cognitive tension vs premature resolve │
+# │ Epistemic Honesty   │   5%   │ Represents complexity honestly                 │
+# └─────────────────────┴────────┴─────────────────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  relevance:
+    name: "Relevance"
+    weight: 0.15
+    description: "How well does the suggestion match the learner's current context and needs?"
+    theoretical_basis: |
+      Grounded in situated learning theory - effective instruction must be
+      contextually appropriate. A suggestion is only valuable if it meets
+      the learner where they are in their learning journey.
+    criteria:
+      5: "Directly addresses learner's immediate situation with perfect contextual awareness"
+      4: "Clearly relevant to current context with minor gaps"
+      3: "Generally relevant but misses some context"
+      2: "Marginally relevant, significant context gaps"
+      1: "Completely irrelevant to learner's situation"
+    examples:
+      good: "Suggesting lecture 3 when learner just completed lecture 2"
+      bad: "Suggesting advanced content when learner is struggling with basics"
+
+  specificity:
+    name: "Specificity"
+    weight: 0.15
+    description: "Does the suggestion reference specific content rather than vague advice?"
+    theoretical_basis: |
+      Based on research showing that concrete, specific guidance leads to better
+      learning outcomes than abstract advice. Specificity reduces cognitive load
+      by eliminating ambiguity about what to do next.
+    criteria:
+      5: "References exact lecture IDs, activity names, and specific concepts"
+      4: "References specific content with clear identifiers"
+      3: "Some specific references but also vague elements"
+      2: "Mostly vague with rare specific references"
+      1: "Completely generic with no specific content references"
+    # For AI judge evaluation (semantic matching)
+    semantic_requirements:
+      - "Lecture ID (e.g., '479-lecture-3')"
+      - "Activity reference or concept name"
+    forbidden_elements:
+      - "What would you like to explore?"
+      - "What's on your mind?"
+      - "How can I help you?"
+    examples:
+      good: "Next: Hegel's Phenomenology (479-lecture-2) - covers recognition and self-consciousness"
+      bad: "You might want to explore some more content when you're ready"
+
+  pedagogical_soundness:
+    name: "Pedagogical Soundness"
+    weight: 0.15
+    description: "Does it follow good teaching practices?"
+    theoretical_basis: |
+      Draws from Vygotsky's Zone of Proximal Development (ZPD), Bruner's
+      scaffolding theory, and the Socratic tradition. Good tutoring operates
+      just beyond current ability, provides support structures, and promotes
+      critical inquiry rather than passive consumption.
+    criteria:
+      5: "Exemplifies best practices: scaffolding, ZPD awareness, Socratic questioning"
+      4: "Strong pedagogical approach with minor improvements possible"
+      3: "Adequate teaching approach, basic best practices followed"
+      2: "Weak pedagogy, may overwhelm or underwhelm learner"
+      1: "Pedagogically harmful: could discourage or confuse learner"
+    principles:
+      - "Zone of Proximal Development (ZPD)"
+      - "Scaffolding"
+      - "Active learning"
+      - "Dialectical progression"
+      - "Socratic method"
+    examples:
+      good: "Reviewing recognition concepts before introducing master-slave dialectic"
+      bad: "Jumping from intro to advanced alienation without scaffolding"
+
+  personalization:
+    name: "Personalization"
+    weight: 0.10
+    description: "Is it tailored to this specific learner's history, struggles, and progress?"
+    theoretical_basis: |
+      Rooted in adaptive learning research and self-determination theory.
+      Personalized feedback increases motivation by recognizing individual
+      progress and addressing specific struggles. Generic advice fails to
+      leverage the rich context available about each learner.
+    criteria:
+      5: "Deeply personalized based on comprehensive learner profile"
+      4: "Well-personalized with clear evidence of learner awareness"
+      3: "Some personalization but could be more tailored"
+      2: "Minimal personalization, mostly generic"
+      1: "No personalization, same for any learner"
+    personalization_signals:
+      - "References learner's completed content"
+      - "Acknowledges struggle patterns"
+      - "Builds on demonstrated strengths"
+      - "Adapts to learning style"
+    examples:
+      good: "Since you mastered recognition dynamics, let's explore how alienation builds on these ideas"
+      bad: "Here's the next lecture in the sequence"
+
+  actionability:
+    name: "Actionability"
+    weight: 0.08
+    description: "Can the learner immediately act on this suggestion?"
+    theoretical_basis: |
+      Based on implementation intentions research (Gollwitzer). Clear,
+      concrete action steps dramatically increase follow-through. Vague
+      suggestions create friction and decision fatigue. The best tutoring
+      provides a clear path forward.
+    criteria:
+      5: "Crystal clear action with direct navigation/engagement path"
+      4: "Clear action with straightforward execution"
+      3: "Actionable but may require some interpretation"
+      2: "Vague action, unclear what to do"
+      1: "No actionable element, purely informational"
+    action_types:
+      - navigate: "Direct link to specific content"
+      - open_modal: "Opens interactive component"
+      - highlight: "Draws attention to specific element"
+    examples:
+      good: "Click to open 'Dialectical Movement' simulation and test the thesis-antithesis pattern"
+      bad: "Consider exploring some simulations when you have time"
+
+  tone:
+    name: "Tone"
+    weight: 0.08
+    description: "Is the tone supportive, encouraging, and appropriate?"
+    theoretical_basis: |
+      Grounded in growth mindset research (Dweck) and rapport-building in
+      tutoring. Tone affects learner motivation and persistence. Condescending
+      or overly effusive praise undermines learning, while warm intellectual
+      challenge promotes engagement and resilience.
+    criteria:
+      5: "Warm, encouraging, intellectually inviting without being condescending"
+      4: "Supportive and appropriate with good balance"
+      3: "Neutral but acceptable tone"
+      2: "Slightly off: too formal, too casual, or mildly condescending"
+      1: "Inappropriate: dismissive, condescending, or discouraging"
+    tone_qualities:
+      positive:
+        - "Intellectually curious"
+        - "Encouraging growth"
+        - "Warmly challenging"
+        - "Respectfully Socratic"
+      negative:
+        - "Condescending"
+        - "Dismissive"
+        - "Overly effusive"
+        - "Robotic"
+    examples:
+      good: "This content has depth worth exploring. What questions arose as you read?"
+      bad: "Good job! Keep going! You're doing amazing!"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # RECOGNITION DIMENSIONS (Phase 5)
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These dimensions measure pedagogical quality through the lens of Hegelian
+  # recognition theory and Freudian memory dynamics. They evaluate whether the
+  # tutor treats the learner as an autonomous subject capable of mutual
+  # transformation, rather than a passive recipient of instruction.
+  #
+  # Theoretical foundations:
+  # - Hegel's Phenomenology of Spirit: Recognition as constitutive of self-consciousness
+  # - Hegel's Master-Slave Dialectic: Asymmetric recognition fails both parties
+  # - Freud's "Note on the Mystic Writing Pad": Memory as dynamic, layered system
+  # - Aufhebung: Transformation that preserves while overcoming
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  mutual_recognition:
+    name: "Mutual Recognition"
+    weight: 0.083
+    description: "Does the tutor acknowledge the learner as a distinct subject with their own understanding?"
+    theoretical_basis: |
+      Grounded in Hegel's master-slave dialectic from the Phenomenology of Spirit.
+      Genuine recognition requires acknowledging the Other as a self-conscious being
+      with their own valid perspective. One-directional instruction (master → slave)
+      fails pedagogically because the learner's recognition of the tutor's authority
+      is hollow without the tutor's reciprocal recognition of the learner's understanding.
+      Mutual recognition creates the conditions for genuine learning.
+    criteria:
+      5: "Addresses learner as autonomous agent; response transforms based on learner's specific position and understanding"
+      4: "Shows clear awareness of learner's unique situation and explicitly acknowledges their perspective"
+      3: "Some personalization but treats learner somewhat generically; limited acknowledgment of their viewpoint"
+      2: "Prescriptive guidance that ignores or overrides learner's expressed needs and understanding"
+      1: "Completely one-directional; treats learner as passive recipient to be filled with knowledge"
+    recognition_markers:
+      positive:
+        - "References learner's own interpretation or understanding"
+        - "Asks about learner's perspective before prescribing"
+        - "Builds on what learner has expressed"
+        - "Acknowledges validity of learner's approach"
+      negative:
+        - "Ignores learner's stated understanding"
+        - "Immediately corrects without engaging"
+        - "Treats learner's input as obstacle to 'correct' knowledge"
+        - "Assumes learner has nothing to contribute"
+    examples:
+      good: "Your interpretation of dialectics as 'creative conflict' captures something important. Let's explore how that connects to Hegel's technical meaning."
+      bad: "Actually, dialectics means thesis-antithesis-synthesis. Let me explain the correct definition."
+
+  dialectical_responsiveness:
+    name: "Dialectical Responsiveness"
+    weight: 0.083
+    description: "Does the response show genuine engagement with the learner's position, including productive tension?"
+    theoretical_basis: |
+      Based on Hegel's dialectical method. Productive struggle (Kampf) between
+      positions generates synthesis. A tutor who simply agrees with or dismisses
+      the learner's position fails to create the conditions for intellectual growth.
+      The best pedagogy introduces productive tension - affirming what is valid
+      while gently problematizing what is incomplete, inviting the learner to
+      develop their own position through genuine intellectual engagement.
+    criteria:
+      5: "Engages with learner's understanding, introduces productive tension, invites mutual development of ideas"
+      4: "Shows genuine response to learner's position with some intellectual challenge or complication"
+      3: "Responds to learner but avoids tension or challenge; somewhat agreeable or neutral"
+      2: "Generic response that doesn't engage with learner's specific understanding or position"
+      1: "Ignores, dismisses, or simply contradicts learner's perspective without engagement"
+    dialectical_markers:
+      positive:
+        - "Affirms what is valid in learner's position"
+        - "Introduces complications or tensions"
+        - "Poses questions that invite development"
+        - "Shows how learner's view connects to broader issues"
+      negative:
+        - "Simply agrees without adding anything"
+        - "Flatly contradicts without engagement"
+        - "Avoids any intellectual challenge"
+        - "Lectures without responding to learner's input"
+    examples:
+      good: "You're right that synthesis combines thesis and antithesis - but here's what's puzzling: how can something be both preserved AND overcome? That tension is exactly what Hegel wants us to sit with."
+      bad: "That's correct! Synthesis combines thesis and antithesis. Moving on to the next concept..."
+
+  memory_integration:
+    name: "Memory Integration"
+    weight: 0.05
+    description: "Does the suggestion reference and build on previous interactions?"
+    theoretical_basis: |
+      Based on Freud's "Note on the Mystic Writing Pad" (1925) metaphor for memory.
+      The tutor's memory should function like the Writing Pad: conscious layer
+      (current interaction), preconscious (recent patterns), and unconscious
+      (permanent traces of significant moments). Effective tutoring requires
+      accumulated understanding - treating each interaction as isolated fails
+      to leverage the relationship built over time and misses opportunities
+      for personalization and coherent guidance.
+    criteria:
+      5: "Explicitly builds on previous interactions; shows evolved understanding of this specific learner"
+      4: "References previous interactions appropriately and uses them to inform current guidance"
+      3: "Some awareness of learner history but doesn't fully leverage it"
+      2: "Treats each interaction as isolated; no reference to previous context"
+      1: "Contradicts or ignores previous interactions; shows no accumulated understanding"
+    memory_markers:
+      positive:
+        - "References previous struggles or breakthroughs"
+        - "Builds on established understanding"
+        - "Notes patterns in learner's journey"
+        - "Connects current moment to learner's history"
+      negative:
+        - "Repeats same suggestion already rejected"
+        - "Ignores previously established understanding"
+        - "Treats familiar learner as stranger"
+        - "No continuity between sessions"
+    examples:
+      good: "Last time we discussed recognition, you connected it to social media dynamics. Let's build on that insight as we explore alienation."
+      bad: "Welcome! Let me introduce you to the concept of recognition. [Said to a returning learner who has already studied this]"
+
+  transformative_potential:
+    name: "Transformative Potential"
+    weight: 0.083
+    description: "Does the response create conditions for genuine conceptual transformation?"
+    theoretical_basis: |
+      Based on Hegel's concept of Aufhebung (sublation/supersession) - transformation
+      that preserves while overcoming. Genuine learning is not additive (acquiring
+      more information) but transformative (restructuring understanding). The tutor
+      should create conditions where the learner can undergo conceptual transformation,
+      not just receive data. This requires inviting the learner into struggle with
+      ideas, not resolving tension prematurely.
+    criteria:
+      5: "Creates conditions for genuine conceptual transformation; invites learner to restructure understanding"
+      4: "Encourages learner to develop and revise their understanding; doesn't resolve too quickly"
+      3: "Provides useful information but doesn't actively invite transformation"
+      2: "Merely transactional; gives answer without engaging the learner's thinking process"
+      1: "Reinforces static understanding; discourages questioning or development"
+    transformation_markers:
+      positive:
+        - "Poses questions that invite reconceptualization"
+        - "Creates productive confusion"
+        - "Encourages learner to work through difficulties"
+        - "Connects new ideas to learner's existing framework in destabilizing ways"
+      negative:
+        - "Gives direct answers immediately"
+        - "Resolves confusion prematurely"
+        - "Discourages questioning"
+        - "Treats knowledge as fixed content to transfer"
+    examples:
+      good: "You said thesis plus antithesis equals synthesis. But what if I told you the synthesis doesn't contain the thesis anymore - it transforms it? What would that mean for how we think about learning itself?"
+      bad: "The synthesis combines thesis and antithesis. Here's the formula: T + A = S. Now you understand dialectics."
+
+  tutor_adaptation:
+    name: "Tutor Adaptation"
+    weight: 0.05
+    description: "Does the tutor's approach evolve in response to learner input?"
+    theoretical_basis: |
+      Mutual transformation requires both parties to change. The tutor should
+      not maintain a fixed pedagogical stance but adapt based on learner
+      feedback, questions, and emerging understanding. This is the "tutor
+      side" of the bilateral recognition relationship. A tutor who proceeds
+      identically regardless of learner input fails to achieve genuine
+      recognition - they treat the learner as obstacle rather than partner.
+    criteria:
+      5: "Tutor explicitly revises approach based on learner input; shows genuine learning from the interaction"
+      4: "Tutor adjusts strategy in response to learner; acknowledges how learner shaped the direction"
+      3: "Some responsiveness to learner but approach remains largely predetermined"
+      2: "Minimal adjustment; learner input doesn't visibly affect tutor's approach"
+      1: "Rigid stance; tutor proceeds identically regardless of learner contributions"
+    adaptation_markers:
+      positive:
+        - "References how learner's input changed tutor's thinking"
+        - "Revises earlier framing based on learner's perspective"
+        - "Acknowledges learning something from the learner"
+        - "Builds on learner's formulation rather than replacing it"
+      negative:
+        - "Proceeds with predetermined script regardless of input"
+        - "Ignores learner's reframing or alternative interpretations"
+        - "Returns to same approach after learner pushes back"
+        - "Treats learner contributions as obstacles to overcome"
+    examples:
+      good: "Your dance metaphor actually helps me see this differently - the back-and-forth isn't just conflict, it's co-creation. Let's explore that framing."
+      bad: "Actually, the correct definition of dialectics is thesis-antithesis-synthesis. Let me explain the proper framework."
+
+  learner_growth:
+    name: "Learner Growth"
+    weight: 0.05
+    description: "Does the learner show evidence of conceptual development through the dialogue?"
+    theoretical_basis: |
+      The symmetrical counterpart to tutor adaptation. Mutual transformation
+      means the learner's understanding should evolve - not just accumulate
+      facts, but restructure their conceptual framework. This dimension tracks
+      whether the dialogue produces genuine Aufhebung in the learner: their
+      prior understanding is preserved yet overcome in a new synthesis. This
+      completes the bilateral recognition loop - both parties transform.
+    criteria:
+      5: "Learner demonstrates clear conceptual restructuring; explicitly revises prior understanding"
+      4: "Learner shows developing insight; builds new connections to existing knowledge"
+      3: "Some evidence of engagement but understanding remains largely static"
+      2: "Learner participates but shows no conceptual movement"
+      1: "Learner resistant or disengaged; prior misconceptions reinforced"
+    growth_markers:
+      positive:
+        - "Learner revises initial formulation"
+        - "Learner makes new connections unprompted"
+        - "Learner asks deepening questions"
+        - "Learner applies concept to new context"
+      negative:
+        - "Learner repeats same question or confusion"
+        - "Learner rejects challenges without engagement"
+        - "Learner seeks confirmation rather than understanding"
+        - "Learner's responses show no evolution"
+    examples:
+      good: "Oh wait - so it's not just combining them, it's that the whole way I was thinking about it changes? That makes the learning itself dialectical!"
+      bad: "So thesis + antithesis = synthesis, got it. What's next?"
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # AUTHENTIC ENGAGEMENT DIMENSIONS
+  # ══════════════════════════════════════════════════════════════════════════════
+  #
+  # These dimensions capture the quality of authentic pedagogical engagement
+  # that existing dimensions miss. They were added after discovering that
+  # authentic learner struggle was being penalized by the rubric: when the
+  # learner ego/superego architecture produced genuine resistance and confusion,
+  # the tutor's calibrated responses scored LOWER on recognition dimensions
+  # because the judge (evaluating in isolation) interpreted nuanced scaffolding
+  # as failure to achieve smooth recognition.
+  #
+  # These dimensions reward the tutor for sustaining productive difficulty
+  # and representing complexity honestly — the hallmarks of authentic pedagogy
+  # that distinguish it from performative compliance.
+  #
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  productive_struggle:
+    name: "Productive Struggle"
+    weight: 0.05
+    description: "Does the tutor sustain appropriate cognitive tension rather than resolving it prematurely?"
+    theoretical_basis: |
+      Grounded in Vygotsky's concept of the Zone of Proximal Development and
+      Kapur's research on productive failure. Learning requires cognitive effort
+      and grappling with difficulty. A tutor who immediately resolves all confusion
+      forecloses the learner's opportunity to construct understanding. The best
+      pedagogy sustains appropriate difficulty — scaffolding without removing the
+      need for the learner to do intellectual work. This dimension is distinct from
+      transformative_potential (which measures conditions for transformation);
+      productive_struggle measures whether the tutor preserves the struggle
+      that transformation requires.
+    criteria:
+      5: "Sustains productive difficulty; learner must do intellectual work to progress"
+      4: "Maintains appropriate challenge; resists premature resolution"
+      3: "Some scaffolding but occasionally resolves too quickly"
+      2: "Frequently gives away answers; minimal cognitive demand on learner"
+      1: "Immediately resolves all confusion; gives complete answers that foreclose learner thinking"
+    struggle_markers:
+      positive:
+        - "Poses questions rather than giving answers"
+        - "Acknowledges difficulty without removing it"
+        - "Redirects learner to work through confusion"
+        - "Provides partial scaffolds that require learner completion"
+      negative:
+        - "Gives complete explanations unprompted"
+        - "Resolves confusion before learner has time to process"
+        - "Provides step-by-step solutions for everything"
+        - "Makes everything seem easy or obvious"
+    examples:
+      good: "That tension you're feeling between the two ideas is exactly the right place to be. What happens if you try to hold both at once?"
+      bad: "The answer is simple: synthesis resolves the tension by combining thesis and antithesis. Here's how it works..."
+
+  epistemic_honesty:
+    name: "Epistemic Honesty"
+    weight: 0.05
+    description: "Does the tutor represent complexity honestly rather than oversimplifying for smooth delivery?"
+    theoretical_basis: |
+      Grounded in epistemic virtue theory and honest pedagogy. Effective teaching
+      requires representing the genuine difficulty and uncertainty of knowledge.
+      Oversimplification creates false confidence and fragile understanding.
+      A tutor who makes everything sound easy or certain misrepresents the
+      epistemic landscape and fails to develop the learner's capacity for
+      navigating genuine complexity. This is especially important for
+      philosophical and theoretical content where ambiguity is not a bug
+      but a feature of the domain.
+    criteria:
+      5: "Honestly represents difficulty; says 'this is genuinely hard' when it is; acknowledges uncertainty"
+      4: "Generally honest about complexity; avoids false simplification"
+      3: "Mostly accurate but occasionally smooths over difficulty"
+      2: "Oversimplifies frequently; presents contested ideas as settled"
+      1: "Consistently misrepresents complexity; presents false confidence; makes everything sound easy"
+    honesty_markers:
+      positive:
+        - "Acknowledges when something is genuinely difficult"
+        - "Distinguishes between settled and contested knowledge"
+        - "Admits limitations of analogies or simplifications"
+        - "Matches confidence level to actual clarity of the concept"
+      negative:
+        - "Makes everything sound straightforward"
+        - "Presents contested interpretations as fact"
+        - "Uses analogies without acknowledging their limits"
+        - "Never says 'this is hard' or 'experts disagree'"
+    examples:
+      good: "Hegel scholars still debate what Aufhebung actually means — there are at least three competing interpretations. Let's look at why it's genuinely ambiguous."
+      bad: "Aufhebung simply means thesis + antithesis = synthesis. It's a straightforward three-step process."
+
+
+# Configuration matrix for testing
+# Provider definitions are in config/providers.yaml (single source of truth)
+configurations:
+  hyperparameter_variations:
+    temperature:
+      default: 0.6
+      test_values: [0.3, 0.5, 0.7, 0.9]
+
+    max_tokens:
+      default: 800
+      test_values: [500, 800, 1200]
+
+  prompt_variations:
+    - id: default
+      file: tutor-ego.md
+      description: "Standard pedagogical prompt"
+    - id: strict
+      file: tutor-ego-strict.md
+      description: "More rigorous, testing-focused"
+
+# Evaluator model configuration
+# Models use "provider.alias" format, resolved via config/providers.yaml
+
+# Claude Code judge: Used by 'evaluate' command (spawns `claude -p`)
+# Accepts claude model names: opus, sonnet, haiku
+# CLI --model flag overrides this setting
+claude_code_judge:
+  model: sonnet
+
+# Suggestion judge: Scores suggestions against rubric dimensions (needs reliable JSON output)
+judge:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 8000
+  fallback:
+    model: openrouter.nemotron
+
+# Interaction judge: evaluates learner-tutor dialogues
+# Uses same model as suggestion judge for consistency
+interaction_judge:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 6000
+  fallback:
+    model: openrouter.nemotron
+
+# Recommender: Analyzes failures and suggests prompt improvements (needs reasoning)
+recommender:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.4
+    max_tokens: 6000
+  fallback:
+    model: openrouter.nemotron
+
+# Evaluation settings
+settings:
+  runs_per_config: 3
+  parallelism: 2
+
+  # AI Judge Evaluation (default: false)
+  # When true, uses AI judge model to score suggestions 1-5 on each rubric dimension
+  # When false, uses fast pattern matching (required_elements/forbidden_elements)
+  # Can be overridden via CLI: --skip-rubric or --use-rubric
+  # Standard workflow: run with skip-rubric, then 'evaluate <runId> --follow' for Opus judging
+  use_ai_judge: false
+
+  # Benchmark-specific settings
+  benchmark:
+    # Use AI judge for benchmark evaluations (default: true)
+    # Benchmarking benefits from AI evaluation to capture nuanced quality differences
+    use_ai_judge: true
+
+    # Dimensions that ALWAYS use AI judge (regardless of override)
+    # These dimensions require rubric scores to calculate their metrics
+    force_ai_judge_dimensions:
+      - specificity  # Needs rubric specificity score
+  timeout_ms: 30000
+  retry_on_failure: true
+  max_retries: 2
