@@ -9,12 +9,14 @@ import {
   cohensD,
   computeLearnerSummaryFromScores,
   evaluateAssertion,
+  evaluateEvidence,
   evaluateProvenanceCheck,
   evaluateSymmetryRule,
   inferMultiFromProfileName,
   inferRecognitionFromProfileName,
   linearRegression,
   pearsonCorrelation,
+  verifyTurnIdsForRow,
 } from '../services/provableDiscourse.js';
 
 test('inferRecognitionFromProfileName classifies canonical names', () => {
@@ -710,5 +712,389 @@ test('conditional_delta with turn_level concept: verified_turns count', () => {
   const skipped = Object.values(rawScores).filter((t) => !t.contentTurnId);
   assert.strictEqual(verified.length, 2, 'should count 2 verified turns');
   assert.strictEqual(skipped.length, 1, 'should count 1 skipped turn');
+});
+
+// ── verifyTurnIdsForRow helper tests ─────────────────────────────
+
+/**
+ * Helper: compute a valid contentTurnId for a given dialogue/turn.
+ */
+function computeContentTurnId(dialogueId, turnIndex, turnResult) {
+  const turnContent = JSON.stringify({
+    turnIndex: turnResult.turnIndex,
+    suggestion: turnResult.suggestion ? [turnResult.suggestion] : [],
+    turnId: turnResult.turnId,
+  });
+  return createHash('sha256')
+    .update(dialogueId + ':' + turnIndex + ':' + turnContent)
+    .digest('hex').slice(0, 16);
+}
+
+test('verifyTurnIdsForRow: returns empty map when no dialogueId', () => {
+  const result = verifyTurnIdsForRow(null, { turn_0: { contentTurnId: 'abc' } }, '/tmp');
+  assert.strictEqual(result.size, 0);
+});
+
+test('verifyTurnIdsForRow: returns empty map when log file missing', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
+  const logDir = path.join(tmpDir, 'logs');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const result = verifyTurnIdsForRow('nonexistent-dlg', { turn_0: { contentTurnId: 'abc' } }, logDir);
+  assert.strictEqual(result.size, 0);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('verifyTurnIdsForRow: verifies matching turn IDs', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  const dialogueId = 'dlg-verify-1';
+  const turnResult = { turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' };
+  const expectedId = computeContentTurnId(dialogueId, 0, turnResult);
+
+  fs.writeFileSync(path.join(tmpDir, `${dialogueId}.json`), JSON.stringify({
+    dialogueId, turnResults: [turnResult],
+  }));
+
+  const tutorScores = {
+    turn_0: { turnIndex: 0, contentTurnId: expectedId, scores: { r: { score: 4 } } },
+  };
+
+  const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);
+  assert.strictEqual(result.size, 1);
+  assert.strictEqual(result.get(0), true);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('verifyTurnIdsForRow: detects mismatching turn IDs', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-test-'));
+  fs.mkdirSync(tmpDir, { recursive: true });
+
+  const dialogueId = 'dlg-verify-2';
+  fs.writeFileSync(path.join(tmpDir, `${dialogueId}.json`), JSON.stringify({
+    dialogueId, turnResults: [{ turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' }],
+  }));
+
+  const tutorScores = {
+    turn_0: { turnIndex: 0, contentTurnId: 'wrong_id_here!!', scores: { r: { score: 4 } } },
+  };
+
+  const result = verifyTurnIdsForRow(dialogueId, tutorScores, tmpDir);
+  assert.strictEqual(result.size, 1);
+  assert.strictEqual(result.get(0), false);
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+// ── Turn-level log verification in trajectory_slope ──────────────
+
+function createTurnLevelLogTestSetup() {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'traj-log-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const db = createTestDb();
+
+  // Create a dialogue log with 4 turns
+  const dialogueId = 'dlg-traj-log-1';
+  const turnResults = [];
+  for (let i = 0; i < 4; i++) {
+    turnResults.push({ turnIndex: i, suggestion: `response-${i}`, turnId: `tid-${i}` });
+  }
+  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify({
+    dialogueId, turnResults,
+  }));
+
+  // Compute valid contentTurnIds
+  const validIds = {};
+  for (let i = 0; i < 4; i++) {
+    validIds[i] = computeContentTurnId(dialogueId, i, turnResults[i]);
+  }
+
+  return { tmpDir, logDir, db, dialogueId, turnResults, validIds };
+}
+
+test('trajectory_slope with turn_level + rootDir: verified turns included, mismatched excluded', () => {
+  const { tmpDir, db, dialogueId, validIds } = createTurnLevelLogTestSetup();
+
+  // Build tutor_scores: turns 0,1 have valid IDs, turn 2 has bad ID, turn 3 has valid
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, contentTurnId: validIds[0], scores: { relevance: { score: 2 } } },
+    turn_1: { turnIndex: 1, contentTurnId: validIds[1], scores: { relevance: { score: 3 } } },
+    turn_2: { turnIndex: 2, contentTurnId: 'bad_id_here!!!!', scores: { relevance: { score: 5 } } },
+    turn_3: { turnIndex: 3, contentTurnId: validIds[3], scores: { relevance: { score: 4 } } },
+  });
+
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+    tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
+    80, tutorScores, '2026-02-27', dialogueId,
+  );
+
+  const result = evaluateEvidence(db, null, {
+    type: 'trajectory_slope',
+    side: 'tutor',
+    dimension: 'overall',
+    output: 'mean_slope',
+    min_turns: 3,
+    turn_level: true,
+    filters: { not_null: ['tutor_scores'] },
+  }, tmpDir);
+
+  // Turn 2 should be excluded (bad ID), leaving turns 0,1,3 → 3 turns (meets min_turns)
+  assert.strictEqual(result.details.log_mismatches, 1, 'should have 1 log mismatch');
+  assert.strictEqual(result.details.log_verified_turns, 3, 'should have 3 log-verified turns');
+  assert.strictEqual(result.details.n_dialogues, 1, 'should have 1 dialogue');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('trajectory_slope with turn_level + rootDir: reports log_verified_turns and log_mismatches', () => {
+  const { tmpDir, db, dialogueId, validIds } = createTurnLevelLogTestSetup();
+
+  // All 4 turns valid
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, contentTurnId: validIds[0], scores: { relevance: { score: 2 } } },
+    turn_1: { turnIndex: 1, contentTurnId: validIds[1], scores: { relevance: { score: 3 } } },
+    turn_2: { turnIndex: 2, contentTurnId: validIds[2], scores: { relevance: { score: 4 } } },
+    turn_3: { turnIndex: 3, contentTurnId: validIds[3], scores: { relevance: { score: 5 } } },
+  });
+
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+    tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
+    80, tutorScores, '2026-02-27', dialogueId,
+  );
+
+  const result = evaluateEvidence(db, null, {
+    type: 'trajectory_slope',
+    side: 'tutor',
+    dimension: 'overall',
+    output: 'mean_slope',
+    min_turns: 3,
+    turn_level: true,
+    filters: { not_null: ['tutor_scores'] },
+  }, tmpDir);
+
+  assert.strictEqual(result.details.log_verified_turns, 4);
+  assert.strictEqual(result.details.log_mismatches, 0);
+  assert.ok(result.value > 0, 'slope from [2,3,4,5] should be positive');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('trajectory_slope with turn_level + missing log: graceful degradation (presence check only)', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'traj-nolog-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+  // NO log file written — log verification should be skipped gracefully
+
+  const db = createTestDb();
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, contentTurnId: 'id0', scores: { relevance: { score: 2 } } },
+    turn_1: { turnIndex: 1, contentTurnId: 'id1', scores: { relevance: { score: 3 } } },
+    turn_2: { turnIndex: 2, contentTurnId: 'id2', scores: { relevance: { score: 4 } } },
+  });
+
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+    tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
+    80, tutorScores, '2026-02-27', 'dlg-missing',
+  );
+
+  const result = evaluateEvidence(db, null, {
+    type: 'trajectory_slope',
+    side: 'tutor',
+    dimension: 'overall',
+    output: 'mean_slope',
+    min_turns: 3,
+    turn_level: true,
+    filters: { not_null: ['tutor_scores'] },
+  }, tmpDir);
+
+  // Log file missing → verifyTurnIdsForRow returns empty map → no log verification
+  // Turns should still pass the contentTurnId presence check
+  assert.strictEqual(result.details.log_verified_turns, 0, 'no log-verified turns when log missing');
+  assert.strictEqual(result.details.log_mismatches, 0, 'no mismatches when log missing');
+  assert.strictEqual(result.details.verified_turns, 3, 'all 3 turns pass presence check');
+  assert.strictEqual(result.details.n_dialogues, 1, 'dialogue still included');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('trajectory_slope without turn_level: no log verification occurs', () => {
+  const { tmpDir, db, dialogueId } = createTurnLevelLogTestSetup();
+
+  // Use BAD contentTurnIds — shouldn't matter when turn_level is false
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, contentTurnId: 'bad', scores: { relevance: { score: 2 } } },
+    turn_1: { turnIndex: 1, contentTurnId: 'bad', scores: { relevance: { score: 3 } } },
+    turn_2: { turnIndex: 2, contentTurnId: 'bad', scores: { relevance: { score: 4 } } },
+  });
+
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+    tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
+    80, tutorScores, '2026-02-27', dialogueId,
+  );
+
+  const result = evaluateEvidence(db, null, {
+    type: 'trajectory_slope',
+    side: 'tutor',
+    dimension: 'overall',
+    output: 'mean_slope',
+    min_turns: 3,
+    // turn_level NOT set
+    filters: { not_null: ['tutor_scores'] },
+  }, tmpDir);
+
+  // Without turn_level, no log verification details should be present
+  assert.strictEqual(result.details.log_verified_turns, undefined);
+  assert.strictEqual(result.details.log_mismatches, undefined);
+  assert.strictEqual(result.details.n_dialogues, 1, 'dialogue included via normal path');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+// ── Turn-level log verification in conditional_delta ─────────────
+
+test('conditional_delta with turn_level + rootDir: verified turns included, mismatched excluded', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cond-log-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const db = createTestDb();
+
+  const dialogueId = 'dlg-cond-log-1';
+  const turnResults = [];
+  for (let i = 0; i < 4; i++) {
+    turnResults.push({ turnIndex: i, suggestion: `resp-${i}`, turnId: `tid-${i}` });
+  }
+  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify({
+    dialogueId, turnResults,
+  }));
+
+  const validIds = {};
+  for (let i = 0; i < 4; i++) {
+    validIds[i] = computeContentTurnId(dialogueId, i, turnResults[i]);
+  }
+
+  // Tutor scores: turn 1 has bad ID
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, contentTurnId: validIds[0], scores: { overall: { score: 3 } } },
+    turn_1: { turnIndex: 1, contentTurnId: 'bad_id!!!!!!!!', scores: { overall: { score: 4 } } },
+    turn_2: { turnIndex: 2, contentTurnId: validIds[2], scores: { overall: { score: 5 } } },
+    turn_3: { turnIndex: 3, contentTurnId: validIds[3], scores: { overall: { score: 5 } } },
+  });
+
+  // Learner scores (no contentTurnId requirement — learner uses tutor verification)
+  const learnerScores = JSON.stringify({
+    turn_0: { turnIndex: 0, scores: { revision_signals: { score: 1 } } },
+    turn_1: { turnIndex: 1, scores: { revision_signals: { score: 4 } } },
+    turn_2: { turnIndex: 2, scores: { revision_signals: { score: 1 } } },
+    turn_3: { turnIndex: 3, scores: { revision_signals: { score: 3 } } },
+  });
+
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+    tutor_first_turn_score, tutor_scores, learner_scores, created_at, dialogue_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
+    80, tutorScores, learnerScores, '2026-02-27', dialogueId,
+  );
+
+  const result = evaluateEvidence(db, null, {
+    type: 'conditional_delta',
+    event_dimension: 'revision_signals',
+    event_threshold: 2,
+    event_direction: 'below',
+    response_dimension: 'overall',
+    output: 'mean_delta_event',
+    min_turns: 3,
+    turn_level: true,
+    filters: { not_null: ['tutor_scores', 'learner_scores'] },
+  }, tmpDir);
+
+  // Turn 1 should be excluded (bad contentTurnId)
+  assert.strictEqual(result.details.log_mismatches, 1, 'should have 1 log mismatch');
+  assert.ok(result.details.log_verified_turns >= 2, 'should have at least 2 log-verified turns');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+test('conditional_delta with turn_level + rootDir: event detection only uses verified turns', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cond-event-test-'));
+  const logDir = path.join(tmpDir, 'logs', 'tutor-dialogues');
+  fs.mkdirSync(logDir, { recursive: true });
+
+  const db = createTestDb();
+
+  const dialogueId = 'dlg-cond-event-1';
+  const turnResults = [];
+  for (let i = 0; i < 4; i++) {
+    turnResults.push({ turnIndex: i, suggestion: `resp-${i}`, turnId: `tid-${i}` });
+  }
+  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify({
+    dialogueId, turnResults,
+  }));
+
+  const validIds = {};
+  for (let i = 0; i < 4; i++) {
+    validIds[i] = computeContentTurnId(dialogueId, i, turnResults[i]);
+  }
+
+  // All turns valid
+  const tutorScores = JSON.stringify({
+    turn_0: { turnIndex: 0, contentTurnId: validIds[0], scores: { overall: { score: 2 } } },
+    turn_1: { turnIndex: 1, contentTurnId: validIds[1], scores: { overall: { score: 4 } } },
+    turn_2: { turnIndex: 2, contentTurnId: validIds[2], scores: { overall: { score: 3 } } },
+    turn_3: { turnIndex: 3, contentTurnId: validIds[3], scores: { overall: { score: 5 } } },
+  });
+
+  const learnerScores = JSON.stringify({
+    turn_0: { turnIndex: 0, scores: { revision_signals: { score: 1 } } },
+    turn_1: { turnIndex: 1, scores: { revision_signals: { score: 4 } } },
+    turn_2: { turnIndex: 2, scores: { revision_signals: { score: 1 } } },
+    turn_3: { turnIndex: 3, scores: { revision_signals: { score: 5 } } },
+  });
+
+  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+    tutor_first_turn_score, tutor_scores, learner_scores, created_at, dialogue_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
+    80, tutorScores, learnerScores, '2026-02-27', dialogueId,
+  );
+
+  const result = evaluateEvidence(db, null, {
+    type: 'conditional_delta',
+    event_dimension: 'revision_signals',
+    event_threshold: 2,
+    event_direction: 'below',
+    response_dimension: 'overall',
+    output: 'mean_delta_event',
+    min_turns: 3,
+    turn_level: true,
+    filters: { not_null: ['tutor_scores', 'learner_scores'] },
+  }, tmpDir);
+
+  assert.strictEqual(result.details.log_mismatches, 0);
+  assert.strictEqual(result.details.log_verified_turns, 4);
+  // Events: turns 0 and 2 (revision_signals <= 2), non-events: turns 1
+  // Event deltas: tutor[1]-tutor[0] = 4-2=2, tutor[3]-tutor[2] = 5-3=2
+  assert.ok(result.details.n_event_deltas >= 1, 'should detect at least 1 event');
+
+  db.close();
+  fs.rmSync(tmpDir, { recursive: true, force: true });
 });
 

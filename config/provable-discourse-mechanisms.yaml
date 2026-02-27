@@ -120,6 +120,7 @@ claims:
       dimension: overall
       output: mean_slope
       min_turns: 3
+      turn_level: true
       filters:
         not_null: [learner_scores]
         like:
@@ -144,6 +145,7 @@ claims:
       dimension: overall
       output: mean_slope
       min_turns: 3
+      turn_level: true
       filters:
         not_null: [tutor_scores]
         like:
@@ -170,6 +172,7 @@ claims:
       group_by: recognition
       output: cohens_d
       min_turns: 3
+      turn_level: true
       filters:
         not_null: [learner_scores]
         like:
@@ -196,6 +199,7 @@ claims:
       response_dimension: overall
       output: mean_delta_event
       min_turns: 3
+      turn_level: true
       filters:
         not_null: [tutor_scores, learner_scores]
         like:

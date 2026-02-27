@@ -956,6 +956,43 @@ function evaluateLogTraceCoverage(db, evidence, rootDir) {
 }
 
 /**
+ * Verify contentTurnIds in a tutor_scores object against a dialogue log file.
+ * Returns a Map<turnIndex, boolean> indicating which turns verified.
+ * Exported for testing and reuse in trajectory_slope / conditional_delta adapters.
+ */
+export function verifyTurnIdsForRow(dialogueId, tutorScoresObj, logDir) {
+  const result = new Map();
+  if (!dialogueId || !tutorScoresObj || !logDir) return result;
+
+  const filePath = path.join(logDir, `${dialogueId}.json`);
+  if (!fs.existsSync(filePath)) return result;
+
+  let turnResults;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    turnResults = Array.isArray(parsed?.turnResults) ? parsed.turnResults : [];
+  } catch { return result; }
+
+  for (const [turnKey, turnValue] of Object.entries(tutorScoresObj)) {
+    const scoreTurnId = turnValue?.contentTurnId;
+    if (!scoreTurnId) continue;
+    const turnIndex = turnValue?.turnIndex ?? Number(String(turnKey).replace(/[^0-9]/g, ''));
+    const matchingTurn = turnResults.find((t) => (t.turnIndex ?? 0) === turnIndex);
+    if (!matchingTurn) { result.set(turnIndex, false); continue; }
+    const turnContent = JSON.stringify({
+      turnIndex: matchingTurn.turnIndex,
+      suggestion: matchingTurn.suggestion ? [matchingTurn.suggestion] : [],
+      turnId: matchingTurn.turnId,
+    });
+    const expectedId = createHash('sha256')
+      .update(dialogueId + ':' + turnIndex + ':' + turnContent)
+      .digest('hex').slice(0, 16);
+    result.set(turnIndex, expectedId === scoreTurnId);
+  }
+  return result;
+}
+
+/**
  * Provenance check adapter: verifies dialogue hashes, turn IDs, judge input
  * hashes, and audit trail presence against the database and log files on disk.
  *
@@ -1026,38 +1063,17 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
           checkResults[check].skipped++;
           continue;
         }
-        const filePath = path.join(logDir, `${row.dialogue_id}.json`);
-        if (!fs.existsSync(filePath)) {
+        const verification = verifyTurnIdsForRow(row.dialogue_id, tutorScores, logDir);
+        if (verification.size === 0) {
+          // No turns with contentTurnId, or log file missing
           checkResults[check].skipped++;
           continue;
         }
-        try {
-          const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-          const turnResults = Array.isArray(parsed?.turnResults) ? parsed.turnResults : [];
-          let allMatch = true;
-          for (const [turnKey, turnValue] of Object.entries(tutorScores)) {
-            const scoreTurnId = turnValue?.contentTurnId;
-            if (!scoreTurnId) continue;
-            const turnIndex = turnValue?.turnIndex ?? Number(String(turnKey).replace(/[^0-9]/g, ''));
-            const matchingTurn = turnResults.find((t) => (t.turnIndex ?? 0) === turnIndex);
-            if (!matchingTurn) { allMatch = false; break; }
-            const turnContent = JSON.stringify({
-              turnIndex: matchingTurn.turnIndex,
-              suggestion: matchingTurn.suggestion ? [matchingTurn.suggestion] : [],
-              turnId: matchingTurn.turnId,
-            });
-            const expectedId = createHash('sha256')
-              .update(row.dialogue_id + ':' + turnIndex + ':' + turnContent)
-              .digest('hex').slice(0, 16);
-            if (expectedId !== scoreTurnId) { allMatch = false; break; }
-          }
-          if (allMatch) checkResults[check].passed++;
-          else {
-            checkResults[check].failed++;
-            checkResults[check].failures.push({ id: row.id, reason: 'turn_id_mismatch' });
-          }
-        } catch {
-          checkResults[check].skipped++;
+        const allMatch = [...verification.values()].every((v) => v === true);
+        if (allMatch) checkResults[check].passed++;
+        else {
+          checkResults[check].failed++;
+          checkResults[check].failures.push({ id: row.id, reason: 'turn_id_mismatch' });
         }
       } else if (check === 'judge_input_present') {
         const tutorScores = safeJsonParse(row.tutor_scores);
@@ -1260,7 +1276,7 @@ function evaluateDimensionClusterEffect(db, evidence) {
   };
 }
 
-function evaluateTrajectorySlope(db, evidence) {
+function evaluateTrajectorySlope(db, evidence, rootDir) {
   const side = evidence?.side || 'learner';
   const dimension = evidence?.dimension || 'overall';
   const groupBy = evidence?.group_by;
@@ -1292,6 +1308,11 @@ function evaluateTrajectorySlope(db, evidence) {
   let skippedTooFew = 0;
   let verifiedTurns = 0;
   let skippedTurns = 0;
+  let logVerifiedTurns = 0;
+  let logMismatches = 0;
+
+  // Resolve log directory for turn-level log verification
+  const logDir = (turnLevel && rootDir) ? path.join(rootDir, 'logs/tutor-dialogues') : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1301,24 +1322,37 @@ function evaluateTrajectorySlope(db, evidence) {
     if (turnLevel) {
       const rawParsed = safeJsonParse(row[scoreColumn]);
       if (!rawParsed || typeof rawParsed !== 'object') { skippedTooFew++; continue; }
+
+      // When rootDir is available, verify contentTurnIds against dialogue log
+      const logVerification = logDir ? verifyTurnIdsForRow(row.dialogue_id, rawParsed, logDir) : null;
+
       const filtered = [];
       for (const [turnKey, turnValue] of Object.entries(rawParsed)) {
         if (!turnValue?.contentTurnId) {
           skippedTurns++;
           continue;
         }
+        const turnIndex = turnValue?.turnIndex ?? Number(String(turnKey).replace(/[^0-9]/g, ''));
+        // Skip turns that fail log verification
+        if (logVerification && logVerification.has(turnIndex) && !logVerification.get(turnIndex)) {
+          logMismatches++;
+          continue;
+        }
+        if (logVerification && logVerification.has(turnIndex) && logVerification.get(turnIndex)) {
+          logVerifiedTurns++;
+        }
         verifiedTurns++;
         const scores = turnValue?.scores;
         if (!scores) continue;
         const turnIndexFromKey = Number(String(turnKey).replace(/[^0-9]/g, ''));
-        const turnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0
+        const resolvedTurnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0
           ? turnIndexFromKey
           : turnValue?.turnIndex || 0;
         const dimScores = Object.values(scores)
           .map((d) => d?.score)
           .filter((s) => isFiniteNumber(s));
         const overallScore = dimScores.length > 0 ? mean(dimScores) : 0;
-        filtered.push({ turnIndex, overallScore, scores });
+        filtered.push({ turnIndex: resolvedTurnIndex, overallScore, scores });
       }
       filtered.sort((a, b) => a.turnIndex - b.turnIndex);
       turns = filtered;
@@ -1363,6 +1397,10 @@ function evaluateTrajectorySlope(db, evidence) {
   if (turnLevel) {
     details.verified_turns = verifiedTurns;
     details.skipped_turns = skippedTurns;
+    if (logDir) {
+      details.log_verified_turns = logVerifiedTurns;
+      details.log_mismatches = logMismatches;
+    }
   }
 
   return {
@@ -1376,7 +1414,7 @@ function evaluateTrajectorySlope(db, evidence) {
   };
 }
 
-function evaluateConditionalDelta(db, evidence) {
+function evaluateConditionalDelta(db, evidence, rootDir) {
   const eventDimension = evidence?.event_dimension || 'revision_signals';
   const eventThreshold = evidence?.event_threshold ?? 2;
   const eventDirection = evidence?.event_direction || 'below';
@@ -1403,6 +1441,11 @@ function evaluateConditionalDelta(db, evidence) {
   let maxCreatedAt = null;
   let verifiedTurns = 0;
   let skippedTurns = 0;
+  let logVerifiedTurns = 0;
+  let logMismatches = 0;
+
+  // Resolve log directory for turn-level log verification
+  const logDir = (turnLevel && rootDir) ? path.join(rootDir, 'logs/tutor-dialogues') : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1412,13 +1455,29 @@ function evaluateConditionalDelta(db, evidence) {
 
     // When turn_level is enabled, build a set of verified turn indices from tutor_scores
     let verifiedTurnIndices = null;
+    let logVerification = null;
     if (turnLevel) {
       verifiedTurnIndices = new Set();
       const rawParsed = safeJsonParse(row.tutor_scores);
+
+      // When rootDir is available, verify contentTurnIds against dialogue log
+      if (logDir && rawParsed) {
+        logVerification = verifyTurnIdsForRow(row.dialogue_id, rawParsed, logDir);
+      }
+
       if (rawParsed && typeof rawParsed === 'object') {
         for (const turnValue of Object.values(rawParsed)) {
           const idx = turnValue?.turnIndex ?? 0;
           if (turnValue?.contentTurnId) {
+            // Skip turns that fail log verification
+            if (logVerification && logVerification.has(idx) && !logVerification.get(idx)) {
+              logMismatches++;
+              skippedTurns++;
+              continue;
+            }
+            if (logVerification && logVerification.has(idx) && logVerification.get(idx)) {
+              logVerifiedTurns++;
+            }
             verifiedTurnIndices.add(idx);
             verifiedTurns++;
           } else {
@@ -1465,6 +1524,10 @@ function evaluateConditionalDelta(db, evidence) {
   if (turnLevel) {
     details.verified_turns = verifiedTurns;
     details.skipped_turns = skippedTurns;
+    if (logDir) {
+      details.log_verified_turns = logVerifiedTurns;
+      details.log_mismatches = logMismatches;
+    }
   }
 
   return {
@@ -1549,7 +1612,7 @@ function evaluateRubricVersionComparison(db, evidence) {
   };
 }
 
-function evaluateEvidence(db, manifest, evidence) {
+export function evaluateEvidence(db, manifest, evidence, rootDir) {
   const type = evidence?.type;
   if (type === 'manifest_total') return evaluateManifestTotal(manifest, evidence);
   if (type === 'manifest_section_total') return evaluateManifestSectionTotal(manifest, evidence);
@@ -1560,8 +1623,8 @@ function evaluateEvidence(db, manifest, evidence) {
   if (type === 'judge_pair_correlation') return evaluateJudgePairCorrelation(db, evidence);
   if (type === 'dimension_variance') return evaluateDimensionVariance(db, evidence);
   if (type === 'dimension_cluster_effect') return evaluateDimensionClusterEffect(db, evidence);
-  if (type === 'trajectory_slope') return evaluateTrajectorySlope(db, evidence);
-  if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence);
+  if (type === 'trajectory_slope') return evaluateTrajectorySlope(db, evidence, rootDir);
+  if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence, rootDir);
   if (type === 'rubric_version_comparison') return evaluateRubricVersionComparison(db, evidence);
   if (type === 'log_trace_coverage') throw new Error('log_trace_coverage requires rootDir context');
   if (type === 'provenance_check') throw new Error('provenance_check requires rootDir context');
@@ -1998,7 +2061,7 @@ export function runProvableDiscourseAudit({
           } else if ((claim?.evidence?.type || '') === 'provenance_check') {
             evidence = evaluateProvenanceCheck(db, claim.evidence || {}, baseDir);
           } else {
-            evidence = evaluateEvidence(db, manifest, claim.evidence || {});
+            evidence = evaluateEvidence(db, manifest, claim.evidence || {}, baseDir);
           }
           result.actual_value = evidence.value;
           result.details = evidence.details || {};
