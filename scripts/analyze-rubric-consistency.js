@@ -3,7 +3,7 @@
 /**
  * Cross-Level Rubric Consistency Analysis
  *
- * Implements the 5 consistency checks from notes/rubric-2-0/metrics-procedure.md:
+ * Implements the 5 consistency checks from notes/paper-2-0/rubric/metrics-procedure.md:
  *
  *   Check 1: Per-Turn → Holistic Convergence
  *   Check 2: Agent-Level → Dialogue-Level Prediction
