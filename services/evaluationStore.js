@@ -264,6 +264,9 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_rubric_vers
 // P0 Provenance: dialogue content hash (SHA-256 of dialogue log JSON at write time)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_content_hash TEXT`, 'dialogue_content_hash');
 
+// P1c Provenance: config snapshot hash (SHA-256 of resolved cell config at generation time)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN config_hash TEXT`, 'config_hash');
+
 // P0 Provenance: score audit trail (append-only)
 db.exec(`
   CREATE TABLE IF NOT EXISTS score_audit (
@@ -582,6 +585,7 @@ export function storeResult(runId, result) {
       scoring_method,
       conversation_mode,
       dialogue_content_hash,
+      config_hash,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -595,6 +599,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
+      ?,
       ?,
       ?,
       ?,
@@ -649,6 +654,7 @@ export function storeResult(runId, result) {
     result.scoringMethod || null,
     result.conversationMode || null,
     result.dialogueContentHash || null,
+    result.configHash || null,
     new Date().toISOString(),
   );
 
@@ -1443,6 +1449,7 @@ function parseResultRow(row) {
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
     conversationMode: row.conversation_mode || null,
     dialogueContentHash: row.dialogue_content_hash || null,
+    configHash: row.config_hash || null,
     tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
     tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
     tutorHolisticScores: row.tutor_holistic_scores ? JSON.parse(row.tutor_holistic_scores) : null,
