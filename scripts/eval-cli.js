@@ -3268,6 +3268,19 @@ async function main() {
             }
           }
 
+          // ── Process Measures (extract from dialogue log, store in DB) ──
+          const tm = dialogueLog.transformationMetrics;
+          if (tm) {
+            evaluationStore.updateProcessMeasures(result.id, {
+              adaptationIndex: tm.tutorAdaptationIndex ?? null,
+              learnerGrowthIndex: tm.learnerGrowthIndex ?? null,
+              bilateralTransformationIndex: tm.bilateralTransformationIndex ?? null,
+              incorporationRate: tm.superegoMetrics?.incorporationRate ?? null,
+              dimensionConvergence: tm.dimensionConvergence ?? null,
+              transformationQuality: tm.transformationQuality ?? null,
+            });
+          }
+
           // ── Summary ──
           const tutorHolisticPart = tutorHolistic != null ? ` holistic=${tutorHolistic.toFixed(1)}` : '';
           const learnerPart = learnerAvg != null
