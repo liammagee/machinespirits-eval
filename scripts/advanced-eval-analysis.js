@@ -15,6 +15,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 // Statistical helpers
 const stats = {
@@ -79,6 +80,10 @@ async function main() {
 
   const db = new Database(dbPath);
 
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
   // Extended scenarios to analyze
   const extendedScenarios = [
     'sustained_dialogue',
@@ -93,6 +98,7 @@ async function main() {
     WHERE scenario_id IN (${extendedScenarios.map(() => '?').join(',')})
       AND success = 1
       AND tutor_first_turn_score IS NOT NULL
+      ${epochFilter.and}
     ORDER BY scenario_id, profile_name
   `;
 
@@ -229,6 +235,7 @@ async function main() {
     FROM evaluation_results
     WHERE scenario_id NOT IN (${extendedScenarios.map(() => '?').join(',')})
       AND success = 1 AND tutor_first_turn_score IS NOT NULL
+      ${epochFilter.and}
     GROUP BY profile_name
   `;
 
@@ -237,6 +244,7 @@ async function main() {
     FROM evaluation_results
     WHERE scenario_id IN (${extendedScenarios.map(() => '?').join(',')})
       AND success = 1 AND tutor_first_turn_score IS NOT NULL
+      ${epochFilter.and}
     GROUP BY profile_name
   `;
 

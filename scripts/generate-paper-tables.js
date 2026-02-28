@@ -18,6 +18,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -89,6 +90,10 @@ function main() {
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
   const db = new Database(DB_PATH, { readonly: true });
 
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
   // ── Query actual data ───────────────────────────────────────────────────
 
   const evalData = [];
@@ -112,6 +117,7 @@ function main() {
                SUM(CASE WHEN learner_overall_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
         WHERE run_id IN (${placeholders}) AND judge_model LIKE ?${profileClause}
+        ${epochFilter.and}
       `,
         )
         .get(...params);
@@ -124,6 +130,7 @@ function main() {
                SUM(CASE WHEN tutor_first_turn_score IS NOT NULL THEN 1 ELSE 0 END) as scored
         FROM evaluation_results
         WHERE run_id IN (${placeholders}) AND judge_model LIKE ?${profileClause}
+        ${epochFilter.and}
       `,
         )
         .get(...params);

@@ -28,6 +28,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -145,6 +146,10 @@ function simpleHash(str) {
 function analyzeJudgeReliability() {
   const db = new Database(DB_PATH, { readonly: true });
 
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
   console.log('Inter-Judge Reliability Analysis');
   console.log('='.repeat(60));
   console.log('');
@@ -156,6 +161,7 @@ function analyzeJudgeReliability() {
     SELECT DISTINCT judge_model
     FROM evaluation_results
     WHERE judge_model IS NOT NULL
+    ${epochFilter.and}
   `,
     )
     .all()
@@ -166,7 +172,7 @@ function analyzeJudgeReliability() {
 
   // Find paired judgments - must be SAME response content judged by different models
   // Match on suggestions content (the actual tutor response), not just scenario/profile
-  let whereClause = 'WHERE judge_model IS NOT NULL AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL';
+  let whereClause = `WHERE judge_model IS NOT NULL AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL ${epochFilter.and}`;
   if (runIdFilter) {
     whereClause += ` AND run_id = '${runIdFilter}'`;
   }

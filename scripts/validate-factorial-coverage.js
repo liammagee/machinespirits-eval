@@ -9,19 +9,25 @@
  *   - Missing cells, unbalanced N, rubric/judge inconsistencies
  *
  * Usage:
- *   node scripts/validate-factorial-coverage.js                # All model combos
+ *   node scripts/validate-factorial-coverage.js                # Paper 2.0 epoch (default)
+ *   node scripts/validate-factorial-coverage.js --epoch all    # All epochs
+ *   node scripts/validate-factorial-coverage.js --epoch pilot  # Pilot data only
  *   node scripts/validate-factorial-coverage.js --run-id <id>  # Specific run only
  *   node scripts/validate-factorial-coverage.js --target-n 5   # Set target N (default: 3)
  *   node scripts/validate-factorial-coverage.js --json         # Machine-readable output
  *   node scripts/validate-factorial-coverage.js --scenario <id> # Filter by scenario
  *
- * See: notes/messages-mode-factorial-matrix.md
+ * Related:
+ *   - analyze-accumulation.js — Cell×scenario gap analysis across all cells (not factorial-aware)
+ *   - consolidate-runs.js     — Merge physical runs into logical runs per epoch
+ *   - notes/messages-mode-factorial-matrix.md — Design matrix reference
  */
 
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -45,6 +51,8 @@ const CELL_NAMES = new Set(FACTORIAL_CELLS.map((c) => c.name));
 // ── CLI ─────────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
+const epoch = parseEpochArg(args);
+const epochFilter = getEpochFilter(epoch);
 const jsonMode = args.includes('--json');
 const runIdIdx = args.indexOf('--run-id');
 const runIdFilter = runIdIdx !== -1 ? args[runIdIdx + 1] : null;
@@ -83,12 +91,17 @@ function main() {
 
   const db = new Database(DB_PATH, { readonly: true });
 
+  if (!jsonMode) printEpochBanner(epoch);
+
   // Query all scored rows for factorial cells 80-87
   let whereClause = `WHERE profile_name IN (${[...CELL_NAMES].map(() => '?').join(',')})`;
   const params = [...CELL_NAMES];
 
   // Must have a tutor score (not just generated)
   whereClause += ` AND (tutor_first_turn_score IS NOT NULL OR tutor_overall_score IS NOT NULL)`;
+
+  // Epoch filter (rubric version boundary)
+  whereClause += ` ${epochFilter.and}`;
 
   if (runIdFilter) {
     whereClause += ` AND run_id = ?`;
@@ -217,13 +230,13 @@ function main() {
   // ── Output ────────────────────────────────────────────────────────────────
 
   if (jsonMode) {
-    console.log(JSON.stringify({ targetN, totalRows: rows.length, combinations: results }, null, 2));
+    console.log(JSON.stringify({ epoch, targetN, totalRows: rows.length, combinations: results }, null, 2));
     db.close();
     return;
   }
 
   console.log(`\n${'═'.repeat(80)}`);
-  console.log(`  MESSAGES-MODE 2×2×2 FACTORIAL COVERAGE`);
+  console.log(`  MESSAGES-MODE 2×2×2 FACTORIAL COVERAGE — Epoch: ${epochFilter.label}`);
   console.log(`${'═'.repeat(80)}`);
   console.log(`  Total scored rows: ${rows.length}   Target N per cell×scenario: ${targetN}`);
   if (runIdFilter) console.log(`  Filtered to run: ${runIdFilter}`);

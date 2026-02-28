@@ -17,6 +17,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 // ── Stopwords ────────────────────────────────────────────────────────────
 
@@ -472,6 +473,10 @@ async function main() {
 
   const db = new Database(dbPath);
 
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
   // Ensure exports directory exists
   const exportsDir = path.join(process.cwd(), 'exports');
   if (!fs.existsSync(exportsDir)) {
@@ -512,6 +517,7 @@ async function main() {
         AND scenario_id = ?
         AND profile_name IN (${recogCells.map(() => '?').join(',')})
         AND suggestions IS NOT NULL
+        ${epochFilter.and}
       ORDER BY tutor_first_turn_score DESC
       LIMIT 1
     `,
@@ -528,6 +534,7 @@ async function main() {
         AND scenario_id = ?
         AND profile_name IN (${baseCells.map(() => '?').join(',')})
         AND suggestions IS NOT NULL
+        ${epochFilter.and}
       ORDER BY tutor_first_turn_score ASC
       LIMIT 1
     `,
@@ -583,6 +590,7 @@ async function main() {
     WHERE success = 1
       AND suggestions IS NOT NULL
       AND profile_name IN (${[...baseCells, ...recogCells].map(() => '?').join(',')})
+      ${epochFilter.and}
   `,
     )
     .all(...baseCells, ...recogCells);

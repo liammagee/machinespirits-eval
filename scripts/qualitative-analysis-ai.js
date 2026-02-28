@@ -28,6 +28,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import readline from 'readline';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 // ── Model Configuration ─────────────────────────────────────────────────
 
@@ -428,7 +429,7 @@ function regexClassify(text) {
 
 // ── Data Loading ────────────────────────────────────────────────────────
 
-function loadData(db, cells, _sampleSize) {
+function loadData(db, cells, _sampleSize, epochFilter = { and: '' }) {
   const _cellList = cells.map(
     (c) =>
       `'cell_${c}_base_single_unified','cell_${c}_base_single_psycho','cell_${c}_base_multi_unified','cell_${c}_base_multi_psycho','cell_${c}_recog_single_unified','cell_${c}_recog_single_psycho','cell_${c}_recog_multi_unified','cell_${c}_recog_multi_psycho'`,
@@ -469,6 +470,7 @@ function loadData(db, cells, _sampleSize) {
       AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
       AND profile_name IN (${placeholders})
+      ${epochFilter.and}
   `;
 
   // Note: when resuming with --sample, we load all data and let the
@@ -506,7 +508,7 @@ function loadData(db, cells, _sampleSize) {
 
 // ── Cost Estimation ─────────────────────────────────────────────────────
 
-function printCostEstimate(db) {
+function printCostEstimate(db, epochFilter = { and: '' }) {
   console.log('='.repeat(70));
   console.log('COST ESTIMATE: AI THEMATIC ANALYSIS');
   console.log('='.repeat(70));
@@ -522,6 +524,7 @@ function printCostEstimate(db) {
        OR profile_name LIKE 'cell_3_%' OR profile_name LIKE 'cell_4_%'
        OR profile_name LIKE 'cell_5_%' OR profile_name LIKE 'cell_6_%'
        OR profile_name LIKE 'cell_7_%' OR profile_name LIKE 'cell_8_%')
+      ${epochFilter.and}
 `,
     )
     .get().n;
@@ -532,6 +535,7 @@ function printCostEstimate(db) {
     SELECT COUNT(*) as n FROM evaluation_results
     WHERE success = 1 AND tutor_first_turn_score IS NOT NULL AND suggestions IS NOT NULL
       AND judge_model LIKE 'claude-opus-%'
+      ${epochFilter.and}
 `,
     )
     .get().n;
@@ -1261,8 +1265,12 @@ async function main() {
 
   const db = new Database(dbPath);
 
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
   if (opts.costEstimate) {
-    printCostEstimate(db);
+    printCostEstimate(db, epochFilter);
     db.close();
     return;
   }
@@ -1281,7 +1289,7 @@ async function main() {
   );
 
   // Load data
-  const data = loadData(db, opts.cells, opts.sample);
+  const data = loadData(db, opts.cells, opts.sample, epochFilter);
   console.log(`\nLoaded ${data.length} responses`);
   const baseCount = data.filter((d) => d.condition === 'base').length;
   const recogCount = data.filter((d) => d.condition === 'recognition').length;

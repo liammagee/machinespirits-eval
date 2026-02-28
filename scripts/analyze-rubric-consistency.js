@@ -21,6 +21,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -149,6 +150,10 @@ function formatP(p) {
 
 const db = new Database(DB_PATH, { readonly: true });
 
+const epoch = parseEpochArg(process.argv);
+const epochFilter = getEpochFilter(epoch);
+printEpochBanner(epoch);
+
 function buildWhereClause() {
   const conditions = [];
   const params = [];
@@ -162,6 +167,10 @@ function buildWhereClause() {
   }
   // Only multi-turn rows (have dialogue_id and multiple turns)
   conditions.push('dialogue_id IS NOT NULL');
+  // Epoch filter
+  if (epochFilter.and) {
+    conditions.push(epochFilter.where);
+  }
   return {
     where: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
     params,
