@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runProvableDiscourseAudit } from '../services/provableDiscourse.js';
+import { parseEpochArg, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -32,6 +33,7 @@ Options:
   --todo-path <path>       Explicit TODO output path (same as --write-todo <path>)
   --color                  Force colorized output
   --no-color               Disable colorized output
+  --epoch <epoch>          Filter claims by epoch: pilot (Paper 1.0), 2.0 (default), all
   --help
 
 Examples:
@@ -238,12 +240,15 @@ function main() {
   const noColor = args.includes('--no-color') || process.env.NO_COLOR != null;
   const useColor = !jsonMode && !noColor && (forceColor || Boolean(process.stdout.isTTY));
   const specPath = getArgValue(args, '--spec') || 'config/provable-discourse.yaml';
+  const epoch = parseEpochArg(process.argv);
+  printEpochBanner(epoch);
 
   const report = runProvableDiscourseAudit({
     rootDir: ROOT,
     specPath,
     smokeMode,
     refreshSnapshot,
+    epoch: epoch || null,
   });
   if (todoPath) {
     report.todo_written = writeTodoFile({
@@ -284,8 +289,9 @@ function main() {
       }
     }
 
+    const epochSuffix = report.summary.skipped_by_epoch > 0 ? ` (${report.summary.skipped_by_epoch} skipped by epoch filter)` : '';
     console.log(
-      `\nSummary: ${paint(String(report.summary.pass), useColor, ANSI.green)} pass, ${paint(String(report.summary.warn), useColor, ANSI.yellow)} warn, ${paint(String(report.summary.fail), useColor, ANSI.red)} fail`,
+      `\nSummary: ${paint(String(report.summary.pass), useColor, ANSI.green)} pass, ${paint(String(report.summary.warn), useColor, ANSI.yellow)} warn, ${paint(String(report.summary.fail), useColor, ANSI.red)} fail${epochSuffix}`,
     );
   }
 

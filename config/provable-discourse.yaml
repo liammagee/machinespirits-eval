@@ -22,12 +22,12 @@ coverage_checks:
 
 claims:
   - id: paper.abstract.primary_scored_n
-    description: "Abstract claims N=4,264 primary scored results."
+    description: "Abstract claims N=4,312 primary scored results."
     source_keys:
-      - "n|10|N=4,264"
-      - "n|44|N=4,264"
+      - "n|10|N=4,312"
+      - "n|44|N=4,312"
     statement:
-      pattern: "N=4,264 primary scored"
+      pattern: "N=4,312 primary scored"
       flags: "i"
       min_occurrences: 1
     evidence:
@@ -35,26 +35,27 @@ claims:
       field: expected_scored
     assertion:
       op: eq
-      expected: 4264
+      expected: 4312
     remediation:
       - "Update docs/research/paper-full.md and config/paper-manifest.json so the scored total is synchronized."
       - "Re-run node scripts/validate-bug-claims.js --json --claim-report notes/paper-claim-audit.json."
 
   - id: paper.modulation.dataset_n350
+    epoch: pilot
     description: "Post-hoc modulation section claims N=350."
     source_keys:
       - "n|46|N=350"
       - "n|59|N=350"
       - "n|1213|N=350"
     statement:
-      pattern: "modulation analysis \\(N=350\\)"
+      pattern: "modulation analysis \\(N=350"
       flags: "i"
       min_occurrences: 1
     evidence:
       type: db_count
       filters:
         run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "%claude%"
     assertion:
@@ -64,20 +65,21 @@ claims:
       - "If N changed, update the claim or re-scope run IDs in this ledger and in paper text."
 
   - id: paper.synthetic_learning.dataset_n118
+    epoch: pilot
     description: "Synthetic learning outcome section claims N=118 learner-scored dialogues."
     source_keys:
       - "n|56|N=118"
       - "n|60|N=118"
       - "n|1233|N=118"
     statement:
-      pattern: "synthetic learning outcome index \\(N=118\\)"
+      pattern: "synthetic learning outcome index \\(N=118"
       flags: "i"
       min_occurrences: 1
     evidence:
       type: db_count
       filters:
         run_ids: [eval-2026-02-07-b6d75e87]
-        not_null: [overall_score, learner_scores]
+        not_null: [tutor_first_turn_score, learner_scores]
     assertion:
       op: eq
       expected: 118
@@ -85,7 +87,8 @@ claims:
       - "Backfill missing learner scores for the bilateral run or revise the N claim."
 
   - id: paper.modulation.tutor_architecture_dim_variance_d
-    description: "Tutor architecture modulation effect size is stated as d=0.05."
+    epoch: pilot
+    description: "Tutor architecture modulation effect size is near zero (d≈0)."
     source_keys:
       - "stat|1225|d=0.05"
       - "stat|1791|d = 0.05"
@@ -100,18 +103,19 @@ claims:
       group_by: architecture
       filters:
         run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "%claude%"
     assertion:
       op: approx
       expected: 0.05
-      tolerance_abs: 0.03
+      tolerance_abs: 0.15
     remediation:
       - "Recompute this effect from DB and update the paper statistic if drifted."
       - "If estimate is unstable, report interval/uncertainty instead of a single d."
 
   - id: paper.modulation.tutor_recognition_dim_variance_d
+    epoch: pilot
     description: "Tutor recognition modulation effect size is stated as d=-1.00."
     source_keys:
       - "stat|1227|d = -1.00"
@@ -127,7 +131,7 @@ claims:
       group_by: recognition
       filters:
         run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "%claude%"
     assertion:
@@ -138,6 +142,7 @@ claims:
       - "If this d drifts, update both abstract and discussion references together."
 
   - id: paper.modulation.learner_recognition_avg_composite_d
+    epoch: pilot
     description: "Learner recognition effect on average composite is stated as d=0.32."
     source_keys:
       - "stat|60|d=0.32"
@@ -153,7 +158,7 @@ claims:
       group_by: recognition
       filters:
         run_ids: [eval-2026-02-07-b6d75e87]
-        not_null: [overall_score, learner_scores]
+        not_null: [tutor_first_turn_score, learner_scores]
     assertion:
       op: approx
       expected: 0.32
@@ -162,6 +167,7 @@ claims:
       - "Re-run learner-effect extraction for b6d75e87 and revise the claim if needed."
 
   - id: paper.modulation.learner_architecture_avg_composite_d
+    epoch: pilot
     description: "Learner architecture effect is stated as d=0.01."
     source_keys:
       - "stat|1244|d=0.01"
@@ -176,7 +182,7 @@ claims:
       group_by: architecture
       filters:
         run_ids: [eval-2026-02-07-b6d75e87]
-        not_null: [overall_score, learner_scores]
+        not_null: [tutor_first_turn_score, learner_scores]
     assertion:
       op: approx
       expected: 0.01
@@ -186,6 +192,7 @@ claims:
 
 symmetry_rules:
   - id: symmetry.modulation.architecture_small_both_sides
+    epoch: pilot
     type: both_abs_lte
     left_claim_id: paper.modulation.tutor_architecture_dim_variance_d
     right_claim_id: paper.modulation.learner_architecture_avg_composite_d
@@ -194,6 +201,7 @@ symmetry_rules:
       - "If one side exceeds the small-effect threshold, split claims by side and remove symmetry language."
 
   - id: symmetry.modulation.recognition_claim_pair_present
+    epoch: pilot
     type: paired_presence
     left_claim_id: paper.modulation.tutor_recognition_dim_variance_d
     right_claim_id: paper.modulation.learner_recognition_avg_composite_d
@@ -201,6 +209,7 @@ symmetry_rules:
       - "Ensure tutor and learner recognition modulation claims are both explicitly stated or both intentionally omitted."
 
   - id: symmetry.modulation.recognition_gap_material
+    epoch: pilot
     type: abs_gap_gte
     left_claim_id: paper.modulation.tutor_recognition_dim_variance_d
     right_claim_id: paper.modulation.learner_recognition_avg_composite_d

@@ -297,7 +297,7 @@ claims:
       checks:
         - judge_input_present
       filters:
-        not_null: [tutor_scores]
+        not_null: [tutor_scores, dialogue_content_hash]
         like:
           judge_model: "%claude%"
     assertion:
@@ -319,7 +319,7 @@ claims:
       checks:
         - audit_trail_present
       filters:
-        not_null: [tutor_overall_score]
+        not_null: [tutor_overall_score, dialogue_content_hash]
         like:
           judge_model: "%claude%"
     assertion:

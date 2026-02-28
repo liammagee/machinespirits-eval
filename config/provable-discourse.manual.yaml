@@ -1,6 +1,7 @@
 version: 1
 claims:
   - id: manual.rubric_crossjudge.n88
+    epoch: pilot
     description: "Rubric-iteration note cites cross-judge replication sample size N=88."
     source_keys:
       - "n|421|N=88"
@@ -12,7 +13,7 @@ claims:
       type: db_count
       filters:
         run_ids: [eval-2026-02-06-a933d745]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "claude-opus%"
     assertion:
@@ -22,6 +23,7 @@ claims:
       - "If this count shifts, update the method note and the associated cross-judge table."
 
   - id: manual.rubric_crossjudge.r055
+    epoch: pilot
     description: "Rubric-iteration note cites cross-judge correlation r=0.55."
     source_keys:
       - "stat|421|r=0.55"
@@ -34,10 +36,10 @@ claims:
       run_ids: [eval-2026-02-06-a933d745]
       judge_a_like: "claude-opus%"
       judge_b_like: "gpt-5.2%"
-      metric: overall_score
+      metric: tutor_first_turn_score
       key_fields: [run_id, scenario_id, profile_name, dialogue_id]
       filters:
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
     assertion:
       op: approx
       expected: 0.55
@@ -46,6 +48,7 @@ claims:
       - "If r drifts, update cross-judge reliability text and corresponding table values."
 
   - id: manual.memory_isolation.n120
+    epoch: pilot
     description: "Memory-isolation method note cites N=120 across two runs."
     source_keys:
       - "n|465|N=120"
@@ -57,7 +60,7 @@ claims:
       type: db_count
       filters:
         run_ids: [eval-2026-02-06-81f2d5a1, eval-2026-02-06-ac9ea8f5]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "claude-opus%"
         in:
@@ -73,6 +76,7 @@ claims:
       - "If run-level row count no longer equals 120, disclose revised denominator and filtering rules."
 
   - id: manual.memory_isolation.recognition_d
+    epoch: pilot
     description: "Memory-isolation method note cites recognition main effect d=1.71."
     source_keys:
       - "stat|465|d=1.71"
@@ -82,10 +86,10 @@ claims:
       min_occurrences: 1
     evidence:
       type: profile_group_effect_size
-      metric: overall_score
+      metric: tutor_first_turn_score
       filters:
         run_ids: [eval-2026-02-06-81f2d5a1, eval-2026-02-06-ac9ea8f5]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "claude-opus%"
         in:
@@ -104,6 +108,7 @@ claims:
       - "Recompute memory-isolation recognition effect and update method note if changed."
 
   - id: manual.memory_isolation.memory_d
+    epoch: pilot
     description: "Memory-isolation method note cites memory main effect d=0.46."
     source_keys:
       - "stat|465|d=0.46"
@@ -113,10 +118,10 @@ claims:
       min_occurrences: 1
     evidence:
       type: profile_group_effect_size
-      metric: overall_score
+      metric: tutor_first_turn_score
       filters:
         run_ids: [eval-2026-02-06-81f2d5a1, eval-2026-02-06-ac9ea8f5]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "claude-opus%"
         in:
@@ -135,6 +140,7 @@ claims:
       - "If memory-effect magnitude changed, revise both method and results sections consistently."
 
   - id: manual.multimodel_probe.n655
+    epoch: pilot
     description: "Model-differences note cites multi-model probe sample N=655."
     source_keys:
       - "n|495|N=655"
@@ -154,6 +160,7 @@ claims:
       - "If section 6.4 manifest totals changed, revise this N claim and probe summary."
 
   - id: manual.multimodel_probe.interaction_F
+    epoch: pilot
     description: "Model-differences note cites Kimi factorial interaction F=0.26."
     source_keys:
       - "stat|495|F=0.26"
@@ -163,12 +170,12 @@ claims:
       min_occurrences: 1
     evidence:
       type: anova_2x2
-      metric: overall_score
+      metric: tutor_first_turn_score
       term: interaction
       output: F
       filters:
         run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "claude-opus%"
     assertion:
@@ -179,6 +186,7 @@ claims:
       - "Recompute interaction F from current factorial data and update text if it drifts."
 
   - id: manual.multimodel_probe.interaction_p_bound
+    epoch: pilot
     description: "Model-differences note claims interaction is non-significant (p>.10)."
     source_keys:
       - "stat|495|p>.10"
@@ -188,12 +196,12 @@ claims:
       min_occurrences: 1
     evidence:
       type: anova_2x2
-      metric: overall_score
+      metric: tutor_first_turn_score
       term: interaction
       output: F
       filters:
         run_ids: [eval-2026-02-03-f5d4dd93, eval-2026-02-06-a933d745]
-        not_null: [overall_score]
+        not_null: [tutor_first_turn_score]
         like:
           judge_model: "claude-opus%"
     assertion:
@@ -203,6 +211,7 @@ claims:
       - "If interaction F exceeds this non-significance bound, update p-value wording and interpretation."
 
   - id: manual.multiturn_holistic.log_coverage
+    epoch: pilot
     description: "Paper claim about multi-turn holistic evaluation is backed by available dialogue traces."
     statement:
       pattern: "multi-turn dialogues receive a holistic evaluation"
