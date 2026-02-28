@@ -12,14 +12,12 @@
  *   node scripts/analyze-superego-transitions.js [--input data/superego-critiques-classified.jsonl]
  */
 
-import { readFileSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const LOGS_DIR = join(ROOT, 'logs', 'tutor-dialogues');
-
 const args = process.argv.slice(2);
 const inputIdx = args.indexOf('--input');
 const inputPath = inputIdx !== -1 ? args[inputIdx + 1] : join(ROOT, 'data', 'superego-critiques-classified.jsonl');
@@ -163,7 +161,7 @@ function main() {
     let stallingDialogues = 0;
     const stallingCategories = {};
 
-    for (const [dialogueId, crits] of multiCrit) {
+    for (const [_dialogueId, crits] of multiCrit) {
         if (crits.length < 3) continue;
 
         // Check for 3+ consecutive same category

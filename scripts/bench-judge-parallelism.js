@@ -179,7 +179,7 @@ async function main() {
   const parStart = Date.now();
   const parResults = await runParallel();
   const parTime = Date.now() - parStart;
-  const parCalls = callCount;
+  const _parCalls = callCount;
 
   // Validate
   const validation = validateResults(seqResults, parResults);

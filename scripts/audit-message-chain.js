@@ -43,7 +43,7 @@ import * as evaluationStore from '../services/evaluationStore.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
-const DIALOGUE_LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const _DIALOGUE_LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
 const LOCAL_PROMPTS_DIR = path.join(ROOT, 'prompts');
 const LEARNER_CONFIG_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
 
