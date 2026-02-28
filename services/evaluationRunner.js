@@ -2057,7 +2057,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     latencyMs: genResult.metadata?.latencyMs,
     inputTokens: genResult.metadata?.inputTokens,
     outputTokens: genResult.metadata?.outputTokens,
-    dialogueRounds: genResult.metadata?.dialogueRounds,
+    dialogueRounds: 1,
+    deliberationRounds: genResult.metadata?.dialogueRounds || 0,
     apiCalls: genResult.metadata?.apiCalls,
     cost: genResult.metadata?.totalCost,
     dialogueId: genResult.metadata?.dialogueId,
@@ -2175,7 +2176,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let totalOutputTokens = cs?.totalOutputTokens || 0;
   let totalApiCalls = cs?.totalApiCalls || 0;
   let totalCost = cs?.totalCost || 0;
-  let totalDialogueRounds = cs?.totalDialogueRounds || 0;
+  let totalDeliberationRounds = cs?.totalDeliberationRounds || 0;
 
   const conversationHistory = cs?.conversationHistory || [];
   let previousSuggestion = cs?.previousSuggestion || null;
@@ -2657,7 +2658,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     totalOutputTokens += genResult.metadata?.outputTokens || 0;
     totalApiCalls += genResult.metadata?.apiCalls || 0;
     totalCost += genResult.metadata?.totalCost || 0;
-    totalDialogueRounds += genResult.metadata?.dialogueRounds || 0;
+    totalDeliberationRounds += genResult.metadata?.dialogueRounds || 0;
 
     // Update for next iteration
     previousSuggestion = suggestion;
@@ -3179,7 +3180,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         totalOutputTokens,
         totalApiCalls,
         totalCost,
-        totalDialogueRounds,
+        totalDeliberationRounds,
       });
     }
   }
@@ -3309,7 +3310,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       : [],
     dialogueTrace: consolidatedTrace,
     converged: false,
-    rounds: totalDialogueRounds,
+    rounds: totalDeliberationRounds,
+    conversationTurns: turnResults.length,
     metrics: {
       totalLatencyMs,
       totalInputTokens,
@@ -3397,7 +3399,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     apiCalls: totalApiCalls,
     cost: totalCost,
     dialogueId,
-    dialogueRounds: totalDialogueRounds,
+    dialogueRounds: turnResults.length,
+    deliberationRounds: totalDeliberationRounds,
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
     tutorFirstTurnScore,
     scoringMethod: turnResults.some((t) => t.scoringMethod === 'judge_failed')

@@ -261,6 +261,10 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_rubric_version
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_rubric_version TEXT`, 'learner_rubric_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_rubric_version TEXT`, 'dialogue_rubric_version');
 
+// Deliberation rounds: cumulative ego-superego cycles across all conversation turns
+// (split from dialogue_rounds which now stores conversation turn count)
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN deliberation_rounds INTEGER`, 'deliberation_rounds');
+
 // P0 Provenance: dialogue content hash (SHA-256 of dialogue log JSON at write time)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_content_hash TEXT`, 'dialogue_content_hash');
 
@@ -575,7 +579,7 @@ export function storeResult(runId, result) {
       provider, model, profile_name, hyperparameters, prompt_id,
       ego_model, superego_model,
       suggestions, raw_response,
-      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
+      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, deliberation_rounds, api_calls, dialogue_id,
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone, overall_score, tutor_first_turn_score,
       base_score, recognition_score,
@@ -592,7 +596,7 @@ export function storeResult(runId, result) {
       ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?,
-      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?,
@@ -626,6 +630,7 @@ export function storeResult(runId, result) {
     result.outputTokens,
     result.cost,
     result.dialogueRounds,
+    result.deliberationRounds ?? null,
     result.apiCalls,
     result.dialogueId,
     result.scores?.relevance,
@@ -1483,6 +1488,7 @@ function parseResultRow(row) {
     outputTokens: row.output_tokens,
     cost: row.cost,
     dialogueRounds: row.dialogue_rounds,
+    deliberationRounds: row.deliberation_rounds ?? null,
     apiCalls: row.api_calls,
     dialogueId: row.dialogue_id,
     scores,
@@ -1775,7 +1781,7 @@ export function storeRejudgment(originalResult, evaluation) {
       provider, model, profile_name, hyperparameters, prompt_id,
       ego_model, superego_model,
       suggestions, raw_response,
-      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
+      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, deliberation_rounds, api_calls, dialogue_id,
       score_relevance, score_specificity, score_pedagogical,
       score_personalization, score_actionability, score_tone, overall_score, tutor_first_turn_score,
       base_score, recognition_score,
@@ -1791,7 +1797,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?,
-      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?,
       ?, ?, ?, ?, ?,
       ?, ?,
@@ -1831,6 +1837,7 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.outputTokens,
     originalResult.cost,
     originalResult.dialogueRounds,
+    originalResult.deliberationRounds ?? null,
     originalResult.apiCalls,
     originalResult.dialogueId,
     // New scores from the new judge
@@ -2505,7 +2512,7 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
       provider, model, profile_name, hyperparameters, prompt_id,
       ego_model, superego_model,
       suggestions, raw_response,
-      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, api_calls, dialogue_id,
+      latency_ms, input_tokens, output_tokens, cost, dialogue_rounds, deliberation_rounds, api_calls, dialogue_id,
       success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method, conversation_mode,
@@ -2515,7 +2522,7 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
       ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?,
-      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?, ?,
       ?, ?,
       ?, ?, ?, ?,
       ?, ?,
@@ -2545,6 +2552,7 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
       r.outputTokens,
       r.cost,
       r.dialogueRounds,
+      r.deliberationRounds ?? null,
       r.apiCalls,
       r.dialogueId,
       r.success ? 1 : 0,
