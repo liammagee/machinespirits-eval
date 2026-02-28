@@ -26,6 +26,14 @@ function clipPayloadText(text, limit = API_PAYLOAD_MAX_CHARS) {
   return `${str.slice(0, limit)}... [truncated ${str.length - limit} chars]`;
 }
 
+function getRequiredTemperature(config, configName) {
+  const t = config?.hyperparameters?.temperature;
+  if (t === undefined) {
+    throw new Error(`Explicit temperature setting is required for ${configName} in YAML config.`);
+  }
+  return t;
+}
+
 function truncatePayload(value, limit = API_PAYLOAD_MAX_CHARS) {
   if (value == null) return null;
   if (typeof value === 'string') return clipPayloadText(value, limit);
@@ -311,7 +319,7 @@ Generate this agent's internal voice as the learner approaches this topic for th
         },
       ],
       {
-        temperature: agentConfig.hyperparameters?.temperature || 0.7,
+        temperature: getRequiredTemperature(agentConfig, role),
         maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
       },
     );
@@ -365,7 +373,7 @@ Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
       revisionSystemPrompt,
       [{ role: 'user', content: "Generate the learner's opening message." }],
       {
-        temperature: egoConfig.hyperparameters?.temperature || 0.7,
+        temperature: getRequiredTemperature(egoConfig, 'ego'),
         maxTokens: egoConfig.hyperparameters?.max_tokens || 200,
       },
     );
@@ -401,7 +409,7 @@ Do NOT include internal thoughts or meta-commentary.`;
       adaptPrompt,
       [{ role: 'user', content: "Generate the learner's opening message." }],
       {
-        temperature: lastConfig.hyperparameters?.temperature || 0.7,
+        temperature: getRequiredTemperature(lastConfig, 'unified_learner'),
         maxTokens: lastConfig.hyperparameters?.max_tokens || 200,
       },
     );
@@ -497,7 +505,7 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   const tutorModel = egoConfig?.model || tutorConfig.getProviderConfig('openrouter')?.default_model;
 
   const egoResponse = await llmCall(tutorModel, egoPrompt, [{ role: 'user', content: learnerMessage }], {
-    temperature: egoConfig?.hyperparameters?.temperature || 0.6,
+    temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
     maxTokens: egoConfig?.hyperparameters?.max_tokens || 800,
     agentRole: 'tutor_ego',
   });
@@ -539,7 +547,7 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
   const superegoModel = superegoConfig?.model || tutorModel;
 
   const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
-    temperature: superegoConfig?.hyperparameters?.temperature || 0.4,
+    temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
     maxTokens: superegoConfig?.hyperparameters?.max_tokens || 1000,
     agentRole: 'tutor_superego',
   });
@@ -1306,21 +1314,21 @@ export async function generateLearnerResponse(options) {
   // The 5th argument is messageHistory for message chain mode.
   const callLLM = llmCall
     ? async (agentConfig, systemPrompt, userPrompt, _role, _msgHistory = null) => {
-        const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
-          temperature: agentConfig.hyperparameters?.temperature || 0.7,
-          maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
-          agentRole: _role,
-        });
-        return {
-          content: response.content,
-          usage: response.usage,
-          model: response.model || agentConfig.model,
-          provider: response.provider || agentConfig.provider || null,
-          latencyMs: response.latencyMs || null,
-          generationId: response.generationId || null,
-          apiPayload: response.apiPayload || null,
-        };
-      }
+      const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
+        temperature: getRequiredTemperature(agentConfig, _role || 'learner_agent'),
+        maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
+        agentRole: _role,
+      });
+      return {
+        content: response.content,
+        usage: response.usage,
+        model: response.model || agentConfig.model,
+        provider: response.provider || agentConfig.provider || null,
+        latencyMs: response.latencyMs || null,
+        generationId: response.generationId || null,
+        apiPayload: response.apiPayload || null,
+      };
+    }
     : callLearnerAI;
 
   const persona = learnerConfig.getPersona(personaId);

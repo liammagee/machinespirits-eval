@@ -201,7 +201,8 @@ function getFallbackJudge() {
  */
 async function callJudgeModelWithConfig(prompt, config) {
   const { provider, model, hyperparameters, reasoningEffort } = config;
-  const temperature = hyperparameters?.temperature ?? 0.2;
+  const temperature = hyperparameters?.temperature;
+  if (temperature === undefined) throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
   const maxTokens = hyperparameters?.max_tokens ?? 1500;
 
   debugLog(`[rubricEvaluator] Calling fallback judge: ${provider}/${model}`);
@@ -516,7 +517,8 @@ function supportsJsonMode(model) {
 async function callJudgeModel(prompt, overrides = {}) {
   const judge = getAvailableJudge(overrides);
   const { provider, model, hyperparameters, reasoningEffort } = judge;
-  const temperature = hyperparameters?.temperature ?? 0.2;
+  const temperature = hyperparameters?.temperature;
+  if (temperature === undefined) throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
   const maxTokens = hyperparameters?.max_tokens ?? 1500;
 
   if (provider === 'anthropic') {
