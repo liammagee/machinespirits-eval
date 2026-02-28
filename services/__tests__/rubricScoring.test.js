@@ -227,18 +227,18 @@ describe('calculateGroupScore', () => {
     clearRubricPathOverride();
   });
 
-  it('returns 0 for empty scores object', () => {
+  it('returns null for empty scores object', () => {
     setRubricPathOverride(V21_RUBRIC);
     const score = calculateGroupScore({}, 'base');
-    assert.strictEqual(score, 0, 'empty scores should produce 0');
+    assert.strictEqual(score, null, 'empty scores should produce null');
   });
 
-  it('returns 0 for unknown group when all scores are present', () => {
+  it('returns null for unknown group when all scores are present', () => {
     setRubricPathOverride(V21_RUBRIC);
     const dims = getRubricDimensions();
     const scores = uniformScores(dims, 4);
     const score = calculateGroupScore(scores, 'nonexistent');
-    assert.strictEqual(score, 0, 'unknown group should produce 0');
+    assert.strictEqual(score, null, 'unknown group should produce null');
   });
 
   it('produces correct score for non-uniform scores', () => {

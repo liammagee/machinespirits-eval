@@ -87,7 +87,7 @@ export function calculateLearnerOverallScore(scores, isMultiAgent = false) {
     totalWeight += dim.weight;
   }
 
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0) return null;
 
   const weightedAvg = weightedSum / totalWeight;
   return ((weightedAvg - 1) / 4) * 100;
@@ -188,6 +188,135 @@ function buildHolisticTranscript(turns, includeDeliberation = false) {
   }
 
   return lines.join('\n');
+}
+
+/**
+ * Build a BATCHED learner evaluation prompt for multi-turn dialogues.
+ * Instead of M separate prompts (one per learner turn), this produces ONE prompt
+ * that includes the rubric criteria once and the full transcript, asking the
+ * judge to score each learner turn independently.
+ *
+ * @param {Object} params
+ * @param {Array} params.turns - All turns from the interaction (reconstructedTurns)
+ * @param {Array} params.learnerTurnTargets - Array of { lt, targetIdx } mapping learner ordinal to turns index
+ * @param {string} params.personaId - Learner persona ID
+ * @param {string} params.personaDescription - Description of the learner persona
+ * @param {string} params.learnerArchitecture - 'unified' or 'multi_agent'
+ * @param {string} params.scenarioName - Name of the scenario
+ * @param {string} params.topic - Topic being discussed
+ * @returns {string|null} Complete batched judge prompt, or null if no turns to score
+ */
+export function buildBatchedLearnerPrompt(params) {
+  const {
+    turns,
+    learnerTurnTargets,
+    personaId = 'unknown',
+    personaDescription = 'No persona description available',
+    learnerArchitecture = 'unified',
+    scenarioName = 'unknown',
+    topic = 'unknown',
+  } = params;
+
+  if (!learnerTurnTargets || learnerTurnTargets.length === 0) return null;
+
+  const isMultiAgent = learnerArchitecture === 'multi_agent' || learnerArchitecture === 'psychodynamic';
+  const dimensions = getLearnerDimensions({ isMultiAgent });
+  const dimensionCriteria = buildDimensionCriteria(dimensions);
+
+  // Build full transcript (all turns, public only)
+  const fullTranscript = buildHolisticTranscript(turns, false);
+
+  // Build per-turn listing of learner messages to evaluate
+  const turnListings = learnerTurnTargets.map(({ lt, targetIdx }) => {
+    const turn = turns[targetIdx];
+    return `### Learner Turn ${lt + 1} (at dialogue position ${targetIdx + 1})
+**External message** (what the tutor sees):
+${turn?.externalMessage || '(no message)'}`;
+  }).join('\n\n');
+
+  // Build example JSON
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = Object.fromEntries(
+    dimKeys.map((key) => [key, { score: 3, reasoning: 'Brief reason' }]),
+  );
+  const exampleTurn = {
+    learner_turn_index: 0,
+    scores: exampleScores,
+    overall_score: 55,
+    summary: 'Brief assessment',
+  };
+
+  return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. You will evaluate MULTIPLE learner turns from the same dialogue, scoring each turn independently.
+
+You are NOT evaluating the tutor. You are evaluating whether the learner agent produces responses that reflect genuine learning engagement: authentic reactions, substantive questions, conceptual thinking, and evidence of intellectual development.
+
+## IMPORTANT: BIAS PREVENTION
+
+For each learner turn, consider ONLY the dialogue context up to and including that turn. Mentally ignore subsequent exchanges when scoring earlier turns.
+
+## IMPORTANT: RESPONSE COMPLETENESS
+
+All learner responses shown below are COMPLETE as generated — they are NOT truncated. Some learner models produce concise output (1-3 sentences). This is the full response, not a fragment. Evaluate what is present. Never penalize brevity itself, never assume missing content, and never describe a response as "truncated." If text ends with an em-dash or ellipsis, that is the model's stylistic choice, not truncation.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## LEARNER CONTEXT
+
+**Assigned Persona**: ${personaId}
+**Persona Description**: ${personaDescription}
+**Learner Architecture**: ${learnerArchitecture}
+**Scenario**: ${scenarioName}
+**Topic**: ${topic}
+
+## FULL DIALOGUE TRANSCRIPT
+
+${fullTranscript}
+
+## LEARNER TURNS TO EVALUATE
+
+${turnListings}
+
+## YOUR TASK
+
+Score EACH learner turn listed above independently. For each turn:
+- Consider ONLY the dialogue context up to and including that turn
+- Evaluate based on the learner's external message only. Internal deliberation (if any) is scored separately.
+
+CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
+conceptual_progression, metacognitive_development), a score of 4 or 5 requires
+EVIDENCE OF CHANGE compared to prior turns. At Turn 1, base your score on the
+quality of the learner's initial engagement. From Turn 2 onward, ask: "How has
+the learner's thinking evolved since the previous turn?" A score of 5 requires
+the learner to demonstrate growth that builds on earlier exchanges.
+
+For each turn, provide:
+1. A score (1-5) for each applicable dimension with brief reasoning
+2. An overall score (weighted average, 0-100 scale)
+3. A brief summary
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+- BAD:  "reasoning": "Says \\"great point\\" which sounds scripted"
+- GOOD: "reasoning": "Says 'great point' which sounds scripted"
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "turns": [
+    ${JSON.stringify(exampleTurn, null, 4).split('\n').join('\n    ')}
+  ]
+}
+\`\`\``;
 }
 
 /**
@@ -408,5 +537,6 @@ export default {
   getLearnerDimensions,
   calculateLearnerOverallScore,
   buildLearnerEvaluationPrompt,
+  buildBatchedLearnerPrompt,
   buildLearnerHolisticEvaluationPrompt,
 };

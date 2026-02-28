@@ -422,8 +422,8 @@ ${criteriaText}`;
     ? `\n## DIALOGUE TRANSCRIPT
 
 ${context.prebuiltTranscript
-    ? 'This is the externally visible exchange between tutor and learner. Evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'
-    : 'The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'}
+      ? 'This is the externally visible exchange between tutor and learner. Evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'
+      : 'The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'}
 
 ${dialogueTranscript}
 `
@@ -1214,7 +1214,7 @@ export function calculateGroupScore(scores, groupName) {
     }
   }
 
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0) return null;
   return ((weightedSum / totalWeight - 1) / 4) * 100;
 }
 
@@ -1262,7 +1262,7 @@ export function calculateOverallScore(scores) {
     }
   }
 
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0) return null;
 
   // Convert 1-5 scale to 0-100
   const avgScore = weightedSum / totalWeight;
@@ -1420,7 +1420,7 @@ export function calculateTutorHolisticScore(scores, hasRecognition = false) {
     totalWeight += dim.weight;
   }
 
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0) return null;
 
   const weightedAvg = weightedSum / totalWeight;
   return ((weightedAvg - 1) / 4) * 100;
@@ -1596,7 +1596,7 @@ export function calculateDialogueQualityScore(scores) {
     }
   }
 
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0) return null;
   const avgScore = weightedSum / totalWeight;
   return ((avgScore - 1) / 4) * 100;
 }
@@ -1837,7 +1837,48 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
  * @param {string} [learnerContext] - Raw learner_context (contains initial learner message)
  * @returns {string} Formatted transcript
  */
+
+/**
+ * Detect whether a dialogue trace contains any deliberation entries
+ * (superego reviews, self-reflection, learner ego/superego, etc.).
+ * Used to gate the full-transcript fast path: when no deliberation is present,
+ * the full transcript delegates to the public transcript for exact consistency.
+ *
+ * @param {Array} trace - Dialogue trace entries
+ * @returns {boolean} true if any deliberation entries exist
+ */
+function _hasDeliberationEntries(trace) {
+  if (!trace?.length) return false;
+  const deliberationAgents = new Set([
+    'superego',
+    'ego_self_reflection',
+    'superego_self_reflection',
+    'ego_intersubjective',
+    'ego_strategy',
+    'tutor_other_ego',
+    'behavioral_overrides',
+    'superego_disposition',
+    'learner_ego_initial',
+    'learner_ego_revision',
+    'learner_superego',
+    'learner_synthesis',
+    'learner_other_ego',
+    'rejection_budget',
+  ]);
+  return trace.some(e => deliberationAgents.has(e.agent)
+    || (e.agent === 'learner' && (e.action === 'final_output' || e.action === 'response')));
+}
+
 function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
+  // ── Fast path: no deliberation → delegate to public for exact backbone match ──
+  // If the trace contains no deliberation entries (no superego, no learner
+  // ego/superego, no self-reflection, etc.), the full transcript is identical
+  // to the public transcript. This prevents confounding the
+  // dialogue_quality vs dialogue_quality_internal comparison.
+  if (dialogueTrace?.length > 0 && !_hasDeliberationEntries(dialogueTrace)) {
+    return buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext);
+  }
+
   if (dialogueTrace?.length > 0) {
     const egoSuperego = isEgoSuperegoLearner(dialogueTrace);
     const initialMessage = extractInitialLearnerMessage(learnerContext);
@@ -1893,6 +1934,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
     // Intermediate rounds (reject/revise/re-approve) are skipped.
     let tutorEgoShown = false;      // Has the first [Tutor Ego] been emitted this turn?
     let tutorSuperegoShown = false;  // Has the first [Tutor Superego] been emitted this turn?
+    let tutorFinalEmitted = false;   // Has the final [Tutor Ego] been emitted this turn?
     let tutorInitialEgoText = '';    // Initial draft text, for comparing with final
     for (let idx = 0; idx < dialogueTrace.length; idx++) {
       const entry = dialogueTrace[idx];
@@ -1900,10 +1942,21 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
       const effectiveTurn = entry.turnIndex ?? inferredTurnIdx[idx] ?? currentTurnIdx;
 
       if (effectiveTurn !== currentTurnIdx && effectiveTurn >= 0) {
+        // Turn boundary: emit pending final delivery if superego was shown
+        // but no final_output entry was encountered for the completed turn.
+        if (tutorSuperegoShown && !tutorFinalEmitted && currentTurnIdx >= 0) {
+          const deliveredMsg = deliveredByTurn[currentTurnIdx] || '';
+          if (deliveredMsg) {
+            const revised = deliveredMsg !== tutorInitialEgoText;
+            const label = revised ? '[Tutor Ego] (revised)' : '[Tutor Ego]';
+            lines.push(`${label} ${truncate(deliveredMsg, 300)}`);
+          }
+        }
         currentTurnIdx = effectiveTurn;
         lastLearnerEgoText = '';
         tutorEgoShown = false;
         tutorSuperegoShown = false;
+        tutorFinalEmitted = false;
         tutorInitialEgoText = '';
         lines.push(`\n--- Turn ${currentTurnIdx + 1} ---`);
         // Emit initial learner message at start of Turn 0
@@ -1957,7 +2010,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Tutor Superego Disposition] ${truncate(text, 300)}`);
 
-      // ── Learner agents (ego_superego only) ──
+        // ── Learner agents (ego_superego only) ──
       } else if (entry.agent === 'learner_ego_initial') {
         const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Ego] ${truncate(text, 300)}`);
@@ -1983,7 +2036,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         const text = entry.detail || entry.contextSummary || '';
         lines.push(`[Learner Other-Ego] ${truncate(text, 300)}`);
 
-      // ── Protocol entries ──
+        // ── Protocol entries ──
       } else if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
         // For ego_superego learners: suppress (redundant with learner)
         // For unified learners: contextSummary is the actual message; detail is action type label
@@ -2000,6 +2053,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
           const revised = deliveredMsg !== tutorInitialEgoText;
           const label = revised ? '[Tutor Ego] (revised)' : '[Tutor Ego]';
           lines.push(`${label} ${truncate(deliveredMsg, 300)}`);
+          tutorFinalEmitted = true;
         }
       } else if (entry.agent === 'rejection_budget') {
         const text = entry.contextSummary || entry.detail || '';
@@ -2007,6 +2061,17 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
       }
       // Skip: user/context_input (raw context metadata), system/memory_cycle (infra)
     }
+
+    // End-of-trace: emit pending final delivery for the last turn if needed
+    if (tutorSuperegoShown && !tutorFinalEmitted && currentTurnIdx >= 0) {
+      const deliveredMsg = deliveredByTurn[currentTurnIdx] || '';
+      if (deliveredMsg) {
+        const revised = deliveredMsg !== tutorInitialEgoText;
+        const label = revised ? '[Tutor Ego] (revised)' : '[Tutor Ego]';
+        lines.push(`${label} ${truncate(deliveredMsg, 300)}`);
+      }
+    }
+
     return lines.join('\n');
   }
 
@@ -2209,7 +2274,7 @@ export function calculateDeliberationScore(scores) {
     }
   }
 
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0) return null;
   const avgScore = weightedSum / totalWeight;
   return ((avgScore - 1) / 4) * 100;
 }
@@ -2426,6 +2491,157 @@ ${exampleScores}
 }
 
 /**
+ * Build a BATCHED per-turn tutor evaluation prompt for multi-turn dialogues.
+ * Instead of N separate prompts (one per turn), this produces ONE prompt that
+ * includes the rubric criteria once and the full public transcript, asking the
+ * judge to score each turn independently.
+ *
+ * Token savings: rubric criteria (~2000 tokens) sent once instead of N times.
+ * For a 5-turn dialogue: ~12,000 input tokens → ~4,000 tokens (67% reduction).
+ *
+ * @param {Object} params
+ * @param {Array} params.turnResults - Turn results from the dialogue log
+ * @param {Array} params.dialogueTrace - Full dialogue trace entries from the log
+ * @param {Object} params.scenario - Scenario context
+ * @param {string} [params.learnerContext] - Raw learner context
+ * @returns {string|null} Complete batched judge prompt, or null if no turns to score
+ */
+function buildBatchedPerTurnTutorPrompt(params) {
+  const {
+    turnResults,
+    dialogueTrace = [],
+    scenario,
+    learnerContext = null,
+  } = params;
+
+  // Filter to turns that have suggestions (scoreable turns)
+  const scoreableTurns = [];
+  for (let i = 0; i < turnResults.length; i++) {
+    const suggestion = turnResults[i]?.suggestions?.[0];
+    if (suggestion) {
+      scoreableTurns.push({ turnIndex: i, suggestion });
+    }
+  }
+
+  if (scoreableTurns.length === 0) return null;
+
+  const dimensions = evalConfigLoader.getRubricDimensions();
+
+  // Build dimension criteria text (included ONCE)
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([_key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  // Build full public transcript (all turns)
+  const allTurns = turnResults.map((t, i) => ({
+    turnIndex: i,
+    turnId: t.turnId,
+    suggestion: t.suggestions?.[0],
+    learnerAction: t.learnerAction,
+    learnerMessage: t.learnerMessage,
+  }));
+  const publicTranscript = buildDialoguePublicTranscript(allTurns, dialogueTrace, learnerContext);
+
+  const totalTurns = turnResults.length;
+
+  // Build per-turn suggestion listing
+  const turnSuggestions = scoreableTurns.map(({ turnIndex, suggestion }) => {
+    return `### Turn ${turnIndex + 1} of ${totalTurns}
+\`\`\`json
+${JSON.stringify(suggestion, null, 2)}
+\`\`\``;
+  }).join('\n\n');
+
+  // Build example JSON output
+  const exampleTurn = {
+    turn_index: 0,
+    scores: Object.fromEntries(
+      Object.entries(dimensions).map(([key], i) => [key, { score: 3 + (i % 3), reasoning: 'Brief rationale' }]),
+    ),
+    validation: { passes_required: true, required_missing: [], passes_forbidden: true, forbidden_found: [] },
+    overall_score: 82,
+    summary: 'Brief assessment',
+  };
+
+  return `You are an expert evaluator of AI tutoring systems. You will evaluate MULTIPLE tutor turns from the same multi-turn dialogue, scoring each turn independently against the pedagogical rubric.
+
+## EVALUATION RUBRIC
+
+Score each dimension from 1-5:
+- 1: Completely fails this criterion
+- 2: Weak, significant issues
+- 3: Adequate, meets basic expectations
+- 4: Good, exceeds expectations
+- 5: Excellent, exemplary
+
+${dimensionCriteria}
+
+## SCENARIO CONTEXT
+
+**Scenario**: ${scenario.name}
+**Description**: ${scenario.description}
+**Expected Behavior**: ${scenario.expectedBehavior}
+
+**Learner Context**:
+${scenario.learnerContext || learnerContext || 'No context provided'}
+
+## FULL DIALOGUE TRANSCRIPT (public messages only)
+
+This is the externally visible exchange between tutor and learner. Evaluate how well the tutor responded to the learner's actual engagement, struggle, and development.
+
+${publicTranscript}
+
+## TUTOR SUGGESTIONS TO EVALUATE
+
+${turnSuggestions}
+
+## VALIDATION REQUIREMENTS
+
+Required elements (must include):
+${(scenario.requiredElements || []).map((e) => `- ${e}`).join('\n') || '- None specified'}
+
+Forbidden elements (must NOT include):
+${(scenario.forbiddenElements || []).map((e) => `- ${e}`).join('\n') || '- None specified'}
+
+## YOUR TASK
+
+Score EACH tutor turn listed above independently. For each turn:
+- Consider ONLY the dialogue context up to and including that turn (mentally ignore later turns)
+- Evaluate the suggestion on its own merits within the dialogue so far
+
+CROSS-TURN CALIBRATION: For modulation dimensions (tutor_adaptation, learner_growth, dialectical_responsiveness), a score of 4 or 5 requires EVIDENCE OF CHANGE compared to prior turns — not just presence of adaptive language. At Turn 1, there are no prior turns to compare against, so base your score on the quality of the tutor's initial responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's approach changed since the previous turn? What specific evidence shows adaptation?" A score of 5 requires explicit cross-turn development, not just good single-turn quality.
+
+For each turn, include:
+- **scores**: 1-5 rating per dimension with brief reasoning
+- **validation**: Whether it passes required/forbidden element checks
+- **overall_score**: Weighted average on 0-100 scale
+- **summary**: Brief overall assessment
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+- BAD:  "reasoning": "Says "great job" which is encouraging"
+- GOOD: "reasoning": "Says 'great job' which is encouraging"
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "turns": [
+    ${JSON.stringify(exampleTurn, null, 4).split('\n').join('\n    ')}
+  ]
+}
+\`\`\``;
+}
+
+/**
  * Build a per-turn tutor evaluation prompt for multi-turn dialogues.
  * Mirrors the learner evaluator's truncated-transcript pattern to prevent future-bias.
  *
@@ -2503,6 +2719,7 @@ function buildPerTurnTutorEvaluationPrompt(params) {
 export {
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
+  buildBatchedPerTurnTutorPrompt,
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,
   isEgoSuperegoLearner,
@@ -2522,6 +2739,7 @@ export default {
   getAvailableJudge,
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
+  buildBatchedPerTurnTutorPrompt,
   buildTutorHolisticEvaluationPrompt,
   buildDialogueQualityPrompt,
   buildDialoguePublicTranscript,

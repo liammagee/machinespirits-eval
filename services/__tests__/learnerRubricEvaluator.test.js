@@ -196,9 +196,9 @@ describe('calculateLearnerOverallScore', () => {
     approxEqual(result, 75); // (4-1)/4 * 100 = 75
   });
 
-  it('returns 0 when no scores provided', () => {
+  it('returns null when no scores provided', () => {
     const result = calculateLearnerOverallScore({}, false);
-    assert.strictEqual(result, 0);
+    assert.strictEqual(result, null);
   });
 
   it('skips invalid scores (out of 1-5 range)', () => {

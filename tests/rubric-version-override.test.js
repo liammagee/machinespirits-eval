@@ -142,14 +142,14 @@ describe('calculateOverallScore with rubric overrides', () => {
       );
     });
 
-    it(`v${ver}: mismatched keys give 0`, () => {
+    it(`v${ver}: mismatched keys give null`, () => {
       setRubricPathOverride(path.join(RUBRICS_DIR, `v${ver}`, 'evaluation-rubric.yaml'));
 
       // Use completely wrong keys
       const scores = { bogus_dim_1: { score: 5, reasoning: 'test' }, bogus_dim_2: { score: 5, reasoning: 'test' } };
       const result = calculateOverallScore(scores);
 
-      assert.strictEqual(result, 0, `v${ver} mismatched keys should give 0`);
+      assert.strictEqual(result, null, `v${ver} mismatched keys should give null`);
     });
   }
 });
