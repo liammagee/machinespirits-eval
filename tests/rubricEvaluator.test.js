@@ -67,16 +67,16 @@ function assertApprox(actual, expected, message, tolerance = 0.01) {
 }
 
 describe('calculateBaseScore', () => {
-  it('returns 0 for empty scores', () => {
-    assert.strictEqual(calculateBaseScore({}), 0);
+  it('returns null for empty scores', () => {
+    assert.strictEqual(calculateBaseScore({}), null);
   });
 
-  it('returns 0 for scores with no base dimensions', () => {
+  it('returns null for scores with no base dimensions', () => {
     const scores = makeScores({
       mutual_recognition: 5,
       dialectical_responsiveness: 4,
     });
-    assert.strictEqual(calculateBaseScore(scores), 0);
+    assert.strictEqual(calculateBaseScore(scores), null);
   });
 
   it('returns 100 when all base dimensions are 5', () => {
@@ -155,17 +155,17 @@ describe('calculateBaseScore', () => {
 });
 
 describe('calculateRecognitionScore', () => {
-  it('returns 0 for empty scores', () => {
-    assert.strictEqual(calculateRecognitionScore({}), 0);
+  it('returns null for empty scores', () => {
+    assert.strictEqual(calculateRecognitionScore({}), null);
   });
 
-  it('returns 0 for scores with only base dimensions', () => {
+  it('returns null for scores with only base dimensions', () => {
     const scores = makeScores({
       relevance: 5,
       specificity: 5,
       pedagogical: 5,
     });
-    assert.strictEqual(calculateRecognitionScore(scores), 0);
+    assert.strictEqual(calculateRecognitionScore(scores), null);
   });
 
   it('returns 100 when all recognition dimensions are 5', () => {
@@ -230,8 +230,8 @@ describe('calculateRecognitionScore', () => {
 });
 
 describe('calculateOverallScore', () => {
-  it('returns 0 for empty scores', () => {
-    assert.strictEqual(calculateOverallScore({}), 0);
+  it('returns null for empty scores', () => {
+    assert.strictEqual(calculateOverallScore({}), null);
   });
 
   it('returns 100 when all dimensions are 5', () => {
@@ -806,9 +806,9 @@ describe('calculateDialogueQualityScore', () => {
     assertApprox(result, 0, 'all-1s should yield ~0', 0.5);
   });
 
-  it('returns 0 for empty scores', () => {
+  it('returns null for empty scores', () => {
     const result = calculateDialogueQualityScore({});
-    assert.strictEqual(result, 0);
+    assert.strictEqual(result, null);
   });
 });
 
