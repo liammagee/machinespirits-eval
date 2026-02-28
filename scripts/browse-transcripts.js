@@ -7,8 +7,9 @@
  * transcripts with sequence diagram + transcript split-pane view.
  *
  * Usage:
- *   node scripts/browse-transcripts.js [--port 3456] [--no-open] [--run <runId>|--run-id <runId>] [--scenario <scenario_id>] [--dialogue <dialogueId>|--dialogue-id <dialogueId>] [--theme light|dark]
+ *   node scripts/browse-transcripts.js [--port 3456] [--no-open] [--run <runId>|--run-id <runId>] [--scenario <scenario_id>] [--dialogue <dialogueId>|--dialogue-id <dialogueId>] [--theme light|dark] [--compare run1,run2]
  *   or open /?run=<runId>&scenario=<scenario_id> (or &dialogue=<dialogueId>)
+ *   or open /?compare=run1,run2 for side-by-side cross-run comparison
  */
 
 import express from 'express';
@@ -37,12 +38,17 @@ const initialRunQuery = getOption('run') || getOption('run-id');
 const initialScenarioQuery = getOption('scenario');
 const initialDialogueQuery = getOption('dialogue') || getOption('dialogue-id');
 const initialThemeQuery = getOption('theme');
+const initialCompareQuery = getOption('compare');
 
 function buildLaunchUrl(port) {
   const params = new URLSearchParams();
-  if (initialRunQuery) params.set('run', initialRunQuery);
-  if (initialScenarioQuery) params.set('scenario', initialScenarioQuery);
-  if (initialDialogueQuery) params.set('dialogue', initialDialogueQuery);
+  if (initialCompareQuery) {
+    params.set('compare', initialCompareQuery);
+  } else {
+    if (initialRunQuery) params.set('run', initialRunQuery);
+    if (initialScenarioQuery) params.set('scenario', initialScenarioQuery);
+    if (initialDialogueQuery) params.set('dialogue', initialDialogueQuery);
+  }
   if (initialThemeQuery === 'light' || initialThemeQuery === 'dark') {
     params.set('theme', initialThemeQuery);
   }
@@ -413,6 +419,101 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
   });
 });
 
+app.get('/api/compare', (req, res) => {
+  const runsParam = req.query.runs;
+  const dialoguesParam = req.query.dialogues;
+
+  if (dialoguesParam) {
+    const ids = dialoguesParam.split(',').filter(Boolean);
+    if (ids.length < 2) return res.status(400).json({ error: 'Need at least 2 dialogue IDs' });
+    const placeholders = ids.map(() => '?').join(',');
+    const rows = db.prepare(
+      `SELECT er.dialogue_id, er.run_id, er.profile_name, er.scenario_id,
+        er.tutor_first_turn_score, er.tutor_overall_score, er.tutor_last_turn_score,
+        er.tutor_development_score, er.tutor_holistic_overall_score,
+        er.learner_overall_score, er.learner_holistic_overall_score,
+        er.dialogue_quality_score, er.dialogue_quality_internal_score,
+        er.holistic_overall_score,
+        er.ego_model, er.superego_model, er.judge_model, er.learner_architecture,
+        er.factor_recognition, er.dialogue_rounds
+      FROM evaluation_results er
+      JOIN (
+        SELECT dialogue_id, MAX(id) AS max_id
+        FROM evaluation_results
+        WHERE dialogue_id IN (${placeholders})
+        GROUP BY dialogue_id
+      ) latest ON latest.max_id = er.id`,
+    ).all(...ids);
+
+    const dialogues = rows.map((r) => {
+      const primary = pickPrimaryScore(r);
+      return {
+        dialogueId: r.dialogue_id, runId: r.run_id, profile: r.profile_name,
+        scenario: r.scenario_id, score: primary.value, scoreMetric: primary.metric,
+        scores: primary.all, egoModel: r.ego_model, superegoModel: r.superego_model,
+        judgeModel: r.judge_model, learnerArch: r.learner_architecture,
+        isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
+        turns: Number.isFinite(Number(r.dialogue_rounds)) ? Number(r.dialogue_rounds) : null,
+      };
+    });
+    return res.json({ mode: 'direct', dialogues });
+  }
+
+  if (!runsParam) return res.status(400).json({ error: 'Provide runs or dialogues parameter' });
+
+  const runIds = runsParam.split(',').filter(Boolean);
+  if (runIds.length < 2) return res.status(400).json({ error: 'Need at least 2 run IDs' });
+
+  const placeholders = runIds.map(() => '?').join(',');
+  const rows = db.prepare(
+    `SELECT er.dialogue_id, er.run_id, er.profile_name, er.scenario_id,
+      er.tutor_first_turn_score, er.tutor_overall_score, er.tutor_last_turn_score,
+      er.tutor_development_score, er.tutor_holistic_overall_score,
+      er.learner_overall_score, er.learner_holistic_overall_score,
+      er.dialogue_quality_score, er.dialogue_quality_internal_score,
+      er.holistic_overall_score,
+      er.ego_model, er.superego_model, er.judge_model, er.learner_architecture,
+      er.factor_recognition, er.dialogue_rounds
+    FROM evaluation_results er
+    JOIN (
+      SELECT dialogue_id, MAX(id) AS max_id
+      FROM evaluation_results
+      WHERE run_id IN (${placeholders}) AND dialogue_id IS NOT NULL
+      GROUP BY dialogue_id
+    ) latest ON latest.max_id = er.id
+    ORDER BY er.scenario_id, er.profile_name`,
+  ).all(...runIds);
+
+  const byScenario = {};
+  for (const r of rows) {
+    const key = r.scenario_id || 'unknown';
+    if (!byScenario[key]) byScenario[key] = [];
+    const primary = pickPrimaryScore(r);
+    byScenario[key].push({
+      dialogueId: r.dialogue_id, runId: r.run_id, profile: r.profile_name,
+      scenario: r.scenario_id, score: primary.value, scoreMetric: primary.metric,
+      scores: primary.all, egoModel: r.ego_model, superegoModel: r.superego_model,
+      judgeModel: r.judge_model, learnerArch: r.learner_architecture,
+      isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
+      turns: Number.isFinite(Number(r.dialogue_rounds)) ? Number(r.dialogue_rounds) : null,
+    });
+  }
+
+  const scenarios = Object.entries(byScenario).map(([scenarioId, dialogues]) => ({
+    scenarioId,
+    scenarioName: scenarioId.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    dialogues,
+    runCount: new Set(dialogues.map((d) => d.runId)).size,
+  }));
+
+  scenarios.sort((a, b) => {
+    if (a.runCount !== b.runCount) return b.runCount - a.runCount;
+    return a.scenarioId.localeCompare(b.scenarioId);
+  });
+
+  res.json({ mode: 'runs', runIds, scenarios });
+});
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function shortModel(m) {
@@ -679,13 +780,85 @@ const PAGE_HTML = `<!DOCTYPE html>
 
   /* Loading */
   .loading { color:var(--muted); font-size:11px; padding:12px 16px; }
+
+  /* ── Comparison mode ── */
+  .compare-container { display:none; flex-direction:column; flex:1; overflow:hidden; }
+  .compare-top-bar { padding:10px 20px; border-bottom:1px solid var(--border); background:var(--surface); flex-shrink:0; }
+  .compare-top-bar h2 { font-size:13px; font-weight:600; margin-bottom:4px; }
+  .compare-top-bar .compare-meta { font-size:10px; color:var(--muted); }
+  .compare-exit-btn { font-family:inherit; font-size:10px; color:var(--text); background:var(--bg-alt); border:1px solid var(--border); border-radius:4px; padding:4px 10px; cursor:pointer; margin-left:12px; }
+  .compare-exit-btn:hover { border-color:var(--accent); }
+
+  .compare-score-bar { flex-shrink:0; border-bottom:1px solid var(--border); background:var(--surface-2); padding:10px 20px; overflow-x:auto; }
+  .compare-score-row { display:grid; grid-template-columns:60px 1fr 50px 10px 1fr 50px 60px; gap:4px; align-items:center; font-size:10px; margin:3px 0; }
+  .compare-score-label { color:var(--muted); font-weight:600; text-align:right; }
+  .compare-score-barbg { background:var(--bar-bg); border-radius:999px; height:7px; width:100%; }
+  .compare-score-barfg { border-radius:999px; height:7px; transition:width 0.3s; }
+  .compare-score-val { font-weight:700; font-size:10px; }
+  .compare-score-val.slot-a { text-align:right; }
+  .compare-score-val.slot-b { text-align:left; }
+  .compare-score-delta { text-align:center; font-weight:700; font-size:10px; min-width:50px; }
+  .delta-pos { color:#66bb6a; }
+  .delta-neg { color:#ef5350; }
+  .delta-zero { color:var(--muted); }
+
+  .compare-transcripts { display:flex; flex:1; overflow:hidden; }
+  .compare-pane { flex:1; overflow-y:auto; padding:12px 16px; border-right:1px solid var(--border); }
+  .compare-pane:last-child { border-right:none; }
+  .compare-pane-header { font-size:11px; font-weight:700; color:var(--accent); margin-bottom:6px; padding-bottom:6px; border-bottom:1px solid var(--border-soft); }
+  .compare-pane-meta { font-size:9px; color:var(--muted); margin-bottom:8px; }
+  .compare-pane-slot-swap { font-family:inherit; font-size:9px; color:var(--muted); background:var(--bg-alt); border:1px solid var(--border-soft); border-radius:3px; padding:2px 6px; cursor:pointer; margin-left:8px; }
+  .compare-pane-slot-swap:hover { border-color:var(--accent); color:var(--text); }
+
+  .compare-turn-sep { font-size:9px; color:var(--muted-dim); font-weight:600; padding:8px 0 4px; border-top:1px solid var(--border-soft); margin-top:8px; }
+  .compare-entry { padding:6px 8px; margin:3px 0; border-radius:4px; }
+  .compare-entry-speaker { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+  .compare-entry-content { font-size:11px; line-height:1.5; color:var(--text-soft); white-space:pre-wrap; word-wrap:break-word; }
+
+  .compare-judge { flex-shrink:0; border-top:1px solid var(--border); background:var(--surface); }
+  .compare-judge summary { padding:10px 20px; cursor:pointer; font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); font-weight:600; list-style:none; user-select:none; }
+  .compare-judge summary::-webkit-details-marker { display:none; }
+  .compare-judge summary::before { content:'\\25B8 '; }
+  .compare-judge[open] summary::before { content:'\\25BE '; }
+  .compare-judge-body { padding:4px 20px 16px; max-height:45vh; overflow-y:auto; }
+  .compare-judge-table { width:100%; border-collapse:collapse; font-size:10px; }
+  .compare-judge-table th { padding:5px 8px; text-align:left; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); }
+  .compare-judge-table td { padding:5px 8px; border-bottom:1px solid var(--border-soft); }
+  .compare-judge-table .dim-name { color:var(--text-soft); font-weight:500; }
+  .compare-judge-table .dim-score { font-weight:700; text-align:center; }
+  .compare-judge-table .dim-delta { font-weight:700; text-align:center; }
+
+  /* Sidebar compare button & checkbox mode */
+  .sidebar-compare-btn { font-family:inherit; font-size:9px; color:var(--accent); background:transparent; border:1px solid var(--accent); border-radius:4px; padding:2px 8px; cursor:pointer; margin-left:auto; }
+  .sidebar-compare-btn:hover { background:rgba(88,166,255,0.12); }
+  .sidebar-compare-btn.active { background:rgba(88,166,255,0.2); font-weight:700; }
+
+  .compare-float-btn { position:sticky; bottom:0; background:var(--accent); color:#fff; border:none; border-radius:6px; padding:8px 16px; font-family:inherit; font-size:11px; font-weight:700; cursor:pointer; width:calc(100% - 16px); margin:8px; z-index:10; }
+  .compare-float-btn:hover { filter:brightness(1.15); }
+
+  .dlg-checkbox { flex-shrink:0; accent-color:var(--accent); margin-right:4px; }
+
+  /* Compare sidebar scenario list */
+  .compare-sidebar-header { padding:10px 16px; border-bottom:1px solid var(--border); background:rgba(88,166,255,0.08); }
+  .compare-sidebar-header h3 { font-size:11px; font-weight:700; color:var(--accent); margin-bottom:4px; }
+  .compare-sidebar-header .compare-run-labels { font-size:9px; color:var(--muted); }
+  .compare-scenario-item { padding:8px 16px; cursor:pointer; font-size:11px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; gap:8px; }
+  .compare-scenario-item:hover { background:var(--hover); }
+  .compare-scenario-item.active { background:var(--selected); }
+  .compare-scenario-item.dimmed { opacity:0.5; }
+  .compare-scenario-name { flex:1; color:var(--text-soft); }
+  .compare-scenario-cells { font-size:9px; color:var(--muted); }
+  .compare-scenario-delta { font-weight:700; font-size:10px; min-width:40px; text-align:right; }
 </style>
 </head>
 <body>
 
 <div class="sidebar">
   <div class="sidebar-header">
-    <h1>Transcript Browser</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h1>Transcript Browser</h1>
+      <button class="sidebar-compare-btn" id="sidebarCompareToggle" onclick="toggleCheckboxMode()" title="Select dialogues to compare">Compare</button>
+    </div>
     <div class="filter-row">
       <input class="filter-input" id="searchFilter" type="text" placeholder="Filter runs/cells..." oninput="applyFilter()">
     </div>
@@ -742,6 +915,16 @@ const PAGE_HTML = `<!DOCTYPE html>
   </div>
 
   <div id="judgePanel"></div>
+
+  <div class="compare-container" id="compareContainer">
+    <div class="compare-top-bar" id="compareTopBar"></div>
+    <div class="compare-score-bar" id="compareScoreBar"></div>
+    <div class="compare-transcripts" id="compareTranscripts"></div>
+    <details class="compare-judge" id="compareJudge">
+      <summary>Judge Comparison</summary>
+      <div class="compare-judge-body" id="compareJudgeBody"></div>
+    </details>
+  </div>
 </div>
 
 <script>
@@ -763,11 +946,21 @@ let activeTheme = 'dark';
 let judgeFocusedMetric = null;
 let judgePanelExpanded = false;
 let judgePanelTab = 'scores';
+// Comparison mode state
+let compareMode = false;
+let compareDialogues = [];         // loaded dialogue data objects (from /api/dialogue)
+let compareSlots = [];             // dialogueId strings for each slot
+let compareScenarioList = [];      // matched scenarios from /api/compare
+let compareRunIds = [];            // run IDs being compared
+let compareActiveScenario = null;  // currently viewed scenario ID
+let sidebarCheckboxMode = false;
+let sidebarChecked = new Set();
 const query = new URLSearchParams(window.location.search);
 const initialRunId = query.get('run');
 const initialDialogueId = query.get('dialogue');
 const initialScenario = query.get('scenario');
 const initialTheme = query.get('theme');
+const initialCompare = query.get('compare');
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function escapeHtml(t) {
@@ -1180,6 +1373,14 @@ function setMessageChainChannelFilter(channel) {
 async function loadRuns() {
   const res = await fetch('/api/runs');
   allRuns = await res.json();
+
+  // If compare param is present, enter comparison mode
+  if (initialCompare) {
+    renderSidebar();
+    await enterCompareMode(initialCompare);
+    return;
+  }
+
   renderSidebar();
 
   if (initialRunId && allRuns.some((r) => r.runId === initialRunId)) {
@@ -1196,6 +1397,12 @@ async function loadRuns() {
 }
 
 function renderSidebar() {
+  // If in compare mode with auto-match, delegate to comparison sidebar
+  if (compareMode && compareScenarioList.length > 0) {
+    renderCompareSidebar();
+    return;
+  }
+
   const list = document.getElementById('sidebarList');
   const search = (document.getElementById('searchFilter').value || '').toLowerCase();
   const cond = document.querySelector('input[name="condFilter"]:checked')?.value || 'all';
@@ -1220,6 +1427,12 @@ function renderSidebar() {
     html += '</div></div>';
   }
   if (!html) html = '<div class="loading">No matching runs</div>';
+
+  // Floating compare button when checkboxes are active
+  if (sidebarCheckboxMode && sidebarChecked.size >= 2) {
+    html += '<button class="compare-float-btn" onclick="compareChecked()">Compare ' + sidebarChecked.size + ' selected</button>';
+  }
+
   list.innerHTML = html;
 }
 
@@ -1258,7 +1471,11 @@ function renderRunChildren(runId, search, cond) {
       const isActive = d.dialogueId === activeDialogueId;
       const turnText = turnBadgeText(d.turns);
       const turnClass = turnBadgeClass(d.turns);
+      const isChecked = sidebarChecked.has(d.dialogueId);
       html += '<div class="dlg-item' + (isActive ? ' active' : '') + '" onclick="loadDialogue(&quot;' + escapeHtml(d.dialogueId) + '&quot;)">';
+      if (sidebarCheckboxMode) {
+        html += '<input type="checkbox" class="dlg-checkbox"' + (isChecked ? ' checked' : '') + ' onclick="toggleCheckboxItem(&quot;' + escapeHtml(d.dialogueId) + '&quot;, event)">';
+      }
       html += '<span class="dlg-turn ' + escapeHtml(turnClass) + '">' + escapeHtml(turnText) + '</span>';
       html += '<span class="dlg-scenario">' + escapeHtml(scn) + '</span>';
       html += '<span class="dlg-score ' + scoreClass(d.score) + '" title="' + escapeHtml(scoreTitle) + '">' + escapeHtml(sc) + '</span>';
@@ -2517,6 +2734,423 @@ function renderJudgePanel(scores, qualitative) {
       tabsHtml +
       paneHtml +
     '</div></details>';
+}
+
+// ── Comparison mode ─────────────────────────────────────────────────────────
+
+function toggleCheckboxMode() {
+  sidebarCheckboxMode = !sidebarCheckboxMode;
+  if (!sidebarCheckboxMode) sidebarChecked.clear();
+  const btn = document.getElementById('sidebarCompareToggle');
+  if (btn) btn.classList.toggle('active', sidebarCheckboxMode);
+  renderSidebar();
+}
+
+function toggleCheckboxItem(dialogueId, event) {
+  if (event) event.stopPropagation();
+  if (sidebarChecked.has(dialogueId)) {
+    sidebarChecked.delete(dialogueId);
+  } else {
+    sidebarChecked.add(dialogueId);
+  }
+  renderSidebar();
+}
+
+async function compareChecked() {
+  const ids = [...sidebarChecked];
+  if (ids.length < 2) return;
+  sidebarCheckboxMode = false;
+  const btn = document.getElementById('sidebarCompareToggle');
+  if (btn) btn.classList.remove('active');
+
+  compareMode = true;
+  compareRunIds = [];
+  compareScenarioList = [];
+  compareActiveScenario = null;
+
+  // Load all selected dialogues
+  compareDialogues = [];
+  compareSlots = ids;
+  for (const id of ids) {
+    const res = await fetch('/api/dialogue/' + encodeURIComponent(id));
+    compareDialogues.push(await res.json());
+  }
+  sidebarChecked.clear();
+  renderSidebar();
+  showComparisonView();
+}
+
+async function enterCompareMode(compareParam) {
+  // Determine if param looks like run IDs or dialogue IDs
+  const parts = compareParam.split(',').filter(Boolean);
+  if (parts.length < 2) return;
+
+  const looksLikeRuns = parts.every((p) => p.startsWith('eval-'));
+  if (looksLikeRuns) {
+    compareRunIds = parts;
+    const res = await fetch('/api/compare?runs=' + encodeURIComponent(compareParam));
+    const data = await res.json();
+    compareScenarioList = data.scenarios || [];
+    compareMode = true;
+    renderCompareSidebar();
+    // Auto-select first matched scenario
+    const firstMatched = compareScenarioList.find((s) => s.runCount >= 2);
+    if (firstMatched) {
+      await loadComparisonScenario(firstMatched.scenarioId);
+    } else {
+      showComparisonView();
+    }
+  } else {
+    // Direct dialogue IDs
+    const res = await fetch('/api/compare?dialogues=' + encodeURIComponent(compareParam));
+    const data = await res.json();
+    compareMode = true;
+    compareRunIds = [...new Set((data.dialogues || []).map((d) => d.runId))];
+    compareSlots = (data.dialogues || []).map((d) => d.dialogueId);
+    // Load full dialogue data
+    compareDialogues = [];
+    for (const id of compareSlots) {
+      const dlgRes = await fetch('/api/dialogue/' + encodeURIComponent(id));
+      compareDialogues.push(await dlgRes.json());
+    }
+    renderSidebar();
+    showComparisonView();
+  }
+}
+
+function exitCompareMode() {
+  compareMode = false;
+  compareDialogues = [];
+  compareSlots = [];
+  compareScenarioList = [];
+  compareRunIds = [];
+  compareActiveScenario = null;
+  document.getElementById('compareContainer').style.display = 'none';
+  // Restore normal view elements
+  document.getElementById('topBar').style.display = 'flex';
+  if (currentDialogueData) {
+    document.getElementById('splitPane').style.display = 'flex';
+    document.getElementById('legendBar').style.display = 'flex';
+    document.getElementById('viewControls').style.display = 'flex';
+  }
+  document.getElementById('judgePanel').style.display = '';
+  renderSidebar();
+}
+
+async function loadComparisonScenario(scenarioId) {
+  const scenario = compareScenarioList.find((s) => s.scenarioId === scenarioId);
+  if (!scenario) return;
+  compareActiveScenario = scenarioId;
+
+  // Pick one dialogue per run for this scenario
+  const byRun = {};
+  for (const d of scenario.dialogues) {
+    if (!byRun[d.runId]) byRun[d.runId] = d;
+  }
+  const selected = compareRunIds.map((rid) => byRun[rid]).filter(Boolean);
+  if (selected.length < 2) return;
+
+  compareSlots = selected.map((d) => d.dialogueId);
+  compareDialogues = [];
+  for (const d of selected) {
+    const res = await fetch('/api/dialogue/' + encodeURIComponent(d.dialogueId));
+    compareDialogues.push(await res.json());
+  }
+
+  renderCompareSidebar();
+  showComparisonView();
+}
+
+async function swapCompareSlot(slotIndex, newDialogueId) {
+  if (!newDialogueId || compareSlots[slotIndex] === newDialogueId) return;
+  compareSlots[slotIndex] = newDialogueId;
+  const res = await fetch('/api/dialogue/' + encodeURIComponent(newDialogueId));
+  compareDialogues[slotIndex] = await res.json();
+  showComparisonView();
+}
+
+function showComparisonView() {
+  // Hide normal view
+  document.getElementById('topBar').style.display = 'none';
+  document.getElementById('splitPane').style.display = 'none';
+  document.getElementById('legendBar').style.display = 'none';
+  document.getElementById('viewControls').style.display = 'none';
+  document.getElementById('judgePanel').style.display = 'none';
+  // Show comparison
+  document.getElementById('compareContainer').style.display = 'flex';
+
+  renderCompareTopBar();
+  renderCompareScoreBar();
+  renderCompareTranscripts();
+  renderCompareJudgePanel();
+}
+
+function renderCompareTopBar() {
+  const el = document.getElementById('compareTopBar');
+  const slotLabels = compareDialogues.map((d, i) => {
+    const m = d.metadata || {};
+    const letter = String.fromCharCode(65 + i);
+    return letter + ': ' + (m.profile || '?') + ' (' + shortModel(m.egoModel) + ')';
+  }).join(' vs ');
+
+  const scenarioLabel = compareDialogues[0]?.metadata?.scenario
+    ? compareDialogues[0].metadata.scenario.replace(/_/g, ' ').replace(/\\b\\w/g, (c) => c.toUpperCase())
+    : 'Comparison';
+
+  el.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:space-between">' +
+    '<div>' +
+      '<h2>' + escapeHtml(scenarioLabel) + '</h2>' +
+      '<div class="compare-meta">' + escapeHtml(slotLabels) + '</div>' +
+    '</div>' +
+    '<button class="compare-exit-btn" onclick="exitCompareMode()">Exit Comparison</button>' +
+    '</div>';
+}
+
+function renderCompareScoreBar() {
+  const el = document.getElementById('compareScoreBar');
+  if (compareDialogues.length < 2) { el.innerHTML = ''; return; }
+
+  // Collect score metrics present in any dialogue
+  const metricKeys = [
+    ['tutorOverall', 'TutPT'],
+    ['tutorHolisticOverall', 'TutH'],
+    ['learnerOverall', 'LrnPT'],
+    ['learnerHolisticOverall', 'LrnH'],
+    ['dialogueQualityPublic', 'DlgP'],
+    ['dialogueQualityInternal', 'DlgI'],
+  ];
+
+  let html = '';
+  for (const [key, label] of metricKeys) {
+    const vals = compareDialogues.map((d) => {
+      const v = d.scores?.[key];
+      return v != null && !Number.isNaN(Number(v)) ? Number(v) : null;
+    });
+    // Only show if at least one dialogue has this metric
+    if (vals.every((v) => v == null)) continue;
+
+    const a = vals[0];
+    const b = vals[1];
+    const delta = (a != null && b != null) ? (b - a) : null;
+    const deltaClass = delta == null ? 'delta-zero' : delta > 0.5 ? 'delta-pos' : delta < -0.5 ? 'delta-neg' : 'delta-zero';
+    const deltaStr = delta == null ? '--' : (delta > 0 ? '+' : '') + delta.toFixed(1);
+
+    const barWidthA = a != null ? Math.max(0, Math.min(100, a)) : 0;
+    const barWidthB = b != null ? Math.max(0, Math.min(100, b)) : 0;
+    const barColorA = scoreBarColor(a, 100);
+    const barColorB = scoreBarColor(b, 100);
+
+    html += '<div class="compare-score-row">' +
+      '<div class="compare-score-label">' + escapeHtml(label) + '</div>' +
+      '<div class="compare-score-barbg"><div class="compare-score-barfg" style="width:' + barWidthA + '%;background:' + barColorA + ';margin-left:auto"></div></div>' +
+      '<div class="compare-score-val slot-a">' + formatScore(a, 1) + '</div>' +
+      '<div class="compare-score-delta ' + deltaClass + '">' + escapeHtml(deltaStr) + '</div>' +
+      '<div class="compare-score-barbg"><div class="compare-score-barfg" style="width:' + barWidthB + '%;background:' + barColorB + '"></div></div>' +
+      '<div class="compare-score-val slot-b">' + formatScore(b, 1) + '</div>' +
+      '<div></div>' +
+    '</div>';
+  }
+
+  if (!html) html = '<div class="loading">No comparable scores available.</div>';
+  el.innerHTML = html;
+}
+
+function getPublicSteps(dialogueData) {
+  const steps = dialogueData?.projection?.steps || [];
+  return steps.filter((s) =>
+    s.type === 'front' || s.type === 'response'
+  );
+}
+
+function renderCompareTranscripts() {
+  const el = document.getElementById('compareTranscripts');
+  if (compareDialogues.length < 2) { el.innerHTML = ''; return; }
+
+  let html = '';
+  for (let slotIdx = 0; slotIdx < compareDialogues.length; slotIdx++) {
+    const data = compareDialogues[slotIdx];
+    const m = data.metadata || {};
+    const letter = String.fromCharCode(65 + slotIdx);
+    const publicSteps = getPublicSteps(data);
+    const score = data.scores?.overall;
+
+    // Build slot swap dropdown if in auto-match mode with alternatives
+    let swapHtml = '';
+    if (compareActiveScenario && compareScenarioList.length > 0) {
+      const scenario = compareScenarioList.find((s) => s.scenarioId === compareActiveScenario);
+      if (scenario) {
+        const alternatives = scenario.dialogues.filter((d) => d.dialogueId !== compareSlots[slotIdx]);
+        if (alternatives.length > 0) {
+          swapHtml = '<select class="compare-pane-slot-swap" onchange="swapCompareSlot(' + slotIdx + ', this.value)">';
+          swapHtml += '<option value="' + escapeHtml(compareSlots[slotIdx]) + '">current</option>';
+          for (const alt of alternatives) {
+            const altLabel = shortModel(alt.egoModel) + ' ' + (alt.profile || '').replace(/^cell_\\d+_/, '');
+            swapHtml += '<option value="' + escapeHtml(alt.dialogueId) + '">' + escapeHtml(alt.runId.replace(/^eval-/, '').slice(0, 10)) + ' ' + escapeHtml(altLabel) + '</option>';
+          }
+          swapHtml += '</select>';
+        }
+      }
+    }
+
+    html += '<div class="compare-pane">';
+    html += '<div class="compare-pane-header">' + letter + ': ' + escapeHtml(m.profile || '?') +
+      ' <span style="font-weight:400;color:var(--muted)">' + formatScore(score, 1) + '</span>' +
+      swapHtml + '</div>';
+    html += '<div class="compare-pane-meta">' +
+      'Ego: ' + escapeHtml(shortModel(m.egoModel)) +
+      ' | Learner: ' + escapeHtml(m.learnerArch || '?') +
+      ' | ' + escapeHtml(m.isRecog ? 'Recognition' : 'Base') +
+      ' | Turns: ' + escapeHtml(String(m.totalTurns || '?')) +
+    '</div>';
+
+    // Render public steps
+    let currentTurn = 0;
+    for (const step of publicSteps) {
+      // Turn separators
+      let turnNum = null;
+      if (step.label === 'Initial query') turnNum = 1;
+      else if (typeof step.label === 'string' && /^Turn \\d+$/.test(step.label)) {
+        turnNum = parseInt(step.label.replace('Turn ', ''), 10);
+      }
+      if (turnNum && turnNum !== currentTurn) {
+        currentTurn = turnNum;
+        html += '<div class="compare-turn-sep">Turn ' + currentTurn + '</div>';
+      } else if (!currentTurn && step.type === 'front') {
+        currentTurn = 1;
+        html += '<div class="compare-turn-sep">Turn 1</div>';
+      }
+
+      const content = step.fullDetail || step.detail || '';
+      if (!content && step.type === 'response') continue;
+      const isTutor = step.type === 'response';
+      const speaker = isTutor ? 'TUTOR' : 'LEARNER';
+      const color = isTutor ? '#42a5f5' : '#78909c';
+
+      html += '<div class="compare-entry">' +
+        '<div class="compare-entry-speaker" style="color:' + color + '">' + speaker + '</div>' +
+        '<div class="compare-entry-content">' + escapeHtml(content) + '</div>' +
+      '</div>';
+    }
+
+    if (publicSteps.length === 0) {
+      html += '<div class="loading">No public messages found in this dialogue.</div>';
+    }
+
+    html += '</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function renderCompareJudgePanel() {
+  const el = document.getElementById('compareJudgeBody');
+  if (compareDialogues.length < 2) { el.innerHTML = ''; return; }
+
+  // Build dimension comparison table
+  // Collect all dimension keys across dialogues
+  const allDims = new Map();
+  for (let i = 0; i < compareDialogues.length; i++) {
+    const dims = compareDialogues[i].scores?.dimensions;
+    if (!dims || typeof dims !== 'object') continue;
+    for (const [rawKey, rawValue] of Object.entries(dims)) {
+      const key = normalizeDimensionKey(rawKey);
+      if (!key) continue;
+      if (!allDims.has(key)) allDims.set(key, { label: dimensionLabelFromKey(rawKey), scores: [] });
+      const entry = allDims.get(key);
+      while (entry.scores.length < i) entry.scores.push(null);
+      const s = extractNumericScore(rawValue);
+      entry.scores.push(s);
+    }
+  }
+  // Pad arrays
+  for (const [, entry] of allDims) {
+    while (entry.scores.length < compareDialogues.length) entry.scores.push(null);
+  }
+
+  const letters = compareDialogues.map((_, i) => String.fromCharCode(65 + i));
+
+  let html = '<table class="compare-judge-table">';
+  html += '<tr><th class="dim-name">Dimension</th>';
+  for (const letter of letters) html += '<th class="dim-score">' + letter + '</th>';
+  if (compareDialogues.length === 2) html += '<th class="dim-delta">\\u0394</th>';
+  html += '</tr>';
+
+  for (const [, entry] of allDims) {
+    html += '<tr><td class="dim-name">' + escapeHtml(entry.label) + '</td>';
+    for (let i = 0; i < entry.scores.length; i++) {
+      const s = entry.scores[i];
+      const color = s != null ? scoreBarColor(s, 5) : 'var(--muted)';
+      html += '<td class="dim-score" style="color:' + color + '">' + formatScore(s, 1) + '</td>';
+    }
+    if (compareDialogues.length === 2) {
+      const a = entry.scores[0];
+      const b = entry.scores[1];
+      const delta = (a != null && b != null) ? (b - a) : null;
+      const cls = delta == null ? 'delta-zero' : delta > 0.1 ? 'delta-pos' : delta < -0.1 ? 'delta-neg' : 'delta-zero';
+      html += '<td class="dim-delta ' + cls + '">' + (delta != null ? ((delta > 0 ? '+' : '') + delta.toFixed(1)) : '--') + '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</table>';
+
+  if (allDims.size === 0) html = '<div class="loading">No judge dimension data available for comparison.</div>';
+  el.innerHTML = html;
+}
+
+function renderCompareSidebar() {
+  const list = document.getElementById('sidebarList');
+  let html = '';
+
+  // Header with run labels
+  html += '<div class="compare-sidebar-header">';
+  html += '<h3>Comparing ' + compareRunIds.length + ' Runs</h3>';
+  html += '<div class="compare-run-labels">';
+  for (let i = 0; i < compareRunIds.length; i++) {
+    const letter = String.fromCharCode(65 + i);
+    const rid = compareRunIds[i];
+    const shortRun = rid.replace(/^eval-/, '').replace(/-[a-f0-9]+$/, '');
+    html += '<div>' + letter + ': ' + escapeHtml(shortRun) + ' <span style="color:var(--muted-dim)">' + escapeHtml(rid.slice(-8)) + '</span></div>';
+  }
+  html += '</div>';
+  html += '<button class="compare-exit-btn" onclick="exitCompareMode()" style="margin:6px 0 0 0">Exit</button>';
+  html += '</div>';
+
+  // Scenario list
+  for (const scenario of compareScenarioList) {
+    const isMatched = scenario.runCount >= 2;
+    const isActive = compareActiveScenario === scenario.scenarioId;
+    const name = scenario.scenarioName || scenario.scenarioId;
+    const cells = [...new Set(scenario.dialogues.map((d) => d.profile))].join(', ').replace(/cell_/g, '');
+
+    // Score delta for matched scenarios
+    let deltaHtml = '';
+    if (isMatched && scenario.dialogues.length >= 2) {
+      const byRun = {};
+      for (const d of scenario.dialogues) {
+        if (!byRun[d.runId]) byRun[d.runId] = d;
+      }
+      const vals = compareRunIds.map((rid) => byRun[rid]?.score).filter((v) => v != null);
+      if (vals.length >= 2) {
+        const delta = vals[1] - vals[0];
+        const cls = delta > 0.5 ? 'delta-pos' : delta < -0.5 ? 'delta-neg' : 'delta-zero';
+        deltaHtml = '<span class="compare-scenario-delta ' + cls + '">' + (delta > 0 ? '+' : '') + delta.toFixed(1) + '</span>';
+      }
+    }
+
+    html += '<div class="compare-scenario-item' + (isActive ? ' active' : '') + (!isMatched ? ' dimmed' : '') + '"' +
+      (isMatched ? ' onclick="loadComparisonScenario(&quot;' + escapeHtml(scenario.scenarioId) + '&quot;)"' : '') + '>';
+    html += '<span class="compare-scenario-name">' + escapeHtml(name) + '</span>';
+    html += '<span class="compare-scenario-cells">' + escapeHtml(cells.substring(0, 30)) + '</span>';
+    html += deltaHtml;
+    html += '</div>';
+  }
+
+  if (compareScenarioList.length === 0) {
+    html += '<div class="loading">No scenarios found for these runs.</div>';
+  }
+
+  list.innerHTML = html;
 }
 
 // ── Highlight / keyboard nav ────────────────────────────────────────────────
