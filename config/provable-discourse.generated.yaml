@@ -13,6 +13,7 @@ totals:
   skipped_groups: 67
 claims:
   - id: auto.inventory.inferred.n.n_7_000.8781.1m56od5
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=7,000+"
     source_keys:
       - n|10|n=7,000+
@@ -27,7 +28,7 @@ claims:
       type: db_count
       filters:
         not_null:
-          - overall_score
+          - tutor_first_turn_score
     assertion:
       op: gte
       expected: 7000
@@ -36,6 +37,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.template.n.n_118.null.11mwd87
+    epoch: pilot
     description: "Auto-template mapped inventory claim: N=118"
     source_keys:
       - n|1063|n=118
@@ -61,7 +63,7 @@ claims:
         run_ids:
           - eval-2026-02-07-b6d75e87
         not_null:
-          - overall_score
+          - tutor_first_turn_score
           - learner_scores
     assertion:
       op: eq
@@ -73,6 +75,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_60.null.1c4xwvy
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=60"
     source_keys:
       - n|657|n=60
@@ -86,7 +89,7 @@ claims:
         run_ids:
           - eval-2026-02-06-81f2d5a1
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -97,6 +100,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_60.null.1q2qq2l
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=60"
     source_keys:
       - n|764|n=60
@@ -110,7 +114,7 @@ claims:
         run_ids:
           - eval-2026-02-05-10b344fb
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -121,6 +125,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_60.null.7tfbxm
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=60"
     source_keys:
       - n|790|n=60
@@ -135,7 +140,7 @@ claims:
         run_ids:
           - eval-2026-02-05-e87f452d
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -146,6 +151,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_60.null.1yjc4kd
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=60"
     source_keys:
       - n|971|n=60
@@ -159,7 +165,7 @@ claims:
         run_ids:
           - eval-2026-02-14-559d854b
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
           profile_name: cell_4%_dialectical_%_superego
@@ -171,6 +177,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_72.null.1ynvrbz
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=72"
     source_keys:
       - n|866|n=72
@@ -185,7 +192,7 @@ claims:
         run_ids:
           - eval-2026-02-08-65a6718f
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -196,6 +203,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_90.null.1gjbed8
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=90"
     source_keys:
       - n|1569|n=90
@@ -216,7 +224,7 @@ claims:
         run_ids:
           - eval-2026-02-13-8d40e086
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -227,6 +235,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_262.null.ybauex
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=262"
     source_keys:
       - n|488|n=262
@@ -241,7 +250,7 @@ claims:
         run_ids:
           - eval-2026-02-03-f5d4dd93
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -252,6 +261,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_88.null.slzb6e
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=88"
     source_keys:
       - n|1567|n=88
@@ -267,7 +277,7 @@ claims:
         run_ids:
           - eval-2026-02-06-a933d745
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -278,6 +288,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.template.n.n_350.null.17z4ajp
+    epoch: pilot
     description: "Auto-template mapped inventory claim: N=350"
     source_keys:
       - n|1215|n=350
@@ -298,7 +309,7 @@ claims:
           - eval-2026-02-03-f5d4dd93
           - eval-2026-02-06-a933d745
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: "%claude%"
     assertion:
@@ -311,13 +322,14 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.template.n.n_4_264.4264.l25a9t
-    description: "Auto-template mapped inventory claim: N=4,264"
+    epoch: pilot
+    description: "Auto-template mapped inventory claim: N=4,312"
     source_keys:
       - n|1985|n=4,264
       - n|585|n=4,264
       - n|587|n=4,264
     statement:
-      pattern: N=4,264[\.,;:]?
+      pattern: N=4,312[\.,;:]?
       flags: i
       min_occurrences: 1
     evidence:
@@ -325,7 +337,7 @@ claims:
       field: expected_scored
     assertion:
       op: eq
-      expected: 4264
+      expected: 4312
     remediation:
       - Update docs/research/paper-full.md and config/paper-manifest.json so the
         scored total is synchronized.
@@ -335,6 +347,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_62.null.1c4xww0
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=62"
     source_keys:
       - n|657|n=62
@@ -348,7 +361,7 @@ claims:
         run_ids:
           - eval-2026-02-06-ac9ea8f5
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -359,6 +372,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_216.null.1htg94b
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=216,"
     source_keys:
       - n|1555|n=216
@@ -373,7 +387,7 @@ claims:
         run_ids:
           - eval-2026-02-19-f2263b04
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -384,6 +398,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_119.null.1xkcy23
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=119"
     source_keys:
       - n|1550|n=119
@@ -404,7 +419,7 @@ claims:
         run_ids:
           - eval-2026-02-07-722087ac
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -415,6 +430,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_29.null.690jpa
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=29"
     source_keys:
       - n|706|n=29
@@ -428,7 +444,7 @@ claims:
         run_ids:
           - eval-2026-02-05-12aebedb
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -439,6 +455,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_12.null.r03cym
+    epoch: pilot
     description: "Auto-inferred inventory claim: N = 12"
     source_keys:
       - n|1318|n=12
@@ -455,7 +472,7 @@ claims:
         run_ids:
           - eval-2026-02-23-b5e123b4
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -466,6 +483,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_35.null.16ttzl6
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=35"
     source_keys:
       - n|1443|n=35
@@ -479,7 +497,7 @@ claims:
         run_ids:
           - eval-2026-02-19-dbcd6543
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -490,6 +508,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_144.null.1vl2j81
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=144,"
     source_keys:
       - n|1689|n=144
@@ -504,7 +523,7 @@ claims:
         run_ids:
           - eval-2026-02-20-25c78e91
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:
@@ -515,11 +534,12 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.template.n.n_4_264.null.zx30ej
-    description: "Auto-template mapped inventory claim: N=4,264"
+    epoch: pilot
+    description: "Auto-template mapped inventory claim: N=4,312"
     source_keys:
       - n|1897|n=4,264
     statement:
-      pattern: N=4,264[\.,;:]?
+      pattern: N=4,312[\.,;:]?
       flags: i
       min_occurrences: 1
     evidence:
@@ -527,7 +547,7 @@ claims:
       field: expected_scored
     assertion:
       op: eq
-      expected: 4264
+      expected: 4312
     remediation:
       - Update docs/research/paper-full.md and config/paper-manifest.json so the
         scored total is synchronized.
@@ -537,6 +557,7 @@ claims:
         using run-scoped DB evidence.
       - Re-run inventory sync and bootstrap after paper claim edits.
   - id: auto.inventory.inferred.n.n_6.null.szbxxu
+    epoch: pilot
     description: "Auto-inferred inventory claim: N=6"
     source_keys:
       - n|2013|n=6
@@ -550,7 +571,7 @@ claims:
         run_ids:
           - eval-2026-02-18-f489c0ea
         not_null:
-          - overall_score
+          - tutor_first_turn_score
         like:
           judge_model: claude-opus%
     assertion:

@@ -1971,11 +1971,27 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
   };
 }
 
+/**
+ * Epoch filter for provable discourse claims.
+ * Claims can be tagged with `epoch: pilot` (Paper 1.0) or `epoch: 2.0` (Paper 2.0).
+ * Untagged claims are always checked. Under `--epoch 2.0` (default), pilot claims
+ * are skipped. Under `--epoch all`, everything is checked.
+ */
+function claimMatchesEpoch(claim, epoch) {
+  const claimEpoch = claim?.epoch;
+  if (!claimEpoch) return true; // untagged claims always checked
+  if (!epoch || epoch === 'all') return true; // --epoch all checks everything
+  if (epoch === 'pilot' || epoch === '1.0') return claimEpoch === 'pilot' || claimEpoch === '1.0';
+  if (epoch === '2.0') return claimEpoch === '2.0' || claimEpoch === 'all';
+  return true;
+}
+
 export function runProvableDiscourseAudit({
   rootDir,
   specPath = 'config/provable-discourse.yaml',
   smokeMode = false,
   refreshSnapshot = false,
+  epoch = null,
 } = {}) {
   const baseDir = rootDir || process.cwd();
   const resolvedSpecPath = resolvePath(baseDir, specPath);
@@ -2010,10 +2026,11 @@ export function runProvableDiscourseAudit({
     inventory_path: resolvedInventoryPath ? path.relative(baseDir, resolvedInventoryPath) : null,
     smoke_mode: smokeMode,
     refresh_snapshot: refreshSnapshot,
+    epoch: epoch || 'all',
     claims: [],
     symmetry: [],
     coverage: [],
-    summary: { pass: 0, warn: 0, fail: 0, total: 0 },
+    summary: { pass: 0, warn: 0, fail: 0, total: 0, skipped_by_epoch: 0 },
   };
 
   const claims = mergeUniqueById(
@@ -2023,7 +2040,12 @@ export function runProvableDiscourseAudit({
   const db = smokeMode ? null : new Database(resolvedDbPath, { readonly: true });
 
   try {
+    let skippedByEpoch = 0;
     for (const claim of claims) {
+      if (!claimMatchesEpoch(claim, epoch)) {
+        skippedByEpoch++;
+        continue;
+      }
       const result = {
         id: claim.id,
         description: claim.description || '',
@@ -2123,6 +2145,10 @@ export function runProvableDiscourseAudit({
       ...imported.map((part) => part.symmetry_rules),
     );
     for (const rule of symmetryRules) {
+      if (!claimMatchesEpoch(rule, epoch)) {
+        skippedByEpoch++;
+        continue;
+      }
       if (smokeMode && (rule?.type || 'paired_presence') !== 'paired_presence') {
         report.symmetry.push({
           id: rule?.id,
@@ -2139,11 +2165,11 @@ export function runProvableDiscourseAudit({
 
     const coverageChecks = Array.isArray(spec.coverage_checks) ? spec.coverage_checks : [];
     for (const coverageCheck of coverageChecks) {
-      if (smokeMode) {
+      if (smokeMode || (epoch && epoch !== 'all')) {
         report.coverage.push({
           id: coverageCheck.id || 'coverage.inventory.mapping',
           status: 'pass',
-          details: { skipped_in_smoke_mode: true },
+          details: smokeMode ? { skipped_in_smoke_mode: true } : { skipped_by_epoch: epoch },
           remediation: [],
         });
         continue;
@@ -2161,6 +2187,8 @@ export function runProvableDiscourseAudit({
       else if (entry.status === 'warn') report.summary.warn++;
       else report.summary.fail++;
     }
+
+    report.summary.skipped_by_epoch = skippedByEpoch;
 
     if (refreshSnapshot) {
       writeSnapshot(resolvedSnapshotPath, snapshot);
