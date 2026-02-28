@@ -105,6 +105,98 @@ claims:
     remediation:
       - "Infrastructure cluster shows moderate recognition spillover (~d=0.56). Gradient claim relies on relative difference vs recognition cluster, not zero effect."
 
+  # ── Error correction mechanism (Superego Taxonomy) ────────────
+  - id: paper2.taxonomy.corpus_size
+    description: "Superego critique taxonomy built from N≥400 classified critiques."
+    source_keys:
+      - "stat|0|superego taxonomy corpus"
+    statement:
+      pattern: "classif.*critiqu|critiqu.*classif|taxonomy.*superego"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: jsonl_critique_stats
+      file: data/superego-critiques-classified.jsonl
+      metric: total_count
+    assertion:
+      op: gte
+      expected: 400
+    remediation:
+      - "If classified critique corpus drops below 400, re-run extraction pipeline."
+
+  - id: paper2.taxonomy.context_blindness_dominant
+    description: "Context Blindness is the most frequent superego critique category (≥25%)."
+    source_keys:
+      - "stat|0|context blindness frequency"
+    statement:
+      pattern: "context.blindness|most.frequent.*critiqu"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: jsonl_critique_stats
+      file: data/superego-critiques-classified.jsonl
+      metric: category_pct
+      category: CONTEXT_BLINDNESS
+    assertion:
+      op: gte
+      expected: 25.0
+    remediation:
+      - "If CONTEXT_BLINDNESS drops below 25%, the 'reality testing' framing of superego error correction needs revision."
+
+  - id: paper2.taxonomy.persistence_rate
+    description: "Superego critique persistence rate ≥25% (same category repeats across turns)."
+    source_keys:
+      - "stat|0|critique persistence"
+    statement:
+      pattern: "persist|same.category.*repeat|repeat.*critiqu"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: jsonl_critique_stats
+      file: data/superego-critiques-classified.jsonl
+      metric: persistence_rate
+    assertion:
+      op: gte
+      expected: 0.25
+    remediation:
+      - "If persistence rate drops below 25%, the stalling narrative weakens. Re-examine ego revision effectiveness."
+
+  - id: paper2.taxonomy.stalling_rate
+    description: "Significant fraction of dialogues show stalling (3+ consecutive same critique)."
+    source_keys:
+      - "stat|0|dialogue stalling"
+    statement:
+      pattern: "stall|3.*consecutive.*same|same.*critiqu.*3"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: jsonl_critique_stats
+      file: data/superego-critiques-classified.jsonl
+      metric: stalling_rate
+    assertion:
+      op: gte
+      expected: 0.20
+    remediation:
+      - "If stalling rate falls below 20%, the ego-compliance/stalling discussion needs revision."
+
+  - id: paper2.taxonomy.escalation_balance
+    description: "De-escalation (critique→APPROVAL) at least as common as escalation (APPROVAL→critique)."
+    source_keys:
+      - "stat|0|escalation balance"
+    statement:
+      pattern: "de-escalat|escalat.*balance"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: jsonl_critique_stats
+      file: data/superego-critiques-classified.jsonl
+      metric: escalation_balance
+    assertion:
+      op: gte
+      expected: 0.8
+    remediation:
+      - "If de-escalation/escalation ratio falls below 0.8, the superego may be over-correcting (creating new problems)."
+
   # ── Adaptive responsiveness mechanism ─────────────────────────
   - id: paper2.trajectory.learner_positive_slope
     description: "Learner scores show positive trajectory across turns (learning signal)."
@@ -336,6 +428,13 @@ symmetry_rules:
     threshold: 0.2
     remediation:
       - "If recognition-cluster and infrastructure-cluster effects converge, the targeted-calibration gradient claim collapses."
+
+  - id: symmetry.taxonomy.persistence_stalling_coherence
+    type: paired_presence
+    left_claim_id: paper2.taxonomy.persistence_rate
+    right_claim_id: paper2.taxonomy.stalling_rate
+    remediation:
+      - "Persistence and stalling claims must both be present — they jointly support the ego-compliance narrative."
 
   - id: symmetry.trajectory.bilateral_presence
     type: paired_presence
