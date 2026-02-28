@@ -1322,10 +1322,8 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
       }
     }
   } else if (skipRubricEval) {
-    debugLog(`[evaluationRunner] Skipping rubric evaluation (--fast mode)`);
     log('Skipping AI rubric evaluation (fast mode)', 'info');
   } else if (!suggestion) {
-    debugLog(`[evaluationRunner] Skipping rubric evaluation (no suggestion generated)`);
     log('Skipping rubric evaluation (no suggestion generated)', 'warning');
   }
 
