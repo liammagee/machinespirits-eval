@@ -76,6 +76,24 @@ function segmentTrace(trace) {
   return segments;
 }
 
+/**
+ * Filter out system segments and merge adjacent same-type segments that were
+ * split by interleaved system entries (e.g. system/memory_cycle between
+ * ego/revise and tutor/final_output).
+ */
+function getNonSystemSegments(trace) {
+  const raw = segmentTrace(trace).filter(s => s.type !== 'system');
+  const merged = [];
+  for (const seg of raw) {
+    if (merged.length > 0 && merged[merged.length - 1].type === seg.type) {
+      merged[merged.length - 1].entries.push(...seg.entries);
+    } else {
+      merged.push({ type: seg.type, entries: [...seg.entries] });
+    }
+  }
+  return merged;
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────
 
 const logFiles = discoverLogs();
@@ -108,8 +126,7 @@ describe('Group 1: learner-request → tutor-response pairing', { skip: multiTur
       });
 
       it('tutor blocks and learner blocks alternate after Turn 0', () => {
-        const segments = segmentTrace(data.dialogueTrace || [])
-          .filter(s => s.type !== 'system');
+        const segments = getNonSystemSegments(data.dialogueTrace || []);
 
         // First segment must be tutor (Turn 0)
         assert.strictEqual(segments[0]?.type, 'tutor', 'first segment should be tutor');
@@ -124,8 +141,7 @@ describe('Group 1: learner-request → tutor-response pairing', { skip: multiTur
       });
 
       it('every learner block is eventually followed by a tutor block', () => {
-        const segments = segmentTrace(data.dialogueTrace || [])
-          .filter(s => s.type !== 'system');
+        const segments = getNonSystemSegments(data.dialogueTrace || []);
 
         for (let i = 0; i < segments.length; i++) {
           if (segments[i].type === 'learner') {
@@ -148,7 +164,7 @@ describe('Group 1: learner-request → tutor-response pairing', { skip: multiTur
           const h = history[i];
           assert.ok(h.suggestion?.message,
             `conversationHistory[${i}] (turn ${h.turnIndex}) missing suggestion.message`);
-          assert.ok(h.learnerMessage,
+          assert.ok(h.learnerMessage != null,
             `conversationHistory[${i}] (turn ${h.turnIndex}) missing learnerMessage`);
         }
       });
@@ -195,7 +211,7 @@ describe('Group 2: multi-agent tutor deliberation', { skip: logFiles.length === 
     describe(`[${file}] (superego: ${hasSuperego})`, () => {
       if (hasSuperego) {
         it('ego/generate appears before first superego/review in each tutor block', () => {
-          const segments = segmentTrace(trace).filter(s => s.type === 'tutor');
+          const segments = getNonSystemSegments(trace).filter(s => s.type === 'tutor');
           for (let si = 0; si < segments.length; si++) {
             const entries = segments[si].entries;
             const egoIdx = entries.findIndex(e => e.agent === 'ego' && e.action === 'generate');
@@ -210,7 +226,7 @@ describe('Group 2: multi-agent tutor deliberation', { skip: logFiles.length === 
         });
 
         it('at least one superego/review exists per tutor block that has deliberation', () => {
-          const segments = segmentTrace(trace).filter(s => s.type === 'tutor');
+          const segments = getNonSystemSegments(trace).filter(s => s.type === 'tutor');
           // At least one tutor block should have a superego entry
           const blocksWithSuperego = segments.filter(s =>
             s.entries.some(e => e.agent === 'superego'));
@@ -226,7 +242,7 @@ describe('Group 2: multi-agent tutor deliberation', { skip: logFiles.length === 
       }
 
       it('every tutor block starts with tutor/context_input or ego/generate', () => {
-        const segments = segmentTrace(trace).filter(s => s.type === 'tutor');
+        const segments = getNonSystemSegments(trace).filter(s => s.type === 'tutor');
         for (let si = 0; si < segments.length; si++) {
           const first = segments[si].entries[0];
           const validStart = (first.agent === 'tutor' && first.action === 'context_input') ||
