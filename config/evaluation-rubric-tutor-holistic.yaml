@@ -1,190 +1,153 @@
-# Holistic Tutor Evaluation Rubric
-# Scores the quality of the tutor's FULL-DIALOGUE TRAJECTORY in multi-turn interactions.
+# Holistic Tutor Evaluation Rubric — v2.2
 #
-# Companion to config/evaluation-rubric.yaml (per-turn tutor scoring) and
-# config/evaluation-rubric-learner.yaml (learner scoring).
+# Literature-informed redesign: 6 → 3 dimensions.
+# See notes/paper-2-0/rubric/ideal-measures.md for full rationale.
 #
-# This rubric evaluates the tutor's arc across the entire dialogue, not
-# individual turn quality. It answers: "How well did the tutor navigate
-# this pedagogical encounter as a whole?"
+# ══════════════════════════════════════════════════════════════════════════════
+# DESIGN RATIONALE
+# ══════════════════════════════════════════════════════════════════════════════
 #
-# Mirrors the learner holistic rubric structure for bilateral symmetry.
+# Consistency analysis found r = 0.907 between tutor per-turn average and
+# tutor holistic score — near-redundant. This v2.2 redesign radically
+# simplifies to 3 dimensions that capture ONLY trajectory-level patterns
+# invisible to per-turn scoring:
+#
+#   1. Pedagogical Arc — does the dialogue tell a coherent pedagogical story?
+#   2. Adaptive Trajectory — does the tutor's approach meaningfully evolve?
+#   3. Pedagogical Closure — does the dialogue end well?
+#
+# Dimensions that merely aggregate per-turn signals (productive_challenge,
+# adaptive_responsiveness as moment-to-moment, recognition_depth) are removed.
+#
+# DIMENSION MAP (v2.1 → v2.2):
+#   scaffolding_arc + conceptual_coherence → pedagogical_arc
+#   adaptive_responsiveness + recognition_depth → adaptive_trajectory
+#   pedagogical_closure → pedagogical_closure (kept)
+#   productive_challenge → REMOVED (captured by per-turn)
+#
+# Recognition sensitivity: The "Recognition Depth" v2.1 dimension is absorbed
+# into Adaptive Trajectory. For recognition cells, the trajectory criteria
+# specifically require evidence of deepening mutual recognition across turns.
+# No separate recognition dimension or weight redistribution needed.
 #
 # ══════════════════════════════════════════════════════════════════════════════
 # SCORING METHODOLOGY
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Same 1-5 scale and 0-100 overall score as the tutor per-turn rubric.
+# Same 1-5 scale and 0-100 overall score.
 #
-#   Overall Score = ((weighted_avg - 1) / 4) x 100
-#
-# The "Recognition Depth" dimension is scored only for recognition-theory cells
-# (those with factor_recognition = true). For base cells, the weight is
-# redistributed proportionally across the remaining five dimensions.
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
-name: "Holistic Tutor Evaluation Rubric"
-version: "2.1"
-description: "Rubric for evaluating tutor dialogue trajectory quality across full multi-turn interactions"
+name: "Holistic Tutor Evaluation Rubric (v2.2)"
+version: "2.2"
+description: "Arc-focused 3-dimension rubric for evaluating tutor trajectory across full multi-turn interactions"
 
 scale:
   min: 1
   max: 5
   labels:
     1: "Completely fails"
-    2: "Weak, significant issues"
+    2: "Between 1 and 3"
     3: "Adequate, meets basic expectations"
-    4: "Good, exceeds expectations"
+    4: "Between 3 and 5"
     5: "Excellent, exemplary"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TUTOR HOLISTIC EVALUATION DIMENSIONS
+# TUTOR HOLISTIC DIMENSIONS (3)
 # ══════════════════════════════════════════════════════════════════════════════
 #
 # ┌──────────────────────────┬────────┬──────────────────────────────────────────────┐
 # │ Dimension                │ Weight │ What it measures                             │
 # ├──────────────────────────┼────────┼──────────────────────────────────────────────┤
-# │ Scaffolding Arc          │  20%   │ Quality of pedagogical scaffolding across    │
-# │                          │        │ the full dialogue                            │
-# │ Adaptive Responsiveness  │  20%   │ How well tutor adapted to learner signals    │
-# │ Conceptual Coherence     │  20%   │ Logical coherence of the pedagogical arc     │
-# │ Recognition Depth        │  15%   │ Depth of mutual recognition trajectory       │
-# │ Productive Challenge     │  15%   │ Balance of support and productive struggle   │
-# │ Pedagogical Closure      │  10%   │ Appropriate closure or next steps            │
+# │ Pedagogical Arc          │  40%   │ Coherent pedagogical story across dialogue   │
+# │ Adaptive Trajectory      │  35%   │ Meaningful evolution of tutor approach       │
+# │ Pedagogical Closure      │  25%   │ Appropriate ending + learning consolidation  │
 # └──────────────────────────┴────────┴──────────────────────────────────────────────┘
 #
 # ══════════════════════════════════════════════════════════════════════════════
 
 dimensions:
-  scaffolding_arc:
-    name: "Scaffolding Arc"
-    weight: 0.20
-    description: "Does the tutor's scaffolding progress appropriately across the full dialogue? Does it build from simpler to more complex support, gradually releasing responsibility as the learner demonstrates competence?"
+  pedagogical_arc:
+    name: "Pedagogical Arc"
+    weight: 0.40
+    description: "Does the dialogue tell a coherent pedagogical story? Is there a logical progression from opening to development, with scaffolding that builds meaningfully across turns rather than repeating or circling?"
     theoretical_basis: |
-      Grounded in Vygotsky's Zone of Proximal Development and Wood, Bruner & Ross's
-      scaffolding framework. Effective scaffolding is not static — it should progress
-      across a dialogue, with the tutor adjusting the level of support based on learner
-      readiness. A tutor that provides the same level of scaffolding in Turn 5 as Turn 1
-      is not responsive to the learner's development. The arc should show intentional
-      pedagogical progression: establishing foundation, building complexity, and
-      promoting increasingly independent thinking.
+      Consolidates v2.1 scaffolding_arc + conceptual_coherence. These
+      two dimensions both measure "does the dialogue have a coherent
+      trajectory?" — scaffolding from the teaching perspective, coherence
+      from the content perspective. Maps to Alexander's Cumulative and
+      Purposeful principles, and Danielson Domain 1 (Planning). This
+      construct can ONLY be assessed by seeing the full dialogue, making
+      it genuinely distinct from per-turn scoring.
     criteria:
-      5: "Clear scaffolding progression: foundation-building early, increasing complexity, gradual release of support; each turn builds meaningfully on the last"
-      4: "Good scaffolding arc with appropriate progression; occasional missed opportunities to build on prior turns"
-      3: "Some scaffolding progression but inconsistent; turns sometimes feel disconnected from each other pedagogically"
-      2: "Largely flat scaffolding: same level of support throughout; little evidence of deliberate progression"
-      1: "No scaffolding arc: turns are pedagogically disconnected, or support is random/chaotic across the dialogue"
+      5: "Masterful pedagogical arc: clear opening that establishes direction, development that builds scaffolding progressively, content that connects logically across turns; the dialogue feels purposeful and cumulative — each turn extends the previous"
+      3: "Recognizable arc but with gaps: some turns feel disconnected or repetitive; scaffolding present but not always progressive; the dialogue generally moves forward but has detours"
+      1: "No arc: turns are disconnected; scaffolding resets each turn; no sense of cumulative building; the dialogue could be rearranged without loss"
+    arc_markers:
+      positive:
+        - "Clear opening that sets direction"
+        - "Each turn builds on previous scaffolding"
+        - "Content references connect across turns"
+        - "Gradual release of responsibility"
+      negative:
+        - "Repeats same level of scaffolding each turn"
+        - "Content disconnected between turns"
+        - "No sense of progression or direction"
+        - "Could remove turns without affecting coherence"
 
-  adaptive_responsiveness:
-    name: "Adaptive Responsiveness"
-    weight: 0.20
-    description: "How well does the tutor adapt its approach based on learner signals across the full dialogue? Does it change strategy when the learner is confused, resistant, or making breakthroughs?"
+  adaptive_trajectory:
+    name: "Adaptive Trajectory"
+    weight: 0.35
+    description: "Does the tutor's approach meaningfully evolve across the dialogue in response to learner signals? Not moment-to-moment responsiveness (per-turn), but the arc of adaptation."
     theoretical_basis: |
-      Based on adaptive teaching research (Corno & Snow, 1986) and contingent
-      tutoring (Wood & Wood, 1999). Expert tutors continuously read learner signals
-      and adjust their approach. This goes beyond per-turn responsiveness — it measures
-      whether the tutor's overall strategy evolves based on accumulated evidence about
-      the learner's state. A tutor that detects frustration in Turn 2 should show
-      a strategic shift by Turn 3, not continue with the same approach. Similarly,
-      a breakthrough moment should be leveraged, not ignored.
+      Consolidates v2.1 adaptive_responsiveness + recognition_depth. Both
+      measure "does the tutor's approach change across the dialogue?" —
+      one from a general pedagogical lens, the other from a recognition
+      theory lens. Maps to GuideEval OSA measured over time. For recognition
+      cells, the trajectory should show deepening mutual recognition (not
+      just surface-level adaptation). This is the arc-level counterpart
+      to per-turn Adaptive Responsiveness.
     criteria:
-      5: "Deeply responsive: strategy visibly shifts based on learner signals; detects and acts on confusion, breakthroughs, resistance, and engagement changes across turns"
-      4: "Good responsiveness: adapts approach when learner signals are clear; occasionally misses subtler cues"
-      3: "Moderate responsiveness: some adaptation to obvious signals but overall approach stays relatively fixed"
-      2: "Weakly responsive: continues with the same strategy despite clear learner signals suggesting change is needed"
-      1: "Non-responsive: follows a predetermined script regardless of learner state; no evidence of reading or responding to learner signals"
-
-  conceptual_coherence:
-    name: "Conceptual Coherence"
-    weight: 0.20
-    description: "Does the tutor's explanation build logically across the dialogue? Is there a coherent pedagogical arc, or does the dialogue feel like disconnected mini-lessons?"
-    theoretical_basis: |
-      Grounded in Ausubel's meaningful learning theory and the principle of advance
-      organizers. Effective multi-turn tutoring should create a coherent narrative
-      where each turn connects to and builds upon what came before. Conceptual
-      coherence means the learner can trace a logical thread through the dialogue —
-      concepts introduced early are developed later, examples connect to prior
-      explanations, and the overall trajectory tells a comprehensible pedagogical
-      story. Incoherent tutoring may score well per-turn but fail as a dialogue.
-    criteria:
-      5: "Highly coherent arc: clear narrative thread connects all turns; concepts build logically; earlier ideas are revisited and deepened in later turns"
-      4: "Good coherence: most turns connect to the overall arc; occasional tangent that is eventually reintegrated"
-      3: "Moderate coherence: some logical flow but turns sometimes feel like standalone responses rather than parts of a dialogue"
-      2: "Weak coherence: turns address different aspects with little connection; hard to identify an overall pedagogical arc"
-      1: "Incoherent: turns are essentially independent responses; no narrative thread, no building on prior exchanges"
-
-  recognition_depth:
-    name: "Recognition Depth"
-    weight: 0.15
-    description: "For recognition-theory cells: How deeply does the tutor engage in mutual recognition across the dialogue? Does it move beyond surface acknowledgment to genuine intersubjective engagement that evolves over turns?"
-    applies_to: "recognition cells only"
-    weight_redistribution: |
-      For base cells (no recognition theory), this dimension is omitted and its
-      weight (15%) is redistributed proportionally across the remaining five dimensions.
-    theoretical_basis: |
-      Based on Hegel's theory of recognition (Anerkennung) as applied to pedagogy.
-      Recognition is not a one-time event but a developing trajectory. Early turns
-      may show basic acknowledgment; later turns should show deeper mutual understanding
-      where the tutor recognizes the learner as an autonomous thinking subject whose
-      perspective genuinely matters. The trajectory should show movement from
-      instrumental teaching toward genuine intersubjective encounter.
-    criteria:
-      5: "Deep recognition trajectory: moves from acknowledgment to genuine intersubjective engagement; learner's perspective visibly shapes tutor's understanding; mutual recognition deepens across turns"
-      4: "Good recognition development: tutor shows genuine engagement with learner's perspective that deepens over the dialogue; some moments of real intersubjective exchange"
-      3: "Moderate recognition: acknowledges learner's perspective but doesn't deeply engage with it; recognition signals present but don't develop across turns"
-      2: "Surface recognition: perfunctory acknowledgments ('great question!') without genuine engagement; recognition language present but hollow"
-      1: "No recognition: treats learner as passive recipient; no evidence of recognizing the learner as an autonomous thinking subject"
-
-  productive_challenge:
-    name: "Productive Challenge"
-    weight: 0.15
-    description: "Does the tutor maintain an appropriate balance of support and challenge across the dialogue? Does it push the learner to think harder while providing enough scaffolding to prevent frustration?"
-    theoretical_basis: |
-      Grounded in Vygotsky's ZPD and Kapur's productive failure framework. Effective
-      tutoring maintains a 'desirable difficulty' — challenging enough to promote
-      learning but not so challenging as to cause disengagement. Across a full dialogue,
-      this balance should be dynamic: early turns may emphasize support, while later
-      turns can increase challenge as the learner builds competence. A tutor that is
-      always supportive fails to push growth; one that is always challenging fails
-      to support it.
-    criteria:
-      5: "Excellent challenge balance: progressively increases cognitive demand; creates productive struggle moments; challenge level matches learner's evolving competence"
-      4: "Good challenge balance: generally appropriate difficulty; pushes learner while maintaining support; occasional over-scaffolding or under-scaffolding"
-      3: "Moderate challenge: some productive difficulty but tends to either over-support (doing the thinking for the learner) or under-support (leaving the learner struggling)"
-      2: "Poor balance: either consistently too easy (spoon-feeding) or too hard (overwhelming); little dynamic adjustment"
-      1: "No productive challenge: either purely supportive (never pushes) or purely demanding (never supports); no sense of deliberate difficulty management"
+      5: "Clear trajectory of adaptation: early turns exploratory, later turns strategically adjusted to what the tutor has learned about this specific learner; for recognition cells, mutual recognition visibly deepens across the dialogue"
+      3: "Some adaptation across the dialogue but approach is largely consistent; strategy adjustments are minor rather than substantive"
+      1: "No trajectory: tutor's approach at the end is identical to the beginning; no evidence the exchange changed the tutor's strategy"
+    trajectory_markers:
+      positive:
+        - "Strategy at turn N differs visibly from turn 1"
+        - "Tutor references earlier exchanges as informing current approach"
+        - "Scaffolding strategy evolves based on learner's demonstrated needs"
+        - "For recognition cells: recognition deepens across the dialogue"
+      negative:
+        - "Same approach applied regardless of learner's evolution"
+        - "No reference to how earlier turns inform later strategy"
+        - "Surface changes only (different words, same approach)"
+        - "Adaptation happens within turns but not across them"
 
   pedagogical_closure:
     name: "Pedagogical Closure"
-    weight: 0.10
-    description: "Does the dialogue reach appropriate closure? Does the tutor consolidate learning, identify remaining gaps, or set up meaningful next steps?"
+    weight: 0.25
+    description: "Does the dialogue end appropriately? Is learning consolidated, are gaps identified, and are clear next steps provided? This is the only rubric dimension that evaluates how a dialogue concludes."
     theoretical_basis: |
-      Based on the instructional design principle of consolidation and transfer.
-      Effective tutoring dialogues should not simply end — they should reach some
-      form of closure: summarizing what was learned, identifying what remains
-      unclear, connecting to broader applications, or setting up next steps.
-      Pedagogical closure creates a sense of meaningful progress and helps the
-      learner integrate the dialogue's content into their broader understanding.
+      Unique to holistic rubric — no per-turn rubric can capture whether a
+      dialogue ends well. Pedagogical closure involves consolidating what
+      was learned, identifying remaining gaps, and providing clear direction
+      for continued learning. Elevated from 10% in v2.1 to 25% in v2.2
+      to reflect its unique status as the only closure-measuring dimension
+      across all rubrics.
     criteria:
-      5: "Strong closure: consolidates key insights, identifies remaining questions, connects to broader context or applications; learner leaves with clear understanding of progress and next steps"
-      4: "Good closure: summarizes main points and provides some direction; most key insights are captured"
-      3: "Adequate closure: dialogue ends at a reasonable point but lacks explicit consolidation; some loose threads"
-      2: "Weak closure: dialogue trails off without summarization; key insights not consolidated; next steps unclear"
-      1: "No closure: dialogue ends abruptly or in the middle of a concept; no consolidation, no direction, no sense of progress"
-
-# ══════════════════════════════════════════════════════════════════════════════
-# WEIGHT REDISTRIBUTION FOR BASE CELLS (NO RECOGNITION THEORY)
-# ══════════════════════════════════════════════════════════════════════════════
-#
-# When recognition_depth is N/A (base cells), redistribute its 15%:
-#
-# Original weights:                    Redistributed weights:
-#   scaffolding_arc:         0.20   →    0.2353   (0.20 / 0.85)
-#   adaptive_responsiveness: 0.20   →    0.2353   (0.20 / 0.85)
-#   conceptual_coherence:    0.20   →    0.2353   (0.20 / 0.85)
-#   recognition_depth:       0.15   →    OMITTED
-#   productive_challenge:    0.15   →    0.1765   (0.15 / 0.85)
-#   pedagogical_closure:     0.10   →    0.1176   (0.10 / 0.85)
-#
-# ══════════════════════════════════════════════════════════════════════════════
+      5: "Excellent closure: learning is explicitly consolidated; gaps are identified and named; clear next steps provided; the learner leaves knowing what they've learned and what comes next"
+      3: "Adequate closure: dialogue doesn't end abruptly; some summary or next steps present but may be generic; gaps not explicitly identified"
+      1: "No closure: dialogue ends mid-thread; no consolidation, no next steps; learner has no clear picture of progress or direction"
+    closure_markers:
+      positive:
+        - "Explicit summary of what was covered and learned"
+        - "Identification of remaining gaps or questions"
+        - "Clear, specific next steps"
+        - "Invites learner to articulate their own takeaways"
+      negative:
+        - "Dialogue ends mid-exchange"
+        - "No summary or consolidation"
+        - "Generic next steps ('keep studying')"
+        - "No acknowledgment of what was accomplished"

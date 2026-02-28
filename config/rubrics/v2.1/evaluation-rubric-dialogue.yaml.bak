@@ -24,7 +24,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Dialogue Quality Rubric"
-version: "2.2"
+version: "2.1"
 description: "Rubric for evaluating the overall quality of pedagogical encounters as interactions"
 
 scale:
