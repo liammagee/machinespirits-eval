@@ -21,7 +21,6 @@ import * as store from '../services/evaluationStore.js';
 import {
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,
-  isEgoSuperegoLearner,
 } from '../services/rubricEvaluator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

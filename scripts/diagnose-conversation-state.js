@@ -14,7 +14,7 @@
  *   node scripts/diagnose-conversation-state.js --compact     # shorter output
  */
 
-import { buildMultiTurnContext, formatTurnForContext } from '../services/evaluationRunner.js';
+import { buildMultiTurnContext } from '../services/evaluationRunner.js';
 
 // ── Simulated epistemic-resistance scenario ──────────────────────────────
 

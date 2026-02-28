@@ -27,7 +27,6 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { randomBytes } from 'crypto';
 import { parseEpochArg, printEpochBanner } from '../services/epochFilter.js';
 import { consolidateRuns } from '../services/runConsolidator.js';
 

@@ -1276,7 +1276,7 @@ function normalizeScenarioKey(v) {
   return String(v || '')
     .toLowerCase()
     .trim()
-    .replace(/[\s\-]+/g, '_')
+    .replace(/ +/g, '_').replace(/-+/g, '_')
     .replace(/[^a-z0-9_]/g, '');
 }
 
