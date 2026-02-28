@@ -244,6 +244,7 @@ function parseArgs() {
     ],
     export: null,
     verbose: false,
+    aggregate: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -260,6 +261,8 @@ function parseArgs() {
       options.export = args[++i];
     } else if (arg === '--verbose' || arg === '-v') {
       options.verbose = true;
+    } else if (arg === '--aggregate') {
+      options.aggregate = true;
     } else if (arg === '--epoch') {
       i++; // handled by parseEpochArg
     } else if (arg === '--help' || arg === '-h') {
@@ -275,6 +278,7 @@ Options:
   --scenarios <s1,s2,...>  Filter to specific scenarios
   --dimensions <d1,d2,...> Specify dimensions to analyze
   --epoch <epoch>          Data epoch: pilot, 2.0 (default), or all
+  --aggregate              Aggregate across all runs with matching eval signature
   --export <file>          Export results to CSV/JSON
   --verbose, -v            Show detailed output
   --help, -h               Show this help
@@ -379,7 +383,22 @@ async function analyzeResults(options) {
 
   console.log(`${c.dim}Total results: ${results.length}${c.reset}`);
   console.log(`${c.dim}Profiles: ${profiles.join(', ')}${c.reset}`);
-  console.log(`${c.dim}Scenarios: ${Object.keys(byScenario).length}${c.reset}\n`);
+  console.log(`${c.dim}Scenarios: ${Object.keys(byScenario).length}${c.reset}`);
+
+  // Aggregation info
+  if (options.aggregate || !options.runId) {
+    const runIds = [...new Set(results.map(r => r.run_id).filter(Boolean))];
+    if (runIds.length > 1) {
+      console.log(`${c.green}${c.bold}  ⊕ AGGREGATED across ${runIds.length} runs${c.reset}`);
+      for (const profile of profiles) {
+        const profileRuns = [...new Set(byProfile[profile].map(r => r.run_id).filter(Boolean))];
+        if (profileRuns.length > 1) {
+          console.log(`${c.dim}    ${profile}: N=${byProfile[profile].length} from ${profileRuns.length} runs${c.reset}`);
+        }
+      }
+    }
+  }
+  console.log();
 
   // Profile summary statistics
   console.log(`${c.bold}PROFILE SUMMARY${c.reset}`);

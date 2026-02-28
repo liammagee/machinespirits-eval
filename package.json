@@ -42,6 +42,8 @@
     "superego:classify:dry-run": "node scripts/classify-superego-critiques.js --sample 5 --tutor-only --dry-run",
     "superego:analyze": "node scripts/analyze-superego-taxonomy.js",
     "superego:transitions": "node scripts/analyze-superego-transitions.js",
+    "accumulation:status": "node scripts/analyze-accumulation.js",
+    "accumulation:status:pilot": "node scripts/analyze-accumulation.js --epoch pilot",
     "provenance:validate": "node scripts/validate-provenance.js",
     "seed": "node scripts/seed-db.js",
     "paper:bug-audit": "node scripts/validate-bug-claims.js",
