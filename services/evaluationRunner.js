@@ -1623,7 +1623,7 @@ export async function runEvaluation(options = {}) {
 
   const runStartTime = Date.now();
 
-  await processQueue(allTests, parallelism, async ({ config, scenario }) => {
+  await processQueue(allTests, parallelism, async ({ config, scenario, runNum }) => {
     const profileLabel = config.label || config.profileName || '';
 
     // Wrap in live API conversation context if --live is active
@@ -1643,6 +1643,7 @@ export async function runEvaluation(options = {}) {
           transcriptMode,
           showMessages,
           runId: run.id,
+          runNum,
           liveApiReporter,
         });
 
@@ -2119,6 +2120,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dryRun = false,
     transcriptMode = false,
     runId = null,
+    runNum = 0,
     showMessages = false,
     checkpointState = null,
     liveApiReporter: liveReporter = null,
@@ -2197,6 +2199,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   let isLLMLearner = isEgoSuperegoLearner; // provisional; updated after conversationMode
   const printedLearnerTurns = new Set(); // dedup: track which learner turns have been printed
 
+  // Build a compact tag for live output: "cell_82_messages_base_multi_unified · misconception_correction_flow #1"
+  const chatTag = chalk.dim(`[${config.profileName} · ${scenario.id} #${runNum + 1}]`);
+  let chatBannerPrinted = false;
+
   function flushTranscript() {
     const newEntries = consolidatedTrace.slice(lastTranscriptIdx);
     if (newEntries.length === 0) return;
@@ -2205,7 +2211,15 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // --- Always: print live chat lines for public-facing messages ---
     for (const entry of newEntries) {
       const chatLine = formatChatLine(entry, isLLMLearner, printedLearnerTurns);
-      if (chatLine) console.log(chatLine);
+      if (chatLine) {
+        if (!chatBannerPrinted) {
+          console.log('\n' + chalk.dim('─'.repeat(70)));
+          console.log(chatTag);
+          console.log(chalk.dim('─'.repeat(70)));
+          chatBannerPrinted = true;
+        }
+        console.log(chatLine);
+      }
     }
 
     // --- --transcript only: write play-format file + compact console lines ---
