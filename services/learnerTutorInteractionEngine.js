@@ -911,7 +911,8 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
   if (!result) throw lastError;
 
   // Phase 2: Empty-content retry (HTTP 200 but no text)
-  if (!result.content && result.usage?.outputTokens === 0) {
+  // Skip if finish_reason is 'length' — token budget exhausted, same max_tokens will fail again
+  if (!result.content && result.usage?.outputTokens === 0 && result.finishReason !== 'length') {
     for (let retry = 0; retry < EMPTY_CONTENT_MAX_RETRIES; retry++) {
       const delay = EMPTY_CONTENT_RETRY_DELAYS[retry];
       console.warn(
@@ -1137,10 +1138,11 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
 
     const data = await res.json();
     const content = data?.choices?.[0]?.message?.content?.trim() || '';
+    const finishReason = data?.choices?.[0]?.finish_reason;
 
     if (!content) {
       console.warn(
-        `[${agentRole}] OpenRouter returned empty content. Model: ${model}, finish_reason: ${data?.choices?.[0]?.finish_reason}`,
+        `[${agentRole}] OpenRouter returned empty content. Model: ${model}, finish_reason: ${finishReason}`,
       );
     }
 
@@ -1150,6 +1152,7 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
         inputTokens: data?.usage?.prompt_tokens || 0,
         outputTokens: data?.usage?.completion_tokens || 0,
       },
+      finishReason,
       latencyMs: Date.now() - startTime,
       model,
       provider,

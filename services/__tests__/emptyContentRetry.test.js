@@ -111,6 +111,20 @@ describe('callLearnerAI empty-content retry', () => {
     assert.equal(callCount, 1);
   });
 
+  it('skips retry when finishReason is length (token budget exhausted)', async () => {
+    let callCount = 0;
+    globalThis.fetch = async () => {
+      callCount++;
+      return mockOpenRouterResponse({ content: '', outputTokens: 0, finishReason: 'length' });
+    };
+
+    const result = await callLearnerAI(makeAgentConfig(), 'system', 'user', 'learner_ego');
+
+    assert.equal(result.content, '');
+    assert.equal(result.emptyContentRetries, undefined);
+    assert.equal(callCount, 1);
+  });
+
   it('succeeds on second retry (third attempt total)', async () => {
     let callCount = 0;
     globalThis.fetch = async () => {
