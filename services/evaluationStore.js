@@ -751,6 +751,13 @@ export function listRuns(options = {}) {
     ORDER BY superego_model
   `);
 
+  // Get distinct profile names actually used in results
+  const profileStmt = db.prepare(`
+    SELECT DISTINCT profile_name FROM evaluation_results
+    WHERE run_id = ? AND profile_name IS NOT NULL
+    ORDER BY profile_name
+  `);
+
   return rows.map((row) => {
     const scenarioRows = scenarioStmt.all(row.id);
     const scenarioNames = scenarioRows.map((s) => s.scenario_name).filter(Boolean);
@@ -772,6 +779,14 @@ export function listRuns(options = {}) {
         ].filter(Boolean),
       ),
     ];
+
+    // Actual profile names from result rows (may differ from metadata if run was partial/resumed)
+    const profileRows = profileStmt.all(row.id);
+    const profileNames = profileRows.map((p) => p.profile_name).filter(Boolean);
+
+    // Model fingerprint: 6-char hex from sorted model list (stable across runs with same models)
+    const fpInput = [...models].sort().join('|');
+    const modelFingerprint = fpInput ? createHash('sha256').update(fpInput).digest('hex').slice(0, 6) : null;
 
     const completedResults = counts?.completed || 0;
     const totalTests = row.total_tests || 0;
@@ -811,6 +826,8 @@ export function listRuns(options = {}) {
       completedAt: row.completed_at,
       scenarioNames, // Scenario names from results
       models, // Distinct ego model aliases used
+      profileNames, // Distinct profile/cell names from results
+      modelFingerprint, // 6-char hex for comparing model configs across runs
       metadata: JSON.parse(row.metadata || '{}'), // Structured metadata
     };
   });

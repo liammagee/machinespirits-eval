@@ -493,6 +493,40 @@ function enrichRunsWithActiveTests(runs) {
 }
 
 /**
+ * Abbreviate cell/profile names into compact range notation.
+ * e.g. ['cell_80_...', 'cell_81_...', 'cell_82_...', 'cell_84_...'] → '80..82, 84'
+ * Non-cell profile names are kept as-is.
+ */
+function abbreviateCells(profileNames) {
+  if (!profileNames || profileNames.length === 0) return '';
+  const nums = [];
+  const nonCell = [];
+  for (const name of profileNames) {
+    const m = name.match(/^cell_(\d+)/);
+    if (m) nums.push(parseInt(m[1], 10));
+    else nonCell.push(name);
+  }
+  nums.sort((a, b) => a - b);
+
+  const parts = [];
+  if (nums.length > 0) {
+    // Detect contiguous ranges
+    let start = nums[0], end = nums[0];
+    for (let i = 1; i < nums.length; i++) {
+      if (nums[i] === end + 1) {
+        end = nums[i];
+      } else {
+        parts.push(start === end ? `${start}` : `${start}..${end}`);
+        start = end = nums[i];
+      }
+    }
+    parts.push(start === end ? `${start}` : `${start}..${end}`);
+  }
+  parts.push(...nonCell);
+  return parts.join(', ');
+}
+
+/**
  * Render the runs table as a formatted string (reusable for one-shot and --live).
  * Automatically switches to compact layout when terminal is narrower than 120 columns.
  */
@@ -504,6 +538,7 @@ function renderRunsTable(runs) {
   lines.push(
     '  ' +
     theme.header('ID'.padEnd(40)) +
+    theme.header('Cfg'.padEnd(8)) +
     theme.header('Status'.padEnd(12)) +
     theme.header('Progress'.padEnd(20)) +
     theme.header('TutPT'.padEnd(6)) +
@@ -516,7 +551,7 @@ function renderRunsTable(runs) {
     theme.header('Created'.padEnd(24)) +
     theme.header('Description'),
   );
-  lines.push('  ' + theme.dim('-'.repeat(160)));
+  lines.push('  ' + theme.dim('-'.repeat(168)));
 
   for (const run of runs) {
     const created = run.createdAt ? new Date(run.createdAt).toLocaleString() : '--';
@@ -547,9 +582,11 @@ function renderRunsTable(runs) {
     }
     const desc = run.description || '';
     const models = run.models && run.models.length > 0 ? run.models.join(', ') : '--';
+    const cfg = run.modelFingerprint || '--';
     lines.push(
       '  ' +
       theme.id(run.id.padEnd(40)) +
+      theme.dim(cfg.padEnd(8)) +
       theme.status((run.status || '--').padEnd(12)) +
       progress.padEnd(20) +
       theme.score(tutPT.padEnd(6)) +
@@ -565,16 +602,21 @@ function renderRunsTable(runs) {
     if (models !== '--') {
       lines.push('  ' + `  Models: ${theme.model(models)}`);
     }
+    const cells = abbreviateCells(run.profileNames);
+    if (cells) {
+      lines.push('  ' + `  Cells:  ${theme.dim(cells)}`);
+    }
     if (run.status === 'running' && activeTest) {
       const activeLabel = formatActiveTestProgress(activeTest);
       if (activeLabel) lines.push('  ' + `  Active: ${theme.dim(activeLabel)}`);
     }
   }
   // Repeat header at bottom for easy reference
-  lines.push('  ' + theme.dim('-'.repeat(160)));
+  lines.push('  ' + theme.dim('-'.repeat(168)));
   lines.push(
     '  ' +
     theme.header('ID'.padEnd(40)) +
+    theme.header('Cfg'.padEnd(8)) +
     theme.header('Status'.padEnd(12)) +
     theme.header('Progress'.padEnd(20)) +
     theme.header('TutPT'.padEnd(6)) +
@@ -659,10 +701,13 @@ function renderRunsCompact(runs, termWidth) {
       duration,
     );
 
-    // Second line: models + description (truncated to terminal width)
+    // Second line: fingerprint + models + cells + description (truncated to terminal width)
+    const cfg = run.modelFingerprint ? `[${run.modelFingerprint}]` : '';
     const models = run.models?.length > 0 ? run.models.join(', ') : '';
+    const cells = abbreviateCells(run.profileNames);
+    const cellsPart = cells ? `cells:${cells}` : '';
     const desc = run.description || '';
-    const detail = [models, desc].filter(Boolean).join(' · ');
+    const detail = [cfg, models, cellsPart, desc].filter(Boolean).join(' · ');
     if (detail) {
       const maxDetail = termWidth - 6;
       lines.push('    ' + theme.dim(detail.length > maxDetail ? detail.slice(0, maxDetail - 1) + '…' : detail));
@@ -1680,8 +1725,37 @@ async function main() {
         const limitOpt = getOption('limit');
         const limit = limitOpt ? parseInt(limitOpt, 10) : null;
         const statusFilter = getOption('status') || null;
+        const cellsFilter = getOption('cells') || null;
+        const groupByConfig = getFlag('group');
         const isLive = getFlag('live');
         const refreshMs = parseInt(getOption('refresh', '3000'), 10);
+
+        // Post-filter: keep runs matching --cells pattern (matches on cell numbers or profile names)
+        const applyRunsFilters = (runs) => {
+          let filtered = runs;
+          if (cellsFilter) {
+            const patterns = cellsFilter.split(',').map((p) => p.trim());
+            filtered = filtered.filter((run) => {
+              const names = run.profileNames || [];
+              return patterns.some((pat) =>
+                names.some((name) => {
+                  const m = name.match(/^cell_(\d+)/);
+                  return (m && m[1] === pat) || name.includes(pat);
+                }),
+              );
+            });
+          }
+          if (groupByConfig) {
+            // Sort by model fingerprint (grouping like-for-like runs together), then by date within groups
+            filtered.sort((a, b) => {
+              const fa = a.modelFingerprint || '';
+              const fb = b.modelFingerprint || '';
+              if (fa !== fb) return fa.localeCompare(fb);
+              return (a.createdAt || '').localeCompare(b.createdAt || '');
+            });
+          }
+          return filtered;
+        };
 
         if (isLive) {
           // Live auto-refreshing mode — use alternate screen buffer (like top/htop)
@@ -1689,7 +1763,8 @@ async function main() {
           let lastOutput = '';
           process.stdout.write('\x1b[?1049h'); // enter alternate screen buffer
           const poll = () => {
-            const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit: liveLimit, status: statusFilter }));
+            let runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit: liveLimit, status: statusFilter }));
+            runs = applyRunsFilters(runs);
             if (runs.length === 0) {
               const output = '\nNo evaluation runs found.';
               if (output !== lastOutput) {
@@ -1700,7 +1775,7 @@ async function main() {
               }
               return;
             }
-            runs.reverse(); // oldest first → newest at bottom (nearest to cursor)
+            if (!groupByConfig) runs.reverse(); // oldest first → newest at bottom (nearest to cursor)
             const output = renderRunsTable(runs);
             if (output !== lastOutput) {
               process.stdout.write('\x1b[H\x1b[2J');
@@ -1724,13 +1799,15 @@ async function main() {
           await new Promise(() => { });
         } else {
           // One-shot mode
-          const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit, status: statusFilter }));
+          let runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit, status: statusFilter }));
+          runs = applyRunsFilters(runs);
           if (runs.length === 0) {
             console.log('\nNo evaluation runs found.');
             break;
           }
-          runs.reverse(); // oldest first → newest at bottom
-          console.log(`\nEvaluation runs (${runs.length} total):\n`);
+          if (!groupByConfig) runs.reverse(); // oldest first → newest at bottom
+          const label = groupByConfig ? 'grouped by model config' : `${runs.length} total`;
+          console.log(`\nEvaluation runs (${label}):\n`);
           console.log(renderRunsTable(runs));
           console.log('');
         }
