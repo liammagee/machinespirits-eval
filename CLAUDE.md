@@ -163,7 +163,7 @@ Key columns: `id`, `run_id`, `scenario_id`, `scenario_name`, `provider`, `model`
 - `rejudge` without `--judge` defaults to Sonnet 4.5, not Opus
 - Rejudge creates new rows by default; `--overwrite` replaces
 - **Legacy cell names**: Early runs used shorthand `cell_1`, later runs use canonical `cell_1_base_single_unified`. Both coexist in the DB. Analysis scripts should match on prefix or use `LIKE 'cell_1%'` when querying across runs.
-- **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"2.0"` = v2 rubric overhaul (Feb 26), `"2.1"` = public-only output scoring + deliberation rubric (Feb 27).
+- **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = original rubric (14 tutor dimensions). `"2.0"` = v2 rubric overhaul (Feb 26). `"2.1"` = public-only output scoring + deliberation rubric (Feb 27). `"2.2"` = literature-informed redesign (Feb 28): consolidates 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, adds `content_accuracy`, removes `learner_growth`. Versioned rubrics live in `config/rubrics/v{X.Y}/`; active rubrics are in `config/`. **Do NOT retroactively score historical data under a newer rubric version** — this creates cross-version contamination that invalidates within-run comparisons.
 
 ### Test Directory Convention
 

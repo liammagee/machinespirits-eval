@@ -17,6 +17,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -259,6 +260,8 @@ function parseArgs() {
       options.export = args[++i];
     } else if (arg === '--verbose' || arg === '-v') {
       options.verbose = true;
+    } else if (arg === '--epoch') {
+      i++; // handled by parseEpochArg
     } else if (arg === '--help' || arg === '-h') {
       console.log(`
 Statistical Analysis for Evaluation Results
@@ -271,6 +274,7 @@ Options:
   --run-id <id>            Analyze specific evaluation run
   --scenarios <s1,s2,...>  Filter to specific scenarios
   --dimensions <d1,d2,...> Specify dimensions to analyze
+  --epoch <epoch>          Data epoch: pilot, 2.0 (default), or all
   --export <file>          Export results to CSV/JSON
   --verbose, -v            Show detailed output
   --help, -h               Show this help
@@ -299,6 +303,11 @@ async function analyzeResults(options) {
 
   const db = new Database(dbPath, { readonly: true });
 
+  // Epoch filtering
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
   // Build query
   let query = `
     SELECT
@@ -315,6 +324,7 @@ async function analyzeResults(options) {
     FROM evaluation_results
     WHERE success = 1
       AND tutor_first_turn_score IS NOT NULL
+      ${epochFilter.and}
   `;
 
   const params = [];
@@ -387,10 +397,10 @@ async function analyzeResults(options) {
 
     console.log(
       `${profile.padEnd(20)} ` +
-        `${scores.length.toString().padStart(6)} ` +
-        `${ci.mean.toFixed(2).padStart(8)} ` +
-        `${standardDeviation(scores).toFixed(2).padStart(8)} ` +
-        `[${ci.lower.toFixed(2)}, ${ci.upper.toFixed(2)}]`.padStart(20),
+      `${scores.length.toString().padStart(6)} ` +
+      `${ci.mean.toFixed(2).padStart(8)} ` +
+      `${standardDeviation(scores).toFixed(2).padStart(8)} ` +
+      `[${ci.lower.toFixed(2)}, ${ci.upper.toFixed(2)}]`.padStart(20),
     );
   }
   console.log();
@@ -401,11 +411,11 @@ async function analyzeResults(options) {
     console.log(`${'─'.repeat(90)}`);
     console.log(
       `${'Comparison'.padEnd(30)} ` +
-        `${'Δ Mean'.padStart(10)} ` +
-        `${"Cohen's d".padStart(12)} ` +
-        `${'Effect'.padStart(12)} ` +
-        `${'t'.padStart(8)} ` +
-        `${'p-value'.padStart(10)}`,
+      `${'Δ Mean'.padStart(10)} ` +
+      `${"Cohen's d".padStart(12)} ` +
+      `${'Effect'.padStart(12)} ` +
+      `${'t'.padStart(8)} ` +
+      `${'p-value'.padStart(10)}`,
     );
     console.log(`${'─'.repeat(90)}`);
 
@@ -427,11 +437,11 @@ async function analyzeResults(options) {
 
         console.log(
           `${`${p1} vs ${p2}`.padEnd(30)} ` +
-            `${(diff >= 0 ? '+' : '') + diff.toFixed(2).padStart(9)} ` +
-            `${d.toFixed(3).padStart(12)} ` +
-            `${effectLabel.padStart(12)} ` +
-            `${ttest.t.toFixed(2).padStart(8)} ` +
-            `${pStr.padStart(8)}${sigMarker.padStart(2)}`,
+          `${(diff >= 0 ? '+' : '') + diff.toFixed(2).padStart(9)} ` +
+          `${d.toFixed(3).padStart(12)} ` +
+          `${effectLabel.padStart(12)} ` +
+          `${ttest.t.toFixed(2).padStart(8)} ` +
+          `${pStr.padStart(8)}${sigMarker.padStart(2)}`,
         );
 
         comparisons.push({ p1, p2, diff, d, effectLabel, t: ttest.t, p: ttest.p });
@@ -497,9 +507,9 @@ async function analyzeResults(options) {
         const direction = dr.d >= 0 ? c.green : c.red;
         console.log(
           `${dr.dimension.padEnd(20)} ` +
-            `${direction}${dr.d >= 0 ? '+' : ''}${dr.d.toFixed(3).padStart(7)}${c.reset} ` +
-            `${direction}${bar}${c.reset} ` +
-            `${dr.effect}`,
+          `${direction}${dr.d >= 0 ? '+' : ''}${dr.d.toFixed(3).padStart(7)}${c.reset} ` +
+          `${direction}${bar}${c.reset} ` +
+          `${dr.effect}`,
         );
       }
       console.log();
@@ -532,9 +542,9 @@ async function analyzeResults(options) {
 
           console.log(
             `  ${p1}(n=${s1.length}, μ=${mean(s1).toFixed(1)}) vs ` +
-              `${p2}(n=${s2.length}, μ=${mean(s2).toFixed(1)}): ` +
-              `Δ=${diff >= 0 ? '+' : ''}${diff.toFixed(1)} (${pctImprove >= 0 ? '+' : ''}${pctImprove.toFixed(0)}%), ` +
-              `d=${d.toFixed(2)}, p=${ttest.p < 0.001 ? '<0.001' : ttest.p.toFixed(3)}`,
+            `${p2}(n=${s2.length}, μ=${mean(s2).toFixed(1)}): ` +
+            `Δ=${diff >= 0 ? '+' : ''}${diff.toFixed(1)} (${pctImprove >= 0 ? '+' : ''}${pctImprove.toFixed(0)}%), ` +
+            `d=${d.toFixed(2)}, p=${ttest.p < 0.001 ? '<0.001' : ttest.p.toFixed(3)}`,
           );
         }
       }
