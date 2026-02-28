@@ -28,7 +28,7 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
-const V21_RUBRIC = path.join(ROOT_DIR, 'config', 'evaluation-rubric.yaml');
+const V21_RUBRIC = path.join(ROOT_DIR, 'config', 'rubrics', 'v2.1', 'evaluation-rubric.yaml');
 const V22_RUBRIC = path.join(ROOT_DIR, 'config', 'rubrics', 'v2.2', 'evaluation-rubric.yaml');
 
 /** Build a mock scores object where every dimension gets the same score. */

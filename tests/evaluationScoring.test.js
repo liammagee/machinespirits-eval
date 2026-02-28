@@ -1299,31 +1299,24 @@ describe('listRuns returns all 6 score columns', () => {
 // ============================================================================
 
 describe('tutor holistic rubric', () => {
-  it('loads dimensions from YAML with recognition_depth for recognition cells', () => {
-    const dims = getTutorHolisticDimensions({ hasRecognition: true });
-    assert.ok(dims.scaffolding_arc, 'has scaffolding_arc');
-    assert.ok(dims.adaptive_responsiveness, 'has adaptive_responsiveness');
-    assert.ok(dims.conceptual_coherence, 'has conceptual_coherence');
-    assert.ok(dims.recognition_depth, 'has recognition_depth for recognition cells');
-    assert.ok(dims.productive_challenge, 'has productive_challenge');
-    assert.ok(dims.pedagogical_closure, 'has pedagogical_closure');
-    assert.strictEqual(Object.keys(dims).length, 6, '6 dimensions for recognition');
-  });
+  it('loads v2.2 dimensions from YAML (3 dims, same for all cells)', () => {
+    const dimsRecog = getTutorHolisticDimensions({ hasRecognition: true });
+    assert.ok(dimsRecog.pedagogical_arc, 'has pedagogical_arc');
+    assert.ok(dimsRecog.adaptive_trajectory, 'has adaptive_trajectory');
+    assert.ok(dimsRecog.pedagogical_closure, 'has pedagogical_closure');
+    assert.strictEqual(Object.keys(dimsRecog).length, 3, '3 dimensions for recognition');
 
-  it('omits recognition_depth for base cells', () => {
-    const dims = getTutorHolisticDimensions({ hasRecognition: false });
-    assert.ok(!dims.recognition_depth, 'no recognition_depth for base cells');
-    assert.strictEqual(Object.keys(dims).length, 5, '5 dimensions for base');
+    const dimsBase = getTutorHolisticDimensions({ hasRecognition: false });
+    assert.strictEqual(Object.keys(dimsBase).length, 3, '3 dimensions for base');
+    assert.deepStrictEqual(Object.keys(dimsRecog), Object.keys(dimsBase),
+      'v2.2 returns same dims regardless of hasRecognition');
   });
 
   it('calculateTutorHolisticScore produces correct 0-100 score', () => {
-    // All 3s with recognition
+    // All 3s with v2.2 dimensions
     const scores = {
-      scaffolding_arc: { score: 3 },
-      adaptive_responsiveness: { score: 3 },
-      conceptual_coherence: { score: 3 },
-      recognition_depth: { score: 3 },
-      productive_challenge: { score: 3 },
+      pedagogical_arc: { score: 3 },
+      adaptive_trajectory: { score: 3 },
       pedagogical_closure: { score: 3 },
     };
     const result = calculateTutorHolisticScore(scores, true);
@@ -1346,7 +1339,7 @@ describe('tutor holistic rubric', () => {
     assert.ok(Math.abs(lowestResult - 0) < 0.01, `all 1s → ~0 (got ${lowestResult})`);
   });
 
-  it('buildTutorHolisticEvaluationPrompt includes rubric dimensions', () => {
+  it('buildTutorHolisticEvaluationPrompt includes v2.2 rubric dimensions', () => {
     const prompt = buildTutorHolisticEvaluationPrompt({
       turns: [{ turnIndex: 0, suggestion: { message: 'Hello' } }],
       dialogueTrace: [],
@@ -1355,14 +1348,15 @@ describe('tutor holistic rubric', () => {
       hasRecognition: true,
     });
 
-    assert.ok(prompt.includes('scaffolding_arc'), 'includes scaffolding_arc');
-    assert.ok(prompt.includes('recognition_depth'), 'includes recognition_depth for recog');
+    assert.ok(prompt.includes('pedagogical_arc'), 'includes pedagogical_arc');
+    assert.ok(prompt.includes('adaptive_trajectory'), 'includes adaptive_trajectory');
+    assert.ok(prompt.includes('pedagogical_closure'), 'includes pedagogical_closure');
     assert.ok(prompt.includes('TUTOR'), 'mentions TUTOR');
     assert.ok(prompt.includes('ENTIRE DIALOGUE'), 'emphasizes full dialogue');
   });
 
-  it('omits recognition_depth dimension criteria from prompt for base cells', () => {
-    const prompt = buildTutorHolisticEvaluationPrompt({
+  it('v2.2 prompt uses same 3 dims for base and recognition cells', () => {
+    const promptBase = buildTutorHolisticEvaluationPrompt({
       turns: [{ turnIndex: 0, suggestion: { message: 'Hello' } }],
       dialogueTrace: [],
       scenarioName: 'test-scenario',
@@ -1370,13 +1364,21 @@ describe('tutor holistic rubric', () => {
       hasRecognition: false,
     });
 
-    // The rubric criteria section should not include recognition_depth as a scored dimension
-    assert.ok(!prompt.includes('key: recognition_depth'), 'no recognition_depth in rubric criteria for base');
-    // But the instruction text tells the judge to omit it
-    assert.ok(prompt.includes('OMIT the recognition_depth'), 'instructs to omit');
-    // Should have 5 dimensions, not 6
-    assert.ok(prompt.includes('scaffolding_arc'), 'has scaffolding_arc');
-    assert.ok(!prompt.includes('"recognition_depth": {"score"'), 'no recognition_depth in example scores');
+    const promptRecog = buildTutorHolisticEvaluationPrompt({
+      turns: [{ turnIndex: 0, suggestion: { message: 'Hello' } }],
+      dialogueTrace: [],
+      scenarioName: 'test-scenario',
+      scenarioDescription: 'A test scenario',
+      hasRecognition: true,
+    });
+
+    // Both prompts include the same v2.2 dimension keys
+    assert.ok(promptBase.includes('pedagogical_arc'), 'base has pedagogical_arc');
+    assert.ok(promptBase.includes('adaptive_trajectory'), 'base has adaptive_trajectory');
+    assert.ok(promptBase.includes('pedagogical_closure'), 'base has pedagogical_closure');
+    assert.ok(promptRecog.includes('pedagogical_arc'), 'recog has pedagogical_arc');
+    assert.ok(promptRecog.includes('adaptive_trajectory'), 'recog has adaptive_trajectory');
+    assert.ok(promptRecog.includes('pedagogical_closure'), 'recog has pedagogical_closure');
   });
 });
 

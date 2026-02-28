@@ -2233,8 +2233,10 @@ export function updateResultTutorScores(resultId, evaluation) {
     ['tutor_scores', 'tutor_overall_score', 'tutor_first_turn_score', 'tutor_last_turn_score',
      'tutor_development_score', 'judge_model', 'tutor_rubric_version'],
     'updateResultTutorScores',
-    { judgeModel: evaluation.judgeModel, rubricVersion: getTutorRubricVersion() },
+    { judgeModel: evaluation.judgeModel, rubricVersion: evaluation.rubricVersion || getTutorRubricVersion() },
   );
+
+  const resolvedRubricVersion = evaluation.rubricVersion || getTutorRubricVersion();
 
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
@@ -2259,7 +2261,7 @@ export function updateResultTutorScores(resultId, evaluation) {
     evaluation.tutorDevelopmentScore ?? null,
     evaluation.judgeModel || null,
     evaluation.judgeLatencyMs ?? null,
-    getTutorRubricVersion(),
+    resolvedRubricVersion,
     resultId,
   );
 

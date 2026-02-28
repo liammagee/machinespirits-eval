@@ -524,8 +524,11 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   const egoDraft = egoResponse.content || '';
   internalDeliberation.push(makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }));
 
-  // ===== T.SUPEREGO: Critique and refine =====
-  const superegoPrompt = `${superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.'}
+  // ===== T.SUPEREGO: Critique and refine (skip when superego is null) =====
+  let externalMessage = egoDraft;
+
+  if (superegoConfig) {
+    const superegoPrompt = `${superegoConfig?.prompt || 'You are a pedagogical critic reviewing tutor responses.'}
 
 Context about the learner:
 ${tutorMemory || 'New learner - no prior history.'}
@@ -552,29 +555,29 @@ After your critique, provide an IMPROVED version if needed. Format:
 CRITIQUE: [your analysis]
 IMPROVED: [refined response, or "APPROVED" if draft is good]`;
 
-  const superegoModel = superegoConfig?.model || tutorModel;
+    const superegoModel = superegoConfig.model || tutorModel;
 
-  const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
-    temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
-    maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
-    agentRole: 'tutor_superego',
-  });
+    const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
+      temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
+      maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
+      agentRole: 'tutor_superego',
+    });
 
-  trace.metrics.tutorInputTokens += superegoResponse.usage?.inputTokens || 0;
-  trace.metrics.tutorOutputTokens += superegoResponse.usage?.outputTokens || 0;
+    trace.metrics.tutorInputTokens += superegoResponse.usage?.inputTokens || 0;
+    trace.metrics.tutorOutputTokens += superegoResponse.usage?.outputTokens || 0;
 
-  const superegoContent = superegoResponse.content || '';
-  internalDeliberation.push(
-    makeDeliberationEntry('superego', superegoResponse, { model: superegoModel, provider: superegoConfig?.provider }),
-  );
+    const superegoContent = superegoResponse.content || '';
+    internalDeliberation.push(
+      makeDeliberationEntry('superego', superegoResponse, { model: superegoModel, provider: superegoConfig.provider }),
+    );
 
-  // Parse superego response for improved version
-  let externalMessage = egoDraft;
-  const improvedMatch = superegoContent.match(/IMPROVED:\s*([\s\S]*?)(?:$)/i);
-  if (improvedMatch && improvedMatch[1]) {
-    const improved = improvedMatch[1].trim();
-    if (improved.toUpperCase() !== 'APPROVED' && improved.length > 20) {
-      externalMessage = improved;
+    // Parse superego response for improved version
+    const improvedMatch = superegoContent.match(/IMPROVED:\s*([\s\S]*?)(?:$)/i);
+    if (improvedMatch && improvedMatch[1]) {
+      const improved = improvedMatch[1].trim();
+      if (improved.toUpperCase() !== 'APPROVED' && improved.length > 20) {
+        externalMessage = improved;
+      }
     }
   }
 

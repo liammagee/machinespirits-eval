@@ -153,20 +153,29 @@ describe('Group 1: learner-request → tutor-response pairing', { skip: multiTur
         }
       });
 
-      it('conversationHistory length equals totalTurns - 1', () => {
+      it('conversationHistory length equals totalTurns or totalTurns - 1', () => {
         const history = data.conversationHistory;
         if (!history) return;
-        // History accumulates during the loop; the last turn's exchange isn't added
-        assert.strictEqual(history.length, data.totalTurns - 1,
-          `expected ${data.totalTurns - 1} history entries, got ${history.length}`);
+        // New behaviour: initial learner message is included, so length === totalTurns.
+        // Legacy logs may still have length === totalTurns - 1 (initial message absent).
+        const validLengths = [data.totalTurns, data.totalTurns - 1];
+        assert.ok(validLengths.includes(history.length),
+          `expected ${data.totalTurns} or ${data.totalTurns - 1} history entries, got ${history.length}`);
       });
 
-      it('conversationHistory turnIndex values are sequential', () => {
+      it('conversationHistory turnIndex values are monotonically non-decreasing', () => {
         const history = data.conversationHistory;
         if (!history || history.length === 0) return;
+        // turnIndex values must be non-negative and monotonically non-decreasing.
+        // Duplicates are allowed (e.g. when the initial learner message shares a
+        // turnIndex with the first tutor response entry).
         for (let i = 0; i < history.length; i++) {
-          assert.strictEqual(history[i].turnIndex, i,
-            `conversationHistory[${i}].turnIndex should be ${i}, got ${history[i].turnIndex}`);
+          assert.ok(history[i].turnIndex >= 0,
+            `conversationHistory[${i}].turnIndex should be >= 0, got ${history[i].turnIndex}`);
+          if (i > 0) {
+            assert.ok(history[i].turnIndex >= history[i - 1].turnIndex,
+              `conversationHistory[${i}].turnIndex (${history[i].turnIndex}) should be >= previous (${history[i - 1].turnIndex})`);
+          }
         }
       });
     });
