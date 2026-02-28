@@ -31,7 +31,7 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 name: "Deliberation Quality Rubric"
-version: "2.2"
+version: "2.1"
 description: "Rubric for evaluating the quality of internal ego/superego deliberation processes in multi-agent architectures"
 
 scale:
