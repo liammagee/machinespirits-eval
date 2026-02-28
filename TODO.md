@@ -1,5 +1,7 @@
 # Future Development TODO
 
+> **NOTE:** For Paper 2.0 related tasks and current active work, see the project board at [`notes/paper-2-0/BOARD.md`](notes/paper-2-0/BOARD.md). This TODO file contains older general experimental extensions and repository sweep items.
+
 Generated 2026-02-19 from comprehensive repository sweep.
 Organized by theme, roughly priority-ordered within each section.
 
