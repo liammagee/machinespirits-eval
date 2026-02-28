@@ -1764,9 +1764,9 @@ describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
     const funcStart = evalCliSource.indexOf('async function evaluateMultiTurnResult');
     assert.ok(funcStart !== -1, 'evaluateMultiTurnResult should exist in eval-cli.js');
 
-    // Find a reliable end boundary: the scoreDialogueQuality helper that follows it.
-    const funcEnd = evalCliSource.indexOf('async function scoreDialogueQuality', funcStart);
-    assert.ok(funcEnd !== -1, 'scoreDialogueQuality should still exist (used by standalone evaluate-dialogue)');
+    // Find a reliable end boundary: the _scoreDialogueQuality helper that follows it.
+    const funcEnd = evalCliSource.indexOf('async function _scoreDialogueQuality', funcStart);
+    assert.ok(funcEnd !== -1, '_scoreDialogueQuality should still exist (used by standalone evaluate-dialogue)');
 
     const funcBody = evalCliSource.slice(funcStart, funcEnd);
 

@@ -2948,7 +2948,7 @@ async function main() {
 
           // ── Prepare learner data for parallel scoring ──
           let learnerTurns = [];
-          let reconstructedTurns = [];
+          const reconstructedTurns = [];
           let isMultiAgent = false;
           let personaDescription = '';
           let scenarioNameForLearner = '';
@@ -3700,9 +3700,9 @@ async function main() {
         }
 
         // Helper: run dialogue quality scoring for a multi-turn result
-        async function scoreDialogueQuality(result, tag) {
+        async function _scoreDialogueQuality(result, tag) {
           const scenarioId = result.scenarioId;
-          const profileName = result.profileName || `${result.provider}/${result.model}`;
+          const _profileName = result.profileName || `${result.provider}/${result.model}`;
           const judgeModel = judgeModelLabel;
 
           const scenario = getScenario(scenarioId);
@@ -4274,7 +4274,7 @@ async function main() {
           // ── Rubric version override: clone rows into derived run ──
           let effectiveRunId = runId;
           if (rubricVersionOpt) {
-            const rubricPaths = resolveRubricPaths(rubricVersionOpt);
+            const _rubricPaths = resolveRubricPaths(rubricVersionOpt);
             console.log(`\n  --rubric-version ${rubricVersionOpt}: scoring with versioned rubrics from config/rubrics/v${rubricVersionOpt}/`);
 
             // Clone source rows into derived run (idempotent)
@@ -5239,7 +5239,7 @@ async function main() {
             learnerAction: t.learnerAction,
             learnerMessage: t.learnerMessage,
           }));
-          const dialogueContext = dialogueTrace.length > 0 || conversationHistory.length > 0
+          const _dialogueContext = dialogueTrace.length > 0 || conversationHistory.length > 0
             ? { consolidatedTrace: dialogueTrace, conversationHistory }
             : null;
 

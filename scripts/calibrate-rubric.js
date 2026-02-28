@@ -98,7 +98,7 @@ function pearsonCorrelation(x, y) {
   // t-test for significance
   if (Math.abs(r) >= 1) return { r, n, p: 0 };
   const t = r * Math.sqrt((n - 2) / (1 - r * r));
-  const df = n - 2;
+  const _df = n - 2;
   const z = Math.abs(t);
   const p1 = Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
   const t1 = 1 / (1 + 0.2316419 * z);
@@ -172,7 +172,7 @@ const TUTOR_DIM_MAP = {
 // For split mappings (productive_struggle → both elicitation AND productive_difficulty),
 // use a secondary map. The primary map takes precedence; the secondary provides the
 // "other half" of the split.
-const TUTOR_DIM_SECONDARY = {
+const _TUTOR_DIM_SECONDARY = {
   productive_struggle: 'productive_difficulty',
   dialectical_responsiveness: 'adaptive_responsiveness',
 };
@@ -204,7 +204,7 @@ function remapDimensions(oldScores, dimMap, oldRubric, newRubric) {
   if (!oldScores || typeof oldScores !== 'object') return null;
 
   const oldDims = oldRubric?.dimensions || {};
-  const newDims = newRubric?.dimensions || {};
+  const _newDims = newRubric?.dimensions || {};
 
   // Collect old scores grouped by new dim
   const groups = {};
