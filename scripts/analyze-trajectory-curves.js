@@ -31,6 +31,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -41,7 +42,7 @@ function parseCliArgs(argv) {
   const options = {};
   const flags = new Set();
   const runIds = [];
-  const valueOpts = new Set(['db', 'json', 'min-turns', 'max-turn-position']);
+  const valueOpts = new Set(['db', 'json', 'min-turns', 'max-turn-position', 'epoch']);
 
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
@@ -222,7 +223,12 @@ function _extractActionTypes(suggestionsJson) {
 // ── Query ────────────────────────────────────────────────────────────
 
 function fetchMultiturnRows() {
-  let whereClause = 'WHERE r.success = 1 AND r.dialogue_id IS NOT NULL';
+  // Epoch filtering
+  const epoch = parseEpochArg(process.argv);
+  const epochFilter = getEpochFilter(epoch);
+  printEpochBanner(epoch);
+
+  let whereClause = `WHERE r.success = 1 AND r.dialogue_id IS NOT NULL ${epochFilter.and}`;
   const params = [];
 
   if (!allMultiturn && cliRunIds.length > 0) {
@@ -329,7 +335,7 @@ function analyzeTutorCalibration(rows) {
   const dimensionDiscrimination = {};
   for (const [dim, condData] of Object.entries(dimensionStats)) {
     if (condData.recognition && condData.baseline &&
-        condData.recognition.n >= 10 && condData.baseline.n >= 10) {
+      condData.recognition.n >= 10 && condData.baseline.n >= 10) {
       const rScores = groups.recognition.map(e => e.dimScores[dim]).filter(v => v != null);
       const bScores = groups.baseline.map(e => e.dimScores[dim]).filter(v => v != null);
       dimensionDiscrimination[dim] = {
