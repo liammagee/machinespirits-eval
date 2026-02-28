@@ -363,6 +363,9 @@ function resolveConfigModels(config) {
     if (rawProfile?.learner_architecture) {
       resolved.learnerArchitecture = rawProfile.learner_architecture;
     }
+    if (rawProfile?.conversation_mode) {
+      resolved.conversationMode = rawProfile.conversation_mode;
+    }
     // Per-profile learner model override (YAML `learner.model`); CLI --learner-model takes priority
     if (rawProfile?.learner?.model && !config.learnerModelOverride) {
       resolved.learnerModelOverride = `${rawProfile.learner.provider || 'openrouter'}.${rawProfile.learner.model}`;
