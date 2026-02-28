@@ -503,18 +503,18 @@ function renderRunsTable(runs) {
   const lines = [];
   lines.push(
     '  ' +
-      theme.header('ID'.padEnd(40)) +
-      theme.header('Status'.padEnd(12)) +
-      theme.header('Progress'.padEnd(20)) +
-      theme.header('TutPT'.padEnd(6)) +
-      theme.header('TutH'.padEnd(6)) +
-      theme.header('LrnPT'.padEnd(6)) +
-      theme.header('LrnH'.padEnd(6)) +
-      theme.header('DlgP'.padEnd(6)) +
-      theme.header('DlgI'.padEnd(6)) +
-      theme.header('Duration'.padEnd(10)) +
-      theme.header('Created'.padEnd(24)) +
-      theme.header('Description'),
+    theme.header('ID'.padEnd(40)) +
+    theme.header('Status'.padEnd(12)) +
+    theme.header('Progress'.padEnd(20)) +
+    theme.header('TutPT'.padEnd(6)) +
+    theme.header('TutH'.padEnd(6)) +
+    theme.header('LrnPT'.padEnd(6)) +
+    theme.header('LrnH'.padEnd(6)) +
+    theme.header('DlgP'.padEnd(6)) +
+    theme.header('DlgI'.padEnd(6)) +
+    theme.header('Duration'.padEnd(10)) +
+    theme.header('Created'.padEnd(24)) +
+    theme.header('Description'),
   );
   lines.push('  ' + theme.dim('-'.repeat(160)));
 
@@ -549,18 +549,18 @@ function renderRunsTable(runs) {
     const models = run.models && run.models.length > 0 ? run.models.join(', ') : '--';
     lines.push(
       '  ' +
-        theme.id(run.id.padEnd(40)) +
-        theme.status((run.status || '--').padEnd(12)) +
-        progress.padEnd(20) +
-        theme.score(tutPT.padEnd(6)) +
-        theme.score(tutH.padEnd(6)) +
-        theme.score(lrnPT.padEnd(6)) +
-        theme.score(lrnH.padEnd(6)) +
-        theme.score(dlgP.padEnd(6)) +
-        theme.score(dlgI.padEnd(6)) +
-        duration.padEnd(10) +
-        theme.dim(created.padEnd(24)) +
-        desc,
+      theme.id(run.id.padEnd(40)) +
+      theme.status((run.status || '--').padEnd(12)) +
+      progress.padEnd(20) +
+      theme.score(tutPT.padEnd(6)) +
+      theme.score(tutH.padEnd(6)) +
+      theme.score(lrnPT.padEnd(6)) +
+      theme.score(lrnH.padEnd(6)) +
+      theme.score(dlgP.padEnd(6)) +
+      theme.score(dlgI.padEnd(6)) +
+      duration.padEnd(10) +
+      theme.dim(created.padEnd(24)) +
+      desc,
     );
     if (models !== '--') {
       lines.push('  ' + `  Models: ${theme.model(models)}`);
@@ -574,18 +574,18 @@ function renderRunsTable(runs) {
   lines.push('  ' + theme.dim('-'.repeat(160)));
   lines.push(
     '  ' +
-      theme.header('ID'.padEnd(40)) +
-      theme.header('Status'.padEnd(12)) +
-      theme.header('Progress'.padEnd(20)) +
-      theme.header('TutPT'.padEnd(6)) +
-      theme.header('TutH'.padEnd(6)) +
-      theme.header('LrnPT'.padEnd(6)) +
-      theme.header('LrnH'.padEnd(6)) +
-      theme.header('DlgP'.padEnd(6)) +
-      theme.header('DlgI'.padEnd(6)) +
-      theme.header('Duration'.padEnd(10)) +
-      theme.header('Created'.padEnd(24)) +
-      theme.header('Description'),
+    theme.header('ID'.padEnd(40)) +
+    theme.header('Status'.padEnd(12)) +
+    theme.header('Progress'.padEnd(20)) +
+    theme.header('TutPT'.padEnd(6)) +
+    theme.header('TutH'.padEnd(6)) +
+    theme.header('LrnPT'.padEnd(6)) +
+    theme.header('LrnH'.padEnd(6)) +
+    theme.header('DlgP'.padEnd(6)) +
+    theme.header('DlgI'.padEnd(6)) +
+    theme.header('Duration'.padEnd(10)) +
+    theme.header('Created'.padEnd(24)) +
+    theme.header('Description'),
   );
   return lines.join('\n');
 }
@@ -599,16 +599,16 @@ function renderRunsCompact(runs, termWidth) {
   // Compact header: ~98 chars
   lines.push(
     '  ' +
-      theme.header('Run'.padEnd(16)) +
-      theme.header('Status'.padEnd(10)) +
-      theme.header('Progress'.padEnd(18)) +
-      theme.header('TuPT'.padEnd(5)) +
-      theme.header('TuH'.padEnd(5)) +
-      theme.header('LrPT'.padEnd(5)) +
-      theme.header('LrH'.padEnd(5)) +
-      theme.header('DgP'.padEnd(5)) +
-      theme.header('DgI'.padEnd(5)) +
-      theme.header('Duration'),
+    theme.header('Run'.padEnd(16)) +
+    theme.header('Status'.padEnd(10)) +
+    theme.header('Progress'.padEnd(18)) +
+    theme.header('TuPT'.padEnd(5)) +
+    theme.header('TuH'.padEnd(5)) +
+    theme.header('LrPT'.padEnd(5)) +
+    theme.header('LrH'.padEnd(5)) +
+    theme.header('DgP'.padEnd(5)) +
+    theme.header('DgI'.padEnd(5)) +
+    theme.header('Duration'),
   );
   lines.push('  ' + theme.dim('─'.repeat(Math.min(98, termWidth - 4))));
 
@@ -647,16 +647,16 @@ function renderRunsCompact(runs, termWidth) {
 
     lines.push(
       '  ' +
-        theme.id(shortId.padEnd(16)) +
-        theme.status(status.padEnd(10)) +
-        progress.padEnd(18) +
-        theme.score(tutPT.padEnd(5)) +
-        theme.score(tutH.padEnd(5)) +
-        theme.score(lrnPT.padEnd(5)) +
-        theme.score(lrnH.padEnd(5)) +
-        theme.score(dlgP.padEnd(5)) +
-        theme.score(dlgI.padEnd(5)) +
-        duration,
+      theme.id(shortId.padEnd(16)) +
+      theme.status(status.padEnd(10)) +
+      progress.padEnd(18) +
+      theme.score(tutPT.padEnd(5)) +
+      theme.score(tutH.padEnd(5)) +
+      theme.score(lrnPT.padEnd(5)) +
+      theme.score(lrnH.padEnd(5)) +
+      theme.score(dlgP.padEnd(5)) +
+      theme.score(dlgI.padEnd(5)) +
+      duration,
     );
 
     // Second line: models + description (truncated to terminal width)
@@ -684,16 +684,16 @@ function renderRunsCompact(runs, termWidth) {
   lines.push('  ' + theme.dim('─'.repeat(Math.min(98, termWidth - 4))));
   lines.push(
     '  ' +
-      theme.header('Run'.padEnd(16)) +
-      theme.header('Status'.padEnd(10)) +
-      theme.header('Progress'.padEnd(18)) +
-      theme.header('TuPT'.padEnd(5)) +
-      theme.header('TuH'.padEnd(5)) +
-      theme.header('LrPT'.padEnd(5)) +
-      theme.header('LrH'.padEnd(5)) +
-      theme.header('DgP'.padEnd(5)) +
-      theme.header('DgI'.padEnd(5)) +
-      theme.header('Duration'),
+    theme.header('Run'.padEnd(16)) +
+    theme.header('Status'.padEnd(10)) +
+    theme.header('Progress'.padEnd(18)) +
+    theme.header('TuPT'.padEnd(5)) +
+    theme.header('TuH'.padEnd(5)) +
+    theme.header('LrPT'.padEnd(5)) +
+    theme.header('LrH'.padEnd(5)) +
+    theme.header('DgP'.padEnd(5)) +
+    theme.header('DgI'.padEnd(5)) +
+    theme.header('Duration'),
   );
   return lines.join('\n');
 }
@@ -1163,7 +1163,11 @@ async function executeTool(name, params) {
   }
 }
 
-async function callOpenRouter(messages, model, apiKey) {
+async function callOpenRouter(messages, model, apiKey, hyperparameters = {}) {
+  const { temperature, max_tokens } = hyperparameters;
+  if (temperature === undefined) throw new Error('Explicit temperature setting required for judge chat model.');
+  if (max_tokens === undefined) throw new Error('Explicit max_tokens setting required for judge chat model.');
+
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -1174,8 +1178,8 @@ async function callOpenRouter(messages, model, apiKey) {
       model,
       messages,
       tools: CHAT_TOOLS,
-      temperature: 0.3,
-      max_tokens: 4096,
+      temperature,
+      max_tokens,
     }),
   });
 
@@ -1253,7 +1257,7 @@ To see available test scenarios and profiles, use list_options.`,
     try {
       let done = false;
       while (!done) {
-        const response = await callOpenRouter(messages, chatModel, apiKey);
+        const response = await callOpenRouter(messages, chatModel, apiKey, judge.hyperparameters || {});
         const choice = response.choices?.[0];
         if (!choice) {
           console.log('[No response from model]');
@@ -1717,7 +1721,7 @@ async function main() {
             console.log('Stopped watching.');
             process.exit(0);
           });
-          await new Promise(() => {});
+          await new Promise(() => { });
         } else {
           // One-shot mode
           const runs = enrichRunsWithActiveTests(evaluationStore.listRuns({ limit, status: statusFilter }));
@@ -1970,7 +1974,7 @@ async function main() {
         });
 
         // Keep process alive
-        await new Promise(() => {});
+        await new Promise(() => { });
         break;
       }
 
@@ -3217,61 +3221,61 @@ async function main() {
           // Holistic promises (no dependency on per-turn scores — use totalTurns gate)
           const tutorHolisticPromise = (totalTurns > 1 && !tutorOnly)
             ? (async () => {
-                const holisticTutorTag = `${tag}   tutor-holistic`;
-                const hasRecognition = result.factors?.recognition || profileName.includes('recog');
-                try {
-                  const holisticPrompt = buildTutorHolisticEvaluationPrompt({
-                    turns: transcriptTurns,
-                    dialogueTrace,
-                    scenarioName: scenario.name || scenarioId,
-                    scenarioDescription: scenario.description,
-                    learnerContext: learnerCtx,
-                    hasRecognition,
-                  });
+              const holisticTutorTag = `${tag}   tutor-holistic`;
+              const hasRecognition = result.factors?.recognition || profileName.includes('recog');
+              try {
+                const holisticPrompt = buildTutorHolisticEvaluationPrompt({
+                  turns: transcriptTurns,
+                  dialogueTrace,
+                  scenarioName: scenario.name || scenarioId,
+                  scenarioDescription: scenario.description,
+                  learnerContext: learnerCtx,
+                  hasRecognition,
+                });
 
-                  const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
-                  if (verbose) console.log(`${holisticTutorTag} ... calling claude`);
-                  const parsedHolistic = await callClaudeJudge(holisticPrompt);
-                  const holisticScores = parsedHolistic.scores || {};
-                  const score = calculateTutorHolisticScore(holisticScores, hasRecognition);
+                const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
+                if (verbose) console.log(`${holisticTutorTag} ... calling claude`);
+                const parsedHolistic = await callClaudeJudge(holisticPrompt);
+                const holisticScores = parsedHolistic.scores || {};
+                const score = calculateTutorHolisticScore(holisticScores, hasRecognition);
 
-                  return { success: true, score, holisticScores, summary: parsedHolistic.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
-                } catch (err) {
-                  const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-                  console.log(`${holisticTutorTag} ... FAIL: ${msg}`);
-                  if (verbose) console.error(err);
-                  return { success: false };
-                }
-              })()
+                return { success: true, score, holisticScores, summary: parsedHolistic.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
+              } catch (err) {
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${holisticTutorTag} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+                return { success: false };
+              }
+            })()
             : Promise.resolve(null);
 
           const learnerHolisticPromise = (!tutorOnly && learnerTurns.length > 0)
             ? (async () => {
-                const holisticTag = `${tag}   learner-holistic`;
-                try {
-                  const holisticPrompt = buildLearnerHolisticEvaluationPrompt({
-                    turns: reconstructedTurns,
-                    personaId: profileName,
-                    personaDescription,
-                    learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
-                    scenarioName: scenarioNameForLearner,
-                    topic: scenarioId,
-                  });
+              const holisticTag = `${tag}   learner-holistic`;
+              try {
+                const holisticPrompt = buildLearnerHolisticEvaluationPrompt({
+                  turns: reconstructedTurns,
+                  personaId: profileName,
+                  personaDescription,
+                  learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+                  scenarioName: scenarioNameForLearner,
+                  topic: scenarioId,
+                });
 
-                  const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
-                  if (verbose) console.log(`${holisticTag} ... calling claude`);
-                  const parsedHolistic = await callClaudeJudge(holisticPrompt);
-                  const holisticScores = parsedHolistic.scores || {};
-                  const holisticOverallScore = calculateLearnerOverallScore(holisticScores, isMultiAgent);
+                const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
+                if (verbose) console.log(`${holisticTag} ... calling claude`);
+                const parsedHolistic = await callClaudeJudge(holisticPrompt);
+                const holisticScores = parsedHolistic.scores || {};
+                const holisticOverallScore = calculateLearnerOverallScore(holisticScores, isMultiAgent);
 
-                  return { success: true, score: holisticOverallScore, holisticScores, summary: parsedHolistic.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
-                } catch (err) {
-                  const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
-                  console.log(`${holisticTag} ... FAIL: ${msg}`);
-                  if (verbose) console.error(err);
-                  return { success: false };
-                }
-              })()
+                return { success: true, score: holisticOverallScore, holisticScores, summary: parsedHolistic.summary, judgeInputHash, judgeTimestamp: new Date().toISOString() };
+              } catch (err) {
+                const msg = err.stderr ? err.stderr.slice(0, 200) : err.message;
+                console.log(`${holisticTag} ... FAIL: ${msg}`);
+                if (verbose) console.error(err);
+                return { success: false };
+              }
+            })()
             : Promise.resolve(null);
 
           // Fire all independent judge calls concurrently (single wave)
@@ -3827,7 +3831,7 @@ async function main() {
               const stdout = await new Promise((resolve, reject) => {
                 const env = { ...process.env };
                 delete env.ANTHROPIC_API_KEY;
-            delete env.CLAUDECODE;
+                delete env.CLAUDECODE;
                 const child = spawn('claude', claudeArgs, {
                   stdio: ['pipe', 'pipe', 'pipe'],
                   env,
@@ -4426,7 +4430,7 @@ async function main() {
             const stdout = await new Promise((resolve, reject) => {
               const env = { ...process.env };
               delete env.ANTHROPIC_API_KEY;
-            delete env.CLAUDECODE;
+              delete env.CLAUDECODE;
               const child = spawn('claude', claudeArgs, {
                 stdio: ['pipe', 'pipe', 'pipe'],
                 env,
@@ -5001,8 +5005,8 @@ async function main() {
           const sdHolistic =
             allHolisticScores.length > 1
               ? Math.sqrt(
-                  allHolisticScores.reduce((acc, s) => acc + (s - avgHolistic) ** 2, 0) / (allHolisticScores.length - 1),
-                )
+                allHolisticScores.reduce((acc, s) => acc + (s - avgHolistic) ** 2, 0) / (allHolisticScores.length - 1),
+              )
               : 0;
           console.log(`  Avg learner holistic: ${avgHolistic.toFixed(1)} (SD=${sdHolistic.toFixed(1)})`);
         }
@@ -5191,7 +5195,7 @@ async function main() {
               const raw = await new Promise((resolve, reject) => {
                 const env = { ...process.env };
                 delete env.ANTHROPIC_API_KEY;
-            delete env.CLAUDECODE;
+                delete env.CLAUDECODE;
                 const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
                 let out = '';
                 let err = '';

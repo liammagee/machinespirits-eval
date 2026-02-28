@@ -288,7 +288,10 @@ async function callRecommender(prompt, options = {}) {
   // Get config from yaml (handles fallbacks automatically)
   const config = getRecommenderConfig();
   const { provider, model, hyperparameters } = config;
-  const maxTokens = hyperparameters?.max_tokens ?? 4000;
+  const maxTokens = hyperparameters?.max_tokens;
+  if (maxTokens === undefined) {
+    throw new Error('Explicit max_tokens setting is required in recommender hyperparameters (evaluation-rubric.yaml).');
+  }
   const temperature = hyperparameters?.temperature;
   if (temperature === undefined) {
     throw new Error('Explicit temperature setting is required in recommender hyperparameters (evaluation-rubric.yaml).');
