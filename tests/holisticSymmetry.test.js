@@ -10,12 +10,12 @@
  *
  * The symmetry principle applies to:
  *   - Score formula: both use weighted (1-5) → 0-100 conversion
- *   - Dimension structure: weights summing to 1.0; tutor has one conditional (recognition_depth)
+ *   - Dimension structure: weights summing to 1.0
  *   - Prompt contract: same JSON format, same 1-5 scale, same evaluation framing
  *   - Agent targeting: each prompt evaluates only its own agent
  *
- * Note: Since v2.1.0, learner rubric has no conditional dimension — deliberation_depth
- * moved to the dedicated deliberation rubric. All 7 learner dims apply uniformly.
+ * Note: Since v2.2, tutor holistic has 3 arc-focused dims (no conditional dimension),
+ * learner has 5 ICAP-anchored dims. Neither has conditional dimensions.
  */
 
 import { describe, it } from 'node:test';
@@ -78,51 +78,55 @@ describe('TuH / LrH holistic scoring symmetry', () => {
 
   // ── Both have a conditional dimension gated by a factor ───────────────
 
-  it('tutor holistic has a conditional dimension (recognition_depth) gated by hasRecognition', () => {
+  it('v2.2 tutor holistic returns same 3 dims regardless of hasRecognition', () => {
     const withRecog = getTutorHolisticDimensions({ hasRecognition: true });
     const withoutRecog = getTutorHolisticDimensions({ hasRecognition: false });
 
-    assert.ok('recognition_depth' in withRecog, 'recognition_depth present when hasRecognition=true');
-    assert.ok(!('recognition_depth' in withoutRecog), 'recognition_depth absent when hasRecognition=false');
-    assert.ok('scaffolding_arc' in withRecog);
-    assert.ok('scaffolding_arc' in withoutRecog);
+    assert.deepStrictEqual(Object.keys(withRecog), Object.keys(withoutRecog),
+      'v2.2 has no conditional dimensions — same keys for base and recognition');
+    assert.ok('pedagogical_arc' in withRecog, 'has pedagogical_arc');
+    assert.ok('adaptive_trajectory' in withRecog, 'has adaptive_trajectory');
+    assert.ok('pedagogical_closure' in withRecog, 'has pedagogical_closure');
+    assert.strictEqual(Object.keys(withRecog).length, 3, '3 dimensions total');
   });
 
-  it('learner dimensions are uniform across architectures (deliberation_depth moved to deliberation rubric)', () => {
+  it('v2.2 learner dimensions are uniform across architectures (5 ICAP-anchored dims)', () => {
     const withMulti = getLearnerDimensions({ isMultiAgent: true });
     const withoutMulti = getLearnerDimensions({ isMultiAgent: false });
 
-    // Since v2.1.0, deliberation_depth is in the dedicated deliberation rubric
-    assert.ok(!('deliberation_depth' in withMulti), 'deliberation_depth should not be in learner rubric');
-    assert.ok(!('deliberation_depth' in withoutMulti), 'deliberation_depth should not be in learner rubric');
     // Same dimensions for both architectures
     assert.deepStrictEqual(Object.keys(withMulti), Object.keys(withoutMulti),
       'same dimensions for multi-agent and unified');
-    assert.ok('learner_authenticity' in withMulti);
-    assert.ok('learner_authenticity' in withoutMulti);
+    assert.ok('engagement_quality' in withMulti, 'has engagement_quality');
+    assert.ok('learner_authenticity' in withMulti, 'has learner_authenticity');
+    assert.ok('revision_signals' in withMulti, 'has revision_signals');
+    assert.ok('conceptual_progression' in withMulti, 'has conceptual_progression');
+    assert.ok('metacognitive_awareness' in withMulti, 'has metacognitive_awareness');
   });
 
   // ── Both dimension sets have the same number of dimensions ────────────
 
-  it('tutor and learner holistic have expected dimension counts', () => {
-    const tutorFull = getTutorHolisticDimensions({ hasRecognition: true });
-    const tutorReduced = getTutorHolisticDimensions({ hasRecognition: false });
-    const learnerFull = getLearnerDimensions({ isMultiAgent: true });
-    const learnerReduced = getLearnerDimensions({ isMultiAgent: false });
+  it('tutor and learner holistic have expected v2.2 dimension counts', () => {
+    const tutorRecog = getTutorHolisticDimensions({ hasRecognition: true });
+    const tutorBase = getTutorHolisticDimensions({ hasRecognition: false });
+    const learnerMulti = getLearnerDimensions({ isMultiAgent: true });
+    const learnerUnified = getLearnerDimensions({ isMultiAgent: false });
 
-    // Tutor holistic: 6 with recognition, 5 without
-    assert.strictEqual(Object.keys(tutorFull).length, 6,
-      `tutor full should have 6 dims, got ${Object.keys(tutorFull).length}`);
-    assert.strictEqual(Object.keys(tutorReduced).length, 5,
-      `tutor reduced should have 5 dims, got ${Object.keys(tutorReduced).length}`);
-    // Learner: 7 for all architectures (deliberation_depth moved to deliberation rubric)
-    assert.strictEqual(Object.keys(learnerFull).length, 7,
-      `learner full should have 7 dims, got ${Object.keys(learnerFull).length}`);
-    assert.strictEqual(Object.keys(learnerReduced).length, 7,
-      `learner reduced should have 7 dims, got ${Object.keys(learnerReduced).length}`);
-    // Tutor still has a conditional dimension (recognition_depth)
-    assert.ok(Object.keys(tutorFull).length > Object.keys(tutorReduced).length,
-      'tutor full should have more dims than reduced');
+    // Tutor holistic: always 3 dims in v2.2 (no conditional)
+    assert.strictEqual(Object.keys(tutorRecog).length, 3,
+      `tutor recog should have 3 dims, got ${Object.keys(tutorRecog).length}`);
+    assert.strictEqual(Object.keys(tutorBase).length, 3,
+      `tutor base should have 3 dims, got ${Object.keys(tutorBase).length}`);
+    // Learner: always 5 dims in v2.2 (no conditional)
+    assert.strictEqual(Object.keys(learnerMulti).length, 5,
+      `learner multi should have 5 dims, got ${Object.keys(learnerMulti).length}`);
+    assert.strictEqual(Object.keys(learnerUnified).length, 5,
+      `learner unified should have 5 dims, got ${Object.keys(learnerUnified).length}`);
+    // v2.2: no conditional dimensions — both variants identical
+    assert.deepStrictEqual(Object.keys(tutorRecog), Object.keys(tutorBase),
+      'tutor dims identical for recog and base');
+    assert.deepStrictEqual(Object.keys(learnerMulti), Object.keys(learnerUnified),
+      'learner dims identical for multi and unified');
   });
 
   // ── Both dimension sets have weights summing to 1.0 ───────────────────
