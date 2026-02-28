@@ -868,6 +868,13 @@ function calculateMemoryDelta(before, after) {
 // Retry delays for 429 rate limits (matches evaluationRunner pattern)
 const LEARNER_RETRY_DELAYS = [2000, 4000, 8000];
 
+// Empty-content retry constants (HTTP 200 but no text — e.g. Gemini Flash).
+// NOTE: This duplicates the retry logic in tutor-core's callAI(). If we ever
+// refactor callLearnerAI to call through tutor-core's callAI instead of its
+// own _callLearnerAIOnce, this can be removed — tutor-core already handles it.
+const EMPTY_CONTENT_MAX_RETRIES = 2;
+const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
+
 /**
  * Call the LLM for a learner agent using the same raw fetch layer as
  * tutorDialogueEngine.callAI — same headers, error handling, and response
@@ -883,10 +890,13 @@ const LEARNER_RETRY_DELAYS = [2000, 4000, 8000];
  * @returns {Promise<Object>} { content, usage: { inputTokens, outputTokens }, latencyMs }
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
+  // Phase 1: 429 rate-limit retry (throws on non-429 errors)
+  let result;
   let lastError;
   for (let attempt = 0; attempt <= LEARNER_RETRY_DELAYS.length; attempt++) {
     try {
-      return await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory);
+      result = await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory);
+      break;
     } catch (error) {
       lastError = error;
       const is429 = error?.message?.includes('429') || error?.message?.toLowerCase()?.includes('rate limit');
@@ -898,7 +908,41 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-  throw lastError;
+  if (!result) throw lastError;
+
+  // Phase 2: Empty-content retry (HTTP 200 but no text)
+  if (!result.content && result.usage?.outputTokens === 0) {
+    for (let retry = 0; retry < EMPTY_CONTENT_MAX_RETRIES; retry++) {
+      const delay = EMPTY_CONTENT_RETRY_DELAYS[retry];
+      console.warn(
+        `[${agentRole}] Empty content from ${agentConfig.model} (0 output tokens), retrying in ${delay}ms (attempt ${retry + 1}/${EMPTY_CONTENT_MAX_RETRIES})`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      try {
+        const retryResult = await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory);
+        if (retryResult.content) {
+          retryResult.emptyContentRetries = retry + 1;
+          return retryResult;
+        }
+        // If outputTokens > 0, thinking model budget exhaustion — don't keep retrying
+        if (retryResult.usage?.outputTokens > 0) {
+          retryResult.emptyContentRetries = retry + 1;
+          return retryResult;
+        }
+        result = retryResult; // update to latest attempt for return
+      } catch {
+        // Retry attempt failed with exception — keep the last successful-but-empty result
+        break;
+      }
+    }
+    console.warn(
+      `[${agentRole}] Empty content persists after ${EMPTY_CONTENT_MAX_RETRIES} retries (model=${agentConfig.model}). Returning empty result.`,
+    );
+    result.emptyContentRetries = EMPTY_CONTENT_MAX_RETRIES;
+  }
+
+  return result;
 }
 
 /**
