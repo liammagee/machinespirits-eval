@@ -22,7 +22,7 @@ import * as evaluationStore from '../services/evaluationStore.js';
 
 const __dirname = import.meta.dirname;
 const DB_PATH = path.join(__dirname, '..', 'data', 'evaluations.db');
-const LOGS_DIR = path.join(__dirname, '..', 'logs', 'tutor-dialogues');
+const _LOGS_DIR = path.join(__dirname, '..', 'logs', 'tutor-dialogues');
 const LEARNER_CONFIG = path.join(__dirname, '..', 'config', 'learner-agents.yaml');
 
 const args = process.argv.slice(2);
@@ -1083,7 +1083,7 @@ function normalizeScenarioKey(v) {
   return String(v || '')
     .toLowerCase()
     .trim()
-    .replace(/[\s-]+/g, '_')
+    .replace(/[\s\-]+/g, '_')
     .replace(/[^a-z0-9_]/g, '');
 }
 

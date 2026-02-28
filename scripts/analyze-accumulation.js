@@ -24,7 +24,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+import { parseEpochArg, printEpochBanner } from '../services/epochFilter.js';
 import { getAggregatedStats, findAccumulationGaps } from '../services/evalSignature.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

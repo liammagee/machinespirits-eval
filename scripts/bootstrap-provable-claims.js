@@ -64,7 +64,7 @@ function normalizeClaimTextForKey(claimText) {
   text = text.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
   text = text.replace(/\s+/g, ' ');
   text = text.replace(/\s*([=<>≈])\s*/g, '$1');
-  text = text.replace(/[,\.;:]+$/g, '');
+  text = text.replace(/[,\\.;:]+$/g, '');
   return text;
 }
 
@@ -181,7 +181,7 @@ function splitGroupBySection(group) {
 function buildStatementPattern(claimText) {
   const trimmed = String(claimText || '')
     .trim()
-    .replace(/[,\.;:]+$/g, '');
+    .replace(/[,\\.;:]+$/g, '');
   if (!trimmed) return '.+';
   return `${regexEscape(trimmed)}[\\.,;:]?`;
 }
