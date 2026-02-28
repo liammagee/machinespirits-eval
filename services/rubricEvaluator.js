@@ -203,7 +203,8 @@ async function callJudgeModelWithConfig(prompt, config) {
   const { provider, model, hyperparameters, reasoningEffort } = config;
   const temperature = hyperparameters?.temperature;
   if (temperature === undefined) throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
-  const maxTokens = hyperparameters?.max_tokens ?? 1500;
+  const maxTokens = hyperparameters?.max_tokens;
+  if (maxTokens === undefined) throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
 
   debugLog(`[rubricEvaluator] Calling fallback judge: ${provider}/${model}`);
 
@@ -519,7 +520,8 @@ async function callJudgeModel(prompt, overrides = {}) {
   const { provider, model, hyperparameters, reasoningEffort } = judge;
   const temperature = hyperparameters?.temperature;
   if (temperature === undefined) throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
-  const maxTokens = hyperparameters?.max_tokens ?? 1500;
+  const maxTokens = hyperparameters?.max_tokens;
+  if (maxTokens === undefined) throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
 
   if (provider === 'anthropic') {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -2726,6 +2728,7 @@ export {
   buildDialogueFullTranscript,
   isEgoSuperegoLearner,
   extractInitialLearnerMessage,
+  callJudgeModelWithConfig,
 };
 
 export default {
@@ -2764,4 +2767,5 @@ export default {
   hasTutorSuperego,
   buildTutorDeliberationPrompt,
   buildLearnerDeliberationPrompt,
+  callJudgeModelWithConfig,
 };

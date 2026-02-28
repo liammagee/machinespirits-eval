@@ -34,6 +34,14 @@ function getRequiredTemperature(config, configName) {
   return t;
 }
 
+function getRequiredMaxTokens(config, configName) {
+  const m = config?.hyperparameters?.max_tokens;
+  if (m === undefined) {
+    throw new Error(`Explicit max_tokens setting is required for ${configName} in YAML config.`);
+  }
+  return m;
+}
+
 function truncatePayload(value, limit = API_PAYLOAD_MAX_CHARS) {
   if (value == null) return null;
   if (typeof value === 'string') return clipPayloadText(value, limit);
@@ -320,7 +328,7 @@ Generate this agent's internal voice as the learner approaches this topic for th
       ],
       {
         temperature: getRequiredTemperature(agentConfig, role),
-        maxTokens: agentConfig.hyperparameters?.max_tokens || 200,
+        maxTokens: getRequiredMaxTokens(agentConfig, role),
       },
     );
 
@@ -374,7 +382,7 @@ Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
       [{ role: 'user', content: "Generate the learner's opening message." }],
       {
         temperature: getRequiredTemperature(egoConfig, 'ego'),
-        maxTokens: egoConfig.hyperparameters?.max_tokens || 200,
+        maxTokens: getRequiredMaxTokens(egoConfig, 'ego'),
       },
     );
 
@@ -410,7 +418,7 @@ Do NOT include internal thoughts or meta-commentary.`;
       [{ role: 'user', content: "Generate the learner's opening message." }],
       {
         temperature: getRequiredTemperature(lastConfig, 'unified_learner'),
-        maxTokens: lastConfig.hyperparameters?.max_tokens || 200,
+        maxTokens: getRequiredMaxTokens(lastConfig, 'unified_learner'),
       },
     );
 
@@ -506,7 +514,7 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
 
   const egoResponse = await llmCall(tutorModel, egoPrompt, [{ role: 'user', content: learnerMessage }], {
     temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
-    maxTokens: egoConfig?.hyperparameters?.max_tokens || 800,
+    maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
     agentRole: 'tutor_ego',
   });
 
@@ -548,7 +556,7 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
 
   const superegoResponse = await llmCall(superegoModel, superegoPrompt, [{ role: 'user', content: egoDraft }], {
     temperature: getRequiredTemperature(superegoConfig, 'tutor_superego'),
-    maxTokens: superegoConfig?.hyperparameters?.max_tokens || 1000,
+    maxTokens: getRequiredMaxTokens(superegoConfig, 'tutor_superego'),
     agentRole: 'tutor_superego',
   });
 
@@ -898,7 +906,10 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
 async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory = null) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
   const { temperature = 0.7, top_p } = hyperparameters;
-  let { max_tokens = 300 } = hyperparameters;
+  let max_tokens = hyperparameters.max_tokens;
+  if (max_tokens === undefined) {
+    throw new Error('Explicit max_tokens setting is required in learner hyperparameters.');
+  }
 
   // Thinking models (kimi-k2.5, deepseek-r1, etc.) use reasoning tokens that consume
   // the max_tokens budget. Increase significantly to allow for both reasoning and output.
@@ -1316,7 +1327,7 @@ export async function generateLearnerResponse(options) {
     ? async (agentConfig, systemPrompt, userPrompt, _role, _msgHistory = null) => {
       const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
         temperature: getRequiredTemperature(agentConfig, _role || 'learner_agent'),
-        maxTokens: agentConfig.hyperparameters?.max_tokens || 300,
+        maxTokens: getRequiredMaxTokens(agentConfig, _role || 'learner_agent'),
         agentRole: _role,
       });
       return {
@@ -1537,6 +1548,8 @@ export {
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,
+  getRequiredTemperature,
+  getRequiredMaxTokens,
 };
 
 export default {
