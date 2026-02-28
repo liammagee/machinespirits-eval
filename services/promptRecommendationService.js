@@ -186,8 +186,8 @@ The evaluation tested profile: **${profileName || 'unknown'}**
 The following rubric dimensions scored below 3.5/5 on average:
 
 ${Object.entries(analysis.dimensionWeaknesses)
-  .map(([dim, data]) => `- **${dim}**: ${data.avgScore.toFixed(2)}/5 (${data.sampleCount} samples)`)
-  .join('\n')}
+        .map(([dim, data]) => `- **${dim}**: ${data.avgScore.toFixed(2)}/5 (${data.sampleCount} samples)`)
+        .join('\n')}
 `);
   }
 
@@ -199,16 +199,16 @@ ${Object.entries(analysis.dimensionWeaknesses)
 These tests failed required/forbidden element checks:
 
 ${analysis.validationFailures
-  .slice(0, 5)
-  .map(
-    (f) => `
+        .slice(0, 5)
+        .map(
+          (f) => `
 ### ${f.scenarioName} (${f.scenarioId})
 - Required elements missing: ${f.requiredMissing.length > 0 ? f.requiredMissing.join(', ') : 'none'}
 - Forbidden elements found: ${f.forbiddenFound.length > 0 ? f.forbiddenFound.join(', ') : 'none'}
 - Generated suggestion: "${f.suggestion?.title || 'N/A'}" - ${f.suggestion?.message?.substring(0, 100) || 'N/A'}...
 `,
-  )
-  .join('\n')}
+        )
+        .join('\n')}
 `);
   }
 
@@ -220,16 +220,16 @@ ${analysis.validationFailures
 These tests scored below 70/100:
 
 ${analysis.lowScoreResults
-  .slice(0, 5)
-  .map(
-    (r) => `
+        .slice(0, 5)
+        .map(
+          (r) => `
 ### ${r.scenarioName} (score: ${r.tutorFirstTurnScore?.toFixed(1)})
 - Suggestion: "${r.suggestions?.[0]?.title || 'N/A'}"
 - Message: ${r.suggestions?.[0]?.message?.substring(0, 150) || 'N/A'}...
 - Evaluation reasoning: ${r.evaluationReasoning?.substring(0, 200) || 'N/A'}...
 `,
-  )
-  .join('\n')}
+        )
+        .join('\n')}
 `);
   }
 
@@ -289,7 +289,10 @@ async function callRecommender(prompt, options = {}) {
   const config = getRecommenderConfig();
   const { provider, model, hyperparameters } = config;
   const maxTokens = hyperparameters?.max_tokens ?? 4000;
-  const temperature = hyperparameters?.temperature ?? 0.3;
+  const temperature = hyperparameters?.temperature;
+  if (temperature === undefined) {
+    throw new Error('Explicit temperature setting is required in recommender hyperparameters (evaluation-rubric.yaml).');
+  }
 
   if (provider === 'openrouter') {
     return callOpenRouterEvaluator(prompt, model, { maxTokens, temperature });
@@ -339,7 +342,10 @@ async function callRecommender(prompt, options = {}) {
  * Call OpenRouter for evaluation
  */
 async function callOpenRouterEvaluator(prompt, model, options = {}) {
-  const { maxTokens = 4000, temperature = 0.3 } = options;
+  const { maxTokens = 4000, temperature } = options;
+  if (temperature === undefined) {
+    throw new Error('Explicit temperature setting is required for OpenRouter evaluator.');
+  }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {

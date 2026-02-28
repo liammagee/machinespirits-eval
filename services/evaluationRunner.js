@@ -181,6 +181,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_88_messages_recog_multi_psycho_haiku',
   'cell_89_messages_recog_multi_psycho_gemflash',
   'cell_90_messages_recog_single_unified',
+  'cell_91_messages_recog_multi_unified_gemflash',
+  'cell_92_messages_recog_single_psycho_gemflash',
 ];
 
 /**
@@ -1154,7 +1156,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     judgeOverride = null,
     useDialogue = false,
     maxRounds = 0,
-    log = () => {},
+    log = () => { },
     scenarioId = '',
     systemPromptExtension = null,
     superegoPromptExtension = null, // Dynamic disposition adjustments for superego
@@ -1174,10 +1176,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     const suggestion = genResult.suggestions?.[0];
     const validation = suggestion
       ? rubricEvaluator.quickValidate(suggestion, {
-          requiredElements: turnMeta.requiredElements,
-          requiredElementsAny: turnMeta.requiredElementsAny,
-          forbiddenElements: turnMeta.forbiddenElements,
-        })
+        requiredElements: turnMeta.requiredElements,
+        requiredElementsAny: turnMeta.requiredElementsAny,
+        forbiddenElements: turnMeta.forbiddenElements,
+      })
       : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
 
     let rubricResult = null;
@@ -1263,10 +1265,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
   const suggestion = genResult.suggestions?.[0];
   const validation = suggestion
     ? rubricEvaluator.quickValidate(suggestion, {
-        requiredElements: turnMeta.requiredElements,
-        requiredElementsAny: turnMeta.requiredElementsAny,
-        forbiddenElements: turnMeta.forbiddenElements,
-      })
+      requiredElements: turnMeta.requiredElements,
+      requiredElementsAny: turnMeta.requiredElementsAny,
+      forbiddenElements: turnMeta.forbiddenElements,
+    })
     : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
 
   log(
@@ -1283,10 +1285,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     const dialogueContext =
       options.conversationHistory || options.dialogueTrace || options.consolidatedTrace
         ? {
-            conversationHistory: options.conversationHistory || null,
-            dialogueTrace: options.dialogueTrace || null,
-            consolidatedTrace: options.consolidatedTrace || null,
-          }
+          conversationHistory: options.conversationHistory || null,
+          dialogueTrace: options.dialogueTrace || null,
+          consolidatedTrace: options.consolidatedTrace || null,
+        }
         : null;
 
     rubricResult = await rubricEvaluator.evaluateSuggestion(
@@ -1306,9 +1308,9 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     if (rubricResult) {
       debugLog(
         `[evaluationRunner] Rubric result: success=${rubricResult.success}, ` +
-          `overallScore=${rubricResult.overallScore}, ` +
-          `scoresCount=${Object.keys(rubricResult.scores || {}).length}, ` +
-          `error=${rubricResult.error || 'none'}`,
+        `overallScore=${rubricResult.overallScore}, ` +
+        `scoresCount=${Object.keys(rubricResult.scores || {}).length}, ` +
+        `error=${rubricResult.error || 'none'}`,
       );
       if (rubricResult.success) {
         log(`Rubric evaluation complete: score=${rubricResult.overallScore?.toFixed(1)}`, 'success');
@@ -1377,7 +1379,7 @@ export async function runEvaluation(options = {}) {
     liveApi = false, // --live: stream one-line display per API call in real time
   } = options;
 
-  const log = verbose ? console.log : () => {};
+  const log = verbose ? console.log : () => { };
 
   // Always suppress tutor-core verbose dialogue output during eval runs
   // (TUTOR DIALOGUE boxes, learner context, model overrides, etc.)
@@ -1623,176 +1625,176 @@ export async function runEvaluation(options = {}) {
 
     // Wrap in live API conversation context if --live is active
     const runTest = async () => {
-    // Emit test_start
-    progressLogger.testStart({
-      scenarioId: scenario.id,
-      scenarioName: scenario.name || scenario.id,
-      profileName: profileLabel,
-    });
-
-    try {
-      const result = await runSingleTest(scenario, config, {
-        skipRubricEval,
-        verbose,
-        dryRun,
-        transcriptMode,
-        showMessages,
-        runId: run.id,
-        liveApiReporter,
-      });
-
-      // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
-      evaluationStore.storeResult(run.id, result);
-      results.push(result);
-
-      completedTests++;
-
-      // Emit test_complete event
-      progressLogger.testComplete({
+      // Emit test_start
+      progressLogger.testStart({
         scenarioId: scenario.id,
         scenarioName: scenario.name || scenario.id,
         profileName: profileLabel,
-        success: result.success,
-        overallScore: result.tutorFirstTurnScore,
-        baseScore: result.baseScore ?? null,
-        recognitionScore: result.recognitionScore ?? null,
-        latencyMs: result.latencyMs,
-        completedCount: completedTests,
-        totalTests,
       });
 
-      // Streaming reporter line
-      reporter.onTestComplete({
-        ...result,
-        profileName: profileLabel,
-        scenarioName: scenario.name || scenario.id,
-      });
-
-      log(
-        `  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.tutorFirstTurnScore?.toFixed(1)}` : 'FAILED'}`,
-      );
-
-      // Update monitoring session with progress
-      monitoringService.recordEvent(run.id, {
-        type: 'evaluation_test',
-        inputTokens: result.inputTokens || 0,
-        outputTokens: result.outputTokens || 0,
-        latencyMs: result.latencyMs || 0,
-        round: completedTests,
-        approved: result.success,
-      });
-
-      // Track scenario completion
-      const sp = scenarioProgress.get(scenario.id);
-      sp.completed++;
-      if (result.tutorFirstTurnScore != null) sp.scores.push(result.tutorFirstTurnScore);
-      if (sp.completed >= sp.total) {
-        completedScenarios++;
-        const avgScore = sp.scores.length > 0 ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length : null;
-        progressLogger.scenarioComplete({
-          scenarioId: scenario.id,
-          scenarioName: sp.scenarioName,
-          profileNames,
-          avgScore,
-          completedScenarios,
-          totalScenarios: targetScenarios.length,
+      try {
+        const result = await runSingleTest(scenario, config, {
+          skipRubricEval,
+          verbose,
+          dryRun,
+          transcriptMode,
+          showMessages,
+          runId: run.id,
+          liveApiReporter,
         });
-        reporter.onScenarioComplete({
-          scenarioName: sp.scenarioName,
-          avgScore,
-          completedScenarios,
-          totalScenarios: targetScenarios.length,
-        });
-      }
-    } catch (error) {
-      completedTests++;
-      log(
-        `  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`,
-      );
 
-      // Only store failed results for permanent errors (bad config, invalid scenario).
-      // Skip storing for retriable/transient errors (rate limits, model unavailable, timeouts)
-      // so that `resume` can retry them without needing manual cleanup.
-      const errMsg = error.message || '';
-      const isTransient = isTransientEvaluationError(errMsg);
+        // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
+        evaluationStore.storeResult(run.id, result);
+        results.push(result);
 
-      if (!isTransient) {
-        const failedResult = {
+        completedTests++;
+
+        // Emit test_complete event
+        progressLogger.testComplete({
           scenarioId: scenario.id,
           scenarioName: scenario.name || scenario.id,
-          profileName: config.profileName,
-          provider: config.provider || config.ego?.provider || 'unknown',
-          model: config.model || config.ego?.model || 'unknown',
-          egoModel: config.egoModel
-            ? `${config.egoModel.provider}.${config.egoModel.model}`
-            : config.ego
-              ? `${config.ego.provider}.${config.ego.model}`
-              : null,
-          superegoModel: config.superegoModel
-            ? `${config.superegoModel.provider}.${config.superegoModel.model}`
-            : config.superego
-              ? `${config.superego.provider}.${config.superego.model}`
-              : null,
-          factors: config.factors || null,
-          learnerArchitecture: config.learnerArchitecture || null,
-          success: false,
-          errorMessage: error.message,
-        };
-        try {
-          evaluationStore.storeResult(run.id, failedResult);
-          results.push(failedResult);
-        } catch (storeErr) {
-          log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+          profileName: profileLabel,
+          success: result.success,
+          overallScore: result.tutorFirstTurnScore,
+          baseScore: result.baseScore ?? null,
+          recognitionScore: result.recognitionScore ?? null,
+          latencyMs: result.latencyMs,
+          completedCount: completedTests,
+          totalTests,
+        });
+
+        // Streaming reporter line
+        reporter.onTestComplete({
+          ...result,
+          profileName: profileLabel,
+          scenarioName: scenario.name || scenario.id,
+        });
+
+        log(
+          `  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ${result.success ? `score=${result.tutorFirstTurnScore?.toFixed(1)}` : 'FAILED'}`,
+        );
+
+        // Update monitoring session with progress
+        monitoringService.recordEvent(run.id, {
+          type: 'evaluation_test',
+          inputTokens: result.inputTokens || 0,
+          outputTokens: result.outputTokens || 0,
+          latencyMs: result.latencyMs || 0,
+          round: completedTests,
+          approved: result.success,
+        });
+
+        // Track scenario completion
+        const sp = scenarioProgress.get(scenario.id);
+        sp.completed++;
+        if (result.tutorFirstTurnScore != null) sp.scores.push(result.tutorFirstTurnScore);
+        if (sp.completed >= sp.total) {
+          completedScenarios++;
+          const avgScore = sp.scores.length > 0 ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length : null;
+          progressLogger.scenarioComplete({
+            scenarioId: scenario.id,
+            scenarioName: sp.scenarioName,
+            profileNames,
+            avgScore,
+            completedScenarios,
+            totalScenarios: targetScenarios.length,
+          });
+          reporter.onScenarioComplete({
+            scenarioName: sp.scenarioName,
+            avgScore,
+            completedScenarios,
+            totalScenarios: targetScenarios.length,
+          });
         }
-      } else {
-        log(`  [SKIPPED] Transient error, not storing empty row (resumable): ${errMsg.substring(0, 100)}`);
-      }
+      } catch (error) {
+        completedTests++;
+        log(
+          `  ${formatProgress(completedTests, totalTests, runStartTime)} ${profileLabel} / ${scenario.id}: ERROR - ${error.message}`,
+        );
 
-      // Emit test_error event
-      progressLogger.testError({
-        scenarioId: scenario.id,
-        scenarioName: scenario.name || scenario.id,
-        profileName: profileLabel,
-        errorMessage: error.message,
-        completedCount: completedTests,
-        totalTests,
-      });
+        // Only store failed results for permanent errors (bad config, invalid scenario).
+        // Skip storing for retriable/transient errors (rate limits, model unavailable, timeouts)
+        // so that `resume` can retry them without needing manual cleanup.
+        const errMsg = error.message || '';
+        const isTransient = isTransientEvaluationError(errMsg);
 
-      reporter.onTestError({
-        scenarioName: scenario.name || scenario.id,
-        profileName: profileLabel,
-        errorMessage: error.message,
-      });
+        if (!isTransient) {
+          const failedResult = {
+            scenarioId: scenario.id,
+            scenarioName: scenario.name || scenario.id,
+            profileName: config.profileName,
+            provider: config.provider || config.ego?.provider || 'unknown',
+            model: config.model || config.ego?.model || 'unknown',
+            egoModel: config.egoModel
+              ? `${config.egoModel.provider}.${config.egoModel.model}`
+              : config.ego
+                ? `${config.ego.provider}.${config.ego.model}`
+                : null,
+            superegoModel: config.superegoModel
+              ? `${config.superegoModel.provider}.${config.superegoModel.model}`
+              : config.superego
+                ? `${config.superego.provider}.${config.superego.model}`
+                : null,
+            factors: config.factors || null,
+            learnerArchitecture: config.learnerArchitecture || null,
+            success: false,
+            errorMessage: error.message,
+          };
+          try {
+            evaluationStore.storeResult(run.id, failedResult);
+            results.push(failedResult);
+          } catch (storeErr) {
+            log(`  [WARNING] Failed to store error result: ${storeErr.message}`);
+          }
+        } else {
+          log(`  [SKIPPED] Transient error, not storing empty row (resumable): ${errMsg.substring(0, 100)}`);
+        }
 
-      // Record error in monitoring
-      monitoringService.recordEvent(run.id, {
-        type: 'evaluation_error',
-        round: completedTests,
-        error: error.message,
-      });
-
-      // Track scenario completion even on error
-      const sp = scenarioProgress.get(scenario.id);
-      sp.completed++;
-      if (sp.completed >= sp.total) {
-        completedScenarios++;
-        const avgScore = sp.scores.length > 0 ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length : null;
-        progressLogger.scenarioComplete({
+        // Emit test_error event
+        progressLogger.testError({
           scenarioId: scenario.id,
-          scenarioName: sp.scenarioName,
-          profileNames,
-          avgScore,
-          completedScenarios,
-          totalScenarios: targetScenarios.length,
+          scenarioName: scenario.name || scenario.id,
+          profileName: profileLabel,
+          errorMessage: error.message,
+          completedCount: completedTests,
+          totalTests,
         });
-        reporter.onScenarioComplete({
-          scenarioName: sp.scenarioName,
-          avgScore,
-          completedScenarios,
-          totalScenarios: targetScenarios.length,
+
+        reporter.onTestError({
+          scenarioName: scenario.name || scenario.id,
+          profileName: profileLabel,
+          errorMessage: error.message,
         });
+
+        // Record error in monitoring
+        monitoringService.recordEvent(run.id, {
+          type: 'evaluation_error',
+          round: completedTests,
+          error: error.message,
+        });
+
+        // Track scenario completion even on error
+        const sp = scenarioProgress.get(scenario.id);
+        sp.completed++;
+        if (sp.completed >= sp.total) {
+          completedScenarios++;
+          const avgScore = sp.scores.length > 0 ? sp.scores.reduce((a, b) => a + b, 0) / sp.scores.length : null;
+          progressLogger.scenarioComplete({
+            scenarioId: scenario.id,
+            scenarioName: sp.scenarioName,
+            profileNames,
+            avgScore,
+            completedScenarios,
+            totalScenarios: targetScenarios.length,
+          });
+          reporter.onScenarioComplete({
+            scenarioName: sp.scenarioName,
+            avgScore,
+            completedScenarios,
+            totalScenarios: targetScenarios.length,
+          });
+        }
       }
-    }
     }; // end runTest
 
     if (liveApiReporter) {
@@ -1938,7 +1940,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     skipRubricEval = false,
     outputSize = 'normal',
     _verbose = false,
-    log = () => {},
+    log = () => { },
     superegoStrategy = null,
     judgeOverride = null,
     dryRun = false,
@@ -2063,13 +2065,13 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     scores:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
         ? {
-            relevance: rubricResult.scores.relevance?.score,
-            specificity: rubricResult.scores.specificity?.score,
-            pedagogical: rubricResult.scores.pedagogical?.score,
-            personalization: rubricResult.scores.personalization?.score,
-            actionability: rubricResult.scores.actionability?.score,
-            tone: rubricResult.scores.tone?.score,
-          }
+          relevance: rubricResult.scores.relevance?.score,
+          specificity: rubricResult.scores.specificity?.score,
+          pedagogical: rubricResult.scores.pedagogical?.score,
+          personalization: rubricResult.scores.personalization?.score,
+          actionability: rubricResult.scores.actionability?.score,
+          tone: rubricResult.scores.tone?.score,
+        }
         : null,
     scoresWithReasoning:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
@@ -2107,7 +2109,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     skipRubricEval = false,
     outputSize = 'normal',
     _verbose = false,
-    log = () => {},
+    log = () => { },
     superegoStrategy = null,
     judgeOverride = null,
     dryRun = false,
@@ -2632,13 +2634,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       scores:
         rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
           ? {
-              relevance: rubricResult.scores.relevance?.score,
-              specificity: rubricResult.scores.specificity?.score,
-              pedagogical: rubricResult.scores.pedagogical?.score,
-              personalization: rubricResult.scores.personalization?.score,
-              actionability: rubricResult.scores.actionability?.score,
-              tone: rubricResult.scores.tone?.score,
-            }
+            relevance: rubricResult.scores.relevance?.score,
+            specificity: rubricResult.scores.specificity?.score,
+            pedagogical: rubricResult.scores.pedagogical?.score,
+            personalization: rubricResult.scores.personalization?.score,
+            actionability: rubricResult.scores.actionability?.score,
+            tone: rubricResult.scores.tone?.score,
+          }
           : null,
       turnScore,
       scoringMethod,
@@ -3450,7 +3452,7 @@ export async function resumeEvaluation(options = {}) {
     force = false, // Skip the "already running" check
   } = options;
 
-  const log = verbose ? console.log : () => {};
+  const log = verbose ? console.log : () => { };
 
   // 1. Load the run and validate it exists
   const run = evaluationStore.getRun(runId);
@@ -3465,7 +3467,7 @@ export async function resumeEvaluation(options = {}) {
     if (isAlive) {
       throw new Error(
         `Run ${runId} is already being processed by pid ${existingPid}. ` +
-          `Use --force to override (may cause duplicates).`,
+        `Use --force to override (may cause duplicates).`,
       );
     }
   }
@@ -4156,7 +4158,7 @@ export async function rejudgeRun(runId, options = {}) {
     overwrite = false,
   } = options;
 
-  const log = verbose ? console.log : () => {};
+  const log = verbose ? console.log : () => { };
 
   const run = evaluationStore.getRun(runId);
   if (!run) throw new Error(`Run not found: ${runId}`);
