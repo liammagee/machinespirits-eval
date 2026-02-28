@@ -68,10 +68,14 @@ export class StreamingReporter {
     const bar = progressBar(this.completedCount, this.totalTests);
     const count = `${this.completedCount}/${this.totalTests}`;
     const eta = formatEta(this.completedCount, this.totalTests, elapsed);
-    const errShort = (errorMessage || 'unknown error').slice(0, 60);
+    // Extract the root cause (text after last colon) for a more useful summary.
+    // e.g. "Multi-turn scenario X: Turn 0 (initial) failed: Empty response" → "Empty response"
+    const fullErr = errorMessage || 'unknown error';
+    const lastColon = fullErr.lastIndexOf(': ');
+    const cause = lastColon > 0 ? fullErr.slice(lastColon + 2).slice(0, 80) : fullErr.slice(0, 80);
 
     console.log(
-      `${bar} ${count} | \u2717 ERROR | ${profileName || ''} | ${scenarioName || ''} | ${errShort} | ETA ${eta}`,
+      `${bar} ${count} | \u2717 ERROR | ${profileName || ''} | ${scenarioName || ''} | ${cause} | ETA ${eta}`,
     );
   }
 
