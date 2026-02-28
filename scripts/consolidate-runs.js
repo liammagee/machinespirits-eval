@@ -17,6 +17,10 @@
  *   node scripts/consolidate-runs.js --description "Paper 2.0 consolidated N=3"
  *   node scripts/consolidate-runs.js --execute --json         # Machine-readable output
  *   node scripts/consolidate-runs.js --execute --force        # Re-consolidate even if existing
+ *
+ * Related:
+ *   - analyze-accumulation.js         — Cell×scenario gap analysis and power analysis
+ *   - validate-factorial-coverage.js  — 2×2×2 factorial balance check (cells 80-87, model-aware)
  */
 
 import Database from 'better-sqlite3';

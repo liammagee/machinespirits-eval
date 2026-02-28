@@ -14,6 +14,10 @@
  *   node scripts/analyze-accumulation.js --target-n 5     # Target N=5 per group
  *   node scripts/analyze-accumulation.js --profile cell_80  # Filter by profile
  *   node scripts/analyze-accumulation.js --json           # Machine-readable
+ *
+ * Related:
+ *   - validate-factorial-coverage.js — 2×2×2 factorial balance check (cells 80-87, model-aware)
+ *   - consolidate-runs.js            — Merge physical runs into logical runs per epoch
  */
 
 import Database from 'better-sqlite3';

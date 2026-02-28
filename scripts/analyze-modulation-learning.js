@@ -23,10 +23,16 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'evaluations.db');
 const db = new Database(DB_PATH, { readonly: true });
+
+const epoch = parseEpochArg(process.argv);
+const epochFilter = getEpochFilter(epoch);
+printEpochBanner(epoch);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -140,6 +146,7 @@ const factorialRows = db
   WHERE run_id IN ('eval-2026-02-03-f5d4dd93', 'eval-2026-02-06-a933d745')
     AND tutor_first_turn_score IS NOT NULL
     AND judge_model LIKE '%claude%'
+    ${epochFilter.and}
 `,
   )
   .all();
@@ -415,6 +422,7 @@ const bilateralRows = db
   WHERE run_id = 'eval-2026-02-07-b6d75e87'
     AND tutor_first_turn_score IS NOT NULL
     AND learner_scores IS NOT NULL
+    ${epochFilter.and}
 `,
   )
   .all();
