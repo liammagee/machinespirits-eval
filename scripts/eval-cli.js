@@ -199,6 +199,26 @@ function getOption(name, defaultValue = undefined) {
   return args[idx + 1];
 }
 
+/**
+ * Expand shorthand run ID to full form.
+ *   '02-28-24ae5093'      → 'eval-2026-02-28-24ae5093'
+ *   '2026-02-28-24ae5093' → 'eval-2026-02-28-24ae5093'
+ *   'eval-2026-02-28-...' → unchanged
+ */
+function expandRunId(id) {
+  if (!id || id.startsWith('eval-')) return id;
+  // MM-DD-hex
+  if (/^\d{2}-\d{2}-[0-9a-f]{6,}/.test(id)) {
+    const year = new Date().getFullYear();
+    return `eval-${year}-${id}`;
+  }
+  // YYYY-MM-DD-hex
+  if (/^\d{4}-\d{2}-\d{2}-[0-9a-f]{6,}/.test(id)) {
+    return `eval-${id}`;
+  }
+  return id;
+}
+
 function validateCanonicalFactorialTutorEgoModels({
   profileNames,
   modelOverride = null,
@@ -1712,7 +1732,7 @@ async function main() {
       }
 
       case 'report': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'report');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'report'));
         if (!runId) {
           console.error('Usage: eval-cli.js report <runId>');
           process.exit(1);
@@ -1724,7 +1744,7 @@ async function main() {
 
       case 'status': {
         // Quick snapshot of a run's current state
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'status');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'status'));
         if (!runId) {
           console.error('Usage: eval-cli.js status <runId>');
           process.exit(1);
@@ -1837,7 +1857,7 @@ async function main() {
 
       case 'watch': {
         // Live-updating scenario×profile grid table
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'watch');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'watch'));
         if (!runId) {
           console.error('Usage: eval-cli.js watch <runId> [--refresh 2000] [--db]');
           process.exit(1);
@@ -1953,7 +1973,7 @@ async function main() {
       }
 
       case 'transcript': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'transcript');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'transcript'));
         if (!runId) {
           console.error(
             'Usage: eval-cli.js transcript <runId> [--scenario <id>] [--profile <name>] [--dialogue <id>] [--all-matches] [--detail play|compact|messages-only|full|bilateral]',
@@ -2150,7 +2170,7 @@ async function main() {
       }
 
       case 'resume': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'resume');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'resume'));
         if (!runId) {
           console.error('Usage: eval-cli.js resume <runId> [--parallelism N] [--verbose] [--force]');
           process.exit(1);
@@ -2240,7 +2260,7 @@ async function main() {
       }
 
       case 'revert': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'revert');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'revert'));
         if (!runId) {
           console.error('Usage: eval-cli.js revert <runId>');
           process.exit(1);
@@ -2269,7 +2289,7 @@ async function main() {
       }
 
       case 'rejudge': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'rejudge');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'rejudge'));
         if (!runId) {
           console.error(
             'Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose] [--overwrite]',
@@ -2330,7 +2350,7 @@ async function main() {
       }
 
       case 'export': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'export');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'export'));
         if (!runId) {
           console.error('Usage: eval-cli.js export <runId> [--scenario <id>] [--profile <name>] [--output <path>]');
           process.exit(1);
@@ -2461,7 +2481,7 @@ async function main() {
       }
 
       case 'evaluate': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'evaluate'));
         if (!runId) {
           console.error(
             'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--rubric-version <ver>] [--parallelism N] [--verbose]',
@@ -4089,7 +4109,7 @@ async function main() {
       }
 
       case 'backfill-first-turn': {
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'backfill-first-turn');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'backfill-first-turn'));
         if (!runId) {
           console.error(
             'Usage: eval-cli.js backfill-first-turn <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--created-after <iso>] [--created-before <iso>] [--dry-run] [--verbose]',
@@ -4361,7 +4381,7 @@ async function main() {
         //   4. Call Claude as judge
         //   5. Store per-turn + holistic learner scores on the result row
 
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate-learner');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'evaluate-learner'));
         if (!runId) {
           console.error(
             'Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>] [--parallelism N]',
@@ -4815,7 +4835,7 @@ async function main() {
         //
         // Single-turn rows are skipped (NULL for all new columns).
 
-        const runId = args.find((a) => !a.startsWith('--') && a !== 'evaluate-dialogue');
+        const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'evaluate-dialogue'));
         if (!runId) {
           console.error(
             'Usage: eval-cli.js evaluate-dialogue <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--verbose]',
