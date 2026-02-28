@@ -1132,6 +1132,123 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
   };
 }
 
+/**
+ * Evaluate superego critique taxonomy stats from classified JSONL data.
+ *
+ * Metrics:
+ *   total_count     — total classified critiques
+ *   category_pct    — percentage of a specific primary category
+ *   persistence_rate — fraction of transitions where category repeats
+ *   stalling_rate   — fraction of multi-critique dialogues with 3+ consecutive same category
+ *   escalation_balance — de-escalation count / escalation count (>1 = more de-escalation)
+ */
+export function evaluateJsonlCritiqueStats(_db, evidence, rootDir) {
+  const filePath = resolvePath(rootDir, evidence?.file);
+  if (!filePath || !fs.existsSync(filePath)) {
+    throw new Error(`jsonl_critique_stats: file not found: ${evidence?.file}`);
+  }
+
+  const lines = fs.readFileSync(filePath, 'utf8').trim().split('\n');
+  const critiques = lines.map((l) => JSON.parse(l));
+  const metric = evidence?.metric || 'total_count';
+  const category = evidence?.category || null;
+
+  // Group by dialogue for transition-based metrics
+  const byDialogue = {};
+  for (const c of critiques) {
+    const d = c.dialogueId || 'unknown';
+    if (!byDialogue[d]) byDialogue[d] = [];
+    byDialogue[d].push(c);
+  }
+  for (const d of Object.values(byDialogue)) {
+    d.sort((a, b) => (a.round || a.turnIndex || 0) - (b.round || b.turnIndex || 0));
+  }
+  const multiCrit = Object.entries(byDialogue).filter(([, crits]) => crits.length > 1);
+
+  if (metric === 'total_count') {
+    return {
+      value: critiques.length,
+      details: { file: evidence?.file, total: critiques.length },
+      fingerprint: { source: 'jsonl_critique_stats', metric, file: evidence?.file, n: critiques.length },
+    };
+  }
+
+  if (metric === 'category_pct') {
+    if (!category) throw new Error('jsonl_critique_stats: category_pct requires category parameter');
+    const catCount = critiques.filter((c) => c.classification?.primary === category).length;
+    const pct = critiques.length > 0 ? (catCount / critiques.length) * 100 : 0;
+    return {
+      value: pct,
+      details: { category, count: catCount, total: critiques.length, pct },
+      fingerprint: { source: 'jsonl_critique_stats', metric, category, n: critiques.length, count: catCount },
+    };
+  }
+
+  if (metric === 'persistence_rate') {
+    let totalTransitions = 0;
+    let selfTransitions = 0;
+    for (const [, crits] of multiCrit) {
+      for (let i = 0; i < crits.length - 1; i++) {
+        const from = crits[i].classification?.primary || 'UNKNOWN';
+        const to = crits[i + 1].classification?.primary || 'UNKNOWN';
+        totalTransitions++;
+        if (from === to) selfTransitions++;
+      }
+    }
+    const rate = totalTransitions > 0 ? selfTransitions / totalTransitions : 0;
+    return {
+      value: rate,
+      details: { self_transitions: selfTransitions, total_transitions: totalTransitions, rate },
+      fingerprint: { source: 'jsonl_critique_stats', metric, n: totalTransitions, self: selfTransitions },
+    };
+  }
+
+  if (metric === 'stalling_rate') {
+    let stallingCount = 0;
+    for (const [, crits] of multiCrit) {
+      if (crits.length < 3) continue;
+      for (let i = 0; i <= crits.length - 3; i++) {
+        const cats = [
+          crits[i].classification?.primary,
+          crits[i + 1].classification?.primary,
+          crits[i + 2].classification?.primary,
+        ];
+        if (cats[0] && cats[0] === cats[1] && cats[1] === cats[2] && cats[0] !== 'APPROVAL') {
+          stallingCount++;
+          break;
+        }
+      }
+    }
+    const rate = multiCrit.length > 0 ? stallingCount / multiCrit.length : 0;
+    return {
+      value: rate,
+      details: { stalling_dialogues: stallingCount, multi_dialogues: multiCrit.length, rate },
+      fingerprint: { source: 'jsonl_critique_stats', metric, stalling: stallingCount, total: multiCrit.length },
+    };
+  }
+
+  if (metric === 'escalation_balance') {
+    let escalation = 0; // APPROVAL → non-APPROVAL
+    let deescalation = 0; // non-APPROVAL → APPROVAL
+    for (const [, crits] of multiCrit) {
+      for (let i = 0; i < crits.length - 1; i++) {
+        const from = crits[i].classification?.primary || 'UNKNOWN';
+        const to = crits[i + 1].classification?.primary || 'UNKNOWN';
+        if (from === 'APPROVAL' && to !== 'APPROVAL') escalation++;
+        if (from !== 'APPROVAL' && to === 'APPROVAL') deescalation++;
+      }
+    }
+    const ratio = escalation > 0 ? deescalation / escalation : (deescalation > 0 ? Infinity : 1.0);
+    return {
+      value: ratio,
+      details: { escalation, deescalation, ratio },
+      fingerprint: { source: 'jsonl_critique_stats', metric, esc: escalation, deesc: deescalation },
+    };
+  }
+
+  throw new Error(`jsonl_critique_stats: unsupported metric: ${metric}`);
+}
+
 function evaluateDimensionVariance(db, evidence) {
   const groupBy = evidence?.group_by || 'recognition';
   const output = evidence?.output || 'cohens_d';
@@ -1627,6 +1744,7 @@ export function evaluateEvidence(db, manifest, evidence, rootDir) {
   if (type === 'trajectory_slope') return evaluateTrajectorySlope(db, evidence, rootDir);
   if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence, rootDir);
   if (type === 'rubric_version_comparison') return evaluateRubricVersionComparison(db, evidence);
+  if (type === 'jsonl_critique_stats') throw new Error('jsonl_critique_stats requires rootDir context');
   if (type === 'log_trace_coverage') throw new Error('log_trace_coverage requires rootDir context');
   if (type === 'provenance_check') throw new Error('provenance_check requires rootDir context');
   throw new Error(`Unsupported evidence type: ${type}`);
@@ -2083,6 +2201,8 @@ export function runProvableDiscourseAudit({
             evidence = evaluateLogTraceCoverage(db, claim.evidence || {}, baseDir);
           } else if ((claim?.evidence?.type || '') === 'provenance_check') {
             evidence = evaluateProvenanceCheck(db, claim.evidence || {}, baseDir);
+          } else if ((claim?.evidence?.type || '') === 'jsonl_critique_stats') {
+            evidence = evaluateJsonlCritiqueStats(db, claim.evidence || {}, baseDir);
           } else {
             evidence = evaluateEvidence(db, manifest, claim.evidence || {}, baseDir);
           }
