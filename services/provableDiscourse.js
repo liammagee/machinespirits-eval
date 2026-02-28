@@ -29,6 +29,7 @@ const ALLOWED_COLUMNS = new Set([
   'created_at',
   'dialogue_id',
   'dialogue_rounds',
+  'deliberation_rounds',
   'scenario_type',
   'success',
   'error_message',
