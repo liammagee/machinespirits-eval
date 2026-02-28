@@ -953,7 +953,7 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
  */
 async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory = null) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
-  const { temperature = 0.7, top_p } = hyperparameters;
+  const { temperature = 0.7, top_p, reasoning_effort = 'low' } = hyperparameters;
   let max_tokens = hyperparameters.max_tokens;
   if (max_tokens === undefined) {
     throw new Error('Explicit max_tokens setting is required in learner hyperparameters.');
@@ -1117,6 +1117,11 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
       top_p,
       messages: orMessages,
     };
+    // Constrain reasoning token budget for thinking models (e.g. Kimi K2.5, DeepSeek R1).
+    // Non-reasoning models ignore this parameter. Set via hyperparameters.reasoning_effort.
+    if (reasoning_effort) {
+      requestBody.reasoning = { effort: reasoning_effort };
+    }
     const res = await fetch(providerConfig.base_url, {
       method: 'POST',
       headers: {
