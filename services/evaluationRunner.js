@@ -2241,10 +2241,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
    */
   function formatChatLine(entry, isDynamic, printed) {
     const { agent, action } = entry;
-    const ROLE_WIDTH = 11; // "Assistant  " padded width
+    const ROLE_WIDTH = 11; // "Tutor      " padded width
     const pad = (label) => label.padEnd(ROLE_WIDTH);
+    // Compact inline tag: [cell_82 · misconception #1]
+    const inlineTag = ' ' + chalk.dim(`[${config.profileName} · ${scenario.id} #${runNum + 1}]`);
 
-    // --- User (learner) messages ---
+    // --- Learner messages ---
     // final_output: synthesized message from any LLM learner (ego_superego or unified)
     // turn_action: scripted learner action (single-prompt unified) — fallback for messages-mode too
     // Both use the same turnKey for deduplication, so whichever appears first wins.
@@ -2254,13 +2256,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       printed.add(turnKey);
       const text = (entry.detail || entry.contextSummary || '').substring(0, 500);
       if (!text) return null;
-      return '\n' + chalk.green.bold(pad('User')) + wrapChatText(text, ROLE_WIDTH);
+      return '\n' + chalk.green.bold(pad('Learner')) + inlineTag + '\n' + ' '.repeat(ROLE_WIDTH) + wrapChatText(text, ROLE_WIDTH);
     }
 
-    // --- Assistant (tutor) messages ---
+    // --- Tutor messages ---
     // Revised output (final after superego review) or generate_final (legacy)
     if (agent === 'ego' && (action === 'revise' || action === 'generate_final')) {
-      return formatAssistantLine(entry, ROLE_WIDTH, pad);
+      return formatTutorLine(entry, ROLE_WIDTH, pad, inlineTag);
     }
     // Generate without revision (single-agent or superego approved first draft)
     if (agent === 'ego' && action === 'generate') {
@@ -2270,13 +2272,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         (e) => e.turnIndex === entry.turnIndex && e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final'),
       );
       if (hasRevision) return null;
-      return formatAssistantLine(entry, ROLE_WIDTH, pad);
+      return formatTutorLine(entry, ROLE_WIDTH, pad, inlineTag);
     }
 
     return null;
   }
 
-  function formatAssistantLine(entry, roleWidth, pad) {
+  function formatTutorLine(entry, roleWidth, pad, inlineTag) {
     const msg = (entry.suggestions || []).map((s) => s.message || s.title || '').join('\n\n').substring(0, 500);
     if (!msg) return null;
     // Metadata line: model · latency · tokens
@@ -2289,7 +2291,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     if (m.latencyMs != null) metaParts.push(m.latencyMs < 1000 ? `${m.latencyMs}ms` : `${(m.latencyMs / 1000).toFixed(1)}s`);
     if (m.inputTokens != null || m.outputTokens != null) metaParts.push(`${m.inputTokens ?? '?'}→${m.outputTokens ?? '?'}`);
     const metaStr = metaParts.length > 0 ? '\n' + ' '.repeat(roleWidth) + chalk.dim(metaParts.join(' · ')) : '';
-    return '\n' + chalk.cyan.bold(pad('Assistant')) + wrapChatText(msg, roleWidth) + metaStr;
+    return '\n' + chalk.cyan.bold(pad('Tutor')) + inlineTag + '\n' + ' '.repeat(roleWidth) + wrapChatText(msg, roleWidth) + metaStr;
   }
 
   /** Word-wrap text with continuation-line indentation matching role label width. */
