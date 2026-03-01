@@ -221,8 +221,9 @@ export function getProviderConfig(providerName, options = {}) {
   }
 
   const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
-  const isLocal = providerName === 'local';
-  const isConfigured = isLocal ? Boolean(provider.base_url) : Boolean(apiKey);
+  // Providers without api_key_env (local, lmstudio, etc.) only need base_url
+  const needsApiKey = Boolean(provider.api_key_env);
+  const isConfigured = needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
 
   return {
     ...provider,

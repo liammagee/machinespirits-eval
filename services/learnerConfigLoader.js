@@ -183,8 +183,9 @@ export function getProviderConfig(providerName) {
     return coreConfigLoader.getProviderConfig(providerName);
   }
   const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
-  const isLocal = providerName === 'local';
-  const isConfigured = isLocal ? Boolean(provider.base_url) : Boolean(apiKey);
+  // Providers without api_key_env (local, lmstudio, etc.) only need base_url
+  const needsApiKey = Boolean(provider.api_key_env);
+  const isConfigured = needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
   return { ...provider, apiKey, isConfigured };
 }
 
@@ -193,6 +194,7 @@ export { loadProviders } from './evalConfigLoader.js';
 
 // Re-export prompt loading utilities
 export const loadPrompt = promptLoader.loadPrompt;
+export const getPromptMetadata = promptLoader.getPromptMetadata;
 
 // ============================================================================
 // Learner-Specific Functions
@@ -465,6 +467,7 @@ export default {
   getProfileAgentRoles,
   profileHasSynthesis,
   loadPrompt,
+  getPromptMetadata,
   resolveModel,
   listProfiles,
   listPersonas,
