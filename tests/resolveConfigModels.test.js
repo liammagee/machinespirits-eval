@@ -243,6 +243,84 @@ describe('resolveConfigModels — modelOverride', () => {
   });
 });
 
+describe('resolveConfigModels — tutorModelOverride', () => {
+  it('overrides ego model for a single-agent cell', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_1_base_single_unified',
+      tutorModelOverride: 'openrouter.nemotron',
+    });
+    assert.strictEqual(resolved.egoModel.provider, 'openrouter');
+    assert.ok(
+      resolved.egoModel.model.includes('nemotron'),
+      `egoModel.model should contain "nemotron", got: ${resolved.egoModel.model}`,
+    );
+  });
+
+  it('overrides both ego and superego for a multi-agent cell', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_3_base_multi_unified',
+      tutorModelOverride: 'openrouter.nemotron',
+    });
+    assert.strictEqual(resolved.egoModel.provider, 'openrouter');
+    assert.ok(resolved.egoModel.model.includes('nemotron'));
+    assert.ok(resolved.superegoModel, 'multi-agent cell should still have superegoModel');
+    assert.strictEqual(resolved.superegoModel.provider, 'openrouter');
+    assert.strictEqual(resolved.superegoModel.model, resolved.egoModel.model);
+  });
+
+  it('does not add superegoModel to single-agent cells', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_5_recog_single_unified',
+      tutorModelOverride: 'openrouter.nemotron',
+    });
+    assert.strictEqual(resolved.superegoModel, null);
+  });
+
+  it('takes priority over modelOverride for tutor models', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_3_base_multi_unified',
+      modelOverride: 'openrouter.haiku',
+      tutorModelOverride: 'openrouter.nemotron',
+    });
+    // tutorModelOverride should win for tutor ego/superego
+    assert.ok(
+      resolved.egoModel.model.includes('nemotron'),
+      `egoModel should be nemotron (from tutorModelOverride), got: ${resolved.egoModel.model}`,
+    );
+    assert.ok(
+      resolved.superegoModel.model.includes('nemotron'),
+      `superegoModel should be nemotron (from tutorModelOverride), got: ${resolved.superegoModel.model}`,
+    );
+  });
+
+  it('is overridden by egoModelOverride for ego', () => {
+    const resolved = resolveConfigModels({
+      profileName: 'cell_3_base_multi_unified',
+      tutorModelOverride: 'openrouter.nemotron',
+      egoModelOverride: 'openrouter.haiku',
+    });
+    // egoModelOverride should win for ego
+    assert.ok(
+      resolved.egoModel.model.includes('haiku'),
+      `egoModel should be haiku (from egoModelOverride), got: ${resolved.egoModel.model}`,
+    );
+    // superegoModel should still be from tutorModelOverride
+    assert.ok(
+      resolved.superegoModel.model.includes('nemotron'),
+      `superegoModel should be nemotron (from tutorModelOverride), got: ${resolved.superegoModel.model}`,
+    );
+  });
+
+  it('throws on invalid tutorModelOverride', () => {
+    assert.throws(() => {
+      resolveConfigModels({
+        profileName: 'cell_1_base_single_unified',
+        tutorModelOverride: 'nonexistent.model',
+      });
+    }, /Invalid --tutor-model override/);
+  });
+});
+
 describe('resolveConfigModels — hyperparameters extraction', () => {
   it('multi-agent cells extract ego hyperparameters with temperature 0.6', () => {
     for (const cell of multiAgentCells) {

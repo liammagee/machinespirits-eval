@@ -462,6 +462,21 @@ function resolveConfigModels(config) {
     }
   }
 
+  // Apply CLI --tutor-model override (replaces tutor ego + superego, overrides --model for tutor)
+  if (config.tutorModelOverride) {
+    try {
+      const r = evalConfigLoader.resolveModel(config.tutorModelOverride);
+      resolved.provider = r.provider;
+      resolved.model = r.model;
+      resolved.egoModel = { provider: r.provider, model: r.model };
+      if (resolved.superegoModel) {
+        resolved.superegoModel = { provider: r.provider, model: r.model };
+      }
+    } catch (e) {
+      throw new Error(`Invalid --tutor-model override "${config.tutorModelOverride}": ${e.message}`);
+    }
+  }
+
   // Apply CLI --ego-model override (replaces only ego model)
   if (config.egoModelOverride) {
     try {
@@ -1436,7 +1451,8 @@ export async function runEvaluation(options = {}) {
     description = null,
     verbose = false,
     scenarioFilter = null, // Cluster filter: 'single-turn', 'multi-turn', or category names
-    modelOverride = null, // CLI --model override (e.g. "openrouter.nemotron") — ALL agents
+    modelOverride = null, // CLI --model override (e.g. "openrouter.nemotron") — ALL agents (tutor + learner)
+    tutorModelOverride = null, // CLI --tutor-model override — tutor ego + superego only
     egoModelOverride = null, // CLI --ego-model override (replaces only tutor ego model)
     superegoModelOverride = null, // CLI --superego-model override (replaces only tutor superego model)
     learnerModelOverride = null, // CLI --learner-model override (replaces all learner agent models)
@@ -1536,6 +1552,7 @@ export async function runEvaluation(options = {}) {
 
   // Effective overrides: CLI > YAML > none
   const effectiveModelOverride = modelOverride || yamlOverrides.modelOverride;
+  const effectiveTutorModelOverride = tutorModelOverride || null;
   const effectiveEgoModelOverride = egoModelOverride || yamlOverrides.egoModelOverride;
   const effectiveSuperegoModelOverride = superegoModelOverride || yamlOverrides.superegoModelOverride;
   const effectiveLearnerModelOverride = learnerModelOverride || null;
@@ -1544,6 +1561,9 @@ export async function runEvaluation(options = {}) {
 
   if (effectiveModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, modelOverride: effectiveModelOverride }));
+  }
+  if (effectiveTutorModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, tutorModelOverride: effectiveTutorModelOverride }));
   }
   if (effectiveEgoModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, egoModelOverride: effectiveEgoModelOverride }));
@@ -1586,6 +1606,7 @@ export async function runEvaluation(options = {}) {
       runsPerConfig,
       skipRubricEval,
       modelOverride: effectiveModelOverride || null,
+      tutorModelOverride: effectiveTutorModelOverride || null,
       egoModelOverride: effectiveEgoModelOverride || null,
       superegoModelOverride: effectiveSuperegoModelOverride || null,
       learnerModelOverride: effectiveLearnerModelOverride || null,
@@ -3575,6 +3596,7 @@ export async function resumeEvaluation(options = {}) {
   const skipRubricEval = metadata.skipRubricEval || false;
   const dryRun = metadata.dryRun || false;
   const modelOverride = metadata.modelOverride || null;
+  const tutorModelOverride = metadata.tutorModelOverride || null;
   const egoModelOverride = metadata.egoModelOverride || null;
   const superegoModelOverride = metadata.superegoModelOverride || null;
   const learnerModelOverride = metadata.learnerModelOverride || null;
@@ -3624,6 +3646,9 @@ export async function resumeEvaluation(options = {}) {
   // 6. Re-apply model overrides if present in metadata
   if (modelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, modelOverride }));
+  }
+  if (tutorModelOverride) {
+    targetConfigs = targetConfigs.map((c) => ({ ...c, tutorModelOverride }));
   }
   if (egoModelOverride) {
     targetConfigs = targetConfigs.map((c) => ({ ...c, egoModelOverride }));
@@ -3710,6 +3735,7 @@ export async function resumeEvaluation(options = {}) {
   console.log(`  Profiles: ${profileNames.join(', ')}`);
   console.log(`  Scenarios: ${targetScenarios.length}`);
   if (modelOverride) console.log(`  Model override: ${modelOverride}`);
+  if (tutorModelOverride) console.log(`  Tutor model override: ${tutorModelOverride}`);
   if (egoModelOverride) console.log(`  Ego model override: ${egoModelOverride}`);
   if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
   if (learnerModelOverride) console.log(`  Learner model override: ${learnerModelOverride}`);
