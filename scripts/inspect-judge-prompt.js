@@ -44,7 +44,6 @@ import { spawn } from 'child_process';
 import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import {
-  buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
   buildTutorHolisticEvaluationPrompt,
   buildDialogueQualityPrompt,
@@ -101,8 +100,7 @@ if (!runId && !rowId) {
 let result;
 if (rowId) {
   // Look up the row's run_id first, then use getResults for proper parsing
-  const allResults = evaluationStore.getResults('%', {});  // won't work — need direct lookup
-  // Fall back: use sqlite directly
+  // Use sqlite directly for single-row lookup
   const Database = (await import('better-sqlite3')).default;
   const dbPath = path.resolve(__dirname, '..', 'data', 'evaluations.db');
   const rawDb = new Database(dbPath, { readonly: true });

@@ -1700,9 +1700,9 @@ describe('learner architecture symmetry', () => {
   it('unified and ego_superego profiles are symmetric: both have LLM-capable agent configs', async () => {
     const learnerConfig = await import('../../services/learnerConfigLoader.js');
     for (const profileName of ['unified', 'ego_superego', 'unified_recognition', 'ego_superego_recognition']) {
-      let profile;
+      let _profile;
       try {
-        profile = learnerConfig.getActiveProfile(profileName);
+        _profile = learnerConfig.getActiveProfile(profileName);
       } catch {
         continue; // profile may not exist in all configs
       }
@@ -1788,7 +1788,7 @@ describe('scripted vs LLM learner demarcation', () => {
     );
 
     // Split into cell blocks: each cell starts with "  cell_" at 2-space indent
-    const cellBlocks = yaml.split(/\n(?=  cell_\w+:)/);
+    const cellBlocks = yaml.split(/\n(?= {2}cell_\w+:)/);
     const messagesCells = [];
     for (const block of cellBlocks) {
       if (!block.includes('conversation_mode: messages')) continue;

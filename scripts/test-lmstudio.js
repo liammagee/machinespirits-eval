@@ -440,6 +440,8 @@ async function testEgoOverrideSimulation() {
 // ─── Test 8: Full tutorApi.generateSuggestions with lmstudio override ──────
 async function testFullGeneration() {
   console.log('\n8. Full tutorApi.generateSuggestions (production code path)');
+  const originalFetch = globalThis.fetch;
+  const interceptedRequests = [];
   try {
     const { tutorApiService: tutorApi } = await import('@machinespirits/tutor-core');
 
@@ -449,8 +451,6 @@ async function testFullGeneration() {
     context.isNewUser = true;
 
     // Intercept fetch to log the actual request
-    const originalFetch = globalThis.fetch;
-    let interceptedRequests = [];
     globalThis.fetch = async (url, opts) => {
       interceptedRequests.push({ url: String(url), method: opts?.method, body: opts?.body?.slice?.(0, 200) });
       if (verbose) {
