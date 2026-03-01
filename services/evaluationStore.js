@@ -271,6 +271,12 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_content_has
 // P1c Provenance: config snapshot hash (SHA-256 of resolved cell config at generation time)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN config_hash TEXT`, 'config_hash');
 
+// Prompt versioning: track which prompt versions produced each row
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_ego_prompt_version TEXT`, 'tutor_ego_prompt_version');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_superego_prompt_version TEXT`, 'tutor_superego_prompt_version');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_prompt_version TEXT`, 'learner_prompt_version');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN prompt_content_hash TEXT`, 'prompt_content_hash');
+
 // P0 Provenance: score audit trail (append-only)
 db.exec(`
   CREATE TABLE IF NOT EXISTS score_audit (
@@ -590,6 +596,10 @@ export function storeResult(runId, result) {
       conversation_mode,
       dialogue_content_hash,
       config_hash,
+      tutor_ego_prompt_version,
+      tutor_superego_prompt_version,
+      learner_prompt_version,
+      prompt_content_hash,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -607,6 +617,7 @@ export function storeResult(runId, result) {
       ?,
       ?,
       ?,
+      ?, ?, ?, ?,
       ?
     )
   `);
@@ -660,6 +671,10 @@ export function storeResult(runId, result) {
     result.conversationMode || null,
     result.dialogueContentHash || null,
     result.configHash || null,
+    result.tutorEgoPromptVersion || null,
+    result.tutorSuperegoPromptVersion || null,
+    result.learnerPromptVersion || null,
+    result.promptContentHash || null,
     new Date().toISOString(),
   );
 
@@ -1558,6 +1573,11 @@ function parseResultRow(row) {
       row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
     tutorHolisticSummary: row.tutor_holistic_summary || null,
     tutorHolisticJudgeModel: row.tutor_holistic_judge_model || null,
+    // Prompt versioning
+    tutorEgoPromptVersion: row.tutor_ego_prompt_version || null,
+    tutorSuperegoPromptVersion: row.tutor_superego_prompt_version || null,
+    learnerPromptVersion: row.learner_prompt_version || null,
+    promptContentHash: row.prompt_content_hash || null,
   };
 }
 
@@ -1808,6 +1828,10 @@ export function storeRejudgment(originalResult, evaluation) {
       scoring_method,
       judge_latency_ms,
       tutor_rubric_version,
+      tutor_ego_prompt_version,
+      tutor_superego_prompt_version,
+      learner_prompt_version,
+      prompt_content_hash,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -1824,6 +1848,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?,
       ?,
       ?,
+      ?, ?, ?, ?,
       ?
     )
   `);
@@ -1884,6 +1909,11 @@ export function storeRejudgment(originalResult, evaluation) {
     'rubric', // Rejudgments only store successful rubric evaluations
     evaluation.judgeLatencyMs ?? null,
     getTutorRubricVersion(),
+    // Propagate prompt versions from original result (rejudging doesn't change prompts)
+    originalResult.tutorEgoPromptVersion || null,
+    originalResult.tutorSuperegoPromptVersion || null,
+    originalResult.learnerPromptVersion || null,
+    originalResult.promptContentHash || null,
     new Date().toISOString(),
   );
 

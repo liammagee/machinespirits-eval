@@ -25,6 +25,7 @@ import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
 import { StreamingReporter } from './streamingReporter.js';
 import * as anovaStats from './anovaStats.js';
 import { generateLearnerResponse } from './learnerTutorInteractionEngine.js';
+import * as learnerConfigLoader from './learnerConfigLoader.js';
 import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import * as promptRewriter from './promptRewriter.js';
@@ -281,6 +282,74 @@ function computeConfigHash(resolvedConfig) {
     conversationMode: resolvedConfig.conversationMode || null,
   };
   return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
+}
+
+/**
+ * Collect prompt version metadata for tutor ego, superego, and learner prompts.
+ *
+ * Reads prompt_file fields from the eval YAML profile and learner architecture,
+ * then calls getPromptMetadata() to extract version strings and content hashes.
+ * Returns a flat object ready to attach to result objects.
+ *
+ * @param {string} profileName - Eval profile name (e.g. 'cell_5_recog_single_unified')
+ * @param {Object} resolvedConfig - Resolved config with learnerArchitecture
+ * @returns {{ tutorEgoPromptVersion: string|null, tutorSuperegoPromptVersion: string|null,
+ *             learnerPromptVersion: string|null, promptContentHash: string }}
+ */
+function collectPromptVersions(profileName, resolvedConfig) {
+  const versions = {
+    tutorEgoPromptVersion: null,
+    tutorSuperegoPromptVersion: null,
+    learnerPromptVersion: null,
+    promptContentHash: null,
+  };
+
+  const hashes = [];
+
+  // 1. Tutor ego + superego prompt files from eval YAML profile
+  try {
+    const rawProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[profileName];
+    if (rawProfile?.ego?.prompt_file) {
+      const meta = tutorConfigLoader.getPromptMetadata(rawProfile.ego.prompt_file);
+      versions.tutorEgoPromptVersion = meta.version;
+      if (meta.contentHash) hashes.push(meta.contentHash);
+    }
+    if (rawProfile?.superego?.prompt_file) {
+      const meta = tutorConfigLoader.getPromptMetadata(rawProfile.superego.prompt_file);
+      versions.tutorSuperegoPromptVersion = meta.version;
+      if (meta.contentHash) hashes.push(meta.contentHash);
+    }
+  } catch (e) {
+    // Profile may not exist or prompt file missing — leave as null
+  }
+
+  // 2. Learner prompt file from learner architecture config
+  try {
+    const learnerArch = resolvedConfig.learnerArchitecture || 'unified';
+    const learnerProfile = learnerConfigLoader.getActiveProfile(learnerArch);
+    // Unified learners have unified_learner.prompt_file; ego_superego have ego.prompt_file
+    const learnerPromptFile =
+      learnerProfile?.unified_learner?.prompt_file ||
+      learnerProfile?.ego?.prompt_file ||
+      null;
+    if (learnerPromptFile) {
+      const meta = learnerConfigLoader.getPromptMetadata(learnerPromptFile);
+      versions.learnerPromptVersion = meta.version;
+      if (meta.contentHash) hashes.push(meta.contentHash);
+    }
+  } catch (e) {
+    // Learner config not available — leave as null
+  }
+
+  // 3. Composite hash: combine individual hashes into a single 16-char hash
+  if (hashes.length > 0) {
+    versions.promptContentHash = createHash('sha256')
+      .update(hashes.join(':'))
+      .digest('hex')
+      .slice(0, 16);
+  }
+
+  return versions;
 }
 
 /**
@@ -1972,6 +2041,9 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   // P1c Provenance: snapshot the fully-resolved config
   const configHash = computeConfigHash(resolvedConfig);
 
+  // P2 Provenance: prompt version metadata
+  const promptVersions = collectPromptVersions(config.profileName, resolvedConfig);
+
   // Log config info
   log(
     `Generating suggestions with profile: ${resolvedConfig.profileName} (dialogue=${useDialogue}, rounds=${maxRounds}, recognition=${recognitionMode})`,
@@ -2091,6 +2163,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     configHash,
+    ...promptVersions,
     dialogueResult: {
       dialogueTrace: genResult.dialogueTrace,
       dialogueRounds: genResult.metadata?.dialogueRounds,
@@ -2134,6 +2207,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
   // P1c Provenance: snapshot the fully-resolved config
   const configHash = computeConfigHash(resolvedConfig);
+
+  // P2 Provenance: prompt version metadata
+  const promptVersions = collectPromptVersions(config.profileName, resolvedConfig);
 
   // 2. Build curriculum context — same as single-turn
   const curriculumContext = contentResolver.isConfigured()
@@ -3438,6 +3514,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     conversationMode,
     dialogueContentHash,
     configHash,
+    ...promptVersions,
     // Holistic dialogue evaluation (full transcript scored as single unit)
     holisticDialogueScore,
     // Bilateral transformation metrics
