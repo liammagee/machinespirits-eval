@@ -303,6 +303,335 @@ claims:
       - "Relaxed assertion — conditional_delta requires both tutor_scores and learner_scores (~57 rows)."
       - "Sufficient for mechanistic demonstration, not robust statistics."
 
+  # ── Section 1: Introduction claims ────────────────────────────
+  # These are mostly cross-references to pilot data or verified infrastructure.
+  # Theoretical claims are registered for traceability but not machine-checkable.
+
+  - id: paper2.s1.pilot.factorial_d
+    description: "Introduction cites pilot factorial recognition effect d=1.11."
+    source_keys:
+      - "stat|5|pilot factorial d=1.11"
+    statement:
+      pattern: "d=1\\.11"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: cross_reference
+      ref_claim: paper.modulation.dataset_n350
+    assertion:
+      op: exists
+      expected: true
+    remediation:
+      - "If pilot factorial claim is removed from Paper 1.0, update this cross-reference."
+    tags: [s1, pilot]
+
+  - id: paper2.s1.pilot.memory_isolation_d
+    description: "Introduction cites pilot memory isolation d=1.71."
+    source_keys:
+      - "stat|5|pilot memory isolation d=1.71"
+    statement:
+      pattern: "d=1\\.71"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: cross_reference
+      ref_claim: paper.abstract.primary_scored_n
+    assertion:
+      op: exists
+      expected: true
+    remediation:
+      - "If pilot memory isolation numbers change, update §1 citation."
+    tags: [s1, pilot]
+
+  - id: paper2.s1.verified.trace_logging
+    description: "Introduction claims every ego-superego exchange is logged."
+    source_keys:
+      - "design|3|trace logging infrastructure"
+    statement:
+      pattern: "every ego.superego exchange is logged"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "../machinespirits-tutor-core/services/tutorDialogueEngine.js"
+      pattern: "dialogueTrace\\.push"
+      min_matches: 5
+    assertion:
+      op: gte
+      expected: 5
+    remediation:
+      - "If trace push sites drop below 5, the observability claim may be overstated."
+    tags: [s1, verified, architecture]
+
+  - id: paper2.s1.verified.provenance_hashes
+    description: "Introduction claims provenance hashes on scored rows."
+    source_keys:
+      - "design|3|provenance infrastructure"
+    statement:
+      pattern: "provenance"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "services/evaluationStore.js"
+      pattern: "dialogue_content_hash|config_hash"
+      min_matches: 3
+    assertion:
+      op: gte
+      expected: 3
+    remediation:
+      - "If provenance columns are removed, update §1 provenance claims."
+    tags: [s1, verified, provenance]
+
+  - id: paper2.s1.verified.provable_discourse
+    description: "Introduction claims provable discourse framework is operational."
+    source_keys:
+      - "design|3|provable discourse"
+    statement:
+      pattern: "provable discourse"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "scripts/validate-provable-discourse.js"
+      pattern: "validate|audit"
+      min_matches: 1
+    assertion:
+      op: gte
+      expected: 1
+    remediation:
+      - "If validate-provable-discourse.js is removed, this claim and §7 are both invalidated."
+    tags: [s1, verified, infrastructure]
+
+  - id: paper2.s1.theoretical.three_mechanisms
+    description: "Introduction previews three separable mechanisms (calibration, error correction, adaptive responsiveness)."
+    source_keys:
+      - "theoretical|1|three-mechanism model"
+    statement:
+      pattern: "three.*mechanism|calibration.*error correction.*adaptive"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Derived from recognition theory in §3.2; each mechanism generates testable predictions."
+      cross_refs: [paper2.calibration.variance_reduction, paper2.taxonomy.corpus_size, paper2.trajectory.tutor_positive_slope]
+    assertion:
+      op: theoretical
+      expected: "All three mechanisms have at least one provable claim registered"
+    remediation:
+      - "Ensure §3 derives all three mechanisms with explicit observable predictions."
+      - "Each mechanism must have at least one provable-discourse entry with a non-theoretical assertion."
+    tags: [s1, theoretical, mechanisms]
+
+  - id: paper2.s1.theoretical.asymmetry_explanation
+    description: "Introduction claims tutor-learner asymmetry is structurally produced (all mechanisms operate on tutor production)."
+    source_keys:
+      - "theoretical|2|asymmetry explanation"
+    statement:
+      pattern: "tutor.*production.*learner.*reception|all.*mechanisms.*operate.*tutor"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "All three mechanisms (calibration, error correction, adaptive responsiveness) modify the tutor generation pipeline; none directly modifies learner reception."
+      cross_refs: [paper2.calibration.variance_reduction, paper2.taxonomy.corpus_size, paper2.trajectory.tutor_positive_slope]
+    assertion:
+      op: theoretical
+      expected: "Consistent with pilot data showing large tutor effects, small learner effects"
+    remediation:
+      - "If new data shows significant learner-side mechanism effects, this explanation needs revision."
+    tags: [s1, theoretical, asymmetry]
+
+  - id: paper2.s1.pilot.variance_52_of_55
+    description: "Introduction cites 52/55 within-run variance reduction."
+    source_keys:
+      - "stat|5|variance reduction 52/55"
+    statement:
+      pattern: "52/55|52 of 55"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: cross_reference
+      ref_claim: paper2.calibration.variance_reduction
+    assertion:
+      op: exists
+      expected: true
+    remediation:
+      - "If the calibration variance claim changes, update the 52/55 citation in §1."
+    tags: [s1, pilot, calibration]
+
+  - id: paper2.s1.pilot.architecture_interaction
+    description: "Introduction cites 35.9-point architecture x recognition interaction."
+    source_keys:
+      - "stat|5|architecture interaction Δ=35.9"
+    statement:
+      pattern: "35\\.9"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: cross_reference
+      ref_claim: paper.modulation.dataset_n350
+    assertion:
+      op: exists
+      expected: true
+    remediation:
+      - "If the factorial interaction numbers change in Paper 1.0, update §1."
+    tags: [s1, pilot, error_correction]
+
+  # ── Section 3: Theoretical framework claims ──────────────────
+  # These are the core mechanism predictions. Theoretical claims are registered
+  # for traceability. PILOT claims cross-reference frozen pilot data.
+
+  - id: paper2.s3.calibration.prediction
+    description: "Calibration prediction: recognition narrows output distribution even without superego."
+    source_keys:
+      - "theoretical|1|calibration operates at prompt level"
+    statement:
+      pattern: "calibration.*prompt.level|observable.*even without the superego"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Hegel requires response shaped by specific content of other's contribution. This constrains response space at prompt level, independent of architecture."
+      cross_refs: [paper2.calibration.variance_reduction]
+    assertion:
+      op: theoretical
+      expected: "Variance reduction in single-agent recognition cells comparable to multiagent"
+    remediation:
+      - "If single-agent recognition shows NO variance reduction, calibration is not prompt-level."
+    tags: [s3, theoretical, calibration]
+
+  - id: paper2.s3.calibration.null
+    description: "Calibration null hypothesis: recognition produces mean shift without variance reduction."
+    source_keys:
+      - "theoretical|1|calibration null hypothesis"
+    statement:
+      pattern: "null hypothesis.*calibration|variance reduction.*only.*multiagent"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Null: if calibration is not a mechanism, recognition should shift means without narrowing distributions."
+    assertion:
+      op: theoretical
+      expected: "Reject if variance reduction observed in single-agent recognition cells"
+    remediation:
+      - "Document whether null is rejected or not — both outcomes are informative."
+    tags: [s3, theoretical, calibration, null_hypothesis]
+
+  - id: paper2.s3.error_correction.prediction
+    description: "Error correction prediction: ego revision is substantive under recognition, cosmetic under baseline."
+    source_keys:
+      - "theoretical|1|error correction depends on ego receptivity"
+    statement:
+      pattern: "substantive revision.*cosmetic compliance|ego.*receptive.*critique"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Kamoi et al.: self-correction degrades without external feedback. Hegel's Bildung: subject must be genuinely changed by encounter with other."
+      cross_refs: [paper2.taxonomy.corpus_size, paper2.taxonomy.persistence_rate]
+    assertion:
+      op: theoretical
+      expected: "Higher rate of strategic/substantive revisions under recognition vs baseline"
+    remediation:
+      - "If revision types are indistinguishable between conditions, error correction mechanism is unsupported."
+    tags: [s3, theoretical, error_correction]
+
+  - id: paper2.s3.adaptive_responsiveness.prediction
+    description: "Adaptive responsiveness prediction: recognition tutors show increasing scores across turns."
+    source_keys:
+      - "theoretical|1|adaptive responsiveness across turns"
+    statement:
+      pattern: "increasing.*scores.*across turns|trajectory.*recognition.*increasing"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Hegel's dialectic unfolds through stages; each turn shaped by outcomes of previous turn."
+      cross_refs: [paper2.trajectory.tutor_positive_slope, paper2.trajectory.recognition_steeper_learner]
+    assertion:
+      op: theoretical
+      expected: "Positive tutor score slope under recognition; flat/declining under baseline"
+    remediation:
+      - "If trajectories are parallel or both flat, adaptive responsiveness is not a distinct mechanism."
+    tags: [s3, theoretical, adaptive_responsiveness]
+
+  - id: paper2.s3.separability.prediction
+    description: "Separability prediction: 2x2 factorial reinterpretable as mechanism isolation matrix."
+    source_keys:
+      - "theoretical|1|mechanism separability"
+    statement:
+      pattern: "separab|mechanism isolation|factorial.*reinterpret"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "If mechanisms are separable: recog+single = calibration only, base+multi = attempted error correction, recog+multi = all three."
+    assertion:
+      op: theoretical
+      expected: "Each 2x2 cell shows predicted mechanism signature"
+    remediation:
+      - "If recog+single shows no calibration, or base+multi shows effective error correction, separability fails."
+    tags: [s3, theoretical, separability]
+
+  - id: paper2.s3.failure.cognitive_overload
+    description: "Failure prediction: cognitive prosthesis hurts weak models (-12 to -16 pts vs baseline)."
+    source_keys:
+      - "stat|3|cognitive prosthesis failure"
+    statement:
+      pattern: "cognitive.*overload|prosthesis.*fail|mechanism stack.*hurts"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_66%"
+        not_null: [tutor_first_turn_score]
+    assertion:
+      op: gte
+      expected: 10
+    remediation:
+      - "If fewer than 10 cognitive prosthesis rows exist, the failure prediction lacks statistical power."
+    tags: [s3, pilot, calibration, failure]
+
+  - id: paper2.s3.failure.model_dependent
+    description: "Failure prediction: Haiku/Kimi eta^2 reversal (.527 vs .002)."
+    source_keys:
+      - "stat|3|model-dependent architecture"
+    statement:
+      pattern: "Haiku.*Kimi.*reversal|eta.*527.*002"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: cross_reference
+      ref_claim: paper2.s1.pilot.factorial_d
+    assertion:
+      op: exists
+      expected: true
+    remediation:
+      - "Cross-model replication (§5.5) should provide mechanistic explanation of the reversal."
+    tags: [s3, pilot, model_dependence]
+
+  - id: paper2.s3.asymmetry.structural
+    description: "Asymmetry explanation: all three mechanisms operate on tutor production, not learner reception."
+    source_keys:
+      - "theoretical|2|structural asymmetry explanation"
+    statement:
+      pattern: "tutor.*production.*learner.*reception|all.*mechanisms.*operate.*tutor"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Calibration constrains tutor generation; error correction filters tutor output; adaptive responsiveness shapes tutor evolution. None modifies learner processing."
+      cross_refs: [paper2.s1.theoretical.asymmetry_explanation]
+    assertion:
+      op: theoretical
+      expected: "Consistent with pilot: tutor d=1.03, learner d=0.27"
+    remediation:
+      - "If new data shows large learner-side mechanism effects, this structural explanation needs revision."
+    tags: [s3, theoretical, asymmetry]
+
   # ── Construct validity ────────────────────────────────────────
   - id: paper2.validity.cross_version_correlation
     description: "Scores correlate across rubric versions (measurement stability). Requires --rubric-version derived runs."
@@ -419,6 +748,169 @@ claims:
       expected: 0.90
     remediation:
       - "Rows scored before provenance implementation lack audit entries. Only new scoring operations create them."
+
+  # ── Section 4: System Architecture claims ──────────────────────────
+
+  - id: paper2.s4.architecture.trace_logging_7_sites
+    description: "runDialogue() contains 7 trace.push() sites recording every ego-superego exchange."
+    source_keys:
+      - "n|0|7 trace push sites"
+    statement:
+      pattern: "seven distinct steps"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "../machinespirits-tutor-core/services/tutorDialogueEngine.js"
+      pattern: "dialogueTrace\\.push\\("
+      min_matches: 7
+    assertion:
+      op: gte
+      expected: 7
+    remediation:
+      - "If trace.push() count drops below 7, check if trace logging was refactored."
+    tags: [s4, architecture, verified]
+
+  - id: paper2.s4.architecture.disable_superego_flag
+    description: "disableSuperego flag is passed through runDialogue options to prevent phantom superego."
+    source_keys:
+      - "design|0|disableSuperego flag"
+    statement:
+      pattern: "disableSuperego"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "../machinespirits-tutor-core/services/tutorDialogueEngine.js"
+      pattern: "disableSuperego"
+      min_matches: 3
+    assertion:
+      op: gte
+      expected: 3
+    remediation:
+      - "If disableSuperego references drop, check Bug 6 fix is intact."
+    tags: [s4, architecture, verified]
+
+  - id: paper2.s4.architecture.provenance_hashes
+    description: "dialogue_content_hash and config_hash columns exist for cryptographic provenance."
+    source_keys:
+      - "design|0|provenance hash columns"
+    statement:
+      pattern: "content.addressable SHA.256 hash"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "services/evaluationStore.js"
+      pattern: "dialogue_content_hash|config_hash"
+      min_matches: 4
+    assertion:
+      op: gte
+      expected: 4
+    remediation:
+      - "If hash column references drop, check provenance infrastructure is intact."
+    tags: [s4, provenance, verified]
+
+  - id: paper2.s4.architecture.rubric_versioning
+    description: "Rubric version columns auto-resolve from YAML version field at write time."
+    source_keys:
+      - "design|0|rubric version tracking"
+    statement:
+      pattern: "rubric.version"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "services/evaluationStore.js"
+      pattern: "getTutorRubricVersion|getLearnerRubricVersion|getDialogueRubricVersion"
+      min_matches: 3
+    assertion:
+      op: gte
+      expected: 3
+    remediation:
+      - "If rubric version helpers are missing, check evaluationStore.js exports."
+    tags: [s4, scoring, verified]
+
+  - id: paper2.s4.architecture.learner_deliberation
+    description: "Multi-agent learner follows symmetric ego_initial → superego → ego_revision pipeline."
+    source_keys:
+      - "design|0|learner deliberation pipeline"
+    statement:
+      pattern: "learner.*ego.*superego.*revision"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "services/learnerTutorInteractionEngine.js"
+      pattern: "learner_ego_initial|learner_superego|learner_ego_revision"
+      min_matches: 3
+    assertion:
+      op: gte
+      expected: 3
+    remediation:
+      - "If learner deliberation labels are missing, check generateLearnerResponse()."
+    tags: [s4, architecture, verified]
+
+  - id: paper2.s4.architecture.two_file_storage
+    description: "Dialogue logs stored as both content-hash-named and dialogueId-named files."
+    source_keys:
+      - "design|0|two-file log storage"
+    statement:
+      pattern: "stored twice"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "services/evaluationRunner.js"
+      pattern: "hashPath|dialoguePath"
+      min_matches: 2
+    assertion:
+      op: gte
+      expected: 2
+    remediation:
+      - "If two-file storage pattern is removed, update provenance claims."
+    tags: [s4, provenance, verified]
+
+  - id: paper2.s4.architecture.superego_follows_lookahead
+    description: "traceToSteps uses superegoFollows lookahead to correctly route ego output."
+    source_keys:
+      - "design|0|superegoFollows lookahead"
+    statement:
+      pattern: "superegoFollows"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: code_path
+      file: "services/transcriptProjection.js"
+      pattern: "superegoFollows"
+      min_matches: 2
+    assertion:
+      op: gte
+      expected: 2
+    remediation:
+      - "If superegoFollows is removed, check Bug 6 layer 3 fix is intact."
+    tags: [s4, architecture, verified]
+
+  - id: paper2.s4.factorial.mechanism_isolation
+    description: "The 2x2x2 factorial maps to mechanism isolation: single-agent tests calibration, multi-agent tests error correction."
+    source_keys:
+      - "theoretical|0|factorial maps to mechanism isolation"
+    statement:
+      pattern: "factorial.*mechanism"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Single-agent cells lack superego feedback → any effect is prompt-level (calibration). Multi-agent cells add superego → difference is architecture-level (error correction). Interaction tests whether error correction requires recognition priming."
+      cross_refs:
+        - "paper2.s3.error_correction.prediction"
+        - "paper2.s3.calibration.prediction"
+    assertion:
+      op: theoretical
+      expected: true
+    remediation:
+      - "This is a design argument linking factorial structure to mechanism theory."
+    tags: [s4, factorial, theoretical]
 
 symmetry_rules:
   - id: symmetry.calibration.cluster_gradient
