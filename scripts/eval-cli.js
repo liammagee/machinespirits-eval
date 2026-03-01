@@ -1440,6 +1440,7 @@ async function main() {
         const allProfiles = getFlag('all-profiles');
         const allowModelMix = getFlag('allow-model-mix');
         const modelOverride = getOption('model');
+        const tutorModelOverride = getOption('tutor-model');
         const egoModelOverride = getOption('ego-model');
         const superegoModelOverride = getOption('superego-model');
         const learnerModelOverride = getOption('learner-model');
@@ -1574,6 +1575,7 @@ async function main() {
           verbose,
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
+          tutorModelOverride: tutorModelOverride || null,
           egoModelOverride: egoModelOverride || null,
           superegoModelOverride: superegoModelOverride || null,
           learnerModelOverride: learnerModelOverride || null,
