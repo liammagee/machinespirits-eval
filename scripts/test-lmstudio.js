@@ -142,7 +142,7 @@ async function testProviderConfig() {
 
     // Check models mapping
     const defaultModel = config.models?.default;
-    if (defaultModel === 'qwen/qwen3-vl-4b') {
+    if (defaultModel === 'qwen3-14b') {
       ok(`models.default: ${defaultModel}`);
     } else {
       fail('Wrong models.default', defaultModel);
@@ -448,6 +448,27 @@ async function testFullGeneration() {
     );
     context.isNewUser = true;
 
+    // Intercept fetch to log the actual request
+    const originalFetch = globalThis.fetch;
+    let interceptedRequests = [];
+    globalThis.fetch = async (url, opts) => {
+      interceptedRequests.push({ url: String(url), method: opts?.method, body: opts?.body?.slice?.(0, 200) });
+      if (verbose) {
+        console.log(`  [FETCH] ${opts?.method || 'GET'} ${url}`);
+        if (opts?.headers) console.log(`  [FETCH] Headers: ${JSON.stringify(opts.headers)}`);
+        if (opts?.body) console.log(`  [FETCH] Body (first 200): ${String(opts.body).slice(0, 200)}`);
+      }
+      const res = await originalFetch(url, opts);
+      if (!res.ok) {
+        console.log(`  [FETCH] Response: ${res.status} ${res.statusText}`);
+        // Clone to read body without consuming it
+        const clone = res.clone();
+        const text = await clone.text().catch(() => '');
+        console.log(`  [FETCH] Response body (first 300): ${text.slice(0, 300)}`);
+      }
+      return res;
+    };
+
     console.log('  Calling generateSuggestions with egoModel override...');
     const result = await tutorApi.generateSuggestions(context, {
       profileName: 'budget',
@@ -459,6 +480,9 @@ async function testFullGeneration() {
       hyperparameters: { max_tokens: 100, temperature: 0.5 },
     });
 
+    // Restore original fetch
+    globalThis.fetch = originalFetch;
+
     if (result.success) {
       const text = JSON.stringify(result.suggestions || result.response || '').slice(0, 100);
       ok(`Generation succeeded: ${text}...`);
@@ -469,9 +493,202 @@ async function testFullGeneration() {
       }
     } else {
       fail('Generation failed', result.error || JSON.stringify(result));
+      console.log(`  Intercepted requests:`);
+      for (const r of interceptedRequests) {
+        console.log(`    ${r.method} ${r.url}`);
+        if (r.body) console.log(`      body: ${r.body}`);
+      }
     }
   } catch (e) {
+    // Restore fetch even on error
+    if (typeof originalFetch === 'function') globalThis.fetch = originalFetch;
     fail('Generation error', e.message);
+  }
+}
+
+// ─── Test 9: _fetchProvider is importable from tutor-core ────────────────
+async function testFetchProviderImport() {
+  console.log('\n9. _fetchProvider importable from tutor-core');
+  try {
+    const { _fetchProvider: fp, isContextOverflowError: isOF, truncateForContextOverflow: trunc, extractStructuredSummary: ess } =
+      await import('@machinespirits/tutor-core');
+
+    if (typeof fp === 'function') {
+      ok('_fetchProvider is a function');
+    } else {
+      fail('_fetchProvider not a function', typeof fp);
+    }
+
+    if (typeof isOF === 'function') {
+      ok('isContextOverflowError is a function');
+    } else {
+      fail('isContextOverflowError not a function', typeof isOF);
+    }
+
+    if (typeof trunc === 'function') {
+      ok('truncateForContextOverflow is a function');
+    } else {
+      fail('truncateForContextOverflow not a function', typeof trunc);
+    }
+
+    if (typeof ess === 'function') {
+      ok('extractStructuredSummary is a function');
+    } else {
+      fail('extractStructuredSummary not a function', typeof ess);
+    }
+  } catch (e) {
+    fail('Import error', e.message);
+  }
+}
+
+// ─── Test 10: Context overflow error detection ──────────────────────────────
+async function testContextOverflowDetection() {
+  console.log('\n10. Context overflow error detection');
+  try {
+    const { isContextOverflowError } = await import('@machinespirits/tutor-core');
+
+    // Should detect overflow errors
+    if (isContextOverflowError(400, 'tokens to keep from the initial prompt are exceeding the context window')) {
+      ok('Detects "tokens to keep" error');
+    } else {
+      fail('Missed "tokens to keep" error');
+    }
+
+    if (isContextOverflowError(400, 'context length exceeded')) {
+      ok('Detects "context length" error');
+    } else {
+      fail('Missed "context length" error');
+    }
+
+    if (isContextOverflowError(500, 'model has crashed')) {
+      ok('Detects "model has crashed" error');
+    } else {
+      fail('Missed "model has crashed" error');
+    }
+
+    if (isContextOverflowError(400, 'The context window is too small')) {
+      ok('Detects "context window" error');
+    } else {
+      fail('Missed "context window" error');
+    }
+
+    // Should NOT detect non-overflow errors
+    if (!isContextOverflowError(401, 'unauthorized')) {
+      ok('Does not detect 401 unauthorized');
+    } else {
+      fail('Falsely detected 401 as overflow');
+    }
+
+    if (!isContextOverflowError(400, 'invalid model name')) {
+      ok('Does not detect "invalid model name"');
+    } else {
+      fail('Falsely detected "invalid model name" as overflow');
+    }
+
+    if (!isContextOverflowError(400, null)) {
+      ok('Does not detect null error message');
+    } else {
+      fail('Falsely detected null error message');
+    }
+  } catch (e) {
+    fail('Detection test error', e.message);
+  }
+}
+
+// ─── Test 11: Truncation at each level ──────────────────────────────────────
+async function testTruncationLevels() {
+  console.log('\n11. Truncation produces smaller output at each level');
+  try {
+    const { truncateForContextOverflow } = await import('@machinespirits/tutor-core');
+
+    const systemPrompt = 'You are a helpful tutor. '.repeat(200); // ~5000 chars
+    const userPrompt = [
+      '## Available Simulations',
+      'Simulation 1: Photosynthesis Explorer — Interactive lab simulation.\n'.repeat(20),
+      '## Available Curriculum',
+      'Unit 1: Introduction to Biology\nUnit 2: Cell Structure\n'.repeat(20),
+      '## Learner Context',
+      'Student is struggling with the concept of photosynthesis.\n'.repeat(10),
+    ].join('\n');
+
+    const originalLen = systemPrompt.length + userPrompt.length;
+
+    const level1 = truncateForContextOverflow(systemPrompt, userPrompt, 1);
+    const level1Len = level1.systemPrompt.length + level1.userPrompt.length;
+
+    const level2 = truncateForContextOverflow(systemPrompt, userPrompt, 2);
+    const level2Len = level2.systemPrompt.length + level2.userPrompt.length;
+
+    console.log(`  Original: ${originalLen} chars`);
+    console.log(`  Level 1: ${level1Len} chars (${Math.round((1 - level1Len / originalLen) * 100)}% reduction)`);
+    console.log(`  Level 2: ${level2Len} chars (${Math.round((1 - level2Len / originalLen) * 100)}% reduction)`);
+
+    if (level1Len < originalLen) {
+      ok(`Level 1 is smaller than original (${originalLen} → ${level1Len})`);
+    } else {
+      fail('Level 1 is NOT smaller', `${originalLen} → ${level1Len}`);
+    }
+
+    if (level2Len < level1Len) {
+      ok(`Level 2 is smaller than level 1 (${level1Len} → ${level2Len})`);
+    } else {
+      fail('Level 2 is NOT smaller than level 1', `${level1Len} → ${level2Len}`);
+    }
+
+    // Level 1 should remove simulations section
+    if (!level1.userPrompt.includes('## Available Simulations')) {
+      ok('Level 1 removed simulations section');
+    } else {
+      fail('Level 1 did NOT remove simulations section');
+    }
+
+    // Level 2 should truncate system prompt
+    if (level2.systemPrompt.length <= 1600) {
+      ok(`Level 2 truncated system prompt (${level2.systemPrompt.length} chars)`);
+    } else {
+      fail('Level 2 did NOT truncate system prompt', `${level2.systemPrompt.length} chars`);
+    }
+  } catch (e) {
+    fail('Truncation test error', e.message);
+  }
+}
+
+// ─── Test 12: _fetchProvider via shared path with lmstudio ──────────────────
+async function testFetchProviderWithLmstudio() {
+  console.log('\n12. _fetchProvider with lmstudio provider (live call)');
+  try {
+    const { _fetchProvider: fp, tutorConfigLoader } = await import('@machinespirits/tutor-core');
+
+    const providerConfig = tutorConfigLoader.getProviderConfig('lmstudio');
+    const model = providerConfig.models?.[modelArg] || providerConfig.default_model || modelArg;
+
+    const result = await fp({
+      provider: 'lmstudio',
+      providerConfig,
+      model,
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'Say "test passed" in one sentence.' },
+      ],
+      hyperparameters: { temperature: 0.5, max_tokens: 50 },
+      onToken: null,
+    });
+
+    if (result.text && result.text.length > 0) {
+      ok(`Got response: "${result.text.slice(0, 60)}..."`);
+    } else if (result.contextOverflow) {
+      ok(`Got context overflow signal (expected for small models): ${result.errorMessage}`);
+    } else {
+      fail('Empty response', JSON.stringify(result));
+    }
+
+    if (typeof result.inputTokens === 'number') {
+      ok(`inputTokens: ${result.inputTokens}`);
+    } else {
+      fail('Missing inputTokens');
+    }
+  } catch (e) {
+    fail('_fetchProvider call error', e.message);
   }
 }
 
@@ -489,6 +706,10 @@ await testObjectResolution();
 await testTutorCorePath();
 await testEgoOverrideSimulation();
 await testFullGeneration();
+await testFetchProviderImport();
+await testContextOverflowDetection();
+await testTruncationLevels();
+await testFetchProviderWithLmstudio();
 
 console.log('\n────────────────────────────────────');
 console.log(`Results: ${passed} passed, ${failed} failed`);
