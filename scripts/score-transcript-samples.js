@@ -189,7 +189,7 @@ async function main() {
   }
 
   // Try DB lookup for dialogue-ID-based filenames; use filename as label for cell-prefixed names
-  let cellMap = {};
+  const cellMap = {};
   try {
     const Database = (await import('better-sqlite3')).default;
     const dbPath = path.resolve(__dirname, '..', 'data', 'evaluations.db');

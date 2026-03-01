@@ -110,7 +110,6 @@ function extractFromLog(filePath, fileName) {
     // --- Learner superego deliberation ---
     if (agent === 'learner_superego' && action === 'deliberation') {
       const detail = entry.detail || '';
-      const contextSummary = entry.contextSummary || '';
       const turnIndex = entry.turnIndex ?? null;
       const metrics = entry.metrics || {};
 
