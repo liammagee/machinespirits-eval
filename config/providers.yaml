@@ -67,7 +67,13 @@ providers:
   lmstudio:
     base_url: http://10.0.0.174:1234/v1/chat/completions
     format: openai
-    default_model: qwen/qwen3-vl-4b
+    default_model: qwen3-14b
+    context_length: 4096
     models:
-      default: qwen/qwen3-vl-4b
-      qwen3-vl: qwen/qwen3-vl-4b
+      default: qwen3-14b
+      qwen3-14b: qwen3-14b
+      qwen3-vl-4b: qwen/qwen3-vl-4b
+      qwen3-vl-8b: qwen/qwen3-vl-8b
+      gemma-12b: gemma-3-12b-it
+      deepseek-14b: deepseek-r1-distill-qwen-14b
+      gpt-oss-20b: openai/gpt-oss-20b

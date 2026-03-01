@@ -7,7 +7,7 @@
  */
 
 import * as learnerConfig from './learnerConfigLoader.js';
-import { tutorConfigLoader as tutorConfig } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as tutorConfig, _fetchProvider, isContextOverflowError, truncateForContextOverflow } from '@machinespirits/tutor-core';
 
 import * as learnerWritingPad from './memory/learnerWritingPad.js';
 import * as tutorWritingPad from './memory/tutorWritingPad.js';
@@ -890,12 +890,15 @@ const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
  * @returns {Promise<Object>} { content, usage: { inputTokens, outputTokens }, latencyMs }
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
+  let effectiveSystemPrompt = systemPrompt;
+  let effectiveUserPrompt = userPrompt;
+
   // Phase 1: 429 rate-limit retry (throws on non-429 errors)
   let result;
   let lastError;
   for (let attempt = 0; attempt <= LEARNER_RETRY_DELAYS.length; attempt++) {
     try {
-      result = await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory);
+      result = await _callLearnerAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, messageHistory);
       break;
     } catch (error) {
       lastError = error;
@@ -910,6 +913,26 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
   }
   if (!result) throw lastError;
 
+  // Phase 1.5: Context overflow retry (local/lmstudio only — progressive truncation)
+  const MAX_OVERFLOW_RETRIES = 2;
+  for (let overflowLevel = 1; result.contextOverflow && overflowLevel <= MAX_OVERFLOW_RETRIES; overflowLevel++) {
+    const beforeLen = effectiveSystemPrompt.length + effectiveUserPrompt.length;
+    const truncated = truncateForContextOverflow(systemPrompt, userPrompt, overflowLevel);
+    effectiveSystemPrompt = truncated.systemPrompt;
+    effectiveUserPrompt = truncated.userPrompt;
+    const afterLen = effectiveSystemPrompt.length + effectiveUserPrompt.length;
+    console.warn(
+      `[${agentRole}] Context overflow from ${agentConfig.model}, truncating level ${overflowLevel} (${beforeLen} → ${afterLen} chars)`,
+    );
+    result = await _callLearnerAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, messageHistory);
+  }
+  if (result.contextOverflow) {
+    throw new Error(
+      `Context overflow for ${agentConfig.model} even after level-${MAX_OVERFLOW_RETRIES} truncation. ` +
+      `Error: ${result.errorMessage}`,
+    );
+  }
+
   // Phase 2: Empty-content retry (HTTP 200 but no text)
   // Skip if finish_reason is 'length' — token budget exhausted, same max_tokens will fail again
   if (!result.content && result.usage?.outputTokens === 0 && result.finishReason !== 'length') {
@@ -921,7 +944,7 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
       await new Promise((resolve) => setTimeout(resolve, delay));
 
       try {
-        const retryResult = await _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory);
+        const retryResult = await _callLearnerAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, messageHistory);
         if (retryResult.content) {
           retryResult.emptyContentRetries = retry + 1;
           return retryResult;
@@ -947,9 +970,9 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
 }
 
 /**
- * Single-attempt LLM call. Mirrors tutorDialogueEngine.callAI per-provider
- * fetch logic: same headers, same body format, same error parsing.
- * Accepts system and user prompts separately for provider-level caching.
+ * Single-attempt LLM call. Delegates to shared _fetchProvider() from tutor-core
+ * for the raw HTTP fetch, then wraps the result into the learner's shape
+ * (content + usage + apiPayload).
  */
 async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory = null) {
   const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
@@ -959,23 +982,21 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     throw new Error('Explicit max_tokens setting is required in learner hyperparameters.');
   }
 
-  // Thinking models (kimi-k2.5, deepseek-r1, etc.) use reasoning tokens that consume
-  // the max_tokens budget. Increase significantly to allow for both reasoning and output.
-  const isThinkingModel = model?.includes('kimi-k2') || model?.includes('deepseek-r1');
-  if (isThinkingModel && max_tokens < 2000) {
-    max_tokens = 2000;
+  // Thinking/reasoning models (kimi-k2-thinking, deepseek-r1) use internal
+  // chain-of-thought that consumes max_tokens. Boost significantly.
+  // Note: kimi-k2.5 (non-thinking) does NOT need this — it's a separate model.
+  const isThinkingModel = model?.includes('kimi-k2-thinking') || model?.includes('deepseek-r1');
+  if (isThinkingModel && max_tokens < 8000) {
+    max_tokens = 8000;
   }
 
-  if (!providerConfig?.isConfigured) {
-    throw new Error(`Learner provider ${provider} not configured (missing API key)`);
-  }
-
-  const startTime = Date.now();
-
-  // --- Anthropic ---
+  // Build provider-specific messages and system prompt
+  // Learner's Anthropic path merges userPrompt into the last user message
+  // (different from tutor which folds into system for message-chain mode)
+  let messages;
+  let effectiveSystem;
   if (provider === 'anthropic') {
-    // Anthropic requires strictly alternating user/assistant roles
-    let messages;
+    effectiveSystem = systemPrompt;
     if (messageHistory?.length) {
       messages = [...messageHistory];
       const last = messages[messages.length - 1];
@@ -987,311 +1008,74 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     } else {
       messages = [{ role: 'user', content: userPrompt }];
     }
-
-    const bodyParams = {
-      model,
-      max_tokens,
-      temperature,
-      system: systemPrompt,
-      messages,
-    };
-    if (top_p !== undefined) {
-      delete bodyParams.temperature;
-      bodyParams.top_p = top_p;
-    }
-
-    const res = await fetch(providerConfig.base_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': providerConfig.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify(bodyParams),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch((parseErr) => {
-        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
-        return {};
-      });
-      throw new Error(`Anthropic API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await res.json();
-    const content = data?.content?.[0]?.text?.trim() || '';
-    return {
-      content,
-      usage: {
-        inputTokens: data?.usage?.input_tokens || 0,
-        outputTokens: data?.usage?.output_tokens || 0,
-      },
-      latencyMs: Date.now() - startTime,
-      model,
-      provider,
-      generationId: data?.id || null,
-      apiPayload: {
-        captureVersion: 1,
-        source: 'learner_call',
-        endpoint: providerConfig.base_url,
-        request: {
-          method: 'POST',
-          body: truncatePayload(bodyParams),
-        },
-        response: {
-          status: res.status,
-          body: truncatePayload(data),
-        },
-      },
-    };
-  }
-
-  // --- OpenAI ---
-  if (provider === 'openai') {
-    const openaiMessages = messageHistory?.length
-      ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
-      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
-
-    const requestBody = {
-      model,
-      temperature,
-      max_tokens,
-      top_p,
-      messages: openaiMessages,
-    };
-    const res = await fetch(providerConfig.base_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${providerConfig.apiKey}`,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch((parseErr) => {
-        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
-        return {};
-      });
-      throw new Error(`OpenAI API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content?.trim() || '';
-    return {
-      content,
-      usage: {
-        inputTokens: data?.usage?.prompt_tokens || 0,
-        outputTokens: data?.usage?.completion_tokens || 0,
-      },
-      latencyMs: Date.now() - startTime,
-      model,
-      provider,
-      generationId: data?.id || null,
-      apiPayload: {
-        captureVersion: 1,
-        source: 'learner_call',
-        endpoint: providerConfig.base_url,
-        request: {
-          method: 'POST',
-          body: truncatePayload(requestBody),
-        },
-        response: {
-          status: res.status,
-          body: truncatePayload(data),
-        },
-      },
-    };
-  }
-
-  // --- OpenRouter ---
-  if (provider === 'openrouter') {
-    const orMessages = messageHistory?.length
-      ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
-      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
-
-    const requestBody = {
-      model,
-      temperature,
-      max_tokens,
-      top_p,
-      messages: orMessages,
-    };
-    // Constrain reasoning token budget for thinking models (e.g. Kimi K2.5, DeepSeek R1).
-    // Non-reasoning models ignore this parameter. Set via hyperparameters.reasoning_effort.
-    if (reasoning_effort) {
-      requestBody.reasoning = { effort: reasoning_effort };
-    }
-    const res = await fetch(providerConfig.base_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${providerConfig.apiKey}`,
-        'HTTP-Referer': process.env.OPENROUTER_REFERER || 'https://machine-spirits.com',
-        'X-Title': 'Machine Spirits Tutor',
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch((parseErr) => {
-        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
-        return {};
-      });
-      throw new Error(`OpenRouter API error: ${res.status} - ${data?.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content?.trim() || '';
-    const finishReason = data?.choices?.[0]?.finish_reason;
-
-    if (!content) {
-      console.warn(
-        `[${agentRole}] OpenRouter returned empty content. Model: ${model}, finish_reason: ${finishReason}`,
-      );
-    }
-
-    return {
-      content,
-      usage: {
-        inputTokens: data?.usage?.prompt_tokens || 0,
-        outputTokens: data?.usage?.completion_tokens || 0,
-      },
-      finishReason,
-      latencyMs: Date.now() - startTime,
-      model,
-      provider,
-      generationId: data?.id || null,
-      apiPayload: {
-        captureVersion: 1,
-        source: 'learner_call',
-        endpoint: providerConfig.base_url,
-        request: {
-          method: 'POST',
-          body: truncatePayload(requestBody),
-        },
-        response: {
-          status: res.status,
-          body: truncatePayload(data),
-        },
-      },
-    };
-  }
-
-  // --- Gemini ---
-  if (provider === 'gemini') {
-    const { GoogleGenAI } = await import('@google/genai');
-    const gemini = new GoogleGenAI({ apiKey: providerConfig.apiKey });
-
-    let geminiContents;
+  } else if (provider === 'gemini') {
+    effectiveSystem = systemPrompt;
     if (messageHistory?.length) {
-      geminiContents = [];
+      messages = [];
       for (const msg of messageHistory) {
         const geminiRole = msg.role === 'assistant' ? 'model' : 'user';
-        const last = geminiContents[geminiContents.length - 1];
+        const last = messages[messages.length - 1];
         if (last && last.role === geminiRole) {
           last.parts[0].text += '\n\n' + msg.content;
         } else {
-          geminiContents.push({ role: geminiRole, parts: [{ text: msg.content }] });
+          messages.push({ role: geminiRole, parts: [{ text: msg.content }] });
         }
       }
-      const last = geminiContents[geminiContents.length - 1];
+      const last = messages[messages.length - 1];
       if (last && last.role === 'user') {
         last.parts[0].text += '\n\n' + userPrompt;
       } else {
-        geminiContents.push({ role: 'user', parts: [{ text: userPrompt }] });
+        messages.push({ role: 'user', parts: [{ text: userPrompt }] });
       }
     } else {
-      geminiContents = [{ role: 'user', parts: [{ text: userPrompt }] }];
+      messages = [{ role: 'user', parts: [{ text: userPrompt }] }];
     }
-
-    const requestBody = {
-      model,
-      systemInstruction: systemPrompt,
-      contents: geminiContents,
-      config: { temperature, maxOutputTokens: max_tokens, topP: top_p },
-    };
-    const result = await gemini.models.generateContent(requestBody);
-
-    const content = result?.text?.() || result?.response?.text?.() || '';
-    return {
-      content,
-      usage: { inputTokens: 0, outputTokens: 0 },
-      latencyMs: Date.now() - startTime,
-      model,
-      provider,
-      generationId: null,
-      apiPayload: {
-        captureVersion: 1,
-        source: 'learner_call',
-        endpoint: providerConfig.base_url || 'gemini.models.generateContent',
-        request: {
-          method: 'POST',
-          body: truncatePayload(requestBody),
-        },
-        response: {
-          status: 200,
-          body: truncatePayload({ content }),
-        },
-      },
-    };
-  }
-
-  // --- Local (LM Studio / Ollama / llama.cpp) ---
-  if (provider === 'local') {
-    const localMessages = messageHistory?.length
+  } else {
+    // OpenAI, OpenRouter, local, lmstudio: standard {role, content} messages
+    effectiveSystem = systemPrompt;
+    messages = messageHistory?.length
       ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
       : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
-
-    const requestBody = {
-      model,
-      temperature,
-      max_tokens,
-      messages: localMessages,
-    };
-    const res = await fetch(providerConfig.base_url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch((parseErr) => {
-        console.warn(`[callLearnerAI] Failed to parse error response body (status ${res.status}):`, parseErr.message);
-        return {};
-      });
-      throw new Error(`Local LLM error: ${res.status} - ${data?.error?.message || 'Is LM Studio running?'}`);
-    }
-
-    const data = await res.json();
-    const content = data?.choices?.[0]?.message?.content?.trim() || '';
-    return {
-      content,
-      usage: {
-        inputTokens: data?.usage?.prompt_tokens || 0,
-        outputTokens: data?.usage?.completion_tokens || 0,
-      },
-      latencyMs: Date.now() - startTime,
-      model,
-      provider,
-      generationId: data?.id || null,
-      apiPayload: {
-        captureVersion: 1,
-        source: 'learner_call',
-        endpoint: providerConfig.base_url,
-        request: {
-          method: 'POST',
-          body: truncatePayload(requestBody),
-        },
-        response: {
-          status: res.status,
-          body: truncatePayload(data),
-        },
-      },
-    };
   }
 
-  throw new Error(`Unsupported learner provider: ${provider}`);
+  // Delegate to shared fetch (no streaming for learner)
+  const raw = await _fetchProvider({
+    provider,
+    providerConfig,
+    model,
+    messages,
+    systemPrompt: effectiveSystem,
+    hyperparameters: { temperature, max_tokens, top_p, reasoning_effort },
+    onToken: null,
+  });
+
+  // Wrap into learner result shape
+  return {
+    content: raw.text,
+    usage: {
+      inputTokens: raw.inputTokens || 0,
+      outputTokens: raw.outputTokens || 0,
+    },
+    finishReason: raw.finishReason || undefined,
+    latencyMs: raw.latencyMs,
+    model,
+    provider,
+    generationId: raw.generationId || null,
+    ...(raw.contextOverflow && { contextOverflow: true, errorMessage: raw.errorMessage }),
+    apiPayload: {
+      captureVersion: 1,
+      source: 'learner_call',
+      endpoint: providerConfig.base_url || (provider === 'gemini' ? 'gemini.models.generateContent' : undefined),
+      request: {
+        method: 'POST',
+        body: truncatePayload({ model, temperature, max_tokens, top_p, messages }),
+      },
+      response: {
+        status: raw.rawResponse?.status || 200,
+        body: truncatePayload({ text: raw.text }),
+      },
+    },
+  };
 }
 
 /**
