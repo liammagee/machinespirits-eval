@@ -441,7 +441,7 @@ async function testEgoOverrideSimulation() {
 async function testFullGeneration() {
   console.log('\n8. Full tutorApi.generateSuggestions (production code path)');
   try {
-    const { tutorApi } = await import('@machinespirits/tutor-core');
+    const { tutorApiService: tutorApi } = await import('@machinespirits/tutor-core');
 
     const context = tutorApi.buildContext(
       'Student: I am struggling with photosynthesis. I keep mixing up the light and dark reactions.',
@@ -488,6 +488,7 @@ await testModelResolution();
 await testObjectResolution();
 await testTutorCorePath();
 await testEgoOverrideSimulation();
+await testFullGeneration();
 
 console.log('\n────────────────────────────────────');
 console.log(`Results: ${passed} passed, ${failed} failed`);
