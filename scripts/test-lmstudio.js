@@ -238,7 +238,7 @@ async function testObjectResolution() {
 
     const overriddenProviderConfig = {
       ...originalProviderConfig,
-      apiKey: resolved.apiKey || originalProviderConfig.apiKey,
+      apiKey: resolved.apiKey != null ? resolved.apiKey : originalProviderConfig.apiKey,
       base_url: resolved.baseUrl || originalProviderConfig.base_url,
       isConfigured: resolved.isConfigured ?? originalProviderConfig.isConfigured,
     };
@@ -354,14 +354,14 @@ async function testEgoOverrideSimulation() {
     // Resolve the lmstudio override
     const resolved = tutorConfigLoader.resolveModel({ provider: 'lmstudio', model: 'qwen/qwen3-vl-4b' });
 
-    // Apply the CURRENT fix
+    // Apply the CURRENT fix (must use != null, not ||, to preserve empty string for keyless providers)
     const overriddenEgoConfig = {
       ...defaultEgoConfig,
       provider: resolved.provider,
       model: resolved.model,
       providerConfig: {
         ...defaultEgoConfig.providerConfig,
-        apiKey: resolved.apiKey || defaultEgoConfig.providerConfig?.apiKey,
+        apiKey: resolved.apiKey != null ? resolved.apiKey : defaultEgoConfig.providerConfig?.apiKey,
         base_url: resolved.baseUrl || defaultEgoConfig.providerConfig?.base_url,
         isConfigured: resolved.isConfigured ?? defaultEgoConfig.providerConfig?.isConfigured,
       },
