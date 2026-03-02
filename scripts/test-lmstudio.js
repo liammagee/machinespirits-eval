@@ -6,11 +6,13 @@
  * to isolate where failures occur.
  *
  * Usage:
- *   node scripts/test-lmstudio.js                  # Run all tests
- *   node scripts/test-lmstudio.js --verbose         # Show request/response details
- *   node scripts/test-lmstudio.js --model qwen3-vl  # Test a specific model alias
+ *   node scripts/test-lmstudio.js                           # Use providers.yaml lmstudio.default_model
+ *   node scripts/test-lmstudio.js --verbose                # Show request/response details
+ *   node scripts/test-lmstudio.js --model qwen3.5-9b       # Test a specific model alias
+ *   node scripts/test-lmstudio.js --model qwen/qwen3-vl-4b # Test a specific model ID
  */
 
+import evalConfigLoader from '../services/evalConfigLoader.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -21,7 +23,33 @@ const __dirname = dirname(__filename);
 process.chdir(join(__dirname, '..'));
 
 const verbose = process.argv.includes('--verbose');
-const modelArg = process.argv.find((a, i) => process.argv[i - 1] === '--model') || 'default';
+const modelOverride = process.argv.find((arg, index) => process.argv[index - 1] === '--model') || null;
+
+function getLmstudioTarget(modelRef = null) {
+  const providerConfig = evalConfigLoader.getProviderConfig('lmstudio');
+  const configuredRef = providerConfig.default_model || 'default';
+  const requestedRef = modelRef || configuredRef;
+  const resolvedModel = providerConfig.models?.[requestedRef] || requestedRef;
+
+  if (!resolvedModel) {
+    throw new Error('Could not resolve an LMStudio model from config/providers.yaml');
+  }
+
+  return {
+    providerConfig,
+    configuredRef,
+    requestedRef,
+    resolvedModel,
+    baseUrl: providerConfig.base_url,
+    source: modelRef
+      ? '--model'
+      : providerConfig.default_model
+        ? 'providers.lmstudio.default_model'
+        : 'providers.lmstudio.models.default',
+  };
+}
+
+const lmstudioTarget = getLmstudioTarget(modelOverride);
 
 let passed = 0;
 let failed = 0;
@@ -40,9 +68,9 @@ function fail(label, detail) {
 // ─── Test 1: Raw curl-equivalent fetch ─────────────────────────────────────
 async function testRawFetch() {
   console.log('\n1. Raw fetch to LMStudio (curl equivalent)');
-  const url = 'http://10.0.0.174:1234/v1/chat/completions';
+  const url = lmstudioTarget.baseUrl;
   const body = {
-    model: 'qwen/qwen3-vl-4b',
+    model: lmstudioTarget.resolvedModel,
     messages: [
       { role: 'system', content: 'You are a helpful assistant.' },
       { role: 'user', content: 'Say hello in one sentence.' },
@@ -79,9 +107,9 @@ async function testRawFetch() {
 // ─── Test 2: Raw fetch with stale auth header ──────────────────────────────
 async function testRawFetchWithAuth() {
   console.log('\n2. Raw fetch with spurious Authorization header');
-  const url = 'http://10.0.0.174:1234/v1/chat/completions';
+  const url = lmstudioTarget.baseUrl;
   const body = {
-    model: 'qwen/qwen3-vl-4b',
+    model: lmstudioTarget.resolvedModel,
     messages: [{ role: 'user', content: 'Say hello.' }],
     max_tokens: 30,
   };
@@ -111,8 +139,6 @@ async function testRawFetchWithAuth() {
 async function testProviderConfig() {
   console.log('\n3. Provider config resolution');
   try {
-    const { default: evalConfigLoader } = await import('../services/evalConfigLoader.js');
-
     const config = evalConfigLoader.getProviderConfig('lmstudio');
     if (!config) {
       fail('getProviderConfig returned null');
@@ -121,10 +147,10 @@ async function testProviderConfig() {
 
     if (verbose) console.log(`  Config: ${JSON.stringify(config, null, 2)}`);
 
-    if (config.base_url?.includes('10.0.0.174:1234')) {
+    if (config.base_url) {
       ok(`base_url: ${config.base_url}`);
     } else {
-      fail('Wrong base_url', config.base_url);
+      fail('Missing base_url', config.base_url);
     }
 
     if (config.isConfigured) {
@@ -140,12 +166,11 @@ async function testProviderConfig() {
       fail('Unexpected apiKey', `"${config.apiKey.slice(0, 10)}..." — should be empty`);
     }
 
-    // Check models mapping
-    const defaultModel = config.models?.default;
-    if (defaultModel === 'qwen3-14b') {
-      ok(`models.default: ${defaultModel}`);
+    const configuredDefaultModel = config.models?.[config.default_model] || config.default_model;
+    if (configuredDefaultModel) {
+      ok(`default_model: ${config.default_model} → ${configuredDefaultModel}`);
     } else {
-      fail('Wrong models.default', defaultModel);
+      fail('Missing default_model', config.default_model);
     }
   } catch (e) {
     fail('Import/config error', e.message);
@@ -156,9 +181,7 @@ async function testProviderConfig() {
 async function testModelResolution() {
   console.log('\n4. Model resolution (evalConfigLoader.resolveModel)');
   try {
-    const { default: evalConfigLoader } = await import('../services/evalConfigLoader.js');
-
-    const ref = `lmstudio.${modelArg}`;
+    const ref = `lmstudio.${lmstudioTarget.requestedRef}`;
     const r = evalConfigLoader.resolveModel(ref);
 
     if (verbose) console.log(`  resolveModel("${ref}"): ${JSON.stringify(r, null, 2)}`);
@@ -169,13 +192,13 @@ async function testModelResolution() {
       fail('Wrong provider', r.provider);
     }
 
-    if (r.model && !r.model.includes('undefined')) {
+    if (r.model === lmstudioTarget.resolvedModel) {
       ok(`model: ${r.model}`);
     } else {
-      fail('Bad model ID', r.model);
+      fail('Wrong model ID', `${r.model} (expected ${lmstudioTarget.resolvedModel})`);
     }
 
-    if (r.baseUrl?.includes('10.0.0.174:1234')) {
+    if (r.baseUrl === lmstudioTarget.baseUrl) {
       ok(`baseUrl: ${r.baseUrl}`);
     } else {
       fail('Wrong baseUrl', r.baseUrl);
@@ -206,7 +229,7 @@ async function testObjectResolution() {
     const { tutorConfigLoader } = await import('@machinespirits/tutor-core');
 
     // This is what evalRunner passes to tutor-core
-    const egoModelObj = { provider: 'lmstudio', model: 'qwen/qwen3-vl-4b' };
+    const egoModelObj = { provider: 'lmstudio', model: lmstudioTarget.requestedRef };
     const resolved = tutorConfigLoader.resolveModel(egoModelObj);
 
     if (verbose) console.log(`  resolveModel(object): ${JSON.stringify(resolved, null, 2)}`);
@@ -217,13 +240,13 @@ async function testObjectResolution() {
       fail('Wrong provider', resolved.provider);
     }
 
-    if (resolved.model === 'qwen/qwen3-vl-4b') {
+    if (resolved.model === lmstudioTarget.resolvedModel) {
       ok(`model: ${resolved.model}`);
     } else {
-      fail('Wrong model', resolved.model);
+      fail('Wrong model', `${resolved.model} (expected ${lmstudioTarget.resolvedModel})`);
     }
 
-    if (resolved.baseUrl?.includes('10.0.0.174:1234')) {
+    if (resolved.baseUrl === lmstudioTarget.baseUrl) {
       ok(`baseUrl: ${resolved.baseUrl}`);
     } else {
       fail('Wrong baseUrl from tutor-core', resolved.baseUrl);
@@ -243,7 +266,7 @@ async function testObjectResolution() {
       isConfigured: resolved.isConfigured ?? originalProviderConfig.isConfigured,
     };
 
-    if (overriddenProviderConfig.base_url.includes('10.0.0.174:1234')) {
+    if (overriddenProviderConfig.base_url === lmstudioTarget.baseUrl) {
       ok(`Overridden base_url: ${overriddenProviderConfig.base_url}`);
     } else {
       fail('base_url NOT overridden!', overriddenProviderConfig.base_url);
@@ -271,7 +294,7 @@ async function testTutorCorePath() {
 
     // Get the lmstudio provider config directly
     const providerConfig = tutorConfigLoader.getProviderConfig('lmstudio');
-    const model = providerConfig.models?.[modelArg] || modelArg;
+    const model = providerConfig.models?.[lmstudioTarget.requestedRef] || lmstudioTarget.requestedRef;
 
     if (verbose) {
       console.log(`  providerConfig.base_url: ${providerConfig.base_url}`);
@@ -351,7 +374,7 @@ async function testEgoOverrideSimulation() {
     }
 
     // Resolve the lmstudio override
-    const resolved = tutorConfigLoader.resolveModel({ provider: 'lmstudio', model: 'qwen/qwen3-vl-4b' });
+    const resolved = tutorConfigLoader.resolveModel({ provider: 'lmstudio', model: lmstudioTarget.requestedRef });
 
     // Apply the CURRENT fix (must use != null, not ||, to preserve empty string for keyless providers)
     const overriddenEgoConfig = {
@@ -374,7 +397,7 @@ async function testEgoOverrideSimulation() {
     console.log(`    providerConfig.isConfigured: ${overriddenEgoConfig.providerConfig.isConfigured}`);
 
     // Check base_url
-    if (overriddenEgoConfig.providerConfig.base_url.includes('10.0.0.174:1234')) {
+    if (overriddenEgoConfig.providerConfig.base_url === lmstudioTarget.baseUrl) {
       ok('base_url correctly points to LMStudio');
     } else {
       fail('base_url still points to original provider!', overriddenEgoConfig.providerConfig.base_url);
@@ -476,7 +499,7 @@ async function testFullGeneration() {
     console.log('  Calling generateSuggestions with egoModel override...');
     const result = await tutorApi.generateSuggestions(context, {
       profileName: 'budget',
-      egoModel: { provider: 'lmstudio', model: 'qwen/qwen3-vl-4b' },
+      egoModel: { provider: 'lmstudio', model: lmstudioTarget.requestedRef },
       disableSuperego: true,
       useDialogue: false,
       maxRounds: 0,
@@ -668,7 +691,7 @@ async function testFetchProviderWithLmstudio() {
     const { _fetchProvider: fp, tutorConfigLoader } = await import('@machinespirits/tutor-core');
 
     const providerConfig = tutorConfigLoader.getProviderConfig('lmstudio');
-    const model = providerConfig.models?.[modelArg] || providerConfig.default_model || modelArg;
+    const model = providerConfig.models?.[lmstudioTarget.requestedRef] || lmstudioTarget.requestedRef;
 
     const result = await fp({
       provider: 'lmstudio',
@@ -703,8 +726,9 @@ async function testFetchProviderWithLmstudio() {
 // ─── Run all tests ─────────────────────────────────────────────────────────
 console.log('LMStudio Provider Integration Tests');
 console.log('====================================');
-console.log(`Target: http://10.0.0.174:1234`);
-console.log(`Model alias: ${modelArg}`);
+console.log(`Target: ${lmstudioTarget.baseUrl}`);
+console.log(`Model ref: ${lmstudioTarget.requestedRef} (${lmstudioTarget.source})`);
+console.log(`Resolved model: ${lmstudioTarget.resolvedModel}`);
 
 await testRawFetch();
 await testRawFetchWithAuth();
