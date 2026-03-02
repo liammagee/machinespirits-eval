@@ -2982,13 +2982,24 @@ async function main() {
             learnerMessage: t.learnerMessage,
           }));
           const learnerCtx = dialogueLog.learnerContext || null;
+          const transcriptArtifacts = dialogueLog.transcripts || null;
 
-          const publicTranscript = buildDialoguePublicTranscript(transcriptTurns, dialogueTrace, learnerCtx);
+          const publicTranscript = buildDialoguePublicTranscript(
+            transcriptTurns,
+            dialogueTrace,
+            learnerCtx,
+            transcriptArtifacts,
+          );
           console.log(`──── Public Transcript (${totalTurns} turns) ────────────────`);
           console.log(publicTranscript);
 
           if (verbose) {
-            const fullTranscript = buildDialogueFullTranscript(transcriptTurns, dialogueTrace, learnerCtx);
+            const fullTranscript = buildDialogueFullTranscript(
+              transcriptTurns,
+              dialogueTrace,
+              learnerCtx,
+              transcriptArtifacts,
+            );
             console.log(`──── Full Transcript (with internals) ──────────`);
             console.log(fullTranscript);
           }
@@ -3076,6 +3087,7 @@ async function main() {
                 topic: scenario.topic || scenario.name,
                 turnCount: totalTurns,
                 learnerContext: learnerCtx,
+                transcriptArtifacts,
               }
             : null;
 
@@ -3420,6 +3432,7 @@ async function main() {
                       scenarioDescription: scenario.description,
                       learnerContext: learnerCtx,
                       hasRecognition,
+                      transcriptArtifacts,
                     });
 
                     const judgeInputHash = createHash('sha256').update(holisticPrompt).digest('hex');
@@ -3877,6 +3890,7 @@ async function main() {
             topic: scenario.topic || scenario.name,
             turnCount: result.suggestions?.length || conversationHistory.length,
             learnerContext: dialogueLog?.learnerContext || null,
+            transcriptArtifacts: dialogueLog?.transcripts || null,
           };
 
           // DgP and DgI use independent try/catch so a transient failure
@@ -5528,6 +5542,7 @@ async function main() {
                   ? result.suggestions.length
                   : result.dialogueRounds || conversationHistory.length,
               learnerContext: dialogueLog?.learnerContext || null,
+              transcriptArtifacts: dialogueLog?.transcripts || null,
             };
 
             // ── Step B: Score dialogue quality (PUBLIC transcript) → dialogue_quality_score ──

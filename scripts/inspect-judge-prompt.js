@@ -204,6 +204,7 @@ const learnerArch = dialogueLog?.learnerArchitecture || result.learner_architect
 const isMultiAgent =
   learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
 const learnerCtx = dialogueLog?.learnerContext || scenario.learner_context || '';
+const transcriptArtifacts = dialogueLog?.transcripts || null;
 
 const scenarioContext = {
   name: scenario.name,
@@ -348,6 +349,7 @@ function buildPromptForChannel(ch) {
         scenarioDescription: scenario.description,
         learnerContext: learnerCtx,
         hasRecognition: profileName.includes('recog'),
+        transcriptArtifacts,
       });
     }
 
@@ -372,6 +374,7 @@ function buildPromptForChannel(ch) {
         turnCount: totalTurns,
         learnerContext: learnerCtx,
         transcriptMode: 'public',
+        transcriptArtifacts,
       });
     }
 
@@ -385,6 +388,7 @@ function buildPromptForChannel(ch) {
         turnCount: totalTurns,
         learnerContext: learnerCtx,
         transcriptMode: 'full',
+        transcriptArtifacts,
       });
     }
 
@@ -574,7 +578,7 @@ if (!promptOnly && channel !== 'all' && dialogueLog) {
   console.log('─'.repeat(70));
   console.log('  PUBLIC TRANSCRIPT (what output-quality judges see)');
   console.log('─'.repeat(70));
-  const publicTranscript = buildDialoguePublicTranscript(transcriptTurns, dialogueTrace, learnerCtx);
+  const publicTranscript = buildDialoguePublicTranscript(transcriptTurns, dialogueTrace, learnerCtx, transcriptArtifacts);
   console.log(publicTranscript);
   console.log('');
 
@@ -582,7 +586,7 @@ if (!promptOnly && channel !== 'all' && dialogueLog) {
     console.log('─'.repeat(70));
     console.log('  FULL TRANSCRIPT (what deliberation judges see)');
     console.log('─'.repeat(70));
-    const fullTranscript = buildDialogueFullTranscript(transcriptTurns, dialogueTrace, learnerCtx);
+    const fullTranscript = buildDialogueFullTranscript(transcriptTurns, dialogueTrace, learnerCtx, transcriptArtifacts);
     console.log(fullTranscript);
     console.log('');
   }

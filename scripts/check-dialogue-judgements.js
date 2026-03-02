@@ -149,7 +149,8 @@ function checkRow(row) {
   // ─── B. Public Transcript Structural Checks ────────────────────────────
 
   const learnerContext = log.learnerContext || '';
-  publicTranscript = buildDialoguePublicTranscript(turns, trace, learnerContext);
+  const transcriptArtifacts = log.transcripts || null;
+  publicTranscript = buildDialoguePublicTranscript(turns, trace, learnerContext, transcriptArtifacts);
 
   if (publicTranscript === '(no transcript available)') {
     checks.B.push({ status: FAIL, msg: 'public transcript empty' });
@@ -196,7 +197,7 @@ function checkRow(row) {
 
   // ─── C. Full Transcript Structural Checks ──────────────────────────────
 
-  fullTranscript = buildDialogueFullTranscript(turns, trace, learnerContext);
+  fullTranscript = buildDialogueFullTranscript(turns, trace, learnerContext, transcriptArtifacts);
 
   if (fullTranscript === '(no transcript available)') {
     checks.C.push({ status: FAIL, msg: 'full transcript empty' });
