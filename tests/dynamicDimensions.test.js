@@ -4,6 +4,7 @@ import {
   createRun,
   storeResult,
   getRunStats,
+  updateResultScores,
   updateResultTutorScores,
   deleteRun,
 } from '../services/evaluationStore.js';
@@ -111,6 +112,51 @@ describe('Dynamic Dimensions Support', () => {
     assert.ok(report.includes('new_custom_dimension'), 'Should include new_custom_dimension in report');
     assert.ok(report.includes('5.00'), 'Should show the score for perception_quality');
     assert.ok(report.includes('4.00'), 'Should show the score for new_custom_dimension');
+  });
+
+  it('aggregates dimensions from scores_with_reasoning objects in getRunStats and report', () => {
+    const run = createRun({ description: 'scores_with_reasoning dynamic dims test' });
+    testRunIds.push(run.id);
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'scen-json',
+      scenarioName: 'Scenario JSON',
+      provider: 'test-provider',
+      model: 'test-model',
+      profileName: 'cell_1',
+      success: true,
+    });
+
+    updateResultScores(resultId, {
+      scores: {
+        perception_quality: { score: 2, reasoning: 'Tracks learner state weakly' },
+        pedagogical_craft: { score: 4, reasoning: 'Clear scaffold' },
+        content_accuracy: { score: 5, reasoning: 'Accurate explanation' },
+      },
+      tutorFirstTurnScore: 73,
+      baseScore: 70,
+      recognitionScore: 78,
+      passesRequired: true,
+      passesForbidden: true,
+      requiredMissing: [],
+      forbiddenFound: [],
+      judgeModel: 'test-judge/model',
+      summary: 'Structured JSON dimensions',
+    });
+
+    const stats = getRunStats(run.id);
+    assert.strictEqual(stats.length, 1);
+    assert.strictEqual(stats[0].dimensions.perception_quality, 2);
+    assert.strictEqual(stats[0].dimensions.pedagogical_craft, 4);
+    assert.strictEqual(stats[0].dimensions.content_accuracy, 5);
+
+    const report = generateReport(run.id);
+    assert.ok(report.includes('perception_quality'), 'Should include JSON-backed dimension');
+    assert.ok(report.includes('pedagogical_craft'), 'Should include JSON-backed dimension');
+    assert.ok(report.includes('content_accuracy'), 'Should include JSON-backed dimension');
+    assert.ok(report.includes('2.00'), 'Should show the JSON-backed perception score');
+    assert.ok(report.includes('4.00'), 'Should show the JSON-backed pedagogical score');
+    assert.ok(report.includes('5.00'), 'Should show the JSON-backed accuracy score');
   });
 
   it('falls back to legacy dimensions if tutor_scores is missing', () => {
