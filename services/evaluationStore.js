@@ -889,64 +889,95 @@ export function getResults(runId, options = {}) {
  * Get aggregated statistics for a run
  */
 export function getRunStats(runId) {
-  const stmt = db.prepare(`
-    SELECT
-      provider,
-      model,
-      profile_name,
-      ego_model,
-      superego_model,
-      COUNT(*) as total_tests,
-      SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful_tests,
-      AVG(COALESCE(tutor_first_turn_score, overall_score)) as avg_score,
-      AVG(score_relevance) as avg_relevance,
-      AVG(score_specificity) as avg_specificity,
-      AVG(score_pedagogical) as avg_pedagogical,
-      AVG(score_personalization) as avg_personalization,
-      AVG(score_actionability) as avg_actionability,
-      AVG(score_tone) as avg_tone,
-      AVG(base_score) as avg_base_score,
-      AVG(recognition_score) as avg_recognition_score,
-      AVG(latency_ms) as avg_latency,
-      SUM(input_tokens) as total_input_tokens,
-      SUM(output_tokens) as total_output_tokens,
-      SUM(CASE WHEN passes_required = 1 THEN 1 ELSE 0 END) as passes_required,
-      SUM(CASE WHEN passes_forbidden = 1 THEN 1 ELSE 0 END) as passes_forbidden
-    FROM evaluation_results
-    WHERE run_id = ?
-    GROUP BY provider, model, profile_name
-    ORDER BY avg_score DESC
-  `);
+  const results = getResults(runId);
+  if (results.length === 0) return [];
 
-  const rows = stmt.all(runId);
+  // Group by (provider, model, profileName)
+  const groups = {};
 
-  return rows.map((row) => ({
-    provider: row.provider,
-    model: row.model,
-    profileName: row.profile_name,
-    egoModel: row.ego_model,
-    superegoModel: row.superego_model,
-    totalTests: row.total_tests,
-    successfulTests: row.successful_tests,
-    successRate: row.total_tests > 0 ? row.successful_tests / row.total_tests : 0,
-    avgScore: row.avg_score,
-    avgBaseScore: row.avg_base_score,
-    avgRecognitionScore: row.avg_recognition_score,
-    dimensions: {
-      relevance: row.avg_relevance,
-      specificity: row.avg_specificity,
-      pedagogical: row.avg_pedagogical,
-      personalization: row.avg_personalization,
-      actionability: row.avg_actionability,
-      tone: row.avg_tone,
-    },
-    avgLatencyMs: row.avg_latency,
-    totalInputTokens: row.total_input_tokens,
-    totalOutputTokens: row.total_output_tokens,
-    passesRequired: row.passes_required,
-    passesForbidden: row.passes_forbidden,
-    validationPassRate: row.total_tests > 0 ? (row.passes_required + row.passes_forbidden) / (row.total_tests * 2) : 0,
-  }));
+  for (const r of results) {
+    const key = `${r.provider}|${r.model}|${r.profileName}`;
+    if (!groups[key]) {
+      groups[key] = {
+        provider: r.provider,
+        model: r.model,
+        profileName: r.profileName,
+        egoModel: r.egoModel,
+        superegoModel: r.superegoModel,
+        totalTests: 0,
+        successfulTests: 0,
+        scores: [],
+        baseScores: [],
+        recognitionScores: [],
+        latencies: [],
+        inputTokens: 0,
+        outputTokens: 0,
+        passesRequired: 0,
+        passesForbidden: 0,
+        dimensionSums: {},
+        dimensionCounts: {},
+      };
+    }
+
+    const g = groups[key];
+    g.totalTests++;
+    if (r.success) {
+      g.successfulTests++;
+      if (r.tutorFirstTurnScore != null) g.scores.push(r.tutorFirstTurnScore);
+      if (r.baseScore != null) g.baseScores.push(r.baseScore);
+      if (r.recognitionScore != null) g.recognitionScores.push(r.recognitionScore);
+      if (r.latencyMs != null) g.latencies.push(r.latencyMs);
+      g.inputTokens += r.inputTokens || 0;
+      g.outputTokens += r.outputTokens || 0;
+      if (r.passesRequired) g.passesRequired++;
+      if (r.passesForbidden) g.passesForbidden++;
+
+      // Aggregate dimensions from the parsed scores object
+      if (r.scores) {
+        for (const [dim, score] of Object.entries(r.scores)) {
+          if (score != null) {
+            g.dimensionSums[dim] = (g.dimensionSums[dim] || 0) + score;
+            g.dimensionCounts[dim] = (g.dimensionCounts[dim] || 0) + 1;
+          }
+        }
+      }
+    }
+  }
+
+  const finalStats = Object.values(groups)
+    .map((g) => {
+      const avgScore = g.scores.length > 0 ? g.scores.reduce((a, b) => a + b, 0) / g.scores.length : null;
+      
+      const dimensions = {};
+      for (const dim of Object.keys(g.dimensionSums)) {
+        dimensions[dim] = g.dimensionSums[dim] / g.dimensionCounts[dim];
+      }
+
+      return {
+        provider: g.provider,
+        model: g.model,
+        profileName: g.profileName,
+        egoModel: g.egoModel,
+        superegoModel: g.superegoModel,
+        totalTests: g.totalTests,
+        successfulTests: g.successfulTests,
+        successRate: g.totalTests > 0 ? g.successfulTests / g.totalTests : 0,
+        avgScore,
+        avgBaseScore: g.baseScores.length > 0 ? g.baseScores.reduce((a, b) => a + b, 0) / g.baseScores.length : null,
+        avgRecognitionScore: g.recognitionScores.length > 0 ? g.recognitionScores.reduce((a, b) => a + b, 0) / g.recognitionScores.length : null,
+        dimensions,
+        avgLatencyMs: g.latencies.length > 0 ? g.latencies.reduce((a, b) => a + b, 0) / g.latencies.length : null,
+        totalInputTokens: g.inputTokens,
+        totalOutputTokens: g.outputTokens,
+        passesRequired: g.passesRequired,
+        passesForbidden: g.passesForbidden,
+        validationPassRate: g.totalTests > 0 ? (g.passesRequired + g.passesForbidden) / (g.totalTests * 2) : 0,
+      };
+    })
+    .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
+
+  console.log(`[getRunStats] dimensions for group ${finalStats[0]?.profileName}:`, finalStats[0]?.dimensions);
+  return finalStats;
 }
 
 /**
@@ -1491,15 +1522,67 @@ function parseResultRow(row) {
     }
   }
 
-  // Build the scores object - use scoresWithReasoning if available
-  const scores = scoresWithReasoning || {
-    relevance: row.score_relevance,
-    specificity: row.score_specificity,
-    pedagogical: row.score_pedagogical,
-    personalization: row.score_personalization,
-    actionability: row.score_actionability,
-    tone: row.score_tone,
-  };
+  // Parse tutor_scores if available (Rubric 2.2+ per-turn scores)
+  let tutorScoresJson = null;
+  if (row.tutor_scores) {
+    try {
+      tutorScoresJson = JSON.parse(row.tutor_scores);
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  // Build the scores object
+  let scores = scoresWithReasoning;
+
+  if (!scores && tutorScoresJson) {
+    // If we have tutor_scores JSON (v2.2+), aggregate turn-level dimension scores
+    // into a single dimensions object for legacy-compatible reporting.
+    const turnIndices = Object.keys(tutorScoresJson);
+    if (turnIndices.length > 0) {
+      const dimensionSums = {};
+      const dimensionCounts = {};
+
+      for (const idx of turnIndices) {
+        const turnData = tutorScoresJson[idx];
+        const turnScores = turnData.scores || turnData; // Handle both wrapped and direct scores
+        if (!turnScores) continue;
+
+        for (const [dim, detail] of Object.entries(turnScores)) {
+          // Skip non-score keys if we're looking at a turn object
+          if (['overallScore', 'baseScore', 'recognitionScore', 'summary', 'judgeInputHash', 'judgeTimestamp', 'judgeModel', 'contentTurnId', 'turnIndex'].includes(dim)) continue;
+          
+          const val = typeof detail === 'number' ? detail : detail?.score;
+          if (val != null) {
+            dimensionSums[dim] = (dimensionSums[dim] || 0) + val;
+            dimensionCounts[dim] = (dimensionCounts[dim] || 0) + 1;
+          }
+        }
+      }
+
+      const aggregated = {};
+      for (const dim of Object.keys(dimensionSums)) {
+        aggregated[dim] = dimensionSums[dim] / dimensionCounts[dim];
+      }
+      
+      // If we found dimensions, use them
+      if (Object.keys(aggregated).length > 0) {
+        scores = aggregated;
+      }
+    }
+  }
+
+  // Fallback to legacy numeric columns if no structured scores found
+  if (!scores) {
+    scores = {
+      relevance: row.score_relevance,
+      specificity: row.score_specificity,
+      pedagogical: row.score_pedagogical,
+      personalization: row.score_personalization,
+      actionability: row.score_actionability,
+      tone: row.score_tone,
+    };
+  }
 
   return {
     id: row.id,

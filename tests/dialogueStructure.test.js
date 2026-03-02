@@ -307,8 +307,6 @@ describe('Group 3: multi-agent learner deliberation', { skip: multiTurnLogs.leng
           }
         });
       } else {
-        const isMessagesMode = data.conversationMode === 'messages';
-
         // Unified learners have two valid trace patterns:
         // - YAML-scripted (single-prompt, or pre-fix messages): 1 entry (learner/turn_action)
         // - LLM single-agent (messages-mode post-fix): 2 entries (learner_*/deliberation + learner/final_output)

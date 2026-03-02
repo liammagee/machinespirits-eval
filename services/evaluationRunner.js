@@ -4174,24 +4174,49 @@ export function generateReport(runId) {
     lines.push('DIMENSION BREAKDOWN');
     lines.push('-'.repeat(80));
 
-    const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-    const header =
-      '| Dimension       |' + stats.map((s) => ` ${(s.profileName || s.model).substring(0, 12).padEnd(12)} |`).join('');
-    lines.push(header);
-    lines.push('|-----------------|' + stats.map(() => '--------------|').join(''));
+    // Determine which dimensions to show based on what's in the data
+    const allDims = new Set();
+    stats.forEach(s => Object.keys(s.dimensions).forEach(d => allDims.add(d)));
 
-    for (const dim of dims) {
-      const row =
-        `| ${dim.padEnd(15)} |` +
-        stats
-          .map((s) => {
-            const score = s.dimensions?.[dim];
-            return ` ${score ? score.toFixed(2).padStart(12) : '         N/A'} |`;
-          })
-          .join('');
-      lines.push(row);
+    // Prioritize Rubric 2.2+ dimensions if present
+    let dims = [];
+    if (allDims.has('perception_quality') || allDims.has('recognition_quality')) {
+      dims = [
+        'perception_quality',
+        'pedagogical_craft',
+        'elicitation_quality',
+        'adaptive_responsiveness',
+        'recognition_quality',
+        'productive_difficulty',
+        'epistemic_integrity',
+        'content_accuracy'
+      ];
+    } else {
+      dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
     }
-    lines.push('');
+
+    // Only show dimensions that actually have data in at least one config
+    dims = dims.filter(d => allDims.has(d));
+
+    if (dims.length > 0) {
+      const header =
+        '| Dimension'.padEnd(26) + '|' + stats.map((s) => ` ${(s.profileName || s.model).substring(0, 12).padEnd(12)} |`).join('');
+      lines.push(header);
+      lines.push('|' + '-'.repeat(25) + '|' + stats.map(() => '--------------|').join(''));
+
+      for (const dim of dims) {
+        const row =
+          `| ${dim.padEnd(24)} |` +
+          stats
+            .map((s) => {
+              const score = s.dimensions?.[dim];
+              return ` ${score ? score.toFixed(2).padStart(12) : '         N/A'} |`;
+            })
+            .join('');
+        lines.push(row);
+      }
+      lines.push('');
+    }
   }
 
   // Scenario breakdown

@@ -164,7 +164,6 @@ export function loadSuggestionScenarios({ forceReload } = {}) {
 
 // Cache for the { providers: ... } wrapper (so callers get stable references)
 let providersWrapperCache = null;
-let providersWrapperRef = null; // track configLoaderBase's cache reference
 let providersWrapperSources = { shared: null, local: null };
 
 /**
@@ -198,7 +197,6 @@ export function loadProviders({ forceReload } = {}) {
   const merged = deepMerge(sharedProviders || {}, localOverrides || {});
   if (!merged || Object.keys(merged).length === 0) return null;
 
-  providersWrapperRef = merged;
   providersWrapperSources = { shared: sharedProviders, local: localOverrides };
   providersWrapperCache = { providers: merged };
   return providersWrapperCache;

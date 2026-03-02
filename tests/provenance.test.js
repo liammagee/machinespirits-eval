@@ -33,7 +33,6 @@ const {
   createRun,
   storeResult,
   getResults,
-  getResultById,
   updateResultScores,
   updateResultTutorScores,
   updateResultTutorHolisticScores,
@@ -152,7 +151,7 @@ describe('Turn ID generation', () => {
 describe('storeResult with dialogueContentHash', () => {
   it('stores dialogue_content_hash when provided', () => {
     const testHash = createHash('sha256').update('test dialogue content').digest('hex');
-    const { runId, resultId } = createTestResult({ dialogueContentHash: testHash });
+    const { runId } = createTestResult({ dialogueContentHash: testHash });
     const results = getResults(runId);
     assert.strictEqual(results.length, 1);
     const row = results[0];
@@ -160,7 +159,7 @@ describe('storeResult with dialogueContentHash', () => {
   });
 
   it('stores NULL when dialogueContentHash not provided', () => {
-    const { runId, resultId } = createTestResult();
+    const { runId } = createTestResult();
     const results = getResults(runId);
     const row = results[0];
     assert.strictEqual(row.dialogueContentHash, null);
@@ -599,7 +598,7 @@ describe('Hash verification scenarios', () => {
     const hashB = createHash('sha256').update(contentB).digest('hex');
 
     // Store with hash A
-    const { runId, resultId } = createTestResult({ dialogueContentHash: hashA });
+    const { runId } = createTestResult({ dialogueContentHash: hashA });
 
     // Verify: recomputing with content B produces different hash
     const results = getResults(runId);
@@ -743,7 +742,7 @@ describe('Backward compatibility extensions', () => {
     const { resultId } = createTestResult(); // No dialogueContentHash
 
     // Verify hash is NULL
-    const results = getResults(createTestResult().runId);
+    getResults(createTestResult().runId);
     // Now update the row without hash — should work fine
     updateResultTutorScores(resultId, {
       tutorOverallScore: 88,

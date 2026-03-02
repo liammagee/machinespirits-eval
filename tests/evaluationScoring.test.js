@@ -41,7 +41,6 @@ const {
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
   buildTutorHolisticEvaluationPrompt,
-  calculateOverallScore,
   calculateTutorHolisticScore,
   getTutorHolisticDimensions,
 } = await import('../services/rubricEvaluator.js');

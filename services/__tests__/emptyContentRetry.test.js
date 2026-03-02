@@ -5,7 +5,7 @@
  * Run: node --test services/__tests__/emptyContentRetry.test.js
  */
 
-import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { callLearnerAI } from '../learnerTutorInteractionEngine.js';
 

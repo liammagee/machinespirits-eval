@@ -23,7 +23,6 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 
 import { resolveConfigModels, resolveEvalProfile, EVAL_ONLY_PROFILES } from '../services/evaluationRunner.js';
-import { getTutorProfile, loadTutorAgents } from '../services/evalConfigLoader.js';
 
 // tutor-core imports (via symlink)
 import * as tutorCoreConfig from '@machinespirits/tutor-core/services/tutorConfigLoader';
@@ -182,9 +181,6 @@ describe('config override boundary — dialogue rounds from eval YAML', () => {
 
 describe('config override boundary — conversation mode', () => {
   const messagesCells = cellNames.filter(n => evalConfig.profiles[n]?.conversation_mode === 'messages');
-  const nonMessagesCells = cellNames.filter(n =>
-    !evalConfig.profiles[n]?.conversation_mode || evalConfig.profiles[n]?.conversation_mode !== 'messages',
-  );
 
   it('messages-mode cells are identified correctly', () => {
     assert.ok(messagesCells.length >= 8, `Expected ≥8 messages-mode cells, got ${messagesCells.length}`);
