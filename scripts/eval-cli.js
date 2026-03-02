@@ -2602,8 +2602,8 @@ async function main() {
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
         const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
 
-        if (judgeCli !== 'claude' && judgeCli !== 'gemini') {
-          console.error(`Error: --judge-cli must be 'claude' or 'gemini', got '${judgeCli}'`);
+        if (!['claude', 'gemini', 'codex'].includes(judgeCli)) {
+          console.error(`Error: --judge-cli must be 'claude', 'gemini', or 'codex', got '${judgeCli}'`);
           process.exit(1);
         }
 
@@ -2620,9 +2620,11 @@ async function main() {
         const judgeModelLabel =
           judgeCli === 'gemini'
             ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
-            : effectiveJudgeModel
-              ? `claude-code/${effectiveJudgeModel}`
-              : 'claude-opus-4.6';
+            : judgeCli === 'codex'
+              ? `codex-cli/${effectiveJudgeModel || 'auto'}`
+              : effectiveJudgeModel
+                ? `claude-code/${effectiveJudgeModel}`
+                : 'claude-opus-4.6';
 
         // Restore env overrides from run metadata (e.g. EVAL_SCENARIOS_FILE for domain generalizability runs)
         {
@@ -2709,6 +2711,13 @@ async function main() {
           if (judgeCli === 'gemini') {
             cliBinary = 'gemini';
             cliArgs = ['-o', 'text'];
+            if (effectiveJudgeModel) {
+              cliArgs.push('-m', effectiveJudgeModel);
+            }
+            cliEnv = { ...process.env };
+          } else if (judgeCli === 'codex') {
+            cliBinary = 'codex';
+            cliArgs = ['exec', '-'];
             if (effectiveJudgeModel) {
               cliArgs.push('-m', effectiveJudgeModel);
             }
@@ -2862,6 +2871,11 @@ async function main() {
           if (judgeCli === 'gemini') {
             cliBin = 'gemini';
             cliJudgeArgs = ['-o', 'text'];
+            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
+            cliJudgeEnv = { ...process.env };
+          } else if (judgeCli === 'codex') {
+            cliBin = 'codex';
+            cliJudgeArgs = ['exec', '-'];
             if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
             cliJudgeEnv = { ...process.env };
           } else {
@@ -4780,8 +4794,8 @@ async function main() {
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
         const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
 
-        if (judgeCli !== 'claude' && judgeCli !== 'gemini') {
-          console.error(`Error: --judge-cli must be 'claude' or 'gemini', got '${judgeCli}'`);
+        if (!['claude', 'gemini', 'codex'].includes(judgeCli)) {
+          console.error(`Error: --judge-cli must be 'claude', 'gemini', or 'codex', got '${judgeCli}'`);
           process.exit(1);
         }
 
@@ -4798,9 +4812,11 @@ async function main() {
         const judgeModelLabel =
           judgeCli === 'gemini'
             ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
-            : effectiveJudgeModel
-              ? `claude-code/${effectiveJudgeModel}`
-              : 'claude-opus-4.6';
+            : judgeCli === 'codex'
+              ? `codex-cli/${effectiveJudgeModel || 'auto'}`
+              : effectiveJudgeModel
+                ? `claude-code/${effectiveJudgeModel}`
+                : 'claude-opus-4.6';
 
         // Load results with dialogue IDs (multi-turn data)
         const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
@@ -4897,6 +4913,11 @@ async function main() {
           if (judgeCli === 'gemini') {
             cliBin = 'gemini';
             cliJudgeArgs = ['-o', 'text'];
+            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
+            cliJudgeEnv = { ...process.env };
+          } else if (judgeCli === 'codex') {
+            cliBin = 'codex';
+            cliJudgeArgs = ['exec', '-'];
             if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
             cliJudgeEnv = { ...process.env };
           } else {
@@ -5266,8 +5287,8 @@ async function main() {
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
 
-        if (judgeCli !== 'claude' && judgeCli !== 'gemini') {
-          console.error(`Error: --judge-cli must be 'claude' or 'gemini', got '${judgeCli}'`);
+        if (!['claude', 'gemini', 'codex'].includes(judgeCli)) {
+          console.error(`Error: --judge-cli must be 'claude', 'gemini', or 'codex', got '${judgeCli}'`);
           process.exit(1);
         }
 
@@ -5284,9 +5305,11 @@ async function main() {
         const judgeModelLabel =
           judgeCli === 'gemini'
             ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
-            : effectiveJudgeModel
-              ? `claude-code/${effectiveJudgeModel}`
-              : 'claude-opus-4.6';
+            : judgeCli === 'codex'
+              ? `codex-cli/${effectiveJudgeModel || 'auto'}`
+              : effectiveJudgeModel
+                ? `claude-code/${effectiveJudgeModel}`
+                : 'claude-opus-4.6';
 
         // Restore env overrides from run metadata
         {
