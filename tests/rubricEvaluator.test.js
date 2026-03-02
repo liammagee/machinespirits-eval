@@ -789,7 +789,7 @@ describe('buildDialogueQualityPrompt', () => {
 
     assert.ok(prompt.includes('EVALUATION RUBRIC'), 'should include rubric section');
     assert.ok(prompt.includes('DIALOGUE CONTEXT'), 'should include context section');
-    assert.ok(prompt.includes('FULL DIALOGUE TRANSCRIPT'), 'should include transcript section');
+    assert.ok(prompt.includes('PUBLIC DIALOGUE TRANSCRIPT'), 'should include transcript section');
     assert.ok(prompt.includes('Test Scenario'), 'should include scenario name');
     assert.ok(prompt.includes('**Turn count**: 2'), 'should include turn count');
     assert.ok(prompt.includes('pedagogical_progression'), 'should include dimension keys in example');
@@ -811,19 +811,20 @@ describe('buildDialogueQualityPrompt', () => {
     assert.ok(prompt.includes('Interactional Coherence'), 'should mention Interactional Coherence');
   });
 
-  it('uses dialogueTrace when provided (consolidated trace)', () => {
+  it('public prompt excludes internal trace details (v3 public-only scoring)', () => {
     const prompt = buildDialogueQualityPrompt({
-      turns: [],
+      turns: [
+        { learnerMessage: 'What is dialectics?', suggestion: { message: 'Great question!' } },
+      ],
       dialogueTrace: [
         { turnIndex: 0, agent: 'learner', action: 'turn_action', detail: 'Learner asks a question' },
         { turnIndex: 0, agent: 'ego', action: 'initial_draft', contextSummary: 'Drafting response' },
-        { turnIndex: 0, agent: 'learner', detail: 'I think I understand now' },
       ],
       scenarioName: 'Trace Test',
       turnCount: 1,
     });
 
-    assert.ok(prompt.includes('Learner asks a question'), 'should include trace detail');
-    assert.ok(prompt.includes('Turn 0'), 'should include turn markers');
+    assert.ok(prompt.includes('PUBLIC DIALOGUE TRANSCRIPT'), 'should use public transcript heading');
+    assert.ok(!prompt.includes('initial_draft'), 'should exclude internal trace actions');
   });
 });
