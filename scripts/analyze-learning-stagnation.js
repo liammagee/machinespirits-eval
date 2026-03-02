@@ -179,21 +179,27 @@ function parseJson(value, fallback = null) {
 
 function resolveRunIds() {
   if (runIdsFromArgs.length > 0) return runIdsFromArgs;
-  const latest = db
-    .prepare(
-      `
-      SELECT run_id, MAX(created_at) AS latest_at
+  try {
+    const latest = db
+      .prepare(
+        `
+      SELECT run_id, MAX(created_at) as latest_at
       FROM evaluation_results
       WHERE success = 1 AND dialogue_id IS NOT NULL
       GROUP BY run_id
       ORDER BY latest_at DESC
       LIMIT 1
     `,
-    )
-    .get();
-  if (!latest?.run_id) return [];
-  return [latest.run_id];
+      )
+      .get();
+    if (!latest?.run_id) return [];
+    return [latest.run_id];
+  } catch (err) {
+    if (err.message.includes('no such table')) return [];
+    throw err;
+  }
 }
+
 
 function computeSlopePerTurn(seq) {
   if (!Array.isArray(seq) || seq.length < 2) return null;

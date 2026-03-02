@@ -82,7 +82,7 @@ function getModelConfig(choice) {
     case 'sonnet':
       return { provider: 'anthropic', model: 'claude-sonnet-4-5', label: 'Sonnet' };
     case 'flash':
-      return { provider: 'openrouter', model: 'google/gemini-2.5-flash-preview', label: 'Flash' };
+      return { provider: 'openrouter', model: 'google/gemini-3-flash-preview', label: 'Flash' };
     default:
       console.error(`Unknown model: ${choice}. Use or-haiku, haiku, sonnet, or flash.`);
       process.exit(1);
