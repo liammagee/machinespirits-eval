@@ -7,7 +7,8 @@
  */
 
 import * as learnerConfig from './learnerConfigLoader.js';
-import { tutorConfigLoader as tutorConfig, _fetchProvider, truncateForContextOverflow } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as tutorConfig, tutorDialogueEngine, truncateForContextOverflow } from '@machinespirits/tutor-core';
+const { callAI } = tutorDialogueEngine;
 
 import * as learnerWritingPad from './memory/learnerWritingPad.js';
 import * as tutorWritingPad from './memory/tutorWritingPad.js';
@@ -876,180 +877,25 @@ const EMPTY_CONTENT_MAX_RETRIES = 2;
 const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
 
 /**
- * Call the LLM for a learner agent using the same raw fetch layer as
- * tutorDialogueEngine.callAI — same headers, error handling, and response
- * parsing per provider. This ensures learner and tutor calls go through
- * identical network code paths.
- *
- * Includes built-in retry with exponential backoff for 429 rate limits.
+ * Call the LLM for a learner agent using tutor-core's public callAI().
+ * This ensures learner and tutor calls go through identical logic for retries
+ * (429s, context overflow, empty content) and provider-specific message formatting.
  *
  * @param {Object} agentConfig - From learnerConfig.getAgentConfig()
  * @param {string} systemPrompt - Static system/persona prompt (cacheable)
  * @param {string} userPrompt - Dynamic per-call user content
  * @param {string} agentRole - For logging (e.g. 'ego', 'superego', 'synthesis')
- * @returns {Promise<Object>} { content, usage: { inputTokens, outputTokens }, latencyMs }
+ * @returns {Promise<Object>} Learner result shape
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
-  let effectiveSystemPrompt = systemPrompt;
-  let effectiveUserPrompt = userPrompt;
-
-  // Phase 1: 429 rate-limit retry (throws on non-429 errors)
-  let result;
-  let lastError;
-  for (let attempt = 0; attempt <= LEARNER_RETRY_DELAYS.length; attempt++) {
-    try {
-      result = await _callLearnerAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, messageHistory);
-      break;
-    } catch (error) {
-      lastError = error;
-      const is429 = error?.message?.includes('429') || error?.message?.toLowerCase()?.includes('rate limit');
-      if (!is429 || attempt >= LEARNER_RETRY_DELAYS.length) throw error;
-      const delay = LEARNER_RETRY_DELAYS[attempt];
-      console.warn(
-        `[${agentRole}] Rate limit hit, retrying in ${delay}ms (attempt ${attempt + 1}/${LEARNER_RETRY_DELAYS.length})`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
-  if (!result) throw lastError;
-
-  // Phase 1.5: Context overflow retry (local/lmstudio only — progressive truncation)
-  const MAX_OVERFLOW_RETRIES = 2;
-  for (let overflowLevel = 1; result.contextOverflow && overflowLevel <= MAX_OVERFLOW_RETRIES; overflowLevel++) {
-    const beforeLen = effectiveSystemPrompt.length + effectiveUserPrompt.length;
-    const truncated = truncateForContextOverflow(systemPrompt, userPrompt, overflowLevel);
-    effectiveSystemPrompt = truncated.systemPrompt;
-    effectiveUserPrompt = truncated.userPrompt;
-    const afterLen = effectiveSystemPrompt.length + effectiveUserPrompt.length;
-    console.warn(
-      `[${agentRole}] Context overflow from ${agentConfig.model}, truncating level ${overflowLevel} (${beforeLen} → ${afterLen} chars)`,
-    );
-    result = await _callLearnerAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, messageHistory);
-  }
-  if (result.contextOverflow) {
-    throw new Error(
-      `Context overflow for ${agentConfig.model} even after level-${MAX_OVERFLOW_RETRIES} truncation. ` +
-      `Error: ${result.errorMessage}`,
-    );
-  }
-
-  // Phase 2: Empty-content retry (HTTP 200 but no text)
-  // Skip if finish_reason is 'length' — token budget exhausted, same max_tokens will fail again
-  if (!result.content && result.usage?.outputTokens === 0 && result.finishReason !== 'length') {
-    for (let retry = 0; retry < EMPTY_CONTENT_MAX_RETRIES; retry++) {
-      const delay = EMPTY_CONTENT_RETRY_DELAYS[retry];
-      console.warn(
-        `[${agentRole}] Empty content from ${agentConfig.model} (0 output tokens), retrying in ${delay}ms (attempt ${retry + 1}/${EMPTY_CONTENT_MAX_RETRIES})`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, delay));
-
-      try {
-        const retryResult = await _callLearnerAIOnce(agentConfig, effectiveSystemPrompt, effectiveUserPrompt, agentRole, messageHistory);
-        if (retryResult.content) {
-          retryResult.emptyContentRetries = retry + 1;
-          return retryResult;
-        }
-        // If outputTokens > 0, thinking model budget exhaustion — don't keep retrying
-        if (retryResult.usage?.outputTokens > 0) {
-          retryResult.emptyContentRetries = retry + 1;
-          return retryResult;
-        }
-        result = retryResult; // update to latest attempt for return
-      } catch {
-        // Retry attempt failed with exception — keep the last successful-but-empty result
-        break;
-      }
-    }
-    console.warn(
-      `[${agentRole}] Empty content persists after ${EMPTY_CONTENT_MAX_RETRIES} retries (model=${agentConfig.model}). Returning empty result.`,
-    );
-    result.emptyContentRetries = EMPTY_CONTENT_MAX_RETRIES;
-  }
-
-  return result;
-}
-
-/**
- * Single-attempt LLM call. Delegates to shared _fetchProvider() from tutor-core
- * for the raw HTTP fetch, then wraps the result into the learner's shape
- * (content + usage + apiPayload).
- */
-async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRole, messageHistory = null) {
-  const { provider, providerConfig, model, hyperparameters = {} } = agentConfig;
-  const { temperature = 0.7, top_p, reasoning_effort = 'low' } = hyperparameters;
-  let max_tokens = hyperparameters.max_tokens;
-  if (max_tokens === undefined) {
-    throw new Error('Explicit max_tokens setting is required in learner hyperparameters.');
-  }
-
-  // Thinking/reasoning models (kimi-k2-thinking, deepseek-r1) use internal
-  // chain-of-thought that consumes max_tokens. Boost significantly.
-  // Note: kimi-k2.5 (non-thinking) does NOT need this — it's a separate model.
-  const isThinkingModel = model?.includes('kimi-k2-thinking') || model?.includes('deepseek-r1');
-  if (isThinkingModel && max_tokens < 8000) {
-    max_tokens = 8000;
-  }
-
-  // Build provider-specific messages and system prompt
-  // Learner's Anthropic path merges userPrompt into the last user message
-  // (different from tutor which folds into system for message-chain mode)
-  let messages;
-  let effectiveSystem;
-  if (provider === 'anthropic') {
-    effectiveSystem = systemPrompt;
-    if (messageHistory?.length) {
-      messages = [...messageHistory];
-      const last = messages[messages.length - 1];
-      if (last.role === 'user') {
-        messages[messages.length - 1] = { role: 'user', content: `${last.content}\n\n${userPrompt}` };
-      } else {
-        messages.push({ role: 'user', content: userPrompt });
-      }
-    } else {
-      messages = [{ role: 'user', content: userPrompt }];
-    }
-  } else if (provider === 'gemini') {
-    effectiveSystem = systemPrompt;
-    if (messageHistory?.length) {
-      messages = [];
-      for (const msg of messageHistory) {
-        const geminiRole = msg.role === 'assistant' ? 'model' : 'user';
-        const last = messages[messages.length - 1];
-        if (last && last.role === geminiRole) {
-          last.parts[0].text += '\n\n' + msg.content;
-        } else {
-          messages.push({ role: geminiRole, parts: [{ text: msg.content }] });
-        }
-      }
-      const last = messages[messages.length - 1];
-      if (last && last.role === 'user') {
-        last.parts[0].text += '\n\n' + userPrompt;
-      } else {
-        messages.push({ role: 'user', parts: [{ text: userPrompt }] });
-      }
-    } else {
-      messages = [{ role: 'user', parts: [{ text: userPrompt }] }];
-    }
-  } else {
-    // OpenAI, OpenRouter, local, lmstudio: standard {role, content} messages
-    effectiveSystem = systemPrompt;
-    messages = messageHistory?.length
-      ? [{ role: 'system', content: systemPrompt }, ...messageHistory, { role: 'user', content: userPrompt }]
-      : [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }];
-  }
-
-  // Delegate to shared fetch (no streaming for learner)
-  const raw = await _fetchProvider({
-    provider,
-    providerConfig,
-    model,
-    messages,
-    systemPrompt: effectiveSystem,
-    hyperparameters: { temperature, max_tokens, top_p, reasoning_effort },
-    onToken: null,
+  // Delegate all retry and fetch logic to tutor-core
+  const raw = await callAI(agentConfig, systemPrompt, userPrompt, agentRole, {
+    messageHistory,
+    // Add providerConfig for API key/base URL resolution if needed by tutor-core
+    ...agentConfig.providerConfig
   });
 
-  // Wrap into learner result shape
+  // Map tutor-core result shape back to learner result shape
   return {
     content: raw.text,
     usage: {
@@ -1058,25 +904,30 @@ async function _callLearnerAIOnce(agentConfig, systemPrompt, userPrompt, agentRo
     },
     finishReason: raw.finishReason || undefined,
     latencyMs: raw.latencyMs,
-    model,
-    provider,
+    model: raw.model || agentConfig.model,
+    provider: raw.provider || agentConfig.provider,
     generationId: raw.generationId || null,
     ...(raw.contextOverflow && { contextOverflow: true, errorMessage: raw.errorMessage }),
-    apiPayload: {
+    apiPayload: raw.apiPayload || {
       captureVersion: 1,
       source: 'learner_call',
-      endpoint: providerConfig.base_url || (provider === 'gemini' ? 'gemini.models.generateContent' : undefined),
+      endpoint: agentConfig.providerConfig?.base_url,
       request: {
         method: 'POST',
-        body: truncatePayload({ model, temperature, max_tokens, top_p, messages }),
+        body: truncatePayload({
+          model: raw.model || agentConfig.model,
+          messages: messageHistory || [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+        }),
       },
       response: {
-        status: raw.rawResponse?.status || 200,
+        status: 200,
         body: truncatePayload({ text: raw.text }),
       },
     },
   };
 }
+
+// Remove the now-unused _callLearnerAIOnce
 
 /**
  * Generate a single learner response for use by the evaluation pipeline.

@@ -240,10 +240,14 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 
 ## B. Code Quality & Infrastructure
 
-### ~~B1. Test Coverage Gaps~~ (DONE)
-Tests added for `processUtils.js` (4 tests), `streamingReporter.js` (8 tests), `progressLogger.js` (13 tests), and `learnerConfigLoader.js` (36 tests). `mockProvider.js` already tested in `dryRun.test.js`.
-Remaining untested (low priority):
-- `services/promptRecommendationService.js` — 508 LOC, hard to test (requires API mocking), optional feature
+### B1. Test Coverage Gaps (IN PROGRESS)
+Tests added for `processUtils.js` (100%), `streamingReporter.js` (100%), `progressLogger.js` (100%), `learnerConfigLoader.js` (91%), `apiMessageFormatter.js` (100%), `apiPayloadCapture.js` (94%), and `liveApiReporter.js` (98%). `mockProvider.js` already tested in `dryRun.test.js` (100%).
+Overall project line coverage is at ~45% (partially due to CLI scripts being inherently untestable).
+Remaining untested `services/` components that need coverage:
+- `services/codexSessionService.js` (13% coverage)
+- `services/promptRecommendationService.js` (14% coverage) — 508 LOC, hard to test (requires API mocking), optional feature
+- `services/provableDiscourse.js` (34% coverage)
+- `services/promptRewriter.js` (39% coverage)
 
 ### ~~B2. Silent Error Handling~~ (FIXED)
 - ~~`learnerTutorInteractionEngine.js` JSON parse failures~~ — Now logs warning with status code on parse failure
