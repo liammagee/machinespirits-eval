@@ -9,7 +9,7 @@ describe('Explicit Hyperparameter Validation (Unit)', () => {
       const badConfig = { hyperparameters: { max_tokens: 100 } };
       assert.throws(
         () => getRequiredTemperature(badConfig, 'tutor_ego'),
-        /Explicit temperature setting is required for tutor_ego/i
+        /Explicit temperature setting is required for tutor_ego/i,
       );
     });
 
@@ -22,7 +22,7 @@ describe('Explicit Hyperparameter Validation (Unit)', () => {
       const badConfig = { hyperparameters: { temperature: 0.7 } };
       assert.throws(
         () => getRequiredMaxTokens(badConfig, 'learner_superego'),
-        /Explicit max_tokens setting is required for learner_superego/i
+        /Explicit max_tokens setting is required for learner_superego/i,
       );
     });
 
@@ -35,11 +35,11 @@ describe('Explicit Hyperparameter Validation (Unit)', () => {
       const badConfig = { provider: 'openrouter' }; // no hyperparameters
       assert.throws(
         () => getRequiredTemperature(badConfig, 'test_agent'),
-        /Explicit temperature setting is required for test_agent/i
+        /Explicit temperature setting is required for test_agent/i,
       );
       assert.throws(
         () => getRequiredMaxTokens(badConfig, 'test_agent'),
-        /Explicit max_tokens setting is required for test_agent/i
+        /Explicit max_tokens setting is required for test_agent/i,
       );
     });
   });
@@ -49,7 +49,7 @@ describe('Explicit Hyperparameter Validation (Unit)', () => {
       const badConfig = {
         provider: 'openrouter',
         model: 'test',
-        hyperparameters: { max_tokens: 100 }
+        hyperparameters: { max_tokens: 100 },
       };
 
       try {
@@ -64,7 +64,7 @@ describe('Explicit Hyperparameter Validation (Unit)', () => {
       const badConfig = {
         provider: 'openrouter',
         model: 'test',
-        hyperparameters: { temperature: 0.5 }
+        hyperparameters: { temperature: 0.5 },
       };
 
       try {

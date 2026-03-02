@@ -14,7 +14,6 @@ const SYSTEM_PROMPT = `You are a philosophy tutor working with a university stud
 
 const LEARNER_INPUT = `I've been stuck on Hegel's master-slave dialectic for an hour. I think I get that there are two self-consciousnesses that fight, and one becomes the master and one becomes the slave. But then my textbook says the slave actually ends up with a "higher" form of self-consciousness? That makes no sense — the slave lost! How does losing make you MORE conscious? Am I missing something fundamental?`;
 
-
 async function callModel(alias) {
   const resolved = evalConfigLoader.resolveModel({ provider: 'openrouter', model: alias });
   if (!resolved.isConfigured) return { alias, status: 'skip', reason: 'no API key' };
@@ -41,7 +40,6 @@ async function callModel(alias) {
   };
 }
 
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 console.log(`\n${'═'.repeat(80)}`);
@@ -57,7 +55,9 @@ for (const alias of MODELS) {
   try {
     const r = await callModel(alias);
     if (r.status === 'ok') {
-      process.stdout.write(`${(r.latencyMs / 1000).toFixed(1)}s  ${r.inputTokens}→${r.outputTokens} tok  $${r.cost.toFixed(4)}\n`);
+      process.stdout.write(
+        `${(r.latencyMs / 1000).toFixed(1)}s  ${r.inputTokens}→${r.outputTokens} tok  $${r.cost.toFixed(4)}\n`,
+      );
     } else {
       process.stdout.write(`${r.status}: ${r.reason || ''}\n`);
     }
@@ -69,7 +69,7 @@ for (const alias of MODELS) {
 }
 
 // Phase 2: Summary table
-const okResults = results.filter(r => r.status === 'ok').sort((a, b) => a.latencyMs - b.latencyMs);
+const okResults = results.filter((r) => r.status === 'ok').sort((a, b) => a.latencyMs - b.latencyMs);
 
 console.log(`\n── Metrics ────────────────────────────────────────────────────────────────────\n`);
 console.log('  Model          Latency   In→Out       Cost');
@@ -79,7 +79,7 @@ for (const r of okResults) {
   const costStr = r.cost < 0.001 ? `$${r.cost.toFixed(6)}` : `$${r.cost.toFixed(4)}`;
   console.log(
     `  ${r.alias.padEnd(14)} ${(r.latencyMs / 1000).toFixed(1).padStart(5)}s  ` +
-    `${r.inputTokens}→${String(r.outputTokens).padEnd(4)} ${costStr.padStart(10)}`
+      `${r.inputTokens}→${String(r.outputTokens).padEnd(4)} ${costStr.padStart(10)}`,
   );
 }
 
@@ -93,15 +93,15 @@ for (const r of okResults) {
   const fullRun = perDialogue * 144;
   console.log(
     `  ${r.alias.padEnd(14)} ${('$' + perCall.toFixed(4)).padStart(8)}   ` +
-    `${('$' + perDialogue.toFixed(3)).padStart(8)}      ` +
-    `${('$' + fullRun.toFixed(2)).padStart(8)}`
+      `${('$' + perDialogue.toFixed(3)).padStart(8)}      ` +
+      `${('$' + fullRun.toFixed(2)).padStart(8)}`,
   );
 }
 
 // Print full responses for quality assessment
 console.log(`\n── Full Responses (for quality assessment) ────────────────────────────────────\n`);
 for (const r of okResults) {
-  console.log(`┌─ ${r.alias} (${(r.latencyMs/1000).toFixed(1)}s, $${r.cost.toFixed(4)}) ─────────────────────`);
+  console.log(`┌─ ${r.alias} (${(r.latencyMs / 1000).toFixed(1)}s, $${r.cost.toFixed(4)}) ─────────────────────`);
   console.log(r.content);
   console.log(`└${'─'.repeat(60)}\n`);
 }

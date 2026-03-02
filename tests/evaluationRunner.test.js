@@ -15,7 +15,11 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveEvalProfile, flattenConversationHistory, isTransientEvaluationError } from '../services/evaluationRunner.js';
+import {
+  resolveEvalProfile,
+  flattenConversationHistory,
+  isTransientEvaluationError,
+} from '../services/evaluationRunner.js';
 
 describe('resolveEvalProfile', () => {
   // --- Recognition + Multi-agent cells (dialogue ON, recognition ON) ---

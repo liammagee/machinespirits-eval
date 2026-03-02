@@ -286,9 +286,15 @@ function buildSeedPrompt({
   ];
 
   if (augmentEvidence) {
-    lines.push('4) Implement augmentation directly: update/add evidence + assertions for failing claims in provable-discourse configs.');
-    lines.push('5) Prioritize edits in config/provable-discourse.manual.yaml and config/provable-discourse.yaml; regenerate deterministic mappings only via bootstrap script.');
-    lines.push('6) Re-run `npm run paper:provable-discourse` and iterate until fail count decreases; summarize exact residual failures.');
+    lines.push(
+      '4) Implement augmentation directly: update/add evidence + assertions for failing claims in provable-discourse configs.',
+    );
+    lines.push(
+      '5) Prioritize edits in config/provable-discourse.manual.yaml and config/provable-discourse.yaml; regenerate deterministic mappings only via bootstrap script.',
+    );
+    lines.push(
+      '6) Re-run `npm run paper:provable-discourse` and iterate until fail count decreases; summarize exact residual failures.',
+    );
   } else {
     lines.push('4) Review mode: focus on TODO quality and next-step recommendations.');
     lines.push('Then wait for my follow-up questions.');

@@ -328,10 +328,7 @@ function collectPromptVersions(profileName, resolvedConfig) {
     const learnerArch = resolvedConfig.learnerArchitecture || 'unified';
     const learnerProfile = learnerConfigLoader.getActiveProfile(learnerArch);
     // Unified learners have unified_learner.prompt_file; ego_superego have ego.prompt_file
-    const learnerPromptFile =
-      learnerProfile?.unified_learner?.prompt_file ||
-      learnerProfile?.ego?.prompt_file ||
-      null;
+    const learnerPromptFile = learnerProfile?.unified_learner?.prompt_file || learnerProfile?.ego?.prompt_file || null;
     if (learnerPromptFile) {
       const meta = learnerConfigLoader.getPromptMetadata(learnerPromptFile);
       versions.learnerPromptVersion = meta.version;
@@ -343,10 +340,7 @@ function collectPromptVersions(profileName, resolvedConfig) {
 
   // 3. Composite hash: combine individual hashes into a single 16-char hash
   if (hashes.length > 0) {
-    versions.promptContentHash = createHash('sha256')
-      .update(hashes.join(':'))
-      .digest('hex')
-      .slice(0, 16);
+    versions.promptContentHash = createHash('sha256').update(hashes.join(':')).digest('hex').slice(0, 16);
   }
 
   return versions;
@@ -752,7 +746,7 @@ function flattenConversationHistory(conversationHistory) {
  */
 function buildMessageChain(conversationHistory) {
   const messages = [];
-  for (const h of (conversationHistory || [])) {
+  for (const h of conversationHistory || []) {
     if (h.suggestion?.message) {
       messages.push({ role: 'assistant', content: h.suggestion.message });
     }
@@ -808,9 +802,10 @@ function buildMultiTurnContext(options) {
   let effectiveContext = originalContext;
   if (conversationMode === 'messages' && conversationHistory.length > 0) {
     effectiveContext = stripRecentChatHistory(originalContext);
-    effectiveContext += '\n\n### Conversation Context\n'
-      + 'The learner\'s ongoing messages are provided as conversation history. '
-      + 'Focus your response on their most recent message.';
+    effectiveContext +=
+      '\n\n### Conversation Context\n' +
+      "The learner's ongoing messages are provided as conversation history. " +
+      'Focus your response on their most recent message.';
   }
   contextParts.push(effectiveContext);
 
@@ -1243,7 +1238,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     judgeOverride = null,
     useDialogue = false,
     maxRounds = 0,
-    log = () => { },
+    log = () => {},
     scenarioId = '',
     systemPromptExtension = null,
     superegoPromptExtension = null, // Dynamic disposition adjustments for superego
@@ -1263,10 +1258,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     const suggestion = genResult.suggestions?.[0];
     const validation = suggestion
       ? rubricEvaluator.quickValidate(suggestion, {
-        requiredElements: turnMeta.requiredElements,
-        requiredElementsAny: turnMeta.requiredElementsAny,
-        forbiddenElements: turnMeta.forbiddenElements,
-      })
+          requiredElements: turnMeta.requiredElements,
+          requiredElementsAny: turnMeta.requiredElementsAny,
+          forbiddenElements: turnMeta.forbiddenElements,
+        })
       : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
 
     let rubricResult = null;
@@ -1352,10 +1347,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
   const suggestion = genResult.suggestions?.[0];
   const validation = suggestion
     ? rubricEvaluator.quickValidate(suggestion, {
-      requiredElements: turnMeta.requiredElements,
-      requiredElementsAny: turnMeta.requiredElementsAny,
-      forbiddenElements: turnMeta.forbiddenElements,
-    })
+        requiredElements: turnMeta.requiredElements,
+        requiredElementsAny: turnMeta.requiredElementsAny,
+        forbiddenElements: turnMeta.forbiddenElements,
+      })
     : { passesRequired: false, passesForbidden: true, requiredMissing: ['No suggestions generated'] };
 
   log(
@@ -1372,10 +1367,10 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     const dialogueContext =
       options.conversationHistory || options.dialogueTrace || options.consolidatedTrace
         ? {
-          conversationHistory: options.conversationHistory || null,
-          dialogueTrace: options.dialogueTrace || null,
-          consolidatedTrace: options.consolidatedTrace || null,
-        }
+            conversationHistory: options.conversationHistory || null,
+            dialogueTrace: options.dialogueTrace || null,
+            consolidatedTrace: options.consolidatedTrace || null,
+          }
         : null;
 
     rubricResult = await rubricEvaluator.evaluateSuggestion(
@@ -1395,9 +1390,9 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     if (rubricResult) {
       debugLog(
         `[evaluationRunner] Rubric result: success=${rubricResult.success}, ` +
-        `overallScore=${rubricResult.overallScore}, ` +
-        `scoresCount=${Object.keys(rubricResult.scores || {}).length}, ` +
-        `error=${rubricResult.error || 'none'}`,
+          `overallScore=${rubricResult.overallScore}, ` +
+          `scoresCount=${Object.keys(rubricResult.scores || {}).length}, ` +
+          `error=${rubricResult.error || 'none'}`,
       );
       if (rubricResult.success) {
         log(`Rubric evaluation complete: score=${rubricResult.overallScore?.toFixed(1)}`, 'success');
@@ -1465,7 +1460,7 @@ export async function runEvaluation(options = {}) {
     liveApi = false, // --live: stream one-line display per API call in real time
   } = options;
 
-  const log = verbose ? console.log : () => { };
+  const log = verbose ? console.log : () => {};
 
   // Always suppress tutor-core verbose dialogue output during eval runs
   // (TUTOR DIALOGUE boxes, learner context, model overrides, etc.)
@@ -1890,10 +1885,7 @@ export async function runEvaluation(options = {}) {
     }; // end runTest
 
     if (liveApiReporter) {
-      await liveApiReporter.withConversation(
-        { profileName: profileLabel, scenarioId: scenario.id },
-        runTest,
-      );
+      await liveApiReporter.withConversation({ profileName: profileLabel, scenarioId: scenario.id }, runTest);
     } else {
       await runTest();
     }
@@ -1947,7 +1939,14 @@ function writeCheckpoint(runId, scenarioId, profileName, state) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
   const filePath = path.join(dir, `${safeName}.json`);
-  const payload = { version: CHECKPOINT_VERSION, runId, scenarioId, profileName, timestamp: new Date().toISOString(), ...state };
+  const payload = {
+    version: CHECKPOINT_VERSION,
+    runId,
+    scenarioId,
+    profileName,
+    timestamp: new Date().toISOString(),
+    ...state,
+  };
   fs.writeFileSync(filePath, JSON.stringify(payload));
   return filePath;
 }
@@ -1956,7 +1955,11 @@ function loadCheckpoint(runId, scenarioId, profileName) {
   const safeName = `${profileName}--${scenarioId}`.replace(/[^a-zA-Z0-9_-]/g, '_');
   const filePath = path.join(CHECKPOINTS_DIR, runId, `${safeName}.json`);
   if (!fs.existsSync(filePath)) return null;
-  try { return JSON.parse(fs.readFileSync(filePath, 'utf-8')); } catch { return null; }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch {
+    return null;
+  }
 }
 
 function deleteCheckpoint(runId, scenarioId, profileName) {
@@ -1966,7 +1969,9 @@ function deleteCheckpoint(runId, scenarioId, profileName) {
   try {
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
-  } catch { /* best-effort cleanup */ }
+  } catch {
+    /* best-effort cleanup */
+  }
 }
 
 function listCheckpoints(runId) {
@@ -1978,7 +1983,9 @@ function listCheckpoints(runId) {
     try {
       const data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf-8'));
       if (data.version === CHECKPOINT_VERSION) checkpoints.push(data);
-    } catch { /* skip corrupt */ }
+    } catch {
+      /* skip corrupt */
+    }
   }
   return checkpoints;
 }
@@ -2017,7 +2024,13 @@ async function runSingleTest(scenario, config, options = {}) {
 
   if (isMultiTurn) {
     log('Detected multi-turn scenario', 'info');
-    return runMultiTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride, checkpointState, liveApiReporter: options.liveApiReporter });
+    return runMultiTurnTest(scenario, config, fullScenario, {
+      ...options,
+      log,
+      judgeOverride,
+      checkpointState,
+      liveApiReporter: options.liveApiReporter,
+    });
   }
 
   // Single-turn evaluation (original logic)
@@ -2032,7 +2045,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     skipRubricEval = false,
     outputSize = 'normal',
     _verbose = false,
-    log = () => { },
+    log = () => {},
     superegoStrategy = null,
     judgeOverride = null,
     dryRun = false,
@@ -2161,13 +2174,13 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     scores:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
         ? {
-          relevance: rubricResult.scores.relevance?.score,
-          specificity: rubricResult.scores.specificity?.score,
-          pedagogical: rubricResult.scores.pedagogical?.score,
-          personalization: rubricResult.scores.personalization?.score,
-          actionability: rubricResult.scores.actionability?.score,
-          tone: rubricResult.scores.tone?.score,
-        }
+            relevance: rubricResult.scores.relevance?.score,
+            specificity: rubricResult.scores.specificity?.score,
+            pedagogical: rubricResult.scores.pedagogical?.score,
+            personalization: rubricResult.scores.personalization?.score,
+            actionability: rubricResult.scores.actionability?.score,
+            tone: rubricResult.scores.tone?.score,
+          }
         : null,
     scoresWithReasoning:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
@@ -2206,7 +2219,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     skipRubricEval = false,
     outputSize = 'normal',
     _verbose = false,
-    log = () => { },
+    log = () => {},
     superegoStrategy = null,
     judgeOverride = null,
     dryRun = false,
@@ -2242,9 +2255,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   dialogueEngine.setCurrentDialogueId(dialogueId);
 
   // Generate synthetic learnerId for Writing Pad persistence across turns (or restore)
-  const learnerId = checkpointState?.learnerId || `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
+  const learnerId =
+    checkpointState?.learnerId || `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
   if (checkpointState) {
-    log(`[evaluationRunner] Resuming from checkpoint: turn ${checkpointState.lastCompletedTurn + 1} (dialogueId=${dialogueId})`, 'info');
+    log(
+      `[evaluationRunner] Resuming from checkpoint: turn ${checkpointState.lastCompletedTurn + 1} (dialogueId=${dialogueId})`,
+      'info',
+    );
   } else {
     log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
   }
@@ -2353,7 +2370,14 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       printed.add(turnKey);
       const text = (entry.detail || entry.contextSummary || '').substring(0, 500);
       if (!text) return null;
-      return '\n' + chalk.green.bold(pad('Learner')) + inlineTag + '\n' + ' '.repeat(ROLE_WIDTH) + wrapChatText(text, ROLE_WIDTH);
+      return (
+        '\n' +
+        chalk.green.bold(pad('Learner')) +
+        inlineTag +
+        '\n' +
+        ' '.repeat(ROLE_WIDTH) +
+        wrapChatText(text, ROLE_WIDTH)
+      );
     }
 
     // --- Tutor messages ---
@@ -2366,7 +2390,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       // Check if a revision follows in the remaining new entries — if so, skip this draft
       const laterInTrace = consolidatedTrace.slice(consolidatedTrace.indexOf(entry) + 1);
       const hasRevision = laterInTrace.some(
-        (e) => e.turnIndex === entry.turnIndex && e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final'),
+        (e) =>
+          e.turnIndex === entry.turnIndex &&
+          e.agent === 'ego' &&
+          (e.action === 'revise' || e.action === 'generate_final'),
       );
       if (hasRevision) return null;
       return formatTutorLine(entry, ROLE_WIDTH, pad, inlineTag);
@@ -2376,7 +2403,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   }
 
   function formatTutorLine(entry, roleWidth, pad, inlineTag) {
-    const msg = (entry.suggestions || []).map((s) => s.message || s.title || '').join('\n\n').substring(0, 500);
+    const msg = (entry.suggestions || [])
+      .map((s) => s.message || s.title || '')
+      .join('\n\n')
+      .substring(0, 500);
     if (!msg) return null;
     // Metadata line: model · latency · tokens
     const m = entry.metrics || {};
@@ -2385,10 +2415,20 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       const name = m.model.includes('/') ? m.model.split('/').pop() : m.model;
       metaParts.push(name.split(':')[0].substring(0, 22));
     }
-    if (m.latencyMs != null) metaParts.push(m.latencyMs < 1000 ? `${m.latencyMs}ms` : `${(m.latencyMs / 1000).toFixed(1)}s`);
-    if (m.inputTokens != null || m.outputTokens != null) metaParts.push(`${m.inputTokens ?? '?'}→${m.outputTokens ?? '?'}`);
+    if (m.latencyMs != null)
+      metaParts.push(m.latencyMs < 1000 ? `${m.latencyMs}ms` : `${(m.latencyMs / 1000).toFixed(1)}s`);
+    if (m.inputTokens != null || m.outputTokens != null)
+      metaParts.push(`${m.inputTokens ?? '?'}→${m.outputTokens ?? '?'}`);
     const metaStr = metaParts.length > 0 ? '\n' + ' '.repeat(roleWidth) + chalk.dim(metaParts.join(' · ')) : '';
-    return '\n' + chalk.cyan.bold(pad('Tutor')) + inlineTag + '\n' + ' '.repeat(roleWidth) + wrapChatText(msg, roleWidth) + metaStr;
+    return (
+      '\n' +
+      chalk.cyan.bold(pad('Tutor')) +
+      inlineTag +
+      '\n' +
+      ' '.repeat(roleWidth) +
+      wrapChatText(msg, roleWidth) +
+      metaStr
+    );
   }
 
   /** Word-wrap text with continuation-line indentation matching role label width. */
@@ -2397,7 +2437,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     const lines = text.split('\n');
     const result = [];
     for (const line of lines) {
-      if (line.trim() === '') { result.push(''); continue; }
+      if (line.trim() === '') {
+        result.push('');
+        continue;
+      }
       const words = line.split(/\s+/);
       let current = '';
       for (const word of words) {
@@ -2492,7 +2535,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const totalTurnCount = 1 + turns.length;
   const startTurnIdx = cs ? cs.lastCompletedTurn + 1 : 0;
   if (cs) {
-    log(`[evaluationRunner] Checkpoint: resuming from turn ${startTurnIdx}/${totalTurnCount - 1} (${turnResults.length} turns already completed)`, 'info');
+    log(
+      `[evaluationRunner] Checkpoint: resuming from turn ${startTurnIdx}/${totalTurnCount - 1} (${turnResults.length} turns already completed)`,
+      'info',
+    );
   }
 
   // Print live chat System context at dialogue start (shows the learner scenario)
@@ -2567,9 +2613,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
 
     const structuredContextStr = structureLearnerContext(contextStr);
     // Build message chain for message mode (from accumulated conversation history)
-    const turnMessageHistory = (conversationMode === 'messages' && conversationHistory.length > 0)
-      ? buildMessageChain(conversationHistory)
-      : null;
+    const turnMessageHistory =
+      conversationMode === 'messages' && conversationHistory.length > 0 ? buildMessageChain(conversationHistory) : null;
     const context = tutorApi.buildContext(structuredContextStr, curriculumContext, null, turnMessageHistory);
     context.isNewUser = isInitialTurn ? fullScenario.is_new_user : false;
 
@@ -2672,7 +2717,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       // Attach inputMessages to tutor trace entries (symmetric with learner deliberation entries)
       for (let i = consolidatedTrace.length - genResult.dialogueTrace.length; i < consolidatedTrace.length; i++) {
         const entry = consolidatedTrace[i];
-        if (entry.agent === 'ego' && (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')) {
+        if (
+          entry.agent === 'ego' &&
+          (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')
+        ) {
           entry.inputMessages = turnMessageHistory || null;
         } else if (entry.agent === 'superego' && entry.action === 'review') {
           entry.inputMessages = null; // superego uses single-prompt, not message chains
@@ -2749,13 +2797,13 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       scores:
         rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
           ? {
-            relevance: rubricResult.scores.relevance?.score,
-            specificity: rubricResult.scores.specificity?.score,
-            pedagogical: rubricResult.scores.pedagogical?.score,
-            personalization: rubricResult.scores.personalization?.score,
-            actionability: rubricResult.scores.actionability?.score,
-            tone: rubricResult.scores.tone?.score,
-          }
+              relevance: rubricResult.scores.relevance?.score,
+              specificity: rubricResult.scores.specificity?.score,
+              pedagogical: rubricResult.scores.pedagogical?.score,
+              personalization: rubricResult.scores.personalization?.score,
+              actionability: rubricResult.scores.actionability?.score,
+              tone: rubricResult.scores.tone?.score,
+            }
           : null,
       turnScore,
       scoringMethod,
@@ -3198,7 +3246,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
           conversationHistory: flattenConversationHistory(conversationHistory),
           learnerProfile: resolvedConfig.learnerArchitecture,
           personaId: fullScenario.learner_persona || 'eager_novice',
-          modelOverride: config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
+          modelOverride:
+            config.learnerModelOverride || resolvedConfig.learnerModelOverride || config.modelOverride || null,
           egoModelOverride: config.learnerEgoModelOverride || null,
           superegoModelOverride: config.learnerSuperegoModelOverride || null,
           profileContext:
@@ -3241,7 +3290,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               timestamp: new Date().toISOString(),
             });
           }
-          const finalLearnerDelib = learnerResponse.internalDeliberation[learnerResponse.internalDeliberation.length - 1];
+          const finalLearnerDelib =
+            learnerResponse.internalDeliberation[learnerResponse.internalDeliberation.length - 1];
           const finalLearnerMetrics = finalLearnerDelib?.metrics || null;
           consolidatedTrace.push({
             agent: 'learner',
@@ -3449,7 +3499,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       });
       const contentTurnId = createHash('sha256')
         .update(dialogueId + ':' + t.turnIndex + ':' + turnContent)
-        .digest('hex').slice(0, 16);
+        .digest('hex')
+        .slice(0, 16);
       return {
         turnIndex: t.turnIndex,
         turnId: t.turnId,
@@ -3484,7 +3535,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   fs.writeFileSync(hashPath, logContent);
   fs.writeFileSync(dialoguePath, logContent);
 
-  log(`[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${tutorFirstTurnScore?.toFixed(1)}`);
+  log(
+    `[evaluationRunner] Multi-turn complete: ${turnResults.length} turns, avgScore=${tutorFirstTurnScore?.toFixed(1)}`,
+  );
 
   // Aggregate requiredMissing/forbiddenFound from all turns
   const requiredMissing = [...new Set(turnResults.flatMap((t) => t.requiredMissing || []))];
@@ -3570,7 +3623,7 @@ export async function resumeEvaluation(options = {}) {
     force = false, // Skip the "already running" check
   } = options;
 
-  const log = verbose ? console.log : () => { };
+  const log = verbose ? console.log : () => {};
 
   // 1. Load the run and validate it exists
   const run = evaluationStore.getRun(runId);
@@ -3585,7 +3638,7 @@ export async function resumeEvaluation(options = {}) {
     if (isAlive) {
       throw new Error(
         `Run ${runId} is already being processed by pid ${existingPid}. ` +
-        `Use --force to override (may cause duplicates).`,
+          `Use --force to override (may cause duplicates).`,
       );
     }
   }
@@ -4176,9 +4229,9 @@ export function generateReport(runId) {
 
     // Determine which dimensions to show based on what's in the data
     const allDims = new Set();
-    stats.forEach(s => {
+    stats.forEach((s) => {
       if (s.dimensions) {
-        Object.keys(s.dimensions).forEach(d => allDims.add(d));
+        Object.keys(s.dimensions).forEach((d) => allDims.add(d));
       }
     });
 
@@ -4197,12 +4250,12 @@ export function generateReport(runId) {
       'pedagogical',
       'personalization',
       'actionability',
-      'tone'
+      'tone',
     ];
 
     // Build the final dimension list: prioritized first, then any remaining in data
     const dims = [];
-    prioritized.forEach(d => {
+    prioritized.forEach((d) => {
       if (allDims.has(d)) {
         dims.push(d);
       }
@@ -4210,7 +4263,7 @@ export function generateReport(runId) {
 
     // Add any "new" dimensions not in the prioritized list
     const prioritizedSet = new Set(prioritized);
-    allDims.forEach(d => {
+    allDims.forEach((d) => {
       if (!prioritizedSet.has(d)) {
         dims.push(d);
       }
@@ -4218,7 +4271,9 @@ export function generateReport(runId) {
 
     if (dims.length > 0) {
       const header =
-        '| Dimension'.padEnd(26) + '|' + stats.map((s) => ` ${(s.profileName || s.model).substring(0, 12).padEnd(12)} |`).join('');
+        '| Dimension'.padEnd(26) +
+        '|' +
+        stats.map((s) => ` ${(s.profileName || s.model).substring(0, 12).padEnd(12)} |`).join('');
       lines.push(header);
       lines.push('|' + '-'.repeat(25) + '|' + stats.map(() => '--------------|').join(''));
 
@@ -4324,7 +4379,7 @@ export async function rejudgeRun(runId, options = {}) {
     overwrite = false,
   } = options;
 
-  const log = verbose ? console.log : () => { };
+  const log = verbose ? console.log : () => {};
 
   const run = evaluationStore.getRun(runId);
   if (!run) throw new Error(`Run not found: ${runId}`);
@@ -4413,9 +4468,10 @@ export async function rejudgeRun(runId, options = {}) {
           throw new Error(`Scenario not found: ${result.scenarioId}`);
         }
 
-        const suggestion = result.dialogueId && result.suggestions.length > 1
-          ? result.suggestions[result.suggestions.length - 1]
-          : result.suggestions[0];
+        const suggestion =
+          result.dialogueId && result.suggestions.length > 1
+            ? result.suggestions[result.suggestions.length - 1]
+            : result.suggestions[0];
 
         // Load dialogue context for multi-turn results
         let dialogueContext = null;
@@ -4511,7 +4567,19 @@ export async function rejudgeRun(runId, options = {}) {
 }
 
 // Named exports for unit testing (these are internal helpers not part of the public API)
-export { structureLearnerContext, stripRecentChatHistory, resolveConfigModels, flattenConversationHistory, buildMultiTurnContext, formatTurnForContext, buildMessageChain, writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints };
+export {
+  structureLearnerContext,
+  stripRecentChatHistory,
+  resolveConfigModels,
+  flattenConversationHistory,
+  buildMultiTurnContext,
+  formatTurnForContext,
+  buildMessageChain,
+  writeCheckpoint,
+  loadCheckpoint,
+  deleteCheckpoint,
+  listCheckpoints,
+};
 
 export default {
   runEvaluation,

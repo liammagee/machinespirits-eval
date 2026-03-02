@@ -177,11 +177,9 @@ function fTest2x2(data) {
   const margB1 = mean([...data.a0b1, ...data.a1b1]);
 
   const ssA =
-    (cellNs.a0b0 + cellNs.a0b1) * (margA0 - grandMean) ** 2 +
-    (cellNs.a1b0 + cellNs.a1b1) * (margA1 - grandMean) ** 2;
+    (cellNs.a0b0 + cellNs.a0b1) * (margA0 - grandMean) ** 2 + (cellNs.a1b0 + cellNs.a1b1) * (margA1 - grandMean) ** 2;
   const ssB =
-    (cellNs.a0b0 + cellNs.a1b0) * (margB0 - grandMean) ** 2 +
-    (cellNs.a0b1 + cellNs.a1b1) * (margB1 - grandMean) ** 2;
+    (cellNs.a0b0 + cellNs.a1b0) * (margB0 - grandMean) ** 2 + (cellNs.a0b1 + cellNs.a1b1) * (margB1 - grandMean) ** 2;
 
   const ssAB =
     cellNs.a0b0 * (cellMeans.a0b0 - margA0 - margB0 + grandMean) ** 2 +
@@ -305,8 +303,9 @@ function learnerCompositeFromTurnScores(scores) {
   const conceptual = scores?.conceptual_engagement?.score || 0;
   const progression = scores?.conceptual_progression?.score || 0;
   const metacognitive = scores?.metacognitive_development?.score || 0;
-  return ((revision * 0.20 + question * 0.20 + conceptual * 0.20
-         + progression * 0.25 + metacognitive * 0.15 - 1) / 4) * 100;
+  return (
+    ((revision * 0.2 + question * 0.2 + conceptual * 0.2 + progression * 0.25 + metacognitive * 0.15 - 1) / 4) * 100
+  );
 }
 
 export function computeLearnerSummaryFromScores(rawLearnerScores) {
@@ -318,7 +317,8 @@ export function computeLearnerSummaryFromScores(rawLearnerScores) {
     const scores = turnValue?.scores;
     if (!scores) continue;
     const turnIndexFromKey = Number(String(turnKey).replace(/[^0-9]/g, ''));
-    const turnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0 ? turnIndexFromKey : turnValue?.turnIndex || 0;
+    const turnIndex =
+      Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0 ? turnIndexFromKey : turnValue?.turnIndex || 0;
     const revision = scores?.revision_signals?.score || 0;
     turns.push({
       turnIndex,
@@ -348,9 +348,8 @@ function extractTurnSequence(rawScoresJson) {
     const scores = turnValue?.scores;
     if (!scores) continue;
     const turnIndexFromKey = Number(String(turnKey).replace(/[^0-9]/g, ''));
-    const turnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0
-      ? turnIndexFromKey
-      : turnValue?.turnIndex || 0;
+    const turnIndex =
+      Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0 ? turnIndexFromKey : turnValue?.turnIndex || 0;
     const dimScores = Object.values(scores)
       .map((d) => d?.score)
       .filter((s) => isFiniteNumber(s));
@@ -378,7 +377,9 @@ function resolveRowFlags(row, domain) {
 
   const inferredMulti = inferMultiFromProfileName(row.profile_name);
   const factorMulti =
-    domain === 'learner' ? parseBooleanish(row.factor_multi_agent_learner) : parseBooleanish(row.factor_multi_agent_tutor);
+    domain === 'learner'
+      ? parseBooleanish(row.factor_multi_agent_learner)
+      : parseBooleanish(row.factor_multi_agent_tutor);
   const multi = inferredMulti ?? factorMulti;
 
   return { recognition, multi };
@@ -547,13 +548,21 @@ function evaluateManifestTotal(manifest, evidence) {
   return {
     value,
     details: { field, value },
-    fingerprint: { source: 'manifest', version: manifest?.version || null, generated: manifest?.generated || null, field, value },
+    fingerprint: {
+      source: 'manifest',
+      version: manifest?.version || null,
+      generated: manifest?.generated || null,
+      field,
+      value,
+    },
   };
 }
 
 function evaluateDbCount(db, evidence) {
   const { sql, params } = buildWhereClause(evidence?.filters || {});
-  const row = db.prepare(`SELECT COUNT(*) AS value, MAX(created_at) AS max_created_at FROM evaluation_results ${sql}`).get(...params);
+  const row = db
+    .prepare(`SELECT COUNT(*) AS value, MAX(created_at) AS max_created_at FROM evaluation_results ${sql}`)
+    .get(...params);
   const value = Number(row?.value || 0);
   return {
     value,
@@ -601,7 +610,10 @@ function evaluateEffectSize(db, evidence) {
 
   const filters = {
     ...(evidence?.filters || {}),
-    not_null: [...(evidence?.filters?.not_null || []), domain === 'tutor' ? 'tutor_first_turn_score' : 'learner_scores'],
+    not_null: [
+      ...(evidence?.filters?.not_null || []),
+      domain === 'tutor' ? 'tutor_first_turn_score' : 'learner_scores',
+    ],
   };
   const { sql, params } = buildWhereClause(filters);
   const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
@@ -656,11 +668,7 @@ function evaluateEffectSize(db, evidence) {
 }
 
 function evaluateManifestSectionTotal(manifest, evidence) {
-  const sections = Array.isArray(evidence?.sections)
-    ? evidence.sections
-    : evidence?.section
-      ? [evidence.section]
-      : [];
+  const sections = Array.isArray(evidence?.sections) ? evidence.sections : evidence?.section ? [evidence.section] : [];
   if (sections.length === 0) {
     throw new Error('manifest_section_total evidence requires section or sections');
   }
@@ -677,7 +685,9 @@ function evaluateManifestSectionTotal(manifest, evidence) {
   for (const row of rows) {
     const section = row?.section;
     if (!section) continue;
-    const matches = sections.some((target) => (matchMode === 'prefix' ? section.startsWith(String(target)) : section === target));
+    const matches = sections.some((target) =>
+      matchMode === 'prefix' ? section.startsWith(String(target)) : section === target,
+    );
     if (!matches) continue;
     const cellValue = Number(row?.[field] || 0);
     value += cellValue;
@@ -832,9 +842,10 @@ function evaluateJudgePairCorrelation(db, evidence) {
   const judgeALike = evidence?.judge_a_like || 'claude-opus%';
   const judgeBLike = evidence?.judge_b_like || 'gpt-5.2%';
   const metric = evidence?.metric || 'tutor_first_turn_score';
-  const keyFields = Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
-    ? evidence.key_fields
-    : ['run_id', 'scenario_id', 'profile_name', 'dialogue_id'];
+  const keyFields =
+    Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
+      ? evidence.key_fields
+      : ['run_id', 'scenario_id', 'profile_name', 'dialogue_id'];
   for (const field of keyFields) ensureColumnName(field);
   ensureColumnName(metric);
 
@@ -972,14 +983,19 @@ export function verifyTurnIdsForRow(dialogueId, tutorScoresObj, logDir) {
   try {
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     turnResults = Array.isArray(parsed?.turnResults) ? parsed.turnResults : [];
-  } catch { return result; }
+  } catch {
+    return result;
+  }
 
   for (const [turnKey, turnValue] of Object.entries(tutorScoresObj)) {
     const scoreTurnId = turnValue?.contentTurnId;
     if (!scoreTurnId) continue;
     const turnIndex = turnValue?.turnIndex ?? Number(String(turnKey).replace(/[^0-9]/g, ''));
     const matchingTurn = turnResults.find((t) => (t.turnIndex ?? 0) === turnIndex);
-    if (!matchingTurn) { result.set(turnIndex, false); continue; }
+    if (!matchingTurn) {
+      result.set(turnIndex, false);
+      continue;
+    }
     const turnContent = JSON.stringify({
       turnIndex: matchingTurn.turnIndex,
       suggestion: matchingTurn.suggestion ? [matchingTurn.suggestion] : [],
@@ -987,7 +1003,8 @@ export function verifyTurnIdsForRow(dialogueId, tutorScoresObj, logDir) {
     });
     const expectedId = createHash('sha256')
       .update(dialogueId + ':' + turnIndex + ':' + turnContent)
-      .digest('hex').slice(0, 16);
+      .digest('hex')
+      .slice(0, 16);
     result.set(turnIndex, expectedId === scoreTurnId);
   }
   return result;
@@ -1013,8 +1030,13 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
   });
 
   const selectColumns = [
-    'id', 'run_id', 'dialogue_id', 'dialogue_content_hash',
-    'tutor_scores', 'tutor_overall_score', 'created_at',
+    'id',
+    'run_id',
+    'dialogue_id',
+    'dialogue_content_hash',
+    'tutor_scores',
+    'tutor_overall_score',
+    'created_at',
   ];
   const rows = db
     .prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${where.sql}`)
@@ -1084,7 +1106,10 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
         }
         let allPresent = true;
         for (const turnValue of Object.values(tutorScores)) {
-          if (!turnValue?.judgeInputHash) { allPresent = false; break; }
+          if (!turnValue?.judgeInputHash) {
+            allPresent = false;
+            break;
+          }
         }
         if (allPresent) checkResults[check].passed++;
         else {
@@ -1096,9 +1121,7 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
           checkResults[check].skipped++;
           continue;
         }
-        const auditRows = db
-          .prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?')
-          .get(String(row.id));
+        const auditRows = db.prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?').get(String(row.id));
         if (auditRows && auditRows.c > 0) checkResults[check].passed++;
         else {
           checkResults[check].failed++;
@@ -1238,7 +1261,7 @@ export function evaluateJsonlCritiqueStats(_db, evidence, rootDir) {
         if (from !== 'APPROVAL' && to === 'APPROVAL') deescalation++;
       }
     }
-    const ratio = escalation > 0 ? deescalation / escalation : (deescalation > 0 ? Infinity : 1.0);
+    const ratio = escalation > 0 ? deescalation / escalation : deescalation > 0 ? Infinity : 1.0;
     return {
       value: ratio,
       details: { escalation, deescalation, ratio },
@@ -1259,10 +1282,17 @@ function evaluateDimensionVariance(db, evidence) {
   }
 
   const selectColumns = [
-    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
-    'factor_multi_agent_learner', 'created_at',
-    'score_relevance', 'score_specificity', 'score_pedagogical',
-    'score_personalization', 'score_actionability', 'score_tone',
+    'profile_name',
+    'factor_recognition',
+    'factor_multi_agent_tutor',
+    'factor_multi_agent_learner',
+    'created_at',
+    'score_relevance',
+    'score_specificity',
+    'score_pedagogical',
+    'score_personalization',
+    'score_actionability',
+    'score_tone',
     'scores_with_reasoning',
   ];
 
@@ -1300,14 +1330,23 @@ function evaluateDimensionVariance(db, evidence) {
   return {
     value,
     details: {
-      group_by: groupBy, output, scope,
-      n_group1: group1.length, n_group0: group0.length,
-      mean_group1: mean(group1), mean_group0: mean(group0),
+      group_by: groupBy,
+      output,
+      scope,
+      n_group1: group1.length,
+      n_group0: group0.length,
+      mean_group1: mean(group1),
+      mean_group0: mean(group0),
     },
     fingerprint: {
-      source: 'dimension_variance', group_by: groupBy, output, scope,
-      n_group1: group1.length, n_group0: group0.length,
-      n_rows: rows.length, max_created_at: maxCreatedAt,
+      source: 'dimension_variance',
+      group_by: groupBy,
+      output,
+      scope,
+      n_group1: group1.length,
+      n_group0: group0.length,
+      n_rows: rows.length,
+      max_created_at: maxCreatedAt,
     },
   };
 }
@@ -1330,10 +1369,17 @@ function evaluateDimensionClusterEffect(db, evidence) {
   }
 
   const selectColumns = [
-    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
-    'factor_multi_agent_learner', 'created_at',
-    'score_relevance', 'score_specificity', 'score_pedagogical',
-    'score_personalization', 'score_actionability', 'score_tone',
+    'profile_name',
+    'factor_recognition',
+    'factor_multi_agent_tutor',
+    'factor_multi_agent_learner',
+    'created_at',
+    'score_relevance',
+    'score_specificity',
+    'score_pedagogical',
+    'score_personalization',
+    'score_actionability',
+    'score_tone',
     'scores_with_reasoning',
   ];
 
@@ -1345,9 +1391,12 @@ function evaluateDimensionClusterEffect(db, evidence) {
   const rows = db.prepare(`SELECT ${selectColumns.join(', ')} FROM evaluation_results ${sql}`).all(...params);
 
   const baseScoreToName = {
-    score_relevance: 'relevance', score_specificity: 'specificity',
-    score_pedagogical: 'pedagogical', score_personalization: 'personalization',
-    score_actionability: 'actionability', score_tone: 'tone',
+    score_relevance: 'relevance',
+    score_specificity: 'specificity',
+    score_pedagogical: 'pedagogical',
+    score_personalization: 'personalization',
+    score_actionability: 'actionability',
+    score_tone: 'tone',
   };
   const nameToBaseCol = {};
   for (const [col, name] of Object.entries(baseScoreToName)) nameToBaseCol[name] = col;
@@ -1382,14 +1431,18 @@ function evaluateDimensionClusterEffect(db, evidence) {
   return {
     value,
     details: {
-      cluster, group_by: groupBy,
+      cluster,
+      group_by: groupBy,
       dimensions: clusterDims,
       per_dimension: perDimResults,
       n_dimensions: clusterDims.length,
     },
     fingerprint: {
-      source: 'dimension_cluster_effect', cluster, group_by: groupBy,
-      n_dimensions: clusterDims.length, n_rows: rows.length,
+      source: 'dimension_cluster_effect',
+      cluster,
+      group_by: groupBy,
+      n_dimensions: clusterDims.length,
+      n_rows: rows.length,
     },
   };
 }
@@ -1408,8 +1461,13 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
 
   const scoreColumn = side === 'tutor' ? 'tutor_scores' : 'learner_scores';
   const selectColumns = [
-    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
-    'factor_multi_agent_learner', 'created_at', 'dialogue_id', scoreColumn,
+    'profile_name',
+    'factor_recognition',
+    'factor_multi_agent_tutor',
+    'factor_multi_agent_learner',
+    'created_at',
+    'dialogue_id',
+    scoreColumn,
   ];
 
   const filters = {
@@ -1430,7 +1488,7 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
   let logMismatches = 0;
 
   // Resolve log directory for turn-level log verification
-  const logDir = (turnLevel && rootDir) ? path.join(rootDir, 'logs/tutor-dialogues') : null;
+  const logDir = turnLevel && rootDir ? path.join(rootDir, 'logs/tutor-dialogues') : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1439,7 +1497,10 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
     let turns;
     if (turnLevel) {
       const rawParsed = safeJsonParse(row[scoreColumn]);
-      if (!rawParsed || typeof rawParsed !== 'object') { skippedTooFew++; continue; }
+      if (!rawParsed || typeof rawParsed !== 'object') {
+        skippedTooFew++;
+        continue;
+      }
 
       // When rootDir is available, verify contentTurnIds against dialogue log
       const logVerification = logDir ? verifyTurnIdsForRow(row.dialogue_id, rawParsed, logDir) : null;
@@ -1463,9 +1524,8 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
         const scores = turnValue?.scores;
         if (!scores) continue;
         const turnIndexFromKey = Number(String(turnKey).replace(/[^0-9]/g, ''));
-        const resolvedTurnIndex = Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0
-          ? turnIndexFromKey
-          : turnValue?.turnIndex || 0;
+        const resolvedTurnIndex =
+          Number.isFinite(turnIndexFromKey) && turnIndexFromKey > 0 ? turnIndexFromKey : turnValue?.turnIndex || 0;
         const dimScores = Object.values(scores)
           .map((d) => d?.score)
           .filter((s) => isFiniteNumber(s));
@@ -1478,13 +1538,19 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
       turns = extractTurnSequence(row[scoreColumn]);
     }
 
-    if (turns.length < minTurns) { skippedTooFew++; continue; }
+    if (turns.length < minTurns) {
+      skippedTooFew++;
+      continue;
+    }
 
     const xValues = [];
     const yValues = [];
     for (let i = 0; i < turns.length; i++) {
       const y = getTurnDimScore(turns, i, dimension);
-      if (y != null) { xValues.push(i); yValues.push(y); }
+      if (y != null) {
+        xValues.push(i);
+        yValues.push(y);
+      }
     }
     if (xValues.length < 2) continue;
 
@@ -1506,10 +1572,17 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
   else value = mean(allSlopes);
 
   const details = {
-    side, dimension, group_by: groupBy || null, output, min_turns: minTurns,
-    n_dialogues: allSlopes.length, mean_slope: mean(allSlopes),
-    n_group1: group1Slopes.length, n_group0: group0Slopes.length,
-    mean_slope_group1: mean(group1Slopes), mean_slope_group0: mean(group0Slopes),
+    side,
+    dimension,
+    group_by: groupBy || null,
+    output,
+    min_turns: minTurns,
+    n_dialogues: allSlopes.length,
+    mean_slope: mean(allSlopes),
+    n_group1: group1Slopes.length,
+    n_group0: group0Slopes.length,
+    mean_slope_group1: mean(group1Slopes),
+    mean_slope_group0: mean(group0Slopes),
     skipped_too_few_turns: skippedTooFew,
   };
   if (turnLevel) {
@@ -1525,8 +1598,14 @@ function evaluateTrajectorySlope(db, evidence, rootDir) {
     value,
     details,
     fingerprint: {
-      source: 'trajectory_slope', side, dimension, group_by: groupBy || null, output,
-      min_turns: minTurns, n_rows: rows.length, n_dialogues: allSlopes.length,
+      source: 'trajectory_slope',
+      side,
+      dimension,
+      group_by: groupBy || null,
+      output,
+      min_turns: minTurns,
+      n_rows: rows.length,
+      n_dialogues: allSlopes.length,
       max_created_at: maxCreatedAt,
     },
   };
@@ -1542,9 +1621,14 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
   const turnLevel = !!evidence?.turn_level;
 
   const selectColumns = [
-    'profile_name', 'factor_recognition', 'factor_multi_agent_tutor',
-    'factor_multi_agent_learner', 'created_at', 'dialogue_id',
-    'tutor_scores', 'learner_scores',
+    'profile_name',
+    'factor_recognition',
+    'factor_multi_agent_tutor',
+    'factor_multi_agent_learner',
+    'created_at',
+    'dialogue_id',
+    'tutor_scores',
+    'learner_scores',
   ];
 
   const filters = {
@@ -1563,7 +1647,7 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
   let logMismatches = 0;
 
   // Resolve log directory for turn-level log verification
-  const logDir = (turnLevel && rootDir) ? path.join(rootDir, 'logs/tutor-dialogues') : null;
+  const logDir = turnLevel && rootDir ? path.join(rootDir, 'logs/tutor-dialogues') : null;
 
   for (const row of rows) {
     if (row.created_at && (!maxCreatedAt || row.created_at > maxCreatedAt)) maxCreatedAt = row.created_at;
@@ -1612,9 +1696,7 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
 
       const learnerScore = getTurnDimScore(learnerTurns, i, eventDimension);
       if (learnerScore == null) continue;
-      const isEvent = eventDirection === 'below'
-        ? learnerScore <= eventThreshold
-        : learnerScore >= eventThreshold;
+      const isEvent = eventDirection === 'below' ? learnerScore <= eventThreshold : learnerScore >= eventThreshold;
 
       const tutorBefore = getTurnDimScore(tutorTurns, i, responseDimension);
       const tutorAfter = getTurnDimScore(tutorTurns, i + 1, responseDimension);
@@ -1633,11 +1715,16 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
   else value = mean(eventDeltas);
 
   const details = {
-    event_dimension: eventDimension, event_threshold: eventThreshold,
-    event_direction: eventDirection, response_dimension: responseDimension,
-    output, min_turns: minTurns,
-    n_event_deltas: eventDeltas.length, n_non_event_deltas: nonEventDeltas.length,
-    mean_event_delta: mean(eventDeltas), mean_non_event_delta: mean(nonEventDeltas),
+    event_dimension: eventDimension,
+    event_threshold: eventThreshold,
+    event_direction: eventDirection,
+    response_dimension: responseDimension,
+    output,
+    min_turns: minTurns,
+    n_event_deltas: eventDeltas.length,
+    n_non_event_deltas: nonEventDeltas.length,
+    mean_event_delta: mean(eventDeltas),
+    mean_non_event_delta: mean(nonEventDeltas),
   };
   if (turnLevel) {
     details.verified_turns = verifiedTurns;
@@ -1653,9 +1740,13 @@ function evaluateConditionalDelta(db, evidence, rootDir) {
     details,
     fingerprint: {
       source: 'conditional_delta',
-      event_dimension: eventDimension, event_threshold: eventThreshold,
-      event_direction: eventDirection, response_dimension: responseDimension,
-      output, n_rows: rows.length, n_event_deltas: eventDeltas.length,
+      event_dimension: eventDimension,
+      event_threshold: eventThreshold,
+      event_direction: eventDirection,
+      response_dimension: responseDimension,
+      output,
+      n_rows: rows.length,
+      n_event_deltas: eventDeltas.length,
       max_created_at: maxCreatedAt,
     },
   };
@@ -1667,9 +1758,10 @@ function evaluateRubricVersionComparison(db, evidence) {
   const versionColumn = evidence?.version_column || 'tutor_rubric_version';
   const metric = evidence?.metric || 'tutor_first_turn_score';
   const output = evidence?.output || 'correlation';
-  const keyFields = Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
-    ? evidence.key_fields
-    : ['dialogue_id', 'scenario_id', 'profile_name'];
+  const keyFields =
+    Array.isArray(evidence?.key_fields) && evidence.key_fields.length > 0
+      ? evidence.key_fields
+      : ['dialogue_id', 'scenario_id', 'profile_name'];
 
   if (!versionA || !versionB) {
     throw new Error('rubric_version_comparison requires version_a and version_b');
@@ -1717,14 +1809,25 @@ function evaluateRubricVersionComparison(db, evidence) {
   return {
     value,
     details: {
-      version_column: versionColumn, version_a: versionA, version_b: versionB,
-      metric, output, key_fields: keyFields,
-      n_pairs: aValues.length, mean_a: mean(aValues), mean_b: mean(bValues),
+      version_column: versionColumn,
+      version_a: versionA,
+      version_b: versionB,
+      metric,
+      output,
+      key_fields: keyFields,
+      n_pairs: aValues.length,
+      mean_a: mean(aValues),
+      mean_b: mean(bValues),
     },
     fingerprint: {
       source: 'rubric_version_comparison',
-      version_column: versionColumn, version_a: versionA, version_b: versionB,
-      metric, output, n_rows: rows.length, n_pairs: aValues.length,
+      version_column: versionColumn,
+      version_a: versionA,
+      version_b: versionB,
+      metric,
+      output,
+      n_rows: rows.length,
+      n_pairs: aValues.length,
       max_created_at: maxCreatedAt,
     },
   };
@@ -2026,11 +2129,14 @@ function evaluateInventoryCoverage(spec, claimResults, inventory) {
 
   const policy = spec?.inventory_policy || {};
   const majorOnly = policy.major_only !== false;
-  const includeKinds = Array.isArray(policy.include_kinds) && policy.include_kinds.length > 0 ? new Set(policy.include_kinds) : null;
+  const includeKinds =
+    Array.isArray(policy.include_kinds) && policy.include_kinds.length > 0 ? new Set(policy.include_kinds) : null;
   const expandMappedFamilies = policy.expand_mapped_families !== false;
   const statusMode = policy.coverage_status_mode === 'strict' ? 'strict' : 'expanded';
   const maxUnmappedExpanded = Number.isFinite(policy.max_unmapped_major) ? policy.max_unmapped_major : 0;
-  const maxUnmappedRateExpanded = Number.isFinite(policy.max_unmapped_major_rate) ? policy.max_unmapped_major_rate : 0.05;
+  const maxUnmappedRateExpanded = Number.isFinite(policy.max_unmapped_major_rate)
+    ? policy.max_unmapped_major_rate
+    : 0.05;
   const maxUnmappedStrict = Number.isFinite(policy.max_unmapped_major_strict)
     ? policy.max_unmapped_major_strict
     : maxUnmappedExpanded;
@@ -2202,10 +2308,7 @@ export function runProvableDiscourseAudit({
     summary: { pass: 0, warn: 0, fail: 0, total: 0, skipped_by_epoch: 0 },
   };
 
-  const claims = mergeUniqueById(
-    Array.isArray(spec.claims) ? spec.claims : [],
-    ...imported.map((part) => part.claims),
-  );
+  const claims = mergeUniqueById(Array.isArray(spec.claims) ? spec.claims : [], ...imported.map((part) => part.claims));
   const db = smokeMode ? null : new Database(resolvedDbPath, { readonly: true });
 
   try {
@@ -2242,7 +2345,9 @@ export function runProvableDiscourseAudit({
       result.statement_found = statementCheck.count >= minOccurrences;
       if (!result.statement_found) {
         result.status = mergeStatus(result.status, 'fail');
-        result.messages.push(`Statement regex not found enough times (need >=${minOccurrences}, got ${statementCheck.count})`);
+        result.messages.push(
+          `Statement regex not found enough times (need >=${minOccurrences}, got ${statementCheck.count})`,
+        );
       }
 
       if (!smokeMode) {
@@ -2301,8 +2406,13 @@ export function runProvableDiscourseAudit({
           if (status !== 'pass') unresolved.push({ check_id: checkId, status: status || 'missing' });
         }
         if (unresolved.length > 0) {
-          result.status = mergeStatus(result.status, unresolved.some((entry) => entry.status === 'fail') ? 'fail' : 'warn');
-          result.messages.push(`Bug-gate dependencies not fully passing: ${unresolved.map((entry) => `${entry.check_id}:${entry.status}`).join(', ')}`);
+          result.status = mergeStatus(
+            result.status,
+            unresolved.some((entry) => entry.status === 'fail') ? 'fail' : 'warn',
+          );
+          result.messages.push(
+            `Bug-gate dependencies not fully passing: ${unresolved.map((entry) => `${entry.check_id}:${entry.status}`).join(', ')}`,
+          );
           result.details.required_bug_checks = unresolved;
         }
       }

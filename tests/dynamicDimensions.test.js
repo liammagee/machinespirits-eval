@@ -1,4 +1,3 @@
-
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -15,7 +14,11 @@ describe('Dynamic Dimensions Support', () => {
 
   after(() => {
     for (const id of testRunIds) {
-      try { deleteRun(id); } catch { /* ignore */ }
+      try {
+        deleteRun(id);
+      } catch {
+        /* ignore */
+      }
     }
   });
 
@@ -34,22 +37,22 @@ describe('Dynamic Dimensions Support', () => {
 
     // Rubric 2.2+ style tutor_scores (per-turn JSON)
     const tutorScores = {
-      "0": {
-        "scores": {
-          "perception_quality": 4,
-          "pedagogical_craft": 3,
-          "elicitation_quality": 5
+      0: {
+        scores: {
+          perception_quality: 4,
+          pedagogical_craft: 3,
+          elicitation_quality: 5,
         },
-        "overallScore": 80
+        overallScore: 80,
       },
-      "1": {
-        "scores": {
-          "perception_quality": 5,
-          "pedagogical_craft": 4,
-          "elicitation_quality": 4
+      1: {
+        scores: {
+          perception_quality: 5,
+          pedagogical_craft: 4,
+          elicitation_quality: 4,
         },
-        "overallScore": 90
-      }
+        overallScore: 90,
+      },
     };
 
     updateResultTutorScores(resultId, {
@@ -57,7 +60,7 @@ describe('Dynamic Dimensions Support', () => {
       tutorOverallScore: 85,
       tutorFirstTurnScore: 80,
       tutorLastTurnScore: 90,
-      tutorDevelopmentScore: 10
+      tutorDevelopmentScore: 10,
     });
 
     const stats = getRunStats(run.id);
@@ -87,22 +90,22 @@ describe('Dynamic Dimensions Support', () => {
     });
 
     const tutorScores = {
-      "0": {
-        "scores": {
-          "perception_quality": 5,
-          "new_custom_dimension": 4
+      0: {
+        scores: {
+          perception_quality: 5,
+          new_custom_dimension: 4,
         },
-        "overallScore": 90
-      }
+        overallScore: 90,
+      },
     };
 
     updateResultTutorScores(resultId, {
       tutorScores,
-      tutorOverallScore: 90
+      tutorOverallScore: 90,
     });
 
     const report = generateReport(run.id);
-    
+
     // Check if new dimensions appear in the report
     assert.ok(report.includes('perception_quality'), 'Should include perception_quality in report');
     assert.ok(report.includes('new_custom_dimension'), 'Should include new_custom_dimension in report');
@@ -124,8 +127,8 @@ describe('Dynamic Dimensions Support', () => {
       tutorFirstTurnScore: 75,
       scores: {
         relevance: 4,
-        tone: 5
-      }
+        tone: 5,
+      },
     });
 
     const stats = getRunStats(run.id);

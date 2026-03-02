@@ -190,7 +190,9 @@ function writeTodoFile({ baseDir, todoPath, report }) {
 }
 
 function printEntry(entry, useColor) {
-  console.log(`${paint(statusSymbol(entry.status), useColor, statusColor(entry.status))} ${paint(entry.id, useColor, ANSI.cyan)}`);
+  console.log(
+    `${paint(statusSymbol(entry.status), useColor, statusColor(entry.status))} ${paint(entry.id, useColor, ANSI.cyan)}`,
+  );
   if (entry.description) console.log(`    ${entry.description}`);
   if (entry.statement_occurrences != null) {
     const lineHint = entry.statement_lines?.length > 0 ? ` lines=${entry.statement_lines.join(',')}` : '';
@@ -199,7 +201,9 @@ function printEntry(entry, useColor) {
   if (entry.actual_value != null) {
     console.log(`    actual=${formatNumber(entry.actual_value)}`);
     if (entry.assertion?.expected != null) {
-      console.log(`    expected=${Array.isArray(entry.assertion.expected) ? JSON.stringify(entry.assertion.expected) : entry.assertion.expected}`);
+      console.log(
+        `    expected=${Array.isArray(entry.assertion.expected) ? JSON.stringify(entry.assertion.expected) : entry.assertion.expected}`,
+      );
     }
     if (entry.assertion?.op) console.log(`    op=${entry.assertion.op}`);
   }
@@ -275,7 +279,7 @@ function main() {
       printEntry(claim, useColor);
     }
 
-  if (report.symmetry.length > 0) {
+    if (report.symmetry.length > 0) {
       console.log('\nSymmetry rules:');
       for (const rule of report.symmetry) {
         printEntry(rule, useColor);
@@ -289,7 +293,8 @@ function main() {
       }
     }
 
-    const epochSuffix = report.summary.skipped_by_epoch > 0 ? ` (${report.summary.skipped_by_epoch} skipped by epoch filter)` : '';
+    const epochSuffix =
+      report.summary.skipped_by_epoch > 0 ? ` (${report.summary.skipped_by_epoch} skipped by epoch filter)` : '';
     console.log(
       `\nSummary: ${paint(String(report.summary.pass), useColor, ANSI.green)} pass, ${paint(String(report.summary.warn), useColor, ANSI.yellow)} warn, ${paint(String(report.summary.fail), useColor, ANSI.red)} fail${epochSuffix}`,
     );

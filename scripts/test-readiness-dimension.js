@@ -178,9 +178,7 @@ function formatDialogueForScoring(dialoguePath) {
     transcript += `\nTUTOR (turn ${i}): ${tutorMsg.slice(0, 500)}\n`;
 
     // Learner response and deliberation from dialogueTrace
-    const learnerExt = trace.find(
-      (t) => t.turnIndex === i + 1 && t.agent === 'learner' && t.action === 'final_output',
-    );
+    const learnerExt = trace.find((t) => t.turnIndex === i + 1 && t.agent === 'learner' && t.action === 'final_output');
     const learnerEgo = trace.find(
       (t) => t.turnIndex === i + 1 && t.agent === 'learner_ego_initial' && t.action === 'deliberation',
     );

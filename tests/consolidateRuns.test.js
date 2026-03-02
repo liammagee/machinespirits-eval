@@ -26,7 +26,10 @@ import { consolidateRuns } from '../services/runConsolidator.js';
 // ── Test DB Setup ───────────────────────────────────────────────────────────
 
 let db;
-const testDbPath = path.join(os.tmpdir(), `consolidate-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`);
+const testDbPath = path.join(
+  os.tmpdir(),
+  `consolidate-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`,
+);
 
 before(() => {
   db = new Database(testDbPath);
@@ -103,31 +106,50 @@ before(() => {
 
 after(() => {
   db.close();
-  try { fs.unlinkSync(testDbPath); } catch { /* ignore */ }
-  try { fs.unlinkSync(testDbPath + '-wal'); } catch { /* ignore */ }
-  try { fs.unlinkSync(testDbPath + '-shm'); } catch { /* ignore */ }
+  try {
+    fs.unlinkSync(testDbPath);
+  } catch {
+    /* ignore */
+  }
+  try {
+    fs.unlinkSync(testDbPath + '-wal');
+  } catch {
+    /* ignore */
+  }
+  try {
+    fs.unlinkSync(testDbPath + '-shm');
+  } catch {
+    /* ignore */
+  }
 });
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function insertRun(id, { status = 'completed', description = 'test' } = {}) {
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO evaluation_runs (id, created_at, description, status, completed_at, metadata)
     VALUES (?, datetime('now'), ?, ?, datetime('now'), '{}')
-  `).run(id, description, status);
+  `,
+  ).run(id, description, status);
 }
 
-function insertRow(runId, {
-  scenarioId = 'scenario_A',
-  profileName = 'cell_80_base_single_unified',
-  configHash = 'hash_cell_80',
-  rubricVersion = '2.2',
-  tutorScore = 75.0,
-  judgeModel = 'claude-opus-4-6',
-  success = 1,
-  egoModel = 'nemotron',
-} = {}) {
-  return db.prepare(`
+function insertRow(
+  runId,
+  {
+    scenarioId = 'scenario_A',
+    profileName = 'cell_80_base_single_unified',
+    configHash = 'hash_cell_80',
+    rubricVersion = '2.2',
+    tutorScore = 75.0,
+    judgeModel = 'claude-opus-4-6',
+    success = 1,
+    egoModel = 'nemotron',
+  } = {},
+) {
+  return db
+    .prepare(
+      `
     INSERT INTO evaluation_results (
       run_id, scenario_id, scenario_name, provider, model, profile_name,
       config_hash, tutor_rubric_version, tutor_first_turn_score, overall_score,
@@ -141,11 +163,21 @@ function insertRow(runId, {
       0, 0, 0,
       'unified', datetime('now')
     )
-  `).run(
-    runId, scenarioId, scenarioId, profileName,
-    configHash, rubricVersion, tutorScore, tutorScore,
-    judgeModel, success, egoModel,
-  ).lastInsertRowid;
+  `,
+    )
+    .run(
+      runId,
+      scenarioId,
+      scenarioId,
+      profileName,
+      configHash,
+      rubricVersion,
+      tutorScore,
+      tutorScore,
+      judgeModel,
+      success,
+      egoModel,
+    ).lastInsertRowid;
 }
 
 function getRowCountByRun(runId) {
@@ -153,9 +185,9 @@ function getRowCountByRun(runId) {
 }
 
 function getRowCountByProfile(runId, profileName) {
-  return db.prepare(
-    'SELECT COUNT(*) as cnt FROM evaluation_results WHERE run_id = ? AND profile_name = ?'
-  ).get(runId, profileName).cnt;
+  return db
+    .prepare('SELECT COUNT(*) as cnt FROM evaluation_results WHERE run_id = ? AND profile_name = ?')
+    .get(runId, profileName).cnt;
 }
 
 function getRunStatus(runId) {
@@ -171,7 +203,6 @@ function clearAllData() {
 // ── Tests ───────────────────────────────────────────────────────────────────
 
 describe('consolidateRuns', () => {
-
   describe('multi-cell consolidation', () => {
     before(() => clearAllData());
 
@@ -227,9 +258,11 @@ describe('consolidateRuns', () => {
       // Verify: per cell×scenario, N=3
       for (const cell of cells) {
         for (const scenario of scenarios) {
-          const count = db.prepare(
-            'SELECT COUNT(*) as cnt FROM evaluation_results WHERE run_id = ? AND profile_name = ? AND scenario_id = ?'
-          ).get('consolidated-2.0-test-multicell', cell.profile, scenario).cnt;
+          const count = db
+            .prepare(
+              'SELECT COUNT(*) as cnt FROM evaluation_results WHERE run_id = ? AND profile_name = ? AND scenario_id = ?',
+            )
+            .get('consolidated-2.0-test-multicell', cell.profile, scenario).cnt;
           assert.equal(count, 3, `Expected N=3 for ${cell.profile} × ${scenario}`);
         }
       }
@@ -290,7 +323,8 @@ describe('consolidateRuns', () => {
       // One eligible row (scored, success, v2.2 rubric)
       insertRow('run-partial', { scenarioId: 's1' });
       // One ineligible row (no score — will not be picked up by getAggregatedGroups)
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO evaluation_results (
           run_id, scenario_id, provider, model, profile_name,
           config_hash, tutor_rubric_version, tutor_first_turn_score,
@@ -300,7 +334,8 @@ describe('consolidateRuns', () => {
           'hash_80', '2.2', NULL,
           0, '[]', datetime('now')
         )
-      `).run();
+      `,
+      ).run();
 
       consolidateRuns(db, {
         epoch: '2.0',
@@ -361,9 +396,9 @@ describe('consolidateRuns', () => {
       assert.equal(getRowCountByRun('run-preview'), 1);
 
       // No consolidated run should exist
-      const consolidated = db.prepare(
-        "SELECT COUNT(*) as cnt FROM evaluation_runs WHERE id LIKE 'consolidated-%'"
-      ).get().cnt;
+      const consolidated = db
+        .prepare("SELECT COUNT(*) as cnt FROM evaluation_runs WHERE id LIKE 'consolidated-%'")
+        .get().cnt;
       assert.equal(consolidated, 0);
     });
   });
@@ -458,7 +493,8 @@ describe('consolidateRuns', () => {
       // Scored row
       insertRow('run-unscored', { scenarioId: 's1', tutorScore: 80 });
       // Unscored row (NULL score)
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO evaluation_results (
           run_id, scenario_id, provider, model, profile_name,
           config_hash, tutor_rubric_version, tutor_first_turn_score,
@@ -468,7 +504,8 @@ describe('consolidateRuns', () => {
           'hash_80', '2.2', NULL,
           1, '["test"]', datetime('now')
         )
-      `).run();
+      `,
+      ).run();
 
       const result = consolidateRuns(db, {
         epoch: '2.0',

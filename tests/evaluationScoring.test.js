@@ -20,7 +20,10 @@ import path from 'path';
 // Set up isolated test database BEFORE importing evaluationStore.
 // MUST use dynamic import() — static `import` is hoisted above this assignment,
 // so evaluationStore.js would open the production DB instead of the temp one.
-const testDbPath = path.join(os.tmpdir(), `eval-scoring-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`);
+const testDbPath = path.join(
+  os.tmpdir(),
+  `eval-scoring-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`,
+);
 process.env.EVAL_DB_PATH = testDbPath;
 
 const {
@@ -49,11 +52,27 @@ const testRunIds = [];
 
 after(() => {
   for (const runId of testRunIds) {
-    try { deleteRun(runId); } catch (e) { /* ignore */ }
+    try {
+      deleteRun(runId);
+    } catch (e) {
+      /* ignore */
+    }
   }
-  try { fs.unlinkSync(testDbPath); } catch (e) { /* ignore */ }
-  try { fs.unlinkSync(testDbPath + '-wal'); } catch (e) { /* ignore */ }
-  try { fs.unlinkSync(testDbPath + '-shm'); } catch (e) { /* ignore */ }
+  try {
+    fs.unlinkSync(testDbPath);
+  } catch (e) {
+    /* ignore */
+  }
+  try {
+    fs.unlinkSync(testDbPath + '-wal');
+  } catch (e) {
+    /* ignore */
+  }
+  try {
+    fs.unlinkSync(testDbPath + '-shm');
+  } catch (e) {
+    /* ignore */
+  }
 });
 
 function makeRun(description = 'test run') {
@@ -106,15 +125,18 @@ describe('tutor_scores and tutor_overall_score columns', () => {
 describe('updateResultTutorScores', () => {
   it('writes per-turn scores and aggregate metrics', () => {
     const runId = makeRun('tutor scores test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-test-1',
-      suggestions: [
-        { message: 'Turn 0 suggestion' },
-        { message: 'Turn 1 suggestion' },
-        { message: 'Turn 2 suggestion' },
-      ],
-      dialogueRounds: 3,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-test-1',
+        suggestions: [
+          { message: 'Turn 0 suggestion' },
+          { message: 'Turn 1 suggestion' },
+          { message: 'Turn 2 suggestion' },
+        ],
+        dialogueRounds: 3,
+      }),
+    );
 
     const results = getResults(runId);
     const resultId = results[0].id;
@@ -398,8 +420,10 @@ describe('buildPerTurnTutorEvaluationPrompt', () => {
     });
 
     // The prompt should include turn 0 and turn 1 content but NOT turn 2
-    assert.ok(prompt.includes('Turn 0 draft') || prompt.includes('Turn 1 draft') || prompt.includes('recursion'),
-      'should include earlier turn content');
+    assert.ok(
+      prompt.includes('Turn 0 draft') || prompt.includes('Turn 1 draft') || prompt.includes('recursion'),
+      'should include earlier turn content',
+    );
     // Turn 2 trace entry should NOT appear
     assert.ok(!prompt.includes('Turn 2 draft'), 'should NOT include future turn trace');
   });
@@ -412,11 +436,14 @@ describe('buildPerTurnTutorEvaluationPrompt', () => {
 describe('scoring completeness — all dimensions populated after full evaluation', () => {
   it('multi-turn result has tutor, learner, and dialogue scores after full scoring', () => {
     const runId = makeRun('completeness test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-complete-1',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
-      dialogueRounds: 3,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-complete-1',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
+        dialogueRounds: 3,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -466,11 +493,14 @@ describe('scoring completeness — all dimensions populated after full evaluatio
 
   it('missing learner score is detectable via null check', () => {
     const runId = makeRun('missing learner test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-missing-1',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }],
-      dialogueRounds: 2,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-missing-1',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }],
+        dialogueRounds: 2,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -508,16 +538,28 @@ describe('listRuns computes correct averages across multiple results', () => {
 
     // Score with 60, 80, 100
     updateResultScores(results[0].id, {
-      scores: {}, tutorFirstTurnScore: 60, baseScore: 60,
-      passesRequired: true, passesForbidden: true, judgeModel: 'test',
+      scores: {},
+      tutorFirstTurnScore: 60,
+      baseScore: 60,
+      passesRequired: true,
+      passesForbidden: true,
+      judgeModel: 'test',
     });
     updateResultScores(results[1].id, {
-      scores: {}, tutorFirstTurnScore: 80, baseScore: 80,
-      passesRequired: true, passesForbidden: true, judgeModel: 'test',
+      scores: {},
+      tutorFirstTurnScore: 80,
+      baseScore: 80,
+      passesRequired: true,
+      passesForbidden: true,
+      judgeModel: 'test',
     });
     updateResultScores(results[2].id, {
-      scores: {}, tutorFirstTurnScore: 100, baseScore: 100,
-      passesRequired: true, passesForbidden: true, judgeModel: 'test',
+      scores: {},
+      tutorFirstTurnScore: 100,
+      baseScore: 100,
+      passesRequired: true,
+      passesForbidden: true,
+      judgeModel: 'test',
     });
 
     const runs = listRuns();
@@ -537,8 +579,12 @@ describe('listRuns computes correct averages across multiple results', () => {
     // Score tutor (required for judge_model filter in listRuns)
     for (const r of results) {
       updateResultScores(r.id, {
-        scores: {}, tutorFirstTurnScore: 70, baseScore: 70,
-        passesRequired: true, passesForbidden: true, judgeModel: 'test',
+        scores: {},
+        tutorFirstTurnScore: 70,
+        baseScore: 70,
+        passesRequired: true,
+        passesForbidden: true,
+        judgeModel: 'test',
       });
     }
 
@@ -562,8 +608,12 @@ describe('listRuns computes correct averages across multiple results', () => {
 
     for (const r of results) {
       updateResultScores(r.id, {
-        scores: {}, tutorFirstTurnScore: 70, baseScore: 70,
-        passesRequired: true, passesForbidden: true, judgeModel: 'test',
+        scores: {},
+        tutorFirstTurnScore: 70,
+        baseScore: 70,
+        passesRequired: true,
+        passesForbidden: true,
+        judgeModel: 'test',
       });
     }
 
@@ -651,16 +701,12 @@ describe('holistic evaluation receives full dialogue transcript', () => {
   it('holistic prompt includes "DIALOGUE TRANSCRIPT" section', () => {
     const lastSuggestion = mockTurnResults[3].suggestions[0];
 
-    const prompt = buildEvaluationPrompt(
-      lastSuggestion,
-      mockScenario,
-      {
-        dialogueContext: {
-          conversationHistory: mockConversationHistory,
-          consolidatedTrace: mockConsolidatedTrace,
-        },
+    const prompt = buildEvaluationPrompt(lastSuggestion, mockScenario, {
+      dialogueContext: {
+        conversationHistory: mockConversationHistory,
+        consolidatedTrace: mockConsolidatedTrace,
       },
-    );
+    });
 
     assert.ok(prompt.includes('DIALOGUE TRANSCRIPT'), 'should include DIALOGUE TRANSCRIPT section');
     assert.ok(prompt.includes('full learner-tutor exchange'), 'should describe it as full exchange');
@@ -669,16 +715,12 @@ describe('holistic evaluation receives full dialogue transcript', () => {
   it('holistic prompt does NOT include per-turn framing', () => {
     const lastSuggestion = mockTurnResults[3].suggestions[0];
 
-    const prompt = buildEvaluationPrompt(
-      lastSuggestion,
-      mockScenario,
-      {
-        dialogueContext: {
-          conversationHistory: mockConversationHistory,
-          consolidatedTrace: mockConsolidatedTrace,
-        },
+    const prompt = buildEvaluationPrompt(lastSuggestion, mockScenario, {
+      dialogueContext: {
+        conversationHistory: mockConversationHistory,
+        consolidatedTrace: mockConsolidatedTrace,
       },
-    );
+    });
 
     assert.ok(!prompt.includes('PER-TURN SCORING'), 'holistic prompt should NOT contain PER-TURN SCORING');
     assert.ok(!prompt.includes('truncated to this point'), 'holistic prompt should NOT mention truncation');
@@ -746,16 +788,12 @@ describe('holistic evaluation receives full dialogue transcript', () => {
   it('holistic prompt falls back to conversationHistory when no consolidated trace', () => {
     const lastSuggestion = mockTurnResults[3].suggestions[0];
 
-    const prompt = buildEvaluationPrompt(
-      lastSuggestion,
-      mockScenario,
-      {
-        dialogueContext: {
-          conversationHistory: mockConversationHistory,
-          consolidatedTrace: [], // empty — should fall back
-        },
+    const prompt = buildEvaluationPrompt(lastSuggestion, mockScenario, {
+      dialogueContext: {
+        conversationHistory: mockConversationHistory,
+        consolidatedTrace: [], // empty — should fall back
       },
-    );
+    });
 
     // Should still include all turns via conversationHistory fallback
     for (let i = 0; i < TURN_FINGERPRINTS.length; i++) {
@@ -779,8 +817,10 @@ describe('holistic evaluation receives full dialogue transcript', () => {
     assert.ok(!prompt.includes('DIALOGUE TRANSCRIPT'), 'no context → no transcript section');
     // Prior turns should not appear (turn 3 fingerprint is in the suggestion itself, which is OK)
     for (let i = 0; i < TURN_FINGERPRINTS.length - 1; i++) {
-      assert.ok(!prompt.includes(TURN_FINGERPRINTS[i]),
-        `no context → no fingerprint for turn ${i}: ${TURN_FINGERPRINTS[i]}`);
+      assert.ok(
+        !prompt.includes(TURN_FINGERPRINTS[i]),
+        `no context → no fingerprint for turn ${i}: ${TURN_FINGERPRINTS[i]}`,
+      );
     }
   });
 });
@@ -805,8 +845,7 @@ describe('isMultiTurnResult detection', () => {
       dialogueRounds: 3,
       suggestions: [{ message: 'Only Turn 0 stored in messages mode' }],
     };
-    assert.strictEqual(isMultiTurnResult(result), true,
-      'messages-mode with multiple rounds should be multi-turn');
+    assert.strictEqual(isMultiTurnResult(result), true, 'messages-mode with multiple rounds should be multi-turn');
   });
 
   it('dialogue-mode with suggestions.length > 1 → true', () => {
@@ -816,8 +855,7 @@ describe('isMultiTurnResult detection', () => {
       dialogueRounds: 3,
       suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
     };
-    assert.strictEqual(isMultiTurnResult(result), true,
-      'dialogue-mode with multiple suggestions should be multi-turn');
+    assert.strictEqual(isMultiTurnResult(result), true, 'dialogue-mode with multiple suggestions should be multi-turn');
   });
 
   it('no dialogueId → false', () => {
@@ -827,8 +865,7 @@ describe('isMultiTurnResult detection', () => {
       dialogueRounds: 3,
       suggestions: [{ message: 'T0' }, { message: 'T1' }],
     };
-    assert.strictEqual(isMultiTurnResult(result), false,
-      'missing dialogueId should always be single-turn');
+    assert.strictEqual(isMultiTurnResult(result), false, 'missing dialogueId should always be single-turn');
   });
 
   it('messages-mode with dialogueRounds === 1 → false', () => {
@@ -838,8 +875,7 @@ describe('isMultiTurnResult detection', () => {
       dialogueRounds: 1,
       suggestions: [{ message: 'Single turn' }],
     };
-    assert.strictEqual(isMultiTurnResult(result), false,
-      'messages-mode with 1 round should be single-turn');
+    assert.strictEqual(isMultiTurnResult(result), false, 'messages-mode with 1 round should be single-turn');
   });
 });
 
@@ -850,11 +886,14 @@ describe('isMultiTurnResult detection', () => {
 describe('multi-turn scoring pipeline (DB round-trip)', () => {
   it('stores per-turn tutor scores and aggregates correctly', () => {
     const runId = makeRun('tutor pipeline test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-pipe-1',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }, { message: 'T3' }],
-      dialogueRounds: 4,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-pipe-1',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }, { message: 'T3' }],
+        dialogueRounds: 4,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -886,11 +925,14 @@ describe('multi-turn scoring pipeline (DB round-trip)', () => {
 
   it('stores per-turn learner scores alongside tutor (no clobbering)', () => {
     const runId = makeRun('learner no-clobber test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-pipe-2',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
-      dialogueRounds: 3,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-pipe-2',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
+        dialogueRounds: 3,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -930,11 +972,14 @@ describe('multi-turn scoring pipeline (DB round-trip)', () => {
 
   it('tutor N turns, learner N-1 turns (entry count symmetry)', () => {
     const runId = makeRun('turn count symmetry');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-pipe-3',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }, { message: 'T3' }],
-      dialogueRounds: 4,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-pipe-3',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }, { message: 'T3' }],
+        dialogueRounds: 4,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -1065,8 +1110,11 @@ describe('dialogue quality scoring — public vs internal', () => {
     const scored = getResults(runId)[0];
     assert.strictEqual(scored.dialogueQualityScore, 72.5, 'public DQ should be 72.5');
     assert.strictEqual(scored.dialogueQualityInternalScore, 68.3, 'internal DQ should be 68.3');
-    assert.notStrictEqual(scored.dialogueQualityScore, scored.dialogueQualityInternalScore,
-      'public and internal should be distinct values');
+    assert.notStrictEqual(
+      scored.dialogueQualityScore,
+      scored.dialogueQualityInternalScore,
+      'public and internal should be distinct values',
+    );
   });
 });
 
@@ -1142,10 +1190,13 @@ describe('listRuns reflects all score types', () => {
 describe('updateResultTutorHolisticScores', () => {
   it('stores holistic tutor scores without clobbering per-turn tutor columns', () => {
     const runId = makeRun('tutor holistic DB');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-tutor-holistic-1',
-      dialogueRounds: 3,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-tutor-holistic-1',
+        dialogueRounds: 3,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -1162,7 +1213,10 @@ describe('updateResultTutorHolisticScores', () => {
 
     // Then write holistic tutor scores
     updateResultTutorHolisticScores(id, {
-      holisticScores: { scaffolding_arc: { score: 4, reasoning: 'Good progression' }, adaptive_responsiveness: { score: 3, reasoning: 'Moderate' } },
+      holisticScores: {
+        scaffolding_arc: { score: 4, reasoning: 'Good progression' },
+        adaptive_responsiveness: { score: 3, reasoning: 'Moderate' },
+      },
       holisticOverallScore: 68.5,
       holisticSummary: 'Strong scaffolding arc with moderate responsiveness',
       holisticJudgeModel: 'test-judge',
@@ -1207,8 +1261,11 @@ describe('updateResultTutorHolisticScores', () => {
     });
 
     const scored = getResults(runId)[0];
-    assert.notStrictEqual(scored.tutorOverallScore, scored.tutorHolisticOverallScore,
-      'per-turn and holistic tutor scores should be distinct');
+    assert.notStrictEqual(
+      scored.tutorOverallScore,
+      scored.tutorHolisticOverallScore,
+      'per-turn and holistic tutor scores should be distinct',
+    );
     assert.strictEqual(scored.tutorOverallScore, 75);
     assert.strictEqual(scored.tutorHolisticOverallScore, 95);
   });
@@ -1307,8 +1364,11 @@ describe('tutor holistic rubric', () => {
 
     const dimsBase = getTutorHolisticDimensions({ hasRecognition: false });
     assert.strictEqual(Object.keys(dimsBase).length, 3, '3 dimensions for base');
-    assert.deepStrictEqual(Object.keys(dimsRecog), Object.keys(dimsBase),
-      'v2.2 returns same dims regardless of hasRecognition');
+    assert.deepStrictEqual(
+      Object.keys(dimsRecog),
+      Object.keys(dimsBase),
+      'v2.2 returns same dims regardless of hasRecognition',
+    );
   });
 
   it('calculateTutorHolisticScore produces correct 0-100 score', () => {
@@ -1388,11 +1448,14 @@ describe('tutor holistic rubric', () => {
 describe('full pipeline end-to-end', () => {
   it('multi-turn row gets all 6 score types populated without clobbering', () => {
     const runId = makeRun('full pipeline E2E');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-e2e-full',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
-      dialogueRounds: 3,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-e2e-full',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }, { message: 'T2' }],
+        dialogueRounds: 3,
+      }),
+    );
 
     const results = getResults(runId);
     const id = results[0].id;
@@ -1473,12 +1536,21 @@ describe('full pipeline end-to-end', () => {
     assert.ok(scored.dialogueQualityInternalSummary.includes('ego-superego'), 'internal DQ summary');
 
     // Cross-check: stages didn't clobber each other
-    assert.notStrictEqual(scored.dialogueQualityScore, scored.dialogueQualityInternalScore,
-      'public and internal DQ should be distinct');
-    assert.notStrictEqual(scored.tutorOverallScore, scored.learnerOverallScore,
-      'tutor and learner overall should be distinct');
-    assert.notStrictEqual(scored.tutorOverallScore, scored.tutorHolisticOverallScore,
-      'tutor per-turn and holistic should be distinct');
+    assert.notStrictEqual(
+      scored.dialogueQualityScore,
+      scored.dialogueQualityInternalScore,
+      'public and internal DQ should be distinct',
+    );
+    assert.notStrictEqual(
+      scored.tutorOverallScore,
+      scored.learnerOverallScore,
+      'tutor and learner overall should be distinct',
+    );
+    assert.notStrictEqual(
+      scored.tutorOverallScore,
+      scored.tutorHolisticOverallScore,
+      'tutor per-turn and holistic should be distinct',
+    );
   });
 });
 
@@ -1595,11 +1667,14 @@ describe('per-dialogue scoring completeness', () => {
 describe('DgP and DgI can be stored independently', () => {
   it('DgP can be written without DgI', () => {
     const runId = makeRun('dgp-only test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-dgp-only',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }],
-      dialogueRounds: 2,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-dgp-only',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }],
+        dialogueRounds: 2,
+      }),
+    );
 
     const id = getResults(runId)[0].id;
 
@@ -1616,11 +1691,14 @@ describe('DgP and DgI can be stored independently', () => {
 
   it('DgI can be written without DgP', () => {
     const runId = makeRun('dgi-only test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-dgi-only',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }],
-      dialogueRounds: 2,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-dgi-only',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }],
+        dialogueRounds: 2,
+      }),
+    );
 
     const id = getResults(runId)[0].id;
 
@@ -1636,11 +1714,14 @@ describe('DgP and DgI can be stored independently', () => {
 
   it('DgP written first, then DgI — no clobbering', () => {
     const runId = makeRun('dgp-then-dgi test');
-    storeResult(runId, makeResult({
-      dialogueId: 'dlg-both-seq',
-      suggestions: [{ message: 'T0' }, { message: 'T1' }],
-      dialogueRounds: 2,
-    }));
+    storeResult(
+      runId,
+      makeResult({
+        dialogueId: 'dlg-both-seq',
+        suggestions: [{ message: 'T0' }, { message: 'T1' }],
+        dialogueRounds: 2,
+      }),
+    );
 
     const id = getResults(runId)[0].id;
 
@@ -1668,9 +1749,10 @@ describe('DgP and DgI can be stored independently', () => {
 // Replicated from evaluate-dialogue command (~line 4446) to test in isolation.
 // Must stay in sync with the source.
 function isMultiTurnForDialogueEval(result) {
-  return result.success && (
-    (Array.isArray(result.suggestions) && result.suggestions.length > 1) ||
-    (result.conversationMode === 'messages' && result.dialogueRounds > 1)
+  return (
+    result.success &&
+    ((Array.isArray(result.suggestions) && result.suggestions.length > 1) ||
+      (result.conversationMode === 'messages' && result.dialogueRounds > 1))
   );
 }
 
@@ -1683,8 +1765,11 @@ describe('evaluate-dialogue multi-turn filter', () => {
       dialogueRounds: 3,
       suggestions: [{ message: 'Only Turn 0 stored in messages mode' }],
     };
-    assert.strictEqual(isMultiTurnForDialogueEval(result), true,
-      'messages-mode multi-turn should pass filter even with 1 suggestion');
+    assert.strictEqual(
+      isMultiTurnForDialogueEval(result),
+      true,
+      'messages-mode multi-turn should pass filter even with 1 suggestion',
+    );
   });
 
   it('dialogue-mode with suggestions.length > 1 → included', () => {
@@ -1706,8 +1791,11 @@ describe('evaluate-dialogue multi-turn filter', () => {
       dialogueRounds: 1,
       suggestions: [{ message: 'Single turn' }],
     };
-    assert.strictEqual(isMultiTurnForDialogueEval(result), false,
-      'single-round messages-mode should not be multi-turn');
+    assert.strictEqual(
+      isMultiTurnForDialogueEval(result),
+      false,
+      'single-round messages-mode should not be multi-turn',
+    );
   });
 
   it('failed result → excluded regardless of turn count', () => {
@@ -1718,8 +1806,7 @@ describe('evaluate-dialogue multi-turn filter', () => {
       dialogueRounds: 5,
       suggestions: [{ message: 'T0' }],
     };
-    assert.strictEqual(isMultiTurnForDialogueEval(result), false,
-      'failed results must be excluded');
+    assert.strictEqual(isMultiTurnForDialogueEval(result), false, 'failed results must be excluded');
   });
 
   it('null conversationMode with single suggestion → excluded', () => {
@@ -1730,8 +1817,11 @@ describe('evaluate-dialogue multi-turn filter', () => {
       dialogueRounds: 3,
       suggestions: [{ message: 'T0' }],
     };
-    assert.strictEqual(isMultiTurnForDialogueEval(result), false,
-      'null conversationMode with 1 suggestion should not be multi-turn');
+    assert.strictEqual(
+      isMultiTurnForDialogueEval(result),
+      false,
+      'null conversationMode with 1 suggestion should not be multi-turn',
+    );
   });
 });
 
@@ -1752,8 +1842,11 @@ describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
     // by searching for the old caller pattern.
     const callerPattern = /evaluateMultiTurnResult\(result[\s\S]{0,300}scoreDialogueQuality\(result/g;
     const matches = evalCliSource.match(callerPattern);
-    assert.strictEqual(matches, null,
-      'scoreDialogueQuality should NOT be called after evaluateMultiTurnResult in evaluate loops — DgP/DgI are now inlined');
+    assert.strictEqual(
+      matches,
+      null,
+      'scoreDialogueQuality should NOT be called after evaluateMultiTurnResult in evaluate loops — DgP/DgI are now inlined',
+    );
   });
 
   it('evaluateMultiTurnResult contains all 6 metric store writes', () => {
@@ -1771,12 +1864,12 @@ describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
 
     // All 6 metric store writes must appear inside this function:
     const requiredStoreWrites = [
-      'updateResultScores',                  // TuPT (legacy per-dimension)
-      'updateResultTutorScores',             // TuPT (per-turn JSON)
-      'updateResultTutorHolisticScores',     // TuH
-      'updateResultLearnerScores',           // LrPT + LrH
-      'updateDialogueQualityScore',          // DgP
-      'updateDialogueQualityInternalScore',  // DgI
+      'updateResultScores', // TuPT (legacy per-dimension)
+      'updateResultTutorScores', // TuPT (per-turn JSON)
+      'updateResultTutorHolisticScores', // TuH
+      'updateResultLearnerScores', // LrPT + LrH
+      'updateDialogueQualityScore', // DgP
+      'updateDialogueQualityInternalScore', // DgI
     ];
 
     for (const storeFn of requiredStoreWrites) {
@@ -1803,17 +1896,14 @@ describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
     // Walk backwards from DgP to find the nearest !tutorOnly guard
     const beforeDgp = funcBody.slice(0, dgpIdx);
     const tutorOnlyGuardIdx = beforeDgp.lastIndexOf('if (!tutorOnly)');
-    assert.ok(tutorOnlyGuardIdx !== -1,
-      'DgP/DgI must be inside an if (!tutorOnly) guard');
+    assert.ok(tutorOnlyGuardIdx !== -1, 'DgP/DgI must be inside an if (!tutorOnly) guard');
 
     // The guard should be closer to DgP than the learner section's guard
     // (there's another !tutorOnly for learner scoring earlier in the function).
     // Check that DgI also comes after this guard.
     const afterGuard = funcBody.slice(tutorOnlyGuardIdx);
-    assert.ok(afterGuard.includes('updateDialogueQualityScore'),
-      'DgP must be inside the !tutorOnly block');
-    assert.ok(afterGuard.includes('updateDialogueQualityInternalScore'),
-      'DgI must be inside the !tutorOnly block');
+    assert.ok(afterGuard.includes('updateDialogueQualityScore'), 'DgP must be inside the !tutorOnly block');
+    assert.ok(afterGuard.includes('updateDialogueQualityInternalScore'), 'DgI must be inside the !tutorOnly block');
   });
 });
 
@@ -1831,10 +1921,8 @@ describe('judge subprocess env cleanup pattern', () => {
     delete env.ANTHROPIC_API_KEY;
     delete env.CLAUDECODE;
 
-    assert.strictEqual(env.CLAUDECODE, undefined,
-      'CLAUDECODE must not be passed to judge subprocess');
-    assert.strictEqual(env.ANTHROPIC_API_KEY, undefined,
-      'ANTHROPIC_API_KEY must not be passed to judge subprocess');
+    assert.strictEqual(env.CLAUDECODE, undefined, 'CLAUDECODE must not be passed to judge subprocess');
+    assert.strictEqual(env.ANTHROPIC_API_KEY, undefined, 'ANTHROPIC_API_KEY must not be passed to judge subprocess');
     // PATH should still be present
     assert.ok(env.PATH, 'PATH must survive env cleanup');
   });

@@ -33,24 +33,22 @@ describe('apiMessageFormatter', () => {
           body: {
             model: 'test-model',
             system: 'You are a helpful tutor.',
-            messages: [
-              { role: 'user', content: 'Hello there, how are you today?'.repeat(20) }
-            ]
-          }
+            messages: [{ role: 'user', content: 'Hello there, how are you today?'.repeat(20) }],
+          },
         },
         response: {
           json: {
             usage: {
               prompt_tokens: 10,
-              completion_tokens: 20
-            }
-          }
-        }
-      }
+              completion_tokens: 20,
+            },
+          },
+        },
+      },
     ];
 
     formatApiMessages(records, { showMessages: false });
-    
+
     const output = logOutput.join('\n');
     assert.match(output, /API Messages \(1 call\)/);
     assert.match(output, /API Call #1: openrouter \(ego\) — test-model/);
@@ -70,23 +68,23 @@ describe('apiMessageFormatter', () => {
             model: 'claude-3',
             messages: [
               { role: 'system', content: 'You are a strict superego critic.' },
-              { role: 'user', content: [{ type: 'text', text: 'Analyze this.' }] }
-            ]
-          }
+              { role: 'user', content: [{ type: 'text', text: 'Analyze this.' }] },
+            ],
+          },
         },
         response: {
           body: {
             usage: {
               input_tokens: 5,
-              output_tokens: 15
-            }
-          }
-        }
-      }
+              output_tokens: 15,
+            },
+          },
+        },
+      },
     ];
 
     formatApiMessages(records, { showMessages: 'full' });
-    
+
     const output = logOutput.join('\n');
     assert.match(output, /API Call #1: anthropic \(superego\) — claude-3/);
     assert.match(output, /system\s*: You are a strict superego critic./);
@@ -101,23 +99,23 @@ describe('apiMessageFormatter', () => {
       {
         request: {
           body: {
-            model: 'unknown-model'
-          }
-        }
+            model: 'unknown-model',
+          },
+        },
       },
       {
         request: {
           body: {
             system: 'You are a learner ego.',
-            messages: [{ role: 'assistant', content: null }]
-          }
-        }
-      }
+            messages: [{ role: 'assistant', content: null }],
+          },
+        },
+      },
     ];
 
     formatApiMessages(records);
     const output = logOutput.join('\n');
-    
+
     assert.match(output, /API Call #3: \? \(learner\) — \?/);
     assert.match(output, /system\s*: You are a learner ego./);
   });
@@ -126,26 +124,26 @@ describe('apiMessageFormatter', () => {
     const records = [
       {
         request: {
-          body: { system: 'review the following' }
-        }
+          body: { system: 'review the following' },
+        },
       },
       {
         request: {
-          body: { system: 'you are a pedagog' }
-        }
+          body: { system: 'you are a pedagog' },
+        },
       },
       {
         request: {
-          body: { system: 'no matching keywords' }
-        }
-      }
+          body: { system: 'no matching keywords' },
+        },
+      },
     ];
 
     formatApiMessages(records);
     const output = logOutput.join('\n');
-    
+
     assert.match(output, /\(superego\)/);
     assert.match(output, /\(ego\)/);
-    assert.match(output, /API Call #3: \? — \?/); 
+    assert.match(output, /API Call #3: \? — \?/);
   });
 });

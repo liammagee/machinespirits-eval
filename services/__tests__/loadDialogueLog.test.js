@@ -146,7 +146,11 @@ describe('loadDialogueLog', () => {
       const result = loadDialogueLog(badId);
       assert.equal(result, null, 'should return null for invalid JSON');
     } finally {
-      try { fs.unlinkSync(badFile); } catch { /* ignore */ }
+      try {
+        fs.unlinkSync(badFile);
+      } catch {
+        /* ignore */
+      }
     }
   });
 

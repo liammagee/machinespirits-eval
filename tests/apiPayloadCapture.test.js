@@ -19,7 +19,12 @@ test('attachApiPayloadsToTrace attaches payloads by generationId', () => {
       method: 'POST',
       generationId: 'gen-1',
       request: { headers: {}, body: { model: 'nvidia/nemotron-3-nano-30b-a3b' } },
-      response: { status: 200, ok: true, headers: {}, json: { id: 'gen-1', choices: [{ message: { content: 'ok' } }] } },
+      response: {
+        status: 200,
+        ok: true,
+        headers: {},
+        json: { id: 'gen-1', choices: [{ message: { content: 'ok' } }] },
+      },
       error: null,
     },
   ];

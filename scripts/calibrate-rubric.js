@@ -83,7 +83,9 @@ function pearsonCorrelation(x, y) {
   const mx = mean(x.slice(0, n));
   const my = mean(y.slice(0, n));
 
-  let sumXY = 0, sumX2 = 0, sumY2 = 0;
+  let sumXY = 0,
+    sumX2 = 0,
+    sumY2 = 0;
   for (let i = 0; i < n; i++) {
     const dx = x[i] - mx;
     const dy = y[i] - my;
@@ -102,7 +104,7 @@ function pearsonCorrelation(x, y) {
   const z = Math.abs(t);
   const p1 = Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
   const t1 = 1 / (1 + 0.2316419 * z);
-  const poly = t1 * (0.319381530 + t1 * (-0.356563782 + t1 * (1.781477937 + t1 * (-1.821255978 + 1.330274429 * t1))));
+  const poly = t1 * (0.31938153 + t1 * (-0.356563782 + t1 * (1.781477937 + t1 * (-1.821255978 + 1.330274429 * t1))));
   const p = 2 * p1 * poly;
 
   return { r, n, p };
@@ -155,7 +157,7 @@ const TUTOR_DIM_MAP = {
   personalization: 'perception_quality',
   memory_integration: 'perception_quality',
   pedagogical_soundness: 'pedagogical_craft',
-  pedagogical: 'pedagogical_craft',  // normalized key
+  pedagogical: 'pedagogical_craft', // normalized key
   specificity: 'pedagogical_craft',
   actionability: 'pedagogical_craft',
   dialectical_responsiveness: 'elicitation_quality',
@@ -166,7 +168,7 @@ const TUTOR_DIM_MAP = {
   // productive_struggle also maps to productive_difficulty (split mapping)
   epistemic_honesty: 'epistemic_integrity',
   tone: 'epistemic_integrity',
-  learner_growth: null,  // REMOVED in v2.2
+  learner_growth: null, // REMOVED in v2.2
 };
 
 // For split mappings (productive_struggle → both elicitation AND productive_difficulty),
@@ -184,7 +186,7 @@ const LEARNER_DIM_MAP = {
   revision_signals: 'revision_signals',
   conceptual_progression: 'conceptual_progression',
   metacognitive_development: 'metacognitive_awareness',
-  persona_consistency: null,  // REMOVED in v2.2
+  persona_consistency: null, // REMOVED in v2.2
 };
 
 const TUTOR_HOLISTIC_DIM_MAP = {
@@ -193,7 +195,7 @@ const TUTOR_HOLISTIC_DIM_MAP = {
   adaptive_responsiveness: 'adaptive_trajectory',
   recognition_depth: 'adaptive_trajectory',
   pedagogical_closure: 'pedagogical_closure',
-  productive_challenge: null,  // REMOVED in v2.2
+  productive_challenge: null, // REMOVED in v2.2
 };
 
 /**
@@ -209,7 +211,7 @@ function remapDimensions(oldScores, dimMap, oldRubric, newRubric) {
   // Collect old scores grouped by new dim
   const groups = {};
   for (const [oldKey, newKey] of Object.entries(dimMap)) {
-    if (!newKey) continue;  // REMOVED dimension
+    if (!newKey) continue; // REMOVED dimension
     const scoreEntry = oldScores[oldKey];
     if (!scoreEntry) continue;
 
@@ -255,7 +257,7 @@ function computeOverall(scores, rubric) {
   }
 
   if (totalWeight === 0) return NaN;
-  return ((weightedSum / totalWeight) - 1) / 4 * 100;
+  return ((weightedSum / totalWeight - 1) / 4) * 100;
 }
 
 /**
@@ -273,14 +275,14 @@ function flattenPerTurnScores(raw) {
   const keys = Object.keys(raw);
   if (keys.length === 0) return null;
 
-  const isPerTurn = keys.every(k => /^\d+$/.test(k)) && keys.some(k => raw[k]?.scores);
+  const isPerTurn = keys.every((k) => /^\d+$/.test(k)) && keys.some((k) => raw[k]?.scores);
   if (!isPerTurn) {
     // Already flat — return as-is
     return raw;
   }
 
   // Accumulate scores per dimension across turns
-  const accum = {};  // { dimKey: { sum: N, count: N } }
+  const accum = {}; // { dimKey: { sum: N, count: N } }
   for (const turnKey of keys) {
     const turnScores = raw[turnKey]?.scores;
     if (!turnScores || typeof turnScores !== 'object') continue;
@@ -348,7 +350,9 @@ function getCalibrationSample() {
 // ── Synthetic calibration ──
 
 function runSyntheticCalibration() {
-  console.log(`${c.bold}${c.magenta}═══ Rubric Calibration: v${fromVersion} → v${toVersion} (synthetic) ═══${c.reset}\n`);
+  console.log(
+    `${c.bold}${c.magenta}═══ Rubric Calibration: v${fromVersion} → v${toVersion} (synthetic) ═══${c.reset}\n`,
+  );
 
   // Load both rubric versions
   const oldFiles = getRubricFiles(fromVersion);
@@ -361,8 +365,12 @@ function runSyntheticCalibration() {
   const oldHolisticRubric = loadRubric(oldFiles.tutorHolistic);
   const newHolisticRubric = loadRubric(newFiles.tutorHolistic);
 
-  console.log(`  Old rubric: ${oldTutorRubric.name} v${oldTutorRubric.version} (${Object.keys(oldTutorRubric.dimensions).length} tutor dims)`);
-  console.log(`  New rubric: ${newTutorRubric.name} v${newTutorRubric.version} (${Object.keys(newTutorRubric.dimensions).length} tutor dims)`);
+  console.log(
+    `  Old rubric: ${oldTutorRubric.name} v${oldTutorRubric.version} (${Object.keys(oldTutorRubric.dimensions).length} tutor dims)`,
+  );
+  console.log(
+    `  New rubric: ${newTutorRubric.name} v${newTutorRubric.version} (${Object.keys(newTutorRubric.dimensions).length} tutor dims)`,
+  );
 
   // Get calibration sample
   const rows = getCalibrationSample();
@@ -384,17 +392,23 @@ function runSyntheticCalibration() {
     let tutorScoresRaw;
     try {
       tutorScoresRaw = row.tutor_scores ? JSON.parse(row.tutor_scores) : null;
-    } catch { tutorScoresRaw = null; }
+    } catch {
+      tutorScoresRaw = null;
+    }
 
     let learnerScoresRaw;
     try {
       learnerScoresRaw = row.learner_scores ? JSON.parse(row.learner_scores) : null;
-    } catch { learnerScoresRaw = null; }
+    } catch {
+      learnerScoresRaw = null;
+    }
 
     let holisticScores;
     try {
       holisticScores = row.tutor_holistic_scores ? JSON.parse(row.tutor_holistic_scores) : null;
-    } catch { holisticScores = null; }
+    } catch {
+      holisticScores = null;
+    }
 
     // Flatten per-turn scores to average across turns.
     // Format: { "0": { scores: { dim: {score, reasoning} } }, "1": { scores: ... } }
@@ -412,8 +426,12 @@ function runSyntheticCalibration() {
         if (!isNaN(newOverall)) {
           tutorResults.push({ id: row.id, oldOverall, newOverall, oldScores: tutorScores, newScores: remapped });
           exportRows.push({
-            id: row.id, instrument: 'tutor_perturn', scenario: row.scenario_name,
-            profile: row.profile_name, old_overall: oldOverall, new_overall: newOverall,
+            id: row.id,
+            instrument: 'tutor_perturn',
+            scenario: row.scenario_name,
+            profile: row.profile_name,
+            old_overall: oldOverall,
+            new_overall: newOverall,
           });
         }
       }
@@ -429,8 +447,12 @@ function runSyntheticCalibration() {
         if (!isNaN(newOverall)) {
           learnerResults.push({ id: row.id, oldOverall, newOverall });
           exportRows.push({
-            id: row.id, instrument: 'learner_perturn', scenario: row.scenario_name,
-            profile: row.profile_name, old_overall: oldOverall, new_overall: newOverall,
+            id: row.id,
+            instrument: 'learner_perturn',
+            scenario: row.scenario_name,
+            profile: row.profile_name,
+            old_overall: oldOverall,
+            new_overall: newOverall,
           });
         }
       }
@@ -446,8 +468,12 @@ function runSyntheticCalibration() {
         if (!isNaN(newOverall)) {
           holisticResults.push({ id: row.id, oldOverall, newOverall });
           exportRows.push({
-            id: row.id, instrument: 'tutor_holistic', scenario: row.scenario_name,
-            profile: row.profile_name, old_overall: oldOverall, new_overall: newOverall,
+            id: row.id,
+            instrument: 'tutor_holistic',
+            scenario: row.scenario_name,
+            profile: row.profile_name,
+            old_overall: oldOverall,
+            new_overall: newOverall,
           });
         }
       }
@@ -474,27 +500,38 @@ function runSyntheticCalibration() {
     ['Tutor holistic', holisticResults],
   ];
 
-  console.log(`  ${'Instrument'.padEnd(20)}  ${'N'.padStart(5)}  ${'r'.padStart(7)}  ${'MAE'.padStart(6)}  ${'Δ mean'.padStart(7)}  Verdict`);
-  console.log(`  ${'─'.repeat(20)}  ${'─'.repeat(5)}  ${'─'.repeat(7)}  ${'─'.repeat(6)}  ${'─'.repeat(7)}  ${'─'.repeat(30)}`);
+  console.log(
+    `  ${'Instrument'.padEnd(20)}  ${'N'.padStart(5)}  ${'r'.padStart(7)}  ${'MAE'.padStart(6)}  ${'Δ mean'.padStart(7)}  Verdict`,
+  );
+  console.log(
+    `  ${'─'.repeat(20)}  ${'─'.repeat(5)}  ${'─'.repeat(7)}  ${'─'.repeat(6)}  ${'─'.repeat(7)}  ${'─'.repeat(30)}`,
+  );
 
   for (const [label, results] of summaryRows) {
     if (results.length === 0) {
-      console.log(`  ${label.padEnd(20)}  ${'0'.padStart(5)}  ${'—'.padStart(7)}  ${'—'.padStart(6)}  ${'—'.padStart(7)}  ${c.dim}no data${c.reset}`);
+      console.log(
+        `  ${label.padEnd(20)}  ${'0'.padStart(5)}  ${'—'.padStart(7)}  ${'—'.padStart(6)}  ${'—'.padStart(7)}  ${c.dim}no data${c.reset}`,
+      );
       continue;
     }
 
-    const oldArr = results.map(r => r.oldOverall);
-    const newArr = results.map(r => r.newOverall);
+    const oldArr = results.map((r) => r.oldOverall);
+    const newArr = results.map((r) => r.newOverall);
     const corr = pearsonCorrelation(oldArr, newArr);
     const mae = meanAbsoluteError(oldArr, newArr);
     const delta = mean(newArr) - mean(oldArr);
 
-    const verdict = isNaN(corr.r) ? `${c.dim}insufficient data${c.reset}` :
-      corr.r > 0.90 ? `${c.green}minimal information loss${c.reset}` :
-      corr.r > 0.80 ? `${c.yellow}moderate information loss — investigate${c.reset}` :
-      `${c.red}significant information loss — DO NOT ADOPT${c.reset}`;
+    const verdict = isNaN(corr.r)
+      ? `${c.dim}insufficient data${c.reset}`
+      : corr.r > 0.9
+        ? `${c.green}minimal information loss${c.reset}`
+        : corr.r > 0.8
+          ? `${c.yellow}moderate information loss — investigate${c.reset}`
+          : `${c.red}significant information loss — DO NOT ADOPT${c.reset}`;
 
-    console.log(`  ${label.padEnd(20)}  ${String(results.length).padStart(5)}  ${formatR(corr.r).padStart(7)}  ${mae.toFixed(1).padStart(6)}  ${(delta >= 0 ? '+' : '') + delta.toFixed(1).padStart(6)}  ${verdict}`);
+    console.log(
+      `  ${label.padEnd(20)}  ${String(results.length).padStart(5)}  ${formatR(corr.r).padStart(7)}  ${mae.toFixed(1).padStart(6)}  ${(delta >= 0 ? '+' : '') + delta.toFixed(1).padStart(6)}  ${verdict}`,
+    );
   }
 
   console.log(`\n  ${c.bold}Decision criteria:${c.reset}`);
@@ -505,9 +542,13 @@ function runSyntheticCalibration() {
   // ── Export ──
   if (exportPath && exportRows.length > 0) {
     const header = 'id,instrument,scenario,profile,old_overall,new_overall';
-    const csv = [header, ...exportRows.map(r =>
-      `${r.id},${r.instrument},"${r.scenario}","${r.profile}",${r.old_overall.toFixed(1)},${r.new_overall.toFixed(1)}`,
-    )].join('\n');
+    const csv = [
+      header,
+      ...exportRows.map(
+        (r) =>
+          `${r.id},${r.instrument},"${r.scenario}","${r.profile}",${r.old_overall.toFixed(1)},${r.new_overall.toFixed(1)}`,
+      ),
+    ].join('\n');
     fs.writeFileSync(exportPath, csv, 'utf-8');
     console.log(`  Exported ${exportRows.length} rows to ${exportPath}`);
   }
@@ -519,16 +560,20 @@ function reportCalibration(results, label) {
     return;
   }
 
-  const oldArr = results.map(r => r.oldOverall);
-  const newArr = results.map(r => r.newOverall);
+  const oldArr = results.map((r) => r.oldOverall);
+  const newArr = results.map((r) => r.newOverall);
   const corr = pearsonCorrelation(oldArr, newArr);
   const mae = meanAbsoluteError(oldArr, newArr);
 
   console.log(`  N = ${results.length}`);
   console.log(`  r(v${fromVersion}, v${toVersion}) = ${c.bold}${formatR(corr.r)}${c.reset}  p = ${formatP(corr.p)}`);
   console.log(`  MAE = ${mae.toFixed(1)} points (on 0-100 scale)`);
-  console.log(`  Mean shift: v${fromVersion}=${mean(oldArr).toFixed(1)} → v${toVersion}=${mean(newArr).toFixed(1)} (Δ = ${(mean(newArr) - mean(oldArr) >= 0 ? '+' : '')}${(mean(newArr) - mean(oldArr)).toFixed(1)})`);
-  console.log(`  SD: v${fromVersion}=${standardDeviation(oldArr).toFixed(1)} → v${toVersion}=${standardDeviation(newArr).toFixed(1)}`);
+  console.log(
+    `  Mean shift: v${fromVersion}=${mean(oldArr).toFixed(1)} → v${toVersion}=${mean(newArr).toFixed(1)} (Δ = ${mean(newArr) - mean(oldArr) >= 0 ? '+' : ''}${(mean(newArr) - mean(oldArr)).toFixed(1)})`,
+  );
+  console.log(
+    `  SD: v${fromVersion}=${standardDeviation(oldArr).toFixed(1)} → v${toVersion}=${standardDeviation(newArr).toFixed(1)}`,
+  );
 
   // Per-dimension detail for tutor (the biggest change)
   if (verbose && label === 'tutor' && results.length > 0 && results[0].newScores) {
@@ -539,11 +584,11 @@ function reportCalibration(results, label) {
     }
 
     for (const dim of [...allNewDims].sort()) {
-      const scores = results
-        .filter(r => r.newScores[dim])
-        .map(r => r.newScores[dim].score);
+      const scores = results.filter((r) => r.newScores[dim]).map((r) => r.newScores[dim].score);
       if (scores.length > 0) {
-        console.log(`    ${dim.padEnd(25)} mean=${mean(scores).toFixed(2)}  SD=${standardDeviation(scores).toFixed(2)}  N=${scores.length}`);
+        console.log(
+          `    ${dim.padEnd(25)} mean=${mean(scores).toFixed(2)}  SD=${standardDeviation(scores).toFixed(2)}  N=${scores.length}`,
+        );
       }
     }
   }

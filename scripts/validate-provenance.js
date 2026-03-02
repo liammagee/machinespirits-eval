@@ -94,7 +94,7 @@ function coverageStatus(covered, total, label) {
     warn(`${label}: no rows to check`);
     return 'warn';
   }
-  const pct = (covered / total * 100).toFixed(1);
+  const pct = ((covered / total) * 100).toFixed(1);
   if (covered === total) {
     pass(`${label}: ${covered}/${total} (100%)`);
     return 'pass';
@@ -110,13 +110,15 @@ function coverageStatus(covered, total, label) {
 // ── Section 1: Dialogue Content Hash Coverage ────────────────────────────────
 
 function checkDialogueHashCoverage(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id, dialogue_content_hash FROM evaluation_results
-     WHERE run_id = ? AND tutor_scores IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id, dialogue_content_hash FROM evaluation_results
+     WHERE run_id = ? AND tutor_scores IS NOT NULL`,
+    )
+    .all(runId);
 
-  const withHash = rows.filter(r => r.dialogue_content_hash != null);
-  const without = rows.filter(r => r.dialogue_content_hash == null);
+  const withHash = rows.filter((r) => r.dialogue_content_hash != null);
+  const without = rows.filter((r) => r.dialogue_content_hash == null);
 
   const status = coverageStatus(withHash.length, rows.length, 'Dialogue content hash coverage');
 
@@ -133,17 +135,19 @@ function checkDialogueHashCoverage(db, runId, verbose) {
     covered: withHash.length,
     missing: without.length,
     status,
-    failures: without.map(r => ({ id: r.id, reason: 'missing_dialogue_content_hash' })),
+    failures: without.map((r) => ({ id: r.id, reason: 'missing_dialogue_content_hash' })),
   };
 }
 
 // ── Section 2: Dialogue Log File Integrity ───────────────────────────────────
 
 function checkDialogueLogIntegrity(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id, dialogue_id, dialogue_content_hash FROM evaluation_results
-     WHERE run_id = ? AND dialogue_content_hash IS NOT NULL AND dialogue_id IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id, dialogue_id, dialogue_content_hash FROM evaluation_results
+     WHERE run_id = ? AND dialogue_content_hash IS NOT NULL AND dialogue_id IS NOT NULL`,
+    )
+    .all(runId);
 
   let matched = 0;
   let mismatched = 0;
@@ -181,7 +185,9 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
   } else if (mismatched === 0 && missing === 0 && parseError === 0) {
     pass(`Dialogue log integrity: ${matched}/${rows.length} verified`);
   } else {
-    fail(`Dialogue log integrity: ${matched} match, ${mismatched} mismatch, ${missing} missing, ${parseError} parse error (of ${rows.length})`);
+    fail(
+      `Dialogue log integrity: ${matched} match, ${mismatched} mismatch, ${missing} missing, ${parseError} parse error (of ${rows.length})`,
+    );
   }
 
   if (verbose && failures.length > 0) {
@@ -198,7 +204,7 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
     mismatched,
     missing,
     parseError,
-    status: (mismatched === 0 && missing === 0 && parseError === 0) ? 'pass' : 'fail',
+    status: mismatched === 0 && missing === 0 && parseError === 0 ? 'pass' : 'fail',
     failures,
   };
 }
@@ -206,10 +212,12 @@ function checkDialogueLogIntegrity(db, runId, verbose) {
 // ── Section 3: Per-Turn Score Provenance (contentTurnId + judgeInputHash) ────
 
 function checkPerTurnProvenance(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id, tutor_scores FROM evaluation_results
-     WHERE run_id = ? AND tutor_scores IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id, tutor_scores FROM evaluation_results
+     WHERE run_id = ? AND tutor_scores IS NOT NULL`,
+    )
+    .all(runId);
 
   let totalTurns = 0;
   let turnsWithContentTurnId = 0;
@@ -266,10 +274,12 @@ function checkPerTurnProvenance(db, runId, verbose) {
 // ── Section 4: Turn ID Log Verification ──────────────────────────────────────
 
 function checkTurnIdVerification(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id, dialogue_id, tutor_scores FROM evaluation_results
-     WHERE run_id = ? AND tutor_scores IS NOT NULL AND dialogue_id IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id, dialogue_id, tutor_scores FROM evaluation_results
+     WHERE run_id = ? AND tutor_scores IS NOT NULL AND dialogue_id IS NOT NULL`,
+    )
+    .all(runId);
 
   let verified = 0;
   let mismatched = 0;
@@ -278,11 +288,17 @@ function checkTurnIdVerification(db, runId, verbose) {
 
   for (const row of rows) {
     const tutorScores = safeJsonParse(row.tutor_scores);
-    if (!tutorScores) { unverifiable++; continue; }
+    if (!tutorScores) {
+      unverifiable++;
+      continue;
+    }
 
     // Check if any turns have contentTurnId
-    const hasAnyTurnId = Object.values(tutorScores).some(t => t?.contentTurnId);
-    if (!hasAnyTurnId) { unverifiable++; continue; }
+    const hasAnyTurnId = Object.values(tutorScores).some((t) => t?.contentTurnId);
+    if (!hasAnyTurnId) {
+      unverifiable++;
+      continue;
+    }
 
     const verification = verifyTurnIdsForRow(row.dialogue_id, tutorScores, LOG_DIR);
     if (verification.size === 0) {
@@ -290,14 +306,12 @@ function checkTurnIdVerification(db, runId, verbose) {
       continue;
     }
 
-    const allMatch = [...verification.values()].every(v => v === true);
+    const allMatch = [...verification.values()].every((v) => v === true);
     if (allMatch) {
       verified++;
     } else {
       mismatched++;
-      const failedTurns = [...verification.entries()]
-        .filter(([, v]) => !v)
-        .map(([idx]) => idx);
+      const failedTurns = [...verification.entries()].filter(([, v]) => !v).map(([idx]) => idx);
       failures.push({ id: row.id, dialogueId: row.dialogue_id, failedTurns });
     }
   }
@@ -332,13 +346,15 @@ function checkTurnIdVerification(db, runId, verbose) {
 // ── Section 5: Config Hash Presence ──────────────────────────────────────────
 
 function checkConfigHashPresence(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id, config_hash FROM evaluation_results
-     WHERE run_id = ? AND tutor_scores IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id, config_hash FROM evaluation_results
+     WHERE run_id = ? AND tutor_scores IS NOT NULL`,
+    )
+    .all(runId);
 
-  const withHash = rows.filter(r => r.config_hash != null);
-  const without = rows.filter(r => r.config_hash == null);
+  const withHash = rows.filter((r) => r.config_hash != null);
+  const without = rows.filter((r) => r.config_hash == null);
 
   const status = coverageStatus(withHash.length, rows.length, 'Config hash coverage');
 
@@ -355,26 +371,26 @@ function checkConfigHashPresence(db, runId, verbose) {
     covered: withHash.length,
     missing: without.length,
     status,
-    failures: without.map(r => ({ id: r.id, reason: 'missing_config_hash' })),
+    failures: without.map((r) => ({ id: r.id, reason: 'missing_config_hash' })),
   };
 }
 
 // ── Section 6: Score Audit Trail Coverage ────────────────────────────────────
 
 function checkAuditTrailCoverage(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id FROM evaluation_results
-     WHERE run_id = ? AND tutor_overall_score IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id FROM evaluation_results
+     WHERE run_id = ? AND tutor_overall_score IS NOT NULL`,
+    )
+    .all(runId);
 
   let withAudit = 0;
   let withoutAudit = 0;
   const failures = [];
 
   for (const row of rows) {
-    const auditRow = db
-      .prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?')
-      .get(String(row.id));
+    const auditRow = db.prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?').get(String(row.id));
     if (auditRow && auditRow.c > 0) {
       withAudit++;
     } else {
@@ -405,10 +421,12 @@ function checkAuditTrailCoverage(db, runId, verbose) {
 // ── Section 7: Rubric Version Consistency ────────────────────────────────────
 
 function checkRubricVersionConsistency(db, runId, verbose) {
-  const rows = db.prepare(
-    `SELECT id, tutor_scores, tutor_rubric_version FROM evaluation_results
-     WHERE run_id = ? AND tutor_scores IS NOT NULL`
-  ).all(runId);
+  const rows = db
+    .prepare(
+      `SELECT id, tutor_scores, tutor_rubric_version FROM evaluation_results
+     WHERE run_id = ? AND tutor_scores IS NOT NULL`,
+    )
+    .all(runId);
 
   let consistent = 0;
   let inconsistent = 0;
@@ -417,7 +435,10 @@ function checkRubricVersionConsistency(db, runId, verbose) {
 
   for (const row of rows) {
     const tutorScores = safeJsonParse(row.tutor_scores);
-    if (!tutorScores) { skipped++; continue; }
+    if (!tutorScores) {
+      skipped++;
+      continue;
+    }
 
     let rowHasAnyVersion = false;
     let rowConsistent = true;
@@ -458,7 +479,9 @@ function checkRubricVersionConsistency(db, runId, verbose) {
 
   if (verbose && failures.length > 0) {
     for (const f of failures.slice(0, 10)) {
-      console.log(`    → mismatch: row ${f.id} turn ${f.turn}: per-turn="${f.perTurnVersion}" vs row="${f.rowVersion}"`);
+      console.log(
+        `    → mismatch: row ${f.id} turn ${f.turn}: per-turn="${f.perTurnVersion}" vs row="${f.rowVersion}"`,
+      );
     }
     if (failures.length > 10) console.log(`    → ... and ${failures.length - 10} more`);
   }
@@ -481,9 +504,9 @@ function validateRun(db, runId, verbose) {
   const desc = runRow?.description ? ` — ${runRow.description}` : '';
   console.log(`\n═══ Provenance Validation: ${runId}${desc} ═══`);
 
-  const scoredCount = db.prepare(
-    `SELECT COUNT(*) AS c FROM evaluation_results WHERE run_id = ? AND tutor_scores IS NOT NULL`
-  ).get(runId);
+  const scoredCount = db
+    .prepare(`SELECT COUNT(*) AS c FROM evaluation_results WHERE run_id = ? AND tutor_scores IS NOT NULL`)
+    .get(runId);
   console.log(`  Scored rows: ${scoredCount?.c || 0}\n`);
 
   if (!scoredCount || scoredCount.c === 0) {
@@ -537,9 +560,9 @@ function main() {
     results.push(validateRun(db, runId, verbose));
   } else {
     // Validate all runs with scored rows
-    const runs = db.prepare(
-      `SELECT DISTINCT run_id FROM evaluation_results WHERE tutor_scores IS NOT NULL ORDER BY run_id`
-    ).all();
+    const runs = db
+      .prepare(`SELECT DISTINCT run_id FROM evaluation_results WHERE tutor_scores IS NOT NULL ORDER BY run_id`)
+      .all();
     console.log(`\n═══ Provenance Validation: All Runs (${runs.length}) ═══`);
     for (const row of runs) {
       results.push(validateRun(db, row.run_id, verbose));

@@ -38,14 +38,14 @@ export function consolidateRuns(db, options = {}) {
   const { epoch = '2.0', execute = false, force = false, description: userDescription, runId: overrideRunId } = options;
 
   // Check for existing consolidated run for this epoch
-  const existingConsolidated = db.prepare(
-    `SELECT id FROM evaluation_runs WHERE id LIKE ? AND status = 'completed'`
-  ).all(`consolidated-${epoch}-%`);
+  const existingConsolidated = db
+    .prepare(`SELECT id FROM evaluation_runs WHERE id LIKE ? AND status = 'completed'`)
+    .all(`consolidated-${epoch}-%`);
 
   if (existingConsolidated.length > 0 && !force) {
     return {
       error: 'existing_consolidated_run',
-      existingRunIds: existingConsolidated.map(r => r.id),
+      existingRunIds: existingConsolidated.map((r) => r.id),
       message: 'Use --force to reconsolidate',
     };
   }
@@ -101,8 +101,9 @@ export function consolidateRuns(db, options = {}) {
   }
 
   const consolidatedRunId = overrideRunId || generateConsolidatedRunId(epoch);
-  const description = userDescription
-    || `Consolidated ${epoch} epoch: ${totalRows} rows from ${sourceRunIds.length} source runs, ${totalSignatures} signatures`;
+  const description =
+    userDescription ||
+    `Consolidated ${epoch} epoch: ${totalRows} rows from ${sourceRunIds.length} source runs, ${totalSignatures} signatures`;
 
   // Preview mode — return analysis without modifying DB
   if (!execute) {
@@ -123,18 +124,24 @@ export function consolidateRuns(db, options = {}) {
   // ── Execute ─────────────────────────────────────────────────────────────
 
   // Find earliest and latest created_at among eligible rows
-  const timeRange = db.prepare(`
+  const timeRange = db
+    .prepare(
+      `
     SELECT MIN(created_at) as earliest, MAX(created_at) as latest
     FROM evaluation_results
     WHERE id IN (${allRowIds.map(() => '?').join(',')})
-  `).get(...allRowIds);
+  `,
+    )
+    .get(...allRowIds);
 
   const consolidate = db.transaction(() => {
     // 1. Create the consolidated run
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, total_tests, status, completed_at, metadata)
       VALUES (?, ?, ?, ?, ?, ?, 'completed', ?, ?)
-    `).run(
+    `,
+    ).run(
       consolidatedRunId,
       timeRange.earliest,
       description,
@@ -153,7 +160,7 @@ export function consolidateRuns(db, options = {}) {
         judgeModels,
         consolidatedAt: new Date().toISOString(),
         force: force || false,
-      })
+      }),
     );
 
     // 2. Move all eligible rows to the consolidated run
@@ -164,14 +171,10 @@ export function consolidateRuns(db, options = {}) {
 
     // 3. Mark source runs that are now fully empty
     for (const sourceRunId of sourceRunIds) {
-      const remaining = db.prepare(
-        'SELECT COUNT(*) as cnt FROM evaluation_results WHERE run_id = ?'
-      ).get(sourceRunId);
+      const remaining = db.prepare('SELECT COUNT(*) as cnt FROM evaluation_results WHERE run_id = ?').get(sourceRunId);
 
       if (remaining.cnt === 0) {
-        db.prepare(
-          `UPDATE evaluation_runs SET status = 'consolidated' WHERE id = ?`
-        ).run(sourceRunId);
+        db.prepare(`UPDATE evaluation_runs SET status = 'consolidated' WHERE id = ?`).run(sourceRunId);
       }
     }
   });
@@ -179,9 +182,11 @@ export function consolidateRuns(db, options = {}) {
   consolidate();
 
   // Count how many source runs were marked consolidated
-  const markedConsolidated = db.prepare(
-    `SELECT COUNT(*) as cnt FROM evaluation_runs WHERE id IN (${sourceRunIds.map(() => '?').join(',')}) AND status = 'consolidated'`
-  ).get(...sourceRunIds);
+  const markedConsolidated = db
+    .prepare(
+      `SELECT COUNT(*) as cnt FROM evaluation_runs WHERE id IN (${sourceRunIds.map(() => '?').join(',')}) AND status = 'consolidated'`,
+    )
+    .get(...sourceRunIds);
 
   return {
     epoch,

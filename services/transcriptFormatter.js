@@ -486,7 +486,11 @@ function isTutorEntry(entry) {
   ]);
   if (tutorAgents.has(entry.agent)) return true;
   // context_input and final_output are tutor-phase bookends
-  if ((entry.agent === 'tutor' || entry.agent === 'user') && (entry.action === 'context_input' || entry.action === 'final_output')) return true;
+  if (
+    (entry.agent === 'tutor' || entry.agent === 'user') &&
+    (entry.action === 'context_input' || entry.action === 'final_output')
+  )
+    return true;
   // system entries (memory_cycle, etc.) belong to tutor phase
   if (entry.agent === 'system') return true;
   return false;
@@ -608,7 +612,8 @@ function formatBilateralTranscript(trace, options = {}) {
         // Skip final_output markers (they're structural, not content)
         if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'final_output') continue;
         // Skip repeated context_input after the first turn — it's the same scenario data re-injected
-        if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input' && turnNum > 0) continue;
+        if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'context_input' && turnNum > 0)
+          continue;
 
         const formatted = formatEntry(entry, { detail: 'play' });
         if (formatted) {
@@ -620,9 +625,7 @@ function formatBilateralTranscript(trace, options = {}) {
 
     // ── LEARNER DELIBERATION ──
     // Skip learner — it duplicates the turn_action content shown in LEARNER MESSAGE
-    const deliberationOnly = learnerDeliberation.filter(
-      (e) => !(e.agent === 'learner' && e.action === 'final_output'),
-    );
+    const deliberationOnly = learnerDeliberation.filter((e) => !(e.agent === 'learner' && e.action === 'final_output'));
     if (deliberationOnly.length > 0) {
       lines.push(INDENT + `\u2500\u2500 LEARNER DELIBERATION ${PHASE_LINE}`);
       lines.push('');

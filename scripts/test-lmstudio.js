@@ -253,8 +253,7 @@ async function testObjectResolution() {
     if (overriddenProviderConfig.apiKey === 'sk-or-some-openrouter-key') {
       fail(
         'apiKey falls back to original provider key!',
-        'Empty string is falsy, so || picks up the old key. ' +
-          'This sends an OpenRouter API key to LMStudio.',
+        'Empty string is falsy, so || picks up the old key. ' + 'This sends an OpenRouter API key to LMStudio.',
       );
     } else {
       ok('apiKey correctly empty after override');
@@ -382,7 +381,8 @@ async function testEgoOverrideSimulation() {
     }
 
     // Check apiKey leak
-    const hasLeakedKey = overriddenEgoConfig.providerConfig.apiKey &&
+    const hasLeakedKey =
+      overriddenEgoConfig.providerConfig.apiKey &&
       overriddenEgoConfig.providerConfig.apiKey !== '' &&
       overriddenEgoConfig.providerConfig.apiKey !== resolved.apiKey;
     if (hasLeakedKey) {
@@ -429,7 +429,11 @@ async function testEgoOverrideSimulation() {
     } else {
       const raw = await res.text();
       let parsed;
-      try { parsed = JSON.parse(raw); } catch { parsed = null; }
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        parsed = null;
+      }
       fail(`API call failed: ${res.status}`, parsed?.error?.message || raw.slice(0, 200));
     }
   } catch (e) {
@@ -510,8 +514,12 @@ async function testFullGeneration() {
 async function testFetchProviderImport() {
   console.log('\n9. _fetchProvider importable from tutor-core');
   try {
-    const { _fetchProvider: fp, isContextOverflowError: isOF, truncateForContextOverflow: trunc, extractStructuredSummary: ess } =
-      await import('@machinespirits/tutor-core');
+    const {
+      _fetchProvider: fp,
+      isContextOverflowError: isOF,
+      truncateForContextOverflow: trunc,
+      extractStructuredSummary: ess,
+    } = await import('@machinespirits/tutor-core');
 
     if (typeof fp === 'function') {
       ok('_fetchProvider is a function');

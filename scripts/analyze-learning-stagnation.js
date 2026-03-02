@@ -368,7 +368,11 @@ function extractLearnerTurnMaps(log) {
     }
   }
   for (const e of trace) {
-    if ((e?.agent === 'learner' || e?.agent === 'user') && e?.action === 'turn_action' && Number.isFinite(e?.turnIndex)) {
+    if (
+      (e?.agent === 'learner' || e?.agent === 'user') &&
+      e?.action === 'turn_action' &&
+      Number.isFinite(e?.turnIndex)
+    ) {
       const ctx = String(e?.contextSummary || e?.message || '').trim();
       const detail = String(e?.detail || '').trim();
       byIdxUserCtx.set(e.turnIndex, ctx);
@@ -392,12 +396,56 @@ function extractTutorByTurn(log) {
 }
 
 const REGEX = {
-  help: [/\brecap\b/i, /\bexample\b/i, /\bexplain\b/i, /\bstuck\b/i, /\bconfus/i, /\bcan you\b/i, /\bhelp\b/i, /\btell me\b/i],
-  reflect: [/\bi see\b/i, /\bi realize\b/i, /\bi was\b/i, /\bactually\b/i, /\bwait\b/i, /\bon second thought\b/i, /\bmaybe\b/i],
-  commit: [/\bi will\b/i, /\bi'll\b/i, /\bnext i\b/i, /\btherefore\b/i, /\bi can now\b/i, /\bi understand\b/i, /\bso i should\b/i],
+  help: [
+    /\brecap\b/i,
+    /\bexample\b/i,
+    /\bexplain\b/i,
+    /\bstuck\b/i,
+    /\bconfus/i,
+    /\bcan you\b/i,
+    /\bhelp\b/i,
+    /\btell me\b/i,
+  ],
+  reflect: [
+    /\bi see\b/i,
+    /\bi realize\b/i,
+    /\bi was\b/i,
+    /\bactually\b/i,
+    /\bwait\b/i,
+    /\bon second thought\b/i,
+    /\bmaybe\b/i,
+  ],
+  commit: [
+    /\bi will\b/i,
+    /\bi'll\b/i,
+    /\bnext i\b/i,
+    /\btherefore\b/i,
+    /\bi can now\b/i,
+    /\bi understand\b/i,
+    /\bso i should\b/i,
+  ],
   gratitude: [/\bthank/i, /\bglad/i, /\bappreciate/i, /\bgrateful/i, /\bfeel seen/i],
-  tutorAbstract: [/\bdialectic/i, /\bparadox/i, /\brecognition/i, /\bnegation/i, /\bcontradiction/i, /\bmediation/i, /\buniversal/i, /\bparticular/i, /\bsynthesis/i],
-  tutorConcrete: [/\bfor example\b/i, /\bexample\b/i, /\bstep\b/i, /\bnext\b/i, /\btry this\b/i, /\bspecific\b/i, /\bdo this\b/i, /\bone sentence\b/i],
+  tutorAbstract: [
+    /\bdialectic/i,
+    /\bparadox/i,
+    /\brecognition/i,
+    /\bnegation/i,
+    /\bcontradiction/i,
+    /\bmediation/i,
+    /\buniversal/i,
+    /\bparticular/i,
+    /\bsynthesis/i,
+  ],
+  tutorConcrete: [
+    /\bfor example\b/i,
+    /\bexample\b/i,
+    /\bstep\b/i,
+    /\bnext\b/i,
+    /\btry this\b/i,
+    /\bspecific\b/i,
+    /\bdo this\b/i,
+    /\bone sentence\b/i,
+  ],
 };
 
 function countRegexHits(text, list) {
@@ -408,7 +456,9 @@ function extractTranscriptFeatures(log) {
   const learnerMaps = extractLearnerTurnMaps(log);
   const tutorByTurn = extractTutorByTurn(log);
 
-  const turnIndices = [...new Set([...learnerMaps.byIdxSynth.keys(), ...learnerMaps.byIdxUserCtx.keys()])].sort((a, b) => a - b);
+  const turnIndices = [...new Set([...learnerMaps.byIdxSynth.keys(), ...learnerMaps.byIdxUserCtx.keys()])].sort(
+    (a, b) => a - b,
+  );
   const learnerTurns = turnIndices.map((idx) => {
     const synth = learnerMaps.byIdxSynth.get(idx);
     const ctx = learnerMaps.byIdxUserCtx.get(idx);
@@ -463,7 +513,9 @@ function extractTranscriptFeatures(log) {
     tutorLearnerOverlap: overlaps.length > 0 ? mean(overlaps) : null,
     learnerAdjacentSimilarity: adjacentSims.length > 0 ? mean(adjacentSims) : null,
     learnerFirstLastSimilarity:
-      learnerTokenTurns.length >= 2 ? jaccard(learnerTokenTurns[0], learnerTokenTurns[learnerTokenTurns.length - 1]) : null,
+      learnerTokenTurns.length >= 2
+        ? jaccard(learnerTokenTurns[0], learnerTokenTurns[learnerTokenTurns.length - 1])
+        : null,
     learnerTypeTokenRatio: learnerAllTokens.length > 0 ? learnerUnique / learnerAllTokens.length : null,
     learnerTotalTokens: learnerAllTokens.length,
     learnerUniqueTokens: learnerUnique,
@@ -487,7 +539,7 @@ function welchT(a, b) {
   if (se2 <= 0) return null;
   const t = (ma - mb) / Math.sqrt(se2);
   const dfNumer = se2 ** 2;
-  const dfDenom = (va ** 2) / (a.length ** 2 * (a.length - 1)) + (vb ** 2) / (b.length ** 2 * (b.length - 1));
+  const dfDenom = va ** 2 / (a.length ** 2 * (a.length - 1)) + vb ** 2 / (b.length ** 2 * (b.length - 1));
   const df = dfDenom > 0 ? dfNumer / dfDenom : null;
   return { ma, mb, diff: ma - mb, t, df };
 }
@@ -717,7 +769,13 @@ const stagnationByRecognition = [
 
 const deltaValues = records.map((r) => r.learnerRubricDelta);
 const corrs = featureKeys
-  .map((key) => ({ feature: key, ...corr(records.map((r) => r[key]), deltaValues) }))
+  .map((key) => ({
+    feature: key,
+    ...corr(
+      records.map((r) => r[key]),
+      deltaValues,
+    ),
+  }))
   .filter((x) => Number.isFinite(x?.r))
   .sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
 
@@ -780,7 +838,9 @@ console.log(`Learner rubric metrics: stored=${metricFromStore}, fallback=${metri
 console.log('');
 
 console.log('Per-run headline');
-console.log('  run_id | n | model | learner_turn(base->recog) | learner_hol(base->recog) | tutor(base->recog) | delta(base->recog) | nonpos(base->recog)');
+console.log(
+  '  run_id | n | model | learner_turn(base->recog) | learner_hol(base->recog) | tutor(base->recog) | delta(base->recog) | nonpos(base->recog)',
+);
 for (const s of runSummaries) {
   console.log(
     `  ${s.runId} | ${s.n} | ${s.model || 'n/a'} | ${numFmt(s.learnerTurnBase, 1)} -> ${numFmt(s.learnerTurnRecog, 1)} | ${numFmt(s.learnerHolBase, 1)} -> ${numFmt(s.learnerHolRecog, 1)} | ${numFmt(s.tutorBase, 1)} -> ${numFmt(s.tutorRecog, 1)} | ${numFmt(s.deltaBase, 1)} -> ${numFmt(s.deltaRecog, 1)} | ${pctFmt(s.nonPosRateBase)} -> ${pctFmt(s.nonPosRateRecog)}`,
@@ -908,8 +968,7 @@ function buildStrictChecks() {
     {
       id: 'learner-vs-tutor-gap',
       label: 'Tutor-vs-learner recognition effect gap',
-      pass:
-        Number.isFinite(learnerTutorEffectGap) && learnerTutorEffectGap <= strictCfg.maxLearnerTutorEffectGap,
+      pass: Number.isFinite(learnerTutorEffectGap) && learnerTutorEffectGap <= strictCfg.maxLearnerTutorEffectGap,
       observed: numFmt(learnerTutorEffectGap, 2),
       expected: `<= ${numFmt(strictCfg.maxLearnerTutorEffectGap, 2)}`,
       fix: 'Treat tutor-side gains as separate from learner gains; revisit mechanisms that improve tutor polish without learner change.',

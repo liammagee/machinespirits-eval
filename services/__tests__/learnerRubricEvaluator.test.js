@@ -213,11 +213,11 @@ describe('calculateLearnerOverallScore', () => {
     //               revision_signals=0.20, conceptual_progression=0.20,
     //               metacognitive_awareness=0.10
     const scores = {
-      engagement_quality: { score: 5, reasoning: '' },            // 0.25
-      learner_authenticity: { score: 5, reasoning: '' },          // 0.25
-      revision_signals: { score: 1, reasoning: '' },              // 0.20
-      conceptual_progression: { score: 5, reasoning: '' },        // 0.20
-      metacognitive_awareness: { score: 5, reasoning: '' },       // 0.10
+      engagement_quality: { score: 5, reasoning: '' }, // 0.25
+      learner_authenticity: { score: 5, reasoning: '' }, // 0.25
+      revision_signals: { score: 1, reasoning: '' }, // 0.20
+      conceptual_progression: { score: 5, reasoning: '' }, // 0.20
+      metacognitive_awareness: { score: 5, reasoning: '' }, // 0.10
     };
     // High dims (0.25+0.25+0.20+0.10 = 0.80): score 5
     // Low dims (0.20): score 1

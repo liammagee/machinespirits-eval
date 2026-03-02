@@ -41,12 +41,24 @@ function parseArgs() {
   const opts = { resultId: null, runId: null, outDir: null, prefix: null, allowModelMix: false };
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--result-id': opts.resultId = args[++i]; break;
-      case '--run-id': opts.runId = args[++i]; break;
-      case '--out-dir': opts.outDir = args[++i]; break;
-      case '--prefix': opts.prefix = args[++i]; break;
-      case '--allow-model-mix': opts.allowModelMix = true; break;
-      default: console.error(`Unknown option: ${args[i]}`); process.exit(1);
+      case '--result-id':
+        opts.resultId = args[++i];
+        break;
+      case '--run-id':
+        opts.runId = args[++i];
+        break;
+      case '--out-dir':
+        opts.outDir = args[++i];
+        break;
+      case '--prefix':
+        opts.prefix = args[++i];
+        break;
+      case '--allow-model-mix':
+        opts.allowModelMix = true;
+        break;
+      default:
+        console.error(`Unknown option: ${args[i]}`);
+        process.exit(1);
     }
   }
   return opts;
@@ -196,22 +208,37 @@ const db = await openDb();
 let results;
 if (opts.resultId) {
   const row = db.prepare('SELECT * FROM evaluation_results WHERE id = ?').get(opts.resultId);
-  if (!row) { console.error(`Result ${opts.resultId} not found`); process.exit(1); }
+  if (!row) {
+    console.error(`Result ${opts.resultId} not found`);
+    process.exit(1);
+  }
   results = [rowToResult(row)];
 } else if (opts.runId) {
-  const rows = db.prepare(
-    'SELECT * FROM evaluation_results WHERE run_id = ? AND dialogue_id IS NOT NULL ORDER BY profile_name, scenario_id'
-  ).all(opts.runId);
-  if (rows.length === 0) { console.error(`No dialogue results for run ${opts.runId}`); process.exit(1); }
+  const rows = db
+    .prepare(
+      'SELECT * FROM evaluation_results WHERE run_id = ? AND dialogue_id IS NOT NULL ORDER BY profile_name, scenario_id',
+    )
+    .all(opts.runId);
+  if (rows.length === 0) {
+    console.error(`No dialogue results for run ${opts.runId}`);
+    process.exit(1);
+  }
   results = rows.map(rowToResult);
 } else {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT * FROM evaluation_results
     WHERE dialogue_id IS NOT NULL
       AND (profile_name LIKE '%psycho%' OR profile_name LIKE '%ego_superego%')
     ORDER BY created_at DESC LIMIT 1
-  `).get();
-  if (!row) { console.error('No dynamic learner results found'); process.exit(1); }
+  `,
+    )
+    .get();
+  if (!row) {
+    console.error('No dynamic learner results found');
+    process.exit(1);
+  }
   results = [rowToResult(row)];
 }
 db.close();
@@ -248,7 +275,11 @@ const metaPath = path.join(outDir, 'metadata.json');
 // Merge with existing metadata if present
 let existing = {};
 if (fs.existsSync(metaPath)) {
-  try { existing = JSON.parse(fs.readFileSync(metaPath, 'utf-8')); } catch { /* ignore */ }
+  try {
+    existing = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+  } catch {
+    /* ignore */
+  }
 }
 const merged = {
   ...existing,

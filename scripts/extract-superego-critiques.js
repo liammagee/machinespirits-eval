@@ -76,7 +76,10 @@ function extractFromLog(filePath, fileName) {
         }
       }
       for (let j = i + 1; j < Math.min(dialogueTrace.length, i + 5); j++) {
-        if (dialogueTrace[j].agent === 'ego' && (dialogueTrace[j].action === 'revision' || dialogueTrace[j].action === 'generate')) {
+        if (
+          dialogueTrace[j].agent === 'ego' &&
+          (dialogueTrace[j].action === 'revision' || dialogueTrace[j].action === 'generate')
+        ) {
           egoRevision = dialogueTrace[j].detail || dialogueTrace[j].contextSummary || null;
           break;
         }
@@ -150,7 +153,7 @@ function main() {
     process.exit(1);
   }
 
-  const files = readdirSync(LOGS_DIR).filter(f => f.endsWith('.json') && dialogueMatchesEpoch(f, epoch));
+  const files = readdirSync(LOGS_DIR).filter((f) => f.endsWith('.json') && dialogueMatchesEpoch(f, epoch));
   printEpochBanner(epoch);
   console.log(`Scanning ${files.length} dialogue log files (epoch: ${epoch})...`);
 
@@ -166,7 +169,9 @@ function main() {
       allCritiques.push(...critiques);
     }
     if (filesScanned % 2000 === 0) {
-      process.stdout.write(`  ${filesScanned}/${files.length} files scanned, ${allCritiques.length} critiques found...\r`);
+      process.stdout.write(
+        `  ${filesScanned}/${files.length} files scanned, ${allCritiques.length} critiques found...\r`,
+      );
     }
   }
 
@@ -176,20 +181,20 @@ function main() {
   console.log(`  Total critiques extracted: ${allCritiques.length}`);
 
   // --- Stats breakdown ---
-  const tutorCritiques = allCritiques.filter(c => c.type === 'tutor_superego');
-  const learnerCritiques = allCritiques.filter(c => c.type === 'learner_superego');
+  const tutorCritiques = allCritiques.filter((c) => c.type === 'tutor_superego');
+  const learnerCritiques = allCritiques.filter((c) => c.type === 'learner_superego');
 
   console.log(`\n  Tutor superego critiques: ${tutorCritiques.length}`);
   console.log(`  Learner superego critiques: ${learnerCritiques.length}`);
 
   // Approval stats for tutor superego
   if (tutorCritiques.length > 0) {
-    const approved = tutorCritiques.filter(c => c.approved === true).length;
-    const rejected = tutorCritiques.filter(c => c.approved === false).length;
+    const approved = tutorCritiques.filter((c) => c.approved === true).length;
+    const rejected = tutorCritiques.filter((c) => c.approved === false).length;
     const unknown = tutorCritiques.length - approved - rejected;
     console.log(`\n  Tutor superego verdicts:`);
-    console.log(`    Approved: ${approved} (${(approved / tutorCritiques.length * 100).toFixed(1)}%)`);
-    console.log(`    Rejected: ${rejected} (${(rejected / tutorCritiques.length * 100).toFixed(1)}%)`);
+    console.log(`    Approved: ${approved} (${((approved / tutorCritiques.length) * 100).toFixed(1)}%)`);
+    console.log(`    Rejected: ${rejected} (${((rejected / tutorCritiques.length) * 100).toFixed(1)}%)`);
     if (unknown > 0) console.log(`    Unknown: ${unknown}`);
 
     // Intervention type distribution
@@ -216,7 +221,7 @@ function main() {
   }
 
   // Feedback length stats
-  const feedbackLengths = allCritiques.map(c => c.feedback.length);
+  const feedbackLengths = allCritiques.map((c) => c.feedback.length);
   const avgLen = feedbackLengths.reduce((a, b) => a + b, 0) / feedbackLengths.length;
   const maxLen = Math.max(...feedbackLengths);
   const minLen = Math.min(...feedbackLengths);
@@ -227,7 +232,7 @@ function main() {
   }
 
   // --- Write JSONL output ---
-  const lines = allCritiques.map(c => JSON.stringify(c));
+  const lines = allCritiques.map((c) => JSON.stringify(c));
   writeFileSync(outputPath, lines.join('\n') + '\n');
   console.log(`\nWrote ${allCritiques.length} critiques to: ${outputPath}`);
 }

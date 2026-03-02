@@ -110,7 +110,10 @@ function extractUserRequestFromRequestBody(body) {
     const users = body.contents
       .map((c) => {
         if (Array.isArray(c?.parts)) {
-          return c.parts.map((p) => p?.text).filter(Boolean).join('\n');
+          return c.parts
+            .map((p) => p?.text)
+            .filter(Boolean)
+            .join('\n');
         }
         return extractContentField(c?.content || c?.text || null);
       })
@@ -314,7 +317,10 @@ export function traceToSteps(trace) {
       let responseContent = '';
       for (let j = i - 1; j >= 0; j--) {
         const prev = trace[j];
-        if (prev.agent === 'ego' && (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')) {
+        if (
+          prev.agent === 'ego' &&
+          (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')
+        ) {
           responseContent = fullContent(prev);
           break;
         }
@@ -350,7 +356,8 @@ export function traceToSteps(trace) {
           speaker: 'LEARNER',
         });
       } else {
-        const followup = extractLearnerFollowupFromContext(e.rawContext) || extractLearnerQuery(e) || '(learner follow-up)';
+        const followup =
+          extractLearnerFollowupFromContext(e.rawContext) || extractLearnerQuery(e) || '(learner follow-up)';
         steps.push({
           from: 'learner_ego',
           to: 'tutor_ego',
@@ -427,7 +434,10 @@ export function traceToSteps(trace) {
         let responseContent = '';
         for (let j = i - 1; j >= 0; j--) {
           const prev = trace[j];
-          if (prev.agent === 'ego' && (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')) {
+          if (
+            prev.agent === 'ego' &&
+            (prev.action === 'generate' || prev.action === 'revise' || prev.action === 'incorporate-feedback')
+          ) {
             responseContent = fullContent(prev);
             break;
           }
@@ -513,8 +523,12 @@ export function buildProjectionDiagnostics({ trace = [], steps = [], messageChai
   const modelCallCount = exchanges.length;
   const missingPayloadCount = exchanges.filter((e) => !e.hasApiPayload).length;
   const missingTurnIndexCount = trace.filter((e) => e?.turnIndex === undefined).length;
-  const contextInputs = trace.filter((e) => (e.agent === 'tutor' || e.agent === 'user') && e.action === 'context_input').length;
-  const turnActions = trace.filter((e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action').length;
+  const contextInputs = trace.filter(
+    (e) => (e.agent === 'tutor' || e.agent === 'user') && e.action === 'context_input',
+  ).length;
+  const turnActions = trace.filter(
+    (e) => (e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action',
+  ).length;
   const heuristicFollowups = Math.max(0, contextInputs - 1 - turnActions);
 
   const effects = [];

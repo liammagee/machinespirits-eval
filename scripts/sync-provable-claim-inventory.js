@@ -99,7 +99,9 @@ function main() {
   const outPath = outArg ? (path.isAbsolute(outArg) ? outArg : path.join(ROOT, outArg)) : DEFAULT_OUTPUT_PATH;
 
   const claimAudit = JSON.parse(fs.readFileSync(claimAuditPath, 'utf8'));
-  const nOutcomes = Array.isArray(claimAudit?.n_claim_backtracking?.outcomes) ? claimAudit.n_claim_backtracking.outcomes : [];
+  const nOutcomes = Array.isArray(claimAudit?.n_claim_backtracking?.outcomes)
+    ? claimAudit.n_claim_backtracking.outcomes
+    : [];
   const statOutcomes = Array.isArray(claimAudit?.stat_claim_traceability?.outcomes)
     ? claimAudit.stat_claim_traceability.outcomes
     : [];

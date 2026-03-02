@@ -336,7 +336,11 @@ app.get('/api/dialogue/:dialogueId', (req, res) => {
     };
   }
 
-  const learnerModels = resolvelearnerModels(row.learner_architecture || logMeta.learnerArchitecture || 'unified', trace, row.profile_name);
+  const learnerModels = resolvelearnerModels(
+    row.learner_architecture || logMeta.learnerArchitecture || 'unified',
+    trace,
+    row.profile_name,
+  );
 
   let judgeScores = {};
   try {
@@ -427,8 +431,9 @@ app.get('/api/compare', (req, res) => {
     const ids = dialoguesParam.split(',').filter(Boolean);
     if (ids.length < 2) return res.status(400).json({ error: 'Need at least 2 dialogue IDs' });
     const placeholders = ids.map(() => '?').join(',');
-    const rows = db.prepare(
-      `SELECT er.dialogue_id, er.run_id, er.profile_name, er.scenario_id,
+    const rows = db
+      .prepare(
+        `SELECT er.dialogue_id, er.run_id, er.profile_name, er.scenario_id,
         er.tutor_first_turn_score, er.tutor_overall_score, er.tutor_last_turn_score,
         er.tutor_development_score, er.tutor_holistic_overall_score,
         er.learner_overall_score, er.learner_holistic_overall_score,
@@ -443,15 +448,23 @@ app.get('/api/compare', (req, res) => {
         WHERE dialogue_id IN (${placeholders})
         GROUP BY dialogue_id
       ) latest ON latest.max_id = er.id`,
-    ).all(...ids);
+      )
+      .all(...ids);
 
     const dialogues = rows.map((r) => {
       const primary = pickPrimaryScore(r);
       return {
-        dialogueId: r.dialogue_id, runId: r.run_id, profile: r.profile_name,
-        scenario: r.scenario_id, score: primary.value, scoreMetric: primary.metric,
-        scores: primary.all, egoModel: r.ego_model, superegoModel: r.superego_model,
-        judgeModel: r.judge_model, learnerArch: r.learner_architecture,
+        dialogueId: r.dialogue_id,
+        runId: r.run_id,
+        profile: r.profile_name,
+        scenario: r.scenario_id,
+        score: primary.value,
+        scoreMetric: primary.metric,
+        scores: primary.all,
+        egoModel: r.ego_model,
+        superegoModel: r.superego_model,
+        judgeModel: r.judge_model,
+        learnerArch: r.learner_architecture,
         isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
         turns: Number.isFinite(Number(r.dialogue_rounds)) ? Number(r.dialogue_rounds) : null,
       };
@@ -465,8 +478,9 @@ app.get('/api/compare', (req, res) => {
   if (runIds.length < 2) return res.status(400).json({ error: 'Need at least 2 run IDs' });
 
   const placeholders = runIds.map(() => '?').join(',');
-  const rows = db.prepare(
-    `SELECT er.dialogue_id, er.run_id, er.profile_name, er.scenario_id,
+  const rows = db
+    .prepare(
+      `SELECT er.dialogue_id, er.run_id, er.profile_name, er.scenario_id,
       er.tutor_first_turn_score, er.tutor_overall_score, er.tutor_last_turn_score,
       er.tutor_development_score, er.tutor_holistic_overall_score,
       er.learner_overall_score, er.learner_holistic_overall_score,
@@ -482,7 +496,8 @@ app.get('/api/compare', (req, res) => {
       GROUP BY dialogue_id
     ) latest ON latest.max_id = er.id
     ORDER BY er.scenario_id, er.profile_name`,
-  ).all(...runIds);
+    )
+    .all(...runIds);
 
   const byScenario = {};
   for (const r of rows) {
@@ -490,10 +505,17 @@ app.get('/api/compare', (req, res) => {
     if (!byScenario[key]) byScenario[key] = [];
     const primary = pickPrimaryScore(r);
     byScenario[key].push({
-      dialogueId: r.dialogue_id, runId: r.run_id, profile: r.profile_name,
-      scenario: r.scenario_id, score: primary.value, scoreMetric: primary.metric,
-      scores: primary.all, egoModel: r.ego_model, superegoModel: r.superego_model,
-      judgeModel: r.judge_model, learnerArch: r.learner_architecture,
+      dialogueId: r.dialogue_id,
+      runId: r.run_id,
+      profile: r.profile_name,
+      scenario: r.scenario_id,
+      score: primary.value,
+      scoreMetric: primary.metric,
+      scores: primary.all,
+      egoModel: r.ego_model,
+      superegoModel: r.superego_model,
+      judgeModel: r.judge_model,
+      learnerArch: r.learner_architecture,
       isRecog: !!r.factor_recognition || /recog/i.test(r.profile_name),
       turns: Number.isFinite(Number(r.dialogue_rounds)) ? Number(r.dialogue_rounds) : null,
     });
@@ -530,9 +552,10 @@ function extractScenarioPromptForMetadata(trace, learnerContext) {
   if (fromLearnerContext) return fromLearnerContext;
 
   const firstContextInput = (Array.isArray(trace) ? trace : []).find(
-    (e) => (e?.agent === 'tutor' || e?.agent === 'user')
-      && e?.action === 'context_input'
-      && String(e?.rawContext || '').trim(),
+    (e) =>
+      (e?.agent === 'tutor' || e?.agent === 'user') &&
+      e?.action === 'context_input' &&
+      String(e?.rawContext || '').trim(),
   );
 
   return String(firstContextInput?.rawContext || '').trim();

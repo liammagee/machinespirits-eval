@@ -88,9 +88,13 @@ function loadLongPrompts() {
   try {
     systemPrompt = fs.readFileSync(superegoPath, 'utf-8');
   } catch {
-    systemPrompt = SHORT_SYSTEM + '\n\n' +
-      Array.from({ length: 200 }, (_, i) =>
-        `Guideline ${i + 1}: When evaluating tutor responses, consider the learner's emotional state, prior knowledge level, and the pedagogical approach used. Assess whether the tutor builds appropriate scaffolding, validates learner emotions, and creates opportunities for deeper understanding through guided discovery rather than direct instruction.`
+    systemPrompt =
+      SHORT_SYSTEM +
+      '\n\n' +
+      Array.from(
+        { length: 200 },
+        (_, i) =>
+          `Guideline ${i + 1}: When evaluating tutor responses, consider the learner's emotional state, prior knowledge level, and the pedagogical approach used. Assess whether the tutor builds appropriate scaffolding, validates learner emotions, and creates opportunities for deeper understanding through guided discovery rather than direct instruction.`,
       ).join('\n');
   }
 
@@ -195,7 +199,15 @@ async function main() {
   let totalCalls = 0;
 
   // 1. Learner path (callLearnerAI) — short
-  const lr1 = await runBatch(agentConfig, SHORT_SYSTEM, SHORT_USER, callLearnerAI, 'learner', 'learner/short', N_ATTEMPTS);
+  const lr1 = await runBatch(
+    agentConfig,
+    SHORT_SYSTEM,
+    SHORT_USER,
+    callLearnerAI,
+    'learner',
+    'learner/short',
+    N_ATTEMPTS,
+  );
   totalEmpty += printSummary('learner callLearnerAI / short', lr1);
   totalCalls += N_ATTEMPTS;
 
@@ -205,7 +217,15 @@ async function main() {
   totalCalls += N_ATTEMPTS;
 
   // 3. Tutor-core path (callAI) — short
-  const tc1 = await runBatch(agentConfig, SHORT_SYSTEM, SHORT_USER, callAI, 'tutor-core', 'tutor-core/short', N_ATTEMPTS);
+  const tc1 = await runBatch(
+    agentConfig,
+    SHORT_SYSTEM,
+    SHORT_USER,
+    callAI,
+    'tutor-core',
+    'tutor-core/short',
+    N_ATTEMPTS,
+  );
   totalEmpty += printSummary('tutor-core callAI / short', tc1);
   totalCalls += N_ATTEMPTS;
 
@@ -217,7 +237,9 @@ async function main() {
   // Verdict
   console.log(`\n${'═'.repeat(50)}`);
   if (totalEmpty > 0) {
-    console.log(`  Empty content: ${totalEmpty}/${totalCalls} calls (${((totalEmpty / totalCalls) * 100).toFixed(0)}%)`);
+    console.log(
+      `  Empty content: ${totalEmpty}/${totalCalls} calls (${((totalEmpty / totalCalls) * 100).toFixed(0)}%)`,
+    );
     process.exit(1);
   } else {
     console.log(`  0/${totalCalls} empty responses. Issue not reproduced.`);

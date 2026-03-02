@@ -127,8 +127,12 @@ Object.entries(failPatterns)
 
 // 4. High vs low score qualitative comparison
 console.log('\n=== High vs Low Score Comparison ===\n');
-const highRows = rows.filter((r) => r.tutor_first_turn_score >= 70).sort((a, b) => b.tutor_first_turn_score - a.tutor_first_turn_score);
-const lowRows = rows.filter((r) => r.tutor_first_turn_score <= 35).sort((a, b) => a.tutor_first_turn_score - b.tutor_first_turn_score);
+const highRows = rows
+  .filter((r) => r.tutor_first_turn_score >= 70)
+  .sort((a, b) => b.tutor_first_turn_score - a.tutor_first_turn_score);
+const lowRows = rows
+  .filter((r) => r.tutor_first_turn_score <= 35)
+  .sort((a, b) => a.tutor_first_turn_score - b.tutor_first_turn_score);
 
 console.log(`High scorers (>=70): N=${highRows.length}, mean=${avg(highRows.map((r) => r.tutor_first_turn_score))}`);
 highRows.slice(0, 3).forEach((r) => {

@@ -25,12 +25,7 @@ const testDbPath = path.join(os.tmpdir(), `eval-audit-${Date.now()}-${Math.rando
 process.env.EVAL_DB_PATH = testDbPath;
 
 const { buildMessageChain } = await import('../services/evaluationRunner.js');
-const {
-  createRun,
-  storeResult,
-  getResults,
-  deleteRun,
-} = await import('../services/evaluationStore.js');
+const { createRun, storeResult, getResults, deleteRun } = await import('../services/evaluationStore.js');
 
 // Track test runs for cleanup
 const testRunIds = [];
@@ -38,13 +33,27 @@ const testRunIds = [];
 // Cleanup: remove temporary database after all tests
 after(() => {
   for (const runId of testRunIds) {
-    try { deleteRun(runId); } catch (_) { /* ignore */ }
+    try {
+      deleteRun(runId);
+    } catch (_) {
+      /* ignore */
+    }
   }
   try {
     fs.unlinkSync(testDbPath);
-    try { fs.unlinkSync(testDbPath + '-wal'); } catch (_) { /* */ }
-    try { fs.unlinkSync(testDbPath + '-shm'); } catch (_) { /* */ }
-  } catch (_) { /* ignore */ }
+    try {
+      fs.unlinkSync(testDbPath + '-wal');
+    } catch (_) {
+      /* */
+    }
+    try {
+      fs.unlinkSync(testDbPath + '-shm');
+    } catch (_) {
+      /* */
+    }
+  } catch (_) {
+    /* ignore */
+  }
   delete process.env.EVAL_DB_PATH;
 });
 
@@ -66,36 +75,28 @@ describe('buildMessageChain', () => {
   });
 
   it('produces assistant message from suggestion.message', () => {
-    const history = [
-      { suggestion: { message: 'Hello learner!' } },
-    ];
+    const history = [{ suggestion: { message: 'Hello learner!' } }];
     const chain = buildMessageChain(history);
     assert.equal(chain.length, 1);
     assert.deepStrictEqual(chain[0], { role: 'assistant', content: 'Hello learner!' });
   });
 
   it('produces user message from learnerMessage', () => {
-    const history = [
-      { learnerMessage: 'I have a question' },
-    ];
+    const history = [{ learnerMessage: 'I have a question' }];
     const chain = buildMessageChain(history);
     assert.equal(chain.length, 1);
     assert.deepStrictEqual(chain[0], { role: 'user', content: 'I have a question' });
   });
 
   it('handles entry with only suggestion (no learner)', () => {
-    const history = [
-      { suggestion: { message: 'Initial response' } },
-    ];
+    const history = [{ suggestion: { message: 'Initial response' } }];
     const chain = buildMessageChain(history);
     assert.equal(chain.length, 1);
     assert.equal(chain[0].role, 'assistant');
   });
 
   it('handles entry with only learner (no suggestion)', () => {
-    const history = [
-      { learnerMessage: 'Just a question' },
-    ];
+    const history = [{ learnerMessage: 'Just a question' }];
     const chain = buildMessageChain(history);
     assert.equal(chain.length, 1);
     assert.equal(chain[0].role, 'user');
@@ -109,16 +110,17 @@ describe('buildMessageChain', () => {
     ];
     const chain = buildMessageChain(history);
     assert.equal(chain.length, 5);
-    assert.deepStrictEqual(chain.map(m => m.role), ['assistant', 'user', 'assistant', 'user', 'assistant']);
+    assert.deepStrictEqual(
+      chain.map((m) => m.role),
+      ['assistant', 'user', 'assistant', 'user', 'assistant'],
+    );
     assert.equal(chain[0].content, 'Turn 0 tutor');
     assert.equal(chain[1].content, 'Turn 0 learner');
     assert.equal(chain[4].content, 'Turn 2 tutor');
   });
 
   it('each message has exactly role and content keys', () => {
-    const history = [
-      { suggestion: { message: 'Hello', extra: 'data' }, learnerMessage: 'Hi' },
-    ];
+    const history = [{ suggestion: { message: 'Hello', extra: 'data' }, learnerMessage: 'Hi' }];
     const chain = buildMessageChain(history);
     for (const msg of chain) {
       const keys = Object.keys(msg).sort();
@@ -133,10 +135,7 @@ describe('buildMessageChain', () => {
     ];
     const chain = buildMessageChain(history);
     for (const msg of chain) {
-      assert.ok(
-        msg.role === 'user' || msg.role === 'assistant',
-        `Unexpected role: ${msg.role}`,
-      );
+      assert.ok(msg.role === 'user' || msg.role === 'assistant', `Unexpected role: ${msg.role}`);
     }
   });
 
@@ -148,7 +147,7 @@ describe('buildMessageChain', () => {
     const chain = buildMessageChain(history);
     // Empty string is falsy, null suggestion means no .message access → no assistant msg
     // Both learner messages should appear
-    assert.equal(chain.filter(m => m.role === 'user').length, 2);
+    assert.equal(chain.filter((m) => m.role === 'user').length, 2);
   });
 });
 
@@ -233,7 +232,10 @@ describe('inputMessages trace annotation', () => {
       const consolidatedTrace = [...dialogueTrace];
       for (let i = 0; i < consolidatedTrace.length; i++) {
         const entry = consolidatedTrace[i];
-        if (entry.agent === 'ego' && (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')) {
+        if (
+          entry.agent === 'ego' &&
+          (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')
+        ) {
           entry.inputMessages = turnMessageHistory || null;
         } else if (entry.agent === 'superego' && entry.action === 'review') {
           entry.inputMessages = null;
@@ -256,7 +258,10 @@ describe('inputMessages trace annotation', () => {
       const consolidatedTrace = [...dialogueTrace];
       for (let i = 0; i < consolidatedTrace.length; i++) {
         const entry = consolidatedTrace[i];
-        if (entry.agent === 'ego' && (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')) {
+        if (
+          entry.agent === 'ego' &&
+          (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')
+        ) {
           entry.inputMessages = turnMessageHistory || null;
         } else if (entry.agent === 'superego' && entry.action === 'review') {
           entry.inputMessages = null;
@@ -328,13 +333,21 @@ describe('inputMessages trace annotation', () => {
      * Mirrors evaluationRunner.js logic for both sides.
      */
     function buildFullTrace(mode) {
-      const turnMessageHistory = mode === 'messages'
-        ? [{ role: 'assistant', content: 'Prior tutor' }, { role: 'user', content: 'Prior learner' }]
-        : null;
+      const turnMessageHistory =
+        mode === 'messages'
+          ? [
+              { role: 'assistant', content: 'Prior tutor' },
+              { role: 'user', content: 'Prior learner' },
+            ]
+          : null;
 
-      const learnerInputMessages = mode === 'messages'
-        ? [{ role: 'user', content: 'Tutor response' }, { role: 'assistant', content: 'Learner prev' }]
-        : null;
+      const learnerInputMessages =
+        mode === 'messages'
+          ? [
+              { role: 'user', content: 'Tutor response' },
+              { role: 'assistant', content: 'Learner prev' },
+            ]
+          : null;
 
       const trace = [];
 
@@ -345,7 +358,10 @@ describe('inputMessages trace annotation', () => {
         { agent: 'ego', action: 'revise', detail: 'Revised' },
       ];
       for (const entry of tutorEntries) {
-        if (entry.agent === 'ego' && (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')) {
+        if (
+          entry.agent === 'ego' &&
+          (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')
+        ) {
           entry.inputMessages = turnMessageHistory || null;
         } else if (entry.agent === 'superego' && entry.action === 'review') {
           entry.inputMessages = null;
@@ -383,8 +399,8 @@ describe('inputMessages trace annotation', () => {
 
     it('in messages mode: tutor ego and learner ego both have non-null inputMessages', () => {
       const trace = buildFullTrace('messages');
-      const tutorEgo = trace.filter(e => e.agent === 'ego');
-      const learnerEgo = trace.filter(e => e.agent.startsWith('learner_ego'));
+      const tutorEgo = trace.filter((e) => e.agent === 'ego');
+      const learnerEgo = trace.filter((e) => e.agent.startsWith('learner_ego'));
 
       for (const e of tutorEgo) {
         assert.ok(e.inputMessages !== null, `tutor ${e.action} should have non-null inputMessages`);
@@ -398,8 +414,8 @@ describe('inputMessages trace annotation', () => {
 
     it('in single-prompt mode: tutor ego and learner ego both have null inputMessages', () => {
       const trace = buildFullTrace('single-prompt');
-      const tutorEgo = trace.filter(e => e.agent === 'ego');
-      const learnerEgo = trace.filter(e => e.agent.startsWith('learner_ego'));
+      const tutorEgo = trace.filter((e) => e.agent === 'ego');
+      const learnerEgo = trace.filter((e) => e.agent.startsWith('learner_ego'));
 
       for (const e of tutorEgo) {
         assert.equal(e.inputMessages, null, `tutor ${e.action} should have null inputMessages`);
@@ -412,9 +428,7 @@ describe('inputMessages trace annotation', () => {
     it('both superegos always have null inputMessages regardless of mode', () => {
       for (const mode of ['messages', 'single-prompt']) {
         const trace = buildFullTrace(mode);
-        const superegos = trace.filter(e =>
-          (e.agent === 'superego') || (e.agent === 'learner_superego'),
-        );
+        const superegos = trace.filter((e) => e.agent === 'superego' || e.agent === 'learner_superego');
         assert.ok(superegos.length >= 2, `Expected at least 2 superego entries in ${mode} mode`);
         for (const e of superegos) {
           assert.equal(e.inputMessages, null, `${e.agent} in ${mode} mode should have null inputMessages`);
@@ -425,17 +439,16 @@ describe('inputMessages trace annotation', () => {
     it('every LLM-call entry has an inputMessages key present', () => {
       for (const mode of ['messages', 'single-prompt']) {
         const trace = buildFullTrace(mode);
-        const llmEntries = trace.filter(e =>
-          (e.agent === 'ego' && ['generate', 'revise', 'incorporate-feedback'].includes(e.action)) ||
-          (e.agent === 'superego' && e.action === 'review') ||
-          ((e.agent === 'learner' || e.agent.startsWith('learner_')) && (e.action === 'deliberation' || e.action === 'final_output')),
+        const llmEntries = trace.filter(
+          (e) =>
+            (e.agent === 'ego' && ['generate', 'revise', 'incorporate-feedback'].includes(e.action)) ||
+            (e.agent === 'superego' && e.action === 'review') ||
+            ((e.agent === 'learner' || e.agent.startsWith('learner_')) &&
+              (e.action === 'deliberation' || e.action === 'final_output')),
         );
         assert.ok(llmEntries.length >= 6, `Expected at least 6 LLM entries, got ${llmEntries.length}`);
         for (const e of llmEntries) {
-          assert.ok(
-            'inputMessages' in e,
-            `${e.agent}/${e.action} missing inputMessages key in ${mode} mode`,
-          );
+          assert.ok('inputMessages' in e, `${e.agent}/${e.action} missing inputMessages key in ${mode} mode`);
         }
       }
     });
@@ -450,9 +463,7 @@ describe('inputMessages trace annotation', () => {
         { role: 'assistant', content: 'Tutor said' },
         { role: 'user', content: 'Learner said' },
       ];
-      const chain = buildMessageChain([
-        { suggestion: { message: 'Tutor said' }, learnerMessage: 'Learner said' },
-      ]);
+      const chain = buildMessageChain([{ suggestion: { message: 'Tutor said' }, learnerMessage: 'Learner said' }]);
       for (const msg of chain) {
         const keys = Object.keys(msg).sort();
         assert.deepStrictEqual(keys, ['content', 'role'], `Unexpected keys: ${keys}`);
@@ -472,10 +483,7 @@ describe('inputMessages trace annotation', () => {
       ];
       const chain = buildMessageChain(history);
       for (const msg of chain) {
-        assert.ok(
-          msg.role === 'user' || msg.role === 'assistant',
-          `Role must be user or assistant, got: ${msg.role}`,
-        );
+        assert.ok(msg.role === 'user' || msg.role === 'assistant', `Role must be user or assistant, got: ${msg.role}`);
         assert.notEqual(msg.role, 'system', 'system role must never appear');
       }
     });
@@ -541,9 +549,7 @@ describe('consolidated dialogue log structure', () => {
     // Verify the shape matches what evaluationRunner.js (~line 2980) produces
     const consolidatedDialogue = {
       suggestions: [{ message: 'Final' }],
-      dialogueTrace: [
-        { agent: 'ego', action: 'generate', inputMessages: [] },
-      ],
+      dialogueTrace: [{ agent: 'ego', action: 'generate', inputMessages: [] }],
       converged: false,
       rounds: 5,
       metrics: {
@@ -561,13 +567,9 @@ describe('consolidated dialogue log structure', () => {
       isMultiTurn: true,
       learnerArchitecture: 'ego_superego',
       totalTurns: 3,
-      turnResults: [
-        { turnIndex: 0, turnId: 't0', suggestions: [{ message: 'T0' }] },
-      ],
+      turnResults: [{ turnIndex: 0, turnId: 't0', suggestions: [{ message: 'T0' }] }],
       conversationMode: 'messages',
-      conversationHistory: [
-        { suggestion: { message: 'T0' }, learnerMessage: 'Reply' },
-      ],
+      conversationHistory: [{ suggestion: { message: 'T0' }, learnerMessage: 'Reply' }],
       holisticDialogueScore: 75.5,
       transformationAnalysis: {
         turnProgression: {},
@@ -578,11 +580,24 @@ describe('consolidated dialogue log structure', () => {
 
     // All production fields should be present
     const requiredFields = [
-      'suggestions', 'dialogueTrace', 'converged', 'rounds', 'metrics',
-      'dialogueId', 'profileName', 'provider', 'model', 'learnerContext',
-      'isMultiTurn', 'learnerArchitecture', 'totalTurns', 'turnResults',
-      'conversationMode', 'conversationHistory',
-      'holisticDialogueScore', 'transformationAnalysis',
+      'suggestions',
+      'dialogueTrace',
+      'converged',
+      'rounds',
+      'metrics',
+      'dialogueId',
+      'profileName',
+      'provider',
+      'model',
+      'learnerContext',
+      'isMultiTurn',
+      'learnerArchitecture',
+      'totalTurns',
+      'turnResults',
+      'conversationMode',
+      'conversationHistory',
+      'holisticDialogueScore',
+      'transformationAnalysis',
     ];
     for (const field of requiredFields) {
       assert.ok(field in consolidatedDialogue, `Missing required field: ${field}`);
@@ -612,9 +627,7 @@ describe('no consecutive same-role messages', () => {
   }
 
   it('buildMessageChain never produces consecutive same-role messages (single turn)', () => {
-    const chain = buildMessageChain([
-      { suggestion: { message: 'T0 tutor' }, learnerMessage: 'T0 learner' },
-    ]);
+    const chain = buildMessageChain([{ suggestion: { message: 'T0 tutor' }, learnerMessage: 'T0 learner' }]);
     assertNoConsecutiveRoles(chain, 'single-turn chain');
   });
 
@@ -632,7 +645,7 @@ describe('no consecutive same-role messages', () => {
     // A turn with only a suggestion (no learner reply) — e.g. final turn
     const chain = buildMessageChain([
       { suggestion: { message: 'T0 tutor' }, learnerMessage: 'T0 learner' },
-      { suggestion: { message: 'T1 tutor' } },  // no learner
+      { suggestion: { message: 'T1 tutor' } }, // no learner
       { suggestion: { message: 'T2 tutor' }, learnerMessage: 'T2 learner' },
     ]);
     // T1 assistant + T2 assistant would be consecutive — verify the chain
@@ -666,10 +679,7 @@ describe('no consecutive same-role messages', () => {
     ]);
 
     // Build messages the way callAI should (OpenRouter/OpenAI/local)
-    const messages = [
-      { role: 'system', content: `${systemPrompt}\n\n${userPrompt}` },
-      ...messageHistory,
-    ];
+    const messages = [{ role: 'system', content: `${systemPrompt}\n\n${userPrompt}` }, ...messageHistory];
 
     assertNoConsecutiveRoles(messages, 'system-folded API messages');
     // System has the folded content

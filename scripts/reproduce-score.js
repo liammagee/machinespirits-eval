@@ -65,7 +65,9 @@ function parseCli() {
   const modelOverride = values['model'] || null;
 
   if (!rowId) {
-    console.error('Usage: node scripts/reproduce-score.js --row-id <id> [--turn N] [--show-prompt] [--rerun] [--json out.json] [--model <ref>]');
+    console.error(
+      'Usage: node scripts/reproduce-score.js --row-id <id> [--turn N] [--show-prompt] [--rerun] [--json out.json] [--model <ref>]',
+    );
     process.exit(1);
   }
 
@@ -168,7 +170,9 @@ function loadAndVerifyDialogueLog(row) {
       pass(`Dialogue hash match: ${shortHash(recomputedHash)}`);
       hashStatus = 'match';
     } else {
-      fail(`Dialogue hash mismatch: stored=${shortHash(row.dialogue_content_hash)} computed=${shortHash(recomputedHash)}`);
+      fail(
+        `Dialogue hash mismatch: stored=${shortHash(row.dialogue_content_hash)} computed=${shortHash(recomputedHash)}`,
+      );
       hashStatus = 'mismatch';
     }
   } else {
@@ -295,8 +299,12 @@ async function callClaudeJudge(prompt, model) {
     const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
     let out = '';
     let err = '';
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { err += d; });
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
     child.on('error', reject);
     child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
@@ -324,9 +332,8 @@ function compareScores(storedTurnData, rerunResult) {
   const storedScores = storedTurnData.scores || {};
   const rerunScores = rerunResult.scores || {};
   const storedOverall = storedTurnData.overallScore;
-  const rerunOverall = rerunResult.overall_score != null
-    ? rerunResult.overall_score
-    : calculateOverallScore(rerunScores);
+  const rerunOverall =
+    rerunResult.overall_score != null ? rerunResult.overall_score : calculateOverallScore(rerunScores);
 
   const dimDeltas = [];
   const allDimKeys = new Set([...Object.keys(storedScores), ...Object.keys(rerunScores)]);
@@ -340,9 +347,8 @@ function compareScores(storedTurnData, rerunResult) {
     }
   }
 
-  const overallDelta = (typeof storedOverall === 'number' && typeof rerunOverall === 'number')
-    ? rerunOverall - storedOverall
-    : null;
+  const overallDelta =
+    typeof storedOverall === 'number' && typeof rerunOverall === 'number' ? rerunOverall - storedOverall : null;
 
   return { dimDeltas, storedOverall, rerunOverall, overallDelta };
 }
@@ -420,7 +426,7 @@ async function main() {
   } else if (isMultiTurn && tutorScores) {
     // All turns present in tutor_scores
     turnIndices = Object.keys(tutorScores)
-      .filter(k => /^\d+$/.test(k))
+      .filter((k) => /^\d+$/.test(k))
       .map(Number)
       .sort((a, b) => a - b);
   } else {
@@ -471,11 +477,13 @@ async function main() {
 
         if (rerunComparison.overallDelta != null) {
           const sign = rerunComparison.overallDelta >= 0 ? '+' : '';
-          console.log(`  Re-scored: ${rerunComparison.rerunOverall.toFixed(1)} (Δ = ${sign}${rerunComparison.overallDelta.toFixed(1)})`);
+          console.log(
+            `  Re-scored: ${rerunComparison.rerunOverall.toFixed(1)} (Δ = ${sign}${rerunComparison.overallDelta.toFixed(1)})`,
+          );
         }
 
         // Report per-dimension deltas
-        const flagged = rerunComparison.dimDeltas.filter(d => Math.abs(d.delta) > 1);
+        const flagged = rerunComparison.dimDeltas.filter((d) => Math.abs(d.delta) > 1);
         if (flagged.length > 0) {
           warn(`${flagged.length} dimension(s) with |Δ| > 1:`);
           for (const d of flagged) {
@@ -495,7 +503,7 @@ async function main() {
       promptHashStatus: promptResult.hashStatus,
       storedHash: promptResult.storedHash || null,
       rebuiltHash: promptResult.rebuiltHash || null,
-      promptText: showPrompt ? promptResult.prompt : (promptResult.prompt?.slice(0, 500) || null),
+      promptText: showPrompt ? promptResult.prompt : promptResult.prompt?.slice(0, 500) || null,
       rerunComparison,
     });
   }

@@ -173,7 +173,11 @@ describe('getDimensionsByGroup', () => {
   it('v2.1: treatment group returns 6 dimensions', () => {
     setRubricPathOverride(V21_RUBRIC);
     const treatmentDims = getDimensionsByGroup('treatment');
-    assert.strictEqual(treatmentDims.length, 6, `expected 6 treatment dims, got ${treatmentDims.length}: ${treatmentDims}`);
+    assert.strictEqual(
+      treatmentDims.length,
+      6,
+      `expected 6 treatment dims, got ${treatmentDims.length}: ${treatmentDims}`,
+    );
     assert.ok(treatmentDims.includes('mutual_recognition'), 'treatment should include mutual_recognition');
     assert.ok(treatmentDims.includes('learner_growth'), 'treatment should include learner_growth');
     assert.ok(!treatmentDims.includes('relevance'), 'treatment should NOT include relevance');
@@ -191,7 +195,11 @@ describe('getDimensionsByGroup', () => {
   it('v2.2: treatment group returns 1 dimension', () => {
     setRubricPathOverride(V22_RUBRIC);
     const treatmentDims = getDimensionsByGroup('treatment');
-    assert.strictEqual(treatmentDims.length, 1, `expected 1 treatment dim, got ${treatmentDims.length}: ${treatmentDims}`);
+    assert.strictEqual(
+      treatmentDims.length,
+      1,
+      `expected 1 treatment dim, got ${treatmentDims.length}: ${treatmentDims}`,
+    );
     assert.strictEqual(treatmentDims[0], 'recognition_quality');
   });
 
@@ -202,7 +210,10 @@ describe('getDimensionsByGroup', () => {
   });
 
   it('base + treatment groups cover all dimensions', () => {
-    for (const [label, rubricPath] of [['v2.1', V21_RUBRIC], ['v2.2', V22_RUBRIC]]) {
+    for (const [label, rubricPath] of [
+      ['v2.1', V21_RUBRIC],
+      ['v2.2', V22_RUBRIC],
+    ]) {
       setRubricPathOverride(rubricPath);
       const allDims = Object.keys(getRubricDimensions());
       const baseDims = getDimensionsByGroup('base');
@@ -276,16 +287,16 @@ describe('rubric scoring — cross-version invariants', () => {
   });
 
   it('uniform score=4 produces ~75 on both rubric versions', () => {
-    for (const [label, rubricPath] of [['v2.1', V21_RUBRIC], ['v2.2', V22_RUBRIC]]) {
+    for (const [label, rubricPath] of [
+      ['v2.1', V21_RUBRIC],
+      ['v2.2', V22_RUBRIC],
+    ]) {
       setRubricPathOverride(rubricPath);
       const dims = getRubricDimensions();
       const scores = uniformScores(dims, 4);
       const overall = calculateOverallScore(scores);
       clearRubricPathOverride();
-      assert.ok(
-        Math.abs(overall - 75) < 1,
-        `${label}: uniform score=4 should give ~75, got ${overall}`,
-      );
+      assert.ok(Math.abs(overall - 75) < 1, `${label}: uniform score=4 should give ~75, got ${overall}`);
     }
   });
 });

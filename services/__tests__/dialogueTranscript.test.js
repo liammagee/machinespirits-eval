@@ -19,9 +19,21 @@ import {
 const UNIFIED_TRACE = [
   { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
-  { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'But Popper would say this is unfalsifiable. How do you respond?' },
+  {
+    agent: 'learner',
+    action: 'turn_action',
+    turnIndex: 1,
+    detail: 'Learner: asked_followup',
+    contextSummary: 'But Popper would say this is unfalsifiable. How do you respond?',
+  },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: '', contextSummary: '' },
-  { agent: 'learner', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I see the distinction between empirical and phenomenological claims.' },
+  {
+    agent: 'learner',
+    action: 'turn_action',
+    turnIndex: 2,
+    detail: 'Learner: asked_followup',
+    contextSummary: 'I see the distinction between empirical and phenomenological claims.',
+  },
   { agent: 'ego', action: 'generate', turnIndex: 2, detail: '', contextSummary: '' },
 ];
 
@@ -29,29 +41,113 @@ const UNIFIED_TRACE = [
 const EGO_SUPEREGO_TRACE = [
   { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
-  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think this is about recognition...', contextSummary: '' },
-  { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'The ego is avoiding the harder question about asymmetry.', contextSummary: '' },
-  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
-  { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
-  { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'OK the real question is about asymmetric recognition.' },
+  {
+    agent: 'learner_ego_initial',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'I think this is about recognition...',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_superego',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'The ego is avoiding the harder question about asymmetry.',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_ego_revision',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'OK the real question is about asymmetric recognition.',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner',
+    action: 'final_output',
+    turnIndex: 1,
+    detail: 'OK the real question is about asymmetric recognition.',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner',
+    action: 'turn_action',
+    turnIndex: 1,
+    detail: 'Learner: asked_followup',
+    contextSummary: 'OK the real question is about asymmetric recognition.',
+  },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: 'Good insight on asymmetry.', contextSummary: '' },
   { agent: 'superego', action: 'review', turnIndex: 1, detail: 'Push harder on the paradox.', contextSummary: '' },
-  { agent: 'ego', action: 'revise', turnIndex: 1, detail: 'You identified asymmetry - now what happens when the master wins?', contextSummary: '' },
+  {
+    agent: 'ego',
+    action: 'revise',
+    turnIndex: 1,
+    detail: 'You identified asymmetry - now what happens when the master wins?',
+    contextSummary: '',
+  },
 ];
 
 /** Ego+superego learner trace variant where learner/final_output is missing after turn 1 */
 const EGO_SUPEREGO_TRACE_NO_SYNTH = [
   { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
-  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'Initial learner ego thought', contextSummary: '' },
-  { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Initial learner critique', contextSummary: '' },
-  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Initial learner revision', contextSummary: '' },
-  { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Could we unpack fear and labour more slowly?' },
+  {
+    agent: 'learner_ego_initial',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'Initial learner ego thought',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_superego',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'Initial learner critique',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_ego_revision',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'Initial learner revision',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner',
+    action: 'turn_action',
+    turnIndex: 1,
+    detail: 'Learner: asked_followup',
+    contextSummary: 'Could we unpack fear and labour more slowly?',
+  },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: '', contextSummary: '' },
-  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 2, detail: 'Second learner ego thought', contextSummary: '' },
-  { agent: 'learner_superego', action: 'deliberation', turnIndex: 2, detail: 'Second learner critique', contextSummary: '' },
-  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 2, detail: 'Second learner revision', contextSummary: '' },
-  { agent: 'learner', action: 'turn_action', turnIndex: 2, detail: 'Learner: asked_followup', contextSummary: 'I can track paragraph 196 now, but still not the negation of negation.' },
+  {
+    agent: 'learner_ego_initial',
+    action: 'deliberation',
+    turnIndex: 2,
+    detail: 'Second learner ego thought',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_superego',
+    action: 'deliberation',
+    turnIndex: 2,
+    detail: 'Second learner critique',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_ego_revision',
+    action: 'deliberation',
+    turnIndex: 2,
+    detail: 'Second learner revision',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner',
+    action: 'turn_action',
+    turnIndex: 2,
+    detail: 'Learner: asked_followup',
+    contextSummary: 'I can track paragraph 196 now, but still not the negation of negation.',
+  },
   { agent: 'ego', action: 'generate', turnIndex: 2, detail: '', contextSummary: '' },
 ];
 
@@ -59,10 +155,34 @@ const EGO_SUPEREGO_TRACE_NO_SYNTH = [
 const EGO_SUPEREGO_TRACE_SYNTHESIS_RESPONSE = [
   { agent: 'tutor', action: 'context_input', turnIndex: 0, detail: '', contextSummary: '' },
   { agent: 'ego', action: 'generate', turnIndex: 0, detail: '', contextSummary: '' },
-  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think this is about recognition...', contextSummary: '' },
-  { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'The ego is avoiding the harder question about asymmetry.', contextSummary: '' },
-  { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
-  { agent: 'learner_synthesis', action: 'response', turnIndex: 1, detail: 'OK the real question is about asymmetric recognition.', contextSummary: '' },
+  {
+    agent: 'learner_ego_initial',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'I think this is about recognition...',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_superego',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'The ego is avoiding the harder question about asymmetry.',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_ego_revision',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'OK the real question is about asymmetric recognition.',
+    contextSummary: '',
+  },
+  {
+    agent: 'learner_synthesis',
+    action: 'response',
+    turnIndex: 1,
+    detail: 'OK the real question is about asymmetric recognition.',
+    contextSummary: '',
+  },
   { agent: 'ego', action: 'generate', turnIndex: 1, detail: 'Good insight on asymmetry.', contextSummary: '' },
 ];
 
@@ -73,10 +193,16 @@ const EGO_SUPEREGO_TRACE_CONTEXT_ONLY = [
     action: 'context_input',
     detail: '',
     contextSummary: '',
-    rawContext: "### Recent Chat History\n- User: \"I'm stuck and nothing makes sense.\"",
+    rawContext: '### Recent Chat History\n- User: "I\'m stuck and nothing makes sense."',
   },
   { agent: 'ego', action: 'generate', detail: '', contextSummary: '' },
-  { agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1, detail: 'I think I am confused', contextSummary: '' },
+  {
+    agent: 'learner_ego_initial',
+    action: 'deliberation',
+    turnIndex: 1,
+    detail: 'I think I am confused',
+    contextSummary: '',
+  },
   {
     agent: 'tutor',
     action: 'context_input',
@@ -106,7 +232,11 @@ const TURNS = [
 
 const TURNS_EGO_SUPEREGO = [
   { turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome to recognition theory.' }] },
-  { turnIndex: 1, turnId: 'turn_1', suggestions: [{ message: 'You identified asymmetry - now what happens when the master wins?' }] },
+  {
+    turnIndex: 1,
+    turnId: 'turn_1',
+    suggestions: [{ message: 'You identified asymmetry - now what happens when the master wins?' }],
+  },
 ];
 
 const TURNS_EGO_SUPEREGO_THREE = [
@@ -115,7 +245,8 @@ const TURNS_EGO_SUPEREGO_THREE = [
   { turnIndex: 2, turnId: 'turn_2', suggestions: [{ message: 'Turn 3 tutor response.' }] },
 ];
 
-const LEARNER_CONTEXT = '### Recent Chat History\n- User: "I think the dialectic is just thesis plus antithesis equals synthesis"';
+const LEARNER_CONTEXT =
+  '### Recent Chat History\n- User: "I think the dialectic is just thesis plus antithesis equals synthesis"';
 
 // ── isEgoSuperegoLearner ──────────────────────────────────────────────────
 
@@ -154,66 +285,100 @@ describe('isEgoSuperegoLearner', () => {
 describe('buildDialoguePublicTranscript', () => {
   it('never contains [Learner Action] for unified learner', () => {
     const transcript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.equal(transcript.includes('[Learner Action]'), false,
-      'Public transcript must not contain [Learner Action] for unified learners');
+    assert.equal(
+      transcript.includes('[Learner Action]'),
+      false,
+      'Public transcript must not contain [Learner Action] for unified learners',
+    );
   });
 
   it('labels unified learner messages as [Learner]', () => {
     const transcript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('[Learner]'),
-      'Public transcript should contain [Learner] labels for unified learners');
+    assert.ok(
+      transcript.includes('[Learner]'),
+      'Public transcript should contain [Learner] labels for unified learners',
+    );
   });
 
   it('uses contextSummary (actual message) for unified learner, not detail (action label)', () => {
     const transcript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('Popper would say this is unfalsifiable'),
-      'Should use contextSummary content (actual learner message)');
-    assert.equal(transcript.includes('asked_followup'), false,
-      'Should NOT show action type label from detail field');
+    assert.ok(
+      transcript.includes('Popper would say this is unfalsifiable'),
+      'Should use contextSummary content (actual learner message)',
+    );
+    assert.equal(transcript.includes('asked_followup'), false, 'Should NOT show action type label from detail field');
   });
 
   it('labels ego_superego learner messages as [Learner Ego]', () => {
     const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('[Learner Ego]'),
-      'Public transcript should contain [Learner Ego] for ego_superego learners');
+    assert.ok(
+      transcript.includes('[Learner Ego]'),
+      'Public transcript should contain [Learner Ego] for ego_superego learners',
+    );
   });
 
   it('never contains [Learner Action] for ego_superego learner', () => {
     const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
-    assert.equal(transcript.includes('[Learner Action]'), false,
-      'Public transcript must not contain [Learner Action] for ego_superego learners');
+    assert.equal(
+      transcript.includes('[Learner Action]'),
+      false,
+      'Public transcript must not contain [Learner Action] for ego_superego learners',
+    );
   });
 
   it('shows initial learner message at Turn 1', () => {
     const transcript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('thesis plus antithesis equals synthesis'),
-      'Should include initial learner message from learnerContext at Turn 1');
+    assert.ok(
+      transcript.includes('thesis plus antithesis equals synthesis'),
+      'Should include initial learner message from learnerContext at Turn 1',
+    );
   });
 
   it('does not show superego or internal deliberation', () => {
     const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
     assert.equal(transcript.includes('[Learner Superego]'), false);
-    assert.equal(transcript.includes('avoiding the harder question'), false,
-      'Should not leak superego critique into public transcript');
+    assert.equal(
+      transcript.includes('avoiding the harder question'),
+      false,
+      'Should not leak superego critique into public transcript',
+    );
   });
 
   it('falls back to turn_action learner message when ego_superego synthesis entries are missing', () => {
-    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('Could we unpack fear and labour more slowly?'),
-      'Should include turn_action contextSummary for turn 2 when learner/final_output is missing');
-    assert.ok(transcript.includes('I can track paragraph 196 now, but still not the negation of negation.'),
-      'Should include turn_action contextSummary for turn 3 when learner/final_output is missing');
+    const transcript = buildDialoguePublicTranscript(
+      TURNS_EGO_SUPEREGO_THREE,
+      EGO_SUPEREGO_TRACE_NO_SYNTH,
+      LEARNER_CONTEXT,
+    );
+    assert.ok(
+      transcript.includes('Could we unpack fear and labour more slowly?'),
+      'Should include turn_action contextSummary for turn 2 when learner/final_output is missing',
+    );
+    assert.ok(
+      transcript.includes('I can track paragraph 196 now, but still not the negation of negation.'),
+      'Should include turn_action contextSummary for turn 3 when learner/final_output is missing',
+    );
   });
 
   it('reads learner synthesis from learner_synthesis/response schema', () => {
-    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE_SYNTHESIS_RESPONSE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('OK the real question is about asymmetric recognition.'),
-      'Should include learner message from learner_synthesis/response entry');
+    const transcript = buildDialoguePublicTranscript(
+      TURNS_EGO_SUPEREGO,
+      EGO_SUPEREGO_TRACE_SYNTHESIS_RESPONSE,
+      LEARNER_CONTEXT,
+    );
+    assert.ok(
+      transcript.includes('OK the real question is about asymmetric recognition.'),
+      'Should include learner message from learner_synthesis/response entry',
+    );
   });
 
   it('stays balanced across turns for ego_superego traces without learner/final_output', () => {
-    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
-    const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+    const transcript = buildDialoguePublicTranscript(
+      TURNS_EGO_SUPEREGO_THREE,
+      EGO_SUPEREGO_TRACE_NO_SYNTH,
+      LEARNER_CONTEXT,
+    );
+    const sections = transcript.split(/--- Turn \d+ ---/).filter((s) => s.trim());
     assert.equal(sections.length, 3, 'Expected 3 turn sections');
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
@@ -223,16 +388,28 @@ describe('buildDialoguePublicTranscript', () => {
   });
 
   it('reconstructs learner follow-ups from context_input when turn_action is missing', () => {
-    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_CONTEXT_ONLY, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('Could we unpack fear and labour more slowly?'),
-      'Should recover turn 2 learner message from context_input rawContext');
-    assert.ok(transcript.includes('I can track paragraph 196 now, but still not the negation of negation.'),
-      'Should recover turn 3 learner message from context_input rawContext');
+    const transcript = buildDialoguePublicTranscript(
+      TURNS_EGO_SUPEREGO_THREE,
+      EGO_SUPEREGO_TRACE_CONTEXT_ONLY,
+      LEARNER_CONTEXT,
+    );
+    assert.ok(
+      transcript.includes('Could we unpack fear and labour more slowly?'),
+      'Should recover turn 2 learner message from context_input rawContext',
+    );
+    assert.ok(
+      transcript.includes('I can track paragraph 196 now, but still not the negation of negation.'),
+      'Should recover turn 3 learner message from context_input rawContext',
+    );
   });
 
   it('remains turn-balanced when only context_input follow-ups are available', () => {
-    const transcript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_CONTEXT_ONLY, LEARNER_CONTEXT);
-    const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+    const transcript = buildDialoguePublicTranscript(
+      TURNS_EGO_SUPEREGO_THREE,
+      EGO_SUPEREGO_TRACE_CONTEXT_ONLY,
+      LEARNER_CONTEXT,
+    );
+    const sections = transcript.split(/--- Turn \d+ ---/).filter((s) => s.trim());
     assert.equal(sections.length, 3, 'Expected 3 turn sections');
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
@@ -247,58 +424,66 @@ describe('buildDialoguePublicTranscript', () => {
 describe('buildDialogueFullTranscript', () => {
   it('never contains [Learner Action] for unified learner', () => {
     const transcript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.equal(transcript.includes('[Learner Action]'), false,
-      'Full transcript must not contain [Learner Action] for unified learners');
+    assert.equal(
+      transcript.includes('[Learner Action]'),
+      false,
+      'Full transcript must not contain [Learner Action] for unified learners',
+    );
   });
 
   it('labels unified learner messages as [Learner]', () => {
     const transcript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('[Learner]'),
-      'Full transcript should contain [Learner] labels for unified learners');
+    assert.ok(transcript.includes('[Learner]'), 'Full transcript should contain [Learner] labels for unified learners');
   });
 
   it('uses contextSummary for unified learner turn_action entries', () => {
     const transcript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('Popper would say this is unfalsifiable'),
-      'Should use contextSummary content for unified learners');
-    assert.equal(transcript.includes('asked_followup'), false,
-      'Should NOT show action type label from detail field');
+    assert.ok(
+      transcript.includes('Popper would say this is unfalsifiable'),
+      'Should use contextSummary content for unified learners',
+    );
+    assert.equal(transcript.includes('asked_followup'), false, 'Should NOT show action type label from detail field');
   });
 
   it('never contains [Learner Action] for ego_superego learner', () => {
     const transcript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
-    assert.equal(transcript.includes('[Learner Action]'), false,
-      'Full transcript must not contain [Learner Action] for ego_superego learners');
+    assert.equal(
+      transcript.includes('[Learner Action]'),
+      false,
+      'Full transcript must not contain [Learner Action] for ego_superego learners',
+    );
   });
 
   it('shows learner deliberation chain for ego_superego learner', () => {
     const transcript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
     assert.ok(transcript.includes('[Learner Ego]'), 'Should show learner ego');
     assert.ok(transcript.includes('[Learner Superego]'), 'Should show learner superego');
-    assert.ok(transcript.includes('avoiding the harder question'),
-      'Should include superego critique in full transcript');
+    assert.ok(
+      transcript.includes('avoiding the harder question'),
+      'Should include superego critique in full transcript',
+    );
   });
 
   it('suppresses turn_action for ego_superego learner (redundant with synthesis)', () => {
     const transcript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
     // The turn_action contextSummary for ego_superego is same as synthesis - should not appear separately
-    const learnerLines = transcript.split('\n').filter(l => l.startsWith('[Learner'));
-    const actionLines = learnerLines.filter(l => l.includes('asked_followup'));
-    assert.equal(actionLines.length, 0,
-      'Should not show raw turn_action for ego_superego learner');
+    const learnerLines = transcript.split('\n').filter((l) => l.startsWith('[Learner'));
+    const actionLines = learnerLines.filter((l) => l.includes('asked_followup'));
+    assert.equal(actionLines.length, 0, 'Should not show raw turn_action for ego_superego learner');
   });
 
   it('deduplicates synthesis identical to revision', () => {
     const transcript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
-    const synthesisLines = transcript.split('\n').filter(l => l.includes('(synthesis)'));
-    assert.equal(synthesisLines.length, 0,
-      'Synthesis identical to revision should be suppressed');
+    const synthesisLines = transcript.split('\n').filter((l) => l.includes('(synthesis)'));
+    assert.equal(synthesisLines.length, 0, 'Synthesis identical to revision should be suppressed');
   });
 
   it('shows initial learner message at Turn 1', () => {
     const transcript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.ok(transcript.includes('thesis plus antithesis equals synthesis'),
-      'Should include initial learner message at Turn 1');
+    assert.ok(
+      transcript.includes('thesis plus antithesis equals synthesis'),
+      'Should include initial learner message at Turn 1',
+    );
   });
 
   it('renders tutor superego feedback from feedback field (not just detail/contextSummary)', () => {
@@ -311,10 +496,11 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Revised response with more depth.' }] }];
     const transcript = buildDialogueFullTranscript(turns, traceWithFeedback, null);
-    assert.ok(transcript.includes('Push harder on the paradox'),
-      'Should render superego feedback from the feedback field');
-    assert.ok(transcript.includes('[Tutor Superego]'),
-      'Should have Tutor Superego label');
+    assert.ok(
+      transcript.includes('Push harder on the paradox'),
+      'Should render superego feedback from the feedback field',
+    );
+    assert.ok(transcript.includes('[Tutor Superego]'), 'Should have Tutor Superego label');
   });
 
   it('does not render empty superego when feedback/detail/contextSummary all absent', () => {
@@ -327,8 +513,7 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Response.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('[Tutor Superego]'),
-      'Should still emit the label for superego');
+    assert.ok(transcript.includes('[Tutor Superego]'), 'Should still emit the label for superego');
   });
 
   it('renders ego text from turnResults when detail/contextSummary are empty', () => {
@@ -340,8 +525,10 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Welcome to Hegel.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('Welcome to Hegel'),
-      'Should fall back to turnResults when ego detail/contextSummary are empty');
+    assert.ok(
+      transcript.includes('Welcome to Hegel'),
+      'Should fall back to turnResults when ego detail/contextSummary are empty',
+    );
   });
 
   it('renders all tutor agent types with correct labels', () => {
@@ -353,11 +540,21 @@ describe('buildDialogueFullTranscript', () => {
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       { agent: 'ego_self_reflection', action: 'rewrite', turnIndex: 0, detail: 'I reflected on my approach.' },
       { agent: 'superego_self_reflection', action: 'rewrite', turnIndex: 0, detail: 'My critiquing was too soft.' },
-      { agent: 'ego_intersubjective', action: 'respond_to_critic', turnIndex: 0, detail: 'I agree with the self-reflection.' },
+      {
+        agent: 'ego_intersubjective',
+        action: 'respond_to_critic',
+        turnIndex: 0,
+        detail: 'I agree with the self-reflection.',
+      },
       { agent: 'ego_strategy', action: 'plan', turnIndex: 0, detail: 'Strategy: push on paradox.' },
       { agent: 'tutor_other_ego', action: 'profile_learner', turnIndex: 0, detail: 'Learner is a strong critic.' },
       { agent: 'behavioral_overrides', action: 'parse', turnIndex: 0, contextSummary: 'Threshold=0.6' },
-      { agent: 'superego_disposition', action: 'rewrite', turnIndex: 0, detail: 'Disposition evolved toward advocacy.' },
+      {
+        agent: 'superego_disposition',
+        action: 'rewrite',
+        turnIndex: 0,
+        detail: 'Disposition evolved toward advocacy.',
+      },
     ];
     const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Revised response.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
@@ -383,7 +580,13 @@ describe('buildDialogueFullTranscript', () => {
       { agent: 'learner_superego', action: 'deliberation', turnIndex: 1, detail: 'Dig deeper.' },
       { agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1, detail: 'Revised thought.' },
       { agent: 'learner', action: 'final_output', turnIndex: 1, detail: 'Final message.' },
-      { agent: 'learner', action: 'turn_action', turnIndex: 1, detail: 'Learner: asked_followup', contextSummary: 'Final message.' },
+      {
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'Final message.',
+      },
       { agent: 'ego', action: 'generate', turnIndex: 1 },
     ];
     const turns = [
@@ -391,24 +594,30 @@ describe('buildDialogueFullTranscript', () => {
       { turnIndex: 1, turnId: 'turn_1', suggestions: [{ message: 'Good point.' }] },
     ];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('[Learner Other-Ego] Tutor seems Socratic'),
-      'Should render learner other-ego profile');
+    assert.ok(
+      transcript.includes('[Learner Other-Ego] Tutor seems Socratic'),
+      'Should render learner other-ego profile',
+    );
   });
 
   it('prefers contextSummary over detail for behavioral_overrides', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       {
-        agent: 'behavioral_overrides', action: 'parse', turnIndex: 0,
+        agent: 'behavioral_overrides',
+        action: 'parse',
+        turnIndex: 0,
         contextSummary: 'Quantitative behavioral params: threshold=0.6',
-        detail: '{"rejection_threshold":0.6}'
+        detail: '{"rejection_threshold":0.6}',
       },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
     ];
     const turns = [{ turnIndex: 0, turnId: 'turn_0', suggestions: [{ message: 'Hello.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('Quantitative behavioral params'),
-      'Should use contextSummary (human-readable) not detail (raw JSON)');
+    assert.ok(
+      transcript.includes('Quantitative behavioral params'),
+      'Should use contextSummary (human-readable) not detail (raw JSON)',
+    );
   });
 
   // ── Regression tests: tutor-core trace entries (no turnIndex, suggestions field) ──
@@ -419,22 +628,31 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Initial draft about Popper.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Initial draft about Popper.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Good approach.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Good approach.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Final delivered message (different).' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('[Tutor Ego] Initial draft about Popper'),
-      'Ego label should show draft from suggestions[], not delivered message');
+    assert.ok(
+      transcript.includes('[Tutor Ego] Initial draft about Popper'),
+      'Ego label should show draft from suggestions[], not delivered message',
+    );
     // Delivery appears as [Tutor Ego] (revised) when delivered text differs from initial draft
-    assert.ok(transcript.includes('[Tutor Ego] (revised) Final delivered message (different)'),
-      'Should emit [Tutor Ego] (revised) when delivered text differs from initial draft');
+    assert.ok(
+      transcript.includes('[Tutor Ego] (revised) Final delivered message (different)'),
+      'Should emit [Tutor Ego] (revised) when delivered text differs from initial draft',
+    );
   });
 
   it('collapses multi-round deliberation to TE → TS → TE(revised) pattern', () => {
@@ -443,42 +661,56 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'You spent 30 minutes on this.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'You spent 30 minutes on this.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: false,
-        feedback: '30 minutes is not evidenced. Use 120 events instead.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: false,
+        feedback: '30 minutes is not evidenced. Use 120 events instead.',
       },
       {
-        agent: 'ego', action: 'revise', round: 1,
-        suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }]
+        agent: 'ego',
+        action: 'revise',
+        round: 1,
+        suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 2, approved: true,
-        feedback: 'Excellent revision. Data specificity maintained.'
+        agent: 'superego',
+        action: 'review',
+        round: 2,
+        approved: true,
+        feedback: 'Excellent revision. Data specificity maintained.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
-    const turns = [{ turnIndex: 0, suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }] }];
+    const turns = [
+      { turnIndex: 0, suggestions: [{ message: 'Over 120 events across 7 sessions, you circled this tension.' }] },
+    ];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
     // Collapsed pattern: initial draft → first review → final delivery (revised)
-    assert.ok(transcript.includes('[Tutor Ego] You spent 30 minutes'),
-      'Should show initial ego draft');
-    assert.ok(transcript.includes('[Tutor Superego] 30 minutes is not evidenced'),
-      'Should show first superego review');
-    assert.ok(transcript.includes('[Tutor Ego] (revised) Over 120 events'),
-      'Should show final delivered message as [Tutor Ego] (revised)');
+    assert.ok(transcript.includes('[Tutor Ego] You spent 30 minutes'), 'Should show initial ego draft');
+    assert.ok(transcript.includes('[Tutor Superego] 30 minutes is not evidenced'), 'Should show first superego review');
+    assert.ok(
+      transcript.includes('[Tutor Ego] (revised) Over 120 events'),
+      'Should show final delivered message as [Tutor Ego] (revised)',
+    );
 
     // Intermediate rounds are skipped: no second superego, no ego/revise line
-    assert.ok(!transcript.includes('Excellent revision'),
-      'Should NOT show second superego review (collapsed)');
+    assert.ok(!transcript.includes('Excellent revision'), 'Should NOT show second superego review (collapsed)');
 
     // Exactly 3 tutor agent lines
-    const tutorLines = transcript.split('\n').filter(l => /^\[Tutor/.test(l));
-    assert.equal(tutorLines.length, 3,
-      `Expected 3 tutor lines (TE → TS → TE revised), got ${tutorLines.length}:\n${tutorLines.join('\n')}`);
+    const tutorLines = transcript.split('\n').filter((l) => /^\[Tutor/.test(l));
+    assert.equal(
+      tutorLines.length,
+      3,
+      `Expected 3 tutor lines (TE → TS → TE revised), got ${tutorLines.length}:\n${tutorLines.join('\n')}`,
+    );
   });
 
   it('infers turnIndex for tutor-core entries that lack it', () => {
@@ -488,27 +720,40 @@ describe('buildDialogueFullTranscript', () => {
       // Turn 0 tutor deliberation (no turnIndex on tutor-core entries)
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Welcome to Hegel.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Welcome to Hegel.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Good opening.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Good opening.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       // Turn 1 learner + tutor
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
-        detail: 'Learner: asked_followup', contextSummary: 'What about Popper?'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'What about Popper?',
       },
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Popper raises a fair critique.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Popper raises a fair critique.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Addresses the question.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Addresses the question.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
     ];
@@ -519,22 +764,17 @@ describe('buildDialogueFullTranscript', () => {
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
     // Turn 1 (display) should have the tutor ego and superego
-    assert.ok(transcript.includes('--- Turn 1 ---'),
-      'Should have Turn 1 header');
-    assert.ok(transcript.includes('[Tutor Ego] Welcome to Hegel'),
-      'Turn 1 ego should appear under Turn 1');
-    assert.ok(transcript.includes('[Tutor Superego] Good opening'),
-      'Turn 1 superego should appear under Turn 1');
+    assert.ok(transcript.includes('--- Turn 1 ---'), 'Should have Turn 1 header');
+    assert.ok(transcript.includes('[Tutor Ego] Welcome to Hegel'), 'Turn 1 ego should appear under Turn 1');
+    assert.ok(transcript.includes('[Tutor Superego] Good opening'), 'Turn 1 superego should appear under Turn 1');
 
     // Turn 2 (display) should have the learner message and tutor response
-    assert.ok(transcript.includes('--- Turn 2 ---'),
-      'Should have Turn 2 header');
+    assert.ok(transcript.includes('--- Turn 2 ---'), 'Should have Turn 2 header');
 
     // Verify Turn 1 content appears before Turn 2 content
     const turn1Pos = transcript.indexOf('Welcome to Hegel');
     const turn2Pos = transcript.indexOf('Popper raises a fair critique');
-    assert.ok(turn1Pos < turn2Pos,
-      'Turn 1 content should appear before Turn 2 content');
+    assert.ok(turn1Pos < turn2Pos, 'Turn 1 content should appear before Turn 2 content');
   });
 
   it('handles Turn 0 tutor-core entries before any final_output (no empty ego text)', () => {
@@ -543,25 +783,33 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Your dialectic analogy breaks down.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Your dialectic analogy breaks down.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Directly addresses the misconception.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Directly addresses the misconception.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Your dialectic analogy breaks down.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
-    assert.ok(transcript.includes('[Tutor Ego] Your dialectic analogy'),
-      'Turn 0 ego should have content from suggestions[], not be empty');
-    assert.ok(transcript.includes('[Tutor Superego] Directly addresses'),
-      'Turn 0 superego should have feedback content');
+    assert.ok(
+      transcript.includes('[Tutor Ego] Your dialectic analogy'),
+      'Turn 0 ego should have content from suggestions[], not be empty',
+    );
+    assert.ok(
+      transcript.includes('[Tutor Superego] Directly addresses'),
+      'Turn 0 superego should have feedback content',
+    );
     // Should not have empty labels
-    assert.ok(!transcript.includes('[Tutor Ego] \n'),
-      'Should not have empty [Tutor Ego] line');
+    assert.ok(!transcript.includes('[Tutor Ego] \n'), 'Should not have empty [Tutor Ego] line');
   });
 
   it('still falls back to deliveredByTurn when suggestions[] is absent', () => {
@@ -573,8 +821,10 @@ describe('buildDialogueFullTranscript', () => {
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Fallback delivered text.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('Fallback delivered text'),
-      'Should fall back to deliveredByTurn when no suggestions on trace entry');
+    assert.ok(
+      transcript.includes('Fallback delivered text'),
+      'Should fall back to deliveredByTurn when no suggestions on trace entry',
+    );
   });
 
   it('approved-without-revision still emits final TE (TS must never conclude a turn)', () => {
@@ -583,18 +833,23 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Draft response about Hegel.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Draft response about Hegel.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Good approach to the dialectic.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Good approach to the dialectic.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Draft response about Hegel.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    const lines = transcript.split('\n').filter(l => l.startsWith('[Tutor'));
+    const lines = transcript.split('\n').filter((l) => l.startsWith('[Tutor'));
     assert.equal(lines.length, 3, `Expected 3 tutor lines (TE→TS→TE), got ${lines.length}:\n${lines.join('\n')}`);
     assert.ok(lines[0].startsWith('[Tutor Ego]'), 'First: TE draft');
     assert.ok(lines[1].startsWith('[Tutor Superego]'), 'Second: TS review');
@@ -608,17 +863,24 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Direct response to learner.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Direct response to learner.' }],
       },
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
-        detail: 'Learner: asked_followup', contextSummary: 'What about Popper?'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'What about Popper?',
       },
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Popper raises a valid point.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Popper raises a valid point.' }],
       },
     ];
     const turns = [
@@ -626,18 +888,12 @@ describe('buildDialogueFullTranscript', () => {
       { turnIndex: 1, suggestions: [{ message: 'Popper raises a valid point.' }] },
     ];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(!transcript.includes('[Tutor → Learner]'),
-      'Single-agent tutor should not have [Tutor → Learner]');
-    assert.ok(!transcript.includes('[Tutor Superego]'),
-      'Single-agent tutor should not have superego lines');
-    assert.ok(transcript.includes('[Tutor Ego] Direct response'),
-      'Turn 1 ego message');
-    assert.ok(transcript.includes('[Tutor Ego] Popper raises'),
-      'Turn 2 ego message');
-    assert.ok(transcript.includes('--- Turn 1 ---'),
-      'Should start at Turn 1');
-    assert.ok(transcript.includes('--- Turn 2 ---'),
-      'Should have Turn 2');
+    assert.ok(!transcript.includes('[Tutor → Learner]'), 'Single-agent tutor should not have [Tutor → Learner]');
+    assert.ok(!transcript.includes('[Tutor Superego]'), 'Single-agent tutor should not have superego lines');
+    assert.ok(transcript.includes('[Tutor Ego] Direct response'), 'Turn 1 ego message');
+    assert.ok(transcript.includes('[Tutor Ego] Popper raises'), 'Turn 2 ego message');
+    assert.ok(transcript.includes('--- Turn 1 ---'), 'Should start at Turn 1');
+    assert.ok(transcript.includes('--- Turn 2 ---'), 'Should have Turn 2');
   });
 
   it('infers turnIndex from turn_action for single-agent cells (no final_output)', () => {
@@ -646,27 +902,39 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Welcome to the course.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Welcome to the course.' }],
       },
       // turn_action at turnIndex=1 means the preceding ego is Turn 0
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
-        detail: 'Learner: asked_followup', contextSummary: 'Tell me about Hegel.'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'Tell me about Hegel.',
       },
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Hegel is a key figure.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Hegel is a key figure.' }],
       },
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 2,
-        detail: 'Learner: asked_followup', contextSummary: 'What about Popper?'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 2,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'What about Popper?',
       },
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Popper critiques unfalsifiability.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Popper critiques unfalsifiability.' }],
       },
     ];
     const turns = [
@@ -677,10 +945,8 @@ describe('buildDialogueFullTranscript', () => {
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
     // Verify sequential turns starting at Turn 1
-    const turnNumbers = [...transcript.matchAll(/--- Turn (\d+) ---/g)]
-      .map(m => parseInt(m[1], 10));
-    assert.deepStrictEqual(turnNumbers, [1, 2, 3],
-      'Should have Turn 1, 2, 3 (not starting at Turn 2)');
+    const turnNumbers = [...transcript.matchAll(/--- Turn (\d+) ---/g)].map((m) => parseInt(m[1], 10));
+    assert.deepStrictEqual(turnNumbers, [1, 2, 3], 'Should have Turn 1, 2, 3 (not starting at Turn 2)');
 
     // Verify content under correct turns
     const turn1Pos = transcript.indexOf('--- Turn 1 ---');
@@ -690,12 +956,9 @@ describe('buildDialogueFullTranscript', () => {
     const hegelPos = transcript.indexOf('Hegel is a key figure');
     const popperPos = transcript.indexOf('Popper critiques unfalsifiability');
 
-    assert.ok(welcomePos > turn1Pos && welcomePos < turn2Pos,
-      'Welcome should be under Turn 1');
-    assert.ok(hegelPos > turn2Pos && hegelPos < turn3Pos,
-      'Hegel should be under Turn 2');
-    assert.ok(popperPos > turn3Pos,
-      'Popper should be under Turn 3');
+    assert.ok(welcomePos > turn1Pos && welcomePos < turn2Pos, 'Welcome should be under Turn 1');
+    assert.ok(hegelPos > turn2Pos && hegelPos < turn3Pos, 'Hegel should be under Turn 2');
+    assert.ok(popperPos > turn3Pos, 'Popper should be under Turn 3');
   });
 
   it('prefers entry.suggestions over entry.detail for ego entries', () => {
@@ -706,22 +969,25 @@ describe('buildDialogueFullTranscript', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       {
-        agent: 'ego', action: 'generate', turnIndex: 0,
+        agent: 'ego',
+        action: 'generate',
+        turnIndex: 0,
         detail: 'detail text',
-        suggestions: [{ message: 'suggestions text' }]
+        suggestions: [{ message: 'suggestions text' }],
       },
       {
-        agent: 'superego', action: 'review', turnIndex: 0, approved: true,
-        feedback: 'Looks good.'
+        agent: 'superego',
+        action: 'review',
+        turnIndex: 0,
+        approved: true,
+        feedback: 'Looks good.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0 },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'delivered text' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    assert.ok(transcript.includes('suggestions text'),
-      'Should prefer suggestions[].message over detail');
-    assert.ok(!transcript.includes('detail text'),
-      'Should not use detail when suggestions[] is available');
+    assert.ok(transcript.includes('suggestions text'), 'Should prefer suggestions[].message over detail');
+    assert.ok(!transcript.includes('detail text'), 'Should not use detail when suggestions[] is available');
   });
 
   it('handles multi-turn with tutor-core entries and ego_superego learner', () => {
@@ -731,57 +997,84 @@ describe('buildDialogueFullTranscript', () => {
       // Turn 0: tutor deliberation
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Consider the master-servant dialectic.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Consider the master-servant dialectic.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Appropriate level.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Appropriate level.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       {
-        agent: 'ego_self_reflection', action: 'rewrite', turnIndex: 0,
-        detail: 'I should push harder on the paradox.'
+        agent: 'ego_self_reflection',
+        action: 'rewrite',
+        turnIndex: 0,
+        detail: 'I should push harder on the paradox.',
       },
       // Turn 1: learner deliberation + tutor response
       {
-        agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1,
-        detail: 'I think this is about power.'
+        agent: 'learner_ego_initial',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'I think this is about power.',
       },
       {
-        agent: 'learner_superego', action: 'deliberation', turnIndex: 1,
-        detail: 'Too simplistic, dig into asymmetry.'
+        agent: 'learner_superego',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'Too simplistic, dig into asymmetry.',
       },
       {
-        agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
-        detail: 'The real question is asymmetric recognition.'
+        agent: 'learner_ego_revision',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'The real question is asymmetric recognition.',
       },
       {
-        agent: 'learner', action: 'final_output', turnIndex: 1,
-        detail: 'The real question is asymmetric recognition.'
+        agent: 'learner',
+        action: 'final_output',
+        turnIndex: 1,
+        detail: 'The real question is asymmetric recognition.',
       },
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
         detail: 'Learner: asked_followup',
-        contextSummary: 'The real question is asymmetric recognition.'
+        contextSummary: 'The real question is asymmetric recognition.',
       },
       // Turn 1: tutor deliberation (no turnIndex on tutor-core entries)
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Draft: you are right about asymmetry.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Draft: you are right about asymmetry.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: false,
-        feedback: 'Too agreeable. Challenge the learner.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: false,
+        feedback: 'Too agreeable. Challenge the learner.',
       },
       {
-        agent: 'ego', action: 'revise', round: 1,
-        suggestions: [{ message: 'Asymmetry is key, but what happens when the master wins?' }]
+        agent: 'ego',
+        action: 'revise',
+        round: 1,
+        suggestions: [{ message: 'Asymmetry is key, but what happens when the master wins?' }],
       },
       {
-        agent: 'superego', action: 'review', round: 2, approved: true,
-        feedback: 'Good dialectical challenge.'
+        agent: 'superego',
+        action: 'review',
+        round: 2,
+        approved: true,
+        feedback: 'Good dialectical challenge.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
     ];
@@ -792,35 +1085,31 @@ describe('buildDialogueFullTranscript', () => {
     const transcript = buildDialogueFullTranscript(turns, trace, null);
 
     // Turn 0: tutor ego + superego + self-reflection
-    assert.ok(transcript.includes('[Tutor Ego] Consider the master-servant'),
-      'Turn 0 ego from suggestions[]');
-    assert.ok(transcript.includes('[Tutor Superego] Appropriate level'),
-      'Turn 0 superego feedback');
-    assert.ok(transcript.includes('[Tutor Self-Reflection] I should push harder'),
-      'Turn 0 self-reflection');
+    assert.ok(transcript.includes('[Tutor Ego] Consider the master-servant'), 'Turn 0 ego from suggestions[]');
+    assert.ok(transcript.includes('[Tutor Superego] Appropriate level'), 'Turn 0 superego feedback');
+    assert.ok(transcript.includes('[Tutor Self-Reflection] I should push harder'), 'Turn 0 self-reflection');
 
     // Turn 1: learner deliberation + tutor collapsed deliberation
-    assert.ok(transcript.includes('[Learner Ego] I think this is about power'),
-      'Learner ego initial');
-    assert.ok(transcript.includes('[Learner Superego] Too simplistic'),
-      'Learner superego');
-    assert.ok(transcript.includes('[Tutor Ego] Draft: you are right'),
-      'Turn 1 ego draft from suggestions[]');
-    assert.ok(transcript.includes('[Tutor Superego] Too agreeable'),
-      'Turn 1 first superego review');
-    assert.ok(transcript.includes('[Tutor Ego] (revised) Asymmetry is key'),
-      'Turn 1 final delivery (revised, from final_output)');
+    assert.ok(transcript.includes('[Learner Ego] I think this is about power'), 'Learner ego initial');
+    assert.ok(transcript.includes('[Learner Superego] Too simplistic'), 'Learner superego');
+    assert.ok(transcript.includes('[Tutor Ego] Draft: you are right'), 'Turn 1 ego draft from suggestions[]');
+    assert.ok(transcript.includes('[Tutor Superego] Too agreeable'), 'Turn 1 first superego review');
+    assert.ok(
+      transcript.includes('[Tutor Ego] (revised) Asymmetry is key'),
+      'Turn 1 final delivery (revised, from final_output)',
+    );
     // Second superego review is collapsed (not shown)
-    assert.ok(!transcript.includes('Good dialectical challenge'),
-      'Should NOT show second superego review (collapsed)');
+    assert.ok(!transcript.includes('Good dialectical challenge'), 'Should NOT show second superego review (collapsed)');
 
     // Verify TS→TE invariant: every [Tutor Superego] followed by [Tutor Ego]
-    const transcriptLines = transcript.split('\n').filter(l => l.trim());
-    const agentLines = transcriptLines.filter(l => /^\[(Tutor|Learner)/.test(l));
+    const transcriptLines = transcript.split('\n').filter((l) => l.trim());
+    const agentLines = transcriptLines.filter((l) => /^\[(Tutor|Learner)/.test(l));
     for (let i = 0; i < agentLines.length; i++) {
       if (agentLines[i].startsWith('[Tutor Superego]')) {
-        assert.ok(i + 1 < agentLines.length && agentLines[i + 1].startsWith('[Tutor Ego]'),
-          `[Tutor Superego] at index ${i} not followed by [Tutor Ego]: next="${agentLines[i + 1]?.slice(0, 50)}"`);
+        assert.ok(
+          i + 1 < agentLines.length && agentLines[i + 1].startsWith('[Tutor Ego]'),
+          `[Tutor Superego] at index ${i} not followed by [Tutor Ego]: next="${agentLines[i + 1]?.slice(0, 50)}"`,
+        );
       }
     }
   });
@@ -868,56 +1157,61 @@ describe('transcript conformity', () => {
       const transcript = mode.build(arch.turns, arch.trace, LEARNER_CONTEXT);
 
       it(`[${label}] never contains Turn 0`, () => {
-        assert.equal(transcript.includes('--- Turn 0 ---'), false,
-          `${label}: must not contain --- Turn 0 ---`);
+        assert.equal(transcript.includes('--- Turn 0 ---'), false, `${label}: must not contain --- Turn 0 ---`);
       });
 
       it(`[${label}] starts at Turn 1`, () => {
         const firstTurnMatch = transcript.match(/--- Turn (\d+) ---/);
         assert.ok(firstTurnMatch, `${label}: should have at least one turn header`);
-        assert.equal(firstTurnMatch[1], '1',
-          `${label}: first turn header should be Turn 1, got Turn ${firstTurnMatch?.[1]}`);
+        assert.equal(
+          firstTurnMatch[1],
+          '1',
+          `${label}: first turn header should be Turn 1, got Turn ${firstTurnMatch?.[1]}`,
+        );
       });
 
       it(`[${label}] has sequential turn numbers`, () => {
-        const turnNumbers = [...transcript.matchAll(/--- Turn (\d+) ---/g)]
-          .map(m => parseInt(m[1], 10));
+        const turnNumbers = [...transcript.matchAll(/--- Turn (\d+) ---/g)].map((m) => parseInt(m[1], 10));
         assert.ok(turnNumbers.length > 0, `${label}: should have turn headers`);
         for (let j = 1; j < turnNumbers.length; j++) {
-          assert.equal(turnNumbers[j], turnNumbers[j - 1] + 1,
-            `${label}: turns not sequential at position ${j}: ${turnNumbers[j - 1]} → ${turnNumbers[j]}`);
+          assert.equal(
+            turnNumbers[j],
+            turnNumbers[j - 1] + 1,
+            `${label}: turns not sequential at position ${j}: ${turnNumbers[j - 1]} → ${turnNumbers[j]}`,
+          );
         }
       });
 
       it(`[${label}] has no empty agent labels`, () => {
         const emptyLabelPattern = /\[(Tutor|Learner)[^\]]*\]\s*$/m;
         const match = transcript.match(emptyLabelPattern);
-        assert.equal(match, null,
-          `${label}: found empty agent label: "${match?.[0]}"`);
+        assert.equal(match, null, `${label}: found empty agent label: "${match?.[0]}"`);
       });
 
       it(`[${label}] never contains [Learner Action]`, () => {
-        assert.equal(transcript.includes('[Learner Action]'), false,
-          `${label}: must not contain [Learner Action]`);
+        assert.equal(transcript.includes('[Learner Action]'), false, `${label}: must not contain [Learner Action]`);
       });
 
       it(`[${label}] every turn has learner + tutor content`, () => {
-        const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+        const sections = transcript.split(/--- Turn \d+ ---/).filter((s) => s.trim());
         for (let j = 0; j < sections.length; j++) {
           const section = sections[j];
-          assert.ok(/\[Learner/.test(section),
-            `${label}: Turn ${j + 1} missing [Learner...] line`);
-          assert.ok(/\[Tutor/.test(section),
-            `${label}: Turn ${j + 1} missing [Tutor...] line`);
+          assert.ok(/\[Learner/.test(section), `${label}: Turn ${j + 1} missing [Learner...] line`);
+          assert.ok(/\[Tutor/.test(section), `${label}: Turn ${j + 1} missing [Tutor...] line`);
         }
       });
 
       it(`[${label}] has no raw action labels`, () => {
-        const rawActions = ['asked_followup', 'asked_question', 'expressed_confusion',
-          'provided_answer', 'changed_topic', 'requested_hint'];
+        const rawActions = [
+          'asked_followup',
+          'asked_question',
+          'expressed_confusion',
+          'provided_answer',
+          'changed_topic',
+          'requested_hint',
+        ];
         for (const action of rawActions) {
-          assert.equal(transcript.includes(action), false,
-            `${label}: must not contain raw action label "${action}"`);
+          assert.equal(transcript.includes(action), false, `${label}: must not contain raw action label "${action}"`);
         }
       });
 
@@ -925,9 +1219,9 @@ describe('transcript conformity', () => {
         // Structural invariant: within each turn section, ALL [Learner...] lines
         // must appear before ALL [Tutor...] lines. This reflects the dialogue flow:
         //   Learner speaks → Tutor deliberates → Tutor delivers
-        const sections = transcript.split(/--- Turn \d+ ---/).filter(s => s.trim());
+        const sections = transcript.split(/--- Turn \d+ ---/).filter((s) => s.trim());
         for (let j = 0; j < sections.length; j++) {
-          const sectionLines = sections[j].split('\n').filter(l => l.trim());
+          const sectionLines = sections[j].split('\n').filter((l) => l.trim());
           let lastLearnerIdx = -1;
           let firstTutorIdx = -1;
           for (let k = 0; k < sectionLines.length; k++) {
@@ -939,8 +1233,10 @@ describe('transcript conformity', () => {
             }
           }
           if (lastLearnerIdx >= 0 && firstTutorIdx >= 0) {
-            assert.ok(lastLearnerIdx < firstTutorIdx,
-              `${label}: Turn ${j + 1} has [Learner...] at line ${lastLearnerIdx} after [Tutor...] at line ${firstTutorIdx}`);
+            assert.ok(
+              lastLearnerIdx < firstTutorIdx,
+              `${label}: Turn ${j + 1} has [Learner...] at line ${lastLearnerIdx} after [Tutor...] at line ${firstTutorIdx}`,
+            );
           }
         }
       });
@@ -956,34 +1252,47 @@ describe('transcript conformity', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Draft about Hegel.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Draft about Hegel.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: false,
-        feedback: 'Push harder on the paradox.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: false,
+        feedback: 'Push harder on the paradox.',
       },
       {
-        agent: 'ego', action: 'revise', round: 1,
-        suggestions: [{ message: 'Revised: the paradox of recognition.' }]
+        agent: 'ego',
+        action: 'revise',
+        round: 1,
+        suggestions: [{ message: 'Revised: the paradox of recognition.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 2, approved: true,
-        feedback: 'Good revision.'
+        agent: 'superego',
+        action: 'review',
+        round: 2,
+        approved: true,
+        feedback: 'Good revision.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Done' },
     ];
     const turns = [{ turnIndex: 0, suggestions: [{ message: 'Revised: the paradox of recognition.' }] }];
     const transcript = buildDialogueFullTranscript(turns, trace, null);
-    const agentLines = transcript.split('\n')
-      .filter(l => /^\[(Tutor|Learner)/.test(l));
+    const agentLines = transcript.split('\n').filter((l) => /^\[(Tutor|Learner)/.test(l));
 
     for (let i = 0; i < agentLines.length; i++) {
       if (agentLines[i].startsWith('[Tutor Superego]')) {
-        assert.ok(i + 1 < agentLines.length,
-          `[Tutor Superego] at line ${i} is the last agent line — must be followed by [Tutor Ego]`);
-        assert.ok(agentLines[i + 1].startsWith('[Tutor Ego]'),
-          `[Tutor Superego] at line ${i} followed by "${agentLines[i + 1].slice(0, 40)}" — expected [Tutor Ego]`);
+        assert.ok(
+          i + 1 < agentLines.length,
+          `[Tutor Superego] at line ${i} is the last agent line — must be followed by [Tutor Ego]`,
+        );
+        assert.ok(
+          agentLines[i + 1].startsWith('[Tutor Ego]'),
+          `[Tutor Superego] at line ${i} followed by "${agentLines[i + 1].slice(0, 40)}" — expected [Tutor Ego]`,
+        );
       }
     }
   });
@@ -991,15 +1300,18 @@ describe('transcript conformity', () => {
   it('[full] every [Learner Superego] is followed by [Learner Ego] (LS→LE invariant)', () => {
     // Symmetric with tutor: every [Learner Superego] must be followed by [Learner Ego].
     const transcript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
-    const agentLines = transcript.split('\n')
-      .filter(l => /^\[(Tutor|Learner)/.test(l));
+    const agentLines = transcript.split('\n').filter((l) => /^\[(Tutor|Learner)/.test(l));
 
     for (let i = 0; i < agentLines.length; i++) {
       if (agentLines[i].startsWith('[Learner Superego]')) {
-        assert.ok(i + 1 < agentLines.length,
-          `[Learner Superego] at line ${i} is the last agent line — must be followed by [Learner Ego]`);
-        assert.ok(agentLines[i + 1].startsWith('[Learner Ego]'),
-          `[Learner Superego] at line ${i} followed by "${agentLines[i + 1].slice(0, 40)}" — expected [Learner Ego]`);
+        assert.ok(
+          i + 1 < agentLines.length,
+          `[Learner Superego] at line ${i} is the last agent line — must be followed by [Learner Ego]`,
+        );
+        assert.ok(
+          agentLines[i + 1].startsWith('[Learner Ego]'),
+          `[Learner Superego] at line ${i} followed by "${agentLines[i + 1].slice(0, 40)}" — expected [Learner Ego]`,
+        );
       }
     }
   });
@@ -1011,51 +1323,77 @@ describe('transcript conformity', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Opening about the dialectic.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Opening about the dialectic.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Good opening.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Good opening.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Turn 1 complete' },
       // Turn 1: full learner chain + full tutor chain
       {
-        agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1,
-        detail: 'Initial learner thought.'
+        agent: 'learner_ego_initial',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'Initial learner thought.',
       },
       {
-        agent: 'learner_superego', action: 'deliberation', turnIndex: 1,
-        detail: 'Learner superego critique.'
+        agent: 'learner_superego',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'Learner superego critique.',
       },
       {
-        agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
-        detail: 'Revised learner thought.'
+        agent: 'learner_ego_revision',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'Revised learner thought.',
       },
       {
-        agent: 'learner', action: 'final_output', turnIndex: 1,
-        detail: 'Revised learner thought.'
-      },  // Same as revision → deduped
+        agent: 'learner',
+        action: 'final_output',
+        turnIndex: 1,
+        detail: 'Revised learner thought.',
+      }, // Same as revision → deduped
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
-        contextSummary: 'Revised learner thought.', detail: 'Learner: asked_followup'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        contextSummary: 'Revised learner thought.',
+        detail: 'Learner: asked_followup',
       },
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Tutor draft response.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Tutor draft response.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: false,
-        feedback: 'Push deeper.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: false,
+        feedback: 'Push deeper.',
       },
       {
-        agent: 'ego', action: 'revise', round: 1,
-        suggestions: [{ message: 'Tutor revised response.' }]
+        agent: 'ego',
+        action: 'revise',
+        round: 1,
+        suggestions: [{ message: 'Tutor revised response.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 2, approved: true,
-        feedback: 'Good revision.'
+        agent: 'superego',
+        action: 'review',
+        round: 2,
+        approved: true,
+        feedback: 'Good revision.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Turn 2 complete' },
     ];
@@ -1067,9 +1405,10 @@ describe('transcript conformity', () => {
 
     // Extract Turn 2 section (internal turn 1) which has the full deliberation chain
     const turn2Section = transcript.split('--- Turn 2 ---')[1]?.split('--- Turn 3 ---')[0] || '';
-    const agentLines = turn2Section.split('\n')
-      .filter(l => l.trim())
-      .filter(l => /^\[(Learner|Tutor)/.test(l));
+    const agentLines = turn2Section
+      .split('\n')
+      .filter((l) => l.trim())
+      .filter((l) => /^\[(Learner|Tutor)/.test(l));
 
     // Expected order: symmetric collapsed deliberation chains
     // Learner: LE → LS → LE(revised)
@@ -1083,12 +1422,17 @@ describe('transcript conformity', () => {
       '[Tutor Ego] (revised)',
     ];
 
-    assert.equal(agentLines.length, expectedPrefixes.length,
-      `Expected ${expectedPrefixes.length} agent lines, got ${agentLines.length}:\n${agentLines.join('\n')}`);
+    assert.equal(
+      agentLines.length,
+      expectedPrefixes.length,
+      `Expected ${expectedPrefixes.length} agent lines, got ${agentLines.length}:\n${agentLines.join('\n')}`,
+    );
 
     for (let k = 0; k < expectedPrefixes.length; k++) {
-      assert.ok(agentLines[k].startsWith(expectedPrefixes[k]),
-        `Line ${k}: expected "${expectedPrefixes[k]}...", got "${agentLines[k].slice(0, 40)}..."`);
+      assert.ok(
+        agentLines[k].startsWith(expectedPrefixes[k]),
+        `Line ${k}: expected "${expectedPrefixes[k]}...", got "${agentLines[k].slice(0, 40)}..."`,
+      );
     }
   });
 
@@ -1100,51 +1444,77 @@ describe('transcript conformity', () => {
     const trace = [
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Opening about recognition.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Opening about recognition.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: true,
-        feedback: 'Solid opening approach.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: true,
+        feedback: 'Solid opening approach.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 0, detail: 'Done' },
       // Turn 1
       {
-        agent: 'learner_ego_initial', action: 'deliberation', turnIndex: 1,
-        detail: 'I wonder about the master.'
+        agent: 'learner_ego_initial',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'I wonder about the master.',
       },
       {
-        agent: 'learner_superego', action: 'deliberation', turnIndex: 1,
-        detail: 'Dig into the asymmetry more.'
+        agent: 'learner_superego',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'Dig into the asymmetry more.',
       },
       {
-        agent: 'learner_ego_revision', action: 'deliberation', turnIndex: 1,
-        detail: 'The asymmetry of recognition is key.'
+        agent: 'learner_ego_revision',
+        action: 'deliberation',
+        turnIndex: 1,
+        detail: 'The asymmetry of recognition is key.',
       },
       {
-        agent: 'learner', action: 'final_output', turnIndex: 1,
-        detail: 'The asymmetry of recognition is key.'
+        agent: 'learner',
+        action: 'final_output',
+        turnIndex: 1,
+        detail: 'The asymmetry of recognition is key.',
       },
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
-        contextSummary: 'The asymmetry of recognition is key.', detail: 'Learner: asked_followup'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        contextSummary: 'The asymmetry of recognition is key.',
+        detail: 'Learner: asked_followup',
       },
       { agent: 'tutor', action: 'context_input', round: 0 },
       {
-        agent: 'ego', action: 'generate', round: 0,
-        suggestions: [{ message: 'Yes, asymmetry drives the dialectic.' }]
+        agent: 'ego',
+        action: 'generate',
+        round: 0,
+        suggestions: [{ message: 'Yes, asymmetry drives the dialectic.' }],
       },
       {
-        agent: 'superego', action: 'review', round: 1, approved: false,
-        feedback: 'Challenge the learner more.'
+        agent: 'superego',
+        action: 'review',
+        round: 1,
+        approved: false,
+        feedback: 'Challenge the learner more.',
       },
       {
-        agent: 'ego', action: 'revise', round: 1,
-        suggestions: [{ message: 'Asymmetry drives the dialectic — but what if it collapses?' }]
+        agent: 'ego',
+        action: 'revise',
+        round: 1,
+        suggestions: [{ message: 'Asymmetry drives the dialectic — but what if it collapses?' }],
       },
       {
-        agent: 'superego', action: 'review', round: 2, approved: true,
-        feedback: 'Good dialectical tension now.'
+        agent: 'superego',
+        action: 'review',
+        round: 2,
+        approved: true,
+        feedback: 'Good dialectical tension now.',
       },
       { agent: 'tutor', action: 'final_output', turnIndex: 1, detail: 'Done' },
     ];
@@ -1157,24 +1527,23 @@ describe('transcript conformity', () => {
     // Extract ordered markers — each must appear later in the transcript than the previous
     // Intermediate deliberation rounds (ego/revise, second superego) are collapsed
     const markers = [
-      'Opening about recognition',           // Turn 1 tutor ego (draft)
-      'Solid opening approach',              // Turn 1 tutor superego
-      'Opening about recognition',           // Turn 1 tutor ego (final, same text = approved)
-      'I wonder about the master',           // Turn 2 learner ego
-      'Dig into the asymmetry more',         // Turn 2 learner superego
+      'Opening about recognition', // Turn 1 tutor ego (draft)
+      'Solid opening approach', // Turn 1 tutor superego
+      'Opening about recognition', // Turn 1 tutor ego (final, same text = approved)
+      'I wonder about the master', // Turn 2 learner ego
+      'Dig into the asymmetry more', // Turn 2 learner superego
       'The asymmetry of recognition is key', // Turn 2 learner ego (revised)
       'Yes, asymmetry drives the dialectic', // Turn 2 tutor ego (draft)
-      'Challenge the learner more',          // Turn 2 tutor superego (first review)
+      'Challenge the learner more', // Turn 2 tutor superego (first review)
       'Asymmetry drives the dialectic — but what if it collapses', // Turn 2 tutor ego (revised)
     ];
 
     // Use line-by-line ordering for markers that repeat (delivery = same text as draft/revision)
-    const lines = transcript.split('\n').filter(l => l.trim());
+    const lines = transcript.split('\n').filter((l) => l.trim());
     let lineIdx = 0;
     for (const marker of markers) {
       const found = lines.findIndex((l, i) => i >= lineIdx && l.includes(marker));
-      assert.ok(found >= lineIdx,
-        `Marker "${marker}" not found at or after line ${lineIdx}`);
+      assert.ok(found >= lineIdx, `Marker "${marker}" not found at or after line ${lineIdx}`);
       lineIdx = found + 1;
     }
   });
@@ -1185,13 +1554,19 @@ describe('transcript conformity', () => {
       { agent: 'tutor', action: 'context_input', turnIndex: 0 },
       { agent: 'ego', action: 'generate', turnIndex: 0 },
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 1,
-        detail: 'Learner: asked_followup', contextSummary: 'But what about Popper?'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 1,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'But what about Popper?',
       },
       { agent: 'ego', action: 'generate', turnIndex: 1 },
       {
-        agent: 'learner', action: 'turn_action', turnIndex: 2,
-        detail: 'Learner: asked_followup', contextSummary: 'I see the phenomenological point.'
+        agent: 'learner',
+        action: 'turn_action',
+        turnIndex: 2,
+        detail: 'Learner: asked_followup',
+        contextSummary: 'I see the phenomenological point.',
       },
       { agent: 'ego', action: 'generate', turnIndex: 2 },
     ];
@@ -1203,21 +1578,22 @@ describe('transcript conformity', () => {
     const transcript = buildDialogueFullTranscript(turns, trace, '- User: "Is the dialectic scientific?"');
 
     const markers = [
-      'Is the dialectic scientific',          // Turn 1 learner
-      'Welcome to Hegel',                     // Turn 1 tutor ego
-      'But what about Popper',                // Turn 2 learner
-      'Popper raises a good critique',        // Turn 2 tutor ego
-      'I see the phenomenological point',     // Turn 3 learner
-      'Yes, the phenomenological claim',      // Turn 3 tutor ego
+      'Is the dialectic scientific', // Turn 1 learner
+      'Welcome to Hegel', // Turn 1 tutor ego
+      'But what about Popper', // Turn 2 learner
+      'Popper raises a good critique', // Turn 2 tutor ego
+      'I see the phenomenological point', // Turn 3 learner
+      'Yes, the phenomenological claim', // Turn 3 tutor ego
     ];
 
     let prevPos = -1;
     for (const marker of markers) {
       const pos = transcript.indexOf(marker);
-      assert.ok(pos >= 0,
-        `Marker "${marker}" not found in transcript`);
-      assert.ok(pos > prevPos,
-        `Chronological violation: "${marker}" (pos ${pos}) appears before previous marker (pos ${prevPos})`);
+      assert.ok(pos >= 0, `Marker "${marker}" not found in transcript`);
+      assert.ok(
+        pos > prevPos,
+        `Chronological violation: "${marker}" (pos ${pos}) appears before previous marker (pos ${prevPos})`,
+      );
       prevPos = pos;
     }
   });
@@ -1230,15 +1606,18 @@ describe('transcript conformity', () => {
       for (let j = 1; j < turnHeaders.length; j++) {
         const prev = parseInt(turnHeaders[j - 1][1], 10);
         const curr = parseInt(turnHeaders[j][1], 10);
-        assert.ok(curr > prev,
-          `${arch.name}: Turn headers not ascending at positions ${j - 1}/${j}: Turn ${prev} → Turn ${curr}`);
+        assert.ok(
+          curr > prev,
+          `${arch.name}: Turn headers not ascending at positions ${j - 1}/${j}: Turn ${prev} → Turn ${curr}`,
+        );
         // Headers appear at increasing string positions
-        assert.ok(turnHeaders[j].index > turnHeaders[j - 1].index,
-          `${arch.name}: Turn ${curr} header appears before Turn ${prev} header in string`);
+        assert.ok(
+          turnHeaders[j].index > turnHeaders[j - 1].index,
+          `${arch.name}: Turn ${curr} header appears before Turn ${prev} header in string`,
+        );
       }
     }
   });
-
 });
 
 // ── Diagnostic: conversation history state ────────────────────────────────
@@ -1250,19 +1629,22 @@ describe('diagnostic: conversation history state', () => {
   // Realistic tutor responses (300+ chars each, as a real ego would produce)
   const TUTOR_RESPONSES = [
     {
-      message: "You raise Popper's classic challenge — if the 'negation of the negation' absorbs every counterexample, how is this different from pseudoscience? But consider: is the Master-Slave dialectic offering empirical predictions or describing necessary conditions for self-consciousness? When Hegel claims recognition requires mutual dependence, he is making a structural claim, not an empirical one.",
+      message:
+        "You raise Popper's classic challenge — if the 'negation of the negation' absorbs every counterexample, how is this different from pseudoscience? But consider: is the Master-Slave dialectic offering empirical predictions or describing necessary conditions for self-consciousness? When Hegel claims recognition requires mutual dependence, he is making a structural claim, not an empirical one.",
       title: null,
       action: 'navigate',
       actionTarget: '479-lecture-7',
     },
     {
-      message: "Your 'heads-I-win' objection captures Popper's critique precisely. But consider: when Hegel describes death as the outcome of the struggle, he calls it dialectical failure, not another negation. And unhappy consciousness is not a triumph but an impasse the servant must work through. So the dialectic does distinguish outcomes — it is not heads-I-win after all. The question is whether these distinctions are principled or ad hoc.",
+      message:
+        "Your 'heads-I-win' objection captures Popper's critique precisely. But consider: when Hegel describes death as the outcome of the struggle, he calls it dialectical failure, not another negation. And unhappy consciousness is not a triumph but an impasse the servant must work through. So the dialectic does distinguish outcomes — it is not heads-I-win after all. The question is whether these distinctions are principled or ad hoc.",
       title: null,
       action: 'navigate',
       actionTarget: '479-lecture-7',
     },
     {
-      message: "Your thirty minutes of deep engagement and that sharp framing cuts to the heart of the critique. But what if the normative force emerges immanently from the dialectical process itself rather than being imported from outside? The servant does not choose to value labour — the experience of shaping objects under constraint transforms consciousness from within. That is Hegel's answer to the is-ought gap: normativity is a product of Bildung, not a premise smuggled in.",
+      message:
+        "Your thirty minutes of deep engagement and that sharp framing cuts to the heart of the critique. But what if the normative force emerges immanently from the dialectical process itself rather than being imported from outside? The servant does not choose to value labour — the experience of shaping objects under constraint transforms consciousness from within. That is Hegel's answer to the is-ought gap: normativity is a product of Bildung, not a premise smuggled in.",
       title: null,
       action: 'navigate',
       actionTarget: '479-lecture-7',
@@ -1313,11 +1695,9 @@ describe('diagnostic: conversation history state', () => {
 
     assert.ok(ctx1.includes('### Conversation History'), 'Turn 1 should have history section');
     // Full tutor response preserved
-    assert.ok(ctx1.includes(TUTOR_RESPONSES[0].message),
-      'Turn 1 history should contain FULL tutor Turn 0 response');
+    assert.ok(ctx1.includes(TUTOR_RESPONSES[0].message), 'Turn 1 history should contain FULL tutor Turn 0 response');
     // Full learner message preserved
-    assert.ok(ctx1.includes(LEARNER_MESSAGES[1]),
-      'Turn 1 history should contain FULL learner message');
+    assert.ok(ctx1.includes(LEARNER_MESSAGES[1]), 'Turn 1 history should contain FULL learner message');
 
     // ── Turn 2: two prior exchanges ──
     conversationHistory.push({
@@ -1335,15 +1715,11 @@ describe('diagnostic: conversation history state', () => {
     });
 
     // Both full tutor responses preserved
-    assert.ok(ctx2.includes(TUTOR_RESPONSES[0].message),
-      'Turn 2 history should contain FULL tutor Turn 0 response');
-    assert.ok(ctx2.includes(TUTOR_RESPONSES[1].message),
-      'Turn 2 history should contain FULL tutor Turn 1 response');
+    assert.ok(ctx2.includes(TUTOR_RESPONSES[0].message), 'Turn 2 history should contain FULL tutor Turn 0 response');
+    assert.ok(ctx2.includes(TUTOR_RESPONSES[1].message), 'Turn 2 history should contain FULL tutor Turn 1 response');
     // Both learner messages preserved
-    assert.ok(ctx2.includes(LEARNER_MESSAGES[1]),
-      'Learner Turn 1 message fully preserved');
-    assert.ok(ctx2.includes(LEARNER_MESSAGES[2]),
-      'Learner Turn 2 message fully preserved');
+    assert.ok(ctx2.includes(LEARNER_MESSAGES[1]), 'Learner Turn 1 message fully preserved');
+    assert.ok(ctx2.includes(LEARNER_MESSAGES[2]), 'Learner Turn 2 message fully preserved');
 
     // ── Turn 3: three prior exchanges ──
     conversationHistory.push({
@@ -1362,13 +1738,14 @@ describe('diagnostic: conversation history state', () => {
 
     // All three full tutor responses preserved
     for (let i = 0; i < 3; i++) {
-      assert.ok(ctx3.includes(TUTOR_RESPONSES[i].message),
-        `Turn 3 history should contain FULL tutor Turn ${i} response`);
+      assert.ok(
+        ctx3.includes(TUTOR_RESPONSES[i].message),
+        `Turn 3 history should contain FULL tutor Turn ${i} response`,
+      );
     }
     // All learner messages preserved
     for (let i = 1; i <= 3; i++) {
-      assert.ok(ctx3.includes(LEARNER_MESSAGES[i]),
-        `Learner message ${i} fully preserved at Turn 3`);
+      assert.ok(ctx3.includes(LEARNER_MESSAGES[i]), `Learner message ${i} fully preserved at Turn 3`);
     }
   });
 
@@ -1384,11 +1761,9 @@ describe('diagnostic: conversation history state', () => {
     const formatted = formatTurnForContext(turn);
 
     // Full tutor message present
-    assert.ok(formatted.includes(TUTOR_RESPONSES[0].message),
-      'Should contain the FULL tutor message');
+    assert.ok(formatted.includes(TUTOR_RESPONSES[0].message), 'Should contain the FULL tutor message');
     // Learner message preserved in full
-    assert.ok(formatted.includes(LEARNER_MESSAGES[1]),
-      'Should contain full learner message');
+    assert.ok(formatted.includes(LEARNER_MESSAGES[1]), 'Should contain full learner message');
   });
 });
 
@@ -1435,40 +1810,27 @@ const CONTEXT_WITHOUT_CHAT_HISTORY = `### User Profile
 describe('stripRecentChatHistory', () => {
   it('removes chat history section at end of string', () => {
     const result = stripRecentChatHistory(CONTEXT_WITH_CHAT_HISTORY);
-    assert.ok(!result.includes('Recent Chat History'),
-      'Should not contain Recent Chat History heading');
-    assert.ok(!result.includes('stuck on this dialectic'),
-      'Should not contain chat message');
-    assert.ok(result.includes('User Profile'),
-      'Should preserve User Profile section');
-    assert.ok(result.includes('Struggle signals detected'),
-      'Should preserve struggle signals');
+    assert.ok(!result.includes('Recent Chat History'), 'Should not contain Recent Chat History heading');
+    assert.ok(!result.includes('stuck on this dialectic'), 'Should not contain chat message');
+    assert.ok(result.includes('User Profile'), 'Should preserve User Profile section');
+    assert.ok(result.includes('Struggle signals detected'), 'Should preserve struggle signals');
   });
 
   it('removes chat history with trailing section preserved', () => {
     const result = stripRecentChatHistory(CONTEXT_WITH_TRAILING_SECTION);
-    assert.ok(!result.includes('Recent Chat History'),
-      'Should not contain Recent Chat History heading');
-    assert.ok(!result.includes('stuck on this dialectic'),
-      'Should not contain chat message');
-    assert.ok(result.includes('### Recent Activity'),
-      'Should preserve trailing Recent Activity section');
-    assert.ok(result.includes('Viewed lecture 3'),
-      'Should preserve trailing section content');
+    assert.ok(!result.includes('Recent Chat History'), 'Should not contain Recent Chat History heading');
+    assert.ok(!result.includes('stuck on this dialectic'), 'Should not contain chat message');
+    assert.ok(result.includes('### Recent Activity'), 'Should preserve trailing Recent Activity section');
+    assert.ok(result.includes('Viewed lecture 3'), 'Should preserve trailing section content');
   });
 
   it('handles multiple User: lines', () => {
     const result = stripRecentChatHistory(CONTEXT_WITH_MULTI_CHAT);
-    assert.ok(!result.includes('Recent Chat History'),
-      'Should not contain Recent Chat History heading');
-    assert.ok(!result.includes('stuck on this dialectic'),
-      'Should not contain first chat message');
-    assert.ok(!result.includes('explain recognition theory'),
-      'Should not contain second chat message');
-    assert.ok(!result.includes('getting it now'),
-      'Should not contain third chat message');
-    assert.ok(result.includes('### Recent Activity'),
-      'Should preserve trailing section');
+    assert.ok(!result.includes('Recent Chat History'), 'Should not contain Recent Chat History heading');
+    assert.ok(!result.includes('stuck on this dialectic'), 'Should not contain first chat message');
+    assert.ok(!result.includes('explain recognition theory'), 'Should not contain second chat message');
+    assert.ok(!result.includes('getting it now'), 'Should not contain third chat message');
+    assert.ok(result.includes('### Recent Activity'), 'Should preserve trailing section');
   });
 
   it('returns context unchanged when no chat history section', () => {
@@ -1505,10 +1867,8 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       currentTurn: { learner_action: 'initial' },
       conversationMode: 'messages',
     });
-    assert.ok(ctx.includes('Recent Chat History'),
-      'Turn 0 should preserve Recent Chat History');
-    assert.ok(ctx.includes('stuck on this dialectic'),
-      'Turn 0 should preserve the initial chat message');
+    assert.ok(ctx.includes('Recent Chat History'), 'Turn 0 should preserve Recent Chat History');
+    assert.ok(ctx.includes('stuck on this dialectic'), 'Turn 0 should preserve the initial chat message');
   });
 
   it('Turn 1+ messages mode: strips Recent Chat History', () => {
@@ -1518,10 +1878,8 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       currentTurn: { learner_action: 'asked_followup' },
       conversationMode: 'messages',
     });
-    assert.ok(!ctx.includes('Recent Chat History'),
-      'Turn 1+ should strip Recent Chat History');
-    assert.ok(!ctx.includes('stuck on this dialectic'),
-      'Turn 1+ should strip the initial chat message');
+    assert.ok(!ctx.includes('Recent Chat History'), 'Turn 1+ should strip Recent Chat History');
+    assert.ok(!ctx.includes('stuck on this dialectic'), 'Turn 1+ should strip the initial chat message');
   });
 
   it('Turn 1+ messages mode: preserves static context', () => {
@@ -1531,12 +1889,9 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       currentTurn: { learner_action: 'asked_followup' },
       conversationMode: 'messages',
     });
-    assert.ok(ctx.includes('User Profile'),
-      'Should preserve User Profile');
-    assert.ok(ctx.includes('Struggle signals detected'),
-      'Should preserve struggle signals');
-    assert.ok(ctx.includes('Currently viewing'),
-      'Should preserve current content');
+    assert.ok(ctx.includes('User Profile'), 'Should preserve User Profile');
+    assert.ok(ctx.includes('Struggle signals detected'), 'Should preserve struggle signals');
+    assert.ok(ctx.includes('Currently viewing'), 'Should preserve current content');
   });
 
   it('Turn 1+ messages mode: adds Conversation Context annotation', () => {
@@ -1546,10 +1901,8 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       currentTurn: { learner_action: 'asked_followup' },
       conversationMode: 'messages',
     });
-    assert.ok(ctx.includes('### Conversation Context'),
-      'Should add Conversation Context heading');
-    assert.ok(ctx.includes('Focus your response on their most recent message'),
-      'Should include focus instruction');
+    assert.ok(ctx.includes('### Conversation Context'), 'Should add Conversation Context heading');
+    assert.ok(ctx.includes('Focus your response on their most recent message'), 'Should include focus instruction');
   });
 
   it('Turn 1+ single-prompt mode: preserves Recent Chat History', () => {
@@ -1559,10 +1912,8 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       currentTurn: { learner_action: 'asked_followup' },
       conversationMode: 'single-prompt',
     });
-    assert.ok(ctx.includes('Recent Chat History'),
-      'Single-prompt mode should preserve Recent Chat History');
-    assert.ok(ctx.includes('stuck on this dialectic'),
-      'Single-prompt mode should preserve chat message');
+    assert.ok(ctx.includes('Recent Chat History'), 'Single-prompt mode should preserve Recent Chat History');
+    assert.ok(ctx.includes('stuck on this dialectic'), 'Single-prompt mode should preserve chat message');
   });
 
   it('handles context with trailing section after chat history', () => {
@@ -1572,12 +1923,9 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       currentTurn: { learner_action: 'asked_followup' },
       conversationMode: 'messages',
     });
-    assert.ok(!ctx.includes('Recent Chat History'),
-      'Should strip chat history');
-    assert.ok(ctx.includes('### Recent Activity'),
-      'Should preserve trailing Recent Activity section');
-    assert.ok(ctx.includes('Viewed lecture 3'),
-      'Should preserve trailing section content');
+    assert.ok(!ctx.includes('Recent Chat History'), 'Should strip chat history');
+    assert.ok(ctx.includes('### Recent Activity'), 'Should preserve trailing Recent Activity section');
+    assert.ok(ctx.includes('Viewed lecture 3'), 'Should preserve trailing section content');
   });
 
   it('handles context without Recent Chat History section', () => {
@@ -1588,10 +1936,8 @@ describe('buildMultiTurnContext messages-mode chat history stripping', () => {
       conversationMode: 'messages',
     });
     // Should still add annotation even when no chat history to strip
-    assert.ok(ctx.includes('### Conversation Context'),
-      'Should add Conversation Context annotation');
-    assert.ok(ctx.includes('Struggle signals detected'),
-      'Should preserve all original context');
+    assert.ok(ctx.includes('### Conversation Context'), 'Should add Conversation Context annotation');
+    assert.ok(ctx.includes('Struggle signals detected'), 'Should preserve all original context');
   });
 });
 
@@ -1602,23 +1948,20 @@ describe('structureLearnerContext with pre-stripped chat history', () => {
     const stripped = stripRecentChatHistory(CONTEXT_WITH_CHAT_HISTORY);
     const structured = structureLearnerContext(stripped);
 
-    assert.ok(!structured.includes('Learner Messages'),
-      'Should not contain Learner Messages field after chat history stripping');
+    assert.ok(
+      !structured.includes('Learner Messages'),
+      'Should not contain Learner Messages field after chat history stripping',
+    );
     // Other fields should still be extracted
-    assert.ok(structured.includes('Struggle Signals'),
-      'Should still extract Struggle Signals');
-    assert.ok(structured.includes('Current Content'),
-      'Should still extract Current Content');
-    assert.ok(structured.includes('Learner Type'),
-      'Should still extract Learner Type');
+    assert.ok(structured.includes('Struggle Signals'), 'Should still extract Struggle Signals');
+    assert.ok(structured.includes('Current Content'), 'Should still extract Current Content');
+    assert.ok(structured.includes('Learner Type'), 'Should still extract Learner Type');
   });
 
   it('structureLearnerContext with original context DOES produce Learner Messages', () => {
     const structured = structureLearnerContext(CONTEXT_WITH_CHAT_HISTORY);
-    assert.ok(structured.includes('Learner Messages'),
-      'Un-stripped context should produce Learner Messages field');
-    assert.ok(structured.includes('stuck on this dialectic'),
-      'Should contain the chat message in Learner Messages');
+    assert.ok(structured.includes('Learner Messages'), 'Un-stripped context should produce Learner Messages field');
+    assert.ok(structured.includes('stuck on this dialectic'), 'Should contain the chat message in Learner Messages');
   });
 });
 
@@ -1638,9 +1981,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 describe('learner architecture symmetry', () => {
   it('evaluationRunner has no raw ego_superego gates beyond isEgoSuperegoLearner definition', () => {
     // Read the source file and find all uses of includes('ego_superego')
-    const source = fs.readFileSync(
-      path.resolve(__dirname, '..', 'evaluationRunner.js'), 'utf8',
-    );
+    const source = fs.readFileSync(path.resolve(__dirname, '..', 'evaluationRunner.js'), 'utf8');
     const lines = source.split('\n');
     const violations = [];
     for (let i = 0; i < lines.length; i++) {
@@ -1649,9 +1990,13 @@ describe('learner architecture symmetry', () => {
         violations.push({ line: i + 1, content: line.trim() });
       }
     }
-    assert.deepStrictEqual(violations, [],
-      `Found raw ego_superego gate(s) that should use isLLMLearner instead:\n${violations.map((v) => `  line ${v.line}: ${v.content}`).join('\n')
-      }`);
+    assert.deepStrictEqual(
+      violations,
+      [],
+      `Found raw ego_superego gate(s) that should use isLLMLearner instead:\n${violations
+        .map((v) => `  line ${v.line}: ${v.content}`)
+        .join('\n')}`,
+    );
   });
 
   it('isLLMLearner is true for ego_superego architecture regardless of conversation mode', () => {
@@ -1660,23 +2005,20 @@ describe('learner architecture symmetry', () => {
     const conversationModes = ['single-prompt', 'messages'];
     for (const mode of conversationModes) {
       const isLLMLearner = isEgoSuperego || mode === 'messages';
-      assert.ok(isLLMLearner,
-        `ego_superego learner should always be LLM-generated (mode=${mode})`);
+      assert.ok(isLLMLearner, `ego_superego learner should always be LLM-generated (mode=${mode})`);
     }
   });
 
   it('isLLMLearner is true for unified learner in messages mode', () => {
     const isEgoSuperego = false;
     const isLLMLearner = isEgoSuperego || 'messages' === 'messages';
-    assert.ok(isLLMLearner,
-      'unified learner in messages mode should be LLM-generated');
+    assert.ok(isLLMLearner, 'unified learner in messages mode should be LLM-generated');
   });
 
   it('isLLMLearner is false for unified learner in single-prompt mode', () => {
     const isEgoSuperego = false;
     const isLLMLearner = isEgoSuperego || 'single-prompt' === 'messages';
-    assert.ok(!isLLMLearner,
-      'unified learner in single-prompt mode should use YAML messages');
+    assert.ok(!isLLMLearner, 'unified learner in single-prompt mode should use YAML messages');
   });
 
   it('generateLearnerResponse supports unified learner profile', async () => {
@@ -1684,10 +2026,8 @@ describe('learner architecture symmetry', () => {
     // that generateLearnerResponse can use (single-agent path)
     const learnerConfig = await import('../../services/learnerConfigLoader.js');
     const unifiedRoles = learnerConfig.getProfileAgentRoles('unified');
-    assert.ok(unifiedRoles.length > 0,
-      'unified profile must have at least one agent role for LLM generation');
-    assert.ok(!unifiedRoles.includes('superego'),
-      'unified profile must NOT have a superego role');
+    assert.ok(unifiedRoles.length > 0, 'unified profile must have at least one agent role for LLM generation');
+    assert.ok(!unifiedRoles.includes('superego'), 'unified profile must NOT have a superego role');
   });
 
   it('generateLearnerResponse supports ego_superego learner profile', async () => {
@@ -1707,12 +2047,13 @@ describe('learner architecture symmetry', () => {
         continue; // profile may not exist in all configs
       }
       const roles = learnerConfig.getProfileAgentRoles(profileName);
-      assert.ok(roles.length > 0,
-        `${profileName} must have agent roles for LLM generation`);
+      assert.ok(roles.length > 0, `${profileName} must have agent roles for LLM generation`);
       for (const role of roles) {
         const agentConfig = learnerConfig.getAgentConfig(role, profileName);
-        assert.ok(agentConfig?.model || agentConfig?.provider,
-          `${profileName}/${role} must have a model or provider configured`);
+        assert.ok(
+          agentConfig?.model || agentConfig?.provider,
+          `${profileName}/${role} must have a model or provider configured`,
+        );
       }
     }
   });
@@ -1750,8 +2091,7 @@ describe('scripted vs LLM learner demarcation', () => {
     for (const { arch, mode, expectLLM } of cases) {
       const isEgoSuperego = arch.includes('ego_superego');
       const isLLMLearner = isEgoSuperego || mode === 'messages';
-      assert.strictEqual(isLLMLearner, expectLLM,
-        `${arch} + ${mode}: isLLMLearner should be ${expectLLM}`);
+      assert.strictEqual(isLLMLearner, expectLLM, `${arch} + ${mode}: isLLMLearner should be ${expectLLM}`);
     }
   });
 
@@ -1761,14 +2101,12 @@ describe('scripted vs LLM learner demarcation', () => {
     // ego_superego must have both ego and superego → multi-agent path
     const esPRoles = learnerConfig.getProfileAgentRoles('ego_superego');
     const hasMultiAgent = esPRoles.includes('ego') && esPRoles.includes('superego');
-    assert.ok(hasMultiAgent,
-      'ego_superego profile must trigger multi-agent deliberation path');
+    assert.ok(hasMultiAgent, 'ego_superego profile must trigger multi-agent deliberation path');
 
     // unified must NOT have both ego and superego → single-agent path
     const uniRoles = learnerConfig.getProfileAgentRoles('unified');
     const uniHasMulti = uniRoles.includes('ego') && uniRoles.includes('superego');
-    assert.ok(!uniHasMulti,
-      'unified profile must trigger single-agent path (no ego+superego pair)');
+    assert.ok(!uniHasMulti, 'unified profile must trigger single-agent path (no ego+superego pair)');
   });
 
   it('all learner profiles in learner-agents.yaml have LLM-capable configs', async () => {
@@ -1777,16 +2115,16 @@ describe('scripted vs LLM learner demarcation', () => {
     for (const profileSummary of allProfiles) {
       const profileName = profileSummary.name;
       const roles = learnerConfig.getProfileAgentRoles(profileName);
-      assert.ok(roles.length > 0,
-        `Learner profile '${profileName}' has no agent roles — cannot generate LLM responses`);
+      assert.ok(
+        roles.length > 0,
+        `Learner profile '${profileName}' has no agent roles — cannot generate LLM responses`,
+      );
     }
   });
 
   it('tutor-agents.yaml messages-mode cells exist with both learner architectures', () => {
     // Read tutor-agents.yaml and find cells with conversation_mode: messages
-    const yaml = fs.readFileSync(
-      path.resolve(__dirname, '..', '..', 'config', 'tutor-agents.yaml'), 'utf8',
-    );
+    const yaml = fs.readFileSync(path.resolve(__dirname, '..', '..', 'config', 'tutor-agents.yaml'), 'utf8');
 
     // Split into cell blocks: each cell starts with "  cell_" at 2-space indent
     const cellBlocks = yaml.split(/\n(?= {2}cell_\w+:)/);
@@ -1803,15 +2141,13 @@ describe('scripted vs LLM learner demarcation', () => {
       }
     }
 
-    assert.ok(messagesCells.length > 0,
-      'Should find at least one messages-mode cell in tutor-agents.yaml');
+    assert.ok(messagesCells.length > 0, 'Should find at least one messages-mode cell in tutor-agents.yaml');
 
     // Verify the isLLMLearner gate covers ALL messages-mode cells
     for (const { cellName, arch } of messagesCells) {
       const isEgoSuperego = arch.includes('ego_superego');
       const isLLMLearner = isEgoSuperego || true; // messages mode → always LLM
-      assert.ok(isLLMLearner,
-        `messages-mode cell '${cellName}' (${arch}) must produce LLM learner responses`);
+      assert.ok(isLLMLearner, `messages-mode cell '${cellName}' (${arch}) must produce LLM learner responses`);
     }
 
     // Verify both unified and ego_superego architectures are represented in messages mode
@@ -1863,10 +2199,10 @@ function stripDeliberationLines(transcript) {
   ];
 
   // Phase 1: Remove deliberation prefix lines
-  const phase1 = transcript.split('\n').filter(line => {
+  const phase1 = transcript.split('\n').filter((line) => {
     const trimmed = line.trim();
     if (!trimmed.startsWith('[')) return true;
-    if (deliberationPrefixes.some(p => trimmed.startsWith(p))) return false;
+    if (deliberationPrefixes.some((p) => trimmed.startsWith(p))) return false;
     return true;
   });
 
@@ -1899,12 +2235,10 @@ function stripDeliberationLines(transcript) {
     // Keep only labels from the final ego/learner lines, remove markers
     if (turnHeader) result.push(turnHeader);
     if (learnerLines.length > 0) {
-      result.push(learnerLines[learnerLines.length - 1]
-        .replace(' (revised)', ''));
+      result.push(learnerLines[learnerLines.length - 1].replace(' (revised)', ''));
     }
     if (tutorEgoLines.length > 0) {
-      result.push(tutorEgoLines[tutorEgoLines.length - 1]
-        .replace(' (revised)', ''));
+      result.push(tutorEgoLines[tutorEgoLines.length - 1].replace(' (revised)', ''));
     }
     // Other lines (shouldn't be any after stripping)
     for (const l of otherLines) result.push(l);
@@ -1939,16 +2273,18 @@ describe('backbone consistency: full transcript backbone matches public', () => 
   it('unified/single-agent: full transcript === public transcript (exact match)', () => {
     const publicTranscript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
     const fullTranscript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, LEARNER_CONTEXT);
-    assert.strictEqual(fullTranscript, publicTranscript,
+    assert.strictEqual(
+      fullTranscript,
+      publicTranscript,
       'For unified/single-agent cells (no deliberation), full and public transcripts must be identical.\n' +
-      `PUBLIC:\n${publicTranscript}\n\nFULL:\n${fullTranscript}`);
+        `PUBLIC:\n${publicTranscript}\n\nFULL:\n${fullTranscript}`,
+    );
   });
 
   it('unified/single-agent without learnerContext: full === public', () => {
     const publicTranscript = buildDialoguePublicTranscript(TURNS, UNIFIED_TRACE, null);
     const fullTranscript = buildDialogueFullTranscript(TURNS, UNIFIED_TRACE, null);
-    assert.strictEqual(fullTranscript, publicTranscript,
-      'Without learnerContext, full and public must still match');
+    assert.strictEqual(fullTranscript, publicTranscript, 'Without learnerContext, full and public must still match');
   });
 
   // ── Ego-superego learner, multi-agent tutor: backbone matches ──────────
@@ -1957,34 +2293,48 @@ describe('backbone consistency: full transcript backbone matches public', () => 
     const publicTranscript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
     const fullTranscript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, EGO_SUPEREGO_TRACE, LEARNER_CONTEXT);
     const strippedFull = stripDeliberationLines(fullTranscript);
-    assert.strictEqual(strippedFull, publicTranscript,
+    assert.strictEqual(
+      strippedFull,
+      publicTranscript,
       'Stripping deliberation lines from full transcript should yield the public transcript.\n' +
-      `PUBLIC:\n${publicTranscript}\n\nFULL (stripped):\n${strippedFull}`);
+        `PUBLIC:\n${publicTranscript}\n\nFULL (stripped):\n${strippedFull}`,
+    );
   });
 
   it('ego_superego/no-synth: stripped full has same structure as public', () => {
     // When traces lack learner_synthesis entries, the full transcript uses
     // learner_ego_revision text (internal) while public uses turn_action (external).
     // These may differ, so we verify structural consistency, not exact match.
-    const publicTranscript = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
-    const fullTranscript = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO_THREE, EGO_SUPEREGO_TRACE_NO_SYNTH, LEARNER_CONTEXT);
+    const publicTranscript = buildDialoguePublicTranscript(
+      TURNS_EGO_SUPEREGO_THREE,
+      EGO_SUPEREGO_TRACE_NO_SYNTH,
+      LEARNER_CONTEXT,
+    );
+    const fullTranscript = buildDialogueFullTranscript(
+      TURNS_EGO_SUPEREGO_THREE,
+      EGO_SUPEREGO_TRACE_NO_SYNTH,
+      LEARNER_CONTEXT,
+    );
     const strippedFull = stripDeliberationLines(fullTranscript);
 
     // Same number of turns
     const publicTurns = [...publicTranscript.matchAll(/--- Turn \d+ ---/g)].length;
     const strippedTurns = [...strippedFull.matchAll(/--- Turn \d+ ---/g)].length;
-    assert.strictEqual(publicTurns, strippedTurns,
-      `Turn count mismatch: public has ${publicTurns}, stripped has ${strippedTurns}`);
+    assert.strictEqual(
+      publicTurns,
+      strippedTurns,
+      `Turn count mismatch: public has ${publicTurns}, stripped has ${strippedTurns}`,
+    );
 
     // Same structure: each turn has exactly one learner and one tutor line
-    const publicSections = publicTranscript.split(/--- Turn \d+ ---/).filter(s => s.trim());
-    const strippedSections = strippedFull.split(/--- Turn \d+ ---/).filter(s => s.trim());
+    const publicSections = publicTranscript.split(/--- Turn \d+ ---/).filter((s) => s.trim());
+    const strippedSections = strippedFull.split(/--- Turn \d+ ---/).filter((s) => s.trim());
     assert.strictEqual(publicSections.length, strippedSections.length);
     for (let i = 0; i < publicSections.length; i++) {
-      const pubLearner = publicSections[i].split('\n').filter(l => /^\[Learner/.test(l.trim())).length;
-      const pubTutor = publicSections[i].split('\n').filter(l => /^\[Tutor/.test(l.trim())).length;
-      const strLearner = strippedSections[i].split('\n').filter(l => /^\[Learner/.test(l.trim())).length;
-      const strTutor = strippedSections[i].split('\n').filter(l => /^\[Tutor/.test(l.trim())).length;
+      const pubLearner = publicSections[i].split('\n').filter((l) => /^\[Learner/.test(l.trim())).length;
+      const pubTutor = publicSections[i].split('\n').filter((l) => /^\[Tutor/.test(l.trim())).length;
+      const strLearner = strippedSections[i].split('\n').filter((l) => /^\[Learner/.test(l.trim())).length;
+      const strTutor = strippedSections[i].split('\n').filter((l) => /^\[Tutor/.test(l.trim())).length;
       assert.strictEqual(pubLearner, strLearner, `Turn ${i + 1}: learner line count differs`);
       assert.strictEqual(pubTutor, strTutor, `Turn ${i + 1}: tutor line count differs`);
     }
@@ -1999,12 +2349,16 @@ describe('backbone consistency: full transcript backbone matches public', () => 
       { name: 'ego_superego_no_synth', turns: TURNS_EGO_SUPEREGO_THREE, trace: EGO_SUPEREGO_TRACE_NO_SYNTH },
     ];
     for (const { name, turns, trace } of cases) {
-      const publicTurns = [...buildDialoguePublicTranscript(turns, trace, LEARNER_CONTEXT)
-        .matchAll(/--- Turn \d+ ---/g)].length;
-      const fullTurns = [...buildDialogueFullTranscript(turns, trace, LEARNER_CONTEXT)
-        .matchAll(/--- Turn \d+ ---/g)].length;
-      assert.strictEqual(publicTurns, fullTurns,
-        `${name}: public has ${publicTurns} turns, full has ${fullTurns} turns — must be equal`);
+      const publicTurns = [
+        ...buildDialoguePublicTranscript(turns, trace, LEARNER_CONTEXT).matchAll(/--- Turn \d+ ---/g),
+      ].length;
+      const fullTurns = [...buildDialogueFullTranscript(turns, trace, LEARNER_CONTEXT).matchAll(/--- Turn \d+ ---/g)]
+        .length;
+      assert.strictEqual(
+        publicTurns,
+        fullTurns,
+        `${name}: public has ${publicTurns} turns, full has ${fullTurns} turns — must be equal`,
+      );
     }
   });
 
@@ -2021,20 +2375,26 @@ describe('backbone consistency: full transcript backbone matches public', () => 
       const fullT = buildDialogueFullTranscript(turns, trace, LEARNER_CONTEXT);
 
       // Extract [Tutor Ego] lines from public (there's exactly one per turn — the final)
-      const publicTutorLines = publicT.split('\n').filter(l => l.trim().startsWith('[Tutor Ego]'));
+      const publicTutorLines = publicT.split('\n').filter((l) => l.trim().startsWith('[Tutor Ego]'));
       // Extract the LAST [Tutor Ego] per turn from full (may have initial + revised)
-      const fullSections = fullT.split(/--- Turn \d+ ---/).filter(s => s.trim());
-      const fullTutorFinals = fullSections.map(section => {
-        const tutorLines = section.split('\n').filter(l => l.trim().startsWith('[Tutor Ego]'));
+      const fullSections = fullT.split(/--- Turn \d+ ---/).filter((s) => s.trim());
+      const fullTutorFinals = fullSections.map((section) => {
+        const tutorLines = section.split('\n').filter((l) => l.trim().startsWith('[Tutor Ego]'));
         return tutorLines[tutorLines.length - 1]?.trim() || '';
       });
 
-      assert.strictEqual(publicTutorLines.length, fullTutorFinals.length,
-        `${name}: different number of tutor final lines`);
+      assert.strictEqual(
+        publicTutorLines.length,
+        fullTutorFinals.length,
+        `${name}: different number of tutor final lines`,
+      );
       for (let i = 0; i < publicTutorLines.length; i++) {
-        assert.strictEqual(normalize(publicTutorLines[i]), normalize(fullTutorFinals[i]),
+        assert.strictEqual(
+          normalize(publicTutorLines[i]),
+          normalize(fullTutorFinals[i]),
           `${name}: turn ${i + 1} tutor final message content differs.\n` +
-          `Public: ${publicTutorLines[i].trim()}\nFull: ${fullTutorFinals[i]}`);
+            `Public: ${publicTutorLines[i].trim()}\nFull: ${fullTutorFinals[i]}`,
+        );
       }
     }
   });
@@ -2052,22 +2412,26 @@ describe('backbone consistency: full transcript backbone matches public', () => 
       const fullT = buildDialogueFullTranscript(turns, trace, LEARNER_CONTEXT);
 
       // Public: all [Learner] or [Learner Ego] lines
-      const publicLearnerLines = publicT.split('\n')
-        .filter(l => l.trim().startsWith(label));
+      const publicLearnerLines = publicT.split('\n').filter((l) => l.trim().startsWith(label));
       // Full: last [Learner Ego] or [Learner] per turn (the final output after deliberation)
-      const fullSections = fullT.split(/--- Turn \d+ ---/).filter(s => s.trim());
-      const fullLearnerFinals = fullSections.map(section => {
-        const learnerLines = section.split('\n')
-          .filter(l => l.trim().startsWith(label));
+      const fullSections = fullT.split(/--- Turn \d+ ---/).filter((s) => s.trim());
+      const fullLearnerFinals = fullSections.map((section) => {
+        const learnerLines = section.split('\n').filter((l) => l.trim().startsWith(label));
         return learnerLines[learnerLines.length - 1]?.trim() || '';
       });
 
-      assert.strictEqual(publicLearnerLines.length, fullLearnerFinals.length,
-        `${name}: different number of learner lines`);
+      assert.strictEqual(
+        publicLearnerLines.length,
+        fullLearnerFinals.length,
+        `${name}: different number of learner lines`,
+      );
       for (let i = 0; i < publicLearnerLines.length; i++) {
-        assert.strictEqual(normalize(publicLearnerLines[i]), normalize(fullLearnerFinals[i]),
+        assert.strictEqual(
+          normalize(publicLearnerLines[i]),
+          normalize(fullLearnerFinals[i]),
           `${name}: turn ${i + 1} learner message content differs.\n` +
-          `Public: ${publicLearnerLines[i].trim()}\nFull: ${fullLearnerFinals[i]}`);
+            `Public: ${publicLearnerLines[i].trim()}\nFull: ${fullLearnerFinals[i]}`,
+        );
       }
     }
   });

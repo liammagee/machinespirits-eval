@@ -117,7 +117,9 @@ function parseClaimLowerBound(claimText) {
 }
 
 function sectionMajor(section) {
-  const raw = String(section || '').trim().toLowerCase();
+  const raw = String(section || '')
+    .trim()
+    .toLowerCase();
   if (raw === 'front matter') return 'front';
   const m = raw.match(/^(\d+)/);
   return m ? m[1] : null;
@@ -291,9 +293,7 @@ function buildEvidenceAndAssertion(group, manifest, dbScoredTotal, manifestExpec
           not_null: ['tutor_first_turn_score'],
         },
       },
-      assertion: claimInfo?.isLowerBound
-        ? { op: 'gte', expected: claimInfo.value }
-        : { op: 'eq', expected },
+      assertion: claimInfo?.isLowerBound ? { op: 'gte', expected: claimInfo.value } : { op: 'eq', expected },
     };
   }
 
@@ -390,7 +390,8 @@ function main() {
 
   const db = new Database(dbPath, { readonly: true });
   const dbScoredTotal = Number(
-    db.prepare('SELECT COUNT(*) AS value FROM evaluation_results WHERE tutor_first_turn_score IS NOT NULL').get()?.value || 0,
+    db.prepare('SELECT COUNT(*) AS value FROM evaluation_results WHERE tutor_first_turn_score IS NOT NULL').get()
+      ?.value || 0,
   );
   db.close();
 
@@ -431,7 +432,9 @@ function main() {
   ];
   const { familyTemplates, familySectionTemplates } = buildTemplateIndexes(templateCandidateClaims, inventory);
 
-  const majorCandidates = (inventory.entries || []).filter((entry) => entry.is_major && ['n', 'stat'].includes(entry.kind));
+  const majorCandidates = (inventory.entries || []).filter(
+    (entry) => entry.is_major && ['n', 'stat'].includes(entry.kind),
+  );
   const exactUnmappedCandidates = majorCandidates.filter((entry) => {
     const canonicalKey = canonicalSourceKeyFromParts(entry);
     if (canonicalKey && mappedCanonicalKeys.has(canonicalKey)) return false;

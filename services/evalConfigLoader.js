@@ -27,7 +27,10 @@ if (typeof registerClientConfigDirFn === 'function') {
   try {
     registerClientConfigDirFn(EVAL_CONFIG_DIR);
   } catch (err) {
-    console.warn('[evalConfigLoader] registerClientConfigDir failed; falling back to manual provider merge:', err.message);
+    console.warn(
+      '[evalConfigLoader] registerClientConfigDir failed; falling back to manual provider merge:',
+      err.message,
+    );
   }
 }
 
@@ -84,8 +87,12 @@ let evalSettingsMtime = null;
 
 // Module-level rubric path override (set by --rubric-version, cleared after scoring)
 let _rubricPathOverride = null;
-export function setRubricPathOverride(p) { _rubricPathOverride = p; }
-export function clearRubricPathOverride() { _rubricPathOverride = null; }
+export function setRubricPathOverride(p) {
+  _rubricPathOverride = p;
+}
+export function clearRubricPathOverride() {
+  _rubricPathOverride = null;
+}
 
 /**
  * Load the evaluation rubric YAML from the eval repo's config directory.

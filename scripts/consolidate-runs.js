@@ -156,11 +156,17 @@ function main() {
   });
 
   if (jsonMode) {
-    console.log(JSON.stringify({
-      mode: 'executed',
-      ...result,
-      manifestPath,
-    }, null, 2));
+    console.log(
+      JSON.stringify(
+        {
+          mode: 'executed',
+          ...result,
+          manifestPath,
+        },
+        null,
+        2,
+      ),
+    );
   } else {
     console.log(`\n${'═'.repeat(60)}`);
     console.log(`  Run Consolidation — Epoch: ${epoch}`);

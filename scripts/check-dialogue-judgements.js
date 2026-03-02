@@ -18,10 +18,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import YAML from 'yaml';
 import * as store from '../services/evaluationStore.js';
-import {
-  buildDialoguePublicTranscript,
-  buildDialogueFullTranscript,
-} from '../services/rubricEvaluator.js';
+import { buildDialoguePublicTranscript, buildDialogueFullTranscript } from '../services/rubricEvaluator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -48,7 +45,9 @@ const verbose = getFlag('verbose');
 const failuresOnly = getFlag('failures-only');
 
 if (!runId) {
-  console.error('Usage: node scripts/check-dialogue-judgements.js <runId> [--profile <name>] [--verbose] [--failures-only]');
+  console.error(
+    'Usage: node scripts/check-dialogue-judgements.js <runId> [--profile <name>] [--verbose] [--failures-only]',
+  );
   process.exit(1);
 }
 
@@ -378,7 +377,13 @@ if (rows.length === 0) {
 console.log(`Checking run ${runId} (${rows.length} multi-turn rows)...\n`);
 
 // Track aggregates
-const categoryCounts = { A: { pass: 0, warn: 0, fail: 0 }, B: { pass: 0, warn: 0, fail: 0 }, C: { pass: 0, warn: 0, fail: 0 }, D: { pass: 0, warn: 0, fail: 0 }, E: { pass: 0, warn: 0, fail: 0 } };
+const categoryCounts = {
+  A: { pass: 0, warn: 0, fail: 0 },
+  B: { pass: 0, warn: 0, fail: 0 },
+  C: { pass: 0, warn: 0, fail: 0 },
+  D: { pass: 0, warn: 0, fail: 0 },
+  E: { pass: 0, warn: 0, fail: 0 },
+};
 let totalPass = 0;
 let totalWarn = 0;
 let totalFail = 0;

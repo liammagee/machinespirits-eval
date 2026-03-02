@@ -40,11 +40,12 @@ function extractText(content) {
 
 /** Infer agent role from system prompt keywords. Extended for learner roles. */
 function inferRole(body) {
-  const systemText = typeof body?.system === 'string'
-    ? body.system
-    : Array.isArray(body?.messages)
-      ? (body.messages.find((m) => m.role === 'system')?.content || '')
-      : '';
+  const systemText =
+    typeof body?.system === 'string'
+      ? body.system
+      : Array.isArray(body?.messages)
+        ? body.messages.find((m) => m.role === 'system')?.content || ''
+        : '';
   const sys = extractText(systemText).toLowerCase();
 
   // Learner roles (check before tutor since learner prompts may contain 'tutor' references)
@@ -68,15 +69,24 @@ function inferRole(body) {
 function colorRole(role) {
   const label = role.padEnd(12);
   switch (role) {
-    case 'ego': return theme.tutorEgo(label);
-    case 'superego': return theme.tutorSuperego(label);
-    case 'learner_ego': return theme.learnerEgo(label);
-    case 'learner_sup': return theme.learnerSuperego(label);
-    case 'learner': return theme.learnerEgo(label);
-    case 'reflect': return chalk.blueBright(label);
-    case 'profile': return chalk.blueBright(label);
-    case 'rewrite': return chalk.yellowBright(label);
-    default: return chalk.white(label);
+    case 'ego':
+      return theme.tutorEgo(label);
+    case 'superego':
+      return theme.tutorSuperego(label);
+    case 'learner_ego':
+      return theme.learnerEgo(label);
+    case 'learner_sup':
+      return theme.learnerSuperego(label);
+    case 'learner':
+      return theme.learnerEgo(label);
+    case 'reflect':
+      return chalk.blueBright(label);
+    case 'profile':
+      return chalk.blueBright(label);
+    case 'rewrite':
+      return chalk.yellowBright(label);
+    default:
+      return chalk.white(label);
   }
 }
 
@@ -157,7 +167,10 @@ export class LiveApiReporter {
     const turnIdx = meta?.turnIdx;
 
     // Short identifiers
-    const shortProfile = profileName.replace(/^cell_\d+_/, '').replace(/_/g, '-').slice(0, 16);
+    const shortProfile = profileName
+      .replace(/^cell_\d+_/, '')
+      .replace(/_/g, '-')
+      .slice(0, 16);
     const shortScenario = scenarioId.replace(/_/g, '-').slice(0, 16);
     const conversationKey = `${profileName}|${scenarioId}`;
     const laneColor = this._laneColor(conversationKey);
@@ -193,7 +206,9 @@ export class LiveApiReporter {
       sec,
       tokenStr,
       errStr,
-    ].filter(Boolean).join(' ');
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     process.stderr.write(line + '\n');
   }

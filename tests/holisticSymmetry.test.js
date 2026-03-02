@@ -35,10 +35,7 @@ import {
 
 // Helper: assert approximate equality (floating point safe)
 function assertApprox(actual, expected, msg) {
-  assert.ok(
-    Math.abs(actual - expected) < 0.01,
-    `${msg}: expected ~${expected}, got ${actual}`,
-  );
+  assert.ok(Math.abs(actual - expected) < 0.01, `${msg}: expected ~${expected}, got ${actual}`);
 }
 
 describe('TuH / LrH holistic scoring symmetry', () => {
@@ -82,8 +79,11 @@ describe('TuH / LrH holistic scoring symmetry', () => {
     const withRecog = getTutorHolisticDimensions({ hasRecognition: true });
     const withoutRecog = getTutorHolisticDimensions({ hasRecognition: false });
 
-    assert.deepStrictEqual(Object.keys(withRecog), Object.keys(withoutRecog),
-      'v2.2 has no conditional dimensions — same keys for base and recognition');
+    assert.deepStrictEqual(
+      Object.keys(withRecog),
+      Object.keys(withoutRecog),
+      'v2.2 has no conditional dimensions — same keys for base and recognition',
+    );
     assert.ok('pedagogical_arc' in withRecog, 'has pedagogical_arc');
     assert.ok('adaptive_trajectory' in withRecog, 'has adaptive_trajectory');
     assert.ok('pedagogical_closure' in withRecog, 'has pedagogical_closure');
@@ -95,8 +95,11 @@ describe('TuH / LrH holistic scoring symmetry', () => {
     const withoutMulti = getLearnerDimensions({ isMultiAgent: false });
 
     // Same dimensions for both architectures
-    assert.deepStrictEqual(Object.keys(withMulti), Object.keys(withoutMulti),
-      'same dimensions for multi-agent and unified');
+    assert.deepStrictEqual(
+      Object.keys(withMulti),
+      Object.keys(withoutMulti),
+      'same dimensions for multi-agent and unified',
+    );
     assert.ok('engagement_quality' in withMulti, 'has engagement_quality');
     assert.ok('learner_authenticity' in withMulti, 'has learner_authenticity');
     assert.ok('revision_signals' in withMulti, 'has revision_signals');
@@ -113,20 +116,34 @@ describe('TuH / LrH holistic scoring symmetry', () => {
     const learnerUnified = getLearnerDimensions({ isMultiAgent: false });
 
     // Tutor holistic: always 3 dims in v2.2 (no conditional)
-    assert.strictEqual(Object.keys(tutorRecog).length, 3,
-      `tutor recog should have 3 dims, got ${Object.keys(tutorRecog).length}`);
-    assert.strictEqual(Object.keys(tutorBase).length, 3,
-      `tutor base should have 3 dims, got ${Object.keys(tutorBase).length}`);
+    assert.strictEqual(
+      Object.keys(tutorRecog).length,
+      3,
+      `tutor recog should have 3 dims, got ${Object.keys(tutorRecog).length}`,
+    );
+    assert.strictEqual(
+      Object.keys(tutorBase).length,
+      3,
+      `tutor base should have 3 dims, got ${Object.keys(tutorBase).length}`,
+    );
     // Learner: always 5 dims in v2.2 (no conditional)
-    assert.strictEqual(Object.keys(learnerMulti).length, 5,
-      `learner multi should have 5 dims, got ${Object.keys(learnerMulti).length}`);
-    assert.strictEqual(Object.keys(learnerUnified).length, 5,
-      `learner unified should have 5 dims, got ${Object.keys(learnerUnified).length}`);
+    assert.strictEqual(
+      Object.keys(learnerMulti).length,
+      5,
+      `learner multi should have 5 dims, got ${Object.keys(learnerMulti).length}`,
+    );
+    assert.strictEqual(
+      Object.keys(learnerUnified).length,
+      5,
+      `learner unified should have 5 dims, got ${Object.keys(learnerUnified).length}`,
+    );
     // v2.2: no conditional dimensions — both variants identical
-    assert.deepStrictEqual(Object.keys(tutorRecog), Object.keys(tutorBase),
-      'tutor dims identical for recog and base');
-    assert.deepStrictEqual(Object.keys(learnerMulti), Object.keys(learnerUnified),
-      'learner dims identical for multi and unified');
+    assert.deepStrictEqual(Object.keys(tutorRecog), Object.keys(tutorBase), 'tutor dims identical for recog and base');
+    assert.deepStrictEqual(
+      Object.keys(learnerMulti),
+      Object.keys(learnerUnified),
+      'learner dims identical for multi and unified',
+    );
   });
 
   // ── Both dimension sets have weights summing to 1.0 ───────────────────
@@ -134,19 +151,13 @@ describe('TuH / LrH holistic scoring symmetry', () => {
   it('tutor holistic dimension weights sum to 1.0', () => {
     const dims = getTutorHolisticDimensions({ hasRecognition: true });
     const totalWeight = Object.values(dims).reduce((sum, d) => sum + d.weight, 0);
-    assert.ok(
-      Math.abs(totalWeight - 1.0) < 0.001,
-      `tutor holistic weights should sum to 1.0, got ${totalWeight}`,
-    );
+    assert.ok(Math.abs(totalWeight - 1.0) < 0.001, `tutor holistic weights should sum to 1.0, got ${totalWeight}`);
   });
 
   it('learner holistic dimension weights sum to 1.0', () => {
     const dims = getLearnerDimensions({ isMultiAgent: true });
     const totalWeight = Object.values(dims).reduce((sum, d) => sum + d.weight, 0);
-    assert.ok(
-      Math.abs(totalWeight - 1.0) < 0.001,
-      `learner holistic weights should sum to 1.0, got ${totalWeight}`,
-    );
+    assert.ok(Math.abs(totalWeight - 1.0) < 0.001, `learner holistic weights should sum to 1.0, got ${totalWeight}`);
   });
 
   // ── Both prompts use the same 1-5 scoring scale and JSON format ───────
