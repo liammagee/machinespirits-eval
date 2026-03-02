@@ -40,7 +40,7 @@ jobs:
       - name: Install tutor-core peer dependency
         run: npm install @machinespirits/tutor-core@0.5.2
 
-      - name: Create data directory for SQLite
-        run: mkdir -p data
+      - name: Create data directory and initialize empty database
+        run: mkdir -p data && node --input-type=module -e "import './services/evaluationStore.js'"
 
       - run: npm test
