@@ -4283,7 +4283,7 @@ export function generateReport(runId) {
           stats
             .map((s) => {
               const score = s.dimensions?.[dim];
-              return ` ${score ? score.toFixed(2).padStart(12) : '         N/A'} |`;
+              return ` ${Number.isFinite(score) ? score.toFixed(2).padStart(12) : '         N/A'} |`;
             })
             .join('');
         lines.push(row);

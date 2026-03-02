@@ -971,8 +971,9 @@ export function getRunStats(runId) {
       // Aggregate dimensions from the parsed scores object
       if (r.scores) {
         for (const [dim, score] of Object.entries(r.scores)) {
-          if (score != null) {
-            g.dimensionSums[dim] = (g.dimensionSums[dim] || 0) + score;
+          const numericScore = typeof score === 'number' ? score : score?.score;
+          if (Number.isFinite(numericScore)) {
+            g.dimensionSums[dim] = (g.dimensionSums[dim] || 0) + numericScore;
             g.dimensionCounts[dim] = (g.dimensionCounts[dim] || 0) + 1;
           }
         }
@@ -1015,7 +1016,6 @@ export function getRunStats(runId) {
     })
     .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
 
-  console.log(`[getRunStats] dimensions for group ${finalStats[0]?.profileName}:`, finalStats[0]?.dimensions);
   return finalStats;
 }
 
