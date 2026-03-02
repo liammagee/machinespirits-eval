@@ -200,7 +200,6 @@ function resolveRunIds() {
   }
 }
 
-
 function computeSlopePerTurn(seq) {
   if (!Array.isArray(seq) || seq.length < 2) return null;
   const n = seq.length;

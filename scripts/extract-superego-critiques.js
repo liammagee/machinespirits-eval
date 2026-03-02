@@ -70,17 +70,16 @@ function extractFromLog(filePath, fileName) {
       let egoGenerate = null;
       let egoRevision = null;
       for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
-        if (dialogueTrace[j].agent === 'ego' && dialogueTrace[j].action === 'generate') {
-          egoGenerate = dialogueTrace[j].detail || dialogueTrace[j].contextSummary || null;
+        const entry = dialogueTrace[j];
+        if (entry.agent === 'ego' && entry.action === 'generate') {
+          egoGenerate = entry.detail || entry.contextSummary || entry.suggestions?.[0]?.message || null;
           break;
         }
       }
       for (let j = i + 1; j < Math.min(dialogueTrace.length, i + 5); j++) {
-        if (
-          dialogueTrace[j].agent === 'ego' &&
-          (dialogueTrace[j].action === 'revision' || dialogueTrace[j].action === 'generate')
-        ) {
-          egoRevision = dialogueTrace[j].detail || dialogueTrace[j].contextSummary || null;
+        const entry = dialogueTrace[j];
+        if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'generate')) {
+          egoRevision = entry.detail || entry.contextSummary || entry.suggestions?.[0]?.message || null;
           break;
         }
       }

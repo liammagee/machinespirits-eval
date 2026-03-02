@@ -8,7 +8,7 @@ import {
   getCodexSession,
   pollCodexSession,
   writeCodexSessionInput,
-  terminateCodexSession
+  terminateCodexSession,
 } from '../codexSessionService.js';
 
 describe('codexSessionService', () => {
@@ -20,7 +20,7 @@ describe('codexSessionService', () => {
       write: mock.fn(),
       kill: mock.fn(),
       onData: mock.fn(),
-      onExit: mock.fn()
+      onExit: mock.fn(),
     };
 
     mock.method(pty, 'spawn', () => mockProcess);
@@ -36,10 +36,10 @@ describe('codexSessionService', () => {
     assert.equal(session.command, 'codex');
     assert.deepEqual(session.args, ['--help']);
     assert.equal(session.status, 'running');
-    
+
     // 2. List & Get
     const list = listCodexSessions();
-    assert.ok(list.some(s => s.id === session.id));
+    assert.ok(list.some((s) => s.id === session.id));
     assert.equal(getCodexSession(session.id).id, session.id);
     assert.equal(getCodexSession('bad-id'), null);
 
@@ -53,7 +53,7 @@ describe('codexSessionService', () => {
     const polled = pollCodexSession(session.id, -1);
     assert.equal(polled.events.length, 2);
     assert.equal(polled.events[0].text, 'hello world');
-    
+
     const polledLater = pollCodexSession(session.id, 0);
     assert.equal(polledLater.events.length, 1);
     assert.equal(polledLater.events[0].text, '\u001b[6n');
@@ -61,7 +61,7 @@ describe('codexSessionService', () => {
     // 5. Input
     writeCodexSessionInput(session.id, 'ls -la');
     assert.equal(mockProcess.write.mock.calls[1].arguments[0], 'ls -la\r');
-    
+
     // 6. Terminate
     terminateCodexSession(session.id);
     assert.equal(mockProcess.kill.mock.calls[0].arguments[0], 'SIGTERM');
@@ -69,7 +69,7 @@ describe('codexSessionService', () => {
     // 7. Exit
     const onExitCallback = mockProcess.onExit.mock.calls[0].arguments[0];
     onExitCallback({ exitCode: 0, signal: 0 });
-    
+
     const final = getCodexSession(session.id);
     assert.equal(final.status, 'exited');
     assert.equal(final.exitCode, 0);

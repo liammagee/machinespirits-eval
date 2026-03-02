@@ -42,7 +42,7 @@ function detectCondition(profileName) {
   if (!profileName) return 'unknown';
   const p = profileName.toLowerCase();
   if (p.includes('recog') || p.includes('recognition')) return 'recognition';
-  if (p.includes('base') || p.includes('baseline') || p.includes('placebo')) return 'baseline';
+  if (p.includes('base') || p.includes('baseline') || p.includes('placebo') || p.includes('budget')) return 'baseline';
   // Dialectical variants without recognition
   if (p.includes('dialectical') && !p.includes('recog')) return 'baseline';
   return 'unknown';
