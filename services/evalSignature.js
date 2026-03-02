@@ -201,7 +201,7 @@ export function findAccumulationGaps(db, epoch = '2.0', targetN = 3) {
     const groups = getAggregatedGroups(db, epoch);
     const gaps = [];
 
-    for (const [sig, group] of groups) {
+    for (const [_sig, group] of groups) {
         if (group.n < targetN) {
             gaps.push({
                 profileName: group.profileName,

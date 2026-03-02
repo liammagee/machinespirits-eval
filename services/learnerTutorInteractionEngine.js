@@ -7,7 +7,7 @@
  */
 
 import * as learnerConfig from './learnerConfigLoader.js';
-import { tutorConfigLoader as tutorConfig, _fetchProvider, isContextOverflowError, truncateForContextOverflow } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as tutorConfig, _fetchProvider, truncateForContextOverflow } from '@machinespirits/tutor-core';
 
 import * as learnerWritingPad from './memory/learnerWritingPad.js';
 import * as tutorWritingPad from './memory/tutorWritingPad.js';
@@ -1157,7 +1157,7 @@ export async function generateLearnerResponse(options) {
   }
 
   // Internal chains for ego-superego deliberation (within this turn)
-  let learnerEgoInternalHistory = [];
+  const learnerEgoInternalHistory = [];
 
   // Build LLM call adapter so both interactive (injected llmCall) and
   // eval (callLearnerAI) paths use the same pipeline.

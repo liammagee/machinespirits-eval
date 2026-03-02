@@ -1665,7 +1665,7 @@ function extractLearnerFollowupFromContext(rawContext) {
   const saidMarker = '**Learner said**:';
   const saidIndex = raw.indexOf(saidMarker);
   if (saidIndex >= 0) {
-    let tail = raw.slice(saidIndex + saidMarker.length).trim();
+    const tail = raw.slice(saidIndex + saidMarker.length).trim();
     if (tail.startsWith('"')) {
       const closing = tail.indexOf('"', 1);
       if (closing > 1) return tail.slice(1, closing).trim();
@@ -1682,7 +1682,7 @@ function extractLearnerFollowupFromContext(rawContext) {
   const actionMarker = '### Learner Action';
   const actionIndex = raw.indexOf(actionMarker);
   if (actionIndex >= 0) {
-    let block = raw.slice(actionIndex);
+    const block = raw.slice(actionIndex);
     let end = block.length;
     const idxHeading = block.indexOf('\n###', actionMarker.length);
     const idxClose = block.indexOf('\n</');

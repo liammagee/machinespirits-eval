@@ -56,7 +56,7 @@ export function loadLearnerRubric({ forceReload } = {}) {
  * @param {boolean} options.isMultiAgent - Kept for backward compat (no-op since v2.1.0)
  * @returns {Object} Map of dimension key → dimension config
  */
-export function getLearnerDimensions({ isMultiAgent = false } = {}) {
+export function getLearnerDimensions({ isMultiAgent: _isMultiAgent = false } = {}) {
   const rubric = loadLearnerRubric();
   if (!rubric?.dimensions) return {};
 

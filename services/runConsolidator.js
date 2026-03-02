@@ -10,7 +10,6 @@
  */
 
 import { randomBytes } from 'crypto';
-import { getEpochFilter } from './epochFilter.js';
 import { getAggregatedGroups } from './evalSignature.js';
 
 // ── Run ID Generation ───────────────────────────────────────────────────────
@@ -60,7 +59,7 @@ export function consolidateRuns(db, options = {}) {
   let multiRunGroupCount = 0;
   let singleRunGroupCount = 0;
 
-  for (const [sig, group] of groups) {
+  for (const [_sig, group] of groups) {
     if (group.nRuns > 1) {
       multiRunGroupCount++;
     } else {
