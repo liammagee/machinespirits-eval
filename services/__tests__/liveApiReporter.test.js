@@ -1,7 +1,6 @@
-import { describe, it, mock, beforeEach, afterEach } from 'node:test';
+import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { LiveApiReporter } from '../liveApiReporter.js';
-import { setGlobalOnRecord } from '../apiPayloadCapture.js';
 
 describe('LiveApiReporter', () => {
   let reporter;
@@ -54,7 +53,7 @@ describe('LiveApiReporter', () => {
     
     assert.equal(stderrOutput.length, 1);
     const line = stderrOutput[0];
-    assert.match(line, /#  1/);
+    assert.match(line, /# {2}1/);
     assert.match(line, /\?\|\?/); // Unknown profile|scenario
     assert.match(line, /ego/); // Role inferred from 'tutor'
     assert.match(line, /test-model-name-is-ver\.\./); // Truncated model name
