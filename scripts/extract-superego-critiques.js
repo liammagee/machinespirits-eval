@@ -78,10 +78,7 @@ function extractFromLog(filePath, fileName) {
       }
       for (let j = i + 1; j < Math.min(dialogueTrace.length, i + 5); j++) {
         const entry = dialogueTrace[j];
-        if (
-          entry.agent === 'ego' &&
-          (entry.action === 'revise' || entry.action === 'generate')
-        ) {
+        if (entry.agent === 'ego' && (entry.action === 'revise' || entry.action === 'generate')) {
           egoRevision = entry.detail || entry.contextSummary || entry.suggestions?.[0]?.message || null;
           break;
         }
