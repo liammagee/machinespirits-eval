@@ -40,4 +40,7 @@ jobs:
       - name: Install tutor-core peer dependency
         run: npm install @machinespirits/tutor-core@0.5.2
 
+      - name: Create data directory for SQLite
+        run: mkdir -p data
+
       - run: npm test
