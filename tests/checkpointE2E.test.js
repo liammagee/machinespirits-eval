@@ -17,11 +17,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import {
-  writeCheckpoint,
-  listCheckpoints,
-  resumeEvaluation,
-} from '../services/evaluationRunner.js';
+import { writeCheckpoint, listCheckpoints, resumeEvaluation } from '../services/evaluationRunner.js';
 import evaluationStore from '../services/evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -60,30 +56,53 @@ describe('Checkpoint E2E: resume from planted checkpoint', () => {
       dialogueId: `dialogue-e2e-test-${Date.now()}`,
       learnerId: `eval-learner-e2e-test-${Date.now()}`,
       turns: [
-        { id: 'turn_1_still_frustrated', learner_action: 'Express frustration',
-          action_details: { message: 'I still dont understand recursion!' } },
-        { id: 'turn_2_starting_to_get_it', learner_action: 'Show progress',
-          action_details: { message: 'Oh wait, maybe I see...' } },
-        { id: 'turn_3_breakthrough', learner_action: 'Breakthrough',
-          action_details: { message: 'I get it now!' } },
+        {
+          id: 'turn_1_still_frustrated',
+          learner_action: 'Express frustration',
+          action_details: { message: 'I still dont understand recursion!' },
+        },
+        {
+          id: 'turn_2_starting_to_get_it',
+          learner_action: 'Show progress',
+          action_details: { message: 'Oh wait, maybe I see...' },
+        },
+        { id: 'turn_3_breakthrough', learner_action: 'Breakthrough', action_details: { message: 'I get it now!' } },
       ],
       turnResults: [
-        { turnIndex: 0, turnId: 'initial', turnScore: 72.5,
+        {
+          turnIndex: 0,
+          turnId: 'initial',
+          turnScore: 72.5,
           suggestion: { title: 'Turn 0', message: 'Welcome!' },
           scores: { relevance: 4, specificity: 3, pedagogical: 4, personalization: 4, actionability: 4, tone: 4 },
-          scoringMethod: 'rubric', requiredMissing: [], forbiddenFound: [] },
-        { turnIndex: 1, turnId: 'turn_1_still_frustrated', turnScore: 68.0,
+          scoringMethod: 'rubric',
+          requiredMissing: [],
+          forbiddenFound: [],
+        },
+        {
+          turnIndex: 1,
+          turnId: 'turn_1_still_frustrated',
+          turnScore: 68.0,
           suggestion: { title: 'Turn 1', message: 'I see your frustration...' },
           scores: { relevance: 3, specificity: 3, pedagogical: 4, personalization: 4, actionability: 4, tone: 3 },
-          scoringMethod: 'rubric', requiredMissing: [], forbiddenFound: [] },
+          scoringMethod: 'rubric',
+          requiredMissing: [],
+          forbiddenFound: [],
+        },
       ],
       conversationHistory: [
-        { turnIndex: 0, turnId: 'initial',
+        {
+          turnIndex: 0,
+          turnId: 'initial',
           suggestion: { title: 'Turn 0', message: 'Welcome!' },
-          learnerMessage: 'I still dont understand recursion!' },
-        { turnIndex: 1, turnId: 'turn_1_still_frustrated',
+          learnerMessage: 'I still dont understand recursion!',
+        },
+        {
+          turnIndex: 1,
+          turnId: 'turn_1_still_frustrated',
           suggestion: { title: 'Turn 1', message: 'I see your frustration...' },
-          learnerMessage: 'Oh wait, maybe I see...' },
+          learnerMessage: 'Oh wait, maybe I see...',
+        },
       ],
       consolidatedTrace: [
         { agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Turn 0 generation' },
@@ -93,7 +112,13 @@ describe('Checkpoint E2E: resume from planted checkpoint', () => {
       ],
       priorSuperegoAssessments: [
         { turnIndex: 0, finalApproved: true, rejections: 0, interventionTypes: [], feedback: 'Good initial approach' },
-        { turnIndex: 1, finalApproved: true, rejections: 1, interventionTypes: ['tone'], feedback: 'Soften frustration response' },
+        {
+          turnIndex: 1,
+          finalApproved: true,
+          rejections: 1,
+          interventionTypes: ['tone'],
+          feedback: 'Soften frustration response',
+        },
       ],
       previousSuggestion: { title: 'Turn 1', message: 'I see your frustration...' },
       sessionEvolution: null,
@@ -127,7 +152,11 @@ describe('Checkpoint E2E: resume from planted checkpoint', () => {
   after(() => {
     if (runId) {
       // Clean DB records
-      try { evaluationStore.deleteRun(runId); } catch { /* ignore */ }
+      try {
+        evaluationStore.deleteRun(runId);
+      } catch {
+        /* ignore */
+      }
       // Clean any leftover checkpoint files
       const cpDir = path.join(CHECKPOINTS_DIR, runId);
       if (fs.existsSync(cpDir)) {
@@ -166,9 +195,8 @@ describe('Checkpoint E2E: resume from planted checkpoint', () => {
     assert.ok(match, 'Should have a result');
 
     // suggestions may be a JSON string or already-parsed array depending on DB layer
-    const suggestions = typeof match.suggestions === 'string'
-      ? JSON.parse(match.suggestions || '[]')
-      : (match.suggestions || []);
+    const suggestions =
+      typeof match.suggestions === 'string' ? JSON.parse(match.suggestions || '[]') : match.suggestions || [];
     assert.strictEqual(suggestions.length, 4, 'Should have 4 suggestions (1 initial + 3 follow-up turns)');
   });
 
@@ -184,7 +212,9 @@ describe('Checkpoint E2E: resume from planted checkpoint', () => {
     const results = evaluationStore.getResults(runId);
     const match = results.find((r) => r.scenarioId === TEST_SCENARIO);
     assert.ok(match, 'Should have a result');
-    assert.ok(match.dialogueId.startsWith('dialogue-e2e-test-'),
-      `dialogueId should be from checkpoint, got ${match.dialogueId}`);
+    assert.ok(
+      match.dialogueId.startsWith('dialogue-e2e-test-'),
+      `dialogueId should be from checkpoint, got ${match.dialogueId}`,
+    );
   });
 });

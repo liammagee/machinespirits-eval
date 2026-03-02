@@ -387,13 +387,15 @@ async function analyzeResults(options) {
 
   // Aggregation info
   if (options.aggregate || !options.runId) {
-    const runIds = [...new Set(results.map(r => r.run_id).filter(Boolean))];
+    const runIds = [...new Set(results.map((r) => r.run_id).filter(Boolean))];
     if (runIds.length > 1) {
       console.log(`${c.green}${c.bold}  ⊕ AGGREGATED across ${runIds.length} runs${c.reset}`);
       for (const profile of profiles) {
-        const profileRuns = [...new Set(byProfile[profile].map(r => r.run_id).filter(Boolean))];
+        const profileRuns = [...new Set(byProfile[profile].map((r) => r.run_id).filter(Boolean))];
         if (profileRuns.length > 1) {
-          console.log(`${c.dim}    ${profile}: N=${byProfile[profile].length} from ${profileRuns.length} runs${c.reset}`);
+          console.log(
+            `${c.dim}    ${profile}: N=${byProfile[profile].length} from ${profileRuns.length} runs${c.reset}`,
+          );
         }
       }
     }
@@ -416,10 +418,10 @@ async function analyzeResults(options) {
 
     console.log(
       `${profile.padEnd(20)} ` +
-      `${scores.length.toString().padStart(6)} ` +
-      `${ci.mean.toFixed(2).padStart(8)} ` +
-      `${standardDeviation(scores).toFixed(2).padStart(8)} ` +
-      `[${ci.lower.toFixed(2)}, ${ci.upper.toFixed(2)}]`.padStart(20),
+        `${scores.length.toString().padStart(6)} ` +
+        `${ci.mean.toFixed(2).padStart(8)} ` +
+        `${standardDeviation(scores).toFixed(2).padStart(8)} ` +
+        `[${ci.lower.toFixed(2)}, ${ci.upper.toFixed(2)}]`.padStart(20),
     );
   }
   console.log();
@@ -430,11 +432,11 @@ async function analyzeResults(options) {
     console.log(`${'─'.repeat(90)}`);
     console.log(
       `${'Comparison'.padEnd(30)} ` +
-      `${'Δ Mean'.padStart(10)} ` +
-      `${"Cohen's d".padStart(12)} ` +
-      `${'Effect'.padStart(12)} ` +
-      `${'t'.padStart(8)} ` +
-      `${'p-value'.padStart(10)}`,
+        `${'Δ Mean'.padStart(10)} ` +
+        `${"Cohen's d".padStart(12)} ` +
+        `${'Effect'.padStart(12)} ` +
+        `${'t'.padStart(8)} ` +
+        `${'p-value'.padStart(10)}`,
     );
     console.log(`${'─'.repeat(90)}`);
 
@@ -456,11 +458,11 @@ async function analyzeResults(options) {
 
         console.log(
           `${`${p1} vs ${p2}`.padEnd(30)} ` +
-          `${(diff >= 0 ? '+' : '') + diff.toFixed(2).padStart(9)} ` +
-          `${d.toFixed(3).padStart(12)} ` +
-          `${effectLabel.padStart(12)} ` +
-          `${ttest.t.toFixed(2).padStart(8)} ` +
-          `${pStr.padStart(8)}${sigMarker.padStart(2)}`,
+            `${(diff >= 0 ? '+' : '') + diff.toFixed(2).padStart(9)} ` +
+            `${d.toFixed(3).padStart(12)} ` +
+            `${effectLabel.padStart(12)} ` +
+            `${ttest.t.toFixed(2).padStart(8)} ` +
+            `${pStr.padStart(8)}${sigMarker.padStart(2)}`,
         );
 
         comparisons.push({ p1, p2, diff, d, effectLabel, t: ttest.t, p: ttest.p });
@@ -526,9 +528,9 @@ async function analyzeResults(options) {
         const direction = dr.d >= 0 ? c.green : c.red;
         console.log(
           `${dr.dimension.padEnd(20)} ` +
-          `${direction}${dr.d >= 0 ? '+' : ''}${dr.d.toFixed(3).padStart(7)}${c.reset} ` +
-          `${direction}${bar}${c.reset} ` +
-          `${dr.effect}`,
+            `${direction}${dr.d >= 0 ? '+' : ''}${dr.d.toFixed(3).padStart(7)}${c.reset} ` +
+            `${direction}${bar}${c.reset} ` +
+            `${dr.effect}`,
         );
       }
       console.log();
@@ -561,9 +563,9 @@ async function analyzeResults(options) {
 
           console.log(
             `  ${p1}(n=${s1.length}, μ=${mean(s1).toFixed(1)}) vs ` +
-            `${p2}(n=${s2.length}, μ=${mean(s2).toFixed(1)}): ` +
-            `Δ=${diff >= 0 ? '+' : ''}${diff.toFixed(1)} (${pctImprove >= 0 ? '+' : ''}${pctImprove.toFixed(0)}%), ` +
-            `d=${d.toFixed(2)}, p=${ttest.p < 0.001 ? '<0.001' : ttest.p.toFixed(3)}`,
+              `${p2}(n=${s2.length}, μ=${mean(s2).toFixed(1)}): ` +
+              `Δ=${diff >= 0 ? '+' : ''}${diff.toFixed(1)} (${pctImprove >= 0 ? '+' : ''}${pctImprove.toFixed(0)}%), ` +
+              `d=${d.toFixed(2)}, p=${ttest.p < 0.001 ? '<0.001' : ttest.p.toFixed(3)}`,
           );
         }
       }

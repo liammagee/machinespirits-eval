@@ -195,9 +195,10 @@ function remediationForCheck(check) {
 
     case 'multiturn-holistic-coverage': {
       const topRuns = Array.isArray(details.top_runs_missing_holistic) ? details.top_runs_missing_holistic : [];
-      const runHint = topRuns.length > 0
-        ? `Prioritize runs: ${topRuns.map((r) => `${r.run_id} (${r.missing})`).join(', ')}.`
-        : 'Prioritize runs with the largest missing holistic counts.';
+      const runHint =
+        topRuns.length > 0
+          ? `Prioritize runs: ${topRuns.map((r) => `${r.run_id} (${r.missing})`).join(', ')}.`
+          : 'Prioritize runs with the largest missing holistic counts.';
       return [
         'Backfill holistic scores by re-evaluating multi-turn rows per run: `node scripts/eval-cli.js evaluate <runId> --force --multiturn-only`.',
         runHint,
@@ -348,11 +349,7 @@ function getSuggestionText(suggestion) {
   if (typeof suggestion === 'string') return suggestion;
   if (typeof suggestion === 'object') {
     return (
-      suggestion.message ||
-      suggestion.text ||
-      suggestion.content ||
-      suggestion.title ||
-      JSON.stringify(suggestion)
+      suggestion.message || suggestion.text || suggestion.content || suggestion.title || JSON.stringify(suggestion)
     );
   }
   return String(suggestion);
@@ -484,7 +481,12 @@ function runManifestValidator() {
   }
 
   if (result.status === 0) {
-    record('pass', 'manifest-paper-validator', 'validate-paper-manifest passed (DB↔manifest + paper↔manifest)', details);
+    record(
+      'pass',
+      'manifest-paper-validator',
+      'validate-paper-manifest passed (DB↔manifest + paper↔manifest)',
+      details,
+    );
   } else {
     const tail = output.split('\n').slice(-20);
     details.output_tail = tail;
@@ -773,9 +775,14 @@ function checkLearnerLeakage(manifest, db, scopeRunIds) {
     }
 
     if (replaced.length > 0) {
-      record('warn', 'learner-leakage-severe-replaced', 'Severe leakage detected in historical runs with replacements', {
-        runs: replaced,
-      });
+      record(
+        'warn',
+        'learner-leakage-severe-replaced',
+        'Severe leakage detected in historical runs with replacements',
+        {
+          runs: replaced,
+        },
+      );
     }
   } else {
     record('pass', 'learner-leakage-severe', 'No severe leakage runs detected in scope');
@@ -852,10 +859,15 @@ function checkConversationHistoryRegression() {
     const behaviorOk = JSON.stringify(flattened) === JSON.stringify(expected);
 
     if (!behaviorOk) {
-      record('fail', 'conversation-history-behavior', 'flattenConversationHistory behavior no longer matches regression fixture', {
-        expected,
-        actual: flattened,
-      });
+      record(
+        'fail',
+        'conversation-history-behavior',
+        'flattenConversationHistory behavior no longer matches regression fixture',
+        {
+          expected,
+          actual: flattened,
+        },
+      );
     } else {
       record('pass', 'conversation-history-behavior', 'flattenConversationHistory behavior matches regression fixture');
     }
@@ -881,12 +893,21 @@ function checkConversationHistoryRegression() {
     cliSource.includes('result.suggestions[result.suggestions.length - 1]');
 
   if (runnerUsesLastSuggestion && cliUsesLastSuggestion) {
-    record('pass', 'multiturn-selection-source', 'evaluate/rejudge source paths select last suggestion for multi-turn rows');
+    record(
+      'pass',
+      'multiturn-selection-source',
+      'evaluate/rejudge source paths select last suggestion for multi-turn rows',
+    );
   } else {
-    record('fail', 'multiturn-selection-source', 'Missing last-suggestion selection guard in evaluate/rejudge code paths', {
-      runnerUsesLastSuggestion,
-      cliUsesLastSuggestion,
-    });
+    record(
+      'fail',
+      'multiturn-selection-source',
+      'Missing last-suggestion selection guard in evaluate/rejudge code paths',
+      {
+        runnerUsesLastSuggestion,
+        cliUsesLastSuggestion,
+      },
+    );
   }
 }
 
@@ -1037,9 +1058,7 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
 
 function checkPaperDisclosureCoverage(paperText) {
   const hasJudgeBugDisclosure =
-    /Opus 4\.5/i.test(paperText) &&
-    /Opus 4\.6/i.test(paperText) &&
-    /(version drift|rejudg|re-judg)/i.test(paperText);
+    /Opus 4\.5/i.test(paperText) && /Opus 4\.6/i.test(paperText) && /(version drift|rejudg|re-judg)/i.test(paperText);
 
   if (hasJudgeBugDisclosure) {
     record('pass', 'paper-disclosure-bug1', 'Paper discloses judge-version drift and unification');
@@ -1048,8 +1067,7 @@ function checkPaperDisclosureCoverage(paperText) {
   }
 
   const hasLearnerPipelineDisclosure =
-    /learner pipeline bugs/i.test(paperText) &&
-    /(0fbca69e|bd37cc62|4e131c6f)/i.test(paperText);
+    /learner pipeline bugs/i.test(paperText) && /(0fbca69e|bd37cc62|4e131c6f)/i.test(paperText);
 
   if (hasLearnerPipelineDisclosure) {
     record('pass', 'paper-disclosure-bug2', 'Paper discloses learner-pipeline bug context and clean reruns');
@@ -1117,7 +1135,12 @@ function checkBugReportIssueState() {
       },
       {
         bug: 'Bug 4',
-        checks: ['multiturn-selection-source', 'multiturn-holistic-coverage', 'multiturn-turn0-risk', 'paper-disclosure-bug4'],
+        checks: [
+          'multiturn-selection-source',
+          'multiturn-holistic-coverage',
+          'multiturn-turn0-risk',
+          'paper-disclosure-bug4',
+        ],
       },
     ];
 
@@ -1160,12 +1183,14 @@ function checkBugReportIssueState() {
   const runnerSource = fs.readFileSync(EVAL_RUNNER_PATH, 'utf8');
   const hasMetaEgoOverride = /metadata\.egoModelOverride/.test(runnerSource);
   const hasMetaSuperegoOverride = /metadata\.superegoModelOverride/.test(runnerSource);
-  const reappliesEgo = /targetConfigs\s*=\s*targetConfigs\.map\(\(c\)\s*=>\s*\(\{\s*\.\.\.c,\s*egoModelOverride\s*\}\)\)/.test(
-    runnerSource,
-  );
-  const reappliesSuperego = /targetConfigs\s*=\s*targetConfigs\.map\(\(c\)\s*=>\s*\(\{\s*\.\.\.c,\s*superegoModelOverride\s*\}\)\)/.test(
-    runnerSource,
-  );
+  const reappliesEgo =
+    /targetConfigs\s*=\s*targetConfigs\.map\(\(c\)\s*=>\s*\(\{\s*\.\.\.c,\s*egoModelOverride\s*\}\)\)/.test(
+      runnerSource,
+    );
+  const reappliesSuperego =
+    /targetConfigs\s*=\s*targetConfigs\.map\(\(c\)\s*=>\s*\(\{\s*\.\.\.c,\s*superegoModelOverride\s*\}\)\)/.test(
+      runnerSource,
+    );
 
   if (hasMetaEgoOverride && hasMetaSuperegoOverride && reappliesEgo && reappliesSuperego) {
     record('pass', 'bug-reports-resume', 'Resume override bug fix is present in source');
@@ -1287,7 +1312,9 @@ function checkTodoIssueState() {
   }
 
   let validateConfigResult = null;
-  const hasValidateConfigTodo = unchecked.some((item) => /validate with `eval-cli\.js validate-config`/i.test(item.text));
+  const hasValidateConfigTodo = unchecked.some((item) =>
+    /validate with `eval-cli\.js validate-config`/i.test(item.text),
+  );
   if (hasValidateConfigTodo && !skipCommandChecks) {
     validateConfigResult = spawnSync(process.execPath, [EVAL_CLI_PATH, 'validate-config'], {
       cwd: ROOT,
@@ -1399,7 +1426,10 @@ function checkTodoIssueState() {
 
     if (/Rewrite Tables 29,\s*30,\s*31 with above data/i.test(text)) {
       const hasNewCellMeans =
-        /\b69\.2\b/.test(paperText) && /\b69\.7\b/.test(paperText) && /\b45\.5\b/.test(paperText) && /\b47\.4\b/.test(paperText);
+        /\b69\.2\b/.test(paperText) &&
+        /\b69\.7\b/.test(paperText) &&
+        /\b45\.5\b/.test(paperText) &&
+        /\b47\.4\b/.test(paperText);
       const hasLegacyCellMeans = /\b38\.0\b/.test(paperText);
       if (hasNewCellMeans && !hasLegacyCellMeans) {
         addOutcome(addressedButUnchecked, item, 'New post-fix Table 29-31 values detected in paper');
@@ -1416,9 +1446,16 @@ function checkTodoIssueState() {
       if (!hasLegacyF && hasUpdatedInteractionNarrative) {
         addOutcome(addressedButUnchecked, item, 'Legacy F=11.50 removed and updated interaction narrative detected');
       } else if (hasLegacyF) {
-        addOutcome(unresolved, item, { legacy_f_11_50_present: true, updated_interaction_narrative: hasUpdatedInteractionNarrative });
+        addOutcome(unresolved, item, {
+          legacy_f_11_50_present: true,
+          updated_interaction_narrative: hasUpdatedInteractionNarrative,
+        });
       } else {
-        addOutcome(manual, item, 'No explicit legacy F-stat found; ANOVA recomputation still requires manual verification');
+        addOutcome(
+          manual,
+          item,
+          'No explicit legacy F-stat found; ANOVA recomputation still requires manual verification',
+        );
       }
       continue;
     }
@@ -1429,7 +1466,10 @@ function checkTodoIssueState() {
       if (!stillClaimsRescue && hasNoRescueClaim) {
         addOutcome(addressedButUnchecked, item, '§6.16 appears updated to no-rescue interpretation');
       } else {
-        addOutcome(unresolved, item, { rescue_language_present: stillClaimsRescue, no_rescue_language_present: hasNoRescueClaim });
+        addOutcome(unresolved, item, {
+          rescue_language_present: stillClaimsRescue,
+          no_rescue_language_present: hasNoRescueClaim,
+        });
       }
       continue;
     }
@@ -1515,10 +1555,15 @@ function checkTodoIssueState() {
       continue;
     }
 
-    if (/Remove\/update §6\.10 footnote about "original runs; clean re-runs produce comparable tutor-side scores"/i.test(text)) {
-      const legacyFootnote = /Table 19 tutor-side scores below are from the original runs; the bugs affected the learner's behavior but the tutor's generation path was independent/i.test(
-        paperText,
-      );
+    if (
+      /Remove\/update §6\.10 footnote about "original runs; clean re-runs produce comparable tutor-side scores"/i.test(
+        text,
+      )
+    ) {
+      const legacyFootnote =
+        /Table 19 tutor-side scores below are from the original runs; the bugs affected the learner's behavior but the tutor's generation path was independent/i.test(
+          paperText,
+        );
       if (legacyFootnote) {
         addOutcome(unresolved, item, { legacy_footnote_present: true });
       } else {
@@ -1775,16 +1820,12 @@ function buildRunEvidenceIndex(db, runIds, manifestRunMeta) {
     const manifestEntries = manifestRunMeta.get(runId) || [];
     const manifestExpectedScoredValues = [
       ...new Set(
-        manifestEntries
-          .map((entry) => Number(entry.expected_scored))
-          .filter((value) => Number.isFinite(value)),
+        manifestEntries.map((entry) => Number(entry.expected_scored)).filter((value) => Number.isFinite(value)),
       ),
     ];
     const manifestExpectedAttemptValues = [
       ...new Set(
-        manifestEntries
-          .map((entry) => Number(entry.expected_attempts))
-          .filter((value) => Number.isFinite(value)),
+        manifestEntries.map((entry) => Number(entry.expected_attempts)).filter((value) => Number.isFinite(value)),
       ),
     ];
 
@@ -1839,7 +1880,8 @@ function aggregateRunEvidence(runIds, runEvidenceIndex) {
     aggregate.multiturn_rows += evidence.multiturn_rows;
     aggregate.multiturn_with_holistic += evidence.multiturn_with_holistic;
     for (const value of evidence.manifest_expected_scored_values) aggregate.manifest_expected_scored_values.add(value);
-    for (const value of evidence.manifest_expected_attempt_values) aggregate.manifest_expected_attempt_values.add(value);
+    for (const value of evidence.manifest_expected_attempt_values)
+      aggregate.manifest_expected_attempt_values.add(value);
   }
 
   return {
@@ -1920,7 +1962,8 @@ function evaluateNClaimsBacktracking({
     };
 
     if (paperCue && dbCue) {
-      const preferPaper = claim.value === manifestTotal || Math.abs(claim.value - manifestTotal) <= Math.abs(claim.value - dbExpected);
+      const preferPaper =
+        claim.value === manifestTotal || Math.abs(claim.value - manifestTotal) <= Math.abs(claim.value - dbExpected);
       const expected = preferPaper ? manifestTotal : dbExpected;
       const pass = claim.lower_bound ? expected >= claim.value : claim.value === expected;
       outcomes.push({
@@ -2168,7 +2211,8 @@ function buildContaminatedRunSet(manifest, _db, runEvidenceIndex) {
 }
 
 function evaluateContaminatedRunCaveats(runMentions, lines, contaminatedRuns) {
-  const caveatRe = /(bug|pre-fix|upper bound|artifact|caveat|inflat|clean re-run|clean rerun|pipeline|leak|flatmap|fixed)/i;
+  const caveatRe =
+    /(bug|pre-fix|upper bound|artifact|caveat|inflat|clean re-run|clean rerun|pipeline|leak|flatmap|fixed)/i;
   const relevantMentions = runMentions.filter((mention) => contaminatedRuns.has(mention.run_id));
   const narrativeMentions = relevantMentions.filter((mention) => {
     if (/\|/.test(mention.line_text)) return false;
@@ -2269,7 +2313,9 @@ function evaluateLogBacktrackingForClaims(runIds, runEvidenceIndex, db) {
   const logFailures = runLogStats.filter(
     (row) => row.missing_logs > 0 || row.unreadable_logs > 0 || row.no_trace_logs > 0,
   );
-  const holisticGaps = runLogStats.filter((row) => row.multiturn_rows > 0 && row.multiturn_with_holistic < row.multiturn_rows);
+  const holisticGaps = runLogStats.filter(
+    (row) => row.multiturn_rows > 0 && row.multiturn_with_holistic < row.multiturn_rows,
+  );
   const nonMulti = runLogStats.filter((row) => row.not_multiturn_logs > 0);
 
   let status = 'pass';
@@ -2352,31 +2398,39 @@ function checkPaperClaimsSuite(manifest, paperText, db) {
 
   const contaminatedRuns = buildContaminatedRunSet(manifest, db, runEvidenceIndex);
   const caveatEval = evaluateContaminatedRunCaveats(runMentions, lines, contaminatedRuns);
-  record(caveatEval.status, 'paper-claims-bug-caveats', 'Mentions of contaminated runs include nearby caveat language', {
-    contaminated_runs_known: caveatEval.contaminated_runs_known,
-    contaminated_mentions: caveatEval.contaminated_mentions,
-    narrative_mentions: caveatEval.narrative_mentions,
-    missing_caveat_mentions: caveatEval.mentions_missing_caveat.slice(0, 10),
-  });
+  record(
+    caveatEval.status,
+    'paper-claims-bug-caveats',
+    'Mentions of contaminated runs include nearby caveat language',
+    {
+      contaminated_runs_known: caveatEval.contaminated_runs_known,
+      contaminated_mentions: caveatEval.contaminated_mentions,
+      narrative_mentions: caveatEval.narrative_mentions,
+      missing_caveat_mentions: caveatEval.mentions_missing_caveat.slice(0, 10),
+    },
+  );
 
   const logTrace = evaluateLogBacktrackingForClaims(claimRunIds, runEvidenceIndex, db);
-  record(logTrace.status, 'paper-claims-log-trace', 'Paper-cited multi-turn runs are backed by logs and holistic coverage', {
-    runs_checked: logTrace.runs_checked,
-    log_failure_count: logTrace.log_failures.length,
-    holistic_gap_count: logTrace.holistic_gaps.length,
-    non_multiturn_log_count: logTrace.non_multiturn_logs.length,
-    log_failure_samples: logTrace.log_failures.slice(0, 10),
-    holistic_gap_samples: logTrace.holistic_gaps.slice(0, 10),
-  });
-
-  const componentStatuses = [
-    runIdTrace.status,
-    nStatus,
-    statStatus,
-    caveatEval.status,
+  record(
     logTrace.status,
-  ];
-  const suiteStatus = componentStatuses.includes('fail') ? 'fail' : componentStatuses.includes('warn') ? 'warn' : 'pass';
+    'paper-claims-log-trace',
+    'Paper-cited multi-turn runs are backed by logs and holistic coverage',
+    {
+      runs_checked: logTrace.runs_checked,
+      log_failure_count: logTrace.log_failures.length,
+      holistic_gap_count: logTrace.holistic_gaps.length,
+      non_multiturn_log_count: logTrace.non_multiturn_logs.length,
+      log_failure_samples: logTrace.log_failures.slice(0, 10),
+      holistic_gap_samples: logTrace.holistic_gaps.slice(0, 10),
+    },
+  );
+
+  const componentStatuses = [runIdTrace.status, nStatus, statStatus, caveatEval.status, logTrace.status];
+  const suiteStatus = componentStatuses.includes('fail')
+    ? 'fail'
+    : componentStatuses.includes('warn')
+      ? 'warn'
+      : 'pass';
   record(suiteStatus, 'paper-claims-suite', 'Comprehensive paper claim backtracking audit completed', {
     run_id_claims: runMentions.length,
     n_claims: nClaims.length,
@@ -2416,7 +2470,9 @@ function checkPaperClaimsSuite(manifest, paperText, db) {
       fs.writeFileSync(reportPath, JSON.stringify(claimAuditReport, null, 2), 'utf8');
       report.claim_report = path.relative(ROOT, reportPath);
       if (!jsonMode) {
-        console.log(`    ${paint('-', ANSI.gray)} ${paint('claim_report:', ANSI.gray)} ${path.relative(ROOT, reportPath)}`);
+        console.log(
+          `    ${paint('-', ANSI.gray)} ${paint('claim_report:', ANSI.gray)} ${path.relative(ROOT, reportPath)}`,
+        );
       }
     } catch (error) {
       record('warn', 'paper-claims-report-write', 'Could not write claim report file', {

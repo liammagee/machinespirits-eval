@@ -161,7 +161,15 @@ function toRepoRelative(p) {
   return path.relative(ROOT, abs);
 }
 
-function buildSeedPrompt({ auditPathRel, claimReportRel, auditExitCode, summary, failedChecks, warnedChecks, override }) {
+function buildSeedPrompt({
+  auditPathRel,
+  claimReportRel,
+  auditExitCode,
+  summary,
+  failedChecks,
+  warnedChecks,
+  override,
+}) {
   if (override && override.trim()) {
     return override.trim();
   }

@@ -46,7 +46,10 @@ function parseCliArgs(argv) {
 
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
-    if (!token.startsWith('--')) { runIds.push(token); continue; }
+    if (!token.startsWith('--')) {
+      runIds.push(token);
+      continue;
+    }
     const key = token.slice(2);
     if (valueOpts.has(key) && i + 1 < argv.length) {
       options[key] = argv[++i];
@@ -88,9 +91,12 @@ function resolveFactors(row) {
   const inferred = inferFactorsFromProfile(row.profile_name || '');
   const recognition = row.factor_recognition == null ? inferred.recognition : Boolean(row.factor_recognition);
   const multiTutor = row.factor_multi_agent_tutor == null ? inferred.multiTutor : Boolean(row.factor_multi_agent_tutor);
-  const multiLearner = row.factor_multi_agent_learner == null ? inferred.multiLearner : Boolean(row.factor_multi_agent_learner);
+  const multiLearner =
+    row.factor_multi_agent_learner == null ? inferred.multiLearner : Boolean(row.factor_multi_agent_learner);
   return {
-    recognition, multiTutor, multiLearner,
+    recognition,
+    multiTutor,
+    multiLearner,
     cellKey: `r${recognition ? 1 : 0}_t${multiTutor ? 1 : 0}_l${multiLearner ? 1 : 0}`,
     conditionLabel: recognition ? 'recognition' : 'baseline',
   };
@@ -98,7 +104,9 @@ function resolveFactors(row) {
 
 // ── Stats helpers ────────────────────────────────────────────────────
 
-function mean(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN; }
+function mean(arr) {
+  return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : NaN;
+}
 function std(arr) {
   if (arr.length < 2) return 0;
   const m = mean(arr);
@@ -110,10 +118,13 @@ function cohensD(a, b) {
   return pooled === 0 ? NaN : (mean(a) - mean(b)) / pooled;
 }
 function welchT(a, b) {
-  const na = a.length, nb = b.length;
+  const na = a.length,
+    nb = b.length;
   if (na < 2 || nb < 2) return { t: NaN, df: NaN, p: NaN };
-  const ma = mean(a), mb = mean(b);
-  const va = std(a) ** 2, vb = std(b) ** 2;
+  const ma = mean(a),
+    mb = mean(b);
+  const va = std(a) ** 2,
+    vb = std(b) ** 2;
   const se = Math.sqrt(va / na + vb / nb);
   if (se === 0) return { t: NaN, df: NaN, p: NaN };
   const t = (ma - mb) / se;
@@ -132,15 +143,24 @@ function betaIncomplete(a, b, x) {
   if (x === 0 || x === 1) return x === 0 ? 1 : 0;
   const lnBeta = lgamma(a) + lgamma(b) - lgamma(a + b);
   const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta) / a;
-  let f = 1, c = 1, d = 0;
+  let f = 1,
+    c = 1,
+    d = 0;
   for (let i = 0; i <= 200; i++) {
     const m = Math.floor(i / 2);
     let numerator;
-    if (i === 0) { numerator = 1; }
-    else if (i % 2 === 0) { numerator = (m * (b - m) * x) / ((a + 2 * m - 1) * (a + 2 * m)); }
-    else { numerator = -((a + m) * (a + b + m) * x) / ((a + 2 * m) * (a + 2 * m + 1)); }
-    d = 1 + numerator * d; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1 / d;
-    c = 1 + numerator / c; if (Math.abs(c) < 1e-30) c = 1e-30;
+    if (i === 0) {
+      numerator = 1;
+    } else if (i % 2 === 0) {
+      numerator = (m * (b - m) * x) / ((a + 2 * m - 1) * (a + 2 * m));
+    } else {
+      numerator = -((a + m) * (a + b + m) * x) / ((a + 2 * m) * (a + 2 * m + 1));
+    }
+    d = 1 + numerator * d;
+    if (Math.abs(d) < 1e-30) d = 1e-30;
+    d = 1 / d;
+    c = 1 + numerator / c;
+    if (Math.abs(c) < 1e-30) c = 1e-30;
     f *= c * d;
     if (Math.abs(c * d - 1) < 1e-8) break;
   }
@@ -148,13 +168,16 @@ function betaIncomplete(a, b, x) {
   return x < (a + 1) / (a + b + 2) ? result : 1 - result;
 }
 function lgamma(x) {
-  const c = [76.18009172947146, -86.50532032941676, 24.01409824083091,
-    -1.231739572450155, 0.001208650973866179, -0.000005395239384953];
-  let y = x, tmp = x + 5.5;
+  const c = [
+    76.18009172947146, -86.50532032941676, 24.01409824083091, -1.231739572450155, 0.001208650973866179,
+    -0.000005395239384953,
+  ];
+  let y = x,
+    tmp = x + 5.5;
   tmp -= (x + 0.5) * Math.log(tmp);
   let ser = 1.000000000190015;
   for (let j = 0; j < 6; j++) ser += c[j] / ++y;
-  return -tmp + Math.log(2.5066282746310007 * ser / x);
+  return -tmp + Math.log((2.5066282746310007 * ser) / x);
 }
 
 function computeSlope(seq) {
@@ -162,7 +185,8 @@ function computeSlope(seq) {
   if (n < 2) return null;
   const meanX = (n - 1) / 2;
   const meanY = mean(seq);
-  let cov = 0, varX = 0;
+  let cov = 0,
+    varX = 0;
   for (let i = 0; i < n; i++) {
     const dx = i - meanX;
     cov += dx * (seq[i] - meanY);
@@ -175,7 +199,11 @@ function computeSlope(seq) {
 
 function parseJson(raw, fallback = null) {
   if (!raw || typeof raw !== 'string') return fallback;
-  try { return JSON.parse(raw); } catch { return fallback; }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
 }
 
 // ── Data extraction ──────────────────────────────────────────────────
@@ -185,7 +213,10 @@ function extractPerTurnDimensions(scoresJson, _side) {
   if (!parsed || typeof parsed !== 'object') return null;
 
   const turns = [];
-  const keys = Object.keys(parsed).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  const keys = Object.keys(parsed)
+    .map(Number)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
   if (keys.length < 2) return null;
 
   for (const turnIdx of keys) {
@@ -217,7 +248,7 @@ function extractPerTurnDimensions(scoresJson, _side) {
 function _extractActionTypes(suggestionsJson) {
   const parsed = parseJson(suggestionsJson, []);
   if (!Array.isArray(parsed)) return [];
-  return parsed.map(s => s?.actionType || s?.action_type || 'unknown');
+  return parsed.map((s) => s?.actionType || s?.action_type || 'unknown');
 }
 
 // ── Query ────────────────────────────────────────────────────────────
@@ -291,7 +322,7 @@ function analyzeTutorCalibration(rows) {
   const dimensionStats = {};
 
   for (const [condition, entries] of Object.entries(groups)) {
-    const variances = entries.map(e => {
+    const variances = entries.map((e) => {
       const vals = Object.values(e.dimScores);
       return std(vals) ** 2; // variance across dimensions for this row
     });
@@ -304,11 +335,11 @@ function analyzeTutorCalibration(rows) {
 
     // Per-dimension means and SDs
     const allDims = new Set();
-    entries.forEach(e => Object.keys(e.dimScores).forEach(d => allDims.add(d)));
+    entries.forEach((e) => Object.keys(e.dimScores).forEach((d) => allDims.add(d)));
 
     for (const dim of allDims) {
       if (!dimensionStats[dim]) dimensionStats[dim] = {};
-      const scores = entries.map(e => e.dimScores[dim]).filter(v => v != null);
+      const scores = entries.map((e) => e.dimScores[dim]).filter((v) => v != null);
       dimensionStats[dim][condition] = {
         n: scores.length,
         mean: mean(scores),
@@ -318,26 +349,23 @@ function analyzeTutorCalibration(rows) {
   }
 
   // Cohen's d for variance reduction
-  const recogVars = groups.recognition.map(e => {
+  const recogVars = groups.recognition.map((e) => {
     const vals = Object.values(e.dimScores);
     return std(vals) ** 2;
   });
-  const baseVars = groups.baseline.map(e => {
+  const baseVars = groups.baseline.map((e) => {
     const vals = Object.values(e.dimScores);
     return std(vals) ** 2;
   });
 
-  const varianceCohensD = recogVars.length >= 3 && baseVars.length >= 3
-    ? cohensD(recogVars, baseVars)
-    : NaN;
+  const varianceCohensD = recogVars.length >= 3 && baseVars.length >= 3 ? cohensD(recogVars, baseVars) : NaN;
 
   // Per-dimension discriminative power (which dims differ most between conditions?)
   const dimensionDiscrimination = {};
   for (const [dim, condData] of Object.entries(dimensionStats)) {
-    if (condData.recognition && condData.baseline &&
-      condData.recognition.n >= 10 && condData.baseline.n >= 10) {
-      const rScores = groups.recognition.map(e => e.dimScores[dim]).filter(v => v != null);
-      const bScores = groups.baseline.map(e => e.dimScores[dim]).filter(v => v != null);
+    if (condData.recognition && condData.baseline && condData.recognition.n >= 10 && condData.baseline.n >= 10) {
+      const rScores = groups.recognition.map((e) => e.dimScores[dim]).filter((v) => v != null);
+      const bScores = groups.baseline.map((e) => e.dimScores[dim]).filter((v) => v != null);
       dimensionDiscrimination[dim] = {
         recogMean: condData.recognition.mean,
         baseMean: condData.baseline.mean,
@@ -382,14 +410,14 @@ function analyzeTrajectories(rows) {
       entry.tutorTurns = tutorTurns;
       entry.tutorTurnCount = tutorTurns.length;
       entry.tutorDimensionSlopes = computeDimensionSlopes(tutorTurns);
-      entry.tutorOverallSlope = computeSlope(tutorTurns.map(t => t.overallScore).filter(v => v != null));
+      entry.tutorOverallSlope = computeSlope(tutorTurns.map((t) => t.overallScore).filter((v) => v != null));
     }
 
     if (learnerTurns) {
       entry.learnerTurns = learnerTurns;
       entry.learnerTurnCount = learnerTurns.length;
       entry.learnerDimensionSlopes = computeDimensionSlopes(learnerTurns);
-      entry.learnerOverallSlope = computeSlope(learnerTurns.map(t => t.overallScore).filter(v => v != null));
+      entry.learnerOverallSlope = computeSlope(learnerTurns.map((t) => t.overallScore).filter((v) => v != null));
     }
 
     dialogues.push(entry);
@@ -400,11 +428,11 @@ function analyzeTrajectories(rows) {
 
 function computeDimensionSlopes(turns) {
   const allDims = new Set();
-  for (const t of turns) Object.keys(t.dimensions).forEach(d => allDims.add(d));
+  for (const t of turns) Object.keys(t.dimensions).forEach((d) => allDims.add(d));
 
   const slopes = {};
   for (const dim of allDims) {
-    const seq = turns.map(t => t.dimensions[dim]).filter(v => v != null);
+    const seq = turns.map((t) => t.dimensions[dim]).filter((v) => v != null);
     if (seq.length >= 2) {
       slopes[dim] = computeSlope(seq);
     }
@@ -475,8 +503,8 @@ function buildMeanCurve(entries, turnsKey) {
 // ── Hypothesis tests ─────────────────────────────────────────────────
 
 function runHypothesisTests(dialogues) {
-  const recog = dialogues.filter(d => d.recognition);
-  const base = dialogues.filter(d => !d.recognition);
+  const recog = dialogues.filter((d) => d.recognition);
+  const base = dialogues.filter((d) => !d.recognition);
   const tests = {};
 
   // H1: Per-dimension slope comparison (recognition vs baseline) — tutor side
@@ -500,13 +528,13 @@ function runHypothesisTests(dialogues) {
 function testDimensionSlopes(recog, base, slopeKey = 'tutorDimensionSlopes') {
   const allDims = new Set();
   for (const d of [...recog, ...base]) {
-    if (d[slopeKey]) Object.keys(d[slopeKey]).forEach(k => allDims.add(k));
+    if (d[slopeKey]) Object.keys(d[slopeKey]).forEach((k) => allDims.add(k));
   }
 
   const results = {};
   for (const dim of [...allDims].sort()) {
-    const recogSlopes = recog.map(d => d[slopeKey]?.[dim]).filter(v => v != null);
-    const baseSlopes = base.map(d => d[slopeKey]?.[dim]).filter(v => v != null);
+    const recogSlopes = recog.map((d) => d[slopeKey]?.[dim]).filter((v) => v != null);
+    const baseSlopes = base.map((d) => d[slopeKey]?.[dim]).filter((v) => v != null);
 
     if (recogSlopes.length < 3 || baseSlopes.length < 3) continue;
 
@@ -535,8 +563,8 @@ function testOverallSlopes(recog, base) {
 
   for (const side of sides) {
     const slopeKey = `${side}OverallSlope`;
-    const recogSlopes = recog.map(d => d[slopeKey]).filter(v => v != null);
-    const baseSlopes = base.map(d => d[slopeKey]).filter(v => v != null);
+    const recogSlopes = recog.map((d) => d[slopeKey]).filter((v) => v != null);
+    const baseSlopes = base.map((d) => d[slopeKey]).filter((v) => v != null);
 
     if (recogSlopes.length < 3 || baseSlopes.length < 3) continue;
 
@@ -577,7 +605,7 @@ function testAsymmetry(dialogues) {
       // One-sample t-test: is the gap > 0?
       tValue: se > 0 ? m / se : NaN,
       pValue: se > 0 ? tDistPValue(Math.abs(m / se), gaps.length - 1) : NaN,
-      gapPositiveRate: gaps.filter(g => g > 0).length / gaps.length,
+      gapPositiveRate: gaps.filter((g) => g > 0).length / gaps.length,
     };
   }
 
@@ -608,26 +636,43 @@ function printCalibrationReport(calibration) {
   console.log(`${'═'.repeat(70)}`);
 
   for (const [cond, stats] of Object.entries(calibration.varianceByCondition)) {
-    console.log(`  ${cond}: N=${stats.n}, mean dim-variance=${formatNumber(stats.meanVariance, 3)}, SD=${formatNumber(stats.sdVariance, 3)}`);
+    console.log(
+      `  ${cond}: N=${stats.n}, mean dim-variance=${formatNumber(stats.meanVariance, 3)}, SD=${formatNumber(stats.sdVariance, 3)}`,
+    );
   }
-  console.log(`  Variance reduction d=${formatNumber(calibration.varianceCohensD)} (negative = recognition has lower variance)`);
+  console.log(
+    `  Variance reduction d=${formatNumber(calibration.varianceCohensD)} (negative = recognition has lower variance)`,
+  );
 
   console.log(`\n  Per-dimension discrimination (sorted by |d|):`);
-  console.log('  ' + 'Dimension'.padEnd(30) + 'Recog'.padStart(8) + 'Base'.padStart(8) +
-    'Delta'.padStart(8) + 'd'.padStart(8) + 'R_sd'.padStart(8) + 'B_sd'.padStart(8) + 'sdRatio'.padStart(9));
+  console.log(
+    '  ' +
+      'Dimension'.padEnd(30) +
+      'Recog'.padStart(8) +
+      'Base'.padStart(8) +
+      'Delta'.padStart(8) +
+      'd'.padStart(8) +
+      'R_sd'.padStart(8) +
+      'B_sd'.padStart(8) +
+      'sdRatio'.padStart(9),
+  );
 
-  const sorted = Object.entries(calibration.dimensionDiscrimination)
-    .sort((a, b) => Math.abs(b[1].cohensD) - Math.abs(a[1].cohensD));
+  const sorted = Object.entries(calibration.dimensionDiscrimination).sort(
+    (a, b) => Math.abs(b[1].cohensD) - Math.abs(a[1].cohensD),
+  );
 
   for (const [dim, r] of sorted) {
-    console.log('  ' + dim.padEnd(30) +
-      formatNumber(r.recogMean).padStart(8) +
-      formatNumber(r.baseMean).padStart(8) +
-      formatNumber(r.delta).padStart(8) +
-      formatNumber(r.cohensD).padStart(8) +
-      formatNumber(r.recogSd).padStart(8) +
-      formatNumber(r.baseSd).padStart(8) +
-      formatNumber(r.sdRatio).padStart(9));
+    console.log(
+      '  ' +
+        dim.padEnd(30) +
+        formatNumber(r.recogMean).padStart(8) +
+        formatNumber(r.baseMean).padStart(8) +
+        formatNumber(r.delta).padStart(8) +
+        formatNumber(r.cohensD).padStart(8) +
+        formatNumber(r.recogSd).padStart(8) +
+        formatNumber(r.baseSd).padStart(8) +
+        formatNumber(r.sdRatio).padStart(9),
+    );
   }
 }
 
@@ -637,9 +682,11 @@ function printReport(dialogues, meanTrajectories, hypothesisTests, skippedTooFew
   console.log(`  TRAJECTORY CURVE ANALYSIS (Paper 2.0)`);
   console.log(`${'═'.repeat(70)}`);
   console.log(`  Dialogues analyzed: ${dialogues.length} (skipped ${skippedTooFewTurns} with <${minTurns} turns)`);
-  console.log(`  Recognition: ${dialogues.filter(d => d.recognition).length}  |  Baseline: ${dialogues.filter(d => !d.recognition).length}`);
+  console.log(
+    `  Recognition: ${dialogues.filter((d) => d.recognition).length}  |  Baseline: ${dialogues.filter((d) => !d.recognition).length}`,
+  );
 
-  const runs = [...new Set(dialogues.map(d => d.runId))];
+  const runs = [...new Set(dialogues.map((d) => d.runId))];
   console.log(`  Runs: ${runs.length} (${runs.slice(0, 3).join(', ')}${runs.length > 3 ? '...' : ''})`);
 
   // Mean trajectories
@@ -649,9 +696,12 @@ function printReport(dialogues, meanTrajectories, hypothesisTests, skippedTooFew
 
     for (const side of ['tutor', 'learner']) {
       const curve = data[side];
-      if (!curve?.length) { console.log(`    ${side}: no data`); continue; }
+      if (!curve?.length) {
+        console.log(`    ${side}: no data`);
+        continue;
+      }
       console.log(`    ${side} mean trajectory (overall 0-100):`);
-      const line = curve.map(p => `T${p.turn}=${formatNumber(p.overallMean, 1)}(n=${p.n})`).join('  ');
+      const line = curve.map((p) => `T${p.turn}=${formatNumber(p.overallMean, 1)}(n=${p.n})`).join('  ');
       console.log(`      ${line}`);
     }
   }
@@ -669,19 +719,30 @@ function printReport(dialogues, meanTrajectories, hypothesisTests, skippedTooFew
     }
     console.log(`\n${'─'.repeat(70)}`);
     console.log(`  H1: ${label} DIMENSION SLOPE COMPARISON (recognition vs baseline)`);
-    console.log('  ' + 'Dimension'.padEnd(30) + 'RecogSlope'.padStart(12) + 'BaseSlope'.padStart(12) +
-      'Delta'.padStart(10) + 'd'.padStart(8) + 'p'.padStart(8) + 'Sig'.padStart(6));
+    console.log(
+      '  ' +
+        'Dimension'.padEnd(30) +
+        'RecogSlope'.padStart(12) +
+        'BaseSlope'.padStart(12) +
+        'Delta'.padStart(10) +
+        'd'.padStart(8) +
+        'p'.padStart(8) +
+        'Sig'.padStart(6),
+    );
 
     const dimsSorted = Object.entries(h1).sort((a, b) => Math.abs(b[1].cohensD) - Math.abs(a[1].cohensD));
     for (const [dim, r] of dimsSorted) {
       const sig = r.significant ? ' *' : '';
-      console.log('  ' + dim.padEnd(30) +
-        formatNumber(r.recogMeanSlope, 3).padStart(12) +
-        formatNumber(r.baseMeanSlope, 3).padStart(12) +
-        formatNumber(r.delta, 3).padStart(10) +
-        formatNumber(r.cohensD).padStart(8) +
-        formatNumber(r.pValue, 3).padStart(8) +
-        sig.padStart(6));
+      console.log(
+        '  ' +
+          dim.padEnd(30) +
+          formatNumber(r.recogMeanSlope, 3).padStart(12) +
+          formatNumber(r.baseMeanSlope, 3).padStart(12) +
+          formatNumber(r.delta, 3).padStart(10) +
+          formatNumber(r.cohensD).padStart(8) +
+          formatNumber(r.pValue, 3).padStart(8) +
+          sig.padStart(6),
+      );
     }
   }
 
@@ -691,10 +752,14 @@ function printReport(dialogues, meanTrajectories, hypothesisTests, skippedTooFew
   const h2 = hypothesisTests.H2_tutor_learner_asymmetry;
   for (const [cond, r] of Object.entries(h2)) {
     if (cond === 'comparison') continue;
-    console.log(`    ${cond}: N=${r.n}, mean gap=${formatNumber(r.meanGap, 3)}, t=${formatNumber(r.tValue)}, p=${formatNumber(r.pValue, 3)}, gap>0 rate=${formatNumber(r.gapPositiveRate * 100, 1)}%`);
+    console.log(
+      `    ${cond}: N=${r.n}, mean gap=${formatNumber(r.meanGap, 3)}, t=${formatNumber(r.tValue)}, p=${formatNumber(r.pValue, 3)}, gap>0 rate=${formatNumber(r.gapPositiveRate * 100, 1)}%`,
+    );
   }
   if (h2.comparison) {
-    console.log(`    Comparison: recog gap=${formatNumber(h2.comparison.recogMeanGap, 3)} vs base gap=${formatNumber(h2.comparison.baseMeanGap, 3)}, d=${formatNumber(h2.comparison.cohensD)}`);
+    console.log(
+      `    Comparison: recog gap=${formatNumber(h2.comparison.recogMeanGap, 3)} vs base gap=${formatNumber(h2.comparison.baseMeanGap, 3)}, d=${formatNumber(h2.comparison.cohensD)}`,
+    );
   }
 
   // Overall slopes
@@ -702,7 +767,9 @@ function printReport(dialogues, meanTrajectories, hypothesisTests, skippedTooFew
   console.log('  OVERALL SLOPE COMPARISON');
   const os = hypothesisTests.overall_slope;
   for (const [side, r] of Object.entries(os)) {
-    console.log(`    ${side}: recog slope=${formatNumber(r.recogMeanSlope, 3)} (N=${r.recogN}), base slope=${formatNumber(r.baseMeanSlope, 3)} (N=${r.baseN}), d=${formatNumber(r.cohensD)}`);
+    console.log(
+      `    ${side}: recog slope=${formatNumber(r.recogMeanSlope, 3)} (N=${r.recogN}), base slope=${formatNumber(r.baseMeanSlope, 3)} (N=${r.baseN}), d=${formatNumber(r.cohensD)}`,
+    );
   }
 
   console.log(`\n${'═'.repeat(70)}\n`);
@@ -712,7 +779,9 @@ function printReport(dialogues, meanTrajectories, hypothesisTests, skippedTooFew
 
 function main() {
   const rows = fetchMultiturnRows();
-  console.log(`Fetched ${rows.length} multi-turn rows from ${allMultiturn ? 'all runs' : cliRunIds.length + ' run(s)'}`);
+  console.log(
+    `Fetched ${rows.length} multi-turn rows from ${allMultiturn ? 'all runs' : cliRunIds.length + ' run(s)'}`,
+  );
 
   // Calibration analysis (uses all rows with scores_with_reasoning)
   const calibration = analyzeTutorCalibration(rows);
@@ -738,14 +807,14 @@ function main() {
       config: { minTurns, maxTurnPosition, runIds: allMultiturn ? 'all' : cliRunIds },
       summary: {
         totalDialogues: dialogues.length,
-        recognitionN: dialogues.filter(d => d.recognition).length,
-        baselineN: dialogues.filter(d => !d.recognition).length,
-        runs: [...new Set(dialogues.map(d => d.runId))],
+        recognitionN: dialogues.filter((d) => d.recognition).length,
+        baselineN: dialogues.filter((d) => !d.recognition).length,
+        runs: [...new Set(dialogues.map((d) => d.runId))],
       },
       calibration,
       meanTrajectories,
       hypothesisTests,
-      dialogues: dialogues.map(d => ({
+      dialogues: dialogues.map((d) => ({
         runId: d.runId,
         dialogueId: d.dialogueId,
         scenarioId: d.scenarioId,

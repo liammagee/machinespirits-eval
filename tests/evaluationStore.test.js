@@ -768,7 +768,11 @@ describe('updateResultScores cross-judge safety', () => {
     });
 
     const after = getResults(run.id, {}).find((r) => r.id === resultId);
-    assert.strictEqual(after.judgeModel, 'claude-opus-4.6', 'judge_model IS overwritten by updateResultScores — use --judge filter to prevent');
+    assert.strictEqual(
+      after.judgeModel,
+      'claude-opus-4.6',
+      'judge_model IS overwritten by updateResultScores — use --judge filter to prevent',
+    );
     assert.strictEqual(after.tutorFirstTurnScore, 80.0);
   });
 });
@@ -1002,9 +1006,7 @@ describe('listRuns metric semantics', () => {
           scores: r.learnerScores || { 0: { overallScore: r.learnerOverallScore || 0 } },
           overallScore: r.learnerOverallScore ?? null,
           judgeModel: 'test-judge',
-          holisticScores: r.learnerHolisticScore != null
-            ? { trajectory: { score: r.learnerHolisticScore } }
-            : null,
+          holisticScores: r.learnerHolisticScore != null ? { trajectory: { score: r.learnerHolisticScore } } : null,
           holisticOverallScore: r.learnerHolisticScore ?? null,
           holisticSummary: r.learnerHolisticScore != null ? 'learner holistic summary' : null,
           holisticJudgeModel: r.learnerHolisticScore != null ? 'test-judge' : null,
@@ -1042,8 +1044,8 @@ describe('listRuns metric semantics', () => {
 
   it('TuPT averages per-dialogue tutor turn scores across all dialogues in the run', () => {
     const runId = createScoredRun('TuPT average test', [
-      { tutorOverallScore: 80, tutorFirstTurnScore: 80 },  // dialogue 1: tutor avg = 80
-      { tutorOverallScore: 60, tutorFirstTurnScore: 60 },  // dialogue 2: tutor avg = 60
+      { tutorOverallScore: 80, tutorFirstTurnScore: 80 }, // dialogue 1: tutor avg = 80
+      { tutorOverallScore: 60, tutorFirstTurnScore: 60 }, // dialogue 2: tutor avg = 60
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgScore, 70.0, 'TuPT should be AVG across dialogues: (80 + 60) / 2 = 70');
@@ -1051,7 +1053,7 @@ describe('listRuns metric semantics', () => {
 
   it('TuPT falls back to tutor_first_turn_score when tutor_overall_score is NULL', () => {
     const runId = createScoredRun('TuPT fallback test', [
-      { tutorFirstTurnScore: 90 },  // no tutorOverallScore → column is NULL
+      { tutorFirstTurnScore: 90 }, // no tutorOverallScore → column is NULL
       { tutorFirstTurnScore: 70 },
     ]);
     const run = findRun(runId);
@@ -1065,8 +1067,8 @@ describe('listRuns metric semantics', () => {
 
   it('TuH averages per-dialogue holistic tutor trajectory assessments across the run', () => {
     const runId = createScoredRun('TuH holistic test', [
-      { tutorOverallScore: 80, tutorFirstTurnScore: 80, tutorHolisticScore: 90 },  // dialogue 1: holistic = 90
-      { tutorOverallScore: 60, tutorFirstTurnScore: 60, tutorHolisticScore: 70 },  // dialogue 2: holistic = 70
+      { tutorOverallScore: 80, tutorFirstTurnScore: 80, tutorHolisticScore: 90 }, // dialogue 1: holistic = 90
+      { tutorOverallScore: 60, tutorFirstTurnScore: 60, tutorHolisticScore: 70 }, // dialogue 2: holistic = 70
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgTutorHolisticScore, 80.0, 'TuH should be AVG across dialogues: (90 + 70) / 2 = 80');
@@ -1089,8 +1091,11 @@ describe('listRuns metric semantics', () => {
       { tutorOverallScore: 70, tutorFirstTurnScore: 60, tutorLastTurnScore: 90 },
     ]);
     const run = findRun(runId);
-    assert.strictEqual(run.avgTutorHolisticScore, null,
-      'TuH should be NULL when holistic is NULL — no fallback to per-turn');
+    assert.strictEqual(
+      run.avgTutorHolisticScore,
+      null,
+      'TuH should be NULL when holistic is NULL — no fallback to per-turn',
+    );
   });
 
   // ── LrPT: learner per-turn average ────────────────────────────────────
@@ -1099,8 +1104,8 @@ describe('listRuns metric semantics', () => {
 
   it('LrPT averages per-dialogue learner turn scores across all dialogues in the run', () => {
     const runId = createScoredRun('LrPT average test', [
-      { tutorFirstTurnScore: 80, learnerOverallScore: 70 },  // dialogue 1: learner avg = 70
-      { tutorFirstTurnScore: 80, learnerOverallScore: 50 },  // dialogue 2: learner avg = 50
+      { tutorFirstTurnScore: 80, learnerOverallScore: 70 }, // dialogue 1: learner avg = 70
+      { tutorFirstTurnScore: 80, learnerOverallScore: 50 }, // dialogue 2: learner avg = 50
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgLearnerScore, 60.0, 'LrPT should be AVG across dialogues: (70 + 50) / 2 = 60');
@@ -1124,8 +1129,8 @@ describe('listRuns metric semantics', () => {
 
   it('LrH averages per-dialogue holistic learner trajectory assessments across the run', () => {
     const runId = createScoredRun('LrH holistic test', [
-      { tutorFirstTurnScore: 80, learnerOverallScore: 60, learnerHolisticScore: 75 },  // dialogue 1: holistic = 75
-      { tutorFirstTurnScore: 80, learnerOverallScore: 60, learnerHolisticScore: 55 },  // dialogue 2: holistic = 55
+      { tutorFirstTurnScore: 80, learnerOverallScore: 60, learnerHolisticScore: 75 }, // dialogue 1: holistic = 75
+      { tutorFirstTurnScore: 80, learnerOverallScore: 60, learnerHolisticScore: 55 }, // dialogue 2: holistic = 55
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgLearnerHolisticScore, 65.0, 'LrH should be AVG across dialogues: (75 + 55) / 2 = 65');
@@ -1149,8 +1154,8 @@ describe('listRuns metric semantics', () => {
 
   it('DgP averages per-dialogue public-transcript quality scores across the run', () => {
     const runId = createScoredRun('DgP public test', [
-      { tutorFirstTurnScore: 80, dialoguePublicScore: 60 },  // dialogue 1: public quality = 60
-      { tutorFirstTurnScore: 80, dialoguePublicScore: 80 },  // dialogue 2: public quality = 80
+      { tutorFirstTurnScore: 80, dialoguePublicScore: 60 }, // dialogue 1: public quality = 60
+      { tutorFirstTurnScore: 80, dialoguePublicScore: 80 }, // dialogue 2: public quality = 80
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgDialogueScore, 70.0, 'DgP should be AVG across dialogues: (60 + 80) / 2 = 70');
@@ -1163,8 +1168,8 @@ describe('listRuns metric semantics', () => {
 
   it('DgI averages per-dialogue full-trace quality scores across the run', () => {
     const runId = createScoredRun('DgI internal test', [
-      { tutorFirstTurnScore: 80, dialogueInternalScore: 55 },  // dialogue 1: full-trace quality = 55
-      { tutorFirstTurnScore: 80, dialogueInternalScore: 75 },  // dialogue 2: full-trace quality = 75
+      { tutorFirstTurnScore: 80, dialogueInternalScore: 55 }, // dialogue 1: full-trace quality = 55
+      { tutorFirstTurnScore: 80, dialogueInternalScore: 75 }, // dialogue 2: full-trace quality = 75
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgDialogueInternalScore, 65.0, 'DgI should be AVG across dialogues: (55 + 75) / 2 = 65');
@@ -1190,36 +1195,48 @@ describe('listRuns metric semantics', () => {
 
   it('all six metrics are independent — each reads from its own DB column per dialogue', () => {
     const runId = createScoredRun('all-six-metrics test', [
-      {   // dialogue 1
-        tutorOverallScore: 80, tutorFirstTurnScore: 80,  // per-turn tutor avg
-        tutorHolisticScore: 70,                          // whole-dialogue tutor trajectory
-        learnerOverallScore: 60,                         // per-turn learner avg
-        learnerHolisticScore: 50,                        // whole-dialogue learner trajectory
-        dialoguePublicScore: 40,                         // public transcript quality
-        dialogueInternalScore: 30,                       // full-trace transcript quality
+      {
+        // dialogue 1
+        tutorOverallScore: 80,
+        tutorFirstTurnScore: 80, // per-turn tutor avg
+        tutorHolisticScore: 70, // whole-dialogue tutor trajectory
+        learnerOverallScore: 60, // per-turn learner avg
+        learnerHolisticScore: 50, // whole-dialogue learner trajectory
+        dialoguePublicScore: 40, // public transcript quality
+        dialogueInternalScore: 30, // full-trace transcript quality
       },
-      {   // dialogue 2
-        tutorOverallScore: 90, tutorFirstTurnScore: 90,
+      {
+        // dialogue 2
+        tutorOverallScore: 90,
+        tutorFirstTurnScore: 90,
         tutorHolisticScore: 80,
-        learnerOverallScore: 70, learnerHolisticScore: 60,
-        dialoguePublicScore: 50, dialogueInternalScore: 40,
+        learnerOverallScore: 70,
+        learnerHolisticScore: 60,
+        dialoguePublicScore: 50,
+        dialogueInternalScore: 40,
       },
     ]);
     const run = findRun(runId);
     assert.strictEqual(run.avgScore, 85.0, 'TuPT = (80+90)/2 — per-turn tutor avg across dialogues');
     assert.strictEqual(run.avgTutorHolisticScore, 75.0, 'TuH = (70+80)/2 — holistic tutor trajectory across dialogues');
     assert.strictEqual(run.avgLearnerScore, 65.0, 'LrPT = (60+70)/2 — per-turn learner avg across dialogues');
-    assert.strictEqual(run.avgLearnerHolisticScore, 55.0, 'LrH = (50+60)/2 — holistic learner trajectory across dialogues');
+    assert.strictEqual(
+      run.avgLearnerHolisticScore,
+      55.0,
+      'LrH = (50+60)/2 — holistic learner trajectory across dialogues',
+    );
     assert.strictEqual(run.avgDialogueScore, 45.0, 'DgP = (40+50)/2 — public dialogue quality across dialogues');
-    assert.strictEqual(run.avgDialogueInternalScore, 35.0, 'DgI = (30+40)/2 — full-trace dialogue quality across dialogues');
+    assert.strictEqual(
+      run.avgDialogueInternalScore,
+      35.0,
+      'DgI = (30+40)/2 — full-trace dialogue quality across dialogues',
+    );
   });
 
   // ── NULL metrics show as null, not zero ───────────────────────────────
 
   it('unpopulated metrics return null (not zero or NaN)', () => {
-    const runId = createScoredRun('null-metrics test', [
-      { tutorOverallScore: 75, tutorFirstTurnScore: 75 },
-    ]);
+    const runId = createScoredRun('null-metrics test', [{ tutorOverallScore: 75, tutorFirstTurnScore: 75 }]);
     const run = findRun(runId);
     assert.strictEqual(run.avgScore, 75.0, 'TuPT should be populated');
     assert.strictEqual(run.avgLearnerScore, null, 'LrPT should be null when no learner scores');
@@ -1236,46 +1253,70 @@ describe('listRuns metric semantics', () => {
 
     // Result 1: primary judge (judge-A)
     const id1 = storeResult(run.id, {
-      scenarioId: 'scenario-1', scenarioName: 'S1',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'first' }], tutorFirstTurnScore: 80,
-      success: true, judgeModel: 'judge-A',
+      scenarioId: 'scenario-1',
+      scenarioName: 'S1',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'first' }],
+      tutorFirstTurnScore: 80,
+      success: true,
+      judgeModel: 'judge-A',
     });
     updateResultTutorScores(id1, {
       tutorScores: { 0: { overallScore: 80 } },
-      tutorOverallScore: 80, tutorFirstTurnScore: 80,
-      tutorLastTurnScore: 80, tutorDevelopmentScore: 0,
+      tutorOverallScore: 80,
+      tutorFirstTurnScore: 80,
+      tutorLastTurnScore: 80,
+      tutorDevelopmentScore: 0,
     });
 
     // Result 2: primary judge (judge-A)
     const id2 = storeResult(run.id, {
-      scenarioId: 'scenario-2', scenarioName: 'S2',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'second' }], tutorFirstTurnScore: 60,
-      success: true, judgeModel: 'judge-A',
+      scenarioId: 'scenario-2',
+      scenarioName: 'S2',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'second' }],
+      tutorFirstTurnScore: 60,
+      success: true,
+      judgeModel: 'judge-A',
     });
     updateResultTutorScores(id2, {
       tutorScores: { 0: { overallScore: 60 } },
-      tutorOverallScore: 60, tutorFirstTurnScore: 60,
-      tutorLastTurnScore: 60, tutorDevelopmentScore: 0,
+      tutorOverallScore: 60,
+      tutorFirstTurnScore: 60,
+      tutorLastTurnScore: 60,
+      tutorDevelopmentScore: 0,
     });
 
     // Result 3: rejudge row (judge-B) — should be EXCLUDED from average
     const id3 = storeResult(run.id, {
-      scenarioId: 'scenario-1', scenarioName: 'S1',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'first' }], tutorFirstTurnScore: 99,
-      success: true, judgeModel: 'judge-B',
+      scenarioId: 'scenario-1',
+      scenarioName: 'S1',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'first' }],
+      tutorFirstTurnScore: 99,
+      success: true,
+      judgeModel: 'judge-B',
     });
     updateResultTutorScores(id3, {
       tutorScores: { 0: { overallScore: 99 } },
-      tutorOverallScore: 99, tutorFirstTurnScore: 99,
-      tutorLastTurnScore: 99, tutorDevelopmentScore: 0,
+      tutorOverallScore: 99,
+      tutorFirstTurnScore: 99,
+      tutorLastTurnScore: 99,
+      tutorDevelopmentScore: 0,
     });
 
     const found = findRun(run.id);
-    assert.strictEqual(found.avgScore, 70.0,
-      'TuPT should average only judge-A rows (80, 60) = 70, excluding judge-B row (99)');
+    assert.strictEqual(
+      found.avgScore,
+      70.0,
+      'TuPT should average only judge-A rows (80, 60) = 70, excluding judge-B row (99)',
+    );
   });
 
   // ── TuH / LrH COALESCE fallback symmetry ─────────────────────────────
@@ -1284,18 +1325,23 @@ describe('listRuns metric semantics', () => {
 
   it('LrH is NULL when no holistic learner judge has run (no fallback)', () => {
     const runId = createScoredRun('LrH no-fallback test', [
-      { tutorFirstTurnScore: 80, learnerOverallScore: 70 },  // no learnerHolisticScore
+      { tutorFirstTurnScore: 80, learnerOverallScore: 70 }, // no learnerHolisticScore
       { tutorFirstTurnScore: 80, learnerOverallScore: 50 },
     ]);
     const run = findRun(runId);
-    assert.strictEqual(run.avgLearnerHolisticScore, null,
-      'LrH should be NULL when holistic is NULL — no fallback to per-turn');
+    assert.strictEqual(
+      run.avgLearnerHolisticScore,
+      null,
+      'LrH should be NULL when holistic is NULL — no fallback to per-turn',
+    );
   });
 
   it('TuH and LrH are both NULL when only per-turn scores exist (no fallback)', () => {
     const runId = createScoredRun('bilateral no-fallback symmetry', [
       {
-        tutorOverallScore: 80, tutorFirstTurnScore: 75, tutorLastTurnScore: 85,
+        tutorOverallScore: 80,
+        tutorFirstTurnScore: 75,
+        tutorLastTurnScore: 85,
         learnerOverallScore: 60,
         // no tutorHolisticScore, no learnerHolisticScore
       },
@@ -1319,7 +1365,6 @@ describe('listRuns metric semantics', () => {
 // ============================================================================
 
 describe('TuH / LrH bilateral symmetry', () => {
-
   // ── DB column naming: 4 holistic columns each, mirror pattern ─────────
 
   it('tutor and learner holistic DB columns follow the same naming pattern', () => {
@@ -1327,9 +1372,14 @@ describe('TuH / LrH bilateral symmetry', () => {
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
-      scenarioId: 'symmetry-test', scenarioName: 'Symmetry',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+      scenarioId: 'symmetry-test',
+      scenarioName: 'Symmetry',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'test' }],
+      tutorFirstTurnScore: 70,
+      success: true,
     });
 
     // Populate tutor holistic
@@ -1381,16 +1431,23 @@ describe('TuH / LrH bilateral symmetry', () => {
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
-      scenarioId: 'isolation', scenarioName: 'Isolation',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+      scenarioId: 'isolation',
+      scenarioName: 'Isolation',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'test' }],
+      tutorFirstTurnScore: 70,
+      success: true,
     });
 
     // Set per-turn scores first
     updateResultTutorScores(resultId, {
       tutorScores: { 0: { overallScore: 70 } },
-      tutorOverallScore: 70, tutorFirstTurnScore: 70,
-      tutorLastTurnScore: 70, tutorDevelopmentScore: 0,
+      tutorOverallScore: 70,
+      tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 70,
+      tutorDevelopmentScore: 0,
     });
 
     // Now set holistic — should NOT overwrite per-turn
@@ -1411,9 +1468,14 @@ describe('TuH / LrH bilateral symmetry', () => {
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
-      scenarioId: 'bundled', scenarioName: 'Bundled',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+      scenarioId: 'bundled',
+      scenarioName: 'Bundled',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'test' }],
+      tutorFirstTurnScore: 70,
+      success: true,
     });
 
     // Both per-turn and holistic in one call
@@ -1440,20 +1502,28 @@ describe('TuH / LrH bilateral symmetry', () => {
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
-      scenarioId: 'coalesce', scenarioName: 'COALESCE',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+      scenarioId: 'coalesce',
+      scenarioName: 'COALESCE',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'test' }],
+      tutorFirstTurnScore: 70,
+      success: true,
     });
 
     // Set only per-turn scores, no holistic for either side
     updateResultTutorScores(resultId, {
       tutorScores: { 0: { overallScore: 70 } },
-      tutorOverallScore: 70, tutorFirstTurnScore: 70,
-      tutorLastTurnScore: 85, tutorDevelopmentScore: 15,
+      tutorOverallScore: 70,
+      tutorFirstTurnScore: 70,
+      tutorLastTurnScore: 85,
+      tutorDevelopmentScore: 15,
     });
     updateResultLearnerScores(resultId, {
       scores: { 0: { overallScore: 55 } },
-      overallScore: 55, judgeModel: 'test-judge',
+      overallScore: 55,
+      judgeModel: 'test-judge',
     });
 
     const found = listRuns().find((r) => r.id === run.id);
@@ -1470,20 +1540,31 @@ describe('TuH / LrH bilateral symmetry', () => {
     testRunIds.push(run.id);
 
     const resultId = storeResult(run.id, {
-      scenarioId: 'range', scenarioName: 'Range',
-      provider: 'test', model: 'test', profileName: 'cell_1',
-      suggestions: [{ text: 'test' }], tutorFirstTurnScore: 70, success: true,
+      scenarioId: 'range',
+      scenarioName: 'Range',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      suggestions: [{ text: 'test' }],
+      tutorFirstTurnScore: 70,
+      success: true,
     });
 
     // Edge values
     updateResultTutorHolisticScores(resultId, {
-      holisticScores: {}, holisticOverallScore: 0,
-      holisticSummary: 'minimum', holisticJudgeModel: 'test-judge',
+      holisticScores: {},
+      holisticOverallScore: 0,
+      holisticSummary: 'minimum',
+      holisticJudgeModel: 'test-judge',
     });
     updateResultLearnerScores(resultId, {
-      scores: {}, overallScore: null, judgeModel: 'test-judge',
-      holisticScores: {}, holisticOverallScore: 100,
-      holisticSummary: 'maximum', holisticJudgeModel: 'test-judge',
+      scores: {},
+      overallScore: null,
+      judgeModel: 'test-judge',
+      holisticScores: {},
+      holisticOverallScore: 100,
+      holisticSummary: 'maximum',
+      holisticJudgeModel: 'test-judge',
     });
 
     const r = getResults(run.id)[0];

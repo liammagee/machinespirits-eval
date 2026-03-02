@@ -36,14 +36,32 @@ const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
 // ── Factorial Design ────────────────────────────────────────────────────────
 
 const FACTORIAL_CELLS = [
-  { cell: 80, name: 'cell_80_messages_base_single_unified',    prompt: 'base',        tutor: 'single', learner: 'unified' },
-  { cell: 81, name: 'cell_81_messages_base_single_psycho',     prompt: 'base',        tutor: 'single', learner: 'ego_superego' },
-  { cell: 82, name: 'cell_82_messages_base_multi_unified',     prompt: 'base',        tutor: 'multi',  learner: 'unified' },
-  { cell: 83, name: 'cell_83_messages_base_multi_psycho',      prompt: 'base',        tutor: 'multi',  learner: 'ego_superego' },
-  { cell: 84, name: 'cell_84_messages_recog_single_unified',   prompt: 'recognition', tutor: 'single', learner: 'unified' },
-  { cell: 85, name: 'cell_85_messages_recog_single_psycho',    prompt: 'recognition', tutor: 'single', learner: 'ego_superego' },
-  { cell: 86, name: 'cell_86_messages_recog_multi_unified',    prompt: 'recognition', tutor: 'multi',  learner: 'unified' },
-  { cell: 87, name: 'cell_87_messages_recog_multi_psycho',     prompt: 'recognition', tutor: 'multi',  learner: 'ego_superego' },
+  { cell: 80, name: 'cell_80_messages_base_single_unified', prompt: 'base', tutor: 'single', learner: 'unified' },
+  { cell: 81, name: 'cell_81_messages_base_single_psycho', prompt: 'base', tutor: 'single', learner: 'ego_superego' },
+  { cell: 82, name: 'cell_82_messages_base_multi_unified', prompt: 'base', tutor: 'multi', learner: 'unified' },
+  { cell: 83, name: 'cell_83_messages_base_multi_psycho', prompt: 'base', tutor: 'multi', learner: 'ego_superego' },
+  {
+    cell: 84,
+    name: 'cell_84_messages_recog_single_unified',
+    prompt: 'recognition',
+    tutor: 'single',
+    learner: 'unified',
+  },
+  {
+    cell: 85,
+    name: 'cell_85_messages_recog_single_psycho',
+    prompt: 'recognition',
+    tutor: 'single',
+    learner: 'ego_superego',
+  },
+  { cell: 86, name: 'cell_86_messages_recog_multi_unified', prompt: 'recognition', tutor: 'multi', learner: 'unified' },
+  {
+    cell: 87,
+    name: 'cell_87_messages_recog_multi_psycho',
+    prompt: 'recognition',
+    tutor: 'multi',
+    learner: 'ego_superego',
+  },
 ];
 
 const CELL_NAMES = new Set(FACTORIAL_CELLS.map((c) => c.name));
@@ -112,7 +130,9 @@ function main() {
     params.push(scenarioFilter);
   }
 
-  const rows = db.prepare(`
+  const rows = db
+    .prepare(
+      `
     SELECT
       profile_name,
       scenario_id,
@@ -126,7 +146,9 @@ function main() {
       run_id
     FROM evaluation_results
     ${whereClause}
-  `).all(...params);
+  `,
+    )
+    .all(...params);
 
   if (rows.length === 0) {
     if (jsonMode) {
@@ -146,7 +168,15 @@ function main() {
   for (const row of rows) {
     const key = modelComboKey(row.ego_model);
     if (!combos.has(key)) {
-      combos.set(key, { rows: [], cells: new Map(), scenarios: new Set(), judges: new Set(), rubrics: new Set(), runs: new Set(), superegoModels: new Set() });
+      combos.set(key, {
+        rows: [],
+        cells: new Map(),
+        scenarios: new Set(),
+        judges: new Set(),
+        rubrics: new Set(),
+        runs: new Set(),
+        superegoModels: new Set(),
+      });
     }
     const combo = combos.get(key);
     combo.rows.push(row);
@@ -196,7 +226,8 @@ function main() {
     if (!isComplete) issues.push(`Missing ${missingCells.length} cell(s)`);
     if (!isBalanced && isComplete) issues.push(`Unbalanced N (${allMinN}–${allMaxN}, target=${targetN})`);
     if (allMinN < targetN) issues.push(`Below target N (min=${allMinN}, target=${targetN})`);
-    if (combo.superegoModels.size > 1) issues.push(`Multiple superego models: ${[...combo.superegoModels].join(', ')} — do not pool for ANOVA`);
+    if (combo.superegoModels.size > 1)
+      issues.push(`Multiple superego models: ${[...combo.superegoModels].join(', ')} — do not pool for ANOVA`);
     if (multipleJudges) issues.push(`Multiple judges: ${[...combo.judges].join(', ')}`);
     if (multipleRubrics) issues.push(`Multiple rubric versions: ${[...combo.rubrics].join(', ')}`);
 
@@ -248,7 +279,9 @@ function main() {
     const superegoStr = r.superegoModels.length > 0 ? r.superegoModels.join(', ') : '—';
     console.log(`${'─'.repeat(80)}`);
     console.log(`  ${status} Ego: ${r.comboKey}   Superego (multi cells): ${superegoStr}`);
-    console.log(`     Rows: ${r.totalRows}   Cells: ${r.coveredCells}/8   Scenarios: ${r.scenarios.length}   Runs: ${r.runs.length}`);
+    console.log(
+      `     Rows: ${r.totalRows}   Cells: ${r.coveredCells}/8   Scenarios: ${r.scenarios.length}   Runs: ${r.runs.length}`,
+    );
     console.log(`     Judge(s): ${r.judges.join(', ')}   Rubric(s): ${r.rubrics.join(', ')}`);
 
     if (r.issues.length > 0) {

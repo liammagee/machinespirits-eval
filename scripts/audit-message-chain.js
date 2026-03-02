@@ -233,7 +233,10 @@ function resolveSystemPromptSource({ agent, resultRow, priorExtensions }) {
   }
 
   const promptObj = readPromptFile(promptFile);
-  const extensionText = (priorExtensions || []).map((e) => e.detail || '').filter(Boolean).join('\n\n');
+  const extensionText = (priorExtensions || [])
+    .map((e) => e.detail || '')
+    .filter(Boolean)
+    .join('\n\n');
   const hasExtensions = extensionText.length > 0;
 
   if (!promptObj || !promptObj.text) {
@@ -332,7 +335,11 @@ function extractUserRequestFromRequestBody(body) {
   if (Array.isArray(body.contents)) {
     const userTexts = body.contents
       .map((c) => {
-        if (Array.isArray(c?.parts)) return c.parts.map((p) => p?.text).filter(Boolean).join('\n');
+        if (Array.isArray(c?.parts))
+          return c.parts
+            .map((p) => p?.text)
+            .filter(Boolean)
+            .join('\n');
         return extractContentField(c?.content || c?.text || null);
       })
       .filter(Boolean);
@@ -447,11 +454,7 @@ function collectPriorExtensions(trace, idx, agent) {
   const extensionAgentsForSuperego = new Set(['superego_self_reflection', 'superego_disposition']);
 
   const extensionAgents =
-    agent === 'ego'
-      ? extensionAgentsForEgo
-      : agent === 'superego'
-        ? extensionAgentsForSuperego
-        : new Set();
+    agent === 'ego' ? extensionAgentsForEgo : agent === 'superego' ? extensionAgentsForSuperego : new Set();
 
   if (extensionAgents.size === 0) return out;
 
@@ -473,7 +476,11 @@ function collectPriorExtensions(trace, idx, agent) {
 
 function deriveUserRequest(trace, idx, entry) {
   if (entry.agent === 'ego') {
-    const contextIdx = findLastIndex(trace, idx - 1, (e) => (e.agent === 'tutor' || e.agent === 'user') && e.action === 'context_input');
+    const contextIdx = findLastIndex(
+      trace,
+      idx - 1,
+      (e) => (e.agent === 'tutor' || e.agent === 'user') && e.action === 'context_input',
+    );
     if (contextIdx !== -1) {
       return {
         status: 'observed',
@@ -526,9 +533,10 @@ function deriveUserRequest(trace, idx, entry) {
     );
     if (tutorIdx !== -1) {
       const tutorEntry = trace[tutorIdx];
-      const tutorMsg = Array.isArray(tutorEntry.suggestions) && tutorEntry.suggestions.length > 0
-        ? tutorEntry.suggestions[0]?.message || tutorEntry.suggestions[0]?.title
-        : tutorEntry.detail || tutorEntry.contextSummary || null;
+      const tutorMsg =
+        Array.isArray(tutorEntry.suggestions) && tutorEntry.suggestions.length > 0
+          ? tutorEntry.suggestions[0]?.message || tutorEntry.suggestions[0]?.title
+          : tutorEntry.detail || tutorEntry.contextSummary || null;
       return {
         status: 'reconstructed',
         source: 'trace:prior_tutor_output',
@@ -882,7 +890,9 @@ function formatLineModeReport(
   for (const channel of channelOrder) {
     const items = grouped.get(channel) || [];
     if (items.length === 0) continue;
-    lines.push(`${C.key(channelSceneTitle(channel))} ${C.meta(`(${items.length} exchange${items.length === 1 ? '' : 's'})`)}`);
+    lines.push(
+      `${C.key(channelSceneTitle(channel))} ${C.meta(`(${items.length} exchange${items.length === 1 ? '' : 's'})`)}`,
+    );
     lines.push(`${C.divider('  ' + '─'.repeat(72))}`);
     lines.push('');
 

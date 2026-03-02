@@ -182,10 +182,7 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN learner_holistic_overall_score REAL`,
   'learner_holistic_overall_score',
 );
-migrateAddColumn(
-  `ALTER TABLE evaluation_results ADD COLUMN learner_holistic_summary TEXT`,
-  'learner_holistic_summary',
-);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_holistic_summary TEXT`, 'learner_holistic_summary');
 migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN learner_holistic_judge_model TEXT`,
   'learner_holistic_judge_model',
@@ -197,7 +194,9 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN holistic_overall_sco
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_first_turn_score REAL`, 'tutor_first_turn_score');
 // Backfill tutor_first_turn_score from overall_score for existing rows
 try {
-  db.exec(`UPDATE evaluation_results SET tutor_first_turn_score = overall_score WHERE tutor_first_turn_score IS NULL AND overall_score IS NOT NULL`);
+  db.exec(
+    `UPDATE evaluation_results SET tutor_first_turn_score = overall_score WHERE tutor_first_turn_score IS NULL AND overall_score IS NOT NULL`,
+  );
 } catch (e) {
   // Ignore if column doesn't exist yet
 }
@@ -212,8 +211,14 @@ migrateAddColumn(
   'dialogue_quality_judge_model',
 );
 // Internal (full-trace) dialogue quality columns — separate from public-transcript score
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_score REAL`, 'dialogue_quality_internal_score');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_summary TEXT`, 'dialogue_quality_internal_summary');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_score REAL`,
+  'dialogue_quality_internal_score',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_summary TEXT`,
+  'dialogue_quality_internal_summary',
+);
 
 // Conversation mode: 'single-prompt' | 'messages' (how tutor context was delivered)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN conversation_mode TEXT`, 'conversation_mode');
@@ -224,10 +229,7 @@ migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_overall_score REAL`,
   'tutor_holistic_overall_score',
 );
-migrateAddColumn(
-  `ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_summary TEXT`,
-  'tutor_holistic_summary',
-);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_summary TEXT`, 'tutor_holistic_summary');
 migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN tutor_holistic_judge_model TEXT`,
   'tutor_holistic_judge_model',
@@ -238,20 +240,47 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_scores TEXT`, 
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_overall_score REAL`, 'tutor_overall_score');
 
 // Deliberation quality columns (ego/superego process scoring — multi-agent only)
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_scores TEXT`, 'tutor_deliberation_scores');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_scores TEXT`,
+  'tutor_deliberation_scores',
+);
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_score REAL`, 'tutor_deliberation_score');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_summary TEXT`, 'tutor_deliberation_summary');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_judge_model TEXT`, 'tutor_deliberation_judge_model');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_scores TEXT`, 'learner_deliberation_scores');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_score REAL`, 'learner_deliberation_score');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_summary TEXT`, 'learner_deliberation_summary');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_judge_model TEXT`, 'learner_deliberation_judge_model');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN deliberation_rubric_version TEXT`, 'deliberation_rubric_version');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_summary TEXT`,
+  'tutor_deliberation_summary',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_deliberation_judge_model TEXT`,
+  'tutor_deliberation_judge_model',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_scores TEXT`,
+  'learner_deliberation_scores',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_score REAL`,
+  'learner_deliberation_score',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_summary TEXT`,
+  'learner_deliberation_summary',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN learner_deliberation_judge_model TEXT`,
+  'learner_deliberation_judge_model',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN deliberation_rubric_version TEXT`,
+  'deliberation_rubric_version',
+);
 
 // Process measures from dialogue logs (turnComparisonAnalyzer + dialogueTraceAnalyzer)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN adaptation_index REAL`, 'adaptation_index');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_growth_index REAL`, 'learner_growth_index');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN bilateral_transformation_index REAL`, 'bilateral_transformation_index');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN bilateral_transformation_index REAL`,
+  'bilateral_transformation_index',
+);
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN incorporation_rate REAL`, 'incorporation_rate');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dimension_convergence REAL`, 'dimension_convergence');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN transformation_quality REAL`, 'transformation_quality');
@@ -273,7 +302,10 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN config_hash TEXT`, '
 
 // Prompt versioning: track which prompt versions produced each row
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_ego_prompt_version TEXT`, 'tutor_ego_prompt_version');
-migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_superego_prompt_version TEXT`, 'tutor_superego_prompt_version');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_superego_prompt_version TEXT`,
+  'tutor_superego_prompt_version',
+);
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_prompt_version TEXT`, 'learner_prompt_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN prompt_content_hash TEXT`, 'prompt_content_hash');
 
@@ -491,12 +523,16 @@ export function getScoreAudit(resultId) {
  * @returns {Array} Ordered audit entries
  */
 export function getScoreAuditByRun(runId) {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT sa.* FROM score_audit sa
     JOIN evaluation_results er ON sa.result_id = CAST(er.id AS TEXT)
     WHERE er.run_id = ?
     ORDER BY sa.timestamp
-  `).all(runId);
+  `,
+    )
+    .all(runId);
 }
 
 /**
@@ -947,7 +983,7 @@ export function getRunStats(runId) {
   const finalStats = Object.values(groups)
     .map((g) => {
       const avgScore = g.scores.length > 0 ? g.scores.reduce((a, b) => a + b, 0) / g.scores.length : null;
-      
+
       const dimensions = {};
       for (const dim of Object.keys(g.dimensionSums)) {
         dimensions[dim] = g.dimensionSums[dim] / g.dimensionCounts[dim];
@@ -964,7 +1000,10 @@ export function getRunStats(runId) {
         successRate: g.totalTests > 0 ? g.successfulTests / g.totalTests : 0,
         avgScore,
         avgBaseScore: g.baseScores.length > 0 ? g.baseScores.reduce((a, b) => a + b, 0) / g.baseScores.length : null,
-        avgRecognitionScore: g.recognitionScores.length > 0 ? g.recognitionScores.reduce((a, b) => a + b, 0) / g.recognitionScores.length : null,
+        avgRecognitionScore:
+          g.recognitionScores.length > 0
+            ? g.recognitionScores.reduce((a, b) => a + b, 0) / g.recognitionScores.length
+            : null,
         dimensions,
         avgLatencyMs: g.latencies.length > 0 ? g.latencies.reduce((a, b) => a + b, 0) / g.latencies.length : null,
         totalInputTokens: g.inputTokens,
@@ -1192,11 +1231,13 @@ function writeRunManifest(runId, run, results, completedAt) {
     // Query rubric versions directly (not in parsed results)
     const rubricVersionMap = {};
     try {
-      const versionRows = db.prepare(
-        'SELECT id, tutor_rubric_version FROM evaluation_results WHERE run_id = ?'
-      ).all(runId);
+      const versionRows = db
+        .prepare('SELECT id, tutor_rubric_version FROM evaluation_results WHERE run_id = ?')
+        .all(runId);
       for (const vr of versionRows) rubricVersionMap[String(vr.id)] = vr.tutor_rubric_version || null;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     for (const r of results) {
       const rowIdStr = String(r.id);
@@ -1550,8 +1591,21 @@ function parseResultRow(row) {
 
         for (const [dim, detail] of Object.entries(turnScores)) {
           // Skip non-score keys if we're looking at a turn object
-          if (['overallScore', 'baseScore', 'recognitionScore', 'summary', 'judgeInputHash', 'judgeTimestamp', 'judgeModel', 'contentTurnId', 'turnIndex'].includes(dim)) continue;
-          
+          if (
+            [
+              'overallScore',
+              'baseScore',
+              'recognitionScore',
+              'summary',
+              'judgeInputHash',
+              'judgeTimestamp',
+              'judgeModel',
+              'contentTurnId',
+              'turnIndex',
+            ].includes(dim)
+          )
+            continue;
+
           const val = typeof detail === 'number' ? detail : detail?.score;
           if (val != null) {
             dimensionSums[dim] = (dimensionSums[dim] || 0) + val;
@@ -1564,7 +1618,7 @@ function parseResultRow(row) {
       for (const dim of Object.keys(dimensionSums)) {
         aggregated[dim] = dimensionSums[dim] / dimensionCounts[dim];
       }
-      
+
       // If we found dimensions, use them
       if (Object.keys(aggregated).length > 0) {
         scores = aggregated;
@@ -1634,8 +1688,7 @@ function parseResultRow(row) {
     learnerOverallScore: row.learner_overall_score != null ? row.learner_overall_score : null,
     learnerJudgeModel: row.learner_judge_model || null,
     learnerHolisticScores: row.learner_holistic_scores ? JSON.parse(row.learner_holistic_scores) : null,
-    learnerHolisticOverallScore:
-      row.learner_holistic_overall_score != null ? row.learner_holistic_overall_score : null,
+    learnerHolisticOverallScore: row.learner_holistic_overall_score != null ? row.learner_holistic_overall_score : null,
     learnerHolisticSummary: row.learner_holistic_summary || null,
     learnerHolisticJudgeModel: row.learner_holistic_judge_model || null,
     // Dialogue scoring columns
@@ -1644,7 +1697,8 @@ function parseResultRow(row) {
     dialogueQualityScore: row.dialogue_quality_score != null ? row.dialogue_quality_score : null,
     dialogueQualitySummary: row.dialogue_quality_summary || null,
     dialogueQualityJudgeModel: row.dialogue_quality_judge_model || null,
-    dialogueQualityInternalScore: row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
+    dialogueQualityInternalScore:
+      row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
     conversationMode: row.conversation_mode || null,
     dialogueContentHash: row.dialogue_content_hash || null,
@@ -1652,8 +1706,7 @@ function parseResultRow(row) {
     tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
     tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
     tutorHolisticScores: row.tutor_holistic_scores ? JSON.parse(row.tutor_holistic_scores) : null,
-    tutorHolisticOverallScore:
-      row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
+    tutorHolisticOverallScore: row.tutor_holistic_overall_score != null ? row.tutor_holistic_overall_score : null,
     tutorHolisticSummary: row.tutor_holistic_summary || null,
     tutorHolisticJudgeModel: row.tutor_holistic_judge_model || null,
     // Prompt versioning
@@ -2008,10 +2061,20 @@ export function storeRejudgment(originalResult, evaluation) {
  * @deprecated Use storeRejudgment() to preserve judgment history for reliability analysis
  */
 export function updateResultScores(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
-    ['score_relevance', 'score_specificity', 'score_pedagogical', 'score_personalization',
-     'score_actionability', 'score_tone', 'overall_score', 'tutor_first_turn_score',
-     'judge_model', 'tutor_rubric_version'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'score_relevance',
+      'score_specificity',
+      'score_pedagogical',
+      'score_personalization',
+      'score_actionability',
+      'score_tone',
+      'overall_score',
+      'tutor_first_turn_score',
+      'judge_model',
+      'tutor_rubric_version',
+    ],
     'updateResultScores',
     { judgeModel: evaluation.judgeModel, rubricVersion: getTutorRubricVersion() },
   );
@@ -2080,17 +2143,19 @@ export function updateResultScores(resultId, evaluation) {
  * @param {number} [evaluation.judgeLatencyMs] - Judge latency
  */
 export function updateTutorLastTurnScore(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
+  const recordAudit = withAuditTrail(
+    resultId,
     ['tutor_last_turn_score', 'tutor_development_score'],
     'updateTutorLastTurnScore',
   );
 
   // Read existing tutor_first_turn_score to compute development delta
-  const row = db.prepare('SELECT tutor_first_turn_score, overall_score FROM evaluation_results WHERE id = ?').get(resultId);
+  const row = db
+    .prepare('SELECT tutor_first_turn_score, overall_score FROM evaluation_results WHERE id = ?')
+    .get(resultId);
   const firstTurnScore = row?.tutor_first_turn_score ?? row?.overall_score ?? null;
   const lastTurnScore = evaluation.tutorLastTurnScore ?? null;
-  const developmentScore =
-    firstTurnScore != null && lastTurnScore != null ? lastTurnScore - firstTurnScore : null;
+  const developmentScore = firstTurnScore != null && lastTurnScore != null ? lastTurnScore - firstTurnScore : null;
 
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
@@ -2113,7 +2178,8 @@ export function updateTutorLastTurnScore(resultId, evaluation) {
  * @param {string} [evaluation.dialogueQualityJudgeModel] - Judge model used
  */
 export function updateDialogueQualityScore(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
+  const recordAudit = withAuditTrail(
+    resultId,
     ['dialogue_quality_score', 'dialogue_quality_summary', 'dialogue_quality_judge_model', 'dialogue_rubric_version'],
     'updateDialogueQualityScore',
     { judgeModel: evaluation.dialogueQualityJudgeModel, rubricVersion: getDialogueRubricVersion() },
@@ -2148,7 +2214,8 @@ export function updateDialogueQualityScore(resultId, evaluation) {
  * @param {string} [evaluation.dialogueQualityInternalSummary] - Judge narrative summary
  */
 export function updateDialogueQualityInternalScore(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
+  const recordAudit = withAuditTrail(
+    resultId,
     ['dialogue_quality_internal_score', 'dialogue_quality_internal_summary', 'dialogue_rubric_version'],
     'updateDialogueQualityInternalScore',
     { rubricVersion: getDialogueRubricVersion() },
@@ -2183,9 +2250,15 @@ export function updateDialogueQualityInternalScore(resultId, evaluation) {
  * @param {string} [evaluation.deliberationJudgeModel] - Judge model used
  */
 export function updateTutorDeliberationScores(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
-    ['tutor_deliberation_scores', 'tutor_deliberation_score', 'tutor_deliberation_summary',
-     'tutor_deliberation_judge_model', 'deliberation_rubric_version'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'tutor_deliberation_scores',
+      'tutor_deliberation_score',
+      'tutor_deliberation_summary',
+      'tutor_deliberation_judge_model',
+      'deliberation_rubric_version',
+    ],
     'updateTutorDeliberationScores',
     { judgeModel: evaluation.deliberationJudgeModel, rubricVersion: getDeliberationRubricVersion() },
   );
@@ -2223,9 +2296,15 @@ export function updateTutorDeliberationScores(resultId, evaluation) {
  * @param {string} [evaluation.deliberationJudgeModel] - Judge model used
  */
 export function updateLearnerDeliberationScores(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
-    ['learner_deliberation_scores', 'learner_deliberation_score', 'learner_deliberation_summary',
-     'learner_deliberation_judge_model', 'deliberation_rubric_version'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'learner_deliberation_scores',
+      'learner_deliberation_score',
+      'learner_deliberation_summary',
+      'learner_deliberation_judge_model',
+      'deliberation_rubric_version',
+    ],
     'updateLearnerDeliberationScores',
     { judgeModel: evaluation.deliberationJudgeModel, rubricVersion: getDeliberationRubricVersion() },
   );
@@ -2265,9 +2344,16 @@ export function updateLearnerDeliberationScores(resultId, evaluation) {
  * @param {number} [metrics.transformationQuality] - Overall transformation quality 0-100
  */
 export function updateProcessMeasures(resultId, metrics) {
-  const recordAudit = withAuditTrail(resultId,
-    ['adaptation_index', 'learner_growth_index', 'bilateral_transformation_index',
-     'incorporation_rate', 'dimension_convergence', 'transformation_quality'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'adaptation_index',
+      'learner_growth_index',
+      'bilateral_transformation_index',
+      'incorporation_rate',
+      'dimension_convergence',
+      'transformation_quality',
+    ],
     'updateProcessMeasures',
   );
 
@@ -2308,10 +2394,18 @@ export function updateProcessMeasures(resultId, metrics) {
  * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic learner judging
  */
 export function updateResultLearnerScores(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
-    ['learner_scores', 'learner_overall_score', 'learner_judge_model',
-     'learner_holistic_scores', 'learner_holistic_overall_score', 'learner_holistic_summary',
-     'learner_holistic_judge_model', 'learner_rubric_version'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'learner_scores',
+      'learner_overall_score',
+      'learner_judge_model',
+      'learner_holistic_scores',
+      'learner_holistic_overall_score',
+      'learner_holistic_summary',
+      'learner_holistic_judge_model',
+      'learner_rubric_version',
+    ],
     'updateResultLearnerScores',
     { judgeModel: evaluation.judgeModel, rubricVersion: getLearnerRubricVersion() },
   );
@@ -2359,9 +2453,17 @@ export function updateResultLearnerScores(resultId, evaluation) {
  * @param {number} [evaluation.judgeLatencyMs] - Total judge latency
  */
 export function updateResultTutorScores(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
-    ['tutor_scores', 'tutor_overall_score', 'tutor_first_turn_score', 'tutor_last_turn_score',
-     'tutor_development_score', 'judge_model', 'tutor_rubric_version'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'tutor_scores',
+      'tutor_overall_score',
+      'tutor_first_turn_score',
+      'tutor_last_turn_score',
+      'tutor_development_score',
+      'judge_model',
+      'tutor_rubric_version',
+    ],
     'updateResultTutorScores',
     { judgeModel: evaluation.judgeModel, rubricVersion: evaluation.rubricVersion || getTutorRubricVersion() },
   );
@@ -2410,9 +2512,15 @@ export function updateResultTutorScores(resultId, evaluation) {
  * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic judging
  */
 export function updateResultTutorHolisticScores(resultId, evaluation) {
-  const recordAudit = withAuditTrail(resultId,
-    ['tutor_holistic_scores', 'tutor_holistic_overall_score', 'tutor_holistic_summary',
-     'tutor_holistic_judge_model', 'tutor_rubric_version'],
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'tutor_holistic_scores',
+      'tutor_holistic_overall_score',
+      'tutor_holistic_summary',
+      'tutor_holistic_judge_model',
+      'tutor_rubric_version',
+    ],
     'updateResultTutorHolisticScores',
     { judgeModel: evaluation.holisticJudgeModel, rubricVersion: getTutorRubricVersion() },
   );
@@ -2574,7 +2682,9 @@ export function loadImmutableDialogueLog(contentHash) {
     const content = fs.readFileSync(hashPath, 'utf-8');
     const log = JSON.parse(content);
     // Verify content matches filename hash
-    const recomputed = createHash('sha256').update(JSON.stringify(log, null, 2)).digest('hex');
+    const recomputed = createHash('sha256')
+      .update(JSON.stringify(log, null, 2))
+      .digest('hex');
     return { log, verified: recomputed === contentHash };
   } catch {
     return { log: null, verified: false };
@@ -2617,10 +2727,12 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
       derivedFrom: 'rubric-version-comparison',
       ...(sourceRun?.metadata || {}),
     };
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO evaluation_runs (id, created_at, description, total_scenarios, total_configurations, metadata, status)
       VALUES (?, ?, ?, ?, ?, ?, 'running')
-    `).run(
+    `,
+    ).run(
       derivedRunId,
       now,
       `Rubric v${rubricVersion} re-score of ${sourceRunId}`,
@@ -2632,7 +2744,8 @@ export function cloneRowsForRubricVersion(sourceRunId, sourceResults, rubricVers
 
   // Check for existing clones (idempotent: skip rows already cloned)
   const existingDialogueIds = new Set(
-    db.prepare('SELECT dialogue_id FROM evaluation_results WHERE run_id = ?')
+    db
+      .prepare('SELECT dialogue_id FROM evaluation_results WHERE run_id = ?')
       .all(derivedRunId)
       .map((r) => r.dialogue_id),
   );

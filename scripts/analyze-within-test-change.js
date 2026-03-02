@@ -194,7 +194,12 @@ function resolveFactors(row) {
   const multiTutor = row.factor_multi_agent_tutor == null ? inferred.multiTutor : Boolean(row.factor_multi_agent_tutor);
   const multiLearner =
     row.factor_multi_agent_learner == null ? inferred.multiLearner : Boolean(row.factor_multi_agent_learner);
-  return { recognition, multiTutor, multiLearner, cellKey: `r${recognition ? 1 : 0}_t${multiTutor ? 1 : 0}_l${multiLearner ? 1 : 0}` };
+  return {
+    recognition,
+    multiTutor,
+    multiLearner,
+    cellKey: `r${recognition ? 1 : 0}_t${multiTutor ? 1 : 0}_l${multiLearner ? 1 : 0}`,
+  };
 }
 
 function loadDialogueLog(dialogueId, cache) {
@@ -269,7 +274,9 @@ function extractLearnerTurnTextMap(log) {
   }
 
   // Fill gaps from user turn actions.
-  const userActions = trace.filter((e) => (e?.agent === 'learner' || e?.agent === 'user') && e?.action === 'turn_action');
+  const userActions = trace.filter(
+    (e) => (e?.agent === 'learner' || e?.agent === 'user') && e?.action === 'turn_action',
+  );
   for (const e of userActions) {
     const idx = Number.isFinite(e?.turnIndex) ? e.turnIndex : null;
     if (idx == null || byTurn.has(idx)) continue;
@@ -289,9 +296,7 @@ function extractLearnerTurnTextMap(log) {
 }
 
 function orderedTextsByTurn(turnMap) {
-  return [...turnMap.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([, text]) => text);
+  return [...turnMap.entries()].sort((a, b) => a[0] - b[0]).map(([, text]) => text);
 }
 
 function extractProxySequences(row, log) {
@@ -309,8 +314,12 @@ function extractProxySequences(row, log) {
   }
 
   return {
-    tutorSeq: orderedTextsByTurn(tutorByTurn).map(computeMessageComplexity100).filter((x) => x != null),
-    learnerSeq: orderedTextsByTurn(learnerByTurn).map(computeMessageComplexity100).filter((x) => x != null),
+    tutorSeq: orderedTextsByTurn(tutorByTurn)
+      .map(computeMessageComplexity100)
+      .filter((x) => x != null),
+    learnerSeq: orderedTextsByTurn(learnerByTurn)
+      .map(computeMessageComplexity100)
+      .filter((x) => x != null),
     alignedTurns: false,
     sharedTurnCount: 0,
   };
@@ -328,7 +337,16 @@ function computeMessageComplexity100(text) {
 
   const questionCount = (text.match(/\?/g) || []).length;
   const connectives = ['because', 'therefore', 'however', 'although', 'if', 'then', 'so', 'but', 'while', 'yet'];
-  const revisionMarkers = ['wait', 'actually', 'i was wrong', 'i see', 'oh', 'hmm', 'let me think', 'on second thought'];
+  const revisionMarkers = [
+    'wait',
+    'actually',
+    'i was wrong',
+    'i see',
+    'oh',
+    'hmm',
+    'let me think',
+    'on second thought',
+  ];
   const referenceMarkers = ['earlier', 'before', 'you said', 'you mentioned', 'we discussed', 'last turn'];
 
   const connectiveHits = connectives.filter((m) => lower.includes(m)).length;
@@ -342,11 +360,7 @@ function computeMessageComplexity100(text) {
   const referenceScore = Math.min(1, referenceHits / 3); // cross-turn integration
 
   const weighted =
-    wordScore * 0.30 +
-    questionScore * 0.15 +
-    connectiveScore * 0.20 +
-    revisionScore * 0.20 +
-    referenceScore * 0.15;
+    wordScore * 0.3 + questionScore * 0.15 + connectiveScore * 0.2 + revisionScore * 0.2 + referenceScore * 0.15;
   return weighted * 100;
 }
 
@@ -361,9 +375,7 @@ function normalizeRubricScore(v) {
 function extractTutorRubricSequence(log) {
   if (!log) return null;
 
-  const turnScoreSeq = (log.turnResults || [])
-    .map((t) => safeNumber(t?.turnScore))
-    .filter((x) => x != null);
+  const turnScoreSeq = (log.turnResults || []).map((t) => safeNumber(t?.turnScore)).filter((x) => x != null);
   if (turnScoreSeq.length >= 2) {
     return turnScoreSeq.map((x) => Math.max(0, Math.min(100, x)));
   }
@@ -855,9 +867,8 @@ for (const row of rows) {
   }
 }
 
-const persistenceSummary = persistEnabled || dryRunMode
-  ? persistWithinTestMetrics(persistRecords, { persist: persistEnabled })
-  : null;
+const persistenceSummary =
+  persistEnabled || dryRunMode ? persistWithinTestMetrics(persistRecords, { persist: persistEnabled }) : null;
 
 const headerRuns = runIds.join(', ');
 console.log('='.repeat(88));
@@ -865,7 +876,9 @@ console.log('Within-Test Change Analysis (Symmetric Tutor/Learner Methods)');
 console.log('='.repeat(88));
 console.log(`Runs: ${headerRuns}`);
 console.log(`Metric version: ${metricVersion}`);
-console.log(`Mode: ${dryRunMode ? (smokeTestMode ? 'smoke-test (dry-run)' : 'dry-run') : persistEnabled ? 'persist' : 'analysis-only'}`);
+console.log(
+  `Mode: ${dryRunMode ? (smokeTestMode ? 'smoke-test (dry-run)' : 'dry-run') : persistEnabled ? 'persist' : 'analysis-only'}`,
+);
 if (rowLimit != null) {
   console.log(`Row limit: ${rowLimit}${smokeTestMode ? ' (smoke-test default)' : ''}`);
 }
@@ -878,7 +891,12 @@ console.log(`Missing dialogue logs: ${missingLogCount}`);
 console.log('');
 
 const methods = [
-  { key: 'rubric', tutorKey: 'tutor_rubric', learnerKey: 'learner_rubric', label: 'Method A: Rubric Trajectories (0-100)' },
+  {
+    key: 'rubric',
+    tutorKey: 'tutor_rubric',
+    learnerKey: 'learner_rubric',
+    label: 'Method A: Rubric Trajectories (0-100)',
+  },
   {
     key: 'proxy',
     tutorKey: 'tutor_proxy',
@@ -919,7 +937,9 @@ for (const m of methods) {
 const tutorRubricCoverage = rows.length > 0 ? recordsByMethod.tutor_rubric.length / rows.length : 0;
 if (tutorRubricCoverage < 0.5) {
   console.log('Note: Tutor rubric-trajectory coverage is low.');
-  console.log('  This usually means runs were generated with --skip-rubric and only final/holistic tutor scores exist.');
+  console.log(
+    '  This usually means runs were generated with --skip-rubric and only final/holistic tutor scores exist.',
+  );
   console.log('  Use Method B for full symmetric coverage, or add per-turn tutor re-scoring in a follow-up pass.');
   console.log('');
 }

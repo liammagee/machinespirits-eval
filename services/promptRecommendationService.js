@@ -110,7 +110,9 @@ function analyzeResults(results) {
   const scores = results.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
   if (scores.length > 0) {
     analysis.avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-    analysis.lowScoreResults = results.filter((r) => r.tutorFirstTurnScore != null && r.tutorFirstTurnScore < 70).slice(0, 10); // Top 10 low scorers
+    analysis.lowScoreResults = results
+      .filter((r) => r.tutorFirstTurnScore != null && r.tutorFirstTurnScore < 70)
+      .slice(0, 10); // Top 10 low scorers
   }
 
   // Find validation failures
@@ -186,8 +188,8 @@ The evaluation tested profile: **${profileName || 'unknown'}**
 The following rubric dimensions scored below 3.5/5 on average:
 
 ${Object.entries(analysis.dimensionWeaknesses)
-        .map(([dim, data]) => `- **${dim}**: ${data.avgScore.toFixed(2)}/5 (${data.sampleCount} samples)`)
-        .join('\n')}
+  .map(([dim, data]) => `- **${dim}**: ${data.avgScore.toFixed(2)}/5 (${data.sampleCount} samples)`)
+  .join('\n')}
 `);
   }
 
@@ -199,16 +201,16 @@ ${Object.entries(analysis.dimensionWeaknesses)
 These tests failed required/forbidden element checks:
 
 ${analysis.validationFailures
-        .slice(0, 5)
-        .map(
-          (f) => `
+  .slice(0, 5)
+  .map(
+    (f) => `
 ### ${f.scenarioName} (${f.scenarioId})
 - Required elements missing: ${f.requiredMissing.length > 0 ? f.requiredMissing.join(', ') : 'none'}
 - Forbidden elements found: ${f.forbiddenFound.length > 0 ? f.forbiddenFound.join(', ') : 'none'}
 - Generated suggestion: "${f.suggestion?.title || 'N/A'}" - ${f.suggestion?.message?.substring(0, 100) || 'N/A'}...
 `,
-        )
-        .join('\n')}
+  )
+  .join('\n')}
 `);
   }
 
@@ -220,16 +222,16 @@ ${analysis.validationFailures
 These tests scored below 70/100:
 
 ${analysis.lowScoreResults
-        .slice(0, 5)
-        .map(
-          (r) => `
+  .slice(0, 5)
+  .map(
+    (r) => `
 ### ${r.scenarioName} (score: ${r.tutorFirstTurnScore?.toFixed(1)})
 - Suggestion: "${r.suggestions?.[0]?.title || 'N/A'}"
 - Message: ${r.suggestions?.[0]?.message?.substring(0, 150) || 'N/A'}...
 - Evaluation reasoning: ${r.evaluationReasoning?.substring(0, 200) || 'N/A'}...
 `,
-        )
-        .join('\n')}
+  )
+  .join('\n')}
 `);
   }
 
@@ -294,7 +296,9 @@ async function callRecommender(prompt, options = {}) {
   }
   const temperature = hyperparameters?.temperature;
   if (temperature === undefined) {
-    throw new Error('Explicit temperature setting is required in recommender hyperparameters (evaluation-rubric.yaml).');
+    throw new Error(
+      'Explicit temperature setting is required in recommender hyperparameters (evaluation-rubric.yaml).',
+    );
   }
 
   if (provider === 'openrouter') {

@@ -205,7 +205,11 @@ function ensureInstalled() {
         scope.records.push(record);
       }
       if (globalOnRecord) {
-        try { globalOnRecord(record); } catch { /* swallow display errors */ }
+        try {
+          globalOnRecord(record);
+        } catch {
+          /* swallow display errors */
+        }
       }
     }
   };
@@ -215,7 +219,10 @@ function ensureInstalled() {
 function isTutorTraceEntry(entry) {
   if (!entry || typeof entry !== 'object') return false;
   if (!entry.agent || !entry.action) return false;
-  if (entry.agent === 'ego' && (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')) {
+  if (
+    entry.agent === 'ego' &&
+    (entry.action === 'generate' || entry.action === 'revise' || entry.action === 'incorporate-feedback')
+  ) {
     return true;
   }
   if (entry.agent === 'superego' && entry.action === 'review') return true;
@@ -300,4 +307,3 @@ export function attachApiPayloadsToTrace(dialogueTrace, records = []) {
     return { ...entry, apiPayload: captured };
   });
 }
-

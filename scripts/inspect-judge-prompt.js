@@ -90,7 +90,9 @@ const verbose = getFlag('verbose');
 const promptOnly = getFlag('prompt-only');
 
 if (!runId && !rowId) {
-  console.error('Usage: inspect-judge-prompt.js <runId> --scenario <id> [--turn N] [--channel tutor|learner|all] [--score]');
+  console.error(
+    'Usage: inspect-judge-prompt.js <runId> --scenario <id> [--turn N] [--channel tutor|learner|all] [--score]',
+  );
   console.error('       inspect-judge-prompt.js --row <rowId> [--turn N] [--channel tutor|learner|all] [--score]');
   process.exit(1);
 }
@@ -106,17 +108,25 @@ if (rowId) {
   const rawDb = new Database(dbPath, { readonly: true });
   const rawRow = rawDb.prepare('SELECT run_id, scenario_id FROM evaluation_results WHERE id = ?').get(rowId);
   rawDb.close();
-  if (!rawRow) { console.error(`Row ${rowId} not found`); process.exit(1); }
+  if (!rawRow) {
+    console.error(`Row ${rowId} not found`);
+    process.exit(1);
+  }
   const rowResults = evaluationStore.getResults(rawRow.run_id, { scenarioId: rawRow.scenario_id });
   result = rowResults.find((r) => String(r.id) === String(rowId));
-  if (!result) { console.error(`Row ${rowId} found in DB but not returned by getResults`); process.exit(1); }
+  if (!result) {
+    console.error(`Row ${rowId} found in DB but not returned by getResults`);
+    process.exit(1);
+  }
 } else {
   const opts = {};
   if (scenarioFilter) opts.scenarioId = scenarioFilter;
   if (profileFilter) opts.profileName = profileFilter;
   const results = evaluationStore.getResults(runId, opts);
   if (results.length === 0) {
-    console.error(`No rows found for run=${runId} scenario=${scenarioFilter || 'all'} profile=${profileFilter || 'all'}`);
+    console.error(
+      `No rows found for run=${runId} scenario=${scenarioFilter || 'all'} profile=${profileFilter || 'all'}`,
+    );
     process.exit(1);
   }
   if (results.length > 1 && !promptOnly) {
@@ -131,7 +141,11 @@ if (rowId) {
 
 // Parse JSON fields if needed
 if (typeof result.suggestions === 'string') {
-  try { result.suggestions = JSON.parse(result.suggestions); } catch { /* keep as-is */ }
+  try {
+    result.suggestions = JSON.parse(result.suggestions);
+  } catch {
+    /* keep as-is */
+  }
 }
 
 const scenarioId = result.scenarioId || result.scenario_id;
@@ -182,14 +196,13 @@ if (!scenario) {
 
 // ── Shared data prep ──
 
-const turnResults = dialogueLog?.turnResults || [
-  { turnId: 'single', suggestions: result.suggestions },
-];
+const turnResults = dialogueLog?.turnResults || [{ turnId: 'single', suggestions: result.suggestions }];
 const dialogueTrace = dialogueLog?.dialogueTrace || [];
 const totalTurns = turnResults.length;
 
 const learnerArch = dialogueLog?.learnerArchitecture || result.learner_architecture || 'unified';
-const isMultiAgent = learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
+const isMultiAgent =
+  learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
 const learnerCtx = dialogueLog?.learnerContext || scenario.learner_context || '';
 
 const scenarioContext = {
@@ -214,23 +227,22 @@ const transcriptTurns = turnResults.map((t, i) => ({
 
 function extractLearnerTurnsFromTrace(trace, multi, convHist) {
   const turns = [];
-  let markers = trace.filter(
-    (t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action',
-  );
+  let markers = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
   if (markers.length === 0) {
     markers = trace.filter(
-      (t) => (t.agent === 'learner_synthesis' && t.action === 'response')
-        || (t.agent === 'learner' && t.action === 'final_output'),
+      (t) =>
+        (t.agent === 'learner_synthesis' && t.action === 'response') ||
+        (t.agent === 'learner' && t.action === 'final_output'),
     );
   }
   const convHistByTurn = {};
   if (Array.isArray(convHist)) {
-    convHist.forEach((ch, i) => { if (ch.learnerMessage) convHistByTurn[i] = ch.learnerMessage; });
+    convHist.forEach((ch, i) => {
+      if (ch.learnerMessage) convHistByTurn[i] = ch.learnerMessage;
+    });
   }
   for (const ta of markers) {
-    let rawMsg = (ta.action === 'final_output')
-      ? (ta.detail || ta.contextSummary || '')
-      : (ta.contextSummary || '');
+    let rawMsg = ta.action === 'final_output' ? ta.detail || ta.contextSummary || '' : ta.contextSummary || '';
     const extMatch = rawMsg.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
     if (extMatch) rawMsg = extMatch[1].trim();
     const td = { turnIndex: ta.turnIndex, externalMessage: rawMsg, internalDeliberation: [] };
@@ -297,15 +309,15 @@ function buildPromptForChannel(ch) {
     case 'learner': {
       // Learner turns are offset: learner turn 0 maps to reconstructedTurns index
       const targetIdx = reconstructedTurns.findIndex(
-        (t, idx) => t.phase === 'learner' && idx > 0
-          && learnerTurns[turnIndex]
-          && t.externalMessage === learnerTurns[turnIndex].externalMessage,
+        (t, idx) =>
+          t.phase === 'learner' &&
+          idx > 0 &&
+          learnerTurns[turnIndex] &&
+          t.externalMessage === learnerTurns[turnIndex].externalMessage,
       );
       if (targetIdx === -1 && learnerTurns.length > 0) {
         // Fallback: use learner turn index directly in reconstructedTurns
-        const fallbackIdx = reconstructedTurns.findIndex(
-          (t) => t.phase === 'learner',
-        );
+        const fallbackIdx = reconstructedTurns.findIndex((t) => t.phase === 'learner');
         if (fallbackIdx === -1) return null;
         return buildLearnerEvaluationPrompt({
           turns: reconstructedTurns,
@@ -436,8 +448,12 @@ async function callJudge(prompt) {
     const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
     let out = '';
     let err = '';
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { err += d; });
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
     child.on('error', reject);
     child.on('close', (code) => {
       if (code !== 0) reject(new Error(err || out || `claude exited ${code}`));
@@ -461,9 +477,19 @@ async function callJudge(prompt) {
 
 // ── Main ──
 
-const channels = channel === 'all'
-  ? ['tutor', 'learner', 'tutor-holistic', 'learner-holistic', 'dialogue-public', 'dialogue-internal', 'tutor-delib', 'learner-delib']
-  : [channel];
+const channels =
+  channel === 'all'
+    ? [
+        'tutor',
+        'learner',
+        'tutor-holistic',
+        'learner-holistic',
+        'dialogue-public',
+        'dialogue-internal',
+        'tutor-delib',
+        'learner-delib',
+      ]
+    : [channel];
 
 for (const ch of channels) {
   const prompt = buildPromptForChannel(ch);
@@ -503,7 +529,9 @@ for (const ch of channels) {
   const charCount = prompt.length;
   const wordCount = prompt.split(/\s+/).length;
   const lineCount = prompt.split('\n').length;
-  console.log(`\n  📊 Prompt stats: ${charCount.toLocaleString()} chars, ~${wordCount.toLocaleString()} words, ${lineCount} lines`);
+  console.log(
+    `\n  📊 Prompt stats: ${charCount.toLocaleString()} chars, ~${wordCount.toLocaleString()} words, ${lineCount} lines`,
+  );
 
   // Verbose: show trace entries relevant to this turn
   if (verbose && dialogueTrace.length > 0) {

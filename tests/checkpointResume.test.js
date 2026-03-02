@@ -14,12 +14,7 @@ import assert from 'node:assert/strict';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {
-  writeCheckpoint,
-  loadCheckpoint,
-  deleteCheckpoint,
-  listCheckpoints,
-} from '../services/evaluationRunner.js';
+import { writeCheckpoint, loadCheckpoint, deleteCheckpoint, listCheckpoints } from '../services/evaluationRunner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..');
@@ -63,8 +58,21 @@ function makeTestState(overrides = {}) {
       },
     ],
     turnResults: [
-      { turnIndex: 0, turnId: 'initial', turnScore: 72.5, suggestion: { title: 'Turn 0 response', message: 'Lets break down recursion step by step.' } },
-      { turnIndex: 1, turnId: 'escalation', turnScore: 68.0, suggestion: { title: 'Turn 1 response', message: 'I understand your frustration. Lets try a different approach.' } },
+      {
+        turnIndex: 0,
+        turnId: 'initial',
+        turnScore: 72.5,
+        suggestion: { title: 'Turn 0 response', message: 'Lets break down recursion step by step.' },
+      },
+      {
+        turnIndex: 1,
+        turnId: 'escalation',
+        turnScore: 68.0,
+        suggestion: {
+          title: 'Turn 1 response',
+          message: 'I understand your frustration. Lets try a different approach.',
+        },
+      },
     ],
     conversationHistory: [
       {
@@ -76,35 +84,67 @@ function makeTestState(overrides = {}) {
     ],
     consolidatedTrace: [
       {
-        agent: 'ego', action: 'generate', turnIndex: 0, detail: 'Initial generation',
+        agent: 'ego',
+        action: 'generate',
+        turnIndex: 0,
+        detail: 'Initial generation',
         apiPayload: {
-          captureVersion: 1, source: 'fetch_capture', provider: 'openrouter',
+          captureVersion: 1,
+          source: 'fetch_capture',
+          provider: 'openrouter',
           endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-          request: { method: 'POST', body: { model: 'nvidia/nemotron', messages: [{ role: 'system', content: 'You are a tutor...' }] } },
+          request: {
+            method: 'POST',
+            body: { model: 'nvidia/nemotron', messages: [{ role: 'system', content: 'You are a tutor...' }] },
+          },
           response: { status: 200, body: { choices: [{ message: { content: 'Lets break down...' } }] } },
         },
-        inputMessages: [{ role: 'system', content: 'You are a tutor...' }, { role: 'user', content: 'Help with recursion' }],
+        inputMessages: [
+          { role: 'system', content: 'You are a tutor...' },
+          { role: 'user', content: 'Help with recursion' },
+        ],
         metrics: { latencyMs: 1200, inputTokens: 500, outputTokens: 200, provider: 'openrouter' },
       },
       {
-        agent: 'superego', action: 'review', turnIndex: 0, approved: true,
+        agent: 'superego',
+        action: 'review',
+        turnIndex: 0,
+        approved: true,
         apiPayload: {
-          captureVersion: 1, source: 'fetch_capture', provider: 'openrouter',
-          request: { method: 'POST', body: { model: 'moonshot/kimi-k2.5', messages: [{ role: 'system', content: 'Review...' }] } },
+          captureVersion: 1,
+          source: 'fetch_capture',
+          provider: 'openrouter',
+          request: {
+            method: 'POST',
+            body: { model: 'moonshot/kimi-k2.5', messages: [{ role: 'system', content: 'Review...' }] },
+          },
           response: { status: 200, body: { choices: [{ message: { content: 'Approved' } }] } },
         },
         metrics: { latencyMs: 800, inputTokens: 400, outputTokens: 100, provider: 'openrouter' },
       },
       {
-        agent: 'learner_ego', action: 'deliberation', turnIndex: 1,
+        agent: 'learner_ego',
+        action: 'deliberation',
+        turnIndex: 1,
         detail: 'I should push back harder',
-        apiPayload: { captureVersion: 1, provider: 'openrouter', request: { body: { model: 'nvidia/nemotron' } }, response: { status: 200 } },
-        inputMessages: [{ role: 'system', content: 'You are a learner...' }, { role: 'assistant', content: 'Lets break down...' }],
+        apiPayload: {
+          captureVersion: 1,
+          provider: 'openrouter',
+          request: { body: { model: 'nvidia/nemotron' } },
+          response: { status: 200 },
+        },
+        inputMessages: [
+          { role: 'system', content: 'You are a learner...' },
+          { role: 'assistant', content: 'Lets break down...' },
+        ],
         metrics: { latencyMs: 600, inputTokens: 300, outputTokens: 150 },
       },
     ],
     priorSuperegoAssessments: ['Assessment for turn 0'],
-    previousSuggestion: { title: 'Turn 1 response', message: 'I understand your frustration. Lets try a different approach.' },
+    previousSuggestion: {
+      title: 'Turn 1 response',
+      message: 'I understand your frustration. Lets try a different approach.',
+    },
     sessionEvolution: 'Ego self-reflection: learner is frustrated...',
     superegoEvolution: 'Superego reflection: maintain empathy...',
     behavioralOverrides: { rejection_threshold: 0.7, max_rejections: 1 },
@@ -532,23 +572,32 @@ describe('Turns mutation preservation (dynamic learner fix)', () => {
     // Turn 0 (escalation) was mutated by LLM learner generation
     const escalation = loaded.turns[0];
     assert.strictEqual(escalation.id, 'escalation');
-    assert.ok(escalation.action_details.message.startsWith('LLM-generated:'),
-      'Should have LLM-generated message, not scripted');
-    assert.strictEqual(escalation._originalMessage, 'Scripted: I am frustrated',
-      'Should preserve original scripted message');
+    assert.ok(
+      escalation.action_details.message.startsWith('LLM-generated:'),
+      'Should have LLM-generated message, not scripted',
+    );
+    assert.strictEqual(
+      escalation._originalMessage,
+      'Scripted: I am frustrated',
+      'Should preserve original scripted message',
+    );
     assert.ok(escalation._learnerDeliberation, 'Should have learner deliberation');
 
     // Turn 1 (breakthrough) was also mutated
     const breakthrough = loaded.turns[1];
-    assert.ok(breakthrough.action_details.message.startsWith('LLM-generated:'),
-      'Breakthrough turn should have LLM message');
+    assert.ok(
+      breakthrough.action_details.message.startsWith('LLM-generated:'),
+      'Breakthrough turn should have LLM message',
+    );
 
     // Turn 2 (consolidation) was NOT mutated yet (still scripted)
     const consolidation = loaded.turns[2];
-    assert.strictEqual(consolidation.action_details.message, 'Scripted: Can I try a harder problem?',
-      'Unmutated turn should keep scripted message');
-    assert.strictEqual(consolidation._originalMessage, undefined,
-      'Unmutated turn should not have _originalMessage');
+    assert.strictEqual(
+      consolidation.action_details.message,
+      'Scripted: Can I try a harder problem?',
+      'Unmutated turn should keep scripted message',
+    );
+    assert.strictEqual(consolidation._originalMessage, undefined, 'Unmutated turn should not have _originalMessage');
   });
 
   it('resumed turns use checkpointed (mutated) turn definitions, not fresh clones', () => {
@@ -570,9 +619,13 @@ describe('Turns mutation preservation (dynamic learner fix)', () => {
     const turns = cs?.turns || JSON.parse(JSON.stringify(originalScenarioTurns));
 
     // The restored turns should have the LLM-generated messages, not the originals
-    assert.ok(turns[0].action_details.message.startsWith('LLM-generated:'),
-      'Turn 0 should use LLM message from checkpoint, not original');
-    assert.ok(turns[1].action_details.message.startsWith('LLM-generated:'),
-      'Turn 1 should use LLM message from checkpoint, not original');
+    assert.ok(
+      turns[0].action_details.message.startsWith('LLM-generated:'),
+      'Turn 0 should use LLM message from checkpoint, not original',
+    );
+    assert.ok(
+      turns[1].action_details.message.startsWith('LLM-generated:'),
+      'Turn 1 should use LLM message from checkpoint, not original',
+    );
   });
 });

@@ -16,14 +16,13 @@ import assert from 'node:assert/strict';
 function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) {
   const learnerTurns = [];
 
-  let turnMarkers = trace.filter(
-    (t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action',
-  );
+  let turnMarkers = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
 
   if (turnMarkers.length === 0) {
     turnMarkers = trace.filter(
-      (t) => (t.agent === 'learner_synthesis' && t.action === 'response')
-        || (t.agent === 'learner' && t.action === 'final_output'),
+      (t) =>
+        (t.agent === 'learner_synthesis' && t.action === 'response') ||
+        (t.agent === 'learner' && t.action === 'final_output'),
     );
   }
 
@@ -35,9 +34,7 @@ function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) 
   }
 
   for (const ta of turnMarkers) {
-    let rawMessage = (ta.action === 'final_output')
-      ? (ta.detail || ta.contextSummary || '')
-      : (ta.contextSummary || '');
+    let rawMessage = ta.action === 'final_output' ? ta.detail || ta.contextSummary || '' : ta.contextSummary || '';
 
     const externalMatch = rawMessage.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
     if (externalMatch) rawMessage = externalMatch[1].trim();
@@ -218,7 +215,7 @@ describe('extractLearnerTurnsFromTrace', () => {
     const turns = extractLearnerTurnsFromTrace(trace, true, []);
     assert.equal(turns.length, 5, 'Should extract 5 learner turns (turns 1-5)');
     assert.deepEqual(
-      turns.map(t => t.turnIndex),
+      turns.map((t) => t.turnIndex),
       [1, 2, 3, 4, 5],
     );
   });
@@ -239,7 +236,9 @@ describe('extractLearnerTurnsFromTrace', () => {
   it('strips [INTERNAL]/[EXTERNAL] from unified learner output', () => {
     const trace = [
       {
-        agent: 'learner', action: 'final_output', turnIndex: 1,
+        agent: 'learner',
+        action: 'final_output',
+        turnIndex: 1,
         detail: '[INTERNAL]: private thoughts\n\n[EXTERNAL]: This is what the tutor sees',
       },
     ];
@@ -307,8 +306,11 @@ describe('buildLearnerTurnTargets', () => {
     for (const { lt, targetIdx } of learnerTurnTargets) {
       const entry = reconstructedTurns[targetIdx];
       assert.equal(entry.phase, 'learner', `Target at index ${targetIdx} should be a learner entry`);
-      assert.equal(entry.externalMessage, learnerTurns[lt].externalMessage,
-        `Target message should match learnerTurns[${lt}]`);
+      assert.equal(
+        entry.externalMessage,
+        learnerTurns[lt].externalMessage,
+        `Target message should match learnerTurns[${lt}]`,
+      );
     }
   });
 

@@ -370,7 +370,9 @@ router.post('/codex/paper-bug-audit-session', (req, res) => {
     const cwd = resolveApiCwd(req.body?.cwd);
     const claimReportPathRel = req.body?.claimReportPath || path.join('notes', 'paper-claim-audit.json');
     const auditJsonPathRel = req.body?.auditJsonPath || path.join('notes', 'paper-bug-audit.latest.json');
-    const claimReportPath = path.isAbsolute(claimReportPathRel) ? claimReportPathRel : path.join(cwd, claimReportPathRel);
+    const claimReportPath = path.isAbsolute(claimReportPathRel)
+      ? claimReportPathRel
+      : path.join(cwd, claimReportPathRel);
     const auditJsonPath = path.isAbsolute(auditJsonPathRel) ? auditJsonPathRel : path.join(cwd, auditJsonPathRel);
 
     const auditRun = runPaperBugAudit({
@@ -387,9 +389,8 @@ router.post('/codex/paper-bug-audit-session', (req, res) => {
       fs.writeFileSync(auditJsonPath, JSON.stringify(auditRun.parsed, null, 2), 'utf8');
     }
 
-    const codexArgs = Array.isArray(req.body?.codexArgs) && req.body.codexArgs.length > 0
-      ? req.body.codexArgs
-      : ['--full-auto'];
+    const codexArgs =
+      Array.isArray(req.body?.codexArgs) && req.body.codexArgs.length > 0 ? req.body.codexArgs : ['--full-auto'];
     const session = codexSessionService.createCodexSession({
       cwd,
       args: codexArgs,
@@ -414,13 +415,16 @@ router.post('/codex/paper-bug-audit-session', (req, res) => {
       ].join('\n');
 
     const seedDelayMs = Number.isFinite(req.body?.seedDelayMs) ? Number(req.body.seedDelayMs) : 3500;
-    setTimeout(() => {
-      try {
-        codexSessionService.writeCodexSessionInput(session.id, seedPrompt, true);
-      } catch (error) {
-        console.error('[EvalRoutes] Seed codex prompt error:', error.message);
-      }
-    }, Math.max(500, seedDelayMs));
+    setTimeout(
+      () => {
+        try {
+          codexSessionService.writeCodexSessionInput(session.id, seedPrompt, true);
+        } catch (error) {
+          console.error('[EvalRoutes] Seed codex prompt error:', error.message);
+        }
+      },
+      Math.max(500, seedDelayMs),
+    );
 
     res.status(201).json({
       success: true,
@@ -2505,7 +2509,9 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
     // Calculate deltas
     const deltas = {
       tutorFirstTurnScore:
-        avg2.tutorFirstTurnScore != null && avg1.tutorFirstTurnScore != null ? avg2.tutorFirstTurnScore - avg1.tutorFirstTurnScore : null,
+        avg2.tutorFirstTurnScore != null && avg1.tutorFirstTurnScore != null
+          ? avg2.tutorFirstTurnScore - avg1.tutorFirstTurnScore
+          : null,
       dimensions: {},
     };
 
@@ -3263,8 +3269,12 @@ router.get('/stream/recognition-ab', async (req, res) => {
     const baselineResults = results.baseline || [];
     const recognitionResults = results.recognition || [];
 
-    const baselineScores = baselineResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
-    const recognitionScores = recognitionResults.filter((r) => r.tutorFirstTurnScore != null).map((r) => r.tutorFirstTurnScore);
+    const baselineScores = baselineResults
+      .filter((r) => r.tutorFirstTurnScore != null)
+      .map((r) => r.tutorFirstTurnScore);
+    const recognitionScores = recognitionResults
+      .filter((r) => r.tutorFirstTurnScore != null)
+      .map((r) => r.tutorFirstTurnScore);
 
     const baselineAvgScore =
       baselineScores.length > 0 ? baselineScores.reduce((a, b) => a + b, 0) / baselineScores.length : null;

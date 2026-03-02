@@ -523,7 +523,9 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
   trace.metrics.tutorOutputTokens += egoResponse.usage?.outputTokens || 0;
 
   const egoDraft = egoResponse.content || '';
-  internalDeliberation.push(makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }));
+  internalDeliberation.push(
+    makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }),
+  );
 
   // ===== T.SUPEREGO: Critique and refine (skip when superego is null) =====
   let externalMessage = egoDraft;
@@ -882,7 +884,7 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
   const raw = await callAI(agentConfig, systemPrompt, userPrompt, agentRole, {
     messageHistory,
     // Add providerConfig for API key/base URL resolution if needed by tutor-core
-    ...agentConfig.providerConfig
+    ...agentConfig.providerConfig,
   });
 
   // Map tutor-core result shape back to learner result shape
@@ -906,7 +908,10 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
         method: 'POST',
         body: truncatePayload({
           model: raw.model || agentConfig.model,
-          messages: messageHistory || [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+          messages: messageHistory || [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
         }),
       },
       response: {
@@ -991,7 +996,7 @@ export async function generateLearnerResponse(options) {
   const useMessageChains = conversationMode === 'messages';
   let learnerExternalHistory = null;
   if (useMessageChains && conversationHistory.length > 0) {
-    learnerExternalHistory = conversationHistory.map(m => ({
+    learnerExternalHistory = conversationHistory.map((m) => ({
       role: m.role === 'tutor' ? 'user' : 'assistant',
       content: m.content,
     }));
@@ -1005,21 +1010,21 @@ export async function generateLearnerResponse(options) {
   // The 5th argument is messageHistory for message chain mode.
   const callLLM = llmCall
     ? async (agentConfig, systemPrompt, userPrompt, _role, _msgHistory = null) => {
-      const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
-        temperature: getRequiredTemperature(agentConfig, _role || 'learner_agent'),
-        maxTokens: getRequiredMaxTokens(agentConfig, _role || 'learner_agent'),
-        agentRole: _role,
-      });
-      return {
-        content: response.content,
-        usage: response.usage,
-        model: response.model || agentConfig.model,
-        provider: response.provider || agentConfig.provider || null,
-        latencyMs: response.latencyMs || null,
-        generationId: response.generationId || null,
-        apiPayload: response.apiPayload || null,
-      };
-    }
+        const response = await llmCall(agentConfig.model, systemPrompt, [{ role: 'user', content: userPrompt }], {
+          temperature: getRequiredTemperature(agentConfig, _role || 'learner_agent'),
+          maxTokens: getRequiredMaxTokens(agentConfig, _role || 'learner_agent'),
+          agentRole: _role,
+        });
+        return {
+          content: response.content,
+          usage: response.usage,
+          model: response.model || agentConfig.model,
+          provider: response.provider || agentConfig.provider || null,
+          latencyMs: response.latencyMs || null,
+          generationId: response.generationId || null,
+          apiPayload: response.apiPayload || null,
+        };
+      }
     : callLearnerAI;
 
   const persona = learnerConfig.getPersona(personaId);
@@ -1062,16 +1067,15 @@ export async function generateLearnerResponse(options) {
       useMessageChains ? learnerExternalHistory : null,
     );
     const egoInitialEntry = makeDeliberationEntry('ego_initial', egoInitialResponse, egoConfig);
-    egoInitialEntry.inputMessages = useMessageChains && learnerExternalHistory
-      ? [...learnerExternalHistory, { role: 'user', content: "React to the tutor's message." }]
-      : null;
+    egoInitialEntry.inputMessages =
+      useMessageChains && learnerExternalHistory
+        ? [...learnerExternalHistory, { role: 'user', content: "React to the tutor's message." }]
+        : null;
     internalDeliberation.push(egoInitialEntry);
 
     // Record ego initial output in internal chain (for ego revision)
     if (useMessageChains) {
-      learnerEgoInternalHistory.push(
-        { role: 'assistant', content: egoInitialResponse.content },
-      );
+      learnerEgoInternalHistory.push({ role: 'assistant', content: egoInitialResponse.content });
     }
     tokenUsage.inputTokens += egoInitialResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoInitialResponse.usage?.outputTokens || 0;

@@ -10,10 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import store from '../services/evaluationStore.js';
-import {
-  buildLearnerEvaluationPrompt,
-  calculateLearnerOverallScore,
-} from '../services/learnerRubricEvaluator.js';
+import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 
 const args = process.argv.slice(2);
 const runId = args.find((a) => !a.startsWith('--'));
@@ -37,9 +34,7 @@ if (dialogueResults.length === 0) {
 }
 
 // Filter to those needing scoring
-const toEvaluate = force
-  ? dialogueResults
-  : dialogueResults.filter((r) => r.learnerOverallScore == null);
+const toEvaluate = force ? dialogueResults : dialogueResults.filter((r) => r.learnerOverallScore == null);
 
 console.log(`\nEvaluating learner turns for ${toEvaluate.length} dialogue(s) from run: ${runId}\n`);
 
@@ -77,13 +72,13 @@ for (let i = 0; i < toEvaluate.length; i++) {
   const trace = dialogueLog.dialogueTrace || [];
   const learnerArch = dialogueLog.learnerArchitecture || 'unified';
   const isMultiAgent =
-    learnerArch.includes('ego_superego') ||
-    learnerArch === 'multi_agent' ||
-    learnerArch.includes('psychodynamic');
+    learnerArch.includes('ego_superego') || learnerArch === 'multi_agent' || learnerArch.includes('psychodynamic');
 
   // Extract learner turns
   const learnerTurns = [];
-  const turnActionEntries = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
+  const turnActionEntries = trace.filter(
+    (t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action',
+  );
 
   for (const ta of turnActionEntries) {
     const turnData = {
@@ -188,8 +183,12 @@ for (let i = 0; i < toEvaluate.length; i++) {
         });
         let out = '';
         let err = '';
-        child.stdout.on('data', (d) => { out += d; });
-        child.stderr.on('data', (d) => { err += d; });
+        child.stdout.on('data', (d) => {
+          out += d;
+        });
+        child.stderr.on('data', (d) => {
+          err += d;
+        });
         child.on('error', reject);
         child.on('close', (code) => {
           if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));

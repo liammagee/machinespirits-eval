@@ -113,33 +113,58 @@ async function runParallel() {
   // ═══ Wave 1: All independent calls concurrent ═══
   const tutorPromises = [];
   for (let i = 0; i < TURNS; i++) {
-    tutorPromises.push(mockJudgeCall(`tutor-turn-${i}`).then(r => { results[`tutor-${i}`] = r; return r; }));
+    tutorPromises.push(
+      mockJudgeCall(`tutor-turn-${i}`).then((r) => {
+        results[`tutor-${i}`] = r;
+        return r;
+      }),
+    );
   }
 
   const learnerPromises = [];
   if (!TUTOR_ONLY) {
     for (let i = 0; i < learnerTurnCalls; i++) {
-      learnerPromises.push(mockJudgeCall(`learner-turn-${i}`).then(r => { results[`learner-${i}`] = r; return r; }));
+      learnerPromises.push(
+        mockJudgeCall(`learner-turn-${i}`).then((r) => {
+          results[`learner-${i}`] = r;
+          return r;
+        }),
+      );
     }
   }
 
-  const dgpPromise = !TUTOR_ONLY ? mockJudgeCall('dgp').then(r => { results['dgp'] = r; return r; }) : null;
-  const dgiPromise = !TUTOR_ONLY ? mockJudgeCall('dgi').then(r => { results['dgi'] = r; return r; }) : null;
+  const dgpPromise = !TUTOR_ONLY
+    ? mockJudgeCall('dgp').then((r) => {
+        results['dgp'] = r;
+        return r;
+      })
+    : null;
+  const dgiPromise = !TUTOR_ONLY
+    ? mockJudgeCall('dgi').then((r) => {
+        results['dgi'] = r;
+        return r;
+      })
+    : null;
 
-  await Promise.all([
-    Promise.allSettled(tutorPromises),
-    Promise.allSettled(learnerPromises),
-    dgpPromise,
-    dgiPromise,
-  ]);
+  await Promise.all([Promise.allSettled(tutorPromises), Promise.allSettled(learnerPromises), dgpPromise, dgiPromise]);
 
   // ═══ Wave 2: Holistic calls concurrent ═══
   const holisticPromises = [];
   if (!TUTOR_ONLY && TURNS > 1) {
-    holisticPromises.push(mockJudgeCall('tutor-holistic').then(r => { results['tutor-holistic'] = r; return r; }));
+    holisticPromises.push(
+      mockJudgeCall('tutor-holistic').then((r) => {
+        results['tutor-holistic'] = r;
+        return r;
+      }),
+    );
   }
   if (!TUTOR_ONLY && learnerTurnCalls > 0) {
-    holisticPromises.push(mockJudgeCall('learner-holistic').then(r => { results['learner-holistic'] = r; return r; }));
+    holisticPromises.push(
+      mockJudgeCall('learner-holistic').then((r) => {
+        results['learner-holistic'] = r;
+        return r;
+      }),
+    );
   }
 
   if (holisticPromises.length > 0) {
@@ -195,7 +220,9 @@ async function main() {
   console.log(`Results`);
   console.log(`───────────────────────────────────────────────`);
   console.log(`  Sequential:    ${(seqTime / 1000).toFixed(1)}s  (${seqCalls} calls × ${DELAY}ms)`);
-  console.log(`  Parallel:      ${(parTime / 1000).toFixed(1)}s  (Wave 1: ${wave1Calls} concurrent, Wave 2: ${holisticCalls} concurrent)`);
+  console.log(
+    `  Parallel:      ${(parTime / 1000).toFixed(1)}s  (Wave 1: ${wave1Calls} concurrent, Wave 2: ${holisticCalls} concurrent)`,
+  );
   console.log(`  Speedup:       ${(seqTime / parTime).toFixed(2)}×`);
   console.log(`  ─────────────────────────────────────────`);
   console.log(`  Theoretical:`);

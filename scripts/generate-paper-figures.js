@@ -302,7 +302,11 @@ function traceToSteps(trace) {
       needsResponseArrow = false;
     }
 
-    if (agent === 'system' || ((agent === 'tutor' || agent === 'user') && action === 'final_output') || agent === 'learner')
+    if (
+      agent === 'system' ||
+      ((agent === 'tutor' || agent === 'user') && action === 'final_output') ||
+      agent === 'learner'
+    )
       continue;
 
     if ((agent === 'tutor' || agent === 'user') && action === 'context_input') {
@@ -331,7 +335,11 @@ function traceToSteps(trace) {
           superegoFollows = true;
           break;
         }
-        if (learnerBlockStarts.has(j) || ((trace[j].agent === 'tutor' || trace[j].agent === 'user') && trace[j].action === 'context_input')) break;
+        if (
+          learnerBlockStarts.has(j) ||
+          ((trace[j].agent === 'tutor' || trace[j].agent === 'user') && trace[j].action === 'context_input')
+        )
+          break;
       }
       if (action !== 'generate' && !superegoFollows) {
         steps.push({

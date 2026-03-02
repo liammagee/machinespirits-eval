@@ -22,8 +22,12 @@ const _PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
 
 const learnerCacheMap = new Map();
 let _learnerRubricPathOverride = null;
-export function setLearnerRubricPathOverride(p) { _learnerRubricPathOverride = p; }
-export function clearLearnerRubricPathOverride() { _learnerRubricPathOverride = null; }
+export function setLearnerRubricPathOverride(p) {
+  _learnerRubricPathOverride = p;
+}
+export function clearLearnerRubricPathOverride() {
+  _learnerRubricPathOverride = null;
+}
 
 /**
  * Load the learner rubric YAML with mtime-based caching.
@@ -227,18 +231,18 @@ export function buildBatchedLearnerPrompt(params) {
   const fullTranscript = buildHolisticTranscript(turns, false);
 
   // Build per-turn listing of learner messages to evaluate
-  const turnListings = learnerTurnTargets.map(({ lt, targetIdx }) => {
-    const turn = turns[targetIdx];
-    return `### Learner Turn ${lt + 1} (at dialogue position ${targetIdx + 1})
+  const turnListings = learnerTurnTargets
+    .map(({ lt, targetIdx }) => {
+      const turn = turns[targetIdx];
+      return `### Learner Turn ${lt + 1} (at dialogue position ${targetIdx + 1})
 **External message** (what the tutor sees):
 ${turn?.externalMessage || '(no message)'}`;
-  }).join('\n\n');
+    })
+    .join('\n\n');
 
   // Build example JSON
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = Object.fromEntries(
-    dimKeys.map((key) => [key, { score: 3, reasoning: 'Brief reason' }]),
-  );
+  const exampleScores = Object.fromEntries(dimKeys.map((key) => [key, { score: 3, reasoning: 'Brief reason' }]));
   const exampleTurn = {
     learner_turn_index: 0,
     scores: exampleScores,

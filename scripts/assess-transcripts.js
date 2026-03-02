@@ -260,7 +260,9 @@ function buildAssessmentPrompt(row, transcript, { blinded = false } = {}) {
   if (!blinded) metadataLines.push(`- Recognition condition: ${condition}`);
   metadataLines.push(`- Mechanism: ${mechanism}`);
   if (!blinded)
-    metadataLines.push(`- Numeric score: ${row.tutor_first_turn_score != null ? row.tutor_first_turn_score.toFixed(1) : 'N/A'}/100`);
+    metadataLines.push(
+      `- Numeric score: ${row.tutor_first_turn_score != null ? row.tutor_first_turn_score.toFixed(1) : 'N/A'}/100`,
+    );
   metadataLines.push(`- Turns: ${row.dialogue_rounds || 'unknown'}`);
 
   return `You are analyzing a multi-turn AI tutoring dialogue. The dialogue uses an

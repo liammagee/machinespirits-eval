@@ -22,10 +22,7 @@ import {
   loadRubric,
 } from '../services/evalConfigLoader.js';
 
-import {
-  buildEvaluationPrompt,
-  calculateOverallScore,
-} from '../services/rubricEvaluator.js';
+import { buildEvaluationPrompt, calculateOverallScore } from '../services/rubricEvaluator.js';
 
 import {
   setLearnerRubricPathOverride,
@@ -37,7 +34,8 @@ import {
 const RUBRICS_DIR = path.resolve(import.meta.dirname, '..', 'config', 'rubrics');
 
 // Discover available rubric versions on disk
-const availableVersions = fs.readdirSync(RUBRICS_DIR)
+const availableVersions = fs
+  .readdirSync(RUBRICS_DIR)
   .filter((d) => d.startsWith('v') && fs.statSync(path.join(RUBRICS_DIR, d)).isDirectory())
   .map((d) => d.slice(1)); // strip 'v' prefix
 
@@ -89,11 +87,7 @@ describe('Tutor per-turn prompt dimension keys', () => {
       const promptKeys = extractPromptDimKeys(prompt);
       const expected = loadExpectedDimKeys(ver);
 
-      assert.deepStrictEqual(
-        promptKeys,
-        expected,
-        `v${ver} prompt keys should match rubric YAML dimensions`,
-      );
+      assert.deepStrictEqual(promptKeys, expected, `v${ver} prompt keys should match rubric YAML dimensions`);
     });
   }
 
@@ -136,10 +130,7 @@ describe('calculateOverallScore with rubric overrides', () => {
       const scores = makeScoresForVersion(ver, 5);
       const result = calculateOverallScore(scores);
 
-      assert.ok(
-        Math.abs(result - 100) < 1,
-        `v${ver} all-5s should give ~100, got ${result}`,
-      );
+      assert.ok(Math.abs(result - 100) < 1, `v${ver} all-5s should give ~100, got ${result}`);
     });
 
     it(`v${ver}: mismatched keys give null`, () => {
@@ -183,11 +174,7 @@ describe('Learner prompt dimension keys', () => {
 
       const promptKeys = [...prompt.matchAll(/"(\w+)": \{"score": \d/g)].map((m) => m[1]);
 
-      assert.deepStrictEqual(
-        promptKeys,
-        expectedKeys,
-        `v${ver} learner prompt keys should match learner rubric YAML`,
-      );
+      assert.deepStrictEqual(promptKeys, expectedKeys, `v${ver} learner prompt keys should match learner rubric YAML`);
     });
   }
 });

@@ -37,9 +37,7 @@ const CELLS_WITH_SUPEREGO = new Set(
 );
 
 // Cells WITHOUT superego: either superego: null OR multi_agent_tutor: false
-const CELLS_WITHOUT_SUPEREGO = new Set(
-  cellNames.filter((name) => !CELLS_WITH_SUPEREGO.has(name)),
-);
+const CELLS_WITHOUT_SUPEREGO = new Set(cellNames.filter((name) => !CELLS_WITH_SUPEREGO.has(name)));
 
 // ============================================================================
 // EXHAUSTIVE: disableSuperego matches YAML for every cell
@@ -60,21 +58,14 @@ describe('superego guard — disableSuperego for all cells', () => {
           false,
           `${cellName} has a superego configured — disableSuperego should be false`,
         );
-        assert.ok(
-          resolved.superegoModel,
-          `${cellName} has a superego configured — superegoModel should be non-null`,
-        );
+        assert.ok(resolved.superegoModel, `${cellName} has a superego configured — superegoModel should be non-null`);
       } else {
         assert.strictEqual(
           resolved.disableSuperego,
           true,
           `${cellName} has no superego — disableSuperego should be true`,
         );
-        assert.strictEqual(
-          resolved.superegoModel,
-          null,
-          `${cellName} has no superego — superegoModel should be null`,
-        );
+        assert.strictEqual(resolved.superegoModel, null, `${cellName} has no superego — superegoModel should be null`);
       }
     });
   }
@@ -183,7 +174,11 @@ describe('superego guard — hasSuperego computation logic', () => {
 
   it('cells with multi_agent_tutor=false always get disableSuperego=true', () => {
     // Single-agent cells never have a superego
-    for (const cellName of ['cell_1_base_single_unified', 'cell_5_recog_single_unified', 'cell_71_naive_single_unified']) {
+    for (const cellName of [
+      'cell_1_base_single_unified',
+      'cell_5_recog_single_unified',
+      'cell_71_naive_single_unified',
+    ]) {
       const resolved = resolveConfigModels({ profileName: cellName });
       assert.strictEqual(resolved.disableSuperego, true, `${cellName} should have disableSuperego=true`);
     }
@@ -191,7 +186,11 @@ describe('superego guard — hasSuperego computation logic', () => {
 
   it('messages-mode single-agent cells get disableSuperego=true', () => {
     // Messages-mode cells that are single-agent should also be guarded
-    for (const cellName of ['cell_80_messages_base_single_unified', 'cell_84_messages_recog_single_unified', 'cell_90_messages_recog_single_unified']) {
+    for (const cellName of [
+      'cell_80_messages_base_single_unified',
+      'cell_84_messages_recog_single_unified',
+      'cell_90_messages_recog_single_unified',
+    ]) {
       const resolved = resolveConfigModels({ profileName: cellName });
       assert.strictEqual(resolved.disableSuperego, true, `${cellName} should have disableSuperego=true`);
     }
@@ -205,14 +204,27 @@ describe('superego guard — hasSuperego computation logic', () => {
 describe('superego guard — derived set sanity checks', () => {
   it('there are cells WITH superego (at least the core 4: cells 3, 4, 7, 8)', () => {
     assert.ok(CELLS_WITH_SUPEREGO.size >= 4, `Expected ≥4 cells with superego, got ${CELLS_WITH_SUPEREGO.size}`);
-    for (const name of ['cell_3_base_multi_unified', 'cell_4_base_multi_psycho', 'cell_7_recog_multi_unified', 'cell_8_recog_multi_psycho']) {
+    for (const name of [
+      'cell_3_base_multi_unified',
+      'cell_4_base_multi_psycho',
+      'cell_7_recog_multi_unified',
+      'cell_8_recog_multi_psycho',
+    ]) {
       assert.ok(CELLS_WITH_SUPEREGO.has(name), `${name} should be in CELLS_WITH_SUPEREGO`);
     }
   });
 
   it('there are cells WITHOUT superego (at least cells 1, 5, 71, 90)', () => {
-    assert.ok(CELLS_WITHOUT_SUPEREGO.size >= 4, `Expected ≥4 cells without superego, got ${CELLS_WITHOUT_SUPEREGO.size}`);
-    for (const name of ['cell_1_base_single_unified', 'cell_5_recog_single_unified', 'cell_71_naive_single_unified', 'cell_90_messages_recog_single_unified']) {
+    assert.ok(
+      CELLS_WITHOUT_SUPEREGO.size >= 4,
+      `Expected ≥4 cells without superego, got ${CELLS_WITHOUT_SUPEREGO.size}`,
+    );
+    for (const name of [
+      'cell_1_base_single_unified',
+      'cell_5_recog_single_unified',
+      'cell_71_naive_single_unified',
+      'cell_90_messages_recog_single_unified',
+    ]) {
       assert.ok(CELLS_WITHOUT_SUPEREGO.has(name), `${name} should be in CELLS_WITHOUT_SUPEREGO`);
     }
   });

@@ -1,6 +1,11 @@
 import { strict as assert } from 'assert';
 import { describe, it } from 'node:test';
-import { buildMessageChain, buildProjectionDiagnostics, projectTranscriptArtifacts, traceToSteps } from '../services/transcriptProjection.js';
+import {
+  buildMessageChain,
+  buildProjectionDiagnostics,
+  projectTranscriptArtifacts,
+  traceToSteps,
+} from '../services/transcriptProjection.js';
 
 const sampleTrace = [
   {
@@ -108,7 +113,11 @@ describe('transcriptProjection', () => {
   it('multi-turn single-agent trace: all ego generates route to learner', () => {
     // Multi-turn: 2 turns, no superego review
     const multiTurnTrace = [
-      { agent: 'tutor', action: 'context_input', rawContext: '### Recent Chat History\n- User: "Stuck on dialectics."' },
+      {
+        agent: 'tutor',
+        action: 'context_input',
+        rawContext: '### Recent Chat History\n- User: "Stuck on dialectics."',
+      },
       { agent: 'ego', action: 'generate', metrics: { latencyMs: 1200 }, suggestions: [{ message: 'Turn 1 response' }] },
       { agent: 'tutor', action: 'context_input', rawContext: '### Recent Chat History\n- User: "Can you clarify?"' },
       { agent: 'ego', action: 'generate', metrics: { latencyMs: 800 }, suggestions: [{ message: 'Turn 2 response' }] },
@@ -147,4 +156,3 @@ describe('transcriptProjection', () => {
     assert.ok(projection.diagnostics && typeof projection.diagnostics.effectCount === 'number');
   });
 });
-

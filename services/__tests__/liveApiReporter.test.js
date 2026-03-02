@@ -9,14 +9,14 @@ describe('LiveApiReporter', () => {
 
   beforeEach(() => {
     reporter = new LiveApiReporter();
-    
+
     // Mock stderr
     originalStderrWrite = process.stderr.write;
     process.stderr.write = (chunk) => {
       stderrOutput.push(chunk.toString());
     };
     stderrOutput = [];
-    
+
     // Ensure we start clean
     reporter.uninstall();
   });
@@ -27,7 +27,7 @@ describe('LiveApiReporter', () => {
   });
 
   it('installs and uninstalls globally', () => {
-    // Just verify the methods run without throwing. 
+    // Just verify the methods run without throwing.
     // Testing actual payload capture integration would be an integration test.
     reporter.install();
     assert.doesNotThrow(() => reporter.uninstall());
@@ -40,17 +40,17 @@ describe('LiveApiReporter', () => {
         body: {
           model: 'openrouter/test-model-name-is-very-long-so-it-will-be-truncated',
           system: 'You are a helpful pedagog tutor.',
-        }
+        },
       },
       response: {
         json: {
-          usage: { prompt_tokens: 10, completion_tokens: 20 }
-        }
-      }
+          usage: { prompt_tokens: 10, completion_tokens: 20 },
+        },
+      },
     };
 
     reporter._onRecord(record);
-    
+
     assert.equal(stderrOutput.length, 1);
     const line = stderrOutput[0];
     assert.match(line, /# {2}1/);
@@ -67,21 +67,21 @@ describe('LiveApiReporter', () => {
       request: {
         body: {
           model: 'claude-3',
-          messages: [{ role: 'system', content: 'You are a strict superego critic.' }]
-        }
+          messages: [{ role: 'system', content: 'You are a strict superego critic.' }],
+        },
       },
       response: {
         body: {
-          usage: { input_tokens: 5, output_tokens: 15 }
-        }
-      }
+          usage: { input_tokens: 5, output_tokens: 15 },
+        },
+      },
     };
 
     reporter.withConversation({ profileName: 'cell_42_base_multi_psycho', scenarioId: 'frustration_scenario' }, () => {
       reporter.setTurnIdx(3);
       reporter._onRecord(record);
     });
-    
+
     assert.equal(stderrOutput.length, 1);
     const line = stderrOutput[0];
     assert.match(line, /base-multi-psych\|frustration-scen/); // Formatted identifiers
@@ -97,13 +97,13 @@ describe('LiveApiReporter', () => {
     reporter._onRecord(record);
     assert.match(stderrOutput[0], /learner_ego/);
   });
-  
+
   it('infers reflection roles correctly', () => {
     const record = { request: { body: { system: 'profiling other agent' } } };
     reporter._onRecord(record);
     assert.match(stderrOutput[0], /profile/);
   });
-  
+
   it('infers unknown roles when no keywords match', () => {
     const record = { request: { body: { system: 'just some random text' } } };
     reporter._onRecord(record);
@@ -113,7 +113,7 @@ describe('LiveApiReporter', () => {
   it('formats errors correctly', () => {
     const record = {
       error: 'Network timeout',
-      request: { body: { model: 'gpt-4' } }
+      request: { body: { model: 'gpt-4' } },
     };
     reporter._onRecord(record);
     assert.match(stderrOutput[0], /ERR/);
@@ -122,7 +122,7 @@ describe('LiveApiReporter', () => {
   it('handles missing fields gracefully', () => {
     const record = {};
     reporter._onRecord(record);
-    
+
     assert.equal(stderrOutput.length, 1);
     const line = stderrOutput[0];
     assert.match(line, /\?\|\?/);
@@ -136,9 +136,8 @@ describe('LiveApiReporter', () => {
     reporter.withConversation({ profileName: 'p1', scenarioId: 's1' }, () => reporter._onRecord({}));
     reporter.withConversation({ profileName: 'p2', scenarioId: 's2' }, () => reporter._onRecord({}));
     reporter.withConversation({ profileName: 'p1', scenarioId: 's1' }, () => reporter._onRecord({}));
-    
+
     assert.equal(stderrOutput.length, 3);
     assert.equal(reporter.colorMap.size, 2);
   });
-
 });

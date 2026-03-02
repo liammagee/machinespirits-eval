@@ -54,13 +54,27 @@ const testRunIds = [];
 // Cleanup: remove temporary database after all tests
 after(() => {
   for (const runId of testRunIds) {
-    try { deleteRun(runId); } catch { /* ignore */ }
+    try {
+      deleteRun(runId);
+    } catch {
+      /* ignore */
+    }
   }
   try {
     fs.unlinkSync(testDbPath);
-    try { fs.unlinkSync(testDbPath + '-wal'); } catch { /* may not exist */ }
-    try { fs.unlinkSync(testDbPath + '-shm'); } catch { /* may not exist */ }
-  } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(testDbPath + '-wal');
+    } catch {
+      /* may not exist */
+    }
+    try {
+      fs.unlinkSync(testDbPath + '-shm');
+    } catch {
+      /* may not exist */
+    }
+  } catch {
+    /* ignore */
+  }
   delete process.env.EVAL_DB_PATH;
 });
 
@@ -110,7 +124,8 @@ describe('Turn ID generation', () => {
   function generateContentTurnId(dialogueId, turnIndex, turnContent) {
     return createHash('sha256')
       .update(dialogueId + ':' + turnIndex + ':' + turnContent)
-      .digest('hex').slice(0, 16);
+      .digest('hex')
+      .slice(0, 16);
   }
 
   it('same content produces same turn ID', () => {
@@ -188,7 +203,10 @@ describe('Score audit trail', () => {
 
     // Check that the operation label is correct
     const ops = audit.map((a) => a.operation);
-    assert.ok(ops.every((op) => op === 'updateResultTutorScores'), 'all entries should have correct operation');
+    assert.ok(
+      ops.every((op) => op === 'updateResultTutorScores'),
+      'all entries should have correct operation',
+    );
 
     // Check that changed columns are tracked
     const columns = audit.map((a) => a.column_name);
@@ -297,10 +315,20 @@ describe('Score audit trail', () => {
     testRunIds.push(run.id);
 
     const id1 = storeResult(run.id, {
-      scenarioId: 'scenario_a', scenarioName: 'A', provider: 'test', model: 'test', suggestions: [], success: true,
+      scenarioId: 'scenario_a',
+      scenarioName: 'A',
+      provider: 'test',
+      model: 'test',
+      suggestions: [],
+      success: true,
     });
     const id2 = storeResult(run.id, {
-      scenarioId: 'scenario_b', scenarioName: 'B', provider: 'test', model: 'test', suggestions: [], success: true,
+      scenarioId: 'scenario_b',
+      scenarioName: 'B',
+      provider: 'test',
+      model: 'test',
+      suggestions: [],
+      success: true,
     });
 
     updateResultTutorScores(id1, { tutorOverallScore: 70, tutorFirstTurnScore: 70 });
@@ -539,8 +567,14 @@ describe('Audit trail edge cases', () => {
 
     // Check both sets of columns are tracked
     const columns = audit.map((a) => a.column_name);
-    assert.ok(columns.some((c) => c.includes('tutor')), 'should track tutor columns');
-    assert.ok(columns.some((c) => c.includes('learner')), 'should track learner columns');
+    assert.ok(
+      columns.some((c) => c.includes('tutor')),
+      'should track tutor columns',
+    );
+    assert.ok(
+      columns.some((c) => c.includes('learner')),
+      'should track learner columns',
+    );
   });
 
   it('stringifyAudit correctly handles nested objects in tutor_scores', () => {
@@ -620,7 +654,8 @@ describe('Hash verification scenarios', () => {
     function generateContentTurnId(dialogueId, turnIndex, turnContent) {
       return createHash('sha256')
         .update(dialogueId + ':' + turnIndex + ':' + turnContent)
-        .digest('hex').slice(0, 16);
+        .digest('hex')
+        .slice(0, 16);
     }
 
     const ids = new Set();
@@ -680,10 +715,20 @@ describe('Cross-function audit coverage', () => {
     testRunIds.push(run1.id, run2.id);
 
     const id1 = storeResult(run1.id, {
-      scenarioId: 's1', scenarioName: 'S1', provider: 'test', model: 'test', suggestions: [], success: true,
+      scenarioId: 's1',
+      scenarioName: 'S1',
+      provider: 'test',
+      model: 'test',
+      suggestions: [],
+      success: true,
     });
     const id2 = storeResult(run2.id, {
-      scenarioId: 's2', scenarioName: 'S2', provider: 'test', model: 'test', suggestions: [], success: true,
+      scenarioId: 's2',
+      scenarioName: 'S2',
+      provider: 'test',
+      model: 'test',
+      suggestions: [],
+      success: true,
     });
 
     updateResultTutorScores(id1, { tutorOverallScore: 70, tutorFirstTurnScore: 70 });
@@ -694,11 +739,17 @@ describe('Cross-function audit coverage', () => {
 
     // Run1 audit should only contain entries for id1
     const run1ResultIds = [...new Set(auditRun1.map((a) => a.result_id))];
-    assert.ok(run1ResultIds.every((rid) => rid === String(id1)), 'run1 audit should only contain run1 results');
+    assert.ok(
+      run1ResultIds.every((rid) => rid === String(id1)),
+      'run1 audit should only contain run1 results',
+    );
 
     // Run2 audit should only contain entries for id2
     const run2ResultIds = [...new Set(auditRun2.map((a) => a.result_id))];
-    assert.ok(run2ResultIds.every((rid) => rid === String(id2)), 'run2 audit should only contain run2 results');
+    assert.ok(
+      run2ResultIds.every((rid) => rid === String(id2)),
+      'run2 audit should only contain run2 results',
+    );
   });
 
   it('audit entries preserve rubric_version metadata when available', () => {
@@ -731,7 +782,12 @@ describe('Backward compatibility extensions', () => {
     const run = createRun({ description: 'empty run' });
     testRunIds.push(run.id);
     storeResult(run.id, {
-      scenarioId: 's', scenarioName: 'S', provider: 'test', model: 'test', suggestions: [], success: true,
+      scenarioId: 's',
+      scenarioName: 'S',
+      provider: 'test',
+      model: 'test',
+      suggestions: [],
+      success: true,
     });
     // Don't do any updates
     const audit = getScoreAuditByRun(run.id);
@@ -764,7 +820,9 @@ describe('Backward compatibility extensions', () => {
 
 describe('Config hash in storeResult', () => {
   it('stores config_hash when provided', () => {
-    const testHash = createHash('sha256').update(JSON.stringify({ profileName: 'cell_1' })).digest('hex');
+    const testHash = createHash('sha256')
+      .update(JSON.stringify({ profileName: 'cell_1' }))
+      .digest('hex');
     const { runId } = createTestResult({ configHash: testHash });
     const results = getResults(runId);
     assert.strictEqual(results.length, 1);

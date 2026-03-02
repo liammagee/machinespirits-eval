@@ -81,8 +81,11 @@ import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 
 describe('Prompt versioning: config loader re-exports', () => {
   it('tutorConfigLoader exports getPromptMetadata', () => {
-    assert.equal(typeof tutorConfigLoader.getPromptMetadata, 'function',
-      'tutorConfigLoader should export getPromptMetadata');
+    assert.equal(
+      typeof tutorConfigLoader.getPromptMetadata,
+      'function',
+      'tutorConfigLoader should export getPromptMetadata',
+    );
   });
 
   it('tutorConfigLoader.getPromptMetadata returns valid metadata', () => {
@@ -92,8 +95,11 @@ describe('Prompt versioning: config loader re-exports', () => {
   });
 
   it('learnerConfigLoader exports getPromptMetadata', () => {
-    assert.equal(typeof learnerConfigLoader.getPromptMetadata, 'function',
-      'learnerConfigLoader should export getPromptMetadata');
+    assert.equal(
+      typeof learnerConfigLoader.getPromptMetadata,
+      'function',
+      'learnerConfigLoader should export getPromptMetadata',
+    );
   });
 
   it('learnerConfigLoader.getPromptMetadata returns valid metadata for learner prompts', () => {
@@ -112,8 +118,7 @@ describe('Prompt versioning: all prompt files tagged', () => {
   // Follow symlink to actual directory
   const realPromptsDir = fs.realpathSync(promptsDir);
 
-  const promptFiles = fs.readdirSync(realPromptsDir)
-    .filter(f => f.endsWith('.md') && f !== 'PROMPT_SCHEMA.md');
+  const promptFiles = fs.readdirSync(realPromptsDir).filter((f) => f.endsWith('.md') && f !== 'PROMPT_SCHEMA.md');
 
   for (const filename of promptFiles) {
     it(`${filename} has <!-- version: X.Y --> tag`, () => {
@@ -137,9 +142,21 @@ const evaluationStore = await import('../services/evaluationStore.js');
 
 describe('Prompt versioning: DB storage', () => {
   after(() => {
-    try { fs.unlinkSync(testDbPath); } catch { /* ignore */ }
-    try { fs.unlinkSync(testDbPath + '-wal'); } catch { /* ignore */ }
-    try { fs.unlinkSync(testDbPath + '-shm'); } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(testDbPath);
+    } catch {
+      /* ignore */
+    }
+    try {
+      fs.unlinkSync(testDbPath + '-wal');
+    } catch {
+      /* ignore */
+    }
+    try {
+      fs.unlinkSync(testDbPath + '-shm');
+    } catch {
+      /* ignore */
+    }
   });
 
   it('storeResult stores prompt version columns', () => {
@@ -163,7 +180,11 @@ describe('Prompt versioning: DB storage', () => {
 
     const result = evaluationStore.getResultById(rowId);
     assert.equal(result.tutorEgoPromptVersion, '1.0', 'tutor_ego_prompt_version should be stored');
-    assert.equal(result.tutorSuperegoPromptVersion, null, 'tutor_superego_prompt_version should be null for single-agent');
+    assert.equal(
+      result.tutorSuperegoPromptVersion,
+      null,
+      'tutor_superego_prompt_version should be null for single-agent',
+    );
     assert.equal(result.learnerPromptVersion, '1.0', 'learner_prompt_version should be stored');
     assert.equal(result.promptContentHash, 'abcdef0123456789', 'prompt_content_hash should be stored');
   });
@@ -232,13 +253,17 @@ import { loadTutorAgents } from '../services/evalConfigLoader.js';
 
 describe('Prompt versioning: cross-boundary (registered cells)', () => {
   const evalProfiles = loadTutorAgents()?.profiles || {};
-  const cellNames = Object.keys(evalProfiles).filter(name => /^cell_\d/.test(name));
+  const cellNames = Object.keys(evalProfiles).filter((name) => /^cell_\d/.test(name));
 
   // Spot-check a representative sample (not all ~90, just key ones)
-  const sampleCells = cellNames.filter(name =>
-    name.includes('cell_1_') || name.includes('cell_5_') ||
-    name.includes('cell_7_') || name.includes('cell_22_') ||
-    name.includes('cell_71_') || name.includes('cell_86_')
+  const sampleCells = cellNames.filter(
+    (name) =>
+      name.includes('cell_1_') ||
+      name.includes('cell_5_') ||
+      name.includes('cell_7_') ||
+      name.includes('cell_22_') ||
+      name.includes('cell_71_') ||
+      name.includes('cell_86_'),
   );
 
   for (const cellName of sampleCells) {

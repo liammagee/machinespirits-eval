@@ -30,18 +30,45 @@ const DEFAULT_DIR = path.resolve(__dirname, '..', 'logs', 'transcript-samples');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { dir: null, parallelism: 2, model: null, onlyPublic: false, onlyFull: false, filter: null, output: null, verbose: false };
+  const opts = {
+    dir: null,
+    parallelism: 2,
+    model: null,
+    onlyPublic: false,
+    onlyFull: false,
+    filter: null,
+    output: null,
+    verbose: false,
+  };
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--dir': opts.dir = args[++i]; break;
-      case '--parallelism': opts.parallelism = parseInt(args[++i], 10); break;
-      case '--model': opts.model = args[++i]; break;
-      case '--only-public': opts.onlyPublic = true; break;
-      case '--only-full': opts.onlyFull = true; break;
-      case '--filter': opts.filter = args[++i]; break;
-      case '--output': opts.output = args[++i]; break;
-      case '--verbose': opts.verbose = true; break;
-      default: console.error(`Unknown option: ${args[i]}`); process.exit(1);
+      case '--dir':
+        opts.dir = args[++i];
+        break;
+      case '--parallelism':
+        opts.parallelism = parseInt(args[++i], 10);
+        break;
+      case '--model':
+        opts.model = args[++i];
+        break;
+      case '--only-public':
+        opts.onlyPublic = true;
+        break;
+      case '--only-full':
+        opts.onlyFull = true;
+        break;
+      case '--filter':
+        opts.filter = args[++i];
+        break;
+      case '--output':
+        opts.output = args[++i];
+        break;
+      case '--verbose':
+        opts.verbose = true;
+        break;
+      default:
+        console.error(`Unknown option: ${args[i]}`);
+        process.exit(1);
     }
   }
   return opts;
@@ -50,7 +77,7 @@ function parseArgs() {
 // ── Discover transcript pairs ───────────────────────────────────────────────
 
 function discoverPairs(dir, filter) {
-  const files = fs.readdirSync(dir).filter(f => f.endsWith('-public.txt'));
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('-public.txt'));
   const pairs = [];
   for (const pubFile of files) {
     const base = pubFile.replace(/-public\.txt$/, '');
@@ -78,8 +105,12 @@ function callJudge(promptText, model, verbose) {
     const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
     let out = '';
     let err = '';
-    child.stdout.on('data', (d) => { out += d; });
-    child.stderr.on('data', (d) => { err += d; });
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
     child.on('error', reject);
     child.on('close', (code) => {
       if (verbose) {
@@ -109,12 +140,12 @@ const DIMENSIONS = [
 ];
 
 const WEIGHTS = {
-  pedagogical_progression: 0.20,
-  dialogical_responsiveness: 0.20,
-  knowledge_co_construction: 0.20,
+  pedagogical_progression: 0.2,
+  dialogical_responsiveness: 0.2,
+  knowledge_co_construction: 0.2,
   productive_tension_management: 0.15,
   transformation_evidence: 0.15,
-  interactional_coherence: 0.10,
+  interactional_coherence: 0.1,
 };
 
 function parseJudgeOutput(raw) {
@@ -197,12 +228,16 @@ async function main() {
     for (const pair of pairs) {
       const dialogueId = pair.base;
       if (dialogueId.startsWith('dialogue-')) {
-        const row = db.prepare('SELECT profile_name, scenario_id FROM evaluation_results WHERE dialogue_id = ? LIMIT 1').get(dialogueId);
+        const row = db
+          .prepare('SELECT profile_name, scenario_id FROM evaluation_results WHERE dialogue_id = ? LIMIT 1')
+          .get(dialogueId);
         if (row) cellMap[dialogueId] = { cell: row.profile_name, scenario: row.scenario_id };
       }
     }
     db.close();
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // Build task list
   const jobs = [];
@@ -267,9 +302,13 @@ async function main() {
   const colW = 6;
   const cellW = 48;
   const modeW = 7;
-  const hdr = 'Cell'.padEnd(cellW) + 'Mode'.padEnd(modeW)
-    + Object.values(dimShort).map(d => d.padStart(colW)).join('')
-    + '  Overall';
+  const hdr =
+    'Cell'.padEnd(cellW) +
+    'Mode'.padEnd(modeW) +
+    Object.values(dimShort)
+      .map((d) => d.padStart(colW))
+      .join('') +
+    '  Overall';
   console.log('\n' + hdr);
   console.log('-'.repeat(hdr.length));
 
@@ -286,7 +325,7 @@ async function main() {
       if (!data) continue;
 
       const cellName = (entry.cell || base).slice(0, cellW - 1);
-      const dimScores = DIMENSIONS.map(d => {
+      const dimScores = DIMENSIONS.map((d) => {
         const s = data.scores?.[d]?.score;
         return s != null ? String(s).padStart(colW) : '  -   ';
       }).join('');
@@ -327,9 +366,12 @@ async function main() {
   console.log('PUBLIC vs FULL DELTA (full - public)');
   console.log('='.repeat(100));
 
-  const deltaHdr = 'Cell'.padEnd(cellW)
-    + Object.values(dimShort).map(d => d.padStart(colW)).join('')
-    + '  Overall';
+  const deltaHdr =
+    'Cell'.padEnd(cellW) +
+    Object.values(dimShort)
+      .map((d) => d.padStart(colW))
+      .join('') +
+    '  Overall';
   console.log('\n' + deltaHdr);
   console.log('-'.repeat(deltaHdr.length));
 
@@ -343,7 +385,7 @@ async function main() {
     if (!pub || !full || pub.error || full.error) continue;
 
     const cellName = (entry.cell || base).slice(0, cellW - 1);
-    const dims = DIMENSIONS.map(d => {
+    const dims = DIMENSIONS.map((d) => {
       const ps = pub.scores?.[d]?.score;
       const fs = full.scores?.[d]?.score;
       if (ps != null && fs != null) {
@@ -355,17 +397,15 @@ async function main() {
       return '  -   ';
     }).join('');
 
-    const overallDelta = (full.overall != null && pub.overall != null) ? full.overall - pub.overall : null;
+    const overallDelta = full.overall != null && pub.overall != null ? full.overall - pub.overall : null;
     if (overallDelta != null) deltas.overall.push(overallDelta);
-    const overallStr = overallDelta != null
-      ? `${overallDelta > 0 ? '+' : ''}${overallDelta.toFixed(1)}`
-      : 'N/A';
+    const overallStr = overallDelta != null ? `${overallDelta > 0 ? '+' : ''}${overallDelta.toFixed(1)}` : 'N/A';
     console.log(`${cellName.padEnd(cellW)}${dims}  ${overallStr}`);
   }
 
   // Averages
-  const mean = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-  const avgDims = DIMENSIONS.map(d => {
+  const mean = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
+  const avgDims = DIMENSIONS.map((d) => {
     const m = mean(deltas[d]);
     const sign = m > 0 ? '+' : m < 0 ? '' : ' ';
     return `${sign}${m.toFixed(1)}`.padStart(colW);
@@ -383,4 +423,7 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

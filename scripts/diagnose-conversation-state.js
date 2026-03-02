@@ -26,25 +26,29 @@ const ORIGINAL_CONTEXT = `**Currently viewing**: 479-lecture-3 — The Master-Sl
 
 const TUTOR_RESPONSES = [
   {
-    message: "You raise Popper's classic challenge — if the 'negation of the negation' absorbs every counterexample, how is this different from pseudoscience? But consider: is the Master-Slave dialectic offering empirical predictions or describing necessary conditions for self-consciousness? When Hegel claims recognition requires mutual dependence, he is making a structural claim, not an empirical one. The distinction matters: Popper's criterion targets theories that make empirical predictions but immunise themselves against refutation. Hegel is doing something different — tracing the necessary conditions for self-conscious life.",
+    message:
+      "You raise Popper's classic challenge — if the 'negation of the negation' absorbs every counterexample, how is this different from pseudoscience? But consider: is the Master-Slave dialectic offering empirical predictions or describing necessary conditions for self-consciousness? When Hegel claims recognition requires mutual dependence, he is making a structural claim, not an empirical one. The distinction matters: Popper's criterion targets theories that make empirical predictions but immunise themselves against refutation. Hegel is doing something different — tracing the necessary conditions for self-conscious life.",
     title: null,
     action: 'navigate',
     actionTarget: '479-lecture-7',
   },
   {
-    message: "Your 'heads-I-win' objection captures Popper's critique precisely. But consider: when Hegel describes death as the outcome of the struggle, he calls it dialectical *failure*, not another 'negation.' And 'unhappy consciousness' is not a triumph but an impasse the servant must work through. So the dialectic does distinguish outcomes — it is not heads-I-win after all. The question is whether these distinctions are principled or ad hoc. I'd challenge you to find a passage where Hegel treats a clearly negative outcome as confirmation.",
+    message:
+      "Your 'heads-I-win' objection captures Popper's critique precisely. But consider: when Hegel describes death as the outcome of the struggle, he calls it dialectical *failure*, not another 'negation.' And 'unhappy consciousness' is not a triumph but an impasse the servant must work through. So the dialectic does distinguish outcomes — it is not heads-I-win after all. The question is whether these distinctions are principled or ad hoc. I'd challenge you to find a passage where Hegel treats a clearly negative outcome as confirmation.",
     title: null,
     action: 'navigate',
     actionTarget: '479-lecture-7',
   },
   {
-    message: "Your thirty minutes of deep engagement and that sharp framing cuts to the heart of the critique. But what if the normative force emerges immanently from the dialectical process itself rather than being imported from outside? The servant does not *choose* to value labour — the experience of shaping objects under constraint transforms consciousness from within. That is Hegel's answer to the is-ought gap: normativity is a product of Bildung, not a premise smuggled in. Can you identify the moment in the text where this transformation occurs?",
+    message:
+      "Your thirty minutes of deep engagement and that sharp framing cuts to the heart of the critique. But what if the normative force emerges immanently from the dialectical process itself rather than being imported from outside? The servant does not *choose* to value labour — the experience of shaping objects under constraint transforms consciousness from within. That is Hegel's answer to the is-ought gap: normativity is a product of Bildung, not a premise smuggled in. Can you identify the moment in the text where this transformation occurs?",
     title: null,
     action: 'navigate',
     actionTarget: '479-lecture-7',
   },
   {
-    message: "After five turns grappling with Popper's critique, you've traced the argument from falsifiability through to the is-ought problem. The pedagogical value lies precisely in *this* experience: you now understand the dialectic not as a textbook summary but as a lived encounter with its internal tensions. That is what Hegel means by Bildung — the transformation that occurs through sustained engagement with what resists you.",
+    message:
+      "After five turns grappling with Popper's critique, you've traced the argument from falsifiability through to the is-ought problem. The pedagogical value lies precisely in *this* experience: you now understand the dialectic not as a textbook summary but as a lived encounter with its internal tensions. That is what Hegel means by Bildung — the transformation that occurs through sustained engagement with what resists you.",
     title: null,
     action: 'navigate',
     actionTarget: '479-lecture-7',
@@ -167,18 +171,29 @@ for (let turnIdx = 0; turnIdx <= 4; turnIdx++) {
     }
   } else {
     // Full context
-    console.log(contextStr.split('\n').map(l => `  ${l}`).join('\n'));
+    console.log(
+      contextStr
+        .split('\n')
+        .map((l) => `  ${l}`)
+        .join('\n'),
+    );
   }
 
   // ── Show the API call structure ──
   subheader('LLM API CALL STRUCTURE');
   console.log(`  ${RED}messages: [${RESET}`);
-  console.log(`    ${RED}{ role: 'system', content: <system prompt — ego personality + pedagogy instructions> },${RESET}`);
-  console.log(`    ${RED}{ role: 'user',   content: <the ${contextStr.length}-char context string above + JSON task instructions> }${RESET}`);
+  console.log(
+    `    ${RED}{ role: 'system', content: <system prompt — ego personality + pedagogy instructions> },${RESET}`,
+  );
+  console.log(
+    `    ${RED}{ role: 'user',   content: <the ${contextStr.length}-char context string above + JSON task instructions> }${RESET}`,
+  );
   console.log(`  ${RED}]${RESET}`);
   console.log();
   console.log(`  ${DIM}NOTE: There are NO {role: 'assistant'} entries for prior tutor responses.${RESET}`);
-  console.log(`  ${DIM}The LLM sees its own prior outputs as text within the user prompt, not as its own messages.${RESET}`);
+  console.log(
+    `  ${DIM}The LLM sees its own prior outputs as text within the user prompt, not as its own messages.${RESET}`,
+  );
 
   // ── Metrics ──
   subheader('METRICS');
@@ -186,8 +201,12 @@ for (let turnIdx = 0; turnIdx <= 4; turnIdx++) {
   const historyLen = historySection ? historySection[1].length : 0;
   const origContextLen = ORIGINAL_CONTEXT.length;
 
-  console.log(`  Original context (static):     ${origContextLen} chars (${Math.round(100 * origContextLen / contextStr.length)}% of total)`);
-  console.log(`  Conversation history:           ${historyLen} chars (${Math.round(100 * historyLen / contextStr.length)}% of total)`);
+  console.log(
+    `  Original context (static):     ${origContextLen} chars (${Math.round((100 * origContextLen) / contextStr.length)}% of total)`,
+  );
+  console.log(
+    `  Conversation history:           ${historyLen} chars (${Math.round((100 * historyLen) / contextStr.length)}% of total)`,
+  );
   console.log(`  History entries:                ${conversationHistory.length}`);
 
   if (conversationHistory.length > 0) {

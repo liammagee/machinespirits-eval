@@ -24,11 +24,12 @@ function extractText(content) {
 
 /** Infer agent role (ego/superego/learner) from system prompt keywords. */
 function inferRole(body) {
-  const systemText = typeof body?.system === 'string'
-    ? body.system
-    : Array.isArray(body?.messages)
-      ? (body.messages.find((m) => m.role === 'system')?.content || '')
-      : '';
+  const systemText =
+    typeof body?.system === 'string'
+      ? body.system
+      : Array.isArray(body?.messages)
+        ? body.messages.find((m) => m.role === 'system')?.content || ''
+        : '';
   const sys = extractText(systemText).toLowerCase();
 
   if (sys.includes('superego') || sys.includes('critic') || sys.includes('review the following')) return 'superego';

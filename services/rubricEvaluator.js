@@ -202,9 +202,11 @@ function getFallbackJudge() {
 async function callJudgeModelWithConfig(prompt, config) {
   const { provider, model, hyperparameters, reasoningEffort } = config;
   const temperature = hyperparameters?.temperature;
-  if (temperature === undefined) throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
+  if (temperature === undefined)
+    throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
   const maxTokens = hyperparameters?.max_tokens;
-  if (maxTokens === undefined) throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
+  if (maxTokens === undefined)
+    throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
 
   debugLog(`[rubricEvaluator] Calling fallback judge: ${provider}/${model}`);
 
@@ -423,9 +425,11 @@ ${criteriaText}`;
   const dialogueSection = dialogueTranscript
     ? `\n## DIALOGUE TRANSCRIPT
 
-${context.prebuiltTranscript
-      ? 'This is the externally visible exchange between tutor and learner. Evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'
-      : 'The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner\'s actual engagement, struggle, and development.'}
+${
+  context.prebuiltTranscript
+    ? "This is the externally visible exchange between tutor and learner. Evaluate how well the tutor responded to the learner's actual engagement, struggle, and development."
+    : "The following is the full learner-tutor exchange leading to this suggestion. Internal deliberation traces (ego/superego) show the reasoning process. Use this context to evaluate how well the tutor responded to the learner's actual engagement, struggle, and development."
+}
 
 ${dialogueTranscript}
 `
@@ -488,7 +492,12 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 \`\`\`json
 {
   "scores": {
-${Object.entries(dimensions).map(([key], i, arr) => `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}${i < arr.length - 1 ? ',' : ''}`).join('\n')}
+${Object.entries(dimensions)
+  .map(
+    ([key], i, arr) =>
+      `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}${i < arr.length - 1 ? ',' : ''}`,
+  )
+  .join('\n')}
   },
   "validation": {
     "passes_required": true,
@@ -519,9 +528,11 @@ async function callJudgeModel(prompt, overrides = {}) {
   const judge = getAvailableJudge(overrides);
   const { provider, model, hyperparameters, reasoningEffort } = judge;
   const temperature = hyperparameters?.temperature;
-  if (temperature === undefined) throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
+  if (temperature === undefined)
+    throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
   const maxTokens = hyperparameters?.max_tokens;
-  if (maxTokens === undefined) throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
+  if (maxTokens === undefined)
+    throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
 
   if (provider === 'anthropic') {
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -1354,14 +1365,19 @@ const EVAL_CONFIG_DIR = path.resolve(__rubricDirname, '..', 'config');
 
 const tutorHolisticCacheMap = new Map();
 let _tutorHolisticRubricPathOverride = null;
-export function setTutorHolisticRubricPathOverride(p) { _tutorHolisticRubricPathOverride = p; }
-export function clearTutorHolisticRubricPathOverride() { _tutorHolisticRubricPathOverride = null; }
+export function setTutorHolisticRubricPathOverride(p) {
+  _tutorHolisticRubricPathOverride = p;
+}
+export function clearTutorHolisticRubricPathOverride() {
+  _tutorHolisticRubricPathOverride = null;
+}
 
 /**
  * Load the holistic tutor rubric YAML with mtime-based caching.
  */
 export function loadTutorHolisticRubric({ forceReload } = {}) {
-  const rubricPath = _tutorHolisticRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-tutor-holistic.yaml');
+  const rubricPath =
+    _tutorHolisticRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-tutor-holistic.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);
@@ -1481,9 +1497,7 @@ ${criteriaText}`;
   }
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys
-    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
-    .join(',\n');
+  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
 
   return `You are an expert evaluator of AI tutoring dialogues. Your task is to evaluate the TUTOR's quality ACROSS THE ENTIRE DIALOGUE as a holistic trajectory, independent of individual turn quality.
 
@@ -1542,8 +1556,12 @@ ${exampleScores}
 
 const dialogueCacheMap = new Map();
 let _dialogueRubricPathOverride = null;
-export function setDialogueRubricPathOverride(p) { _dialogueRubricPathOverride = p; }
-export function clearDialogueRubricPathOverride() { _dialogueRubricPathOverride = null; }
+export function setDialogueRubricPathOverride(p) {
+  _dialogueRubricPathOverride = p;
+}
+export function clearDialogueRubricPathOverride() {
+  _dialogueRubricPathOverride = null;
+}
 
 /**
  * Load the dialogue quality rubric YAML with mtime-based caching.
@@ -1615,13 +1633,16 @@ export function calculateDialogueQualityScore(scores) {
  * live in the contextSummary field of user/turn_action trace entries.
  */
 function isEgoSuperegoLearner(dialogueTrace) {
-  return dialogueTrace?.some(
-    (e) => e.agent === 'learner_ego_initial'
-      || e.agent === 'learner_ego_revision'
-      || e.agent === 'learner_superego'
-      || e.agent === 'learner_synthesis'
-      || (e.agent === 'learner' && (e.action === 'final_output' || e.action === 'response')),
-  ) ?? false;
+  return (
+    dialogueTrace?.some(
+      (e) =>
+        e.agent === 'learner_ego_initial' ||
+        e.agent === 'learner_ego_revision' ||
+        e.agent === 'learner_superego' ||
+        e.agent === 'learner_synthesis' ||
+        (e.agent === 'learner' && (e.action === 'final_output' || e.action === 'response')),
+    ) ?? false
+  );
 }
 
 /**
@@ -1729,8 +1750,8 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
   const initialMessage = extractInitialLearnerMessage(learnerContext);
 
   // Index trace entries by turnIndex
-  const synthByTurn = {};       // ego_superego learner final output (when available)
-  const learnerMsgByTurn = {};  // learner external message from turn_action contextSummary
+  const synthByTurn = {}; // ego_superego learner final output (when available)
+  const learnerMsgByTurn = {}; // learner external message from turn_action contextSummary
   if (dialogueTrace?.length > 0) {
     let contextInputOrdinal = 0;
     for (const entry of dialogueTrace) {
@@ -1752,7 +1773,11 @@ function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
       if (isLearnerSynthesisEntry(entry) && entry.turnIndex !== undefined) {
         synthByTurn[entry.turnIndex] = entry.detail || entry.contextSummary || '';
       }
-      if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action' && entry.turnIndex !== undefined) {
+      if (
+        (entry.agent === 'learner' || entry.agent === 'user') &&
+        entry.action === 'turn_action' &&
+        entry.turnIndex !== undefined
+      ) {
         // contextSummary holds the actual learner message; detail is just the action type label
         learnerMsgByTurn[entry.turnIndex] = entry.contextSummary || entry.detail || '';
       }
@@ -1869,8 +1894,11 @@ function _hasDeliberationEntries(trace) {
     'learner_other_ego',
     'rejection_budget',
   ]);
-  return trace.some(e => deliberationAgents.has(e.agent)
-    || (e.agent === 'learner' && (e.action === 'final_output' || e.action === 'response')));
+  return trace.some(
+    (e) =>
+      deliberationAgents.has(e.agent) ||
+      (e.agent === 'learner' && (e.action === 'final_output' || e.action === 'response')),
+  );
 }
 
 function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
@@ -1913,8 +1941,9 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
         // belong to the PREVIOUS dialogue turn (N - 1).
         // For final_output and ego_self_reflection, tutor-core entries belong to
         // the same turn.
-        const isLearnerBoundary = ((e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action')
-          || e.agent?.startsWith('learner_');
+        const isLearnerBoundary =
+          ((e.agent === 'learner' || e.agent === 'user') && e.action === 'turn_action') ||
+          e.agent?.startsWith('learner_');
         if (isLearnerBoundary) {
           nextKnownTurn = Math.max(0, e.turnIndex - 1);
         } else {
@@ -1936,10 +1965,10 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
     //   [Tutor Ego] initial draft → [Tutor Superego] review → [Tutor Ego] final
     // This mirrors the learner pattern: LE → LS → LE (revised).
     // Intermediate rounds (reject/revise/re-approve) are skipped.
-    let tutorEgoShown = false;      // Has the first [Tutor Ego] been emitted this turn?
-    let tutorSuperegoShown = false;  // Has the first [Tutor Superego] been emitted this turn?
-    let tutorFinalEmitted = false;   // Has the final [Tutor Ego] been emitted this turn?
-    let tutorInitialEgoText = '';    // Initial draft text, for comparing with final
+    let tutorEgoShown = false; // Has the first [Tutor Ego] been emitted this turn?
+    let tutorSuperegoShown = false; // Has the first [Tutor Superego] been emitted this turn?
+    let tutorFinalEmitted = false; // Has the final [Tutor Ego] been emitted this turn?
+    let tutorInitialEgoText = ''; // Initial draft text, for comparing with final
     for (let idx = 0; idx < dialogueTrace.length; idx++) {
       const entry = dialogueTrace[idx];
       // Use explicit turnIndex if present, otherwise inferred from final_output
@@ -1975,9 +2004,12 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
       if (entry.agent === 'ego') {
         if (!tutorEgoShown) {
           // First ego entry this turn = initial draft
-          const egoText = entry.suggestions?.[0]?.message
-            || entry.detail || entry.contextSummary
-            || deliveredByTurn[currentTurnIdx] || '';
+          const egoText =
+            entry.suggestions?.[0]?.message ||
+            entry.detail ||
+            entry.contextSummary ||
+            deliveredByTurn[currentTurnIdx] ||
+            '';
           lines.push(`[Tutor Ego] ${truncate(egoText, 300)}`);
           tutorEgoShown = true;
           tutorInitialEgoText = egoText;
@@ -2159,9 +2191,7 @@ ${criteriaText}`;
     : '';
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys
-    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
-    .join(',\n');
+  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
 
   return `You are an expert evaluator of pedagogical dialogues. Your task is to evaluate the OVERALL QUALITY OF THE INTERACTION — not just the tutor or the learner individually, but the emergent quality of their exchange as a pedagogical encounter.
 
@@ -2220,14 +2250,19 @@ ${exampleScores}
 
 const deliberationCacheMap = new Map();
 let _deliberationRubricPathOverride = null;
-export function setDeliberationRubricPathOverride(p) { _deliberationRubricPathOverride = p; }
-export function clearDeliberationRubricPathOverride() { _deliberationRubricPathOverride = null; }
+export function setDeliberationRubricPathOverride(p) {
+  _deliberationRubricPathOverride = p;
+}
+export function clearDeliberationRubricPathOverride() {
+  _deliberationRubricPathOverride = null;
+}
 
 /**
  * Load the deliberation quality rubric YAML with mtime-based caching.
  */
 export function loadDeliberationRubric({ forceReload } = {}) {
-  const rubricPath = _deliberationRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-deliberation.yaml');
+  const rubricPath =
+    _deliberationRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-deliberation.yaml');
 
   try {
     const stats = fs.statSync(rubricPath);
@@ -2294,7 +2329,9 @@ export function calculateDeliberationScore(scores) {
 export function hasTutorSuperego(dialogueTrace) {
   if (!dialogueTrace?.length) return false;
   return dialogueTrace.some(
-    (entry) => entry.agent === 'superego' && (entry.action === 'review' || entry.action === 'approve' || entry.action === 'reject'),
+    (entry) =>
+      entry.agent === 'superego' &&
+      (entry.action === 'review' || entry.action === 'approve' || entry.action === 'reject'),
   );
 }
 
@@ -2338,9 +2375,7 @@ ${criteriaText}`;
   const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys
-    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
-    .join(',\n');
+  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the TUTOR's internal ego/superego deliberation process — NOT the quality of the tutor's output (which is scored separately).
 
@@ -2437,9 +2472,7 @@ ${criteriaText}`;
   const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys
-    .map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`)
-    .join(',\n');
+  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the LEARNER's internal ego/superego deliberation process — NOT the quality of the learner's output (which is scored separately).
 
@@ -2511,12 +2544,7 @@ ${exampleScores}
  * @returns {string|null} Complete batched judge prompt, or null if no turns to score
  */
 function buildBatchedPerTurnTutorPrompt(params) {
-  const {
-    turnResults,
-    dialogueTrace = [],
-    scenario,
-    learnerContext = null,
-  } = params;
+  const { turnResults, dialogueTrace = [], scenario, learnerContext = null } = params;
 
   // Filter to turns that have suggestions (scoreable turns)
   const scoreableTurns = [];
@@ -2557,12 +2585,14 @@ ${criteriaText}`;
   const totalTurns = turnResults.length;
 
   // Build per-turn suggestion listing
-  const turnSuggestions = scoreableTurns.map(({ turnIndex, suggestion }) => {
-    return `### Turn ${turnIndex + 1} of ${totalTurns}
+  const turnSuggestions = scoreableTurns
+    .map(({ turnIndex, suggestion }) => {
+      return `### Turn ${turnIndex + 1} of ${totalTurns}
 \`\`\`json
 ${JSON.stringify(suggestion, null, 2)}
 \`\`\``;
-  }).join('\n\n');
+    })
+    .join('\n\n');
 
   // Build example JSON output
   const exampleTurn = {
@@ -2662,13 +2692,7 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
  * @returns {string} Complete judge prompt for scoring a single tutor turn
  */
 function buildPerTurnTutorEvaluationPrompt(params) {
-  const {
-    turnResults,
-    dialogueTrace = [],
-    targetTurnIndex,
-    scenario,
-    learnerContext = null,
-  } = params;
+  const { turnResults, dialogueTrace = [], targetTurnIndex, scenario, learnerContext = null } = params;
 
   const targetTurn = turnResults[targetTurnIndex];
   if (!targetTurn) return null;
@@ -2705,7 +2729,8 @@ function buildPerTurnTutorEvaluationPrompt(params) {
   const turnLabel = `Turn ${targetTurnIndex + 1} of ${totalTurns}`;
   const perTurnScenario = {
     ...scenario,
-    description: `${scenario.description}\n\n[PER-TURN SCORING] You are scoring the tutor's response at ${turnLabel}. ` +
+    description:
+      `${scenario.description}\n\n[PER-TURN SCORING] You are scoring the tutor's response at ${turnLabel}. ` +
       `The dialogue transcript is truncated to this point — you do NOT see future turns. ` +
       `Evaluate this response on its own merits within the dialogue context so far.\n\n` +
       `CROSS-TURN CALIBRATION: For modulation dimensions (tutor_adaptation, learner_growth, ` +

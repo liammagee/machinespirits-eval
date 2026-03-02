@@ -62,7 +62,7 @@ test('computeLearnerSummaryFromScores computes avg/final/arc', () => {
 
 test('evaluateAssertion supports approx and abs_lte', () => {
   const approxPass = evaluateAssertion(0.33, { op: 'approx', expected: 0.32, tolerance_abs: 0.02 });
-  const approxFail = evaluateAssertion(0.40, { op: 'approx', expected: 0.32, tolerance_abs: 0.02 });
+  const approxFail = evaluateAssertion(0.4, { op: 'approx', expected: 0.32, tolerance_abs: 0.02 });
   const absPass = evaluateAssertion(-0.05, { op: 'abs_lte', expected: 0.1 });
 
   assert.equal(approxPass.pass, true);
@@ -117,7 +117,7 @@ test('linearRegression: perfect positive', () => {
 
 test('linearRegression: perfect negative', () => {
   const result = linearRegression([1, 2, 3, 4], [8, 6, 4, 2]);
-  assert.ok(Math.abs(result.slope - (-2)) < 1e-10);
+  assert.ok(Math.abs(result.slope - -2) < 1e-10);
   assert.ok(Math.abs(result.rSquared - 1) < 1e-10);
 });
 
@@ -218,23 +218,57 @@ test('dimension_variance adapter: uniform vs varied scores → negative d', () =
 
   // Recognition group: uniform scores (low variance)
   for (let i = 0; i < 20; i++) {
-    insert.run(`recog-${i}`, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80,
-      4, 4, 4, 4, 4, 4, JSON.stringify({
-        mutual_recognition: { score: 4 }, dialectical_responsiveness: { score: 4 },
-        memory_integration: { score: 4 }, transformative_potential: { score: 4 },
-        tutor_adaptation: { score: 4 }, learner_growth: { score: 4 },
-        productive_struggle: { score: 4 }, epistemic_honesty: { score: 4 },
-      }), '2026-02-27');
+    insert.run(
+      `recog-${i}`,
+      'run1',
+      'cell_5_recog_single_unified',
+      'claude-opus',
+      80,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      JSON.stringify({
+        mutual_recognition: { score: 4 },
+        dialectical_responsiveness: { score: 4 },
+        memory_integration: { score: 4 },
+        transformative_potential: { score: 4 },
+        tutor_adaptation: { score: 4 },
+        learner_growth: { score: 4 },
+        productive_struggle: { score: 4 },
+        epistemic_honesty: { score: 4 },
+      }),
+      '2026-02-27',
+    );
   }
   // Base group: varied scores (high variance)
   for (let i = 0; i < 20; i++) {
-    insert.run(`base-${i}`, 'run1', 'cell_1_base_single_unified', 'claude-opus', 70,
-      1, 5, 2, 5, 1, 5, JSON.stringify({
-        mutual_recognition: { score: 1 }, dialectical_responsiveness: { score: 5 },
-        memory_integration: { score: 2 }, transformative_potential: { score: 5 },
-        tutor_adaptation: { score: 1 }, learner_growth: { score: 5 },
-        productive_struggle: { score: 2 }, epistemic_honesty: { score: 5 },
-      }), '2026-02-27');
+    insert.run(
+      `base-${i}`,
+      'run1',
+      'cell_1_base_single_unified',
+      'claude-opus',
+      70,
+      1,
+      5,
+      2,
+      5,
+      1,
+      5,
+      JSON.stringify({
+        mutual_recognition: { score: 1 },
+        dialectical_responsiveness: { score: 5 },
+        memory_integration: { score: 2 },
+        transformative_potential: { score: 5 },
+        tutor_adaptation: { score: 1 },
+        learner_growth: { score: 5 },
+        productive_struggle: { score: 2 },
+        epistemic_honesty: { score: 5 },
+      }),
+      '2026-02-27',
+    );
   }
 
   // Use the audit machinery to evaluate a single claim with dimension_variance evidence
@@ -291,23 +325,57 @@ test('dimension_cluster_effect adapter: in-memory DB test', () => {
 
   // Recognition rows: high on recognition dims, normal on infrastructure
   for (let i = 0; i < 15; i++) {
-    insert.run(`recog-c-${i}`, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80,
-      3, 3, 4, 3, 4, 3, JSON.stringify({
-        mutual_recognition: { score: 5 }, dialectical_responsiveness: { score: 5 },
-        memory_integration: { score: 3 }, transformative_potential: { score: 5 },
-        tutor_adaptation: { score: 4 }, learner_growth: { score: 3 },
-        productive_struggle: { score: 4 }, epistemic_honesty: { score: 3 },
-      }), '2026-02-27');
+    insert.run(
+      `recog-c-${i}`,
+      'run1',
+      'cell_5_recog_single_unified',
+      'claude-opus',
+      80,
+      3,
+      3,
+      4,
+      3,
+      4,
+      3,
+      JSON.stringify({
+        mutual_recognition: { score: 5 },
+        dialectical_responsiveness: { score: 5 },
+        memory_integration: { score: 3 },
+        transformative_potential: { score: 5 },
+        tutor_adaptation: { score: 4 },
+        learner_growth: { score: 3 },
+        productive_struggle: { score: 4 },
+        epistemic_honesty: { score: 3 },
+      }),
+      '2026-02-27',
+    );
   }
   // Base rows: low on recognition dims, same on infrastructure
   for (let i = 0; i < 15; i++) {
-    insert.run(`base-c-${i}`, 'run1', 'cell_1_base_single_unified', 'claude-opus', 70,
-      3, 3, 3, 3, 3, 3, JSON.stringify({
-        mutual_recognition: { score: 2 }, dialectical_responsiveness: { score: 2 },
-        memory_integration: { score: 3 }, transformative_potential: { score: 2 },
-        tutor_adaptation: { score: 3 }, learner_growth: { score: 3 },
-        productive_struggle: { score: 3 }, epistemic_honesty: { score: 3 },
-      }), '2026-02-27');
+    insert.run(
+      `base-c-${i}`,
+      'run1',
+      'cell_1_base_single_unified',
+      'claude-opus',
+      70,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      JSON.stringify({
+        mutual_recognition: { score: 2 },
+        dialectical_responsiveness: { score: 2 },
+        memory_integration: { score: 3 },
+        transformative_potential: { score: 2 },
+        tutor_adaptation: { score: 3 },
+        learner_growth: { score: 3 },
+        productive_struggle: { score: 3 },
+        epistemic_honesty: { score: 3 },
+      }),
+      '2026-02-27',
+    );
   }
 
   const count = db.prepare('SELECT COUNT(*) as c FROM evaluation_results').get();
@@ -330,8 +398,16 @@ test('trajectory_slope adapter: in-memory DB with multi-turn data', () => {
       2: { revision_signals: { score: 3 }, question_quality: { score: 3 }, conceptual_engagement: { score: 3 } },
       3: { revision_signals: { score: 4 }, question_quality: { score: 4 }, conceptual_engagement: { score: 4 } },
     });
-    insert.run(`recog-traj-${i}`, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80,
-      scores, '2026-02-27', `dlg-recog-${i}`);
+    insert.run(
+      `recog-traj-${i}`,
+      'run1',
+      'cell_5_recog_single_unified',
+      'claude-opus',
+      80,
+      scores,
+      '2026-02-27',
+      `dlg-recog-${i}`,
+    );
   }
 
   // Base dialogues: flat slope
@@ -341,8 +417,16 @@ test('trajectory_slope adapter: in-memory DB with multi-turn data', () => {
       2: { revision_signals: { score: 3 }, question_quality: { score: 3 }, conceptual_engagement: { score: 3 } },
       3: { revision_signals: { score: 3 }, question_quality: { score: 3 }, conceptual_engagement: { score: 3 } },
     });
-    insert.run(`base-traj-${i}`, 'run1', 'cell_1_base_single_unified', 'claude-opus', 70,
-      scores, '2026-02-27', `dlg-base-${i}`);
+    insert.run(
+      `base-traj-${i}`,
+      'run1',
+      'cell_1_base_single_unified',
+      'claude-opus',
+      70,
+      scores,
+      '2026-02-27',
+      `dlg-base-${i}`,
+    );
   }
 
   const count = db.prepare('SELECT COUNT(*) as c FROM evaluation_results').get();
@@ -361,15 +445,33 @@ test('rubric_version_comparison adapter: in-memory DB with paired versions', () 
   // Version 1.0 rows
   for (let i = 0; i < 10; i++) {
     const score = 60 + i * 3;
-    insert.run(`v1-${i}`, 'run1', 'cell_5_recog_single_unified', 'claude-opus', score,
-      '1.0', '2026-02-27', `dlg-${i}`, `scenario-${i}`);
+    insert.run(
+      `v1-${i}`,
+      'run1',
+      'cell_5_recog_single_unified',
+      'claude-opus',
+      score,
+      '1.0',
+      '2026-02-27',
+      `dlg-${i}`,
+      `scenario-${i}`,
+    );
   }
 
   // Version 2.0 rows (correlated: same base + small noise)
   for (let i = 0; i < 10; i++) {
     const score = 58 + i * 3;
-    insert.run(`v2-${i}`, 'run1', 'cell_5_recog_single_unified', 'claude-opus', score,
-      '2.0', '2026-02-27', `dlg-${i}`, `scenario-${i}`);
+    insert.run(
+      `v2-${i}`,
+      'run1',
+      'cell_5_recog_single_unified',
+      'claude-opus',
+      score,
+      '2.0',
+      '2026-02-27',
+      `dlg-${i}`,
+      `scenario-${i}`,
+    );
   }
 
   const count = db.prepare('SELECT COUNT(*) as c FROM evaluation_results').get();
@@ -448,13 +550,19 @@ test('evaluateProvenanceCheck: dialogue_hash_match passes when log hash matches 
   fs.writeFileSync(path.join(logDir, 'dlg-hash-1.json'), dialogueJson);
 
   const db = createProvenanceTestDb();
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`).run('r1', 'run1', 'dlg-hash-1', contentHash, '{}', 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-hash-1', contentHash, '{}', 'claude-opus', '2026-02-27');
 
-  const result = evaluateProvenanceCheck(db, {
-    checks: ['dialogue_hash_match'],
-    filters: { not_null: ['dialogue_content_hash'] },
-  }, tmpDir);
+  const result = evaluateProvenanceCheck(
+    db,
+    {
+      checks: ['dialogue_hash_match'],
+      filters: { not_null: ['dialogue_content_hash'] },
+    },
+    tmpDir,
+  );
 
   assert.strictEqual(result.value, 1.0, 'all hashes match → value should be 1.0');
   assert.strictEqual(result.details.checks.dialogue_hash_match.passed, 1);
@@ -478,13 +586,19 @@ test('evaluateProvenanceCheck: dialogue_hash_match fails when log file modified'
   fs.writeFileSync(path.join(logDir, 'dlg-mod-1.json'), JSON.stringify(modifiedData, null, 2));
 
   const db = createProvenanceTestDb();
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`).run('r1', 'run1', 'dlg-mod-1', originalHash, '{}', 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-mod-1', originalHash, '{}', 'claude-opus', '2026-02-27');
 
-  const result = evaluateProvenanceCheck(db, {
-    checks: ['dialogue_hash_match'],
-    filters: { not_null: ['dialogue_content_hash'] },
-  }, tmpDir);
+  const result = evaluateProvenanceCheck(
+    db,
+    {
+      checks: ['dialogue_hash_match'],
+      filters: { not_null: ['dialogue_content_hash'] },
+    },
+    tmpDir,
+  );
 
   assert.strictEqual(result.value, 0.0, 'modified file → value should be 0.0');
   assert.strictEqual(result.details.checks.dialogue_hash_match.failed, 1);
@@ -501,8 +615,10 @@ test('evaluateProvenanceCheck: dialogue_hash_match skips rows with NULL dialogue
 
   const db = createProvenanceTestDb();
   // Row with NULL hash
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`).run('r1', 'run1', 'dlg-null-1', null, '{}', 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'dlg-null-1', null, '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['dialogue_hash_match'] }, tmpDir);
   assert.strictEqual(result.details.checks.dialogue_hash_match.skipped, 1);
@@ -529,7 +645,8 @@ test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match lo
   });
   const expectedTurnId = createHash('sha256')
     .update(dialogueId + ':0:' + turnContent)
-    .digest('hex').slice(0, 16);
+    .digest('hex')
+    .slice(0, 16);
 
   const logData = { dialogueId, turnResults: [turnResult] };
   fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify(logData));
@@ -539,8 +656,10 @@ test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match lo
   });
 
   const db = createProvenanceTestDb();
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)`).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['turn_id_match'] }, tmpDir);
   assert.strictEqual(result.value, 1.0);
@@ -564,8 +683,10 @@ test('evaluateProvenanceCheck: turn_id_match fails when score has wrong contentT
   });
 
   const db = createProvenanceTestDb();
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)`).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['turn_id_match'] }, tmpDir);
   assert.strictEqual(result.value, 0.0);
@@ -582,8 +703,10 @@ test('evaluateProvenanceCheck: judge_input_present passes when all turns have ju
     turn_0: { scores: { relevance: { score: 4 } }, judgeInputHash: 'abc123', overallScore: 80 },
     turn_1: { scores: { relevance: { score: 5 } }, judgeInputHash: 'def456', overallScore: 90 },
   });
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
   assert.strictEqual(result.value, 1.0);
@@ -598,8 +721,10 @@ test('evaluateProvenanceCheck: judge_input_present fails when some turns lack ju
     turn_0: { scores: { relevance: { score: 4 } }, judgeInputHash: 'abc123', overallScore: 80 },
     turn_1: { scores: { relevance: { score: 5 } }, overallScore: 90 }, // no judgeInputHash
   });
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
   assert.strictEqual(result.value, 0.0);
@@ -611,10 +736,14 @@ test('evaluateProvenanceCheck: judge_input_present fails when some turns lack ju
 
 test('evaluateProvenanceCheck: audit_trail_present passes when scored rows have audit entries', () => {
   const db = createProvenanceTestDb();
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
-  db.prepare(`INSERT INTO score_audit (result_id, column_name, old_value, new_value, operation)
-    VALUES (?, ?, ?, ?, ?)`).run('r1', 'tutor_overall_score', null, '85', 'updateResultTutorScores');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO score_audit (result_id, column_name, old_value, new_value, operation)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r1', 'tutor_overall_score', null, '85', 'updateResultTutorScores');
 
   const result = evaluateProvenanceCheck(db, { checks: ['audit_trail_present'] }, '/tmp');
   assert.strictEqual(result.value, 1.0);
@@ -625,8 +754,10 @@ test('evaluateProvenanceCheck: audit_trail_present passes when scored rows have 
 
 test('evaluateProvenanceCheck: audit_trail_present fails when scored rows lack audit entries', () => {
   const db = createProvenanceTestDb();
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
   // No audit entries inserted
 
   const result = evaluateProvenanceCheck(db, { checks: ['audit_trail_present'] }, '/tmp');
@@ -643,14 +774,18 @@ test('evaluateProvenanceCheck: return value is fraction (0.0–1.0)', () => {
   });
 
   // Row 1: has judgeInputHash
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
   // Row 2: missing judgeInputHash
   const noHashScores = JSON.stringify({
     turn_0: { scores: { r: { score: 3 } }, overallScore: 60 },
   });
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?)`).run('r2', 'run1', noHashScores, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?)`,
+  ).run('r2', 'run1', noHashScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
   assert.strictEqual(result.value, 0.5, '1 of 2 rows passes → 0.5');
@@ -666,12 +801,18 @@ test('evaluateProvenanceCheck: multiple checks combined returns lowest fraction'
   const tutorScores = JSON.stringify({
     turn_0: { scores: { r: { score: 4 } }, judgeInputHash: 'h1', overallScore: 80 },
   });
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, tutor_scores, tutor_overall_score, judge_model, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)`).run('r1', 'run1', tutorScores, 80, 'claude-opus', '2026-02-27');
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, tutor_scores, tutor_overall_score, judge_model, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', tutorScores, 80, 'claude-opus', '2026-02-27');
 
-  const result = evaluateProvenanceCheck(db, {
-    checks: ['judge_input_present', 'audit_trail_present'],
-  }, '/tmp');
+  const result = evaluateProvenanceCheck(
+    db,
+    {
+      checks: ['judge_input_present', 'audit_trail_present'],
+    },
+    '/tmp',
+  );
   // judge_input_present: 1.0 (all have hash), audit_trail_present: 0.0 (no audit entries)
   assert.strictEqual(result.value, 0.0, 'min of 1.0 and 0.0 should be 0.0');
 
@@ -727,7 +868,8 @@ function computeContentTurnId(dialogueId, turnIndex, turnResult) {
   });
   return createHash('sha256')
     .update(dialogueId + ':' + turnIndex + ':' + turnContent)
-    .digest('hex').slice(0, 16);
+    .digest('hex')
+    .slice(0, 16);
 }
 
 test('verifyTurnIdsForRow: returns empty map when no dialogueId', () => {
@@ -754,9 +896,13 @@ test('verifyTurnIdsForRow: verifies matching turn IDs', () => {
   const turnResult = { turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' };
   const expectedId = computeContentTurnId(dialogueId, 0, turnResult);
 
-  fs.writeFileSync(path.join(tmpDir, `${dialogueId}.json`), JSON.stringify({
-    dialogueId, turnResults: [turnResult],
-  }));
+  fs.writeFileSync(
+    path.join(tmpDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults: [turnResult],
+    }),
+  );
 
   const tutorScores = {
     turn_0: { turnIndex: 0, contentTurnId: expectedId, scores: { r: { score: 4 } } },
@@ -774,9 +920,13 @@ test('verifyTurnIdsForRow: detects mismatching turn IDs', () => {
   fs.mkdirSync(tmpDir, { recursive: true });
 
   const dialogueId = 'dlg-verify-2';
-  fs.writeFileSync(path.join(tmpDir, `${dialogueId}.json`), JSON.stringify({
-    dialogueId, turnResults: [{ turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' }],
-  }));
+  fs.writeFileSync(
+    path.join(tmpDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults: [{ turnIndex: 0, suggestion: 'hello', turnId: 'tid-0' }],
+    }),
+  );
 
   const tutorScores = {
     turn_0: { turnIndex: 0, contentTurnId: 'wrong_id_here!!', scores: { r: { score: 4 } } },
@@ -804,9 +954,13 @@ function createTurnLevelLogTestSetup() {
   for (let i = 0; i < 4; i++) {
     turnResults.push({ turnIndex: i, suggestion: `response-${i}`, turnId: `tid-${i}` });
   }
-  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify({
-    dialogueId, turnResults,
-  }));
+  fs.writeFileSync(
+    path.join(logDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults,
+    }),
+  );
 
   // Compute valid contentTurnIds
   const validIds = {};
@@ -828,22 +982,26 @@ test('trajectory_slope with turn_level + rootDir: verified turns included, misma
     turn_3: { turnIndex: 3, contentTurnId: validIds[3], scores: { relevance: { score: 4 } } },
   });
 
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
-    80, tutorScores, '2026-02-27', dialogueId,
-  );
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
 
-  const result = evaluateEvidence(db, null, {
-    type: 'trajectory_slope',
-    side: 'tutor',
-    dimension: 'overall',
-    output: 'mean_slope',
-    min_turns: 3,
-    turn_level: true,
-    filters: { not_null: ['tutor_scores'] },
-  }, tmpDir);
+  const result = evaluateEvidence(
+    db,
+    null,
+    {
+      type: 'trajectory_slope',
+      side: 'tutor',
+      dimension: 'overall',
+      output: 'mean_slope',
+      min_turns: 3,
+      turn_level: true,
+      filters: { not_null: ['tutor_scores'] },
+    },
+    tmpDir,
+  );
 
   // Turn 2 should be excluded (bad ID), leaving turns 0,1,3 → 3 turns (meets min_turns)
   assert.strictEqual(result.details.log_mismatches, 1, 'should have 1 log mismatch');
@@ -865,22 +1023,26 @@ test('trajectory_slope with turn_level + rootDir: reports log_verified_turns and
     turn_3: { turnIndex: 3, contentTurnId: validIds[3], scores: { relevance: { score: 5 } } },
   });
 
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
-    80, tutorScores, '2026-02-27', dialogueId,
-  );
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
 
-  const result = evaluateEvidence(db, null, {
-    type: 'trajectory_slope',
-    side: 'tutor',
-    dimension: 'overall',
-    output: 'mean_slope',
-    min_turns: 3,
-    turn_level: true,
-    filters: { not_null: ['tutor_scores'] },
-  }, tmpDir);
+  const result = evaluateEvidence(
+    db,
+    null,
+    {
+      type: 'trajectory_slope',
+      side: 'tutor',
+      dimension: 'overall',
+      output: 'mean_slope',
+      min_turns: 3,
+      turn_level: true,
+      filters: { not_null: ['tutor_scores'] },
+    },
+    tmpDir,
+  );
 
   assert.strictEqual(result.details.log_verified_turns, 4);
   assert.strictEqual(result.details.log_mismatches, 0);
@@ -903,22 +1065,26 @@ test('trajectory_slope with turn_level + missing log: graceful degradation (pres
     turn_2: { turnIndex: 2, contentTurnId: 'id2', scores: { relevance: { score: 4 } } },
   });
 
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
-    80, tutorScores, '2026-02-27', 'dlg-missing',
-  );
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', 'dlg-missing');
 
-  const result = evaluateEvidence(db, null, {
-    type: 'trajectory_slope',
-    side: 'tutor',
-    dimension: 'overall',
-    output: 'mean_slope',
-    min_turns: 3,
-    turn_level: true,
-    filters: { not_null: ['tutor_scores'] },
-  }, tmpDir);
+  const result = evaluateEvidence(
+    db,
+    null,
+    {
+      type: 'trajectory_slope',
+      side: 'tutor',
+      dimension: 'overall',
+      output: 'mean_slope',
+      min_turns: 3,
+      turn_level: true,
+      filters: { not_null: ['tutor_scores'] },
+    },
+    tmpDir,
+  );
 
   // Log file missing → verifyTurnIdsForRow returns empty map → no log verification
   // Turns should still pass the contentTurnId presence check
@@ -941,22 +1107,26 @@ test('trajectory_slope without turn_level: no log verification occurs', () => {
     turn_2: { turnIndex: 2, contentTurnId: 'bad', scores: { relevance: { score: 4 } } },
   });
 
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
-    80, tutorScores, '2026-02-27', dialogueId,
-  );
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
 
-  const result = evaluateEvidence(db, null, {
-    type: 'trajectory_slope',
-    side: 'tutor',
-    dimension: 'overall',
-    output: 'mean_slope',
-    min_turns: 3,
-    // turn_level NOT set
-    filters: { not_null: ['tutor_scores'] },
-  }, tmpDir);
+  const result = evaluateEvidence(
+    db,
+    null,
+    {
+      type: 'trajectory_slope',
+      side: 'tutor',
+      dimension: 'overall',
+      output: 'mean_slope',
+      min_turns: 3,
+      // turn_level NOT set
+      filters: { not_null: ['tutor_scores'] },
+    },
+    tmpDir,
+  );
 
   // Without turn_level, no log verification details should be present
   assert.strictEqual(result.details.log_verified_turns, undefined);
@@ -981,9 +1151,13 @@ test('conditional_delta with turn_level + rootDir: verified turns included, mism
   for (let i = 0; i < 4; i++) {
     turnResults.push({ turnIndex: i, suggestion: `resp-${i}`, turnId: `tid-${i}` });
   }
-  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify({
-    dialogueId, turnResults,
-  }));
+  fs.writeFileSync(
+    path.join(logDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults,
+    }),
+  );
 
   const validIds = {};
   for (let i = 0; i < 4; i++) {
@@ -1006,24 +1180,38 @@ test('conditional_delta with turn_level + rootDir: verified turns included, mism
     turn_3: { turnIndex: 3, scores: { revision_signals: { score: 3 } } },
   });
 
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, learner_scores, created_at, dialogue_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
-    80, tutorScores, learnerScores, '2026-02-27', dialogueId,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    'r1',
+    'run1',
+    'cell_5_recog_single_unified',
+    'claude-opus',
+    80,
+    tutorScores,
+    learnerScores,
+    '2026-02-27',
+    dialogueId,
   );
 
-  const result = evaluateEvidence(db, null, {
-    type: 'conditional_delta',
-    event_dimension: 'revision_signals',
-    event_threshold: 2,
-    event_direction: 'below',
-    response_dimension: 'overall',
-    output: 'mean_delta_event',
-    min_turns: 3,
-    turn_level: true,
-    filters: { not_null: ['tutor_scores', 'learner_scores'] },
-  }, tmpDir);
+  const result = evaluateEvidence(
+    db,
+    null,
+    {
+      type: 'conditional_delta',
+      event_dimension: 'revision_signals',
+      event_threshold: 2,
+      event_direction: 'below',
+      response_dimension: 'overall',
+      output: 'mean_delta_event',
+      min_turns: 3,
+      turn_level: true,
+      filters: { not_null: ['tutor_scores', 'learner_scores'] },
+    },
+    tmpDir,
+  );
 
   // Turn 1 should be excluded (bad contentTurnId)
   assert.strictEqual(result.details.log_mismatches, 1, 'should have 1 log mismatch');
@@ -1045,9 +1233,13 @@ test('conditional_delta with turn_level + rootDir: event detection only uses ver
   for (let i = 0; i < 4; i++) {
     turnResults.push({ turnIndex: i, suggestion: `resp-${i}`, turnId: `tid-${i}` });
   }
-  fs.writeFileSync(path.join(logDir, `${dialogueId}.json`), JSON.stringify({
-    dialogueId, turnResults,
-  }));
+  fs.writeFileSync(
+    path.join(logDir, `${dialogueId}.json`),
+    JSON.stringify({
+      dialogueId,
+      turnResults,
+    }),
+  );
 
   const validIds = {};
   for (let i = 0; i < 4; i++) {
@@ -1069,24 +1261,38 @@ test('conditional_delta with turn_level + rootDir: event detection only uses ver
     turn_3: { turnIndex: 3, scores: { revision_signals: { score: 5 } } },
   });
 
-  db.prepare(`INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
+  db.prepare(
+    `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, learner_scores, created_at, dialogue_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    'r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus',
-    80, tutorScores, learnerScores, '2026-02-27', dialogueId,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    'r1',
+    'run1',
+    'cell_5_recog_single_unified',
+    'claude-opus',
+    80,
+    tutorScores,
+    learnerScores,
+    '2026-02-27',
+    dialogueId,
   );
 
-  const result = evaluateEvidence(db, null, {
-    type: 'conditional_delta',
-    event_dimension: 'revision_signals',
-    event_threshold: 2,
-    event_direction: 'below',
-    response_dimension: 'overall',
-    output: 'mean_delta_event',
-    min_turns: 3,
-    turn_level: true,
-    filters: { not_null: ['tutor_scores', 'learner_scores'] },
-  }, tmpDir);
+  const result = evaluateEvidence(
+    db,
+    null,
+    {
+      type: 'conditional_delta',
+      event_dimension: 'revision_signals',
+      event_threshold: 2,
+      event_direction: 'below',
+      response_dimension: 'overall',
+      output: 'mean_delta_event',
+      min_turns: 3,
+      turn_level: true,
+      filters: { not_null: ['tutor_scores', 'learner_scores'] },
+    },
+    tmpDir,
+  );
 
   assert.strictEqual(result.details.log_mismatches, 0);
   assert.strictEqual(result.details.log_verified_turns, 4);
@@ -1097,4 +1303,3 @@ test('conditional_delta with turn_level + rootDir: event detection only uses ver
   db.close();
   fs.rmSync(tmpDir, { recursive: true, force: true });
 });
-

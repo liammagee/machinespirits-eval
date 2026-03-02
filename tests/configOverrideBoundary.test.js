@@ -50,9 +50,10 @@ function simulateHasSuperego(cellName) {
   const superegoModelOverride = !!resolved.superegoModel;
 
   // Post-fix hasSuperego gate (includes override awareness)
-  const hasSuperego = !resolved.disableSuperego
-    && (profileDialogueEnabled || superegoModelOverride)
-    && (profileHasSuperego || superegoModelOverride);
+  const hasSuperego =
+    !resolved.disableSuperego &&
+    (profileDialogueEnabled || superegoModelOverride) &&
+    (profileHasSuperego || superegoModelOverride);
 
   return {
     cellName,
@@ -88,11 +89,11 @@ describe('config override boundary — hasSuperego matches eval YAML for all cel
         result.hasSuperego,
         expectSuperego,
         `${cellName} → tutor-core profile "${result.resolvedProfileName}": ` +
-        `eval YAML expects superego=${expectSuperego}, but tutor-core gate yields ${result.hasSuperego}. ` +
-        `Profile dialogue.enabled=${result.profileDialogueEnabled}, ` +
-        `profile superego=${result.profileHasSuperego}, ` +
-        `superegoModel override=${result.superegoModelOverride}, ` +
-        `disableSuperego=${result.disableSuperego}`,
+          `eval YAML expects superego=${expectSuperego}, but tutor-core gate yields ${result.hasSuperego}. ` +
+          `Profile dialogue.enabled=${result.profileDialogueEnabled}, ` +
+          `profile superego=${result.profileHasSuperego}, ` +
+          `superegoModel override=${result.superegoModelOverride}, ` +
+          `disableSuperego=${result.disableSuperego}`,
       );
     });
   }
@@ -114,9 +115,7 @@ describe('config override boundary — ego model overrides', () => {
       assert.ok(resolved.egoModel, `${cellName} should have egoModel override`);
 
       // egoModel can be string or {provider, model} — extract model name
-      const egoModelName = typeof resolved.egoModel === 'object'
-        ? resolved.egoModel.model
-        : resolved.egoModel;
+      const egoModelName = typeof resolved.egoModel === 'object' ? resolved.egoModel.model : resolved.egoModel;
       assert.ok(egoModelName, `${cellName} egoModel should have a model name`);
     });
   }
@@ -180,7 +179,7 @@ describe('config override boundary — dialogue rounds from eval YAML', () => {
 // ============================================================================
 
 describe('config override boundary — conversation mode', () => {
-  const messagesCells = cellNames.filter(n => evalConfig.profiles[n]?.conversation_mode === 'messages');
+  const messagesCells = cellNames.filter((n) => evalConfig.profiles[n]?.conversation_mode === 'messages');
 
   it('messages-mode cells are identified correctly', () => {
     assert.ok(messagesCells.length >= 8, `Expected ≥8 messages-mode cells, got ${messagesCells.length}`);
@@ -208,18 +207,15 @@ describe('config override boundary — recognition mode', () => {
     if (!EVAL_ONLY_PROFILES.includes(cellName)) continue;
 
     const evalProfile = evalConfig.profiles[cellName];
-    const expectRecognition = evalProfile?.recognition_mode === true
-      || evalProfile?.factors?.prompt_type === 'recognition'
-      || evalProfile?.factors?.prompt_type === 'recognition_nomem';
+    const expectRecognition =
+      evalProfile?.recognition_mode === true ||
+      evalProfile?.factors?.prompt_type === 'recognition' ||
+      evalProfile?.factors?.prompt_type === 'recognition_nomem';
 
     it(`${cellName}: recognition = ${expectRecognition}`, () => {
       const resolved = resolveConfigModels({ profileName: cellName });
       const actualRecognition = resolved.factors?.recognition === true;
-      assert.strictEqual(
-        actualRecognition,
-        expectRecognition,
-        `${cellName} recognition mode mismatch`,
-      );
+      assert.strictEqual(actualRecognition, expectRecognition, `${cellName} recognition mode mismatch`);
     });
   }
 });
@@ -238,7 +234,10 @@ describe('config override boundary — every registered cell resolves to a valid
 
       const tutorCoreProfile = tutorCoreConfig.getActiveProfile(resolvedProfileName);
       assert.ok(tutorCoreProfile, `${cellName} → "${resolvedProfileName}" should exist in tutor-core`);
-      assert.ok(tutorCoreProfile.ego || tutorCoreProfile.agents?.ego, `tutor-core profile "${resolvedProfileName}" should have an ego agent`);
+      assert.ok(
+        tutorCoreProfile.ego || tutorCoreProfile.agents?.ego,
+        `tutor-core profile "${resolvedProfileName}" should have an ego agent`,
+      );
     });
   }
 });
@@ -253,10 +252,12 @@ describe('config override boundary — cell_82 superego override (regression)', 
     assert.strictEqual(resolvedProfileName, 'budget');
 
     const tutorCoreProfile = tutorCoreConfig.getActiveProfile('budget');
-    assert.strictEqual(tutorCoreProfile.dialogue?.enabled, false,
-      'budget profile has dialogue.enabled=false (the root cause)');
-    assert.strictEqual(tutorCoreProfile.superego, null,
-      'budget profile has superego=null');
+    assert.strictEqual(
+      tutorCoreProfile.dialogue?.enabled,
+      false,
+      'budget profile has dialogue.enabled=false (the root cause)',
+    );
+    assert.strictEqual(tutorCoreProfile.superego, null, 'budget profile has superego=null');
   });
 
   it('cell_82 eval YAML has superego configured', () => {
@@ -267,8 +268,7 @@ describe('config override boundary — cell_82 superego override (regression)', 
 
   it('cell_82 superegoModel override makes hasSuperego=true despite budget profile', () => {
     const result = simulateHasSuperego('cell_82_messages_base_multi_unified');
-    assert.strictEqual(result.hasSuperego, true,
-      'superegoModel override should bypass budget profile gates');
+    assert.strictEqual(result.hasSuperego, true, 'superegoModel override should bypass budget profile gates');
     assert.strictEqual(result.disableSuperego, false);
     assert.ok(result.superegoModel, 'should have superegoModel override');
   });
