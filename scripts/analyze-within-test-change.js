@@ -751,8 +751,8 @@ function persistWithinTestMetrics(records, { persist }) {
 
 const runIds = resolveRunIds();
 if (runIds.length === 0) {
-  console.error('No multi-turn runs found (no rows with dialogue_id).');
-  process.exit(1);
+  console.log('No multi-turn runs found (no rows with dialogue_id).');
+  process.exit(0);
 }
 
 const placeholders = runIds.map(() => '?').join(', ');
@@ -783,8 +783,8 @@ const fetchedRows = db
 const rows = rowLimit != null ? fetchedRows.slice(0, rowLimit) : fetchedRows;
 
 if (rows.length === 0) {
-  console.error(`No multi-turn rows found for run(s): ${runIds.join(', ')}`);
-  process.exit(1);
+  console.log(`No multi-turn rows found for run(s): ${runIds.join(', ')}`);
+  process.exit(0);
 }
 
 const logCache = new Map();

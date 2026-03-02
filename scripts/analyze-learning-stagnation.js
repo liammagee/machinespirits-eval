@@ -557,8 +557,8 @@ function printSummaryTable(title, rows, cols) {
 
 const runIds = resolveRunIds();
 if (runIds.length === 0) {
-  console.error('No multi-turn runs found.');
-  process.exit(1);
+  console.log('No multi-turn runs found.');
+  process.exit(0);
 }
 
 const placeholders = runIds.map(() => '?').join(', ');
@@ -587,8 +587,8 @@ const sourceRows = db
   .all(...runIds);
 
 if (sourceRows.length === 0) {
-  console.error(`No multi-turn rows found for run(s): ${runIds.join(', ')}`);
-  process.exit(1);
+  console.log(`No multi-turn rows found for run(s): ${runIds.join(', ')}`);
+  process.exit(0);
 }
 
 const storedMetrics = getLearnerRubricMetricsByDialogue(runIds);
