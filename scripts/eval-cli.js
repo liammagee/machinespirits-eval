@@ -2586,12 +2586,18 @@ async function main() {
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const modelOverride = getOption('model') || null;
+        const judgeCli = (getOption('judge-cli') || 'claude').toLowerCase();
         const judgeFilter = getOption('judge') || null;
         const rubricVersionOpt = getOption('rubric-version') || null;
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
         const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
 
-        // Resolve effective Claude Code judge model: CLI --model > YAML config > opus default
+        if (judgeCli !== 'claude' && judgeCli !== 'gemini') {
+          console.error(`Error: --judge-cli must be 'claude' or 'gemini', got '${judgeCli}'`);
+          process.exit(1);
+        }
+
+        // Resolve effective judge model: CLI --model > YAML config > default
         const yamlJudgeModel = (() => {
           try {
             const rubric = evalConfigLoader.loadRubric();
@@ -2599,7 +2605,9 @@ async function main() {
           } catch { return null; }
         })();
         const effectiveJudgeModel = modelOverride || yamlJudgeModel || null;
-        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+        const judgeModelLabel = judgeCli === 'gemini'
+          ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
+          : effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
 
         // Restore env overrides from run metadata (e.g. EVAL_SCENARIOS_FILE for domain generalizability runs)
         {
@@ -2681,22 +2689,34 @@ async function main() {
             { dialogueContext },
           );
 
-          const claudeArgs = ['-p', '-', '--output-format', 'text'];
-          if (effectiveJudgeModel) {
-            claudeArgs.push('--model', effectiveJudgeModel);
+          // Build CLI command based on --judge-cli selection
+          let cliBinary, cliArgs, cliEnv;
+          if (judgeCli === 'gemini') {
+            cliBinary = 'gemini';
+            cliArgs = ['-o', 'text'];
+            if (effectiveJudgeModel) {
+              cliArgs.push('-m', effectiveJudgeModel);
+            }
+            cliEnv = { ...process.env };
+          } else {
+            cliBinary = 'claude';
+            cliArgs = ['-p', '-', '--output-format', 'text'];
+            if (effectiveJudgeModel) {
+              cliArgs.push('--model', effectiveJudgeModel);
+            }
+            cliEnv = { ...process.env };
+            delete cliEnv.ANTHROPIC_API_KEY;
+            delete cliEnv.CLAUDECODE;
           }
 
           if (verbose) {
-            console.log(`${tag} ${scenarioId} / ${profileName} ... calling claude`);
+            console.log(`${tag} ${scenarioId} / ${profileName} ... calling ${cliBinary}`);
           }
 
           const stdout = await new Promise((resolve, reject) => {
-            const env = { ...process.env };
-            delete env.ANTHROPIC_API_KEY;
-            delete env.CLAUDECODE;
-            const child = spawn('claude', claudeArgs, {
+            const child = spawn(cliBinary, cliArgs, {
               stdio: ['pipe', 'pipe', 'pipe'],
-              env,
+              env: cliEnv,
             });
             let out = '';
             let err = '';
@@ -2708,7 +2728,7 @@ async function main() {
             });
             child.on('error', reject);
             child.on('close', (code) => {
-              if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+              if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
               else resolve(out);
             });
             child.stdin.write(prompt);
@@ -2819,23 +2839,32 @@ async function main() {
           return tutorFirstTurnScore;
         }
 
-        // Helper: call claude CLI as judge and parse JSON response
+        // Helper: call CLI judge (claude or gemini) and parse JSON response
         async function callClaudeJudge(prompt) {
-          const claudeArgs = ['-p', '-', '--output-format', 'text'];
-          if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
+          let cliBin, cliJudgeArgs, cliJudgeEnv;
+          if (judgeCli === 'gemini') {
+            cliBin = 'gemini';
+            cliJudgeArgs = ['-o', 'text'];
+            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
+            cliJudgeEnv = { ...process.env };
+          } else {
+            cliBin = 'claude';
+            cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
+            if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
+            cliJudgeEnv = { ...process.env };
+            delete cliJudgeEnv.ANTHROPIC_API_KEY;
+            delete cliJudgeEnv.CLAUDECODE;
+          }
 
           const stdout = await new Promise((resolve, reject) => {
-            const env = { ...process.env };
-            delete env.ANTHROPIC_API_KEY;
-            delete env.CLAUDECODE;
-            const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
+            const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
             let out = '';
             let err = '';
             child.stdout.on('data', (d) => { out += d; });
             child.stderr.on('data', (d) => { err += d; });
             child.on('error', reject);
             child.on('close', (code) => {
-              if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+              if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
               else resolve(out);
             });
             child.stdin.write(prompt);
@@ -3904,47 +3933,7 @@ async function main() {
             );
 
             try {
-              const claudeArgs = ['-p', '-', '--output-format', 'text'];
-              if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
-
-              const stdout = await new Promise((resolve, reject) => {
-                const env = { ...process.env };
-                delete env.ANTHROPIC_API_KEY;
-                delete env.CLAUDECODE;
-                const child = spawn('claude', claudeArgs, {
-                  stdio: ['pipe', 'pipe', 'pipe'],
-                  env,
-                });
-                let out = '';
-                let err = '';
-                child.stdout.on('data', (d) => {
-                  out += d;
-                });
-                child.stderr.on('data', (d) => {
-                  err += d;
-                });
-                child.on('error', reject);
-                child.on('close', (code) => {
-                  if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-                  else resolve(out);
-                });
-                child.stdin.write(prompt);
-                child.stdin.end();
-              });
-
-              let jsonStr = stdout.trim();
-              const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-              if (fenceMatch) {
-                jsonStr = fenceMatch[1].trim();
-              } else {
-                const firstBrace = jsonStr.indexOf('{');
-                const lastBrace = jsonStr.lastIndexOf('}');
-                if (firstBrace !== -1 && lastBrace > firstBrace) {
-                  jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
-                }
-              }
-
-              const parsed = JSON.parse(jsonStr);
+              const parsed = await callClaudeJudge(prompt);
 
               const normalizedScores = {};
               const dimensionMap = {
@@ -4462,6 +4451,7 @@ async function main() {
         if (modelOverride) console.log(`  Judge model override: ${modelOverride}`);
         console.log('');
 
+        const judgeCli = (getOption('judge-cli') || 'claude').toLowerCase();
         let succeeded = 0;
         let failed = 0;
         let changed = 0;
@@ -4503,16 +4493,25 @@ async function main() {
               { dialogueContext: null },
             );
 
-            const claudeArgs = ['-p', '-', '--output-format', 'text'];
-            if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
+            let cliBin, cliJudgeArgs, cliJudgeEnv;
+            if (judgeCli === 'gemini') {
+              cliBin = 'gemini';
+              cliJudgeArgs = ['-o', 'text'];
+              if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
+              cliJudgeEnv = { ...process.env };
+            } else {
+              cliBin = 'claude';
+              cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
+              if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
+              cliJudgeEnv = { ...process.env };
+              delete cliJudgeEnv.ANTHROPIC_API_KEY;
+              delete cliJudgeEnv.CLAUDECODE;
+            }
 
             const stdout = await new Promise((resolve, reject) => {
-              const env = { ...process.env };
-              delete env.ANTHROPIC_API_KEY;
-              delete env.CLAUDECODE;
-              const child = spawn('claude', claudeArgs, {
+              const child = spawn(cliBin, cliJudgeArgs, {
                 stdio: ['pipe', 'pipe', 'pipe'],
-                env,
+                env: cliJudgeEnv,
               });
               let out = '';
               let err = '';
@@ -4524,7 +4523,7 @@ async function main() {
               });
               child.on('error', reject);
               child.on('close', (code) => {
-                if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+                if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
                 else resolve(out);
               });
               child.stdin.write(prompt);
@@ -4664,14 +4663,22 @@ async function main() {
         const verbose = getFlag('verbose');
         const force = getFlag('force');
         const modelOverride = getOption('model') || null;
+        const judgeCli = (getOption('judge-cli') || 'claude').toLowerCase();
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const archFilter = getOption('arch') || null;
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
         const parallelism = Number.isFinite(parsedParallelism) && parsedParallelism > 0 ? parsedParallelism : 1;
 
-        // Resolve effective judge model: CLI --model > YAML config > opus default
+        if (judgeCli !== 'claude' && judgeCli !== 'gemini') {
+          console.error(`Error: --judge-cli must be 'claude' or 'gemini', got '${judgeCli}'`);
+          process.exit(1);
+        }
+
+        // Resolve effective judge model: CLI --model > YAML config > default
         const effectiveJudgeModel = modelOverride || (() => { try { return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null; } catch { return null; } })();
-        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+        const judgeModelLabel = judgeCli === 'gemini'
+          ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
+          : effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
 
         // Load results with dialogue IDs (multi-turn data)
         const allResults = evaluationStore.getResults(runId, { profileName: profileFilter });
@@ -4761,18 +4768,25 @@ async function main() {
         const learnerJudgeModel = judgeModelLabel;
 
         const callLearnerJudge = async (prompt) => {
-          const claudeArgs = ['-p', '-', '--output-format', 'text'];
-          if (effectiveJudgeModel) {
-            claudeArgs.push('--model', effectiveJudgeModel);
+          let cliBin, cliJudgeArgs, cliJudgeEnv;
+          if (judgeCli === 'gemini') {
+            cliBin = 'gemini';
+            cliJudgeArgs = ['-o', 'text'];
+            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
+            cliJudgeEnv = { ...process.env };
+          } else {
+            cliBin = 'claude';
+            cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
+            if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
+            cliJudgeEnv = { ...process.env };
+            delete cliJudgeEnv.ANTHROPIC_API_KEY;
+            delete cliJudgeEnv.CLAUDECODE;
           }
 
           const stdout = await new Promise((resolve, reject) => {
-            const env = { ...process.env };
-            delete env.ANTHROPIC_API_KEY;
-            delete env.CLAUDECODE;
-            const child = spawn('claude', claudeArgs, {
+            const child = spawn(cliBin, cliJudgeArgs, {
               stdio: ['pipe', 'pipe', 'pipe'],
-              env,
+              env: cliJudgeEnv,
             });
             let out = '';
             let err = '';
@@ -4784,7 +4798,7 @@ async function main() {
             });
             child.on('error', reject);
             child.on('close', (code) => {
-              if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+              if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
               else resolve(out);
             });
             child.stdin.write(prompt);
@@ -5118,13 +5132,21 @@ async function main() {
         const verbose = getFlag('verbose');
         const force = getFlag('force');
         const modelOverride = getOption('model') || null;
+        const judgeCli = (getOption('judge-cli') || 'claude').toLowerCase();
         const judgeFilter = getOption('judge') || null;
         const scenarioFilter = getOption('scenario') || getOption('scenarios') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
 
-        // Resolve judge model: CLI --model > YAML claude_code_judge.model > default (opus)
+        if (judgeCli !== 'claude' && judgeCli !== 'gemini') {
+          console.error(`Error: --judge-cli must be 'claude' or 'gemini', got '${judgeCli}'`);
+          process.exit(1);
+        }
+
+        // Resolve judge model: CLI --model > YAML claude_code_judge.model > default
         const effectiveJudgeModel = modelOverride || (() => { try { return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null; } catch { return null; } })();
-        const judgeModelLabel = effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
+        const judgeModelLabel = judgeCli === 'gemini'
+          ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
+          : effectiveJudgeModel ? `claude-code/${effectiveJudgeModel}` : 'claude-opus-4.6';
 
         // Restore env overrides from run metadata
         {
@@ -5250,8 +5272,20 @@ async function main() {
             const tutorLastTurnScore = result.tutorLastTurnScore ?? null;
             const judgeModel = judgeModelLabel;
 
-            const claudeArgs = ['-p', '-', '--output-format', 'text'];
-            if (effectiveJudgeModel) claudeArgs.push('--model', effectiveJudgeModel);
+            let cliBin, cliJudgeArgs, cliJudgeEnv;
+            if (judgeCli === 'gemini') {
+              cliBin = 'gemini';
+              cliJudgeArgs = ['-o', 'text'];
+              if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
+              cliJudgeEnv = { ...process.env };
+            } else {
+              cliBin = 'claude';
+              cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
+              if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
+              cliJudgeEnv = { ...process.env };
+              delete cliJudgeEnv.ANTHROPIC_API_KEY;
+              delete cliJudgeEnv.CLAUDECODE;
+            }
 
             if (tutorLastTurnScore != null) {
               lastTurnScores.push(tutorLastTurnScore);
@@ -5272,17 +5306,14 @@ async function main() {
             // ── Helper: call judge and parse JSON response ──
             async function callDialogueJudge(prompt) {
               const raw = await new Promise((resolve, reject) => {
-                const env = { ...process.env };
-                delete env.ANTHROPIC_API_KEY;
-                delete env.CLAUDECODE;
-                const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
+                const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
                 let out = '';
                 let err = '';
                 child.stdout.on('data', (d) => { out += d; });
                 child.stderr.on('data', (d) => { err += d; });
                 child.on('error', reject);
                 child.on('close', (code) => {
-                  if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
+                  if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
                   else resolve(out);
                 });
                 child.stdin.write(prompt);
