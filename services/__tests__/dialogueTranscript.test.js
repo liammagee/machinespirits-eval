@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildTranscriptArtifacts,
   buildDialoguePublicTranscript,
   buildDialogueFullTranscript,
   isEgoSuperegoLearner,
@@ -2266,6 +2267,43 @@ function stripDeliberationLines(transcript) {
 
   return result.join('\n');
 }
+
+describe('stored transcript artifacts', () => {
+  it('round-trip the public and full transcripts from event artifacts alone', () => {
+    const artifacts = buildTranscriptArtifacts({
+      turns: TURNS_EGO_SUPEREGO,
+      dialogueTrace: EGO_SUPEREGO_TRACE,
+      learnerContext: LEARNER_CONTEXT,
+    });
+
+    const publicFromEvents = buildDialoguePublicTranscript(TURNS_EGO_SUPEREGO, [], null, {
+      publicEvents: artifacts.publicEvents,
+    });
+    const fullFromEvents = buildDialogueFullTranscript(TURNS_EGO_SUPEREGO, [], null, {
+      fullEvents: artifacts.fullEvents,
+    });
+
+    assert.strictEqual(publicFromEvents, artifacts.public);
+    assert.strictEqual(fullFromEvents, artifacts.full);
+  });
+
+  it('prefers stored transcripts over lossy runtime inputs', () => {
+    const artifacts = buildTranscriptArtifacts({
+      turns: TURNS_EGO_SUPEREGO_THREE,
+      dialogueTrace: EGO_SUPEREGO_TRACE_NO_SYNTH,
+      learnerContext: LEARNER_CONTEXT,
+    });
+    const lossyTurns = TURNS_EGO_SUPEREGO_THREE.map((turn) => ({ ...turn, learnerMessage: null }));
+    const lossyTrace = EGO_SUPEREGO_TRACE_NO_SYNTH.filter((entry) => entry.action !== 'turn_action');
+
+    const reconstructed = buildDialoguePublicTranscript(lossyTurns, lossyTrace, null, {
+      public: artifacts.public,
+    });
+
+    assert.strictEqual(reconstructed, artifacts.public);
+    assert.ok(reconstructed.includes('Could we unpack fear and labour more slowly?'));
+  });
+});
 
 describe('backbone consistency: full transcript backbone matches public', () => {
   // ── Unified learner, single-agent tutor: full === public exactly ──────

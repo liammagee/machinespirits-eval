@@ -1457,6 +1457,7 @@ export function calculateTutorHolisticScore(scores, hasRecognition = false) {
  * @param {string} [params.scenarioDescription] - Scenario description
  * @param {string} [params.learnerContext] - Learner context info
  * @param {boolean} [params.hasRecognition] - Whether recognition theory is enabled
+ * @param {Object} [params.transcriptArtifacts] - Canonical stored transcript artifacts from the dialogue log
  * @returns {string} Complete judge prompt
  */
 export function buildTutorHolisticEvaluationPrompt(params) {
@@ -1467,6 +1468,7 @@ export function buildTutorHolisticEvaluationPrompt(params) {
     scenarioDescription = 'No description available',
     learnerContext = null,
     hasRecognition = false,
+    transcriptArtifacts = null,
   } = params;
 
   const dimensions = getTutorHolisticDimensions({ hasRecognition });
@@ -1485,7 +1487,7 @@ ${criteriaText}`;
     .join('\n\n');
 
   // Use public-only transcript (no internal deliberation) for fair cross-architecture comparison
-  const fullTranscript = buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext);
+  const fullTranscript = buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts);
 
   let recognitionNote = '';
   if (hasRecognition) {
@@ -1727,6 +1729,68 @@ function isLearnerSynthesisEntry(entry) {
   return entry.agent === 'learner' && (entry.action === 'final_output' || entry.action === 'response');
 }
 
+function renderTranscriptEvents(events) {
+  if (!Array.isArray(events) || events.length === 0) return '(no transcript available)';
+  return events
+    .slice()
+    .sort((a, b) => (a?.sequence ?? 0) - (b?.sequence ?? 0))
+    .map((event) => (typeof event === 'string' ? event : event?.line ?? ''))
+    .join('\n');
+}
+
+function serializeTranscriptEvents(transcript) {
+  const text = String(transcript || '');
+  if (!text || text === '(no transcript available)') return [];
+
+  const lines = text.split('\n');
+  let currentTurnIndex = null;
+
+  return lines.map((line, sequence) => {
+    const turnHeader = line.match(/^--- Turn (\d+) ---$/);
+    if (turnHeader) {
+      currentTurnIndex = Number.parseInt(turnHeader[1], 10) - 1;
+    }
+
+    const speakerMatch = line.match(/^\[([^\]]+)\]\s*(.*)$/);
+    return {
+      sequence,
+      turnIndex: currentTurnIndex,
+      kind: turnHeader ? 'turn_header' : speakerMatch ? 'utterance' : line.trim() === '' ? 'blank' : 'text',
+      speaker: speakerMatch ? speakerMatch[1] : null,
+      content: speakerMatch ? speakerMatch[2] : null,
+      line,
+    };
+  });
+}
+
+function getStoredTranscript(transcriptArtifacts, mode) {
+  if (!transcriptArtifacts || typeof transcriptArtifacts !== 'object') return null;
+
+  const stored = transcriptArtifacts[mode];
+  if (typeof stored === 'string' && stored.length > 0) return stored;
+
+  const eventsKey = mode === 'public' ? 'publicEvents' : 'fullEvents';
+  const events = transcriptArtifacts[eventsKey];
+  if (Array.isArray(events) && events.length > 0) {
+    return renderTranscriptEvents(events);
+  }
+
+  return null;
+}
+
+export function buildTranscriptArtifacts({ turns, dialogueTrace = [], learnerContext = null } = {}) {
+  const publicTranscript = buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext);
+  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+
+  return {
+    version: 1,
+    public: publicTranscript,
+    full: fullTranscript,
+    publicEvents: serializeTranscriptEvents(publicTranscript),
+    fullEvents: serializeTranscriptEvents(fullTranscript),
+  };
+}
+
 /**
  * Build a public-facing dialogue transcript — ego roles only.
  *
@@ -1741,9 +1805,13 @@ function isLearnerSynthesisEntry(entry) {
  * @param {Array} turns - Turn objects from turnResults
  * @param {Array} [dialogueTrace] - Consolidated trace
  * @param {string} [learnerContext] - Raw learner_context (contains initial learner message)
+ * @param {Object} [transcriptArtifacts] - Canonical stored transcript artifacts from the dialogue log
  * @returns {string} Formatted public transcript
  */
-function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext) {
+function buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts = null) {
+  const storedTranscript = getStoredTranscript(transcriptArtifacts, 'public');
+  if (storedTranscript) return storedTranscript;
+
   if (!turns?.length) return '(no transcript available)';
 
   const egoSuperego = isEgoSuperegoLearner(dialogueTrace);
@@ -1901,14 +1969,17 @@ function _hasDeliberationEntries(trace) {
   );
 }
 
-function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
+function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts = null) {
+  const storedTranscript = getStoredTranscript(transcriptArtifacts, 'full');
+  if (storedTranscript) return storedTranscript;
+
   // ── Fast path: no deliberation → delegate to public for exact backbone match ──
   // If the trace contains no deliberation entries (no superego, no learner
   // ego/superego, no self-reflection, etc.), the full transcript is identical
   // to the public transcript. This prevents confounding the
   // dialogue_quality vs dialogue_quality_internal comparison.
   if (dialogueTrace?.length > 0 && !_hasDeliberationEntries(dialogueTrace)) {
-    return buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext);
+    return buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts);
   }
 
   if (dialogueTrace?.length > 0) {
@@ -2150,6 +2221,7 @@ function buildDialogueFullTranscript(turns, dialogueTrace, learnerContext) {
  * @param {number} params.turnCount - Number of dialogue turns
  * @param {string} [params.transcriptMode='public'] - 'public' for externally visible only, 'full' for internal deliberation
  * @param {string} [params.learnerContext] - Raw learner_context string (contains initial learner message)
+ * @param {Object} [params.transcriptArtifacts] - Canonical stored transcript artifacts from the dialogue log
  * @returns {string} Complete judge prompt
  */
 export function buildDialogueQualityPrompt(params) {
@@ -2162,6 +2234,7 @@ export function buildDialogueQualityPrompt(params) {
     turnCount = 0,
     transcriptMode = 'public',
     learnerContext,
+    transcriptArtifacts = null,
   } = params;
 
   const dimensions = getDialogueDimensions();
@@ -2179,8 +2252,8 @@ ${criteriaText}`;
 
   const isPublic = transcriptMode !== 'full';
   const transcript = isPublic
-    ? buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext)
-    : buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+    ? buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts)
+    : buildDialogueFullTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts);
 
   const transcriptHeader = isPublic
     ? '## PUBLIC DIALOGUE TRANSCRIPT'
@@ -2770,6 +2843,7 @@ export default {
   buildEvaluationPrompt,
   buildPerTurnTutorEvaluationPrompt,
   buildBatchedPerTurnTutorPrompt,
+  buildTranscriptArtifacts,
   buildTutorHolisticEvaluationPrompt,
   buildDialogueQualityPrompt,
   buildDialoguePublicTranscript,

@@ -151,6 +151,7 @@ function generateForResult(result, outDir, filenameBase, scenarioData) {
     topic: scenario.topic || scenario.name || result.scenarioId || 'unknown',
     turnCount: turns.length,
     learnerContext: dialogueLog.learnerContext || null,
+    transcriptArtifacts: dialogueLog.transcripts || null,
   };
 
   const publicPrompt = buildDialogueQualityPrompt({ ...params, transcriptMode: 'public' });

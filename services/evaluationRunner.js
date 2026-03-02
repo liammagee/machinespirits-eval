@@ -3467,6 +3467,20 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     log(`  - ${dialogueTraceReport.bilateralMetrics.summary}`, 'info');
   }
 
+  const transcriptTurns = turnResults.map((t, idx) => ({
+    turnIndex: Number.isInteger(t.turnIndex) ? t.turnIndex : idx,
+    turnId: t.turnId,
+    suggestion: t.suggestion || t.suggestions?.[0] || null,
+    suggestions: t.suggestion ? [t.suggestion] : t.suggestions || [],
+    learnerAction: t.learnerAction,
+    learnerMessage: t.learnerMessage,
+  }));
+  const transcripts = rubricEvaluator.buildTranscriptArtifacts({
+    turns: transcriptTurns,
+    dialogueTrace: consolidatedTrace,
+    learnerContext: fullScenario.learner_context,
+  });
+
   // 6. Write consolidated dialogue log
   const consolidatedDialogue = {
     suggestions: turnResults[turnResults.length - 1]?.suggestion
@@ -3490,6 +3504,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     learnerContext: fullScenario.learner_context,
     isMultiTurn: true,
     learnerArchitecture: resolvedConfig.learnerArchitecture || 'unified',
+    transcripts,
     totalTurns: turnResults.length,
     turnResults: turnResults.map((t) => {
       const turnContent = JSON.stringify({
@@ -3506,6 +3521,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         turnId: t.turnId,
         contentTurnId,
         suggestions: t.suggestion ? [t.suggestion] : [],
+        learnerAction: t.learnerAction,
+        learnerMessage: t.learnerMessage,
       };
     }),
     // Conversation mode audit trail
