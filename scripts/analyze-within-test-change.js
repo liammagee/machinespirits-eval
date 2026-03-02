@@ -8,7 +8,8 @@
  *
  * Methods:
  * 1) Rubric trajectories (0-100)
- *    - Tutor: derived from per-turn tutor rubric traces when available in dialogue logs.
+ *    - Tutor: derived from per-turn tutor rubric scores in evaluation_results.tutor_scores,
+ *      falling back to dialogue log turnResults/dimensionTrajectories.
  *    - Learner: derived from per-turn learner rubric scores in evaluation_results.learner_scores.
  *
  * 2) Text-proxy trajectories (0-100)
@@ -31,6 +32,7 @@ import { createHash } from 'crypto';
 import Database from 'better-sqlite3';
 import { runThreeWayANOVA } from '../services/anovaStats.js';
 import { calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
+import { calculateOverallScore } from '../services/rubricEvaluator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -377,7 +379,36 @@ function normalizeRubricScore(v) {
   return v;
 }
 
-function extractTutorRubricSequence(log) {
+function extractTutorRubricSequence(row, log) {
+  // Primary source: DB tutor_scores JSON (per-turn judge scores, mirrors learner extraction)
+  const parsed = parseJson(row?.tutor_scores, null);
+  if (parsed && typeof parsed === 'object') {
+    const turns = Object.values(parsed)
+      .filter((x) => x && typeof x === 'object')
+      .map((x) => {
+        const overall = safeNumber(x.overallScore);
+        if (overall != null) return { turnIndex: x.turnIndex ?? null, score: overall };
+
+        if (x.scores && typeof x.scores === 'object') {
+          const computed = calculateOverallScore(x.scores);
+          if (Number.isFinite(computed)) return { turnIndex: x.turnIndex ?? null, score: computed };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    if (turns.length >= 2) {
+      turns.sort((a, b) => {
+        if (a.turnIndex == null && b.turnIndex == null) return 0;
+        if (a.turnIndex == null) return 1;
+        if (b.turnIndex == null) return -1;
+        return a.turnIndex - b.turnIndex;
+      });
+      return turns.map((t) => t.score);
+    }
+  }
+
+  // Fallback: dialogue log turnResults (generation-time scores)
   if (!log) return null;
 
   const turnScoreSeq = (log.turnResults || []).map((t) => safeNumber(t?.turnScore)).filter((x) => x != null);
@@ -783,6 +814,7 @@ const fetchedRows = db
         profile_name,
         dialogue_id,
         suggestions,
+        tutor_scores,
         learner_scores,
         factor_recognition,
         factor_multi_agent_tutor,
@@ -831,7 +863,7 @@ for (const row of rows) {
   };
   const sourceHash = buildSourceHash(row, log, factors);
 
-  const tutorRubricSeq = extractTutorRubricSequence(log);
+  const tutorRubricSeq = extractTutorRubricSequence(row, log);
   const tutorRubricMetrics = computeTrajectoryMetrics(tutorRubricSeq);
   if (tutorRubricMetrics) {
     recordsByMethod.tutor_rubric.push({ ...baseMeta, ...tutorRubricMetrics });
