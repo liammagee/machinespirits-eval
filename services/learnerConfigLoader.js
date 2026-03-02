@@ -206,6 +206,11 @@ export const getPromptMetadata = promptLoader.getPromptMetadata;
  * @returns {Object} Profile configuration
  */
 export function getActiveProfile(profileName = null) {
+  // Robustness: handle cases where a profile summary object might be passed
+  if (profileName && typeof profileName === 'object' && profileName.name) {
+    profileName = profileName.name;
+  }
+
   const config = loadConfig();
 
   // Check for environment variable override

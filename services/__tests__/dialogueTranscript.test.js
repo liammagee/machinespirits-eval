@@ -1774,7 +1774,8 @@ describe('scripted vs LLM learner demarcation', () => {
   it('all learner profiles in learner-agents.yaml have LLM-capable configs', async () => {
     const learnerConfig = await import('../../services/learnerConfigLoader.js');
     const allProfiles = learnerConfig.listProfiles();
-    for (const profileName of allProfiles) {
+    for (const profileSummary of allProfiles) {
+      const profileName = profileSummary.name;
       const roles = learnerConfig.getProfileAgentRoles(profileName);
       assert.ok(roles.length > 0,
         `Learner profile '${profileName}' has no agent roles — cannot generate LLM responses`);
