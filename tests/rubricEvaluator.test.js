@@ -813,9 +813,7 @@ describe('buildDialogueQualityPrompt', () => {
 
   it('public prompt excludes internal trace details (v3 public-only scoring)', () => {
     const prompt = buildDialogueQualityPrompt({
-      turns: [
-        { learnerMessage: 'What is dialectics?', suggestion: { message: 'Great question!' } },
-      ],
+      turns: [{ learnerMessage: 'What is dialectics?', suggestion: { message: 'Great question!' } }],
       dialogueTrace: [
         { turnIndex: 0, agent: 'learner', action: 'turn_action', detail: 'Learner asks a question' },
         { turnIndex: 0, agent: 'ego', action: 'initial_draft', contextSummary: 'Drafting response' },
