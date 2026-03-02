@@ -4176,27 +4176,45 @@ export function generateReport(runId) {
 
     // Determine which dimensions to show based on what's in the data
     const allDims = new Set();
-    stats.forEach(s => Object.keys(s.dimensions).forEach(d => allDims.add(d)));
+    stats.forEach(s => {
+      if (s.dimensions) {
+        Object.keys(s.dimensions).forEach(d => allDims.add(d));
+      }
+    });
 
-    // Prioritize Rubric 2.2+ dimensions if present
-    let dims = [];
-    if (allDims.has('perception_quality') || allDims.has('recognition_quality')) {
-      dims = [
-        'perception_quality',
-        'pedagogical_craft',
-        'elicitation_quality',
-        'adaptive_responsiveness',
-        'recognition_quality',
-        'productive_difficulty',
-        'epistemic_integrity',
-        'content_accuracy'
-      ];
-    } else {
-      dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
-    }
+    // Order: Prioritize Rubric 2.2+ dimensions, then legacy, then any custom ones
+    const prioritized = [
+      'perception_quality',
+      'pedagogical_craft',
+      'elicitation_quality',
+      'adaptive_responsiveness',
+      'recognition_quality',
+      'productive_difficulty',
+      'epistemic_integrity',
+      'content_accuracy',
+      'relevance',
+      'specificity',
+      'pedagogical',
+      'personalization',
+      'actionability',
+      'tone'
+    ];
 
-    // Only show dimensions that actually have data in at least one config
-    dims = dims.filter(d => allDims.has(d));
+    // Build the final dimension list: prioritized first, then any remaining in data
+    const dims = [];
+    prioritized.forEach(d => {
+      if (allDims.has(d)) {
+        dims.push(d);
+      }
+    });
+
+    // Add any "new" dimensions not in the prioritized list
+    const prioritizedSet = new Set(prioritized);
+    allDims.forEach(d => {
+      if (!prioritizedSet.has(d)) {
+        dims.push(d);
+      }
+    });
 
     if (dims.length > 0) {
       const header =
