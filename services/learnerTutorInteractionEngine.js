@@ -7,7 +7,7 @@
  */
 
 import * as learnerConfig from './learnerConfigLoader.js';
-import { tutorConfigLoader as tutorConfig, tutorDialogueEngine, truncateForContextOverflow } from '@machinespirits/tutor-core';
+import { tutorConfigLoader as tutorConfig, tutorDialogueEngine } from '@machinespirits/tutor-core';
 const { callAI } = tutorDialogueEngine;
 
 import * as learnerWritingPad from './memory/learnerWritingPad.js';
@@ -865,16 +865,6 @@ function calculateMemoryDelta(before, after) {
 // ============================================================================
 // Standalone Learner Response (for evaluation pipeline)
 // ============================================================================
-
-// Retry delays for 429 rate limits (matches evaluationRunner pattern)
-const LEARNER_RETRY_DELAYS = [2000, 4000, 8000];
-
-// Empty-content retry constants (HTTP 200 but no text — e.g. Gemini Flash).
-// NOTE: This duplicates the retry logic in tutor-core's callAI(). If we ever
-// refactor callLearnerAI to call through tutor-core's callAI instead of its
-// own _callLearnerAIOnce, this can be removed — tutor-core already handles it.
-const EMPTY_CONTENT_MAX_RETRIES = 2;
-const EMPTY_CONTENT_RETRY_DELAYS = [1000, 2000];
 
 /**
  * Call the LLM for a learner agent using tutor-core's public callAI().
