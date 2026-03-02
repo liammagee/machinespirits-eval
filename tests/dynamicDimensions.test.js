@@ -1,19 +1,22 @@
 
-import { describe, it, afterEach } from 'node:test';
+import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { 
-  createRun, 
-  storeResult, 
-  getRunStats, 
-  updateResultTutorScores 
+import {
+  createRun,
+  storeResult,
+  getRunStats,
+  updateResultTutorScores,
+  deleteRun,
 } from '../services/evaluationStore.js';
 import { generateReport } from '../services/evaluationRunner.js';
 
 describe('Dynamic Dimensions Support', () => {
   const testRunIds = [];
 
-  afterEach(() => {
-    // We don't have a formal "deleteRun" but we can track them
+  after(() => {
+    for (const id of testRunIds) {
+      try { deleteRun(id); } catch { /* ignore */ }
+    }
   });
 
   it('aggregates Rubric 2.2+ dimensions from tutor_scores in getRunStats', () => {
