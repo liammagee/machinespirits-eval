@@ -7,6 +7,7 @@
 #   ./build.sh beamer       # build slides PDF (beamer)
 #   ./build.sh pptx         # build slides PPTX
 #   ./build.sh slides       # build both beamer PDF and PPTX slides
+#   ./build.sh paper2       # build Paper 2.0 PDF
 #   ./build.sh all          # build everything
 
 set -euo pipefail
@@ -50,6 +51,15 @@ build_beamer() {
   echo "  -> ${SLIDES_PDF}"
 }
 
+build_paper2() {
+  local V2=$(grep '^version:' paper-full-2.0.md 2>/dev/null | head -1 | sed 's/version: *"\(.*\)"/\1/')
+  if [ -z "$V2" ]; then V2="dev"; fi
+  local P2_PDF="paper-2.0-v${V2}.pdf"
+  echo "Building ${P2_PDF} (Paper 2.0) ..."
+  pandoc "${PANDOC_OPTS[@]}" paper-full-2.0.md -o "${P2_PDF}"
+  echo "  -> ${P2_PDF}"
+}
+
 build_pptx() {
   echo "Building ${SLIDES_PPTX} ..."
   # Use slides-pptx.md (stripped of LaTeX commands) with styled reference doc
@@ -83,14 +93,18 @@ case "${1:-full}" in
     build_beamer
     build_pptx
     ;;
+  paper2)
+    build_paper2
+    ;;
   all)
     build_full
+    build_paper2
     build_short
     build_beamer
     build_pptx
     ;;
   *)
-    echo "Usage: $0 [full|short|beamer|pptx|slides|all]"
+    echo "Usage: $0 [full|short|paper2|beamer|pptx|slides|all]"
     exit 1
     ;;
 esac
