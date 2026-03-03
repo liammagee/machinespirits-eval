@@ -24,9 +24,11 @@ const TUTOR_CORE_ROOT = fs.realpathSync(path.join(ROOT, 'node_modules', '@machin
 const CANONICAL_PROMPTS_DIR = path.join(TUTOR_CORE_ROOT, 'prompts');
 const DEFAULT_JUDGE = 'openrouter.gemini-flash';
 const DEFAULT_AUTOTUNE_ITERATIONS = 3;
+const VALID_TARGETS = new Set(['tutor', 'learner', 'both']);
 
 const args = process.argv.slice(2);
 const command = args[0] || 'help';
+const isDirectExecution = process.argv[1] ? path.resolve(process.argv[1]) === __filename : false;
 
 function getOption(name, fallback = null) {
   const idx = args.indexOf(`--${name}`);
@@ -73,6 +75,8 @@ Recommend/Autotune:
   --recommender <ref>    Prompt-rewriter model (default: config/evaluation-rubric.yaml recommender)
   --basis <best|latest|N>
                          Which scored iteration to optimize from (default: best)
+  --target <tutor|learner|both>
+                         Which prompt family the recommender may edit (default: both)
   --apply                For recommend: apply the proposed prompt rewrite to the working prompt dir
   --iterations <n>       For autotune: number of recommendation/eval passes (default: 3)
   --keep-worse           For autotune: keep working prompts even if a candidate scores worse
@@ -190,6 +194,20 @@ function normalizePromptContent(content) {
   let text = String(content || '').replace(/\r\n/g, '\n');
   if (!text.endsWith('\n')) text += '\n';
   return text;
+}
+
+function normalizeTargetScope(value = 'both') {
+  const normalized = String(value || 'both').trim().toLowerCase();
+  if (!VALID_TARGETS.has(normalized)) {
+    throw new Error(`Invalid --target value: ${value}. Expected tutor, learner, or both.`);
+  }
+  return normalized;
+}
+
+function selectPromptFilesByTarget(session, targetScope = 'both') {
+  const target = normalizeTargetScope(targetScope);
+  if (target === 'both') return session.promptFiles;
+  return session.promptFiles.filter((prompt) => prompt.kind === target);
 }
 
 function getTutorRuntimeProfile(profileName) {
@@ -340,7 +358,7 @@ function analyzeSectionTags(content) {
 
   let match;
   while ((match = regex.exec(text)) !== null) {
-    const full = match[0];
+    const full = match[0].trim();
     const tag = match[1];
     if (full.startsWith('</')) {
       closeCounts.set(tag, (closeCounts.get(tag) || 0) + 1);
@@ -420,6 +438,70 @@ function validatePromptCandidate(prompt, candidateContent, referenceContent) {
     issues,
     referenceLength: reference.length,
     candidateLength: candidate.length,
+  };
+}
+
+function getRecoverableValidationIssues(issues = []) {
+  return issues.filter(
+    (issue) =>
+      issue.startsWith('contains an unmatched code fence')
+      || issue.startsWith('has imbalanced <')
+      || issue.startsWith('does not end with required closing tag'),
+  );
+}
+
+function appendMissingClosingTags(candidate, reference) {
+  const referenceTags = analyzeSectionTags(reference);
+  const candidateTags = analyzeSectionTags(candidate);
+  const missingClosers = [];
+
+  for (const tag of referenceTags.tagNames) {
+    const candidateOpen = candidateTags.openCounts.get(tag) || 0;
+    const candidateClose = candidateTags.closeCounts.get(tag) || 0;
+    const referenceClose = referenceTags.closeCounts.get(tag) || 0;
+    const delta = Math.min(candidateOpen - candidateClose, referenceClose - candidateClose);
+    if (delta > 0) {
+      missingClosers.push(...Array.from({ length: delta }, () => `</${tag}>`));
+    }
+  }
+
+  if (missingClosers.length === 0) {
+    return { content: candidate, notes: [] };
+  }
+
+  let repaired = candidate.replace(/\s*$/, '\n');
+  repaired += `${missingClosers.join('\n')}\n`;
+  return {
+    content: repaired,
+    notes: [`appended missing closing tags: ${missingClosers.join(', ')}`],
+  };
+}
+
+function recoverPromptCandidate(prompt, candidateContent, referenceContent) {
+  const reference = normalizePromptContent(referenceContent);
+  let repaired = normalizePromptContent(candidateContent);
+  const notes = [];
+
+  if (countCodeFences(repaired) % 2 !== 0) {
+    repaired = `${repaired.replace(/\s*$/, '\n')}\`\`\`\n`;
+    notes.push('appended a closing code fence');
+  }
+
+  const appended = appendMissingClosingTags(repaired, reference);
+  repaired = appended.content;
+  notes.push(...appended.notes);
+
+  const referenceLastLine = getLastNonEmptyLine(reference);
+  const repairedLastLine = getLastNonEmptyLine(repaired);
+  if (/^<\/[a-z_][a-z0-9_-]*>$/.test(referenceLastLine) && repairedLastLine !== referenceLastLine) {
+    repaired = `${repaired.replace(/\s*$/, '\n')}${referenceLastLine}\n`;
+    notes.push(`restored required final closing tag ${referenceLastLine}`);
+  }
+
+  return {
+    applied: notes.length > 0 && normalizePromptContent(candidateContent) !== repaired,
+    content: repaired,
+    notes,
   };
 }
 
@@ -747,8 +829,11 @@ async function callRecommenderJson(systemPrompt, userPrompt, modelRefOverride = 
   };
 }
 
-function createMockRecommendation(session, basisIteration, promptState, recommenderRef) {
-  const firstPrompt = session.promptFiles[0];
+function createMockRecommendation(session, basisIteration, promptState, recommenderRef, allowedPrompts) {
+  const firstPrompt = allowedPrompts[0];
+  if (!firstPrompt) {
+    throw new Error('No prompt files available for the selected target scope.');
+  }
   return {
     parsed: {
       summary: 'Dry-run recommendation placeholder. No prompt changes were synthesized from a live recommender.',
@@ -772,12 +857,12 @@ function createMockRecommendation(session, basisIteration, promptState, recommen
   };
 }
 
-function buildRecommendationPrompt(session, basisIteration, basisResults, promptState) {
+function buildRecommendationPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope) {
   const analysis = promptRecommendationService.analyzeResults(basisResults);
   const scenario = evalConfigLoader.getScenario(session.scenarioId);
   const basisSummary = basisIteration?.summary || null;
   const latestRow = basisResults[basisResults.length - 1] || null;
-  const promptSections = session.promptFiles
+  const promptSections = allowedPrompts
     .map((prompt) => {
       const state = promptState[prompt.filename];
       return `## ${prompt.filename}
@@ -840,6 +925,7 @@ Session:
 - scenario_description: ${scenario?.description || 'n/a'}
 - tutor_model: ${session.modelRef}
 - judge_model: ${session.judgeRef || DEFAULT_JUDGE}
+- target_scope: ${targetScope}
 - target_metric: tutorFirstTurnScore
 - basis_iteration: ${basisIteration?.iteration ?? 'n/a'}
 - basis_run_id: ${basisIteration?.runId ?? 'n/a'}
@@ -853,7 +939,7 @@ ${Object.entries(analysis.dimensionWeaknesses || {})
   .join('\n') || '- none detected'}
 
 Allowed filenames:
-${session.promptFiles.map((prompt) => `- ${prompt.filename}`).join('\n')}
+${allowedPrompts.map((prompt) => `- ${prompt.filename}`).join('\n')}
 
 Current working prompt files:
 ${promptSections}
@@ -866,9 +952,9 @@ Generate concrete prompt revisions. Return JSON only.`,
   };
 }
 
-function normalizeRecommendation(session, payload) {
+function normalizeRecommendation(session, payload, allowedPromptFiles) {
   const parsed = payload.parsed || {};
-  const allowed = new Set(session.promptFiles.map((prompt) => prompt.filename));
+  const allowed = new Set(allowedPromptFiles.map((prompt) => prompt.filename));
   const updates = Array.isArray(parsed.prompt_updates) ? parsed.prompt_updates : [];
 
   const promptUpdates = updates
@@ -904,6 +990,62 @@ function validateRecommendationPromptUpdates(session, promptState, normalized) {
   return { validations, invalid };
 }
 
+function attemptRecommendationRecovery(session, promptState, normalized, validation) {
+  const repairedUpdates = [];
+  const recoveryNotes = [];
+  let changed = false;
+
+  for (const update of normalized.promptUpdates) {
+    const prompt = session.promptFiles.find((item) => item.filename === update.filename) || { filename: update.filename };
+    const referenceContent = promptState[update.filename]?.content || '';
+    const currentValidation = validation.validations.find((item) => item.filename === update.filename);
+
+    if (!currentValidation || currentValidation.ok) {
+      repairedUpdates.push(update);
+      continue;
+    }
+
+    const recoverableIssues = getRecoverableValidationIssues(currentValidation.issues);
+    if (recoverableIssues.length === 0) {
+      repairedUpdates.push(update);
+      continue;
+    }
+
+    const repaired = recoverPromptCandidate(prompt, update.content, referenceContent);
+    if (repaired.applied) {
+      changed = true;
+      recoveryNotes.push(`${update.filename}: ${repaired.notes.join('; ')}`);
+      repairedUpdates.push({
+        ...update,
+        content: repaired.content,
+      });
+    } else {
+      repairedUpdates.push(update);
+    }
+  }
+
+  if (!changed) {
+    return {
+      changed: false,
+      normalized,
+      validation,
+      notes: [],
+    };
+  }
+
+  const repairedNormalized = {
+    ...normalized,
+    promptUpdates: repairedUpdates,
+  };
+  const repairedValidation = validateRecommendationPromptUpdates(session, promptState, repairedNormalized);
+  return {
+    changed: true,
+    normalized: repairedNormalized,
+    validation: repairedValidation,
+    notes: recoveryNotes,
+  };
+}
+
 function saveRecommendationArtifact(session, artifact) {
   ensureDir(recommendationsDir(session.sessionId));
   writeJson(recommendationFile(session.sessionId, artifact.id), artifact);
@@ -924,7 +1066,13 @@ async function generateRecommendation(session, options = {}) {
     recommenderRef = null,
     dryRun = false,
     apply = false,
+    targetScope = 'both',
   } = options;
+
+  const allowedPrompts = selectPromptFilesByTarget(session, targetScope);
+  if (allowedPrompts.length === 0) {
+    throw new Error(`No prompts available for target scope "${targetScope}" in session ${session.sessionId}.`);
+  }
 
   const basisIteration = resolveIterationSpec(session, basis);
   if (!basisIteration) {
@@ -933,11 +1081,18 @@ async function generateRecommendation(session, options = {}) {
 
   const basisResults = getRunRows(basisIteration.runId, session.profileName, basisIteration.scenarioId || session.scenarioId);
   const promptState = readPromptState(session.promptDir, session.promptFiles);
-  const promptRequest = buildRecommendationPrompt(session, basisIteration, basisResults, promptState);
+  const promptRequest = buildRecommendationPrompt(
+    session,
+    basisIteration,
+    basisResults,
+    promptState,
+    allowedPrompts,
+    targetScope,
+  );
   const recommendationId = `reco-${String((session.recommendations?.length || 0) + 1).padStart(3, '0')}-${timestampTag()}`;
 
   const payload = dryRun
-    ? createMockRecommendation(session, basisIteration, promptState, recommenderRef)
+    ? createMockRecommendation(session, basisIteration, promptState, recommenderRef, allowedPrompts)
     : await (async () => {
         try {
           return await callRecommenderJson(promptRequest.systemPrompt, promptRequest.userPrompt, recommenderRef);
@@ -952,12 +1107,25 @@ async function generateRecommendation(session, options = {}) {
         }
       })();
 
-  const normalized = normalizeRecommendation(session, payload);
+  let normalized = normalizeRecommendation(session, payload, allowedPrompts);
+  let validation = validateRecommendationPromptUpdates(session, promptState, normalized);
+  let recovery = {
+    changed: false,
+    normalized,
+    validation,
+    notes: [],
+  };
+
+  if (validation.invalid.length > 0) {
+    recovery = attemptRecommendationRecovery(session, promptState, normalized, validation);
+    normalized = recovery.normalized;
+    validation = recovery.validation;
+  }
+
   const changedFiles = normalized.promptUpdates.filter((update) => {
     const current = promptState[update.filename]?.content || '';
     return normalizePromptContent(current) !== normalizePromptContent(update.content);
   });
-  const validation = validateRecommendationPromptUpdates(session, promptState, normalized);
 
   const artifact = {
     id: recommendationId,
@@ -967,11 +1135,17 @@ async function generateRecommendation(session, options = {}) {
     basedOnScore: basisIteration.summary?.primaryScore ?? null,
     recommenderRef: payload.recommenderRef,
     recommenderModel: payload.recommenderModel,
+    targetScope,
     usage: payload.usage,
     dryRun,
     summary: normalized.summary,
     observations: normalized.observations,
     expectedEffects: normalized.expectedEffects,
+    recovery: {
+      attempted: recovery.changed,
+      applied: recovery.changed && recovery.validation.invalid.length === 0,
+      notes: recovery.notes,
+    },
     promptUpdates: normalized.promptUpdates.map((update) => ({
       filename: update.filename,
       rationale: update.rationale,
@@ -993,7 +1167,9 @@ async function generateRecommendation(session, options = {}) {
     basedOnRunId: artifact.basedOnRunId,
     recommenderRef: artifact.recommenderRef,
     recommenderModel: artifact.recommenderModel,
+    targetScope: artifact.targetScope,
     changedFiles: artifact.changedFiles,
+    recoveryApplied: artifact.recovery.applied,
     appliedToWorkingDir: false,
     evaluationIteration: null,
       accepted: null,
@@ -1007,8 +1183,12 @@ async function generateRecommendation(session, options = {}) {
       .map((item) => `${item.filename}: ${item.issues.join('; ')}`)
       .join(' | ');
     saveSession(session);
+    const recoveryDetail =
+      recovery.changed && recovery.notes.length > 0
+        ? ` Recovery attempted: ${recovery.notes.join(' | ')}.`
+        : '';
     throw new Error(
-      `Recommendation ${artifact.id} failed prompt validation and was not applied: ${details}. Artifact: ${recommendationFile(session.sessionId, artifact.id)}`,
+      `Recommendation ${artifact.id} failed prompt validation and was not applied: ${details}.${recoveryDetail} Artifact: ${recommendationFile(session.sessionId, artifact.id)}`,
     );
   }
 
@@ -1123,7 +1303,7 @@ function formatDuration(ms) {
 }
 
 function printAutotuneSessionSummary(session, options = {}) {
-  const { rounds, basisMode, recommenderRef, keepWorse, dryRun } = options;
+  const { rounds, basisMode, recommenderRef, keepWorse, dryRun, targetScope } = options;
   console.log('Autotune session');
   console.log(`  Session: ${session.sessionId}`);
   console.log(`  Profile: ${session.profileName}`);
@@ -1132,6 +1312,7 @@ function printAutotuneSessionSummary(session, options = {}) {
   console.log(`  Judge: ${session.judgeRef || DEFAULT_JUDGE}`);
   console.log(`  Recommender: ${recommenderRef || resolveRecommenderConfig().modelRef}`);
   console.log(`  Basis selection: ${basisMode}`);
+  console.log(`  Target scope: ${targetScope}`);
   console.log(`  Planned passes: ${rounds}`);
   console.log(`  Parallelism: ${session.parallelism || 1}`);
   console.log(`  Keep regressions: ${keepWorse ? 'yes' : 'no'}`);
@@ -1180,12 +1361,12 @@ function printRecommendationTable(session) {
   }
 
   console.log('\nRecommendations:');
-  console.log('  ID                          Basis  Files                          Valid  Applied  Eval  Accepted');
-  console.log('  ' + '─'.repeat(106));
+  console.log('  ID                          Basis  Scope    Files                          Valid  Repair  Applied  Eval  Accepted');
+  console.log('  ' + '─'.repeat(124));
   for (const item of items) {
     const files = (item.changedFiles || []).join(', ') || 'none';
     console.log(
-      `  ${item.id.padEnd(26)}  ${String(item.basedOnIteration).padStart(5)}  ${files.slice(0, 28).padEnd(28)}  ${(item.validationPassed == null ? '--' : item.validationPassed ? 'yes' : 'no').padStart(5)}  ${String(Boolean(item.appliedToWorkingDir)).padStart(7)}  ${(item.evaluationIteration ?? '--').toString().padStart(4)}  ${(item.accepted == null ? '--' : item.accepted ? 'yes' : 'no').padStart(8)}`,
+      `  ${item.id.padEnd(26)}  ${String(item.basedOnIteration).padStart(5)}  ${(item.targetScope || 'both').padEnd(7)}  ${files.slice(0, 28).padEnd(28)}  ${(item.validationPassed == null ? '--' : item.validationPassed ? 'yes' : 'no').padStart(5)}  ${String(Boolean(item.recoveryApplied)).padStart(6)}  ${String(Boolean(item.appliedToWorkingDir)).padStart(7)}  ${(item.evaluationIteration ?? '--').toString().padStart(4)}  ${(item.accepted == null ? '--' : item.accepted ? 'yes' : 'no').padStart(8)}`,
     );
   }
 }
@@ -1200,7 +1381,13 @@ function printRecommendationSummary(artifact, options = {}) {
   if (artifact.basedOnIteration != null) {
     console.log(`  Basis iteration: ${artifact.basedOnIteration} (score ${artifact.basedOnScore ?? 'n/a'})`);
   }
+  console.log(`  Target scope: ${artifact.targetScope || 'both'}`);
   console.log(`  Changed files: ${changedFiles.length ? changedFiles.join(', ') : 'none'}`);
+  if (artifact.recovery?.applied) {
+    console.log('  Structural recovery: applied');
+  } else if (artifact.recovery?.attempted) {
+    console.log('  Structural recovery: attempted but validation still failed');
+  }
   if (artifact.summary) {
     console.log(`  Summary: ${artifact.summary}`);
   }
@@ -1498,11 +1685,13 @@ async function handleRun() {
 
 async function handleRecommend() {
   const session = loadSession(resolveSessionId());
+  const targetScope = normalizeTargetScope(getOption('target', 'both'));
   const artifact = await generateRecommendation(session, {
     basis: getOption('basis', 'best'),
     recommenderRef: getOption('recommender', null),
     dryRun: hasFlag('dry-run'),
     apply: hasFlag('apply'),
+    targetScope,
   });
 
   printRecommendationSummary(artifact, {
@@ -1521,6 +1710,7 @@ async function handleAutotune() {
   const recommenderRef = getOption('recommender', null);
   const dryRun = hasFlag('dry-run');
   const keepWorse = hasFlag('keep-worse');
+  const targetScope = normalizeTargetScope(getOption('target', 'both'));
 
   console.log('');
   printAutotuneSessionSummary(session, {
@@ -1529,6 +1719,7 @@ async function handleAutotune() {
     recommenderRef,
     keepWorse,
     dryRun,
+    targetScope,
   });
 
   if (!getBestScoredIteration(session)) {
@@ -1566,6 +1757,7 @@ async function handleAutotune() {
       recommenderRef,
       dryRun,
       apply: false,
+      targetScope,
     });
     console.log(`    Completed in ${formatDuration(Date.now() - recommendationStartedAt)}`);
     printRecommendationSummary(artifact, {
@@ -1729,7 +1921,16 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error(`\nError: ${error.message}`);
-  process.exit(1);
-});
+export {
+  analyzeSectionTags,
+  appendMissingClosingTags,
+  recoverPromptCandidate,
+  validatePromptCandidate,
+};
+
+if (isDirectExecution) {
+  main().catch((error) => {
+    console.error(`\nError: ${error.message}`);
+    process.exit(1);
+  });
+}
