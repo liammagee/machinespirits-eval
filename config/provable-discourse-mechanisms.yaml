@@ -1272,6 +1272,26 @@ symmetry_rules:
       - "Verify architecture delta from §6.1.3 if data changes."
     tags: [s6, error_correction, theoretical]
 
+  # ── Section 6.2 additional: Ego compliance ────────────────────
+
+  - id: paper2.s6.error_correction.ego_compliance
+    description: "Ego RevΔ >0.85 under both conditions — unconditional compliance with superego regardless of critique quality."
+    source_keys:
+      - "stat|0|ego revision magnitude"
+    statement:
+      pattern: "rev.*0\\.8[5-9]|near.complete.*rewrite|ego.*compliant|compliance.*unconditional"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "RevΔ from analyze-mechanism-traces.js: DeepSeek base=0.901, recog=0.869; Haiku base=0.917, recog=0.851."
+    assertion:
+      op: theoretical
+      expected: "RevΔ >0.85 in all conditions"
+    remediation:
+      - "Re-run mechanism traces if dialogue logs change."
+    tags: [s6, error_correction, verified]
+
   # ── Section 6.3: Adaptive Responsiveness results ─────────────
 
   - id: paper2.s6.adaptive_responsiveness.slopes_not_different
@@ -1351,6 +1371,128 @@ symmetry_rules:
     remediation:
       - "Verify development patterns per model if new models are added."
     tags: [s6, adaptive_responsiveness, verified]
+
+  # ── Section 6.4: Mechanism Interaction results ────────────────
+
+  - id: paper2.s6.mechanism_interaction.substitution
+    description: "Calibration × error correction shows ~15-16% deficit from additivity (substitution interaction)."
+    source_keys:
+      - "stat|0|additivity deficit"
+    statement:
+      pattern: "15.*16.*deficit|substitut.*interaction|non.?additive"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "DeepSeek: expected 59.0, observed 50.2, deficit 8.8 (15%). Haiku: expected 95.2, observed 79.5, deficit 15.7 (16%)."
+      cross_refs: [paper2.s6.calibration.architecture_interaction]
+    assertion:
+      op: theoretical
+      expected: "Deficit from additivity 10-20% in both models"
+    remediation:
+      - "Recompute from 2x2 factorial if data changes."
+    tags: [s6, mechanism_interaction, verified]
+
+  - id: paper2.s6.mechanism_interaction.separability_confirmed
+    description: "Three mechanisms are separable: temporally, architecturally, and in recognition-dependence."
+    source_keys:
+      - "theoretical|0|three-mechanism separability"
+    statement:
+      pattern: "separab.*three.*sense|temporal.*separab|architectural.*separab"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Calibration=first-turn/prompt. Error correction=within-turn/architecture. Adaptation=cross-turn/model-dependent."
+      cross_refs: [paper2.s3.calibration.prediction]
+    assertion:
+      op: theoretical
+      expected: "Three mechanisms empirically separable"
+    remediation:
+      - "If mechanisms show unexpected coupling, revise separability claim."
+    tags: [s6, mechanism_interaction, theoretical]
+
+  # ── Section 6.5: Tutor-Learner Asymmetry results ────────────
+
+  - id: paper2.s6.asymmetry.effect_size_ratio
+    description: "Tutor d=1.88/1.84 vs learner d=0.25/0.16 — ratio 7.5:1 to 11.5:1."
+    source_keys:
+      - "stat|0|tutor-learner effect size ratio"
+    statement:
+      pattern: "1\\.88|1\\.84|7\\.5.*1|11\\.5.*1|tutor.*effect.*7.*12.*larger"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        not_null: [learner_overall_score, tutor_overall_score]
+    assertion:
+      op: gte
+      expected: 280
+    remediation:
+      - "Need both tutor and learner scores for effect size computation."
+    tags: [s6, asymmetry, verified]
+
+  - id: paper2.s6.asymmetry.dialogue_quality_tracks_tutor
+    description: "Dialogue quality correlates r>0.99 with tutor scores, not learner scores."
+    source_keys:
+      - "stat|0|dialogue quality correlation"
+    statement:
+      pattern: "dialogue.*quality.*track.*tutor|r.*0\\.99.*tutor|quality.*determined.*tutor"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Computed from condition-level means: tutor vs dialogue quality across 8 conditions per model."
+    assertion:
+      op: theoretical
+      expected: "r>0.99 between tutor and dialogue quality scores"
+    remediation:
+      - "Recompute correlation if conditions change."
+    tags: [s6, asymmetry, verified]
+
+  # ── Section 6.6: Model Dependence results ────────────────────
+
+  - id: paper2.s6.model_dependence.recognition_d_similar
+    description: "Recognition effect size nearly identical across models: DeepSeek d=1.88, Haiku d=1.84."
+    source_keys:
+      - "stat|0|cross-model recognition effect size"
+    statement:
+      pattern: "1\\.88.*1\\.84|similar.*effect.*size|near.?identical.*d"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        not_null: [tutor_overall_score]
+    assertion:
+      op: gte
+      expected: 280
+    remediation:
+      - "Need per-model data to compute effect sizes."
+    tags: [s6, model_dependence, verified]
+
+  - id: paper2.s6.model_dependence.eight_replicating_findings
+    description: "Eight findings replicate across DeepSeek and Haiku; five are model-dependent."
+    source_keys:
+      - "n|0|replicating findings count"
+    statement:
+      pattern: "eight.*replicat|8.*replicate|five.*model.dependent|5.*model.dependent"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Systematic comparison across §6.1-6.5 findings."
+    assertion:
+      op: theoretical
+      expected: "Majority of findings replicate; minority model-dependent"
+    remediation:
+      - "Recount if additional models are added."
+    tags: [s6, model_dependence, theoretical]
 
   # ── Section 5: Methodology claims ────────────────────────────
 
