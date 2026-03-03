@@ -20,6 +20,7 @@ const SESSION_ROOT = path.join(ROOT, 'tmp', 'prompt-lab');
 const PROMPTS_ENV = 'MACHINESPIRITS_PROMPTS_DIR';
 const TUTOR_CORE_ROOT = fs.realpathSync(path.join(ROOT, 'node_modules', '@machinespirits', 'tutor-core'));
 const CANONICAL_PROMPTS_DIR = path.join(TUTOR_CORE_ROOT, 'prompts');
+const DEFAULT_JUDGE = 'openrouter.gemini-flash';
 
 const args = process.argv.slice(2);
 const command = args[0] || 'help';
@@ -51,6 +52,7 @@ Options:
   --profile <name>     Eval profile (default: cell_80_messages_base_single_unified)
   --scenario <id>      Scenario id (default: mood_frustration_to_breakthrough)
   --model <ref>        Tutor model override (default: lmstudio.qwen3.5-9b)
+  --judge <ref>        Rubric judge override (default: openrouter.gemini-flash)
   --parallelism <n>    Eval parallelism for run (default: 1)
   --notes <text>       Free-form note stored with a run iteration
   --skip-rubric        Generate only; do not force rubric scoring
@@ -338,6 +340,7 @@ function printPromptFiles(session) {
   console.log(`Profile: ${session.profileName}`);
   console.log(`Scenario: ${session.scenarioId}`);
   console.log(`Model: ${session.modelRef}`);
+  console.log(`Judge: ${session.judgeRef || DEFAULT_JUDGE}`);
   console.log(`Tutor runtime profile: ${session.resolvedTutorProfileName}`);
   console.log(`Learner profile: ${session.learnerProfileName}`);
   console.log('');
@@ -382,6 +385,7 @@ async function handleInit() {
   const profileName = getOption('profile', 'cell_80_messages_base_single_unified');
   const scenarioId = getOption('scenario', 'mood_frustration_to_breakthrough');
   const modelRef = getOption('model', 'lmstudio.qwen3.5-9b');
+  const judgeRef = getOption('judge', DEFAULT_JUDGE);
   const sessionId = getOption('session') || defaultSessionId(profileName, scenarioId, modelRef);
   const force = hasFlag('force');
 
@@ -408,6 +412,7 @@ async function handleInit() {
     profileName,
     scenarioId,
     modelRef,
+    judgeRef,
     parallelism: parseInt(getOption('parallelism', '1'), 10),
     promptDir,
     resolvedTutorProfileName: blueprint.resolvedTutorProfileName,
@@ -432,6 +437,7 @@ async function handleRun() {
   const session = readJson(manifestPath);
   const scenarioId = getOption('scenario', session.scenarioId);
   const modelRef = getOption('model', session.modelRef);
+  const judgeRef = getOption('judge', session.judgeRef || DEFAULT_JUDGE);
   const parallelism = parseInt(getOption('parallelism', String(session.parallelism || 1)), 10);
   const notes = getOption('notes', null);
   const useRubric = !hasFlag('skip-rubric');
@@ -463,6 +469,8 @@ async function handleRun() {
     String(parallelism),
     '--model',
     modelRef,
+    '--judge',
+    judgeRef,
     '--description',
     description,
     useRubric ? '--use-rubric' : '--skip-rubric',
@@ -504,6 +512,7 @@ async function handleRun() {
     runId,
     scenarioId,
     modelRef,
+    judgeRef,
     usedRubric: useRubric,
     dryRun,
     notes,
@@ -515,12 +524,16 @@ async function handleRun() {
   session.updatedAt = new Date().toISOString();
   session.scenarioId = scenarioId;
   session.modelRef = modelRef;
+  session.judgeRef = judgeRef;
   session.parallelism = parallelism;
   session.iterations = [...history, entry];
   writeJson(manifestPath, session);
 
   console.log('\nIteration summary');
   console.log(`  Run ID: ${runId}`);
+  if (useRubric) {
+    console.log(`  Judge: ${judgeRef}`);
+  }
   console.log(`  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`);
   if (baseline?.summary?.primaryScore != null && summary.primaryScore != null) {
     console.log(`  Delta vs baseline: ${formatDelta(summary.primaryScore - baseline.summary.primaryScore)}`);

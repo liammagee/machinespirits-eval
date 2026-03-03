@@ -1574,6 +1574,7 @@ export async function runEvaluation(options = {}) {
     runsPerConfig = 1, // Repetitions for statistical significance
     parallelism = DEFAULT_PARALLELISM,
     skipRubricEval = false, // Skip AI-based rubric evaluation (faster)
+    judgeOverride = null, // CLI --judge override for rubric evaluation
     description = null,
     verbose = false,
     scenarioFilter = null, // Cluster filter: 'single-turn', 'multi-turn', or category names
@@ -1731,6 +1732,7 @@ export async function runEvaluation(options = {}) {
     metadata: {
       runsPerConfig,
       skipRubricEval,
+      judgeOverride: judgeOverride || null,
       modelOverride: effectiveModelOverride || null,
       tutorModelOverride: effectiveTutorModelOverride || null,
       egoModelOverride: effectiveEgoModelOverride || null,

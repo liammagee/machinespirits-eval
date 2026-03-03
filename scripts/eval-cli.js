@@ -1440,6 +1440,7 @@ async function main() {
         const allProfiles = getFlag('all-profiles');
         const allowModelMix = getFlag('allow-model-mix');
         const modelOverride = getOption('model');
+        const judgeOverride = getOption('judge');
         const tutorModelOverride = getOption('tutor-model');
         const egoModelOverride = getOption('ego-model');
         const superegoModelOverride = getOption('superego-model');
@@ -1550,6 +1551,9 @@ async function main() {
             if (egoModelOverride) console.log(`  Ego model override: ${egoModelOverride}`);
             if (superegoModelOverride) console.log(`  Superego model override: ${superegoModelOverride}`);
           }
+          if (judgeOverride) {
+            console.log(`  Judge override: ${judgeOverride}`);
+          }
           if (learnerModelOverride) {
             console.log(`  Learner model override: ${learnerModelOverride}`);
           } else if (learnerEgoModelOverride || learnerSuperegoModelOverride) {
@@ -1577,6 +1581,7 @@ async function main() {
           verbose,
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
+          judgeOverride: judgeOverride || null,
           tutorModelOverride: tutorModelOverride || null,
           egoModelOverride: egoModelOverride || null,
           superegoModelOverride: superegoModelOverride || null,
