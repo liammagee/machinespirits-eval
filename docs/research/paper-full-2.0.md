@@ -1,8 +1,5 @@
 ---
-title: |
-  *Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
-
-  Mechanisms of Recognition-Enhanced AI Tutoring
+title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
 version: "3.0.0"
@@ -16,7 +13,7 @@ header-includes: |
   \floatplacement{figure}{H}
 ---
 
-# *Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring --- Mechanisms of Recognition-Enhanced AI Tutoring
+# *Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring
 
 ## Abstract
 
