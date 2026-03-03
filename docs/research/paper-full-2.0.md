@@ -20,13 +20,13 @@ header-includes: |
 
 ## Abstract
 
-A companion pilot study established that recognition-enhanced prompts and multiagent architecture produce large effects on AI tutoring quality (d=1.11 in a 2$\times$2$\times$2 factorial, N=4,312). This paper asks: *through what mechanisms?*
+A companion pilot study established that recognition-enhanced prompts and multiagent architecture produce large effects on AI tutoring quality (d=1.11 in a $2 \times 2 \times 2$ factorial, N=4,312). This paper asks: *through what mechanisms?*
 
 We derive three separable mechanisms from Hegel's recognition theory, each at a distinct architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique), and **adaptive responsiveness** (interaction-level turn-by-turn adaptation). To trace these mechanisms, we adapt process tracing---a methodology from comparative politics---for AI agent architectures, combining superego critique taxonomy, revision delta analysis, and trajectory analysis within a provable discourse framework that machine-verifies every mechanism claim against data.
 
-Testing the model on a 2$\times$2 factorial (recognition $\times$ architecture) across two structurally different models (DeepSeek V3.2, N=146; Haiku 4.5, N=163), we find that calibration is the dominant mechanism: recognition narrows within-response dimension variance (d=0.52--0.64), lifts the weakest dimensions most, and operates identically without a superego. Error correction and calibration interact through *substitution*, not synergy---the superego provides +9--15 points under baseline but collapses to near-zero under recognition ($\sim$15\% additivity deficit), because calibration pre-empts the errors the superego would catch. Adaptive responsiveness is real (cross-turn adaptation $>$0.79) but not recognition-specific: tutor development slopes are identical across conditions (d=$-$0.00), with trajectories model-dependent rather than prompt-dependent.
+Testing the model on a $2 \times 2$ factorial (recognition $\times$ architecture) across two structurally different models (DeepSeek V3.2, N=146; Haiku 4.5, N=163), we find that calibration is the dominant mechanism: recognition narrows within-response dimension variance (d=0.52--0.64), lifts the weakest dimensions most, and operates identically without a superego. Error correction and calibration interact through *substitution*, not synergy---the superego provides +9--15 points under baseline but collapses to near-zero under recognition ($\sim$15\% additivity deficit), because calibration pre-empts the errors the superego would catch. Adaptive responsiveness is real (cross-turn adaptation $>$0.79) but not recognition-specific: tutor development slopes are identical across conditions ($d = -0.00$), with trajectories model-dependent rather than prompt-dependent.
 
-All three mechanisms operate on tutor production, producing a tutor effect 7--12$\times$ larger than the learner effect (tutor d$\approx$1.85, learner d$\approx$0.16--0.25)---a structural property of the mechanism model, not a measurement artifact. Eight of thirteen findings replicate across both models with near-identical effect sizes (recognition d=1.88 vs 1.84); five are model-dependent in magnitude but not direction. A distinctive contribution is the evaluation apparatus itself---provable discourse infrastructure, four rubric iterations, test suite as analytical provenance---as a transferable methodology for mechanistic LLM evaluation.
+All three mechanisms operate on tutor production, producing a tutor effect $7$--$12\times$ larger than the learner effect (tutor $d \approx 1.85$, learner $d \approx 0.16$--$0.25$)---a structural property of the mechanism model, not a measurement artifact. Eight of thirteen findings replicate across both models with near-identical effect sizes (recognition d=1.88 vs 1.84); five are model-dependent in magnitude but not direction. A distinctive contribution is the evaluation apparatus itself---provable discourse infrastructure, four rubric iterations, test suite as analytical provenance---as a transferable methodology for mechanistic LLM evaluation.
 
 ## 1. Introduction
 
@@ -62,11 +62,11 @@ This paper argues that recognition-enhanced prompts and multiagent architecture 
 
 1. **Calibration** (prompt-level). Recognition prompts narrow the tutor's output distribution, producing more uniform quality rather than higher peaks. The pilot study found dimension variance reduction in 52/55 within-run comparisons (d=-0.47 to d=-1.00 depending on analysis scope), the single most reliable recognition signal. Calibration operates even without a superego, because it is a prompt-level constraint on the response space.
 
-2. **Error correction** (architecture-level). The superego functions as a structural feedback channel, but its effectiveness depends on the quality of the ego's initial output. The pilot study found a 35.9-point recognition$\times$architecture interaction (Paper 1.0 Section 6.3). The mechanism data (Section 6.2, Section 6.4) reveals this as a *substitution* interaction: the superego provides substantial benefit under baseline conditions (+9--15 points), catching errors the ego cannot self-correct, but this benefit collapses to near-zero under recognition because calibration pre-empts the failures the superego would catch. The superego approval rate shifts dramatically under recognition (DeepSeek: 13%$\to$55%; Haiku: 52%$\to$66%), confirming that a calibrated ego produces fewer errors for the superego to correct.
+2. **Error correction** (architecture-level). The superego functions as a structural feedback channel, but its effectiveness depends on the quality of the ego's initial output. The pilot study found a 35.9-point recognition $\times$ architecture interaction (Paper 1.0 Section 6.3). The mechanism data (Section 6.2, Section 6.4) reveals this as a *substitution* interaction: the superego provides substantial benefit under baseline conditions (+9--15 points), catching errors the ego cannot self-correct, but this benefit collapses to near-zero under recognition because calibration pre-empts the failures the superego would catch. The superego approval rate shifts dramatically under recognition (DeepSeek: 13%$\to$55%; Haiku: 52%$\to$66%), confirming that a calibrated ego produces fewer errors for the superego to correct.
 
 3. **Adaptive responsiveness** (interaction-level). In multi-turn conversations, both recognition and baseline tutors adapt substantially to learner signals (cross-turn adaptation magnitude AdaptΔ > 0.79). Recognition does not steepen the adaptation rate (tutor slope d = -0.00) but raises the *level* at which adaptation occurs and produces more *consistent* adaptation (lower variance). Development trajectories are model-dependent rather than prompt-dependent: Haiku shows consistent positive development across all conditions, while DeepSeek shows mixed patterns (Section 6.3). The mechanism is better characterized as *model-dependent adaptation at a recognition-determined baseline* rather than recognition-enhanced adaptation.
 
-These mechanisms are separable: calibration is a prompt-level effect (operative from the first turn), error correction is an architecture-level effect (operative within each turn), and adaptive responsiveness is an interaction-level property (operative across turns). Calibration and error correction interact through substitution (overlapping targets, ~15% additivity deficit), while calibration and adaptive responsiveness are independent (slopes do not depend on levels). Crucially, all three operate on tutor *production* rather than learner *reception*---recognition produces a tutor effect 7--12$\times$ larger than its learner effect (tutor d $\approx$ 1.85, learner d $\approx$ 0.16--0.25), explaining the tutor-learner asymmetry as a structural property of the architecture, not a measurement artifact (Section 6.5).
+These mechanisms are separable: calibration is a prompt-level effect (operative from the first turn), error correction is an architecture-level effect (operative within each turn), and adaptive responsiveness is an interaction-level property (operative across turns). Calibration and error correction interact through substitution (overlapping targets, ~15% additivity deficit), while calibration and adaptive responsiveness are independent (slopes do not depend on levels). Crucially, all three operate on tutor *production* rather than learner *reception*---recognition produces a tutor effect $7$--$12\times$ larger than its learner effect (tutor d $\approx$ 1.85, learner d $\approx$ 0.16--0.25), explaining the tutor-learner asymmetry as a structural property of the architecture, not a measurement artifact (Section 6.5).
 
 ### Process tracing methodology
 
@@ -386,7 +386,7 @@ The scoring pipeline is symmetric across tutor and learner, with rubric-versione
 
 ### 4.6 Factorial Design as Mechanism Isolation
 
-The 2$\times$2$\times$2 factorial design (Recognition $\times$ Tutor Architecture $\times$ Learner Architecture) maps directly to the three mechanism predictions derived in Section 3:
+The $2 \times 2 \times 2$ factorial design (Recognition $\times$ Tutor Architecture $\times$ Learner Architecture) maps directly to the three mechanism predictions derived in Section 3:
 
 | Comparison | Mechanism Tested | What It Isolates |
 |------------|-----------------|------------------|
@@ -628,7 +628,7 @@ This provides a mechanistic explanation of the Haiku/Kimi reversal: if Kimi fail
 
 #### Existing Infrastructure
 
-The provable discourse framework tracks empirical claims as structured YAML entries with automated evidence adapters (`config/provable-discourse.yaml`, `services/provableDiscourse.js`). Paper 1.0 used 8 adapter types covering N-counts, effect sizes, profile-group comparisons, 2$\times$2 ANOVA, judge-pair correlations, and log-trace coverage.
+The provable discourse framework tracks empirical claims as structured YAML entries with automated evidence adapters (`config/provable-discourse.yaml`, `services/provableDiscourse.js`). Paper 1.0 used 8 adapter types covering N-counts, effect sizes, profile-group comparisons, $2 \times 2$ ANOVA, judge-pair correlations, and log-trace coverage.
 
 #### Extension for Mechanistic Claims
 
@@ -823,7 +823,7 @@ The floor-lifting pattern replicates: in both models, `elicitation_quality` and 
 | Recognition floor (single) | 21.9 | 60.6 |
 | Recognition floor (multi) | 24.0 | 54.7 |
 
-Both models show floor elevation under recognition. Haiku starts from a much higher baseline (its base floor is already ~30--40), but recognition still raises the floor further. The *relative* floor shift is larger for DeepSeek (4$\times$ increase) than for Haiku (2$\times$ increase), consistent with the interpretation that calibration provides more benefit to weaker models that are more prone to catastrophic failures.
+Both models show floor elevation under recognition. Haiku starts from a much higher baseline (its base floor is already ~30--40), but recognition still raises the floor further. The *relative* floor shift is larger for DeepSeek ($4\times$ increase) than for Haiku ($2\times$ increase), consistent with the interpretation that calibration provides more benefit to weaker models that are more prone to catastrophic failures.
 
 **Scenario-dependent calibration replicates:**
 
@@ -1098,11 +1098,11 @@ Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not 
 
 ### 6.4 Mechanism Interaction
 
-The preceding sections established three separable mechanisms: calibration (Section 6.1, prompt-level), error correction (Section 6.2, architecture-level), and adaptive responsiveness (Section 6.3, interaction-level). This section examines how they interact within the 2$\times$2 factorial design, testing the Section 3 prediction that the mechanisms are separable but non-independent.
+The preceding sections established three separable mechanisms: calibration (Section 6.1, prompt-level), error correction (Section 6.2, architecture-level), and adaptive responsiveness (Section 6.3, interaction-level). This section examines how they interact within the $2 \times 2$ factorial design, testing the Section 3 prediction that the mechanisms are separable but non-independent.
 
 #### 6.4.1 The Factorial Interaction
 
-The 2$\times$2 factorial (recognition $\times$ architecture) permits decomposition of the total recognition effect into prompt-level and architecture-level components. Table Z reports the full factorial for both models:
+The $2 \times 2$ factorial (recognition $\times$ architecture) permits decomposition of the total recognition effect into prompt-level and architecture-level components. Table Z reports the full factorial for both models:
 
 **DeepSeek V3.2 (N=146):**
 
@@ -1226,7 +1226,7 @@ Three structural factors predict the asymmetry:
 
 #### 6.5.3 Learner Scores Across Conditions
 
-Breaking down learner scores by the full 2$\times$2 factorial reveals the architecture interaction on the learner side:
+Breaking down learner scores by the full $2 \times 2$ factorial reveals the architecture interaction on the learner side:
 
 | Model | Condition | Tutor Score | Learner Score | Dialogue Quality |
 |---|---|---|---|---|
@@ -1361,7 +1361,7 @@ The messages-mode data provides further evidence. Pooled across both models (N=2
 
 ### 7.3 Architecture as Additive, Not Synergistic
 
-The multi-model probe (N=655, five ego models) showed that multiagent architecture does not synergize with recognition: the A$\times$B interaction is negative across all five models (mean -2.2). The mechanism model explains this: error correction (Mechanism 2) provides a consistent but bounded benefit---catching errors and improving specificity---that does not multiply with calibration (Mechanism 1). A calibrated ego generates fewer errors for the superego to catch, so the superego's marginal value is lower when calibration is already operating.
+The multi-model probe (N=655, five ego models) showed that multiagent architecture does not synergize with recognition: the $A \times B$ interaction is negative across all five models (mean -2.2). The mechanism model explains this: error correction (Mechanism 2) provides a consistent but bounded benefit---catching errors and improving specificity---that does not multiply with calibration (Mechanism 1). A calibrated ego generates fewer errors for the superego to catch, so the superego's marginal value is lower when calibration is already operating.
 
 The dialectical modulation experiments (N=174) provide supporting evidence: structural modulation metrics (negation depth, convergence speed) do not predict output quality (all $|r| < 0.12$, n.s.). The superego functions as a *filter* (preventing poor responses) rather than an *improver* (iteratively refining good ones). Recognition raises the quality of the ego's initial draft; the superego has less to filter. This is additive by construction: a floor from error correction plus a level-shift from calibration.
 
@@ -1392,7 +1392,7 @@ Three examples illustrate the pattern. The active control reframing (February 6)
 
 The provable discourse framework treats paper claims as executable tests. Every quantitative claim has a statement pattern (regex matching paper text), evidence (an executable extractor: DB counts, effect sizes, ANOVA), an assertion (machine-checkable predicate), and remediation steps (concrete fixes when failing). Symmetry rules enforce cross-claim consistency; staleness fingerprints detect when data changes but claims do not.
 
-The framework currently tracks claims across multiple YAML files (count is dynamic as Paper 2.0 claims accumulate). Eight evidence adapter types connect claims to data: manifest totals, DB counts, effect sizes, profile-group comparisons, 2$\times$2 ANOVA, judge-pair correlations, log-trace coverage, and critique statistics. Paper 2.0 extends this with four mechanism-specific adapters: superego taxonomy frequency (counting critique categories by condition), revision delta (computing ego-to-revised-ego text changes), trajectory slope (per-turn score regression), and conditional response (score changes after specific learner events).
+The framework currently tracks claims across multiple YAML files (count is dynamic as Paper 2.0 claims accumulate). Eight evidence adapter types connect claims to data: manifest totals, DB counts, effect sizes, profile-group comparisons, $2 \times 2$ ANOVA, judge-pair correlations, log-trace coverage, and critique statistics. Paper 2.0 extends this with four mechanism-specific adapters: superego taxonomy frequency (counting critique categories by condition), revision delta (computing ego-to-revised-ego text changes), trajectory slope (per-turn score regression), and conditional response (score changes after specific learner events).
 
 This infrastructure goes beyond "publish your code." It publishes the *contract between claims and evidence*, making it machine-verifiable that the paper says what the data shows. Any researcher building an LLM-based educational system could adopt the pattern: write claims as structured YAML with evidence extractors, run the validation harness after each data update, and let staleness fingerprints catch when findings drift from data.
 
