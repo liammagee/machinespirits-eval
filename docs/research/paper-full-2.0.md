@@ -850,6 +850,8 @@ The calibration mechanism predictions from Section 3 are assessed as follows:
 
 **Pilot replication.** The pilot study (N=350, cells 1--8) found dimension variance drops in 52/55 within-run comparisons. The messages-mode data confirms the same pattern under multi-turn conversation with the v2.2 rubric, different ego models (DeepSeek V3.2, Haiku 4.5 vs. pilot-era Nemotron/Kimi), and a different judge (claude-code/sonnet vs. claude-opus). The calibration effect replicates across model, rubric version, and conversation mode.
 
+![Tutor language word clouds by condition. Recognition-condition tutors foreground Hegelian recognition-theoretic vocabulary (recognition, consciousness, transformation, servant), while base-condition tutors use more generic pedagogical language.](figures/figure-word-clouds.png){#fig:word-clouds}
+
 **Cross-model calibration (H5).** Calibration replicates from DeepSeek V3.2 to Haiku 4.5 on all tested indicators. The calibration effect size is *larger* in Haiku (d=0.64 vs. 0.52), despite Haiku operating at a much higher baseline. This is consistent with calibration being a prompt-level mechanism independent of model capability, though the higher Haiku effect size may also reflect better instruction-following by Haiku 4.5.
 
 **Key distinction.** Calibration is not quality improvement. The mean score rises substantially under recognition (DeepSeek +23.7, Haiku +19.1), but this is better understood as *floor elimination* than *ceiling raising*. DeepSeek base conditions produce scores from 5 to 61; recognition conditions produce scores from 22 to 74. Haiku base conditions produce scores from 28 to 87; recognition conditions produce scores from 55 to 94. In both models, the ceiling rises modestly while the floor rises dramatically. A calibrated tutor does not produce brilliant responses --- it produces *reliably adequate* ones by engaging with the specific learner rather than deploying generic approaches.
@@ -898,6 +900,8 @@ Three patterns emerge. First, the *total volume* of critiques drops dramatically
 Second, the *composition* of remaining critiques shifts. Under base, the superego catches a broad mix of failures --- vagueness (15.6%), elicitation quality (16.2%), recognition failure (29.3%), and context awareness (18.4%). Under recognition, the "easy" errors (vagueness, elicitation, content accuracy) shrink to under 10%, while the remaining critiques concentrate on context awareness (31.8%) and recognition failure (30.1%). The recognition prompt handles the pedagogical basics; what remains are the harder, more context-dependent failures that require attending to the specific learner's history and trajectory.
 
 Third, the *struggle preservation* category increases proportionally under recognition (DeepSeek: 5.2%$\to$9.3%), despite its absolute count dropping. This suggests that recognition prompts, while effective at ensuring the tutor engages with the learner, can over-engage --- giving too much scaffolding rather than maintaining productive difficulty. The superego's residual value lies partly in enforcing struggle even when the ego's recognition-enhanced response is otherwise adequate.
+
+![Qualitative tag divergence between base and recognition conditions. Recognition-dominant tags (green) show increased productive impasse, recognition moments, and strategy shifts; base-dominant tags (red) show more premature learner breakthroughs and missed scaffolding.](figures/figure-qualitative-tags.png){#fig:qualitative-tags}
 
 #### 6.2.3 Deliberation Quality: From Substantive to Perfunctory
 
@@ -1254,6 +1258,8 @@ Neither tutor nor learner slopes differ significantly between conditions. The le
 The tutor-learner asymmetry has a specific theoretical implication: recognition theory, as implemented through prompt engineering, operates as a *production* theory rather than a *learning* theory. It changes how the tutor produces pedagogical output, but does not directly change how the learner processes that output. This is consistent with the Hegelian framework: recognition is an *orientation toward* the other, not a transformation *of* the other. The tutor recognizes the learner; the learner does not thereby learn more.
 
 Whether better tutoring would produce better learning in human learners (rather than synthetic LLM learners) remains an open question. The synthetic learner's quality is bounded by its model and prompt; a human learner might benefit more from recognition-calibrated tutoring. This limitation is addressed in Section 8.
+
+![Transcript comparison: base vs recognition condition on the same scenario. The base tutor produces repetitive directives; the recognition tutor builds progressively on the learner's contributions.](figures/figure-transcript-comparison.png){#fig:transcript-comparison}
 
 ### 6.6 Model Dependence
 
