@@ -42,6 +42,7 @@ function usage() {
 
 Usage:
   node scripts/prompt-lab.js init [options]
+  node scripts/prompt-lab.js fork [options]
   node scripts/prompt-lab.js run [options]
   node scripts/prompt-lab.js status [options]
   node scripts/prompt-lab.js recommend [options]
@@ -50,6 +51,7 @@ Usage:
 
 Commands:
   init       Create an isolated prompt-override session from an existing eval cell
+  fork       Create a new session from another session's current/best/latest/iteration prompts
   run        Run one fixed eval using the session's prompt override directory
   status     Show prompt files, scored iterations, and recommendations for a session
   recommend  Ask a recommender model for prompt revisions based on a scored iteration
@@ -58,6 +60,7 @@ Commands:
 
 Shared Options:
   --session <id>         Session name (default: latest for run/status/recommend/autotune/diff)
+  --new-session <id>     For fork: destination session name
   --profile <name>       Eval profile (default: cell_80_messages_base_single_unified)
   --scenario <id>        Scenario id (default: mood_frustration_to_breakthrough)
   --model <ref>          Tutor model override (default: lmstudio.qwen3.5-9b)
@@ -73,6 +76,10 @@ Recommend/Autotune:
   --apply                For recommend: apply the proposed prompt rewrite to the working prompt dir
   --iterations <n>       For autotune: number of recommendation/eval passes (default: 3)
   --keep-worse           For autotune: keep working prompts even if a candidate scores worse
+
+Fork:
+  --from <current|baseline|best|latest|N>
+                         Which prompt state to branch from (default: current)
 
 Diff:
   --from <baseline|current|best|latest|N>
@@ -1071,6 +1078,13 @@ function runNoIndexDiff(oldPath, newPath) {
 
 function printPromptFiles(session) {
   console.log(`Session: ${session.sessionId}`);
+  if (session.forkedFrom?.sessionId) {
+    const sourceLabel =
+      session.forkedFrom.sourceIteration != null
+        ? `${session.forkedFrom.sessionId} (${session.forkedFrom.fromSpec} -> iter ${session.forkedFrom.sourceIteration})`
+        : `${session.forkedFrom.sessionId} (${session.forkedFrom.fromSpec})`;
+    console.log(`Forked from: ${sourceLabel}`);
+  }
   console.log(`Prompt override dir: ${session.promptDir}`);
   console.log(`Baseline prompt dir: ${session.baselineDir}`);
   console.log(`Profile: ${session.profileName}`);
@@ -1412,6 +1426,62 @@ async function handleInit() {
   console.log(`  3. Or ask for a model rewrite: node scripts/prompt-lab.js recommend --session ${sessionId}`);
 }
 
+async function handleFork() {
+  const sourceSession = loadSession(resolveSessionId());
+  const fromSpec = getOption('from', 'current');
+  const resolvedIteration = ['current', 'baseline'].includes(fromSpec) ? null : resolveIterationSpec(sourceSession, fromSpec);
+  const defaultForkName = slugify(`${sourceSession.sessionId}-${fromSpec}-${timestampTag()}`);
+  const sessionId = getOption('new-session', defaultForkName);
+  const force = hasFlag('force');
+
+  const sourcePromptDir = resolvePromptDirSpec(sourceSession, fromSpec);
+  const dir = sessionDir(sessionId);
+  if (fs.existsSync(dir) && !force) {
+    throw new Error(`Session already exists: ${sessionId}. Use --force to overwrite it.`);
+  }
+
+  fs.rmSync(dir, { recursive: true, force: true });
+  ensureDir(dir);
+  ensureDir(path.join(dir, 'prompts'));
+  ensureDir(baselinePromptsDir(sessionId));
+  ensureDir(recommendationsDir(sessionId));
+  ensureDir(snapshotsDir(sessionId));
+
+  copyPromptDir(sourcePromptDir, path.join(dir, 'prompts'), sourceSession.promptFiles);
+  copyPromptDir(sourcePromptDir, baselinePromptsDir(sessionId), sourceSession.promptFiles);
+
+  const session = {
+    sessionId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    profileName: sourceSession.profileName,
+    scenarioId: getOption('scenario', sourceSession.scenarioId),
+    modelRef: getOption('model', sourceSession.modelRef),
+    judgeRef: getOption('judge', sourceSession.judgeRef || DEFAULT_JUDGE),
+    parallelism: parseInt(getOption('parallelism', String(sourceSession.parallelism || 1)), 10),
+    promptDir: path.join(dir, 'prompts'),
+    baselineDir: baselinePromptsDir(sessionId),
+    resolvedTutorProfileName: sourceSession.resolvedTutorProfileName,
+    learnerProfileName: sourceSession.learnerProfileName,
+    promptFiles: sourceSession.promptFiles,
+    iterations: [],
+    recommendations: [],
+    forkedFrom: {
+      sessionId: sourceSession.sessionId,
+      fromSpec,
+      sourceIteration: resolvedIteration?.iteration ?? null,
+      sourceRunId: resolvedIteration?.runId ?? null,
+      sourcePromptDir,
+    },
+  };
+
+  saveSession(session);
+  printPromptFiles(session);
+  console.log('\nNext steps:');
+  console.log(`  1. Score the fork baseline: node scripts/prompt-lab.js run --session ${sessionId}`);
+  console.log(`  2. Or branch-autotune immediately: node scripts/prompt-lab.js autotune --session ${sessionId}`);
+}
+
 async function handleRun() {
   const session = loadSession(resolveSessionId());
   await runSessionIteration(session, {
@@ -1635,6 +1705,9 @@ async function main() {
   switch (command) {
     case 'init':
       await handleInit();
+      return;
+    case 'fork':
+      await handleFork();
       return;
     case 'run':
       await handleRun();

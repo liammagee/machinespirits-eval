@@ -1693,15 +1693,29 @@ export function autoCompleteStaleRuns(options = {}) {
  * Delete a run and its results
  */
 export function deleteRun(runId) {
+  const deleteAudit = db.prepare(`
+    DELETE FROM score_audit
+    WHERE result_id IN (SELECT id FROM evaluation_results WHERE run_id = ?)
+  `);
   const deleteResults = db.prepare('DELETE FROM evaluation_results WHERE run_id = ?');
+  const deleteInteractionEvals = db.prepare('DELETE FROM interaction_evaluations WHERE run_id = ?');
   const deleteRun = db.prepare('DELETE FROM evaluation_runs WHERE id = ?');
 
   const transaction = db.transaction(() => {
-    deleteResults.run(runId);
-    deleteRun.run(runId);
+    const auditInfo = deleteAudit.run(runId);
+    const resultsInfo = deleteResults.run(runId);
+    const interactionInfo = deleteInteractionEvals.run(runId);
+    const runInfo = deleteRun.run(runId);
+
+    return {
+      deletedAuditRows: auditInfo.changes,
+      deletedResults: resultsInfo.changes,
+      deletedInteractionEvals: interactionInfo.changes,
+      deletedRuns: runInfo.changes,
+    };
   });
 
-  transaction();
+  return transaction();
 }
 
 /**
