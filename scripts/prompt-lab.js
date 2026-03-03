@@ -500,25 +500,92 @@ function summarizeRun(runId, profileName, scenarioId) {
 }
 
 function parseJsonResponse(text) {
-  let candidate = String(text || '').trim();
-  if (!candidate) throw new Error('Empty structured response');
+  const raw = String(text || '').trim();
+  if (!raw) throw new Error('Empty structured response');
 
-  const fenced = candidate.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fenced) {
-    candidate = fenced[1].trim();
-  } else {
-    const firstBrace = candidate.indexOf('{');
-    const lastBrace = candidate.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      candidate = candidate.slice(firstBrace, lastBrace + 1);
+  const sources = [];
+  const fencedMatches = [...raw.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+  for (const match of fencedMatches) {
+    if (match[1]?.trim()) sources.push(match[1].trim());
+  }
+  sources.push(raw);
+
+  const candidates = [];
+  const seen = new Set();
+
+  const pushCandidate = (value) => {
+    const candidate = String(value || '').trim();
+    if (!candidate || seen.has(candidate)) return;
+    seen.add(candidate);
+    candidates.push(candidate);
+  };
+
+  const extractBalancedObjects = (value) => {
+    const found = [];
+    let depth = 0;
+    let start = -1;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < value.length; i++) {
+      const ch = value[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\' && inString) {
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+
+      if (ch === '{') {
+        if (depth === 0) start = i;
+        depth += 1;
+      } else if (ch === '}') {
+        if (depth === 0) continue;
+        depth -= 1;
+        if (depth === 0 && start !== -1) {
+          found.push(value.slice(start, i + 1));
+          start = -1;
+        }
+      }
+    }
+
+    return found;
+  };
+
+  for (const source of sources) {
+    pushCandidate(source);
+    for (const objectCandidate of extractBalancedObjects(source)) {
+      pushCandidate(objectCandidate);
     }
   }
 
-  try {
-    return JSON.parse(candidate);
-  } catch {
-    return JSON.parse(jsonrepair(candidate));
+  const errors = [];
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch (error) {
+      errors.push(`JSON.parse: ${error.message}`);
+    }
+
+    try {
+      return JSON.parse(jsonrepair(candidate));
+    } catch (error) {
+      errors.push(`jsonrepair: ${error.message}`);
+    }
   }
+
+  const preview = raw.slice(0, 300).replace(/\s+/g, ' ');
+  throw new Error(
+    `Could not parse recommender response as JSON. Tried ${candidates.length} candidate(s). ${errors[errors.length - 1] || ''} Raw preview: ${preview}`,
+  );
 }
 
 function resolveRecommenderConfig(modelRefOverride = null) {
@@ -553,10 +620,21 @@ async function callRecommenderJson(systemPrompt, userPrompt, modelRefOverride = 
     },
   });
 
-  const parsed = parseJsonResponse(response.content || '');
+  const rawText = response.content || '';
+  let parsed;
+  try {
+    parsed = parseJsonResponse(rawText);
+  } catch (error) {
+    const wrapped = new Error(`Could not parse recommender output as JSON: ${error.message}`);
+    wrapped.rawText = rawText;
+    wrapped.recommenderRef = config.modelRef;
+    wrapped.recommenderModel = response.model || config.model;
+    throw wrapped;
+  }
+
   return {
     parsed,
-    rawText: response.content || '',
+    rawText,
     recommenderRef: config.modelRef,
     recommenderModel: response.model || config.model,
     usage: response.usage || null,
@@ -743,7 +821,19 @@ async function generateRecommendation(session, options = {}) {
 
   const payload = dryRun
     ? createMockRecommendation(session, basisIteration, promptState, recommenderRef)
-    : await callRecommenderJson(promptRequest.systemPrompt, promptRequest.userPrompt, recommenderRef);
+    : await (async () => {
+        try {
+          return await callRecommenderJson(promptRequest.systemPrompt, promptRequest.userPrompt, recommenderRef);
+        } catch (error) {
+          if (error.rawText) {
+            ensureDir(recommendationsDir(session.sessionId));
+            const debugPath = path.join(recommendationsDir(session.sessionId), `${recommendationId}-parse-error.txt`);
+            fs.writeFileSync(debugPath, error.rawText, 'utf8');
+            throw new Error(`${error.message}. Raw response saved to ${debugPath}`);
+          }
+          throw error;
+        }
+      })();
 
   const normalized = normalizeRecommendation(session, payload);
   const changedFiles = normalized.promptUpdates.filter((update) => {
