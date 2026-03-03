@@ -317,6 +317,105 @@ function getPromptHashesFromDir(dir, promptFiles) {
   return hashes;
 }
 
+function extractMarkdownHeadings(content) {
+  return [...String(content || '').matchAll(/^#{1,6}\s+.+$/gm)].map((match) => match[0].trim());
+}
+
+function countCodeFences(content) {
+  return (String(content || '').match(/```/g) || []).length;
+}
+
+function analyzeSectionTags(content) {
+  const text = String(content || '');
+  const regex = /^\s*<\/?([a-z_][a-z0-9_-]*)>\s*$/gim;
+  const openCounts = new Map();
+  const closeCounts = new Map();
+
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    const full = match[0];
+    const tag = match[1];
+    if (full.startsWith('</')) {
+      closeCounts.set(tag, (closeCounts.get(tag) || 0) + 1);
+    } else {
+      openCounts.set(tag, (openCounts.get(tag) || 0) + 1);
+    }
+  }
+
+  const tagNames = new Set([...openCounts.keys(), ...closeCounts.keys()]);
+  const imbalanced = [];
+  for (const tag of tagNames) {
+    const openCount = openCounts.get(tag) || 0;
+    const closeCount = closeCounts.get(tag) || 0;
+    if (openCount !== closeCount) {
+      imbalanced.push({ tag, openCount, closeCount });
+    }
+  }
+
+  return { openCounts, closeCounts, tagNames, imbalanced };
+}
+
+function getLastNonEmptyLine(content) {
+  const lines = String(content || '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return lines.length > 0 ? lines[lines.length - 1] : '';
+}
+
+function validatePromptCandidate(prompt, candidateContent, referenceContent) {
+  const candidate = normalizePromptContent(candidateContent);
+  const reference = normalizePromptContent(referenceContent);
+  const issues = [];
+
+  if (!candidate.trim()) {
+    issues.push('candidate is empty');
+  }
+
+  const candidateFenceCount = countCodeFences(candidate);
+  if (candidateFenceCount % 2 !== 0) {
+    issues.push(`contains an unmatched code fence (${candidateFenceCount} total fences)`);
+  }
+
+  const candidateTags = analyzeSectionTags(candidate);
+  for (const imbalance of candidateTags.imbalanced) {
+    issues.push(
+      `has imbalanced <${imbalance.tag}> tags (${imbalance.openCount} open / ${imbalance.closeCount} close)`,
+    );
+  }
+
+  const referenceHeadings = extractMarkdownHeadings(reference);
+  const candidateHeadingSet = new Set(extractMarkdownHeadings(candidate));
+  const missingHeadings = referenceHeadings.filter((heading) => !candidateHeadingSet.has(heading));
+  if (missingHeadings.length > 0) {
+    issues.push(`is missing required headings: ${missingHeadings.slice(0, 4).join(', ')}`);
+  }
+
+  const referenceTags = analyzeSectionTags(reference);
+  const missingTags = [...referenceTags.tagNames].filter((tag) => !candidateTags.tagNames.has(tag));
+  if (missingTags.length > 0) {
+    issues.push(`is missing required section tags: ${missingTags.slice(0, 6).map((tag) => `<${tag}>`).join(', ')}`);
+  }
+
+  const referenceLastLine = getLastNonEmptyLine(reference);
+  const candidateLastLine = getLastNonEmptyLine(candidate);
+  if (/^<\/[a-z_][a-z0-9_-]*>$/.test(referenceLastLine) && candidateLastLine !== referenceLastLine) {
+    issues.push(`does not end with required closing tag ${referenceLastLine}`);
+  }
+
+  if (candidate.length < reference.length * 0.7) {
+    issues.push(`is suspiciously short (${candidate.length} chars vs ${reference.length} chars in current prompt)`);
+  }
+
+  return {
+    filename: prompt.filename,
+    ok: issues.length === 0,
+    issues,
+    referenceLength: reference.length,
+    candidateLength: candidate.length,
+  };
+}
+
 function getScoredIterations(session) {
   return (session.iterations || []).filter((entry) => entry.summary?.primaryScore != null);
 }
@@ -787,6 +886,17 @@ function normalizeRecommendation(session, payload) {
   };
 }
 
+function validateRecommendationPromptUpdates(session, promptState, normalized) {
+  const validations = normalized.promptUpdates.map((update) => {
+    const prompt = session.promptFiles.find((item) => item.filename === update.filename);
+    const referenceContent = promptState[update.filename]?.content || '';
+    return validatePromptCandidate(prompt || { filename: update.filename }, update.content, referenceContent);
+  });
+
+  const invalid = validations.filter((item) => !item.ok);
+  return { validations, invalid };
+}
+
 function saveRecommendationArtifact(session, artifact) {
   ensureDir(recommendationsDir(session.sessionId));
   writeJson(recommendationFile(session.sessionId, artifact.id), artifact);
@@ -840,6 +950,7 @@ async function generateRecommendation(session, options = {}) {
     const current = promptState[update.filename]?.content || '';
     return normalizePromptContent(current) !== normalizePromptContent(update.content);
   });
+  const validation = validateRecommendationPromptUpdates(session, promptState, normalized);
 
   const artifact = {
     id: recommendationId,
@@ -862,6 +973,7 @@ async function generateRecommendation(session, options = {}) {
       content: update.content,
     })),
     changedFiles: changedFiles.map((update) => update.filename),
+    promptValidation: validation.validations,
     rawResponse: payload.rawText,
   };
 
@@ -877,10 +989,21 @@ async function generateRecommendation(session, options = {}) {
     changedFiles: artifact.changedFiles,
     appliedToWorkingDir: false,
     evaluationIteration: null,
-    accepted: null,
-    artifactPath: recommendationFile(session.sessionId, artifact.id),
-    summary: artifact.summary,
-  });
+      accepted: null,
+      artifactPath: recommendationFile(session.sessionId, artifact.id),
+      summary: artifact.summary,
+      validationPassed: validation.invalid.length === 0,
+    });
+
+  if (validation.invalid.length > 0) {
+    const details = validation.invalid
+      .map((item) => `${item.filename}: ${item.issues.join('; ')}`)
+      .join(' | ');
+    saveSession(session);
+    throw new Error(
+      `Recommendation ${artifact.id} failed prompt validation and was not applied: ${details}. Artifact: ${recommendationFile(session.sessionId, artifact.id)}`,
+    );
+  }
 
   if (apply) {
     applyRecommendationToWorkingPrompts(session, artifact);
@@ -969,6 +1092,40 @@ function formatDelta(value) {
   return `${sign}${value.toFixed(1)}`;
 }
 
+function formatDuration(ms) {
+  if (ms == null) return 'n/a';
+  if (ms < 1000) return `${ms}ms`;
+
+  const totalSeconds = ms / 1000;
+  if (totalSeconds < 60) return `${totalSeconds.toFixed(1)}s`;
+
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  const seconds = Math.round(totalSeconds % 60);
+  if (totalMinutes < 60) return `${totalMinutes}m ${String(seconds).padStart(2, '0')}s`;
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+}
+
+function printAutotuneSessionSummary(session, options = {}) {
+  const { rounds, basisMode, recommenderRef, keepWorse, dryRun } = options;
+  console.log('Autotune session');
+  console.log(`  Session: ${session.sessionId}`);
+  console.log(`  Profile: ${session.profileName}`);
+  console.log(`  Scenario: ${session.scenarioId}`);
+  console.log(`  Tutor model: ${session.modelRef}`);
+  console.log(`  Judge: ${session.judgeRef || DEFAULT_JUDGE}`);
+  console.log(`  Recommender: ${recommenderRef || resolveRecommenderConfig().modelRef}`);
+  console.log(`  Basis selection: ${basisMode}`);
+  console.log(`  Planned passes: ${rounds}`);
+  console.log(`  Parallelism: ${session.parallelism || 1}`);
+  console.log(`  Keep regressions: ${keepWorse ? 'yes' : 'no'}`);
+  console.log('  Flow: recommend -> apply -> evaluate -> accept/revert');
+  if (dryRun) console.log('  Mode: dry-run');
+  console.log(`  Working prompts: ${session.promptDir}`);
+}
+
 function printIterationTable(session) {
   const runs = session.iterations || [];
   if (runs.length === 0) {
@@ -977,8 +1134,8 @@ function printIterationTable(session) {
   }
 
   console.log('\nIterations:');
-  console.log('  #  Src  Keep  Score   ΔPrev  ΔBest  Latency   Run ID');
-  console.log('  ' + '─'.repeat(86));
+  console.log('  #  Src  Mode  Keep  Score   ΔPrev  ΔBest  Latency   Run ID');
+  console.log('  ' + '─'.repeat(93));
   for (const run of runs) {
     const summary = run.summary || {};
     const latency =
@@ -993,9 +1150,10 @@ function printIterationTable(session) {
     const deltaBest =
       run.comparison?.deltaVsBestBefore == null ? '--' : formatDelta(run.comparison.deltaVsBestBefore);
     const source = run.origin === 'autotune' ? 'A' : run.origin === 'baseline' ? 'B' : 'M';
+    const mode = run.dryRun ? 'mock' : 'live';
     const keep = run.accepted == null ? '--' : run.accepted ? 'yes' : run.revertedToIteration ? 'revert' : 'no';
     console.log(
-      `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
+      `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
     );
   }
 }
@@ -1008,31 +1166,29 @@ function printRecommendationTable(session) {
   }
 
   console.log('\nRecommendations:');
-  console.log('  ID                          Basis  Files                          Applied  Eval  Accepted');
-  console.log('  ' + '─'.repeat(98));
+  console.log('  ID                          Basis  Files                          Valid  Applied  Eval  Accepted');
+  console.log('  ' + '─'.repeat(106));
   for (const item of items) {
     const files = (item.changedFiles || []).join(', ') || 'none';
     console.log(
-      `  ${item.id.padEnd(26)}  ${String(item.basedOnIteration).padStart(5)}  ${files.slice(0, 28).padEnd(28)}  ${String(Boolean(item.appliedToWorkingDir)).padStart(7)}  ${(item.evaluationIteration ?? '--').toString().padStart(4)}  ${(item.accepted == null ? '--' : item.accepted ? 'yes' : 'no').padStart(8)}`,
+      `  ${item.id.padEnd(26)}  ${String(item.basedOnIteration).padStart(5)}  ${files.slice(0, 28).padEnd(28)}  ${(item.validationPassed == null ? '--' : item.validationPassed ? 'yes' : 'no').padStart(5)}  ${String(Boolean(item.appliedToWorkingDir)).padStart(7)}  ${(item.evaluationIteration ?? '--').toString().padStart(4)}  ${(item.accepted == null ? '--' : item.accepted ? 'yes' : 'no').padStart(8)}`,
     );
   }
 }
 
-function printRecommendationSummary(artifact) {
+function printRecommendationSummary(artifact, options = {}) {
+  const { compact = false, artifactPath = null } = options;
+  const changedFiles = artifact.changedFiles || artifact.promptUpdates?.map((update) => update.filename) || [];
+
   console.log(`\nRecommendation: ${artifact.id}`);
   console.log(`  Recommender: ${artifact.recommenderRef}`);
   console.log(`  Model: ${artifact.recommenderModel}`);
   if (artifact.basedOnIteration != null) {
     console.log(`  Basis iteration: ${artifact.basedOnIteration} (score ${artifact.basedOnScore ?? 'n/a'})`);
   }
+  console.log(`  Changed files: ${changedFiles.length ? changedFiles.join(', ') : 'none'}`);
   if (artifact.summary) {
     console.log(`  Summary: ${artifact.summary}`);
-  }
-  if (artifact.observations?.length) {
-    console.log('  Observations:');
-    for (const observation of artifact.observations) {
-      console.log(`    - ${observation}`);
-    }
   }
   if (artifact.promptUpdates?.length) {
     console.log('  Prompt updates:');
@@ -1040,11 +1196,20 @@ function printRecommendationSummary(artifact) {
       console.log(`    - ${update.filename}: ${update.rationale || 'no rationale provided'}`);
     }
   }
-  if (artifact.expectedEffects?.length) {
+  if (!compact && artifact.observations?.length) {
+    console.log('  Observations:');
+    for (const observation of artifact.observations) {
+      console.log(`    - ${observation}`);
+    }
+  }
+  if (!compact && artifact.expectedEffects?.length) {
     console.log('  Expected effects:');
     for (const effect of artifact.expectedEffects) {
       console.log(`    - ${effect}`);
     }
+  }
+  if (artifactPath) {
+    console.log(`  Artifact: ${artifactPath}`);
   }
 }
 
@@ -1095,7 +1260,16 @@ async function runSessionIteration(session, options = {}) {
   if (hasFlag('live')) childArgs.push('--live');
   if (hasFlag('show-messages')) childArgs.push('--show-messages');
 
-  console.log(`\nRunning iteration ${iteration} with prompt override dir:\n  ${session.promptDir}\n`);
+  console.log(`\nEvaluation run`);
+  console.log(`  Iteration: ${iteration}`);
+  console.log(`  Scenario: ${scenarioId}`);
+  console.log(`  Tutor model: ${modelRef}`);
+  if (useRubric) console.log(`  Judge: ${judgeRef}`);
+  console.log(`  Parallelism: ${parallelism}`);
+  console.log(`  Prompt override dir: ${session.promptDir}`);
+  console.log(`  Prompt files: ${session.promptFiles.map((prompt) => prompt.filename).join(', ')}`);
+  console.log('  Note: eval-cli may still print its generic factorial banner; prompt-lab is running one fixed profile/scenario here.');
+  console.log('  Launching eval-cli...\n');
   const childEnv = { ...process.env, [PROMPTS_ENV]: session.promptDir };
   const { code, stdout, stderr } = await runChildProcess('node', childArgs, { cwd: ROOT, env: childEnv });
   const runId = extractRunId(stdout + '\n' + stderr);
@@ -1261,8 +1435,9 @@ async function handleRecommend() {
     apply: hasFlag('apply'),
   });
 
-  printRecommendationSummary(artifact);
-  console.log(`  Artifact: ${recommendationFile(session.sessionId, artifact.id)}`);
+  printRecommendationSummary(artifact, {
+    artifactPath: recommendationFile(session.sessionId, artifact.id),
+  });
   if (hasFlag('apply')) {
     console.log(`  Applied recommendation to: ${session.promptDir}`);
     console.log(`  Evaluate it with: node scripts/prompt-lab.js run --session ${session.sessionId}`);
@@ -1276,6 +1451,15 @@ async function handleAutotune() {
   const recommenderRef = getOption('recommender', null);
   const dryRun = hasFlag('dry-run');
   const keepWorse = hasFlag('keep-worse');
+
+  console.log('');
+  printAutotuneSessionSummary(session, {
+    rounds,
+    basisMode,
+    recommenderRef,
+    keepWorse,
+    dryRun,
+  });
 
   if (!getBestScoredIteration(session)) {
     console.log('\nNo scored baseline iteration found. Running a baseline iteration first.\n');
@@ -1302,6 +1486,10 @@ async function handleAutotune() {
 
     console.log(`\nAutotune pass ${pass}/${rounds}`);
     console.log(`  Basis iteration: ${basisIteration.iteration} (${basisIteration.summary?.primaryScore ?? 'n/a'})`);
+    console.log('  Step 1/4: Request prompt recommendation');
+    console.log(`    Recommender: ${recommenderRef || resolveRecommenderConfig().modelRef}`);
+    console.log(`    Basis run: ${basisIteration.runId}`);
+    const recommendationStartedAt = Date.now();
 
     const artifact = await generateRecommendation(refreshed, {
       basis: basisMode,
@@ -1309,17 +1497,25 @@ async function handleAutotune() {
       dryRun,
       apply: false,
     });
-    printRecommendationSummary(artifact);
+    console.log(`    Completed in ${formatDuration(Date.now() - recommendationStartedAt)}`);
+    printRecommendationSummary(artifact, {
+      compact: true,
+      artifactPath: recommendationFile(refreshed.sessionId, artifact.id),
+    });
 
     if ((artifact.promptUpdates || []).length === 0) {
       console.log('  No prompt updates proposed. Stopping autotune.');
       break;
     }
 
+    console.log('  Step 2/4: Apply candidate prompt updates');
     applyRecommendationToWorkingPrompts(refreshed, artifact);
     saveSession(refreshed);
+    console.log(`    Applied ${artifact.changedFiles?.length || artifact.promptUpdates?.length || 0} file(s) to ${refreshed.promptDir}`);
 
     const bestBefore = getBestScoredIteration(refreshed);
+    console.log('  Step 3/4: Run benchmark iteration');
+    const evaluationStartedAt = Date.now();
     const entry = await runSessionIteration(refreshed, {
       scenarioId: refreshed.scenarioId,
       modelRef: refreshed.modelRef,
@@ -1331,6 +1527,7 @@ async function handleAutotune() {
       origin: 'autotune',
       recommendationId: artifact.id,
     });
+    console.log(`  Step 3/4 complete in ${formatDuration(Date.now() - evaluationStartedAt)}`);
 
     const latestSession = loadSession(refreshed.sessionId);
     const latestEntry = getIterationByNumber(latestSession, entry.iteration);
@@ -1356,24 +1553,33 @@ async function handleAutotune() {
       accepted,
     });
 
+    console.log('  Step 4/4: Compare against best prior');
+    if (latestEntry?.summary?.primaryScore != null) {
+      console.log(`    Candidate score: ${latestEntry.summary.primaryScore.toFixed(1)}`);
+    } else {
+      console.log('    Candidate score: n/a');
+    }
+    if (bestBefore?.summary?.primaryScore != null) {
+      console.log(`    Best prior score: ${bestBefore.summary.primaryScore.toFixed(1)} (iteration ${bestBefore.iteration})`);
+    }
     if (!accepted && !keepWorse && bestBefore) {
       const bestDir = path.join(bestBefore.snapshotDir, 'prompts');
       restoreWorkingPromptsFromDir(latestSession, bestDir);
       if (latestEntry) latestEntry.revertedToIteration = bestBefore.iteration;
-      console.log(`  Candidate regressed. Restored working prompts to iteration ${bestBefore.iteration}.`);
+      console.log(`    Decision: reverted to iteration ${bestBefore.iteration}`);
     } else if (accepted) {
-      console.log('  Candidate accepted.');
+      console.log('    Decision: accepted');
     } else {
-      console.log('  Candidate kept despite regression (--keep-worse).');
+      console.log('    Decision: kept despite regression (--keep-worse)');
     }
 
     saveSession(latestSession);
 
     if (latestEntry?.comparison?.deltaVsBestBefore != null) {
-      console.log(`  Delta vs best prior: ${formatDelta(latestEntry.comparison.deltaVsBestBefore)}`);
+      console.log(`    Delta vs best prior: ${formatDelta(latestEntry.comparison.deltaVsBestBefore)}`);
     }
     if (latestEntry?.comparison?.deltaVsBasis != null) {
-      console.log(`  Delta vs basis: ${formatDelta(latestEntry.comparison.deltaVsBasis)}`);
+      console.log(`    Delta vs basis: ${formatDelta(latestEntry.comparison.deltaVsBasis)}`);
     }
   }
 
@@ -1417,7 +1623,9 @@ async function handleStatus() {
 
   const best = getBestScoredIteration(session);
   if (best) {
-    console.log(`\nBest score: ${best.summary.primaryScore?.toFixed(1) ?? 'n/a'} (iteration ${best.iteration})`);
+    console.log(
+      `\nBest score: ${best.summary.primaryScore?.toFixed(1) ?? 'n/a'} (iteration ${best.iteration}, ${best.dryRun ? 'mock' : 'live'})`,
+    );
   }
 }
 
