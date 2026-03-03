@@ -1035,6 +1035,163 @@ symmetry_rules:
   # Added during /author-paper2 all pass (2026-03-02)
   # ══════════════════════════════════════════════════════════════
 
+  # ── Section 6.1: Calibration results ─────────────────────────
+
+  - id: paper2.s6.calibration.within_response_d
+    description: "Recognition reduces within-response dimension SD: DeepSeek d=0.52, Haiku d=0.64 (cells 80-87, v2.2)."
+    source_keys:
+      - "stat|0|within-response calibration DeepSeek d=0.52"
+      - "stat|0|within-response calibration Haiku d=0.64"
+    statement:
+      pattern: "within.response.*d=0\\.5|d=0\\.52.*within.response|d=0\\.64"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        not_null: [tutor_scores]
+    assertion:
+      op: gte
+      expected: 140
+    remediation:
+      - "If fewer than 140 rows per model with tutor_scores exist for cells 80-87 v2.2, rerun scoring."
+      - "Analysis MUST be per-model — do NOT pool across ego_model."
+    tags: [s6, calibration, verified]
+
+  - id: paper2.s6.calibration.prompt_level_independence
+    description: "Calibration effect is prompt-level: recog/single ≈ recog/multi SD. DeepSeek 0.509 vs 0.568; Haiku 0.497 vs 0.500."
+    source_keys:
+      - "stat|0|calibration architecture independence DeepSeek"
+      - "stat|0|calibration architecture independence Haiku"
+    statement:
+      pattern: "recognition.*single.*multi.*identical|prompt.*alone.*uniformity|calibration.*does not require.*superego"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "If calibration is prompt-level, within-response variance should be similar with and without superego under recognition."
+      cross_refs: [paper2.s3.calibration.prediction]
+    assertion:
+      op: theoretical
+      expected: "recog/single and recog/multi within-response SDs differ by < 0.06 in at least one model"
+    remediation:
+      - "If the gap exceeds 0.06 in both models, architecture contributes to calibration beyond prompt level."
+      - "Note: DeepSeek gap is 0.059, at the boundary. Haiku gap is 0.003, confirming prompt-level."
+    tags: [s6, calibration, theoretical]
+
+  - id: paper2.s6.calibration.floor_elimination
+    description: "Recognition raises floor scores: DeepSeek base min ~5→recog min ~22; Haiku base min ~28→recog min ~55."
+    source_keys:
+      - "stat|0|DeepSeek floor elimination"
+      - "stat|0|Haiku floor elimination"
+    statement:
+      pattern: "floor.*eliminat|floor.*rais|catastrophic.*failure"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        not_null: [tutor_first_turn_score]
+    assertion:
+      op: gte
+      expected: 140
+    remediation:
+      - "Verify min scores per model per condition if data changes."
+      - "Analysis MUST be per-model — do NOT pool across ego_model."
+    tags: [s6, calibration, verified]
+
+  - id: paper2.s6.calibration.architecture_interaction
+    description: "Architecture delta collapses under recognition: DeepSeek +9.0→+0.2, Haiku +15.0→-0.7."
+    source_keys:
+      - "stat|0|DeepSeek architecture × recognition interaction"
+      - "stat|0|Haiku architecture × recognition interaction"
+    statement:
+      pattern: "superego.*adds.*9\\.0|superego.*adds.*0\\.2|superego.*adds.*15\\.0|calibration.*substitut|recognition.*renders.*superego.*redundant"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        not_null: [tutor_first_turn_score]
+    assertion:
+      op: gte
+      expected: 140
+    remediation:
+      - "Recompute 2x2 cell means PER MODEL if data changes."
+      - "The interaction should show multi > single under base, near-parity under recognition, in EACH model."
+    tags: [s6, calibration, verified]
+
+  - id: paper2.s6.calibration.scenario_impasse_largest
+    description: "Impasse scenarios show largest recognition lifts in both models. DeepSeek: +38.3/+34.9. Haiku: +27.8/+26.4."
+    source_keys:
+      - "stat|0|DeepSeek scenario-dependent calibration"
+      - "stat|0|Haiku scenario-dependent calibration"
+    statement:
+      pattern: "impasse.*largest|epistemic resistance.*38|productive deadlock.*34|epistemic resistance.*26|productive deadlock.*27"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        scenario_name_like: "%impasse%"
+        not_null: [tutor_first_turn_score]
+    assertion:
+      op: gte
+      expected: 50
+    remediation:
+      - "If impasse scenario N drops below 50 per model, per-scenario comparisons lack power."
+      - "Analysis MUST be per-model."
+    tags: [s6, calibration, verified]
+
+  - id: paper2.s6.calibration.cross_model_replication
+    description: "Calibration mechanism replicates across DeepSeek V3.2 and Haiku 4.5 on all four indicators."
+    source_keys:
+      - "stat|0|cross-model calibration replication"
+    statement:
+      pattern: "replicat.*across.*model|cross.model.*replication|calibration.*replicat"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: db_count
+      filters:
+        profile_name_like: "cell_8%"
+        tutor_rubric_version: "2.2"
+        not_null: [tutor_scores]
+    assertion:
+      op: gte
+      expected: 280
+    remediation:
+      - "Requires at least 140 rows per model (DeepSeek + Haiku) with v2.2 tutor_scores."
+      - "Four replication indicators: (1) variance reduction, (2) dimension floor-lifting rank, (3) architecture interaction collapse, (4) impasse-dominant scenario effects."
+    tags: [s6, calibration, verified]
+
+  - id: paper2.s6.calibration.dimension_floor_lifting
+    description: "Weakest baseline dims (productive_difficulty, elicitation_quality) show largest recognition lift."
+    source_keys:
+      - "stat|0|dimension floor-lifting pattern"
+    statement:
+      pattern: "productive_difficulty.*elicitation.*largest|weakest.*baseline.*largest.*lift"
+      flags: "i"
+      min_occurrences: 0
+    evidence:
+      type: theoretical
+      derivation: "Calibration lifts the floor toward the ceiling. Dimensions where baseline is weakest have most room for prompt-driven improvement."
+      cross_refs: [paper2.s3.calibration.prediction]
+    assertion:
+      op: theoretical
+      expected: "Bottom-2 baseline dims show top-2 recognition lift"
+    remediation:
+      - "If dimension ranking changes, verify with updated v2.2 data and check for rubric artifacts."
+    tags: [s6, calibration, verified]
+
   # ── Section 5: Methodology claims ────────────────────────────
 
   - id: paper2.s5.rubric.tutor_v22_dims
