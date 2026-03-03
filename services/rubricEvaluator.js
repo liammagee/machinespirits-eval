@@ -11,6 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import * as evalConfigLoader from './evalConfigLoader.js';
+import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { jsonrepair } from 'jsonrepair';
 
 // HTTP request timeout for all judge API calls (ms)
@@ -88,6 +89,8 @@ export function normalizeJudgeLabel(provider, model) {
  */
 export function getAvailableJudge(overrides = {}) {
   const { judgeOverride } = overrides;
+  const rubric = evalConfigLoader.loadRubric();
+  const evalConfig = rubric?.judge;
 
   // If a judge override is provided, resolve and return it directly
   if (judgeOverride?.model) {
@@ -103,15 +106,13 @@ export function getAvailableJudge(overrides = {}) {
         model: resolved.model,
         apiKey,
         baseUrl: resolved.baseUrl,
-        hyperparameters: judgeOverride.hyperparameters || {},
+        hyperparameters: judgeOverride.hyperparameters || evalConfig?.hyperparameters || {},
+        reasoningEffort: judgeOverride.reasoningEffort || evalConfig?.reasoning_effort || null,
       };
     } catch (e) {
       console.warn(`[rubricEvaluator] Failed to resolve judge override: ${e.message}, falling back to rubric config`);
     }
   }
-
-  const rubric = evalConfigLoader.loadRubric();
-  const evalConfig = rubric?.judge;
 
   if (!evalConfig?.model) {
     console.warn('[rubricEvaluator] No judge config in evaluation-rubric.yaml, using defaults');
@@ -309,6 +310,16 @@ async function callJudgeModelWithConfig(prompt, config) {
       }
     }
 
+    if (provider === 'openai') {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) throw new Error('OPENAI_API_KEY not set');
+      return callOpenAICompatibleJudge(prompt, { ...config, apiKey });
+    }
+
+    if (provider === 'local' || provider === 'lmstudio') {
+      return callOpenAICompatibleJudge(prompt, config);
+    }
+
     throw new Error(`Unsupported fallback provider: ${provider}`);
   } catch (error) {
     // Log the error before re-throwing to help debugging
@@ -352,24 +363,24 @@ function formatDialogueTranscript(dialogueContext) {
       }
 
       if ((entry.agent === 'learner' || entry.agent === 'user') && entry.action === 'turn_action') {
-        lines.push(`[Learner Action] ${entry.detail || entry.contextSummary}`);
+        lines.push(`[Learner Action] ${truncateForEvaluation(entry.detail || entry.contextSummary, 300)}`);
       } else if (entry.agent === 'learner_ego') {
-        lines.push(`  (Learner Ego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
+        lines.push(`  (Learner Ego: ${truncateForEvaluation(entry.detail || entry.contextSummary, 200)})`);
       } else if (entry.agent === 'learner_superego') {
-        lines.push(`  (Learner Superego: ${truncate(entry.detail || entry.contextSummary, 200)})`);
+        lines.push(`  (Learner Superego: ${truncateForEvaluation(entry.detail || entry.contextSummary, 200)})`);
       } else if (entry.agent === 'learner') {
-        lines.push(`[Learner] "${truncate(entry.detail || entry.contextSummary, 300)}"`);
+        lines.push(`[Learner] "${truncateForEvaluation(entry.detail || entry.contextSummary, 300)}"`);
       } else if (entry.agent === 'ego' && entry.action === 'initial_draft') {
-        lines.push(`  (Tutor Ego draft: ${truncate(entry.contextSummary || '', 150)})`);
+        lines.push(`  (Tutor Ego draft: ${truncateForEvaluation(entry.contextSummary || '', 150)})`);
       } else if (entry.agent === 'superego') {
-        lines.push(`  (Tutor Superego: ${truncate(entry.feedback || entry.contextSummary || '', 150)})`);
+        lines.push(`  (Tutor Superego: ${truncateForEvaluation(entry.feedback || entry.contextSummary || '', 150)})`);
       } else if (entry.agent === 'ego' && (entry.action === 'revision' || entry.action === 'final_revision')) {
         lines.push(`[Tutor] (revised after superego feedback)`);
       } else if ((entry.agent === 'tutor' || entry.agent === 'user') && entry.action === 'final_output') {
         lines.push(`[Tutor → Learner] Delivered ${entry.suggestionCount} suggestion(s)`);
       } else if (entry.agent === 'ego') {
         // Single-agent tutor response
-        lines.push(`[Tutor] ${truncate(entry.contextSummary || '', 200)}`);
+        lines.push(`[Tutor] ${truncateForEvaluation(entry.contextSummary || '', 200)}`);
       }
     }
   } else if (history) {
@@ -377,13 +388,13 @@ function formatDialogueTranscript(dialogueContext) {
     for (const turn of history) {
       lines.push(`\n--- Turn ${turn.turnIndex + 1} ---`);
       if (turn.learnerMessage) {
-        lines.push(`[Learner] "${truncate(turn.learnerMessage, 300)}"`);
+        lines.push(`[Learner] "${truncateForEvaluation(turn.learnerMessage, 300)}"`);
       } else if (turn.learnerAction) {
-        lines.push(`[Learner Action] ${turn.learnerAction}`);
+        lines.push(`[Learner Action] ${truncateForEvaluation(turn.learnerAction, 300)}`);
       }
       if (turn.suggestion) {
         const msg = turn.suggestion.message || turn.suggestion.title || '';
-        lines.push(`[Tutor] "${truncate(msg, 300)}"`);
+        lines.push(`[Tutor] "${truncateForEvaluation(msg, 300)}"`);
       }
     }
   }
@@ -400,11 +411,16 @@ function truncate(str, maxLen) {
   return str.slice(0, maxLen - 3) + '...';
 }
 
+function truncateForEvaluation(str, maxLen) {
+  return truncate(stripThinkBlocks(str || ''), maxLen);
+}
+
 /**
  * Build the evaluation prompt for the judge model
  */
 function buildEvaluationPrompt(suggestion, scenario, context) {
   const dimensions = evalConfigLoader.getRubricDimensions();
+  const sanitizedSuggestion = sanitizeEvaluationValue(suggestion);
 
   // Build dimension criteria text
   const dimensionCriteria = Object.entries(dimensions)
@@ -421,7 +437,7 @@ ${criteriaText}`;
 
   // Build optional dialogue transcript section
   // If prebuiltTranscript is provided (e.g. public-only transcript), use it directly
-  const dialogueTranscript = context.prebuiltTranscript || formatDialogueTranscript(context.dialogueContext);
+  const dialogueTranscript = stripThinkBlocks(context.prebuiltTranscript || formatDialogueTranscript(context.dialogueContext) || '');
   const dialogueSection = dialogueTranscript
     ? `\n## DIALOGUE TRANSCRIPT
 
@@ -455,12 +471,12 @@ ${dimensionCriteria}
 **Expected Behavior**: ${scenario.expectedBehavior}
 
 **Learner Context**:
-${scenario.learnerContext || context.learnerContext || 'No context provided'}
+${stripThinkBlocks(scenario.learnerContext || context.learnerContext || 'No context provided')}
 ${dialogueSection}
 ## SUGGESTION TO EVALUATE
 
 \`\`\`json
-${JSON.stringify(suggestion, null, 2)}
+${JSON.stringify(sanitizedSuggestion, null, 2)}
 \`\`\`
 
 ## VALIDATION REQUIREMENTS
@@ -522,6 +538,73 @@ const JSON_MODE_PREFIXES = ['gpt-', 'deepseek-', 'claude-'];
 
 function supportsJsonMode(model) {
   return JSON_MODE_PREFIXES.some((prefix) => model.startsWith(prefix));
+}
+
+async function callOpenAICompatibleJudge(prompt, config) {
+  const { provider, model, apiKey = '', baseUrl = '', hyperparameters } = config;
+  const temperature = hyperparameters?.temperature;
+  if (temperature === undefined) {
+    throw new Error('Explicit temperature setting is required in judge hyperparameters (evaluation-rubric.yaml).');
+  }
+  const maxTokens = hyperparameters?.max_tokens;
+  if (maxTokens === undefined) {
+    throw new Error('Explicit max_tokens setting is required in judge hyperparameters (evaluation-rubric.yaml).');
+  }
+
+  const endpoint =
+    provider === 'openai'
+      ? 'https://api.openai.com/v1/chat/completions'
+      : baseUrl.replace(/\/+$/, '').replace(/\/v1\/chat\/completions$/, '') + '/v1/chat/completions';
+
+  if (!endpoint.startsWith('http')) {
+    throw new Error(`Missing or invalid baseUrl for ${provider} judge provider`);
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
+
+  try {
+    const body = {
+      model,
+      max_tokens: maxTokens,
+      temperature,
+      messages: [{ role: 'user', content: prompt }],
+    };
+    if (provider === 'openai' && supportsJsonMode(model)) {
+      body.response_format = { type: 'json_object' };
+    }
+
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) {
+      headers.Authorization = `Bearer ${apiKey}`;
+    }
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const errorBody = await res.text().catch(() => '');
+      throw new Error(`${provider} judge API error: ${res.status} - ${errorBody.slice(0, 200)}`);
+    }
+
+    const data = await res.json().catch((err) => {
+      throw new Error(`Failed to parse ${provider} judge response: ${err.message}`);
+    });
+
+    return data.choices?.[0]?.message?.content || '';
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      throw new Error(`${provider} judge API request timed out after 60s`);
+    }
+    throw err;
+  }
 }
 
 async function callJudgeModel(prompt, overrides = {}) {
@@ -637,51 +720,11 @@ async function callJudgeModel(prompt, overrides = {}) {
   if (provider === 'openai') {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error('OPENAI_API_KEY not set');
+    return callOpenAICompatibleJudge(prompt, { ...judge, apiKey });
+  }
 
-    // Add timeout to prevent hanging
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), API_CALL_TIMEOUT_MS);
-
-    try {
-      const body = {
-        model,
-        max_tokens: maxTokens,
-        temperature,
-        messages: [{ role: 'user', content: prompt }],
-      };
-      if (supportsJsonMode(model)) {
-        body.response_format = { type: 'json_object' };
-      }
-
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeout);
-
-      if (!res.ok) {
-        const errorBody = await res.text().catch(() => '');
-        throw new Error(`OpenAI API error: ${res.status} - ${errorBody.slice(0, 200)}`);
-      }
-
-      const data = await res.json().catch((err) => {
-        throw new Error(`Failed to parse OpenAI response: ${err.message}`);
-      });
-
-      return data.choices?.[0]?.message?.content || '';
-    } catch (err) {
-      clearTimeout(timeout);
-      if (err.name === 'AbortError') {
-        throw new Error('OpenAI API request timed out after 60s');
-      }
-      throw err;
-    }
+  if (provider === 'local' || provider === 'lmstudio') {
+    return callOpenAICompatibleJudge(prompt, judge);
   }
 
   if (provider === 'gemini') {
@@ -1091,12 +1134,13 @@ export async function evaluateSuggestions(suggestions, scenario, context = {}, o
  * @returns {Object} Validation result
  */
 export function quickValidate(suggestion, scenario) {
+  const sanitizedSuggestion = sanitizeEvaluationValue(suggestion);
   // For required elements, check all fields including actionTarget
-  const fullSuggestionText = JSON.stringify(suggestion).toLowerCase();
+  const fullSuggestionText = JSON.stringify(sanitizedSuggestion).toLowerCase();
 
   // For forbidden elements, only check user-facing fields (title, message)
   // NOT the internal 'reasoning' field which may contain context-derived text
-  const userFacingText = [suggestion.title || '', suggestion.message || ''].join(' ').toLowerCase();
+  const userFacingText = [sanitizedSuggestion.title || '', sanitizedSuggestion.message || ''].join(' ').toLowerCase();
 
   const result = {
     passesRequired: true,
@@ -1119,9 +1163,9 @@ export function quickValidate(suggestion, scenario) {
     const normalizedRequired = required.toLowerCase();
     const found =
       fullSuggestionText.includes(normalizedRequired) ||
-      (suggestion.actionTarget && suggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
-      (suggestion.title && suggestion.title.toLowerCase().includes(normalizedRequired)) ||
-      (suggestion.message && suggestion.message.toLowerCase().includes(normalizedRequired));
+      (sanitizedSuggestion.actionTarget && sanitizedSuggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
+      (sanitizedSuggestion.title && sanitizedSuggestion.title.toLowerCase().includes(normalizedRequired)) ||
+      (sanitizedSuggestion.message && sanitizedSuggestion.message.toLowerCase().includes(normalizedRequired));
 
     if (!found) {
       result.passesRequired = false;
@@ -1136,9 +1180,9 @@ export function quickValidate(suggestion, scenario) {
       const normalizedRequired = required.toLowerCase();
       return (
         fullSuggestionText.includes(normalizedRequired) ||
-        (suggestion.actionTarget && suggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
-        (suggestion.title && suggestion.title.toLowerCase().includes(normalizedRequired)) ||
-        (suggestion.message && suggestion.message.toLowerCase().includes(normalizedRequired))
+        (sanitizedSuggestion.actionTarget && sanitizedSuggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
+        (sanitizedSuggestion.title && sanitizedSuggestion.title.toLowerCase().includes(normalizedRequired)) ||
+        (sanitizedSuggestion.message && sanitizedSuggestion.message.toLowerCase().includes(normalizedRequired))
       );
     });
 
@@ -1487,7 +1531,9 @@ ${criteriaText}`;
     .join('\n\n');
 
   // Use public-only transcript (no internal deliberation) for fair cross-architecture comparison
-  const fullTranscript = buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts);
+  const fullTranscript = stripThinkBlocks(
+    buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts),
+  );
 
   let recognitionNote = '';
   if (hasRecognition) {
@@ -1780,7 +1826,7 @@ function getStoredTranscript(transcriptArtifacts, mode) {
 
 export function buildTranscriptArtifacts({ turns, dialogueTrace = [], learnerContext = null } = {}) {
   const publicTranscript = buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext);
-  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+  const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   return {
     version: 1,
@@ -2254,6 +2300,7 @@ ${criteriaText}`;
   const transcript = isPublic
     ? buildDialoguePublicTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts)
     : buildDialogueFullTranscript(turns, dialogueTrace, learnerContext, transcriptArtifacts);
+  const sanitizedTranscript = stripThinkBlocks(transcript);
 
   const transcriptHeader = isPublic
     ? '## PUBLIC DIALOGUE TRANSCRIPT'
@@ -2290,7 +2337,7 @@ ${dimensionCriteria}
 
 ${transcriptHeader}
 ${transcriptNote}
-${transcript}
+${sanitizedTranscript}
 
 ## YOUR TASK
 
@@ -2445,7 +2492,7 @@ ${criteriaText}`;
     .join('\n\n');
 
   // Full transcript WITH internal deliberation — this IS where internals should be shown
-  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+  const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
@@ -2542,7 +2589,7 @@ ${criteriaText}`;
     .join('\n\n');
 
   // Full transcript WITH internal deliberation
-  const fullTranscript = buildDialogueFullTranscript(turns, dialogueTrace, learnerContext);
+  const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
@@ -2653,7 +2700,7 @@ ${criteriaText}`;
     learnerAction: t.learnerAction,
     learnerMessage: t.learnerMessage,
   }));
-  const publicTranscript = buildDialoguePublicTranscript(allTurns, dialogueTrace, learnerContext);
+  const publicTranscript = stripThinkBlocks(buildDialoguePublicTranscript(allTurns, dialogueTrace, learnerContext));
 
   const totalTurns = turnResults.length;
 
@@ -2662,7 +2709,7 @@ ${criteriaText}`;
     .map(({ turnIndex, suggestion }) => {
       return `### Turn ${turnIndex + 1} of ${totalTurns}
 \`\`\`json
-${JSON.stringify(suggestion, null, 2)}
+${JSON.stringify(sanitizeEvaluationValue(suggestion), null, 2)}
 \`\`\``;
     })
     .join('\n\n');
