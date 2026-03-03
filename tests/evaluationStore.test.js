@@ -34,6 +34,9 @@ const {
   getRunStats,
   deleteRun,
   listRuns,
+  getScoreAudit,
+  storeInteractionEval,
+  getInteractionEval,
   updateResultLearnerScores,
   updateResultScores,
   updateResultTutorScores,
@@ -581,6 +584,57 @@ describe('deleteRun', () => {
 
     assert.strictEqual(getRun(run.id), null, 'run should be gone after delete');
     assert.strictEqual(getResults(run.id).length, 0, 'results should be gone after delete');
+  });
+
+  it('removes associated interaction evals and score audit rows', () => {
+    const run = createRun({ description: 'delete cascades ancillary rows' });
+
+    const resultId = storeResult(run.id, {
+      scenarioId: 'del-ancillary',
+      scenarioName: 'Delete Ancillary',
+      provider: 'test',
+      model: 'test',
+      profileName: 'cell_1',
+      tutorFirstTurnScore: 50,
+      success: true,
+    });
+
+    updateResultScores(resultId, {
+      scores: { relevance: 4, specificity: 4, pedagogical: 4, personalization: 4, actionability: 4, tone: 4 },
+      overallScore: 80,
+      judgeModel: 'test-judge',
+      summary: 'score audit row',
+    });
+
+    const evalId = storeInteractionEval({
+      evalId: 'interaction-delete-test',
+      runId: run.id,
+      scenarioId: 'del-ancillary',
+      scenarioName: 'Delete Ancillary',
+      learnerProfile: 'unified',
+      tutorProfile: 'budget',
+      learnerAgents: ['unified_learner'],
+      interaction: {
+        turns: [{ turnNumber: 1, learnerMessage: 'hello', tutorMessage: 'hi' }],
+        summary: { uniqueOutcomes: ['done'] },
+      },
+      metrics: { turnCount: 1, totalTokens: 10, totalLatencyMs: 5 },
+      judgeEvaluation: { overall_score: 75 },
+    });
+
+    assert.ok(getInteractionEval(evalId), 'interaction eval should exist before delete');
+    assert.ok(getScoreAudit(resultId).length > 0, 'score audit rows should exist before delete');
+
+    const deletion = deleteRun(run.id);
+
+    assert.strictEqual(getRun(run.id), null, 'run should be gone after delete');
+    assert.strictEqual(getResults(run.id).length, 0, 'results should be gone after delete');
+    assert.strictEqual(getInteractionEval(evalId), null, 'interaction eval should be gone after delete');
+    assert.deepStrictEqual(getScoreAudit(resultId), [], 'score audit rows should be gone after delete');
+    assert.strictEqual(deletion.deletedRuns, 1);
+    assert.strictEqual(deletion.deletedResults, 1);
+    assert.strictEqual(deletion.deletedInteractionEvals, 1);
+    assert.ok(deletion.deletedAuditRows >= 1);
   });
 });
 

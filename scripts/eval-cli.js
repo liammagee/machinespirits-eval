@@ -20,6 +20,7 @@ import 'dotenv/config';
  *   node scripts/eval-cli.js export <runId>   # Export results to file for offline review
  *   node scripts/eval-cli.js cleanup          # Preview stale runs (dry-run by default)
  *   node scripts/eval-cli.js cleanup --force # Actually mark stale runs as completed
+ *   node scripts/eval-cli.js delete-runs      # Preview deletion of runs by filter (pass --force to delete)
  *   node scripts/eval-cli.js resume <runId>   # Resume an incomplete run (re-run missing tests)
  *   node scripts/eval-cli.js revert <runId>  # Revert a completed/failed run to 'running'
  *   node scripts/eval-cli.js rejudge <runId> # Re-run AI judge (adds new rows for reliability)
@@ -51,6 +52,9 @@ import 'dotenv/config';
  *   --refresh <ms>         Refresh interval for 'watch' (default: 2000) or 'evaluate --follow' (default: 5000)
  *   --force                Actually complete stale runs (for 'cleanup'; dry-run without it)
  *   --older-than <min>     Staleness threshold in minutes (for 'cleanup', default: 30)
+ *   --run-id <ids>         Comma-separated run IDs for 'delete-runs'
+ *   --dry-run-runs         Filter to mock/dry-run evals for 'delete-runs'
+ *   --before <YYYY-MM-DD>  Only match runs created before this date for 'delete-runs'
  *   --dry-run              Use mock data instead of API calls (no API keys required)
  *   --show-messages        Print API messages during 'run' (system prompts truncated to 200 chars)
  *   --show-messages=full   Print API messages untruncated
@@ -198,6 +202,15 @@ function getOption(name, defaultValue = undefined) {
   return args[idx + 1];
 }
 
+function getCsvOption(name) {
+  const value = getOption(name);
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 /**
  * Expand shorthand run ID to full form.
  *   '02-28-24ae5093'      → 'eval-2026-02-28-24ae5093'
@@ -216,6 +229,60 @@ function expandRunId(id) {
     return `eval-${id}`;
   }
   return id;
+}
+
+function matchesTextFilter(values, patterns) {
+  if (!patterns || patterns.length === 0) return true;
+  const haystack = (values || []).map((value) => String(value || '').toLowerCase());
+  return patterns.some((pattern) => haystack.some((value) => value.includes(pattern.toLowerCase())));
+}
+
+function filterRunsForDeletion(runs, filters = {}) {
+  const {
+    runIds = [],
+    dryRunOnly = false,
+    descriptionContains = null,
+    profileFilters = [],
+    scenarioFilters = [],
+    statusFilter = null,
+    beforeDate = null,
+  } = filters;
+
+  const wantedRunIds = new Set(runIds.map((id) => expandRunId(id)));
+
+  return runs.filter((run) => {
+    if (wantedRunIds.size > 0 && !wantedRunIds.has(run.id)) return false;
+    if (dryRunOnly && !run.metadata?.dryRun) return false;
+    if (statusFilter && run.status !== statusFilter) return false;
+    if (descriptionContains) {
+      const desc = String(run.description || '').toLowerCase();
+      if (!desc.includes(descriptionContains.toLowerCase())) return false;
+    }
+
+    const allProfiles = [...new Set([...(run.profileNames || []), ...((run.metadata?.profileNames || []).filter(Boolean))])];
+    if (!matchesTextFilter(allProfiles, profileFilters)) return false;
+
+    const scenarioIds = [...new Set((run.metadata?.scenarioIds || []).filter(Boolean))];
+    if (!matchesTextFilter(scenarioIds, scenarioFilters)) return false;
+
+    if (beforeDate) {
+      const createdAt = run.createdAt ? new Date(run.createdAt) : null;
+      if (!createdAt || Number.isNaN(createdAt.getTime()) || createdAt >= beforeDate) return false;
+    }
+
+    return true;
+  });
+}
+
+function renderDeleteRunsPreview(runs) {
+  return runs
+    .map((run) => {
+      const mode = run.metadata?.dryRun ? 'mock' : 'live';
+      const profiles = (run.profileNames || run.metadata?.profileNames || []).slice(0, 2).join(',') || '--';
+      const scenarios = (run.metadata?.scenarioIds || []).slice(0, 2).join(',') || '--';
+      return `${run.id}  ${mode.padEnd(4)}  ${String(run.status || '--').padEnd(9)}  profiles=${profiles}  scenarios=${scenarios}  desc="${run.description || ''}"`;
+    })
+    .join('\n');
 }
 
 function validateCanonicalFactorialTutorEgoModels({
@@ -2264,6 +2331,84 @@ async function main() {
         }
 
         console.log('');
+        break;
+      }
+
+      case 'delete-runs': {
+        const force = getFlag('force');
+        const runIds = getCsvOption('run-id');
+        const dryRunOnly = getFlag('dry-run-runs');
+        const descriptionContains = getOption('description', null);
+        const profileFilters = getCsvOption('profile');
+        const scenarioFilters = getCsvOption('scenario');
+        const statusFilter = getOption('status', null);
+        const beforeRaw = getOption('before', null);
+        const beforeDate = beforeRaw ? new Date(beforeRaw) : null;
+
+        if (beforeRaw && Number.isNaN(beforeDate?.getTime?.())) {
+          console.error('Error: --before must be a valid date in YYYY-MM-DD format');
+          process.exit(1);
+        }
+
+        const hasFilter =
+          runIds.length > 0 ||
+          dryRunOnly ||
+          Boolean(descriptionContains) ||
+          profileFilters.length > 0 ||
+          scenarioFilters.length > 0 ||
+          Boolean(statusFilter) ||
+          Boolean(beforeRaw);
+
+        if (!hasFilter) {
+          console.error(
+            'Error: delete-runs requires at least one filter (--run-id, --dry-run-runs, --description, --profile, --scenario, --status, or --before)',
+          );
+          process.exit(1);
+        }
+
+        let runs = evaluationStore.listRuns({ limit: null, status: statusFilter });
+        runs = filterRunsForDeletion(runs, {
+          runIds,
+          dryRunOnly,
+          descriptionContains,
+          profileFilters,
+          scenarioFilters,
+          statusFilter,
+          beforeDate,
+        });
+
+        if (runs.length === 0) {
+          console.log('\nNo runs matched the delete filters.\n');
+          break;
+        }
+
+        runs.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+
+        console.log(`\nMatched ${runs.length} run(s) for deletion:\n`);
+        console.log(renderDeleteRunsPreview(runs));
+        console.log('');
+
+        if (!force) {
+          console.log('Dry run only. Re-run with --force to actually delete these runs.\n');
+          break;
+        }
+
+        let deletedRuns = 0;
+        let deletedResults = 0;
+        let deletedInteractionEvals = 0;
+        let deletedAuditRows = 0;
+
+        for (const run of runs) {
+          const summary = evaluationStore.deleteRun(run.id);
+          deletedRuns += summary?.deletedRuns || 0;
+          deletedResults += summary?.deletedResults || 0;
+          deletedInteractionEvals += summary?.deletedInteractionEvals || 0;
+          deletedAuditRows += summary?.deletedAuditRows || 0;
+        }
+
+        console.log(
+          `Deleted ${deletedRuns} run(s), ${deletedResults} evaluation row(s), ${deletedInteractionEvals} interaction eval(s), ${deletedAuditRows} audit row(s).\n`,
+        );
         break;
       }
 
@@ -5984,7 +6129,7 @@ async function main() {
       default:
         console.error(`Unknown command: ${command}`);
         console.error(
-          'Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, resume, revert, rejudge, evaluate, backfill-first-turn, evaluate-learner, validate-config, chat, play',
+          'Available commands: list, quick, test, run, runs, report, status, watch, transcript, export, cleanup, delete-runs, resume, revert, rejudge, evaluate, backfill-first-turn, evaluate-learner, validate-config, chat, play',
         );
         process.exit(1);
     }
