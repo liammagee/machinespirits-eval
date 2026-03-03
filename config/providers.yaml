@@ -65,12 +65,14 @@ providers:
       default: local-model
 
   lmstudio:
-    base_url: http://10.0.0.174:1234/v1/chat/completions
+    base_url: http://127.0.0.1:1234/v1/chat/completions
     format: openai
     default_model: qwen3-14b
     context_length: 4096
     models:
-      default: qwen3-14b
+      default: qwen3.5-9b
+      qwen3.5-4b: qwen3.5-4b
+      qwen3.5-9b: qwen3.5-9b
       qwen3-14b: qwen3-14b
       qwen3-vl-4b: qwen/qwen3-vl-4b
       qwen3-vl-8b: qwen/qwen3-vl-8b
