@@ -39,7 +39,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { randomBytes, createHash } from 'crypto';
 import { isPidAlive } from './processUtils.js';
-import { loadRubric } from './evalConfigLoader.js';
+import { getScenario, getTutorProfile, loadRubric, resolveModel } from './evalConfigLoader.js';
+import { readProgressLog } from './progressLogger.js';
 import { loadTutorHolisticRubric, loadDialogueRubric, loadDeliberationRubric } from './rubricEvaluator.js';
 import { loadLearnerRubric } from './learnerRubricEvaluator.js';
 
@@ -921,12 +922,141 @@ export function getResults(runId, options = {}) {
   return rows.map(parseResultRow);
 }
 
+function safeResolveModel(ref) {
+  if (!ref) return null;
+  try {
+    return resolveModel(ref);
+  } catch {
+    return null;
+  }
+}
+
+function inferScenarioName(scenarioId, progressEvents = []) {
+  for (let i = progressEvents.length - 1; i >= 0; i--) {
+    const event = progressEvents[i];
+    if (event?.scenarioId === scenarioId && event?.scenarioName) {
+      return event.scenarioName;
+    }
+  }
+
+  return getScenario(scenarioId)?.name || scenarioId;
+}
+
+function inferPlannedConfigSummary(profileName, metadata = {}) {
+  const profile = profileName ? getTutorProfile(profileName) : null;
+  const egoRef = profile?.ego?.provider && profile?.ego?.model ? `${profile.ego.provider}.${profile.ego.model}` : null;
+  const superegoRef =
+    profile?.superego?.provider && profile?.superego?.model ? `${profile.superego.provider}.${profile.superego.model}` : null;
+  const egoResolved = safeResolveModel(egoRef);
+
+  const inferred = {
+    provider: egoResolved?.provider || profile?.ego?.resolvedProvider || profile?.ego?.provider || null,
+    model: egoResolved?.model || profile?.ego?.resolvedModel || profile?.ego?.model || null,
+    egoModel: egoRef,
+    superegoModel: superegoRef,
+  };
+
+  if (metadata.modelOverride) {
+    const resolved = safeResolveModel(metadata.modelOverride);
+    if (resolved) {
+      inferred.provider = resolved.provider;
+      inferred.model = resolved.model;
+    }
+    inferred.egoModel = metadata.modelOverride;
+    if (inferred.superegoModel) inferred.superegoModel = metadata.modelOverride;
+  }
+
+  if (metadata.tutorModelOverride) {
+    const resolved = safeResolveModel(metadata.tutorModelOverride);
+    if (resolved) {
+      inferred.provider = resolved.provider;
+      inferred.model = resolved.model;
+    }
+    inferred.egoModel = metadata.tutorModelOverride;
+    if (inferred.superegoModel) inferred.superegoModel = metadata.tutorModelOverride;
+  }
+
+  if (metadata.egoModelOverride) {
+    const resolved = safeResolveModel(metadata.egoModelOverride);
+    if (resolved) {
+      inferred.provider = resolved.provider;
+      inferred.model = resolved.model;
+    }
+    inferred.egoModel = metadata.egoModelOverride;
+  }
+
+  if (metadata.superegoModelOverride && inferred.superegoModel) {
+    inferred.superegoModel = metadata.superegoModelOverride;
+  }
+
+  return inferred;
+}
+
+function buildTransientPlaceholderMap(runId, existingResults = null) {
+  const run = getRun(runId);
+  if (!run || run.status !== 'completed') return new Map();
+
+  const metadata = run.metadata || {};
+  const progressEvents = readProgressLog(runId);
+  const runStartProfiles = progressEvents.flatMap((event) =>
+    event?.eventType === 'run_start' && Array.isArray(event.profiles) ? event.profiles : [],
+  );
+  const progressScenarioIds = progressEvents.map((event) => event?.scenarioId).filter(Boolean);
+  const profileNames = [
+    ...new Set([...(metadata.profileNames || []), ...runStartProfiles].filter((value) => typeof value === 'string' && value)),
+  ];
+  const scenarioIds = [
+    ...new Set([...(metadata.scenarioIds || []), ...progressScenarioIds].filter((value) => typeof value === 'string' && value)),
+  ];
+  const runsPerConfig = Number(metadata.runsPerConfig) || 1;
+  const results = existingResults || getResults(runId);
+
+  if (profileNames.length === 0 || scenarioIds.length === 0) return new Map();
+
+  const storedCounts = new Map();
+  for (const result of results) {
+    const key = `${result.scenarioId}|${result.profileName}`;
+    storedCounts.set(key, (storedCounts.get(key) || 0) + 1);
+  }
+
+  const lastErrorByKey = new Map();
+  for (const event of progressEvents) {
+    if (event?.eventType !== 'test_error' || !event?.scenarioId || !event?.profileName) continue;
+    const key = `${event.scenarioId}|${event.profileName}`;
+    lastErrorByKey.set(key, event.errorMessage || null);
+  }
+
+  const placeholders = new Map();
+  for (const scenarioId of scenarioIds) {
+    const scenarioName = inferScenarioName(scenarioId, progressEvents);
+    for (const profileName of profileNames) {
+      const key = `${scenarioId}|${profileName}`;
+      const storedCount = storedCounts.get(key) || 0;
+      const transientFailedTests = Math.max(0, runsPerConfig - storedCount);
+      if (transientFailedTests === 0) continue;
+
+      const inferredConfig = inferPlannedConfigSummary(profileName, metadata);
+      placeholders.set(key, {
+        scenarioId,
+        scenarioName,
+        profileName,
+        ...inferredConfig,
+        transientFailedTests,
+        lastErrorMessage: lastErrorByKey.get(key) || null,
+      });
+    }
+  }
+
+  return placeholders;
+}
+
 /**
  * Get aggregated statistics for a run
  */
 export function getRunStats(runId) {
   const results = getResults(runId);
-  if (results.length === 0) return [];
+  const transientPlaceholders = buildTransientPlaceholderMap(runId, results);
+  if (results.length === 0 && transientPlaceholders.size === 0) return [];
 
   // Group by (provider, model, profileName)
   const groups = {};
@@ -940,7 +1070,8 @@ export function getRunStats(runId) {
         profileName: r.profileName,
         egoModel: r.egoModel,
         superegoModel: r.superegoModel,
-        totalTests: 0,
+        storedTests: 0,
+        transientFailedTests: 0,
         successfulTests: 0,
         scores: [],
         baseScores: [],
@@ -952,11 +1083,12 @@ export function getRunStats(runId) {
         passesForbidden: 0,
         dimensionSums: {},
         dimensionCounts: {},
+        lastErrorMessage: null,
       };
     }
 
     const g = groups[key];
-    g.totalTests++;
+    g.storedTests++;
     if (r.success) {
       g.successfulTests++;
       if (r.tutorFirstTurnScore != null) g.scores.push(r.tutorFirstTurnScore);
@@ -981,9 +1113,41 @@ export function getRunStats(runId) {
     }
   }
 
+  for (const placeholder of transientPlaceholders.values()) {
+    const key = `${placeholder.provider}|${placeholder.model}|${placeholder.profileName}`;
+    if (!groups[key]) {
+      groups[key] = {
+        provider: placeholder.provider,
+        model: placeholder.model,
+        profileName: placeholder.profileName,
+        egoModel: placeholder.egoModel,
+        superegoModel: placeholder.superegoModel,
+        storedTests: 0,
+        transientFailedTests: 0,
+        successfulTests: 0,
+        scores: [],
+        baseScores: [],
+        recognitionScores: [],
+        latencies: [],
+        inputTokens: 0,
+        outputTokens: 0,
+        passesRequired: 0,
+        passesForbidden: 0,
+        dimensionSums: {},
+        dimensionCounts: {},
+        lastErrorMessage: null,
+      };
+    }
+
+    const group = groups[key];
+    group.transientFailedTests += placeholder.transientFailedTests;
+    if (placeholder.lastErrorMessage) group.lastErrorMessage = placeholder.lastErrorMessage;
+  }
+
   const finalStats = Object.values(groups)
     .map((g) => {
       const avgScore = g.scores.length > 0 ? g.scores.reduce((a, b) => a + b, 0) / g.scores.length : null;
+      const totalTests = g.storedTests + g.transientFailedTests;
 
       const dimensions = {};
       for (const dim of Object.keys(g.dimensionSums)) {
@@ -996,9 +1160,11 @@ export function getRunStats(runId) {
         profileName: g.profileName,
         egoModel: g.egoModel,
         superegoModel: g.superegoModel,
-        totalTests: g.totalTests,
+        totalTests,
+        storedTests: g.storedTests,
         successfulTests: g.successfulTests,
-        successRate: g.totalTests > 0 ? g.successfulTests / g.totalTests : 0,
+        transientFailedTests: g.transientFailedTests,
+        successRate: totalTests > 0 ? g.successfulTests / totalTests : 0,
         avgScore,
         avgBaseScore: g.baseScores.length > 0 ? g.baseScores.reduce((a, b) => a + b, 0) / g.baseScores.length : null,
         avgRecognitionScore:
@@ -1011,7 +1177,8 @@ export function getRunStats(runId) {
         totalOutputTokens: g.outputTokens,
         passesRequired: g.passesRequired,
         passesForbidden: g.passesForbidden,
-        validationPassRate: g.totalTests > 0 ? (g.passesRequired + g.passesForbidden) / (g.totalTests * 2) : 0,
+        validationPassRate: totalTests > 0 ? (g.passesRequired + g.passesForbidden) / (totalTests * 2) : 0,
+        lastErrorMessage: g.lastErrorMessage,
       };
     })
     .sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0));
@@ -1045,6 +1212,8 @@ export function getScenarioStats(runId) {
   `);
 
   const rows = stmt.all(runId);
+  const transientPlaceholders = buildTransientPlaceholderMap(runId);
+  if (rows.length === 0 && transientPlaceholders.size === 0) return [];
 
   // Group by scenario
   const grouped = {};
@@ -1067,8 +1236,53 @@ export function getScenarioStats(runId) {
       avgRecognitionScore: row.avg_recognition_score,
       avgLatencyMs: row.avg_latency,
       passesValidation: row.passes_validation === row.runs,
+      storedRuns: row.runs,
+      transientFailedRuns: 0,
       runs: row.runs,
+      lastErrorMessage: null,
     });
+  }
+
+  for (const placeholder of transientPlaceholders.values()) {
+    if (!grouped[placeholder.scenarioId]) {
+      grouped[placeholder.scenarioId] = {
+        scenarioId: placeholder.scenarioId,
+        scenarioName: placeholder.scenarioName,
+        configurations: [],
+      };
+    }
+
+    let existingConfig = grouped[placeholder.scenarioId].configurations.find(
+      (config) =>
+        config.provider === placeholder.provider &&
+        config.model === placeholder.model &&
+        config.profileName === placeholder.profileName,
+    );
+
+    if (!existingConfig) {
+      existingConfig = {
+        provider: placeholder.provider,
+        model: placeholder.model,
+        profileName: placeholder.profileName,
+        egoModel: placeholder.egoModel,
+        superegoModel: placeholder.superegoModel,
+        avgScore: null,
+        avgBaseScore: null,
+        avgRecognitionScore: null,
+        avgLatencyMs: null,
+        passesValidation: false,
+        storedRuns: 0,
+        transientFailedRuns: 0,
+        runs: 0,
+        lastErrorMessage: null,
+      };
+      grouped[placeholder.scenarioId].configurations.push(existingConfig);
+    }
+
+    existingConfig.transientFailedRuns += placeholder.transientFailedTests;
+    existingConfig.runs += placeholder.transientFailedTests;
+    existingConfig.passesValidation = false;
+    if (placeholder.lastErrorMessage) existingConfig.lastErrorMessage = placeholder.lastErrorMessage;
   }
 
   return Object.values(grouped);
