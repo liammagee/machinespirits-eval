@@ -578,7 +578,12 @@ if (!promptOnly && channel !== 'all' && dialogueLog) {
   console.log('─'.repeat(70));
   console.log('  PUBLIC TRANSCRIPT (what output-quality judges see)');
   console.log('─'.repeat(70));
-  const publicTranscript = buildDialoguePublicTranscript(transcriptTurns, dialogueTrace, learnerCtx, transcriptArtifacts);
+  const publicTranscript = buildDialoguePublicTranscript(
+    transcriptTurns,
+    dialogueTrace,
+    learnerCtx,
+    transcriptArtifacts,
+  );
   console.log(publicTranscript);
   console.log('');
 

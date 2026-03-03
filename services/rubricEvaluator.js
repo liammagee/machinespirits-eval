@@ -437,7 +437,9 @@ ${criteriaText}`;
 
   // Build optional dialogue transcript section
   // If prebuiltTranscript is provided (e.g. public-only transcript), use it directly
-  const dialogueTranscript = stripThinkBlocks(context.prebuiltTranscript || formatDialogueTranscript(context.dialogueContext) || '');
+  const dialogueTranscript = stripThinkBlocks(
+    context.prebuiltTranscript || formatDialogueTranscript(context.dialogueContext) || '',
+  );
   const dialogueSection = dialogueTranscript
     ? `\n## DIALOGUE TRANSCRIPT
 
@@ -1163,7 +1165,8 @@ export function quickValidate(suggestion, scenario) {
     const normalizedRequired = required.toLowerCase();
     const found =
       fullSuggestionText.includes(normalizedRequired) ||
-      (sanitizedSuggestion.actionTarget && sanitizedSuggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
+      (sanitizedSuggestion.actionTarget &&
+        sanitizedSuggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
       (sanitizedSuggestion.title && sanitizedSuggestion.title.toLowerCase().includes(normalizedRequired)) ||
       (sanitizedSuggestion.message && sanitizedSuggestion.message.toLowerCase().includes(normalizedRequired));
 
@@ -1180,7 +1183,8 @@ export function quickValidate(suggestion, scenario) {
       const normalizedRequired = required.toLowerCase();
       return (
         fullSuggestionText.includes(normalizedRequired) ||
-        (sanitizedSuggestion.actionTarget && sanitizedSuggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
+        (sanitizedSuggestion.actionTarget &&
+          sanitizedSuggestion.actionTarget.toLowerCase().includes(normalizedRequired)) ||
         (sanitizedSuggestion.title && sanitizedSuggestion.title.toLowerCase().includes(normalizedRequired)) ||
         (sanitizedSuggestion.message && sanitizedSuggestion.message.toLowerCase().includes(normalizedRequired))
       );
@@ -1780,7 +1784,7 @@ function renderTranscriptEvents(events) {
   return events
     .slice()
     .sort((a, b) => (a?.sequence ?? 0) - (b?.sequence ?? 0))
-    .map((event) => (typeof event === 'string' ? event : event?.line ?? ''))
+    .map((event) => (typeof event === 'string' ? event : (event?.line ?? '')))
     .join('\n');
 }
 
