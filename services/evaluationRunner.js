@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { createHash } from 'crypto';
 import {
   tutorApiService as tutorApi,
@@ -533,6 +533,137 @@ function debugLog(...args) {
  */
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const SUPPORTED_JUDGE_CLIS = new Set(['claude', 'gemini', 'codex']);
+
+export function getCliJudgeModelLabel(judgeCli, modelOverride = null) {
+  const cli = String(judgeCli || '').toLowerCase();
+  if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
+    throw new Error(`Unsupported judge CLI: ${judgeCli}`);
+  }
+
+  if (cli === 'gemini') return `gemini-cli/${modelOverride || 'auto'}`;
+  if (cli === 'codex') return `codex-cli/${modelOverride || 'auto'}`;
+  return modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+}
+
+function getDefaultCliJudgeModelOverride() {
+  try {
+    const rubric = evalConfigLoader.loadRubric();
+    return rubric?.claude_code_judge?.model || null;
+  } catch {
+    return null;
+  }
+}
+
+async function callCliJudge(prompt, judgeCli, modelOverride = null) {
+  const cli = String(judgeCli || '').toLowerCase();
+  if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
+    throw new Error(`Unsupported judge CLI: ${judgeCli}`);
+  }
+
+  let cliBinary;
+  let cliArgs;
+  let cliEnv;
+
+  if (cli === 'gemini') {
+    cliBinary = 'gemini';
+    cliArgs = ['-o', 'text'];
+    if (modelOverride) cliArgs.push('-m', modelOverride);
+    cliEnv = { ...process.env };
+  } else if (cli === 'codex') {
+    cliBinary = 'codex';
+    cliArgs = ['exec', '-'];
+    if (modelOverride) cliArgs.push('-m', modelOverride);
+    cliEnv = { ...process.env };
+  } else {
+    cliBinary = 'claude';
+    cliArgs = ['-p', '-', '--output-format', 'text'];
+    if (modelOverride) cliArgs.push('--model', modelOverride);
+    cliEnv = { ...process.env };
+    delete cliEnv.ANTHROPIC_API_KEY;
+    delete cliEnv.CLAUDECODE;
+  }
+
+  const stdout = await new Promise((resolve, reject) => {
+    const child = spawn(cliBinary, cliArgs, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: cliEnv,
+    });
+    let out = '';
+    let err = '';
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
+      else resolve(out);
+    });
+    child.stdin.write(prompt);
+    child.stdin.end();
+  });
+
+  let jsonStr = String(stdout || '').trim();
+  const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) {
+    jsonStr = fenceMatch[1].trim();
+  } else {
+    const firstBrace = jsonStr.indexOf('{');
+    const lastBrace = jsonStr.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+    }
+  }
+
+  return JSON.parse(jsonStr);
+}
+
+function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
+  const dimensionMap = {
+    relevance: 'relevance',
+    specificity: 'specificity',
+    pedagogical_soundness: 'pedagogical',
+    pedagogical: 'pedagogical',
+    personalization: 'personalization',
+    actionability: 'actionability',
+    tone: 'tone',
+  };
+
+  const normalizedScores = {};
+  for (const [key, value] of Object.entries(parsed?.scores || {})) {
+    const normalizedKey = dimensionMap[key] || key;
+    if (typeof value === 'object' && value !== null) {
+      normalizedScores[normalizedKey] = { score: value.score, reasoning: value.reasoning };
+    } else if (typeof value === 'number') {
+      normalizedScores[normalizedKey] = { score: value, reasoning: null };
+    }
+  }
+
+  const tutorFirstTurnScore =
+    Object.keys(normalizedScores).length > 0
+      ? rubricEvaluator.calculateOverallScore(normalizedScores)
+      : parsed?.overall_score ?? null;
+
+  return {
+    success: true,
+    scores: normalizedScores,
+    tutorFirstTurnScore,
+    overallScore: tutorFirstTurnScore,
+    baseScore: rubricEvaluator.calculateBaseScore(normalizedScores),
+    recognitionScore: rubricEvaluator.calculateRecognitionScore(normalizedScores),
+    passesRequired: parsed?.validation?.passes_required ?? true,
+    passesForbidden: parsed?.validation?.passes_forbidden ?? true,
+    requiredMissing: parsed?.validation?.required_missing || [],
+    forbiddenFound: parsed?.validation?.forbidden_found || [],
+    summary: parsed?.summary || null,
+    judgeModel: judgeModelLabel,
+    judgeLatencyMs,
+  };
 }
 
 /**
@@ -4381,6 +4512,8 @@ export function generateReport(runId) {
  * @param {string} runId - The run to rejudge
  * @param {Object} options
  * @param {string} [options.judgeOverride] - Override judge model (e.g. 'openrouter.nemotron')
+ * @param {string} [options.judgeCli] - CLI judge backend ('claude', 'gemini', 'codex')
+ * @param {string} [options.judgeCliModel] - Optional CLI judge model override
  * @param {boolean} [options.verbose] - Show per-result progress
  * @param {string} [options.scenarioFilter] - Only rejudge results for this scenario ID
  * @param {number} [options.parallelism] - Concurrent judge calls (default 3)
@@ -4390,6 +4523,8 @@ export function generateReport(runId) {
 export async function rejudgeRun(runId, options = {}) {
   const {
     judgeOverride = null,
+    judgeCli = null,
+    judgeCliModel = null,
     verbose = false,
     scenarioFilter = null,
     parallelism = DEFAULT_PARALLELISM,
@@ -4400,6 +4535,13 @@ export async function rejudgeRun(runId, options = {}) {
 
   const run = evaluationStore.getRun(runId);
   if (!run) throw new Error(`Run not found: ${runId}`);
+
+  if (judgeOverride && judgeCli) {
+    throw new Error('Use either judgeOverride or judgeCli, not both');
+  }
+  if (judgeCli && !SUPPORTED_JUDGE_CLIS.has(String(judgeCli).toLowerCase())) {
+    throw new Error(`Unsupported judge CLI: ${judgeCli}`);
+  }
 
   let results = evaluationStore.getResults(runId, {
     scenarioId: scenarioFilter || null,
@@ -4414,10 +4556,15 @@ export async function rejudgeRun(runId, options = {}) {
 
   // Resolve the target judge label so we can detect prior rejudgments by the same judge
   let targetJudgeLabel = null;
+  const effectiveCliJudgeModel = judgeCli ? judgeCliModel || getDefaultCliJudgeModelOverride() : null;
   if (!overwrite) {
     try {
-      const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
-      targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
+      if (judgeCli) {
+        targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel);
+      } else {
+        const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
+        targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
+      }
     } catch {
       // If we can't resolve, skip the cross-call dedup (fall back to within-call dedup only)
     }
@@ -4455,6 +4602,7 @@ export async function rejudgeRun(runId, options = {}) {
     `\nRejudging ${results.length} unique results from run ${runId}${skipped > 0 ? ` (skipping ${skipped} duplicates)` : ''}`,
   );
   if (judgeOverride) log(`  Judge override: ${judgeOverride}`);
+  if (judgeCli) log(`  Judge CLI: ${judgeCli}${effectiveCliJudgeModel ? ` (${effectiveCliJudgeModel})` : ''}`);
   if (scenarioFilter) log(`  Scenario filter: ${scenarioFilter}`);
 
   // Capture old scores for before/after comparison
@@ -4515,23 +4663,33 @@ export async function rejudgeRun(runId, options = {}) {
           }
         }
 
-        const evaluation = await retryWithBackoff(
-          () =>
-            rubricEvaluator.evaluateSuggestion(
-              suggestion,
-              {
-                name: fullScenario.name,
-                description: fullScenario.description,
-                expectedBehavior: fullScenario.expected_behavior,
-                learnerContext: fullScenario.learner_context,
-                requiredElements: fullScenario.required_elements,
-                forbiddenElements: fullScenario.forbidden_elements,
+        const scenarioContext = {
+          name: fullScenario.name,
+          description: fullScenario.description,
+          expectedBehavior: fullScenario.expected_behavior,
+          learnerContext: fullScenario.learner_context,
+          requiredElements: fullScenario.required_elements,
+          forbiddenElements: fullScenario.forbidden_elements,
+        };
+
+        const evaluation = judgeCli
+          ? await retryWithBackoff(
+              async () => {
+                const prompt = rubricEvaluator.buildEvaluationPrompt(suggestion, scenarioContext, { dialogueContext });
+                const startTime = Date.now();
+                const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+                return normalizeCliJudgeEvaluation(
+                  parsed,
+                  getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel),
+                  Date.now() - startTime,
+                );
               },
-              { dialogueContext },
-              judgeOverrideObj,
-            ),
-          {},
-        );
+              {},
+            )
+          : await retryWithBackoff(
+              () => rubricEvaluator.evaluateSuggestion(suggestion, scenarioContext, { dialogueContext }, judgeOverrideObj),
+              {},
+            );
 
         if (evaluation.success) {
           // Map evaluationTimeMs → judgeLatencyMs for DB storage

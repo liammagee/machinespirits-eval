@@ -19,6 +19,7 @@ import {
   resolveEvalProfile,
   flattenConversationHistory,
   isTransientEvaluationError,
+  getCliJudgeModelLabel,
 } from '../services/evaluationRunner.js';
 
 describe('resolveEvalProfile', () => {
@@ -201,6 +202,24 @@ describe('resolveEvalProfile', () => {
     assert.strictEqual(result.resolvedProfileName, 'some_custom_profile');
     assert.strictEqual(result.useDialogue, false, 'unknown profile defaults to no dialogue');
     assert.strictEqual(result.maxRounds, 0, 'unknown profile defaults to 0 rounds');
+  });
+});
+
+describe('getCliJudgeModelLabel', () => {
+  it('formats codex CLI labels for preserve-history rejudge deduping', () => {
+    assert.strictEqual(getCliJudgeModelLabel('codex', 'gpt-5'), 'codex-cli/gpt-5');
+    assert.strictEqual(getCliJudgeModelLabel('codex'), 'codex-cli/auto');
+  });
+
+  it('formats gemini and claude CLI labels consistently', () => {
+    assert.strictEqual(getCliJudgeModelLabel('gemini', 'gemini-2.5-pro'), 'gemini-cli/gemini-2.5-pro');
+    assert.strictEqual(getCliJudgeModelLabel('gemini'), 'gemini-cli/auto');
+    assert.strictEqual(getCliJudgeModelLabel('claude', 'claude-opus-4-6'), 'claude-code/claude-opus-4-6');
+    assert.strictEqual(getCliJudgeModelLabel('claude'), 'claude-opus-4.6');
+  });
+
+  it('rejects unsupported CLI judges', () => {
+    assert.throws(() => getCliJudgeModelLabel('foobar'), /Unsupported judge CLI/);
   });
 });
 

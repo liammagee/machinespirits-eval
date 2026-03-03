@@ -12,6 +12,7 @@ const { callAI } = tutorDialogueEngine;
 
 import * as learnerWritingPad from './memory/learnerWritingPad.js';
 import * as tutorWritingPad from './memory/tutorWritingPad.js';
+import { stripThinkBlocks } from './evaluationTextSanitizer.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -69,6 +70,11 @@ function makeDeliberationEntry(role, response, agentConfig = null) {
     },
     apiPayload: response?.apiPayload || null,
   };
+}
+
+function sanitizeLearnerReusableText(text) {
+  if (!text) return '';
+  return stripThinkBlocks(text).trim();
 }
 
 // Interaction outcomes for tracking
@@ -303,7 +309,9 @@ Initial state: ${scenario?.learnerStartState || 'Beginning new topic'}`;
 
     // If this is superego and we have prior deliberation (ego), include it for critique
     if (role === 'superego' && internalDeliberation.length > 0) {
-      const priorDeliberation = internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n');
+      const priorDeliberation = internalDeliberation
+        .map((d) => `${d.role.toUpperCase()}: ${sanitizeLearnerReusableText(d.content)}`)
+        .join('\n\n');
       roleContext += `
 
 The EGO's initial reaction was:
@@ -313,7 +321,9 @@ Review the EGO's first impression. Is it too superficial? What's being avoided? 
     } else {
       roleContext += `
 
-Generate this agent's internal voice as the learner approaches this topic for the first time.`;
+${role === 'unified_learner'
+  ? 'Generate only what the learner would actually say out loud as an opening message about this topic.'
+  : "Generate this agent's internal voice as the learner approaches this topic for the first time."}`;
     }
 
     const prompt = buildLearnerPrompt(agentConfig, persona, roleContext);
@@ -354,10 +364,10 @@ Generate this agent's internal voice as the learner approaches this topic for th
 Scenario: ${scenario?.name || 'General learning'}
 
 Your initial reaction was:
-"${egoInitial?.content || ''}"
+"${sanitizeLearnerReusableText(egoInitial?.content || '')}"
 
 Internal review feedback:
-"${superegoFeedback?.content || ''}"
+"${sanitizeLearnerReusableText(superegoFeedback?.content || '')}"
 
 Consider this feedback. You have final authority — accept, reject, or modify as you see fit.`;
 
@@ -392,7 +402,7 @@ Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
     trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
 
     return {
-      externalMessage: externalResponse.content,
+      externalMessage: extractExternalSection(externalResponse.content),
       internalDeliberation,
       emotionalState: detectEmotionalState(internalDeliberation),
       understandingLevel: 'initial',
@@ -403,9 +413,9 @@ Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
   // or adapt the scenario opening if one is provided.
   if (hasOpeningMessage) {
     const lastConfig = learnerConfig.getAgentConfig(agentRoles[agentRoles.length - 1], profile.name);
-    const adaptPrompt = `You are simulating a learner with this internal voice:
+    const adaptPrompt = `You are simulating a learner whose current stance sounds like this:
 
-${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${d.content}`).join('\n\n')}
+${internalDeliberation.map((d) => `${d.role.toUpperCase()}: ${sanitizeLearnerReusableText(d.content)}`).join('\n\n')}
 
 The learner wants to open with this message: "${scenario.learnerOpening}"
 
@@ -427,7 +437,7 @@ Do NOT include internal thoughts or meta-commentary.`;
     trace.metrics.learnerOutputTokens += adaptResponse.usage?.outputTokens || 0;
 
     return {
-      externalMessage: adaptResponse.content,
+      externalMessage: extractExternalSection(adaptResponse.content),
       internalDeliberation,
       emotionalState: detectEmotionalState(internalDeliberation),
       understandingLevel: 'initial',
@@ -437,7 +447,7 @@ Do NOT include internal thoughts or meta-commentary.`;
   // No opening message, single agent — use the last deliberation step directly
   const lastDelib = internalDeliberation[internalDeliberation.length - 1];
   return {
-    externalMessage: lastDelib?.content || '',
+    externalMessage: extractExternalSection(lastDelib?.content || ''),
     internalDeliberation,
     emotionalState: detectEmotionalState(internalDeliberation),
     understandingLevel: 'initial',
@@ -614,15 +624,24 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
 }
 
 /**
- * Extract the [EXTERNAL] section from unified learner output.
- * The unified learner prompt requests [INTERNAL]/[EXTERNAL] structured format.
- * Returns just the external speech; if no tags found, returns full text unchanged.
+ * Extract the learner-visible speech from a model response.
+ * Supports both the legacy [INTERNAL]/[EXTERNAL] format and the newer
+ * visible-only contract, while stripping provider reasoning blocks.
  */
 function extractExternalSection(text) {
-  if (!text) return '';
-  const match = text.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
-  if (match) return match[1].trim();
-  return text;
+  const sanitized = sanitizeLearnerReusableText(text);
+  if (!sanitized) return '';
+
+  const externalMatch = sanitized.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
+  if (externalMatch) return externalMatch[1].trim();
+
+  // If the model only emitted an INTERNAL block, do not surface that private
+  // monologue as learner-visible text.
+  if (/\[INTERNAL\]:?/i.test(sanitized)) {
+    return sanitized.replace(/\[INTERNAL\]:?[\s\S]*$/i, '').trim();
+  }
+
+  return sanitized.replace(/^\[EXTERNAL\]:?\s*/i, '').trim();
 }
 
 /**
@@ -998,7 +1017,7 @@ export async function generateLearnerResponse(options) {
   if (useMessageChains && conversationHistory.length > 0) {
     learnerExternalHistory = conversationHistory.map((m) => ({
       role: m.role === 'tutor' ? 'user' : 'assistant',
-      content: m.content,
+      content: extractExternalSection(m.content),
     }));
   }
 
@@ -1036,8 +1055,9 @@ export async function generateLearnerResponse(options) {
   // Build conversation context string from history
   const conversationContext = conversationHistory
     .slice(-6)
-    .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+    .map((m) => `${m.role.toUpperCase()}: ${extractExternalSection(m.content)}`)
     .join('\n\n');
+  const visibleTutorMessage = extractExternalSection(tutorMessage);
 
   // Psychodynamic flow: Ego (initial) → Superego (critique) → Ego (revision/final)
   // This mirrors the tutor architecture where the ego has final authority over output,
@@ -1052,11 +1072,11 @@ export async function generateLearnerResponse(options) {
     if (memoryContext) {
       egoContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    egoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+    egoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"`;
     if (profileContext) {
       egoContext += `\n\n${profileContext}`;
     }
-    egoContext += `\n\nGenerate your initial internal reaction as the learner's ego.`;
+    egoContext += `\n\nGenerate your initial internal reaction as the learner's ego. Keep hidden reasoning private and put only the learner's actual wording in your final answer.`;
     const egoSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoContext);
 
     const egoInitialResponse = await callLLM(
@@ -1075,7 +1095,10 @@ export async function generateLearnerResponse(options) {
 
     // Record ego initial output in internal chain (for ego revision)
     if (useMessageChains) {
-      learnerEgoInternalHistory.push({ role: 'assistant', content: egoInitialResponse.content });
+      learnerEgoInternalHistory.push({
+        role: 'assistant',
+        content: sanitizeLearnerReusableText(egoInitialResponse.content),
+      });
     }
     tokenUsage.inputTokens += egoInitialResponse.usage?.inputTokens || 0;
     tokenUsage.outputTokens += egoInitialResponse.usage?.outputTokens || 0;
@@ -1091,7 +1114,7 @@ export async function generateLearnerResponse(options) {
     if (memoryContext) {
       superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nThe EGO's initial reaction was:\n"${egoInitialResponse.content}"`;
+    superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nThe EGO's initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"`;
     if (profileContext) {
       superegoContext += `\n\n${profileContext}`;
     }
@@ -1122,7 +1145,7 @@ export async function generateLearnerResponse(options) {
     if (memoryContext) {
       egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"\n\nYour initial reaction was:\n"${egoInitialResponse.content}"\n\nInternal review feedback:\n"${superegoResponse.content}"\n\nConsider this feedback. You have final authority — accept, reject, or modify as you see fit.\n\nRespond with ONLY what the learner would say out loud to the tutor (1-4 sentences). Do NOT include internal thoughts, meta-commentary, or references to any review process.`;
+    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"\n\nConsider this feedback. You have final authority — accept, reject, or modify as you see fit.\n\nRespond with ONLY what the learner would say out loud to the tutor (1-4 sentences). Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
     // Build combined history for ego revision: external + ego internal + superego feedback
@@ -1131,7 +1154,7 @@ export async function generateLearnerResponse(options) {
       egoRevisionMsgHistory = [
         ...(learnerExternalHistory || []),
         ...learnerEgoInternalHistory,
-        { role: 'user', content: `Internal review feedback:\n${superegoResponse.content}` },
+        { role: 'user', content: `Internal review feedback:\n${sanitizeLearnerReusableText(superegoResponse.content)}` },
       ];
     }
 
@@ -1177,11 +1200,13 @@ export async function generateLearnerResponse(options) {
       if (memoryContext) {
         roleContext += `\n\nYour memory and state:\n${memoryContext}`;
       }
-      roleContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${tutorMessage}"`;
+      roleContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"`;
       if (profileContext) {
         roleContext += `\n\n${profileContext}`;
       }
-      roleContext += `\n\nGenerate your internal reaction as this dimension of the learner's experience.`;
+      roleContext += role === 'unified_learner'
+        ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks.'
+        : '\n\nGenerate your internal reaction as this dimension of the learner\'s experience.';
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
       const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
@@ -1202,8 +1227,8 @@ export async function generateLearnerResponse(options) {
   const finalDeliberation = internalDeliberation[internalDeliberation.length - 1];
   const emotionalState = detectEmotionalState(internalDeliberation);
 
-  // Unified learner prompt requests [INTERNAL]/[EXTERNAL] format.
-  // Parse out the [EXTERNAL] section for what the tutor sees; keep full text in deliberation.
+  // Keep the raw deliberation in the trace, but sanitize learner-visible text
+  // before it reaches the tutor or gets reused in later turns.
   const rawContent = finalDeliberation.content;
   const externalOnly = extractExternalSection(rawContent);
 
@@ -1229,6 +1254,7 @@ export {
   detectTutorStrategy,
   extractTutorMessage,
   extractExternalSection,
+  sanitizeLearnerReusableText,
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,

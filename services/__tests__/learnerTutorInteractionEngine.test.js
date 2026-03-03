@@ -24,6 +24,9 @@ import {
   detectUnderstandingLevel,
   detectTutorStrategy,
   extractTutorMessage,
+  extractExternalSection,
+  generateLearnerResponse,
+  sanitizeLearnerReusableText,
   calculateMemoryDelta,
   INTERACTION_OUTCOMES,
 } from '../learnerTutorInteractionEngine.js';
@@ -246,6 +249,90 @@ describe('extractTutorMessage', () => {
   it('handles JSON with whitespace padding', () => {
     const json = '  ' + JSON.stringify([{ message: 'padded' }]) + '  ';
     assert.strictEqual(extractTutorMessage(json), 'padded');
+  });
+});
+
+// ============================================================================
+// learner output sanitization
+// ============================================================================
+
+describe('learner output sanitization', () => {
+  it('extractExternalSection strips think blocks from visible learner text', () => {
+    const raw = '<think>hidden chain</think> Visible learner reply.';
+    assert.strictEqual(extractExternalSection(raw), 'Visible learner reply.');
+  });
+
+  it('extractExternalSection supports legacy INTERNAL/EXTERNAL format after think stripping', () => {
+    const raw = '<think>draft plan</think>\n[INTERNAL]: private thoughts\n\n[EXTERNAL]: What the tutor should see';
+    assert.strictEqual(extractExternalSection(raw), 'What the tutor should see');
+  });
+
+  it('extractExternalSection drops INTERNAL-only leakage', () => {
+    const raw = '[INTERNAL]: private thoughts only';
+    assert.strictEqual(extractExternalSection(raw), '');
+  });
+
+  it('sanitizeLearnerReusableText strips think blocks for history reuse', () => {
+    assert.strictEqual(sanitizeLearnerReusableText('<think>hidden</think> Keep this part.'), 'Keep this part.');
+  });
+
+  it('generateLearnerResponse strips think blocks before reusing learner history', async () => {
+    const replies = [
+      { content: '<think>private opener</think> I think I partly get it.' },
+      { content: '<think>private critique</think> Ask for a concrete example.' },
+      { content: '<think>final hidden</think> Could you give me a concrete example?' },
+    ];
+    let callIndex = 0;
+    const llmCalls = [];
+
+    const llmCall = async (model, systemPrompt, messages, opts) => {
+      llmCalls.push({ model, systemPrompt, messages, opts });
+      return {
+        ...replies[callIndex++],
+        usage: { inputTokens: 10, outputTokens: 5 },
+      };
+    };
+
+    const result = await generateLearnerResponse({
+      tutorMessage: '<think>hidden tutor chain</think> Dialectics transforms both sides through contradiction.',
+      topic: 'Dialectics',
+      learnerProfile: 'ego_superego',
+      personaId: 'eager_novice',
+      conversationMode: 'messages',
+      conversationHistory: [
+        { role: 'learner', content: '<think>old learner chain</think> I thought it was a compromise.' },
+        { role: 'tutor', content: '<think>old tutor chain</think> It is more transformative than that.' },
+      ],
+      llmCall,
+    });
+
+    assert.strictEqual(result.externalMessage, 'Could you give me a concrete example?');
+
+    const egoInitial = result.internalDeliberation.find((entry) => entry.role === 'ego_initial');
+    const egoRevision = result.internalDeliberation.find((entry) => entry.role === 'ego_revision');
+
+    assert.ok(egoInitial?.inputMessages, 'ego initial should capture the sanitized external history');
+    assert.ok(egoRevision?.inputMessages, 'ego revision should capture the sanitized reuse chain');
+
+    const serializedInitialHistory = JSON.stringify(egoInitial.inputMessages);
+    const serializedRevisionHistory = JSON.stringify(egoRevision.inputMessages);
+
+    assert.ok(!serializedInitialHistory.includes('<think>'));
+    assert.ok(!serializedRevisionHistory.includes('<think>'));
+    assert.ok(serializedInitialHistory.includes('I thought it was a compromise.'));
+    assert.ok(serializedInitialHistory.includes('It is more transformative than that.'));
+    assert.ok(serializedRevisionHistory.includes('I think I partly get it.'));
+    assert.ok(serializedRevisionHistory.includes('Ask for a concrete example.'));
+
+    const serializedPrompts = JSON.stringify(llmCalls.map((call) => ({
+      systemPrompt: call.systemPrompt,
+      messages: call.messages,
+    })));
+    assert.ok(!serializedPrompts.includes('hidden tutor chain'));
+    assert.ok(!serializedPrompts.includes('old learner chain'));
+    assert.ok(!serializedPrompts.includes('old tutor chain'));
+    assert.ok(!serializedPrompts.includes('private opener'));
+    assert.ok(!serializedPrompts.includes('private critique'));
   });
 });
 
