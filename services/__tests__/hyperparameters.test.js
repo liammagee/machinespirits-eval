@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { getRequiredTemperature, getRequiredMaxTokens } from '../learnerTutorInteractionEngine.js';
-import { callJudgeModelWithConfig } from '../rubricEvaluator.js';
+import { callJudgeModelWithConfig, getAvailableJudge } from '../rubricEvaluator.js';
 
 describe('Explicit Hyperparameter Validation (Unit)', () => {
   describe('learnerTutorInteractionEngine validation', () => {
@@ -77,6 +77,52 @@ describe('Explicit Hyperparameter Validation (Unit)', () => {
         // If it fails, I'll update rubricEvaluator.js next.
         // For now, let's write the assertion exactly as we want it to work:
         assert.match(err.message, /Explicit max_tokens setting is required/i);
+      }
+    });
+
+    it('inherits rubric hyperparameters for judge model overrides', () => {
+      const judge = getAvailableJudge({
+        judgeOverride: {
+          model: 'lmstudio.qwen3.5-9b',
+        },
+      });
+
+      assert.strictEqual(judge.provider, 'lmstudio');
+      assert.strictEqual(judge.model, 'qwen3.5-9b');
+      assert.strictEqual(judge.hyperparameters.temperature, 0.2);
+      assert.strictEqual(judge.hyperparameters.max_tokens, 8000);
+    });
+
+    it('supports local OpenAI-compatible judge providers', async () => {
+      const originalFetch = global.fetch;
+      let capturedUrl = null;
+      let capturedBody = null;
+
+      global.fetch = async (url, options = {}) => {
+        capturedUrl = String(url);
+        capturedBody = JSON.parse(options.body);
+        return {
+          ok: true,
+          json: async () => ({
+            choices: [{ message: { content: '{"overall_score": 80, "scores": {}, "summary": "ok"}' } }],
+          }),
+        };
+      };
+
+      try {
+        const response = await callJudgeModelWithConfig('score this', {
+          provider: 'lmstudio',
+          model: 'qwen3.5-9b',
+          baseUrl: 'http://127.0.0.1:1234/v1/chat/completions',
+          hyperparameters: { temperature: 0.2, max_tokens: 8000 },
+        });
+
+        assert.strictEqual(response.includes('"overall_score": 80'), true);
+        assert.strictEqual(capturedUrl, 'http://127.0.0.1:1234/v1/chat/completions');
+        assert.strictEqual(capturedBody.model, 'qwen3.5-9b');
+        assert.deepStrictEqual(capturedBody.messages, [{ role: 'user', content: 'score this' }]);
+      } finally {
+        global.fetch = originalFetch;
       }
     });
   });

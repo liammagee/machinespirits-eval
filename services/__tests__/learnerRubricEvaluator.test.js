@@ -357,6 +357,40 @@ describe('buildLearnerEvaluationPrompt', () => {
     assert.ok(prompt.includes('(no message)'));
   });
 
+  it('strips think blocks from learner prompts before scoring', () => {
+    const turns = [
+      {
+        turnNumber: 0,
+        phase: 'learner',
+        externalMessage: '<think>private chain</think> Visible learner opener.',
+      },
+      {
+        turnNumber: 1,
+        phase: 'tutor',
+        externalMessage: '<think>private tutor chain</think> Visible tutor reply.',
+      },
+      {
+        turnNumber: 1,
+        phase: 'learner',
+        externalMessage: '<think>private learner chain</think> Visible learner follow-up.',
+      },
+    ];
+
+    const prompt = buildLearnerEvaluationPrompt({
+      turns,
+      targetTurnIndex: 2,
+      learnerArchitecture: 'unified',
+    });
+
+    assert.ok(prompt.includes('Visible learner opener.'));
+    assert.ok(prompt.includes('Visible tutor reply.'));
+    assert.ok(prompt.includes('Visible learner follow-up.'));
+    assert.ok(!prompt.includes('<think>'));
+    assert.ok(!prompt.includes('private chain'));
+    assert.ok(!prompt.includes('private tutor chain'));
+    assert.ok(!prompt.includes('private learner chain'));
+  });
+
   it('recognizes psychodynamic as multi-agent (same 5 dimensions)', () => {
     const prompt = buildLearnerEvaluationPrompt({
       turns: sampleTurns,
@@ -426,6 +460,30 @@ describe('buildLearnerHolisticEvaluationPrompt', () => {
     assert.ok(!prompt.includes('Internal deliberation:'));
     assert.ok(!prompt.includes('Superego (critique)'));
     assert.ok(prompt.includes('external messages only'));
+  });
+
+  it('strips think blocks from holistic learner prompts', () => {
+    const prompt = buildLearnerHolisticEvaluationPrompt({
+      turns: [
+        {
+          turnNumber: 0,
+          phase: 'tutor',
+          externalMessage: '<think>private tutor chain</think> Visible tutor message.',
+        },
+        {
+          turnNumber: 1,
+          phase: 'learner',
+          externalMessage: '<think>private learner chain</think> Visible learner message.',
+        },
+      ],
+      learnerArchitecture: 'unified',
+    });
+
+    assert.ok(prompt.includes('Visible tutor message.'));
+    assert.ok(prompt.includes('Visible learner message.'));
+    assert.ok(!prompt.includes('<think>'));
+    assert.ok(!prompt.includes('private tutor chain'));
+    assert.ok(!prompt.includes('private learner chain'));
   });
 
   it('same dimensions for unified learners (no conditional dimension)', () => {

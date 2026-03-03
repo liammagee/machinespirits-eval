@@ -15,6 +15,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
+import { stripThinkBlocks } from './evaluationTextSanitizer.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.resolve(__dirname, '..', 'config');
@@ -132,9 +133,10 @@ function buildTruncatedTranscript(turns, targetTurnIndex) {
     const turn = turns[i];
     const role = turn.phase === 'learner' ? 'LEARNER' : 'TUTOR';
     const turnLabel = `[Turn ${turn.turnNumber}, ${role}]`;
+    const externalMessage = stripThinkBlocks(turn.externalMessage || '') || '(no message)';
 
     lines.push(`${turnLabel}`);
-    lines.push(turn.externalMessage || '(no message)');
+    lines.push(externalMessage);
     lines.push('');
   }
 
@@ -161,7 +163,7 @@ function formatDeliberation(deliberation) {
           ego: 'Ego',
         }[step.role] || step.role;
 
-      return `**${roleLabel}**:\n${step.content}`;
+      return `**${roleLabel}**:\n${stripThinkBlocks(step.content || '')}`;
     })
     .join('\n\n');
 }
@@ -179,8 +181,9 @@ function buildHolisticTranscript(turns, includeDeliberation = false) {
 
   for (const turn of turns || []) {
     const role = turn.phase === 'learner' ? 'LEARNER' : 'TUTOR';
+    const externalMessage = stripThinkBlocks(turn.externalMessage || '') || '(no message)';
     lines.push(`[Turn ${turn.turnNumber}, ${role}]`);
-    lines.push(turn.externalMessage || '(no message)');
+    lines.push(externalMessage);
 
     if (includeDeliberation && turn.phase === 'learner' && turn.internalDeliberation?.length > 0) {
       lines.push('');
@@ -234,9 +237,10 @@ export function buildBatchedLearnerPrompt(params) {
   const turnListings = learnerTurnTargets
     .map(({ lt, targetIdx }) => {
       const turn = turns[targetIdx];
+      const externalMessage = stripThinkBlocks(turn?.externalMessage || '') || '(no message)';
       return `### Learner Turn ${lt + 1} (at dialogue position ${targetIdx + 1})
 **External message** (what the tutor sees):
-${turn?.externalMessage || '(no message)'}`;
+${externalMessage}`;
     })
     .join('\n\n');
 
@@ -353,6 +357,7 @@ export function buildLearnerEvaluationPrompt(params) {
 
   const targetTurn = turns[targetTurnIndex];
   const truncatedTranscript = buildTruncatedTranscript(turns, targetTurnIndex);
+  const targetExternalMessage = stripThinkBlocks(targetTurn?.externalMessage || '') || '(no message)';
 
   // Build dimension keys for JSON example
   const dimKeys = Object.keys(dimensions);
@@ -400,7 +405,7 @@ ${truncatedTranscript}
 ## LEARNER TURN TO EVALUATE
 
 **External message** (what the tutor sees):
-${targetTurn.externalMessage || '(no message)'}
+${targetExternalMessage}
 
 ## YOUR TASK
 
