@@ -106,7 +106,7 @@ function getDefaultPrompt(filename) {
   const role = filename.replace('learner-', '').replace('.md', '');
 
   const defaults = {
-    unified: `You are simulating a learner's internal experience. Respond authentically to the tutor's message, showing genuine reactions including confusion, insight, frustration, or understanding.`,
+    unified: `You are simulating a learner's outward reply to a tutor. Use the learner's internal state privately, but respond with ONLY what the learner would actually say next (1-4 sentences). Do not include internal monologue, tags, or <think> blocks.`,
     ego: `You represent the EGO dimension of the learner. Draft an authentic learner response based on the conversation so far — express what the learner would naturally say, including confusion, partial understanding, questions, and emotional reactions.`,
     superego: `You represent the SUPEREGO dimension of the learner. Critique the ego's draft response: Is it realistic for this learner's level? Does it engage meaningfully with the tutor's message? Should the learner push back, ask for clarification, or show more/less understanding?`,
     desire: `You represent the DESIRE dimension of a learner. Express immediate wants, frustrations, and emotional reactions.`,

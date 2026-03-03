@@ -2385,7 +2385,7 @@ async function main() {
         const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'rejudge'));
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js rejudge <runId> [--judge <model>] [--scenario <id>] [--verbose] [--overwrite]',
+            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>]] [--scenario <id>] [--verbose] [--overwrite]',
           );
           console.error('');
           console.error('By default, creates new rows (preserves history for inter-judge reliability).');
@@ -2410,16 +2410,30 @@ async function main() {
         const verbose = getFlag('verbose');
         const overwrite = getFlag('overwrite');
         const judgeOverride = getOption('judge') || null;
+        const judgeCli = getOption('judge-cli') || null;
+        const judgeCliModel = getOption('model') || null;
         const scenarioFilter = getOption('scenario') || null;
+
+        if (judgeOverride && judgeCli) {
+          console.error('Error: rejudge accepts either --judge or --judge-cli, not both');
+          process.exit(1);
+        }
+        if (judgeCli && !['claude', 'gemini', 'codex'].includes(judgeCli.toLowerCase())) {
+          console.error(`Error: --judge-cli must be 'claude', 'gemini', or 'codex', got '${judgeCli}'`);
+          process.exit(1);
+        }
 
         console.log(`\nRejudging run: ${runId}`);
         if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
+        if (judgeCli) console.log(`  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}`);
         if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
         console.log(`  Mode: ${overwrite ? 'overwrite (replace existing)' : 'preserve history (add new rows)'}`);
         console.log('');
 
         const summary = await evaluationRunner.rejudgeRun(runId, {
           judgeOverride,
+          judgeCli,
+          judgeCliModel,
           verbose,
           scenarioFilter,
           overwrite,
