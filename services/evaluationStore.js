@@ -946,7 +946,9 @@ function inferPlannedConfigSummary(profileName, metadata = {}) {
   const profile = profileName ? getTutorProfile(profileName) : null;
   const egoRef = profile?.ego?.provider && profile?.ego?.model ? `${profile.ego.provider}.${profile.ego.model}` : null;
   const superegoRef =
-    profile?.superego?.provider && profile?.superego?.model ? `${profile.superego.provider}.${profile.superego.model}` : null;
+    profile?.superego?.provider && profile?.superego?.model
+      ? `${profile.superego.provider}.${profile.superego.model}`
+      : null;
   const egoResolved = safeResolveModel(egoRef);
 
   const inferred = {
@@ -1003,10 +1005,14 @@ function buildTransientPlaceholderMap(runId, existingResults = null) {
   );
   const progressScenarioIds = progressEvents.map((event) => event?.scenarioId).filter(Boolean);
   const profileNames = [
-    ...new Set([...(metadata.profileNames || []), ...runStartProfiles].filter((value) => typeof value === 'string' && value)),
+    ...new Set(
+      [...(metadata.profileNames || []), ...runStartProfiles].filter((value) => typeof value === 'string' && value),
+    ),
   ];
   const scenarioIds = [
-    ...new Set([...(metadata.scenarioIds || []), ...progressScenarioIds].filter((value) => typeof value === 'string' && value)),
+    ...new Set(
+      [...(metadata.scenarioIds || []), ...progressScenarioIds].filter((value) => typeof value === 'string' && value),
+    ),
   ];
   const runsPerConfig = Number(metadata.runsPerConfig) || 1;
   const results = existingResults || getResults(runId);
