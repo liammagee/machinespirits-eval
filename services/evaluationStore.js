@@ -1862,7 +1862,7 @@ function parseResultRow(row) {
 
   // Fallback to legacy numeric columns if no structured scores found
   if (!scores) {
-    scores = {
+    const legacyScores = {
       relevance: row.score_relevance,
       specificity: row.score_specificity,
       pedagogical: row.score_pedagogical,
@@ -1870,6 +1870,7 @@ function parseResultRow(row) {
       actionability: row.score_actionability,
       tone: row.score_tone,
     };
+    scores = Object.values(legacyScores).some((value) => value != null) ? legacyScores : null;
   }
 
   return {
@@ -2196,6 +2197,9 @@ export function storeRejudgment(originalResult, evaluation) {
       judge_model, evaluation_reasoning, scores_with_reasoning, success, error_message,
       factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner, learner_architecture,
       scoring_method,
+      conversation_mode,
+      dialogue_content_hash,
+      config_hash,
       judge_latency_ms,
       tutor_rubric_version,
       tutor_ego_prompt_version,
@@ -2216,6 +2220,7 @@ export function storeRejudgment(originalResult, evaluation) {
       ?, ?, ?, ?, ?,
       ?, ?, ?, ?,
       ?,
+      ?, ?, ?,
       ?,
       ?,
       ?, ?, ?, ?,
@@ -2226,7 +2231,7 @@ export function storeRejudgment(originalResult, evaluation) {
   const scores = evaluation.scores || {};
   const firstTurnScore = evaluation.tutorFirstTurnScore ?? evaluation.overallScore ?? null;
 
-  const info = stmt.run(
+  const bindArgs = [
     originalResult.runId,
     originalResult.scenarioId,
     originalResult.scenarioName,
@@ -2277,6 +2282,9 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.factorMultiAgentLearner ?? null,
     originalResult.learnerArchitecture || null,
     'rubric', // Rejudgments only store successful rubric evaluations
+    originalResult.conversationMode || null,
+    originalResult.dialogueContentHash || null,
+    originalResult.configHash || null,
     evaluation.judgeLatencyMs ?? null,
     getTutorRubricVersion(),
     // Propagate prompt versions from original result (rejudging doesn't change prompts)
@@ -2285,7 +2293,8 @@ export function storeRejudgment(originalResult, evaluation) {
     originalResult.learnerPromptVersion || null,
     originalResult.promptContentHash || null,
     new Date().toISOString(),
-  );
+  ];
+  const info = stmt.run(...bindArgs);
 
   return info.lastInsertRowid;
 }

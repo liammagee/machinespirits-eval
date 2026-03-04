@@ -20,6 +20,9 @@ import {
   flattenConversationHistory,
   isTransientEvaluationError,
   getCliJudgeModelLabel,
+  normalizeCliJudgeEvaluation,
+  flattenNumericScores,
+  parseCliJudgeJsonResponse,
 } from '../services/evaluationRunner.js';
 
 describe('resolveEvalProfile', () => {
@@ -223,6 +226,88 @@ describe('getCliJudgeModelLabel', () => {
   });
 });
 
+describe('CLI judge normalization', () => {
+  it('parses the final JSON block when CLI stdout echoes the prompt first', () => {
+    const parsed = parseCliJudgeJsonResponse(`
+[2026-03-04T05:31:25] User instructions:
+\`\`\`json
+{"type":"review","title":"Echoed prompt object"}
+\`\`\`
+
+[2026-03-04T05:31:39] codex
+\`\`\`json
+{"scores":{"perception_quality":{"score":4,"reasoning":"ok"}},"overall_score":80,"summary":"Final answer"}
+\`\`\`
+`);
+
+    assert.deepStrictEqual(parsed, {
+      scores: { perception_quality: { score: 4, reasoning: 'ok' } },
+      overall_score: 80,
+      summary: 'Final answer',
+    });
+  });
+
+  it('accepts direct top-level dimension keys from CLI judges', () => {
+    const result = normalizeCliJudgeEvaluation(
+      {
+        perception_quality: { score: 4, reasoning: 'Attends to learner state.' },
+        pedagogical_craft: { score: 3, reasoning: 'Some scaffold.' },
+        recognition_quality: { score: 2, reasoning: 'Limited agency.' },
+        validation: {
+          passes_required: false,
+          required_missing: ['example'],
+          passes_forbidden: true,
+          forbidden_found: [],
+        },
+        overall_score: 61,
+        summary: 'Adequate but limited.',
+      },
+      'codex-cli/auto',
+      1200,
+    );
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.judgeModel, 'codex-cli/auto');
+    assert.strictEqual(result.scores.perception_quality.score, 4);
+    assert.strictEqual(result.scores.pedagogical_craft.score, 3);
+    assert.strictEqual(result.scores.recognition_quality.score, 2);
+    assert.strictEqual(result.passesRequired, false);
+    assert.deepStrictEqual(result.requiredMissing, ['example']);
+    assert.ok(result.overallScore != null, 'should compute or preserve an overall score');
+  });
+
+  it('fails clearly when parsed CLI JSON has no usable scores', () => {
+    const result = normalizeCliJudgeEvaluation(
+      {
+        summary: 'Looks reasonable.',
+        notes: ['no structured rubric provided'],
+      },
+      'codex-cli/auto',
+      900,
+    );
+
+    assert.strictEqual(result.success, false);
+    assert.match(result.error, /without usable scores or overall_score/i);
+  });
+});
+
+describe('flattenNumericScores', () => {
+  it('keeps dynamic rubric dimensions instead of only legacy ones', () => {
+    assert.deepStrictEqual(
+      flattenNumericScores({
+        perception_quality: { score: 4, reasoning: 'ok' },
+        pedagogical_craft: { score: '3', reasoning: 'ok' },
+        recognition_quality: 2,
+      }),
+      {
+        perception_quality: 4,
+        pedagogical_craft: 3,
+        recognition_quality: 2,
+      },
+    );
+  });
+});
+
 // ============================================================================
 // flattenConversationHistory — regression prevention for multi-turn learner bug
 //
@@ -324,5 +409,109 @@ describe('isTransientEvaluationError', () => {
   it('does not classify deterministic config errors as transient', () => {
     assert.strictEqual(isTransientEvaluationError('Scenario not found: bad_id'), false);
     assert.strictEqual(isTransientEvaluationError('Invalid profile configuration'), false);
+  });
+});
+
+// --- storeRejudgment column propagation ---
+import { storeRejudgment, getResultById, createRun } from '../services/evaluationStore.js';
+
+describe('storeRejudgment column propagation', () => {
+  // Create a shared test run once
+  let testRunId;
+
+  function makeOriginalResult(overrides = {}) {
+    return {
+      runId: testRunId,
+      scenarioId: 'test-scenario',
+      scenarioName: 'Test Scenario',
+      scenarioType: 'suggestion',
+      provider: 'openrouter',
+      model: 'test-model',
+      profileName: 'cell_80_base_single_unified',
+      hyperparameters: {},
+      promptId: 'test-prompt',
+      egoModel: 'test-ego',
+      superegoModel: null,
+      suggestions: ['suggestion1'],
+      rawResponse: 'raw response text',
+      latencyMs: 100,
+      inputTokens: 50,
+      outputTokens: 50,
+      cost: 0.001,
+      dialogueRounds: 3,
+      deliberationRounds: null,
+      apiCalls: 1,
+      dialogueId: 'dlg-test',
+      factorRecognition: 0,
+      factorMultiAgentTutor: 0,
+      factorMultiAgentLearner: 0,
+      learnerArchitecture: 'unified',
+      conversationMode: null,
+      dialogueContentHash: null,
+      configHash: null,
+      tutorEgoPromptVersion: null,
+      tutorSuperegoPromptVersion: null,
+      learnerPromptVersion: null,
+      promptContentHash: null,
+      ...overrides,
+    };
+  }
+
+  function makeEvaluation() {
+    return {
+      overallScore: 4.0,
+      tutorFirstTurnScore: 4.0,
+      scores: { relevance: 4, specificity: 3 },
+      baseScore: null,
+      recognitionScore: null,
+      passesRequired: true,
+      passesForbidden: true,
+      requiredMissing: [],
+      forbiddenFound: [],
+      judgeModel: 'test-judge',
+      summary: 'Good response',
+      judgeLatencyMs: 200,
+    };
+  }
+
+  // Ensure a run exists for the test rows
+  it('setup: create test run', () => {
+    const run = createRun({ description: 'storeRejudgment propagation test' });
+    testRunId = run.id;
+    assert.ok(testRunId, 'test run should be created');
+  });
+
+  it('copies conversation_mode from original result', () => {
+    const original = makeOriginalResult({ conversationMode: 'messages' });
+    const newId = storeRejudgment(original, makeEvaluation());
+    const stored = getResultById(newId);
+    assert.strictEqual(stored.conversationMode, 'messages',
+      'conversation_mode should be propagated from original');
+  });
+
+  it('copies dialogue_content_hash from original result', () => {
+    const hash = 'abc123def456';
+    const original = makeOriginalResult({ dialogueContentHash: hash });
+    const newId = storeRejudgment(original, makeEvaluation());
+    const stored = getResultById(newId);
+    assert.strictEqual(stored.dialogueContentHash, hash,
+      'dialogue_content_hash should be propagated from original');
+  });
+
+  it('copies config_hash from original result', () => {
+    const hash = 'cfg-hash-789';
+    const original = makeOriginalResult({ configHash: hash });
+    const newId = storeRejudgment(original, makeEvaluation());
+    const stored = getResultById(newId);
+    assert.strictEqual(stored.configHash, hash,
+      'config_hash should be propagated from original');
+  });
+
+  it('handles null conversation_mode gracefully', () => {
+    const original = makeOriginalResult({ conversationMode: null });
+    const newId = storeRejudgment(original, makeEvaluation());
+    const stored = getResultById(newId);
+    assert.strictEqual(stored.conversationMode, null,
+      'null conversation_mode should be stored as null');
   });
 });
