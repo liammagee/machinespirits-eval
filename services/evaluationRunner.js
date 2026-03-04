@@ -4971,6 +4971,21 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
             };
           }
 
+          // Echo detection: reject identical score vectors across turns
+          const ltEntries = Object.values(learnerTurnScores);
+          if (ltEntries.length >= 2) {
+            const sigs = ltEntries.map((ts) =>
+              Object.keys(ts.scores || {})
+                .sort()
+                .map((k) => `${k}=${typeof ts.scores[k] === 'object' ? ts.scores[k].score : ts.scores[k]}`)
+                .join(','),
+            );
+            if (sigs.every((s) => s === sigs[0])) {
+              log(`    learner SKIP: all ${ltEntries.length} turns have identical scores (echoed example)`);
+              return { phase: 'learner', success: false };
+            }
+          }
+
           // Write to DB
           const learnerAvg =
             Object.keys(learnerTurnScores).length > 0
