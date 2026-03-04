@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync, spawn } from 'child_process';
 import { createHash } from 'crypto';
+import { jsonrepair } from 'jsonrepair';
 import {
   tutorApiService as tutorApi,
   tutorConfigLoader,
@@ -18,6 +19,12 @@ import {
   setQuietMode,
 } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
+import {
+  buildLearnerEvaluationPrompt,
+  buildBatchedLearnerPrompt,
+  buildLearnerHolisticEvaluationPrompt,
+  calculateLearnerOverallScore,
+} from './learnerRubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import * as contentResolver from './contentResolver.js';
@@ -609,19 +616,176 @@ async function callCliJudge(prompt, judgeCli, modelOverride = null) {
     child.stdin.end();
   });
 
-  let jsonStr = String(stdout || '').trim();
-  const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fenceMatch) {
-    jsonStr = fenceMatch[1].trim();
-  } else {
-    const firstBrace = jsonStr.indexOf('{');
-    const lastBrace = jsonStr.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace > firstBrace) {
-      jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+  return parseCliJudgeJsonResponse(stdout);
+}
+
+function flattenNumericScores(scoreMap) {
+  if (!scoreMap || typeof scoreMap !== 'object') return null;
+
+  const flattened = {};
+  for (const [key, value] of Object.entries(scoreMap)) {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      flattened[key] = value;
+      continue;
+    }
+
+    if (typeof value === 'object' && value !== null) {
+      const numericScore = typeof value.score === 'number' ? value.score : Number(value.score);
+      if (Number.isFinite(numericScore)) {
+        flattened[key] = numericScore;
+      }
     }
   }
 
-  return JSON.parse(jsonStr);
+  return Object.keys(flattened).length > 0 ? flattened : null;
+}
+
+function extractCliJudgeScoreSource(parsed, dimensionMap) {
+  if (!parsed || typeof parsed !== 'object') return null;
+
+  const directKeys = new Set([
+    ...Object.keys(dimensionMap),
+    ...Object.keys(evalConfigLoader.getRubricDimensions?.() || {}),
+  ]);
+
+  const candidates = [];
+  if (parsed.scores && typeof parsed.scores === 'object') candidates.push(parsed.scores);
+  if (parsed.dimension_scores && typeof parsed.dimension_scores === 'object') candidates.push(parsed.dimension_scores);
+  if (parsed.dimensions && typeof parsed.dimensions === 'object') candidates.push(parsed.dimensions);
+
+  const directScores = {};
+  for (const [key, value] of Object.entries(parsed)) {
+    const looksLikeScoreObject =
+      typeof value === 'object' &&
+      value !== null &&
+      ('score' in value || 'reasoning' in value || 'rationale' in value || 'explanation' in value);
+    if (directKeys.has(key) && (looksLikeScoreObject || typeof value === 'number')) {
+      directScores[key] = value;
+    }
+  }
+  if (Object.keys(directScores).length > 0) candidates.push(directScores);
+
+  return candidates.find((candidate) => candidate && Object.keys(candidate).length > 0) || null;
+}
+
+function parseCliJudgeJsonResponse(text) {
+  const raw = String(text || '').trim();
+  if (!raw) {
+    throw new Error('Empty CLI judge response');
+  }
+
+  const sources = [];
+  const fencedMatches = [...raw.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+  for (const match of fencedMatches) {
+    if (match[1]?.trim()) sources.push(match[1].trim());
+  }
+  sources.push(raw);
+
+  const candidates = [];
+  const seen = new Set();
+
+  const pushCandidate = (value) => {
+    const candidate = String(value || '').trim();
+    if (!candidate || seen.has(candidate)) return;
+    seen.add(candidate);
+    candidates.push(candidate);
+  };
+
+  const extractBalancedObjects = (value) => {
+    const found = [];
+    let depth = 0;
+    let start = -1;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < value.length; i++) {
+      const ch = value[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\' && inString) {
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+
+      if (ch === '{') {
+        if (depth === 0) start = i;
+        depth += 1;
+      } else if (ch === '}') {
+        if (depth === 0) continue;
+        depth -= 1;
+        if (depth === 0 && start !== -1) {
+          found.push(value.slice(start, i + 1));
+          start = -1;
+        }
+      }
+    }
+
+    return found;
+  };
+
+  for (const source of sources) {
+    pushCandidate(source);
+    for (const objectCandidate of extractBalancedObjects(source)) {
+      pushCandidate(objectCandidate);
+    }
+  }
+
+  const errors = [];
+  for (const candidate of [...candidates].reverse()) {
+    try {
+      return JSON.parse(candidate);
+    } catch (error) {
+      errors.push(`JSON.parse: ${error.message}`);
+    }
+
+    try {
+      return JSON.parse(jsonrepair(candidate));
+    } catch (error) {
+      errors.push(`jsonrepair: ${error.message}`);
+    }
+  }
+
+  const preview = raw.slice(0, 300).replace(/\s+/g, ' ');
+  throw new Error(
+    `Could not parse CLI judge response as JSON. Tried ${candidates.length} candidate(s). ${errors[errors.length - 1] || ''} Raw preview: ${preview}`,
+  );
+}
+
+function extractCliJudgeOverallScore(parsed) {
+  const candidates = [
+    parsed?.overall_score,
+    parsed?.overallScore,
+    parsed?.total_score,
+    parsed?.totalScore,
+  ];
+
+  for (const candidate of candidates) {
+    const numeric = typeof candidate === 'number' ? candidate : Number(candidate);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+
+  return null;
+}
+
+function extractCliJudgeValidation(parsed) {
+  const validation = parsed?.validation && typeof parsed.validation === 'object' ? parsed.validation : parsed || {};
+
+  return {
+    passesRequired: validation?.passes_required ?? validation?.passesRequired ?? true,
+    passesForbidden: validation?.passes_forbidden ?? validation?.passesForbidden ?? true,
+    requiredMissing: validation?.required_missing ?? validation?.requiredMissing ?? [],
+    forbiddenFound: validation?.forbidden_found ?? validation?.forbiddenFound ?? [],
+  };
 }
 
 function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
@@ -635,33 +799,53 @@ function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
     tone: 'tone',
   };
 
+  const rawScores = extractCliJudgeScoreSource(parsed, dimensionMap) || {};
   const normalizedScores = {};
-  for (const [key, value] of Object.entries(parsed?.scores || {})) {
+  for (const [key, value] of Object.entries(rawScores)) {
     const normalizedKey = dimensionMap[key] || key;
     if (typeof value === 'object' && value !== null) {
-      normalizedScores[normalizedKey] = { score: value.score, reasoning: value.reasoning };
+      const numericScore = typeof value.score === 'number' ? value.score : Number(value.score);
+      if (!Number.isFinite(numericScore)) continue;
+      normalizedScores[normalizedKey] = {
+        score: numericScore,
+        reasoning: value.reasoning ?? value.rationale ?? value.explanation ?? null,
+      };
     } else if (typeof value === 'number') {
       normalizedScores[normalizedKey] = { score: value, reasoning: null };
     }
   }
 
+  const extractedOverallScore = extractCliJudgeOverallScore(parsed);
+  if (Object.keys(normalizedScores).length === 0 && extractedOverallScore == null) {
+    const preview = JSON.stringify(parsed)?.slice(0, 400) || 'null';
+    return {
+      success: false,
+      error: `CLI judge returned JSON without usable scores or overall_score. Parsed preview: ${preview}`,
+      judgeModel: judgeModelLabel,
+      judgeLatencyMs,
+    };
+  }
+
   const tutorFirstTurnScore =
     Object.keys(normalizedScores).length > 0
       ? rubricEvaluator.calculateOverallScore(normalizedScores)
-      : parsed?.overall_score ?? null;
+      : extractedOverallScore;
+
+  const validation = extractCliJudgeValidation(parsed);
 
   return {
     success: true,
     scores: normalizedScores,
     tutorFirstTurnScore,
     overallScore: tutorFirstTurnScore,
-    baseScore: rubricEvaluator.calculateBaseScore(normalizedScores),
-    recognitionScore: rubricEvaluator.calculateRecognitionScore(normalizedScores),
-    passesRequired: parsed?.validation?.passes_required ?? true,
-    passesForbidden: parsed?.validation?.passes_forbidden ?? true,
-    requiredMissing: parsed?.validation?.required_missing || [],
-    forbiddenFound: parsed?.validation?.forbidden_found || [],
-    summary: parsed?.summary || null,
+    baseScore: Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateBaseScore(normalizedScores) : null,
+    recognitionScore:
+      Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateRecognitionScore(normalizedScores) : null,
+    passesRequired: validation.passesRequired,
+    passesForbidden: validation.passesForbidden,
+    requiredMissing: validation.requiredMissing,
+    forbiddenFound: validation.forbiddenFound,
+    summary: parsed?.summary ?? parsed?.assessment ?? parsed?.overview ?? null,
     judgeModel: judgeModelLabel,
     judgeLatencyMs,
   };
@@ -2361,17 +2545,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     cost: genResult.metadata?.totalCost,
     dialogueId: genResult.metadata?.dialogueId,
     conversationMode: null,
-    scores:
-      rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
-        ? {
-            relevance: rubricResult.scores.relevance?.score,
-            specificity: rubricResult.scores.specificity?.score,
-            pedagogical: rubricResult.scores.pedagogical?.score,
-            personalization: rubricResult.scores.personalization?.score,
-            actionability: rubricResult.scores.actionability?.score,
-            tone: rubricResult.scores.tone?.score,
-          }
-        : null,
+    scores: flattenNumericScores(rubricResult?.scores),
     scoresWithReasoning:
       rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
     tutorFirstTurnScore,
@@ -2988,17 +3162,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       learnerEmotionalState: turnDef?._learnerEmotionalState || null,
       learnerMessageGenerated: !!turnDef?._learnerDeliberation,
       learnerOriginalMessage: turnDef?._originalMessage || null,
-      scores:
-        rubricResult?.scores && Object.keys(rubricResult.scores).length > 0
-          ? {
-              relevance: rubricResult.scores.relevance?.score,
-              specificity: rubricResult.scores.specificity?.score,
-              pedagogical: rubricResult.scores.pedagogical?.score,
-              personalization: rubricResult.scores.personalization?.score,
-              actionability: rubricResult.scores.actionability?.score,
-              tone: rubricResult.scores.tone?.score,
-            }
-          : null,
+      scores: flattenNumericScores(rubricResult?.scores),
+      scoresWithReasoning:
+        rubricResult?.scores && Object.keys(rubricResult.scores).length > 0 ? rubricResult.scores : null,
+      judgeModel: rubricResult?.judgeModel || null,
+      evaluationReasoning: rubricResult?.summary || null,
       turnScore,
       scoringMethod,
       passesRequired: rubricResult?.passesRequired ?? validation.passesRequired,
@@ -3780,6 +3948,12 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     dialogueRounds: turnResults.length,
     deliberationRounds: totalDeliberationRounds,
     scores: Object.keys(aggregateDimensions).length > 0 ? aggregateDimensions : null,
+    scoresWithReasoning:
+      Object.keys(aggregateDimensions).length > 0
+        ? Object.fromEntries(
+            Object.entries(aggregateDimensions).map(([key, value]) => [key, { score: value, reasoning: null }]),
+          )
+        : null,
     tutorFirstTurnScore,
     scoringMethod: turnResults.some((t) => t.scoringMethod === 'judge_failed')
       ? 'partial_judge_failure'
@@ -3794,6 +3968,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     passesForbidden: turnResults.every((t) => t.passesForbidden),
     requiredMissing,
     forbiddenFound,
+    judgeModel:
+      turnResults.find((turn) => turn.judgeModel)?.judgeModel || holisticDialogueScore?.judgeModel || null,
+    evaluationReasoning:
+      holisticDialogueScore?.summary || turnResults.find((turn) => turn.evaluationReasoning)?.evaluationReasoning || null,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     conversationMode,
@@ -4567,6 +4745,469 @@ export function generateReport(runId) {
 }
 
 /**
+ * Extract learner turns from a dialogue trace, mirroring eval-cli.js extractLearnerTurnsFromTrace.
+ * Each turn contains the external message and any internal deliberation entries (for multi-agent learners).
+ */
+function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) {
+  const learnerTurns = [];
+
+  // Strategy 1: look for explicit turn_action entries (single-prompt mode)
+  let turnMarkers = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
+
+  // Strategy 2: fall back to learner final output entries (messages mode — any learner architecture)
+  if (turnMarkers.length === 0) {
+    turnMarkers = trace.filter(
+      (t) =>
+        (t.agent === 'learner_synthesis' && t.action === 'response') ||
+        (t.agent === 'learner' && t.action === 'final_output'),
+    );
+  }
+
+  // Build conversationHistory lookup for supplementing empty messages
+  const convHistByTurn = {};
+  if (Array.isArray(conversationHistory)) {
+    conversationHistory.forEach((ch, i) => {
+      if (ch.learnerMessage) convHistByTurn[i] = ch.learnerMessage;
+    });
+  }
+
+  for (const ta of turnMarkers) {
+    let rawMessage = ta.action === 'final_output' ? ta.detail || ta.contextSummary || '' : ta.contextSummary || '';
+
+    // Strip [INTERNAL] section from unified learner output
+    const externalMatch = rawMessage.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
+    if (externalMatch) rawMessage = externalMatch[1].trim();
+
+    const turnData = {
+      turnIndex: ta.turnIndex,
+      externalMessage: rawMessage,
+      internalDeliberation: [],
+    };
+
+    if (!turnData.externalMessage && ta.turnIndex != null) {
+      turnData.externalMessage = convHistByTurn[ta.turnIndex - 1] || '';
+    }
+
+    if (isMultiAgent) {
+      const taIdx = trace.indexOf(ta);
+      for (let j = taIdx - 1; j >= 0; j--) {
+        const entry = trace[j];
+        if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
+          turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
+          break;
+        } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
+          turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
+        } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
+          turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
+        } else if (
+          (entry.agent === 'learner_synthesis' && entry.action === 'response') ||
+          (entry.agent === 'learner' && entry.action === 'final_output')
+        ) {
+          // final learner output — if this IS our marker, skip it
+        } else if (entry.agent === 'ego' || entry.agent === 'system' || entry.agent === 'superego') {
+          break;
+        }
+      }
+    }
+
+    learnerTurns.push(turnData);
+  }
+
+  return learnerTurns;
+}
+
+/**
+ * Score multi-turn dimensions (learner, dialogue, holistic, deliberation) for a rejudge row.
+ * Called after tutor per-turn scoring succeeds. Each phase is independently try/caught.
+ *
+ * @param {number|string} rowId - The DB row ID to update (from storeRejudgment or result.id for overwrite)
+ * @param {Object} result - The original evaluation result
+ * @param {Object} dialogueLog - Parsed dialogue log
+ * @param {Object} opts - Judge dispatch and logging context
+ */
+async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
+  const { judgeCli, judgeModel, effectiveCliJudgeModel, judgeOverrideObj, log, skipLearner, skipDeliberation } = opts;
+
+  const turnResults = dialogueLog.turnResults || [];
+  const dialogueTrace = dialogueLog.dialogueTrace || [];
+  const totalTurns = turnResults.length;
+  const scenarioId = result.scenarioId;
+  const profileName = result.profileName || `${result.provider}/${result.model}`;
+
+  if (totalTurns === 0) return;
+
+  const fullScenario = evalConfigLoader.getScenario(scenarioId);
+  if (!fullScenario) return;
+
+  // ── Shared judge call helper (returns parsed JSON) ──
+  async function callJudge(prompt) {
+    if (judgeCli) {
+      return await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+    } else {
+      // Use rubricEvaluator's API-based judge: callJudgeModel returns raw text, parseJudgeResponse parses it
+      const responseText = await rubricEvaluator.callJudgeModel(prompt, judgeOverrideObj);
+      return rubricEvaluator.parseJudgeResponse(responseText);
+    }
+  }
+
+  // ── Learner data prep ──
+  const isMultiAgent = rubricEvaluator.isEgoSuperegoLearner(dialogueTrace);
+  const personaDescription = dialogueLog.learnerContext || 'No persona description available';
+  const scenarioNameForLearner = fullScenario.name || scenarioId;
+  const learnerCtx = dialogueLog.learnerContext || null;
+  const transcriptArtifacts = dialogueLog.transcripts || null;
+
+  const learnerTurns = extractLearnerTurnsFromTrace(dialogueTrace, isMultiAgent, dialogueLog.conversationHistory);
+
+  // Build reconstructed turns for learner prompt builder
+  const reconstructedTurns = [];
+  for (let lt = 0; lt < learnerTurns.length; lt++) {
+    reconstructedTurns.push({
+      turnNumber: lt + 1,
+      phase: 'learner',
+      externalMessage: learnerTurns[lt].externalMessage,
+      internalDeliberation: learnerTurns[lt].internalDeliberation,
+    });
+    const tutorTurn = turnResults[lt + 1];
+    if (tutorTurn) {
+      const sug = tutorTurn.suggestions?.[0];
+      reconstructedTurns.push({
+        turnNumber: lt + 1,
+        phase: 'tutor',
+        externalMessage: sug?.message || sug?.text || JSON.stringify(sug),
+      });
+    }
+  }
+
+  // Pre-compute learner turn target indices
+  const learnerTurnTargets = [];
+  for (let lt = 0; lt < learnerTurns.length; lt++) {
+    const targetIdx = reconstructedTurns.findIndex(
+      (t) => t.phase === 'learner' && t.externalMessage === learnerTurns[lt].externalMessage,
+    );
+    if (targetIdx !== -1) {
+      learnerTurnTargets.push({ lt, targetIdx });
+    }
+  }
+
+  // ── Build transcript turns (shared by dialogue + holistic prompts) ──
+  const transcriptTurns = turnResults.map((t, idx) => ({
+    turnIndex: idx,
+    turnId: t.turnId,
+    suggestion: t.suggestions?.[0],
+    learnerAction: t.learnerAction,
+    learnerMessage: t.learnerMessage,
+  }));
+
+  // ── Parallel scoring phases ──
+  const promises = [];
+  const phaseLabels = [];
+
+  // Phase 1: Per-turn learner scoring
+  if (!skipLearner && learnerTurnTargets.length > 0) {
+    promises.push(
+      (async () => {
+        try {
+          let learnerTurnScores = {};
+
+          if (learnerTurnTargets.length > 1) {
+            // Attempt batched prompt first
+            const batchedPrompt = buildBatchedLearnerPrompt({
+              turns: reconstructedTurns,
+              learnerTurnTargets,
+              personaId: profileName,
+              personaDescription,
+              learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+              scenarioName: scenarioNameForLearner,
+              topic: scenarioId,
+            });
+            if (batchedPrompt) {
+              const parsed = await retryWithBackoff(async () => callJudge(batchedPrompt), {});
+              if (Array.isArray(parsed.turns)) {
+                for (const turnData of parsed.turns) {
+                  const lt = turnData.learner_turn_index ?? 0;
+                  const turnOverall = calculateLearnerOverallScore(turnData.scores || {}, isMultiAgent);
+                  learnerTurnScores[lt] = { scores: turnData.scores, overallScore: turnOverall };
+                }
+              }
+            }
+          }
+
+          // Fallback to individual if batched didn't produce results
+          if (Object.keys(learnerTurnScores).length === 0) {
+            for (const { lt, targetIdx } of learnerTurnTargets) {
+              const prompt = buildLearnerEvaluationPrompt({
+                turns: reconstructedTurns,
+                targetTurnIndex: targetIdx,
+                personaId: profileName,
+                personaDescription,
+                learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+                scenarioName: scenarioNameForLearner,
+                topic: scenarioId,
+              });
+              const parsed = await retryWithBackoff(async () => callJudge(prompt), {});
+              const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
+              learnerTurnScores[lt] = { scores: parsed.scores, overallScore: turnOverall };
+            }
+          }
+
+          // Learner holistic
+          let holisticResult = null;
+          if (learnerTurns.length > 0) {
+            const holisticPrompt = buildLearnerHolisticEvaluationPrompt({
+              turns: reconstructedTurns,
+              personaId: profileName,
+              personaDescription,
+              learnerArchitecture: isMultiAgent ? 'multi_agent' : 'unified',
+              scenarioName: scenarioNameForLearner,
+              topic: scenarioId,
+            });
+            const parsedHolistic = await retryWithBackoff(async () => callJudge(holisticPrompt), {});
+            const holisticScores = parsedHolistic.scores || {};
+            holisticResult = {
+              holisticScores,
+              holisticOverallScore: calculateLearnerOverallScore(holisticScores, isMultiAgent),
+              holisticSummary: parsedHolistic.summary || null,
+            };
+          }
+
+          // Write to DB
+          const learnerAvg =
+            Object.keys(learnerTurnScores).length > 0
+              ? Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) /
+                Object.values(learnerTurnScores).length
+              : null;
+
+          const updateData = {
+            scores: learnerTurnScores,
+            overallScore: learnerAvg,
+            judgeModel,
+          };
+          if (holisticResult) {
+            updateData.holisticScores = holisticResult.holisticScores;
+            updateData.holisticOverallScore = holisticResult.holisticOverallScore;
+            updateData.holisticSummary = holisticResult.holisticSummary;
+            updateData.holisticJudgeModel = judgeModel;
+          }
+          evaluationStore.updateResultLearnerScores(rowId, updateData);
+
+          log(`    learner: avg=${learnerAvg?.toFixed(1) ?? '?'}${holisticResult ? ` holistic=${holisticResult.holisticOverallScore.toFixed(1)}` : ''}`);
+          return { phase: 'learner', success: true, score: learnerAvg };
+        } catch (err) {
+          log(`    learner scoring FAIL: ${err.message}`);
+          return { phase: 'learner', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('learner');
+  }
+
+  // Phase 2: Dialogue quality (public)
+  if (!skipLearner) {
+    const dqPromptParams = {
+      turns: transcriptTurns,
+      dialogueTrace,
+      scenarioName: fullScenario.name,
+      scenarioDescription: fullScenario.description,
+      topic: fullScenario.topic || fullScenario.name,
+      turnCount: totalTurns,
+      learnerContext: learnerCtx,
+      transcriptArtifacts,
+    };
+
+    promises.push(
+      (async () => {
+        try {
+          const publicPrompt = rubricEvaluator.buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'public' });
+          const publicParsed = await retryWithBackoff(async () => callJudge(publicPrompt), {});
+          const publicScores = {};
+          for (const [key, value] of Object.entries(publicParsed.scores || {})) {
+            if (typeof value === 'object' && value !== null) {
+              publicScores[key] = { score: value.score, reasoning: value.reasoning };
+            } else if (typeof value === 'number') {
+              publicScores[key] = { score: value, reasoning: null };
+            }
+          }
+          const score =
+            Object.keys(publicScores).length > 0
+              ? rubricEvaluator.calculateDialogueQualityScore(publicScores)
+              : publicParsed.overall_score;
+
+          evaluationStore.updateDialogueQualityScore(rowId, {
+            dialogueQualityScore: score,
+            dialogueQualitySummary: publicParsed.summary || null,
+            dialogueQualityJudgeModel: judgeModel,
+          });
+          log(`    dialogue-quality(public)=${score?.toFixed(1)}`);
+          return { phase: 'dgp', success: true, score };
+        } catch (err) {
+          log(`    dialogue-quality(public) FAIL: ${err.message}`);
+          return { phase: 'dgp', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('dgp');
+
+    // Phase 3: Dialogue quality (internal)
+    promises.push(
+      (async () => {
+        try {
+          const fullPrompt = rubricEvaluator.buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'full' });
+          const fullParsed = await retryWithBackoff(async () => callJudge(fullPrompt), {});
+          const fullScores = {};
+          for (const [key, value] of Object.entries(fullParsed.scores || {})) {
+            if (typeof value === 'object' && value !== null) {
+              fullScores[key] = { score: value.score, reasoning: value.reasoning };
+            } else if (typeof value === 'number') {
+              fullScores[key] = { score: value, reasoning: null };
+            }
+          }
+          const score =
+            Object.keys(fullScores).length > 0
+              ? rubricEvaluator.calculateDialogueQualityScore(fullScores)
+              : fullParsed.overall_score;
+
+          evaluationStore.updateDialogueQualityInternalScore(rowId, {
+            dialogueQualityInternalScore: score,
+            dialogueQualityInternalSummary: fullParsed.summary || null,
+          });
+          log(`    dialogue-quality(full)=${score?.toFixed(1)}`);
+          return { phase: 'dgi', success: true, score };
+        } catch (err) {
+          log(`    dialogue-quality(full) FAIL: ${err.message}`);
+          return { phase: 'dgi', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('dgi');
+  }
+
+  // Phase 4: Tutor holistic (only for multi-turn)
+  if (!skipLearner && totalTurns > 1) {
+    promises.push(
+      (async () => {
+        try {
+          const hasRecognition = result.factorRecognition || profileName.includes('recog');
+          const holisticPrompt = rubricEvaluator.buildTutorHolisticEvaluationPrompt({
+            turns: transcriptTurns,
+            dialogueTrace,
+            scenarioName: fullScenario.name || scenarioId,
+            scenarioDescription: fullScenario.description,
+            learnerContext: learnerCtx,
+            hasRecognition,
+            transcriptArtifacts,
+          });
+          const parsedHolistic = await retryWithBackoff(async () => callJudge(holisticPrompt), {});
+          const holisticScores = parsedHolistic.scores || {};
+          const score = rubricEvaluator.calculateTutorHolisticScore(holisticScores, hasRecognition);
+
+          evaluationStore.updateResultTutorHolisticScores(rowId, {
+            holisticScores,
+            holisticOverallScore: score,
+            holisticSummary: parsedHolistic.summary || null,
+            holisticJudgeModel: judgeModel,
+          });
+          log(`    tutor-holistic=${score?.toFixed(1)}`);
+          return { phase: 'tutor-holistic', success: true, score };
+        } catch (err) {
+          log(`    tutor-holistic FAIL: ${err.message}`);
+          return { phase: 'tutor-holistic', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('tutor-holistic');
+  }
+
+  // Phase 5: Tutor deliberation (gated by hasTutorSuperego)
+  if (!skipDeliberation && rubricEvaluator.hasTutorSuperego(dialogueTrace)) {
+    const deliberationParams = {
+      turns: transcriptTurns,
+      dialogueTrace,
+      scenarioName: fullScenario.name || scenarioId,
+      scenarioDescription: fullScenario.description,
+      learnerContext: learnerCtx,
+    };
+    promises.push(
+      (async () => {
+        try {
+          const prompt = rubricEvaluator.buildTutorDeliberationPrompt(deliberationParams);
+          const parsed = await retryWithBackoff(async () => callJudge(prompt), {});
+          const scores = parsed.scores || {};
+          const score =
+            Object.keys(scores).length > 0 ? rubricEvaluator.calculateDeliberationScore(scores) : parsed.overall_score;
+
+          evaluationStore.updateTutorDeliberationScores(rowId, {
+            deliberationScores: scores,
+            deliberationScore: score,
+            deliberationSummary: parsed.summary || null,
+            deliberationJudgeModel: judgeModel,
+          });
+          log(`    tutor-deliberation=${score?.toFixed(1)}`);
+          return { phase: 'tutor-delib', success: true, score };
+        } catch (err) {
+          log(`    tutor-deliberation FAIL: ${err.message}`);
+          return { phase: 'tutor-delib', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('tutor-delib');
+  }
+
+  // Phase 6: Learner deliberation (gated by isMultiAgent)
+  if (!skipDeliberation && isMultiAgent) {
+    const deliberationParams = {
+      turns: transcriptTurns,
+      dialogueTrace,
+      scenarioName: fullScenario.name || scenarioId,
+      scenarioDescription: fullScenario.description,
+      learnerContext: learnerCtx,
+    };
+    promises.push(
+      (async () => {
+        try {
+          const prompt = rubricEvaluator.buildLearnerDeliberationPrompt(deliberationParams);
+          const parsed = await retryWithBackoff(async () => callJudge(prompt), {});
+          const scores = parsed.scores || {};
+          const score =
+            Object.keys(scores).length > 0 ? rubricEvaluator.calculateDeliberationScore(scores) : parsed.overall_score;
+
+          evaluationStore.updateLearnerDeliberationScores(rowId, {
+            deliberationScores: scores,
+            deliberationScore: score,
+            deliberationSummary: parsed.summary || null,
+            deliberationJudgeModel: judgeModel,
+          });
+          log(`    learner-deliberation=${score?.toFixed(1)}`);
+          return { phase: 'learner-delib', success: true, score };
+        } catch (err) {
+          log(`    learner-deliberation FAIL: ${err.message}`);
+          return { phase: 'learner-delib', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('learner-delib');
+  }
+
+  // Phase 7: Process measures (no judge call, just extract from dialogue log)
+  const tm = dialogueLog.transformationMetrics;
+  if (tm) {
+    evaluationStore.updateProcessMeasures(rowId, {
+      adaptationIndex: tm.tutorAdaptationIndex ?? null,
+      learnerGrowthIndex: tm.learnerGrowthIndex ?? null,
+      bilateralTransformationIndex: tm.bilateralTransformationIndex ?? null,
+      incorporationRate: tm.superegoMetrics?.incorporationRate ?? null,
+      dimensionConvergence: tm.dimensionConvergence ?? null,
+      transformationQuality: tm.transformationQuality ?? null,
+    });
+  }
+
+  // Wait for all judge phases
+  if (promises.length > 0) {
+    await Promise.all(promises);
+  }
+}
+
+/**
  * Re-judge all results in an existing run without regenerating tutor responses.
  *
  * By default, creates NEW rows preserving judgment history (for inter-judge reliability).
@@ -4581,6 +5222,8 @@ export function generateReport(runId) {
  * @param {string} [options.scenarioFilter] - Only rejudge results for this scenario ID
  * @param {number} [options.parallelism] - Concurrent judge calls (default 3)
  * @param {boolean} [options.overwrite] - If true, update existing rows instead of creating new ones
+ * @param {boolean} [options.skipLearner] - Skip learner, dialogue, and holistic scoring (tutor-only rejudge)
+ * @param {boolean} [options.skipDeliberation] - Skip deliberation scoring
  * @returns {Promise<Object>} Summary stats
  */
 export async function rejudgeRun(runId, options = {}) {
@@ -4592,6 +5235,8 @@ export async function rejudgeRun(runId, options = {}) {
     scenarioFilter = null,
     parallelism = DEFAULT_PARALLELISM,
     overwrite = false,
+    skipLearner = false,
+    skipDeliberation = false,
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -4705,11 +5350,12 @@ export async function rejudgeRun(runId, options = {}) {
 
         // Load dialogue context for multi-turn results
         let dialogueContext = null;
+        let dialogueLog = null;
         if (result.dialogueId) {
           const logPath = path.join(LOGS_DIR, `${result.dialogueId}.json`);
           try {
             if (fs.existsSync(logPath)) {
-              const dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
+              dialogueLog = JSON.parse(fs.readFileSync(logPath, 'utf-8'));
               if (dialogueLog.isMultiTurn && dialogueLog.dialogueTrace?.length > 0) {
                 dialogueContext = {
                   consolidatedTrace: dialogueLog.dialogueTrace,
@@ -4759,12 +5405,14 @@ export async function rejudgeRun(runId, options = {}) {
         if (evaluation.success) {
           // Map evaluationTimeMs → judgeLatencyMs for DB storage
           evaluation.judgeLatencyMs = evaluation.evaluationTimeMs ?? null;
+          let rowId;
           if (overwrite) {
             // Old behavior: update in place (loses history)
             evaluationStore.updateResultScores(result.id, evaluation);
+            rowId = result.id;
           } else {
             // New behavior: create new row (preserves history for reliability analysis)
-            evaluationStore.storeRejudgment(result, evaluation);
+            rowId = evaluationStore.storeRejudgment(result, evaluation);
           }
           succeeded++;
           if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
@@ -4772,6 +5420,26 @@ export async function rejudgeRun(runId, options = {}) {
           log(
             `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.tutorFirstTurnScore?.toFixed(1) ?? '--'})`,
           );
+
+          // Multi-turn: score learner, dialogue, holistic, deliberation
+          if (result.dialogueId && dialogueLog?.isMultiTurn) {
+            const judgeModelLabel = judgeCli
+              ? getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel)
+              : evaluation.judgeModel || null;
+            try {
+              await scoreMultiTurnRejudgment(rowId, result, dialogueLog, {
+                judgeCli,
+                judgeModel: judgeModelLabel,
+                effectiveCliJudgeModel,
+                judgeOverrideObj,
+                log,
+                skipLearner,
+                skipDeliberation,
+              });
+            } catch (mtErr) {
+              log(`    multi-turn scoring error: ${mtErr.message}`);
+            }
+          }
         } else {
           failed++;
           log(
@@ -4812,6 +5480,8 @@ export {
   stripRecentChatHistory,
   resolveConfigModels,
   flattenConversationHistory,
+  flattenNumericScores,
+  parseCliJudgeJsonResponse,
   buildMultiTurnContext,
   formatTurnForContext,
   buildMessageChain,
@@ -4819,6 +5489,7 @@ export {
   loadCheckpoint,
   deleteCheckpoint,
   listCheckpoints,
+  normalizeCliJudgeEvaluation,
 };
 
 export default {

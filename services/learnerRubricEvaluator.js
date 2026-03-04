@@ -85,8 +85,9 @@ export function calculateLearnerOverallScore(scores, isMultiAgent = false) {
     const scoreEntry = scores[key];
     if (!scoreEntry) continue;
 
-    const score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
-    if (typeof score !== 'number' || score < 1 || score > 5) continue;
+    let score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
+    if (typeof score === 'string') score = Number(score);
+    if (typeof score !== 'number' || isNaN(score) || score < 1 || score > 5) continue;
 
     weightedSum += score * dim.weight;
     totalWeight += dim.weight;
@@ -244,9 +245,9 @@ ${externalMessage}`;
     })
     .join('\n\n');
 
-  // Build example JSON
+  // Build example JSON — use placeholder text to prevent judges from echoing example values
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = Object.fromEntries(dimKeys.map((key, i) => [key, { score: 3 + (i % 3), reasoning: 'Brief rationale' }]));
+  const exampleScores = Object.fromEntries(dimKeys.map((key) => [key, { score: 0, reasoning: 'TODO: replace with your 1-5 score and rationale' }]));
   const exampleTurn = {
     learner_turn_index: 0,
     scores: exampleScores,
@@ -359,11 +360,12 @@ export function buildLearnerEvaluationPrompt(params) {
   const truncatedTranscript = buildTruncatedTranscript(turns, targetTurnIndex);
   const targetExternalMessage = stripThinkBlocks(targetTurn?.externalMessage || '') || '(no message)';
 
-  // Build dimension keys for JSON example
+  // Build dimension keys for JSON example — use placeholder instead of numeric scores
+  // to prevent judges (especially Codex CLI) from echoing example values verbatim
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => {
-      return `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`;
+    .map((key) => {
+      return `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`;
     })
     .join(',\n');
 
@@ -471,8 +473,8 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => {
-      return `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`;
+    .map((key) => {
+      return `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`;
     })
     .join(',\n');
 

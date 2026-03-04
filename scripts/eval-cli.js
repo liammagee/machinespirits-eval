@@ -2562,11 +2562,13 @@ async function main() {
         const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'rejudge'));
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>]] [--scenario <id>] [--verbose] [--overwrite]',
+            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>]] [--scenario <id>] [--verbose] [--overwrite] [--skip-learner] [--skip-deliberation]',
           );
           console.error('');
           console.error('By default, creates new rows (preserves history for inter-judge reliability).');
           console.error('Use --overwrite to replace existing scores instead.');
+          console.error('Use --skip-learner to skip learner + dialogue + holistic scoring (tutor-only rejudge).');
+          console.error('Use --skip-deliberation to skip deliberation scoring.');
           process.exit(1);
         }
 
@@ -2586,6 +2588,8 @@ async function main() {
 
         const verbose = getFlag('verbose');
         const overwrite = getFlag('overwrite');
+        const skipLearner = getFlag('skip-learner');
+        const skipDeliberation = getFlag('skip-deliberation');
         const judgeOverride = getOption('judge') || null;
         const judgeCli = getOption('judge-cli') || null;
         const judgeCliModel = getOption('model') || null;
@@ -2605,6 +2609,8 @@ async function main() {
         if (judgeCli) console.log(`  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}`);
         if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
         console.log(`  Mode: ${overwrite ? 'overwrite (replace existing)' : 'preserve history (add new rows)'}`);
+        if (skipLearner) console.log('  Skipping: learner + dialogue + holistic scoring');
+        if (skipDeliberation) console.log('  Skipping: deliberation scoring');
         console.log('');
 
         const summary = await evaluationRunner.rejudgeRun(runId, {
@@ -2614,6 +2620,8 @@ async function main() {
           verbose,
           scenarioFilter,
           overwrite,
+          skipLearner,
+          skipDeliberation,
         });
 
         console.log('\n' + '='.repeat(60));
