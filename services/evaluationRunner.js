@@ -577,7 +577,7 @@ async function callCliJudge(prompt, judgeCli, modelOverride = null) {
 
   if (cli === 'gemini') {
     cliBinary = 'gemini';
-    cliArgs = ['-o', 'text'];
+    cliArgs = ['-s', '-o', 'text'];
     if (modelOverride) cliArgs.push('-m', modelOverride);
     cliEnv = { ...process.env };
   } else if (cli === 'codex') {
@@ -4991,7 +4991,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
           }
           evaluationStore.updateResultLearnerScores(rowId, updateData);
 
-          log(`    learner: avg=${learnerAvg?.toFixed(1) ?? '?'}${holisticResult ? ` holistic=${holisticResult.holisticOverallScore.toFixed(1)}` : ''}`);
+          log(`    learner: avg=${learnerAvg?.toFixed(1) ?? '?'}${holisticResult ? ` holistic=${holisticResult.holisticOverallScore?.toFixed(1) ?? '?'}` : ''}`);
           return { phase: 'learner', success: true, score: learnerAvg };
         } catch (err) {
           log(`    learner scoring FAIL: ${err.message}`);

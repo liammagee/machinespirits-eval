@@ -168,7 +168,7 @@ describe('TuH / LrH holistic scoring symmetry', () => {
       scenarioName: 'Test',
     });
     assert.ok(prompt.includes('Score each dimension from 1-5'), 'should use 1-5 scale');
-    assert.ok(prompt.includes('"score": 0'), 'should show JSON example with placeholder score field');
+    assert.ok(prompt.includes('"score": 3'), 'should show JSON example with sample score field');
     assert.ok(prompt.includes('"reasoning"'), 'should request reasoning');
     assert.ok(prompt.includes('"summary"'), 'should request summary');
     assert.ok(prompt.includes('ACROSS THE ENTIRE DIALOGUE'), 'should frame as whole-dialogue assessment');

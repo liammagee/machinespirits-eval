@@ -510,12 +510,7 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 \`\`\`json
 {
   "scores": {
-${Object.entries(dimensions)
-  .map(
-    ([key], i, arr) =>
-      `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}${i < arr.length - 1 ? ',' : ''}`,
-  )
-  .join('\n')}
+${(() => { const keys = Object.keys(dimensions); return `    "${keys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${keys.length} dimension keys listed above with your 1-5 scores)`; })()}
   },
   "validation": {
     "passes_required": true,
@@ -1549,7 +1544,7 @@ ${criteriaText}`;
   }
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`).join(',\n');
+  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
 
   return `You are an expert evaluator of AI tutoring dialogues. Your task is to evaluate the TUTOR's quality ACROSS THE ENTIRE DIALOGUE as a holistic trajectory, independent of individual turn quality.
 
@@ -2315,7 +2310,7 @@ ${criteriaText}`;
     : '';
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`).join(',\n');
+  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
 
   return `You are an expert evaluator of pedagogical dialogues. Your task is to evaluate the OVERALL QUALITY OF THE INTERACTION — not just the tutor or the learner individually, but the emergent quality of their exchange as a pedagogical encounter.
 
@@ -2499,7 +2494,7 @@ ${criteriaText}`;
   const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`).join(',\n');
+  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the TUTOR's internal ego/superego deliberation process — NOT the quality of the tutor's output (which is scored separately).
 
@@ -2596,7 +2591,7 @@ ${criteriaText}`;
   const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`).join(',\n');
+  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the LEARNER's internal ego/superego deliberation process — NOT the quality of the learner's output (which is scored separately).
 

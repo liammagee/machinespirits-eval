@@ -245,15 +245,17 @@ ${externalMessage}`;
     })
     .join('\n\n');
 
-  // Build example JSON — use placeholder text to prevent judges from echoing example values
+  // Build example JSON — show only first key with sample score to prevent judges from echoing
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = Object.fromEntries(dimKeys.map((key) => [key, { score: 0, reasoning: 'TODO: replace with your 1-5 score and rationale' }]));
-  const exampleTurn = {
-    learner_turn_index: 0,
-    scores: exampleScores,
-    overall_score: 55,
-    summary: 'Brief assessment',
-  };
+  const exampleTurnStr = `{
+        "learner_turn_index": 0,
+        "scores": {
+            "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},
+            ... (include ALL ${dimKeys.length} dimension keys listed above)
+        },
+        "overall_score": 55,
+        "summary": "Brief assessment"
+    }`;
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. You will evaluate MULTIPLE learner turns from the same dialogue, scoring each turn independently.
 
@@ -322,7 +324,7 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 \`\`\`json
 {
   "turns": [
-    ${JSON.stringify(exampleTurn, null, 4).split('\n').join('\n    ')}
+    ${exampleTurnStr}
   ]
 }
 \`\`\``;
@@ -360,14 +362,10 @@ export function buildLearnerEvaluationPrompt(params) {
   const truncatedTranscript = buildTruncatedTranscript(turns, targetTurnIndex);
   const targetExternalMessage = stripThinkBlocks(targetTurn?.externalMessage || '') || '(no message)';
 
-  // Build dimension keys for JSON example — use placeholder instead of numeric scores
-  // to prevent judges (especially Codex CLI) from echoing example values verbatim
+  // Build dimension keys for JSON example — show only the first key with a sample score
+  // and "..." for the rest to prevent judges (especially Codex CLI) from echoing all values
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys
-    .map((key) => {
-      return `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`;
-    })
-    .join(',\n');
+  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the quality of a LEARNER's response turn — how well the learner agent engages as a student, independent of the tutor's quality.
 
@@ -472,11 +470,7 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
   const fullTranscript = buildHolisticTranscript(turns, false);
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys
-    .map((key) => {
-      return `    "${key}": {"score": 0, "reasoning": "TODO: replace with your 1-5 score and rationale"}`;
-    })
-    .join(',\n');
+  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the LEARNER's quality ACROSS THE ENTIRE DIALOGUE, independent of tutor quality.
 
