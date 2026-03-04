@@ -1549,7 +1549,7 @@ ${criteriaText}`;
   }
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
+  const exampleScores = dimKeys.map((key, i) => `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`).join(',\n');
 
   return `You are an expert evaluator of AI tutoring dialogues. Your task is to evaluate the TUTOR's quality ACROSS THE ENTIRE DIALOGUE as a holistic trajectory, independent of individual turn quality.
 
@@ -2315,7 +2315,7 @@ ${criteriaText}`;
     : '';
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
+  const exampleScores = dimKeys.map((key, i) => `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`).join(',\n');
 
   return `You are an expert evaluator of pedagogical dialogues. Your task is to evaluate the OVERALL QUALITY OF THE INTERACTION — not just the tutor or the learner individually, but the emergent quality of their exchange as a pedagogical encounter.
 
@@ -2499,7 +2499,7 @@ ${criteriaText}`;
   const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
+  const exampleScores = dimKeys.map((key, i) => `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`).join(',\n');
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the TUTOR's internal ego/superego deliberation process — NOT the quality of the tutor's output (which is scored separately).
 
@@ -2596,7 +2596,7 @@ ${criteriaText}`;
   const fullTranscript = stripThinkBlocks(buildDialogueFullTranscript(turns, dialogueTrace, learnerContext));
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = dimKeys.map((key) => `    "${key}": {"score": 3, "reasoning": "Brief reason"}`).join(',\n');
+  const exampleScores = dimKeys.map((key, i) => `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`).join(',\n');
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the LEARNER's internal ego/superego deliberation process — NOT the quality of the learner's output (which is scored separately).
 

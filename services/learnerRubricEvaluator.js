@@ -246,7 +246,7 @@ ${externalMessage}`;
 
   // Build example JSON
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = Object.fromEntries(dimKeys.map((key) => [key, { score: 3, reasoning: 'Brief reason' }]));
+  const exampleScores = Object.fromEntries(dimKeys.map((key, i) => [key, { score: 3 + (i % 3), reasoning: 'Brief rationale' }]));
   const exampleTurn = {
     learner_turn_index: 0,
     scores: exampleScores,
@@ -362,8 +362,8 @@ export function buildLearnerEvaluationPrompt(params) {
   // Build dimension keys for JSON example
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key) => {
-      return `    "${key}": {"score": 3, "reasoning": "Brief reason"}`;
+    .map((key, i) => {
+      return `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`;
     })
     .join(',\n');
 
@@ -471,8 +471,8 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key) => {
-      return `    "${key}": {"score": 3, "reasoning": "Brief reason"}`;
+    .map((key, i) => {
+      return `    "${key}": {"score": ${3 + (i % 3)}, "reasoning": "Brief rationale"}`;
     })
     .join(',\n');
 
