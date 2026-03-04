@@ -43,6 +43,9 @@ import 'dotenv/config';
  *   --all-profiles         Use ALL profiles instead of the 8 factorial cells
  *   --allow-model-mix      Allow mixed tutor ego models in canonical factorial cell runs
  *   --skip-rubric          Skip AI-based rubric evaluation
+ *   --judge <ref>          Override provider-based rubric judge for 'run'
+ *   --judge-cli <name>     Use CLI rubric judge for 'run' or 'rejudge' (claude, gemini, codex)
+ *   --judge-cli-model <m>  Optional CLI judge model override for 'run'
  *   --verbose              Enable verbose output
  *   --runs <n>             Replications per cell (for 'run' command, default: 1)
  *   --parallelism <n>      Parallel worker count (run/resume default: 2, evaluate-learner default: 1)
@@ -209,6 +212,16 @@ function getCsvOption(name) {
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function resolveDefaultCliJudgeModelOverride(judgeCli) {
+  try {
+    const cli = String(judgeCli || '').toLowerCase();
+    if (cli !== 'claude') return null;
+    return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -1508,6 +1521,8 @@ async function main() {
         const allowModelMix = getFlag('allow-model-mix');
         const modelOverride = getOption('model');
         const judgeOverride = getOption('judge');
+        const judgeCli = getOption('judge-cli') || null;
+        const judgeCliModel = getOption('judge-cli-model') || null;
         const tutorModelOverride = getOption('tutor-model');
         const egoModelOverride = getOption('ego-model');
         const superegoModelOverride = getOption('superego-model');
@@ -1532,6 +1547,14 @@ async function main() {
         // --cluster and --scenario are mutually exclusive
         if (clusterOpt && scenarioOpt) {
           console.error('Error: --cluster and --scenario are mutually exclusive.');
+          process.exit(1);
+        }
+        if (judgeOverride && judgeCli) {
+          console.error('Error: use either --judge or --judge-cli, not both.');
+          process.exit(1);
+        }
+        if (judgeCli && !['claude', 'gemini', 'codex'].includes(judgeCli.toLowerCase())) {
+          console.error(`Error: --judge-cli must be 'claude', 'gemini', or 'codex', got '${judgeCli}'`);
           process.exit(1);
         }
 
@@ -1620,6 +1643,8 @@ async function main() {
           }
           if (judgeOverride) {
             console.log(`  Judge override: ${judgeOverride}`);
+          } else if (judgeCli) {
+            console.log(`  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}`);
           }
           if (learnerModelOverride) {
             console.log(`  Learner model override: ${learnerModelOverride}`);
@@ -1649,6 +1674,8 @@ async function main() {
           scenarioFilter: clusterOpt || null,
           modelOverride: modelOverride || null,
           judgeOverride: judgeOverride || null,
+          judgeCli: judgeCli ? judgeCli.toLowerCase() : null,
+          judgeCliModel: judgeCliModel || null,
           tutorModelOverride: tutorModelOverride || null,
           egoModelOverride: egoModelOverride || null,
           superegoModelOverride: superegoModelOverride || null,

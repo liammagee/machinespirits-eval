@@ -22,9 +22,12 @@ const SESSION_ROOT = path.join(ROOT, 'tmp', 'prompt-lab');
 const PROMPTS_ENV = 'MACHINESPIRITS_PROMPTS_DIR';
 const TUTOR_CORE_ROOT = fs.realpathSync(path.join(ROOT, 'node_modules', '@machinespirits', 'tutor-core'));
 const CANONICAL_PROMPTS_DIR = path.join(TUTOR_CORE_ROOT, 'prompts');
-const DEFAULT_JUDGE = 'openrouter.gemini-flash';
+const LEGACY_DEFAULT_JUDGE_REF = 'openrouter.gemini-flash';
+const DEFAULT_JUDGE_CLI = 'codex';
+const DEFAULT_RECOMMENDER_CLI = 'codex';
 const DEFAULT_AUTOTUNE_ITERATIONS = 3;
 const VALID_TARGETS = new Set(['tutor', 'learner', 'both']);
+const VALID_CLIS = new Set(['claude', 'gemini', 'codex']);
 
 const args = process.argv.slice(2);
 const command = args[0] || 'help';
@@ -66,13 +69,18 @@ Shared Options:
   --profile <name>       Eval profile (default: cell_80_messages_base_single_unified)
   --scenario <id>        Scenario id (default: mood_frustration_to_breakthrough)
   --model <ref>          Tutor model override (default: lmstudio.qwen3.5-9b)
-  --judge <ref>          Rubric judge override (default: openrouter.gemini-flash)
+  --judge <ref>          Provider-based rubric judge override
+  --judge-cli <name>     CLI rubric judge backend (default: codex)
+  --judge-cli-model <m>  Optional CLI judge model override
   --parallelism <n>      Eval parallelism for run (default: 1)
   --notes <text>         Free-form note attached to an iteration
   --dry-run              Use eval-cli mock mode; recommender uses a deterministic placeholder
 
 Recommend/Autotune:
-  --recommender <ref>    Prompt-rewriter model (default: config/evaluation-rubric.yaml recommender)
+  --recommender <ref>    Provider-based prompt rewriter override
+  --recommender-cli <n>  CLI prompt rewriter backend (default: codex)
+  --recommender-cli-model <m>
+                         Optional CLI recommender model override
   --basis <best|latest|N>
                          Which scored iteration to optimize from (default: best)
   --target <tutor|learner|both>
@@ -202,6 +210,59 @@ function normalizeTargetScope(value = 'both') {
     throw new Error(`Invalid --target value: ${value}. Expected tutor, learner, or both.`);
   }
   return normalized;
+}
+
+function normalizeCliName(value, { allowNull = false } = {}) {
+  if (value == null || value === '') {
+    if (allowNull) return null;
+    throw new Error(`Invalid CLI selection: ${value}`);
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (!VALID_CLIS.has(normalized)) {
+    throw new Error(`Invalid CLI selection: ${value}. Expected claude, gemini, or codex.`);
+  }
+  return normalized;
+}
+
+function getDefaultPromptLabJudgeSelection() {
+  return { judgeRef: null, judgeCli: DEFAULT_JUDGE_CLI, judgeCliModel: null };
+}
+
+function inferJudgeSourceFromCliArgs() {
+  return getOption('judge', null) || getOption('judge-cli', null) ? 'explicit' : 'default';
+}
+
+function getDefaultPromptLabRecommenderSelection() {
+  return { recommenderRef: null, recommenderCli: DEFAULT_RECOMMENDER_CLI, recommenderCliModel: null };
+}
+
+function formatCliLabel(cli, modelOverride = null) {
+  const normalized = normalizeCliName(cli);
+  if (normalized === 'gemini') return `gemini-cli/${modelOverride || 'auto'}`;
+  if (normalized === 'codex') return `codex-cli/${modelOverride || 'auto'}`;
+  return modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+}
+
+function formatJudgeSelection(selection = {}) {
+  if (selection.judgeRef) return selection.judgeRef;
+  if (selection.judgeCli) return formatCliLabel(selection.judgeCli, selection.judgeCliModel);
+  return formatCliLabel(DEFAULT_JUDGE_CLI);
+}
+
+function parseJudgeSelection(options = {}, fallback = getDefaultPromptLabJudgeSelection()) {
+  const judgeRef = options.judgeRef ?? fallback.judgeRef ?? null;
+  const judgeCli = options.judgeCli ?? fallback.judgeCli ?? null;
+  const judgeCliModel = options.judgeCliModel ?? fallback.judgeCliModel ?? null;
+  if (judgeRef && judgeCli) {
+    throw new Error('Use either a provider judge (--judge) or a CLI judge (--judge-cli), not both.');
+  }
+  if (judgeCli) {
+    return { judgeRef: null, judgeCli: normalizeCliName(judgeCli), judgeCliModel: judgeCliModel || null };
+  }
+  if (judgeRef) {
+    return { judgeRef, judgeCli: null, judgeCliModel: null };
+  }
+  return getDefaultPromptLabJudgeSelection();
 }
 
 function selectPromptFilesByTarget(session, targetScope = 'both') {
@@ -562,8 +623,22 @@ function ensureBaselineSnapshot(session) {
     session.recommendations = [];
     changed = true;
   }
-  if (!session.judgeRef) {
-    session.judgeRef = DEFAULT_JUDGE;
+  if (!session.judgeSource) {
+    if (!session.judgeRef && !session.judgeCli) {
+      Object.assign(session, getDefaultPromptLabJudgeSelection());
+      session.judgeSource = 'default';
+      changed = true;
+    } else if (session.judgeRef === LEGACY_DEFAULT_JUDGE_REF && !session.judgeCli) {
+      Object.assign(session, getDefaultPromptLabJudgeSelection());
+      session.judgeSource = 'migrated_default';
+      session.judgeMigratedAt = new Date().toISOString();
+      changed = true;
+    } else {
+      session.judgeSource = 'explicit';
+      changed = true;
+    }
+  } else if (!session.judgeRef && !session.judgeCli) {
+    Object.assign(session, getDefaultPromptLabJudgeSelection());
     changed = true;
   }
 
@@ -776,18 +851,62 @@ function parseJsonResponse(text) {
   );
 }
 
-function resolveRecommenderConfig(modelRefOverride = null) {
+function writeRawRecommenderResponse(sessionId, recommendationId, rawText, suffix = 'parse-error') {
+  ensureDir(recommendationsDir(sessionId));
+  const debugPath = path.join(recommendationsDir(sessionId), `${recommendationId}-${suffix}.txt`);
+  fs.writeFileSync(debugPath, rawText, 'utf8');
+  return debugPath;
+}
+
+function resolveRecommenderConfig(options = {}) {
+  const {
+    modelRefOverride = null,
+    cliOverride = null,
+    cliModelOverride = null,
+  } = options;
   const rubric = evalConfigLoader.loadRubric();
   const configured = rubric?.recommender || {};
-  const modelRef = modelRefOverride || configured.model || 'openrouter.sonnet';
-  const resolved = evalConfigLoader.resolveModel(modelRef);
   const temperature = configured.hyperparameters?.temperature ?? 0.4;
   const maxTokens = configured.hyperparameters?.max_tokens ?? 6000;
 
+  if (modelRefOverride && cliOverride) {
+    throw new Error('Use either a provider recommender (--recommender) or a CLI recommender (--recommender-cli), not both.');
+  }
+
+  if (cliOverride) {
+    return {
+      mode: 'cli',
+      cli: normalizeCliName(cliOverride),
+      modelRef: formatCliLabel(cliOverride, cliModelOverride || null),
+      provider: null,
+      model: cliModelOverride || null,
+      hyperparameters: {
+        temperature,
+        maxTokens,
+      },
+    };
+  }
+
+  if (modelRefOverride) {
+    const resolved = evalConfigLoader.resolveModel(modelRefOverride);
+    return {
+      mode: 'provider',
+      modelRef: modelRefOverride,
+      provider: resolved.provider,
+      model: resolved.model,
+      hyperparameters: {
+        temperature,
+        maxTokens,
+      },
+    };
+  }
+
   return {
-    modelRef,
-    provider: resolved.provider,
-    model: resolved.model,
+    mode: 'cli',
+    cli: DEFAULT_RECOMMENDER_CLI,
+    modelRef: formatCliLabel(DEFAULT_RECOMMENDER_CLI),
+    provider: null,
+    model: null,
     hyperparameters: {
       temperature,
       maxTokens,
@@ -795,8 +914,88 @@ function resolveRecommenderConfig(modelRefOverride = null) {
   };
 }
 
-async function callRecommenderJson(systemPrompt, userPrompt, modelRefOverride = null) {
-  const config = resolveRecommenderConfig(modelRefOverride);
+async function callStructuredCliJson(prompt, cliName, modelOverride = null) {
+  const cli = normalizeCliName(cliName);
+  let cliBinary;
+  let cliArgs;
+  let cliEnv;
+
+  if (cli === 'gemini') {
+    cliBinary = 'gemini';
+    cliArgs = ['-o', 'text'];
+    if (modelOverride) cliArgs.push('-m', modelOverride);
+    cliEnv = { ...process.env };
+  } else if (cli === 'codex') {
+    cliBinary = 'codex';
+    cliArgs = ['exec', '-'];
+    if (modelOverride) cliArgs.push('-m', modelOverride);
+    cliEnv = { ...process.env };
+  } else {
+    cliBinary = 'claude';
+    cliArgs = ['-p', '-', '--output-format', 'text'];
+    if (modelOverride) cliArgs.push('--model', modelOverride);
+    cliEnv = { ...process.env };
+    delete cliEnv.ANTHROPIC_API_KEY;
+    delete cliEnv.CLAUDECODE;
+  }
+
+  const rawText = await new Promise((resolve, reject) => {
+    const child = spawn(cliBinary, cliArgs, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: cliEnv,
+    });
+    let out = '';
+    let err = '';
+    child.stdout.on('data', (chunk) => {
+      out += chunk.toString();
+    });
+    child.stderr.on('data', (chunk) => {
+      err += chunk.toString();
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
+      else resolve(out);
+    });
+    child.stdin.write(prompt);
+    child.stdin.end();
+  });
+
+  try {
+    return {
+      rawText,
+      parsed: parseJsonResponse(rawText),
+      usage: null,
+    };
+  } catch (error) {
+    error.rawText = rawText;
+    throw error;
+  }
+}
+
+async function callRecommenderJson(systemPrompt, userPrompt, options = {}) {
+  const config = resolveRecommenderConfig(options);
+
+  if (config.mode === 'cli') {
+    const combinedPrompt = `${systemPrompt}\n\n${userPrompt}\n\nReturn JSON only.`;
+    try {
+      const response = await callStructuredCliJson(combinedPrompt, config.cli, config.model);
+      return {
+        parsed: response.parsed,
+        rawText: response.rawText,
+        recommenderRef: config.modelRef,
+        recommenderModel: config.model || 'auto',
+        usage: response.usage,
+      };
+    } catch (error) {
+      const wrapped = new Error(`Could not parse recommender output as JSON: ${error.message}`);
+      wrapped.rawText = error.rawText || '';
+      wrapped.recommenderRef = config.modelRef;
+      wrapped.recommenderModel = config.model || 'auto';
+      throw wrapped;
+    }
+  }
+
   const response = await unifiedAIProvider.call({
     provider: config.provider,
     model: config.model,
@@ -809,9 +1008,14 @@ async function callRecommenderJson(systemPrompt, userPrompt, modelRefOverride = 
   });
 
   const rawText = response.content || '';
-  let parsed;
   try {
-    parsed = parseJsonResponse(rawText);
+    return {
+      parsed: parseJsonResponse(rawText),
+      rawText,
+      recommenderRef: config.modelRef,
+      recommenderModel: response.model || config.model,
+      usage: response.usage || null,
+    };
   } catch (error) {
     const wrapped = new Error(`Could not parse recommender output as JSON: ${error.message}`);
     wrapped.rawText = rawText;
@@ -819,14 +1023,6 @@ async function callRecommenderJson(systemPrompt, userPrompt, modelRefOverride = 
     wrapped.recommenderModel = response.model || config.model;
     throw wrapped;
   }
-
-  return {
-    parsed,
-    rawText,
-    recommenderRef: config.modelRef,
-    recommenderModel: response.model || config.model,
-    usage: response.usage || null,
-  };
 }
 
 function createMockRecommendation(session, basisIteration, promptState, recommenderRef, allowedPrompts) {
@@ -924,7 +1120,7 @@ Session:
 - scenario_name: ${scenario?.name || session.scenarioId}
 - scenario_description: ${scenario?.description || 'n/a'}
 - tutor_model: ${session.modelRef}
-- judge_model: ${session.judgeRef || DEFAULT_JUDGE}
+- judge_model: ${formatJudgeSelection(session)}
 - target_scope: ${targetScope}
 - target_metric: tutorFirstTurnScore
 - basis_iteration: ${basisIteration?.iteration ?? 'n/a'}
@@ -952,6 +1148,50 @@ Generate concrete prompt revisions. Return JSON only.`,
   };
 }
 
+function buildCompactRecommendationEditPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope) {
+  const full = buildRecommendationPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope);
+  return {
+    ...full,
+    systemPrompt: `You are a rigorous prompt engineer optimizing a fixed tutoring benchmark. Output JSON only. Do not wrap your answer in markdown fences.
+
+Rules:
+- Only modify prompt files listed in allowed_filenames.
+- Keep output compact: DO NOT return full file contents.
+- Return only minimal edit operations against the CURRENT working prompt files.
+- Every anchor/find string must match the current file content exactly once.
+- Use at most 4 operations total.
+- Make minimal, targeted edits grounded in the benchmark evidence.
+- Preserve each file's role and basic markdown structure.
+- Never introduce visible chain-of-thought, [INTERNAL]/[EXTERNAL], or <think> output requirements.
+
+Allowed operation types:
+- replace: replace one exact snippet with another
+- insert_after: insert text immediately after one exact anchor snippet
+- insert_before: insert text immediately before one exact anchor snippet
+
+Return JSON with exactly this shape:
+{
+  "summary": "short paragraph",
+  "observations": ["observation 1", "observation 2"],
+  "prompt_edits": [
+    {
+      "filename": "tutor-ego.md",
+      "rationale": "why this file changes",
+      "changes": ["specific edit 1", "specific edit 2"],
+      "operations": [
+        {
+          "type": "replace",
+          "find": "EXACT EXISTING TEXT",
+          "replace": "NEW TEXT"
+        }
+      ]
+    }
+  ],
+  "expected_effects": ["expected effect 1", "expected effect 2"]
+}`,
+  };
+}
+
 function normalizeRecommendation(session, payload, allowedPromptFiles) {
   const parsed = payload.parsed || {};
   const allowed = new Set(allowedPromptFiles.map((prompt) => prompt.filename));
@@ -965,6 +1205,96 @@ function normalizeRecommendation(session, payload, allowedPromptFiles) {
       changes: Array.isArray(update.changes) ? update.changes.map((item) => String(item).trim()).filter(Boolean) : [],
       content: normalizePromptContent(update.content || ''),
     }))
+    .filter((update) => update.content.trim().length > 0);
+
+  return {
+    summary: String(parsed.summary || '').trim(),
+    observations: Array.isArray(parsed.observations)
+      ? parsed.observations.map((item) => String(item).trim()).filter(Boolean)
+      : [],
+    promptUpdates,
+    expectedEffects: Array.isArray(parsed.expected_effects)
+      ? parsed.expected_effects.map((item) => String(item).trim()).filter(Boolean)
+      : [],
+  };
+}
+
+function countOccurrences(haystack, needle) {
+  if (!needle) return 0;
+  let count = 0;
+  let start = 0;
+  while (true) {
+    const idx = haystack.indexOf(needle, start);
+    if (idx === -1) break;
+    count += 1;
+    start = idx + needle.length;
+  }
+  return count;
+}
+
+function applyPromptEditOperations(baseContent, operations, filename) {
+  let content = normalizePromptContent(baseContent);
+  const normalizedOps = Array.isArray(operations) ? operations : [];
+
+  for (const op of normalizedOps) {
+    const type = String(op?.type || '').trim();
+    if (type === 'replace') {
+      const find = String(op?.find || '');
+      const replace = String(op?.replace || '');
+      const matches = countOccurrences(content, find);
+      if (matches !== 1) {
+        throw new Error(`${filename}: replace operation expected 1 exact match for find text, got ${matches}`);
+      }
+      content = content.replace(find, replace);
+      continue;
+    }
+
+    if (type === 'insert_after') {
+      const anchor = String(op?.anchor || '');
+      const text = String(op?.text || '');
+      const matches = countOccurrences(content, anchor);
+      if (matches !== 1) {
+        throw new Error(`${filename}: insert_after expected 1 exact anchor match, got ${matches}`);
+      }
+      content = content.replace(anchor, `${anchor}${text}`);
+      continue;
+    }
+
+    if (type === 'insert_before') {
+      const anchor = String(op?.anchor || '');
+      const text = String(op?.text || '');
+      const matches = countOccurrences(content, anchor);
+      if (matches !== 1) {
+        throw new Error(`${filename}: insert_before expected 1 exact anchor match, got ${matches}`);
+      }
+      content = content.replace(anchor, `${text}${anchor}`);
+      continue;
+    }
+
+    throw new Error(`${filename}: unsupported edit operation type "${type}"`);
+  }
+
+  return normalizePromptContent(content);
+}
+
+function normalizeCompactRecommendation(session, promptState, payload, allowedPromptFiles) {
+  const parsed = payload.parsed || {};
+  const allowed = new Set(allowedPromptFiles.map((prompt) => prompt.filename));
+  const edits = Array.isArray(parsed.prompt_edits) ? parsed.prompt_edits : [];
+
+  const promptUpdates = edits
+    .filter((edit) => allowed.has(edit.filename))
+    .map((edit) => {
+      const filename = String(edit.filename || '').trim();
+      const baseContent = promptState[filename]?.content || '';
+      const content = applyPromptEditOperations(baseContent, edit.operations, filename);
+      return {
+        filename,
+        rationale: String(edit.rationale || '').trim(),
+        changes: Array.isArray(edit.changes) ? edit.changes.map((item) => String(item).trim()).filter(Boolean) : [],
+        content,
+      };
+    })
     .filter((update) => update.content.trim().length > 0);
 
   return {
@@ -1064,6 +1394,8 @@ async function generateRecommendation(session, options = {}) {
   const {
     basis = 'best',
     recommenderRef = null,
+    recommenderCli = null,
+    recommenderCliModel = null,
     dryRun = false,
     apply = false,
     targetScope = 'both',
@@ -1089,25 +1421,87 @@ async function generateRecommendation(session, options = {}) {
     allowedPrompts,
     targetScope,
   );
+  const compactPromptRequest = buildCompactRecommendationEditPrompt(
+    session,
+    basisIteration,
+    basisResults,
+    promptState,
+    allowedPrompts,
+    targetScope,
+  );
+  const recommenderConfig = resolveRecommenderConfig({
+    modelRefOverride: recommenderRef,
+    cliOverride: recommenderCli,
+    cliModelOverride: recommenderCliModel,
+  });
   const recommendationId = `reco-${String((session.recommendations?.length || 0) + 1).padStart(3, '0')}-${timestampTag()}`;
 
-  const payload = dryRun
-    ? createMockRecommendation(session, basisIteration, promptState, recommenderRef, allowedPrompts)
-    : await (async () => {
-        try {
-          return await callRecommenderJson(promptRequest.systemPrompt, promptRequest.userPrompt, recommenderRef);
-        } catch (error) {
-          if (error.rawText) {
-            ensureDir(recommendationsDir(session.sessionId));
-            const debugPath = path.join(recommendationsDir(session.sessionId), `${recommendationId}-parse-error.txt`);
-            fs.writeFileSync(debugPath, error.rawText, 'utf8');
-            throw new Error(`${error.message}. Raw response saved to ${debugPath}`);
-          }
-          throw error;
-        }
-      })();
+  let payload;
+  let responseFormat = 'full-content';
+  let fallback = {
+    attempted: false,
+    succeeded: false,
+    format: null,
+    reason: null,
+    rawParseErrorPath: null,
+  };
 
-  let normalized = normalizeRecommendation(session, payload, allowedPrompts);
+  if (dryRun) {
+    payload = createMockRecommendation(session, basisIteration, promptState, recommenderConfig.modelRef, allowedPrompts);
+  } else {
+    try {
+      payload = await callRecommenderJson(promptRequest.systemPrompt, promptRequest.userPrompt, {
+        modelRefOverride: recommenderRef,
+        cliOverride: recommenderCli,
+        cliModelOverride: recommenderCliModel,
+      });
+    } catch (error) {
+      if (!error.message.includes('Could not parse recommender output as JSON')) {
+        if (error.rawText) {
+          const debugPath = writeRawRecommenderResponse(session.sessionId, recommendationId, error.rawText);
+          throw new Error(`${error.message}. Raw response saved to ${debugPath}`);
+        }
+        throw error;
+      }
+
+      fallback.attempted = true;
+      fallback.format = 'compact-edits';
+      fallback.reason = error.message;
+      if (error.rawText) {
+        fallback.rawParseErrorPath = writeRawRecommenderResponse(session.sessionId, recommendationId, error.rawText);
+      }
+
+      try {
+        payload = await callRecommenderJson(compactPromptRequest.systemPrompt, compactPromptRequest.userPrompt, {
+          modelRefOverride: recommenderRef,
+          cliOverride: recommenderCli,
+          cliModelOverride: recommenderCliModel,
+        });
+        fallback.succeeded = true;
+        responseFormat = 'compact-edits';
+      } catch (fallbackError) {
+        if (fallbackError.rawText) {
+          const compactPath = writeRawRecommenderResponse(
+            session.sessionId,
+            recommendationId,
+            fallbackError.rawText,
+            'compact-parse-error',
+          );
+          throw new Error(
+            `${error.message}. Fallback compact edit response also failed: ${fallbackError.message}. Raw responses saved to ${fallback.rawParseErrorPath || 'n/a'} and ${compactPath}`,
+          );
+        }
+        throw new Error(
+          `${error.message}. Fallback compact edit response also failed: ${fallbackError.message}${fallback.rawParseErrorPath ? `. Raw response saved to ${fallback.rawParseErrorPath}` : ''}`,
+        );
+      }
+    }
+  }
+
+  let normalized =
+    responseFormat === 'compact-edits'
+      ? normalizeCompactRecommendation(session, promptState, payload, allowedPrompts)
+      : normalizeRecommendation(session, payload, allowedPrompts);
   let validation = validateRecommendationPromptUpdates(session, promptState, normalized);
   let recovery = {
     changed: false,
@@ -1136,6 +1530,8 @@ async function generateRecommendation(session, options = {}) {
     recommenderRef: payload.recommenderRef,
     recommenderModel: payload.recommenderModel,
     targetScope,
+    responseFormat,
+    fallback,
     usage: payload.usage,
     dryRun,
     summary: normalized.summary,
@@ -1270,7 +1666,7 @@ function printPromptFiles(session) {
   console.log(`Profile: ${session.profileName}`);
   console.log(`Scenario: ${session.scenarioId}`);
   console.log(`Model: ${session.modelRef}`);
-  console.log(`Judge: ${session.judgeRef || DEFAULT_JUDGE}`);
+  console.log(`Judge: ${formatJudgeSelection(session)}`);
   console.log(`Tutor runtime profile: ${session.resolvedTutorProfileName}`);
   console.log(`Learner profile: ${session.learnerProfileName}`);
   console.log('');
@@ -1303,14 +1699,14 @@ function formatDuration(ms) {
 }
 
 function printAutotuneSessionSummary(session, options = {}) {
-  const { rounds, basisMode, recommenderRef, keepWorse, dryRun, targetScope } = options;
+  const { rounds, basisMode, recommenderLabel, keepWorse, dryRun, targetScope, judgeSelection = session } = options;
   console.log('Autotune session');
   console.log(`  Session: ${session.sessionId}`);
   console.log(`  Profile: ${session.profileName}`);
   console.log(`  Scenario: ${session.scenarioId}`);
   console.log(`  Tutor model: ${session.modelRef}`);
-  console.log(`  Judge: ${session.judgeRef || DEFAULT_JUDGE}`);
-  console.log(`  Recommender: ${recommenderRef || resolveRecommenderConfig().modelRef}`);
+  console.log(`  Judge: ${formatJudgeSelection(judgeSelection)}`);
+  console.log(`  Recommender: ${recommenderLabel || resolveRecommenderConfig().modelRef}`);
   console.log(`  Basis selection: ${basisMode}`);
   console.log(`  Target scope: ${targetScope}`);
   console.log(`  Planned passes: ${rounds}`);
@@ -1383,6 +1779,14 @@ function printRecommendationSummary(artifact, options = {}) {
   }
   console.log(`  Target scope: ${artifact.targetScope || 'both'}`);
   console.log(`  Changed files: ${changedFiles.length ? changedFiles.join(', ') : 'none'}`);
+  if (artifact.responseFormat && artifact.responseFormat !== 'full-content') {
+    console.log(`  Response format: ${artifact.responseFormat}`);
+  }
+  if (artifact.fallback?.succeeded) {
+    console.log('  Fallback: compact edit retry succeeded');
+  } else if (artifact.fallback?.attempted) {
+    console.log('  Fallback: attempted');
+  }
   if (artifact.recovery?.applied) {
     console.log('  Structural recovery: applied');
   } else if (artifact.recovery?.attempted) {
@@ -1415,10 +1819,18 @@ function printRecommendationSummary(artifact, options = {}) {
 }
 
 async function runSessionIteration(session, options = {}) {
+  const judgeWasOverridden = options.judgeRef != null || options.judgeCli != null || options.judgeCliModel != null;
+  const judgeSelection = parseJudgeSelection(
+    {
+      judgeRef: options.judgeRef,
+      judgeCli: options.judgeCli,
+      judgeCliModel: options.judgeCliModel,
+    },
+    session,
+  );
   const {
     scenarioId = session.scenarioId,
     modelRef = session.modelRef,
-    judgeRef = session.judgeRef || DEFAULT_JUDGE,
     parallelism = session.parallelism || 1,
     notes = null,
     useRubric = !hasFlag('skip-rubric'),
@@ -1449,12 +1861,19 @@ async function runSessionIteration(session, options = {}) {
     String(parallelism),
     '--model',
     modelRef,
-    '--judge',
-    judgeRef,
     '--description',
     description,
     useRubric ? '--use-rubric' : '--skip-rubric',
   ];
+
+  if (useRubric) {
+    if (judgeSelection.judgeRef) {
+      childArgs.push('--judge', judgeSelection.judgeRef);
+    } else if (judgeSelection.judgeCli) {
+      childArgs.push('--judge-cli', judgeSelection.judgeCli);
+      if (judgeSelection.judgeCliModel) childArgs.push('--judge-cli-model', judgeSelection.judgeCliModel);
+    }
+  }
 
   if (dryRun) childArgs.push('--dry-run');
   if (hasFlag('verbose')) childArgs.push('--verbose');
@@ -1465,7 +1884,7 @@ async function runSessionIteration(session, options = {}) {
   console.log(`  Iteration: ${iteration}`);
   console.log(`  Scenario: ${scenarioId}`);
   console.log(`  Tutor model: ${modelRef}`);
-  if (useRubric) console.log(`  Judge: ${judgeRef}`);
+  if (useRubric) console.log(`  Judge: ${formatJudgeSelection(judgeSelection)}`);
   console.log(`  Parallelism: ${parallelism}`);
   console.log(`  Prompt override dir: ${session.promptDir}`);
   console.log(`  Prompt files: ${session.promptFiles.map((prompt) => prompt.filename).join(', ')}`);
@@ -1494,7 +1913,9 @@ async function runSessionIteration(session, options = {}) {
     runId,
     scenarioId,
     modelRef,
-    judgeRef,
+    judgeRef: judgeSelection.judgeRef,
+    judgeCli: judgeSelection.judgeCli,
+    judgeCliModel: judgeSelection.judgeCliModel,
     usedRubric: useRubric,
     dryRun,
     notes,
@@ -1526,14 +1947,17 @@ async function runSessionIteration(session, options = {}) {
 
   session.scenarioId = scenarioId;
   session.modelRef = modelRef;
-  session.judgeRef = judgeRef;
+  session.judgeRef = judgeSelection.judgeRef;
+  session.judgeCli = judgeSelection.judgeCli;
+  session.judgeCliModel = judgeSelection.judgeCliModel;
+  if (judgeWasOverridden) session.judgeSource = 'explicit';
   session.parallelism = parallelism;
   session.iterations = [...history, entry];
   saveSession(session);
 
   console.log('\nIteration summary');
   console.log(`  Run ID: ${runId}`);
-  if (useRubric) console.log(`  Judge: ${judgeRef}`);
+  if (useRubric) console.log(`  Judge: ${formatJudgeSelection(judgeSelection)}`);
   console.log(`  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`);
   if (entry.comparison.deltaVsBaseline != null) {
     console.log(`  Delta vs baseline: ${formatDelta(entry.comparison.deltaVsBaseline)}`);
@@ -1565,7 +1989,11 @@ async function handleInit() {
   const profileName = getOption('profile', 'cell_80_messages_base_single_unified');
   const scenarioId = getOption('scenario', 'mood_frustration_to_breakthrough');
   const modelRef = getOption('model', 'lmstudio.qwen3.5-9b');
-  const judgeRef = getOption('judge', DEFAULT_JUDGE);
+  const judgeSelection = parseJudgeSelection({
+    judgeRef: getOption('judge', null),
+    judgeCli: getOption('judge-cli', null),
+    judgeCliModel: getOption('judge-cli-model', null),
+  });
   const sessionId = getOption('session') || defaultSessionId(profileName, scenarioId, modelRef);
   const force = hasFlag('force');
 
@@ -1594,7 +2022,10 @@ async function handleInit() {
     profileName,
     scenarioId,
     modelRef,
-    judgeRef,
+    judgeRef: judgeSelection.judgeRef,
+    judgeCli: judgeSelection.judgeCli,
+    judgeCliModel: judgeSelection.judgeCliModel,
+    judgeSource: inferJudgeSourceFromCliArgs(),
     parallelism: parseInt(getOption('parallelism', '1'), 10),
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
@@ -1637,6 +2068,15 @@ async function handleFork() {
   copyPromptDir(sourcePromptDir, path.join(dir, 'prompts'), sourceSession.promptFiles);
   copyPromptDir(sourcePromptDir, baselinePromptsDir(sessionId), sourceSession.promptFiles);
 
+  const judgeSelection = parseJudgeSelection(
+    {
+      judgeRef: getOption('judge', null),
+      judgeCli: getOption('judge-cli', null),
+      judgeCliModel: getOption('judge-cli-model', null),
+    },
+    sourceSession,
+  );
+
   const session = {
     sessionId,
     createdAt: new Date().toISOString(),
@@ -1644,7 +2084,10 @@ async function handleFork() {
     profileName: sourceSession.profileName,
     scenarioId: getOption('scenario', sourceSession.scenarioId),
     modelRef: getOption('model', sourceSession.modelRef),
-    judgeRef: getOption('judge', sourceSession.judgeRef || DEFAULT_JUDGE),
+    judgeRef: judgeSelection.judgeRef,
+    judgeCli: judgeSelection.judgeCli,
+    judgeCliModel: judgeSelection.judgeCliModel,
+    judgeSource: inferJudgeSourceFromCliArgs() === 'explicit' ? 'explicit' : sourceSession.judgeSource || 'default',
     parallelism: parseInt(getOption('parallelism', String(sourceSession.parallelism || 1)), 10),
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
@@ -1674,7 +2117,9 @@ async function handleRun() {
   await runSessionIteration(session, {
     scenarioId: getOption('scenario', session.scenarioId),
     modelRef: getOption('model', session.modelRef),
-    judgeRef: getOption('judge', session.judgeRef || DEFAULT_JUDGE),
+    judgeRef: getOption('judge', null),
+    judgeCli: getOption('judge-cli', null),
+    judgeCliModel: getOption('judge-cli-model', null),
     parallelism: parseInt(getOption('parallelism', String(session.parallelism || 1)), 10),
     notes: getOption('notes', null),
     useRubric: !hasFlag('skip-rubric'),
@@ -1689,6 +2134,8 @@ async function handleRecommend() {
   const artifact = await generateRecommendation(session, {
     basis: getOption('basis', 'best'),
     recommenderRef: getOption('recommender', null),
+    recommenderCli: getOption('recommender-cli', null),
+    recommenderCliModel: getOption('recommender-cli-model', null),
     dryRun: hasFlag('dry-run'),
     apply: hasFlag('apply'),
     targetScope,
@@ -1708,18 +2155,33 @@ async function handleAutotune() {
   const rounds = parseInt(getOption('iterations', String(DEFAULT_AUTOTUNE_ITERATIONS)), 10);
   const basisMode = getOption('basis', 'best');
   const recommenderRef = getOption('recommender', null);
+  const recommenderCli = getOption('recommender-cli', null);
+  const recommenderCliModel = getOption('recommender-cli-model', null);
   const dryRun = hasFlag('dry-run');
   const keepWorse = hasFlag('keep-worse');
   const targetScope = normalizeTargetScope(getOption('target', 'both'));
+  const judgeSelection = parseJudgeSelection(
+    {
+      judgeRef: getOption('judge', null),
+      judgeCli: getOption('judge-cli', null),
+      judgeCliModel: getOption('judge-cli-model', null),
+    },
+    session,
+  );
 
   console.log('');
   printAutotuneSessionSummary(session, {
     rounds,
     basisMode,
-    recommenderRef,
+    recommenderLabel: resolveRecommenderConfig({
+      modelRefOverride: recommenderRef,
+      cliOverride: recommenderCli,
+      cliModelOverride: recommenderCliModel,
+    }).modelRef,
     keepWorse,
     dryRun,
     targetScope,
+    judgeSelection,
   });
 
   if (!getBestScoredIteration(session)) {
@@ -1727,7 +2189,9 @@ async function handleAutotune() {
     const baselineEntry = await runSessionIteration(session, {
       scenarioId: session.scenarioId,
       modelRef: session.modelRef,
-      judgeRef: session.judgeRef || DEFAULT_JUDGE,
+      judgeRef: judgeSelection.judgeRef,
+      judgeCli: judgeSelection.judgeCli,
+      judgeCliModel: judgeSelection.judgeCliModel,
       parallelism: session.parallelism || 1,
       notes: 'autotune baseline',
       useRubric: true,
@@ -1748,13 +2212,21 @@ async function handleAutotune() {
     console.log(`\nAutotune pass ${pass}/${rounds}`);
     console.log(`  Basis iteration: ${basisIteration.iteration} (${basisIteration.summary?.primaryScore ?? 'n/a'})`);
     console.log('  Step 1/4: Request prompt recommendation');
-    console.log(`    Recommender: ${recommenderRef || resolveRecommenderConfig().modelRef}`);
+    console.log(
+      `    Recommender: ${resolveRecommenderConfig({
+        modelRefOverride: recommenderRef,
+        cliOverride: recommenderCli,
+        cliModelOverride: recommenderCliModel,
+      }).modelRef}`,
+    );
     console.log(`    Basis run: ${basisIteration.runId}`);
     const recommendationStartedAt = Date.now();
 
     const artifact = await generateRecommendation(refreshed, {
       basis: basisMode,
       recommenderRef,
+      recommenderCli,
+      recommenderCliModel,
       dryRun,
       apply: false,
       targetScope,
@@ -1781,7 +2253,9 @@ async function handleAutotune() {
     const entry = await runSessionIteration(refreshed, {
       scenarioId: refreshed.scenarioId,
       modelRef: refreshed.modelRef,
-      judgeRef: refreshed.judgeRef || DEFAULT_JUDGE,
+      judgeRef: judgeSelection.judgeRef,
+      judgeCli: judgeSelection.judgeCli,
+      judgeCliModel: judgeSelection.judgeCliModel,
       parallelism: refreshed.parallelism || 1,
       notes: `autotune pass ${pass} via ${artifact.id}`,
       useRubric: true,
@@ -1922,6 +2396,7 @@ async function main() {
 }
 
 export {
+  applyPromptEditOperations,
   analyzeSectionTags,
   appendMissingClosingTags,
   recoverPromptCandidate,

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { recoverPromptCandidate, validatePromptCandidate } from '../scripts/prompt-lab.js';
+import { applyPromptEditOperations, recoverPromptCandidate, validatePromptCandidate } from '../scripts/prompt-lab.js';
 
 test('validatePromptCandidate accepts indented closing section tags', () => {
   const reference = `# Tutor Prompt
@@ -58,4 +58,24 @@ Return JSON.
 
   const validation = validatePromptCandidate({ filename: 'tutor-ego.md' }, repaired.content, reference);
   assert.equal(validation.ok, true);
+});
+
+test('applyPromptEditOperations supports replace and insert_after edits', () => {
+  const base = `# Prompt
+<section>
+Alpha
+</section>
+`;
+
+  const updated = applyPromptEditOperations(
+    base,
+    [
+      { type: 'replace', find: 'Alpha', replace: 'Beta' },
+      { type: 'insert_after', anchor: '</section>\n', text: '\n## Note\nGamma\n' },
+    ],
+    'sample.md',
+  );
+
+  assert.match(updated, /Beta/);
+  assert.match(updated, /## Note\nGamma/);
 });
