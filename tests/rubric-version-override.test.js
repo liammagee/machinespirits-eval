@@ -55,10 +55,11 @@ function buildTestPrompt() {
   );
 }
 
-// Helper: extract dimension keys from the JSON example in a prompt
-// Matches both numeric scores ("score": 3) and placeholder scores ("score": "<1-5>")
-function extractPromptDimKeys(prompt) {
-  return [...prompt.matchAll(/"(\w+)": \{"score": \d/g)].map((m) => m[1]);
+// Helper: extract the first dimension key shown in the JSON example
+// (prompt now shows only the first key with a sample score, plus "..." for the rest)
+function extractPromptFirstDimKey(prompt) {
+  const match = prompt.match(/"(\w+)": \{"score": \d/);
+  return match ? match[1] : null;
 }
 
 // Helper: build scores object matching a rubric's dimensions
@@ -81,14 +82,14 @@ afterEach(() => {
 // ============================================================================
 describe('Tutor per-turn prompt dimension keys', () => {
   for (const ver of availableVersions) {
-    it(`v${ver}: prompt example JSON uses v${ver} dimension keys`, () => {
+    it(`v${ver}: prompt uses v${ver} dimension keys`, () => {
       setRubricPathOverride(path.join(RUBRICS_DIR, `v${ver}`, 'evaluation-rubric.yaml'));
 
       const prompt = buildTestPrompt();
-      const promptKeys = extractPromptDimKeys(prompt);
       const expected = loadExpectedDimKeys(ver);
 
-      assert.deepStrictEqual(promptKeys, expected, `v${ver} prompt keys should match rubric YAML dimensions`);
+      // First key in JSON example should be the first rubric dimension
+      assert.strictEqual(extractPromptFirstDimKey(prompt), expected[0], `v${ver} example key should be first rubric dim`);
     });
   }
 
@@ -101,13 +102,13 @@ describe('Tutor per-turn prompt dimension keys', () => {
     const keysB = loadExpectedDimKeys(verB);
 
     setRubricPathOverride(path.join(RUBRICS_DIR, `v${verA}`, 'evaluation-rubric.yaml'));
-    const promptKeysA = extractPromptDimKeys(buildTestPrompt());
+    const promptA = buildTestPrompt();
 
     setRubricPathOverride(path.join(RUBRICS_DIR, `v${verB}`, 'evaluation-rubric.yaml'));
-    const promptKeysB = extractPromptDimKeys(buildTestPrompt());
+    const promptB = buildTestPrompt();
 
-    assert.deepStrictEqual(promptKeysA, keysA);
-    assert.deepStrictEqual(promptKeysB, keysB);
+    assert.strictEqual(extractPromptFirstDimKey(promptA), keysA[0]);
+    assert.strictEqual(extractPromptFirstDimKey(promptB), keysB[0]);
   });
 });
 
@@ -173,9 +174,8 @@ describe('Learner prompt dimension keys', () => {
         topic: 'Test topic',
       });
 
-      const promptKeys = [...prompt.matchAll(/"(\w+)": \{"score": \d/g)].map((m) => m[1]);
-
-      assert.deepStrictEqual(promptKeys, expectedKeys, `v${ver} learner prompt keys should match learner rubric YAML`);
+      const firstKey = extractPromptFirstDimKey(prompt);
+      assert.strictEqual(firstKey, expectedKeys[0], `v${ver} learner example key should be first rubric dim`);
     });
   }
 });

@@ -2807,15 +2807,8 @@ async function main() {
         }
 
         // Resolve effective judge model: CLI --model > YAML config > default
-        const yamlJudgeModel = (() => {
-          try {
-            const rubric = evalConfigLoader.loadRubric();
-            return rubric?.claude_code_judge?.model || null;
-          } catch {
-            return null;
-          }
-        })();
-        const effectiveJudgeModel = modelOverride || yamlJudgeModel || null;
+        // YAML claude_code_judge.model is only relevant for Claude CLI — skip for Gemini/Codex
+        const effectiveJudgeModel = modelOverride || resolveDefaultCliJudgeModelOverride(judgeCli);
         const judgeModelLabel =
           judgeCli === 'gemini'
             ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
@@ -2909,7 +2902,7 @@ async function main() {
           let cliBinary, cliArgs, cliEnv;
           if (judgeCli === 'gemini') {
             cliBinary = 'gemini';
-            cliArgs = ['-o', 'text'];
+            cliArgs = ['-s', '-o', 'text'];
             if (effectiveJudgeModel) {
               cliArgs.push('-m', effectiveJudgeModel);
             }
@@ -3069,7 +3062,7 @@ async function main() {
           let cliBin, cliJudgeArgs, cliJudgeEnv;
           if (judgeCli === 'gemini') {
             cliBin = 'gemini';
-            cliJudgeArgs = ['-o', 'text'];
+            cliJudgeArgs = ['-s', '-o', 'text'];
             if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
             cliJudgeEnv = { ...process.env };
           } else if (judgeCli === 'codex') {
@@ -3810,6 +3803,13 @@ async function main() {
 
           function storeLearnerTurnResult(r) {
             if (!r || !r.success) return;
+            if (r.overallScore == null) {
+              const dimScores = Object.entries(r.scores || {})
+                .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
+                .join(' ');
+              console.log(`${tag}   learner-turn-${r.lt} ... FAIL: scores out of range (${dimScores})`);
+              return;
+            }
             learnerTurnScores[r.lt] = {
               turnIndex: r.turnIndex,
               scores: r.scores,
@@ -5014,15 +5014,8 @@ async function main() {
         }
 
         // Resolve effective judge model: CLI --model > YAML config > default
-        const effectiveJudgeModel =
-          modelOverride ||
-          (() => {
-            try {
-              return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null;
-            } catch {
-              return null;
-            }
-          })();
+        // YAML claude_code_judge.model is only relevant for Claude CLI — skip for Gemini/Codex
+        const effectiveJudgeModel = modelOverride || resolveDefaultCliJudgeModelOverride(judgeCli);
         const judgeModelLabel =
           judgeCli === 'gemini'
             ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
@@ -5133,7 +5126,7 @@ async function main() {
           let cliBin, cliJudgeArgs, cliJudgeEnv;
           if (judgeCli === 'gemini') {
             cliBin = 'gemini';
-            cliJudgeArgs = ['-o', 'text'];
+            cliJudgeArgs = ['-s', '-o', 'text'];
             if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
             cliJudgeEnv = { ...process.env };
           } else if (judgeCli === 'codex') {
@@ -5311,6 +5304,14 @@ async function main() {
                 const parsed = await callLearnerJudge(prompt);
                 const turnOverall = calculateLearnerOverallScore(parsed.scores || {}, isMultiAgent);
 
+                if (turnOverall == null) {
+                  const dimScores = Object.entries(parsed.scores || {})
+                    .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
+                    .join(' ');
+                  console.log(`${turnTag} ... FAIL: scores out of range or missing (${dimScores})`);
+                  continue;
+                }
+
                 turnScores[lt] = {
                   turnIndex: lt + 1,
                   scores: parsed.scores,
@@ -5369,7 +5370,12 @@ async function main() {
               const holisticDimScores = Object.entries(holisticScores)
                 .map(([k, v]) => `${k}=${typeof v === 'object' ? v.score : v}`)
                 .join(' ');
-              console.log(`${holisticTag} ... ${holisticOverallScore.toFixed(1)}  (${holisticDimScores})`);
+              if (holisticOverallScore == null) {
+                console.log(`${holisticTag} ... FAIL: scores out of range or missing (${holisticDimScores})`);
+                holisticFailed = true;
+              } else {
+                console.log(`${holisticTag} ... ${holisticOverallScore.toFixed(1)}  (${holisticDimScores})`);
+              }
               if (verbose && holisticSummary) {
                 console.log(`     Judge: ${holisticSummary}`);
               }
@@ -5513,16 +5519,9 @@ async function main() {
           process.exit(1);
         }
 
-        // Resolve judge model: CLI --model > YAML claude_code_judge.model > default
-        const effectiveJudgeModel =
-          modelOverride ||
-          (() => {
-            try {
-              return evalConfigLoader.loadRubric()?.claude_code_judge?.model || null;
-            } catch {
-              return null;
-            }
-          })();
+        // Resolve judge model: CLI --model > YAML config > default
+        // YAML claude_code_judge.model is only relevant for Claude CLI — skip for Gemini/Codex
+        const effectiveJudgeModel = modelOverride || resolveDefaultCliJudgeModelOverride(judgeCli);
         const judgeModelLabel =
           judgeCli === 'gemini'
             ? `gemini-cli/${effectiveJudgeModel || 'auto'}`

@@ -522,7 +522,7 @@ describe('example score variation in prompts', () => {
       turns: sampleTurns,
       learnerArchitecture: 'unified',
     });
-    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
+    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
@@ -531,7 +531,7 @@ describe('example score variation in prompts', () => {
       turns: sampleTurns,
       learnerArchitecture: 'unified',
     });
-    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
+    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
@@ -541,6 +541,6 @@ describe('example score variation in prompts', () => {
       learnerTurnTargets: [{ lt: 0, targetIdx: 0 }],
       learnerArchitecture: 'unified',
     });
-    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
+    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
   });
 });
