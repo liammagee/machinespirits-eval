@@ -3989,6 +3989,22 @@ async function main() {
 
           // ── Process learner holistic + per-turn DB write ──
           if (!tutorOnly) {
+            // Echo detection: reject identical score vectors across turns
+            const learnerEntries = Object.values(learnerTurnScores);
+            if (learnerEntries.length >= 2) {
+              const sigs = learnerEntries.map((ts) =>
+                Object.keys(ts.scores || {})
+                  .sort()
+                  .map((k) => `${k}=${typeof ts.scores[k] === 'object' ? ts.scores[k].score : ts.scores[k]}`)
+                  .join(','),
+              );
+              if (sigs.every((s) => s === sigs[0])) {
+                console.log(`${tag}   WARN: all ${learnerEntries.length} learner turns have identical scores — likely echoed example pattern; skipping learner storage`);
+                // Clear turn scores so they don't get stored
+                for (const k of Object.keys(learnerTurnScores)) delete learnerTurnScores[k];
+              }
+            }
+
             learnerAvg =
               Object.keys(learnerTurnScores).length > 0
                 ? Object.values(learnerTurnScores).reduce((a, b) => a + b.overallScore, 0) /
@@ -5337,6 +5353,23 @@ async function main() {
             }
 
             if (turnSucceeded > 0) {
+              // Echo detection: if all turns produced identical score vectors, reject as echoed
+              const turnEntries = Object.values(turnScores);
+              if (turnEntries.length >= 2) {
+                const signatures = turnEntries.map((ts) => {
+                  const scores = ts.scores || {};
+                  return Object.keys(scores)
+                    .sort()
+                    .map((k) => `${k}=${typeof scores[k] === 'object' ? scores[k].score : scores[k]}`)
+                    .join(',');
+                });
+                const allIdentical = signatures.every((s) => s === signatures[0]);
+                if (allIdentical) {
+                  console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP: all ${turnEntries.length} turns produced identical scores (judge echoed example pattern)`);
+                  return { ok: false };
+                }
+              }
+
               // Calculate dialogue-level learner score (average across turns)
               const turnOveralls = Object.values(turnScores).map((ts) => ts.overallScore);
               dialogueLearnerScore = turnOveralls.reduce((a, b) => a + b, 0) / turnOveralls.length;
