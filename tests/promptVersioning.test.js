@@ -104,7 +104,7 @@ describe('Prompt versioning: config loader re-exports', () => {
 
   it('learnerConfigLoader.getPromptMetadata returns valid metadata for learner prompts', () => {
     const meta = learnerConfigLoader.getPromptMetadata('learner-unified.md');
-    assert.equal(meta.version, '1.0');
+    assert.equal(meta.version, '1.1');
     assert.equal(meta.contentHash.length, 16);
   });
 });
