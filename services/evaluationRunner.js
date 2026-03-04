@@ -548,10 +548,11 @@ export function getCliJudgeModelLabel(judgeCli, modelOverride = null) {
   return modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
 }
 
-function getDefaultCliJudgeModelOverride() {
+function getDefaultCliJudgeModelOverride(judgeCli = 'claude') {
+  const cli = String(judgeCli || '').toLowerCase();
   try {
     const rubric = evalConfigLoader.loadRubric();
-    return rubric?.claude_code_judge?.model || null;
+    return cli === 'claude' ? rubric?.claude_code_judge?.model || null : null;
   } catch {
     return null;
   }
@@ -664,6 +665,32 @@ function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
     judgeModel: judgeModelLabel,
     judgeLatencyMs,
   };
+}
+
+async function evaluateSuggestionWithSelectedJudge(
+  suggestion,
+  scenarioContext,
+  context = {},
+  options = {},
+) {
+  const { dialogueContext = null } = context;
+  const { judgeOverride = null, judgeCli = null, judgeCliModel = null } = options;
+
+  if (judgeCli) {
+    const startTime = Date.now();
+    const parsed = await callCliJudge(
+      rubricEvaluator.buildEvaluationPrompt(suggestion, scenarioContext, { dialogueContext }),
+      judgeCli,
+      judgeCliModel,
+    );
+    return normalizeCliJudgeEvaluation(
+      parsed,
+      getCliJudgeModelLabel(judgeCli, judgeCliModel),
+      Date.now() - startTime,
+    );
+  }
+
+  return rubricEvaluator.evaluateSuggestion(suggestion, scenarioContext, { dialogueContext }, { judgeOverride });
 }
 
 /**
@@ -1355,6 +1382,8 @@ function formatLearnerActionForTranscript(turn) {
  * @param {string} options.outputSize
  * @param {string} options.superegoStrategy
  * @param {string} options.judgeOverride
+ * @param {string} options.judgeCli
+ * @param {string} options.judgeCliModel
  * @param {boolean} options.useDialogue
  * @param {number} options.maxRounds
  * @param {Function} options.log
@@ -1367,6 +1396,8 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     outputSize = 'normal',
     superegoStrategy = null,
     judgeOverride = null,
+    judgeCli = null,
+    judgeCliModel = null,
     useDialogue = false,
     maxRounds = 0,
     log = () => {},
@@ -1504,7 +1535,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
           }
         : null;
 
-    rubricResult = await rubricEvaluator.evaluateSuggestion(
+    rubricResult = await evaluateSuggestionWithSelectedJudge(
       suggestion,
       {
         name: turnMeta.scenarioName,
@@ -1515,7 +1546,7 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
         forbiddenElements: turnMeta.forbiddenElements,
       },
       { dialogueContext },
-      { judgeOverride },
+      { judgeOverride, judgeCli, judgeCliModel },
     );
 
     if (rubricResult) {
@@ -1575,6 +1606,8 @@ export async function runEvaluation(options = {}) {
     parallelism = DEFAULT_PARALLELISM,
     skipRubricEval = false, // Skip AI-based rubric evaluation (faster)
     judgeOverride = null, // CLI --judge override for rubric evaluation
+    judgeCli = null, // CLI judge backend for rubric evaluation
+    judgeCliModel = null, // Optional CLI judge model override
     description = null,
     verbose = false,
     scenarioFilter = null, // Cluster filter: 'single-turn', 'multi-turn', or category names
@@ -1593,6 +1626,17 @@ export async function runEvaluation(options = {}) {
   } = options;
 
   const log = verbose ? console.log : () => {};
+
+  if (judgeOverride && judgeCli) {
+    throw new Error('Use either judgeOverride or judgeCli, not both');
+  }
+  if (judgeCli && !SUPPORTED_JUDGE_CLIS.has(String(judgeCli).toLowerCase())) {
+    throw new Error(`Unsupported judge CLI: ${judgeCli}`);
+  }
+  const effectiveCliJudge = judgeCli ? String(judgeCli).toLowerCase() : null;
+  const effectiveCliJudgeModel = effectiveCliJudge
+    ? judgeCliModel || getDefaultCliJudgeModelOverride(effectiveCliJudge)
+    : null;
 
   // Always suppress tutor-core verbose dialogue output during eval runs
   // (TUTOR DIALOGUE boxes, learner context, model overrides, etc.)
@@ -1733,6 +1777,8 @@ export async function runEvaluation(options = {}) {
       runsPerConfig,
       skipRubricEval,
       judgeOverride: judgeOverride || null,
+      judgeCli: effectiveCliJudge || null,
+      judgeCliModel: effectiveCliJudgeModel || null,
       modelOverride: effectiveModelOverride || null,
       tutorModelOverride: effectiveTutorModelOverride || null,
       egoModelOverride: effectiveEgoModelOverride || null,
@@ -1855,6 +1901,9 @@ export async function runEvaluation(options = {}) {
         const result = await runSingleTest(scenario, config, {
           skipRubricEval,
           verbose,
+          judgeOverride,
+          judgeCli: effectiveCliJudge,
+          judgeCliModel: effectiveCliJudgeModel,
           dryRun,
           transcriptMode,
           showMessages,
@@ -2135,6 +2184,8 @@ async function runSingleTest(scenario, config, options = {}) {
     onLog,
     _superegoStrategy = null,
     judgeOverride = null,
+    judgeCli = null,
+    judgeCliModel = null,
     _dryRun = false,
     checkpointState = null,
   } = options;
@@ -2161,13 +2212,15 @@ async function runSingleTest(scenario, config, options = {}) {
       ...options,
       log,
       judgeOverride,
+      judgeCli,
+      judgeCliModel,
       checkpointState,
       liveApiReporter: options.liveApiReporter,
     });
   }
 
   // Single-turn evaluation (original logic)
-  return runSingleTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride });
+  return runSingleTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride, judgeCli, judgeCliModel });
 }
 
 /**
@@ -2181,6 +2234,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     log = () => {},
     superegoStrategy = null,
     judgeOverride = null,
+    judgeCli = null,
+    judgeCliModel = null,
     dryRun = false,
     showMessages = false,
   } = options;
@@ -2253,6 +2308,8 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
       outputSize,
       superegoStrategy,
       judgeOverride,
+      judgeCli,
+      judgeCliModel,
       useDialogue,
       maxRounds,
       log,
@@ -2355,6 +2412,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     log = () => {},
     superegoStrategy = null,
     judgeOverride = null,
+    judgeCli = null,
+    judgeCliModel = null,
     dryRun = false,
     transcriptMode = false,
     runId = null,
@@ -2642,6 +2701,8 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     outputSize,
     superegoStrategy,
     judgeOverride,
+    judgeCli,
+    judgeCliModel,
     useDialogue,
     maxRounds,
     log,
@@ -3543,7 +3604,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       // Use the last turn's suggestion as the focal point, with full dialogue context
       const lastSuggestion = turnResults[turnResults.length - 1]?.suggestion;
       if (lastSuggestion) {
-        const holisticResult = await rubricEvaluator.evaluateSuggestion(
+        const holisticResult = await evaluateSuggestionWithSelectedJudge(
           lastSuggestion,
           {
             name: `${fullScenario.name} (holistic dialogue)`,
@@ -3559,7 +3620,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
               consolidatedTrace,
             },
           },
-          { judgeOverride },
+          { judgeOverride, judgeCli, judgeCliModel },
         );
 
         if (holisticResult?.success) {
@@ -4558,7 +4619,9 @@ export async function rejudgeRun(runId, options = {}) {
 
   // Resolve the target judge label so we can detect prior rejudgments by the same judge
   let targetJudgeLabel = null;
-  const effectiveCliJudgeModel = judgeCli ? judgeCliModel || getDefaultCliJudgeModelOverride() : null;
+  const effectiveCliJudgeModel = judgeCli
+    ? judgeCliModel || getDefaultCliJudgeModelOverride(judgeCli)
+    : null;
   if (!overwrite) {
     try {
       if (judgeCli) {
