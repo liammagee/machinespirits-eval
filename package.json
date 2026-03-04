@@ -34,6 +34,8 @@
     "prompt-lab:recommend": "node scripts/prompt-lab.js recommend",
     "prompt-lab:autotune": "node scripts/prompt-lab.js autotune",
     "prompt-lab:diff": "node scripts/prompt-lab.js diff",
+    "model-shootout": "node scripts/model-shootout.js",
+    "shootout:model": "node scripts/model-shootout.js",
     "analyze:recognition-definitions": "node scripts/analyze-recognition-definitions.js",
     "analyze:effects": "node scripts/analyze-eval-results.js",
     "analyze:costs": "node scripts/analyze-eval-costs.js",

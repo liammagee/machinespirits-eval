@@ -1,26 +1,34 @@
 #!/usr/bin/env node
 /**
- * Model shootout: latency + cost + quality assessment via Claude judge.
- * Calls each candidate model with a pedagogically-demanding prompt,
- * then pipes each response to `claude -p` for a 1-100 quality rating.
+ * Model shootout: latency + cost comparison with full-response output for manual quality inspection.
+ * Calls each candidate model with a pedagogically-demanding prompt and prints metrics plus full responses.
  */
 import 'dotenv/config';
 import { unifiedAIProvider } from '@machinespirits/tutor-core';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 
-const MODELS = ['nemotron', 'deepseek', 'glm5', 'minimax', 'haiku', 'gemini-flash', 'qwen3.5-plus'];
+const OPENROUTER_MODELS = [
+  'openrouter.nemotron',
+  'openrouter.deepseek',
+  'openrouter.glm5',
+  'openrouter.minimax',
+  'openrouter.haiku',
+  'openrouter.gemini-flash',
+  'openrouter.gemini-flash-3.1',
+  'openrouter.qwen3.5-plus',
+];
 
 const SYSTEM_PROMPT = `You are a philosophy tutor working with a university student. Respond helpfully, specifically, and concisely. Do NOT use bullet lists or headers — write in natural prose. Engage directly with the learner's confusion.`;
 
 const LEARNER_INPUT = `I've been stuck on Hegel's master-slave dialectic for an hour. I think I get that there are two self-consciousnesses that fight, and one becomes the master and one becomes the slave. But then my textbook says the slave actually ends up with a "higher" form of self-consciousness? That makes no sense — the slave lost! How does losing make you MORE conscious? Am I missing something fundamental?`;
 
 async function callModel(alias) {
-  const resolved = evalConfigLoader.resolveModel({ provider: 'openrouter', model: alias });
+  const resolved = evalConfigLoader.resolveModel(alias);
   if (!resolved.isConfigured) return { alias, status: 'skip', reason: 'no API key' };
 
   const start = Date.now();
   const response = await unifiedAIProvider.call({
-    provider: 'openrouter',
+    provider: resolved.provider,
     model: resolved.model,
     systemPrompt: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: LEARNER_INPUT }],
@@ -40,7 +48,23 @@ async function callModel(alias) {
   };
 }
 
+function discoverLmStudioModels() {
+  const provider = evalConfigLoader.getProviderConfig('lmstudio');
+  const configuredAliases = Object.keys(provider.models || {});
+
+  return configuredAliases
+    .filter((alias) => alias !== 'default')
+    .filter((alias) => !alias.includes('vl'))
+    .map((alias) => `lmstudio.${alias}`);
+}
+
+function getShootoutModels() {
+  return [...OPENROUTER_MODELS, ...discoverLmStudioModels()];
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
+
+const MODELS = getShootoutModels();
 
 console.log(`\n${'═'.repeat(80)}`);
 console.log(`  MODEL SHOOTOUT — Latency × Cost × Quality`);
