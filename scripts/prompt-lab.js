@@ -26,6 +26,7 @@ const LEGACY_DEFAULT_JUDGE_REF = 'openrouter.gemini-flash';
 const DEFAULT_JUDGE_CLI = 'codex';
 const DEFAULT_RECOMMENDER_CLI = 'codex';
 const DEFAULT_AUTOTUNE_ITERATIONS = 3;
+const DEFAULT_RUNS_PER_ITERATION = 1;
 const VALID_TARGETS = new Set(['tutor', 'learner', 'both']);
 const VALID_CLIS = new Set(['claude', 'gemini', 'codex']);
 
@@ -73,6 +74,7 @@ Shared Options:
   --judge-cli <name>     CLI rubric judge backend (default: codex)
   --judge-cli-model <m>  Optional CLI judge model override
   --parallelism <n>      Eval parallelism for run (default: 1)
+  --runs <n>             Replications per prompt-lab iteration (default: 1)
   --notes <text>         Free-form note attached to an iteration
   --dry-run              Use eval-cli mock mode; recommender uses a deterministic placeholder
 
@@ -656,7 +658,11 @@ function loadSession(sessionId) {
     throw new Error(`Session not found: ${sessionId}`);
   }
   const session = readJson(manifestPath);
-  const changed = ensureBaselineSnapshot(session);
+  let changed = ensureBaselineSnapshot(session) || refreshSessionSummaries(session);
+  if (!Number.isInteger(session.runsPerIteration) || session.runsPerIteration < 1) {
+    session.runsPerIteration = DEFAULT_RUNS_PER_ITERATION;
+    changed = true;
+  }
   if (changed) saveSession(session);
   return session;
 }
@@ -701,34 +707,89 @@ function getRunRows(runId, profileName, scenarioId) {
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 }
 
+function selectLatestRowsPerDialogue(rows) {
+  const byDialogue = new Map();
+
+  for (const row of rows || []) {
+    const key = row.dialogueId || `row:${row.id}`;
+    const existing = byDialogue.get(key);
+    if (!existing || new Date(row.createdAt) >= new Date(existing.createdAt)) {
+      byDialogue.set(key, row);
+    }
+  }
+
+  return [...byDialogue.values()].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+}
+
+function averageOrNull(values) {
+  const numeric = (values || []).map((value) => (value == null ? null : Number(value))).filter(Number.isFinite);
+  if (numeric.length === 0) return null;
+  return numeric.reduce((sum, value) => sum + value, 0) / numeric.length;
+}
+
+function getPrimaryMetricName(rows) {
+  return rows.some((row) => row.tutorFirstTurnScore != null) ? 'tutorFirstTurnScore' : 'tutorOverallScore';
+}
+
+function getPrimaryMetricValue(row) {
+  return row?.tutorFirstTurnScore ?? row?.tutorOverallScore ?? null;
+}
+
+function uniqueOrNull(values) {
+  const unique = [...new Set((values || []).filter((value) => value != null))];
+  if (unique.length !== 1) return null;
+  return unique[0];
+}
+
+function joinUnique(values) {
+  const unique = [...new Set((values || []).filter(Boolean))];
+  if (unique.length === 0) return null;
+  return unique.length === 1 ? unique[0] : unique.join(', ');
+}
+
+function aggregateRunRows(rows) {
+  const latestRows = selectLatestRowsPerDialogue(rows);
+  if (latestRows.length === 0) return null;
+
+  const metricName = getPrimaryMetricName(latestRows);
+  const scoredRows = latestRows.filter((row) => getPrimaryMetricValue(row) != null);
+  const failedRows = latestRows.filter((row) => !row.success);
+  const latestRow = latestRows[latestRows.length - 1];
+
+  return {
+    mode: 'stored-result',
+    success: failedRows.length === 0,
+    metricName,
+    primaryScore: averageOrNull(scoredRows.map((row) => getPrimaryMetricValue(row))),
+    tutorFirstTurnScore: averageOrNull(latestRows.map((row) => row.tutorFirstTurnScore)),
+    tutorOverallScore: averageOrNull(latestRows.map((row) => row.tutorOverallScore)),
+    tutorHolisticOverallScore: averageOrNull(latestRows.map((row) => row.tutorHolisticOverallScore)),
+    learnerHolisticOverallScore: averageOrNull(latestRows.map((row) => row.learnerHolisticOverallScore)),
+    dialogueQualityScore: averageOrNull(latestRows.map((row) => row.dialogueQualityScore)),
+    latencyMs: averageOrNull(latestRows.map((row) => row.latencyMs)),
+    inputTokens: averageOrNull(latestRows.map((row) => row.inputTokens)),
+    outputTokens: averageOrNull(latestRows.map((row) => row.outputTokens)),
+    cost: averageOrNull(latestRows.map((row) => row.cost)),
+    judgeModel: joinUnique(latestRows.map((row) => row.judgeModel)),
+    evaluationReasoning: latestRow.evaluationReasoning ?? null,
+    scoringMethod: latestRow.scoringMethod ?? null,
+    errorMessage: failedRows.length > 0 ? failedRows[failedRows.length - 1].errorMessage ?? null : null,
+    dialogueId: latestRows.length === 1 ? latestRow.dialogueId ?? null : null,
+    promptContentHash: uniqueOrNull(latestRows.map((row) => row.promptContentHash)),
+    tutorEgoPromptVersion: uniqueOrNull(latestRows.map((row) => row.tutorEgoPromptVersion)),
+    tutorSuperegoPromptVersion: uniqueOrNull(latestRows.map((row) => row.tutorSuperegoPromptVersion)),
+    learnerPromptVersion: uniqueOrNull(latestRows.map((row) => row.learnerPromptVersion)),
+    totalRuns: latestRows.length,
+    scoredRuns: scoredRows.length,
+    failedRuns: failedRows.length,
+  };
+}
+
 function summarizeRun(runId, profileName, scenarioId) {
   const results = getRunRows(runId, profileName, scenarioId);
 
   if (results.length > 0) {
-    const row = results[results.length - 1];
-    return {
-      mode: 'stored-result',
-      success: Boolean(row.success),
-      metricName: row.tutorFirstTurnScore != null ? 'tutorFirstTurnScore' : 'tutorOverallScore',
-      primaryScore: row.tutorFirstTurnScore ?? row.tutorOverallScore ?? null,
-      tutorFirstTurnScore: row.tutorFirstTurnScore ?? null,
-      tutorOverallScore: row.tutorOverallScore ?? null,
-      tutorHolisticOverallScore: row.tutorHolisticOverallScore ?? null,
-      learnerHolisticOverallScore: row.learnerHolisticOverallScore ?? null,
-      dialogueQualityScore: row.dialogueQualityScore ?? null,
-      latencyMs: row.latencyMs ?? null,
-      inputTokens: row.inputTokens ?? null,
-      outputTokens: row.outputTokens ?? null,
-      cost: row.cost ?? null,
-      judgeModel: row.judgeModel ?? null,
-      evaluationReasoning: row.evaluationReasoning ?? null,
-      errorMessage: row.errorMessage ?? null,
-      dialogueId: row.dialogueId ?? null,
-      promptContentHash: row.promptContentHash ?? null,
-      tutorEgoPromptVersion: row.tutorEgoPromptVersion ?? null,
-      tutorSuperegoPromptVersion: row.tutorSuperegoPromptVersion ?? null,
-      learnerPromptVersion: row.learnerPromptVersion ?? null,
-    };
+    return aggregateRunRows(results);
   }
 
   const stat = evaluationStore.getRunStats(runId).find((entry) => entry.profileName === profileName);
@@ -753,13 +814,32 @@ function summarizeRun(runId, profileName, scenarioId) {
     cost: null,
     judgeModel: null,
     evaluationReasoning: null,
+    scoringMethod: null,
     errorMessage: stat?.lastErrorMessage || scenarioStat?.lastErrorMessage || 'No stored result row found',
     dialogueId: null,
     promptContentHash: null,
     tutorEgoPromptVersion: null,
     tutorSuperegoPromptVersion: null,
     learnerPromptVersion: null,
+    totalRuns: 0,
+    scoredRuns: 0,
+    failedRuns: 0,
   };
+}
+
+function refreshSessionSummaries(session) {
+  let changed = false;
+
+  for (const iteration of session.iterations || []) {
+    if (!iteration.runId) continue;
+    const updatedSummary = summarizeRun(iteration.runId, session.profileName, session.scenarioId);
+    if (JSON.stringify(iteration.summary || null) !== JSON.stringify(updatedSummary)) {
+      iteration.summary = updatedSummary;
+      changed = true;
+    }
+  }
+
+  return changed;
 }
 
 function parseJsonResponse(text) {
@@ -1698,6 +1778,14 @@ function formatDuration(ms) {
   return `${hours}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
 }
 
+function parsePositiveIntOption(value, fallback) {
+  const parsed = parseInt(String(value ?? fallback), 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    throw new Error(`Expected a positive integer, received: ${value}`);
+  }
+  return parsed;
+}
+
 function printAutotuneSessionSummary(session, options = {}) {
   const { rounds, basisMode, recommenderLabel, keepWorse, dryRun, targetScope, judgeSelection = session } = options;
   console.log('Autotune session');
@@ -1710,6 +1798,7 @@ function printAutotuneSessionSummary(session, options = {}) {
   console.log(`  Basis selection: ${basisMode}`);
   console.log(`  Target scope: ${targetScope}`);
   console.log(`  Planned passes: ${rounds}`);
+  console.log(`  Runs per iteration: ${session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION}`);
   console.log(`  Parallelism: ${session.parallelism || 1}`);
   console.log(`  Keep regressions: ${keepWorse ? 'yes' : 'no'}`);
   console.log('  Flow: recommend -> apply -> evaluate -> accept/revert');
@@ -1725,8 +1814,8 @@ function printIterationTable(session) {
   }
 
   console.log('\nIterations:');
-  console.log('  #  Src  Mode  Keep  Score   ΔPrev  ΔBest  Latency   Run ID');
-  console.log('  ' + '─'.repeat(93));
+  console.log('  #  Src  Mode  Keep  Score      n  ΔPrev  ΔBest  Latency   Run ID');
+  console.log('  ' + '─'.repeat(99));
   for (const run of runs) {
     const summary = run.summary || {};
     const latency =
@@ -1743,8 +1832,12 @@ function printIterationTable(session) {
     const source = run.origin === 'autotune' ? 'A' : run.origin === 'baseline' ? 'B' : 'M';
     const mode = run.dryRun ? 'mock' : 'live';
     const keep = run.accepted == null ? '--' : run.accepted ? 'yes' : run.revertedToIteration ? 'revert' : 'no';
+    const n =
+      summary.totalRuns != null
+        ? `${summary.scoredRuns ?? summary.totalRuns}/${summary.totalRuns}`
+        : '--';
     console.log(
-      `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
+      `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${n.padStart(6)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
     );
   }
 }
@@ -1832,6 +1925,7 @@ async function runSessionIteration(session, options = {}) {
     scenarioId = session.scenarioId,
     modelRef = session.modelRef,
     parallelism = session.parallelism || 1,
+    runs = session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION,
     notes = null,
     useRubric = !hasFlag('skip-rubric'),
     dryRun = hasFlag('dry-run'),
@@ -1856,7 +1950,7 @@ async function runSessionIteration(session, options = {}) {
     '--scenario',
     scenarioId,
     '--runs',
-    '1',
+    String(runs),
     '--parallelism',
     String(parallelism),
     '--model',
@@ -1885,6 +1979,7 @@ async function runSessionIteration(session, options = {}) {
   console.log(`  Scenario: ${scenarioId}`);
   console.log(`  Tutor model: ${modelRef}`);
   if (useRubric) console.log(`  Judge: ${formatJudgeSelection(judgeSelection)}`);
+  console.log(`  Runs: ${runs}`);
   console.log(`  Parallelism: ${parallelism}`);
   console.log(`  Prompt override dir: ${session.promptDir}`);
   console.log(`  Prompt files: ${session.promptFiles.map((prompt) => prompt.filename).join(', ')}`);
@@ -1952,6 +2047,7 @@ async function runSessionIteration(session, options = {}) {
   session.judgeCliModel = judgeSelection.judgeCliModel;
   if (judgeWasOverridden) session.judgeSource = 'explicit';
   session.parallelism = parallelism;
+  session.runsPerIteration = runs;
   session.iterations = [...history, entry];
   saveSession(session);
 
@@ -1959,6 +2055,15 @@ async function runSessionIteration(session, options = {}) {
   console.log(`  Run ID: ${runId}`);
   if (useRubric) console.log(`  Judge: ${formatJudgeSelection(judgeSelection)}`);
   console.log(`  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`);
+  if (summary.totalRuns > 1) {
+    console.log(`  Replications: ${summary.scoredRuns}/${summary.totalRuns} scored`);
+  }
+  if (useRubric && summary.primaryScore == null) {
+    console.log('  Judge result: no usable score was recorded for this run');
+    if (summary.scoringMethod) {
+      console.log(`  Scoring method: ${summary.scoringMethod}`);
+    }
+  }
   if (entry.comparison.deltaVsBaseline != null) {
     console.log(`  Delta vs baseline: ${formatDelta(entry.comparison.deltaVsBaseline)}`);
   }
@@ -2027,6 +2132,7 @@ async function handleInit() {
     judgeCliModel: judgeSelection.judgeCliModel,
     judgeSource: inferJudgeSourceFromCliArgs(),
     parallelism: parseInt(getOption('parallelism', '1'), 10),
+    runsPerIteration: parsePositiveIntOption(getOption('runs', String(DEFAULT_RUNS_PER_ITERATION)), DEFAULT_RUNS_PER_ITERATION),
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
     resolvedTutorProfileName: blueprint.resolvedTutorProfileName,
@@ -2089,6 +2195,10 @@ async function handleFork() {
     judgeCliModel: judgeSelection.judgeCliModel,
     judgeSource: inferJudgeSourceFromCliArgs() === 'explicit' ? 'explicit' : sourceSession.judgeSource || 'default',
     parallelism: parseInt(getOption('parallelism', String(sourceSession.parallelism || 1)), 10),
+    runsPerIteration: parsePositiveIntOption(
+      getOption('runs', String(sourceSession.runsPerIteration || DEFAULT_RUNS_PER_ITERATION)),
+      sourceSession.runsPerIteration || DEFAULT_RUNS_PER_ITERATION,
+    ),
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
     resolvedTutorProfileName: sourceSession.resolvedTutorProfileName,
@@ -2121,6 +2231,10 @@ async function handleRun() {
     judgeCli: getOption('judge-cli', null),
     judgeCliModel: getOption('judge-cli-model', null),
     parallelism: parseInt(getOption('parallelism', String(session.parallelism || 1)), 10),
+    runs: parsePositiveIntOption(
+      getOption('runs', String(session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION)),
+      session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION,
+    ),
     notes: getOption('notes', null),
     useRubric: !hasFlag('skip-rubric'),
     dryRun: hasFlag('dry-run'),
@@ -2160,6 +2274,10 @@ async function handleAutotune() {
   const dryRun = hasFlag('dry-run');
   const keepWorse = hasFlag('keep-worse');
   const targetScope = normalizeTargetScope(getOption('target', 'both'));
+  const runsPerIteration = parsePositiveIntOption(
+    getOption('runs', String(session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION)),
+    session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION,
+  );
   const judgeSelection = parseJudgeSelection(
     {
       judgeRef: getOption('judge', null),
@@ -2170,7 +2288,7 @@ async function handleAutotune() {
   );
 
   console.log('');
-  printAutotuneSessionSummary(session, {
+  printAutotuneSessionSummary({ ...session, runsPerIteration }, {
     rounds,
     basisMode,
     recommenderLabel: resolveRecommenderConfig({
@@ -2193,6 +2311,7 @@ async function handleAutotune() {
       judgeCli: judgeSelection.judgeCli,
       judgeCliModel: judgeSelection.judgeCliModel,
       parallelism: session.parallelism || 1,
+      runs: runsPerIteration,
       notes: 'autotune baseline',
       useRubric: true,
       dryRun,
@@ -2207,6 +2326,11 @@ async function handleAutotune() {
     const basisIteration = resolveIterationSpec(refreshed, basisMode);
     if (!basisIteration) {
       throw new Error('Autotune requires at least one scored iteration.');
+    }
+    if (basisIteration.summary?.primaryScore == null) {
+      throw new Error(
+        `Autotune requires a scored basis iteration. Iteration ${basisIteration.iteration} (${basisIteration.runId}) has no usable judge score.`,
+      );
     }
 
     console.log(`\nAutotune pass ${pass}/${rounds}`);
@@ -2257,6 +2381,7 @@ async function handleAutotune() {
       judgeCli: judgeSelection.judgeCli,
       judgeCliModel: judgeSelection.judgeCliModel,
       parallelism: refreshed.parallelism || 1,
+      runs: runsPerIteration,
       notes: `autotune pass ${pass} via ${artifact.id}`,
       useRubric: true,
       dryRun,
@@ -2396,6 +2521,7 @@ async function main() {
 }
 
 export {
+  aggregateRunRows,
   applyPromptEditOperations,
   analyzeSectionTags,
   appendMissingClosingTags,
