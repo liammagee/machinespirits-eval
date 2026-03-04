@@ -831,64 +831,61 @@ describe('buildDialogueQualityPrompt', () => {
 });
 
 // ============================================================================
-// Example score variation (regression: uniform examples cause Codex echo)
+// Example score placeholders (regression: numeric examples cause Codex echo)
 // ============================================================================
 
-describe('example score variation in tutor/dialogue prompts', () => {
+describe('example score placeholders in tutor/dialogue prompts', () => {
   const sampleTurns = [
     { role: 'tutor', content: 'Let me explain this concept.' },
     { role: 'learner', content: 'I think I understand.' },
   ];
 
-  it('buildDialogueQualityPrompt uses varied example scores', () => {
+  it('buildEvaluationPrompt uses non-numeric placeholder scores', () => {
+    const prompt = buildEvaluationPrompt(
+      { message: 'Test suggestion' },
+      { name: 'Test', description: 'Test scenario', expectedBehavior: 'Good behavior' },
+    );
+    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
+  });
+
+  it('buildDialogueQualityPrompt uses non-numeric placeholder scores', () => {
     const prompt = buildDialogueQualityPrompt({
       turns: sampleTurns,
       scenarioName: 'Test',
       isPublicOnly: true,
     });
-    const has3 = prompt.includes('"score": 3');
-    const has4 = prompt.includes('"score": 4');
-    const distinctScores = [has3, has4].filter(Boolean).length;
-    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
-  it('buildTutorHolisticEvaluationPrompt uses varied example scores', () => {
+  it('buildTutorHolisticEvaluationPrompt uses non-numeric placeholder scores', () => {
     const prompt = buildTutorHolisticEvaluationPrompt({
       turns: sampleTurns,
       scenarioName: 'Test',
       isRecognition: true,
     });
-    const has3 = prompt.includes('"score": 3');
-    const has4 = prompt.includes('"score": 4');
-    const distinctScores = [has3, has4].filter(Boolean).length;
-    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
-  it('buildTutorDeliberationPrompt uses varied example scores', () => {
+  it('buildTutorDeliberationPrompt uses non-numeric placeholder scores', () => {
     const prompt = buildTutorDeliberationPrompt({
       turns: sampleTurns,
       dialogueTrace: [],
       learnerContext: 'Test learner',
     });
-    const has3 = prompt.includes('"score": 3');
-    const has4 = prompt.includes('"score": 4');
-    const distinctScores = [has3, has4].filter(Boolean).length;
-    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
-  it('buildLearnerDeliberationPrompt uses varied example scores', () => {
+  it('buildLearnerDeliberationPrompt uses non-numeric placeholder scores', () => {
     const prompt = buildLearnerDeliberationPrompt({
       turns: sampleTurns,
       dialogueTrace: [],
       learnerContext: 'Test learner',
     });
-    const has3 = prompt.includes('"score": 3');
-    const has4 = prompt.includes('"score": 4');
-    const distinctScores = [has3, has4].filter(Boolean).length;
-    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(prompt.includes('"score": 0'), 'should use 0 as placeholder score (outside valid 1-5 range)');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 });

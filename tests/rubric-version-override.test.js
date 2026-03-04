@@ -56,6 +56,7 @@ function buildTestPrompt() {
 }
 
 // Helper: extract dimension keys from the JSON example in a prompt
+// Matches both numeric scores ("score": 3) and placeholder scores ("score": "<1-5>")
 function extractPromptDimKeys(prompt) {
   return [...prompt.matchAll(/"(\w+)": \{"score": \d/g)].map((m) => m[1]);
 }
