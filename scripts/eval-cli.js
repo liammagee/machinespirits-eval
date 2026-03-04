@@ -4980,7 +4980,7 @@ async function main() {
         const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'evaluate-learner'));
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--force] [--verbose] [--arch <architecture>] [--parallelism N]',
+            'Usage: eval-cli.js evaluate-learner <runId> [--model <model>] [--judge <judge>] [--force] [--verbose] [--arch <architecture>] [--parallelism N]',
           );
           console.error(
             '  Scores learner turns and holistic learner dialogue quality from logs using the learner rubric.',
@@ -4994,6 +4994,7 @@ async function main() {
         const force = getFlag('force');
         const modelOverride = getOption('model') || null;
         const judgeCli = (getOption('judge-cli') || 'claude').toLowerCase();
+        const judgeFilter = getOption('judge') || null;
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const archFilter = getOption('arch') || null;
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
@@ -5028,6 +5029,13 @@ async function main() {
         let dialogueResults = allResults.filter((r) => r.dialogueId && r.success);
         if (archFilter) {
           dialogueResults = dialogueResults.filter((r) => r.learnerArchitecture === archFilter);
+        }
+        if (judgeFilter) {
+          const before = dialogueResults.length;
+          dialogueResults = dialogueResults.filter((r) => r.judgeModel === judgeFilter);
+          if (before !== dialogueResults.length) {
+            console.log(`  --judge ${judgeFilter}: filtered ${before} → ${dialogueResults.length} rows`);
+          }
         }
 
         if (dialogueResults.length === 0) {

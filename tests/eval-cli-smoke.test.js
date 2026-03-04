@@ -165,3 +165,24 @@ describe('eval-cli smoke — DB-backed commands', () => {
     assert.ok(stderr.includes('not found') || stderr.includes('Error'), 'should report not found');
   });
 });
+
+// ---------------------------------------------------------------------------
+// evaluate-learner --judge filter
+// ---------------------------------------------------------------------------
+
+describe('eval-cli smoke — evaluate-learner', () => {
+  it('usage includes --judge option', async () => {
+    const { stderr, code } = await runCli(['evaluate-learner']);
+    assert.strictEqual(code, 1, 'should exit with error when no runId given');
+    assert.ok(stderr.includes('--judge'), 'usage should mention --judge option');
+  });
+
+  it('errors on nonexistent run', async () => {
+    const { stderr, code } = await runCli(['evaluate-learner', 'eval-9999-99-99-nonexistent']);
+    assert.strictEqual(code, 1);
+    assert.ok(
+      stderr.includes('not found') || stderr.includes('No multi-turn'),
+      'should report not found or no results',
+    );
+  });
+});
