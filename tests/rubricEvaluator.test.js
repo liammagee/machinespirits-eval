@@ -845,7 +845,7 @@ describe('example score placeholders in tutor/dialogue prompts', () => {
       { message: 'Test suggestion' },
       { name: 'Test', description: 'Test scenario', expectedBehavior: 'Good behavior' },
     );
-    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
+    assert.ok(prompt.includes('"score": 2'), 'should include varied example scores');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
@@ -855,7 +855,7 @@ describe('example score placeholders in tutor/dialogue prompts', () => {
       scenarioName: 'Test',
       isPublicOnly: true,
     });
-    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
+    assert.ok(prompt.includes('"score": 2'), 'should include varied example scores');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
@@ -865,7 +865,7 @@ describe('example score placeholders in tutor/dialogue prompts', () => {
       scenarioName: 'Test',
       isRecognition: true,
     });
-    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
+    assert.ok(prompt.includes('"score": 2'), 'should include varied example scores');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
@@ -875,7 +875,7 @@ describe('example score placeholders in tutor/dialogue prompts', () => {
       dialogueTrace: [],
       learnerContext: 'Test learner',
     });
-    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
+    assert.ok(prompt.includes('"score": 2'), 'should include varied example scores');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 
@@ -885,7 +885,7 @@ describe('example score placeholders in tutor/dialogue prompts', () => {
       dialogueTrace: [],
       learnerContext: 'Test learner',
     });
-    assert.ok(prompt.includes('"score": 3'), 'should use single example score (not all dimensions)');
+    assert.ok(prompt.includes('"score": 2'), 'should include varied example scores');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 });

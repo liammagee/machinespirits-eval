@@ -245,13 +245,15 @@ ${externalMessage}`;
     })
     .join('\n\n');
 
-  // Build example JSON — show only first key with sample score to prevent judges from echoing
+  // Build example JSON — use varied scores to prevent judges from echoing a uniform pattern
   const dimKeys = Object.keys(dimensions);
+  const batchedExampleScores = dimKeys
+    .map((key, i) => `            "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .join(',\n');
   const exampleTurnStr = `{
         "learner_turn_index": 0,
         "scores": {
-            "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},
-            ... (include ALL ${dimKeys.length} dimension keys listed above)
+${batchedExampleScores}
         },
         "overall_score": 55,
         "summary": "Brief assessment"
@@ -362,10 +364,11 @@ export function buildLearnerEvaluationPrompt(params) {
   const truncatedTranscript = buildTruncatedTranscript(turns, targetTurnIndex);
   const targetExternalMessage = stripThinkBlocks(targetTurn?.externalMessage || '') || '(no message)';
 
-  // Build dimension keys for JSON example — show only the first key with a sample score
-  // and "..." for the rest to prevent judges (especially Codex CLI) from echoing all values
+  // Build dimension keys for JSON example — use varied scores to prevent judges from echoing
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
+  const exampleScores = dimKeys
+    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .join(',\n');
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the quality of a LEARNER's response turn — how well the learner agent engages as a student, independent of the tutor's quality.
 
@@ -428,6 +431,8 @@ CRITICAL JSON RULES:
 - BAD:  "reasoning": "Says \\"great point\\" which sounds scripted"
 - GOOD: "reasoning": "Says 'great point' which sounds scripted"
 
+IMPORTANT: The scores in the example below are PLACEHOLDERS. You MUST replace every score and reasoning with your own independent assessment based on the learner turn above. Do NOT copy the example scores.
+
 Respond with ONLY a JSON object in this exact format (no other text before or after):
 \`\`\`json
 {
@@ -470,7 +475,9 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
   const fullTranscript = buildHolisticTranscript(turns, false);
 
   const dimKeys = Object.keys(dimensions);
-  const exampleScores = `    "${dimKeys[0]}": {"score": 3, "reasoning": "brief reasoning here"},\n    ... (include ALL ${dimKeys.length} dimension keys listed above with your 1-5 scores)`;
+  const exampleScores = dimKeys
+    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .join(',\n');
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the LEARNER's quality ACROSS THE ENTIRE DIALOGUE, independent of tutor quality.
 
