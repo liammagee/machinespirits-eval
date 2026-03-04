@@ -30,6 +30,9 @@ import {
   calculateRecognitionMetrics,
   calculateDialogueQualityScore,
   buildDialogueQualityPrompt,
+  buildTutorHolisticEvaluationPrompt,
+  buildTutorDeliberationPrompt,
+  buildLearnerDeliberationPrompt,
   loadDialogueRubric,
   getDialogueDimensions,
 } from '../services/rubricEvaluator.js';
@@ -824,5 +827,68 @@ describe('buildDialogueQualityPrompt', () => {
 
     assert.ok(prompt.includes('PUBLIC DIALOGUE TRANSCRIPT'), 'should use public transcript heading');
     assert.ok(!prompt.includes('initial_draft'), 'should exclude internal trace actions');
+  });
+});
+
+// ============================================================================
+// Example score variation (regression: uniform examples cause Codex echo)
+// ============================================================================
+
+describe('example score variation in tutor/dialogue prompts', () => {
+  const sampleTurns = [
+    { role: 'tutor', content: 'Let me explain this concept.' },
+    { role: 'learner', content: 'I think I understand.' },
+  ];
+
+  it('buildDialogueQualityPrompt uses varied example scores', () => {
+    const prompt = buildDialogueQualityPrompt({
+      turns: sampleTurns,
+      scenarioName: 'Test',
+      isPublicOnly: true,
+    });
+    const has3 = prompt.includes('"score": 3');
+    const has4 = prompt.includes('"score": 4');
+    const distinctScores = [has3, has4].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
+  });
+
+  it('buildTutorHolisticEvaluationPrompt uses varied example scores', () => {
+    const prompt = buildTutorHolisticEvaluationPrompt({
+      turns: sampleTurns,
+      scenarioName: 'Test',
+      isRecognition: true,
+    });
+    const has3 = prompt.includes('"score": 3');
+    const has4 = prompt.includes('"score": 4');
+    const distinctScores = [has3, has4].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
+  });
+
+  it('buildTutorDeliberationPrompt uses varied example scores', () => {
+    const prompt = buildTutorDeliberationPrompt({
+      turns: sampleTurns,
+      dialogueTrace: [],
+      learnerContext: 'Test learner',
+    });
+    const has3 = prompt.includes('"score": 3');
+    const has4 = prompt.includes('"score": 4');
+    const distinctScores = [has3, has4].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
+  });
+
+  it('buildLearnerDeliberationPrompt uses varied example scores', () => {
+    const prompt = buildLearnerDeliberationPrompt({
+      turns: sampleTurns,
+      dialogueTrace: [],
+      learnerContext: 'Test learner',
+    });
+    const has3 = prompt.includes('"score": 3');
+    const has4 = prompt.includes('"score": 4');
+    const distinctScores = [has3, has4].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct)`);
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
   });
 });

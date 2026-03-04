@@ -14,6 +14,7 @@ import {
   calculateLearnerOverallScore,
   buildLearnerEvaluationPrompt,
   buildLearnerHolisticEvaluationPrompt,
+  buildBatchedLearnerPrompt,
 } from '../learnerRubricEvaluator.js';
 
 // ============================================================================
@@ -494,5 +495,65 @@ describe('buildLearnerHolisticEvaluationPrompt', () => {
 
     assert.ok(!prompt.includes('deliberation_depth'));
     assert.ok(!prompt.includes('OMIT'));
+  });
+});
+
+// ============================================================================
+// Example score variation (regression: uniform examples cause Codex echo)
+// ============================================================================
+
+describe('example score variation in prompts', () => {
+  const sampleTurns = [
+    {
+      turnNumber: 1,
+      externalMessage: 'I think I understand the concept.',
+      internalDeliberation: null,
+    },
+    {
+      turnNumber: 2,
+      externalMessage: 'Can you explain the relationship between X and Y?',
+      internalDeliberation: null,
+    },
+  ];
+
+  it('buildLearnerEvaluationPrompt uses varied example scores, not uniform', () => {
+    const prompt = buildLearnerEvaluationPrompt({
+      targetTurnIndex: 0,
+      turns: sampleTurns,
+      learnerArchitecture: 'unified',
+    });
+    // Should contain at least two different score values (e.g. 3, 4, 5)
+    const has3 = prompt.includes('"score": 3');
+    const has4 = prompt.includes('"score": 4');
+    const has5 = prompt.includes('"score": 5');
+    const distinctScores = [has3, has4, has5].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct values)`);
+    // Must not contain the old placeholder text
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
+  });
+
+  it('buildLearnerHolisticEvaluationPrompt uses varied example scores', () => {
+    const prompt = buildLearnerHolisticEvaluationPrompt({
+      turns: sampleTurns,
+      learnerArchitecture: 'unified',
+    });
+    const has3 = prompt.includes('"score": 3');
+    const has4 = prompt.includes('"score": 4');
+    const distinctScores = [has3, has4].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct values)`);
+    assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
+  });
+
+  it('buildBatchedLearnerPrompt uses varied example scores', () => {
+    const prompt = buildBatchedLearnerPrompt({
+      turns: sampleTurns,
+      learnerTurnTargets: [{ lt: 0, targetIdx: 0 }],
+      learnerArchitecture: 'unified',
+    });
+    // The batched prompt serialises example JSON — check for varied scores
+    const has3 = prompt.includes('"score": 3') || prompt.includes('"score":3');
+    const has4 = prompt.includes('"score": 4') || prompt.includes('"score":4');
+    const distinctScores = [has3, has4].filter(Boolean).length;
+    assert.ok(distinctScores >= 2, `example scores should vary (found ${distinctScores} distinct values)`);
   });
 });
