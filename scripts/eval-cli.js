@@ -5069,6 +5069,44 @@ async function main() {
         // re-scoring all learner turns.
         let partialCount = 0;
         let missingHolisticCount = 0;
+        let echoedLearnerCount = 0;
+        const PLACEHOLDER_LEARNER_SIGNATURE =
+          'conceptual_progression=2,engagement_quality=2,learner_authenticity=3,metacognitive_awareness=3,revision_signals=4';
+
+        const getLearnerScoreSignature = (scoreMap = {}) =>
+          Object.keys(scoreMap)
+            .sort()
+            .map((k) => `${k}=${typeof scoreMap[k] === 'object' ? scoreMap[k].score : scoreMap[k]}`)
+            .join(',');
+
+        const isPromptExamplePlaceholder = (parsed) => {
+          if (!parsed || typeof parsed !== 'object' || !parsed.scores || typeof parsed.scores !== 'object') {
+            return false;
+          }
+
+          const signature = getLearnerScoreSignature(parsed.scores);
+          const reasonings = Object.values(parsed.scores)
+            .map((entry) =>
+              typeof entry === 'object' && entry !== null ? String(entry.reasoning || '').toLowerCase() : '',
+            )
+            .filter(Boolean);
+          const hasTemplateReasoning = reasonings.some((reasoning) => reasoning.includes('your assessment of'));
+          const hasTemplateSummary = String(parsed.summary || '').toLowerCase().includes('brief overall assessment');
+          const overall = Number(parsed.overall_score);
+          const hasTemplateOverall = Number.isFinite(overall) && overall === 55;
+
+          if (hasTemplateReasoning) return true;
+
+          return signature === PLACEHOLDER_LEARNER_SIGNATURE && (hasTemplateSummary || hasTemplateOverall);
+        };
+
+        const hasEchoedLearnerScorePattern = (learnerScores) => {
+          const turnEntries = Object.values(learnerScores || {});
+          if (turnEntries.length < 2) return false;
+          const signatures = turnEntries.map((turnScore) => getLearnerScoreSignature(turnScore.scores || {}));
+          return signatures.every((signature) => signature === signatures[0]);
+        };
+
         const toEvaluate = dialogueResults
           .map((r) => {
             if (force) {
@@ -5105,7 +5143,14 @@ async function main() {
             }
 
             const needsTurnEval = !hasCompleteTurnScores;
-            const needsHolisticEval = r.learnerHolisticOverallScore == null;
+            let needsHolisticEval = r.learnerHolisticOverallScore == null;
+
+            if (!needsTurnEval && hasEchoedLearnerScorePattern(r.learnerScores)) {
+              echoedLearnerCount++;
+              partialCount++;
+              needsHolisticEval = true;
+              return { result: r, needsTurnEval: true, needsHolisticEval };
+            }
 
             if (r.learnerOverallScore != null && needsTurnEval) partialCount++;
             if (!needsTurnEval && needsHolisticEval) missingHolisticCount++;
@@ -5117,6 +5162,11 @@ async function main() {
 
         if (partialCount > 0) {
           console.log(`Found ${partialCount} partially-scored dialogue(s) — will re-evaluate learner turns.`);
+        }
+        if (echoedLearnerCount > 0) {
+          console.log(
+            `Found ${echoedLearnerCount} dialogue(s) with echoed learner score patterns — will re-evaluate with robust CLI parsing.`,
+          );
         }
         if (missingHolisticCount > 0) {
           console.log(`Found ${missingHolisticCount} dialogue(s) with missing learner holistic scores.`);
@@ -5139,6 +5189,11 @@ async function main() {
         const learnerJudgeModel = judgeModelLabel;
 
         const callLearnerJudge = async (prompt) => {
+          const attemptPrompts = [
+            prompt,
+            `${prompt}\n\nIMPORTANT RETRY DIRECTIVE: Your prior response appeared to copy the example template. Return ONLY fresh JSON scores for this specific learner transcript. Do NOT reuse example scores or example summary text.`,
+          ];
+
           let cliBin, cliJudgeArgs, cliJudgeEnv;
           if (judgeCli === 'gemini') {
             cliBin = 'gemini';
@@ -5159,40 +5214,51 @@ async function main() {
             delete cliJudgeEnv.CLAUDECODE;
           }
 
-          const stdout = await new Promise((resolve, reject) => {
-            const child = spawn(cliBin, cliJudgeArgs, {
-              stdio: ['pipe', 'pipe', 'pipe'],
-              env: cliJudgeEnv,
-            });
-            let out = '';
-            let err = '';
-            child.stdout.on('data', (d) => {
-              out += d;
-            });
-            child.stderr.on('data', (d) => {
-              err += d;
-            });
-            child.on('error', reject);
-            child.on('close', (code) => {
-              if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
-              else resolve(out);
-            });
-            child.stdin.write(prompt);
-            child.stdin.end();
-          });
+          let lastError = null;
+          for (let attempt = 0; attempt < attemptPrompts.length; attempt++) {
+            try {
+              const stdout = await new Promise((resolve, reject) => {
+                const child = spawn(cliBin, cliJudgeArgs, {
+                  stdio: ['pipe', 'pipe', 'pipe'],
+                  env: cliJudgeEnv,
+                });
+                let out = '';
+                let err = '';
+                child.stdout.on('data', (d) => {
+                  out += d;
+                });
+                child.stderr.on('data', (d) => {
+                  err += d;
+                });
+                child.on('error', reject);
+                child.on('close', (code) => {
+                  if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
+                  else resolve(out);
+                });
+                child.stdin.write(attemptPrompts[attempt]);
+                child.stdin.end();
+              });
 
-          let jsonStr = stdout.trim();
-          const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-          if (fenceMatch) {
-            jsonStr = fenceMatch[1].trim();
-          } else {
-            const firstBrace = jsonStr.indexOf('{');
-            const lastBrace = jsonStr.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace > firstBrace) {
-              jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+              const parsed = evaluationRunner.parseCliJudgeJsonResponse(stdout);
+
+              if (!parsed?.scores || typeof parsed.scores !== 'object') {
+                throw new Error('CLI judge response missing scores object');
+              }
+
+              if (isPromptExamplePlaceholder(parsed)) {
+                throw new Error('CLI judge echoed prompt example scores');
+              }
+
+              return parsed;
+            } catch (error) {
+              lastError = error;
+              if (attempt < attemptPrompts.length - 1) {
+                continue;
+              }
             }
           }
-          return JSON.parse(jsonStr);
+
+          throw lastError || new Error('CLI judge failed to return a valid learner evaluation payload');
         };
 
         const evaluateDialogue = async (workItem, index) => {
@@ -5314,7 +5380,7 @@ async function main() {
                 });
 
                 if (verbose) {
-                  console.log(`${turnTag} ... calling claude`);
+                  console.log(`${turnTag} ... calling ${judgeCli}`);
                 }
 
                 const parsed = await callLearnerJudge(prompt);
@@ -5358,10 +5424,7 @@ async function main() {
               if (turnEntries.length >= 2) {
                 const signatures = turnEntries.map((ts) => {
                   const scores = ts.scores || {};
-                  return Object.keys(scores)
-                    .sort()
-                    .map((k) => `${k}=${typeof scores[k] === 'object' ? scores[k].score : scores[k]}`)
-                    .join(',');
+                  return getLearnerScoreSignature(scores);
                 });
                 const allIdentical = signatures.every((s) => s === signatures[0]);
                 if (allIdentical) {
@@ -5392,7 +5455,7 @@ async function main() {
               });
 
               if (verbose) {
-                console.log(`${holisticTag} ... calling claude`);
+                console.log(`${holisticTag} ... calling ${judgeCli}`);
               }
 
               const parsedHolistic = await callLearnerJudge(holisticPrompt);

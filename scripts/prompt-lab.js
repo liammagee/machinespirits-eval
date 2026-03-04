@@ -903,26 +903,159 @@ function parseJsonResponse(text) {
     return found;
   };
 
+  const extractObjectFromStart = (value, start) => {
+    if (start < 0 || start >= value.length || value[start] !== '{') return null;
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = start; i < value.length; i++) {
+      const ch = value[i];
+
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (ch === '\\' && inString) {
+        escaped = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+
+      if (ch === '{') {
+        depth += 1;
+      } else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) {
+          return value.slice(start, i + 1);
+        }
+        if (depth < 0) return null;
+      }
+    }
+
+    return null;
+  };
+
+  const extractTrailingObjects = (value, maxCandidates = 50) => {
+    const found = [];
+    let cursor = value.length;
+
+    while (cursor > 0 && found.length < maxCandidates) {
+      const start = value.lastIndexOf('{', cursor - 1);
+      if (start === -1) break;
+
+      const candidate = extractObjectFromStart(value, start);
+      if (candidate) found.push(candidate);
+      cursor = start;
+    }
+
+    return found;
+  };
+
   for (const source of sources) {
     pushCandidate(source);
     for (const objectCandidate of extractBalancedObjects(source)) {
       pushCandidate(objectCandidate);
     }
   }
+  for (const objectCandidate of extractTrailingObjects(raw)) {
+    pushCandidate(objectCandidate);
+  }
 
+  const parsedCandidates = [];
   const errors = [];
-  for (const candidate of candidates) {
+
+  const placeholderRegexes = [
+    /\bshort paragraph\b/i,
+    /\bobservation 1\b/i,
+    /\bspecific edit 1\b/i,
+    /\bexpected effect 1\b/i,
+    /\bwhy this file changes\b/i,
+    /\bFULL FILE CONTENT\b/i,
+  ];
+
+  const scoreCandidate = (parsed) => {
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return -1000;
+
+    let score = 0;
+
+    const summary = typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
+    if (summary) score += 3;
+    else if ('summary' in parsed) score -= 1;
+
+    const observations = Array.isArray(parsed.observations) ? parsed.observations : [];
+    const expectedEffects = Array.isArray(parsed.expected_effects) ? parsed.expected_effects : [];
+    score += Math.min(observations.length, 4);
+    score += Math.min(expectedEffects.length, 4);
+
+    const updates = Array.isArray(parsed.prompt_updates) ? parsed.prompt_updates : [];
+    const edits = Array.isArray(parsed.prompt_edits) ? parsed.prompt_edits : [];
+
+    if (updates.length > 0) {
+      score += 8 + updates.length;
+      for (const update of updates) {
+        if (typeof update?.filename === 'string' && update.filename.endsWith('.md')) score += 2;
+        const rationale = typeof update?.rationale === 'string' ? update.rationale.trim() : '';
+        if (rationale && !/why this file changes/i.test(rationale)) score += 1;
+        const changes = Array.isArray(update?.changes) ? update.changes.filter(Boolean) : [];
+        score += Math.min(changes.length, 3);
+        const content = typeof update?.content === 'string' ? update.content.trim() : '';
+        if (content.length > 200) score += 4;
+        else if (content.length > 0) score += 1;
+      }
+    }
+
+    if (edits.length > 0) {
+      score += 6 + edits.length;
+    }
+
+    if (updates.length === 0 && edits.length === 0) score -= 4;
+
+    const rawText = JSON.stringify(parsed);
+    for (const regex of placeholderRegexes) {
+      if (regex.test(rawText)) score -= 5;
+    }
+
+    return score;
+  };
+
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index];
+    let parsed = null;
+
     try {
-      return JSON.parse(candidate);
+      parsed = JSON.parse(candidate);
     } catch (error) {
       errors.push(`JSON.parse: ${error.message}`);
     }
 
-    try {
-      return JSON.parse(jsonrepair(candidate));
-    } catch (error) {
-      errors.push(`jsonrepair: ${error.message}`);
+    if (parsed == null) {
+      try {
+        parsed = JSON.parse(jsonrepair(candidate));
+      } catch (error) {
+        errors.push(`jsonrepair: ${error.message}`);
+      }
     }
+
+    if (parsed != null) {
+      parsedCandidates.push({
+        parsed,
+        score: scoreCandidate(parsed),
+        index,
+      });
+    }
+  }
+
+  if (parsedCandidates.length > 0) {
+    parsedCandidates.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return b.index - a.index;
+    });
+    return parsedCandidates[0].parsed;
   }
 
   const preview = raw.slice(0, 300).replace(/\s+/g, ' ');
@@ -2525,6 +2658,7 @@ export {
   applyPromptEditOperations,
   analyzeSectionTags,
   appendMissingClosingTags,
+  parseJsonResponse,
   recoverPromptCandidate,
   validatePromptCandidate,
 };
