@@ -5297,10 +5297,15 @@ export async function rejudgeRun(runId, options = {}) {
 
   // Helper: check whether a row has complete multi-turn scores (all scoring phases done)
   function hasCompleteScores(r) {
+    // Parse suggestions if stored as JSON string
+    let suggs = r.suggestions;
+    if (typeof suggs === 'string') {
+      try { suggs = JSON.parse(suggs); } catch { suggs = []; }
+    }
     // Single-turn: just needs tutor_first_turn_score
     const isMultiTurn = r.dialogueId && (
-      (Array.isArray(r.suggestions) && r.suggestions.length > 1) ||
-      (r.conversationMode === 'messages' && r.dialogueRounds > 1)
+      (Array.isArray(suggs) && suggs.length > 1) ||
+      (r.dialogueRounds > 1)
     );
     if (!isMultiTurn) return r.tutorFirstTurnScore != null;
     // Multi-turn: needs per-turn tutor scores + last-turn + dialogue quality
