@@ -33,6 +33,7 @@ Options:
   --todo-path <path>       Explicit TODO output path (same as --write-todo <path>)
   --color                  Force colorized output
   --no-color               Disable colorized output
+  --graph                  Output dependency graph in DOT format (Graphviz)
   --epoch <epoch>          Filter claims by epoch: pilot (Paper 1.0), 2.0 (default), all
   --help
 
@@ -235,6 +236,7 @@ function main() {
   const strictMode = args.includes('--strict');
   const jsonMode = args.includes('--json');
   const smokeMode = args.includes('--smoke');
+  const graphMode = args.includes('--graph');
   const refreshSnapshot = args.includes('--refresh-snapshot');
   const writeTodoFlag = hasFlag(args, '--write-todo');
   const writeTodoArg = getArgValue(args, '--write-todo');
@@ -260,6 +262,25 @@ function main() {
       todoPath,
       report,
     });
+  }
+
+  if (graphMode) {
+    const graph = report.dependency_graph || {};
+    const claimStatusMap = new Map((report.claims || []).map((c) => [c.id, c.status]));
+    const lines = ['digraph claims {', '  rankdir=LR;', '  node [shape=box, style=filled];'];
+    for (const id of graph.evaluation_order || []) {
+      const status = claimStatusMap.get(id) || 'pass';
+      const color = status === 'pass' ? '#90EE90' : status === 'warn' ? '#FFD700' : '#FF6B6B';
+      const blocked = (graph.blocked_claims || []).some((b) => b.id === id);
+      const fillColor = blocked ? '#D3D3D3' : color;
+      lines.push(`  "${id}" [fillcolor="${fillColor}"];`);
+    }
+    for (const edge of graph.edges || []) {
+      lines.push(`  "${edge.from}" -> "${edge.to}";`);
+    }
+    lines.push('}');
+    console.log(lines.join('\n'));
+    process.exit(0);
   }
 
   if (jsonMode) {
@@ -290,6 +311,20 @@ function main() {
       console.log('\nCoverage checks:');
       for (const check of report.coverage) {
         printEntry(check, useColor);
+      }
+    }
+
+    if (report.dependency_graph) {
+      const dg = report.dependency_graph;
+      const edgeCount = (dg.edges || []).length;
+      if (edgeCount > 0) {
+        const blockedCount = (dg.blocked_claims || []).length;
+        console.log(`\nDependency Graph:`);
+        console.log(`  Total edges: ${edgeCount}`);
+        console.log(`  Max depth: ${dg.max_depth || 0}`);
+        if (blockedCount > 0) {
+          console.log(`  ${paint(`Blocked claims: ${blockedCount}`, useColor, ANSI.yellow)} (due to upstream failures)`);
+        }
       }
     }
 
