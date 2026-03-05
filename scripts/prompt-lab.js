@@ -1405,6 +1405,37 @@ Return JSON with exactly this shape:
   };
 }
 
+function buildStrictCompactRecommendationEditPrompt(
+  session,
+  basisIteration,
+  basisResults,
+  promptState,
+  allowedPrompts,
+  targetScope,
+) {
+  const compact = buildCompactRecommendationEditPrompt(
+    session,
+    basisIteration,
+    basisResults,
+    promptState,
+    allowedPrompts,
+    targetScope,
+  );
+
+  return {
+    ...compact,
+    systemPrompt: `${compact.systemPrompt}
+
+STRICT RETRY RULES (apply-operation failure recovery):
+- Use ONLY "replace" operations (no insert_after / insert_before).
+- Each "find" string MUST be copied verbatim from the current file content.
+- Each "find" string MUST match exactly once in the current file.
+- Prefer 1-2 high-impact replacements; avoid broad rewrites.
+- If you cannot provide safe exact matches, return "prompt_edits": [].
+- Return JSON only.`,
+  };
+}
+
 function normalizeRecommendation(session, payload, allowedPromptFiles) {
   const parsed = payload.parsed || {};
   const allowed = new Set(allowedPromptFiles.map((prompt) => prompt.filename));
@@ -1463,8 +1494,8 @@ function applyPromptEditOperations(baseContent, operations, filename) {
     }
 
     if (type === 'insert_after') {
-      const anchor = String(op?.anchor || '');
-      const text = String(op?.text || '');
+      const anchor = String(op?.anchor ?? op?.find ?? '');
+      const text = String(op?.text ?? op?.replace ?? '');
       const matches = countOccurrences(content, anchor);
       if (matches !== 1) {
         throw new Error(`${filename}: insert_after expected 1 exact anchor match, got ${matches}`);
@@ -1474,8 +1505,8 @@ function applyPromptEditOperations(baseContent, operations, filename) {
     }
 
     if (type === 'insert_before') {
-      const anchor = String(op?.anchor || '');
-      const text = String(op?.text || '');
+      const anchor = String(op?.anchor ?? op?.find ?? '');
+      const text = String(op?.text ?? op?.replace ?? '');
       const matches = countOccurrences(content, anchor);
       if (matches !== 1) {
         throw new Error(`${filename}: insert_before expected 1 exact anchor match, got ${matches}`);
@@ -1642,6 +1673,14 @@ async function generateRecommendation(session, options = {}) {
     allowedPrompts,
     targetScope,
   );
+  const strictCompactPromptRequest = buildStrictCompactRecommendationEditPrompt(
+    session,
+    basisIteration,
+    basisResults,
+    promptState,
+    allowedPrompts,
+    targetScope,
+  );
   const recommenderConfig = resolveRecommenderConfig({
     modelRefOverride: recommenderRef,
     cliOverride: recommenderCli,
@@ -1711,22 +1750,132 @@ async function generateRecommendation(session, options = {}) {
     }
   }
 
+  const evaluateRecommendationOutput = (candidateNormalized) => {
+    let candidateValidation = validateRecommendationPromptUpdates(session, promptState, candidateNormalized);
+    let candidateRecovery = {
+      changed: false,
+      normalized: candidateNormalized,
+      validation: candidateValidation,
+      notes: [],
+    };
+
+    if (candidateValidation.invalid.length > 0) {
+      candidateRecovery = attemptRecommendationRecovery(session, promptState, candidateNormalized, candidateValidation);
+      candidateValidation = candidateRecovery.validation;
+    }
+
+    return {
+      normalized: candidateRecovery.normalized,
+      validation: candidateValidation,
+      recovery: candidateRecovery,
+    };
+  };
+
   let normalized =
     responseFormat === 'compact-edits'
       ? normalizeCompactRecommendation(session, promptState, payload, allowedPrompts)
       : normalizeRecommendation(session, payload, allowedPrompts);
-  let validation = validateRecommendationPromptUpdates(session, promptState, normalized);
-  let recovery = {
-    changed: false,
-    normalized,
-    validation,
-    notes: [],
-  };
+  let { validation, recovery } = evaluateRecommendationOutput(normalized);
+  normalized = recovery.normalized;
 
-  if (validation.invalid.length > 0) {
-    recovery = attemptRecommendationRecovery(session, promptState, normalized, validation);
-    normalized = recovery.normalized;
-    validation = recovery.validation;
+  // If full-content rewrites fail structural validation, retry with compact edits.
+  // This avoids aborting autotune when the recommender omits sections in full-file mode.
+  if (validation.invalid.length > 0 && !dryRun && responseFormat !== 'compact-edits') {
+    const fullValidationDetails = validation.invalid
+      .map((item) => `${item.filename}: ${item.issues.join('; ')}`)
+      .join(' | ');
+    fallback.attempted = true;
+    fallback.format = 'compact-edits';
+    fallback.reason = `full-content failed validation: ${fullValidationDetails}`;
+    if (!fallback.rawParseErrorPath && payload?.rawText) {
+      fallback.rawParseErrorPath = writeRawRecommenderResponse(
+        session.sessionId,
+        recommendationId,
+        payload.rawText,
+        'full-validation-fail',
+      );
+    }
+
+    try {
+      payload = await callRecommenderJson(compactPromptRequest.systemPrompt, compactPromptRequest.userPrompt, {
+        modelRefOverride: recommenderRef,
+        cliOverride: recommenderCli,
+        cliModelOverride: recommenderCliModel,
+      });
+      responseFormat = 'compact-edits';
+      fallback.succeeded = true;
+
+      normalized = normalizeCompactRecommendation(session, promptState, payload, allowedPrompts);
+      ({ validation, recovery } = evaluateRecommendationOutput(normalized));
+      normalized = recovery.normalized;
+    } catch (fallbackError) {
+      const isCompactApplyMismatch =
+        !fallbackError.rawText &&
+        /expected 1 exact (anchor|match)/i.test(String(fallbackError.message || ''));
+      let strictRetryRecovered = false;
+
+      if (isCompactApplyMismatch) {
+        const applyErrorPath =
+          payload?.rawText && responseFormat === 'compact-edits'
+            ? writeRawRecommenderResponse(session.sessionId, recommendationId, payload.rawText, 'compact-apply-error')
+            : null;
+
+        try {
+          const strictPayload = await callRecommenderJson(
+            strictCompactPromptRequest.systemPrompt,
+            strictCompactPromptRequest.userPrompt,
+            {
+              modelRefOverride: recommenderRef,
+              cliOverride: recommenderCli,
+              cliModelOverride: recommenderCliModel,
+            },
+          );
+
+          payload = strictPayload;
+          responseFormat = 'compact-edits';
+          fallback.succeeded = true;
+          fallback.reason = `${fallback.reason}; compact apply mismatch retry`;
+
+          normalized = normalizeCompactRecommendation(session, promptState, payload, allowedPrompts);
+          ({ validation, recovery } = evaluateRecommendationOutput(normalized));
+          normalized = recovery.normalized;
+          strictRetryRecovered = true;
+        } catch (strictRetryError) {
+          if (strictRetryError.rawText) {
+            const strictPath = writeRawRecommenderResponse(
+              session.sessionId,
+              recommendationId,
+              strictRetryError.rawText,
+              'compact-strict-retry-error',
+            );
+            throw new Error(
+              `Recommendation ${recommendationId} failed full-content validation (${fullValidationDetails}). Compact edit fallback failed to apply operations (${fallbackError.message}). Strict compact retry also failed: ${strictRetryError.message}. Raw responses saved to ${fallback.rawParseErrorPath || 'n/a'}, ${applyErrorPath || 'n/a'}, and ${strictPath}`,
+            );
+          }
+          throw new Error(
+            `Recommendation ${recommendationId} failed full-content validation (${fullValidationDetails}). Compact edit fallback failed to apply operations (${fallbackError.message}). Strict compact retry also failed: ${strictRetryError.message}${fallback.rawParseErrorPath ? `. Raw response saved to ${fallback.rawParseErrorPath}` : ''}${applyErrorPath ? `. Compact apply response saved to ${applyErrorPath}` : ''}`,
+          );
+        }
+      }
+
+      if (strictRetryRecovered) {
+        // Recovered by strict compact retry; continue without throwing.
+      } else if (fallbackError.rawText) {
+        const compactPath = writeRawRecommenderResponse(
+          session.sessionId,
+          recommendationId,
+          fallbackError.rawText,
+          'compact-validation-fallback-error',
+        );
+        throw new Error(
+          `Recommendation ${recommendationId} failed full-content validation (${fullValidationDetails}). Compact edit fallback also failed: ${fallbackError.message}. Raw responses saved to ${fallback.rawParseErrorPath || 'n/a'} and ${compactPath}`,
+        );
+      } else {
+        throw new Error(
+          `Recommendation ${recommendationId} failed full-content validation (${fullValidationDetails}). Compact edit fallback also failed: ${fallbackError.message}${fallback.rawParseErrorPath ? `. Raw response saved to ${fallback.rawParseErrorPath}` : ''}`,
+        );
+      }
+    }
   }
 
   const changedFiles = normalized.promptUpdates.filter((update) => {
