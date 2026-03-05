@@ -4903,6 +4903,137 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   const promises = [];
   const phaseLabels = [];
 
+  // Phase 0: Per-turn tutor scoring
+  if (totalTurns > 0) {
+    promises.push(
+      (async () => {
+        try {
+          const scenarioContext = {
+            name: fullScenario.name,
+            description: fullScenario.description,
+            expectedBehavior: fullScenario.expected_behavior,
+            learnerContext: fullScenario.learner_context,
+            requiredElements: fullScenario.required_elements,
+            forbiddenElements: fullScenario.forbidden_elements,
+          };
+          const learnerCtxForTutor = dialogueLog.learnerContext || null;
+
+          // Normalize a single turn's parsed scores
+          function normalizeTutorTurnResult(turnIndex, parsed) {
+            const normalizedScores = {};
+            for (const [key, value] of Object.entries(parsed.scores || {})) {
+              if (typeof value === 'object' && value !== null) {
+                normalizedScores[key] = { score: value.score, reasoning: value.reasoning };
+              } else if (typeof value === 'number') {
+                normalizedScores[key] = { score: value, reasoning: null };
+              }
+            }
+            const overallScore =
+              Object.keys(normalizedScores).length > 0
+                ? rubricEvaluator.calculateOverallScore(normalizedScores)
+                : parsed.overall_score;
+            return {
+              turnIndex,
+              scores: normalizedScores,
+              overallScore,
+              baseScore: Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateBaseScore(normalizedScores) : null,
+              recognitionScore: Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateRecognitionScore(normalizedScores) : null,
+              summary: parsed.summary,
+            };
+          }
+
+          let tutorTurnScores = {};
+
+          // Attempt batched scoring first for multi-turn
+          if (totalTurns > 1) {
+            try {
+              const batchedPrompt = rubricEvaluator.buildBatchedPerTurnTutorPrompt({
+                turnResults,
+                dialogueTrace,
+                scenario: scenarioContext,
+                learnerContext: learnerCtxForTutor,
+              });
+              if (batchedPrompt) {
+                const parsed = await retryWithBackoff(async () => callJudge(batchedPrompt), {});
+                if (Array.isArray(parsed.turns)) {
+                  for (const turnData of parsed.turns) {
+                    const r = normalizeTutorTurnResult(turnData.turn_index, turnData);
+                    tutorTurnScores[r.turnIndex] = {
+                      scores: r.scores,
+                      overallScore: r.overallScore,
+                      baseScore: r.baseScore,
+                      recognitionScore: r.recognitionScore,
+                      summary: r.summary,
+                      judgeModel,
+                    };
+                  }
+                }
+              }
+            } catch (batchErr) {
+              log(`    tutor-per-turn batch FAIL (falling back): ${batchErr.message}`);
+            }
+          }
+
+          // Fallback: score each turn individually
+          if (Object.keys(tutorTurnScores).length === 0) {
+            for (let i = 0; i < totalTurns; i++) {
+              try {
+                const prompt = rubricEvaluator.buildPerTurnTutorEvaluationPrompt({
+                  turnResults,
+                  dialogueTrace,
+                  targetTurnIndex: i,
+                  scenario: scenarioContext,
+                  learnerContext: learnerCtxForTutor,
+                });
+                if (!prompt) continue;
+                const parsed = await retryWithBackoff(async () => callJudge(prompt), {});
+                const r = normalizeTutorTurnResult(i, parsed);
+                tutorTurnScores[r.turnIndex] = {
+                  scores: r.scores,
+                  overallScore: r.overallScore,
+                  baseScore: r.baseScore,
+                  recognitionScore: r.recognitionScore,
+                  summary: r.summary,
+                  judgeModel,
+                };
+              } catch (turnErr) {
+                log(`    tutor-turn-${i} FAIL: ${turnErr.message}`);
+              }
+            }
+          }
+
+          if (Object.keys(tutorTurnScores).length === 0) {
+            return { phase: 'tutor-per-turn', success: false };
+          }
+
+          // Aggregate scores
+          const overalls = Object.values(tutorTurnScores).map((s) => s.overallScore);
+          const tutorOverall = overalls.reduce((a, b) => a + b, 0) / overalls.length;
+          const tutorFirst = tutorTurnScores[0]?.overallScore ?? null;
+          const lastTurnIdx = Math.max(...Object.keys(tutorTurnScores).map(Number));
+          const tutorLast = tutorTurnScores[lastTurnIdx]?.overallScore ?? null;
+          const tutorDevelopment = tutorFirst != null && tutorLast != null ? tutorLast - tutorFirst : null;
+
+          evaluationStore.updateResultTutorScores(rowId, {
+            tutorScores: tutorTurnScores,
+            tutorOverallScore: tutorOverall,
+            tutorFirstTurnScore: tutorFirst,
+            tutorLastTurnScore: tutorLast,
+            tutorDevelopmentScore: tutorDevelopment,
+            judgeModel,
+          });
+
+          log(`    tutor-per-turn: ${Object.keys(tutorTurnScores).length} turns, first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} dev=${tutorDevelopment?.toFixed(1)}`);
+          return { phase: 'tutor-per-turn', success: true, score: tutorOverall };
+        } catch (err) {
+          log(`    tutor-per-turn scoring FAIL: ${err.message}`);
+          return { phase: 'tutor-per-turn', success: false };
+        }
+      })(),
+    );
+    phaseLabels.push('tutor-per-turn');
+  }
+
   // Phase 1: Per-turn learner scoring
   if (!skipLearner && learnerTurnTargets.length > 0) {
     promises.push(
@@ -5252,6 +5383,7 @@ export async function rejudgeRun(runId, options = {}) {
     overwrite = false,
     skipLearner = false,
     skipDeliberation = false,
+    limit = null,
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -5350,6 +5482,12 @@ export async function rejudgeRun(runId, options = {}) {
   const skipped = results.length - uniqueResults.length - resumeIncomplete;
   results = uniqueResults;
 
+  // Apply --limit if specified
+  if (limit != null && limit > 0 && results.length > limit) {
+    console.log(`  Limiting to ${limit} of ${results.length} eligible results`);
+    results = results.slice(0, limit);
+  }
+
   console.log(
     `\nRejudging ${results.length} unique results from run ${runId}${skippedComplete > 0 ? ` (skipping ${skippedComplete} already complete)` : ''}${resumeIncomplete > 0 ? ` (resuming ${resumeIncomplete} incomplete)` : ''}`,
   );
@@ -5369,6 +5507,9 @@ export async function rejudgeRun(runId, options = {}) {
   // Build judge override object if provided
   // rubricEvaluator expects { judgeOverride: { model: "..." } }
   const judgeOverrideObj = judgeOverride ? { judgeOverride: { model: judgeOverride } } : {};
+
+  // Reset usage accumulator for cost tracking
+  rubricEvaluator.resetUsageAccumulator();
 
   // Parallel worker pool (same pattern as main eval loop)
   const items = [...results];
@@ -5518,6 +5659,7 @@ export async function rejudgeRun(runId, options = {}) {
   await Promise.all(workers);
 
   const newAvg = newScores.length > 0 ? newScores.reduce((a, b) => a + b, 0) / newScores.length : null;
+  const usage = rubricEvaluator.getUsageAccumulator();
 
   return {
     runId,
@@ -5527,6 +5669,7 @@ export async function rejudgeRun(runId, options = {}) {
     oldAvgScore: oldAvg,
     newAvgScore: newAvg,
     scoreDelta: oldAvg != null && newAvg != null ? newAvg - oldAvg : null,
+    usage,
   };
 }
 
