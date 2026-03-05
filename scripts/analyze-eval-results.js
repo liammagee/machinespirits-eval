@@ -226,6 +226,65 @@ function interpretEffectSize(d) {
   return 'large';
 }
 
+// v2.2 dimension keys (from evaluation-rubric.yaml, GuideEval P→O→E + content_accuracy)
+const V22_DIMENSIONS = [
+  { key: 'perception_quality', name: 'Perception' },
+  { key: 'pedagogical_craft', name: 'Pedagogy' },
+  { key: 'elicitation_quality', name: 'Elicitation' },
+  { key: 'adaptive_responsiveness', name: 'Adaptation' },
+  { key: 'recognition_quality', name: 'Recognition' },
+  { key: 'productive_difficulty', name: 'Prod. Difficulty' },
+  { key: 'epistemic_integrity', name: 'Epist. Integrity' },
+  { key: 'content_accuracy', name: 'Content Accuracy' },
+];
+
+// v1 dimension keys (legacy per-column storage)
+const V1_DIMENSIONS = [
+  { key: 'score_relevance', name: 'Relevance' },
+  { key: 'score_specificity', name: 'Specificity' },
+  { key: 'score_pedagogical', name: 'Pedagogical' },
+  { key: 'score_personalization', name: 'Personalization' },
+  { key: 'score_actionability', name: 'Actionability' },
+  { key: 'score_tone', name: 'Tone' },
+];
+
+/**
+ * Extract per-dimension average scores from a result row.
+ * For v2.2 rows: parses tutor_scores JSON → averages across turns.
+ * For v1 rows: reads legacy score_* columns directly.
+ * Returns { dimKey: averageScore } or null values for missing data.
+ */
+function extractDimensionScores(row) {
+  // Try v2.2 tutor_scores JSON first
+  if (row.tutor_scores) {
+    try {
+      const parsed = typeof row.tutor_scores === 'string' ? JSON.parse(row.tutor_scores) : row.tutor_scores;
+      const turns = Object.keys(parsed).filter((k) => parsed[k]?.scores);
+      if (turns.length === 0) return null;
+
+      const dimAvgs = {};
+      for (const dim of V22_DIMENSIONS) {
+        const values = turns
+          .map((t) => parsed[t]?.scores?.[dim.key]?.score)
+          .filter((v) => v != null && typeof v === 'number');
+        dimAvgs[dim.key] = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null;
+      }
+      return { version: '2.2', scores: dimAvgs };
+    } catch {
+      // Fall through to v1
+    }
+  }
+
+  // v1 legacy columns
+  const dimAvgs = {};
+  let hasAny = false;
+  for (const dim of V1_DIMENSIONS) {
+    dimAvgs[dim.key] = row[dim.key] ?? null;
+    if (dimAvgs[dim.key] != null) hasAny = true;
+  }
+  return hasAny ? { version: '1.0', scores: dimAvgs } : null;
+}
+
 // Parse command line arguments
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -324,6 +383,8 @@ async function analyzeResults(options) {
       score_personalization,
       score_actionability,
       score_tone,
+      tutor_scores,
+      tutor_rubric_version,
       created_at
     FROM evaluation_results
     WHERE success = 1
@@ -470,46 +531,69 @@ async function analyzeResults(options) {
     }
     console.log(`\n${c.dim}* p < 0.05, ** p < 0.01${c.reset}\n`);
 
-    // Dimension-level analysis
+    // Dimension-level analysis — auto-detect v2.2 vs v1 from data
     console.log(`${c.bold}DIMENSION-LEVEL EFFECT SIZES${c.reset}`);
     console.log(`${'─'.repeat(100)}`);
 
-    const dimensions = [
-      { key: 'score_relevance', name: 'Relevance' },
-      { key: 'score_specificity', name: 'Specificity' },
-      { key: 'score_pedagogical', name: 'Pedagogical' },
-      { key: 'score_personalization', name: 'Personalization' },
-      { key: 'score_actionability', name: 'Actionability' },
-      { key: 'score_tone', name: 'Tone' },
-    ];
+    // Extract per-dimension scores for all rows
+    const allDimExtractions = results.map((r) => ({ profile: r.profile_name, dims: extractDimensionScores(r) }));
+    const v22Count = allDimExtractions.filter((e) => e.dims?.version === '2.2').length;
+    const v1Count = allDimExtractions.filter((e) => e.dims?.version === '1.0').length;
+    const dimensions = v22Count >= v1Count ? V22_DIMENSIONS : V1_DIMENSIONS;
+    const dimVersion = v22Count >= v1Count ? '2.2' : '1.0';
+    console.log(`${c.dim}(rubric version: ${dimVersion}, ${v22Count} v2.2 rows, ${v1Count} v1.0 rows)${c.reset}`);
+
+    // Build per-profile per-dimension score arrays
+    const profileDimScores = {};
+    for (const profile of profiles) {
+      profileDimScores[profile] = {};
+      for (const dim of dimensions) {
+        profileDimScores[profile][dim.key] = [];
+      }
+    }
+    for (const extraction of allDimExtractions) {
+      if (!extraction.dims || extraction.dims.version !== dimVersion) continue;
+      const profile = extraction.profile;
+      if (!profileDimScores[profile]) continue;
+      for (const dim of dimensions) {
+        const val = extraction.dims.scores[dim.key];
+        if (val != null) profileDimScores[profile][dim.key].push(val);
+      }
+    }
 
     // Header
-    let header = 'Dimension'.padEnd(20);
+    const nameWidth = 18;
+    const colWidth = Math.max(14, ...profiles.map((p) => p.substring(0, 12).length + 2));
+    let header = 'Dimension'.padEnd(nameWidth);
     for (const profile of profiles) {
-      header += profile.substring(0, 12).padStart(14);
+      header += profile.substring(0, 12).padStart(colWidth);
     }
     if (profiles.length === 2) {
-      header += "  Cohen's d".padStart(14) + '  Effect'.padStart(12);
+      header += "  Cohen's d".padStart(colWidth) + '  Effect'.padStart(12);
     }
     console.log(header);
     console.log(`${'─'.repeat(100)}`);
 
     const dimensionResults = [];
     for (const dim of dimensions) {
-      let row = dim.name.padEnd(20);
+      let row = dim.name.padEnd(nameWidth);
 
-      const dimScores = {};
       for (const profile of profiles) {
-        const scores = byProfile[profile].map((r) => r[dim.key]).filter((s) => s !== null && s !== undefined);
-        dimScores[profile] = scores;
-        row += mean(scores).toFixed(2).padStart(14);
+        const scores = profileDimScores[profile][dim.key];
+        row += (scores.length > 0 ? mean(scores).toFixed(2) : 'n/a').padStart(colWidth);
       }
 
       if (profiles.length === 2) {
-        const d = cohensD(dimScores[profiles[0]], dimScores[profiles[1]]);
-        const effect = interpretEffectSize(d);
-        row += d.toFixed(3).padStart(14) + effect.padStart(12);
-        dimensionResults.push({ dimension: dim.name, d, effect });
+        const s1 = profileDimScores[profiles[0]][dim.key];
+        const s2 = profileDimScores[profiles[1]][dim.key];
+        if (s1.length > 0 && s2.length > 0) {
+          const d = cohensD(s1, s2);
+          const effect = interpretEffectSize(d);
+          row += d.toFixed(3).padStart(colWidth) + effect.padStart(12);
+          dimensionResults.push({ dimension: dim.name, d, effect });
+        } else {
+          row += 'n/a'.padStart(colWidth) + 'n/a'.padStart(12);
+        }
       }
 
       console.log(row);
