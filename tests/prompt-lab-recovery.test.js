@@ -86,6 +86,28 @@ Alpha
   assert.match(updated, /## Note\nGamma/);
 });
 
+test('applyPromptEditOperations accepts insert_after find/replace aliases', () => {
+  const base = `# Prompt
+<section>
+Alpha
+</section>
+`;
+
+  const updated = applyPromptEditOperations(
+    base,
+    [
+      {
+        type: 'insert_after',
+        find: '</section>\n',
+        replace: '\n## Alias Note\nDelta\n',
+      },
+    ],
+    'sample.md',
+  );
+
+  assert.match(updated, /## Alias Note\nDelta/);
+});
+
 test('aggregateRunRows averages real replications and ignores superseded rejudgments', () => {
   const aggregated = aggregateRunRows([
     {
