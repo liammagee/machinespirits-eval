@@ -413,7 +413,7 @@ describe('isTransientEvaluationError', () => {
 });
 
 // --- storeRejudgment column propagation ---
-import { storeRejudgment, getResultById, createRun } from '../services/evaluationStore.js';
+import { storeRejudgment, getResultById, createRun, updateResultScores } from '../services/evaluationStore.js';
 
 describe('storeRejudgment column propagation', () => {
   // Create a shared test run once
@@ -457,7 +457,7 @@ describe('storeRejudgment column propagation', () => {
     };
   }
 
-  function makeEvaluation() {
+  function makeEvaluation(overrides = {}) {
     return {
       overallScore: 4.0,
       tutorFirstTurnScore: 4.0,
@@ -471,6 +471,7 @@ describe('storeRejudgment column propagation', () => {
       judgeModel: 'test-judge',
       summary: 'Good response',
       judgeLatencyMs: 200,
+      ...overrides,
     };
   }
 
@@ -513,5 +514,55 @@ describe('storeRejudgment column propagation', () => {
     const stored = getResultById(newId);
     assert.strictEqual(stored.conversationMode, null,
       'null conversation_mode should be stored as null');
+  });
+
+  // --- Cross-judge safety invariants ---
+  // These tests verify that rejudge operations cannot destroy scores from a different judge.
+
+  it('storeRejudgment preserves original row when creating a new row', () => {
+    // When rejudge creates a new row (correct path), the original must remain untouched
+    const original = makeOriginalResult();
+    // Create the "original" Sonnet-judged row
+    const sonnetId = storeRejudgment(original, makeEvaluation({ judgeModel: 'claude-code/sonnet' }));
+
+    // Now rejudge with codex — should create a NEW row
+    const sonnetRow = getResultById(sonnetId);
+    const codexId = storeRejudgment(sonnetRow, makeEvaluation({ judgeModel: 'codex-cli/auto' }));
+
+    // Original Sonnet row still exists with its judge
+    const originalAfter = getResultById(sonnetId);
+    assert.ok(originalAfter, 'original row must still exist');
+    assert.strictEqual(originalAfter.judgeModel, 'claude-code/sonnet',
+      'original row judge_model must not change after storeRejudgment');
+
+    // New row has the codex judge
+    const codexRow = getResultById(codexId);
+    assert.strictEqual(codexRow.judgeModel, 'codex-cli/auto',
+      'new rejudge row should have the target judge label');
+    assert.notStrictEqual(sonnetId, codexId, 'rejudge must create a distinct row');
+  });
+
+  it('updateResultScores overwrites judge_model — this is the danger the guard prevents', () => {
+    // This test documents the dangerous behavior: updateResultScores changes
+    // judge_model in-place. The rejudgeRun() cross-judge guard prevents this
+    // from being called on rows belonging to a different judge.
+    const original = makeOriginalResult();
+    const rowId = storeRejudgment(original, makeEvaluation({ judgeModel: 'claude-code/sonnet' }));
+
+    // Simulate the dangerous overwrite path
+    updateResultScores(rowId, makeEvaluation({ judgeModel: 'codex-cli/auto' }));
+    const row = getResultById(rowId);
+    assert.strictEqual(row.judgeModel, 'codex-cli/auto',
+      'updateResultScores DOES overwrite judge_model (this is why the guard exists)');
+  });
+
+  it('getCliJudgeModelLabel returns distinct labels for each CLI backend', () => {
+    // Different CLI judges must produce different labels so the guard can distinguish them
+    const codex = getCliJudgeModelLabel('codex');
+    const gemini = getCliJudgeModelLabel('gemini');
+    const claude = getCliJudgeModelLabel('claude');
+    assert.notStrictEqual(codex, gemini, 'codex and gemini labels must differ');
+    assert.notStrictEqual(codex, claude, 'codex and claude labels must differ');
+    assert.notStrictEqual(gemini, claude, 'gemini and claude labels must differ');
   });
 });

@@ -5277,22 +5277,20 @@ export async function rejudgeRun(runId, options = {}) {
     throw new Error('No successful results with suggestions found to rejudge');
   }
 
-  // Resolve the target judge label so we can detect prior rejudgments by the same judge
+  // Resolve the target judge label — used for dedup (resume mode) AND overwrite safety
   let targetJudgeLabel = null;
   const effectiveCliJudgeModel = judgeCli
     ? judgeCliModel || getDefaultCliJudgeModelOverride(judgeCli)
     : null;
-  if (!overwrite) {
-    try {
-      if (judgeCli) {
-        targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel);
-      } else {
-        const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
-        targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
-      }
-    } catch {
-      // If we can't resolve, skip the cross-call dedup (fall back to within-call dedup only)
+  try {
+    if (judgeCli) {
+      targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel);
+    } else {
+      const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
+      targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
     }
+  } catch {
+    // If we can't resolve, skip the cross-call dedup (fall back to within-call dedup only)
   }
 
   // Helper: check whether a row has complete multi-turn scores (all scoring phases done)
@@ -5450,18 +5448,30 @@ export async function rejudgeRun(runId, options = {}) {
           // Map evaluationTimeMs → judgeLatencyMs for DB storage
           evaluation.judgeLatencyMs = evaluation.evaluationTimeMs ?? null;
           let rowId;
+          let modeLabel;
           if (overwrite || result._overwriteRowId) {
             // Update in place: explicit --overwrite, or resuming an incomplete row
             const targetId = result._overwriteRowId || result.id;
-            evaluationStore.updateResultScores(targetId, evaluation);
-            rowId = targetId;
+            // SAFETY: never overwrite a row belonging to a different judge
+            const targetRow = result._overwriteRowId
+              ? results.find((r) => r.id === targetId) || result
+              : result;
+            if (targetJudgeLabel && targetRow.judgeModel && targetRow.judgeModel !== targetJudgeLabel) {
+              // Row belongs to a different judge — create new row instead of overwriting
+              rowId = evaluationStore.storeRejudgment(result, evaluation);
+              modeLabel = `added — refused to overwrite ${targetRow.judgeModel} row`;
+            } else {
+              evaluationStore.updateResultScores(targetId, evaluation);
+              rowId = targetId;
+              modeLabel = result._overwriteRowId ? 'resumed' : 'replaced';
+            }
           } else {
             // Create new row (preserves history for reliability analysis)
             rowId = evaluationStore.storeRejudgment(result, evaluation);
+            modeLabel = 'added';
           }
           succeeded++;
           if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
-          const modeLabel = result._overwriteRowId ? 'resumed' : overwrite ? 'replaced' : 'added';
           // Always print one line per row so the user can see progress
           console.log(
             `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.tutorFirstTurnScore?.toFixed(1) ?? '--'})`,
