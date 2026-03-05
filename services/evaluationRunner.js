@@ -5295,40 +5295,64 @@ export async function rejudgeRun(runId, options = {}) {
     }
   }
 
-  // Build a set of suggestion keys that have already been judged by the target judge.
-  // This prevents duplicate rows when rejudge is run multiple times with the same judge.
-  const alreadyJudgedByTarget = new Set();
+  // Helper: check whether a row has complete multi-turn scores (all scoring phases done)
+  function hasCompleteScores(r) {
+    // Single-turn: just needs tutor_first_turn_score
+    const isMultiTurn = r.dialogueId && (
+      (Array.isArray(r.suggestions) && r.suggestions.length > 1) ||
+      (r.conversationMode === 'messages' && r.dialogueRounds > 1)
+    );
+    if (!isMultiTurn) return r.tutorFirstTurnScore != null;
+    // Multi-turn: needs per-turn tutor scores + last-turn + dialogue quality
+    return r.tutorScores != null && r.tutorLastTurnScore != null && r.dialogueQualityScore != null;
+  }
+
+  // Build a map of suggestion keys → existing rows judged by the target judge.
+  // In resume mode (default, no --overwrite): skip rows with COMPLETE scores.
+  // Rows with incomplete scores (e.g. pre-fix single-shot only) are re-processed.
+  const existingRowsByTarget = new Map(); // suggKey → row
   if (targetJudgeLabel) {
     for (const r of results) {
       if (r.judgeModel === targetJudgeLabel) {
         const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
-        alreadyJudgedByTarget.add(suggKey);
+        existingRowsByTarget.set(suggKey, r);
       }
     }
   }
 
   // Deduplicate: only rejudge unique responses (by suggestions content),
-  // and skip responses already judged by the target judge
+  // and skip responses already COMPLETELY judged by the target judge
   const seenSuggestions = new Set();
   const uniqueResults = [];
+  let skippedComplete = 0;
+  let resumeIncomplete = 0;
   for (const r of results) {
     const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
     if (seenSuggestions.has(suggKey)) continue;
     seenSuggestions.add(suggKey);
-    // Skip if this response was already judged by the target judge in a prior rejudge call
-    if (alreadyJudgedByTarget.has(suggKey)) continue;
+    // Check if target judge already scored this response
+    const existing = existingRowsByTarget.get(suggKey);
+    if (existing) {
+      if (hasCompleteScores(existing)) {
+        skippedComplete++;
+        continue; // Fully scored — skip
+      }
+      // Incomplete scores — re-process with overwrite behavior on that row
+      r._overwriteRowId = existing.id;
+      resumeIncomplete++;
+    }
     uniqueResults.push(r);
   }
 
-  const skipped = results.length - uniqueResults.length;
+  const skipped = results.length - uniqueResults.length - resumeIncomplete;
   results = uniqueResults;
 
-  log(
-    `\nRejudging ${results.length} unique results from run ${runId}${skipped > 0 ? ` (skipping ${skipped} duplicates)` : ''}`,
+  console.log(
+    `\nRejudging ${results.length} unique results from run ${runId}${skippedComplete > 0 ? ` (skipping ${skippedComplete} already complete)` : ''}${resumeIncomplete > 0 ? ` (resuming ${resumeIncomplete} incomplete)` : ''}`,
   );
-  if (judgeOverride) log(`  Judge override: ${judgeOverride}`);
-  if (judgeCli) log(`  Judge CLI: ${judgeCli}${effectiveCliJudgeModel ? ` (${effectiveCliJudgeModel})` : ''}`);
-  if (scenarioFilter) log(`  Scenario filter: ${scenarioFilter}`);
+  if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
+  if (judgeCli) console.log(`  Judge CLI: ${judgeCli}${effectiveCliJudgeModel ? ` (${effectiveCliJudgeModel})` : ''}`);
+  if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
 
   // Capture old scores for before/after comparison
   const oldScores = results.map((r) => r.tutorFirstTurnScore).filter((s) => s != null);
@@ -5421,18 +5445,20 @@ export async function rejudgeRun(runId, options = {}) {
           // Map evaluationTimeMs → judgeLatencyMs for DB storage
           evaluation.judgeLatencyMs = evaluation.evaluationTimeMs ?? null;
           let rowId;
-          if (overwrite) {
-            // Old behavior: update in place (loses history)
-            evaluationStore.updateResultScores(result.id, evaluation);
-            rowId = result.id;
+          if (overwrite || result._overwriteRowId) {
+            // Update in place: explicit --overwrite, or resuming an incomplete row
+            const targetId = result._overwriteRowId || result.id;
+            evaluationStore.updateResultScores(targetId, evaluation);
+            rowId = targetId;
           } else {
-            // New behavior: create new row (preserves history for reliability analysis)
+            // Create new row (preserves history for reliability analysis)
             rowId = evaluationStore.storeRejudgment(result, evaluation);
           }
           succeeded++;
           if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
-          const modeLabel = overwrite ? 'replaced' : 'added';
-          log(
+          const modeLabel = result._overwriteRowId ? 'resumed' : overwrite ? 'replaced' : 'added';
+          // Always print one line per row so the user can see progress
+          console.log(
             `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.tutorFirstTurnScore?.toFixed(1) ?? '--'})`,
           );
 
@@ -5457,13 +5483,13 @@ export async function rejudgeRun(runId, options = {}) {
           }
         } else {
           failed++;
-          log(
+          console.log(
             `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: JUDGE FAILED - ${evaluation.error}`,
           );
         }
       } catch (error) {
         failed++;
-        log(
+        console.log(
           `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ERROR - ${error.message}`,
         );
       }
