@@ -566,3 +566,138 @@ describe('storeRejudgment column propagation', () => {
     assert.notStrictEqual(gemini, claude, 'gemini and claude labels must differ');
   });
 });
+
+// --- Evaluate / Rejudge scoring parity ---
+// These tests verify that the rejudge multi-turn pipeline (scoreMultiTurnRejudgment)
+// produces the same DB columns as the evaluate multi-turn pipeline (evaluateMultiTurnResult).
+// Both are tested by scanning the source code for DB write calls.
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+describe('evaluate / rejudge scoring parity', () => {
+  // DB update functions that write score columns.
+  // Both evaluate and rejudge must call the same set for multi-turn results.
+  const MULTI_TURN_DB_WRITERS = [
+    'updateResultTutorScores',       // per-turn tutor scores JSON, first/last/dev
+    'updateResultScores',            // Turn 0 legacy columns (evaluate only calls this additionally)
+    'updateResultLearnerScores',     // per-turn + holistic learner scores
+    'updateDialogueQualityScore',    // dialogue quality (public)
+    'updateDialogueQualityInternalScore', // dialogue quality (internal/full)
+    'updateResultTutorHolisticScores', // tutor holistic scores
+    // Deliberation is gated — both sides gate identically via hasTutorSuperego / isMultiAgent
+    'updateTutorDeliberationScores',
+    'updateLearnerDeliberationScores',
+  ];
+
+  // Score columns that MUST be populated for a complete multi-turn result
+  const REQUIRED_MULTI_TURN_COLUMNS = [
+    'tutor_scores',
+    'tutor_first_turn_score',
+    'tutor_last_turn_score',
+    'tutor_development_score',
+    'tutor_holistic_overall_score',
+    'learner_scores',
+    'learner_overall_score',
+    'dialogue_quality_score',
+  ];
+
+  function extractDbWriterCalls(source) {
+    const writers = new Set();
+    for (const fn of MULTI_TURN_DB_WRITERS) {
+      if (source.includes(`evaluationStore.${fn}(`) || source.includes(`${fn}(`)) {
+        writers.add(fn);
+      }
+    }
+    return writers;
+  }
+
+  it('scoreMultiTurnRejudgment calls all required DB writers', () => {
+    const source = fs.readFileSync(
+      path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8',
+    );
+
+    // Extract the scoreMultiTurnRejudgment function body
+    const fnStart = source.indexOf('async function scoreMultiTurnRejudgment(');
+    assert.ok(fnStart > 0, 'scoreMultiTurnRejudgment must exist in evaluationRunner.js');
+
+    // Find the end by matching braces (approximate — look for next top-level function)
+    const fnEnd = source.indexOf('\nasync function ', fnStart + 10);
+    const fnBody = fnEnd > 0 ? source.slice(fnStart, fnEnd) : source.slice(fnStart);
+
+    const writers = extractDbWriterCalls(fnBody);
+
+    // These writers MUST be present in scoreMultiTurnRejudgment
+    const requiredWriters = [
+      'updateResultTutorScores',
+      'updateResultLearnerScores',
+      'updateDialogueQualityScore',
+      'updateDialogueQualityInternalScore',
+      'updateResultTutorHolisticScores',
+      'updateTutorDeliberationScores',
+      'updateLearnerDeliberationScores',
+    ];
+
+    for (const writer of requiredWriters) {
+      assert.ok(writers.has(writer),
+        `scoreMultiTurnRejudgment must call evaluationStore.${writer}()`);
+    }
+  });
+
+  it('evaluate multi-turn and rejudge multi-turn write the same score columns', () => {
+    const evalCliSource = fs.readFileSync(
+      path.join(__dirname, '..', 'scripts', 'eval-cli.js'), 'utf-8',
+    );
+    const runnerSource = fs.readFileSync(
+      path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8',
+    );
+
+    // Extract evaluateMultiTurnResult from eval-cli.js
+    const evalStart = evalCliSource.indexOf('async function evaluateMultiTurnResult(');
+    assert.ok(evalStart > 0, 'evaluateMultiTurnResult must exist in eval-cli.js');
+    const evalEnd = evalCliSource.indexOf('\n        async function evaluateSingle', evalStart + 10);
+    const evalBody = evalEnd > 0 ? evalCliSource.slice(evalStart, evalEnd) : evalCliSource.slice(evalStart, evalStart + 5000);
+
+    // Extract scoreMultiTurnRejudgment from evaluationRunner.js
+    const rejStart = runnerSource.indexOf('async function scoreMultiTurnRejudgment(');
+    const rejEnd = runnerSource.indexOf('\nasync function ', rejStart + 10);
+    const rejBody = rejEnd > 0 ? runnerSource.slice(rejStart, rejEnd) : runnerSource.slice(rejStart);
+
+    const evalWriters = extractDbWriterCalls(evalBody);
+    const rejWriters = extractDbWriterCalls(rejBody);
+
+    // Rejudge must have AT LEAST every writer that evaluate has (except updateResultScores
+    // which evaluate uses for legacy Turn 0 columns — rejudge handles this in the outer loop)
+    const evalOnly = [...evalWriters].filter(w => !rejWriters.has(w) && w !== 'updateResultScores');
+    const rejOnly = [...rejWriters].filter(w => !evalWriters.has(w));
+
+    assert.deepStrictEqual(evalOnly, [],
+      `These DB writers are in evaluate but missing from rejudge: ${evalOnly.join(', ')}`);
+
+    // It's OK if rejudge has extra writers, but flag for review
+    if (rejOnly.length > 0) {
+      // Not a failure, just informational
+    }
+  });
+
+  it('required multi-turn columns are all written by updateResultTutorScores', () => {
+    // Verify that updateResultTutorScores writes the key tutor columns
+    const storeSource = fs.readFileSync(
+      path.join(__dirname, '..', 'services', 'evaluationStore.js'), 'utf-8',
+    );
+
+    const fnStart = storeSource.indexOf('export function updateResultTutorScores(');
+    assert.ok(fnStart > 0, 'updateResultTutorScores must exist in evaluationStore.js');
+    const fnEnd = storeSource.indexOf('\nexport function ', fnStart + 10);
+    const fnBody = fnEnd > 0 ? storeSource.slice(fnStart, fnEnd) : storeSource.slice(fnStart, fnStart + 1000);
+
+    const expectedColumns = ['tutor_scores', 'tutor_first_turn_score', 'tutor_last_turn_score', 'tutor_development_score'];
+    for (const col of expectedColumns) {
+      assert.ok(fnBody.includes(col),
+        `updateResultTutorScores must write column '${col}'`);
+    }
+  });
+});
