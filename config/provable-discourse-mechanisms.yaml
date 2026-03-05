@@ -309,6 +309,8 @@ claims:
 
   - id: paper2.s1.pilot.factorial_d
     description: "Introduction cites pilot factorial recognition effect d=1.11."
+    depends_on:
+      - paper.modulation.dataset_n350
     source_keys:
       - "stat|5|pilot factorial d=1.11"
     statement:

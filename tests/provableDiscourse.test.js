@@ -6,6 +6,7 @@ import os from 'os';
 import path from 'path';
 import Database from 'better-sqlite3';
 import {
+  buildDependencyGraph,
   cohensD,
   computeLearnerSummaryFromScores,
   evaluateAssertion,
@@ -16,6 +17,7 @@ import {
   inferRecognitionFromProfileName,
   linearRegression,
   pearsonCorrelation,
+  topologicalSort,
   verifyTurnIdsForRow,
 } from '../services/provableDiscourse.js';
 
@@ -1302,4 +1304,156 @@ test('conditional_delta with turn_level + rootDir: event detection only uses ver
 
   db.close();
   fs.rmSync(tmpDir, { recursive: true, force: true });
+});
+
+// ── Dependency graph tests ──────────────────────────────────────
+
+test('topologicalSort: linear chain A→B→C', () => {
+  const claims = [
+    { id: 'A' },
+    { id: 'B', depends_on: ['A'] },
+    { id: 'C', depends_on: ['B'] },
+  ];
+  const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
+  const result = topologicalSort(adjacency, inDegree, allIds);
+
+  assert.equal(result.hasCycle, false);
+  assert.equal(result.cycleMembers.length, 0);
+  // A must come before B, B before C
+  const indexA = result.order.indexOf('A');
+  const indexB = result.order.indexOf('B');
+  const indexC = result.order.indexOf('C');
+  assert.ok(indexA < indexB);
+  assert.ok(indexB < indexC);
+});
+
+test('topologicalSort: diamond A→B,C→D', () => {
+  const claims = [
+    { id: 'A' },
+    { id: 'B', depends_on: ['A'] },
+    { id: 'C', depends_on: ['A'] },
+    { id: 'D', depends_on: ['B', 'C'] },
+  ];
+  const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
+  const result = topologicalSort(adjacency, inDegree, allIds);
+
+  assert.equal(result.hasCycle, false);
+  const indexA = result.order.indexOf('A');
+  const indexB = result.order.indexOf('B');
+  const indexC = result.order.indexOf('C');
+  const indexD = result.order.indexOf('D');
+  assert.ok(indexA < indexB);
+  assert.ok(indexA < indexC);
+  assert.ok(indexB < indexD);
+  assert.ok(indexC < indexD);
+});
+
+test('topologicalSort: cycle detection', () => {
+  const claims = [
+    { id: 'A', depends_on: ['C'] },
+    { id: 'B', depends_on: ['A'] },
+    { id: 'C', depends_on: ['B'] },
+  ];
+  const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
+  const result = topologicalSort(adjacency, inDegree, allIds);
+
+  assert.equal(result.hasCycle, true);
+  assert.equal(result.cycleMembers.length, 3);
+  assert.ok(result.cycleMembers.includes('A'));
+  assert.ok(result.cycleMembers.includes('B'));
+  assert.ok(result.cycleMembers.includes('C'));
+});
+
+test('buildDependencyGraph: cross_reference ref_claim creates implicit dependency', () => {
+  const claims = [
+    { id: 'root', evidence: { type: 'db_count' } },
+    { id: 'xref', evidence: { type: 'cross_reference', ref_claim: 'root' } },
+  ];
+  const { adjacency } = buildDependencyGraph(claims);
+
+  // root → xref edge exists (root's children include xref)
+  assert.ok(adjacency.get('root').includes('xref'));
+});
+
+test('buildDependencyGraph: unknown ref_claim is silently skipped', () => {
+  const claims = [
+    { id: 'orphan', evidence: { type: 'cross_reference', ref_claim: 'nonexistent' } },
+  ];
+  const { adjacency, inDegree } = buildDependencyGraph(claims);
+
+  // No edges, orphan has 0 in-degree
+  assert.equal(adjacency.get('orphan').length, 0);
+  assert.equal(inDegree.get('orphan'), 0);
+});
+
+test('evaluateEvidence: cross_reference with claimResults checks target status', () => {
+  const claimResults = new Map([
+    ['target.pass', { status: 'pass' }],
+    ['target.fail', { status: 'fail' }],
+    ['target.warn', { status: 'warn' }],
+  ]);
+
+  const passResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.pass' }, null, { claimResults });
+  assert.equal(passResult.value, 1);
+  assert.equal(passResult.details.target_status, 'pass');
+
+  const failResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.fail' }, null, { claimResults });
+  assert.equal(failResult.value, 0);
+  assert.equal(failResult.details.target_status, 'fail');
+
+  const warnResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.warn' }, null, { claimResults });
+  assert.equal(warnResult.value, 1);
+  assert.equal(warnResult.details.target_status, 'warn');
+});
+
+test('evaluateEvidence: cross_reference without claimResults returns 1 (backward compat)', () => {
+  const result = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'anything' }, null);
+  assert.equal(result.value, 1);
+});
+
+test('topologicalSort: independent claims have stable ordering', () => {
+  const claims = [
+    { id: 'X' },
+    { id: 'Y' },
+    { id: 'Z' },
+  ];
+  const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
+  const result = topologicalSort(adjacency, inDegree, allIds);
+
+  assert.equal(result.hasCycle, false);
+  assert.equal(result.order.length, 3);
+  assert.ok(result.order.includes('X'));
+  assert.ok(result.order.includes('Y'));
+  assert.ok(result.order.includes('Z'));
+});
+
+test('buildDependencyGraph: mixed explicit depends_on and implicit cross_reference', () => {
+  const claims = [
+    { id: 'base' },
+    { id: 'mid', depends_on: ['base'] },
+    { id: 'xref', depends_on: ['mid'], evidence: { type: 'cross_reference', ref_claim: 'base' } },
+  ];
+  const { adjacency, inDegree } = buildDependencyGraph(claims);
+
+  // xref depends on both mid (explicit) and base (implicit from ref_claim)
+  assert.ok(adjacency.get('base').includes('xref'));
+  assert.ok(adjacency.get('mid').includes('xref'));
+  assert.equal(inDegree.get('xref'), 2);
+});
+
+test('evaluateEvidence: cross_reference to blocked target returns 0', () => {
+  const claimResults = new Map([
+    ['target.blocked', { status: 'warn', details: { blocked_by: ['some.root'] } }],
+    ['target.clean_warn', { status: 'warn', details: {} }],
+  ]);
+
+  // Blocked target → value 0 (cascade)
+  const blockedResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.blocked' }, null, { claimResults });
+  assert.equal(blockedResult.value, 0);
+  assert.equal(blockedResult.details.target_status, 'blocked');
+
+  // Clean warn (no blocked_by) → value 1 (still passes)
+  const cleanWarnResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.clean_warn' }, null, { claimResults });
+  assert.equal(cleanWarnResult.value, 1);
+  assert.equal(cleanWarnResult.details.target_status, 'warn');
 });

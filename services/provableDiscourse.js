@@ -1851,10 +1851,128 @@ function evaluateCodePath(evidence, rootDir) {
   };
 }
 
-function evaluateCrossReference(evidence) {
-  // Cross-reference claims verify that a referenced claim ID exists in the config.
-  // Returns 1 (truthy numeric) so the exists assertion passes.
+// ── Dependency graph utilities ──────────────────────────────────
+
+/**
+ * Build adjacency list from explicit `depends_on` fields and implicit
+ * cross_reference `ref_claim` pointers.  Returns { adjacency, inDegree, allIds }.
+ */
+export function buildDependencyGraph(claims) {
+  const claimIds = new Set(claims.map((c) => c.id));
+  const adjacency = new Map(); // parent → [children that depend on it]
+  const inDegree = new Map();
+
+  for (const id of claimIds) {
+    adjacency.set(id, []);
+    inDegree.set(id, 0);
+  }
+
+  for (const claim of claims) {
+    const deps = new Set();
+
+    // Explicit depends_on
+    if (Array.isArray(claim.depends_on)) {
+      for (const dep of claim.depends_on) deps.add(dep);
+    }
+
+    // Implicit: cross_reference ref_claim is a dependency
+    if (claim.evidence?.type === 'cross_reference' && claim.evidence.ref_claim) {
+      deps.add(claim.evidence.ref_claim);
+    }
+
+    for (const dep of deps) {
+      if (!claimIds.has(dep)) continue; // skip unknown refs (validated elsewhere)
+      adjacency.get(dep).push(claim.id);
+      inDegree.set(claim.id, (inDegree.get(claim.id) || 0) + 1);
+    }
+  }
+
+  return { adjacency, inDegree, allIds: claimIds };
+}
+
+/**
+ * Kahn's algorithm topological sort.
+ * Returns { order: string[], hasCycle: boolean, cycleMembers: string[] }.
+ */
+export function topologicalSort(adjacency, inDegree, allIds) {
+  const queue = [];
+  const inDeg = new Map(inDegree);
+
+  for (const id of allIds) {
+    if ((inDeg.get(id) || 0) === 0) queue.push(id);
+  }
+
+  const order = [];
+  while (queue.length > 0) {
+    const node = queue.shift();
+    order.push(node);
+    for (const child of adjacency.get(node) || []) {
+      const newDeg = inDeg.get(child) - 1;
+      inDeg.set(child, newDeg);
+      if (newDeg === 0) queue.push(child);
+    }
+  }
+
+  if (order.length < allIds.size) {
+    const cycleMembers = [...allIds].filter((id) => !order.includes(id));
+    return { order, hasCycle: true, cycleMembers };
+  }
+
+  return { order, hasCycle: false, cycleMembers: [] };
+}
+
+/**
+ * Compute dependency depth (longest path from any root) for each claim.
+ */
+function computeDepths(adjacency, order) {
+  const depth = new Map();
+  for (const id of order) depth.set(id, 0);
+  for (const id of order) {
+    for (const child of adjacency.get(id) || []) {
+      depth.set(child, Math.max(depth.get(child) || 0, (depth.get(id) || 0) + 1));
+    }
+  }
+  return depth;
+}
+
+/**
+ * Collect all upstream dependency IDs for a claim (direct depends_on + cross_reference ref_claim).
+ */
+function getClaimDependencies(claim) {
+  const deps = new Set();
+  if (Array.isArray(claim.depends_on)) {
+    for (const dep of claim.depends_on) deps.add(dep);
+  }
+  if (claim.evidence?.type === 'cross_reference' && claim.evidence.ref_claim) {
+    deps.add(claim.evidence.ref_claim);
+  }
+  return deps;
+}
+
+function evaluateCrossReference(evidence, claimResults = null) {
+  // Cross-reference claims validate that the referenced claim exists AND passes.
+  // When claimResults is provided (dependency-graph mode), checks the target's actual status.
+  // Falls back to hardcoded 1 when claimResults is not available (backward compat).
   const refClaim = evidence.ref_claim;
+
+  if (claimResults && claimResults.has(refClaim)) {
+    const targetResult = claimResults.get(refClaim);
+    const isBlocked = targetResult.details?.blocked_by?.length > 0;
+    const targetPassed = !isBlocked && (targetResult.status === 'pass' || targetResult.status === 'warn');
+    const statusLabel = isBlocked ? 'blocked' : targetResult.status;
+    return {
+      value: targetPassed ? 1 : 0,
+      details: {
+        ref_claim: refClaim,
+        target_status: statusLabel,
+        note: targetPassed
+          ? 'Cross-reference target passes.'
+          : `Cross-reference target ${isBlocked ? 'blocked' : 'failed'} (status: ${statusLabel}).`,
+      },
+      fingerprint: { source: 'cross_reference', ref_claim: refClaim },
+    };
+  }
+
   return {
     value: 1,
     details: { ref_claim: refClaim, note: 'Cross-reference registered; audit pass verifies target claim.' },
@@ -1876,7 +1994,7 @@ function evaluateTheoretical(evidence) {
   };
 }
 
-export function evaluateEvidence(db, manifest, evidence, rootDir) {
+export function evaluateEvidence(db, manifest, evidence, rootDir, { claimResults = null } = {}) {
   const type = evidence?.type;
   if (type === 'manifest_total') return evaluateManifestTotal(manifest, evidence);
   if (type === 'manifest_section_total') return evaluateManifestSectionTotal(manifest, evidence);
@@ -1891,7 +2009,7 @@ export function evaluateEvidence(db, manifest, evidence, rootDir) {
   if (type === 'conditional_delta') return evaluateConditionalDelta(db, evidence, rootDir);
   if (type === 'rubric_version_comparison') return evaluateRubricVersionComparison(db, evidence);
   if (type === 'code_path') return evaluateCodePath(evidence, rootDir);
-  if (type === 'cross_reference') return evaluateCrossReference(evidence);
+  if (type === 'cross_reference') return evaluateCrossReference(evidence, claimResults);
   if (type === 'theoretical') return evaluateTheoretical(evidence);
   if (type === 'jsonl_critique_stats') throw new Error('jsonl_critique_stats requires rootDir context');
   if (type === 'log_trace_coverage') throw new Error('log_trace_coverage requires rootDir context');
@@ -2308,16 +2426,45 @@ export function runProvableDiscourseAudit({
     summary: { pass: 0, warn: 0, fail: 0, total: 0, skipped_by_epoch: 0 },
   };
 
-  const claims = mergeUniqueById(Array.isArray(spec.claims) ? spec.claims : [], ...imported.map((part) => part.claims));
+  const allClaims = mergeUniqueById(Array.isArray(spec.claims) ? spec.claims : [], ...imported.map((part) => part.claims));
   const db = smokeMode ? null : new Database(resolvedDbPath, { readonly: true });
 
   try {
     let skippedByEpoch = 0;
-    for (const claim of claims) {
+
+    // Filter claims by epoch, then build dependency graph for evaluation ordering
+    const claims = [];
+    for (const claim of allClaims) {
       if (!claimMatchesEpoch(claim, epoch)) {
         skippedByEpoch++;
-        continue;
+      } else {
+        claims.push(claim);
       }
+    }
+
+    const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
+    const { order: evaluationOrder, hasCycle, cycleMembers } = topologicalSort(adjacency, inDegree, allIds);
+
+    if (hasCycle) {
+      throw new Error(`Circular dependency detected among claims: ${cycleMembers.join(', ')}`);
+    }
+
+    // Build edges list and depths for the report
+    const edges = [];
+    for (const [parent, children] of adjacency) {
+      for (const child of children) {
+        edges.push({ from: parent, to: child });
+      }
+    }
+    const depths = computeDepths(adjacency, evaluationOrder);
+
+    const claimLookup = new Map(claims.map((c) => [c.id, c]));
+    const claimResults = new Map(); // id → result (used for dependency checking)
+
+    for (const claimId of evaluationOrder) {
+      const claim = claimLookup.get(claimId);
+      if (!claim) continue;
+
       const result = {
         id: claim.id,
         description: claim.description || '',
@@ -2337,6 +2484,25 @@ export function runProvableDiscourseAudit({
         details: {},
         remediation: Array.isArray(claim.remediation) ? claim.remediation : [],
       };
+
+      // Check if any dependency failed or is blocked → block this claim (transitive cascade)
+      const deps = getClaimDependencies(claim);
+      const failedDeps = [];
+      for (const depId of deps) {
+        const depResult = claimResults.get(depId);
+        if (depResult && (depResult.status === 'fail' || depResult.details?.blocked_by?.length > 0)) {
+          failedDeps.push(depId);
+        }
+      }
+
+      if (failedDeps.length > 0) {
+        result.status = 'warn';
+        result.messages.push(`Blocked: upstream dependency failed (${failedDeps.join(', ')})`);
+        result.details.blocked_by = failedDeps;
+        report.claims.push(result);
+        claimResults.set(claim.id, result);
+        continue;
+      }
 
       const statementCheck = findStatementOccurrences(paperText, claim.statement || {});
       const minOccurrences = claim?.statement?.min_occurrences ?? 1;
@@ -2360,7 +2526,7 @@ export function runProvableDiscourseAudit({
           } else if ((claim?.evidence?.type || '') === 'jsonl_critique_stats') {
             evidence = evaluateJsonlCritiqueStats(db, claim.evidence || {}, baseDir);
           } else {
-            evidence = evaluateEvidence(db, manifest, claim.evidence || {}, baseDir);
+            evidence = evaluateEvidence(db, manifest, claim.evidence || {}, baseDir, { claimResults });
           }
           result.actual_value = evidence.value;
           result.details = evidence.details || {};
@@ -2418,7 +2584,22 @@ export function runProvableDiscourseAudit({
       }
 
       report.claims.push(result);
+      claimResults.set(claim.id, result);
     }
+
+    // Dependency graph summary
+    const blockedClaims = report.claims
+      .filter((c) => c.details?.blocked_by?.length > 0)
+      .map((c) => ({ id: c.id, blocked_by: c.details.blocked_by }));
+    const depthMap = {};
+    for (const [id, d] of depths) depthMap[id] = d;
+    report.dependency_graph = {
+      edges,
+      evaluation_order: evaluationOrder,
+      blocked_claims: blockedClaims,
+      max_depth: Math.max(0, ...depths.values()),
+      depth: depthMap,
+    };
 
     const claimById = new Map(report.claims.map((claim) => [claim.id, claim]));
     const symmetryRules = mergeUniqueById(

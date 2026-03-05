@@ -433,7 +433,27 @@ Each analytical method targets one or more of the three mechanisms predicted in 
 
 ### 5.2 Evaluation Rubric Design (v2.2)
 
-#### 5.2.1 Tutor Per-Turn Rubric
+#### 5.2.1 Rubric Derivation: From Ad Hoc to Literature-Informed
+
+The v1.0 rubric (14 tutor dimensions, 6 learner dimensions) was constructed through iterative prompting of Claude during Paper 1.0's pilot phase. The process was pragmatic rather than principled: dimensions were proposed by the LLM based on general pedagogical reasoning, refined through trial scoring, and retained if they appeared to discriminate between conditions. No systematic literature review grounded the dimension selection, and the resulting rubric reflected the LLM's implicit model of "good tutoring" rather than validated constructs from learning sciences or educational measurement.
+
+Paper 2.0 replaced this approach with a structured derivation process. A literature review of eight validated evaluation frameworks---MRBench [@maurya2025unifying], GuideEval [@liu2025discerning], MathTutorBench [@macina2025mathtutorbench], ICAP [@chi2014icap], TRU [@schoenfeld2018tru], the Danielson Framework [@danielson2022framework], Talk Moves [@michaels2015talk], and a cognitive scaffolding rubric [@figueiredo2025fuzzy]---plus five dialogue-level frameworks (Alexander's dialogic teaching principles [@alexander2018dialogic], Nystrand's process indicators [@nystrand1997opening], T-SEDA [@hennessy2016tseda], LLM-Rubric [@hashemi2024llmrubric], and the BEA 2025 shared task) produced a cross-framework dimension mapping identifying which constructs were well-covered (3+ independent frameworks), partially covered (1--2), or unique to our rubric.
+
+Three findings drove the redesign:
+
+1. **Structural conflation.** The v1.0 rubric conflated what the tutor *perceives* (learner state detection), what it *does* (pedagogical strategy), and what it *elicits* (learner reasoning). GuideEval's Perception$\to$Orchestration$\to$Elicitation (P$\to$O$\to$E) decomposition [@liu2025discerning] provided a principled separation, validated on 5,177 samples with 89--97% human-LLM agreement.
+
+2. **Empirical redundancy.** A dimension-by-dimension audit predicted high correlations among clusters of v1.0 dimensions (e.g., `relevance` + `personalization` + `memory_integration`; `productive_struggle` + `transformative_potential`). PCA on 1,584 per-turn observations confirmed this: PC1 explained 80.7% of variance across the 14 dimensions (KMO = 0.938), with a mean inter-dimension correlation of $r = 0.776$. The rubric measured fewer independent constructs than its 14 dimensions implied.
+
+3. **Missing constructs.** Every reviewed framework except our v1.0 rubric measured *content accuracy* (factual correctness). Additionally, `learner_growth` on the tutor rubric was architecturally unscorable---the judge could not see the learner's next turn.
+
+The redesign consolidated 14 tutor dimensions to 8 using the P$\to$O$\to$E decomposition, added `content_accuracy`, and removed `learner_growth`.
+
+The learner rubric required a parallel restructuring. The v1.0 learner rubric (7 dimensions) suffered from three problems identified in the dimension audit: overlap among `question_quality`, `conceptual_engagement`, and `revision_signals` (all measuring "depth of intellectual engagement" from slightly different angles); a `persona_consistency` dimension (5% weight) that created a structural tension with `revision_signals` (showing genuine growth means departing from a frustrated or confused persona); and a `deliberation_depth` dimension that was only scorable for multi-agent learners, creating an architecture-dependent gap in the scoring instrument. The ICAP framework (Interactive$\to$Constructive$\to$Active$\to$Passive; [@chi2014icap]) provided a validated hierarchy for collapsing the overlapping engagement dimensions into a single `engagement_quality` construct with empirically grounded scoring anchors: level 1 (Passive) = paraphrases tutor, confirms understanding; level 3 (Active/Constructive) = generates own interpretations, makes connections; level 5 (Interactive) = co-constructs understanding, challenges tutor's framing. `persona_consistency` was removed (its core concern---does the learner feel real?---is captured by `learner_authenticity`), and `deliberation_depth` was moved to the dedicated deliberation rubric (Section 5.2.4). The resulting 5-dimension learner rubric maps to two validated frameworks: ICAP for engagement levels and T-SEDA's behavioral coding clusters [@hennessy2016tseda] for revision signals (B-cluster: Build on ideas) and conceptual progression (R-cluster: Make reasoning explicit).
+
+The tutor holistic rubric was radically simplified from 6 to 3 dimensions after consistency analysis showed $r = 0.907$ between per-turn and holistic scores, indicating that most holistic signal was redundant with aggregated per-turn scoring. The three retained dimensions---pedagogical arc, adaptive trajectory, and pedagogical closure---capture exclusively arc-level properties that cannot be assessed from individual turns. Scale criteria across all instruments were redesigned following Yamauchi et al. [@yamauchi2025empirical]: only levels 1, 3, and 5 carry full descriptions, as intermediate-level descriptions have limited impact on LLM judges.
+
+#### 5.2.2 Tutor Per-Turn Rubric
 
 The evaluation rubric underwent four iterations (v1.0$\to$v2.0$\to$v2.1$\to$v2.2), each responding to empirical anomalies discovered during analysis (documented in Appendix E). The current v2.2 rubric consolidates 14 dimensions to 8, guided by the GuideEval P$\to$O$\to$E decomposition framework and the study's own empirical dimension clustering. The eight dimensions are:
 
@@ -450,7 +470,7 @@ The evaluation rubric underwent four iterations (v1.0$\to$v2.0$\to$v2.1$\to$v2.2
 
 The consolidation from 14$\to$8 dimensions was validated through synthetic calibration (r=0.996 against v2.1 scoring on identical responses), confirming that the reduced rubric preserves discriminability while eliminating ceiling-prone and redundant dimensions.
 
-#### 5.2.2 Learner Per-Turn Rubric
+#### 5.2.3 Learner Per-Turn Rubric
 
 The learner rubric mirrors the tutor rubric symmetrically (Section 4, Design Principle), scoring learner responses on five ICAP-anchored dimensions:
 
@@ -462,18 +482,18 @@ The learner rubric mirrors the tutor rubric symmetrically (Section 4, Design Pri
 | `metacognitive_awareness` | 15% | Self-monitoring of understanding |
 | `learner_authenticity` | 15% | Persona-consistent, non-formulaic responses |
 
-#### 5.2.3 Holistic and Deliberation Rubrics
+#### 5.2.4 Holistic and Deliberation Rubrics
 
 Two additional rubrics assess trajectory-level and process-level quality:
 
 - **Tutor holistic** (3 dimensions: `pedagogical_arc`, `adaptive_trajectory`, `pedagogical_closure`) --- scores the full multi-turn dialogue as an arc, capturing qualities invisible to per-turn scoring.
 - **Deliberation quality** (6 dimensions, applied symmetrically to tutor and learner ego-superego traces) --- scores the quality of internal deliberation for multi-agent cells.
 
-#### 5.2.4 Public-Only Output Scoring (v2.1 Fix)
+#### 5.2.5 Public-Only Output Scoring (v2.1 Fix)
 
 A critical methodological decision: per-turn and holistic judges see ONLY public messages (the delivered tutor response and the learner's external message). Internal ego-superego deliberation is scored separately by the deliberation rubric. This prevents a confound where multi-agent cells receive higher scores simply because the judge sees richer internal reasoning.
 
-#### 5.2.5 Rubric Version Tracking
+#### 5.2.6 Rubric Version Tracking
 
 Each scored row records which rubric version was used (`tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version`), auto-resolved from YAML `version:` fields at write time. This prevents cross-version contamination: v1.0 scores (8,987 backfilled rows) are never mixed with v2.2 scores in the same analysis.
 
@@ -597,7 +617,31 @@ This iteration parallels the ego-superego dynamic: initial rubric (ego draft) $\
 
 ---
 
-### 5.7 Cross-Model Mechanism Replication
+### 5.7 Model Selection
+
+Paper 1.0 used free-tier models (Kimi K2.5, Nemotron 3 Nano 30B) to demonstrate that recognition effects are achievable without frontier-model budgets. Paper 2.0 shifts to **DeepSeek V3.2** (open-weight, 685B MoE) and **Haiku 4.5** (Anthropic, proprietary, optimized for speed) as primary ego models, with **Claude Sonnet 4.6** as the judge. Three criteria governed the transition:
+
+1. **Capability separation.** Paper 1.0's model-dependent architecture effects ($\eta^2$ = .527 for Kimi vs .002 for Haiku on the pilot's learner architecture factor) demanded models at clearly different capability levels. DeepSeek and Haiku occupy distinct regions of the capability space---Haiku outperforms DeepSeek by 30--37 points on base tutor metrics (Section 6.6.1)---making cross-model comparison maximally informative for separating mechanism effects from model artifacts.
+
+2. **Architectural diversity.** DeepSeek V3.2 is an open-weight mixture-of-experts model; Haiku 4.5 is a proprietary dense model. If mechanisms replicate across both---as they do for calibration (d = 1.88 vs d = 1.84) and the error-correction substitution pattern---the findings are less likely to reflect idiosyncratic training choices of a single model family.
+
+3. **Practical reproducibility.** Both models are accessible through OpenRouter at low cost. DeepSeek V3.2 is available as open weights for local replication. The judge (Claude Sonnet 4.6) was chosen as a capable, cost-effective scorer; cross-judge validation with GPT-5.2 in Paper 1.0 established that judge choice compresses effect magnitudes but preserves effect directions.
+
+**Scope limitation.** Both models are relatively capable. The Paper 1.0 Nemotron data (N = 40, mean tutor score ~8 under base) hints that very weak models may not benefit from recognition at all, and the cognitive prosthesis test (Paper 1.0, Section 6.10) confirmed a minimum ego capability threshold below which mechanisms add noise rather than signal. Paper 2.0's model pair tests whether mechanisms are model-*independent* among capable models; it does not claim generalization to the full capability spectrum. Section 8.3 discusses this limitation further.
+
+**Table 1: Model Configuration (Paper 2.0)**
+
+| Role | Model | Access | Temperature |
+|------|-------|--------|-------------|
+| Tutor Ego | DeepSeek V3.2 / Haiku 4.5 | OpenRouter | 0.6 |
+| Tutor Superego | DeepSeek V3.2 / Haiku 4.5 | OpenRouter | 0.2--0.4 |
+| Judge | Claude Sonnet 4.6 | Claude Code CLI | 0.2 |
+| Learner Ego | DeepSeek V3.2 / Haiku 4.5 | OpenRouter | 0.6 |
+| Learner Superego | DeepSeek V3.2 / Haiku 4.5 | OpenRouter | 0.4 |
+
+---
+
+### 5.8 Cross-Model Mechanism Replication
 
 #### Purpose
 
@@ -621,7 +665,7 @@ This provides a mechanistic explanation of the Haiku/Kimi reversal: if Kimi fail
 
 ---
 
-### 5.8 Provable Discourse Extension
+### 5.9 Provable Discourse Extension
 
 #### Existing Infrastructure
 
@@ -638,6 +682,12 @@ Paper 2.0 extends the framework with adapter types targeting mechanism-level evi
 | `taxonomy_frequency` | Superego critique category frequencies | Category X occurs in >Y% of recognition dialogues |
 | `trajectory_slope` | Per-turn regression coefficients | Recognition slope on `recognition_quality` $\beta$ > 0 |
 
+#### Dependency Graph
+
+Claims form a directed acyclic graph (DAG) via two edge types: explicit `depends_on` declarations and implicit edges from `cross_reference` evidence (where a claim cites another claim's result). The validation pipeline topologically sorts claims before evaluation, so upstream claims are always resolved before their dependents. If a dependency fails, all downstream claims are automatically marked *blocked* (status: warn) with a `blocked_by` annotation---they are not evaluated, since their evidence preconditions are not met. This cascading validation prevents a common failure mode in claim ledgers: a root statistic changes, but downstream claims that cite it continue to pass because they only check for the citation's *existence*, not its *validity*.
+
+For example, the pilot factorial effect size (d=1.11, claim `paper2.s1.pilot.factorial_d`) depends on the N=350 dataset claim (`paper.modulation.dataset_n350`). Five further claims---model-dependent architecture reversal, strategy shift frequency, baseline stalling rate, cross-judge correlation range, and the learner paradox effect size---in turn depend on the factorial claim. If the N=350 dataset claim were to fail (e.g., because a data correction changed the sample size), the factorial claim would be blocked, and all five downstream claims would cascade to blocked status without evaluation. The `--graph` flag outputs the full DAG in Graphviz DOT format for visual inspection.
+
 #### Symmetry Rules
 
 Two new consistency rules enforce claim discipline:
@@ -647,7 +697,7 @@ Two new consistency rules enforce claim discipline:
 
 ---
 
-### 5.9 Statistical Approach
+### 5.10 Statistical Approach
 
 #### Effect Size Conventions
 
@@ -667,7 +717,7 @@ All Paper 2.0 analyses filter to `tutor_rubric_version = '2.2'` (epoch 2.0), ens
 
 ---
 
-### 5.10 Reproducibility Infrastructure
+### 5.11 Reproducibility Infrastructure
 
 #### Evaluation Commands
 
@@ -1390,6 +1440,8 @@ Three examples illustrate the pattern. The active control reframing (February 6)
 The provable discourse framework treats paper claims as executable tests. Every quantitative claim has a statement pattern (regex matching paper text), evidence (an executable extractor: DB counts, effect sizes, ANOVA), an assertion (machine-checkable predicate), and remediation steps (concrete fixes when failing). Symmetry rules enforce cross-claim consistency; staleness fingerprints detect when data changes but claims do not.
 
 The framework currently tracks claims across multiple YAML files (count is dynamic as Paper 2.0 claims accumulate). Eight evidence adapter types connect claims to data: manifest totals, DB counts, effect sizes, profile-group comparisons, $2 \times 2$ ANOVA, judge-pair correlations, log-trace coverage, and critique statistics. Paper 2.0 extends this with four mechanism-specific adapters: superego taxonomy frequency (counting critique categories by condition), revision delta (computing ego-to-revised-ego text changes), trajectory slope (per-turn score regression), and conditional response (score changes after specific learner events).
+
+Claims are organized as a dependency graph: each claim can declare upstream dependencies (explicitly or implicitly via cross-references), and the validation pipeline evaluates them in topological order. When a root claim fails, all dependents cascade to blocked status without evaluation, preventing false confidence from stale downstream claims. This ensures the ledger reflects structural validity, not just point-wise correctness---a failing foundation cannot support passing conclusions.
 
 This infrastructure goes beyond "publish your code." It publishes the *contract between claims and evidence*, making it machine-verifiable that the paper says what the data shows. Any researcher building an LLM-based educational system could adopt the pattern: write claims as structured YAML with evidence extractors, run the validation harness after each data update, and let staleness fingerprints catch when findings drift from data.
 
