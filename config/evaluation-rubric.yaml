@@ -354,7 +354,7 @@ recommender:
   model: openrouter.sonnet
   hyperparameters:
     temperature: 0.4
-    max_tokens: 6000
+    max_tokens: 16000
   fallback:
     model: openrouter.nemotron
 

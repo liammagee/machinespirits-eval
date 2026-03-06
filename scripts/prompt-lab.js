@@ -1266,11 +1266,36 @@ function createMockRecommendation(session, basisIteration, promptState, recommen
   };
 }
 
+function buildStructuralInventory(promptState, allowedPrompts) {
+  const inventories = [];
+  for (const prompt of allowedPrompts) {
+    const content = promptState[prompt.filename]?.content || '';
+    if (!content.trim()) continue;
+    const headings = extractMarkdownHeadings(content);
+    const tags = [...analyzeSectionTags(content).tagNames];
+    if (headings.length === 0 && tags.length === 0) continue;
+    const parts = [`### ${prompt.filename}`];
+    if (headings.length > 0) {
+      parts.push('Required headings (must appear verbatim in output):');
+      parts.push(...headings.map((h) => `- \`${h}\``));
+    }
+    if (tags.length > 0) {
+      parts.push('Required XML section tags (must appear as matched open/close pairs):');
+      parts.push(...tags.map((t) => `- <${t}>...</${t}>`));
+    }
+    inventories.push(parts.join('\n'));
+  }
+  return inventories.length > 0
+    ? `\nStructural inventory — EVERY item below MUST be preserved in your output:\n\n${inventories.join('\n\n')}\n`
+    : '';
+}
+
 function buildRecommendationPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope) {
   const analysis = promptRecommendationService.analyzeResults(basisResults);
   const scenario = evalConfigLoader.getScenario(session.scenarioId);
   const basisSummary = basisIteration?.summary || null;
   const latestRow = basisResults[basisResults.length - 1] || null;
+  const structuralInventory = buildStructuralInventory(promptState, allowedPrompts);
   const promptSections = allowedPrompts
     .map((prompt) => {
       const state = promptState[prompt.filename];
@@ -1306,10 +1331,10 @@ Rules:
 - Only modify prompt files listed in allowed_filenames.
 - Return FULL replacement file contents for changed files only.
 - Make minimal, targeted edits grounded in the benchmark evidence.
-- Preserve each file's role and basic markdown structure.
+- CRITICAL: Preserve ALL markdown headings, XML section tags, and document structure from the original file. Your output will be rejected if any heading or tag is missing.
 - Never introduce visible chain-of-thought, [INTERNAL]/[EXTERNAL], or <think> output requirements.
 - Aim to improve the target metric without making the learner or tutor generic, repetitive, or role-leaky.
-
+${structuralInventory}
 Return JSON with exactly this shape:
 {
   "summary": "short paragraph",
@@ -1363,6 +1388,7 @@ Generate concrete prompt revisions. Return JSON only.`,
 
 function buildCompactRecommendationEditPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope) {
   const full = buildRecommendationPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope);
+  const structuralInventory = buildStructuralInventory(promptState, allowedPrompts);
   return {
     ...full,
     systemPrompt: `You are a rigorous prompt engineer optimizing a fixed tutoring benchmark. Output JSON only. Do not wrap your answer in markdown fences.
@@ -1374,8 +1400,9 @@ Rules:
 - Every anchor/find string must match the current file content exactly once.
 - Use at most 4 operations total.
 - Make minimal, targeted edits grounded in the benchmark evidence.
-- Preserve each file's role and basic markdown structure.
+- CRITICAL: Do NOT delete or rename any markdown headings or XML section tags. Your edits must preserve document structure.
 - Never introduce visible chain-of-thought, [INTERNAL]/[EXTERNAL], or <think> output requirements.
+${structuralInventory}
 
 Allowed operation types:
 - replace: replace one exact snippet with another
@@ -1796,8 +1823,13 @@ async function generateRecommendation(session, options = {}) {
       );
     }
 
+    // Augment compact prompts with the specific validation failures so the LLM can avoid repeating them
+    const validationHint = `\n\nPREVIOUS ATTEMPT FAILED VALIDATION:\n${fullValidationDetails}\nDo NOT remove or rename any headings or XML tags. Make only targeted content edits within existing sections.`;
+    const augmentedCompactSystem = compactPromptRequest.systemPrompt + validationHint;
+    const augmentedStrictSystem = strictCompactPromptRequest.systemPrompt + validationHint;
+
     try {
-      payload = await callRecommenderJson(compactPromptRequest.systemPrompt, compactPromptRequest.userPrompt, {
+      payload = await callRecommenderJson(augmentedCompactSystem, compactPromptRequest.userPrompt, {
         modelRefOverride: recommenderRef,
         cliOverride: recommenderCli,
         cliModelOverride: recommenderCliModel,
@@ -1822,7 +1854,7 @@ async function generateRecommendation(session, options = {}) {
 
         try {
           const strictPayload = await callRecommenderJson(
-            strictCompactPromptRequest.systemPrompt,
+            augmentedStrictSystem,
             strictCompactPromptRequest.userPrompt,
             {
               modelRefOverride: recommenderRef,
