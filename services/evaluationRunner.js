@@ -4974,9 +4974,16 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
             }
           }
 
-          // Fallback: score each turn individually
-          if (Object.keys(tutorTurnScores).length === 0) {
-            for (let i = 0; i < totalTurns; i++) {
+          // Fallback: score missing turns individually (all turns if batch failed, or just gaps)
+          const missingTurns = [];
+          for (let i = 0; i < totalTurns; i++) {
+            if (!tutorTurnScores[i]) missingTurns.push(i);
+          }
+          if (missingTurns.length > 0) {
+            if (Object.keys(tutorTurnScores).length > 0) {
+              log(`    tutor-per-turn batch partial: got ${Object.keys(tutorTurnScores).length}/${totalTurns} turns, filling gaps [${missingTurns.join(',')}]`);
+            }
+            for (const i of missingTurns) {
               try {
                 const prompt = rubricEvaluator.buildPerTurnTutorEvaluationPrompt({
                   turnResults,
@@ -5064,9 +5071,13 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
             }
           }
 
-          // Fallback to individual if batched didn't produce results
-          if (Object.keys(learnerTurnScores).length === 0) {
-            for (const { lt, targetIdx } of learnerTurnTargets) {
+          // Fallback: score missing turns individually (all turns if batch failed, or just gaps)
+          const missingLearnerTurns = learnerTurnTargets.filter(({ lt }) => !learnerTurnScores[lt]);
+          if (missingLearnerTurns.length > 0) {
+            if (Object.keys(learnerTurnScores).length > 0) {
+              log(`    learner-per-turn batch partial: got ${Object.keys(learnerTurnScores).length}/${learnerTurnTargets.length} turns, filling gaps [${missingLearnerTurns.map(t => t.lt).join(',')}]`);
+            }
+            for (const { lt, targetIdx } of missingLearnerTurns) {
               const prompt = buildLearnerEvaluationPrompt({
                 turns: reconstructedTurns,
                 targetTurnIndex: targetIdx,

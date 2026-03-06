@@ -3782,12 +3782,19 @@ async function main() {
             }
           }
 
-          // Fallback: if batched call failed, retry with individual per-turn calls
-          if (needsTutorFallback) {
-            console.log(`${tag}   tutor-batch fallback: retrying ${totalTurns} turns individually`);
+          // Fallback: if batched call failed or returned partial results, fill gaps individually
+          const missingTutorTurns = [];
+          for (let i = 0; i < totalTurns; i++) {
+            if (!tutorTurnScores[i]) missingTutorTurns.push(i);
+          }
+          if (needsTutorFallback || missingTutorTurns.length > 0) {
+            if (!needsTutorFallback && missingTutorTurns.length > 0) {
+              console.log(`${tag}   tutor-batch partial: got ${Object.keys(tutorTurnScores).length}/${totalTurns} turns, filling gaps [${missingTutorTurns.join(',')}]`);
+            } else {
+              console.log(`${tag}   tutor-batch fallback: retrying ${totalTurns} turns individually`);
+            }
             const fallbackPromises = [];
-            for (let i = 0; i < totalTurns; i++) {
-              const turnIndex = i;
+            for (const turnIndex of (needsTutorFallback ? Array.from({length: totalTurns}, (_, i) => i) : missingTutorTurns)) {
               fallbackPromises.push(
                 (async () => {
                   const turnTag = `${tag}   tutor-turn-${turnIndex}`;
@@ -3864,10 +3871,16 @@ async function main() {
             }
           }
 
-          // Fallback: if batched learner call failed, retry individually
-          if (needsLearnerFallback) {
-            console.log(`${tag}   learner-batch fallback: retrying ${learnerTurnTargets.length} turns individually`);
-            const fallbackPromises = learnerTurnTargets.map(({ lt, targetIdx }) => {
+          // Fallback: if batched learner call failed or returned partial results, fill gaps
+          const missingLearnerTurns = learnerTurnTargets.filter(({ lt }) => !learnerTurnScores[lt]);
+          if (needsLearnerFallback || missingLearnerTurns.length > 0) {
+            const targetsToRetry = needsLearnerFallback ? learnerTurnTargets : missingLearnerTurns;
+            if (!needsLearnerFallback && missingLearnerTurns.length > 0) {
+              console.log(`${tag}   learner-batch partial: got ${Object.keys(learnerTurnScores).length}/${learnerTurnTargets.length} turns, filling gaps [${missingLearnerTurns.map(t => t.lt).join(',')}]`);
+            } else {
+              console.log(`${tag}   learner-batch fallback: retrying ${learnerTurnTargets.length} turns individually`);
+            }
+            const fallbackPromises = targetsToRetry.map(({ lt, targetIdx }) => {
               return (async () => {
                 const turnTag = `${tag}   learner-turn-${lt}`;
                 try {
