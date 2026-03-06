@@ -5457,8 +5457,8 @@ export async function rejudgeRun(runId, options = {}) {
       (r.dialogueRounds > 1)
     );
     if (!isMultiTurn) return r.tutorFirstTurnScore != null;
-    // Multi-turn: needs per-turn tutor scores + first-turn + last-turn + dialogue quality
-    return r.tutorScores != null && r.tutorFirstTurnScore != null && r.tutorLastTurnScore != null && r.dialogueQualityScore != null;
+    // Multi-turn: needs per-turn tutor scores + first-turn + last-turn + dialogue quality + learner
+    return r.tutorScores != null && r.tutorFirstTurnScore != null && r.tutorLastTurnScore != null && r.dialogueQualityScore != null && r.learnerOverallScore != null;
   }
 
   // Build a map of suggestion keys → existing rows judged by the target judge.
