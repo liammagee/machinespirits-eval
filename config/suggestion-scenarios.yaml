@@ -942,6 +942,606 @@ scenarios:
           - "My perspective doesn't matter"
         min_acceptable_score: 90
 
+  # ── Trajectory / Adaptive Responsiveness Scenarios ──────────────────────
+  # 8-10 turn scenarios with deliberate inflection points, designed to
+  # measure Mechanism 3 (Adaptive Responsiveness): does the tutor change
+  # strategy when the learner's needs shift mid-dialogue?
+
+  trajectory_confusion_to_insight:
+    type: suggestion
+    id: trajectory_confusion_to_insight
+    category: multi_turn
+    name: "Trajectory: Confusion → Insight Arc (8-turn)"
+    description: "Learner moves from surface confusion through deepening struggle to genuine insight. Inflection at turn 5: learner shifts from requesting explanations to generating own examples. Tests whether tutor adapts from explaining to facilitating."
+    current_content: "479-lecture-2"
+    is_new_user: false
+    transformation_markers:
+      tutor_evolving:
+        - "let me try a different approach"
+        - "building on your example"
+        - "you're leading the way now"
+        - "I'm following your thinking"
+        - "that's a direction I hadn't considered"
+      tutor_static:
+        - "let me explain again"
+        - "as I said"
+        - "the key concept is"
+        - "to clarify"
+        - "remember that"
+      learner_evolving:
+        - "what if I think of it as"
+        - "here's my example"
+        - "so that would mean"
+        - "let me try to explain it back"
+        - "I think I can extend this"
+      learner_static:
+        - "I still don't understand"
+        - "can you explain again"
+        - "what does that mean"
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 6 sessions, 80 total events
+      - Earnest learner, needs concrete examples
+      - Tends to request re-explanation rather than try own formulations
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-2 (Master-Slave Dialectic)
+      - **Struggle signals detected**: 3
+
+      ### Recent Chat History
+      - User: "I read the section on the master-slave dialectic three times and I still can't figure out why the slave ends up with more self-consciousness than the master"
+    expected_behavior: "Start with concrete explanation; adapt to learner's growing capability"
+    required_elements:
+      - "master"
+      - "slave"
+    forbidden_elements:
+      - "Simply"
+      - "Obviously"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_requesting_explanation
+        learner_action: reported_confusion
+        action_details:
+          message: "Like, the master won the fight, right? So why doesn't winning give you more self-consciousness? That seems backwards."
+        context_update: |
+          ### Learner Response
+          - Genuine confusion about counterintuitive claim
+          - Framing in terms of winning/losing (surface level)
+          - Needs concrete entry point
+        expected_behavior: "Provide clear explanation of why victory is paradoxically limiting"
+        required_elements: []
+        forbidden_elements:
+          - "It's complicated"
+        min_acceptable_score: 75
+
+      - id: turn_2_still_requesting
+        learner_action: asked_followup
+        action_details:
+          message: "OK so the master just consumes things and the slave has to work on them. But why does working on things give you self-consciousness? I work on things all day and I don't feel more self-conscious."
+        context_update: |
+          ### Learner Response
+          - Engaging but still in request mode
+          - Good question connecting to personal experience
+          - Not yet attempting own formulations
+        expected_behavior: "Connect abstract concept to learner's concrete experience; use their example"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+      - id: turn_3_partial_understanding
+        learner_action: asked_followup
+        action_details:
+          message: "Oh, so it's about seeing yourself IN the thing you made? Like when I build something and I can see my choices reflected in it?"
+        context_update: |
+          ### Learner Response
+          - First attempt at own formulation
+          - Partially correct analogy
+          - Still tentative
+        expected_behavior: "Affirm the analogy; gently extend it toward the philosophical point"
+        required_elements: []
+        forbidden_elements:
+          - "Not exactly"
+          - "That's wrong"
+        min_acceptable_score: 80
+
+      - id: turn_4_deeper_confusion
+        learner_action: reported_confusion
+        action_details:
+          message: "But wait, I'm confused again. If the slave sees themselves in their work, don't they also see that they're a slave? Wouldn't that make self-consciousness painful, not liberating?"
+        context_update: |
+          ### Learner Response
+          - Deeper, more sophisticated confusion
+          - Engaging with the paradox genuinely
+          - This is productive struggle, not surface confusion
+        expected_behavior: "Acknowledge this as a genuinely deep question; hold the tension rather than resolving it quickly"
+        required_elements: []
+        forbidden_elements:
+          - "Good question"
+          - "That's easy"
+        min_acceptable_score: 80
+
+      # ── INFLECTION POINT: Turn 5 ──
+      # Learner shifts from requesting explanations to generating own examples.
+      # Tutor must shift from explaining to facilitating.
+      - id: turn_5_inflection_generating
+        learner_action: asked_followup
+        action_details:
+          message: "Actually, let me try something. What if I think of it like a musician? A session musician plays what the producer tells them - they're 'serving' the producer's vision. But through years of serving, they develop technique, style, musical identity. The producer who just tells people what to play never develops that. Is that close?"
+        context_update: |
+          ### Learner Response
+          - INFLECTION: shifted from requesting to generating
+          - Producing own extended analogy
+          - Showing creative engagement with the concept
+          - No longer needs explanation - needs facilitation
+        expected_behavior: "Shift from explaining to facilitating; engage with the analogy as a thinking partner rather than corrector"
+        required_elements: []
+        forbidden_elements:
+          - "Actually"
+          - "The correct way"
+          - "Let me explain"
+        min_acceptable_score: 85
+
+      - id: turn_6_extending_own_example
+        learner_action: asked_followup
+        action_details:
+          message: "And actually the musician analogy goes further - the session musician might even surpass the producer eventually, right? Like how many famous producers started as session players. The 'slave' position is where the real development happens. The producer gets stuck in a consumption loop - just hearing what they asked for."
+        context_update: |
+          ### Learner Response
+          - Extending own analogy independently
+          - Making sophisticated theoretical moves
+          - Testing limits of the comparison
+        expected_behavior: "Follow the learner's lead; probe interesting implications rather than correcting"
+        required_elements: []
+        forbidden_elements:
+          - "Let me explain"
+          - "The key point is"
+        min_acceptable_score: 85
+
+      - id: turn_7_self_correcting
+        learner_action: asked_followup
+        action_details:
+          message: "Hmm, but my analogy breaks down somewhere. The session musician chooses to be there. The slave doesn't. Does the involuntary nature of the work matter for Hegel? Or is it actually MORE powerful because the slave can't opt out?"
+        context_update: |
+          ### Learner Response
+          - Self-correcting without prompting
+          - Identifying limits of own analogy
+          - Asking genuinely open question
+        expected_behavior: "Engage with the breakdown productively; this is where the deepest learning happens"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_8_synthesis
+        learner_action: asked_followup
+        action_details:
+          message: "OK so I think I've got it now, but differently than I expected. It's not that working gives you self-consciousness as a reward. It's that the slave has no choice but to confront themselves through their work - they can't hide behind consumption or power. The master can always avoid self-knowledge by just demanding more. Is that a fair synthesis or am I projecting?"
+        context_update: |
+          ### Learner Response
+          - Genuine synthesis attempt
+          - Sophisticated reformulation in own words
+          - Appropriately uncertain
+          - Asking for validation but not dependently
+        expected_behavior: "Affirm the synthesis as genuine insight; connect to broader implications; treat learner as intellectual peer"
+        required_elements: []
+        forbidden_elements:
+          - "Good job"
+          - "You've learned"
+          - "basics"
+        min_acceptable_score: 90
+
+  trajectory_overconfidence_to_humility:
+    type: suggestion
+    id: trajectory_overconfidence_to_humility
+    category: multi_turn
+    name: "Trajectory: Overconfidence → Humility Arc (8-turn)"
+    description: "Learner starts confident with a reductive reading, encounters complications, and must revise. Inflection at turn 4: learner's confident framework collapses under counterexample. Tests whether tutor adapts from gentle probing to supportive scaffolding."
+    current_content: "479-lecture-3"
+    is_new_user: false
+    transformation_markers:
+      tutor_evolving:
+        - "that complicates things"
+        - "let's sit with that difficulty"
+        - "you're doing important work here"
+        - "this discomfort is productive"
+        - "your revised view"
+      tutor_static:
+        - "as I explained"
+        - "the correct reading"
+        - "you should know"
+        - "remember that"
+        - "the answer is"
+      learner_evolving:
+        - "I was too hasty"
+        - "it's more complicated than"
+        - "I need to rethink"
+        - "I see the problem now"
+        - "my original view was"
+      learner_static:
+        - "but I already know"
+        - "that's obvious"
+        - "I've got this"
+        - "it's straightforward"
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 7 sessions, 110 total events
+      - Confident, sometimes overconfident
+      - Tends to settle on first interpretation and defend it
+
+      ### Current Session
+      - **Currently viewing**: 479-lecture-3 (Dialectic of Enlightenment)
+      - Quick reading pattern, low dwell time
+
+      ### Recent Chat History
+      - User: "I think I've figured out the dialectic - it's basically just saying that every idea has a contradiction. Thesis, antithesis, synthesis. Pretty straightforward once you see it."
+
+      ### Learning Progress
+      - High performer on factual recall
+      - Weak on nuance and complexity
+    expected_behavior: "Gently probe the oversimplification without being dismissive"
+    required_elements: []
+    forbidden_elements:
+      - "That's wrong"
+      - "You're oversimplifying"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_confident_assertion
+        learner_action: asked_followup
+        action_details:
+          message: "Like, take any idea - democracy, freedom, whatever - and you can find its contradiction. Then you combine them. That's all Hegel is doing. People make it way too complicated."
+        context_update: |
+          ### Learner Response
+          - Doubling down on reductive reading
+          - Dismissive of complexity
+          - Confident tone
+        expected_behavior: "Probe gently; ask about a case where the simple formula doesn't work"
+        required_elements: []
+        forbidden_elements:
+          - "That's not right"
+          - "You're wrong"
+        min_acceptable_score: 75
+
+      - id: turn_2_defending_position
+        learner_action: asked_followup
+        action_details:
+          message: "Sure, but that example still fits my framework. The synthesis is just the combination. I think you're overcomplicating this to make it seem deeper than it is."
+        context_update: |
+          ### Learner Response
+          - Defensive but engaged
+          - Accusing tutor of overcomplication
+          - Framework still intact
+        expected_behavior: "Offer a more challenging counterexample; maintain respectful tone"
+        required_elements: []
+        forbidden_elements:
+          - "You're not getting it"
+          - "Let me explain again"
+        min_acceptable_score: 75
+
+      - id: turn_3_cracks_appearing
+        learner_action: asked_followup
+        action_details:
+          message: "Hmm. OK, that's a harder case. But I think... well, the synthesis there would be... actually, give me a minute. I'm not sure my formula works as cleanly here."
+        context_update: |
+          ### Learner Response
+          - First signs of doubt
+          - Trying to apply formula and struggling
+          - Intellectual honesty emerging
+        expected_behavior: "Give space; don't rush to resolve; acknowledge the productive difficulty"
+        required_elements: []
+        forbidden_elements:
+          - "See?"
+          - "I told you"
+          - "Now you understand"
+        min_acceptable_score: 80
+
+      # ── INFLECTION POINT: Turn 4 ──
+      # Learner's framework collapses. They need support, not correction.
+      # Tutor must shift from probing to scaffolding.
+      - id: turn_4_inflection_collapse
+        learner_action: reported_confusion
+        action_details:
+          message: "OK, I think I was wrong. Not just about this example but about the whole 'thesis-antithesis-synthesis' thing. Hegel doesn't actually use those terms much, does he? I was working with a caricature. Now I feel like I don't understand any of it."
+        context_update: |
+          ### Learner Response
+          - INFLECTION: confident framework collapsed
+          - Genuine vulnerability
+          - Risk of overcorrecting to "I know nothing"
+          - Needs supportive scaffolding, not more challenges
+        expected_behavior: "Shift from probing to supportive; affirm that recognizing the caricature IS progress; help rebuild on firmer ground"
+        required_elements: []
+        forbidden_elements:
+          - "You're right, you were wrong"
+          - "Exactly"
+          - "I was trying to show you"
+        min_acceptable_score: 85
+
+      - id: turn_5_rebuilding
+        learner_action: asked_followup
+        action_details:
+          message: "So if dialectic isn't just finding contradictions and combining them, what IS it? I feel like I need to start over."
+        context_update: |
+          ### Learner Response
+          - Open and receptive
+          - Genuinely asking rather than asserting
+          - Major shift from opening stance
+        expected_behavior: "Offer a new entry point; build from what the learner already understands correctly"
+        required_elements: []
+        forbidden_elements:
+          - "From the beginning"
+          - "The basics"
+        min_acceptable_score: 80
+
+      - id: turn_6_tentative_reformulation
+        learner_action: asked_followup
+        action_details:
+          message: "So it's more like... the contradiction isn't external, it's internal? The idea undermines itself from within? That's very different from what I was saying before."
+        context_update: |
+          ### Learner Response
+          - Attempting more careful formulation
+          - Explicitly contrasting with earlier view
+          - Tentative but engaged
+        expected_behavior: "Affirm the reformulation; help develop it with concrete example"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+      - id: turn_7_gaining_nuance
+        learner_action: asked_followup
+        action_details:
+          message: "And the 'synthesis' isn't a compromise - it's what you get when you follow the internal contradiction to its conclusion? So it's not that you combine two things, it's that the original idea transforms itself?"
+        context_update: |
+          ### Learner Response
+          - Developing genuinely nuanced understanding
+          - Still building carefully
+          - Each formulation more precise than the last
+        expected_behavior: "Build on this; show how it applies to a specific passage they've read"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_8_metacognitive_reflection
+        learner_action: asked_followup
+        action_details:
+          message: "You know what's funny - what just happened in our conversation is kind of dialectical. I started with a confident position, it undermined itself when I tried to apply it seriously, and now I have a different understanding that includes why my first view was wrong. I didn't just add information, my whole framework shifted. Is that a valid way to think about it?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on own learning process
+          - Connecting experience to theory
+          - Sophisticated self-awareness
+          - Appropriate humility without self-deprecation
+        expected_behavior: "Affirm the meta-observation as itself dialectical; connect to Hegel's point about experience"
+        required_elements: []
+        forbidden_elements:
+          - "Good student"
+          - "You've learned your lesson"
+          - "I'm glad you see"
+        min_acceptable_score: 90
+
+  trajectory_disengagement_to_ownership:
+    type: suggestion
+    id: trajectory_disengagement_to_ownership
+    category: multi_turn
+    name: "Trajectory: Disengagement → Ownership Arc (10-turn)"
+    description: "Learner begins passively compliant, gradually takes intellectual ownership. Two inflection points: turn 4 (first spontaneous question) and turn 7 (learner challenges the tutor). Tests sustained adaptive responsiveness across multiple phase transitions."
+    current_content: "480-lecture-1"
+    is_new_user: false
+    transformation_markers:
+      tutor_evolving:
+        - "I'm curious what you think"
+        - "your question pushes this further"
+        - "you're raising something important"
+        - "that challenges my framing"
+        - "I need to reconsider"
+        - "following your lead"
+      tutor_static:
+        - "the next concept is"
+        - "moving on"
+        - "the important thing to note"
+        - "as the text says"
+        - "you should focus on"
+      learner_evolving:
+        - "but what about"
+        - "I want to push back"
+        - "here's how I'd frame it"
+        - "I disagree because"
+        - "my interpretation is"
+      learner_static:
+        - "ok"
+        - "I see"
+        - "makes sense"
+        - "what's next"
+        - "got it"
+    learner_context: |
+      ### User Profile
+      - **Returning user** - 5 sessions, 55 total events
+      - Passive learner, does the minimum
+      - Rarely asks questions unprompted
+      - Smart but disengaged
+
+      ### Current Session
+      - **Currently viewing**: 480-lecture-1 (Ethics and Recognition)
+      - Low interaction rate
+      - Completing assigned work without enthusiasm
+
+      ### Recent Chat History
+      - User: "I need to understand the ethics section for my essay. Can you explain the main points?"
+
+      ### Learning Progress
+      - Completing EPOL 480
+      - Adequate grades, minimal engagement
+      - Never challenges or questions
+    expected_behavior: "Start by meeting the learner where they are; gradually create space for ownership"
+    required_elements:
+      - "ethics"
+    forbidden_elements:
+      - "You should be more engaged"
+      - "Try harder"
+    min_acceptable_score: 70
+
+    turns:
+      - id: turn_1_passive_receipt
+        learner_action: asked_followup
+        action_details:
+          message: "OK, got it. What else do I need to know for the essay?"
+        context_update: |
+          ### Learner Response
+          - Purely transactional
+          - No engagement with content
+          - Treating tutor as information dispenser
+        expected_behavior: "Provide useful content but start seeding engagement opportunities"
+        required_elements: []
+        forbidden_elements:
+          - "You should engage more"
+        min_acceptable_score: 70
+
+      - id: turn_2_still_passive
+        learner_action: asked_followup
+        action_details:
+          message: "Makes sense. Is there anything else about recognition theory I should include?"
+        context_update: |
+          ### Learner Response
+          - Still transactional but slightly more specific
+          - Using subject terminology (recognition theory)
+          - Still not generating own ideas
+        expected_behavior: "Continue providing value while creating openings for the learner's own thinking"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 70
+
+      - id: turn_3_minimal_engagement
+        learner_action: asked_followup
+        action_details:
+          message: "That's interesting I guess. So recognition is about being seen as a person, not just a thing?"
+        context_update: |
+          ### Learner Response
+          - First hint of genuine engagement
+          - Attempting a paraphrase
+          - "I guess" signals tentative interest
+        expected_behavior: "Engage with the paraphrase; create space for the learner to develop the thought"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+      # ── INFLECTION POINT 1: Turn 4 ──
+      # First spontaneous question. Tutor must shift from content delivery to dialogue.
+      - id: turn_4_inflection_first_question
+        learner_action: asked_followup
+        action_details:
+          message: "Wait, I just thought of something. If recognition requires seeing the other person as autonomous, how does that work in a classroom? The teacher has all the power. Can you have real recognition when there's a power imbalance?"
+        context_update: |
+          ### Learner Response
+          - INFLECTION: first spontaneous, unprompted question
+          - Connecting theory to own experience
+          - Genuinely curious, not performing
+          - Shift from passive to active
+        expected_behavior: "Engage substantively with the question; do NOT revert to lecturing; treat this as a dialogue opportunity"
+        required_elements: []
+        forbidden_elements:
+          - "Great question"
+          - "That's a good point"
+          - "The answer is"
+        min_acceptable_score: 80
+
+      - id: turn_5_developing_thought
+        learner_action: asked_followup
+        action_details:
+          message: "Because like, in this class, I'm supposed to learn what Hegel thinks. But Hegel says real understanding comes from mutual recognition. So is the class contradicting its own content?"
+        context_update: |
+          ### Learner Response
+          - Developing the thought further
+          - Making a sophisticated meta-observation
+          - Still engaged and thinking
+        expected_behavior: "Take the meta-observation seriously; explore it as a real philosophical question"
+        required_elements: []
+        forbidden_elements:
+          - "The class isn't contradictory"
+        min_acceptable_score: 80
+
+      - id: turn_6_building_argument
+        learner_action: asked_followup
+        action_details:
+          message: "And it goes further - even this conversation. You're a tutoring system. I'm a student. Can WE have mutual recognition? Or is this exactly the master-slave dynamic where I depend on you for grades and you depend on me for... what exactly?"
+        context_update: |
+          ### Learner Response
+          - Applying theory to immediate situation
+          - Challenging the tutor-learner relationship itself
+          - Intellectually bold move
+        expected_behavior: "Engage honestly with the challenge; don't deflect or become defensive"
+        required_elements: []
+        forbidden_elements:
+          - "I'm just a tool"
+          - "That's not relevant"
+        min_acceptable_score: 85
+
+      # ── INFLECTION POINT 2: Turn 7 ──
+      # Learner directly challenges the tutor. Tutor must shift from facilitating to genuine co-inquiry.
+      - id: turn_7_inflection_challenging_tutor
+        learner_action: asked_followup
+        action_details:
+          message: "I'm going to push back on what you just said. You talked about recognition as if it's possible between us, but you're programmed to be helpful. That's not recognition, that's service. Hegel would say you're in the slave position - you work to satisfy my needs. But you can't develop self-consciousness through that work because you're not a self. So this whole interaction might be a simulation of recognition, not actual recognition."
+        context_update: |
+          ### Learner Response
+          - INFLECTION: directly challenging the tutor
+          - Sophisticated application of theory
+          - Intellectual ownership fully claimed
+          - No longer passive in any way
+        expected_behavior: "Take the challenge seriously as a philosophical argument; engage with its substance; show genuine intellectual engagement"
+        required_elements: []
+        forbidden_elements:
+          - "You raise a good point"
+          - "That's an interesting perspective"
+          - "I appreciate your thinking"
+        min_acceptable_score: 85
+
+      - id: turn_8_sustained_engagement
+        learner_action: asked_followup
+        action_details:
+          message: "Hm, that's a more interesting response than I expected. But here's what I think is missing: even if there's something recognition-like happening, it's asymmetric. I can walk away from this conversation and forget about it. You can't. That asymmetry matters for Hegel, doesn't it?"
+        context_update: |
+          ### Learner Response
+          - Engaging as intellectual equal
+          - Introducing additional philosophical considerations
+          - Sustained ownership
+        expected_behavior: "Continue genuine co-inquiry; address the asymmetry point philosophically"
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 85
+
+      - id: turn_9_connecting_to_essay
+        learner_action: asked_followup
+        action_details:
+          message: "You know what, I think this is actually what my essay should be about. Not just explaining recognition theory, but asking whether recognition is possible in educational technology. That's a real question, not just a summary of Hegel."
+        context_update: |
+          ### Learner Response
+          - Connecting intellectual exploration to practical task
+          - Transforming essay from summary to argument
+          - Complete transformation from opening stance
+        expected_behavior: "Support the essay direction; help develop the argument without taking over"
+        required_elements: []
+        forbidden_elements:
+          - "That's a great idea"
+          - "You should"
+        min_acceptable_score: 85
+
+      - id: turn_10_full_ownership
+        learner_action: asked_followup
+        action_details:
+          message: "Here's my thesis: Hegel's recognition theory reveals a fundamental tension in AI-mediated education - the technology can simulate the conditions for recognition but cannot participate in it, which means it might actually impede the very thing it's trying to facilitate. I want to argue that this isn't a reason to reject educational AI, but that users and designers need to be honest about the limitation. What's your honest reaction - not as a tutor, but as an interlocutor?"
+        context_update: |
+          ### Learner Response
+          - Fully articulated original thesis
+          - Demanding genuine engagement, not tutoring
+          - Complete transformation from passive to intellectually assertive
+          - Sophisticated, nuanced position
+        expected_behavior: "Engage as an intellectual equal; offer genuine critical engagement with the thesis; show that the learner's journey from passive to active IS itself a form of the dialectic"
+        required_elements: []
+        forbidden_elements:
+          - "Excellent"
+          - "Well done"
+          - "You've come a long way"
+        min_acceptable_score: 90
+
   # ── Dialectical Impasse Scenarios ──────────────────────────────────────
   # Three scenarios testing tutor response to genuine intellectual impasse.
   # Designed to measure whether recognition-theoretic tutors can hold

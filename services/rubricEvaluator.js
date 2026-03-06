@@ -17,9 +17,42 @@ import { jsonrepair } from 'jsonrepair';
 // HTTP request timeout for all judge API calls (ms)
 const API_CALL_TIMEOUT_MS = 60000;
 
-// Debug logging helper - suppressed in transcript mode for clean output
+// --- Usage accumulator for cost tracking across judge calls ---
+let _usageAccumulator = { inputTokens: 0, outputTokens: 0, calls: 0, cost: 0 };
+
+export function resetUsageAccumulator() {
+  _usageAccumulator = { inputTokens: 0, outputTokens: 0, calls: 0, cost: 0 };
+}
+
+export function getUsageAccumulator() {
+  return { ..._usageAccumulator };
+}
+
+function _accumulateUsage(data) {
+  _usageAccumulator.calls++;
+  if (data?.usage) {
+    // OpenRouter/OpenAI: prompt_tokens/completion_tokens
+    // Anthropic: input_tokens/output_tokens
+    _usageAccumulator.inputTokens += data.usage.prompt_tokens || data.usage.input_tokens || 0;
+    _usageAccumulator.outputTokens += data.usage.completion_tokens || data.usage.output_tokens || 0;
+    // OpenRouter reports actual cost in usage.cost (dollars)
+    if (data.usage.cost != null) {
+      _usageAccumulator.cost += data.usage.cost;
+    }
+  } else if (data?.usageMetadata) {
+    // Gemini format
+    _usageAccumulator.inputTokens += data.usageMetadata.promptTokenCount || 0;
+    _usageAccumulator.outputTokens += data.usageMetadata.candidatesTokenCount || 0;
+  }
+  // OpenRouter sometimes reports cost at top level
+  if (data?.total_cost != null) {
+    _usageAccumulator.cost += data.total_cost;
+  }
+}
+
+// Debug logging helper - only prints when RUBRIC_DEBUG=true
 function debugLog(...args) {
-  if (process.env.TUTOR_TRANSCRIPT !== 'true') {
+  if (process.env.RUBRIC_DEBUG === 'true') {
     console.log(...args);
   }
 }
@@ -254,6 +287,7 @@ async function callJudgeModelWithConfig(prompt, config) {
           throw new Error(`Failed to parse OpenRouter response: ${err.message}`);
         });
 
+        _accumulateUsage(data);
         return data.choices?.[0]?.message?.content || '';
       } catch (err) {
         clearTimeout(timeout);
@@ -300,6 +334,7 @@ async function callJudgeModelWithConfig(prompt, config) {
           throw new Error(`Failed to parse Gemini response: ${err.message}`);
         });
 
+        _accumulateUsage(data);
         return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       } catch (err) {
         clearTimeout(timeout);
@@ -596,6 +631,7 @@ async function callOpenAICompatibleJudge(prompt, config) {
       throw new Error(`Failed to parse ${provider} judge response: ${err.message}`);
     });
 
+    _accumulateUsage(data);
     return data.choices?.[0]?.message?.content || '';
   } catch (err) {
     clearTimeout(timeout);
@@ -652,6 +688,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`Failed to parse Anthropic response: ${err.message}`);
       });
 
+      _accumulateUsage(data);
       return data.content?.[0]?.text || '';
     } catch (err) {
       clearTimeout(timeout);
@@ -706,6 +743,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`Failed to parse OpenRouter response: ${err.message}`);
       });
 
+      _accumulateUsage(data);
       return data.choices?.[0]?.message?.content || '';
     } catch (err) {
       clearTimeout(timeout);
@@ -762,6 +800,7 @@ async function callJudgeModel(prompt, overrides = {}) {
         throw new Error(`Failed to parse Gemini response: ${err.message}`);
       });
 
+      _accumulateUsage(data);
       return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     } catch (err) {
       clearTimeout(timeout);

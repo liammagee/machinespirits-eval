@@ -2736,13 +2736,26 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       printed.add(turnKey);
       const text = (entry.detail || entry.contextSummary || '').substring(0, 500);
       if (!text) return null;
+      // Metadata line: model · latency · tokens (mirrors tutor metadata)
+      const lm = entry.metrics || {};
+      const lmParts = [];
+      if (lm.model) {
+        const name = lm.model.includes('/') ? lm.model.split('/').pop() : lm.model;
+        lmParts.push(name.split(':')[0].substring(0, 22));
+      }
+      if (lm.latencyMs != null)
+        lmParts.push(lm.latencyMs < 1000 ? `${lm.latencyMs}ms` : `${(lm.latencyMs / 1000).toFixed(1)}s`);
+      if (lm.inputTokens != null || lm.outputTokens != null)
+        lmParts.push(`${lm.inputTokens ?? '?'}→${lm.outputTokens ?? '?'}`);
+      const lmStr = lmParts.length > 0 ? '\n' + ' '.repeat(ROLE_WIDTH) + chalk.dim(lmParts.join(' · ')) : '';
       return (
         '\n' +
         chalk.green.bold(pad('Learner')) +
         inlineTag +
         '\n' +
         ' '.repeat(ROLE_WIDTH) +
-        wrapChatText(text, ROLE_WIDTH)
+        wrapChatText(text, ROLE_WIDTH) +
+        lmStr
       );
     }
 
