@@ -1526,7 +1526,7 @@ Each iteration follows the error correction pattern: the initial rubric (ego) ge
 
 #### 7.4.4 The Test Suite as Analytical Provenance
 
-The test suite (39 test files in `tests/`, 12 in `services/__tests__/`, totaling 51 files) covers not just system functionality but analytical correctness. The provenance tests (44/44 passing) verify that every scored row has a traceable path from cell configuration through dialogue execution to judge evaluation. The superego guard tests (111 tests) verify that single-agent cells cannot produce superego traces. The ANOVA implementation tests verify that statistical computations match reference implementations.
+The test suite (40 test files in `tests/`, 14 in `services/__tests__/`, totaling 54 files) covers not just system functionality but analytical correctness. The provenance tests (44/44 passing) verify that every scored row has a traceable path from cell configuration through dialogue execution to judge evaluation. The superego guard tests (111 tests) verify that single-agent cells cannot produce superego traces. The ANOVA implementation tests verify that statistical computations match reference implementations.
 
 This makes the analysis *reproducible in a testable sense*: not just "you can run our code" but "our code produces expected output on known inputs, and here are the tests that prove it." The test suite functions as analytical provenance---machine-verifiable evidence that the infrastructure supporting mechanism claims is itself sound.
 
