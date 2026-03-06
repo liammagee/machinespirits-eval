@@ -78,7 +78,7 @@ function getModelConfig(choice) {
     case 'or-haiku':
       return { provider: 'openrouter', model: 'anthropic/claude-haiku-4.5', label: 'OR-Haiku' };
     case 'haiku':
-      return { provider: 'anthropic', model: 'claude-haiku-4', label: 'Haiku (direct)' };
+      return { provider: 'openrouter', model: 'anthropic/claude-haiku-4.5', label: 'Haiku' };
     case 'sonnet':
       return { provider: 'anthropic', model: 'claude-sonnet-4-5', label: 'Sonnet' };
     case 'flash':
