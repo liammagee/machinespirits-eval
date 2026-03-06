@@ -5456,11 +5456,13 @@ export async function rejudgeRun(runId, options = {}) {
   // IMPORTANT: Must scan ALL rows in the run, not just source-filtered `results`,
   // because the target judge's rows won't be in `results` when sourceJudge differs.
   const existingRowsByTarget = new Map(); // suggKey → row
+  const allRowsById = new Map(); // id → row (for target row lookup in safety guard)
   if (targetJudgeLabel) {
     const allRunRows = evaluationStore.getResults(runId, {
       scenarioId: scenarioFilter || null,
     });
     for (const r of allRunRows) {
+      allRowsById.set(r.id, r);
       if (r.judgeModel === targetJudgeLabel) {
         const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
         existingRowsByTarget.set(suggKey, r);
@@ -5607,8 +5609,9 @@ export async function rejudgeRun(runId, options = {}) {
             // Update in place: explicit --overwrite, or resuming an incomplete row
             const targetId = result._overwriteRowId || result.id;
             // SAFETY: never overwrite a row belonging to a different judge
+            // Use allRowsById (all run rows) — `results` is source-filtered and won't contain target judge rows
             const targetRow = result._overwriteRowId
-              ? results.find((r) => r.id === targetId) || result
+              ? allRowsById.get(targetId) || result
               : result;
             if (targetJudgeLabel && targetRow.judgeModel && targetRow.judgeModel !== targetJudgeLabel) {
               // Row belongs to a different judge — create new row instead of overwriting
