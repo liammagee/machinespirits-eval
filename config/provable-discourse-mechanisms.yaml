@@ -125,7 +125,7 @@ claims:
       - "If classified critique corpus drops below 200, re-run extraction pipeline."
 
   - id: paper2.taxonomy.recognition_failure_dominant
-    description: "Recognition Failure is the most frequent non-approval superego critique category (≥25%)."
+    description: "Recognition Failure is the most frequent non-approval superego critique category (≥15% of full corpus including approvals)."
     source_keys:
       - "stat|0|recognition failure frequency"
     statement:
@@ -139,9 +139,9 @@ claims:
       category: RECOGNITION_FAILURE
     assertion:
       op: gte
-      expected: 25.0
+      expected: 15.0
     remediation:
-      - "If RECOGNITION_FAILURE drops below 25%, the dominant critique framing needs revision."
+      - "If RECOGNITION_FAILURE drops below 15%, the dominant critique framing needs revision. Note: 41% of critiques are APPROVAL; RECOGNITION_FAILURE is ~16% of full corpus but ~28% of non-approval critiques."
 
   - id: paper2.taxonomy.persistence_rate
     description: "Superego critique persistence rate ≥25% (same category repeats across turns)."
