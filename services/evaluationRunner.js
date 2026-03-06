@@ -5641,8 +5641,9 @@ export async function rejudgeRun(runId, options = {}) {
           succeeded++;
           if (evaluation.overallScore != null) newScores.push(evaluation.overallScore);
           // Always print one line per row so the user can see progress
+          const sourceLabel = result.judgeModel || 'source';
           console.log(
-            `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, was ${result.tutorFirstTurnScore?.toFixed(1) ?? '--'})`,
+            `  [${completed + 1}/${results.length}] ${result.scenarioId} / ${result.profileName}: ${evaluation.overallScore?.toFixed(1)} (${modeLabel}, ${sourceLabel}: ${result.tutorFirstTurnScore?.toFixed(1) ?? '--'})`,
           );
 
           // Multi-turn: score learner, dialogue, holistic, deliberation
