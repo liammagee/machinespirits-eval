@@ -1660,7 +1660,8 @@ async function main() {
         if (clusterOpt) {
           console.log(`Cluster filter: ${clusterOpt}\n`);
         }
-        console.log('Starting evaluation run...\n');
+        const runStartTime = new Date();
+        console.log(`Starting evaluation run at ${runStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})...\n`);
         const result = await evaluationRunner.runEvaluation({
           scenarios,
           configurations,
@@ -1711,9 +1712,12 @@ async function main() {
         if (result.runId) {
           const runResults = evaluationStore.getResults(result.runId);
           if (runResults.length > 0) {
+            const runEndTime = new Date();
             console.log('\n' + '='.repeat(80));
             console.log('  TOKEN & COST SUMMARY');
             console.log('='.repeat(80));
+            console.log(`  Finished:  ${runEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+            console.log(`  Duration:  ${((runEndTime - runStartTime) / 1000 / 60).toFixed(1)} min`);
 
             // Per-result breakdown
             const header =
@@ -2562,7 +2566,7 @@ async function main() {
         const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'rejudge'));
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>]] [--scenario <id>] [--verbose] [--overwrite] [--skip-learner] [--skip-deliberation]',
+            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>]] [--scenario <id>] [--source-judge <label>] [--limit <N>] [--verbose] [--overwrite] [--skip-learner] [--skip-deliberation]',
           );
           console.error('');
           console.error('By default, creates new rows (preserves history for inter-judge reliability).');
@@ -2594,6 +2598,9 @@ async function main() {
         const judgeCli = getOption('judge-cli') || null;
         const judgeCliModel = getOption('model') || null;
         const scenarioFilter = getOption('scenario') || null;
+        const limitStr = getOption('limit') || null;
+        const limit = limitStr ? parseInt(limitStr, 10) : null;
+        const sourceJudge = getOption('source-judge') || null;
 
         if (judgeOverride && judgeCli) {
           console.error('Error: rejudge accepts either --judge or --judge-cli, not both');
@@ -2604,10 +2611,14 @@ async function main() {
           process.exit(1);
         }
 
+        const rejudgeStartTime = new Date();
         console.log(`\nRejudging run: ${runId}`);
+        console.log(`  Started:   ${rejudgeStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
         if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
         if (judgeCli) console.log(`  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}`);
         if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
+        if (sourceJudge) console.log(`  Source judge: ${sourceJudge}`);
+        if (limit) console.log(`  Limit: ${limit} records`);
         console.log(`  Mode: ${overwrite ? 'overwrite (replace existing)' : 'preserve history (add new rows)'}`);
         if (skipLearner) console.log('  Skipping: learner + dialogue + holistic scoring');
         if (skipDeliberation) console.log('  Skipping: deliberation scoring');
@@ -2622,12 +2633,17 @@ async function main() {
           overwrite,
           skipLearner,
           skipDeliberation,
+          limit,
+          sourceJudge,
         });
 
+        const rejudgeEndTime = new Date();
         console.log('\n' + '='.repeat(60));
         console.log('  REJUDGE SUMMARY');
         console.log('='.repeat(60));
         console.log(`  Run:       ${summary.runId}`);
+        console.log(`  Finished:  ${rejudgeEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(`  Duration:  ${((rejudgeEndTime - rejudgeStartTime) / 1000 / 60).toFixed(1)} min`);
         console.log(`  Total:     ${summary.total}`);
         console.log(`  Succeeded: ${summary.succeeded}`);
         console.log(`  Failed:    ${summary.failed}`);
@@ -2636,6 +2652,13 @@ async function main() {
         if (summary.scoreDelta != null) {
           const sign = summary.scoreDelta >= 0 ? '+' : '';
           console.log(`  Delta:     ${sign}${summary.scoreDelta.toFixed(2)}`);
+        }
+        if (summary.usage && summary.usage.calls > 0) {
+          console.log(`  API calls: ${summary.usage.calls}`);
+          console.log(`  Tokens:    ${summary.usage.inputTokens.toLocaleString()} in / ${summary.usage.outputTokens.toLocaleString()} out (${(summary.usage.inputTokens + summary.usage.outputTokens).toLocaleString()} total)`);
+          if (summary.usage.cost > 0) {
+            console.log(`  Cost:      $${summary.usage.cost.toFixed(4)}`);
+          }
         }
         console.log('');
         break;
@@ -4177,10 +4200,15 @@ async function main() {
         // Helper: print summary
         function printEvaluateSummary(succeeded, failed, totalAttempted, scores) {
           const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+          const evalEndTime = new Date();
 
           console.log('\n' + '='.repeat(50));
           console.log('  EVALUATE SUMMARY');
           console.log('='.repeat(50));
+          console.log(`  Finished:  ${evalEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+          if (typeof evalStartTime !== 'undefined') {
+            console.log(`  Duration:  ${((evalEndTime - evalStartTime) / 1000 / 60).toFixed(1)} min`);
+          }
           console.log(`  Total:     ${totalAttempted}`);
           console.log(`  Succeeded: ${succeeded}`);
           console.log(`  Failed:    ${failed}`);
@@ -4641,7 +4669,9 @@ async function main() {
           const singleTurn = toEvaluate.filter((r) => !isMultiTurnResult(r));
           const multiTurn = toEvaluate.filter((r) => isMultiTurnResult(r));
 
+          const evalStartTime = new Date();
           console.log(`\nEvaluating ${toEvaluate.length} result(s) for run: ${effectiveRunId}`);
+          console.log(`  Started:     ${evalStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
           if (singleTurn.length > 0) console.log(`  Single-turn: ${singleTurn.length}`);
           if (multiTurn.length > 0) console.log(`  Multi-turn:  ${multiTurn.length} (per-turn scoring)`);
           if (tutorOnly) console.log('  --tutor-only: skipping learner + dialogue scoring');
@@ -5177,7 +5207,9 @@ async function main() {
           break;
         }
 
+        const learnerStartTime = new Date();
         console.log(`\nEvaluating learner turns for ${toEvaluate.length} dialogue(s) from run: ${runId}`);
+        console.log(`  Started:     ${learnerStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
         if (modelOverride) console.log(`  Model: ${modelOverride}`);
         if (parallelism > 1) console.log(`  Parallelism: ${parallelism}`);
         console.log('');
@@ -5551,9 +5583,12 @@ async function main() {
         }
 
         // Summary
+        const learnerEndTime = new Date();
         console.log('\n' + '='.repeat(50));
         console.log('  EVALUATE-LEARNER SUMMARY');
         console.log('='.repeat(50));
+        console.log(`  Finished:  ${learnerEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(`  Duration:  ${((learnerEndTime - learnerStartTime) / 1000 / 60).toFixed(1)} min`);
         console.log(`  Total dialogues:  ${toEvaluate.length}`);
         console.log(`  Succeeded: ${succeeded}`);
         console.log(`  Failed:    ${failed}`);
@@ -5697,7 +5732,9 @@ async function main() {
           break;
         }
 
+        const dialogueStartTime = new Date();
         console.log(`\nEvaluating ${toEvaluate.length} multi-turn dialogue(s) for run: ${runId}`);
+        console.log(`  Started:   ${dialogueStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
         if (modelOverride) console.log(`  Model: ${modelOverride}`);
         console.log('');
 
@@ -5918,9 +5955,12 @@ async function main() {
         }
 
         // Summary
+        const dialogueEndTime = new Date();
         console.log('\n' + '='.repeat(50));
         console.log('  EVALUATE-DIALOGUE SUMMARY');
         console.log('='.repeat(50));
+        console.log(`  Finished:  ${dialogueEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(`  Duration:  ${((dialogueEndTime - dialogueStartTime) / 1000 / 60).toFixed(1)} min`);
         console.log(`  Total:     ${toEvaluate.length}`);
         console.log(`  Succeeded: ${succeeded}`);
         console.log(`  Failed:    ${failed}`);

@@ -5384,6 +5384,7 @@ export async function rejudgeRun(runId, options = {}) {
     skipLearner = false,
     skipDeliberation = false,
     limit = null,
+    sourceJudge = null,
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -5404,6 +5405,13 @@ export async function rejudgeRun(runId, options = {}) {
 
   // Skip results that have no suggestions (errors / failed generation)
   results = results.filter((r) => r.success && r.suggestions?.length > 0);
+
+  // Filter by source judge if specified (e.g. only rejudge rows originally scored by Sonnet)
+  if (sourceJudge) {
+    const before = results.length;
+    results = results.filter((r) => r.judgeModel && r.judgeModel.includes(sourceJudge));
+    console.log(`  Source judge filter: "${sourceJudge}" → ${results.length} of ${before} rows`);
+  }
 
   if (results.length === 0) {
     throw new Error('No successful results with suggestions found to rejudge');
@@ -5438,16 +5446,21 @@ export async function rejudgeRun(runId, options = {}) {
       (r.dialogueRounds > 1)
     );
     if (!isMultiTurn) return r.tutorFirstTurnScore != null;
-    // Multi-turn: needs per-turn tutor scores + last-turn + dialogue quality
-    return r.tutorScores != null && r.tutorLastTurnScore != null && r.dialogueQualityScore != null;
+    // Multi-turn: needs per-turn tutor scores + first-turn + last-turn + dialogue quality
+    return r.tutorScores != null && r.tutorFirstTurnScore != null && r.tutorLastTurnScore != null && r.dialogueQualityScore != null;
   }
 
   // Build a map of suggestion keys → existing rows judged by the target judge.
   // In resume mode (default, no --overwrite): skip rows with COMPLETE scores.
   // Rows with incomplete scores (e.g. pre-fix single-shot only) are re-processed.
+  // IMPORTANT: Must scan ALL rows in the run, not just source-filtered `results`,
+  // because the target judge's rows won't be in `results` when sourceJudge differs.
   const existingRowsByTarget = new Map(); // suggKey → row
   if (targetJudgeLabel) {
-    for (const r of results) {
+    const allRunRows = evaluationStore.getResults(runId, {
+      scenarioId: scenarioFilter || null,
+    });
+    for (const r of allRunRows) {
       if (r.judgeModel === targetJudgeLabel) {
         const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
         existingRowsByTarget.set(suggKey, r);
