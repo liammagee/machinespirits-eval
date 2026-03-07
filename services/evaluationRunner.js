@@ -4964,7 +4964,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
             };
           }
 
-          let tutorTurnScores = {};
+          const tutorTurnScores = {};
 
           // Attempt batched scoring first for multi-turn
           if (totalTurns > 1) {
@@ -5068,7 +5068,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
     promises.push(
       (async () => {
         try {
-          let learnerTurnScores = {};
+          const learnerTurnScores = {};
 
           if (learnerTurnTargets.length > 1) {
             // Attempt batched prompt first
@@ -5527,7 +5527,7 @@ export async function rejudgeRun(runId, options = {}) {
     uniqueResults.push(r);
   }
 
-  const skipped = results.length - uniqueResults.length - resumeIncomplete;
+  const _skipped = results.length - uniqueResults.length - resumeIncomplete;
   results = uniqueResults;
 
   // Apply --limit if specified

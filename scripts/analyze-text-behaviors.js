@@ -32,7 +32,7 @@ const LOGS_DIR = path.resolve(__dirname, '..', 'logs', 'tutor-dialogues');
 const args = process.argv.slice(2);
 const section = args.find((a, i) => args[i - 1] === '--section') || 'all';
 const jsonOutput = args.includes('--json');
-const verbose = args.includes('--verbose');
+const _verbose = args.includes('--verbose');
 
 const RUN_IDS = [
   'eval-2026-03-01-aea2abfb',
@@ -232,7 +232,7 @@ function analyzeQuestionFrequency(rows) {
   console.log('| Scenario | Base q/turn | Recog q/turn | Ratio |');
   console.log('|---|---|---|---|');
   const scenEntries = Object.entries(data.byScenario)
-    .map(([id, s]) => ({
+    .map(([_id, s]) => ({
       name: s.name,
       bRate: s.base.turns > 0 ? s.base.q / s.base.turns : 0,
       rRate: s.recog.turns > 0 ? s.recog.q / s.recog.turns : 0,
@@ -423,7 +423,7 @@ function analyzeGeminiFlashScenarios(rows) {
   console.log('| Scenario | Base Mean (N) | Recog Mean (N) | Delta | d |');
   console.log('|---|---|---|---|---|');
   const scenEntries = Object.entries(scenarios)
-    .map(([id, s]) => {
+    .map(([_id, s]) => {
       const bm = mean(s.base);
       const rm = mean(s.recog);
       return { name: s.name, baseMean: bm, recogMean: rm, delta: rm - bm, d: cohensD(s.recog, s.base), baseN: s.base.length, recogN: s.recog.length };

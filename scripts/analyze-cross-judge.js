@@ -26,7 +26,7 @@ function getOption(name) {
   const idx = args.indexOf(`--${name}`);
   return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : null;
 }
-const jsonOutput = args.includes('--json');
+const _jsonOutput = args.includes('--json');
 
 const DEFAULT_RUNS = [
   'eval-2026-03-01-aea2abfb',

@@ -4211,7 +4211,7 @@ async function main() {
         }
 
         // Helper: print summary
-        function printEvaluateSummary(succeeded, failed, totalAttempted, scores) {
+        function printEvaluateSummary(succeeded, failed, totalAttempted, scores, evalStartTime) {
           const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
           const evalEndTime = new Date();
 
@@ -4219,7 +4219,7 @@ async function main() {
           console.log('  EVALUATE SUMMARY');
           console.log('='.repeat(50));
           console.log(`  Finished:  ${evalEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
-          if (typeof evalStartTime !== 'undefined') {
+          if (evalStartTime) {
             console.log(`  Duration:  ${((evalEndTime - evalStartTime) / 1000 / 60).toFixed(1)} min`);
           }
           console.log(`  Total:     ${totalAttempted}`);
@@ -4731,7 +4731,7 @@ async function main() {
             });
             await Promise.all(workers);
 
-            printEvaluateSummary(succeeded, failed, toEvaluate.length, scores);
+            printEvaluateSummary(succeeded, failed, toEvaluate.length, scores, evalStartTime);
 
             // Legacy holistic dialogue evaluation for any remaining multi-turn results
             // (kept for backward compat with evaluate --multiturn-only path)
