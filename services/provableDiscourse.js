@@ -2395,13 +2395,17 @@ export function runProvableDiscourseAudit({
     .map((resolvedPath) => loadClaimsFromImportPath(resolvedPath));
 
   const resolvedPaperPath = resolvePath(baseDir, spec.paper_path);
+  const resolvedPaper2Path = spec.paper2_path ? resolvePath(baseDir, spec.paper2_path) : null;
   const resolvedManifestPath = resolvePath(baseDir, spec.manifest_path);
   const resolvedDbPath = resolvePath(baseDir, spec.db_path);
   const resolvedAuditPath = resolvePath(baseDir, spec.audit_report_path);
   const resolvedSnapshotPath = resolvePath(baseDir, spec.snapshot_path);
   const resolvedInventoryPath = resolvePath(baseDir, spec.inventory_path);
 
-  const paperText = fs.readFileSync(resolvedPaperPath, 'utf8');
+  let paperText = fs.readFileSync(resolvedPaperPath, 'utf8');
+  if (resolvedPaper2Path && fs.existsSync(resolvedPaper2Path)) {
+    paperText += '\n' + fs.readFileSync(resolvedPaper2Path, 'utf8');
+  }
   const manifest = JSON.parse(fs.readFileSync(resolvedManifestPath, 'utf8'));
   const auditChecks = parseAuditChecks(resolvedAuditPath);
   const inventory = loadClaimInventory(resolvedInventoryPath);
