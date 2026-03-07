@@ -60,6 +60,26 @@ build_paper2() {
   echo "  -> ${P2_PDF}"
 }
 
+build_paper2_short() {
+  local V2S=$(grep '^version:' paper-short-2.0.md 2>/dev/null | head -1 | sed 's/version: *"\(.*\)"/\1/')
+  if [ -z "$V2S" ]; then V2S="dev"; fi
+  local P2S_PDF="paper-2.0-short-v${V2S}.pdf"
+  echo "Building ${P2S_PDF} (Paper 2.0 Short) ..."
+  pandoc "${PANDOC_OPTS[@]}" paper-short-2.0.md -o "${P2S_PDF}"
+  echo "  -> ${P2S_PDF}"
+}
+
+build_paper2_slides() {
+  local V2SL=$(grep '^version:' slides-2.0.md 2>/dev/null | head -1 | sed 's/version: *"\(.*\)"/\1/' || echo "")
+  if [ -z "$V2SL" ]; then V2SL="dev"; fi
+  local P2SL_PDF="slides-2.0-v${V2SL}.pdf"
+  echo "Building ${P2SL_PDF} (Paper 2.0 Slides) ..."
+  pandoc --citeproc --pdf-engine=xelatex -t beamer \
+    --slide-level=2 \
+    slides-2.0.md -o "${P2SL_PDF}"
+  echo "  -> ${P2SL_PDF}"
+}
+
 build_pptx() {
   echo "Building ${SLIDES_PPTX} ..."
   # Use slides-pptx.md (stripped of LaTeX commands) with styled reference doc
@@ -96,15 +116,28 @@ case "${1:-full}" in
   paper2)
     build_paper2
     ;;
+  paper2-short)
+    build_paper2_short
+    ;;
+  paper2-slides)
+    build_paper2_slides
+    ;;
+  paper2-all)
+    build_paper2
+    build_paper2_short
+    build_paper2_slides
+    ;;
   all)
     build_full
     build_paper2
+    build_paper2_short
+    build_paper2_slides
     build_short
     build_beamer
     build_pptx
     ;;
   *)
-    echo "Usage: $0 [full|short|paper2|beamer|pptx|slides|all]"
+    echo "Usage: $0 [full|short|paper2|paper2-short|paper2-slides|paper2-all|beamer|pptx|slides|all]"
     exit 1
     ;;
 esac
