@@ -248,7 +248,10 @@ ${externalMessage}`;
   // Build example JSON — use varied scores to prevent judges from echoing a uniform pattern
   const dimKeys = Object.keys(dimensions);
   const batchedExampleScores = dimKeys
-    .map((key, i) => `            "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `            "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
   const exampleTurnStr = `{
         "learner_turn_index": 0,
@@ -367,7 +370,10 @@ export function buildLearnerEvaluationPrompt(params) {
   // Build dimension keys for JSON example — use varied scores to prevent judges from echoing
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the quality of a LEARNER's response turn — how well the learner agent engages as a student, independent of the tutor's quality.
@@ -476,7 +482,10 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
 
   return `You are an expert evaluator of synthetic learner agents in AI tutoring dialogues. Your task is to evaluate the LEARNER's quality ACROSS THE ENTIRE DIALOGUE, independent of tutor quality.

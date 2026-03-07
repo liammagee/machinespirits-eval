@@ -324,10 +324,12 @@ describe('learner output sanitization', () => {
     assert.ok(serializedRevisionHistory.includes('I think I partly get it.'));
     assert.ok(serializedRevisionHistory.includes('Ask for a concrete example.'));
 
-    const serializedPrompts = JSON.stringify(llmCalls.map((call) => ({
-      systemPrompt: call.systemPrompt,
-      messages: call.messages,
-    })));
+    const serializedPrompts = JSON.stringify(
+      llmCalls.map((call) => ({
+        systemPrompt: call.systemPrompt,
+        messages: call.messages,
+      })),
+    );
     assert.ok(!serializedPrompts.includes('hidden tutor chain'));
     assert.ok(!serializedPrompts.includes('old learner chain'));
     assert.ok(!serializedPrompts.includes('old tutor chain'));

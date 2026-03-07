@@ -2430,7 +2430,10 @@ export function runProvableDiscourseAudit({
     summary: { pass: 0, warn: 0, fail: 0, total: 0, skipped_by_epoch: 0 },
   };
 
-  const allClaims = mergeUniqueById(Array.isArray(spec.claims) ? spec.claims : [], ...imported.map((part) => part.claims));
+  const allClaims = mergeUniqueById(
+    Array.isArray(spec.claims) ? spec.claims : [],
+    ...imported.map((part) => part.claims),
+  );
   const db = smokeMode ? null : new Database(resolvedDbPath, { readonly: true });
 
   try {

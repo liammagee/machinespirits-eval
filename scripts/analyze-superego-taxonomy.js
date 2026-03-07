@@ -71,11 +71,7 @@ function main() {
   const allCritiques = lines.map((l) => {
     const c = JSON.parse(l);
     // Reclassify parse failures: "Unable to parse superego review" is not a real critique
-    if (
-      c.classification?.primary === 'OTHER' &&
-      c.feedback &&
-      c.feedback.startsWith('Unable to parse')
-    ) {
+    if (c.classification?.primary === 'OTHER' && c.feedback && c.feedback.startsWith('Unable to parse')) {
       c.classification.primary = 'PARSE_FAILURE';
     }
     return c;
@@ -85,13 +81,17 @@ function main() {
   const parseFailures = allCritiques.filter((c) => c.classification?.primary === 'PARSE_FAILURE');
 
   console.log(`\n${'═'.repeat(70)}`);
-  console.log(`  SUPEREGO CRITIQUE TAXONOMY ANALYSIS — N=${critiques.length} (${parseFailures.length} parse failures excluded)`);
+  console.log(
+    `  SUPEREGO CRITIQUE TAXONOMY ANALYSIS — N=${critiques.length} (${parseFailures.length} parse failures excluded)`,
+  );
   console.log(`${'═'.repeat(70)}\n`);
 
   if (parseFailures.length > 0) {
     const pfBase = parseFailures.filter((c) => detectCondition(c.profileName) === 'baseline').length;
     const pfRecog = parseFailures.filter((c) => detectCondition(c.profileName) === 'recognition').length;
-    console.log(`  Parse failures: ${parseFailures.length} (base=${pfBase}, recog=${pfRecog}) — "Unable to parse superego review"\n`);
+    console.log(
+      `  Parse failures: ${parseFailures.length} (base=${pfBase}, recog=${pfRecog}) — "Unable to parse superego review"\n`,
+    );
   }
 
   // ── 1. Overall Distribution ───────────────────────────────────────────
@@ -314,9 +314,7 @@ function main() {
     const baseAppr = baseCrits.filter((c) => c.classification?.primary === 'APPROVAL').length;
     const recogAppr = recogCrits.filter((c) => c.classification?.primary === 'APPROVAL').length;
 
-    console.log(
-      `  ${model} (N=${modelCritiques.length}): base=${baseCrits.length}, recog=${recogCrits.length}`,
-    );
+    console.log(`  ${model} (N=${modelCritiques.length}): base=${baseCrits.length}, recog=${recogCrits.length}`);
     console.log(
       `    Approval rate: base=${pct(baseAppr, baseCrits.length)}% → recog=${pct(recogAppr, recogCrits.length)}%`,
     );
@@ -366,18 +364,10 @@ function main() {
 
   if (transitions.length > 0) {
     // Overall transition patterns
-    const persistCritique = transitions.filter(
-      (t) => t.round1Cat !== 'APPROVAL' && t.round2Cat !== 'APPROVAL',
-    );
-    const resolveToApproval = transitions.filter(
-      (t) => t.round1Cat !== 'APPROVAL' && t.round2Cat === 'APPROVAL',
-    );
-    const newCritique = transitions.filter(
-      (t) => t.round1Cat === 'APPROVAL' && t.round2Cat !== 'APPROVAL',
-    );
-    const stayApproval = transitions.filter(
-      (t) => t.round1Cat === 'APPROVAL' && t.round2Cat === 'APPROVAL',
-    );
+    const persistCritique = transitions.filter((t) => t.round1Cat !== 'APPROVAL' && t.round2Cat !== 'APPROVAL');
+    const resolveToApproval = transitions.filter((t) => t.round1Cat !== 'APPROVAL' && t.round2Cat === 'APPROVAL');
+    const newCritique = transitions.filter((t) => t.round1Cat === 'APPROVAL' && t.round2Cat !== 'APPROVAL');
+    const stayApproval = transitions.filter((t) => t.round1Cat === 'APPROVAL' && t.round2Cat === 'APPROVAL');
 
     console.log(`  Overall patterns:`);
     console.log(
@@ -403,7 +393,9 @@ function main() {
       const newC = condT.filter((t) => t.round1Cat === 'APPROVAL' && t.round2Cat !== 'APPROVAL').length;
       const stay = condT.filter((t) => t.round1Cat === 'APPROVAL' && t.round2Cat === 'APPROVAL').length;
       console.log(`    ${cond} (N=${condT.length}):`);
-      console.log(`      Persist: ${persist} (${pct(persist, condT.length)}%)  Resolve: ${resolve} (${pct(resolve, condT.length)}%)  New: ${newC} (${pct(newC, condT.length)}%)  Stay: ${stay} (${pct(stay, condT.length)}%)`);
+      console.log(
+        `      Persist: ${persist} (${pct(persist, condT.length)}%)  Resolve: ${resolve} (${pct(resolve, condT.length)}%)  New: ${newC} (${pct(newC, condT.length)}%)  Stay: ${stay} (${pct(stay, condT.length)}%)`,
+      );
     }
 
     // Category persistence: which R1 categories resolve vs persist?
@@ -411,8 +403,7 @@ function main() {
     const catPersistence = {};
     for (const t of transitions) {
       if (t.round1Cat === 'APPROVAL') continue;
-      if (!catPersistence[t.round1Cat])
-        catPersistence[t.round1Cat] = { persist: 0, resolve: 0, shift: 0, total: 0 };
+      if (!catPersistence[t.round1Cat]) catPersistence[t.round1Cat] = { persist: 0, resolve: 0, shift: 0, total: 0 };
       catPersistence[t.round1Cat].total++;
       if (t.round2Cat === 'APPROVAL') catPersistence[t.round1Cat].resolve++;
       else if (t.round2Cat === t.round1Cat) catPersistence[t.round1Cat].persist++;
@@ -421,9 +412,7 @@ function main() {
 
     console.log('    Category                   Persist  Shift  Resolve  Resolve%');
     console.log('    ' + '─'.repeat(60));
-    for (const [cat, counts] of Object.entries(catPersistence).sort(
-      (a, b) => b[1].total - a[1].total,
-    )) {
+    for (const [cat, counts] of Object.entries(catPersistence).sort((a, b) => b[1].total - a[1].total)) {
       console.log(
         `    ${cat.padEnd(30)}${String(counts.persist).padStart(5)}  ${String(counts.shift).padStart(5)}  ${String(counts.resolve).padStart(7)}  ${pct(counts.resolve, counts.total).padStart(7)}%`,
       );
@@ -450,17 +439,11 @@ function main() {
   // Filter to non-approval critiques with both ego texts
   const withRevisions = critiques.filter(
     (c) =>
-      c.classification?.primary !== 'APPROVAL' &&
-      c.egoGenerate &&
-      c.egoRevision &&
-      c.egoGenerate !== c.egoRevision,
+      c.classification?.primary !== 'APPROVAL' && c.egoGenerate && c.egoRevision && c.egoGenerate !== c.egoRevision,
   );
   const noChange = critiques.filter(
     (c) =>
-      c.classification?.primary !== 'APPROVAL' &&
-      c.egoGenerate &&
-      c.egoRevision &&
-      c.egoGenerate === c.egoRevision,
+      c.classification?.primary !== 'APPROVAL' && c.egoGenerate && c.egoRevision && c.egoGenerate === c.egoRevision,
   );
   const missingText = critiques.filter(
     (c) => c.classification?.primary !== 'APPROVAL' && (!c.egoGenerate || !c.egoRevision),
@@ -482,10 +465,13 @@ function main() {
       // Revision type based on Jaccard similarity quartiles
       // Data: P25=0.14, P50=0.20, P75=0.27 — ego regenerates, so all revisions are large
       let revisionType;
-      if (jSim > 0.40) revisionType = 'cosmetic';       // Top ~10%: minor surface edits
-      else if (jSim > 0.25) revisionType = 'calibrative'; // P75+: adjusted wording/tone
-      else if (jSim > 0.14) revisionType = 'substantive'; // P25-P75: significant content change
-      else revisionType = 'strategic';                     // Bottom 25%: near-complete rewrite
+      if (jSim > 0.4)
+        revisionType = 'cosmetic'; // Top ~10%: minor surface edits
+      else if (jSim > 0.25)
+        revisionType = 'calibrative'; // P75+: adjusted wording/tone
+      else if (jSim > 0.14)
+        revisionType = 'substantive'; // P25-P75: significant content change
+      else revisionType = 'strategic'; // Bottom 25%: near-complete rewrite
 
       return {
         condition: detectCondition(c.profileName),
@@ -575,9 +561,7 @@ function main() {
       const metrics = revisionMetrics.filter((m) => m.model === model);
       if (metrics.length === 0) continue;
       const meanJ = metrics.reduce((s, m) => s + m.jSim, 0) / metrics.length;
-      const deep = metrics.filter(
-        (m) => m.revisionType === 'substantive' || m.revisionType === 'strategic',
-      ).length;
+      const deep = metrics.filter((m) => m.revisionType === 'substantive' || m.revisionType === 'strategic').length;
       console.log(
         `    ${model} (N=${metrics.length}): mean Jaccard=${meanJ.toFixed(3)}, substantive+strategic=${pct(deep, metrics.length)}%`,
       );
@@ -609,9 +593,7 @@ function main() {
     `  → Base produces ${((baseTot.length - baseApprTot) / (recogTot.length - recogApprTot || 1)).toFixed(1)}× more critiques`,
   );
   console.log();
-  console.log(
-    '  Interpretation: Recognition pre-empts errors that the superego would catch,',
-  );
+  console.log('  Interpretation: Recognition pre-empts errors that the superego would catch,');
   console.log('  confirming the substitution mechanism (calibration + error correction overlap).');
 
   console.log(`\n${'═'.repeat(70)}\n`);

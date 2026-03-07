@@ -207,7 +207,9 @@ function normalizePromptContent(content) {
 }
 
 function normalizeTargetScope(value = 'both') {
-  const normalized = String(value || 'both').trim().toLowerCase();
+  const normalized = String(value || 'both')
+    .trim()
+    .toLowerCase();
   if (!VALID_TARGETS.has(normalized)) {
     throw new Error(`Invalid --target value: ${value}. Expected tutor, learner, or both.`);
   }
@@ -233,7 +235,6 @@ function getDefaultPromptLabJudgeSelection() {
 function inferJudgeSourceFromCliArgs() {
   return getOption('judge', null) || getOption('judge-cli', null) ? 'explicit' : 'default';
 }
-
 
 function formatCliLabel(cli, modelOverride = null) {
   const normalized = normalizeCliName(cli);
@@ -464,9 +465,7 @@ function validatePromptCandidate(prompt, candidateContent, referenceContent) {
 
   const candidateTags = analyzeSectionTags(candidate);
   for (const imbalance of candidateTags.imbalanced) {
-    issues.push(
-      `has imbalanced <${imbalance.tag}> tags (${imbalance.openCount} open / ${imbalance.closeCount} close)`,
-    );
+    issues.push(`has imbalanced <${imbalance.tag}> tags (${imbalance.openCount} open / ${imbalance.closeCount} close)`);
   }
 
   const referenceHeadings = extractMarkdownHeadings(reference);
@@ -479,7 +478,12 @@ function validatePromptCandidate(prompt, candidateContent, referenceContent) {
   const referenceTags = analyzeSectionTags(reference);
   const missingTags = [...referenceTags.tagNames].filter((tag) => !candidateTags.tagNames.has(tag));
   if (missingTags.length > 0) {
-    issues.push(`is missing required section tags: ${missingTags.slice(0, 6).map((tag) => `<${tag}>`).join(', ')}`);
+    issues.push(
+      `is missing required section tags: ${missingTags
+        .slice(0, 6)
+        .map((tag) => `<${tag}>`)
+        .join(', ')}`,
+    );
   }
 
   const referenceLastLine = getLastNonEmptyLine(reference);
@@ -504,9 +508,9 @@ function validatePromptCandidate(prompt, candidateContent, referenceContent) {
 function getRecoverableValidationIssues(issues = []) {
   return issues.filter(
     (issue) =>
-      issue.startsWith('contains an unmatched code fence')
-      || issue.startsWith('has imbalanced <')
-      || issue.startsWith('does not end with required closing tag'),
+      issue.startsWith('contains an unmatched code fence') ||
+      issue.startsWith('has imbalanced <') ||
+      issue.startsWith('does not end with required closing tag'),
   );
 }
 
@@ -570,8 +574,11 @@ function getScoredIterations(session) {
 }
 
 function getBestScoredIteration(session) {
-  return [...getScoredIterations(session)].sort((a, b) => (b.summary.primaryScore || 0) - (a.summary.primaryScore || 0))[0]
-    || null;
+  return (
+    [...getScoredIterations(session)].sort(
+      (a, b) => (b.summary.primaryScore || 0) - (a.summary.primaryScore || 0),
+    )[0] || null
+  );
 }
 
 function getLatestIteration(session) {
@@ -770,8 +777,8 @@ function aggregateRunRows(rows) {
     judgeModel: joinUnique(latestRows.map((row) => row.judgeModel)),
     evaluationReasoning: latestRow.evaluationReasoning ?? null,
     scoringMethod: latestRow.scoringMethod ?? null,
-    errorMessage: failedRows.length > 0 ? failedRows[failedRows.length - 1].errorMessage ?? null : null,
-    dialogueId: latestRows.length === 1 ? latestRow.dialogueId ?? null : null,
+    errorMessage: failedRows.length > 0 ? (failedRows[failedRows.length - 1].errorMessage ?? null) : null,
+    dialogueId: latestRows.length === 1 ? (latestRow.dialogueId ?? null) : null,
     promptContentHash: uniqueOrNull(latestRows.map((row) => row.promptContentHash)),
     tutorEgoPromptVersion: uniqueOrNull(latestRows.map((row) => row.tutorEgoPromptVersion)),
     tutorSuperegoPromptVersion: uniqueOrNull(latestRows.map((row) => row.tutorSuperegoPromptVersion)),
@@ -792,8 +799,8 @@ function summarizeRun(runId, profileName, scenarioId) {
   const stat = evaluationStore.getRunStats(runId).find((entry) => entry.profileName === profileName);
   const scenarioStat = evaluationStore
     .getScenarioStats(runId)
-    .find((entry) => entry.scenarioId === scenarioId)?.configurations
-    ?.find((entry) => entry.profileName === profileName);
+    .find((entry) => entry.scenarioId === scenarioId)
+    ?.configurations?.find((entry) => entry.profileName === profileName);
 
   return {
     mode: 'transient-placeholder',
@@ -1069,18 +1076,16 @@ function writeRawRecommenderResponse(sessionId, recommendationId, rawText, suffi
 }
 
 function resolveRecommenderConfig(options = {}) {
-  const {
-    modelRefOverride = null,
-    cliOverride = null,
-    cliModelOverride = null,
-  } = options;
+  const { modelRefOverride = null, cliOverride = null, cliModelOverride = null } = options;
   const rubric = evalConfigLoader.loadRubric();
   const configured = rubric?.recommender || {};
   const temperature = configured.hyperparameters?.temperature ?? 0.4;
   const maxTokens = configured.hyperparameters?.max_tokens ?? 6000;
 
   if (modelRefOverride && cliOverride) {
-    throw new Error('Use either a provider recommender (--recommender) or a CLI recommender (--recommender-cli), not both.');
+    throw new Error(
+      'Use either a provider recommender (--recommender) or a CLI recommender (--recommender-cli), not both.',
+    );
   }
 
   if (cliOverride) {
@@ -1365,9 +1370,11 @@ Session:
 - avg_score_across_basis_results: ${analysis.avgScore.toFixed(1)}
 
 Weak dimensions:
-${Object.entries(analysis.dimensionWeaknesses || {})
-  .map(([dim, data]) => `- ${dim}: ${data.avgScore.toFixed(2)}/5`)
-  .join('\n') || '- none detected'}
+${
+  Object.entries(analysis.dimensionWeaknesses || {})
+    .map(([dim, data]) => `- ${dim}: ${data.avgScore.toFixed(2)}/5`)
+    .join('\n') || '- none detected'
+}
 
 Allowed filenames:
 ${allowedPrompts.map((prompt) => `- ${prompt.filename}`).join('\n')}
@@ -1383,8 +1390,22 @@ Generate concrete prompt revisions. Return JSON only.`,
   };
 }
 
-function buildCompactRecommendationEditPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope) {
-  const full = buildRecommendationPrompt(session, basisIteration, basisResults, promptState, allowedPrompts, targetScope);
+function buildCompactRecommendationEditPrompt(
+  session,
+  basisIteration,
+  basisResults,
+  promptState,
+  allowedPrompts,
+  targetScope,
+) {
+  const full = buildRecommendationPrompt(
+    session,
+    basisIteration,
+    basisResults,
+    promptState,
+    allowedPrompts,
+    targetScope,
+  );
   const structuralInventory = buildStructuralInventory(promptState, allowedPrompts);
   return {
     ...full,
@@ -1594,7 +1615,9 @@ function attemptRecommendationRecovery(session, promptState, normalized, validat
   let changed = false;
 
   for (const update of normalized.promptUpdates) {
-    const prompt = session.promptFiles.find((item) => item.filename === update.filename) || { filename: update.filename };
+    const prompt = session.promptFiles.find((item) => item.filename === update.filename) || {
+      filename: update.filename,
+    };
     const referenceContent = promptState[update.filename]?.content || '';
     const currentValidation = validation.validations.find((item) => item.filename === update.filename);
 
@@ -1679,7 +1702,11 @@ async function generateRecommendation(session, options = {}) {
     throw new Error('No scored iteration found to analyze. Run a scored iteration first.');
   }
 
-  const basisResults = getRunRows(basisIteration.runId, session.profileName, basisIteration.scenarioId || session.scenarioId);
+  const basisResults = getRunRows(
+    basisIteration.runId,
+    session.profileName,
+    basisIteration.scenarioId || session.scenarioId,
+  );
   const promptState = readPromptState(session.promptDir, session.promptFiles);
   const promptRequest = buildRecommendationPrompt(
     session,
@@ -1723,7 +1750,13 @@ async function generateRecommendation(session, options = {}) {
   };
 
   if (dryRun) {
-    payload = createMockRecommendation(session, basisIteration, promptState, recommenderConfig.modelRef, allowedPrompts);
+    payload = createMockRecommendation(
+      session,
+      basisIteration,
+      promptState,
+      recommenderConfig.modelRef,
+      allowedPrompts,
+    );
   } else {
     try {
       payload = await callRecommenderJson(promptRequest.systemPrompt, promptRequest.userPrompt, {
@@ -1839,8 +1872,7 @@ async function generateRecommendation(session, options = {}) {
       normalized = recovery.normalized;
     } catch (fallbackError) {
       const isCompactApplyMismatch =
-        !fallbackError.rawText &&
-        /expected 1 exact (anchor|match)/i.test(String(fallbackError.message || ''));
+        !fallbackError.rawText && /expected 1 exact (anchor|match)/i.test(String(fallbackError.message || ''));
       let strictRetryRecovered = false;
 
       if (isCompactApplyMismatch) {
@@ -1959,21 +1991,17 @@ async function generateRecommendation(session, options = {}) {
     recoveryApplied: artifact.recovery.applied,
     appliedToWorkingDir: false,
     evaluationIteration: null,
-      accepted: null,
-      artifactPath: recommendationFile(session.sessionId, artifact.id),
-      summary: artifact.summary,
-      validationPassed: validation.invalid.length === 0,
-    });
+    accepted: null,
+    artifactPath: recommendationFile(session.sessionId, artifact.id),
+    summary: artifact.summary,
+    validationPassed: validation.invalid.length === 0,
+  });
 
   if (validation.invalid.length > 0) {
-    const details = validation.invalid
-      .map((item) => `${item.filename}: ${item.issues.join('; ')}`)
-      .join(' | ');
+    const details = validation.invalid.map((item) => `${item.filename}: ${item.issues.join('; ')}`).join(' | ');
     saveSession(session);
     const recoveryDetail =
-      recovery.changed && recovery.notes.length > 0
-        ? ` Recovery attempted: ${recovery.notes.join(' | ')}.`
-        : '';
+      recovery.changed && recovery.notes.length > 0 ? ` Recovery attempted: ${recovery.notes.join(' | ')}.` : '';
     throw new Error(
       `Recommendation ${artifact.id} failed prompt validation and was not applied: ${details}.${recoveryDetail} Artifact: ${recommendationFile(session.sessionId, artifact.id)}`,
     );
@@ -2136,17 +2164,12 @@ function printIterationTable(session) {
           ? `${(summary.latencyMs / 1000).toFixed(1)}s`
           : `${summary.latencyMs}ms`;
     const score = summary.primaryScore == null ? '--' : summary.primaryScore.toFixed(1);
-    const deltaPrev =
-      run.comparison?.deltaVsPrevious == null ? '--' : formatDelta(run.comparison.deltaVsPrevious);
-    const deltaBest =
-      run.comparison?.deltaVsBestBefore == null ? '--' : formatDelta(run.comparison.deltaVsBestBefore);
+    const deltaPrev = run.comparison?.deltaVsPrevious == null ? '--' : formatDelta(run.comparison.deltaVsPrevious);
+    const deltaBest = run.comparison?.deltaVsBestBefore == null ? '--' : formatDelta(run.comparison.deltaVsBestBefore);
     const source = run.origin === 'autotune' ? 'A' : run.origin === 'baseline' ? 'B' : 'M';
     const mode = run.dryRun ? 'mock' : 'live';
     const keep = run.accepted == null ? '--' : run.accepted ? 'yes' : run.revertedToIteration ? 'revert' : 'no';
-    const n =
-      summary.totalRuns != null
-        ? `${summary.scoredRuns ?? summary.totalRuns}/${summary.totalRuns}`
-        : '--';
+    const n = summary.totalRuns != null ? `${summary.scoredRuns ?? summary.totalRuns}/${summary.totalRuns}` : '--';
     console.log(
       `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${n.padStart(6)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
     );
@@ -2161,7 +2184,9 @@ function printRecommendationTable(session) {
   }
 
   console.log('\nRecommendations:');
-  console.log('  ID                          Basis  Scope    Files                          Valid  Repair  Applied  Eval  Accepted');
+  console.log(
+    '  ID                          Basis  Scope    Files                          Valid  Repair  Applied  Eval  Accepted',
+  );
   console.log('  ' + '─'.repeat(124));
   for (const item of items) {
     const files = (item.changedFiles || []).join(', ') || 'none';
@@ -2246,7 +2271,10 @@ async function runSessionIteration(session, options = {}) {
 
   const history = session.iterations || [];
   const iteration = history.length + 1;
-  const snapshotDir = path.join(snapshotsDir(session.sessionId), `${String(iteration).padStart(3, '0')}-${timestampTag()}`);
+  const snapshotDir = path.join(
+    snapshotsDir(session.sessionId),
+    `${String(iteration).padStart(3, '0')}-${timestampTag()}`,
+  );
   const snapshotPromptDir = path.join(snapshotDir, 'prompts');
 
   ensureDir(snapshotPromptDir);
@@ -2294,7 +2322,9 @@ async function runSessionIteration(session, options = {}) {
   console.log(`  Parallelism: ${parallelism}`);
   console.log(`  Prompt override dir: ${session.promptDir}`);
   console.log(`  Prompt files: ${session.promptFiles.map((prompt) => prompt.filename).join(', ')}`);
-  console.log('  Note: eval-cli may still print its generic factorial banner; prompt-lab is running one fixed profile/scenario here.');
+  console.log(
+    '  Note: eval-cli may still print its generic factorial banner; prompt-lab is running one fixed profile/scenario here.',
+  );
   console.log('  Launching eval-cli...\n');
   const childEnv = { ...process.env, [PROMPTS_ENV]: session.promptDir };
   const { code, stdout, stderr } = await runChildProcess('node', childArgs, { cwd: ROOT, env: childEnv });
@@ -2365,7 +2395,9 @@ async function runSessionIteration(session, options = {}) {
   console.log('\nIteration summary');
   console.log(`  Run ID: ${runId}`);
   if (useRubric) console.log(`  Judge: ${formatJudgeSelection(judgeSelection)}`);
-  console.log(`  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`);
+  console.log(
+    `  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`,
+  );
   if (summary.totalRuns > 1) {
     console.log(`  Replications: ${summary.scoredRuns}/${summary.totalRuns} scored`);
   }
@@ -2443,7 +2475,10 @@ async function handleInit() {
     judgeCliModel: judgeSelection.judgeCliModel,
     judgeSource: inferJudgeSourceFromCliArgs(),
     parallelism: parseInt(getOption('parallelism', '1'), 10),
-    runsPerIteration: parsePositiveIntOption(getOption('runs', String(DEFAULT_RUNS_PER_ITERATION)), DEFAULT_RUNS_PER_ITERATION),
+    runsPerIteration: parsePositiveIntOption(
+      getOption('runs', String(DEFAULT_RUNS_PER_ITERATION)),
+      DEFAULT_RUNS_PER_ITERATION,
+    ),
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
     resolvedTutorProfileName: blueprint.resolvedTutorProfileName,
@@ -2464,7 +2499,9 @@ async function handleInit() {
 async function handleFork() {
   const sourceSession = loadSession(resolveSessionId());
   const fromSpec = getOption('from', 'current');
-  const resolvedIteration = ['current', 'baseline'].includes(fromSpec) ? null : resolveIterationSpec(sourceSession, fromSpec);
+  const resolvedIteration = ['current', 'baseline'].includes(fromSpec)
+    ? null
+    : resolveIterationSpec(sourceSession, fromSpec);
   const defaultForkName = slugify(`${sourceSession.sessionId}-${fromSpec}-${timestampTag()}`);
   const sessionId = getOption('new-session', defaultForkName);
   const force = hasFlag('force');
@@ -2599,19 +2636,22 @@ async function handleAutotune() {
   );
 
   console.log('');
-  printAutotuneSessionSummary({ ...session, runsPerIteration }, {
-    rounds,
-    basisMode,
-    recommenderLabel: resolveRecommenderConfig({
-      modelRefOverride: recommenderRef,
-      cliOverride: recommenderCli,
-      cliModelOverride: recommenderCliModel,
-    }).modelRef,
-    keepWorse,
-    dryRun,
-    targetScope,
-    judgeSelection,
-  });
+  printAutotuneSessionSummary(
+    { ...session, runsPerIteration },
+    {
+      rounds,
+      basisMode,
+      recommenderLabel: resolveRecommenderConfig({
+        modelRefOverride: recommenderRef,
+        cliOverride: recommenderCli,
+        cliModelOverride: recommenderCliModel,
+      }).modelRef,
+      keepWorse,
+      dryRun,
+      targetScope,
+      judgeSelection,
+    },
+  );
 
   if (!getBestScoredIteration(session)) {
     console.log('\nNo scored baseline iteration found. Running a baseline iteration first.\n');
@@ -2648,11 +2688,13 @@ async function handleAutotune() {
     console.log(`  Basis iteration: ${basisIteration.iteration} (${basisIteration.summary?.primaryScore ?? 'n/a'})`);
     console.log('  Step 1/4: Request prompt recommendation');
     console.log(
-      `    Recommender: ${resolveRecommenderConfig({
-        modelRefOverride: recommenderRef,
-        cliOverride: recommenderCli,
-        cliModelOverride: recommenderCliModel,
-      }).modelRef}`,
+      `    Recommender: ${
+        resolveRecommenderConfig({
+          modelRefOverride: recommenderRef,
+          cliOverride: recommenderCli,
+          cliModelOverride: recommenderCliModel,
+        }).modelRef
+      }`,
     );
     console.log(`    Basis run: ${basisIteration.runId}`);
     const recommendationStartedAt = Date.now();
@@ -2680,7 +2722,9 @@ async function handleAutotune() {
     console.log('  Step 2/4: Apply candidate prompt updates');
     applyRecommendationToWorkingPrompts(refreshed, artifact);
     saveSession(refreshed);
-    console.log(`    Applied ${artifact.changedFiles?.length || artifact.promptUpdates?.length || 0} file(s) to ${refreshed.promptDir}`);
+    console.log(
+      `    Applied ${artifact.changedFiles?.length || artifact.promptUpdates?.length || 0} file(s) to ${refreshed.promptDir}`,
+    );
 
     const bestBefore = getBestScoredIteration(refreshed);
     console.log('  Step 3/4: Run benchmark iteration');
@@ -2705,7 +2749,8 @@ async function handleAutotune() {
     const latestEntry = getIterationByNumber(latestSession, entry.iteration);
     const accepted =
       latestEntry?.summary?.primaryScore != null &&
-      (bestBefore?.summary?.primaryScore == null || latestEntry.summary.primaryScore >= bestBefore.summary.primaryScore);
+      (bestBefore?.summary?.primaryScore == null ||
+        latestEntry.summary.primaryScore >= bestBefore.summary.primaryScore);
 
     if (latestEntry) {
       latestEntry.accepted = accepted;
@@ -2732,7 +2777,9 @@ async function handleAutotune() {
       console.log('    Candidate score: n/a');
     }
     if (bestBefore?.summary?.primaryScore != null) {
-      console.log(`    Best prior score: ${bestBefore.summary.primaryScore.toFixed(1)} (iteration ${bestBefore.iteration})`);
+      console.log(
+        `    Best prior score: ${bestBefore.summary.primaryScore.toFixed(1)} (iteration ${bestBefore.iteration})`,
+      );
     }
     if (!accepted && !keepWorse && bestBefore) {
       const bestDir = path.join(bestBefore.snapshotDir, 'prompts');

@@ -323,7 +323,9 @@ function main() {
         console.log(`  Total edges: ${edgeCount}`);
         console.log(`  Max depth: ${dg.max_depth || 0}`);
         if (blockedCount > 0) {
-          console.log(`  ${paint(`Blocked claims: ${blockedCount}`, useColor, ANSI.yellow)} (due to upstream failures)`);
+          console.log(
+            `  ${paint(`Blocked claims: ${blockedCount}`, useColor, ANSI.yellow)} (due to upstream failures)`,
+          );
         }
       }
     }

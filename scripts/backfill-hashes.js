@@ -16,13 +16,17 @@ if (!runId) {
 const db = new Database('data/evaluations.db');
 const logDir = 'logs/tutor-dialogues';
 
-const rows = db.prepare(`
+const rows = db
+  .prepare(
+    `
   SELECT id, dialogue_id, profile_name, provider, model, ego_model, superego_model,
          hyperparameters, factor_recognition, factor_multi_agent_tutor, factor_multi_agent_learner,
          learner_architecture, conversation_mode
   FROM evaluation_results
   WHERE run_id = ? AND (dialogue_content_hash IS NULL OR config_hash IS NULL)
-`).all(runId);
+`,
+  )
+  .all(runId);
 
 console.log(`Found ${rows.length} rows to backfill for ${runId}`);
 
@@ -50,7 +54,9 @@ const txn = db.transaction(() => {
       if (fs.existsSync(logPath)) {
         const content = fs.readFileSync(logPath, 'utf8');
         const parsed = JSON.parse(content);
-        contentHash = createHash('sha256').update(JSON.stringify(parsed, null, 2)).digest('hex');
+        contentHash = createHash('sha256')
+          .update(JSON.stringify(parsed, null, 2))
+          .digest('hex');
       }
     }
 
@@ -93,10 +99,16 @@ txn();
 console.log(`Backfilled: ${updated} rows updated, ${skipped} skipped (no log file)`);
 
 // Verify
-const check = db.prepare(`
+const check = db
+  .prepare(
+    `
   SELECT COUNT(*) as total, COUNT(dialogue_content_hash) as has_hash, COUNT(config_hash) as has_config
   FROM evaluation_results WHERE run_id = ?
-`).get(runId);
-console.log(`Verification: ${check.has_hash}/${check.total} content hashes, ${check.has_config}/${check.total} config hashes`);
+`,
+  )
+  .get(runId);
+console.log(
+  `Verification: ${check.has_hash}/${check.total} content hashes, ${check.has_config}/${check.total} config hashes`,
+);
 
 db.close();

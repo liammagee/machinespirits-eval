@@ -546,7 +546,9 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 {
   "scores": {
 ${Object.keys(dimensions)
-  .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+  .map(
+    (key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+  )
   .join(',\n')}
   },
   "validation": {
@@ -1586,7 +1588,10 @@ ${criteriaText}`;
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
 
   return `You are an expert evaluator of AI tutoring dialogues. Your task is to evaluate the TUTOR's quality ACROSS THE ENTIRE DIALOGUE as a holistic trajectory, independent of individual turn quality.
@@ -2354,7 +2359,10 @@ ${criteriaText}`;
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
 
   return `You are an expert evaluator of pedagogical dialogues. Your task is to evaluate the OVERALL QUALITY OF THE INTERACTION — not just the tutor or the learner individually, but the emergent quality of their exchange as a pedagogical encounter.
@@ -2540,7 +2548,10 @@ ${criteriaText}`;
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the TUTOR's internal ego/superego deliberation process — NOT the quality of the tutor's output (which is scored separately).
@@ -2639,7 +2650,10 @@ ${criteriaText}`;
 
   const dimKeys = Object.keys(dimensions);
   const exampleScores = dimKeys
-    .map((key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`)
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
     .join(',\n');
 
   return `You are an expert evaluator of multi-agent AI architectures. Your task is to evaluate the quality of the LEARNER's internal ego/superego deliberation process — NOT the quality of the learner's output (which is scored separately).
@@ -2766,7 +2780,10 @@ ${JSON.stringify(sanitizeEvaluationValue(suggestion), null, 2)}
   const exampleTurn = {
     turn_index: 0,
     scores: Object.fromEntries(
-      Object.entries(dimensions).map(([key]) => [key, { score: 0, reasoning: 'TODO: replace with your 1-5 score and rationale' }]),
+      Object.entries(dimensions).map(([key]) => [
+        key,
+        { score: 0, reasoning: 'TODO: replace with your 1-5 score and rationale' },
+      ]),
     ),
     validation: { passes_required: true, required_missing: [], passes_forbidden: true, forbidden_found: [] },
     overall_score: 82,

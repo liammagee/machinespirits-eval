@@ -272,7 +272,9 @@ function filterRunsForDeletion(runs, filters = {}) {
       if (!desc.includes(descriptionContains.toLowerCase())) return false;
     }
 
-    const allProfiles = [...new Set([...(run.profileNames || []), ...((run.metadata?.profileNames || []).filter(Boolean))])];
+    const allProfiles = [
+      ...new Set([...(run.profileNames || []), ...(run.metadata?.profileNames || []).filter(Boolean)]),
+    ];
     if (!matchesTextFilter(allProfiles, profileFilters)) return false;
 
     const scenarioIds = [...new Set((run.metadata?.scenarioIds || []).filter(Boolean))];
@@ -1661,7 +1663,9 @@ async function main() {
           console.log(`Cluster filter: ${clusterOpt}\n`);
         }
         const runStartTime = new Date();
-        console.log(`Starting evaluation run at ${runStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})...\n`);
+        console.log(
+          `Starting evaluation run at ${runStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})...\n`,
+        );
         const result = await evaluationRunner.runEvaluation({
           scenarios,
           configurations,
@@ -1716,7 +1720,9 @@ async function main() {
             console.log('\n' + '='.repeat(80));
             console.log('  TOKEN & COST SUMMARY');
             console.log('='.repeat(80));
-            console.log(`  Finished:  ${runEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+            console.log(
+              `  Finished:  ${runEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+            );
             console.log(`  Duration:  ${((runEndTime - runStartTime) / 1000 / 60).toFixed(1)} min`);
 
             // Per-result breakdown
@@ -2613,7 +2619,9 @@ async function main() {
 
         const rejudgeStartTime = new Date();
         console.log(`\nRejudging run: ${runId}`);
-        console.log(`  Started:   ${rejudgeStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(
+          `  Started:   ${rejudgeStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+        );
         if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
         if (judgeCli) console.log(`  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}`);
         if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
@@ -2642,7 +2650,9 @@ async function main() {
         console.log('  REJUDGE SUMMARY');
         console.log('='.repeat(60));
         console.log(`  Run:       ${summary.runId}`);
-        console.log(`  Finished:  ${rejudgeEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(
+          `  Finished:  ${rejudgeEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+        );
         console.log(`  Duration:  ${((rejudgeEndTime - rejudgeStartTime) / 1000 / 60).toFixed(1)} min`);
         console.log(`  Total:     ${summary.total}`);
         console.log(`  Succeeded: ${summary.succeeded}`);
@@ -2655,7 +2665,9 @@ async function main() {
         }
         if (summary.usage && summary.usage.calls > 0) {
           console.log(`  API calls: ${summary.usage.calls}`);
-          console.log(`  Tokens:    ${summary.usage.inputTokens.toLocaleString()} in / ${summary.usage.outputTokens.toLocaleString()} out (${(summary.usage.inputTokens + summary.usage.outputTokens).toLocaleString()} total)`);
+          console.log(
+            `  Tokens:    ${summary.usage.inputTokens.toLocaleString()} in / ${summary.usage.outputTokens.toLocaleString()} out (${(summary.usage.inputTokens + summary.usage.outputTokens).toLocaleString()} total)`,
+          );
           if (summary.usage.cost > 0) {
             console.log(`  Cost:      $${summary.usage.cost.toFixed(4)}`);
           }
@@ -3789,12 +3801,16 @@ async function main() {
           }
           if (needsTutorFallback || missingTutorTurns.length > 0) {
             if (!needsTutorFallback && missingTutorTurns.length > 0) {
-              console.log(`${tag}   tutor-batch partial: got ${Object.keys(tutorTurnScores).length}/${totalTurns} turns, filling gaps [${missingTutorTurns.join(',')}]`);
+              console.log(
+                `${tag}   tutor-batch partial: got ${Object.keys(tutorTurnScores).length}/${totalTurns} turns, filling gaps [${missingTutorTurns.join(',')}]`,
+              );
             } else {
               console.log(`${tag}   tutor-batch fallback: retrying ${totalTurns} turns individually`);
             }
             const fallbackPromises = [];
-            for (const turnIndex of (needsTutorFallback ? Array.from({length: totalTurns}, (_, i) => i) : missingTutorTurns)) {
+            for (const turnIndex of needsTutorFallback
+              ? Array.from({ length: totalTurns }, (_, i) => i)
+              : missingTutorTurns) {
               fallbackPromises.push(
                 (async () => {
                   const turnTag = `${tag}   tutor-turn-${turnIndex}`;
@@ -3876,7 +3892,9 @@ async function main() {
           if (needsLearnerFallback || missingLearnerTurns.length > 0) {
             const targetsToRetry = needsLearnerFallback ? learnerTurnTargets : missingLearnerTurns;
             if (!needsLearnerFallback && missingLearnerTurns.length > 0) {
-              console.log(`${tag}   learner-batch partial: got ${Object.keys(learnerTurnScores).length}/${learnerTurnTargets.length} turns, filling gaps [${missingLearnerTurns.map(t => t.lt).join(',')}]`);
+              console.log(
+                `${tag}   learner-batch partial: got ${Object.keys(learnerTurnScores).length}/${learnerTurnTargets.length} turns, filling gaps [${missingLearnerTurns.map((t) => t.lt).join(',')}]`,
+              );
             } else {
               console.log(`${tag}   learner-batch fallback: retrying ${learnerTurnTargets.length} turns individually`);
             }
@@ -4035,7 +4053,9 @@ async function main() {
                   .join(','),
               );
               if (sigs.every((s) => s === sigs[0])) {
-                console.log(`${tag}   WARN: all ${learnerEntries.length} learner turns have identical scores — likely echoed example pattern; skipping learner storage`);
+                console.log(
+                  `${tag}   WARN: all ${learnerEntries.length} learner turns have identical scores — likely echoed example pattern; skipping learner storage`,
+                );
                 // Clear turn scores so they don't get stored
                 for (const k of Object.keys(learnerTurnScores)) delete learnerTurnScores[k];
               }
@@ -4218,7 +4238,9 @@ async function main() {
           console.log('\n' + '='.repeat(50));
           console.log('  EVALUATE SUMMARY');
           console.log('='.repeat(50));
-          console.log(`  Finished:  ${evalEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+          console.log(
+            `  Finished:  ${evalEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+          );
           if (evalStartTime) {
             console.log(`  Duration:  ${((evalEndTime - evalStartTime) / 1000 / 60).toFixed(1)} min`);
           }
@@ -4684,7 +4706,9 @@ async function main() {
 
           const evalStartTime = new Date();
           console.log(`\nEvaluating ${toEvaluate.length} result(s) for run: ${effectiveRunId}`);
-          console.log(`  Started:     ${evalStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+          console.log(
+            `  Started:     ${evalStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+          );
           if (singleTurn.length > 0) console.log(`  Single-turn: ${singleTurn.length}`);
           if (multiTurn.length > 0) console.log(`  Multi-turn:  ${multiTurn.length} (per-turn scoring)`);
           if (tutorOnly) console.log('  --tutor-only: skipping learner + dialogue scoring');
@@ -5134,7 +5158,9 @@ async function main() {
             )
             .filter(Boolean);
           const hasTemplateReasoning = reasonings.some((reasoning) => reasoning.includes('your assessment of'));
-          const hasTemplateSummary = String(parsed.summary || '').toLowerCase().includes('brief overall assessment');
+          const hasTemplateSummary = String(parsed.summary || '')
+            .toLowerCase()
+            .includes('brief overall assessment');
           const overall = Number(parsed.overall_score);
           const hasTemplateOverall = Number.isFinite(overall) && overall === 55;
 
@@ -5222,7 +5248,9 @@ async function main() {
 
         const learnerStartTime = new Date();
         console.log(`\nEvaluating learner turns for ${toEvaluate.length} dialogue(s) from run: ${runId}`);
-        console.log(`  Started:     ${learnerStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(
+          `  Started:     ${learnerStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+        );
         if (modelOverride) console.log(`  Model: ${modelOverride}`);
         if (parallelism > 1) console.log(`  Parallelism: ${parallelism}`);
         console.log('');
@@ -5473,7 +5501,9 @@ async function main() {
                 });
                 const allIdentical = signatures.every((s) => s === signatures[0]);
                 if (allIdentical) {
-                  console.log(`${tag} ${result.scenarioId} / ${profileName} ... SKIP: all ${turnEntries.length} turns produced identical scores (judge echoed example pattern)`);
+                  console.log(
+                    `${tag} ${result.scenarioId} / ${profileName} ... SKIP: all ${turnEntries.length} turns produced identical scores (judge echoed example pattern)`,
+                  );
                   return { ok: false };
                 }
               }
@@ -5600,7 +5630,9 @@ async function main() {
         console.log('\n' + '='.repeat(50));
         console.log('  EVALUATE-LEARNER SUMMARY');
         console.log('='.repeat(50));
-        console.log(`  Finished:  ${learnerEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(
+          `  Finished:  ${learnerEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+        );
         console.log(`  Duration:  ${((learnerEndTime - learnerStartTime) / 1000 / 60).toFixed(1)} min`);
         console.log(`  Total dialogues:  ${toEvaluate.length}`);
         console.log(`  Succeeded: ${succeeded}`);
@@ -5747,7 +5779,9 @@ async function main() {
 
         const dialogueStartTime = new Date();
         console.log(`\nEvaluating ${toEvaluate.length} multi-turn dialogue(s) for run: ${runId}`);
-        console.log(`  Started:   ${dialogueStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(
+          `  Started:   ${dialogueStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+        );
         if (modelOverride) console.log(`  Model: ${modelOverride}`);
         console.log('');
 
@@ -5972,7 +6006,9 @@ async function main() {
         console.log('\n' + '='.repeat(50));
         console.log('  EVALUATE-DIALOGUE SUMMARY');
         console.log('='.repeat(50));
-        console.log(`  Finished:  ${dialogueEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`);
+        console.log(
+          `  Finished:  ${dialogueEndTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
+        );
         console.log(`  Duration:  ${((dialogueEndTime - dialogueStartTime) / 1000 / 60).toFixed(1)} min`);
         console.log(`  Total:     ${toEvaluate.length}`);
         console.log(`  Succeeded: ${succeeded}`);

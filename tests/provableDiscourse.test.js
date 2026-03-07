@@ -1309,11 +1309,7 @@ test('conditional_delta with turn_level + rootDir: event detection only uses ver
 // ── Dependency graph tests ──────────────────────────────────────
 
 test('topologicalSort: linear chain A→B→C', () => {
-  const claims = [
-    { id: 'A' },
-    { id: 'B', depends_on: ['A'] },
-    { id: 'C', depends_on: ['B'] },
-  ];
+  const claims = [{ id: 'A' }, { id: 'B', depends_on: ['A'] }, { id: 'C', depends_on: ['B'] }];
   const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
   const result = topologicalSort(adjacency, inDegree, allIds);
 
@@ -1376,9 +1372,7 @@ test('buildDependencyGraph: cross_reference ref_claim creates implicit dependenc
 });
 
 test('buildDependencyGraph: unknown ref_claim is silently skipped', () => {
-  const claims = [
-    { id: 'orphan', evidence: { type: 'cross_reference', ref_claim: 'nonexistent' } },
-  ];
+  const claims = [{ id: 'orphan', evidence: { type: 'cross_reference', ref_claim: 'nonexistent' } }];
   const { adjacency, inDegree } = buildDependencyGraph(claims);
 
   // No edges, orphan has 0 in-degree
@@ -1393,15 +1387,21 @@ test('evaluateEvidence: cross_reference with claimResults checks target status',
     ['target.warn', { status: 'warn' }],
   ]);
 
-  const passResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.pass' }, null, { claimResults });
+  const passResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.pass' }, null, {
+    claimResults,
+  });
   assert.equal(passResult.value, 1);
   assert.equal(passResult.details.target_status, 'pass');
 
-  const failResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.fail' }, null, { claimResults });
+  const failResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.fail' }, null, {
+    claimResults,
+  });
   assert.equal(failResult.value, 0);
   assert.equal(failResult.details.target_status, 'fail');
 
-  const warnResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.warn' }, null, { claimResults });
+  const warnResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.warn' }, null, {
+    claimResults,
+  });
   assert.equal(warnResult.value, 1);
   assert.equal(warnResult.details.target_status, 'warn');
 });
@@ -1412,11 +1412,7 @@ test('evaluateEvidence: cross_reference without claimResults returns 1 (backward
 });
 
 test('topologicalSort: independent claims have stable ordering', () => {
-  const claims = [
-    { id: 'X' },
-    { id: 'Y' },
-    { id: 'Z' },
-  ];
+  const claims = [{ id: 'X' }, { id: 'Y' }, { id: 'Z' }];
   const { adjacency, inDegree, allIds } = buildDependencyGraph(claims);
   const result = topologicalSort(adjacency, inDegree, allIds);
 
@@ -1448,12 +1444,20 @@ test('evaluateEvidence: cross_reference to blocked target returns 0', () => {
   ]);
 
   // Blocked target → value 0 (cascade)
-  const blockedResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.blocked' }, null, { claimResults });
+  const blockedResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.blocked' }, null, {
+    claimResults,
+  });
   assert.equal(blockedResult.value, 0);
   assert.equal(blockedResult.details.target_status, 'blocked');
 
   // Clean warn (no blocked_by) → value 1 (still passes)
-  const cleanWarnResult = evaluateEvidence(null, null, { type: 'cross_reference', ref_claim: 'target.clean_warn' }, null, { claimResults });
+  const cleanWarnResult = evaluateEvidence(
+    null,
+    null,
+    { type: 'cross_reference', ref_claim: 'target.clean_warn' },
+    null,
+    { claimResults },
+  );
   assert.equal(cleanWarnResult.value, 1);
   assert.equal(cleanWarnResult.details.target_status, 'warn');
 });

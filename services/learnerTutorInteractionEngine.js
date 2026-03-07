@@ -321,9 +321,11 @@ Review the EGO's first impression. Is it too superficial? What's being avoided? 
     } else {
       roleContext += `
 
-${role === 'unified_learner'
-  ? 'Generate only what the learner would actually say out loud as an opening message about this topic.'
-  : "Generate this agent's internal voice as the learner approaches this topic for the first time."}`;
+${
+  role === 'unified_learner'
+    ? 'Generate only what the learner would actually say out loud as an opening message about this topic.'
+    : "Generate this agent's internal voice as the learner approaches this topic for the first time."
+}`;
     }
 
     const prompt = buildLearnerPrompt(agentConfig, persona, roleContext);
@@ -1154,7 +1156,10 @@ export async function generateLearnerResponse(options) {
       egoRevisionMsgHistory = [
         ...(learnerExternalHistory || []),
         ...learnerEgoInternalHistory,
-        { role: 'user', content: `Internal review feedback:\n${sanitizeLearnerReusableText(superegoResponse.content)}` },
+        {
+          role: 'user',
+          content: `Internal review feedback:\n${sanitizeLearnerReusableText(superegoResponse.content)}`,
+        },
       ];
     }
 
@@ -1204,9 +1209,10 @@ export async function generateLearnerResponse(options) {
       if (profileContext) {
         roleContext += `\n\n${profileContext}`;
       }
-      roleContext += role === 'unified_learner'
-        ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks.'
-        : '\n\nGenerate your internal reaction as this dimension of the learner\'s experience.';
+      roleContext +=
+        role === 'unified_learner'
+          ? '\n\nRespond with ONLY what the learner would actually say out loud next to the tutor (1-4 sentences). Do NOT include internal monologue, tags, meta-commentary, or <think> blocks.'
+          : "\n\nGenerate your internal reaction as this dimension of the learner's experience.";
 
       const systemPrompt = buildLearnerPrompt(agentConfig, persona, roleContext);
       const response = await callLLM(agentConfig, systemPrompt, "React to the tutor's message.", `learner_${role}`);
