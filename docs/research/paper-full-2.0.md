@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.6"
+version: "3.0.7"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1805,6 +1805,8 @@ Recognition theory as a design heuristic has clear scope conditions.
 
 The learner superego paradox is particularly instructive. Hegel's account of self-consciousness through formative activity (*Bildung*) predicts that internal self-critique should be productive---the slave's labor produces richer self-consciousness than the master's immediate gratification. Yet the learner's internal critic systematically degrades output quality. The resolution may lie in the distinction between Hegel's developmental timescale (self-consciousness emerges over extended engagement) and our evaluation window (3--5 turns): the learner's internal critique may be laying groundwork for understanding that does not manifest within the current measurement horizon. Alternatively, the architectural implementation may fail to capture what *Bildung* requires---genuine struggle rather than polish.
 
+**Prompt density as alternative explanation.** A skeptical reading of the results is that the recognition effect reflects not recognition *per se* but prompt density: the recognition prompt (~5,100 tokens) is substantially larger and more instruction-heavy than the baseline, so perhaps the effect is simply "more detailed prompts produce better output." Three lines of evidence argue against this reduction, though they do not fully eliminate it. First, the companion pilot study's **placebo control** (cells 15--18) used length-matched prompts containing pedagogical best practices but no recognition theory; recognition substantially outperformed the placebo, demonstrating that prompt length alone does not account for the effect (Paper 1.0, Section 6.2). Second, the **autotuning experiment** (Section 7.7) subjected both base and recognition prompts to automated optimization. If recognition were reducible to prompt density, optimization should converge the conditions; instead, the gap *widens* (from +18.6 to +31.3 points on DeepSeek), and the optimized base ceiling (~41--45) remains below the *unoptimized* recognition baseline (~48--55). Third, the **mediation analysis** (Section 6.1.7) shows that 42.4% of the first-turn recognition effect is mediated through question-asking frequency (Sobel $z = 8.46$, $p < .001$) --- a specific behavioral channel, not a generic prompt-compliance effect. Collectively, these results suggest that recognition operates through its *content* (intersubjective orientation toward the learner) rather than its *volume* (token count and instruction density). However, prompt content and prompt density are not fully separable: the recognition prompt is large *because* the intersubjective orientation requires detailed instructions. The strongest version of the alternative explanation --- that any sufficiently elaborate pedagogical prompt would match recognition --- remains untested, and the placebo control only partially addresses it because the placebo prompts, while length-matched, may not have been equally *specific* in their pedagogical guidance.
+
 ## 8. Limitations
 
 ### 8.1 Synthetic Learners
@@ -2570,6 +2572,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.7** (2026-03-07)
+:   **Prompt density defense**: Added "Prompt density as alternative explanation" paragraph to §7.8, consolidating three existing evidence lines against the reduction of recognition to prompt elaboration: (1) placebo control (Paper 1.0, length-matched prompts without recognition theory), (2) autotuning experiment (§7.7, gap widens under optimization), (3) mediation analysis (§6.1.7, 42.4% mediated through question-asking). Acknowledges the strongest version of the alternative remains untested: whether *any* equally specific pedagogical prompt would match recognition.
 
 **v3.0.6** (2026-03-07)
 :   **Engineered vs. discovered mechanism distinction**: Added paragraph to §8.4 explicitly addressing the circularity objection: the architecture was designed for observability, not to guarantee specific outcomes; three key findings were genuinely unpredicted (superego redundancy on strong models, adaptive responsiveness null, consistent 15--17% additivity deficit). Distinguishes "mechanisms of this system" from "mechanisms of AI tutoring in general."
