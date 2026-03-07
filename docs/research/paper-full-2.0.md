@@ -21,7 +21,7 @@ A companion pilot study established that recognition-enhanced prompts and multia
 
 We motivate three candidate mechanisms drawing on Hegel's recognition theory, each at a distinct architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique), and **adaptive responsiveness** (interaction-level turn-by-turn adaptation). To trace these mechanisms, we adapt process tracing---a methodology from comparative politics---for AI agent architectures, combining superego critique taxonomy, revision delta analysis, and trajectory analysis within a provable discourse framework that machine-verifies every mechanism claim against data.
 
-Testing the model on a $2 \times 2$ factorial (recognition $\times$ architecture) across three structurally different generation models (DeepSeek V3.2, N=146; Haiku 4.5, N=163; Gemini Flash, N=144), validated by three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4; 1,296 total scored rows, zero nulls), we find that **two of the three predicted mechanisms are supported and the third is conditionally supported**. Calibration is the strongest effect: recognition narrows within-response dimension variance (d=0.52--0.64), lifts the weakest dimensions most, and operates identically without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction and calibration interact through **universal substitution**---the superego provides +9--15 points under baseline but its marginal value diminishes under recognition, with a consistent 15--17% additivity deficit across all three models. However, the *residual architecture benefit* under recognition is model-dependent: near-zero on strong models but +12.3 points on Gemini Flash, where base quality is low enough that calibration alone cannot handle all failure modes. Adaptive responsiveness is **not a general mechanism**: formal tests on N=432 multi-turn dialogues (3--5 turns) find that no experimental factor modulates within-dialogue trajectories (all d $\leq$ 0.15, well-powered to detect d $\geq$ 0.27), replicated across all three judges. However, trajectory-specific scenarios (N=72, 8--10 turns) reveal a conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d=1.63, p<.001), with the recognition--baseline gap widening from +12 to +35 pts. M3 emerges as a **conditional property** of M1+M2 accumulating over sufficient turns in scenarios demanding sustained re-engagement, rather than a third independent mechanism. The three-mechanism model resolves to **two general mechanisms and one conditional emergent property**.
+Testing the model on a $2 \times 2$ factorial (recognition $\times$ architecture) across three structurally different generation models (DeepSeek V3.2, N=146; Haiku 4.5, N=163; Gemini Flash, N=144), validated by three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4; 1,296 total scored rows, zero nulls), we find that **two of the three predicted mechanisms are supported and the third is conditionally supported**. Calibration is the strongest effect: recognition narrows within-response dimension variance (d=0.52--0.64), lifts the weakest dimensions most, and operates identically without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction and calibration interact through **universal substitution**---the superego provides +9--15 points under baseline but its marginal value diminishes under recognition, with a consistent 15--17% additivity deficit across all three models. However, the *residual architecture benefit* under recognition is model-dependent: near-zero on strong models but +12.3 points on Gemini Flash, where base quality is low enough that calibration alone cannot handle all failure modes. Adaptive responsiveness is **not a general mechanism**: formal tests on N=432 multi-turn dialogues (3--5 turns) find that no experimental factor modulates within-dialogue trajectories (all d ≤ 0.15, well-powered to detect d ≥ 0.27), replicated across all three judges. However, trajectory-specific scenarios (N=72, 8--10 turns) reveal a conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d=1.63, p<.001), with the recognition--baseline gap widening from +12 to +35 pts. M3 emerges as a **conditional property** of M1+M2 accumulating over sufficient turns in scenarios demanding sustained re-engagement, rather than a third independent mechanism. The three-mechanism model resolves to **two general mechanisms and one conditional emergent property**.
 
 Both supported mechanisms operate on tutor production, and the tutor-learner asymmetry is itself model-dependent: on strong models, tutor $d \approx 1.85$ vs learner $d \approx 0.16$--$0.25$ ($7$--$12\times$ ratio); on a weaker model (Gemini Flash), the gap narrows dramatically (tutor $d \approx 1.87$, learner $d \approx 1.20$, ratio $1.6\times$), suggesting a generation-quality threshold below which recognition's tutor improvements also benefit learner engagement. A distinctive contribution is the evaluation apparatus itself---provable discourse infrastructure, four rubric iterations, test suite as analytical provenance---as a transferable methodology for mechanistic LLM evaluation. All findings concern tutor output quality as assessed by LLM judges interacting with synthetic learners; whether the supported mechanisms translate to human learning outcomes remains an open empirical question (Section 8.1).
 
@@ -61,11 +61,11 @@ This paper motivates three candidate mechanisms drawing on recognition theory an
 
 1. **Calibration** (prompt-level). Recognition prompts narrow the tutor's output distribution, producing more uniform quality rather than higher peaks. The pilot study found dimension variance reduction in 52/55 within-run comparisons (d=-0.47 to d=-1.00 depending on analysis scope), the single most reliable recognition signal. Calibration operates even without a superego, because it is a prompt-level constraint on the response space.
 
-2. **Error correction** (architecture-level). The superego functions as a structural feedback channel, but its effectiveness depends on the quality of the ego's initial output. The pilot study found a 35.9-point recognition $\times$ architecture interaction (Paper 1.0 Section 6.3). The mechanism data (Section 6.2, Section 6.4) reveals this as a **universal substitution** interaction: the superego provides substantial benefit under baseline conditions (+9--15 points), catching errors the ego cannot self-correct, but this benefit diminishes under recognition because calibration pre-empts the failures the superego would catch, with a consistent 15--17% additivity deficit across all three models. The substitution is *incomplete* on the weakest model: Gemini Flash retains a +12.3-point residual architecture benefit under recognition, because base quality is low enough that calibration alone cannot handle all failure modes (Section 6.4.1). The superego approval rate shifts dramatically under recognition (DeepSeek: 13%$\to$55%; Haiku: 52%$\to$66%), consistent with a calibrated ego producing fewer errors for the superego to correct.
+2. **Error correction** (architecture-level). The superego functions as a structural feedback channel, but its effectiveness depends on the quality of the ego's initial output. The pilot study found a 35.9-point recognition $\times$ architecture interaction (Paper 1.0 Section 6.3). The mechanism data (Section 6.2, Section 6.4) reveals this as a **universal substitution** interaction: the superego provides substantial benefit under baseline conditions (+9--15 points), catching errors the ego cannot self-correct, but this benefit diminishes under recognition because calibration pre-empts the failures the superego would catch, with a consistent 15--17% additivity deficit across all three models. The substitution is *incomplete* on the weakest model: Gemini Flash retains a +12.3-point residual architecture benefit under recognition, because base quality is low enough that calibration alone cannot handle all failure modes (Section 6.4.1). The superego approval rate shifts dramatically under recognition (DeepSeek: 13%→55%; Haiku: 52%→66%), consistent with a calibrated ego producing fewer errors for the superego to correct.
 
-3. **Adaptive responsiveness** (interaction-level, *predicted but not supported as a general mechanism*). In multi-turn conversations, both recognition and baseline tutors adapt substantially to learner signals (cross-turn adaptation magnitude AdaptΔ > 0.79). Formal tests on N=432 dialogues find that no experimental factor modulates within-dialogue trajectories: recognition d=0.03 on tutor slopes, all factors d $\leq$ 0.15, with the design well-powered to detect d $\geq$ 0.27 (Section 6.3). However, trajectory-specific scenarios (N=72, run ebcd6de0) reveal a *conditional* effect: in the 10-turn disengagement scenario --- which specifically demands sustained re-engagement --- recognition produces dramatically steeper improvement (d=1.63, p<.001), with the recognition--baseline gap widening from +12 pts at T0 to +35 pts at T8--T10. The two 8-turn scenarios show no slope differentiation (d $\leq$ 0.30). Adaptive responsiveness is better characterized as a *conditional emergent property* of calibration and error correction that manifests only when scenario demands and turn count provide sufficient runway.
+3. **Adaptive responsiveness** (interaction-level, *predicted but not supported as a general mechanism*). In multi-turn conversations, both recognition and baseline tutors adapt substantially to learner signals (cross-turn adaptation magnitude AdaptΔ > 0.79). Formal tests on N=432 dialogues find that no experimental factor modulates within-dialogue trajectories: recognition d=0.03 on tutor slopes, all factors d ≤ 0.15, with the design well-powered to detect d ≥ 0.27 (Section 6.3). However, trajectory-specific scenarios (N=72, run ebcd6de0) reveal a *conditional* effect: in the 10-turn disengagement scenario --- which specifically demands sustained re-engagement --- recognition produces dramatically steeper improvement (d=1.63, p<.001), with the recognition--baseline gap widening from +12 pts at T0 to +35 pts at T8--T10. The two 8-turn scenarios show no slope differentiation (d ≤ 0.30). Adaptive responsiveness is better characterized as a *conditional emergent property* of calibration and error correction that manifests only when scenario demands and turn count provide sufficient runway.
 
-The two supported mechanisms are separable: calibration is a prompt-level effect (operative from the first turn), error correction is an architecture-level effect (operative within each turn). They interact through universal substitution (overlapping targets, 15--17% additivity deficit across all three models), though with a model-dependent residual: the superego adds +12.3 points under recognition on Gemini Flash but near-zero on DeepSeek/Haiku. Within-dialogue trajectories are independent of both mechanisms (slopes do not depend on levels, d=0.03). Crucially, both supported mechanisms operate primarily on tutor *production* rather than learner *reception*---on strong generation models, recognition produces a tutor effect $7$--$12\times$ larger than its learner effect (tutor d $\approx$ 1.85, learner d $\approx$ 0.16--0.25). However, on a weaker model (Gemini Flash), the asymmetry narrows to $1.6\times$ (learner d $\approx$ 1.20), revealing that the recognition $\to$ learner pathway requires a minimum generation quality floor to observe (Section 6.5).
+The two supported mechanisms are separable: calibration is a prompt-level effect (operative from the first turn), error correction is an architecture-level effect (operative within each turn). They interact through universal substitution (overlapping targets, 15--17% additivity deficit across all three models), though with a model-dependent residual: the superego adds +12.3 points under recognition on Gemini Flash but near-zero on DeepSeek/Haiku. Within-dialogue trajectories are independent of both mechanisms (slopes do not depend on levels, d=0.03). Crucially, both supported mechanisms operate primarily on tutor *production* rather than learner *reception*---on strong generation models, recognition produces a tutor effect $7$--$12\times$ larger than its learner effect (tutor d ≈ 1.85, learner d ≈ 0.16--0.25). However, on a weaker model (Gemini Flash), the asymmetry narrows to $1.6\times$ (learner d ≈ 1.20), revealing that the recognition → learner pathway requires a minimum generation quality floor to observe (Section 6.5).
 
 ### Process tracing methodology
 
@@ -89,7 +89,7 @@ The contributions of this paper are:
 
 - Evidence that error correction and calibration interact through **universal substitution** (15--17% additivity deficit across all three models), with a model-dependent residual architecture benefit: near-zero on strong models but +12.3 points on Gemini Flash, where calibration alone cannot handle all failure modes (Section 6.2, Section 6.4)
 
-- Evidence that adaptive responsiveness is real (AdaptΔ > 0.79) but **not a general mechanism**: formal tests on N = 432 dialogues find d = 0.03 for recognition on tutor slopes and d $\leq$ 0.15 for all factors on all dimensions. However, trajectory-specific scenarios (N = 72) reveal a conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d = 1.63, p < .001) with the gap widening from +12 to +35 pts. M3 is a conditional emergent property of M1+M2 that manifests only under sustained re-engagement demands (Section 6.3)
+- Evidence that adaptive responsiveness is real (AdaptΔ > 0.79) but **not a general mechanism**: formal tests on N = 432 dialogues find d = 0.03 for recognition on tutor slopes and d ≤ 0.15 for all factors on all dimensions. However, trajectory-specific scenarios (N = 72) reveal a conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d = 1.63, p < .001) with the gap widening from +12 to +35 pts. M3 is a conditional emergent property of M1+M2 that manifests only under sustained re-engagement demands (Section 6.3)
 
 - A mechanistic explanation of the tutor-learner asymmetry as model-dependent: on strong models, both supported mechanisms operate on tutor production ($7$--$12\times$ tutor-to-learner ratio); on weaker models, improved tutoring also benefits learner engagement ($1.6\times$ ratio), revealing a generation-quality threshold
 
@@ -247,7 +247,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Key distinction.** Adaptive responsiveness requires *both* calibration (the prompt orients the tutor toward learner-specific signals) *and* error correction (the superego catches when the tutor is repeating itself). It is an emergent property of their interaction over time, not a third independent mechanism. This makes it the strongest test of the three-mechanism model: if calibration and error correction are genuinely operative, adaptive responsiveness should emerge in multi-turn settings without additional prompting.
 
-**Note on evidence status.** The Section 6 data **does not fully support** this prediction. In the main dataset (cells 80--87, N=432, 3--5 turn dialogues), no experimental factor modulates adaptation slopes: recognition d=0.03 on tutor slopes, architecture d=0.07, all dimensions d $\leq$ 0.15, with the design well-powered to detect d $\geq$ 0.27. Cross-judge validation confirms the null. However, trajectory-specific scenarios (N=72, run ebcd6de0, 8--10 turn dialogues) reveal a *conditional* effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d=1.63, p<.001), with the gap widening from +12 pts at T0 to +35 pts at T8--T10. The two 8-turn scenarios show no slope differentiation. This suggests M3 is a conditional emergent property of M1+M2 that manifests only when scenario demands (sustained re-engagement) and turn count (10+ turns) provide sufficient runway---consistent with the key distinction above. The three-mechanism model reduces to two general mechanisms and one conditional emergent property (Section 6.3).
+**Note on evidence status.** The Section 6 data **does not fully support** this prediction. In the main dataset (cells 80--87, N=432, 3--5 turn dialogues), no experimental factor modulates adaptation slopes: recognition d=0.03 on tutor slopes, architecture d=0.07, all dimensions d ≤ 0.15, with the design well-powered to detect d ≥ 0.27. Cross-judge validation confirms the null. However, trajectory-specific scenarios (N=72, run ebcd6de0, 8--10 turn dialogues) reveal a *conditional* effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d=1.63, p<.001), with the gap widening from +12 pts at T0 to +35 pts at T8--T10. The two 8-turn scenarios show no slope differentiation. This suggests M3 is a conditional emergent property of M1+M2 that manifests only when scenario demands (sustained re-engagement) and turn count (10+ turns) provide sufficient runway---consistent with the key distinction above. The three-mechanism model reduces to two general mechanisms and one conditional emergent property (Section 6.3).
 
 ### 3.3 The Mechanism Interaction Model
 
@@ -349,7 +349,7 @@ Every ego-superego exchange in every evaluation is logged with verbatim text, en
 |-------|-------------|
 | `agent` | Which agent produced this entry (`tutor`, `ego`, `superego`, `system`, `learner`, `learner_ego_initial`, `learner_superego`, `learner_ego_revision`) |
 | `action` | What the agent did (`context_input`, `generate`, `review`, `respond`, `finalize`, `pre_analyze`, `memory_cycle`) |
-| `from` / `to` | Direction of information flow (e.g., `ego` $\to$ `superego` $\to$ `ego`) |
+| `from` / `to` | Direction of information flow (e.g., `ego` → `superego` → `ego`) |
 | `round` | Deliberation round index (0-based) |
 | `suggestions` | The verbatim text produced at this step |
 | `latencyMs` | Wall-clock time for the LLM call |
@@ -365,9 +365,9 @@ The tutor trace records seven distinct steps per deliberation cycle:
 6. **`ego/finalize`** --- Final delivery to learner, end of deliberation loop
 7. **`system/memory_cycle`** --- Memory dynamics final pass
 
-For single-agent cells (no superego), the `disableSuperego` flag suppresses steps 2, 4, and 5, producing a three-step trace: `context_input` $\to$ `generate` $\to$ `finalize`. This flag is enforced at three architectural layers to prevent phantom superego calls: the `runDialogue()` option disables the deliberation loop, the `logApiCall()` function independently verifies superego absence from dialogue state, and the `traceToSteps()` projection uses a `superegoFollows` lookahead to correctly route ego output.
+For single-agent cells (no superego), the `disableSuperego` flag suppresses steps 2, 4, and 5, producing a three-step trace: `context_input` → `generate` → `finalize`. This flag is enforced at three architectural layers to prevent phantom superego calls: the `runDialogue()` option disables the deliberation loop, the `logApiCall()` function independently verifies superego absence from dialogue state, and the `traceToSteps()` projection uses a `superegoFollows` lookahead to correctly route ego output.
 
-The learner trace follows a symmetric structure: `learner_ego_initial/deliberation` $\to$ `learner_superego/deliberation` $\to$ `learner_ego_revision/deliberation` $\to$ `learner/final_output`, with the internal deliberation array returned alongside the external message.
+The learner trace follows a symmetric structure: `learner_ego_initial/deliberation` → `learner_superego/deliberation` → `learner_ego_revision/deliberation` → `learner/final_output`, with the internal deliberation array returned alongside the external message.
 
 ### 4.4 Provenance and Reproducibility
 
@@ -449,21 +449,21 @@ Paper 2.0 replaced this approach with a structured derivation process. A literat
 
 Three findings drove the redesign:
 
-1. **Structural conflation.** The v1.0 rubric conflated what the tutor *perceives* (learner state detection), what it *does* (pedagogical strategy), and what it *elicits* (learner reasoning). GuideEval's Perception$\to$Orchestration$\to$Elicitation (P$\to$O$\to$E) decomposition [@liu2025discerning] provided a principled separation, validated on 5,177 samples with 89--97% human-LLM agreement.
+1. **Structural conflation.** The v1.0 rubric conflated what the tutor *perceives* (learner state detection), what it *does* (pedagogical strategy), and what it *elicits* (learner reasoning). GuideEval's Perception→Orchestration→Elicitation (P→O→E) decomposition [@liu2025discerning] provided a principled separation, validated on 5,177 samples with 89--97% human-LLM agreement.
 
 2. **Empirical redundancy.** A dimension-by-dimension audit predicted high correlations among clusters of v1.0 dimensions (e.g., `relevance` + `personalization` + `memory_integration`; `productive_struggle` + `transformative_potential`). PCA on 1,584 per-turn observations supported this: PC1 explained 80.7% of variance across the 14 dimensions (KMO = 0.938), with a mean inter-dimension correlation of $r = 0.776$. The rubric measured fewer independent constructs than its 14 dimensions implied.
 
 3. **Missing constructs.** Every reviewed framework except our v1.0 rubric measured *content accuracy* (factual correctness). Additionally, `learner_growth` on the tutor rubric was architecturally unscorable---the judge could not see the learner's next turn.
 
-The redesign consolidated 14 tutor dimensions to 8 using the P$\to$O$\to$E decomposition, added `content_accuracy`, and removed `learner_growth`.
+The redesign consolidated 14 tutor dimensions to 8 using the P→O→E decomposition, added `content_accuracy`, and removed `learner_growth`.
 
-The learner rubric required a parallel restructuring. The v1.0 learner rubric (7 dimensions) suffered from three problems identified in the dimension audit: overlap among `question_quality`, `conceptual_engagement`, and `revision_signals` (all measuring "depth of intellectual engagement" from slightly different angles); a `persona_consistency` dimension (5% weight) that created a structural tension with `revision_signals` (showing genuine growth means departing from a frustrated or confused persona); and a `deliberation_depth` dimension that was only scorable for multi-agent learners, creating an architecture-dependent gap in the scoring instrument. The ICAP framework (Interactive$\to$Constructive$\to$Active$\to$Passive; [@chi2014icap]) provided a validated hierarchy for collapsing the overlapping engagement dimensions into a single `engagement_quality` construct with empirically grounded scoring anchors: level 1 (Passive) = paraphrases tutor, confirms understanding; level 3 (Active/Constructive) = generates own interpretations, makes connections; level 5 (Interactive) = co-constructs understanding, challenges tutor's framing. `persona_consistency` was removed (its core concern---does the learner feel real?---is captured by `learner_authenticity`), and `deliberation_depth` was moved to the dedicated deliberation rubric (Section 5.2.4). The resulting 5-dimension learner rubric maps to two validated frameworks: ICAP for engagement levels and T-SEDA's behavioral coding clusters [@hennessy2016tseda] for revision signals (B-cluster: Build on ideas) and conceptual progression (R-cluster: Make reasoning explicit).
+The learner rubric required a parallel restructuring. The v1.0 learner rubric (7 dimensions) suffered from three problems identified in the dimension audit: overlap among `question_quality`, `conceptual_engagement`, and `revision_signals` (all measuring "depth of intellectual engagement" from slightly different angles); a `persona_consistency` dimension (5% weight) that created a structural tension with `revision_signals` (showing genuine growth means departing from a frustrated or confused persona); and a `deliberation_depth` dimension that was only scorable for multi-agent learners, creating an architecture-dependent gap in the scoring instrument. The ICAP framework (Interactive→Constructive→Active→Passive; [@chi2014icap]) provided a validated hierarchy for collapsing the overlapping engagement dimensions into a single `engagement_quality` construct with empirically grounded scoring anchors: level 1 (Passive) = paraphrases tutor, confirms understanding; level 3 (Active/Constructive) = generates own interpretations, makes connections; level 5 (Interactive) = co-constructs understanding, challenges tutor's framing. `persona_consistency` was removed (its core concern---does the learner feel real?---is captured by `learner_authenticity`), and `deliberation_depth` was moved to the dedicated deliberation rubric (Section 5.2.4). The resulting 5-dimension learner rubric maps to two validated frameworks: ICAP for engagement levels and T-SEDA's behavioral coding clusters [@hennessy2016tseda] for revision signals (B-cluster: Build on ideas) and conceptual progression (R-cluster: Make reasoning explicit).
 
 The tutor holistic rubric was radically simplified from 6 to 3 dimensions after consistency analysis showed $r = 0.907$ between per-turn and holistic scores, indicating that most holistic signal was redundant with aggregated per-turn scoring. The three retained dimensions---pedagogical arc, adaptive trajectory, and pedagogical closure---capture exclusively arc-level properties that cannot be assessed from individual turns. Scale criteria across all instruments were redesigned following Yamauchi et al. [@yamauchi2025empirical]: only levels 1, 3, and 5 carry full descriptions, as intermediate-level descriptions have limited impact on LLM judges.
 
 #### 5.2.2 Tutor Per-Turn Rubric
 
-The evaluation rubric underwent four iterations (v1.0$\to$v2.0$\to$v2.1$\to$v2.2), each responding to empirical anomalies discovered during analysis (documented in Appendix E). The current v2.2 rubric consolidates 14 dimensions to 8, guided by the GuideEval P$\to$O$\to$E decomposition framework and the study's own empirical dimension clustering. The eight dimensions are:
+The evaluation rubric underwent four iterations (v1.0→v2.0→v2.1→v2.2), each responding to empirical anomalies discovered during analysis (documented in Appendix E). The current v2.2 rubric consolidates 14 dimensions to 8, guided by the GuideEval P→O→E decomposition framework and the study's own empirical dimension clustering. The eight dimensions are:
 
 | Category | Dimension | Weight | Mechanism Relevance |
 |----------|-----------|--------|---------------------|
@@ -476,7 +476,7 @@ The evaluation rubric underwent four iterations (v1.0$\to$v2.0$\to$v2.1$\to$v2.2
 | **Execution (E)** | `epistemic_integrity` | 10% | Error correction: intellectual honesty |
 | **Recognition** | `recognition_quality` | 15% | Calibration + error correction: intersubjective stance |
 
-The consolidation from 14$\to$8 dimensions was validated through synthetic calibration (r=0.996 against v2.1 scoring on identical responses), confirming that the reduced rubric preserves discriminability while eliminating ceiling-prone and redundant dimensions.
+The consolidation from 14→8 dimensions was validated through synthetic calibration (r=0.996 against v2.1 scoring on identical responses), confirming that the reduced rubric preserves discriminability while eliminating ceiling-prone and redundant dimensions.
 
 #### 5.2.3 Learner Per-Turn Rubric
 
@@ -515,7 +515,7 @@ Classify what the superego actually objects to, building an empirical taxonomy f
 
 #### Data Source
 
-Dialogue log files in `logs/tutor-dialogues/` contain the full ego$\to$superego$\to$ego_revised chain with verbatim text. An extraction script (`scripts/extract-superego-critiques.js`) harvests all superego review entries and learner superego deliberation entries into structured JSONL format.
+Dialogue log files in `logs/tutor-dialogues/` contain the full ego→superego→ego_revised chain with verbatim text. An extraction script (`scripts/extract-superego-critiques.js`) harvests all superego review entries and learner superego deliberation entries into structured JSONL format.
 
 #### Method
 
@@ -619,9 +619,9 @@ The rubric evolution itself constitutes evidence of construct refinement. Each v
 | v1.0 | Baseline design | 14 tutor dimensions, standard weights |
 | v2.0 | Truncation hallucination (31% of Haiku reasonings) | Anti-truncation instruction; modulation dims reweighted |
 | v2.1 | Architecture confound (internal deliberation visible to judge) | Public-only output scoring; separate deliberation rubric |
-| v2.2 | Dimension redundancy (ceiling on tone, overlap in struggle dims) | 14$\to$8 consolidation guided by GuideEval P$\to$O$\to$E and empirical clustering |
+| v2.2 | Dimension redundancy (ceiling on tone, overlap in struggle dims) | 14→8 consolidation guided by GuideEval P→O→E and empirical clustering |
 
-This iteration parallels the ego-superego dynamic: initial rubric (ego draft) $\to$ anomaly detection (superego critique) $\to$ revised rubric (substantive revision, not cosmetic).
+This iteration parallels the ego-superego dynamic: initial rubric (ego draft) → anomaly detection (superego critique) → revised rubric (substantive revision, not cosmetic).
 
 ---
 
@@ -700,8 +700,8 @@ Each adapter type encapsulates a specific data extraction pattern. The 18 types 
 | `manifest_total` | Total count from `paper-manifest.json` | N=4,312 primary scored |
 | `manifest_section_total` | Section-specific count from manifest | Multi-model probe N=655 |
 | `db_count` | Row count from evaluation database with filters | N=350 modulation dataset |
-| `provenance_check` | Hash match rate between DB and dialogue logs | $\geq$95% content hash match |
-| `log_trace_coverage` | Fraction of scored rows with available log files | $\geq$95% trace coverage |
+| `provenance_check` | Hash match rate between DB and dialogue logs | ≥95% content hash match |
+| `log_trace_coverage` | Fraction of scored rows with available log files | ≥95% trace coverage |
 
 **Effect estimation** (compute statistical quantities from data):
 
@@ -717,9 +717,9 @@ Each adapter type encapsulates a specific data extraction pattern. The 18 types 
 | Adapter | What It Extracts | Example |
 |---------|-----------------|---------|
 | `dimension_variance` | Cross-dimension variance reduction by condition | Calibration $d \leq -0.3$ |
-| `dimension_cluster_effect` | Effect size for dimension clusters | Recognition cluster d $\geq$ 0.50 |
-| `jsonl_critique_stats` | Superego critique category frequencies from classified corpus | RECOGNITION_FAILURE $\geq$15% |
-| `trajectory_slope` | Per-turn OLS regression coefficients | Learner slope $\beta$ $\geq$ 0 |
+| `dimension_cluster_effect` | Effect size for dimension clusters | Recognition cluster d ≥ 0.50 |
+| `jsonl_critique_stats` | Superego critique category frequencies from classified corpus | RECOGNITION_FAILURE ≥15% |
+| `trajectory_slope` | Per-turn OLS regression coefficients | Learner slope $\beta$ ≥ 0 |
 | `conditional_delta` | Score change after specific learner events | Post-confusion adaptation $\geq -1$ |
 | `rubric_version_comparison` | Cross-version score correlation | $r \geq -0.1$ (stability) |
 
@@ -727,18 +727,18 @@ Each adapter type encapsulates a specific data extraction pattern. The 18 types 
 
 | Adapter | What It Extracts | Example |
 |---------|-----------------|---------|
-| `code_path` | Grep count for patterns in source files | $\geq$5 matches for trace logging |
+| `code_path` | Grep count for patterns in source files | ≥5 matches for trace logging |
 | `cross_reference` | Existence check for a referenced upstream claim | Pilot d=1.11 claim exists |
 
 **Theoretical** (register non-machine-checkable claims for traceability):
 
 | Adapter | What It Extracts | Example |
 |---------|-----------------|---------|
-| `theoretical` | Presence of related provable claims in the ledger | Three mechanisms each have $\geq$1 provable claim |
+| `theoretical` | Presence of related provable claims in the ledger | Three mechanisms each have ≥1 provable claim |
 
 #### Worked Example: Tracing a Calibration Claim
 
-To illustrate the full claim$\to$evidence$\to$source chain, consider claim `paper2.calibration.variance_reduction`:
+To illustrate the full claim→evidence→source chain, consider claim `paper2.calibration.variance_reduction`:
 
 ```yaml
 - id: paper2.calibration.variance_reduction
@@ -877,7 +877,7 @@ The calibration effect is not uniform across dimensions. Table Y reports per-dim
 
 The two largest recognition lifts (+1.33, +1.18) occur on the two *weakest* baseline dimensions: `productive_difficulty` (scaffolding struggle rather than resolving it) and `elicitation_quality` (asking questions that deepen understanding). The smallest lifts (+0.53, +0.52) occur on the two *strongest* baseline dimensions: `content_accuracy` and `adaptive_responsiveness`. This is the calibration signature: recognition specifically improves where the tutor is worst, lifting the floor toward the ceiling rather than raising the ceiling further.
 
-At the response level, this floor-lifting translates to the elimination of catastrophic failures. DeepSeek base conditions produce responses as low as 5.4 (100-point scale); recognition conditions floor at 21.9 for single-agent and 24.0 for multi-agent configurations. The ceiling also rises modestly (52.5$\to$71.0 single, 60.6$\to$74.0 multi), but the floor shift is proportionally much larger.
+At the response level, this floor-lifting translates to the elimination of catastrophic failures. DeepSeek base conditions produce responses as low as 5.4 (100-point scale); recognition conditions floor at 21.9 for single-agent and 24.0 for multi-agent configurations. The ceiling also rises modestly (52.5→71.0 single, 60.6→74.0 multi), but the floor shift is proportionally much larger.
 
 ![Per-dimension mean scores under base and recognition conditions. Recognition lifts the weakest dimensions most, producing a floor-lifting pattern rather than uniform improvement.](figures/figure-dimension-lifting.png){#fig:dimension-lifting}
 
@@ -984,7 +984,7 @@ The cross-model scenario rank ordering is remarkably stable. Four of six scenari
 
 The calibration mechanism predictions from Section 3 are assessed as follows:
 
-**Prediction: Recognition narrows output distribution even without superego.** *Supported in both models.* Within-response dimension SD drops under recognition in single-agent conditions: DeepSeek 0.687$\to$0.509, Haiku 0.656$\to$0.497. The effect does not require the superego.
+**Prediction: Recognition narrows output distribution even without superego.** *Supported in both models.* Within-response dimension SD drops under recognition in single-agent conditions: DeepSeek 0.687→0.509, Haiku 0.656→0.497. The effect does not require the superego.
 
 **Null hypothesis: Recognition produces mean shift without variance reduction.** *Rejected.* Both mean shift and variance reduction are observed in both models. DeepSeek: +23.7-point mean shift, d=0.52 calibration. Haiku: +19.1-point mean shift, d=0.64 calibration. The effects are separable: mean shift is large under both architectures, while variance reduction is prompt-level.
 
@@ -1011,20 +1011,20 @@ The calibration effect has a concrete behavioral marker: question frequency. Cou
 
 Recognition tutors ask 5.4 times more questions than base tutors. The effect is largest on the weakest model: Gemini Flash base tutors ask essentially zero questions (0.03 per turn), defaulting entirely to directive instruction. Under recognition, all three models converge toward similar question rates (0.35--1.01), despite their divergent baselines --- paralleling the superego approval rate convergence reported in Section 6.2.
 
-The mechanism link is direct. The recognition prompt instructs the tutor to "engage with the learner's interpretation" and "pose questions rather than provide answers when appropriate." The question rate operationalizes these instructions: a tutor that asks questions is a tutor that creates space for the learner's contribution, which is the behavioral core of calibration. The rubric dimension `elicitation_quality` captures this indirectly (it shows the largest recognition floor-lift in both models, Table Y), but the raw question count provides a more concrete and independently measurable marker. Importantly, the question rate is flat across turns (slope $\approx$ 0 for both conditions), consistent with question-asking being a prompt-level (calibration) effect operative from the first turn, not an adaptive behavior that develops across the dialogue.
+The mechanism link is direct. The recognition prompt instructs the tutor to "engage with the learner's interpretation" and "pose questions rather than provide answers when appropriate." The question rate operationalizes these instructions: a tutor that asks questions is a tutor that creates space for the learner's contribution, which is the behavioral core of calibration. The rubric dimension `elicitation_quality` captures this indirectly (it shows the largest recognition floor-lift in both models, Table Y), but the raw question count provides a more concrete and independently measurable marker. Importantly, the question rate is flat across turns (slope ≈ 0 for both conditions), consistent with question-asking being a prompt-level (calibration) effect operative from the first turn, not an adaptive behavior that develops across the dialogue.
 
 Transcript excerpts illustrate the qualitative shift. A base tutor (DeepSeek V3.2, Mood: Frustration scenario, holistic score 0/100) opens: "You've hit 5 struggle signals on dialectic concepts. Revisiting Hegel's foundational ideas from the previous lecture will help clarify the master-servant dynamic." The tutor diagnoses, prescribes, and directs --- never asking what the learner finds difficult or what they understand. A recognition tutor on the same model (Productive Deadlock scenario, holistic score 77.5/100) engages differently: "The dialectic simulation lets you manipulate master/slave dynamics and watch *Bildung* emerge immanently. No safety, no control." The learner responds with a substantive philosophical question, and by Turn 4 asks, "does engaging with this reshape what *you* mean by materialism, too, or is the risk only mine?" --- a learner-initiated philosophical challenge that only arises when recognition-oriented prompting creates dialogical space.
 
 The contrast is most extreme on Gemini Flash. A base/single tutor (Epistemic Resistance scenario, holistic score 0/100) produces: "Since you've spent 30 minutes on 479-lecture-3 and are looking for 'discrete state-changes', test if Hegel's 'poetry' holds up as a formal agent-based system." The tutor paraphrases the learner's stated interests but responds with a directive rather than an inquiry. A recognition tutor on the same model and scenario (holistic score 19/100 --- still weak, but markedly better) opens with a framing that acknowledges the learner's philosophical stance and invites engagement rather than compliance. The difference between zero-quality and low-quality tutoring on a weak model is precisely the difference between monologue and dialogue --- and question-asking is the most reliable surface marker of that shift.
 
-**Mediation analysis.** A formal Baron-Kenny mediation test (N=432) asks whether question frequency *mediates* the recognition $\to$ quality pathway. The test decomposes the total recognition effect into a direct path (recognition $\to$ quality) and an indirect path (recognition $\to$ questions $\to$ quality):
+**Mediation analysis.** A formal Baron-Kenny mediation test (N=432) asks whether question frequency *mediates* the recognition → quality pathway. The test decomposes the total recognition effect into a direct path (recognition → quality) and an indirect path (recognition → questions → quality):
 
 | Path | Coefficient | SE | $t$ | $p$ |
 |---|---|---|---|---|
-| $c$ (total: recognition $\to$ T1 score) | 22.45 | 1.57 | 14.32 | $< .001$ |
-| $a$ (recognition $\to$ questions/turn) | 0.524 | 0.042 | 12.56 | $< .001$ |
-| $b$ (questions $\to$ T1 score $\mid$ recognition) | 18.15 | 1.59 | 11.43 | $< .001$ |
-| $c'$ (direct: recognition $\to$ T1 score $\mid$ questions) | 12.94 | 1.61 | 8.05 | $< .001$ |
+| $c$ (total: recognition → T1 score) | 22.45 | 1.57 | 14.32 | $< .001$ |
+| $a$ (recognition → questions/turn) | 0.524 | 0.042 | 12.56 | $< .001$ |
+| $b$ (questions → T1 score $\mid$ recognition) | 18.15 | 1.59 | 11.43 | $< .001$ |
+| $c'$ (direct: recognition → T1 score $\mid$ questions) | 12.94 | 1.61 | 8.05 | $< .001$ |
 
 The indirect effect ($a \times b = 9.52$) accounts for **42.4%** of the total recognition effect on first-turn quality (Sobel $z = 8.46$, $p < .001$). Adding question frequency as a mediator increases $R^2$ from 0.323 to 0.481 ($\Delta R^2 = +0.158$). The mediation is partial: recognition also operates through other calibration channels (vocabulary, tone, specificity) beyond question-asking.
 
@@ -1032,7 +1032,7 @@ The mediation pattern is model-dependent: DeepSeek shows the weakest mediation (
 
 ### 6.2 Error Correction
 
-Section 3 predicted that multi-agent architecture enables an *error correction* mechanism: the superego critiques the ego's output, catching pedagogical failures that the ego alone would miss. Section 6.1 showed that this mechanism's contribution collapses under recognition (DeepSeek: architecture delta +9.0$\to$+0.2; Haiku: +15.0$\to$-0.7). This section traces the error correction process itself: what the superego catches, how the ego responds, and why the mechanism becomes redundant under recognition.
+Section 3 predicted that multi-agent architecture enables an *error correction* mechanism: the superego critiques the ego's output, catching pedagogical failures that the ego alone would miss. Section 6.1 showed that this mechanism's contribution collapses under recognition (DeepSeek: architecture delta +9.0→+0.2; Haiku: +15.0→-0.7). This section traces the error correction process itself: what the superego catches, how the ego responds, and why the mechanism becomes redundant under recognition.
 
 #### 6.2.1 The Superego's Approval Rate Under Recognition
 
@@ -1069,11 +1069,11 @@ When the superego rejects the ego's output, what errors does it identify? We cat
 | STRUGGLE_PRESERVATION | 5.2% | 9.3% | 8.2% | 7.6% |
 | EMOTIONAL_ATTENTION | 3.1% | 5.0% | 7.6% | 3.5% |
 
-Three patterns emerge. First, the *total volume* of critiques drops dramatically under recognition: DeepSeek produces 69% fewer critique mentions (975$\to$302), Haiku 33% fewer (550$\to$368). Calibration eliminates the majority of errors before the superego sees them.
+Three patterns emerge. First, the *total volume* of critiques drops dramatically under recognition: DeepSeek produces 69% fewer critique mentions (975→302), Haiku 33% fewer (550→368). Calibration eliminates the majority of errors before the superego sees them.
 
 Second, the *composition* of remaining critiques shifts. Under base, the superego catches a broad mix of failures --- vagueness (15.6%), elicitation quality (16.2%), recognition failure (29.3%), and context awareness (18.4%). Under recognition, the "easy" errors (vagueness, elicitation, content accuracy) shrink to under 10%, while the remaining critiques concentrate on context awareness (31.8%) and recognition failure (30.1%). The recognition prompt handles the pedagogical basics; what remains are the harder, more context-dependent failures that require attending to the specific learner's history and trajectory.
 
-Third, the *struggle preservation* category increases proportionally under recognition (DeepSeek: 5.2%$\to$9.3%), despite its absolute count dropping. This suggests that recognition prompts, while effective at ensuring the tutor engages with the learner, can over-engage --- giving too much scaffolding rather than maintaining productive difficulty. The superego's residual value lies partly in enforcing struggle even when the ego's recognition-enhanced response is otherwise adequate.
+Third, the *struggle preservation* category increases proportionally under recognition (DeepSeek: 5.2%→9.3%), despite its absolute count dropping. This suggests that recognition prompts, while effective at ensuring the tutor engages with the learner, can over-engage --- giving too much scaffolding rather than maintaining productive difficulty. The superego's residual value lies partly in enforcing struggle even when the ego's recognition-enhanced response is otherwise adequate.
 
 ![Qualitative tag divergence between base and recognition conditions. Recognition-dominant tags (green) show increased productive impasse, recognition moments, and strategy shifts; base-dominant tags (red) show more premature learner breakthroughs and missed scaffolding.](figures/figure-qualitative-tags.png){#fig:qualitative-tags}
 
@@ -1083,14 +1083,14 @@ The three-model breakdown confirms this pattern generalizes. Gemini Flash shows 
 
 #### 6.2.3 Critique Resolution Across Deliberation Rounds
 
-The 10-category taxonomy enables a transition analysis: when the superego critiques the ego's output in Round 1, does the ego fix the problem in Round 2? We tracked 232 Round 1$\to$Round 2 transition pairs across 56 dialogues.
+The 10-category taxonomy enables a transition analysis: when the superego critiques the ego's output in Round 1, does the ego fix the problem in Round 2? We tracked 232 Round 1→Round 2 transition pairs across 56 dialogues.
 
 | Pattern | Base (N=57) | Recognition (N=175) |
 |---|---|---|
-| Persist critique (R1 crit $\to$ R2 crit) | 35 (61.4%) | 13 (7.4%) |
-| Resolve to approval (R1 crit $\to$ R2 ok) | 4 (7.0%) | 63 (36.0%) |
-| New critique (R1 ok $\to$ R2 crit) | 16 (28.1%) | 33 (18.9%) |
-| Stay approved (R1 ok $\to$ R2 ok) | 2 (3.5%) | 66 (37.7%) |
+| Persist critique (R1 crit → R2 crit) | 35 (61.4%) | 13 (7.4%) |
+| Resolve to approval (R1 crit → R2 ok) | 4 (7.0%) | 63 (36.0%) |
+| New critique (R1 ok → R2 crit) | 16 (28.1%) | 33 (18.9%) |
+| Stay approved (R1 ok → R2 ok) | 2 (3.5%) | 66 (37.7%) |
 
 The pattern is dramatic. Under baseline, the ego fails to resolve 61.4% of critiques --- the superego identifies the same problem across rounds, and the ego cannot fix it. Only 7.0% of baseline critiques resolve to approval. Under recognition, the pattern inverts: 36.0% of critiques resolve and only 7.4% persist. The recognition-enhanced ego is not merely exposed to critique; it is *receptive* to it.
 
@@ -1122,15 +1122,15 @@ Despite the shift toward approval, when the superego does intervene, the revisio
 
 | | DeepSeek V3.2 | Haiku 4.5 |
 |---|---|---|
-| Base RevΔ | 0.901 $\pm$ 0.086 | 0.917 $\pm$ --- |
-| Recognition RevΔ | 0.869 $\pm$ 0.130 | 0.851 $\pm$ --- |
+| Base RevΔ | 0.901 ± 0.086 | 0.917 ± --- |
+| Recognition RevΔ | 0.869 ± 0.130 | 0.851 ± --- |
 | Delta | -0.032 | -0.066 |
 
 RevΔ values above 0.85 indicate near-complete rewrites --- the ego does not make minor edits in response to superego feedback; it generates substantially new output. This is true under both conditions, though recognition shows a slight decrease (-0.032 DeepSeek, -0.066 Haiku). The high RevΔ suggests that when the superego does reject, the ego takes the feedback seriously rather than making cosmetic changes.
 
 **Revision depth by critique category.** Word-level Jaccard similarity between the ego's initial generation and revised output (N=216 non-approval critiques with both texts) reveals that revision depth varies by what the superego catches. LACK\_OF\_AGENCY critiques produce the deepest revisions (mean Jaccard 0.132 --- nearly complete rewrites), followed by REDIRECTION (0.157) and EMOTIONAL\_NEGLECT (0.192). CONTEXT\_BLINDNESS produces the shallowest (0.613 --- minor adjustments), consistent with the design document's prediction that factual corrections require less restructuring than pedagogical reconceptualization. Under base conditions, 78% of revisions are substantive or strategic (Jaccard $< 0.25$); under recognition, this drops to 57%, because recognition critiques increasingly target easier problems (memory failures, fabrication) rather than the deep pedagogical failures that dominate baseline.
 
-The combination of high RevΔ but low deliberation quality under recognition presents an apparent paradox: the revisions are extensive but the deliberation process is poor. The resolution is that under recognition, the superego's critiques are less substantive (as shown by the approval rate and critique taxonomy), and the ego responds to even thin feedback with substantial rewrites. The ego is *compliant* with the superego regardless of critique quality --- it rewrites extensively whether the feedback is deep or shallow. This compliance mechanism explains why error correction works under base (substantive critique $\to$ substantive revision) but adds little under recognition (thin critique $\to$ extensive but unnecessary revision).
+The combination of high RevΔ but low deliberation quality under recognition presents an apparent paradox: the revisions are extensive but the deliberation process is poor. The resolution is that under recognition, the superego's critiques are less substantive (as shown by the approval rate and critique taxonomy), and the ego responds to even thin feedback with substantial rewrites. The ego is *compliant* with the superego regardless of critique quality --- it rewrites extensively whether the feedback is deep or shallow. This compliance mechanism explains why error correction works under base (substantive critique → substantive revision) but adds little under recognition (thin critique → extensive but unnecessary revision).
 
 #### 6.2.6 Cross-Model Comparison
 
@@ -1202,9 +1202,9 @@ Pooling across all three generation models (N=432), the learner architecture dim
 
 The expanded trajectory analysis (N=432, three generation models, Sonnet judge) provides formal hypothesis tests on per-turn slopes computed via OLS regression across 4--6 turn dialogues.
 
-**H1: Recognition $\to$ steeper tutor slopes.** Not supported. Recognition tutor slope = 1.45 $\pm$ 5.50, baseline = 1.32 $\pm$ 4.93, d = 0.03, t(425) = 0.27, p > .05. The result is consistent across all three generation models: aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09. With N = 216 per group, we have 80% power to detect d $\geq$ 0.27; the observed d = 0.03 is definitively null.
+**H1: Recognition → steeper tutor slopes.** Not supported. Recognition tutor slope = 1.45 ± 5.50, baseline = 1.32 ± 4.93, d = 0.03, t(425) = 0.27, p > .05. The result is consistent across all three generation models: aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09. With N = 216 per group, we have 80% power to detect d ≥ 0.27; the observed d = 0.03 is definitively null.
 
-**H2: Tutor slopes steeper than learner slopes under recognition.** Not supported. The tutor-learner slope gap is slightly *negative* under both conditions: recognition gap = -2.42 $\pm$ 8.12, baseline gap = -2.12 $\pm$ 9.36, d = -0.03. Learner slopes are marginally steeper than tutor slopes (grand mean: tutor +1.39, learner +3.66), the opposite of the Section 3 prediction.
+**H2: Tutor slopes steeper than learner slopes under recognition.** Not supported. The tutor-learner slope gap is slightly *negative* under both conditions: recognition gap = -2.42 ± 8.12, baseline gap = -2.12 ± 9.36, d = -0.03. Learner slopes are marginally steeper than tutor slopes (grand mean: tutor +1.39, learner +3.66), the opposite of the Section 3 prediction.
 
 No experimental factor produces differential trajectory improvement:
 
@@ -1214,15 +1214,15 @@ No experimental factor produces differential trajectory improvement:
 | Multi-agent tutor (multi vs single) | 0.07 | 0.13 |
 | Learner architecture (multi vs single) | 0.05 | -0.04 |
 
-All effect sizes are below d = 0.15 --- none approaches the d $\geq$ 0.27 detection threshold. The grand mean tutor slope is mildly positive (+1.39, t = 5.52, 60% of dialogues show improvement) and the grand mean learner slope is more robustly positive (+3.66, t = 8.79, 73% positive), but neither is modulated by any experimental condition. Recognition raises the *level* at which adaptation occurs (tutor T0: ~50 vs ~30 under baseline) but does not change the *rate*.
+All effect sizes are below d = 0.15 --- none approaches the d ≥ 0.27 detection threshold. The grand mean tutor slope is mildly positive (+1.39, t = 5.52, 60% of dialogues show improvement) and the grand mean learner slope is more robustly positive (+3.66, t = 8.79, 73% positive), but neither is modulated by any experimental condition. Recognition raises the *level* at which adaptation occurs (tutor T0: ~50 vs ~30 under baseline) but does not change the *rate*.
 
 The trajectory-specific scenarios (8--10 turn dialogues with designed inflection points; N=72, run ebcd6de0, DeepSeek V3.2, Sonnet judge) qualify this null. Pooled across all three scenarios, the slope effect remains small and non-significant (d=0.219, p=.36), consistent with the main analysis. However, scenario disaggregation reveals a striking conditional effect:
 
 | Scenario | Turns | Slope d | p |
 |---|---|---|---|
-| Confusion $\to$ Insight | 8 | 0.005 | >.90 |
-| Overconfidence $\to$ Humility | 8 | $-0.298$ | ${\sim}.30$ |
-| **Disengagement $\to$ Ownership** | **10** | **1.628** | **<.001** |
+| Confusion → Insight | 8 | 0.005 | >.90 |
+| Overconfidence → Humility | 8 | $-0.298$ | ${\sim}.30$ |
+| **Disengagement → Ownership** | **10** | **1.628** | **<.001** |
 
 In the disengagement scenario --- the longest scenario (10 turns) and the one most demanding of sustained re-engagement --- recognition tutors improve at +2.79 pts/turn while base tutors stagnate at $-0.21$ pts/turn (Welch's t=3.99, df=21.9, n=12 per condition). The recognition--baseline gap widens from +11.6 pts at T0 to +35.4 pts averaged across T8--T10, driven by a late-stage recognition surge: recognition scores climb from $\sim$45 to $\sim$73 in the final three turns (the designed ownership transition), while base scores collapse to $\sim$20 at T8 before partially recovering.
 
@@ -1249,7 +1249,7 @@ The OLS slope analysis assumes linear improvement; the actual trajectories revea
 
 Three of four conditions exhibit a **T1 dip followed by recovery**: the tutor's quality drops at Turn 1 (the first turn with real learner input) before climbing back. The dip is deepest for base-single (+5.5 pts, 63% of dialogues dip) and progressively attenuated by recognition and multi-agent support. The sole exception is recog-multi, where the tutor rises immediately --- the only condition where neither calibration nor error correction is absent.
 
-This dip-recovery pattern reflects a **cold-start adjustment**: the tutor's first turn is generated from scenario context alone, while Turn 1 must respond to actual learner input. Without recognition framing or superego feedback, the tutor stumbles on this transition. Both mechanisms independently reduce the T0$\to$T1 dip (recognition: 0.7 vs 4.1 pts; multi-agent: 0.6 vs 4.2 pts), and their combination eliminates it.
+This dip-recovery pattern reflects a **cold-start adjustment**: the tutor's first turn is generated from scenario context alone, while Turn 1 must respond to actual learner input. Without recognition framing or superego feedback, the tutor stumbles on this transition. Both mechanisms independently reduce the T0→T1 dip (recognition: 0.7 vs 4.1 pts; multi-agent: 0.6 vs 4.2 pts), and their combination eliminates it.
 
 A half-split analysis comparing the mean of the first three turns to the mean of the last three turns (restricted to 5--6 turn dialogues for non-overlapping halves, N=360) confirms that the improvement is real but modest:
 
@@ -1293,13 +1293,13 @@ A complementary measure of adaptive responsiveness is the raw cross-turn adaptat
 
 | | DeepSeek V3.2 | Haiku 4.5 |
 |---|---|---|
-| Base AdaptΔ | 0.793 $\pm$ 0.199 | 0.888 $\pm$ 0.093 |
-| Recognition AdaptΔ | 0.824 $\pm$ 0.167 | 0.908 $\pm$ 0.048 |
+| Base AdaptΔ | 0.793 ± 0.199 | 0.888 ± 0.093 |
+| Recognition AdaptΔ | 0.824 ± 0.167 | 0.908 ± 0.048 |
 | Delta | +0.031 | +0.020 |
 
 Cross-turn adaptation is high in all conditions (>0.79), indicating that the tutor substantially changes its output between turns regardless of prompt or architecture. Recognition shows slightly higher adaptation (+0.031 DeepSeek, +0.020 Haiku), consistent with the recognition prompt's emphasis on engaging with the specific learner contribution. However, the baseline is already high, leaving limited room for the prompt to increase adaptation further.
 
-The lower variance under recognition (DeepSeek: 0.199$\to$0.167; Haiku: 0.093$\to$0.048) is more noteworthy. Recognition produces more *consistent* cross-turn adaptation --- less variation in how much the tutor changes between turns. This mirrors the calibration finding from Section 6.1.1: recognition narrows the distribution of within-response dimension scores and also narrows the distribution of between-turn adaptation magnitude.
+The lower variance under recognition (DeepSeek: 0.199→0.167; Haiku: 0.093→0.048) is more noteworthy. Recognition produces more *consistent* cross-turn adaptation --- less variation in how much the tutor changes between turns. This mirrors the calibration finding from Section 6.1.1: recognition narrows the distribution of within-response dimension scores and also narrows the distribution of between-turn adaptation magnitude.
 
 #### 6.3.6 Learner Outcomes
 
@@ -1316,7 +1316,7 @@ If adaptive responsiveness matters for learning, tutor adaptation should transla
 | Haiku | Recog / single | 80.2 | 68.2 | 72.0 |
 | Haiku | Recog / multi | 79.5 | 69.0 | 72.9 |
 
-The tutor-learner asymmetry is pronounced. DeepSeek tutor scores range from 22 to 50 across conditions; learner scores range from 57 to 63 --- a much narrower band. Haiku tutor scores range from 53 to 80; learner scores from 64 to 73. Recognition produces a 28-point tutor swing in DeepSeek (22$\to$50) but only a 3-point learner swing (57$\to$60). In Haiku, a 27-point tutor swing (53$\to$80) produces a 5-point learner swing (64$\to$69).
+The tutor-learner asymmetry is pronounced. DeepSeek tutor scores range from 22 to 50 across conditions; learner scores range from 57 to 63 --- a much narrower band. Haiku tutor scores range from 53 to 80; learner scores from 64 to 73. Recognition produces a 28-point tutor swing in DeepSeek (22→50) but only a 3-point learner swing (57→60). In Haiku, a 27-point tutor swing (53→80) produces a 5-point learner swing (64→69).
 
 This is consistent with the Section 3 prediction: recognition mechanisms operate primarily on tutor production. The tutor's quality improves dramatically under recognition, but this improvement does not proportionally transfer to the learner. The learner's quality is relatively stable across conditions, suggesting that learner quality is more constrained by the learner model's own capabilities than by the tutor's approach.
 
@@ -1343,11 +1343,11 @@ Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not 
 
 #### 6.3.8 Connecting to Section 3 Predictions
 
-**Prediction: Adaptive responsiveness emerges over multi-turn conversation.** *Weakly supported.* Cross-turn adaptation is high (AdaptΔ > 0.79), and grand mean tutor slopes are mildly positive (+1.39, 60% of dialogues improve). However, with N = 432 dialogues and 80% power to detect d $\geq$ 0.27, the slope difference between conditions is definitively null (d = 0.03). Adaptation occurs, but no mechanism accelerates it.
+**Prediction: Adaptive responsiveness emerges over multi-turn conversation.** *Weakly supported.* Cross-turn adaptation is high (AdaptΔ > 0.79), and grand mean tutor slopes are mildly positive (+1.39, 60% of dialogues improve). However, with N = 432 dialogues and 80% power to detect d ≥ 0.27, the slope difference between conditions is definitively null (d = 0.03). Adaptation occurs, but no mechanism accelerates it.
 
 **Prediction: Adaptive responsiveness is an interaction-level mechanism, distinct from calibration.** *Supported.* Calibration operates from the first turn (Section 6.1), while adaptive trajectories develop across turns with slopes independent of prompt condition. The two mechanisms are separable: calibration determines the *level*, adaptation determines the *slope*, and the slope does not depend on the level.
 
-**Prediction: Recognition produces steeper adaptation curves.** *Conditionally supported.* Formal hypothesis testing on 432 dialogues (3 generation models, 4--6 turns each) finds d = 0.03 pooled, with sign-flipping across runs (aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09). However, trajectory-specific scenarios (8--10 turns, N = 72, run ebcd6de0) reveal a scenario-conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper slopes (d = 1.63, p < .001, n = 12 per condition), with the gap widening from +12 pts at T0 to +35 pts at T8--T10. The 8-turn confusion and overconfidence scenarios show no slope differentiation (d $\leq$ 0.30). The prediction holds specifically in scenarios that demand sustained re-engagement over 10+ turns, but not as a general mechanism.
+**Prediction: Recognition produces steeper adaptation curves.** *Conditionally supported.* Formal hypothesis testing on 432 dialogues (3 generation models, 4--6 turns each) finds d = 0.03 pooled, with sign-flipping across runs (aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09). However, trajectory-specific scenarios (8--10 turns, N = 72, run ebcd6de0) reveal a scenario-conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper slopes (d = 1.63, p < .001, n = 12 per condition), with the gap widening from +12 pts at T0 to +35 pts at T8--T10. The 8-turn confusion and overconfidence scenarios show no slope differentiation (d ≤ 0.30). The prediction holds specifically in scenarios that demand sustained re-engagement over 10+ turns, but not as a general mechanism.
 
 **Prediction: Tutor-learner asymmetry in trajectories.** *Reversed.* Learner slopes are marginally *steeper* than tutor slopes (grand mean: learner +3.66, tutor +1.39; 73% vs 60% positive). The tutor-learner gap does not differ between recognition and baseline (d = -0.03). Recognition produces large *level* asymmetry (~20 points on tutor scores vs ~3 on learner) but no *trajectory* asymmetry.
 
@@ -1367,16 +1367,16 @@ The $2 \times 2$ factorial (recognition $\times$ architecture) permits decomposi
 
 | | Single-Agent | Multi-Agent | Architecture Delta |
 |---|---|---|---|
-| **Base** | 22.0 $\pm$ 11.5 (N=37) | 31.0 $\pm$ 12.0 (N=36) | **+9.0** |
-| **Recognition** | 50.0 $\pm$ 12.4 (N=36) | 50.2 $\pm$ 12.8 (N=37) | **+0.2** |
+| **Base** | 22.0 ± 11.5 (N=37) | 31.0 ± 12.0 (N=36) | **+9.0** |
+| **Recognition** | 50.0 ± 12.4 (N=36) | 50.2 ± 12.8 (N=37) | **+0.2** |
 | **Recognition Delta** | **+28.0** | **+19.2** | |
 
 **Haiku 4.5 (N=163):**
 
 | | Single-Agent | Multi-Agent | Architecture Delta |
 |---|---|---|---|
-| **Base** | 52.9 $\pm$ 10.6 (N=39) | 67.9 $\pm$ 9.3 (N=42) | **+15.0** |
-| **Recognition** | 80.2 $\pm$ 7.8 (N=39) | 79.5 $\pm$ 7.6 (N=43) | **-0.7** |
+| **Base** | 52.9 ± 10.6 (N=39) | 67.9 ± 9.3 (N=42) | **+15.0** |
+| **Recognition** | 80.2 ± 7.8 (N=39) | 79.5 ± 7.6 (N=43) | **-0.7** |
 | **Recognition Delta** | **+27.3** | **+11.6** | |
 
 **Gemini Flash (N=144, run 18027efc):**
@@ -1394,7 +1394,7 @@ The interaction effect is large and negative across all three models:
 
 In all three models, the architecture's contribution under recognition is smaller than under baseline---the signature of a *substitution* interaction where calibration and error correction target overlapping output failures.
 
-However, Gemini Flash reveals a **critical boundary condition** in the *residual*. While the interaction magnitude is comparable to Haiku (-14.6 vs -15.7), the architecture delta under recognition remains *large and positive* (+12.3)---unlike DeepSeek (+0.2) and Haiku (-0.7), where it collapses to near-zero. Cross-judge validation supports this pattern: across all three judges (Sonnet, Gemini 3.1 Pro, GPT-5.4), multi_recog is positive for Gemini Flash (+7.4 to +17.1) but non-positive for DeepSeek (all 6 judge $\times$ run cells $\leq$ 0). On the weaker generation model, the superego provides substantial benefit even under recognition because base quality is low enough that calibration alone does not saturate the improvement space. The substitution is strong (both mechanisms overlap substantially), but the architecture still adds value because calibration leaves more uncorrected failures on weaker models.
+However, Gemini Flash reveals a **critical boundary condition** in the *residual*. While the interaction magnitude is comparable to Haiku (-14.6 vs -15.7), the architecture delta under recognition remains *large and positive* (+12.3)---unlike DeepSeek (+0.2) and Haiku (-0.7), where it collapses to near-zero. Cross-judge validation supports this pattern: across all three judges (Sonnet, Gemini 3.1 Pro, GPT-5.4), multi_recog is positive for Gemini Flash (+7.4 to +17.1) but non-positive for DeepSeek (all 6 judge $\times$ run cells ≤ 0). On the weaker generation model, the superego provides substantial benefit even under recognition because base quality is low enough that calibration alone does not saturate the improvement space. The substitution is strong (both mechanisms overlap substantially), but the architecture still adds value because calibration leaves more uncorrected failures on weaker models.
 
 #### 6.4.2 Additive Decomposition
 
@@ -1439,7 +1439,7 @@ Section 3 predicted three candidate mechanisms operating at different levels (pr
 
 The two supported mechanisms are separable in three senses:
 
-1. **Temporal separability.** Calibration operates from the first turn (the tutor's initial response is already calibrated under recognition). Error correction operates within each turn (ego $\to$ superego $\to$ revision). These temporal signatures are empirically distinct. Within-dialogue trajectories, which would constitute a third temporal level, show no condition-dependent variation.
+1. **Temporal separability.** Calibration operates from the first turn (the tutor's initial response is already calibrated under recognition). Error correction operates within each turn (ego → superego → revision). These temporal signatures are empirically distinct. Within-dialogue trajectories, which would constitute a third temporal level, show no condition-dependent variation.
 
 2. **Architectural separability.** Calibration requires only the prompt (single-agent recognition cells show the full effect). Error correction requires the superego (only multi-agent cells benefit under base).
 
@@ -1464,7 +1464,7 @@ Recognition narrows the output distribution on multiple dimensions simultaneousl
 
 #### 6.4.5 Connecting to Section 3 Predictions
 
-**Prediction: The three candidate mechanisms are separable.** *Partially supported.* Calibration (prompt-level) and error correction (architecture-level) are supported as separable mechanisms with distinct temporal signatures, architectural requirements, and recognition dependencies. Adaptive responsiveness (interaction-level) is not a general mechanism (all d $\leq$ 0.15, N=432) but emerges conditionally in sustained re-engagement scenarios (d=1.63, p<.001, 10-turn disengagement). The evidence supports two general mechanisms and one conditional emergent property.
+**Prediction: The three candidate mechanisms are separable.** *Partially supported.* Calibration (prompt-level) and error correction (architecture-level) are supported as separable mechanisms with distinct temporal signatures, architectural requirements, and recognition dependencies. Adaptive responsiveness (interaction-level) is not a general mechanism (all d ≤ 0.15, N=432) but emerges conditionally in sustained re-engagement scenarios (d=1.63, p<.001, 10-turn disengagement). The evidence supports two general mechanisms and one conditional emergent property.
 
 **Prediction: The mechanisms interact non-additively.** *Supported across all models.* Calibration and error correction show a consistent 15--17% deficit from additivity across all three models (DeepSeek 15%, Haiku 16%, Gemini Flash 17%), indicating stable mechanism overlap. The interaction is **universally substitutive** in magnitude, but the *residual architecture benefit under recognition* is model-dependent: the superego adds +12.3 points under recognition on Gemini Flash but near-zero on DeepSeek/Haiku. On weaker models, calibration leaves more uncorrected failures, giving the superego independent value even after substitution. Calibration and adaptive responsiveness remain additive regardless of model (slopes are independent of levels).
 
@@ -1486,7 +1486,7 @@ The universal substitution pattern with model-dependent residual is validated ac
 | 18027efc (GF) | Gemini | +40.1 | +18.0 | +39.2 | +17.1 |
 | 18027efc (GF) | GPT | +29.9 | +14.3 | +22.9 | +7.4 |
 
-The pattern is unanimous: **multi_recog $\leq$ 0 in all 6 DeepSeek cells** (complete substitution), and **multi_recog > 0 in all 3 Gemini Flash cells** (positive residual architecture benefit under recognition). No judge disagrees on the direction within either generation model. The 9-way replication (3 judges $\times$ 3 runs) provides strong evidence that the residual architecture benefit is a genuine property of the generation-quality $\times$ mechanism interaction, not an artifact of a particular judge's scoring pattern. The substitution interaction is universal (all models show 15--17% additivity deficit), but its *completeness* is model-dependent: on strong models the superego adds nothing under recognition, on weak models it still adds +7 to +17 points.
+The pattern is unanimous: **multi_recog ≤ 0 in all 6 DeepSeek cells** (complete substitution), and **multi_recog > 0 in all 3 Gemini Flash cells** (positive residual architecture benefit under recognition). No judge disagrees on the direction within either generation model. The 9-way replication (3 judges $\times$ 3 runs) provides strong evidence that the residual architecture benefit is a genuine property of the generation-quality $\times$ mechanism interaction, not an artifact of a particular judge's scoring pattern. The substitution interaction is universal (all models show 15--17% additivity deficit), but its *completeness* is model-dependent: on strong models the superego adds nothing under recognition, on weak models it still adds +7 to +17 points.
 
 Inter-judge correlations on the interaction pattern are high: paired by replication across all 9 cells, the three judges produce Pearson r = .71--.89 on tutor overall scores. Notably, inter-judge agreement is highest on Gemini Flash (r = .81--.89) and lowest on DeepSeek (r = .61--.78). Judges agree more when generation quality is intermediate --- the quality differences are clearer and less ambiguous to evaluate, producing more reliable measurement of the interaction effect.
 
@@ -1501,8 +1501,8 @@ The recognition main effect on tutor quality is large; on learner quality it is 
 | | Tutor Score | | Learner Score | |
 |---|---|---|---|---|
 | Model | Base | Recognition | Base | Recognition |
-| DeepSeek (N=146) | 26.4 $\pm$ 12.6 | 50.1 $\pm$ 12.6 | 58.8 $\pm$ 11.9 | 61.7 $\pm$ 11.1 |
-| Haiku (N=163) | 60.7 $\pm$ 12.5 | 79.8 $\pm$ 7.7 | 66.7 $\pm$ 11.2 | 68.6 $\pm$ 12.2 |
+| DeepSeek (N=146) | 26.4 ± 12.6 | 50.1 ± 12.6 | 58.8 ± 11.9 | 61.7 ± 11.1 |
+| Haiku (N=163) | 60.7 ± 12.5 | 79.8 ± 7.7 | 66.7 ± 11.2 | 68.6 ± 12.2 |
 
 | | Tutor d | Learner d | Ratio |
 |---|---|---|---|
@@ -1519,7 +1519,7 @@ Recognition produces a tutor effect 7--12 times larger than its learner effect o
 | Haiku (N=163) | **1.84** | 0.16 | **11.5 : 1** |
 | Gemini Flash (N=144) | **1.87** | **1.20** | **1.6 : 1** |
 
-The Gemini Flash result suggests that the recognition $\to$ learner pathway requires a **minimum generation quality floor** to observe. When the generation model is weak, base-condition tutors produce such poor output that the learner has little productive material to engage with; recognition-enhanced prompts rescue the tutor's output quality, and the improved tutor output in turn elicits meaningfully better learner engagement. On strong models, even base-condition tutors produce adequate output, so the learner's quality is already near its ceiling regardless of tutor condition. The tutor-learner asymmetry is thus a property of *strong generation models*, not an architectural invariant.
+The Gemini Flash result suggests that the recognition → learner pathway requires a **minimum generation quality floor** to observe. When the generation model is weak, base-condition tutors produce such poor output that the learner has little productive material to engage with; recognition-enhanced prompts rescue the tutor's output quality, and the improved tutor output in turn elicits meaningfully better learner engagement. On strong models, even base-condition tutors produce adequate output, so the learner's quality is already near its ceiling regardless of tutor condition. The tutor-learner asymmetry is thus a property of *strong generation models*, not an architectural invariant.
 
 The question-asking data from Section 6.1.7 provides a concrete transmission mechanism. Gemini Flash base tutors ask 0.03 questions per turn --- effectively zero --- while recognition tutors ask 0.65 (a 19.8$\times$ ratio). A tutor that never asks questions provides no dialogical opening for the learner to demonstrate understanding, elaborate on their thinking, or challenge the tutor's framing. The learner receives lectures and can only respond to lectures. Under recognition, the tutor's questions create space for the learner to contribute substantively, and this space is precisely what produces the +27-point learner delta on Gemini Flash. On stronger models (Haiku base: 0.28 questions/turn; DeepSeek base: 0.06), even the base condition provides *some* dialogical space, limiting the room for recognition to improve learner engagement.
 
@@ -1586,7 +1586,7 @@ The two models differ substantially in baseline performance:
 |---|---|---|---|
 | Base / single tutor score | 22.0 | 22.4 | 52.9 |
 | Base / multi tutor score | 31.0 | 49.3 | 67.9 |
-| Base overall (collapsed) | 26.4 $\pm$ 12.6 | 35.9 | 60.7 $\pm$ 12.5 |
+| Base overall (collapsed) | 26.4 ± 12.6 | 35.9 | 60.7 ± 12.5 |
 | Base learner score | 58.8 | 42.6 | 66.7 |
 | Base dialogue quality | 26.7 | 28.6 | 63.3 |
 
@@ -1615,7 +1615,7 @@ Despite the baseline gaps, the following findings replicate across all three mod
 
 **5. Impasse scenarios show largest effects.** Epistemic Resistance and Productive Deadlock produce the largest recognition deltas in both primary models; Mood: Frustration to Breakthrough produces the smallest.
 
-**6. Superego approval rate increases under recognition.** Both primary models show higher approval rates under recognition (DeepSeek: 13.3%$\to$55.1%; Haiku: 51.6%$\to$66.1%).
+**6. Superego approval rate increases under recognition.** Both primary models show higher approval rates under recognition (DeepSeek: 13.3%→55.1%; Haiku: 51.6%→66.1%).
 
 **7. Tutor development slopes are equal across conditions.** No model shows steeper tutor improvement under recognition (pooled d = -0.00).
 
@@ -1627,15 +1627,15 @@ Despite the baseline gaps, the following findings replicate across all three mod
 
 Several findings differ between models, revealing generation-quality as the key moderating variable:
 
-**1. Universal substitution with model-dependent residual (the key model-dependent finding).** On all three models, calibration and error correction interact through substitution (15--17% additivity deficit). On DeepSeek and Haiku (strong), the residual architecture benefit under recognition collapses to near-zero (multi_recog $\leq$ 0 in 6/6 judge $\times$ run cells). On Gemini Flash (weaker), a substantial residual persists (+7 to +17 points under recognition across judges, multi_recog > 0 in 3/3 cells). The *residual magnitude* is model-dependent, not the interaction *type*. See Section 6.4 for the theoretical interpretation.
+**1. Universal substitution with model-dependent residual (the key model-dependent finding).** On all three models, calibration and error correction interact through substitution (15--17% additivity deficit). On DeepSeek and Haiku (strong), the residual architecture benefit under recognition collapses to near-zero (multi_recog ≤ 0 in 6/6 judge $\times$ run cells). On Gemini Flash (weaker), a substantial residual persists (+7 to +17 points under recognition across judges, multi_recog > 0 in 3/3 cells). The *residual magnitude* is model-dependent, not the interaction *type*. See Section 6.4 for the theoretical interpretation.
 
-**2. Learner recognition-sensitivity.** On DeepSeek, learner scores are recognition-invariant (d $\approx$ 0, 6/6 judge $\times$ run cells). On Gemini Flash, recognition produces a large learner effect (d = 1.18--1.23, all three judges agree). The recognition $\to$ learner pathway requires a minimum generation quality floor to observe (Section 6.5.1).
+**2. Learner recognition-sensitivity.** On DeepSeek, learner scores are recognition-invariant (d ≈ 0, 6/6 judge $\times$ run cells). On Gemini Flash, recognition produces a large learner effect (d = 1.18--1.23, all three judges agree). The recognition → learner pathway requires a minimum generation quality floor to observe (Section 6.5.1).
 
 **3. Superego approval rate baseline.** DeepSeek base: 13.3% approved (the ego almost always needs correction). Haiku base: 51.6% (roughly half approved). Weaker models produce more errors for the superego to catch.
 
 **4. Development trajectories.** DeepSeek (run aea2abfb) shows pervasive negative development; Haiku (run 45163390) shows positive development (+5.8 to +15.7); Gemini Flash (run 18027efc) sits between. Development depends on generation quality (rank order: Haiku > Gemini Flash > DeepSeek), not prompting condition.
 
-**5. Score variance under recognition.** DeepSeek maintains similar variance under recognition (SD: 12.6 $\to$ 12.6). Haiku shows substantial variance reduction (SD: 12.5 $\to$ 7.7, a 38% reduction). Recognition narrows Haiku's output distribution more than DeepSeek's.
+**5. Score variance under recognition.** DeepSeek maintains similar variance under recognition (SD: 12.6 → 12.6). Haiku shows substantial variance reduction (SD: 12.5 → 7.7, a 38% reduction). Recognition narrows Haiku's output distribution more than DeepSeek's.
 
 **6. Deliberation quality sensitivity.** DeepSeek deliberation drops 18.5 points under recognition; Haiku drops only 5.6. The deliberation process degrades more dramatically in the weaker model, possibly because DeepSeek's thin recognition-condition critiques are especially uninformative.
 
@@ -1651,8 +1651,8 @@ The model-dependent findings reveal a coherent pattern: model capability moderat
 |---|---|---|
 | **Calibration** | Variance reduction, floor lifting, dimension-rank pattern | Magnitude (d=0.52 vs 0.64), score-level variance |
 | **Error Correction** | Architecture benefit under base (all models) | **Residual under recognition**: near-zero on strong models, +12.3 on weak. Universal substitution (15--17% deficit). Cognitive prosthesis effect on weakest model. |
-| **Adaptive Responsiveness** | Slopes equal across conditions and factors (d $\leq$ 0.15), high AdaptΔ | Development trajectory direction, deliberation sensitivity |
-| **Learner effects** | Recognition improves tutor quality (all models) | **Learner sensitivity**: invariant on strong models (d $\approx$ 0), responsive on weak (d $\approx$ 1.2) |
+| **Adaptive Responsiveness** | Slopes equal across conditions and factors (d ≤ 0.15), high AdaptΔ | Development trajectory direction, deliberation sensitivity |
+| **Learner effects** | Recognition improves tutor quality (all models) | **Learner sensitivity**: invariant on strong models (d ≈ 0), responsive on weak (d ≈ 1.2) |
 
 The two strongest model-dependent effects are (1) the model-dependent residual architecture benefit under recognition, which reveals that the *completeness* of substitution depends on generation quality, and (2) the learner recognition-sensitivity, which shows that the tutor-learner asymmetry is itself moderated by model capability. Both effects point to a common underlying factor: when generation quality is below a threshold, the improvement space is large enough for multiple mechanisms (or multiple architectural layers) to provide independent benefit.
 
@@ -1674,7 +1674,7 @@ The companion pilot study [@magee2026geist] established that recognition-enhance
 
 The mechanism model (Section 3) predicted that recognition operates through calibration (narrowing output distributions), error correction (the superego catching failures that the ego incorporates rather than minimizes), and adaptive responsiveness (accumulated turn-over-turn adaptation to learner-specific signals). The process tracing methodology (Section 5) provided tools to observe each: the superego critique taxonomy classifies *what* the superego objects to; revision delta analysis measures *how* the ego changes; trajectory analysis tracks *whether* these processes accumulate across turns.
 
-The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 total scored rows) supports calibration strongly: within-response dimension variance drops d=0.52--0.64, operating identically in single-agent cells, with recognition unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through a **generation-quality-dependent** pattern: on strong models (DeepSeek, Haiku), the superego provides +9--15 points under baseline but collapses to near-zero under recognition (substitution), because calibration pre-empts the errors the superego would catch. On a weaker model (Gemini Flash), the superego retains a +12.3-point residual benefit *even under recognition*, because base quality is low enough that calibration alone cannot saturate the improvement space. Adaptive responsiveness, however, is **not supported as a distinct mechanism**: formal tests on N=432 dialogues find d $\leq$ 0.15 for all factors on all dimensions, well-powered to detect d $\geq$ 0.27, replicated across all three judges. Tutors improve modestly across turns (+3.9 points early-to-late), but this improvement is identical across conditions. The mechanism hierarchy is clear: calibration does the primary work; error correction provides a model-dependent safety net; and within-dialogue trajectory improvement, while real, is not modulated by any experimental manipulation---it is incidental adaptation at a mechanism-determined baseline, not a third mechanism.
+The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 total scored rows) supports calibration strongly: within-response dimension variance drops d=0.52--0.64, operating identically in single-agent cells, with recognition unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through a **generation-quality-dependent** pattern: on strong models (DeepSeek, Haiku), the superego provides +9--15 points under baseline but collapses to near-zero under recognition (substitution), because calibration pre-empts the errors the superego would catch. On a weaker model (Gemini Flash), the superego retains a +12.3-point residual benefit *even under recognition*, because base quality is low enough that calibration alone cannot saturate the improvement space. Adaptive responsiveness, however, is **not supported as a distinct mechanism**: formal tests on N=432 dialogues find d ≤ 0.15 for all factors on all dimensions, well-powered to detect d ≥ 0.27, replicated across all three judges. Tutors improve modestly across turns (+3.9 points early-to-late), but this improvement is identical across conditions. The mechanism hierarchy is clear: calibration does the primary work; error correction provides a model-dependent safety net; and within-dialogue trajectory improvement, while real, is not modulated by any experimental manipulation---it is incidental adaptation at a mechanism-determined baseline, not a third mechanism.
 
 ### 7.2 The Tutor-Learner Asymmetry Explained
 
@@ -1682,9 +1682,9 @@ The pilot study's most puzzling finding was the tutor-learner asymmetry: recogni
 
 Calibration constrains what the tutor generates. Error correction filters what it outputs. Neither directly modifies the learner's response process. The synthetic learner generates turns according to its own architecture; better tutoring does not mechanically produce better simulated learning within a 3--5 turn window.
 
-However, the three-model analysis (Section 6.5.1) reveals that the asymmetry is **model-dependent**, not absolute. On strong generation models (DeepSeek, Haiku), the tutor-learner ratio is 7.5:1 to 11.5:1---the asymmetry is a structural property of the architecture. On Gemini Flash (weaker), the ratio narrows to 1.6:1 (tutor d $\approx$ 1.87, learner d $\approx$ 1.20). The interpretation is that when base-condition tutors are catastrophically weak (Gemini Flash single-agent base ~17 pts), recognition's tutor improvement provides the learner with qualitatively different input---material worth engaging with rather than generic directives. The recognition $\to$ learner pathway operates through the *quality of the tutor's output as input to the learner*, not through direct modification of the learner's processing.
+However, the three-model analysis (Section 6.5.1) reveals that the asymmetry is **model-dependent**, not absolute. On strong generation models (DeepSeek, Haiku), the tutor-learner ratio is 7.5:1 to 11.5:1---the asymmetry is a structural property of the architecture. On Gemini Flash (weaker), the ratio narrows to 1.6:1 (tutor d ≈ 1.87, learner d ≈ 1.20). The interpretation is that when base-condition tutors are catastrophically weak (Gemini Flash single-agent base ~17 pts), recognition's tutor improvement provides the learner with qualitatively different input---material worth engaging with rather than generic directives. The recognition → learner pathway operates through the *quality of the tutor's output as input to the learner*, not through direct modification of the learner's processing.
 
-The messages-mode data provides further evidence. Pooled across all three models, recognition sets the tutor's initial quality substantially higher (T0: 62.4 vs 41.6) with near-identical slopes across conditions (recognition 1.47, baseline 1.50, d = 0.03). The recognition condition operates through *calibration*---setting the initial level---not *adaptation*---driving within-dialogue improvement. This pattern---mechanism effects on levels, null effects on slopes---replicates across all three models, all three judges, and all rubric dimensions (all d $\leq$ 0.15).
+The messages-mode data provides further evidence. Pooled across all three models, recognition sets the tutor's initial quality substantially higher (T0: 62.4 vs 41.6) with near-identical slopes across conditions (recognition 1.47, baseline 1.50, d = 0.03). The recognition condition operates through *calibration*---setting the initial level---not *adaptation*---driving within-dialogue improvement. This pattern---mechanism effects on levels, null effects on slopes---replicates across all three models, all three judges, and all rubric dimensions (all d ≤ 0.15).
 
 ### 7.3 Architecture Interaction: Universal Substitution with Model-Dependent Residual
 
@@ -1733,12 +1733,12 @@ The practical lesson is that provable discourse is lightweight to adopt. The YAM
 
 #### 7.4.3 The Rubric Iteration as Construct Refinement
 
-The rubric evolved through four versions (v1.0 $\rightarrow$ v2.0 $\rightarrow$ v2.1 $\rightarrow$ v2.2), each responding to specific measurement problems:
+The rubric evolved through four versions (v1.0 → v2.0 → v2.1 → v2.2), each responding to specific measurement problems:
 
 - **v1.0**: Original 14-dimension tutor rubric. Discovered: ceiling effects on modulation dimensions, judge hallucinated "truncation" on short responses.
 - **v2.0**: Reweighted modulation dimensions, hardened criteria, added cross-turn calibration. Discovered: judge input confound (multi-agent cells showed internal deliberation, single-agent showed only public messages).
 - **v2.1**: Public-only output scoring for fair cross-architecture comparison. Added deliberation quality rubric (6 dimensions) for internal process evaluation. Discovered: dimension redundancy (14 tutor dimensions measured $\sim$3 latent factors).
-- **v2.2**: Literature-informed consolidation: 14 $\rightarrow$ 8 tutor dimensions using GuideEval P$\rightarrow$O$\rightarrow$E decomposition, 7 $\rightarrow$ 5 learner dimensions using ICAP anchoring. Added content\_accuracy. Synthetic calibration: r=+0.996 (tutor), r=+0.968 (learner).
+- **v2.2**: Literature-informed consolidation: 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, 7 → 5 learner dimensions using ICAP anchoring. Added content\_accuracy. Synthetic calibration: r=+0.996 (tutor), r=+0.968 (learner).
 
 Each iteration follows the error correction pattern: the initial rubric (ego) generated scores that were challenged by measurement problems (superego), and the revised rubric represents a genuine reconceptualization (strategic revision) rather than a cosmetic fix. The dimension reduction from 14 to 8 is itself a finding: it reveals what the evaluation *actually* measures, and this structure can be compared to the mechanism model.
 
@@ -1803,7 +1803,7 @@ Recognition theory as a design heuristic has clear scope conditions.
 
 **What the design heuristic explains:** Why intersubjective prompts produce calibrated output (calibration: the prompt constrains responses to engage with specific learner input, d=0.52--0.64). Why the superego's benefit collapses under recognition (error correction: calibration pre-empts errors, producing a substitution interaction rather than synergy). Why recognition effects are largest in impasse scenarios (Section 6.1.4: Epistemic Resistance and Productive Deadlock produce the largest deltas in both models).
 
-**What it does not explain:** Why the specific magnitude of recognition's effect is nearly identical across two structurally different models (DeepSeek d=1.88, Haiku d=1.84---the near-equality is unexpectedly precise). Why adaptive responsiveness---predicted by Hegel's temporal dialectic---fails to manifest as a distinct mechanism (all trajectory slopes d $\leq$ 0.15, N=432). Why the learner superego paradox produces a d=3.05 deficit---the largest effect in the study---when recognition theory's Hegelian framework would predict that internal self-critique (*Bildung*) should be productive rather than destructive.
+**What it does not explain:** Why the specific magnitude of recognition's effect is nearly identical across two structurally different models (DeepSeek d=1.88, Haiku d=1.84---the near-equality is unexpectedly precise). Why adaptive responsiveness---predicted by Hegel's temporal dialectic---fails to manifest as a distinct mechanism (all trajectory slopes d ≤ 0.15, N=432). Why the learner superego paradox produces a d=3.05 deficit---the largest effect in the study---when recognition theory's Hegelian framework would predict that internal self-critique (*Bildung*) should be productive rather than destructive.
 
 The learner superego paradox is particularly instructive. Hegel's account of self-consciousness through formative activity (*Bildung*) predicts that internal self-critique should be productive---the slave's labor produces richer self-consciousness than the master's immediate gratification. Yet the learner's internal critic systematically degrades output quality. The resolution may lie in the distinction between Hegel's developmental timescale (self-consciousness emerges over extended engagement) and our evaluation window (3--5 turns): the learner's internal critique may be laying groundwork for understanding that does not manifest within the current measurement horizon. Alternatively, the architectural implementation may fail to capture what *Bildung* requires---genuine struggle rather than polish.
 
@@ -1827,7 +1827,7 @@ For mechanism-level claims, the judge limitation is particularly relevant to the
 
 ### 8.3 Model Transience
 
-Findings are model-version-specific. Paper 2.0 uses three generation models---DeepSeek V3.2 (open-weight, 685B MoE), Haiku 4.5 (proprietary, optimized for speed), and Gemini Flash (proprietary, multimodal)---with three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4). The recognition effect replicates across all 9 judge $\times$ run cells (d = 1.34--1.92), substantially strengthening the generalizability claim relative to the two-model analysis. The addition of Gemini Flash (weaker than the other two models) partially addresses the capability-range limitation: it shows that mechanisms replicate in direction on weaker models while revealing generation-quality boundary conditions on their interactions (universal substitution with model-dependent residual, learner invariance $\to$ sensitivity). The Nemotron data in the database (N=40, mean tutor score ~8 under base) hints that very weak models may not benefit from recognition at all, but the sample is too small for confident claims. The two supported mechanisms (calibration through prompt orientation, error correction with a model-dependent residual) describe *prompt-level and architecture-level* properties that should generalize across model versions, supported by three-model $\times$ three-judge replication. The null finding for adaptive responsiveness also replicates across all three models and judges.
+Findings are model-version-specific. Paper 2.0 uses three generation models---DeepSeek V3.2 (open-weight, 685B MoE), Haiku 4.5 (proprietary, optimized for speed), and Gemini Flash (proprietary, multimodal)---with three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4). The recognition effect replicates across all 9 judge $\times$ run cells (d = 1.34--1.92), substantially strengthening the generalizability claim relative to the two-model analysis. The addition of Gemini Flash (weaker than the other two models) partially addresses the capability-range limitation: it shows that mechanisms replicate in direction on weaker models while revealing generation-quality boundary conditions on their interactions (universal substitution with model-dependent residual, learner invariance → sensitivity). The Nemotron data in the database (N=40, mean tutor score ~8 under base) hints that very weak models may not benefit from recognition at all, but the sample is too small for confident claims. The two supported mechanisms (calibration through prompt orientation, error correction with a model-dependent residual) describe *prompt-level and architecture-level* properties that should generalize across model versions, supported by three-model $\times$ three-judge replication. The null finding for adaptive responsiveness also replicates across all three models and judges.
 
 ### 8.4 Process Tracing with LLMs
 
@@ -1867,7 +1867,7 @@ A companion pilot study established that recognition-enhanced prompts and multia
 
 We motivated three candidate mechanisms drawing on Hegel's recognition theory, each mapped to a specific architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique that the ego incorporates rather than minimizes), and **adaptive responsiveness** (interaction-level turn-over-turn adaptation to learner-specific signals). Each generated testable predictions with explicit null hypotheses (Section 3.2).
 
-The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 scored rows) **supports calibration and error correction, and reveals adaptive responsiveness as a conditional emergent property**. Calibration is the strongest effect: within-response dimension variance drops d=0.52--0.64, the weakest baseline dimensions show the largest recognition lifts, and the effect operates identically in single-agent cells without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through **universal substitution** (15--17% additivity deficit across all three models), but the *residual architecture benefit* under recognition is model-dependent: near-zero on strong models (DeepSeek, Haiku), but +12.3 points on Gemini Flash, where calibration alone cannot handle all failure modes. Adaptive responsiveness is not a general mechanism: formal tests on N=432 dialogues (3--5 turns) find that no experimental factor modulates within-dialogue trajectories (all d $\leq$ 0.15, well-powered to detect d $\geq$ 0.27), replicated across all three judges. However, trajectory-specific scenarios (N=72, 8--10 turns) reveal a conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d=1.63, p<.001), with the gap widening from +12 pts at T0 to +35 pts at T8--T10. M3 is a conditional emergent property of M1+M2 that manifests when scenario demands (sustained re-engagement) and turn count (10+ turns) provide sufficient runway. The three-mechanism model resolves to **two general mechanisms and one conditional emergent property**.
+The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 scored rows) **supports calibration and error correction, and reveals adaptive responsiveness as a conditional emergent property**. Calibration is the strongest effect: within-response dimension variance drops d=0.52--0.64, the weakest baseline dimensions show the largest recognition lifts, and the effect operates identically in single-agent cells without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through **universal substitution** (15--17% additivity deficit across all three models), but the *residual architecture benefit* under recognition is model-dependent: near-zero on strong models (DeepSeek, Haiku), but +12.3 points on Gemini Flash, where calibration alone cannot handle all failure modes. Adaptive responsiveness is not a general mechanism: formal tests on N=432 dialogues (3--5 turns) find that no experimental factor modulates within-dialogue trajectories (all d ≤ 0.15, well-powered to detect d ≥ 0.27), replicated across all three judges. However, trajectory-specific scenarios (N=72, 8--10 turns) reveal a conditional effect: in the 10-turn disengagement scenario, recognition produces dramatically steeper improvement (d=1.63, p<.001), with the gap widening from +12 pts at T0 to +35 pts at T8--T10. M3 is a conditional emergent property of M1+M2 that manifests when scenario demands (sustained re-engagement) and turn count (10+ turns) provide sufficient runway. The three-mechanism model resolves to **two general mechanisms and one conditional emergent property**.
 
 ### The apparatus as contribution
 
@@ -2469,7 +2469,7 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 :   Added corrected memory isolation experiment (N=120), active control (N=118), cells 6&8 re-run, cross-judge GPT-5.2 analysis. Corrected GPT-5.2 effect sizes (d=1.15 to 0.99, d=0.50 to 0.29) after deduplication of rejudge rows. Dropped dead partial run (e617e757).
 
 **v1.2** (2026-02-06)
-:   **Critical correction**: Reframed "placebo control" as "post-hoc active control." The original v1.1 analysis compared the active control (Nemotron, M=66.5) to factorial base (Kimi K2.5, M=78.8) and reported d=-1.03, but this compared different ego models. Same-model historical data shows Nemotron base $\approx$ 58, making the active control $\approx$ +9 pts above base (not below). Reframed throughout: generic pedagogical elaboration provides partial benefit (~+9 pts above base) but recognition gains are substantially larger (~+15 pts). Acknowledged post-hoc design and active (not inert) control content.
+:   **Critical correction**: Reframed "placebo control" as "post-hoc active control." The original v1.1 analysis compared the active control (Nemotron, M=66.5) to factorial base (Kimi K2.5, M=78.8) and reported d=-1.03, but this compared different ego models. Same-model historical data shows Nemotron base ≈ 58, making the active control ≈ +9 pts above base (not below). Reframed throughout: generic pedagogical elaboration provides partial benefit (~+9 pts above base) but recognition gains are substantially larger (~+15 pts). Acknowledged post-hoc design and active (not inert) control content.
 
 **v1.3--v1.4** (2026-02-06)
 :   Intermediate revisions: corrected factorial with re-run cells 6, 8 (a933d745); updated AxC interaction values; qualitative analysis additions; production quality fixes. Superseded by v1.5.
@@ -2571,10 +2571,10 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 :   **N-claim and stat-claim traceability**: Systematic pass through all 156 N-claims and 66 stat-claims identified by the claim-by-claim audit tool, adding inline run ID anchors, Section cross-references, and Table citations. Key changes: added run IDs to all table headers lacking them (Tables 3, 5, 6, 8, 13, 15, 20b, 21, 22, 25, 45); added Run ID column to Table 41 (inter-judge agreement); annotated pooled-data N-claims with "see Table 2" or "pooled across evaluation database"; marked pilot data as "no longer in primary evaluation set"; added Section/Table cross-references to all stat-claims in Sections 7--9. No data, analysis, or N-count changes---purely traceability metadata.
 
 **v3.0.0** (2026-03-07)
-:   **Automated prompt tuning experiment**: Added Section 7.7 with $2 \times 2 \times 2$ autotuning experiment (base/recognition $\times$ unoptimised/autotuned $\times$ DeepSeek/Qwen 3.5). Seven new runs (eval-2026-03-05-53fb1462 through eval-2026-03-07-c4d1bfa2, N=38 total). Key finding: recognition prompts are more improvable than base (+17--23 pts vs +5--9 pts), the effects are super-additive, and the gap between conditions *widens* under optimisation. Autotuned recognition converges to ~71--73 on both models. Base autotuning ceiling (41--45) remains below unoptimised recognition baseline (48--55), confirming recognition's irreducibility to prompt engineering. Added Table N, 7 run IDs to Appendix D. Renumbered Section 7.7 $\to$ 7.8.
+:   **Automated prompt tuning experiment**: Added Section 7.7 with $2 \times 2 \times 2$ autotuning experiment (base/recognition $\times$ unoptimised/autotuned $\times$ DeepSeek/Qwen 3.5). Seven new runs (eval-2026-03-05-53fb1462 through eval-2026-03-07-c4d1bfa2, N=38 total). Key finding: recognition prompts are more improvable than base (+17--23 pts vs +5--9 pts), the effects are super-additive, and the gap between conditions *widens* under optimisation. Autotuned recognition converges to ~71--73 on both models. Base autotuning ceiling (41--45) remains below unoptimised recognition baseline (48--55), confirming recognition's irreducibility to prompt engineering. Added Table N, 7 run IDs to Appendix D. Renumbered Section 7.7 → 7.8.
 
 **v3.0.1** (2026-03-07)
-:   **M3 trajectory analysis**: Updated M3 (adaptive responsiveness) from "disconfirmed" to "conditionally supported" based on complete trajectory-specific data (eval-2026-03-06-ebcd6de0, N=72, 3 scenarios $\times$ 8 cells $\times$ 3 replications, DeepSeek V3.2, Sonnet judge). Pooled slope effect remains small (d=0.22, NS), but the 10-turn disengagement scenario shows d=1.63, p<.001, with recognition--baseline gap widening from +12 pts at T0 to +35 pts at T8--T10. The two 8-turn scenarios show no slope differentiation (d$\leq$0.30). M3 recharacterized as a conditional emergent property of M1+M2 that manifests under sustained re-engagement demands with sufficient turn count. Updated abstract, Section 3.2, Section 6.3.2, Section 6.3.8, mechanism summary table, and Discussion synthesis. Added 1 run ID to Appendix D (53 total).
+:   **M3 trajectory analysis**: Updated M3 (adaptive responsiveness) from "disconfirmed" to "conditionally supported" based on complete trajectory-specific data (eval-2026-03-06-ebcd6de0, N=72, 3 scenarios $\times$ 8 cells $\times$ 3 replications, DeepSeek V3.2, Sonnet judge). Pooled slope effect remains small (d=0.22, NS), but the 10-turn disengagement scenario shows d=1.63, p<.001, with recognition--baseline gap widening from +12 pts at T0 to +35 pts at T8--T10. The two 8-turn scenarios show no slope differentiation (d≤0.30). M3 recharacterized as a conditional emergent property of M1+M2 that manifests under sustained re-engagement demands with sufficient turn count. Updated abstract, Section 3.2, Section 6.3.2, Section 6.3.8, mechanism summary table, and Discussion synthesis. Added 1 run ID to Appendix D (53 total).
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
