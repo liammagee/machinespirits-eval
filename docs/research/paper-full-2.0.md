@@ -1624,13 +1624,13 @@ The experiment forms a $2 \times 2 \times 2$ design: prompt condition (base vs. 
 |  | Base | Base autotuned | Recognition | Recog. autotuned |
 |--|------|---------------|-------------|-----------------|
 | **DeepSeek V3.2** | 36.6 (n=9) | 41.6 (n=5) | 55.2 (n=5) | 72.9 (n=5) |
-| **Qwen 3.5 9B** | 35.7 (n=5) | 45.0 (n=4) | 47.9 (n=5) | 71.0 (n=4) |
+| **Qwen 3.5 9B** | 35.7 (n=5) | 45.0 (n=4) | 47.9 (n=5) | 71.2 (n=5) |
 
 Four findings emerge from the complete matrix.
 
-First, **recognition prompts are more improvable than base prompts, not less**. Autotuning gains on recognition (+17.7 DeepSeek, +23.1 Qwen) substantially exceed gains on base (+5.0 DeepSeek, +9.3 Qwen). Recognition does not saturate the rubric; it provides richer starting material that the optimiser can refine further.
+First, **recognition prompts are more improvable than base prompts, not less**. Autotuning gains on recognition (+17.7 DeepSeek, +23.3 Qwen) substantially exceed gains on base (+5.0 DeepSeek, +9.3 Qwen). Recognition does not saturate the rubric; it provides richer starting material that the optimiser can refine further.
 
-Second, **the effects are super-additive**. On DeepSeek, recognition alone adds +18.6 and base autotuning adds +5.0, but recognition + autotuning adds +36.3---exceeding the sum of parts (+23.6) by 54%. The same pattern holds on Qwen (+35.3 combined vs +21.5 sum). Recognition and prompt engineering operate on complementary dimensions.
+Second, **the effects are super-additive**. On DeepSeek, recognition alone adds +18.6 and base autotuning adds +5.0, but recognition + autotuning adds +36.3---exceeding the sum of parts (+23.6) by 54%. The same pattern holds on Qwen (+35.5 combined vs +21.5 sum). Recognition and prompt engineering operate on complementary dimensions.
 
 Third, **the gap between conditions widens under optimisation**. Unoptimised, recognition leads base by 18.6 points (DeepSeek) and 12.2 points (Qwen). After autotuning, the gap grows to 31.3 and 26.0 respectively. If recognition were reducible to "better prompt writing," automated optimisation should converge the conditions; instead, it diverges them.
 
@@ -2284,6 +2284,7 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | Autotuned recognition pass 2, DeepSeek (cell 84) | eval-2026-03-07-68acef5a | 7.7 |
 | Recognition baseline, Qwen 3.5 (cell 84) | eval-2026-03-07-94aef993 | 7.7 |
 | Autotuned recognition, Qwen 3.5 (cell 84) | eval-2026-03-07-c4d1bfa2 | 7.7 |
+| Autotuned recognition rep 5, Qwen 3.5 (cell 84) | eval-2026-03-07-baf2367b | 7.7 |
 
 ---
 
