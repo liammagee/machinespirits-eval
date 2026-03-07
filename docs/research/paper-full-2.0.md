@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.10"
+version: "3.0.11"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -213,7 +213,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Pilot evidence.** Dimension variance drops in 52 of 55 within-run comparisons (d=-0.47 to d=-1.00 depending on analysis scope). The core evidence for prompt-level calibration comes from the 2x2x2 factorial (N=350), where single-agent recognition cells (cells 5--6) show variance reduction comparable to multiagent recognition cells (cells 7--8) --- variance narrows under recognition regardless of whether a superego is present. Self-reflective evolution data (cells 40--45, N=366, eval-2026-02-13-8d40e086) shows the calibration effect interacting with superego disposition: the suspicious persona produces the largest recognition delta (+9.0 points, baseline 67.9 vs. recognition 76.9). Note that cells 40--45 are multiagent configurations (ego + suspicious superego), so their recognition delta reflects calibration *combined with* error correction, not calibration alone. The single-agent cells from the factorial provide the cleaner isolation.
 
-**Missing evidence.** Systematic single-agent vs. multiagent variance comparison under v2.2 rubric. If calibration is purely prompt-level, single-agent and multiagent configurations should show similar variance reduction magnitudes.
+**Evidence needed beyond pilot.** Systematic single-agent vs. multiagent variance comparison under v2.2 rubric. If calibration is purely prompt-level, single-agent and multiagent configurations should show similar variance reduction magnitudes. *Addressed in Section 6.1.*
 
 **Key distinction.** Calibration is not the same as quality improvement. A calibrated tutor produces *reliably adequate* responses, not necessarily *excellent* ones. Mean shift and variance reduction are different effects; the claim is that recognition primarily produces the latter.
 
@@ -227,7 +227,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Pilot evidence.** Qualitative transcript assessment (eval-2026-02-07-b6d75e87, N=118) reveals the contrast starkly. In baseline ego/superego dialogues, the superego correctly diagnoses problems but the ego regenerates the same response --- assessors tagged this "ego compliance" (70.7% of baseline bilateral dialogues vs. 60.0% recognition). The stalling tag (no meaningful evolution across turns) appears in 100% of base bilateral dialogues and drops to 45% with recognition. With recognition, the ego pivots: from prescriptive to Socratic, from content routing to engagement. The factorial interaction supports this interpretation: in the pilot 2x2x2 (N=350), base ego_superego learners scored 72.6 while recognition ego_superego learners scored 85.6, a 13.0-point delta. The unified learner delta was 15.6 points (74.5 to 90.1), suggesting error correction provides a consistent but not dramatically larger benefit beyond calibration alone.
 
-**Missing evidence.** Systematic superego critique taxonomy (Section 5.1), revision delta classification (Section 5.2), and critique-to-revision mapping showing the causal chain from superego category to ego response type.
+**Evidence needed beyond pilot.** Systematic superego critique taxonomy (Section 5.1), revision delta classification (Section 5.2), and critique-to-revision mapping showing the causal chain from superego category to ego response type. *Addressed in Section 6.2.*
 
 **Key distinction.** Error correction is not "having a critic." Baseline multiagent architecture *adds* a critic, but the critic is ineffective when the ego treats critique as noise to be minimized. Recognition transforms the ego-superego relationship from compliance to deliberation. The failure cases are equally informative: when the superego adopts an adversary disposition, the adversary over-deference spiral can emerge (eval-2026-02-11-35c53e99, cells 24--25: base adversary 55.8 vs. recognition adversary 65.2), and when the superego adopts an advocate disposition, recognition adds near-zero benefit because there is no struggle to overcome.
 
@@ -241,7 +241,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Pilot evidence.** The strategy_shift tag appears in 30% of recognition dialogues and 0% of baseline (qualitative coding, eval-2026-02-07-b6d75e87). The stalling tag appears in 100% of base bilateral dialogues. The regression tag (quality declining across turns) appears in 17.2% of baseline multi-turn dialogues versus 1.7% of recognition dialogues. Recognition effects are largest in disengagement scenarios (+16.5, +15.4 points), precisely the conditions where adaptive responsiveness matters most.
 
-**Missing evidence.** Turn-by-turn trajectory analysis with per-dimension slopes. Conditional branching analysis: after a learner confusion signal at turn N, what happens to scores at turn N+1 under recognition versus baseline? Cross-model trajectory replication.
+**Evidence needed beyond pilot.** Turn-by-turn trajectory analysis with per-dimension slopes. Conditional branching analysis: after a learner confusion signal at turn N, what happens to scores at turn N+1 under recognition versus baseline? Cross-model trajectory replication. *Addressed in Section 6.3.*
 
 **Key distinction.** Adaptive responsiveness requires *both* calibration (the prompt orients the tutor toward learner-specific signals) *and* error correction (the superego catches when the tutor is repeating itself). It is an emergent property of their interaction over time, not a third independent mechanism. This makes it the strongest test of the three-mechanism model: if calibration and error correction are genuinely operative, adaptive responsiveness should emerge in multi-turn settings without additional prompting.
 
@@ -2576,6 +2576,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.11** (2026-03-07)
+:   **Clarify evidence status markers in §3**: Renamed three "Missing evidence" markers (§3.2, mechanisms 1--3) to "Evidence needed beyond pilot" and added forward references (*Addressed in Section 6.X*) to prevent readers from misinterpreting them as gaps in the current paper. Verified provable discourse counts (119 claims, 18 adapters) remain accurate.
 
 **v3.0.10** (2026-03-07)
 :   **Human expert coding validation**: Strengthened §8.2 to identify human expert coding as the most important outstanding validation for mechanism claims, with explicit procedure (30--50 exchanges, two coders, 10-category taxonomy, Cohen's $\kappa$, human-LLM agreement). Added matching future work entry in §9 (now "Third") with the same procedural specificity. Both sections note that the trace infrastructure makes this feasible without re-running dialogues. Added cross-reference between §8.2 and §9.
