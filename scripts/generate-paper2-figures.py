@@ -103,13 +103,54 @@ def load_factorial_data():
     return rows
 
 
+def load_all_models_data():
+    """Load all v2.2 cells 80-87 data for DeepSeek, Haiku, AND Gemini Flash (Sonnet judge)."""
+    db = get_db()
+    rows = db.execute("""
+        SELECT id, profile_name, ego_model,
+               tutor_first_turn_score, tutor_last_turn_score,
+               tutor_overall_score,
+               learner_overall_score, learner_holistic_overall_score,
+               dialogue_quality_score,
+               tutor_scores, learner_scores,
+               scores_with_reasoning,
+               tutor_deliberation_scores, tutor_deliberation_score,
+               scenario_id
+        FROM evaluation_results
+        WHERE tutor_rubric_version = '2.2'
+          AND tutor_first_turn_score IS NOT NULL
+          AND profile_name LIKE 'cell_8%'
+          AND judge_model LIKE '%sonnet%'
+          AND (ego_model LIKE '%deepseek%' OR ego_model LIKE '%haiku%' OR ego_model LIKE '%gemini%')
+    """).fetchall()
+    db.close()
+    return rows
+
+
 def classify_row(row):
     """Extract condition labels from a row."""
     profile = row['profile_name']
-    model = 'DeepSeek' if 'deepseek' in row['ego_model'] else 'Haiku'
+    ego = row['ego_model']
+    if 'deepseek' in ego:
+        model = 'DeepSeek'
+    elif 'haiku' in ego:
+        model = 'Haiku'
+    elif 'gemini' in ego:
+        model = 'Gemini Flash'
+    else:
+        model = ego
     condition = 'recog' if 'recog' in profile else 'base'
     arch = 'multi' if 'multi' in profile else 'single'
+    learner = 'psycho' if 'psycho' in profile else 'unified'
     return model, condition, arch
+
+
+def classify_row_full(row):
+    """Extract condition labels including learner architecture."""
+    model, condition, arch = classify_row(row)
+    profile = row['profile_name']
+    learner = 'ego_superego' if 'psycho' in profile else 'unified'
+    return model, condition, arch, learner
 
 
 def extract_dimension_scores(row):
@@ -868,6 +909,235 @@ def figure_scenario_effects(rows):
     print(f'  -> {path}')
 
 
+GEMINI_COLOR = '#e91e63'     # Pink for Gemini Flash
+
+# Tutor v2.2 dimension names (8 dims)
+TUTOR_DIMS = [
+    'perception_quality', 'pedagogical_craft', 'elicitation_quality',
+    'adaptive_responsiveness', 'recognition_quality', 'productive_difficulty',
+    'epistemic_integrity', 'content_accuracy'
+]
+TUTOR_DIM_LABELS = {
+    'perception_quality': 'Perception',
+    'pedagogical_craft': 'Craft',
+    'elicitation_quality': 'Elicitation',
+    'adaptive_responsiveness': 'Adapt. Resp.',
+    'recognition_quality': 'Recognition',
+    'productive_difficulty': 'Prod. Difficulty',
+    'epistemic_integrity': 'Epistemic Int.',
+    'content_accuracy': 'Content Acc.'
+}
+
+
+# ── Figure 11: Faceted Per-Dimension Trajectory Curves (§6.3) ────────────────
+
+def figure_adaptation_faceted(all_rows):
+    """Per-dimension adaptation curves: 2x4 faceted grid by tutor dimension.
+
+    Each panel shows mean score per turn for recognition vs baseline,
+    pooled across all 3 generation models. 95% CI ribbon.
+    """
+    dim_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
+    for row in all_rows:
+        model, condition, arch = classify_row(row)
+        tutor_turns = extract_per_turn_dimension_scores(row, 'tutor_scores')
+        for turn, scores in tutor_turns.items():
+            for dim, score in scores.items():
+                dim_data[dim][condition][turn].append(score)
+
+    dims = [d for d in TUTOR_DIMS if d in dim_data]
+    n_dims = len(dims)
+    ncols = 4
+    nrows = (n_dims + ncols - 1) // ncols
+
+    fig, axes = plt.subplots(nrows, ncols, figsize=(16, 4 * nrows), sharey=True)
+    axes_flat = axes.flatten() if n_dims > 1 else [axes]
+
+    for i, dim in enumerate(dims):
+        ax = axes_flat[i]
+        for condition, color, label in [('recog', RECOG_COLOR, 'Recognition'),
+                                         ('base', BASE_COLOR, 'Baseline')]:
+            turns_data = dim_data[dim][condition]
+            turns = sorted(t for t in turns_data.keys() if len(turns_data[t]) >= 5)
+            if not turns:
+                continue
+            means = [np.mean(turns_data[t]) for t in turns]
+            sems = [1.96 * np.std(turns_data[t]) / np.sqrt(len(turns_data[t])) for t in turns]
+
+            ax.plot(turns, means, 'o-', color=color, linewidth=2, markersize=5, label=label)
+            ax.fill_between(turns,
+                           [m - s for m, s in zip(means, sems)],
+                           [m + s for m, s in zip(means, sems)],
+                           alpha=0.15, color=color)
+
+        ax.set_title(TUTOR_DIM_LABELS.get(dim, dim), fontsize=11, fontweight='bold')
+        ax.set_xlabel('Turn')
+        if i % ncols == 0:
+            ax.set_ylabel('Score (1-5)')
+        ax.set_ylim(0.5, 5.5)
+        if i == 0:
+            ax.legend(fontsize=9, loc='upper left')
+
+    for j in range(i + 1, len(axes_flat)):
+        axes_flat[j].set_visible(False)
+
+    fig.suptitle('Per-Dimension Adaptation Curves (Pooled, 3 Models, Sonnet Judge)',
+                 fontsize=14, fontweight='bold', y=1.02)
+    fig.text(0.5, -0.01,
+             'Recognition raises levels across all dimensions; slopes are flat in both conditions. '
+             'Ribbons = 95% CI.',
+             ha='center', fontsize=9, color='gray', style='italic')
+
+    plt.tight_layout()
+    path = os.path.join(FIGURES_DIR, 'figure-adaptation-faceted.png')
+    plt.savefig(path, bbox_inches='tight')
+    plt.close()
+    print(f'  -> {path}')
+
+
+# ── Figure 12: Scissors Plot — Tutor vs Learner Trajectories (§6.3/§6.5) ────
+
+def figure_scissors_plot(all_rows):
+    """Tutor-learner trajectory asymmetry: four lines showing the 'scissors' pattern.
+
+    Tutor lines diverge (recognition >> baseline); learner lines stay flat.
+    """
+    trajectories = defaultdict(lambda: defaultdict(list))
+
+    for row in all_rows:
+        model, condition, arch = classify_row(row)
+        tutor_turns = extract_per_turn_scores(row, 'tutor_scores')
+        for turn, score in tutor_turns.items():
+            trajectories[('tutor', condition)][turn].append(score)
+
+        learner_turns = extract_per_turn_scores(row, 'learner_scores')
+        for turn, score in learner_turns.items():
+            trajectories[('learner', condition)][turn].append(score)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    line_specs = [
+        (('tutor', 'recog'), RECOG_COLOR, '-', 'o', 'Tutor + Recognition'),
+        (('tutor', 'base'), BASE_COLOR, '-', 'o', 'Tutor + Baseline'),
+        (('learner', 'recog'), RECOG_COLOR, '--', 's', 'Learner + Recognition'),
+        (('learner', 'base'), BASE_COLOR, '--', 's', 'Learner + Baseline'),
+    ]
+
+    for key, color, ls, marker, label in line_specs:
+        turns_data = trajectories[key]
+        turns = sorted(t for t in turns_data.keys() if len(turns_data[t]) >= 5)
+        if not turns:
+            continue
+        means = [np.mean(turns_data[t]) for t in turns]
+        sems = [1.96 * np.std(turns_data[t]) / np.sqrt(len(turns_data[t])) for t in turns]
+
+        ax.plot(turns, means, marker=marker, linestyle=ls, color=color,
+                linewidth=2.5, markersize=7, label=label)
+        ax.fill_between(turns,
+                        [m - s for m, s in zip(means, sems)],
+                        [m + s for m, s in zip(means, sems)],
+                        alpha=0.1, color=color)
+
+    ax.set_xlabel('Turn Number', fontsize=12)
+    ax.set_ylabel('Mean Score (0-100)', fontsize=12)
+    ax.set_title('Tutor-Learner Trajectory Asymmetry', fontsize=14, fontweight='bold')
+    ax.legend(loc='center right', fontsize=10, framealpha=0.9)
+
+    fig.text(0.5, -0.02,
+             'Recognition opens a ~20-point tutor gap from Turn 0 that persists but does not widen. '
+             'Learner trajectories are recognition-invariant (d < 0.1).',
+             ha='center', fontsize=9, color='gray', style='italic')
+
+    plt.tight_layout()
+    path = os.path.join(FIGURES_DIR, 'figure-scissors-plot.png')
+    plt.savefig(path, bbox_inches='tight')
+    plt.close()
+    print(f'  -> {path}')
+
+
+# ── Figure 13: Conditional Development Boxplots (§6.3) ──────────────────────
+
+def figure_conditional_boxplots(all_rows):
+    """Development (last - first) boxplots by condition, split by learner architecture."""
+    data = defaultdict(list)
+
+    for row in all_rows:
+        model, condition, arch, learner = classify_row_full(row)
+        first = row['tutor_first_turn_score']
+        last = row['tutor_last_turn_score']
+        if first is not None and last is not None:
+            dev = last - first
+            data[(condition, learner)].append(dev)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    groups = [
+        ('base', 'unified', 'Base\nUnified'),
+        ('base', 'ego_superego', 'Base\nEgo-Superego'),
+        ('recog', 'unified', 'Recog\nUnified'),
+        ('recog', 'ego_superego', 'Recog\nEgo-Superego'),
+    ]
+
+    positions = list(range(len(groups)))
+    colors = [BASE_COLOR, BASE_COLOR, RECOG_COLOR, RECOG_COLOR]
+    alphas = [0.5, 1.0, 0.5, 1.0]
+
+    box_data = []
+    for cond, learner, label in groups:
+        vals = data[(cond, learner)]
+        box_data.append(vals if vals else [0])
+
+    bp = ax.boxplot(box_data, positions=positions, widths=0.6,
+                    patch_artist=True, showmeans=True,
+                    meanprops=dict(marker='D', markerfacecolor='white',
+                                   markeredgecolor='black', markersize=6))
+
+    for patch, color, alpha in zip(bp['boxes'], colors, alphas):
+        patch.set_facecolor(color)
+        patch.set_alpha(alpha)
+
+    for i, (vals, color) in enumerate(zip(box_data, colors)):
+        jitter = np.random.normal(0, 0.08, len(vals))
+        ax.scatter([i + j for j in jitter], vals, color=color,
+                   alpha=0.4, s=20, zorder=3, edgecolors='none')
+
+    # N and mean annotations inside each box
+    for i, vals in enumerate(box_data):
+        mean_val = np.mean(vals)
+        median_val = np.median(vals)
+        ax.text(i, median_val + 3, f'N={len(vals)}',
+                ha='center', va='bottom', fontsize=8, fontweight='bold',
+                bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8))
+
+    ax.axhline(y=0, color='black', linewidth=1, linestyle='-', alpha=0.5)
+    ax.set_xticks(positions)
+    ax.set_xticklabels([g[2] for g in groups], fontsize=11)
+    ax.set_ylabel('Development Score (Last - First Turn)', fontsize=12)
+    ax.set_title('Tutor Development by Condition and Learner Architecture',
+                 fontsize=14, fontweight='bold')
+
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor=BASE_COLOR, alpha=0.5, label='Baseline / Unified'),
+        Patch(facecolor=BASE_COLOR, alpha=1.0, label='Baseline / Ego-Superego'),
+        Patch(facecolor=RECOG_COLOR, alpha=0.5, label='Recognition / Unified'),
+        Patch(facecolor=RECOG_COLOR, alpha=1.0, label='Recognition / Ego-Superego'),
+    ]
+    ax.legend(handles=legend_elements, loc='lower right', fontsize=9)
+
+    fig.text(0.5, -0.02,
+             'Ego-superego learners consistently reduce development decline. '
+             'Light = unified; solid = ego-superego. Diamond = mean.',
+             ha='center', fontsize=9, color='gray', style='italic')
+
+    plt.tight_layout()
+    path = os.path.join(FIGURES_DIR, 'figure-conditional-boxplots.png')
+    plt.savefig(path, bbox_inches='tight')
+    plt.close()
+    print(f'  -> {path}')
+
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -903,7 +1173,16 @@ def main():
     figure_development_trajectories(rows)
     figure_scenario_effects(rows)
 
-    print(f'\nDone. 10 figures generated in {FIGURES_DIR}/')
+    # New WS1 figures: load all 3 models for pooled trajectory analysis
+    print('\nLoading all-models data (DeepSeek + Haiku + Gemini Flash)...')
+    all_rows = load_all_models_data()
+    print(f'  Loaded {len(all_rows)} rows from cells 80-87 (3 models, Sonnet judge, v2.2)')
+
+    figure_adaptation_faceted(all_rows)
+    figure_scissors_plot(all_rows)
+    figure_conditional_boxplots(all_rows)
+
+    print(f'\nDone. 13 figures generated in {FIGURES_DIR}/')
 
     print('\n--- Figure Plan Summary ---')
     print('''

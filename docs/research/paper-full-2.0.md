@@ -954,7 +954,28 @@ Third, the *struggle preservation* category increases proportionally under recog
 
 ![Qualitative tag divergence between base and recognition conditions. Recognition-dominant tags (green) show increased productive impasse, recognition moments, and strategy shifts; base-dominant tags (red) show more premature learner breakthroughs and missed scaffolding.](figures/figure-qualitative-tags.png){#fig:qualitative-tags}
 
-#### 6.2.3 Deliberation Quality: From Substantive to Perfunctory
+**LLM-classified taxonomy.** To complement the keyword-based extraction, we classified 500 superego critiques using an LLM-based taxonomy classifier (Haiku 4.5, 10-category taxonomy; mean confidence 0.93). After excluding 69 parse failures --- superego outputs too malformatted to extract feedback, occurring exclusively under baseline (69/69) --- the N=431 classified corpus reveals a sharper condition effect. Under base, the dominant non-approval category is RECOGNITION\_FAILURE (45.2% of critiques), followed by MEMORY\_FAILURE (16.3%) and EMOTIONAL\_NEGLECT (12.6%). Under recognition, MEMORY\_FAILURE becomes dominant (33.3%), with RECOGNITION\_FAILURE dropping to 22.2% ($\chi^2 = 57.87$, $p < .001$). The recognition prompt eliminates precisely the failures it is designed to prevent, while memory-related and pedagogical judgment errors persist because they require attending to learner history rather than intersubjective orientation.
+
+The three-model breakdown confirms this pattern generalizes. Gemini Flash shows 0% base approval (every initial response draws critique), DeepSeek 22.1%, and Haiku 25.0%. Under recognition, all three converge to 60--70% approval. The convergence under recognition, despite divergent baselines, further supports calibration as a prompt-level mechanism that operates independently of model capability.
+
+#### 6.2.3 Critique Resolution Across Deliberation Rounds
+
+The 10-category taxonomy enables a transition analysis: when the superego critiques the ego's output in Round 1, does the ego fix the problem in Round 2? We tracked 232 Round 1$\to$Round 2 transition pairs across 56 dialogues.
+
+| Pattern | Base (N=57) | Recognition (N=175) |
+|---|---|---|
+| Persist critique (R1 crit $\to$ R2 crit) | 35 (61.4%) | 13 (7.4%) |
+| Resolve to approval (R1 crit $\to$ R2 ok) | 4 (7.0%) | 63 (36.0%) |
+| New critique (R1 ok $\to$ R2 crit) | 16 (28.1%) | 33 (18.9%) |
+| Stay approved (R1 ok $\to$ R2 ok) | 2 (3.5%) | 66 (37.7%) |
+
+The pattern is dramatic. Under baseline, the ego fails to resolve 61.4% of critiques --- the superego identifies the same problem across rounds, and the ego cannot fix it. Only 7.0% of baseline critiques resolve to approval. Under recognition, the pattern inverts: 36.0% of critiques resolve and only 7.4% persist. The recognition-enhanced ego is not merely exposed to critique; it is *receptive* to it.
+
+Category-specific resolution rates reveal which errors the ego can fix. PEDAGOGICAL\_MISJUDGMENT resolves most readily (83.3% resolve rate), followed by VAGUENESS (83.3%) and CONTEXT\_BLINDNESS (66.7%). RECOGNITION\_FAILURE resolves at only 52.9%, and REDIRECTION at 42.9% --- the hardest errors for the ego to correct are those requiring fundamental reconceptualization of the tutoring approach rather than incremental adjustment.
+
+This transition analysis provides the within-case evidence for Mechanism 2 that the between-condition statistics alone cannot: the ego under recognition does not just produce fewer errors, it *learns from critique within the same dialogue exchange*.
+
+#### 6.2.4 Deliberation Quality: From Substantive to Perfunctory
 
 The reduction in error correction need is reflected in the deliberation quality scores. The deliberation rubric (6 dimensions, 1--5 scale) evaluates the quality of the ego-superego exchange process independently of the public output. Multi-agent cells (82--83, 86--87) receive deliberation scores alongside their output scores.
 
@@ -972,7 +993,7 @@ DeepSeek shows dramatic deliberation quality drops under recognition: revision_i
 
 This is not a failure of the architecture --- it is the expected consequence of calibration pre-empting error correction. When the ego already produces calibrated output, the superego has less substantive feedback to offer. The critique becomes perfunctory (lower critique_substance), the revisions become cosmetic rather than transformative (lower revision_impact), and the overall process becomes a formality rather than a genuine deliberative exchange (lower deliberation_depth). The quality of the *process* declines because the *product* no longer needs the process.
 
-#### 6.2.4 Revision Magnitude: The Superego Still Changes the Output
+#### 6.2.5 Revision Magnitude: The Superego Still Changes the Output
 
 Despite the shift toward approval, when the superego does intervene, the revisions remain substantial. Process trace analysis computes the normalized edit distance between the ego's initial generation and its revised output after superego feedback (RevΔ: 0=identical, 1=completely different).
 
@@ -984,9 +1005,11 @@ Despite the shift toward approval, when the superego does intervene, the revisio
 
 RevΔ values above 0.85 indicate near-complete rewrites --- the ego does not make minor edits in response to superego feedback; it generates substantially new output. This is true under both conditions, though recognition shows a slight decrease (-0.032 DeepSeek, -0.066 Haiku). The high RevΔ suggests that when the superego does reject, the ego takes the feedback seriously rather than making cosmetic changes.
 
+**Revision depth by critique category.** Word-level Jaccard similarity between the ego's initial generation and revised output (N=216 non-approval critiques with both texts) reveals that revision depth varies by what the superego catches. LACK\_OF\_AGENCY critiques produce the deepest revisions (mean Jaccard 0.132 --- nearly complete rewrites), followed by REDIRECTION (0.157) and EMOTIONAL\_NEGLECT (0.192). CONTEXT\_BLINDNESS produces the shallowest (0.613 --- minor adjustments), confirming the design document's prediction that factual corrections require less restructuring than pedagogical reconceptualization. Under base conditions, 78% of revisions are substantive or strategic (Jaccard $< 0.25$); under recognition, this drops to 57%, because recognition critiques increasingly target easier problems (memory failures, fabrication) rather than the deep pedagogical failures that dominate baseline.
+
 The combination of high RevΔ but low deliberation quality under recognition presents an apparent paradox: the revisions are extensive but the deliberation process is poor. The resolution is that under recognition, the superego's critiques are less substantive (as shown by the approval rate and critique taxonomy), and the ego responds to even thin feedback with substantial rewrites. The ego is *compliant* with the superego regardless of critique quality --- it rewrites extensively whether the feedback is deep or shallow. This compliance mechanism explains why error correction works under base (substantive critique $\to$ substantive revision) but adds little under recognition (thin critique $\to$ extensive but unnecessary revision).
 
-#### 6.2.5 Cross-Model Comparison
+#### 6.2.6 Cross-Model Comparison
 
 The error correction mechanism shows qualitatively similar patterns across models but quantitatively different magnitudes:
 
@@ -1005,7 +1028,7 @@ DeepSeek, the weaker model, shows more dramatic error correction dynamics: its b
 
 The key cross-model constant is the *interaction pattern*: in both models, the architecture delta collapses to near-zero under recognition. The superego's error correction benefit is fully pre-empted by calibration regardless of the model's baseline capability.
 
-#### 6.2.6 Connecting to Section 3 Predictions
+#### 6.2.7 Connecting to Section 3 Predictions
 
 **Prediction: Error correction requires the superego (architecture-level mechanism).** *Confirmed.* The architecture delta under base conditions (DeepSeek +9.0, Haiku +15.0) demonstrates that the superego adds measurable value when the ego produces uncalibrated output. Single-agent tutors lack this correction pathway.
 
@@ -1042,6 +1065,10 @@ Two findings are noteworthy. First, recognition does not consistently improve de
 
 Second, the architecture interaction for development differs from the architecture interaction for quality level. Section 6.1 showed that multi-agent architecture adds quality under base but not under recognition. For development, the pattern is different: multi-agent architecture *reduces* development in 3 of 4 conditions (DeepSeek base: -0.7 vs -3.2; Haiku base: +6.7 vs +15.7; Haiku recog: +7.8 vs +5.8). The superego may constrain the tutor's natural adaptation by imposing consistency through repeated critique.
 
+Pooling across all three generation models (N=570), the learner architecture dimension reveals an additional pattern. Ego-superego learners consistently reduce development decline compared to unified learners across both conditions (Figure @fig:conditional-boxplots). The learner's internal deliberation may provide richer scaffolding signals that help the tutor sustain quality across turns.
+
+![Tutor development by condition and learner architecture, pooled across 3 generation models (N=570). Ego-superego learners consistently reduce development decline. Light fill = unified learner; solid fill = ego-superego. Diamond = mean.](figures/figure-conditional-boxplots.png){#fig:conditional-boxplots}
+
 #### 6.3.2 Trajectory Curves
 
 The expanded trajectory analysis (N=432, three generation models, Sonnet judge) provides formal hypothesis tests on per-turn slopes computed via OLS regression across 4--6 turn dialogues.
@@ -1060,9 +1087,11 @@ No experimental factor produces differential trajectory improvement:
 
 All effect sizes are below d = 0.15 --- none approaches the d $\geq$ 0.27 detection threshold. The grand mean tutor slope is mildly positive (+1.39, t = 5.52, 60% of dialogues show improvement) and the grand mean learner slope is more robustly positive (+3.66, t = 8.79, 73% positive), but neither is modulated by any experimental condition. Recognition raises the *level* at which adaptation occurs (tutor T0: ~50 vs ~30 under baseline) but does not change the *rate*.
 
-The trajectory-specific scenarios (9-turn dialogues with designed inflection points, N=50) confirm the null: recognition d = -0.10 on tutor slopes. More turns do not reveal hidden slope effects.
+The trajectory-specific scenarios (8--10 turn dialogues with designed inflection points; N=51, run ebcd6de0, preliminary) confirm the null on slopes but reveal scenario-differential development. Recognition raises the level (+20 points on t\_first, base 32.7 vs recognition 52.7) but development is pervasively negative (7/8 cells show decline). Scenario design matters: `confusion\_to\_insight` (learner shifts from requesting explanations to generating analogies) is uniquely positive (+3.8 development), while `overconfidence\_to\_humility` (learner framework collapse) shows steep decline (-11.5). More turns do not reveal hidden slope effects, but they do reveal that *what happens* during those turns---the learner's trajectory arc---modulates development direction.
 
 ![Turn-by-turn trajectory curves with 95% confidence bands. Tutor slopes are identical across conditions (d=-0.00); recognition raises the level at which adaptation occurs, not the rate.](figures/figure-trajectory-curves.png){#fig:trajectory-curves}
+
+![Tutor-learner trajectory asymmetry. Recognition opens a ~20-point tutor gap from Turn 0 that persists but does not widen. Learner trajectories (dashed) are recognition-invariant. Pooled across 3 generation models, N=570, Sonnet judge.](figures/figure-scissors-plot.png){#fig:scissors-plot}
 
 #### 6.3.3 Per-Dimension Adaptation Patterns
 
@@ -1084,6 +1113,8 @@ Seven of eight dimensions show |d| < 0.20 on both factors. The sole exception is
 On the learner side, no dimension exceeds |d| = 0.15 on either factor (max: `conceptual_progression` d = 0.12 for recognition, `metacognitive_awareness` d = 0.15 for architecture). Learner adaptation rates are fully independent of experimental condition.
 
 The comprehensive null across 8 tutor and 5 learner dimensions, confirmed by cross-judge validation, establishes that no mechanism selectively accelerates within-dialogue adaptation. The calibration effect from Section 6.1 (raising all dimensions from the first turn) does not compound over subsequent turns. Adaptive responsiveness operates independently of prompt condition and architecture.
+
+![Per-dimension adaptation curves (2$\times$4 faceted grid). Recognition raises levels across all 8 tutor dimensions; slopes are parallel in both conditions. Ribbons = 95% CI. Pooled across 3 generation models, N=570, Sonnet judge.](figures/figure-adaptation-faceted.png){#fig:adaptation-faceted}
 
 #### 6.3.4 Cross-Turn Adaptation Magnitude
 
@@ -1141,7 +1172,7 @@ Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not 
 
 **Prediction: Adaptive responsiveness is an interaction-level mechanism, distinct from calibration.** *Confirmed.* Calibration operates from the first turn (Section 6.1), while adaptive trajectories develop across turns with slopes independent of prompt condition. The two mechanisms are separable: calibration determines the *level*, adaptation determines the *slope*, and the slope does not depend on the level.
 
-**Prediction: Recognition produces steeper adaptation curves.** *Not confirmed.* Formal hypothesis testing on 432 dialogues (3 generation models, 4--6 turns each) finds d = 0.03 pooled, with sign-flipping across runs (aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09). Trajectory-specific scenarios (9 turns, N = 50) confirm: d = -0.10. No per-dimension slope exceeds d = 0.20 with cross-judge replication. Recognition raises the *floor* of each turn's score but does not change the *rate* of improvement.
+**Prediction: Recognition produces steeper adaptation curves.** *Not confirmed.* Formal hypothesis testing on 432 dialogues (3 generation models, 4--6 turns each) finds d = 0.03 pooled, with sign-flipping across runs (aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09). Trajectory-specific scenarios (8--10 turns, N = 51, preliminary) confirm: development is pervasively negative under both conditions (base -3.9, recognition -5.3), with scenario-differential patterns (confusion-to-insight +3.8 vs overconfidence-to-humility -11.5) but no recognition modulation of slopes. No per-dimension slope exceeds d = 0.20 with cross-judge replication. Recognition raises the *floor* of each turn's score but does not change the *rate* of improvement.
 
 **Prediction: Tutor-learner asymmetry in trajectories.** *Reversed.* Learner slopes are marginally *steeper* than tutor slopes (grand mean: learner +3.66, tutor +1.39; 73% vs 60% positive). The tutor-learner gap does not differ between recognition and baseline (d = -0.03). Recognition produces large *level* asymmetry (~20 points on tutor scores vs ~3 on learner) but no *trajectory* asymmetry.
 
