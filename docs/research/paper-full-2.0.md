@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.11"
+version: "3.0.12"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -32,6 +32,8 @@ The dominant paradigm in AI-assisted education treats learning as information tr
 This paper proposes an alternative grounded in Hegel's theory of mutual recognition. In the *Phenomenology of Spirit* [@Hegel1977PhenomenologyMiller], Hegel argues that genuine self-consciousness requires recognition from another consciousness that one in turn recognizes as valid. The master-slave dialectic reveals that one-directional recognition fails: the master's self-consciousness remains hollow because the slave's acknowledgment, given under duress, does not truly count. Only mutual recognition---where each party acknowledges the other as an autonomous subject---produces genuine selfhood.
 
 The connection between Hegelian thought and pedagogy is well established. Vygotsky's zone of proximal development [@vygotsky1978] presupposes a dialogical relationship that echoes Hegel's mutual constitution of self-consciousness. The German *Bildung* tradition frames education as self-formation through encounter with otherness [@stojanov2018], and contemporary recognition theory [@honneth1995] has been applied to educational contexts where the struggle for recognition shapes learning outcomes [@huttunen2007]. Our contribution is to operationalize these philosophical commitments as concrete design heuristics for AI tutoring systems---and then to trace the *mechanisms* through which those heuristics alter system behavior.
+
+A terminological clarification is needed at the outset. "Recognition" operates in this paper at three nested levels. First, as **philosophical inspiration**: Hegel's account of mutual recognition provides the theoretical motivation for treating learners as autonomous subjects whose perspectives genuinely shape the interaction. Second, as **operational design heuristic**: recognition theory is translated into specific prompt instructions (engage with the learner's interpretation, pose questions rather than provide answers, treat resistance as pedagogically productive) and architectural choices (the superego critiques for genuine engagement, not just correctness). Third, as **a family of observable discourse effects**: recognition-enhanced tutors ask more questions, produce less variable output, and revise substantively rather than cosmetically after critique. The empirical claims in this paper concern primarily the third level---what the prompts and architecture *do*---with the first level providing motivation and the second providing implementation. We do not claim that the system instantiates mutual recognition in Hegel's philosophical sense; we claim that design heuristics drawn from recognition theory produce measurable and traceable effects on system behavior.
 
 ### The ablative finding
 
@@ -2576,6 +2578,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.12** (2026-03-07)
+:   **Three senses of "recognition"**: Added terminological clarification paragraph to §1 (after pedagogy framing, before "The ablative finding") explicitly distinguishing recognition as (1) philosophical inspiration (Hegel), (2) operational design heuristic (prompt instructions and architectural choices), and (3) observable discourse effects (question-asking, variance reduction, substantive revision). States that empirical claims concern primarily the third level. Responds to external review concern about construct validity and double duty of "recognition."
 
 **v3.0.11** (2026-03-07)
 :   **Clarify evidence status markers in §3**: Renamed three "Missing evidence" markers (§3.2, mechanisms 1--3) to "Evidence needed beyond pilot" and added forward references (*Addressed in Section 6.X*) to prevent readers from misinterpreting them as gaps in the current paper. Verified provable discourse counts (119 claims, 18 adapters) remain accurate.
