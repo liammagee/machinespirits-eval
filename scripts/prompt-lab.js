@@ -234,9 +234,6 @@ function inferJudgeSourceFromCliArgs() {
   return getOption('judge', null) || getOption('judge-cli', null) ? 'explicit' : 'default';
 }
 
-function getDefaultPromptLabRecommenderSelection() {
-  return { recommenderRef: null, recommenderCli: DEFAULT_RECOMMENDER_CLI, recommenderCliModel: null };
-}
 
 function formatCliLabel(cli, modelOverride = null) {
   const normalized = normalizeCliName(cli);
@@ -1294,7 +1291,7 @@ function buildRecommendationPrompt(session, basisIteration, basisResults, prompt
   const analysis = promptRecommendationService.analyzeResults(basisResults);
   const scenario = evalConfigLoader.getScenario(session.scenarioId);
   const basisSummary = basisIteration?.summary || null;
-  const latestRow = basisResults[basisResults.length - 1] || null;
+
   const structuralInventory = buildStructuralInventory(promptState, allowedPrompts);
   const promptSections = allowedPrompts
     .map((prompt) => {
@@ -1717,7 +1714,7 @@ async function generateRecommendation(session, options = {}) {
 
   let payload;
   let responseFormat = 'full-content';
-  let fallback = {
+  const fallback = {
     attempted: false,
     succeeded: false,
     format: null,
