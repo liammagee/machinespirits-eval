@@ -19,11 +19,11 @@ header-includes: |
 
 A companion pilot study established that recognition-enhanced prompts and multiagent architecture produce large effects on AI tutoring quality (d=1.11 in a $2 \times 2 \times 2$ factorial, N=4,312). This paper asks: *through what mechanisms?*
 
-We derive three separable mechanisms from Hegel's recognition theory, each at a distinct architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique), and **adaptive responsiveness** (interaction-level turn-by-turn adaptation). To trace these mechanisms, we adapt process tracing---a methodology from comparative politics---for AI agent architectures, combining superego critique taxonomy, revision delta analysis, and trajectory analysis within a provable discourse framework that machine-verifies every mechanism claim against data.
+We derive three candidate mechanisms from Hegel's recognition theory, each at a distinct architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique), and **adaptive responsiveness** (interaction-level turn-by-turn adaptation). To trace these mechanisms, we adapt process tracing---a methodology from comparative politics---for AI agent architectures, combining superego critique taxonomy, revision delta analysis, and trajectory analysis within a provable discourse framework that machine-verifies every mechanism claim against data.
 
-Testing the model on a $2 \times 2$ factorial (recognition $\times$ architecture) across three structurally different generation models (DeepSeek V3.2, N=146; Haiku 4.5, N=163; Gemini Flash, N=144), validated by three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4; 1,296 total scored rows, zero nulls), we find that calibration is the dominant mechanism: recognition narrows within-response dimension variance (d=0.52--0.64), lifts the weakest dimensions most, and operates identically without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction and calibration interact through *substitution* on strong models---the superego provides +9--15 points under baseline but collapses to near-zero under recognition---but through *addition* on weaker models, where base quality is low enough that neither mechanism alone saturates the improvement space. This generation-quality boundary condition transforms the substitution finding from a categorical claim to a moderated one. Adaptive responsiveness is real (cross-turn adaptation $>$0.79) but not recognition-specific: tutor development slopes are identical across conditions ($d = -0.00$), with trajectories model-dependent rather than prompt-dependent.
+Testing the model on a $2 \times 2$ factorial (recognition $\times$ architecture) across three structurally different generation models (DeepSeek V3.2, N=146; Haiku 4.5, N=163; Gemini Flash, N=144), validated by three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4; 1,296 total scored rows, zero nulls), we find that **two of the three predicted mechanisms are confirmed and one is disconfirmed**. Calibration is the dominant mechanism: recognition narrows within-response dimension variance (d=0.52--0.64), lifts the weakest dimensions most, and operates identically without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction and calibration interact through *substitution* on strong models---the superego provides +9--15 points under baseline but collapses to near-zero under recognition---but through *addition* on weaker models, where base quality is low enough that neither mechanism alone saturates the improvement space. This generation-quality boundary condition transforms the substitution finding from a categorical claim to a moderated one. Adaptive responsiveness, however, is **not a distinct mechanism**: formal tests on N=432 multi-turn dialogues find that no experimental factor modulates within-dialogue trajectories (all d $\leq$ 0.15, well-powered to detect d $\geq$ 0.27), confirmed across all three judges. Tutors do improve modestly across turns (+3.9 points early-to-late, t=4.88), but this improvement is identical across conditions---incidental adaptation at a mechanism-determined baseline, not a third mechanism. The three-mechanism model reduces to **two confirmed mechanisms and one well-powered null**.
 
-All three mechanisms operate on tutor production, but the tutor-learner asymmetry is itself model-dependent: on strong models, tutor $d \approx 1.85$ vs learner $d \approx 0.16$--$0.25$ ($7$--$12\times$ ratio); on a weaker model (Gemini Flash), the gap narrows dramatically (tutor $d \approx 1.87$, learner $d \approx 1.20$, ratio $1.6\times$), suggesting a generation-quality threshold below which recognition's tutor improvements also benefit learner engagement. A distinctive contribution is the evaluation apparatus itself---provable discourse infrastructure, four rubric iterations, test suite as analytical provenance---as a transferable methodology for mechanistic LLM evaluation.
+Both confirmed mechanisms operate on tutor production, and the tutor-learner asymmetry is itself model-dependent: on strong models, tutor $d \approx 1.85$ vs learner $d \approx 0.16$--$0.25$ ($7$--$12\times$ ratio); on a weaker model (Gemini Flash), the gap narrows dramatically (tutor $d \approx 1.87$, learner $d \approx 1.20$, ratio $1.6\times$), suggesting a generation-quality threshold below which recognition's tutor improvements also benefit learner engagement. A distinctive contribution is the evaluation apparatus itself---provable discourse infrastructure, four rubric iterations, test suite as analytical provenance---as a transferable methodology for mechanistic LLM evaluation.
 
 ## 1. Introduction
 
@@ -53,17 +53,17 @@ Five specific findings from the pilot study resist ablative explanation:
 
 5. **Unexamined deliberation-output relationship.** The dialogue traces contain ego-superego negotiations, but these internal processes have not been systematically correlated with external output quality.
 
-### Three mechanisms
+### Three candidate mechanisms
 
-This paper argues that recognition-enhanced prompts and multiagent architecture produce their effects through three separable mechanisms:
+This paper derives three candidate mechanisms from recognition theory and tests each against multi-turn factorial data:
 
 1. **Calibration** (prompt-level). Recognition prompts narrow the tutor's output distribution, producing more uniform quality rather than higher peaks. The pilot study found dimension variance reduction in 52/55 within-run comparisons (d=-0.47 to d=-1.00 depending on analysis scope), the single most reliable recognition signal. Calibration operates even without a superego, because it is a prompt-level constraint on the response space.
 
 2. **Error correction** (architecture-level). The superego functions as a structural feedback channel, but its effectiveness depends on the quality of the ego's initial output. The pilot study found a 35.9-point recognition $\times$ architecture interaction (Paper 1.0 Section 6.3). The mechanism data (Section 6.2, Section 6.4) reveals this as a *substitution* interaction on strong generation models: the superego provides substantial benefit under baseline conditions (+9--15 points), catching errors the ego cannot self-correct, but this benefit collapses to near-zero under recognition because calibration pre-empts the failures the superego would catch. However, on a weaker generation model (Gemini Flash), the superego adds +12--17 points *even under recognition*---the mechanisms are additive rather than substitutes, because base quality is low enough that calibration alone cannot handle all failure modes (Section 6.4.1). The superego approval rate shifts dramatically under recognition (DeepSeek: 13%$\to$55%; Haiku: 52%$\to$66%), confirming that a calibrated ego produces fewer errors for the superego to correct.
 
-3. **Adaptive responsiveness** (interaction-level). In multi-turn conversations, both recognition and baseline tutors adapt substantially to learner signals (cross-turn adaptation magnitude AdaptΔ > 0.79). Recognition does not steepen the adaptation rate (tutor slope d = -0.00) but raises the *level* at which adaptation occurs and produces more *consistent* adaptation (lower variance). Development trajectories are model-dependent rather than prompt-dependent: Haiku shows consistent positive development across all conditions, while DeepSeek shows mixed patterns (Section 6.3). The mechanism is better characterized as *model-dependent adaptation at a recognition-determined baseline* rather than recognition-enhanced adaptation.
+3. **Adaptive responsiveness** (interaction-level, *predicted but disconfirmed*). In multi-turn conversations, both recognition and baseline tutors adapt substantially to learner signals (cross-turn adaptation magnitude AdaptΔ > 0.79). However, formal tests on N=432 dialogues find that no experimental factor modulates within-dialogue trajectories: recognition d=0.03 on tutor slopes, all factors d $\leq$ 0.15, with the design well-powered to detect d $\geq$ 0.27 (Section 6.3). Tutors improve modestly across turns (+3.9 points early-to-late), but this improvement is identical across conditions. Adaptive responsiveness is better characterized as *incidental adaptation at a mechanism-determined baseline* rather than a third mechanism.
 
-These mechanisms are separable: calibration is a prompt-level effect (operative from the first turn), error correction is an architecture-level effect (operative within each turn), and adaptive responsiveness is an interaction-level property (operative across turns). Calibration and error correction interact through substitution on strong models (overlapping targets, ~15% additivity deficit) but through near-additivity on weaker models (~10% deficit), while calibration and adaptive responsiveness are independent (slopes do not depend on levels). Crucially, all three operate primarily on tutor *production* rather than learner *reception*---on strong generation models, recognition produces a tutor effect $7$--$12\times$ larger than its learner effect (tutor d $\approx$ 1.85, learner d $\approx$ 0.16--0.25). However, on a weaker model (Gemini Flash), the asymmetry narrows to $1.6\times$ (learner d $\approx$ 1.20), revealing that the recognition $\to$ learner pathway requires a minimum generation quality floor to observe (Section 6.5).
+The two confirmed mechanisms are separable: calibration is a prompt-level effect (operative from the first turn), error correction is an architecture-level effect (operative within each turn). They interact through substitution on strong models (overlapping targets, ~15% additivity deficit) but through near-additivity on weaker models (~10% deficit). Within-dialogue trajectories are independent of both mechanisms (slopes do not depend on levels, d=0.03). Crucially, both confirmed mechanisms operate primarily on tutor *production* rather than learner *reception*---on strong generation models, recognition produces a tutor effect $7$--$12\times$ larger than its learner effect (tutor d $\approx$ 1.85, learner d $\approx$ 0.16--0.25). However, on a weaker model (Gemini Flash), the asymmetry narrows to $1.6\times$ (learner d $\approx$ 1.20), revealing that the recognition $\to$ learner pathway requires a minimum generation quality floor to observe (Section 6.5).
 
 ### Process tracing methodology
 
@@ -79,7 +79,7 @@ A distinctive contribution of this paper is the argument that the evaluation app
 
 The contributions of this paper are:
 
-- A theoretical framework deriving three testable mechanism predictions (calibration, error correction, adaptive responsiveness) from Hegel's recognition theory (Section 3)
+- A theoretical framework deriving three testable mechanism predictions (calibration, error correction, adaptive responsiveness) from Hegel's recognition theory, two of which are confirmed and one disconfirmed (Section 3)
 
 - A process tracing methodology combining superego critique taxonomy, revision delta analysis, and trajectory analysis to trace mechanisms through the system's internal processes (Section 5)
 
@@ -87,9 +87,9 @@ The contributions of this paper are:
 
 - Evidence that error correction and calibration interact through *substitution* on strong models (+9--15 points under baseline, near-zero under recognition) but through *addition* on weaker models (+12--17 points even under recognition), with a generation-quality boundary condition (Section 6.2, Section 6.4)
 
-- Evidence that adaptive responsiveness is real (AdaptΔ > 0.79) but not modulated by any experimental manipulation: formal tests on N = 432 dialogues find d = 0.03 for recognition on tutor slopes and d $\leq$ 0.15 for all factors on all dimensions, confirmed by cross-judge validation. All three mechanisms operate on levels, not slopes (Section 6.3)
+- Evidence that adaptive responsiveness is real (AdaptΔ > 0.79) but **not a distinct mechanism**: formal tests on N = 432 dialogues find d = 0.03 for recognition on tutor slopes and d $\leq$ 0.15 for all factors on all dimensions, confirmed by cross-judge validation. Both confirmed mechanisms operate on levels, not slopes; within-dialogue improvement is incidental and unmodulated (Section 6.3)
 
-- A mechanistic explanation of the tutor-learner asymmetry as model-dependent: on strong models, all three mechanisms operate on tutor production ($7$--$12\times$ tutor-to-learner ratio); on weaker models, improved tutoring also benefits learner engagement ($1.6\times$ ratio), revealing a generation-quality threshold
+- A mechanistic explanation of the tutor-learner asymmetry as model-dependent: on strong models, both confirmed mechanisms operate on tutor production ($7$--$12\times$ tutor-to-learner ratio); on weaker models, improved tutoring also benefits learner engagement ($1.6\times$ ratio), revealing a generation-quality threshold
 
 - A mechanistic explanation of model-dependent architecture effects: models that cannot implement error correction (ego ignores critique) or calibration (cannot follow complex instructions) reverse the expected patterns
 
@@ -97,7 +97,7 @@ The contributions of this paper are:
 
 - The evaluation apparatus itself as a transferable methodology for mechanistic LLM evaluation, including provable discourse infrastructure that machine-verifies paper claims against data (Section 7)
 
-The paper is organized as follows. Section 2 reviews related work in AI tutoring, process tracing, and mechanism-oriented AI research. Section 3 develops the theoretical framework, deriving three mechanism predictions from recognition theory. Section 4 presents the system architecture with emphasis on observability for process tracing. Section 5 describes the process tracing methodology. Section 6 reports mechanism-level results: calibration (Section 6.1), error correction (Section 6.2), adaptive responsiveness (Section 6.3), mechanism interaction (Section 6.4), the tutor-learner asymmetry (Section 6.5), and model dependence (Section 6.6). Section 7 discusses the apparatus-as-method argument. Section 8 addresses limitations, and Section 9 concludes.
+The paper is organized as follows. Section 2 reviews related work in AI tutoring, process tracing, and mechanism-oriented AI research. Section 3 develops the theoretical framework, deriving three candidate mechanism predictions from recognition theory. Section 4 presents the system architecture with emphasis on observability for process tracing. Section 5 describes the process tracing methodology. Section 6 reports mechanism-level results: calibration (Section 6.1), error correction (Section 6.2), adaptive responsiveness and its disconfirmation as a distinct mechanism (Section 6.3), mechanism interaction (Section 6.4), the tutor-learner asymmetry (Section 6.5), and model dependence (Section 6.6). Section 7 discusses the apparatus-as-method argument. Section 8 addresses limitations, and Section 9 concludes.
 
 ## 2. Related Work
 
@@ -197,9 +197,9 @@ Fifth, the dialogue traces contain full ego-superego negotiations, but these int
 
 Effect sizes answer "how much?" Process tracing answers "through what?"
 
-### 3.2 Three Mechanisms Predicted by Recognition Theory
+### 3.2 Three Candidate Mechanisms Predicted by Recognition Theory
 
-We argue that recognition-enhanced prompts and multiagent architecture produce their effects through three separable mechanisms, each derivable from specific components of Hegel's recognition framework.
+We derive three candidate mechanisms from specific components of Hegel's recognition framework. Each generates testable predictions with explicit null hypotheses; Section 6 evaluates each prediction against multi-turn factorial data, confirming two and disconfirming the third.
 
 #### Mechanism 1: Calibration (prompt-level)
 
@@ -243,11 +243,11 @@ We argue that recognition-enhanced prompts and multiagent architecture produce t
 
 **Key distinction.** Adaptive responsiveness requires *both* calibration (the prompt orients the tutor toward learner-specific signals) *and* error correction (the superego catches when the tutor is repeating itself). It is an emergent property of their interaction over time, not a third independent mechanism. This makes it the strongest test of the three-mechanism model: if calibration and error correction are genuinely operative, adaptive responsiveness should emerge in multi-turn settings without additional prompting.
 
-**Note on evidence status.** The Section 6 data (cells 80--87) provides *weak* support for this prediction. Adaptive responsiveness is real (AdaptΔ > 0.79 in all conditions), but recognition does not steepen adaptation slopes (tutor slope d = -0.00). Development trajectories are model-dependent (Haiku improves consistently; DeepSeek shows mixed patterns including decline) rather than prompt-dependent. Adaptive responsiveness is better characterized as *model-dependent adaptation at a recognition-determined baseline* than as a recognition-specific mechanism (Section 6.3.7).
+**Note on evidence status.** The Section 6 data (cells 80--87) **disconfirms** this prediction. Tutors do adapt across turns (AdaptΔ > 0.79 in all conditions), but formal tests on N=432 dialogues find that no experimental factor modulates adaptation slopes: recognition d=0.03 on tutor slopes, architecture d=0.07, all dimensions d $\leq$ 0.15, with the design well-powered to detect d $\geq$ 0.27. Cross-judge validation confirms: the one dimension that showed d=0.28 under Sonnet (adaptive\_responsiveness) fails replication under Gemini (d=0.09) and GPT (d=0.11). Tutors improve modestly across turns (+3.9 points early-to-late, t=4.88, p<.001), but this improvement is identical across conditions---incidental adaptation at a mechanism-determined baseline, not a recognition-specific mechanism. The three-mechanism model reduces to two confirmed mechanisms and one well-powered null (Section 6.3.8).
 
-### 3.3 The Three-Mechanism Interaction Model
+### 3.3 The Mechanism Interaction Model
 
-The three mechanisms map onto different levels of the architecture:
+The three candidate mechanisms map onto different levels of the architecture:
 
 ```
                     PROMPT LEVEL              ARCHITECTURE LEVEL
@@ -278,7 +278,7 @@ The three mechanisms map onto different levels of the architecture:
                    └──────────────────────────────────┘
 ```
 
-**Separability prediction.** If the three mechanisms are genuinely separable, the existing 2x2 factorial design can be reinterpreted as a mechanism isolation matrix. Paper 2.0 tests this directly using the messages-mode cells (80--87), which implement the full 2x2x2 factorial under multi-turn conversation:
+**Separability prediction.** If the candidate mechanisms are genuinely separable, the existing 2x2 factorial design can be reinterpreted as a mechanism isolation matrix. Paper 2.0 tests this directly using the messages-mode cells (80--87), which implement the full 2x2x2 factorial under multi-turn conversation:
 
 | Factorial Cell | Paper 2.0 Cells | Calibration | Error Correction | Adaptive Resp. | Predicted Outcome |
 |---|---|---|---|---|---|
@@ -289,7 +289,7 @@ The three mechanisms map onto different levels of the architecture:
 
 **Pilot data alignment.** The factorial means from the pilot study (N=350, cells 1--8) partially align with this prediction. Recognition produces consistent improvement regardless of architecture (+15.6 pts for unified learners, +13.0 pts for ego_superego learners), consistent with calibration as the dominant mechanism. The predicted *harm* from baseline multiagent is not clearly observed in the pilot aggregate factorial, though qualitative evidence (100% stalling in bilateral baseline) strongly supports it at the individual dialogue level. Messages-mode data (cells 80--87, DeepSeek V3.2 N=146, Haiku 4.5 N=163) confirms calibration as the dominant mechanism: recognition d=1.88 (DeepSeek), d=1.84 (Haiku), with the architecture delta collapsing from +9--15 points under baseline to near-zero under recognition---a substitution interaction rather than the predicted synergy (Section 6.4).
 
-**The tutor-learner asymmetry explained.** The tutor-learner asymmetry --- large tutor-side effects (d=1.03), near-zero learner-side effects --- follows directly from the mechanism model. All three mechanisms operate on tutor *production*: calibration constrains what the tutor generates, error correction filters what it outputs, and adaptive responsiveness shapes how it evolves. None directly modifies learner *reception*. The synthetic learner generates responses according to its own architecture; it is not "taught" by better tutoring within a 3--5 turn window. The asymmetry is a structural property of the mechanism model, not a measurement artifact.
+**The tutor-learner asymmetry explained.** The tutor-learner asymmetry --- large tutor-side effects (d=1.03), near-zero learner-side effects --- follows directly from the mechanism model. Both confirmed mechanisms operate on tutor *production*: calibration constrains what the tutor generates, error correction filters what it outputs. Neither directly modifies learner *reception*. The disconfirmation of adaptive responsiveness as a distinct mechanism strengthens this explanation: even the interaction-level pathway does not differentiate conditions, leaving only prompt-level and architecture-level effects---both tutor-internal. The synthetic learner generates responses according to its own architecture; it is not "taught" by better tutoring within a 3--5 turn window. The asymmetry is a structural property of the mechanism model, not a measurement artifact.
 
 ### 3.4 Recognition Theory Predicts the Failures
 
@@ -305,17 +305,17 @@ A strong explanatory framework predicts not just successes but failure modes. Ea
 
 ### 3.5 Connecting Mechanisms to Recognition Theory
 
-The three mechanisms are not arbitrary analytical constructs. Each corresponds to a specific component of Hegel's recognition framework:
+The candidate mechanisms are not arbitrary analytical constructs. Each corresponds to a specific component of Hegel's recognition framework:
 
-| Hegelian Concept | Mechanism | Operationalization |
-|---|---|---|
-| **Mutual acknowledgment** --- recognizing the other as a valid source of meaning | Calibration | Tutor's output distribution constrained by the specific content of the learner's contribution |
-| **Formative activity (*Bildung*)** --- self-formation through the labor of understanding | Error correction | The ego is genuinely changed by encounter with the superego's critique, not merely compliant |
-| **Dialectical unfolding** --- self-consciousness develops through stages of encounter | Adaptive responsiveness | The tutor's approach evolves across turns in response to the specific trajectory of the conversation |
+| Hegelian Concept | Mechanism | Operationalization | Status |
+|---|---|---|---|
+| **Mutual acknowledgment** --- recognizing the other as a valid source of meaning | Calibration | Tutor's output distribution constrained by the specific content of the learner's contribution | **Confirmed** |
+| **Formative activity (*Bildung*)** --- self-formation through the labor of understanding | Error correction | The ego is genuinely changed by encounter with the superego's critique, not merely compliant | **Confirmed** (model-dependent) |
+| **Dialectical unfolding** --- self-consciousness develops through stages of encounter | Adaptive responsiveness | The tutor's approach evolves across turns in response to the specific trajectory of the conversation | **Disconfirmed** |
 
-This mapping is a *derivative application*, not a claim about AI consciousness. The tutor does not "recognize" the learner in Hegel's metaphysical sense. But the design heuristic derived from recognition theory produces *measurable functional analogues* of recognition: calibration where there would otherwise be generic responses, genuine self-transformation where there would otherwise be compliance, and temporal development where there would otherwise be stasis.
+This mapping is a *derivative application*, not a claim about AI consciousness. The tutor does not "recognize" the learner in Hegel's metaphysical sense. But the design heuristic derived from recognition theory produces *measurable functional analogues* of the first two components: calibration where there would otherwise be generic responses, and genuine self-transformation where there would otherwise be compliance. The third component---dialectical unfolding across turns---does not manifest as a distinct mechanism: tutors adapt across turns, but this adaptation is identical regardless of experimental condition (Section 6.3). Recognition operates through level-setting (calibration and error correction), not trajectory-shaping.
 
-The contribution of this section is showing that these analogues are not merely *statistically detectable* (the pilot study established this) but *mechanistically traceable* --- each maps to specific internal processes in the architecture that can be observed, classified, and quantified through the methods described in Section 5.
+The contribution of this section is showing that two of the three predicted analogues are not merely *statistically detectable* (the pilot study established this) but *mechanistically traceable* --- each maps to specific internal processes in the architecture that can be observed, classified, and quantified through the methods described in Section 5. The disconfirmation of the third is itself a contribution: it reveals that recognition's temporal dimension---the Hegelian claim that understanding unfolds through staged encounter---does not translate into measurable trajectory differences within the 3--5 turn dialogue window.
 
 ## 4. System Architecture
 
@@ -385,7 +385,7 @@ The scoring pipeline is symmetric across tutor and learner, with rubric-versione
 
 ### 4.6 Factorial Design as Mechanism Isolation
 
-The $2 \times 2 \times 2$ factorial design (Recognition $\times$ Tutor Architecture $\times$ Learner Architecture) maps directly to the three mechanism predictions derived in Section 3:
+The $2 \times 2 \times 2$ factorial design (Recognition $\times$ Tutor Architecture $\times$ Learner Architecture) maps directly to the candidate mechanism predictions derived in Section 3:
 
 | Comparison | Mechanism Tested | What It Isolates |
 |------------|-----------------|------------------|
@@ -429,7 +429,7 @@ The methodology combines three approaches:
 2. **Quantitative confirmation** --- aggregating process-level observations across the full dataset to test mechanism-level predictions (Section 3.2)
 3. **Cross-model replication** --- repeating process analyses under different ego models to separate mechanism effects from model artifacts
 
-Each analytical method targets one or more of the three mechanisms predicted in Section 3.2: calibration (Mechanism 1), error correction (Mechanism 2), and adaptive responsiveness (Mechanism 3).
+Each analytical method targets one or more of the candidate mechanisms predicted in Section 3.2: calibration (M1), error correction (M2), and adaptive responsiveness (M3).
 
 ---
 
@@ -468,7 +468,7 @@ The evaluation rubric underwent four iterations (v1.0$\to$v2.0$\to$v2.1$\to$v2.2
 | **Orchestration (O)** | `adaptive_responsiveness` | 10% | Adaptive responsiveness: turn-over-turn modulation |
 | **Execution (E)** | `productive_difficulty` | 10% | Calibration + adaptation: challenge calibration |
 | **Execution (E)** | `epistemic_integrity` | 10% | Error correction: intellectual honesty |
-| **Recognition** | `recognition_quality` | 15% | All three mechanisms: intersubjective stance |
+| **Recognition** | `recognition_quality` | 15% | Calibration + error correction: intersubjective stance |
 
 The consolidation from 14$\to$8 dimensions was validated through synthetic calibration (r=0.996 against v2.1 scoring on identical responses), confirming that the reduced rubric preserves discriminability while eliminating ceiling-prone and redundant dimensions.
 
@@ -549,7 +549,7 @@ Multi-turn evaluation runs with per-turn scores stored in the `tutor_scores` and
    - **Breakpoint**: Turn at which recognition and baseline diverge
 
 3. **Dimension-specific trajectories**: Separate slopes for each v2.2 rubric dimension. Key hypotheses (from Section 3.2):
-   - **H1**: Recognition tutors show steeper positive slopes on `recognition_quality` and `elicitation_quality` than baseline. **Note**: Section 6.3 found no significant dimension slope differences on any factor (max |d| = 0.15 with cross-judge replication, overall tutor slope d = 0.03, N = 432). H1 is not confirmed; all three mechanisms raise *levels*, not *slopes*.
+   - **H1**: Recognition tutors show steeper positive slopes on `recognition_quality` and `elicitation_quality` than baseline. **Note**: Section 6.3 found no significant dimension slope differences on any factor (max |d| = 0.15 with cross-judge replication, overall tutor slope d = 0.03, N = 432). H1 is not confirmed; both confirmed mechanisms raise *levels*, not *slopes*.
    - **H2**: Tutor-learner slope gap (tutor slope minus learner slope) should be smaller under recognition (more symmetric change)
    - **H3**: After learner confusion signals, recognition tutors show larger positive $\Delta$ on the next turn
    - **H4**: Recognition tutors show more `action_type` diversity across turns (strategy shifting)
@@ -1206,7 +1206,7 @@ Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not 
 
 **Prediction: Multi-agent architecture or learner architecture modulates trajectories.** *Not confirmed.* Neither factor produces slope effects above d = 0.15 on tutor or learner dimensions. The one apparent exception (`adaptive_responsiveness` d = 0.24 under Sonnet) does not replicate under Gemini (d = 0.13) or GPT (d = 0.12).
 
-**Key distinction.** Adaptive responsiveness is real (the tutor changes across turns, AdaptΔ > 0.79) but it is not modulated by any experimental manipulation. All three mechanisms --- recognition, superego architecture, and learner architecture --- operate on *levels*, not *slopes*. The rate of within-dialogue adaptation is determined by the generation model and scenario, not by the prompting or architectural condition. The mechanism is better characterized as *model-dependent adaptation at a recognition-determined baseline* rather than *recognition-enhanced adaptation*.
+**Key distinction.** Adaptive responsiveness is real (the tutor changes across turns, AdaptΔ > 0.79) but it is not modulated by any experimental manipulation. All three experimental factors --- recognition, superego architecture, and learner architecture --- operate on *levels*, not *slopes*. The rate of within-dialogue adaptation is determined by the generation model and scenario, not by the prompting or architectural condition. Adaptive responsiveness is not a third mechanism but rather *incidental adaptation at a mechanism-determined baseline*.
 
 ### 6.4 Mechanism Interaction
 
@@ -1276,27 +1276,27 @@ If the mechanisms were fully independent, the combined effect would be the sum o
 
 The additivity deficit is **model-dependent**: DeepSeek and Haiku show 15--16% deficits (strong substitution), while Gemini Flash shows only 10% (weak substitution, approaching additivity). The pattern is coherent: on stronger models, calibration alone handles most failures, so the superego's contribution is largely redundant. On weaker models, base quality is low enough that calibration leaves substantial room for the superego to add independent value. The deficit from additivity thus provides a continuous measure of mechanism overlap, with generation quality as the moderating variable.
 
-#### 6.4.3 Three-Mechanism Separability
+#### 6.4.3 Mechanism Separability
 
-Section 3 predicted that the three mechanisms operate at different levels (prompt, architecture, interaction) and should be empirically separable. The evidence across Sections 6.1--6.3 supports this:
+Section 3 predicted three candidate mechanisms operating at different levels (prompt, architecture, interaction). The evidence across Sections 6.1--6.3 confirms two and disconfirms the third:
 
-| Mechanism | Level | Key Evidence | Recognition-Dependent? |
+| Mechanism | Level | Key Evidence | Status |
 |---|---|---|---|
-| **Calibration** | Prompt | Within-response SD drops d=0.52--0.64; floor lifts; operates without superego | Yes --- prompt-level |
-| **Error Correction** | Architecture | Approval rate shifts; architecture delta +9--20 under base, ~0 under recognition (strong models) or +12 (weak models) | Partially --- pre-empted by calibration on strong models; additive on weak |
-| **Adaptive Responsiveness** | Interaction | AdaptΔ > 0.79; tutor slopes d=0.03 across conditions (N=432, well-powered null) | No --- model-dependent, not modulated by any experimental factor |
+| **Calibration** | Prompt | Within-response SD drops d=0.52--0.64; floor lifts; operates without superego | **Confirmed** --- prompt-level, recognition-dependent |
+| **Error Correction** | Architecture | Approval rate shifts; architecture delta +9--20 under base, ~0 under recognition (strong) or +12 (weak) | **Confirmed** --- pre-empted by calibration on strong models; additive on weak |
+| **Adaptive Responsiveness** | Interaction | AdaptΔ > 0.79, but tutor slopes d=0.03 across conditions (N=432, well-powered null; all factors d $\leq$ 0.15) | **Disconfirmed** as distinct mechanism --- adaptation exists but is not modulated by any factor |
 
-The mechanisms are separable in three senses:
+The two confirmed mechanisms are separable in three senses:
 
-1. **Temporal separability.** Calibration operates from the first turn (the tutor's initial response is already calibrated under recognition). Error correction operates within each turn (ego $\to$ superego $\to$ revision). Adaptive responsiveness operates across turns (the tutor adjusts between turns). These temporal signatures are empirically distinct.
+1. **Temporal separability.** Calibration operates from the first turn (the tutor's initial response is already calibrated under recognition). Error correction operates within each turn (ego $\to$ superego $\to$ revision). These temporal signatures are empirically distinct. Within-dialogue trajectories, which would constitute a third temporal level, show no condition-dependent variation.
 
-2. **Architectural separability.** Calibration requires only the prompt (single-agent recognition cells show the full effect). Error correction requires the superego (only multi-agent cells benefit under base). Adaptive responsiveness requires neither --- it is a property of the model's ability to learn from the conversation context.
+2. **Architectural separability.** Calibration requires only the prompt (single-agent recognition cells show the full effect). Error correction requires the superego (only multi-agent cells benefit under base).
 
-3. **Interaction separability.** Calibration and error correction interact (substitution on strong models, additivity on weak); calibration and adaptive responsiveness are independent (the slope is the same regardless of the level, d = 0.03); error correction and adaptive responsiveness are also independent (multi-agent slope d = 0.07). No mechanism modulates within-dialogue trajectories.
+3. **Interaction separability.** Calibration and error correction interact (substitution on strong models, additivity on weak). Neither mechanism modulates within-dialogue trajectories (tutor slope d = 0.03 for recognition, d = 0.07 for architecture), confirming that the two confirmed mechanisms operate on *levels*, not *slopes*.
 
 #### 6.4.4 The Variance Reduction Pattern
 
-A unifying finding across all three mechanisms is variance reduction under recognition:
+A unifying finding across multiple analytical levels is variance reduction under recognition:
 
 | Indicator | Base | Recognition | Reduction |
 |---|---|---|---|
@@ -1313,7 +1313,7 @@ Recognition narrows the output distribution on multiple dimensions simultaneousl
 
 #### 6.4.5 Connecting to Section 3 Predictions
 
-**Prediction: The three mechanisms are separable.** *Confirmed.* Calibration is prompt-level, error correction is architecture-level, and adaptive responsiveness is interaction-level. They have distinct temporal signatures, architectural requirements, and recognition dependencies.
+**Prediction: The three candidate mechanisms are separable.** *Partially confirmed.* Calibration (prompt-level) and error correction (architecture-level) are confirmed as separable mechanisms with distinct temporal signatures, architectural requirements, and recognition dependencies. Adaptive responsiveness (interaction-level) is disconfirmed as a distinct mechanism: no experimental factor modulates within-dialogue trajectories (all d $\leq$ 0.15, N=432). The three-level prediction reduces to two confirmed levels.
 
 **Prediction: The mechanisms interact non-additively.** *Confirmed for strong models, not for weak.* Calibration and error correction show a 15--16% deficit from additivity on DeepSeek and Haiku (substitution), but only 10% on Gemini Flash (approaching additivity). The interaction type is **generation-quality dependent**: on strong models, calibration pre-empts most errors the superego would catch (overlapping targets, strong substitution); on weaker models, calibration and error correction address partially independent failure modes (weak substitution, near-additivity). Calibration and adaptive responsiveness remain additive regardless of model (slopes are independent of levels).
 
@@ -1341,7 +1341,7 @@ Inter-judge correlations on the interaction pattern are high: paired by replicat
 
 ### 6.5 Tutor-Learner Asymmetry
 
-The three mechanisms described in Sections 6.1--6.3 operate exclusively on tutor production: calibration constrains the tutor's generation, error correction filters the tutor's output, and adaptive responsiveness governs the tutor's trajectory. None directly modifies the learner's behavior. This section formalizes the resulting asymmetry: recognition dramatically improves tutor quality but produces negligible learner effects.
+The two confirmed mechanisms described in Sections 6.1--6.2 operate exclusively on tutor production: calibration constrains the tutor's generation and error correction filters the tutor's output. The disconfirmation of adaptive responsiveness as a third mechanism (Section 6.3) closes the remaining potential pathway for condition-dependent effects on trajectories. None of the confirmed mechanisms directly modifies the learner's behavior. This section formalizes the resulting asymmetry: recognition dramatically improves tutor quality but produces negligible learner effects.
 
 #### 6.5.1 The Effect Size Gap
 
@@ -1380,7 +1380,7 @@ Three structural factors predict the asymmetry:
 
 1. **Prompt scope.** The recognition prompt appears in the tutor's system context. The learner agent receives the tutor's output but not the tutor's prompt. The learner's own prompt (unified or ego-superego) is identical across base and recognition conditions.
 
-2. **Mechanism pathways.** All three mechanisms act on the tutor: calibration constrains tutor generation, error correction filters tutor output, adaptive responsiveness adjusts tutor approach. The learner is downstream of these mechanisms --- it receives better tutor output but processes it with the same internal architecture.
+2. **Mechanism pathways.** Both confirmed mechanisms act on the tutor: calibration constrains tutor generation, error correction filters tutor output. Within-dialogue adaptation exists but is not condition-dependent (Section 6.3). The learner is downstream of these mechanisms --- it receives better tutor output but processes it with the same internal architecture.
 
 3. **Learner ceiling.** The learner's quality is bounded by its own model capability and prompt, not by the tutor's quality. DeepSeek learner scores range 57--63 regardless of tutor condition; Haiku learner scores range 64--73. The learner's output quality is relatively insensitive to the quality of tutoring it receives, at least within the range of quality variation produced by the recognition intervention.
 
@@ -1468,7 +1468,7 @@ Despite the baseline gaps, the following findings replicate across all three mod
 
 **8. Deliberation visibility.** Seeing internal deliberation adds ~10--15 points to dialogue quality for multi-agent cells, consistent across all 9 judge $\times$ run cells.
 
-![Cross-model replication: mechanism indicators compared across DeepSeek V3.2, Gemini Flash, and Haiku 4.5. All three mechanisms replicate in direction; magnitudes and interaction type vary by model capability.](figures/figure-cross-model-replication.png){#fig:cross-model-replication}
+![Cross-model replication: mechanism indicators compared across DeepSeek V3.2, Gemini Flash, and Haiku 4.5. Both confirmed mechanisms replicate in direction; magnitudes and interaction type vary by model capability. Adaptive responsiveness (trajectory slopes) shows no condition-dependent variation in any model.](figures/figure-cross-model-replication.png){#fig:cross-model-replication}
 
 #### 6.6.3 What Is Model-Dependent
 
@@ -1503,33 +1503,33 @@ The two strongest model-dependent effects are (1) the substitution-to-additivity
 
 #### 6.6.5 Generalizability Assessment
 
-The replication across three structurally different generation models (open-weight MoE, proprietary optimized, and proprietary multimodal) and three independent judges supports the interpretation that the three mechanisms are *general features of recognition-enhanced prompting* rather than artifacts of a specific model architecture or judge. The mechanisms replicate because they operate through the prompt (calibration) or the architectural structure (error correction), both of which are model-independent. Cross-judge validation (Section 6.4.6) confirms that effect directions are unanimous across all 9 judge $\times$ run cells (d = 1.34--1.92), with inter-judge Pearson r = .45--.89 depending on dimension and generation model.
+The replication across three structurally different generation models (open-weight MoE, proprietary optimized, and proprietary multimodal) and three independent judges supports the interpretation that the two confirmed mechanisms are *general features of recognition-enhanced prompting* rather than artifacts of a specific model architecture or judge. The mechanisms replicate because they operate through the prompt (calibration) or the architectural structure (error correction), both of which are model-independent. The disconfirmation of adaptive responsiveness as a third mechanism also replicates: no judge finds condition-dependent trajectory slopes. Cross-judge validation (Section 6.4.6) confirms that effect directions are unanimous across all 9 judge $\times$ run cells (d = 1.34--1.92), with inter-judge Pearson r = .45--.89 depending on dimension and generation model.
 
-The model-dependent aspects are not merely noise --- they reveal systematic boundary conditions. The substitution-to-additivity transition shows that the *interaction structure* between mechanisms depends on generation quality. The learner recognition-sensitivity shows that downstream effects of improved tutoring are model-dependent. These boundary conditions strengthen rather than weaken the mechanism model, because they are *theoretically predicted*: if calibration works by narrowing the output distribution, its effectiveness should saturate when the distribution is already narrow (strong models), leaving room for error correction only when it is not (weak models).
+The model-dependent aspects are not merely noise --- they reveal systematic boundary conditions. The substitution-to-additivity transition shows that the *interaction structure* between the two confirmed mechanisms depends on generation quality. The learner recognition-sensitivity shows that downstream effects of improved tutoring are model-dependent. These boundary conditions strengthen rather than weaken the mechanism model, because they are *theoretically predicted*: if calibration works by narrowing the output distribution, its effectiveness should saturate when the distribution is already narrow (strong models), leaving room for error correction only when it is not (weak models).
 
 One important caveat qualifies the generalizability claim. All three models are at least moderately capable. The Nemotron data in the database (N=40, mean tutor score ~8 under base) hints that very weak models may not benefit from recognition at all, but the sample is too small for confident claims. The cognitive prosthesis data (cells 66--68, N=96) confirms a minimum ego capability threshold below which mechanisms add noise rather than signal.
 
 ## 7. Discussion
 
-The preceding sections traced three mechanisms---calibration, error correction, and adaptive responsiveness---through the system's internal processes. This section reflects on what the investigation reveals, both about the architecture under study and about the methodology used to study it. We argue that the evaluation apparatus itself constitutes a transferable contribution, and that the process of building it illuminates the mechanisms it was designed to trace.
+The preceding sections tested three predicted mechanisms---calibration, error correction, and adaptive responsiveness---confirming the first two and disconfirming the third. This section reflects on what the investigation reveals, both about the architecture under study and about the methodology used to study it. We argue that the evaluation apparatus itself constitutes a transferable contribution, and that the process of building it illuminates the mechanisms it was designed to trace.
 
 ### 7.1 From Effects to Mechanisms
 
 The companion pilot study [@magee2026geist] established that recognition-enhanced prompts produce large, replicable differences in AI tutoring quality (d=1.11 in the factorial, d=1.71 in memory isolation). This paper asked *through what internal processes* those differences propagate.
 
-The three-mechanism model (Section 3) predicted that recognition operates through calibration (narrowing output distributions), error correction (the superego catching failures that the ego incorporates rather than minimizes), and adaptive responsiveness (accumulated turn-over-turn adaptation to learner-specific signals). The process tracing methodology (Section 5) provided tools to observe each mechanism: the superego critique taxonomy classifies *what* the superego objects to; revision delta analysis measures *how* the ego changes; trajectory analysis tracks *whether* these processes accumulate across turns.
+The mechanism model (Section 3) predicted that recognition operates through calibration (narrowing output distributions), error correction (the superego catching failures that the ego incorporates rather than minimizes), and adaptive responsiveness (accumulated turn-over-turn adaptation to learner-specific signals). The process tracing methodology (Section 5) provided tools to observe each: the superego critique taxonomy classifies *what* the superego objects to; revision delta analysis measures *how* the ego changes; trajectory analysis tracks *whether* these processes accumulate across turns.
 
-The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 total scored rows) supports calibration strongly: within-response dimension variance drops d=0.52--0.64, operating identically in single-agent cells, with recognition unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through a **generation-quality-dependent** pattern: on strong models (DeepSeek, Haiku), the superego provides +9--15 points under baseline but collapses to near-zero under recognition (substitution), because calibration pre-empts the errors the superego would catch. On a weaker model (Gemini Flash), the superego adds +12--17 points *even under recognition* (additivity), because base quality is low enough that calibration alone cannot saturate the improvement space. Adaptive responsiveness is real (AdaptΔ > 0.79) but not recognition-specific: tutor slopes are identical across conditions (d = -0.00). The mechanism hierarchy is clear: calibration does the primary work; error correction provides a baseline safety net whose value is model-dependent; adaptive responsiveness is model-dependent rather than prompt-dependent.
+The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 total scored rows) supports calibration strongly: within-response dimension variance drops d=0.52--0.64, operating identically in single-agent cells, with recognition unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through a **generation-quality-dependent** pattern: on strong models (DeepSeek, Haiku), the superego provides +9--15 points under baseline but collapses to near-zero under recognition (substitution), because calibration pre-empts the errors the superego would catch. On a weaker model (Gemini Flash), the superego adds +12--17 points *even under recognition* (additivity), because base quality is low enough that calibration alone cannot saturate the improvement space. Adaptive responsiveness, however, is **disconfirmed as a distinct mechanism**: formal tests on N=432 dialogues find d $\leq$ 0.15 for all factors on all dimensions, well-powered to detect d $\geq$ 0.27, confirmed across all three judges. Tutors improve modestly across turns (+3.9 points early-to-late), but this improvement is identical across conditions. The mechanism hierarchy is clear: calibration does the primary work; error correction provides a model-dependent safety net; and within-dialogue trajectory improvement, while real, is not modulated by any experimental manipulation---it is incidental adaptation at a mechanism-determined baseline, not a third mechanism.
 
 ### 7.2 The Tutor-Learner Asymmetry Explained
 
-The pilot study's most puzzling finding was the tutor-learner asymmetry: recognition produces large tutor-side effects (d=1.03) but near-zero learner-side effects (d=0.09 post-fix). The mechanism model offers a structural explanation: all three mechanisms operate on tutor *production* rather than learner *reception*.
+The pilot study's most puzzling finding was the tutor-learner asymmetry: recognition produces large tutor-side effects (d=1.03) but near-zero learner-side effects (d=0.09 post-fix). The mechanism model offers a structural explanation: both confirmed mechanisms operate on tutor *production* rather than learner *reception*, and the disconfirmation of adaptive responsiveness as a third mechanism closes the last potential pathway for condition-dependent downstream effects.
 
-Calibration constrains what the tutor generates. Error correction filters what it outputs. Adaptive responsiveness shapes how it evolves. None directly modifies the learner's response process. The synthetic learner generates turns according to its own architecture; better tutoring does not mechanically produce better simulated learning within a 3--5 turn window.
+Calibration constrains what the tutor generates. Error correction filters what it outputs. Neither directly modifies the learner's response process. The synthetic learner generates turns according to its own architecture; better tutoring does not mechanically produce better simulated learning within a 3--5 turn window.
 
 However, the three-model analysis (Section 6.5.1) reveals that the asymmetry is **model-dependent**, not absolute. On strong generation models (DeepSeek, Haiku), the tutor-learner ratio is 7.5:1 to 11.5:1---the asymmetry is a structural property of the architecture. On Gemini Flash (weaker), the ratio narrows to 1.6:1 (tutor d $\approx$ 1.87, learner d $\approx$ 1.20). The interpretation is that when base-condition tutors are catastrophically weak (Gemini Flash single-agent base ~17 pts), recognition's tutor improvement provides the learner with qualitatively different input---material worth engaging with rather than generic directives. The recognition $\to$ learner pathway operates through the *quality of the tutor's output as input to the learner*, not through direct modification of the learner's processing.
 
-The messages-mode data provides further evidence on the tutor side. Pooled across all three models, recognition sets the tutor's initial quality substantially higher (T0: 62.4 vs 41.6) with near-identical slopes across conditions (recognition 1.47, baseline 1.50, d = -0.00). Recognition acts as *calibration*---setting the initial level---not *adaptation*---driving within-dialogue improvement. This is Mechanism 1 dominant, Mechanism 3 weakly supported, replicating across all three models and three judges.
+The messages-mode data provides further evidence. Pooled across all three models, recognition sets the tutor's initial quality substantially higher (T0: 62.4 vs 41.6) with near-identical slopes across conditions (recognition 1.47, baseline 1.50, d = 0.03). Recognition acts as *calibration*---setting the initial level---not *adaptation*---driving within-dialogue improvement. This pattern---mechanism effects on levels, null effects on slopes---replicates across all three models, all three judges, and all rubric dimensions (all d $\leq$ 0.15).
 
 ### 7.3 Architecture Interaction: From Substitution to Additivity
 
@@ -1583,7 +1583,7 @@ The rubric evolved through four versions (v1.0 $\rightarrow$ v2.0 $\rightarrow$ 
 - **v2.1**: Public-only output scoring for fair cross-architecture comparison. Added deliberation quality rubric (6 dimensions) for internal process evaluation. Discovered: dimension redundancy (14 tutor dimensions measured $\sim$3 latent factors).
 - **v2.2**: Literature-informed consolidation: 14 $\rightarrow$ 8 tutor dimensions using GuideEval P$\rightarrow$O$\rightarrow$E decomposition, 7 $\rightarrow$ 5 learner dimensions using ICAP anchoring. Added content\_accuracy. Synthetic calibration: r=+0.996 (tutor), r=+0.968 (learner).
 
-Each iteration follows the error correction pattern: the initial rubric (ego) generated scores that were challenged by measurement problems (superego), and the revised rubric represents a genuine reconceptualization (strategic revision) rather than a cosmetic fix. The dimension reduction from 14 to 8 is itself a finding: it reveals what the evaluation *actually* measures, and this structure can be compared to the three-mechanism model.
+Each iteration follows the error correction pattern: the initial rubric (ego) generated scores that were challenged by measurement problems (superego), and the revised rubric represents a genuine reconceptualization (strategic revision) rather than a cosmetic fix. The dimension reduction from 14 to 8 is itself a finding: it reveals what the evaluation *actually* measures, and this structure can be compared to the mechanism model.
 
 #### 7.4.4 The Test Suite as Analytical Provenance
 
@@ -1599,7 +1599,7 @@ The tutoring system faces a challenge: an agent that generates output (the ego) 
 
 The research process faces the same challenge: a researcher who generates claims needs a validation framework (provable discourse) whose failures must be *addressed* rather than *explained away*. The provable discourse framework forces genuine correction by making the claim-evidence relationship machine-verifiable---the researcher cannot simply reinterpret a failing claim; the assertion either passes or it does not.
 
-The mechanisms we study in the tutor---calibration, error correction, adaptive responsiveness---are the mechanisms we needed in the research process. Calibration narrows the space of acceptable claims (only those supported by evidence). Error correction catches stale or incorrect assertions (the "superego" of provable discourse). And the rubric iteration exhibits adaptive responsiveness: each version responds to specific problems discovered in previous versions, accumulating methodological insight across iterations.
+The mechanisms we study in the tutor---calibration and error correction---are the mechanisms we needed in the research process. Calibration narrows the space of acceptable claims (only those supported by evidence). Error correction catches stale or incorrect assertions (the "superego" of provable discourse). The rubric iteration process exhibits what we *predicted* as adaptive responsiveness---each version responds to specific problems discovered in previous versions, accumulating methodological insight across iterations---but the disconfirmation of this third mechanism in the tutor data is itself instructive: the research process accumulates across iterations separated by weeks; the tutor's 3--5 turn window may simply be too short for analogous accumulation to differentiate conditions.
 
 This reflexive structure is not a coincidence but a consequence of the subject matter. Recognition theory predicts that genuine understanding requires mutual constitution: the methodology constitutes our understanding of the system, and the system constitutes our methodology. The evaluation apparatus is not a neutral measurement instrument applied to a pre-existing object; it is co-constituted with the object it studies. This is the Hegelian insight applied to research methodology: the researcher and the research subject are mutually shaped through the encounter.
 
@@ -1617,9 +1617,9 @@ The apparatus-as-method argument has implications beyond this specific study:
 
 Recognition theory as a design heuristic has clear scope conditions.
 
-**It explains:** Why intersubjective prompts produce calibrated output (Mechanism 1: the prompt constrains responses to engage with specific learner input, d=0.52--0.64). Why the superego's benefit collapses under recognition (Mechanism 2: calibration pre-empts errors, producing a substitution interaction rather than synergy). Why recognition effects are largest in impasse scenarios (Section 6.1.4: Epistemic Resistance and Productive Deadlock produce the largest deltas in both models).
+**It explains:** Why intersubjective prompts produce calibrated output (calibration: the prompt constrains responses to engage with specific learner input, d=0.52--0.64). Why the superego's benefit collapses under recognition (error correction: calibration pre-empts errors, producing a substitution interaction rather than synergy). Why recognition effects are largest in impasse scenarios (Section 6.1.4: Epistemic Resistance and Productive Deadlock produce the largest deltas in both models).
 
-**It does not explain:** Why the specific magnitude of recognition's effect is nearly identical across two structurally different models (DeepSeek d=1.88, Haiku d=1.84---the near-equality is unexpectedly precise). Why development trajectories are model-dependent rather than prompt-dependent (Haiku improves consistently; DeepSeek shows mixed patterns including decline). Why the learner superego paradox produces a d=3.05 deficit---the largest effect in the study---when recognition theory's Hegelian framework would predict that internal self-critique (*Bildung*) should be productive rather than destructive.
+**It does not explain:** Why the specific magnitude of recognition's effect is nearly identical across two structurally different models (DeepSeek d=1.88, Haiku d=1.84---the near-equality is unexpectedly precise). Why adaptive responsiveness---predicted by Hegel's temporal dialectic---fails to manifest as a distinct mechanism (all trajectory slopes d $\leq$ 0.15, N=432). Why the learner superego paradox produces a d=3.05 deficit---the largest effect in the study---when recognition theory's Hegelian framework would predict that internal self-critique (*Bildung*) should be productive rather than destructive.
 
 The learner superego paradox is particularly instructive. Hegel's account of self-consciousness through formative activity (*Bildung*) predicts that internal self-critique should be productive---the slave's labor produces richer self-consciousness than the master's immediate gratification. Yet the learner's internal critic systematically degrades output quality. The resolution may lie in the distinction between Hegel's developmental timescale (self-consciousness emerges over extended engagement) and our evaluation window (3--5 turns): the learner's internal critique may be laying groundwork for understanding that does not manifest within the current measurement horizon. Alternatively, the architectural implementation may fail to capture what *Bildung* requires---genuine struggle rather than polish.
 
@@ -1627,7 +1627,7 @@ The learner superego paradox is particularly instructive. Hegel's account of sel
 
 ### 8.1 Synthetic Learners
 
-All evaluations use LLM-generated learner turns rather than real learners. The three mechanisms we trace (calibration, error correction, adaptive responsiveness) operate on the tutor's production process, which is observable regardless of whether the learner is synthetic or human. However, the *consequences* of these mechanisms for learning outcomes cannot be assessed without human learners. The synthetic learner may respond to better tutoring in ways that diverge from human learners: genuine confusion is different from simulated confusion, and genuine resistance differs from scripted resistance. The mechanism-level findings are robust to learner type (they trace tutor-internal processes), but their pedagogical significance depends on whether the improved tutor behavior actually produces better learning.
+All evaluations use LLM-generated learner turns rather than real learners. The two confirmed mechanisms (calibration, error correction) operate on the tutor's production process, which is observable regardless of whether the learner is synthetic or human. However, the *consequences* of these mechanisms for learning outcomes cannot be assessed without human learners. The synthetic learner may respond to better tutoring in ways that diverge from human learners: genuine confusion is different from simulated confusion, and genuine resistance differs from scripted resistance. The mechanism-level findings are robust to learner type (they trace tutor-internal processes), but their pedagogical significance depends on whether the improved tutor behavior actually produces better learning.
 
 The learner superego paradox (d=3.05, Section 6.16 of the pilot study) complicates this further: the multi-agent learner architecture degrades synthetic learner quality, but we cannot know whether the same architecture would degrade human learner experience. The paradox may be an artifact of synthetic learner architecture rather than a general finding about internal self-critique.
 
@@ -1641,17 +1641,17 @@ For mechanism-level claims, the judge limitation is particularly relevant to the
 
 ### 8.3 Model Transience
 
-Findings are model-version-specific. Paper 2.0 uses three generation models---DeepSeek V3.2 (open-weight, 685B MoE), Haiku 4.5 (proprietary, optimized for speed), and Gemini Flash (proprietary, multimodal)---with three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4). The recognition effect replicates across all 9 judge $\times$ run cells (d = 1.34--1.92), substantially strengthening the generalizability claim relative to the two-model analysis. The addition of Gemini Flash (weaker than the other two models) partially addresses the capability-range limitation: it confirms that mechanisms replicate in direction on weaker models while revealing generation-quality boundary conditions on their interactions (substitution $\to$ additivity, learner invariance $\to$ sensitivity). The Nemotron data in the database (N=40, mean tutor score ~8 under base) hints that very weak models may not benefit from recognition at all, but the sample is too small for confident claims. Recognition's mechanism-level effects (calibration through prompt orientation, error correction with a model-dependent interaction type) describe *prompt-level and architecture-level* properties that should generalize across model versions, supported by three-model $\times$ three-judge replication.
+Findings are model-version-specific. Paper 2.0 uses three generation models---DeepSeek V3.2 (open-weight, 685B MoE), Haiku 4.5 (proprietary, optimized for speed), and Gemini Flash (proprietary, multimodal)---with three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4). The recognition effect replicates across all 9 judge $\times$ run cells (d = 1.34--1.92), substantially strengthening the generalizability claim relative to the two-model analysis. The addition of Gemini Flash (weaker than the other two models) partially addresses the capability-range limitation: it confirms that mechanisms replicate in direction on weaker models while revealing generation-quality boundary conditions on their interactions (substitution $\to$ additivity, learner invariance $\to$ sensitivity). The Nemotron data in the database (N=40, mean tutor score ~8 under base) hints that very weak models may not benefit from recognition at all, but the sample is too small for confident claims. The two confirmed mechanisms (calibration through prompt orientation, error correction with a model-dependent interaction type) describe *prompt-level and architecture-level* properties that should generalize across model versions, supported by three-model $\times$ three-judge replication. The disconfirmation of adaptive responsiveness also replicates across all three models and judges.
 
 ### 8.4 Process Tracing with LLMs
 
 Our adaptation of process tracing from social science to AI systems introduces a philosophical complication. In political science, process tracing examines *actual* causal chains: the decision-maker's deliberation, the institutional constraints, the information flows. In our architecture, the ego-superego exchange is *generated* text---the "deliberation" is a prompted LLM output, not a cognitive process in any neuroscientific sense. The mechanism claims are about designed information flows between prompted agents, not about internal mental states.
 
-This limitation is softened by the distinction drawn in Section 3: we study recognition-*oriented design* (functional analogues), not recognition *proper* (genuine intersubjectivity). The process tracing examines whether designed information flows produce measurable output differences---a behavioral claim, not a cognitive one. But the language of "mechanisms" may imply more causal depth than the evidence supports.
+This limitation is softened by the distinction drawn in Section 3: we study recognition-*oriented design* (functional analogues), not recognition *proper* (genuine intersubjectivity). The process tracing examines whether designed information flows produce measurable output differences---a behavioral claim, not a cognitive one. The disconfirmation of adaptive responsiveness as a third mechanism illustrates the value of this approach: the method was capable of distinguishing genuine mechanisms (calibration and error correction, where condition-dependent effects are observed) from non-mechanisms (adaptive responsiveness, where the null is well-powered). But the language of "mechanisms" may imply more causal depth than the evidence supports.
 
 ### 8.5 Single-System Study
 
-All findings come from a single architectural implementation (the ego/superego tutoring system with recognition-enhanced prompts). The three mechanisms are derived from this specific architecture's observability. Other architectures---chain-of-thought reasoning, debate-based systems, recursive self-improvement---might implement recognition-like behaviors through different internal processes. The mechanism model may not transfer to architectures that lack explicit ego-superego separation or that do not log internal deliberation.
+All findings come from a single architectural implementation (the ego/superego tutoring system with recognition-enhanced prompts). The two confirmed mechanisms are derived from this specific architecture's observability. Other architectures---chain-of-thought reasoning, debate-based systems, recursive self-improvement---might implement recognition-like behaviors through different internal processes. The mechanism model may not transfer to architectures that lack explicit ego-superego separation or that do not log internal deliberation.
 
 ### 8.6 Rubric Evolution
 
@@ -1671,11 +1671,11 @@ The companion pilot study documented nine post-extraction corrections, four of w
 
 A companion pilot study established that recognition-enhanced prompts and multiagent architecture produce large, replicable differences in AI tutoring quality. This paper asked the next question: *through what mechanisms?*
 
-### Three mechanisms, separable and testable
+### Two mechanisms confirmed, one disconfirmed
 
-We derived three mechanisms from Hegel's recognition theory, each mapped to a specific architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique that the ego incorporates rather than minimizes), and **adaptive responsiveness** (interaction-level turn-over-turn adaptation to learner-specific signals). These mechanisms are separable---calibration operates without the superego, error correction requires the superego but not multi-turn interaction, and adaptive responsiveness emerges from their interaction across turns---and each generates testable predictions with explicit null hypotheses (Section 3.2).
+We derived three candidate mechanisms from Hegel's recognition theory, each mapped to a specific architectural level: **calibration** (prompt-level output distribution narrowing), **error correction** (architecture-level superego critique that the ego incorporates rather than minimizes), and **adaptive responsiveness** (interaction-level turn-over-turn adaptation to learner-specific signals). Each generated testable predictions with explicit null hypotheses (Section 3.2).
 
-The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 scored rows) supports calibration strongly: within-response dimension variance drops d=0.52--0.64, the weakest baseline dimensions show the largest recognition lifts, and the effect operates identically in single-agent cells without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through a *generation-quality-dependent* pattern: on strong models, the superego's benefit collapses to near-zero under recognition (substitution, ~15% additivity deficit); on a weaker model (Gemini Flash), the superego adds +12--17 points even under recognition (near-additivity, ~10% deficit). This boundary condition transforms the substitution finding from a categorical claim to a moderated one. Adaptive responsiveness is real (AdaptΔ > 0.79, tutors substantially change their output between turns) but is *not recognition-specific*: tutor development slopes are identical across conditions (d = -0.00), and development trajectories are model-dependent rather than prompt-dependent. Recognition raises the *level* at which adaptation occurs, not the *rate*.
+The mechanism data (cells 80--87, three generation models, N=453, validated by three independent judges across 1,296 scored rows) **confirms calibration and error correction, and disconfirms adaptive responsiveness as a distinct mechanism**. Calibration is the dominant effect: within-response dimension variance drops d=0.52--0.64, the weakest baseline dimensions show the largest recognition lifts, and the effect operates identically in single-agent cells without a superego. The recognition effect is unanimous across all 9 judge $\times$ run cells (d=1.34--1.92). Error correction interacts with calibration through a *generation-quality-dependent* pattern: on strong models, the superego's benefit collapses to near-zero under recognition (substitution, ~15% additivity deficit); on a weaker model (Gemini Flash), the superego adds +12--17 points even under recognition (near-additivity, ~10% deficit). This boundary condition transforms the substitution finding from a categorical claim to a moderated one. Adaptive responsiveness, however, is not a distinct mechanism: formal tests on N=432 dialogues find that no experimental factor modulates within-dialogue trajectories (all d $\leq$ 0.15, well-powered to detect d $\geq$ 0.27), confirmed across all three judges. Tutors do improve modestly across turns (+3.9 points early-to-late, t=4.88), but this improvement is identical across conditions. Recognition raises the *level* at which adaptation occurs, not the *rate*---and no other factor modulates the rate either. The three-mechanism model reduces to **two confirmed mechanisms and one well-powered null**.
 
 ### The apparatus as contribution
 
@@ -1683,7 +1683,7 @@ A distinctive contribution is the argument that the evaluation apparatus itself-
 
 ### What comes next
 
-Three directions are most pressing. First, **mechanism isolation runs** will disentangle calibration from error correction by testing recognition-only (no superego) and superego-only (no recognition) conditions in isolation. The current factorial confounds the two mechanisms; direct isolation would test whether the substitution-to-additivity transition observed across models also appears within a single model when one mechanism is surgically removed.
+Three directions are most pressing. First, **mechanism isolation runs** will disentangle calibration from error correction by testing recognition-only (no superego) and superego-only (no recognition) conditions in isolation. The current factorial confounds the two confirmed mechanisms; direct isolation would test whether the substitution-to-additivity transition observed across models also appears within a single model when one mechanism is surgically removed.
 
 Second, **systematic superego critique taxonomy coding** (400+ exchanges) will provide the within-case evidence needed for Mechanism 2 (error correction). The pilot's qualitative assessment identified compliance versus strategic revision patterns, but a formal taxonomy with frequency distributions by condition is needed to establish the causal chain from superego critique category to ego revision type to output quality.
 
@@ -1691,9 +1691,9 @@ Third, **human learner validation** remains the critical open question. The Gemi
 
 ### The broader implication
 
-Recognition theory, operationalized as a design heuristic rather than an ontological claim, provides a framework for building AI systems that are genuinely shaped by user input rather than merely responsive to it. The mechanisms we trace---calibration, error correction, adaptive responsiveness---describe how intersubjective orientation alters system behavior at concrete architectural levels. Whether these mechanisms generalize beyond tutoring to other AI applications (therapy, creative collaboration, customer service) remains to be seen. But the methodological contribution---process tracing adapted for agent architectures, provable discourse for machine-verifiable research claims---is transferable regardless of domain.
+Recognition theory, operationalized as a design heuristic rather than an ontological claim, provides a framework for building AI systems that are genuinely shaped by user input rather than merely responsive to it. The two confirmed mechanisms---calibration and error correction---describe how intersubjective orientation alters system behavior at prompt and architecture levels. The disconfirmation of adaptive responsiveness as a third mechanism is itself informative: recognition works through *level-setting* (how well the system starts and what it catches), not *trajectory-shaping* (how much it improves over time). Whether these mechanisms generalize beyond tutoring to other AI applications (therapy, creative collaboration, customer service) remains to be seen. But the methodological contribution---process tracing adapted for agent architectures, provable discourse for machine-verifiable research claims---is transferable regardless of domain.
 
-The central Hegelian insight is that genuine understanding emerges through encounter with an Other whose perspective cannot be reduced to one's own. The learner superego paradox ($d = 3.05$, the largest effect in the study) provides the most striking empirical echo: internal self-critique degrades output quality; external recognition improves it. You cannot bootstrap genuine dialogue from a monologue.
+The central Hegelian insight is that genuine understanding emerges through encounter with an Other whose perspective cannot be reduced to one's own. The learner superego paradox ($d = 3.05$, the largest effect in the study) provides the most striking empirical echo: internal self-critique degrades output quality; external recognition improves it. And the disconfirmation of adaptive responsiveness reveals a subtler point: Hegel's dialectic unfolds through stages, but within a 3--5 turn window, what matters is how well you *start* (calibration) and what you *catch* (error correction), not how much you *improve*. You cannot bootstrap genuine dialogue from a monologue---but you can set the conditions for it from the first utterance.
 
 ## References
 
