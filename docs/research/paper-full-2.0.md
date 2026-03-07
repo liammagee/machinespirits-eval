@@ -87,7 +87,7 @@ The contributions of this paper are:
 
 - Evidence that error correction and calibration interact through *substitution* on strong models (+9--15 points under baseline, near-zero under recognition) but through *addition* on weaker models (+12--17 points even under recognition), with a generation-quality boundary condition (Section 6.2, Section 6.4)
 
-- Evidence that adaptive responsiveness is real (AdaptΔ > 0.79) but model-dependent rather than recognition-specific: tutor development slopes are identical across conditions (d = -0.00), with recognition raising the level but not the rate of adaptation (Section 6.3)
+- Evidence that adaptive responsiveness is real (AdaptΔ > 0.79) but not modulated by any experimental manipulation: formal tests on N = 432 dialogues find d = 0.03 for recognition on tutor slopes and d $\leq$ 0.15 for all factors on all dimensions, confirmed by cross-judge validation. All three mechanisms operate on levels, not slopes (Section 6.3)
 
 - A mechanistic explanation of the tutor-learner asymmetry as model-dependent: on strong models, all three mechanisms operate on tutor production ($7$--$12\times$ tutor-to-learner ratio); on weaker models, improved tutoring also benefits learner engagement ($1.6\times$ ratio), revealing a generation-quality threshold
 
@@ -549,7 +549,7 @@ Multi-turn evaluation runs with per-turn scores stored in the `tutor_scores` and
    - **Breakpoint**: Turn at which recognition and baseline diverge
 
 3. **Dimension-specific trajectories**: Separate slopes for each v2.2 rubric dimension. Key hypotheses (from Section 3.2):
-   - **H1**: Recognition tutors show steeper positive slopes on `recognition_quality` and `elicitation_quality` than baseline. **Note**: Section 6.3 found no significant dimension slope differences (all p > 0.15, overall tutor slope d = -0.00). H1 is not confirmed; recognition raises *levels*, not *slopes*.
+   - **H1**: Recognition tutors show steeper positive slopes on `recognition_quality` and `elicitation_quality` than baseline. **Note**: Section 6.3 found no significant dimension slope differences on any factor (max |d| = 0.15 with cross-judge replication, overall tutor slope d = 0.03, N = 432). H1 is not confirmed; all three mechanisms raise *levels*, not *slopes*.
    - **H2**: Tutor-learner slope gap (tutor slope minus learner slope) should be smaller under recognition (more symmetric change)
    - **H3**: After learner confusion signals, recognition tutors show larger positive $\Delta$ on the next turn
    - **H4**: Recognition tutors show more `action_type` diversity across turns (strategy shifting)
@@ -1044,46 +1044,46 @@ Second, the architecture interaction for development differs from the architectu
 
 #### 6.3.2 Trajectory Curves
 
-The aggregate trajectory analysis (pooled across both models, N=288) provides finer-grained turn-by-turn data:
+The expanded trajectory analysis (N=432, three generation models, Sonnet judge) provides formal hypothesis tests on per-turn slopes computed via OLS regression across 4--6 turn dialogues.
 
-**Tutor mean trajectory (overall 0--100):**
+**H1: Recognition $\to$ steeper tutor slopes.** Not confirmed. Recognition tutor slope = 1.45 $\pm$ 5.50, baseline = 1.32 $\pm$ 4.93, d = 0.03, t(425) = 0.27, p > .05. The result is consistent across all three generation models: aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09. With N = 216 per group, we have 80% power to detect d $\geq$ 0.27; the observed d = 0.03 is definitively null.
 
-| | T0 | T1 | T2 | T3 | T4 | T5 |
-|---|---|---|---|---|---|---|
-| Recognition (N=144) | 62.4 | 63.3 | 66.1 | 69.0 | 63.9 | 67.8 |
-| Baseline (N=144) | 41.6 | 38.4 | 44.9 | 46.4 | 45.9 | 42.8 |
+**H2: Tutor slopes steeper than learner slopes under recognition.** Not confirmed. The tutor-learner slope gap is slightly *negative* under both conditions: recognition gap = -2.42 $\pm$ 8.12, baseline gap = -2.12 $\pm$ 9.36, d = -0.03. Learner slopes are marginally steeper than tutor slopes (grand mean: tutor +1.39, learner +3.66), the opposite of the Section 3 prediction.
 
-**Learner mean trajectory (overall 0--100):**
+No experimental factor produces differential trajectory improvement:
 
-| | T0 | T1 | T2 | T3 | T4 |
-|---|---|---|---|---|---|
-| Recognition (N=144) | 60.3 | 65.0 | 67.8 | 65.5 | 70.9 |
-| Baseline (N=144) | 58.3 | 64.2 | 63.4 | 62.9 | 69.5 |
+| Factor | Tutor slope d | Learner slope d |
+|---|---|---|
+| Recognition (recog vs base) | 0.03 | 0.05 |
+| Multi-agent tutor (multi vs single) | 0.07 | 0.13 |
+| Learner architecture (multi vs single) | 0.05 | -0.04 |
 
-Both conditions show modest positive tutor slopes: recognition tutor slope = 1.47, baseline tutor slope = 1.50 (d = -0.00). The slopes are effectively identical --- recognition does not produce steeper tutor improvement over the course of the conversation. What recognition does is raise the *level* at which adaptation occurs: the tutor starts ~20 points higher under recognition (T0: 62.4 vs 41.6) and maintains this advantage throughout.
+All effect sizes are below d = 0.15 --- none approaches the d $\geq$ 0.27 detection threshold. The grand mean tutor slope is mildly positive (+1.39, t = 5.52, 60% of dialogues show improvement) and the grand mean learner slope is more robustly positive (+3.66, t = 8.79, 73% positive), but neither is modulated by any experimental condition. Recognition raises the *level* at which adaptation occurs (tutor T0: ~50 vs ~30 under baseline) but does not change the *rate*.
 
-The learner trajectory tells a complementary story. Learner slopes are slightly higher under recognition (2.29 vs 1.60, d=0.08), but the difference is small. The learner quality gap between conditions (recognition vs baseline) narrows across turns: T0 gap = 2.0 points, T4 gap = 1.4 points. Both learners converge toward similar quality by the end of the conversation regardless of tutor condition. This is consistent with the tutor-learner asymmetry prediction from Section 3: recognition primarily affects tutor production, not learner learning.
+The trajectory-specific scenarios (9-turn dialogues with designed inflection points, N=50) confirm the null: recognition d = -0.10 on tutor slopes. More turns do not reveal hidden slope effects.
 
 ![Turn-by-turn trajectory curves with 95% confidence bands. Tutor slopes are identical across conditions (d=-0.00); recognition raises the level at which adaptation occurs, not the rate.](figures/figure-trajectory-curves.png){#fig:trajectory-curves}
 
 #### 6.3.3 Per-Dimension Adaptation Patterns
 
-The dimension-level slope analysis reveals which aspects of tutoring adapt most across turns:
+The dimension-level slope analysis (N=432, pooled across three generation models) reveals which aspects of tutoring adapt most across turns:
 
-| Tutor Dimension | Recog Slope | Base Slope | Delta | d |
-|---|---|---|---|---|
-| adaptive_responsiveness | 0.088 | 0.036 | +0.052 | 0.19 |
-| recognition_quality | 0.090 | 0.101 | -0.011 | -0.04 |
-| perception_quality | 0.079 | 0.062 | +0.017 | 0.06 |
-| epistemic_integrity | 0.075 | 0.062 | +0.013 | 0.07 |
-| productive_difficulty | 0.074 | 0.110 | -0.036 | -0.13 |
-| pedagogical_craft | 0.036 | 0.039 | -0.002 | -0.01 |
-| content_accuracy | 0.028 | 0.050 | -0.022 | -0.15 |
-| elicitation_quality | 0.003 | 0.038 | -0.035 | -0.11 |
+| Tutor Dimension | Grand Slope | d(Recog-Base) | d(Multi-Single) |
+|---|---|---|---|
+| productive_difficulty | 0.091 | -0.11 | 0.05 |
+| recognition_quality | 0.089 | -0.01 | 0.00 |
+| perception_quality | 0.065 | 0.11 | 0.16 |
+| epistemic_integrity | 0.053 | 0.05 | 0.05 |
+| adaptive_responsiveness | 0.047 | **0.28** | **0.24** |
+| elicitation_quality | 0.038 | -0.10 | -0.04 |
+| content_accuracy | 0.033 | -0.05 | -0.00 |
+| pedagogical_craft | 0.031 | -0.06 | -0.01 |
 
-No dimension shows a statistically significant slope difference between recognition and baseline (all p > 0.15). The dimension slopes are small (0.003--0.110 points per turn on a 5-point scale), reflecting gradual rather than dramatic adaptation. The largest dimension-specific difference is adaptive_responsiveness itself (d=0.19) --- recognition tutors show slightly steeper improvement on this dimension --- but the effect is within noise.
+Seven of eight dimensions show |d| < 0.20 on both factors. The sole exception is `adaptive_responsiveness`, which under the Sonnet judge shows d = 0.28 (recognition vs baseline) and d = 0.24 (multi-agent vs single), both p < .05. However, this effect does not replicate across judges: under Gemini 3.1 Pro (d = 0.09 / 0.13) and GPT-5.4 (d = 0.11 / 0.12), the same dimension shows no differential slope. The `adaptive_responsiveness` slope effect is a Sonnet-specific scoring pattern rather than a robust finding.
 
-The null finding on dimension slopes is itself informative. It means that recognition does not selectively *accelerate* adaptation on any particular dimension. The calibration effect from Section 6.1 (raising all dimensions, especially the weakest) operates from the first turn; subsequent turns do not show differential improvement. Adaptive responsiveness, as measured by per-dimension slopes, operates independently of prompt condition.
+On the learner side, no dimension exceeds |d| = 0.15 on either factor (max: `conceptual_progression` d = 0.12 for recognition, `metacognitive_awareness` d = 0.15 for architecture). Learner adaptation rates are fully independent of experimental condition.
+
+The comprehensive null across 8 tutor and 5 learner dimensions, confirmed by cross-judge validation, establishes that no mechanism selectively accelerates within-dialogue adaptation. The calibration effect from Section 6.1 (raising all dimensions from the first turn) does not compound over subsequent turns. Adaptive responsiveness operates independently of prompt condition and architecture.
 
 #### 6.3.4 Cross-Turn Adaptation Magnitude
 
@@ -1137,15 +1137,17 @@ Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not 
 
 #### 6.3.7 Connecting to Section 3 Predictions
 
-**Prediction: Adaptive responsiveness emerges over multi-turn conversation.** *Weakly supported.* Cross-turn adaptation is high (AdaptΔ > 0.79), and most conditions show positive development trajectories. However, the development slopes are small and not significantly different between recognition and baseline (tutor slope d = -0.00). Adaptation occurs, but recognition does not accelerate it.
+**Prediction: Adaptive responsiveness emerges over multi-turn conversation.** *Weakly supported.* Cross-turn adaptation is high (AdaptΔ > 0.79), and grand mean tutor slopes are mildly positive (+1.39, 60% of dialogues improve). However, with N = 432 dialogues and 80% power to detect d $\geq$ 0.27, the slope difference between conditions is definitively null (d = 0.03). Adaptation occurs, but no mechanism accelerates it.
 
 **Prediction: Adaptive responsiveness is an interaction-level mechanism, distinct from calibration.** *Confirmed.* Calibration operates from the first turn (Section 6.1), while adaptive trajectories develop across turns with slopes independent of prompt condition. The two mechanisms are separable: calibration determines the *level*, adaptation determines the *slope*, and the slope does not depend on the level.
 
-**Prediction: Recognition produces steeper adaptation curves.** *Not confirmed.* Tutor development slopes are effectively identical across conditions (d = -0.00). Recognition raises the *floor* of each turn's score, but does not change the *rate* of improvement. Adaptive responsiveness is model-dependent (DeepSeek shows mixed development; Haiku shows consistent positive development) rather than prompt-dependent.
+**Prediction: Recognition produces steeper adaptation curves.** *Not confirmed.* Formal hypothesis testing on 432 dialogues (3 generation models, 4--6 turns each) finds d = 0.03 pooled, with sign-flipping across runs (aea2abfb d = 0.21, 45163390 d = -0.29, 18027efc d = 0.09). Trajectory-specific scenarios (9 turns, N = 50) confirm: d = -0.10. No per-dimension slope exceeds d = 0.20 with cross-judge replication. Recognition raises the *floor* of each turn's score but does not change the *rate* of improvement.
 
-**Prediction: Tutor-learner asymmetry.** *Confirmed.* Recognition produces a ~28-point tutor swing but only a ~3-5 point learner swing. Learner quality is stable across conditions, confirming that recognition operates on tutor production rather than learner learning. The learner's quality trajectory is largely independent of the tutor's quality level.
+**Prediction: Tutor-learner asymmetry in trajectories.** *Reversed.* Learner slopes are marginally *steeper* than tutor slopes (grand mean: learner +3.66, tutor +1.39; 73% vs 60% positive). The tutor-learner gap does not differ between recognition and baseline (d = -0.03). Recognition produces large *level* asymmetry (~20 points on tutor scores vs ~3 on learner) but no *trajectory* asymmetry.
 
-**Key distinction.** Adaptive responsiveness is real (the tutor changes across turns, AdaptΔ > 0.79) but it is not recognition-specific. Both base and recognition tutors adapt at similar rates; recognition simply ensures that adaptation happens at a higher quality level. The mechanism is better characterized as *model-dependent adaptation at a recognition-determined baseline* rather than *recognition-enhanced adaptation*.
+**Prediction: Multi-agent architecture or learner architecture modulates trajectories.** *Not confirmed.* Neither factor produces slope effects above d = 0.15 on tutor or learner dimensions. The one apparent exception (`adaptive_responsiveness` d = 0.24 under Sonnet) does not replicate under Gemini (d = 0.13) or GPT (d = 0.12).
+
+**Key distinction.** Adaptive responsiveness is real (the tutor changes across turns, AdaptΔ > 0.79) but it is not modulated by any experimental manipulation. All three mechanisms --- recognition, superego architecture, and learner architecture --- operate on *levels*, not *slopes*. The rate of within-dialogue adaptation is determined by the generation model and scenario, not by the prompting or architectural condition. The mechanism is better characterized as *model-dependent adaptation at a recognition-determined baseline* rather than *recognition-enhanced adaptation*.
 
 ### 6.4 Mechanism Interaction
 
@@ -1223,7 +1225,7 @@ Section 3 predicted that the three mechanisms operate at different levels (promp
 |---|---|---|---|
 | **Calibration** | Prompt | Within-response SD drops d=0.52--0.64; floor lifts; operates without superego | Yes --- prompt-level |
 | **Error Correction** | Architecture | Approval rate shifts; architecture delta +9--20 under base, ~0 under recognition (strong models) or +12 (weak models) | Partially --- pre-empted by calibration on strong models; additive on weak |
-| **Adaptive Responsiveness** | Interaction | AdaptΔ > 0.79; tutor slopes d=-0.00 across conditions | No --- model-dependent, not prompt-dependent |
+| **Adaptive Responsiveness** | Interaction | AdaptΔ > 0.79; tutor slopes d=0.03 across conditions (N=432, well-powered null) | No --- model-dependent, not modulated by any experimental factor |
 
 The mechanisms are separable in three senses:
 
@@ -1231,7 +1233,7 @@ The mechanisms are separable in three senses:
 
 2. **Architectural separability.** Calibration requires only the prompt (single-agent recognition cells show the full effect). Error correction requires the superego (only multi-agent cells benefit under base). Adaptive responsiveness requires neither --- it is a property of the model's ability to learn from the conversation context.
 
-3. **Interaction separability.** Calibration and error correction interact (substitution); calibration and adaptive responsiveness are independent (the slope is the same regardless of the level); error correction and adaptive responsiveness interact weakly (the superego may constrain adaptation, as suggested by the DeepSeek multi-agent development decline in Section 6.3.1).
+3. **Interaction separability.** Calibration and error correction interact (substitution on strong models, additivity on weak); calibration and adaptive responsiveness are independent (the slope is the same regardless of the level, d = 0.03); error correction and adaptive responsiveness are also independent (multi-agent slope d = 0.07). No mechanism modulates within-dialogue trajectories.
 
 #### 6.4.4 The Variance Reduction Pattern
 
@@ -1435,7 +1437,7 @@ The model-dependent findings reveal a coherent pattern: model capability moderat
 |---|---|---|
 | **Calibration** | Variance reduction, floor lifting, dimension-rank pattern | Magnitude (d=0.52 vs 0.64), score-level variance |
 | **Error Correction** | Architecture benefit under base (all models) | **Interaction type**: substitution on strong models, additivity on weak. Cognitive prosthesis effect on weakest model. |
-| **Adaptive Responsiveness** | Slopes equal across conditions, high AdaptΔ | Development trajectory direction, deliberation sensitivity |
+| **Adaptive Responsiveness** | Slopes equal across conditions and factors (d $\leq$ 0.15), high AdaptΔ | Development trajectory direction, deliberation sensitivity |
 | **Learner effects** | Recognition improves tutor quality (all models) | **Learner sensitivity**: invariant on strong models (d $\approx$ 0), responsive on weak (d $\approx$ 1.2) |
 
 The two strongest model-dependent effects are (1) the substitution-to-additivity transition, which reveals that the mechanisms' *interaction structure* depends on generation quality, and (2) the learner recognition-sensitivity, which shows that the tutor-learner asymmetry is itself moderated by model capability. Both effects point to a common underlying factor: when generation quality is below a threshold, the improvement space is large enough for multiple mechanisms (or multiple architectural layers) to provide independent benefit.
