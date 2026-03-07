@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.5"
+version: "3.0.6"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1831,6 +1831,8 @@ Our adaptation of process tracing from social science to AI systems introduces a
 
 This limitation is softened by the distinction drawn in Section 3: we study recognition-*oriented design* (functional analogues), not recognition *proper* (genuine intersubjectivity). The process tracing examines whether designed information flows produce measurable output differences---a behavioral claim, not a cognitive one. The null finding for adaptive responsiveness as a third mechanism illustrates the value of this approach: the method was capable of distinguishing supported mechanisms (calibration and error correction, where condition-dependent effects are observed) from unsupported ones (adaptive responsiveness, where the null is well-powered). But the language of "mechanisms" may imply more causal depth than the evidence supports.
 
+A related concern is whether the paper conflates *engineered architecture* with *discovered mechanism*. The ego-superego pathway, the critique taxonomy, and the revision loop are designed into the system. In one sense, finding that the superego catches errors the ego misses is reporting that the architecture works as intended, not uncovering a naturally occurring mechanism of good tutoring. We acknowledge this distinction: the mechanisms we trace are properties of *this specific architecture*, not universal laws of AI tutoring. Calibration describes how recognition prompts constrain *this system's* output distribution; error correction describes how *this system's* superego-ego interaction functions. Whether other architectures (chain-of-thought, debate-based, or single-agent with self-critique) would show analogous patterns under recognition-oriented prompting is an open question (Section 8.5). However, the findings are not purely tautological. The architecture was designed to enable observability, not to guarantee specific outcomes. Three results were genuinely unpredicted: that calibration alone accounts for most of the recognition effect (making the superego largely redundant on strong models), that adaptive responsiveness fails as a general mechanism despite being the most theoretically motivated prediction, and that the substitution interaction produces a consistent 15--17% additivity deficit across three structurally different models. The system was built to make mechanisms *observable*; what those mechanisms turned out to be was an empirical question.
+
 ### 8.5 Single-System Study
 
 All findings come from a single architectural implementation (the ego/superego tutoring system with recognition-enhanced prompts). The two supported mechanisms are identified through this specific architecture's observability. Other architectures---chain-of-thought reasoning, debate-based systems, recursive self-improvement---might implement recognition-like behaviors through different internal processes. The mechanism model may not transfer to architectures that lack explicit ego-superego separation or that do not log internal deliberation.
@@ -2568,6 +2570,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.6** (2026-03-07)
+:   **Engineered vs. discovered mechanism distinction**: Added paragraph to §8.4 explicitly addressing the circularity objection: the architecture was designed for observability, not to guarantee specific outcomes; three key findings were genuinely unpredicted (superego redundancy on strong models, adaptive responsiveness null, consistent 15--17% additivity deficit). Distinguishes "mechanisms of this system" from "mechanisms of AI tutoring in general."
 
 **v3.0.5** (2026-03-07)
 :   **Theoretical framing and scope**: Three changes responding to external review. (1) Reframed Hegelian mapping as heuristic translation: "derive mechanisms from Hegel" → "motivate mechanisms drawing on Hegel" across abstract, §1, §3.2, §3.5, and §9 (~6 passages). Changed "derivative application" → "heuristic translation" in §3.5. The mappings are productive redescriptions, not logical derivations. (2) Added scope qualification to abstract: "All findings concern tutor output quality as assessed by LLM judges interacting with synthetic learners." (3) Added cost qualifier after contributions list: architecture is a research instrument, not a deployable system (~225K tokens/dialogue). No data or analysis changes.
