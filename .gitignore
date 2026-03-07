@@ -64,6 +64,7 @@ liams-paper/
 docs/research/archive/
 docs/research/eval-2-0/
 docs/research/paper-draft/
+*.bak
 docs/research/*.bak*
 docs/research/*.pdf
 docs/research/*.pptx
