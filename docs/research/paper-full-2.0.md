@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.8"
+version: "3.0.9"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1883,6 +1883,8 @@ Third, **human learner validation** remains the critical open question. The Gemi
 
 Recognition theory, operationalized as a design heuristic rather than an ontological claim, provides a framework for building AI systems that are genuinely shaped by user input rather than merely responsive to it. The two supported mechanisms---calibration and error correction---describe how intersubjective orientation alters system behavior at prompt and architecture levels. The conditional emergence of adaptive responsiveness is itself informative: recognition works primarily through *level-setting* (how well the system starts and what it catches), but given sufficient turns and the right scenario demands, the two base mechanisms accumulate into trajectory-shaping as well. Whether these mechanisms generalize beyond tutoring to other AI applications (therapy, creative collaboration, customer service) remains to be seen. But the methodological contribution---process tracing adapted for agent architectures, provable discourse for machine-verifiable research claims---is transferable regardless of domain.
 
+Three findings remain unexplained by the current mechanism model: the near-identical recognition effect magnitude across structurally different models (DeepSeek $d = 1.88$, Haiku $d = 1.84$, Gemini Flash $d = 1.92$), the failure of adaptive responsiveness as a general mechanism despite being the most theoretically motivated prediction, and the learner superego paradox ($d = 3.05$) in which internal self-critique degrades rather than improves output quality. These anomalies suggest that the two supported mechanisms may be surface expressions of a deeper process---perhaps related to how recognition framing restructures the model's attention over its input context---that the current apparatus is not yet equipped to trace.
+
 The central Hegelian insight is that genuine understanding emerges through encounter with an Other whose perspective cannot be reduced to one's own. The learner superego paradox ($d = 3.05$, the largest effect in the study) provides the most striking empirical echo: internal self-critique degrades output quality; external recognition improves it. And the conditional nature of adaptive responsiveness reveals a subtler point: Hegel's dialectic unfolds through stages, and indeed, given sufficient stages (10 turns of disengagement), recognition's advantage does accumulate. But in the typical 3--5 turn window, what matters most is how well you *start* (calibration) and what you *catch* (error correction). The conditions for genuine dialogue can be set from the first utterance---and given enough time, they compound.
 
 ## References
@@ -2572,6 +2574,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.9** (2026-03-07)
+:   **Unexplained phenomena in conclusion**: Added paragraph to §9 noting three findings the current mechanism model does not explain: near-identical effect magnitude across structurally different models (DeepSeek $d=1.88$, Haiku $d=1.84$, Gemini Flash $d=1.92$), the failure of adaptive responsiveness as a general mechanism, and the learner superego paradox ($d=3.05$). Suggests these anomalies may point to a deeper process the current apparatus cannot yet trace. Responds to external review concern about consolidating what recognition doesn't explain.
 
 **v3.0.8** (2026-03-07)
 :   Added prompt elaboration baseline (Paper 1.0 §6.21) as fourth evidence line in §7.8 prompt density paragraph: the 344-line base prompt is itself a long detailed pedagogical prompt, yet it doesn't approach recognition quality and actually hurts performance on Haiku ($M=82.5$ naive vs base, recognition $M=90.9$). Prompt length without recognition content can be inert or counterproductive.
