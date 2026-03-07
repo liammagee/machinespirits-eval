@@ -1093,7 +1093,35 @@ The trajectory-specific scenarios (8--10 turn dialogues with designed inflection
 
 ![Tutor-learner trajectory asymmetry. Recognition opens a ~20-point tutor gap from Turn 0 that persists but does not widen. Learner trajectories (dashed) are recognition-invariant. Pooled across 3 generation models, N=570, Sonnet judge.](figures/figure-scissors-plot.png){#fig:scissors-plot}
 
-#### 6.3.3 Per-Dimension Adaptation Patterns
+#### 6.3.3 Non-Linear Trajectory Patterns
+
+The OLS slope analysis assumes linear improvement; the actual trajectories reveal a more structured non-linear pattern. Examining the turn-by-turn means across the $2 \times 2$ factorial (pooled across three generation models, N=432):
+
+| Condition | T0 | T1 | T2 | T3 | T4 | T5 | Dip (T0$-$T1) | Pattern |
+|---|---|---|---|---|---|---|---|---|
+| Base / single | 33.0 | 27.5 | 32.8 | 33.1 | 33.6 | 33.0 | +5.5 | U-shape |
+| Base / multi | 47.3 | 44.7 | 48.3 | 53.3 | 52.4 | 50.8 | +2.7 | U-shape |
+| Recog / single | 61.1 | 58.3 | 63.4 | 65.1 | 63.2 | 69.3 | +2.8 | U-shape |
+| Recog / multi | 64.2 | 65.6 | 66.6 | 69.4 | 67.7 | 67.1 | -1.5 | Rising |
+
+Three of four conditions exhibit a **T1 dip followed by recovery**: the tutor's quality drops at Turn 1 (the first turn with real learner input) before climbing back. The dip is deepest for base-single (+5.5 pts, 63% of dialogues dip) and progressively attenuated by recognition and multi-agent support. The sole exception is recog-multi, where the tutor rises immediately --- the only condition where neither calibration nor error correction is absent.
+
+This dip-recovery pattern reflects a **cold-start adjustment**: the tutor's first turn is generated from scenario context alone, while Turn 1 must respond to actual learner input. Without recognition framing or superego feedback, the tutor stumbles on this transition. Both mechanisms independently reduce the T0$\to$T1 dip (recognition: 0.7 vs 4.1 pts; multi-agent: 0.6 vs 4.2 pts), and their combination eliminates it.
+
+A half-split analysis comparing the mean of the first three turns to the mean of the last three turns (restricted to 5--6 turn dialogues for non-overlapping halves, N=360) confirms that the improvement is real but modest:
+
+| Condition | Early half | Late half | $\Delta$ |
+|---|---|---|---|
+| Base / single | 29.9 | 33.5 | +3.6 |
+| Base / multi | 45.5 | 51.8 | **+6.3** |
+| Recog / single | 61.4 | 65.6 | +4.1 |
+| Recog / multi | 66.4 | 68.1 | +1.7 |
+
+The grand mean tutor half-delta is +3.9 (t = 4.88, 59% positive) --- a statistically significant but small improvement. No factor modulates this half-delta (recognition d = -0.13, multi-agent d = 0.01), but the $2 \times 2$ interaction is notable: base-multi shows the largest improvement (+6.3) while recog-multi shows the smallest (+1.7), yielding an interaction of -5.0. This echoes the substitution pattern from Section 6.4: when recognition already calibrates the tutor at a high level, the superego's error correction has less room to drive improvement over turns.
+
+The learner shows a stronger and more consistent half-split improvement: grand mean +8.4 (t = 7.45, 72% positive). Multi-agent tutoring produces the largest learner gains (base-multi +11.2, recog-multi +10.6 vs base-single +4.4, recog-single +7.5). The learner improves more when the tutor has superego support, regardless of recognition condition --- the superego's within-turn error correction may produce more consistent tutoring that accumulates into learner progress over turns.
+
+#### 6.3.4 Per-Dimension Adaptation Patterns
 
 The dimension-level slope analysis (N=432, pooled across three generation models) reveals which aspects of tutoring adapt most across turns:
 
@@ -1116,7 +1144,7 @@ The comprehensive null across 8 tutor and 5 learner dimensions, confirmed by cro
 
 ![Per-dimension adaptation curves (2$\times$4 faceted grid). Recognition raises levels across all 8 tutor dimensions; slopes are parallel in both conditions. Ribbons = 95% CI. Pooled across 3 generation models, N=570, Sonnet judge.](figures/figure-adaptation-faceted.png){#fig:adaptation-faceted}
 
-#### 6.3.4 Cross-Turn Adaptation Magnitude
+#### 6.3.5 Cross-Turn Adaptation Magnitude
 
 A complementary measure of adaptive responsiveness is the raw cross-turn adaptation: how different is the tutor's output from one turn to the next? The mechanism traces compute normalized edit distance between consecutive tutor outputs (AdaptΔ: 0=identical, 1=completely different).
 
@@ -1130,7 +1158,7 @@ Cross-turn adaptation is high in all conditions (>0.79), indicating that the tut
 
 The lower variance under recognition (DeepSeek: 0.199$\to$0.167; Haiku: 0.093$\to$0.048) is more noteworthy. Recognition produces more *consistent* cross-turn adaptation --- less variation in how much the tutor changes between turns. This mirrors the calibration finding from Section 6.1.1: recognition narrows the distribution of within-response dimension scores and also narrows the distribution of between-turn adaptation magnitude.
 
-#### 6.3.5 Learner Outcomes
+#### 6.3.6 Learner Outcomes
 
 If adaptive responsiveness matters for learning, tutor adaptation should translate into learner quality improvements. The learner scores (per-turn learner rubric, v2.2) provide a test:
 
@@ -1149,7 +1177,7 @@ The tutor-learner asymmetry is pronounced. DeepSeek tutor scores range from 22 t
 
 This confirms the Section 3 prediction: recognition mechanisms operate primarily on tutor production. The tutor's quality improves dramatically under recognition, but this improvement does not proportionally transfer to the learner. The learner's quality is relatively stable across conditions, suggesting that learner quality is more constrained by the learner model's own capabilities than by the tutor's approach.
 
-#### 6.3.6 Dialogue Quality
+#### 6.3.7 Dialogue Quality
 
 Dialogue quality scores (holistic assessment of the full conversation arc) integrate tutor and learner contributions:
 
@@ -1166,7 +1194,7 @@ Dialogue quality scores (holistic assessment of the full conversation arc) integ
 
 Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not learner quality. The dialogue quality pattern replicates the Section 6.1 architecture interaction: multi-agent adds quality under base (DeepSeek +9.5, Haiku +19.6) but not under recognition (DeepSeek -0.2, Haiku -0.5). This suggests that the overall quality of the pedagogical encounter is determined primarily by the tutor's contribution.
 
-#### 6.3.7 Connecting to Section 3 Predictions
+#### 6.3.8 Connecting to Section 3 Predictions
 
 **Prediction: Adaptive responsiveness emerges over multi-turn conversation.** *Weakly supported.* Cross-turn adaptation is high (AdaptΔ > 0.79), and grand mean tutor slopes are mildly positive (+1.39, 60% of dialogues improve). However, with N = 432 dialogues and 80% power to detect d $\geq$ 0.27, the slope difference between conditions is definitively null (d = 0.03). Adaptation occurs, but no mechanism accelerates it.
 
