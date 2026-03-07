@@ -2762,6 +2762,15 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // --- Tutor messages ---
     // Revised output (final after superego review) or generate_final (legacy)
     if (agent === 'ego' && (action === 'revise' || action === 'generate_final')) {
+      // Only show the final revision — skip intermediate revisions when superego rejects multiple times
+      const laterInTrace = consolidatedTrace.slice(consolidatedTrace.indexOf(entry) + 1);
+      const hasLaterRevision = laterInTrace.some(
+        (e) =>
+          e.turnIndex === entry.turnIndex &&
+          e.agent === 'ego' &&
+          (e.action === 'revise' || e.action === 'generate_final'),
+      );
+      if (hasLaterRevision) return null;
       return formatTutorLine(entry, ROLE_WIDTH, pad, inlineTag);
     }
     // Generate without revision (single-agent or superego approved first draft)
