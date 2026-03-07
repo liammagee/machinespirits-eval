@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.2"
+version: "3.0.3"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1226,7 +1226,9 @@ This finding does not overturn the M3 disconfirmation as a *general* mechanism: 
 
 Scenario design also modulates development direction independent of condition: `confusion\_to\_insight` is uniquely positive (+3.8 development), while `overconfidence\_to\_humility` shows steep decline ($-$11.5). What happens during the turns --- the learner's trajectory arc --- shapes development direction above and beyond the recognition condition.
 
-![Turn-by-turn trajectory curves with 95% confidence bands. Tutor slopes are identical across conditions (d=-0.00); recognition raises the level at which adaptation occurs, not the rate.](figures/figure-trajectory-curves.png){#fig:trajectory-curves}
+![Disengagement scenario trajectory divergence. (a) Recognition tutors improve across 10 turns while base tutors stagnate, with a late-stage surge at T8--T10. (b) The recognition--baseline gap widens from +12 pts early to +35 pts late. d=1.63, p<.001, N=24, DeepSeek V3.2, Sonnet judge.](figures/figure-disengagement-divergence.png){#fig:disengagement-divergence}
+
+![Turn-by-turn trajectory curves with 95% confidence bands. Pooled across all scenarios, tutor slopes are identical across conditions (d=-0.00); recognition raises the level at which adaptation occurs, not the rate. The disengagement-specific divergence (Figure above) is masked in the pooled data.](figures/figure-trajectory-curves.png){#fig:trajectory-curves}
 
 ![Tutor-learner trajectory asymmetry. Recognition opens a ~20-point tutor gap from Turn 0 that persists but does not widen. Learner trajectories (dashed) are recognition-invariant. Pooled across 3 generation models, N=432, Sonnet judge.](figures/figure-scissors-plot.png){#fig:scissors-plot}
 
@@ -1320,16 +1322,20 @@ Dialogue quality scores (holistic assessment of the full conversation arc) integ
 
 | Model | Condition | Dialogue Quality |
 |---|---|---|
-| DeepSeek | Base / single | 22.0 |
-| DeepSeek | Base / multi | 31.5 |
-| DeepSeek | Recog / single | 49.1 |
-| DeepSeek | Recog / multi | 48.9 |
-| Haiku | Base / single | 53.1 |
-| Haiku | Base / multi | 72.7 |
-| Haiku | Recog / single | 81.2 |
-| Haiku | Recog / multi | 80.7 |
+| DeepSeek | Base / single | 23.0 |
+| DeepSeek | Base / multi | 31.9 |
+| DeepSeek | Recog / single | 48.8 |
+| DeepSeek | Recog / multi | 44.8 |
+| Haiku | Base / single | 53.8 |
+| Haiku | Base / multi | 74.0 |
+| Haiku | Recog / single | 82.1 |
+| Haiku | Recog / multi | 81.5 |
+| Gemini Flash | Base / single | 14.9 |
+| Gemini Flash | Base / multi | 42.3 |
+| Gemini Flash | Recog / single | 49.3 |
+| Gemini Flash | Recog / multi | 64.9 |
 
-Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not learner quality. The dialogue quality pattern replicates the Section 6.1 architecture interaction: multi-agent adds quality under base (DeepSeek +9.5, Haiku +19.6) but not under recognition (DeepSeek -0.2, Haiku -0.5). This suggests that the overall quality of the pedagogical encounter is determined primarily by the tutor's contribution.
+Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not learner quality. The dialogue quality pattern replicates the Section 6.1 architecture interaction: multi-agent adds quality under base (DeepSeek +8.9, Haiku +20.2, Gemini Flash +27.4) but the pattern diverges under recognition---on strong models, multi-agent adds nothing (DeepSeek -4.0, Haiku -0.6), while on Gemini Flash it adds +15.6, consistent with the universal substitution pattern with model-dependent residual. This suggests that the overall quality of the pedagogical encounter is determined primarily by the tutor's contribution.
 
 #### 6.3.8 Connecting to Section 3 Predictions
 
@@ -1414,6 +1420,8 @@ If the mechanisms were fully independent, the combined effect would be the sum o
 The additivity deficit is remarkably consistent across all three models (15--17%), indicating a stable degree of mechanism overlap. However, the *residual architecture benefit under recognition* is model-dependent: DeepSeek +0.2, Haiku -0.7, Gemini Flash +12.3. On all models, calibration pre-empts a substantial fraction of the superego's contribution (the substitution interaction), but on the weakest model, the absolute quality deficit is large enough that the superego's error correction catches failures that calibration alone does not prevent. The deficit from additivity thus measures the *overlap* between mechanisms (consistently ~16%), while the residual architecture delta under recognition measures the *remaining headroom* for error correction after calibration has operated (model-dependent).
 
 **Mechanism isolation confirmation.** Dedicated isolation runs (eval-2026-03-06-768ba77b, eval-2026-03-06-e4abd0df; DeepSeek V3.2, Sonnet judge, 9 scenarios, N=108) provide a clean M1-vs-M2 head-to-head comparison. Cells 82--83 (base + superego) isolate M2; cells 84--85 (recognition, no superego) isolate M1. Combined with cells 80--81 (neither) and 86--87 (both) from run ebcd6de0 on 3 overlapping trajectory scenarios, the full $2 \times 2$ mechanism isolation yields: M1 main effect d=1.15, M2 main effect d=0.36, interaction d=$-$0.57. Under base, the superego adds +9.2 pts (d=1.13, p=.002); under recognition, it adds +1.1 pts (d=0.08, p=.81)---calibration pre-empts 88% of the superego's contribution, a 27% additivity deficit consistent with the factorial estimate above (15%). The M1-vs-M2 head-to-head across all 9 scenarios confirms calibration's dominance: M1 alone scores 51.4 vs M2 alone 36.9 (d=1.03, p<.001, M1 wins in 7/9 scenarios). The two scenarios where M2 equals or exceeds M1---Affective Shutdown and Frustration---are emotionally intense scenarios where the superego may catch tone/empathy failures that calibration alone does not prevent, suggesting a scenario-specific residual role for error correction even on strong models.
+
+![Mechanism isolation: the superego adds +9.2 pts under base (d=1.13) but only +1.1 under recognition (NS). Calibration alone (M1, d=1.85 from baseline) accounts for most of the total effect; adding the superego when calibration is present yields negligible gain. DeepSeek V3.2, Sonnet judge, 3 trajectory scenarios, N=72.](figures/figure-mechanism-isolation.png){#fig:mechanism-isolation}
 
 #### 6.4.3 Mechanism Separability
 
@@ -1609,7 +1617,7 @@ Despite the baseline gaps, the following findings replicate across all three mod
 
 **8. Deliberation visibility.** Seeing internal deliberation adds ~10--15 points to dialogue quality for multi-agent cells, consistent across all 9 judge $\times$ run cells.
 
-![Cross-model replication: mechanism indicators compared across DeepSeek V3.2, Gemini Flash, and Haiku 4.5. Both confirmed mechanisms replicate in direction; magnitudes and interaction type vary by model capability. Adaptive responsiveness (trajectory slopes) shows no condition-dependent variation in any model.](figures/figure-cross-model-replication.png){#fig:cross-model-replication}
+![Cross-model replication: mechanism indicators compared across DeepSeek V3.2, Gemini Flash, and Haiku 4.5. Both confirmed mechanisms replicate in direction; magnitudes and interaction type vary by model capability. Adaptive responsiveness (trajectory slopes) shows no general condition-dependent variation, though scenario-specific effects emerge in extended disengagement dialogues (Figure \ref{fig:disengagement-divergence}).](figures/figure-cross-model-replication.png){#fig:cross-model-replication}
 
 #### 6.6.3 What Is Model-Dependent
 
@@ -2558,3 +2566,6 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.3** (2026-03-07)
+:   **Final claim audit corrections**: (1) Gemini Flash stale data fixed: `tutor_overall_score` values updated from 2026-03-03 scoring to 2026-03-05 re-scoring (17.3/37.0/52.6/64.9 → 22.4/49.3/57.7/70.0), changing the interaction from $-$7.4 to $-$14.6 and additivity deficit from 10% to 17%. (2) "Substitution-to-additive transition" narrative reframed as "universal substitution (15--17% deficit across all models) with model-dependent residual architecture benefit" across ~20 passages (abstract, §3, §5, §6.4, §6.6, §7.3, §8). (3) N=570→N=432 corrected throughout (isolation runs had expanded the figure-generation query beyond the clean factorial scope). (4) §7.3 "same model, different sample" error fixed (run 45163390 is Haiku, not DeepSeek). (5) §6.3.7 dialogue quality table updated with verified DB values and Gemini Flash rows added. Provable discourse: 87 pass, 0 warn, 0 fail.
