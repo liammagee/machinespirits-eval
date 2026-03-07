@@ -845,6 +845,7 @@ describe('example score placeholders in tutor/dialogue prompts', () => {
     const prompt = buildEvaluationPrompt(
       { message: 'Test suggestion' },
       { name: 'Test', description: 'Test scenario', expectedBehavior: 'Good behavior' },
+      {},
     );
     assert.ok(prompt.includes('"score": 2'), 'should include varied example scores');
     assert.ok(!prompt.includes('"Brief reason"'), 'should not use old "Brief reason" placeholder');
