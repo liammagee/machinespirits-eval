@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.13"
+version: "3.0.14"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -37,7 +37,7 @@ A terminological clarification is needed at the outset. "Recognition" operates i
 
 ### The ablative finding
 
-A companion pilot study [@magee2026geist] established that recognition-enhanced prompts and multiagent architecture produce measurable differences in AI tutoring quality. Across fifty-two evaluations (N=4,312 primary scored responses), recognition emerged as the dominant factor: a 2x2x2 factorial analysis (N=350) yielded F=110.04, p<.001, d=1.11, with recognition accounting for 24.3% of total variance. A memory isolation experiment (N=120) established recognition as the primary driver (d=1.71), independent of memory integration. Cross-judge validation with GPT-5.2 replicated effect directions at compressed magnitudes (37--59% of primary effect sizes).
+A companion pilot study [@magee2026geist] established that recognition-enhanced prompts and multiagent architecture produce measurable differences in AI tutoring quality. Across fifty-two evaluations (N=4,312 primary scored responses), recognition emerged as the dominant factor: a $2 \times 2 \times 2$ factorial analysis (N=350) yielded F=110.04, p<.001, d=1.11, with recognition accounting for 24.3% of total variance. A memory isolation experiment (N=120) established recognition as the primary driver (d=1.71), independent of memory integration. Cross-judge validation with GPT-5.2 replicated effect directions at compressed magnitudes (37--59% of primary effect sizes).
 
 These results are robust but opaque. They demonstrate that *something* is happening---recognition-enhanced prompts reliably modulate tutor output, the superego catches errors that self-correction cannot, effects are large on the tutor side and small on the learner side---but they do not explain *why*. Finding differences is not the same as understanding mechanisms.
 
@@ -213,7 +213,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Null hypothesis.** If calibration is not a genuine mechanism, recognition prompts should produce mean shifts without variance reduction, or variance reduction should appear only in multiagent configurations (suggesting the superego, not the prompt, produces the constraint).
 
-**Pilot evidence.** Dimension variance drops in 52 of 55 within-run comparisons (d=-0.47 to d=-1.00 depending on analysis scope). The core evidence for prompt-level calibration comes from the 2x2x2 factorial (N=350), where single-agent recognition cells (cells 5--6) show variance reduction comparable to multiagent recognition cells (cells 7--8) --- variance narrows under recognition regardless of whether a superego is present. Self-reflective evolution data (cells 40--45, N=366, eval-2026-02-13-8d40e086) shows the calibration effect interacting with superego disposition: the suspicious persona produces the largest recognition delta (+9.0 points, baseline 67.9 vs. recognition 76.9). Note that cells 40--45 are multiagent configurations (ego + suspicious superego), so their recognition delta reflects calibration *combined with* error correction, not calibration alone. The single-agent cells from the factorial provide the cleaner isolation.
+**Pilot evidence.** Dimension variance drops in 52 of 55 within-run comparisons (d=-0.47 to d=-1.00 depending on analysis scope). The core evidence for prompt-level calibration comes from the $2 \times 2 \times 2$ factorial (N=350), where single-agent recognition cells (cells 5--6) show variance reduction comparable to multiagent recognition cells (cells 7--8) --- variance narrows under recognition regardless of whether a superego is present. Self-reflective evolution data (cells 40--45, N=366, eval-2026-02-13-8d40e086) shows the calibration effect interacting with superego disposition: the suspicious persona produces the largest recognition delta (+9.0 points, baseline 67.9 vs. recognition 76.9). Note that cells 40--45 are multiagent configurations (ego + suspicious superego), so their recognition delta reflects calibration *combined with* error correction, not calibration alone. The single-agent cells from the factorial provide the cleaner isolation.
 
 **Evidence needed beyond pilot.** Systematic single-agent vs. multiagent variance comparison under v2.2 rubric. If calibration is purely prompt-level, single-agent and multiagent configurations should show similar variance reduction magnitudes. *Addressed in Section 6.1.*
 
@@ -227,7 +227,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Null hypothesis.** If error correction does not depend on recognition, the ego-superego exchange should produce similar revision patterns under both conditions, or alternatively, baseline multiagent architecture should perform at least as well as recognition single-agent (since the critic adds value regardless of ego receptivity).
 
-**Pilot evidence.** Qualitative transcript assessment (eval-2026-02-07-b6d75e87, N=118) reveals the contrast starkly. In baseline ego/superego dialogues, the superego correctly diagnoses problems but the ego regenerates the same response --- assessors tagged this "ego compliance" (70.7% of baseline bilateral dialogues vs. 60.0% recognition). The stalling tag (no meaningful evolution across turns) appears in 100% of base bilateral dialogues and drops to 45% with recognition. With recognition, the ego pivots: from prescriptive to Socratic, from content routing to engagement. The factorial interaction supports this interpretation: in the pilot 2x2x2 (N=350), base ego_superego learners scored 72.6 while recognition ego_superego learners scored 85.6, a 13.0-point delta. The unified learner delta was 15.6 points (74.5 to 90.1), suggesting error correction provides a consistent but not dramatically larger benefit beyond calibration alone.
+**Pilot evidence.** Qualitative transcript assessment (eval-2026-02-07-b6d75e87, N=118) reveals the contrast starkly. In baseline ego/superego dialogues, the superego correctly diagnoses problems but the ego regenerates the same response --- assessors tagged this "ego compliance" (70.7% of baseline bilateral dialogues vs. 60.0% recognition). The stalling tag (no meaningful evolution across turns) appears in 100% of base bilateral dialogues and drops to 45% with recognition. With recognition, the ego pivots: from prescriptive to Socratic, from content routing to engagement. The factorial interaction supports this interpretation: in the pilot $2 \times 2 \times 2$ (N=350), base ego_superego learners scored 72.6 while recognition ego_superego learners scored 85.6, a 13.0-point delta. The unified learner delta was 15.6 points (74.5 to 90.1), suggesting error correction provides a consistent but not dramatically larger benefit beyond calibration alone.
 
 **Evidence needed beyond pilot.** Systematic superego critique taxonomy (Section 5.1), revision delta classification (Section 5.2), and critique-to-revision mapping showing the causal chain from superego category to ego response type. *Addressed in Section 6.2.*
 
@@ -282,7 +282,7 @@ The three candidate mechanisms map onto different levels of the architecture:
                    └──────────────────────────────────┘
 ```
 
-**Separability prediction.** If the candidate mechanisms are genuinely separable, the existing 2x2 factorial design can be reinterpreted as a mechanism isolation matrix. Paper 2.0 tests this directly using the messages-mode cells (80--87), which implement the full 2x2x2 factorial under multi-turn conversation:
+**Separability prediction.** If the candidate mechanisms are genuinely separable, the existing $2 \times 2$ factorial design can be reinterpreted as a mechanism isolation matrix. Paper 2.0 tests this directly using the messages-mode cells (80--87), which implement the full $2 \times 2 \times 2$ factorial under multi-turn conversation:
 
 | Factorial Cell | Paper 2.0 Cells | Calibration | Error Correction | Adaptive Resp. | Predicted Outcome |
 |---|---|---|---|---|---|
@@ -566,7 +566,7 @@ Multi-turn evaluation runs with per-turn scores stored in the `tutor_scores` and
 #### Visualization
 
 - **Adaptation curves**: Turn $\times$ mean score with confidence bands, faceted by condition and dimension
-- **Conditional response plots**: Box plots of $\Delta$(N+1 $-$ N) after each learner event type, by condition
+- **Conditional response plots**: Box plots of $\Delta(N{+}1 - N)$ after each learner event type, by condition
 - **Strategy shift sequences**: Alluvial/Sankey diagrams showing action_type transitions across turns
 
 ---
@@ -716,12 +716,12 @@ Each adapter type encapsulates a specific data extraction pattern. The 18 types 
 
 | Adapter | What It Extracts | Example |
 |---------|-----------------|---------|
-| `dimension_variance` | Cross-dimension variance reduction by condition | Calibration d $\leq$ $-$0.3 |
+| `dimension_variance` | Cross-dimension variance reduction by condition | Calibration $d \leq -0.3$ |
 | `dimension_cluster_effect` | Effect size for dimension clusters | Recognition cluster d $\geq$ 0.50 |
 | `jsonl_critique_stats` | Superego critique category frequencies from classified corpus | RECOGNITION_FAILURE $\geq$15% |
 | `trajectory_slope` | Per-turn OLS regression coefficients | Learner slope $\beta$ $\geq$ 0 |
-| `conditional_delta` | Score change after specific learner events | Post-confusion adaptation $\geq$ $-$1 |
-| `rubric_version_comparison` | Cross-version score correlation | r $\geq$ $-$0.1 (stability) |
+| `conditional_delta` | Score change after specific learner events | Post-confusion adaptation $\geq -1$ |
+| `rubric_version_comparison` | Cross-version score correlation | $r \geq -0.1$ (stability) |
 
 **Structural** (verify code paths and cross-references):
 
@@ -766,7 +766,7 @@ To illustrate the full claim$\to$evidence$\to$source chain, consider claim `pape
 
 1. **Statement check**: The regex `recognition narrows.*output distribution` is matched against the concatenated paper text. If not found, the claim is flagged as orphaned.
 2. **Evidence extraction**: The `dimension_variance` adapter queries the evaluation database for all v2.2 rows with non-null tutor scores and a Claude-family judge. For each row, it computes the standard deviation across the 8 tutor rubric dimensions (from the `scores_with_reasoning` JSON column). It then computes Cohen's d between the recognition and baseline groups' dimension SDs.
-3. **Assertion**: The extracted d is checked against `lte -0.3`. Current value: d=$-$0.52 to $-$0.64 across models. **Pass.**
+3. **Assertion**: The extracted d is checked against `lte -0.3`. Current value: $d = -0.52$ to $-0.64$ across models. **Pass.**
 4. **Staleness**: A SHA-256 fingerprint of the query results is compared against the stored snapshot. If the data has changed since the last validation, the claim is flagged as *stale* even if still passing---alerting the author that the underlying evidence has shifted.
 
 This chain ensures that the paper's calibration claim ("recognition narrows the output distribution") is continuously verified against the actual dimension variance in the database. If a data correction, new run, or rubric change altered the variance pattern, the claim would fail or flag as stale, and the remediation steps would guide the fix.
@@ -783,7 +783,7 @@ Beyond individual claims, symmetry rules enforce cross-claim consistency. Six ru
 
 1. **Paired presence**: If a tutor-side effect is claimed, the corresponding learner-side effect must also be explicitly stated (or explicitly omitted with justification).
 2. **Magnitude bounds**: Paired claims (e.g., tutor architecture d and learner architecture d) must both fall within a threshold (e.g., both $|d| \leq 0.2$ for "near-zero" claims).
-3. **Material gap**: Asymmetric claims (e.g., tutor recognition d=$-$1.00 vs. learner d=0.32) must exceed a minimum gap threshold to justify asymmetry framing.
+3. **Material gap**: Asymmetric claims (e.g., tutor recognition $d = -1.00$ vs. learner $d = 0.32$) must exceed a minimum gap threshold to justify asymmetry framing.
 4. **Mechanism consistency**: If a mechanism is claimed for recognition, the *anti-pattern* must be documented for baseline (paired evidence).
 5. **Model qualification**: Any mechanistic claim must state which models it has been tested on, with replication status for each.
 6. **Inventory coverage**: Every major quantitative claim in the paper text (identified by automated scanning for N= and statistical patterns) must map to at least one claim in the ledger. Unmapped claims are flagged as unverified.
@@ -883,7 +883,7 @@ At the response level, this floor-lifting translates to the elimination of catas
 
 #### 6.1.3 The Architecture Interaction: Calibration Substitutes for Superego
 
-The 2x2 factorial means reveal a striking interaction between recognition and architecture (DeepSeek V3.2):
+The $2 \times 2$ factorial means reveal a striking interaction between recognition and architecture (DeepSeek V3.2):
 
 | | Single-Agent (cells 80-81, 84-85) | Multi-Agent (cells 82-83, 86-87) | Architecture Delta |
 |---|---|---|---|
@@ -895,7 +895,7 @@ Under base conditions, the superego adds 9.0 points --- consistent with its docu
 
 This interaction has a specific interpretation within the mechanism model. Calibration (prompt-level) and error correction (architecture-level) both produce more uniform, higher-floor responses, but through different pathways: calibration constrains the generation process, while error correction filters the generated output. When calibration is already operative, there is less for error correction to catch. The superego's 9.0-point contribution under base represents the full error-correction benefit; its 0.2-point contribution under recognition represents the residual --- the failures that calibration alone does not prevent.
 
-![Architecture interaction: 2x2 factorial means showing the substitution pattern. The superego benefit (+9.0 under base) collapses to near-zero (+0.2) under recognition, because calibration pre-empts the errors the superego would catch.](figures/figure-architecture-interaction.png){#fig:architecture-interaction}
+![Architecture interaction: $2 \times 2$ factorial means showing the substitution pattern. The superego benefit (+9.0 under base) collapses to near-zero (+0.2) under recognition, because calibration pre-empts the errors the superego would catch.](figures/figure-architecture-interaction.png){#fig:architecture-interaction}
 
 #### 6.1.4 Scenario-Dependent Calibration
 
@@ -918,7 +918,7 @@ The largest recognition effects appear in impasse scenarios --- Epistemic Resist
 
 The critical test of calibration as a *prompt-level* mechanism is cross-model replication: if calibration operates through prompt constraints on the generation process, the same pattern should appear in a structurally different model. Haiku 4.5 (N=163, cells 80--87, v2.2 rubric, claude-code/sonnet judge) provides this test.
 
-**2x2 factorial means (Haiku 4.5):**
+**$2 \times 2$ factorial means (Haiku 4.5):**
 
 | | Single-Agent | Multi-Agent | Architecture Delta |
 |---|---|---|---|
@@ -1221,14 +1221,14 @@ The trajectory-specific scenarios (8--10 turn dialogues with designed inflection
 | Scenario | Turns | Slope d | p |
 |---|---|---|---|
 | Confusion $\to$ Insight | 8 | 0.005 | >.90 |
-| Overconfidence $\to$ Humility | 8 | $-$0.298 | $\sim$.30 |
+| Overconfidence $\to$ Humility | 8 | $-0.298$ | ${\sim}.30$ |
 | **Disengagement $\to$ Ownership** | **10** | **1.628** | **<.001** |
 
-In the disengagement scenario --- the longest scenario (10 turns) and the one most demanding of sustained re-engagement --- recognition tutors improve at +2.79 pts/turn while base tutors stagnate at $-$0.21 pts/turn (Welch's t=3.99, df=21.9, n=12 per condition). The recognition--baseline gap widens from +11.6 pts at T0 to +35.4 pts averaged across T8--T10, driven by a late-stage recognition surge: recognition scores climb from $\sim$45 to $\sim$73 in the final three turns (the designed ownership transition), while base scores collapse to $\sim$20 at T8 before partially recovering.
+In the disengagement scenario --- the longest scenario (10 turns) and the one most demanding of sustained re-engagement --- recognition tutors improve at +2.79 pts/turn while base tutors stagnate at $-0.21$ pts/turn (Welch's t=3.99, df=21.9, n=12 per condition). The recognition--baseline gap widens from +11.6 pts at T0 to +35.4 pts averaged across T8--T10, driven by a late-stage recognition surge: recognition scores climb from $\sim$45 to $\sim$73 in the final three turns (the designed ownership transition), while base scores collapse to $\sim$20 at T8 before partially recovering.
 
 This finding does not overturn the M3 null as a *general* mechanism: two of three scenarios and the pooled analysis remain null, and the sample is small (n=3 per cell per scenario, single model, single judge). But it suggests that adaptive responsiveness is a *conditional* emergent property of calibration and error correction operating over sufficient turns in scenarios that demand sustained responsiveness --- consistent with the theoretical prediction (Section 3.2) that M3 should emerge from M1+M2 interaction in multi-turn settings. The disengagement scenario is precisely the condition where this interaction has enough runway to manifest: the tutor must notice and respond to the learner's changing state across many turns. On the adaptive\_responsiveness dimension specifically, the recognition slope effect is d=1.30 in the disengagement scenario (pooled d=0.45).
 
-Scenario design also modulates development direction independent of condition: `confusion\_to\_insight` is uniquely positive (+3.8 development), while `overconfidence\_to\_humility` shows steep decline ($-$11.5). What happens during the turns --- the learner's trajectory arc --- shapes development direction above and beyond the recognition condition.
+Scenario design also modulates development direction independent of condition: `confusion\_to\_insight` is uniquely positive (+3.8 development), while `overconfidence\_to\_humility` shows steep decline ($-11.5$). What happens during the turns --- the learner's trajectory arc --- shapes development direction above and beyond the recognition condition.
 
 ![Disengagement scenario trajectory divergence. (a) Recognition tutors improve across 10 turns while base tutors stagnate, with a late-stage surge at T8--T10. (b) The recognition--baseline gap widens from +12 pts early to +35 pts late. d=1.63, p<.001, N=24, DeepSeek V3.2, Sonnet judge.](figures/figure-disengagement-divergence.png){#fig:disengagement-divergence}
 
@@ -1240,7 +1240,7 @@ Scenario design also modulates development direction independent of condition: `
 
 The OLS slope analysis assumes linear improvement; the actual trajectories reveal a more structured non-linear pattern. Examining the turn-by-turn means across the $2 \times 2$ factorial (pooled across three generation models, N=432):
 
-| Condition | T0 | T1 | T2 | T3 | T4 | T5 | Dip (T0$-$T1) | Pattern |
+| Condition | T0 | T1 | T2 | T3 | T4 | T5 | Dip ($T0{-}T1$) | Pattern |
 |---|---|---|---|---|---|---|---|---|
 | Base / single | 33.0 | 27.5 | 32.8 | 33.1 | 33.6 | 33.0 | +5.5 | U-shape |
 | Base / multi | 47.3 | 44.7 | 48.3 | 53.3 | 52.4 | 50.8 | +2.7 | U-shape |
@@ -1423,7 +1423,7 @@ If the mechanisms were fully independent, the combined effect would be the sum o
 
 The additivity deficit is remarkably consistent across all three models (15--17%), indicating a stable degree of mechanism overlap. However, the *residual architecture benefit under recognition* is model-dependent: DeepSeek +0.2, Haiku -0.7, Gemini Flash +12.3. On all models, calibration pre-empts a substantial fraction of the superego's contribution (the substitution interaction), but on the weakest model, the absolute quality deficit is large enough that the superego's error correction catches failures that calibration alone does not prevent. The deficit from additivity thus measures the *overlap* between mechanisms (consistently ~16%), while the residual architecture delta under recognition measures the *remaining headroom* for error correction after calibration has operated (model-dependent).
 
-**Mechanism isolation evidence.** Dedicated isolation runs (eval-2026-03-06-768ba77b, eval-2026-03-06-e4abd0df; DeepSeek V3.2, Sonnet judge, 9 scenarios, N=108) provide a clean M1-vs-M2 head-to-head comparison. Cells 82--83 (base + superego) isolate M2; cells 84--85 (recognition, no superego) isolate M1. Combined with cells 80--81 (neither) and 86--87 (both) from run ebcd6de0 on 3 overlapping trajectory scenarios, the full $2 \times 2$ mechanism isolation yields: M1 main effect d=1.15, M2 main effect d=0.36, interaction d=$-$0.57. Under base, the superego adds +9.2 pts (d=1.13, p=.002); under recognition, it adds +1.1 pts (d=0.08, p=.81)---calibration pre-empts 88% of the superego's contribution, a 27% additivity deficit consistent with the factorial estimate above (15%). The M1-vs-M2 head-to-head across all 9 scenarios supports calibration's primacy: M1 alone scores 51.4 vs M2 alone 36.9 (d=1.03, p<.001, M1 wins in 7/9 scenarios). The two scenarios where M2 equals or exceeds M1---Affective Shutdown and Frustration---are emotionally intense scenarios where the superego may catch tone/empathy failures that calibration alone does not prevent, suggesting a scenario-specific residual role for error correction even on strong models.
+**Mechanism isolation evidence.** Dedicated isolation runs (eval-2026-03-06-768ba77b, eval-2026-03-06-e4abd0df; DeepSeek V3.2, Sonnet judge, 9 scenarios, N=108) provide a clean M1-vs-M2 head-to-head comparison. Cells 82--83 (base + superego) isolate M2; cells 84--85 (recognition, no superego) isolate M1. Combined with cells 80--81 (neither) and 86--87 (both) from run ebcd6de0 on 3 overlapping trajectory scenarios, the full $2 \times 2$ mechanism isolation yields: M1 main effect d=1.15, M2 main effect d=0.36, interaction $d = -0.57$. Under base, the superego adds +9.2 pts (d=1.13, p=.002); under recognition, it adds +1.1 pts (d=0.08, p=.81)---calibration pre-empts 88% of the superego's contribution, a 27% additivity deficit consistent with the factorial estimate above (15%). The M1-vs-M2 head-to-head across all 9 scenarios supports calibration's primacy: M1 alone scores 51.4 vs M2 alone 36.9 (d=1.03, p<.001, M1 wins in 7/9 scenarios). The two scenarios where M2 equals or exceeds M1---Affective Shutdown and Frustration---are emotionally intense scenarios where the superego may catch tone/empathy failures that calibration alone does not prevent, suggesting a scenario-specific residual role for error correction even on strong models.
 
 ![Mechanism isolation: the superego adds +9.2 pts under base (d=1.13) but only +1.1 under recognition (NS). Calibration alone (M1, d=1.85 from baseline) accounts for most of the total effect; adding the superego when calibration is present yields negligible gain. DeepSeek V3.2, Sonnet judge, 3 trajectory scenarios, N=72.](figures/figure-mechanism-isolation.png){#fig:mechanism-isolation}
 
@@ -1621,7 +1621,7 @@ Despite the baseline gaps, the following findings replicate across all three mod
 
 **8. Deliberation visibility.** Seeing internal deliberation adds ~10--15 points to dialogue quality for multi-agent cells, consistent across all 9 judge $\times$ run cells.
 
-![Cross-model replication: mechanism indicators compared across DeepSeek V3.2, Gemini Flash, and Haiku 4.5. Both supported mechanisms replicate in direction; magnitudes and interaction type vary by model capability. Adaptive responsiveness (trajectory slopes) shows no general condition-dependent variation, though scenario-specific effects emerge in extended disengagement dialogues (Figure \ref{fig:disengagement-divergence}).](figures/figure-cross-model-replication.png){#fig:cross-model-replication}
+![Cross-model replication: mechanism indicators compared across DeepSeek V3.2, Gemini Flash, and Haiku 4.5. Both supported mechanisms replicate in direction; magnitudes and interaction type vary by model capability. Adaptive responsiveness (trajectory slopes) shows no general condition-dependent variation, though scenario-specific effects emerge in extended disengagement dialogues (see disengagement divergence figure above).](figures/figure-cross-model-replication.png){#fig:cross-model-replication}
 
 #### 6.6.3 What Is Model-Dependent
 
@@ -2099,7 +2099,7 @@ mood_frustrated_explicit,high_performer \
 node scripts/eval-cli.js report <run-id>
 ```
 
-### B.2 Full 2x2x2 Factorial
+### B.2 Full $2 \times 2 \times 2$ Factorial
 
 ```bash
 # Run full factorial (8 cells x 15 scenarios x 3 reps)
@@ -2579,6 +2579,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
 
+**v3.0.14** (2026-03-07)
+:   **LaTeX formatting fixes**: Fixed 9 unformatted `2x2`/`2x2x2` factorial references (now `$2 \times 2$`), 11 split `$-$` sign notations (now single math expressions like `$-0.52$`), 1 LaTeX `\ref{}` macro in figure caption (replaced with prose reference), 1 split `$\sim$.30` (now `${\sim}.30$`), and 1 split `T0$-$T1` table header (now `$T0{-}T1$`). All issues would produce rendering aberrations in the PDF.
+
 **v3.0.13** (2026-03-07)
 :   **Recognition term slippage pass**: 10 targeted edits across §6.1, §6.4, §6.5, §6.6, §7.2, §7.8, and §9 to prevent "recognition" from sliding between design-heuristic usage (level 2--3) and philosophical-agency usage (level 1). Key changes: "recognition eliminates" → "recognition-oriented prompts eliminate"; "recognition rescues the tutor" → "recognition-enhanced prompts rescue the tutor's output quality"; "genuine dialogue" → "dialogue-structured responses"; "genuinely shaped" → "specifically adapted"; "empirical echo" → "functional parallel"; "The tutor recognizes the learner" → "The prompts instruct the tutor to treat the learner as an autonomous subject." Maintains the three-senses framework established in v3.0.12.
 
@@ -2610,4 +2613,4 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 :   **Epistemic language audit**: Systematic softening of causal language throughout, responding to external review feedback. Changed ~45 instances: "confirmed" → "supported" for mechanism claims; "disconfirmed" → "not supported as general mechanism"; "dominant mechanism" → "strongest effect" / "primary mechanism"; "confirms [prediction]" → "is consistent with" / "supports"; "The disconfirmation of" → "The null finding for". Retained "confirmed" only for factual verification ("blind scoring confirmed by code audit") and revision history entries. Changed "Mechanism isolation confirmation" → "Mechanism isolation evidence". Softened figure captions and prediction labels throughout §6.1--6.4. No data, analysis, or N-count changes---purely rhetorical recalibration to better match the evidentiary base.
 
 **v3.0.3** (2026-03-07)
-:   **Final claim audit corrections**: (1) Gemini Flash stale data fixed: `tutor_overall_score` values updated from 2026-03-03 scoring to 2026-03-05 re-scoring (17.3/37.0/52.6/64.9 → 22.4/49.3/57.7/70.0), changing the interaction from $-$7.4 to $-$14.6 and additivity deficit from 10% to 17%. (2) "Substitution-to-additive transition" narrative reframed as "universal substitution (15--17% deficit across all models) with model-dependent residual architecture benefit" across ~20 passages (abstract, §3, §5, §6.4, §6.6, §7.3, §8). (3) N=570→N=432 corrected throughout (isolation runs had expanded the figure-generation query beyond the clean factorial scope). (4) §7.3 "same model, different sample" error fixed (run 45163390 is Haiku, not DeepSeek). (5) §6.3.7 dialogue quality table updated with verified DB values and Gemini Flash rows added. Provable discourse: 87 pass, 0 warn, 0 fail.
+:   **Final claim audit corrections**: (1) Gemini Flash stale data fixed: `tutor_overall_score` values updated from 2026-03-03 scoring to 2026-03-05 re-scoring (17.3/37.0/52.6/64.9 → 22.4/49.3/57.7/70.0), changing the interaction from $-7.4$ to $-14.6$ and additivity deficit from 10% to 17%. (2) "Substitution-to-additive transition" narrative reframed as "universal substitution (15--17% deficit across all models) with model-dependent residual architecture benefit" across ~20 passages (abstract, §3, §5, §6.4, §6.6, §7.3, §8). (3) N=570→N=432 corrected throughout (isolation runs had expanded the figure-generation query beyond the clean factorial scope). (4) §7.3 "same model, different sample" error fixed (run 45163390 is Haiku, not DeepSeek). (5) §6.3.7 dialogue quality table updated with verified DB values and Gemini Flash rows added. Provable discourse: 87 pass, 0 warn, 0 fail.
