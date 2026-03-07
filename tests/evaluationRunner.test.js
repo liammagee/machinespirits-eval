@@ -593,17 +593,6 @@ describe('evaluate / rejudge scoring parity', () => {
     'updateLearnerDeliberationScores',
   ];
 
-  // Score columns that MUST be populated for a complete multi-turn result
-  const REQUIRED_MULTI_TURN_COLUMNS = [
-    'tutor_scores',
-    'tutor_first_turn_score',
-    'tutor_last_turn_score',
-    'tutor_development_score',
-    'tutor_holistic_overall_score',
-    'learner_scores',
-    'learner_overall_score',
-    'dialogue_quality_score',
-  ];
 
   function extractDbWriterCalls(source) {
     const writers = new Set();

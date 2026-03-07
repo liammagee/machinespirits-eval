@@ -228,7 +228,7 @@ test('parseJsonResponse extracts final JSON after noisy codex logs without fence
 {"summary":"short paragraph","observations":["observation 1"],"prompt_updates":[{"filename":"tutor-ego.md","rationale":"why this file changes","changes":["specific edit 1"],"content":"FULL FILE CONTENT"}],"expected_effects":["expected effect 1"]}
 [2026-03-04T21:03:05] tokens used: 4543
 [2026-03-04T21:03:13] thinking
-command: python -c "print({'bad':'quote starts here \" and never closes in this log line)"
+command: python -c "print({'bad':'quote starts here " and never closes in this log line)"
 [2026-03-04T21:03:13] codex
 {"summary":"Real recommendation","observations":["obs"],"prompt_updates":[{"filename":"tutor-ego.md","rationale":"targeted edit","changes":["edit"],"content":"# AI Tutor - Ego Agent\\n\\n<decision_heuristics>\\n..."}],"expected_effects":["lift first-turn score"]}
 [2026-03-04T21:03:32] tokens used: 10127
