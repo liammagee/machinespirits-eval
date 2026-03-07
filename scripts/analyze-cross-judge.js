@@ -28,16 +28,8 @@ function getOption(name) {
 }
 const _jsonOutput = args.includes('--json');
 
-const DEFAULT_RUNS = [
-  'eval-2026-03-01-aea2abfb',
-  'eval-2026-03-02-45163390',
-  'eval-2026-03-02-18027efc',
-];
-const DEFAULT_JUDGES = [
-  'claude-code/sonnet',
-  'gemini-3.1-pro-preview',
-  'gpt-5.4',
-];
+const DEFAULT_RUNS = ['eval-2026-03-01-aea2abfb', 'eval-2026-03-02-45163390', 'eval-2026-03-02-18027efc'];
+const DEFAULT_JUDGES = ['claude-code/sonnet', 'gemini-3.1-pro-preview', 'gpt-5.4'];
 
 const runIds = (getOption('runs') || '').split(',').filter(Boolean);
 const runs = runIds.length > 0 ? runIds : DEFAULT_RUNS;
@@ -89,7 +81,9 @@ function pearsonR(x, y) {
   if (n < 3) return null;
   const mx = mean(x.slice(0, n));
   const my = mean(y.slice(0, n));
-  let num = 0, dx = 0, dy = 0;
+  let num = 0,
+    dx = 0,
+    dy = 0;
   for (let i = 0; i < n; i++) {
     const a = x[i] - mx;
     const b = y[i] - my;
@@ -141,33 +135,32 @@ const byRunJudge = groupBy(rows, (r) => `${r.run_id}|${r.judge_model}`);
 // ============================================================
 // 1. Grand Means
 // ============================================================
-console.log('=' .repeat(70));
+console.log('='.repeat(70));
 console.log('  CROSS-JUDGE ANALYSIS: 3 runs × 3 judges × N=144');
 console.log('  Runs:', runs.map(runLabel).join(', '));
 console.log('  Judges:', judges.join(', '));
 console.log('  Total rows:', rows.length);
-console.log('=' .repeat(70));
+console.log('='.repeat(70));
 
 console.log('\n1. GRAND MEANS\n');
-const dims = ['tutor_overall_score', 'dialogue_quality_score', 'dialogue_quality_internal_score',
-  'tutor_holistic_overall_score', 'learner_overall_score', 'tutor_development_score'];
+const dims = [
+  'tutor_overall_score',
+  'dialogue_quality_score',
+  'dialogue_quality_internal_score',
+  'tutor_holistic_overall_score',
+  'learner_overall_score',
+  'tutor_development_score',
+];
 const dimLabels = ['t_ovr', 'dq_pub', 'dq_int', 't_hol', 'l_ovr', 't_dev'];
 
-console.log(
-  'Run'.padEnd(18) + 'Judge'.padEnd(26) +
-  dimLabels.map((l) => l.padStart(8)).join('')
-);
+console.log('Run'.padEnd(18) + 'Judge'.padEnd(26) + dimLabels.map((l) => l.padStart(8)).join(''));
 for (const run of runs) {
   for (const judge of judges) {
     const key = `${run}|${judge}`;
     const data = byRunJudge.get(key) || [];
     if (!data.length) continue;
     const vals = dims.map((d) => round(mean(data.map((r) => r[d]).filter((v) => v != null))));
-    console.log(
-      runLabel(run).padEnd(18) +
-      judge.padEnd(26) +
-      vals.map((v) => String(v).padStart(8)).join('')
-    );
+    console.log(runLabel(run).padEnd(18) + judge.padEnd(26) + vals.map((v) => String(v).padStart(8)).join(''));
   }
 }
 
@@ -176,9 +169,16 @@ for (const run of runs) {
 // ============================================================
 console.log('\n2. RECOGNITION EFFECT (recog - base)\n');
 console.log(
-  'Run'.padEnd(18) + 'Judge'.padEnd(26) +
-  dimLabels.slice(0, 5).map((l) => (l + '_d').padStart(10)).join('') +
-  dimLabels.slice(0, 5).map((l) => (l + '_D').padStart(10)).join('')
+  'Run'.padEnd(18) +
+    'Judge'.padEnd(26) +
+    dimLabels
+      .slice(0, 5)
+      .map((l) => (l + '_d').padStart(10))
+      .join('') +
+    dimLabels
+      .slice(0, 5)
+      .map((l) => (l + '_D').padStart(10))
+      .join(''),
 );
 
 const allEffects = [];
@@ -198,9 +198,10 @@ for (const run of runs) {
     }
     allEffects.push({ run: runLabel(run), judge, deltas, ds });
     console.log(
-      runLabel(run).padEnd(18) + judge.padEnd(26) +
-      deltas.map((v) => String(v).padStart(10)).join('') +
-      ds.map((v) => String(v).padStart(10)).join('')
+      runLabel(run).padEnd(18) +
+        judge.padEnd(26) +
+        deltas.map((v) => String(v).padStart(10)).join('') +
+        ds.map((v) => String(v).padStart(10)).join(''),
     );
   }
 }
@@ -210,18 +211,41 @@ for (const run of runs) {
 // ============================================================
 console.log('\n3. ARCHITECTURE MAIN EFFECTS\n');
 console.log(
-  'Run'.padEnd(18) + 'Judge'.padEnd(26) +
-  ['multi_tovr', 'multi_dq', 'multi_thol', 'psycho_tovr', 'psycho_lovr'].map((l) => l.padStart(13)).join('')
+  'Run'.padEnd(18) +
+    'Judge'.padEnd(26) +
+    ['multi_tovr', 'multi_dq', 'multi_thol', 'psycho_tovr', 'psycho_lovr'].map((l) => l.padStart(13)).join(''),
 );
 
 for (const run of runs) {
   for (const judge of judges) {
     const key = `${run}|${judge}`;
     const data = byRunJudge.get(key) || [];
-    const multiD = (dim) => mean(data.filter((r) => r.isMulti).map((r) => r[dim]).filter((v) => v != null))
-      - mean(data.filter((r) => !r.isMulti).map((r) => r[dim]).filter((v) => v != null));
-    const psychoD = (dim) => mean(data.filter((r) => r.isPsycho).map((r) => r[dim]).filter((v) => v != null))
-      - mean(data.filter((r) => !r.isPsycho).map((r) => r[dim]).filter((v) => v != null));
+    const multiD = (dim) =>
+      mean(
+        data
+          .filter((r) => r.isMulti)
+          .map((r) => r[dim])
+          .filter((v) => v != null),
+      ) -
+      mean(
+        data
+          .filter((r) => !r.isMulti)
+          .map((r) => r[dim])
+          .filter((v) => v != null),
+      );
+    const psychoD = (dim) =>
+      mean(
+        data
+          .filter((r) => r.isPsycho)
+          .map((r) => r[dim])
+          .filter((v) => v != null),
+      ) -
+      mean(
+        data
+          .filter((r) => !r.isPsycho)
+          .map((r) => r[dim])
+          .filter((v) => v != null),
+      );
     const vals = [
       round(multiD('tutor_overall_score')),
       round(multiD('dialogue_quality_score')),
@@ -229,9 +253,7 @@ for (const run of runs) {
       round(psychoD('tutor_overall_score')),
       round(psychoD('learner_overall_score')),
     ];
-    console.log(
-      runLabel(run).padEnd(18) + judge.padEnd(26) + vals.map((v) => String(v).padStart(13)).join('')
-    );
+    console.log(runLabel(run).padEnd(18) + judge.padEnd(26) + vals.map((v) => String(v).padStart(13)).join(''));
   }
 }
 
@@ -240,24 +262,29 @@ for (const run of runs) {
 // ============================================================
 console.log('\n4. RECOGNITION × MULTI-AGENT INTERACTION (on tutor_overall)\n');
 console.log(
-  'Run'.padEnd(18) + 'Judge'.padEnd(26) +
-  ['recog_single', 'recog_multi', 'multi_base', 'multi_recog'].map((l) => l.padStart(14)).join('')
+  'Run'.padEnd(18) +
+    'Judge'.padEnd(26) +
+    ['recog_single', 'recog_multi', 'multi_base', 'multi_recog'].map((l) => l.padStart(14)).join(''),
 );
 
 for (const run of runs) {
   for (const judge of judges) {
     const key = `${run}|${judge}`;
     const data = byRunJudge.get(key) || [];
-    const avg = (filter) => mean(data.filter(filter).map((r) => r.tutor_overall_score).filter((v) => v != null));
+    const avg = (filter) =>
+      mean(
+        data
+          .filter(filter)
+          .map((r) => r.tutor_overall_score)
+          .filter((v) => v != null),
+      );
     const vals = [
       round(avg((r) => r.isRecog && !r.isMulti) - avg((r) => !r.isRecog && !r.isMulti)),
       round(avg((r) => r.isRecog && r.isMulti) - avg((r) => !r.isRecog && r.isMulti)),
       round(avg((r) => r.isMulti && !r.isRecog) - avg((r) => !r.isMulti && !r.isRecog)),
       round(avg((r) => r.isMulti && r.isRecog) - avg((r) => !r.isMulti && r.isRecog)),
     ];
-    console.log(
-      runLabel(run).padEnd(18) + judge.padEnd(26) + vals.map((v) => String(v).padStart(14)).join('')
-    );
+    console.log(runLabel(run).padEnd(18) + judge.padEnd(26) + vals.map((v) => String(v).padStart(14)).join(''));
   }
 }
 
@@ -266,8 +293,10 @@ for (const run of runs) {
 // ============================================================
 console.log('\n5. DEVELOPMENT TRAJECTORIES (tN - t0)\n');
 console.log(
-  'Run'.padEnd(18) + 'Judge'.padEnd(26) + 'Cond'.padEnd(8) +
-  ['avg_dev', 'improved', 'declined', 'n'].map((l) => l.padStart(10)).join('')
+  'Run'.padEnd(18) +
+    'Judge'.padEnd(26) +
+    'Cond'.padEnd(8) +
+    ['avg_dev', 'improved', 'declined', 'n'].map((l) => l.padStart(10)).join(''),
 );
 
 for (const run of runs) {
@@ -275,15 +304,18 @@ for (const run of runs) {
     const key = `${run}|${judge}`;
     const data = byRunJudge.get(key) || [];
     for (const cond of ['base', 'recog']) {
-      const subset = data.filter((r) => (cond === 'recog' ? r.isRecog : !r.isRecog))
+      const subset = data
+        .filter((r) => (cond === 'recog' ? r.isRecog : !r.isRecog))
         .filter((r) => r.tutor_first_turn_score != null && r.tutor_last_turn_score != null);
       const devs = subset.map((r) => r.tutor_last_turn_score - r.tutor_first_turn_score);
       console.log(
-        runLabel(run).padEnd(18) + judge.padEnd(26) + cond.padEnd(8) +
-        String(round(mean(devs))).padStart(10) +
-        String(devs.filter((d) => d > 0).length).padStart(10) +
-        String(devs.filter((d) => d < 0).length).padStart(10) +
-        String(devs.length).padStart(10)
+        runLabel(run).padEnd(18) +
+          judge.padEnd(26) +
+          cond.padEnd(8) +
+          String(round(mean(devs))).padStart(10) +
+          String(devs.filter((d) => d > 0).length).padStart(10) +
+          String(devs.filter((d) => d < 0).length).padStart(10) +
+          String(devs.length).padStart(10),
       );
     }
   }
@@ -294,8 +326,10 @@ for (const run of runs) {
 // ============================================================
 console.log('\n6. DQ PUBLIC vs INTERNAL (by architecture)\n');
 console.log(
-  'Run'.padEnd(18) + 'Judge'.padEnd(26) + 'Arch'.padEnd(8) +
-  ['dq_pub', 'dq_int', 'gap'].map((l) => l.padStart(10)).join('')
+  'Run'.padEnd(18) +
+    'Judge'.padEnd(26) +
+    'Arch'.padEnd(8) +
+    ['dq_pub', 'dq_int', 'gap'].map((l) => l.padStart(10)).join(''),
 );
 
 for (const run of runs) {
@@ -307,10 +341,12 @@ for (const run of runs) {
       const pub = mean(subset.map((r) => r.dialogue_quality_score).filter((v) => v != null));
       const int = mean(subset.map((r) => r.dialogue_quality_internal_score).filter((v) => v != null));
       console.log(
-        runLabel(run).padEnd(18) + judge.padEnd(26) + arch.padEnd(8) +
-        String(round(pub)).padStart(10) +
-        String(round(int)).padStart(10) +
-        String(round(int - pub)).padStart(10)
+        runLabel(run).padEnd(18) +
+          judge.padEnd(26) +
+          arch.padEnd(8) +
+          String(round(pub)).padStart(10) +
+          String(round(int)).padStart(10) +
+          String(round(int - pub)).padStart(10),
       );
     }
   }
@@ -335,9 +371,11 @@ for (const arr of byKey.values()) {
 }
 
 console.log(
-  'Run'.padEnd(14) + 'N'.padStart(5) +
-  ['SG_tovr', 'SP_tovr', 'GP_tovr', 'SG_dq', 'SP_dq', 'GP_dq', 'SG_hol', 'SP_hol', 'GP_hol']
-    .map((l) => l.padStart(10)).join('')
+  'Run'.padEnd(14) +
+    'N'.padStart(5) +
+    ['SG_tovr', 'SP_tovr', 'GP_tovr', 'SG_dq', 'SP_dq', 'GP_dq', 'SG_hol', 'SP_hol', 'GP_hol']
+      .map((l) => l.padStart(10))
+      .join(''),
 );
 
 for (const run of runs) {
@@ -356,7 +394,11 @@ for (const run of runs) {
     const pRows = byKey.get(`${run}|${judges[2]}|${prof}|${scen}`) || [];
     const nRep = Math.min(sRows.length, gRows.length, pRows.length);
     for (let i = 0; i < nRep; i++) {
-      if (sRows[i].tutor_overall_score != null && gRows[i].tutor_overall_score != null && pRows[i].tutor_overall_score != null) {
+      if (
+        sRows[i].tutor_overall_score != null &&
+        gRows[i].tutor_overall_score != null &&
+        pRows[i].tutor_overall_score != null
+      ) {
         paired.s_t.push(sRows[i].tutor_overall_score);
         paired.g_t.push(gRows[i].tutor_overall_score);
         paired.p_t.push(pRows[i].tutor_overall_score);
@@ -372,12 +414,21 @@ for (const run of runs) {
 
   const n = paired.s_t.length;
   console.log(
-    runLabel(run).padEnd(14) + String(n).padStart(5) +
-    [
-      pearsonR(paired.s_t, paired.g_t), pearsonR(paired.s_t, paired.p_t), pearsonR(paired.g_t, paired.p_t),
-      pearsonR(paired.s_d, paired.g_d), pearsonR(paired.s_d, paired.p_d), pearsonR(paired.g_d, paired.p_d),
-      pearsonR(paired.s_h, paired.g_h), pearsonR(paired.s_h, paired.p_h), pearsonR(paired.g_h, paired.p_h),
-    ].map((v) => String(round(v, 3)).padStart(10)).join('')
+    runLabel(run).padEnd(14) +
+      String(n).padStart(5) +
+      [
+        pearsonR(paired.s_t, paired.g_t),
+        pearsonR(paired.s_t, paired.p_t),
+        pearsonR(paired.g_t, paired.p_t),
+        pearsonR(paired.s_d, paired.g_d),
+        pearsonR(paired.s_d, paired.p_d),
+        pearsonR(paired.g_d, paired.p_d),
+        pearsonR(paired.s_h, paired.g_h),
+        pearsonR(paired.s_h, paired.p_h),
+        pearsonR(paired.g_h, paired.p_h),
+      ]
+        .map((v) => String(round(v, 3)).padStart(10))
+        .join(''),
   );
 }
 
@@ -391,7 +442,9 @@ console.log('='.repeat(70));
 // Count how many cells have positive recognition effect
 const posRecog = allEffects.filter((e) => e.deltas[0] > 0).length;
 console.log(`  Recognition positive on t_ovr: ${posRecog}/${allEffects.length} cells`);
-console.log(`  Recognition d range on t_ovr:  ${Math.min(...allEffects.map((e) => e.ds[0]))} – ${Math.max(...allEffects.map((e) => e.ds[0]))}`);
+console.log(
+  `  Recognition d range on t_ovr:  ${Math.min(...allEffects.map((e) => e.ds[0]))} – ${Math.max(...allEffects.map((e) => e.ds[0]))}`,
+);
 
 // Learner invariance
 const learnerDs = allEffects.map((e) => e.ds[4]);

@@ -34,11 +34,7 @@ const section = args.find((a, i) => args[i - 1] === '--section') || 'all';
 const jsonOutput = args.includes('--json');
 const _verbose = args.includes('--verbose');
 
-const RUN_IDS = [
-  'eval-2026-03-01-aea2abfb',
-  'eval-2026-03-02-45163390',
-  'eval-2026-03-02-18027efc',
-];
+const RUN_IDS = ['eval-2026-03-01-aea2abfb', 'eval-2026-03-02-45163390', 'eval-2026-03-02-18027efc'];
 const MODEL_MAP = {
   'eval-2026-03-01-aea2abfb': 'DeepSeek V3.2',
   'eval-2026-03-02-45163390': 'Haiku 4.5',
@@ -52,7 +48,9 @@ function getDb() {
 }
 
 function getEpoch2Rows(db) {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT dialogue_id, profile_name, scenario_id, scenario_name, run_id,
            tutor_first_turn_score, tutor_last_turn_score, tutor_development_score,
            tutor_holistic_overall_score, learner_overall_score, dialogue_quality_score,
@@ -63,7 +61,9 @@ function getEpoch2Rows(db) {
       AND dialogue_id IS NOT NULL AND dialogue_id <> ''
       AND judge_model LIKE '%sonnet%'
       AND run_id IN (${RUN_IDS.map(() => '?').join(',')})
-  `).all(...RUN_IDS);
+  `,
+    )
+    .all(...RUN_IDS);
 }
 
 function loadTrace(dialogueId) {
@@ -72,7 +72,9 @@ function loadTrace(dialogueId) {
   try {
     const d = JSON.parse(fs.readFileSync(logPath, 'utf8'));
     return d.dialogueTrace || d.trace || [];
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function extractTutorTurns(trace) {
@@ -85,11 +87,11 @@ function extractTutorTurns(trace) {
       currentTurn++;
     }
     if (e.agent === 'ego' && (e.action === 'revise' || e.action === 'generate_final' || e.action === 'generate')) {
-      const msg = (e.suggestions || []).map(s => s.message || s.title || '').join(' ');
+      const msg = (e.suggestions || []).map((s) => s.message || s.title || '').join(' ');
       if (msg) {
         const turnIdx = e.turnIndex ?? currentTurn;
         // Keep latest revision per turn (revise overwrites generate)
-        const existing = turns.findIndex(t => t.turn === turnIdx);
+        const existing = turns.findIndex((t) => t.turn === turnIdx);
         if (existing >= 0) {
           turns[existing] = { turn: turnIdx, text: msg };
         } else {
@@ -128,10 +130,14 @@ function cohensD(a, b) {
 
 function pearsonR(x, y) {
   if (x.length < 3) return 0;
-  const mx = mean(x), my = mean(y);
-  let num = 0, dx2 = 0, dy2 = 0;
+  const mx = mean(x),
+    my = mean(y);
+  let num = 0,
+    dx2 = 0,
+    dy2 = 0;
   for (let i = 0; i < x.length; i++) {
-    const dx = x[i] - mx, dy = y[i] - my;
+    const dx = x[i] - mx,
+      dy = y[i] - my;
     num += dx * dy;
     dx2 += dx * dx;
     dy2 += dy * dy;
@@ -196,7 +202,8 @@ function analyzeQuestionFrequency(rows) {
       data.byModel[model][cond].turns += 1;
 
       const scenKey = row.scenario_id;
-      if (!data.byScenario[scenKey]) data.byScenario[scenKey] = { name: row.scenario_name, base: { q: 0, turns: 0 }, recog: { q: 0, turns: 0 } };
+      if (!data.byScenario[scenKey])
+        data.byScenario[scenKey] = { name: row.scenario_name, base: { q: 0, turns: 0 }, recog: { q: 0, turns: 0 } };
       data.byScenario[scenKey][cond].q += qCount;
       data.byScenario[scenKey][cond].turns += 1;
 
@@ -211,8 +218,12 @@ function analyzeQuestionFrequency(rows) {
   const bRate = data.byCondition.base.q / data.byCondition.base.turns;
   const rRate = data.byCondition.recog.q / data.byCondition.recog.turns;
   console.log('### Overall');
-  console.log(`Base:       ${bRate.toFixed(3)} questions/turn (${data.byCondition.base.q} questions / ${data.byCondition.base.turns} turns)`);
-  console.log(`Recognition: ${rRate.toFixed(3)} questions/turn (${data.byCondition.recog.q} questions / ${data.byCondition.recog.turns} turns)`);
+  console.log(
+    `Base:       ${bRate.toFixed(3)} questions/turn (${data.byCondition.base.q} questions / ${data.byCondition.base.turns} turns)`,
+  );
+  console.log(
+    `Recognition: ${rRate.toFixed(3)} questions/turn (${data.byCondition.recog.q} questions / ${data.byCondition.recog.turns} turns)`,
+  );
   console.log(`Ratio:       ${(rRate / bRate).toFixed(1)}×\n`);
 
   // By model
@@ -224,7 +235,9 @@ function analyzeQuestionFrequency(rows) {
     if (!m) continue;
     const br = m.base.q / m.base.turns;
     const rr = m.recog.q / m.recog.turns;
-    console.log(`| ${model} | ${br.toFixed(3)} | ${rr.toFixed(3)} | **${(rr / br).toFixed(1)}×** | ${m.base.turns} | ${m.recog.turns} |`);
+    console.log(
+      `| ${model} | ${br.toFixed(3)} | ${rr.toFixed(3)} | **${(rr / br).toFixed(1)}×** | ${m.base.turns} | ${m.recog.turns} |`,
+    );
   }
 
   // By scenario
@@ -237,7 +250,7 @@ function analyzeQuestionFrequency(rows) {
       bRate: s.base.turns > 0 ? s.base.q / s.base.turns : 0,
       rRate: s.recog.turns > 0 ? s.recog.q / s.recog.turns : 0,
     }))
-    .sort((a, b) => (b.rRate / Math.max(b.bRate, 0.001)) - (a.rRate / Math.max(a.bRate, 0.001)));
+    .sort((a, b) => b.rRate / Math.max(b.bRate, 0.001) - a.rRate / Math.max(a.bRate, 0.001));
   for (const s of scenEntries) {
     const ratio = s.bRate > 0 ? (s.rRate / s.bRate).toFixed(1) : '∞';
     console.log(`| ${s.name} | ${s.bRate.toFixed(3)} | ${s.rRate.toFixed(3)} | ${ratio}× |`);
@@ -268,7 +281,11 @@ function analyzeVocabularyDivergence(rows) {
     if (!freqs.byModel[model]) freqs.byModel[model] = { base: {}, recog: {} };
 
     for (const t of tutorTurns) {
-      const words = t.text.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+      const words = t.text
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w) => w.length > 2);
       for (const w of words) {
         freqs.overall[cond][w] = (freqs.overall[cond][w] || 0) + 1;
         freqs.byModel[model][cond][w] = (freqs.byModel[model][cond][w] || 0) + 1;
@@ -303,13 +320,13 @@ function analyzeVocabularyDivergence(rows) {
     const pRecog = (freqs.overall.recog[w] || 0) / totalRecog;
     // Log-ratio favoring recognition
     if (pRecog > 0.0001 && pBase > 0) {
-      wordScores.push({ word: w, ratio: pRecog / pBase, pRecog, pBase, count: (freqs.overall.recog[w] || 0) });
+      wordScores.push({ word: w, ratio: pRecog / pBase, pRecog, pBase, count: freqs.overall.recog[w] || 0 });
     }
   }
   wordScores.sort((a, b) => b.ratio - a.ratio);
   console.log('| Word | Recog freq | Base freq | Ratio |');
   console.log('|---|---|---|---|');
-  for (const ws of wordScores.filter(w => w.count >= 10).slice(0, 20)) {
+  for (const ws of wordScores.filter((w) => w.count >= 10).slice(0, 20)) {
     console.log(`| ${ws.word} | ${ws.pRecog.toFixed(5)} | ${ws.pBase.toFixed(5)} | ${ws.ratio.toFixed(1)}× |`);
   }
 
@@ -320,17 +337,20 @@ function analyzeVocabularyDivergence(rows) {
     const pBase = (freqs.overall.base[w] || 0) / totalBase;
     const pRecog = (freqs.overall.recog[w] || 0) / totalRecog;
     if (pBase > 0.0001 && pRecog > 0) {
-      baseScores.push({ word: w, ratio: pBase / pRecog, pRecog, pBase, count: (freqs.overall.base[w] || 0) });
+      baseScores.push({ word: w, ratio: pBase / pRecog, pRecog, pBase, count: freqs.overall.base[w] || 0 });
     }
   }
   baseScores.sort((a, b) => b.ratio - a.ratio);
   console.log('| Word | Base freq | Recog freq | Ratio |');
   console.log('|---|---|---|---|');
-  for (const ws of baseScores.filter(w => w.count >= 10).slice(0, 20)) {
+  for (const ws of baseScores.filter((w) => w.count >= 10).slice(0, 20)) {
     console.log(`| ${ws.word} | ${ws.pBase.toFixed(5)} | ${ws.pRecog.toFixed(5)} | ${ws.ratio.toFixed(1)}× |`);
   }
 
-  return { overallJSD, byModel: Object.fromEntries(Object.entries(freqs.byModel).map(([m, f]) => [m, jsd(f.base, f.recog)])) };
+  return {
+    overallJSD,
+    byModel: Object.fromEntries(Object.entries(freqs.byModel).map(([m, f]) => [m, jsd(f.base, f.recog)])),
+  };
 }
 
 // ── §3: Ceiling Regression ──────────────────────────────────────────────
@@ -341,30 +361,36 @@ function analyzeCeilingRegression(rows) {
   console.log('═══════════════════════════════════════════════════════════\n');
 
   // Only rows with both T1 and development scores
-  const validRows = rows.filter(r => r.tutor_first_turn_score != null && r.tutor_development_score != null);
+  const validRows = rows.filter((r) => r.tutor_first_turn_score != null && r.tutor_development_score != null);
 
   console.log(`Total rows with T1 + development: ${validRows.length}\n`);
 
   // Overall
-  const t1All = validRows.map(r => r.tutor_first_turn_score);
-  const devAll = validRows.map(r => r.tutor_development_score);
+  const t1All = validRows.map((r) => r.tutor_first_turn_score);
+  const devAll = validRows.map((r) => r.tutor_development_score);
   const rAll = pearsonR(t1All, devAll);
   const tTestAll = tTest(rAll, t1All.length);
-  console.log(`### Overall: r = ${rAll.toFixed(3)}, t(${t1All.length - 2}) = ${tTestAll.t.toFixed(2)}, p ${tTestAll.p < .001 ? '< .001' : '= ' + tTestAll.p.toFixed(3)}`);
-  console.log(`  Interpretation: ${rAll < -0.3 ? 'STRONG ceiling compression' : rAll < -0.1 ? 'Moderate ceiling compression' : 'Weak or no ceiling effect'}\n`);
+  console.log(
+    `### Overall: r = ${rAll.toFixed(3)}, t(${t1All.length - 2}) = ${tTestAll.t.toFixed(2)}, p ${tTestAll.p < 0.001 ? '< .001' : '= ' + tTestAll.p.toFixed(3)}`,
+  );
+  console.log(
+    `  Interpretation: ${rAll < -0.3 ? 'STRONG ceiling compression' : rAll < -0.1 ? 'Moderate ceiling compression' : 'Weak or no ceiling effect'}\n`,
+  );
 
   // By condition
   console.log('### By Condition');
   console.log('| Condition | N | r(T1, dev) | t | p | Interpretation |');
   console.log('|---|---|---|---|---|---|');
   for (const cond of ['base', 'recog']) {
-    const subset = validRows.filter(r => isRecog(r.profile_name) === (cond === 'recog'));
-    const t1 = subset.map(r => r.tutor_first_turn_score);
-    const dev = subset.map(r => r.tutor_development_score);
+    const subset = validRows.filter((r) => isRecog(r.profile_name) === (cond === 'recog'));
+    const t1 = subset.map((r) => r.tutor_first_turn_score);
+    const dev = subset.map((r) => r.tutor_development_score);
     const r = pearsonR(t1, dev);
     const tt = tTest(r, t1.length);
     const interp = r < -0.3 ? 'Strong ceiling' : r < -0.1 ? 'Moderate ceiling' : 'Weak/none';
-    console.log(`| ${cond} | ${t1.length} | ${r.toFixed(3)} | ${tt.t.toFixed(2)} | ${tt.p < .001 ? '< .001' : tt.p.toFixed(3)} | ${interp} |`);
+    console.log(
+      `| ${cond} | ${t1.length} | ${r.toFixed(3)} | ${tt.t.toFixed(2)} | ${tt.p < 0.001 ? '< .001' : tt.p.toFixed(3)} | ${interp} |`,
+    );
   }
 
   // By model
@@ -373,12 +399,14 @@ function analyzeCeilingRegression(rows) {
   console.log('|---|---|---|---|---|');
   for (const model of ['DeepSeek V3.2', 'Haiku 4.5', 'Gemini Flash']) {
     const runId = Object.entries(MODEL_MAP).find(([, v]) => v === model)?.[0];
-    const subset = validRows.filter(r => r.run_id === runId);
-    const t1 = subset.map(r => r.tutor_first_turn_score);
-    const dev = subset.map(r => r.tutor_development_score);
+    const subset = validRows.filter((r) => r.run_id === runId);
+    const t1 = subset.map((r) => r.tutor_first_turn_score);
+    const dev = subset.map((r) => r.tutor_development_score);
     const r = pearsonR(t1, dev);
     const tt = tTest(r, t1.length);
-    console.log(`| ${model} | ${t1.length} | ${r.toFixed(3)} | ${tt.t.toFixed(2)} | ${tt.p < .001 ? '< .001' : tt.p.toFixed(3)} |`);
+    console.log(
+      `| ${model} | ${t1.length} | ${r.toFixed(3)} | ${tt.t.toFixed(2)} | ${tt.p < 0.001 ? '< .001' : tt.p.toFixed(3)} |`,
+    );
   }
 
   // By model × condition
@@ -388,13 +416,15 @@ function analyzeCeilingRegression(rows) {
   for (const model of ['DeepSeek V3.2', 'Haiku 4.5', 'Gemini Flash']) {
     const runId = Object.entries(MODEL_MAP).find(([, v]) => v === model)?.[0];
     for (const cond of ['base', 'recog']) {
-      const subset = validRows.filter(r => r.run_id === runId && isRecog(r.profile_name) === (cond === 'recog'));
+      const subset = validRows.filter((r) => r.run_id === runId && isRecog(r.profile_name) === (cond === 'recog'));
       if (subset.length < 5) continue;
-      const t1 = subset.map(r => r.tutor_first_turn_score);
-      const dev = subset.map(r => r.tutor_development_score);
+      const t1 = subset.map((r) => r.tutor_first_turn_score);
+      const dev = subset.map((r) => r.tutor_development_score);
       const r = pearsonR(t1, dev);
       const tt = tTest(r, t1.length);
-      console.log(`| ${model} | ${cond} | ${t1.length} | ${r.toFixed(3)} | ${tt.t.toFixed(2)} | ${tt.p < .001 ? '< .001' : tt.p.toFixed(3)} |`);
+      console.log(
+        `| ${model} | ${cond} | ${t1.length} | ${r.toFixed(3)} | ${tt.t.toFixed(2)} | ${tt.p < 0.001 ? '< .001' : tt.p.toFixed(3)} |`,
+      );
     }
   }
 
@@ -408,7 +438,7 @@ function analyzeGeminiFlashScenarios(rows) {
   console.log('§4  GEMINI FLASH SCENARIO EFFECTS (CROSS-MODEL COMPARISON)');
   console.log('═══════════════════════════════════════════════════════════\n');
 
-  const geminiRows = rows.filter(r => r.run_id === 'eval-2026-03-02-18027efc');
+  const geminiRows = rows.filter((r) => r.run_id === 'eval-2026-03-02-18027efc');
 
   // By scenario × condition
   const scenarios = {};
@@ -426,11 +456,21 @@ function analyzeGeminiFlashScenarios(rows) {
     .map(([_id, s]) => {
       const bm = mean(s.base);
       const rm = mean(s.recog);
-      return { name: s.name, baseMean: bm, recogMean: rm, delta: rm - bm, d: cohensD(s.recog, s.base), baseN: s.base.length, recogN: s.recog.length };
+      return {
+        name: s.name,
+        baseMean: bm,
+        recogMean: rm,
+        delta: rm - bm,
+        d: cohensD(s.recog, s.base),
+        baseN: s.base.length,
+        recogN: s.recog.length,
+      };
     })
     .sort((a, b) => b.delta - a.delta);
   for (const s of scenEntries) {
-    console.log(`| ${s.name} | ${s.baseMean.toFixed(1)} (${s.baseN}) | ${s.recogMean.toFixed(1)} (${s.recogN}) | **+${s.delta.toFixed(1)}** | ${s.d.toFixed(2)} |`);
+    console.log(
+      `| ${s.name} | ${s.baseMean.toFixed(1)} (${s.baseN}) | ${s.recogMean.toFixed(1)} (${s.recogN}) | **+${s.delta.toFixed(1)}** | ${s.d.toFixed(2)} |`,
+    );
   }
 
   // Cross-model scenario rank comparison
@@ -451,7 +491,7 @@ function analyzeGeminiFlashScenarios(rows) {
   console.log('|---|---|---|---|');
 
   // Get all scenario IDs across models
-  const allScenIds = [...new Set(rows.map(r => r.scenario_id))];
+  const allScenIds = [...new Set(rows.map((r) => r.scenario_id))];
   const modelDeltas = {};
   for (const model of ['DeepSeek V3.2', 'Haiku 4.5', 'Gemini Flash']) {
     const deltas = [];
@@ -465,12 +505,12 @@ function analyzeGeminiFlashScenarios(rows) {
   }
 
   for (const scenId of allScenIds) {
-    const ds = modelDeltas['DeepSeek V3.2']?.find(d => d.scenId === scenId);
-    const hk = modelDeltas['Haiku 4.5']?.find(d => d.scenId === scenId);
-    const gf = modelDeltas['Gemini Flash']?.find(d => d.scenId === scenId);
+    const ds = modelDeltas['DeepSeek V3.2']?.find((d) => d.scenId === scenId);
+    const hk = modelDeltas['Haiku 4.5']?.find((d) => d.scenId === scenId);
+    const gf = modelDeltas['Gemini Flash']?.find((d) => d.scenId === scenId);
     if (!ds && !hk && !gf) continue;
     const name = ds?.name || hk?.name || gf?.name || scenId;
-    const fmt = (m) => m ? `+${m.delta.toFixed(1)} (#${m.rank})` : '—';
+    const fmt = (m) => (m ? `+${m.delta.toFixed(1)} (#${m.rank})` : '—');
     console.log(`| ${name} | ${fmt(ds)} | ${fmt(hk)} | ${fmt(gf)} |`);
   }
 
@@ -485,8 +525,8 @@ function analyzeQuestionTrajectory(rows) {
   console.log('═══════════════════════════════════════════════════════════\n');
 
   // Collect questions per turn index
-  const byTurn = {};  // turnIndex -> { base: [qCounts], recog: [qCounts] }
-  const byTurnModel = {};  // model -> turnIndex -> { base: [qCounts], recog: [qCounts] }
+  const byTurn = {}; // turnIndex -> { base: [qCounts], recog: [qCounts] }
+  const byTurnModel = {}; // model -> turnIndex -> { base: [qCounts], recog: [qCounts] }
 
   for (const row of rows) {
     const trace = loadTrace(row.dialogue_id);
@@ -513,7 +553,9 @@ function analyzeQuestionTrajectory(rows) {
   console.log('### Overall Question Rate by Turn Index');
   console.log('| Turn | Base q/turn (N) | Recog q/turn (N) | Ratio |');
   console.log('|---|---|---|---|');
-  const turns = Object.keys(byTurn).map(Number).sort((a, b) => a - b);
+  const turns = Object.keys(byTurn)
+    .map(Number)
+    .sort((a, b) => a - b);
   for (const ti of turns) {
     const b = byTurn[ti].base;
     const r = byTurn[ti].recog;
@@ -526,7 +568,8 @@ function analyzeQuestionTrajectory(rows) {
   // Slope analysis: is the question rate increasing over turns?
   console.log('\n### Question Rate Slope (OLS regression: q/turn ~ turnIndex)');
   for (const cond of ['base', 'recog']) {
-    const x = [], y = [];
+    const x = [],
+      y = [];
     for (const ti of turns) {
       const vals = byTurn[ti][cond];
       for (const v of vals) {
@@ -537,14 +580,18 @@ function analyzeQuestionTrajectory(rows) {
     const r = pearsonR(x, y);
     const tt = tTest(r, x.length);
     // Compute actual slope via OLS
-    const mx = mean(x), my = mean(y);
-    let num = 0, denom = 0;
+    const mx = mean(x),
+      my = mean(y);
+    let num = 0,
+      denom = 0;
     for (let i = 0; i < x.length; i++) {
       num += (x[i] - mx) * (y[i] - my);
       denom += (x[i] - mx) ** 2;
     }
     const slope = denom > 0 ? num / denom : 0;
-    console.log(`  ${cond}: slope = ${slope.toFixed(4)} q/turn per turn, r = ${r.toFixed(3)}, p ${tt.p < .001 ? '< .001' : '= ' + tt.p.toFixed(3)}`);
+    console.log(
+      `  ${cond}: slope = ${slope.toFixed(4)} q/turn per turn, r = ${r.toFixed(3)}, p ${tt.p < 0.001 ? '< .001' : '= ' + tt.p.toFixed(3)}`,
+    );
   }
 
   // By model
@@ -555,7 +602,9 @@ function analyzeQuestionTrajectory(rows) {
     console.log(`\n**${model}**`);
     console.log('| Turn | Base q/turn | Recog q/turn |');
     console.log('|---|---|---|');
-    const mTurns = Object.keys(mt).map(Number).sort((a, b) => a - b);
+    const mTurns = Object.keys(mt)
+      .map(Number)
+      .sort((a, b) => a - b);
     for (const ti of mTurns) {
       const bRate = mean(mt[ti].base);
       const rRate = mean(mt[ti].recog);
@@ -572,12 +621,20 @@ function ols2(y, x1, x2) {
   // OLS regression: y = b0 + b1*x1 + b2*x2
   // Returns { b0, b1, b2, r2, se_b1, se_b2, t_b1, t_b2, p_b1, p_b2 }
   const n = y.length;
-  const my = mean(y), mx1 = mean(x1), mx2 = mean(x2);
+  const my = mean(y),
+    mx1 = mean(x1),
+    mx2 = mean(x2);
 
   // Normal equations via cross-products
-  let s11 = 0, s22 = 0, s12 = 0, sy1 = 0, sy2 = 0;
+  let s11 = 0,
+    s22 = 0,
+    s12 = 0,
+    sy1 = 0,
+    sy2 = 0;
   for (let i = 0; i < n; i++) {
-    const d1 = x1[i] - mx1, d2 = x2[i] - mx2, dy = y[i] - my;
+    const d1 = x1[i] - mx1,
+      d2 = x2[i] - mx2,
+      dy = y[i] - my;
     s11 += d1 * d1;
     s22 += d2 * d2;
     s12 += d1 * d2;
@@ -593,7 +650,8 @@ function ols2(y, x1, x2) {
   const b0 = my - b1 * mx1 - b2 * mx2;
 
   // Residuals and R²
-  let ssRes = 0, ssTot = 0;
+  let ssRes = 0,
+    ssTot = 0;
   for (let i = 0; i < n; i++) {
     const pred = b0 + b1 * x1[i] + b2 * x2[i];
     ssRes += (y[i] - pred) ** 2;
@@ -603,8 +661,8 @@ function ols2(y, x1, x2) {
 
   // Standard errors of coefficients
   const mse = ssRes / (n - 3);
-  const se_b1 = Math.sqrt(mse * s22 / det);
-  const se_b2 = Math.sqrt(mse * s11 / det);
+  const se_b1 = Math.sqrt((mse * s22) / det);
+  const se_b2 = Math.sqrt((mse * s11) / det);
   const t_b1 = se_b1 > 0 ? b1 / se_b1 : 0;
   const t_b2 = se_b2 > 0 ? b2 / se_b2 : 0;
 
@@ -620,8 +678,10 @@ function ols2(y, x1, x2) {
 function ols1(y, x) {
   // Simple OLS: y = b0 + b1*x
   const n = y.length;
-  const mx = mean(x), my = mean(y);
-  let sxx = 0, sxy = 0;
+  const mx = mean(x),
+    my = mean(y);
+  let sxx = 0,
+    sxy = 0;
   for (let i = 0; i < n; i++) {
     const dx = x[i] - mx;
     sxx += dx * dx;
@@ -631,7 +691,8 @@ function ols1(y, x) {
   const b1 = sxy / sxx;
   const b0 = my - b1 * mx;
 
-  let ssRes = 0, ssTot = 0;
+  let ssRes = 0,
+    ssTot = 0;
   for (let i = 0; i < n; i++) {
     ssRes += (y[i] - (b0 + b1 * x[i])) ** 2;
     ssTot += (y[i] - my) ** 2;
@@ -677,9 +738,9 @@ function analyzeMediationAnalysis(rows) {
   console.log(`Dialogues with trace data: ${data.length}\n`);
 
   function runMediation(subset, label) {
-    const X = subset.map(d => d.x);
-    const M = subset.map(d => d.m);
-    const Y = subset.map(d => d.y);
+    const X = subset.map((d) => d.x);
+    const M = subset.map((d) => d.m);
+    const Y = subset.map((d) => d.y);
 
     // Step 1 (Path c): Y = c0 + c*X
     const pathC = ols1(Y, X);
@@ -693,11 +754,11 @@ function analyzeMediationAnalysis(rows) {
     const pathBC = ols2(Y, X, M);
     if (!pathBC) return;
 
-    const c = pathC.b1;        // total effect
-    const cPrime = pathBC.b1;  // direct effect (controlling for M)
-    const a = pathA.b1;        // X → M
-    const b = pathBC.b2;       // M → Y (controlling for X)
-    const indirect = a * b;    // indirect (mediated) effect
+    const c = pathC.b1; // total effect
+    const cPrime = pathBC.b1; // direct effect (controlling for M)
+    const a = pathA.b1; // X → M
+    const b = pathBC.b2; // M → Y (controlling for X)
+    const indirect = a * b; // indirect (mediated) effect
     const proportionMediated = c !== 0 ? indirect / c : 0;
 
     // Sobel test: z = a*b / sqrt(b²*se_a² + a²*se_b²)
@@ -709,10 +770,18 @@ function analyzeMediationAnalysis(rows) {
     console.log('');
     console.log('| Path | Coefficient | SE | t | p | Interpretation |');
     console.log('|---|---|---|---|---|---|');
-    console.log(`| c (total: X→Y) | ${c.toFixed(2)} | ${pathC.se_b1.toFixed(2)} | ${pathC.t_b1.toFixed(2)} | ${pathC.p_b1 < .001 ? '< .001' : pathC.p_b1.toFixed(3)} | Recognition → quality |`);
-    console.log(`| a (X→M) | ${a.toFixed(3)} | ${pathA.se_b1.toFixed(3)} | ${pathA.t_b1.toFixed(2)} | ${pathA.p_b1 < .001 ? '< .001' : pathA.p_b1.toFixed(3)} | Recognition → questions |`);
-    console.log(`| b (M→Y\\|X) | ${b.toFixed(2)} | ${pathBC.se_b2.toFixed(2)} | ${pathBC.t_b2.toFixed(2)} | ${pathBC.p_b2 < .001 ? '< .001' : pathBC.p_b2.toFixed(3)} | Questions → quality (controlling for X) |`);
-    console.log(`| c' (X→Y\\|M) | ${cPrime.toFixed(2)} | ${pathBC.se_b1.toFixed(2)} | ${pathBC.t_b1.toFixed(2)} | ${pathBC.p_b1 < .001 ? '< .001' : pathBC.p_b1.toFixed(3)} | Direct effect (residual) |`);
+    console.log(
+      `| c (total: X→Y) | ${c.toFixed(2)} | ${pathC.se_b1.toFixed(2)} | ${pathC.t_b1.toFixed(2)} | ${pathC.p_b1 < 0.001 ? '< .001' : pathC.p_b1.toFixed(3)} | Recognition → quality |`,
+    );
+    console.log(
+      `| a (X→M) | ${a.toFixed(3)} | ${pathA.se_b1.toFixed(3)} | ${pathA.t_b1.toFixed(2)} | ${pathA.p_b1 < 0.001 ? '< .001' : pathA.p_b1.toFixed(3)} | Recognition → questions |`,
+    );
+    console.log(
+      `| b (M→Y\\|X) | ${b.toFixed(2)} | ${pathBC.se_b2.toFixed(2)} | ${pathBC.t_b2.toFixed(2)} | ${pathBC.p_b2 < 0.001 ? '< .001' : pathBC.p_b2.toFixed(3)} | Questions → quality (controlling for X) |`,
+    );
+    console.log(
+      `| c' (X→Y\\|M) | ${cPrime.toFixed(2)} | ${pathBC.se_b1.toFixed(2)} | ${pathBC.t_b1.toFixed(2)} | ${pathBC.p_b1 < 0.001 ? '< .001' : pathBC.p_b1.toFixed(3)} | Direct effect (residual) |`,
+    );
     console.log('');
     console.log(`| Metric | Value |`);
     console.log(`|---|---|`);
@@ -724,16 +793,22 @@ function analyzeMediationAnalysis(rows) {
     console.log(`| R² (mediation model) | ${pathBC.r2.toFixed(3)} |`);
     console.log(`| R² increase | +${(pathBC.r2 - pathC.r2).toFixed(3)} |`);
     console.log(`| Sobel z | ${sobelZ.toFixed(2)} |`);
-    console.log(`| Sobel p | ${sobelP < .001 ? '< .001' : sobelP.toFixed(3)} |`);
+    console.log(`| Sobel p | ${sobelP < 0.001 ? '< .001' : sobelP.toFixed(3)} |`);
     console.log('');
 
-    const medType = proportionMediated > 0.8 ? 'FULL mediation' :
-                    proportionMediated > 0.2 ? 'PARTIAL mediation' : 'NO mediation';
-    console.log(`  **${medType}**: Question frequency mediates ${(proportionMediated * 100).toFixed(1)}% of the recognition → quality effect.`);
-    if (sobelP < .05) {
-      console.log(`  Sobel test significant (z=${sobelZ.toFixed(2)}, p${sobelP < .001 ? '<.001' : '=' + sobelP.toFixed(3)}): indirect path is reliable.`);
+    const medType =
+      proportionMediated > 0.8 ? 'FULL mediation' : proportionMediated > 0.2 ? 'PARTIAL mediation' : 'NO mediation';
+    console.log(
+      `  **${medType}**: Question frequency mediates ${(proportionMediated * 100).toFixed(1)}% of the recognition → quality effect.`,
+    );
+    if (sobelP < 0.05) {
+      console.log(
+        `  Sobel test significant (z=${sobelZ.toFixed(2)}, p${sobelP < 0.001 ? '<.001' : '=' + sobelP.toFixed(3)}): indirect path is reliable.`,
+      );
     } else {
-      console.log(`  Sobel test NOT significant (z=${sobelZ.toFixed(2)}, p=${sobelP.toFixed(3)}): indirect path not reliably different from zero.`);
+      console.log(
+        `  Sobel test NOT significant (z=${sobelZ.toFixed(2)}, p=${sobelP.toFixed(3)}): indirect path not reliably different from zero.`,
+      );
     }
     console.log('');
 
@@ -746,7 +821,7 @@ function analyzeMediationAnalysis(rows) {
   // By model
   const byModel = {};
   for (const model of ['DeepSeek V3.2', 'Haiku 4.5', 'Gemini Flash']) {
-    const subset = data.filter(d => d.model === model);
+    const subset = data.filter((d) => d.model === model);
     if (subset.length >= 20) {
       byModel[model] = runMediation(subset, model);
     }
@@ -754,18 +829,21 @@ function analyzeMediationAnalysis(rows) {
 
   // Also test with holistic score as outcome
   console.log('\n---\n### Robustness: Holistic Overall Score as Outcome\n');
-  const dataH = data.filter(d => d.holistic != null);
+  const dataH = data.filter((d) => d.holistic != null);
   if (dataH.length > 20) {
-    const XH = dataH.map(d => d.x);
-    const MH = dataH.map(d => d.m);
-    const YH = dataH.map(d => d.holistic);
+    const XH = dataH.map((d) => d.x);
+    const MH = dataH.map((d) => d.m);
+    const YH = dataH.map((d) => d.holistic);
 
     const pathC = ols1(YH, XH);
     const pathA = ols1(MH, XH);
     const pathBC = ols2(YH, XH, MH);
 
     if (pathC && pathA && pathBC) {
-      const c = pathC.b1, cPrime = pathBC.b1, a = pathA.b1, b = pathBC.b2;
+      const c = pathC.b1,
+        cPrime = pathBC.b1,
+        a = pathA.b1,
+        b = pathBC.b2;
       const indirect = a * b;
       const propMed = c !== 0 ? indirect / c : 0;
       const sobelSE = Math.sqrt(b * b * pathA.se_b1 ** 2 + a * a * pathBC.se_b2 ** 2);
@@ -773,9 +851,11 @@ function analyzeMediationAnalysis(rows) {
       const sobelP = Math.min(1, 2 * Math.exp(-0.717 * Math.abs(sobelZ) - 0.416 * sobelZ * sobelZ));
 
       console.log(`Holistic score mediation (N=${dataH.length}):`);
-      console.log(`  Total effect (c): ${c.toFixed(2)}, Direct (c'): ${cPrime.toFixed(2)}, Indirect (a×b): ${indirect.toFixed(2)}`);
+      console.log(
+        `  Total effect (c): ${c.toFixed(2)}, Direct (c'): ${cPrime.toFixed(2)}, Indirect (a×b): ${indirect.toFixed(2)}`,
+      );
       console.log(`  Proportion mediated: ${(propMed * 100).toFixed(1)}%`);
-      console.log(`  Sobel: z=${sobelZ.toFixed(2)}, p${sobelP < .001 ? '<.001' : '=' + sobelP.toFixed(3)}`);
+      console.log(`  Sobel: z=${sobelZ.toFixed(2)}, p${sobelP < 0.001 ? '<.001' : '=' + sobelP.toFixed(3)}`);
     }
   }
 

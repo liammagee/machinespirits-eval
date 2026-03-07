@@ -9,7 +9,7 @@ console.log();
 
 // Symmetry rules
 if (data.symmetry) {
-  const symNonPass = data.symmetry.filter(s => s.status !== 'pass' && s.status !== 'skip');
+  const symNonPass = data.symmetry.filter((s) => s.status !== 'pass' && s.status !== 'skip');
   console.log(`Symmetry rules: ${data.symmetry.length} total, ${symNonPass.length} non-pass`);
   for (const s of symNonPass) console.log(`  ${s.id}: ${s.status} — ${s.message || ''}`);
   if (symNonPass.length === 0) console.log('  All pass/skip.');
@@ -27,11 +27,13 @@ if (data.coverage) {
 
 // Dependency graph
 if (data.dependency_graph) {
-  console.log(`\nDependency graph: ${data.dependency_graph.total_edges} edges, max depth ${data.dependency_graph.max_depth}`);
+  console.log(
+    `\nDependency graph: ${data.dependency_graph.total_edges} edges, max depth ${data.dependency_graph.max_depth}`,
+  );
 }
 
 // Fails
-const fails = (data.claims || []).filter(c => c.status === 'fail');
+const fails = (data.claims || []).filter((c) => c.status === 'fail');
 console.log(`\n--- FAILS: ${fails.length} ---`);
 for (const f of fails) {
   console.log(`  ${f.id}`);
@@ -41,7 +43,7 @@ for (const f of fails) {
 }
 
 // Warns
-const warns = (data.claims || []).filter(c => c.status === 'warn');
+const warns = (data.claims || []).filter((c) => c.status === 'warn');
 console.log(`\n--- WARNS: ${warns.length} ---`);
 for (const w of warns) {
   const msg = (w.messages || []).join('; ');
@@ -49,7 +51,7 @@ for (const w of warns) {
 }
 
 // Pass count
-const passes = (data.claims || []).filter(c => c.status === 'pass');
+const passes = (data.claims || []).filter((c) => c.status === 'pass');
 console.log(`\n--- PASSES: ${passes.length} ---`);
 
 // Skipped

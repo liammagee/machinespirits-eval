@@ -486,8 +486,7 @@ describe('storeRejudgment column propagation', () => {
     const original = makeOriginalResult({ conversationMode: 'messages' });
     const newId = storeRejudgment(original, makeEvaluation());
     const stored = getResultById(newId);
-    assert.strictEqual(stored.conversationMode, 'messages',
-      'conversation_mode should be propagated from original');
+    assert.strictEqual(stored.conversationMode, 'messages', 'conversation_mode should be propagated from original');
   });
 
   it('copies dialogue_content_hash from original result', () => {
@@ -495,8 +494,7 @@ describe('storeRejudgment column propagation', () => {
     const original = makeOriginalResult({ dialogueContentHash: hash });
     const newId = storeRejudgment(original, makeEvaluation());
     const stored = getResultById(newId);
-    assert.strictEqual(stored.dialogueContentHash, hash,
-      'dialogue_content_hash should be propagated from original');
+    assert.strictEqual(stored.dialogueContentHash, hash, 'dialogue_content_hash should be propagated from original');
   });
 
   it('copies config_hash from original result', () => {
@@ -504,16 +502,14 @@ describe('storeRejudgment column propagation', () => {
     const original = makeOriginalResult({ configHash: hash });
     const newId = storeRejudgment(original, makeEvaluation());
     const stored = getResultById(newId);
-    assert.strictEqual(stored.configHash, hash,
-      'config_hash should be propagated from original');
+    assert.strictEqual(stored.configHash, hash, 'config_hash should be propagated from original');
   });
 
   it('handles null conversation_mode gracefully', () => {
     const original = makeOriginalResult({ conversationMode: null });
     const newId = storeRejudgment(original, makeEvaluation());
     const stored = getResultById(newId);
-    assert.strictEqual(stored.conversationMode, null,
-      'null conversation_mode should be stored as null');
+    assert.strictEqual(stored.conversationMode, null, 'null conversation_mode should be stored as null');
   });
 
   // --- Cross-judge safety invariants ---
@@ -532,13 +528,15 @@ describe('storeRejudgment column propagation', () => {
     // Original Sonnet row still exists with its judge
     const originalAfter = getResultById(sonnetId);
     assert.ok(originalAfter, 'original row must still exist');
-    assert.strictEqual(originalAfter.judgeModel, 'claude-code/sonnet',
-      'original row judge_model must not change after storeRejudgment');
+    assert.strictEqual(
+      originalAfter.judgeModel,
+      'claude-code/sonnet',
+      'original row judge_model must not change after storeRejudgment',
+    );
 
     // New row has the codex judge
     const codexRow = getResultById(codexId);
-    assert.strictEqual(codexRow.judgeModel, 'codex-cli/auto',
-      'new rejudge row should have the target judge label');
+    assert.strictEqual(codexRow.judgeModel, 'codex-cli/auto', 'new rejudge row should have the target judge label');
     assert.notStrictEqual(sonnetId, codexId, 'rejudge must create a distinct row');
   });
 
@@ -552,8 +550,11 @@ describe('storeRejudgment column propagation', () => {
     // Simulate the dangerous overwrite path
     updateResultScores(rowId, makeEvaluation({ judgeModel: 'codex-cli/auto' }));
     const row = getResultById(rowId);
-    assert.strictEqual(row.judgeModel, 'codex-cli/auto',
-      'updateResultScores DOES overwrite judge_model (this is why the guard exists)');
+    assert.strictEqual(
+      row.judgeModel,
+      'codex-cli/auto',
+      'updateResultScores DOES overwrite judge_model (this is why the guard exists)',
+    );
   });
 
   it('getCliJudgeModelLabel returns distinct labels for each CLI backend', () => {
@@ -582,17 +583,16 @@ describe('evaluate / rejudge scoring parity', () => {
   // DB update functions that write score columns.
   // Both evaluate and rejudge must call the same set for multi-turn results.
   const MULTI_TURN_DB_WRITERS = [
-    'updateResultTutorScores',       // per-turn tutor scores JSON, first/last/dev
-    'updateResultScores',            // Turn 0 legacy columns (evaluate only calls this additionally)
-    'updateResultLearnerScores',     // per-turn + holistic learner scores
-    'updateDialogueQualityScore',    // dialogue quality (public)
+    'updateResultTutorScores', // per-turn tutor scores JSON, first/last/dev
+    'updateResultScores', // Turn 0 legacy columns (evaluate only calls this additionally)
+    'updateResultLearnerScores', // per-turn + holistic learner scores
+    'updateDialogueQualityScore', // dialogue quality (public)
     'updateDialogueQualityInternalScore', // dialogue quality (internal/full)
     'updateResultTutorHolisticScores', // tutor holistic scores
     // Deliberation is gated — both sides gate identically via hasTutorSuperego / isMultiAgent
     'updateTutorDeliberationScores',
     'updateLearnerDeliberationScores',
   ];
-
 
   function extractDbWriterCalls(source) {
     const writers = new Set();
@@ -605,9 +605,7 @@ describe('evaluate / rejudge scoring parity', () => {
   }
 
   it('scoreMultiTurnRejudgment calls all required DB writers', () => {
-    const source = fs.readFileSync(
-      path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8',
-    );
+    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
 
     // Extract the scoreMultiTurnRejudgment function body
     const fnStart = source.indexOf('async function scoreMultiTurnRejudgment(');
@@ -631,24 +629,20 @@ describe('evaluate / rejudge scoring parity', () => {
     ];
 
     for (const writer of requiredWriters) {
-      assert.ok(writers.has(writer),
-        `scoreMultiTurnRejudgment must call evaluationStore.${writer}()`);
+      assert.ok(writers.has(writer), `scoreMultiTurnRejudgment must call evaluationStore.${writer}()`);
     }
   });
 
   it('evaluate multi-turn and rejudge multi-turn write the same score columns', () => {
-    const evalCliSource = fs.readFileSync(
-      path.join(__dirname, '..', 'scripts', 'eval-cli.js'), 'utf-8',
-    );
-    const runnerSource = fs.readFileSync(
-      path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8',
-    );
+    const evalCliSource = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'eval-cli.js'), 'utf-8');
+    const runnerSource = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
 
     // Extract evaluateMultiTurnResult from eval-cli.js
     const evalStart = evalCliSource.indexOf('async function evaluateMultiTurnResult(');
     assert.ok(evalStart > 0, 'evaluateMultiTurnResult must exist in eval-cli.js');
     const evalEnd = evalCliSource.indexOf('\n        async function evaluateSingle', evalStart + 10);
-    const evalBody = evalEnd > 0 ? evalCliSource.slice(evalStart, evalEnd) : evalCliSource.slice(evalStart, evalStart + 5000);
+    const evalBody =
+      evalEnd > 0 ? evalCliSource.slice(evalStart, evalEnd) : evalCliSource.slice(evalStart, evalStart + 5000);
 
     // Extract scoreMultiTurnRejudgment from evaluationRunner.js
     const rejStart = runnerSource.indexOf('async function scoreMultiTurnRejudgment(');
@@ -660,11 +654,14 @@ describe('evaluate / rejudge scoring parity', () => {
 
     // Rejudge must have AT LEAST every writer that evaluate has (except updateResultScores
     // which evaluate uses for legacy Turn 0 columns — rejudge handles this in the outer loop)
-    const evalOnly = [...evalWriters].filter(w => !rejWriters.has(w) && w !== 'updateResultScores');
-    const rejOnly = [...rejWriters].filter(w => !evalWriters.has(w));
+    const evalOnly = [...evalWriters].filter((w) => !rejWriters.has(w) && w !== 'updateResultScores');
+    const rejOnly = [...rejWriters].filter((w) => !evalWriters.has(w));
 
-    assert.deepStrictEqual(evalOnly, [],
-      `These DB writers are in evaluate but missing from rejudge: ${evalOnly.join(', ')}`);
+    assert.deepStrictEqual(
+      evalOnly,
+      [],
+      `These DB writers are in evaluate but missing from rejudge: ${evalOnly.join(', ')}`,
+    );
 
     // It's OK if rejudge has extra writers, but flag for review
     if (rejOnly.length > 0) {
@@ -674,19 +671,21 @@ describe('evaluate / rejudge scoring parity', () => {
 
   it('required multi-turn columns are all written by updateResultTutorScores', () => {
     // Verify that updateResultTutorScores writes the key tutor columns
-    const storeSource = fs.readFileSync(
-      path.join(__dirname, '..', 'services', 'evaluationStore.js'), 'utf-8',
-    );
+    const storeSource = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationStore.js'), 'utf-8');
 
     const fnStart = storeSource.indexOf('export function updateResultTutorScores(');
     assert.ok(fnStart > 0, 'updateResultTutorScores must exist in evaluationStore.js');
     const fnEnd = storeSource.indexOf('\nexport function ', fnStart + 10);
     const fnBody = fnEnd > 0 ? storeSource.slice(fnStart, fnEnd) : storeSource.slice(fnStart, fnStart + 1000);
 
-    const expectedColumns = ['tutor_scores', 'tutor_first_turn_score', 'tutor_last_turn_score', 'tutor_development_score'];
+    const expectedColumns = [
+      'tutor_scores',
+      'tutor_first_turn_score',
+      'tutor_last_turn_score',
+      'tutor_development_score',
+    ];
     for (const col of expectedColumns) {
-      assert.ok(fnBody.includes(col),
-        `updateResultTutorScores must write column '${col}'`);
+      assert.ok(fnBody.includes(col), `updateResultTutorScores must write column '${col}'`);
     }
   });
 });

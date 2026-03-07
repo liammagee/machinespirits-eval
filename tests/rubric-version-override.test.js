@@ -89,7 +89,11 @@ describe('Tutor per-turn prompt dimension keys', () => {
       const expected = loadExpectedDimKeys(ver);
 
       // First key in JSON example should be the first rubric dimension
-      assert.strictEqual(extractPromptFirstDimKey(prompt), expected[0], `v${ver} example key should be first rubric dim`);
+      assert.strictEqual(
+        extractPromptFirstDimKey(prompt),
+        expected[0],
+        `v${ver} example key should be first rubric dim`,
+      );
     });
   }
 

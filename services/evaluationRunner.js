@@ -760,12 +760,7 @@ function parseCliJudgeJsonResponse(text) {
 }
 
 function extractCliJudgeOverallScore(parsed) {
-  const candidates = [
-    parsed?.overall_score,
-    parsed?.overallScore,
-    parsed?.total_score,
-    parsed?.totalScore,
-  ];
+  const candidates = [parsed?.overall_score, parsed?.overallScore, parsed?.total_score, parsed?.totalScore];
 
   for (const candidate of candidates) {
     const numeric = typeof candidate === 'number' ? candidate : Number(candidate);
@@ -851,12 +846,7 @@ function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
   };
 }
 
-async function evaluateSuggestionWithSelectedJudge(
-  suggestion,
-  scenarioContext,
-  context = {},
-  options = {},
-) {
+async function evaluateSuggestionWithSelectedJudge(suggestion, scenarioContext, context = {}, options = {}) {
   const { dialogueContext = null } = context;
   const { judgeOverride = null, judgeCli = null, judgeCliModel = null } = options;
 
@@ -867,11 +857,7 @@ async function evaluateSuggestionWithSelectedJudge(
       judgeCli,
       judgeCliModel,
     );
-    return normalizeCliJudgeEvaluation(
-      parsed,
-      getCliJudgeModelLabel(judgeCli, judgeCliModel),
-      Date.now() - startTime,
-    );
+    return normalizeCliJudgeEvaluation(parsed, getCliJudgeModelLabel(judgeCli, judgeCliModel), Date.now() - startTime);
   }
 
   return rubricEvaluator.evaluateSuggestion(suggestion, scenarioContext, { dialogueContext }, { judgeOverride });
@@ -3990,10 +3976,11 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     passesForbidden: turnResults.every((t) => t.passesForbidden),
     requiredMissing,
     forbiddenFound,
-    judgeModel:
-      turnResults.find((turn) => turn.judgeModel)?.judgeModel || holisticDialogueScore?.judgeModel || null,
+    judgeModel: turnResults.find((turn) => turn.judgeModel)?.judgeModel || holisticDialogueScore?.judgeModel || null,
     evaluationReasoning:
-      holisticDialogueScore?.summary || turnResults.find((turn) => turn.evaluationReasoning)?.evaluationReasoning || null,
+      holisticDialogueScore?.summary ||
+      turnResults.find((turn) => turn.evaluationReasoning)?.evaluationReasoning ||
+      null,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
     conversationMode,
@@ -4958,8 +4945,12 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
               turnIndex,
               scores: normalizedScores,
               overallScore,
-              baseScore: Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateBaseScore(normalizedScores) : null,
-              recognitionScore: Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateRecognitionScore(normalizedScores) : null,
+              baseScore:
+                Object.keys(normalizedScores).length > 0 ? rubricEvaluator.calculateBaseScore(normalizedScores) : null,
+              recognitionScore:
+                Object.keys(normalizedScores).length > 0
+                  ? rubricEvaluator.calculateRecognitionScore(normalizedScores)
+                  : null,
               summary: parsed.summary,
             };
           }
@@ -5003,7 +4994,9 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
           }
           if (missingTurns.length > 0) {
             if (Object.keys(tutorTurnScores).length > 0) {
-              log(`    tutor-per-turn batch partial: got ${Object.keys(tutorTurnScores).length}/${totalTurns} turns, filling gaps [${missingTurns.join(',')}]`);
+              log(
+                `    tutor-per-turn batch partial: got ${Object.keys(tutorTurnScores).length}/${totalTurns} turns, filling gaps [${missingTurns.join(',')}]`,
+              );
             }
             for (const i of missingTurns) {
               try {
@@ -5052,7 +5045,9 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
             judgeModel,
           });
 
-          log(`    tutor-per-turn: ${Object.keys(tutorTurnScores).length} turns, first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} dev=${tutorDevelopment?.toFixed(1)}`);
+          log(
+            `    tutor-per-turn: ${Object.keys(tutorTurnScores).length} turns, first=${tutorFirst?.toFixed(1)} last=${tutorLast?.toFixed(1)} dev=${tutorDevelopment?.toFixed(1)}`,
+          );
           return { phase: 'tutor-per-turn', success: true, score: tutorOverall };
         } catch (err) {
           log(`    tutor-per-turn scoring FAIL: ${err.message}`);
@@ -5097,7 +5092,9 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
           const missingLearnerTurns = learnerTurnTargets.filter(({ lt }) => !learnerTurnScores[lt]);
           if (missingLearnerTurns.length > 0) {
             if (Object.keys(learnerTurnScores).length > 0) {
-              log(`    learner-per-turn batch partial: got ${Object.keys(learnerTurnScores).length}/${learnerTurnTargets.length} turns, filling gaps [${missingLearnerTurns.map(t => t.lt).join(',')}]`);
+              log(
+                `    learner-per-turn batch partial: got ${Object.keys(learnerTurnScores).length}/${learnerTurnTargets.length} turns, filling gaps [${missingLearnerTurns.map((t) => t.lt).join(',')}]`,
+              );
             }
             for (const { lt, targetIdx } of missingLearnerTurns) {
               const prompt = buildLearnerEvaluationPrompt({
@@ -5170,7 +5167,9 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
           }
           evaluationStore.updateResultLearnerScores(rowId, updateData);
 
-          log(`    learner: avg=${learnerAvg?.toFixed(1) ?? '?'}${holisticResult ? ` holistic=${holisticResult.holisticOverallScore?.toFixed(1) ?? '?'}` : ''}`);
+          log(
+            `    learner: avg=${learnerAvg?.toFixed(1) ?? '?'}${holisticResult ? ` holistic=${holisticResult.holisticOverallScore?.toFixed(1) ?? '?'}` : ''}`,
+          );
           return { phase: 'learner', success: true, score: learnerAvg };
         } catch (err) {
           log(`    learner scoring FAIL: ${err.message}`);
@@ -5197,7 +5196,10 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
     promises.push(
       (async () => {
         try {
-          const publicPrompt = rubricEvaluator.buildDialogueQualityPrompt({ ...dqPromptParams, transcriptMode: 'public' });
+          const publicPrompt = rubricEvaluator.buildDialogueQualityPrompt({
+            ...dqPromptParams,
+            transcriptMode: 'public',
+          });
           const publicParsed = await retryWithBackoff(async () => callJudge(publicPrompt), {});
           const publicScores = {};
           for (const [key, value] of Object.entries(publicParsed.scores || {})) {
@@ -5452,9 +5454,7 @@ export async function rejudgeRun(runId, options = {}) {
 
   // Resolve the target judge label — used for dedup (resume mode) AND overwrite safety
   let targetJudgeLabel = null;
-  const effectiveCliJudgeModel = judgeCli
-    ? judgeCliModel || getDefaultCliJudgeModelOverride(judgeCli)
-    : null;
+  const effectiveCliJudgeModel = judgeCli ? judgeCliModel || getDefaultCliJudgeModelOverride(judgeCli) : null;
   try {
     if (judgeCli) {
       targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel);
@@ -5471,16 +5471,23 @@ export async function rejudgeRun(runId, options = {}) {
     // Parse suggestions if stored as JSON string
     let suggs = r.suggestions;
     if (typeof suggs === 'string') {
-      try { suggs = JSON.parse(suggs); } catch { suggs = []; }
+      try {
+        suggs = JSON.parse(suggs);
+      } catch {
+        suggs = [];
+      }
     }
     // Single-turn: just needs tutor_first_turn_score
-    const isMultiTurn = r.dialogueId && (
-      (Array.isArray(suggs) && suggs.length > 1) ||
-      (r.dialogueRounds > 1)
-    );
+    const isMultiTurn = r.dialogueId && ((Array.isArray(suggs) && suggs.length > 1) || r.dialogueRounds > 1);
     if (!isMultiTurn) return r.tutorFirstTurnScore != null;
     // Multi-turn: needs per-turn tutor scores + first-turn + last-turn + dialogue quality + learner
-    return r.tutorScores != null && r.tutorFirstTurnScore != null && r.tutorLastTurnScore != null && r.dialogueQualityScore != null && r.learnerOverallScore != null;
+    return (
+      r.tutorScores != null &&
+      r.tutorFirstTurnScore != null &&
+      r.tutorLastTurnScore != null &&
+      r.dialogueQualityScore != null &&
+      r.learnerOverallScore != null
+    );
   }
 
   // Build a map of suggestion keys → existing rows judged by the target judge.
@@ -5615,21 +5622,19 @@ export async function rejudgeRun(runId, options = {}) {
         };
 
         const evaluation = judgeCli
-          ? await retryWithBackoff(
-              async () => {
-                const prompt = rubricEvaluator.buildEvaluationPrompt(suggestion, scenarioContext, { dialogueContext });
-                const startTime = Date.now();
-                const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
-                return normalizeCliJudgeEvaluation(
-                  parsed,
-                  getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel),
-                  Date.now() - startTime,
-                );
-              },
-              {},
-            )
+          ? await retryWithBackoff(async () => {
+              const prompt = rubricEvaluator.buildEvaluationPrompt(suggestion, scenarioContext, { dialogueContext });
+              const startTime = Date.now();
+              const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+              return normalizeCliJudgeEvaluation(
+                parsed,
+                getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel),
+                Date.now() - startTime,
+              );
+            }, {})
           : await retryWithBackoff(
-              () => rubricEvaluator.evaluateSuggestion(suggestion, scenarioContext, { dialogueContext }, judgeOverrideObj),
+              () =>
+                rubricEvaluator.evaluateSuggestion(suggestion, scenarioContext, { dialogueContext }, judgeOverrideObj),
               {},
             );
 
@@ -5643,9 +5648,7 @@ export async function rejudgeRun(runId, options = {}) {
             const targetId = result._overwriteRowId || result.id;
             // SAFETY: never overwrite a row belonging to a different judge
             // Use allRowsById (all run rows) — `results` is source-filtered and won't contain target judge rows
-            const targetRow = result._overwriteRowId
-              ? allRowsById.get(targetId) || result
-              : result;
+            const targetRow = result._overwriteRowId ? allRowsById.get(targetId) || result : result;
             if (targetJudgeLabel && targetRow.judgeModel && targetRow.judgeModel !== targetJudgeLabel) {
               // Row belongs to a different judge — create new row instead of overwriting
               rowId = evaluationStore.storeRejudgment(result, evaluation);
