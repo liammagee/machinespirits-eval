@@ -202,8 +202,8 @@ Recognition-oriented prompts produce \alert{5.4$\times$ more questions per turn}
 
 Superego approval rates shift under recognition:
 
-- DeepSeek: 13% $\to$ \alert{55%}
-- Haiku: 52% $\to$ \alert{66%}
+- DeepSeek: 13% $\to$ \alert{55\%}
+- Haiku: 52% $\to$ \alert{66\%}
 
 \vspace{0.3em}
 
@@ -249,7 +249,7 @@ Dedicated isolation runs (N=108, DeepSeek, 9 scenarios):
 **Superego under recognition**
 
 - Adds +1.1 pts (d=0.08, NS)
-- Calibration pre-empts \alert{88%} of its contribution
+- Calibration pre-empts \alert{88\%} of its contribution
 
 :::
 ::::::::::::::
@@ -435,15 +435,13 @@ These anomalies suggest the supported mechanisms may be surface expressions of a
 
 ## Conclusion
 
-\vspace{0.5em}
-
 **Two mechanisms supported, one conditionally:**
 
 - \alert{Calibration}: prompt-level output distribution narrowing (d=0.52--0.64)
 - \alert{Error correction}: architecture-level critique with universal substitution (15--17% deficit)
 - \alert{Adaptive responsiveness}: conditional property over 10+ turns in re-engagement scenarios
 
-\vspace{0.5em}
+\vspace{0.3em}
 
 **Three contributions:**
 
@@ -451,9 +449,9 @@ These anomalies suggest the supported mechanisms may be surface expressions of a
 2. Process tracing adapted for AI agent architectures
 3. Provable discourse as transferable methodology for mechanistic LLM evaluation
 
-\vspace{0.5em}
+\vspace{0.2em}
 
-All findings concern tutor output quality as assessed by LLM judges interacting with synthetic learners.
+\footnotesize All findings concern tutor output quality as assessed by LLM judges interacting with synthetic learners.
 
 ---
 
