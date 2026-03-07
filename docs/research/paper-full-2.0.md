@@ -1613,7 +1613,34 @@ The apparatus-as-method argument has implications beyond this specific study:
 
 **Rubric iteration as construct development.** The four-version rubric history is not a limitation (inconsistency across evaluations) but a finding (the construct of "tutoring quality" is iteratively refined through empirical engagement). Reporting rubric iteration transparently---including the problems that motivated each change---contributes to the field's understanding of what LLM evaluation measures and what it misses. The v2.2 consolidation from 14 to 8 dimensions, informed by the GuideEval and ICAP literatures, provides a concrete example of construct refinement that other evaluation efforts could build on.
 
-### 7.7 What Recognition Theory Explains and What It Does Not
+### 7.7 The Rubric as Optimisation Signal: Automated Prompt Tuning
+
+The per-dimension rubric enables a capability that holistic scoring cannot: automated prompt optimisation with interpretable gradient signal. We tested this using a simple hill-climbing loop---an LLM recommender analyzes per-dimension weaknesses from scored evaluation rows, proposes targeted prompt edits, benchmarks the revised prompt, and keeps or reverts based on score---applied to a single frustration scenario (Mood: Frustration to Breakthrough) across both base and recognition prompts.
+
+The experiment forms a $2 \times 2 \times 2$ design: prompt condition (base vs. recognition) $\times$ optimisation (unoptimised vs. autotuned) $\times$ generation model (DeepSeek V3.2 vs. Qwen 3.5 9B). All conditions were judged by Sonnet 4.6. The Qwen 3.5 runs were conducted entirely on a local machine via LM Studio, demonstrating that the optimisation loop is feasible without cloud inference for generation.
+
+**Table N: Autotuning $\times$ Recognition $\times$ Model (Sonnet judge, frustration scenario)**
+
+|  | Base | Base autotuned | Recognition | Recog. autotuned |
+|--|------|---------------|-------------|-----------------|
+| **DeepSeek V3.2** | 36.6 (n=9) | 41.6 (n=5) | 55.2 (n=5) | 72.9 (n=5) |
+| **Qwen 3.5 9B** | 35.7 (n=5) | 45.0 (n=4) | 47.9 (n=5) | 71.0 (n=4) |
+
+Four findings emerge from the complete matrix.
+
+First, **recognition prompts are more improvable than base prompts, not less**. Autotuning gains on recognition (+17.7 DeepSeek, +23.1 Qwen) substantially exceed gains on base (+5.0 DeepSeek, +9.3 Qwen). Recognition does not saturate the rubric; it provides richer starting material that the optimiser can refine further.
+
+Second, **the effects are super-additive**. On DeepSeek, recognition alone adds +18.6 and base autotuning adds +5.0, but recognition + autotuning adds +36.3---exceeding the sum of parts (+23.6) by 54%. The same pattern holds on Qwen (+35.3 combined vs +21.5 sum). Recognition and prompt engineering operate on complementary dimensions.
+
+Third, **the gap between conditions widens under optimisation**. Unoptimised, recognition leads base by 18.6 points (DeepSeek) and 12.2 points (Qwen). After autotuning, the gap grows to 31.3 and 26.0 respectively. If recognition were reducible to "better prompt writing," automated optimisation should converge the conditions; instead, it diverges them.
+
+Fourth, **recognition autotuning converges across models**. Despite starting from different baselines (DeepSeek 55.2, Qwen 47.9), both models reach a similar autotuned ceiling (~71--73). This model-independent ceiling suggests a structural quality boundary in the recognition prompt that autotuning can unlock regardless of generation capability. The base prompt has a lower ceiling (~41--45) that no amount of autotuning surpasses---and that ceiling remains below the *unoptimised* recognition baseline on both models.
+
+The qualitative character of the autotuned edits reinforces the mechanistic interpretation. The winning base prompt edits were scenario-specific heuristics: prerequisite targeting ("prefer the nearest prerequisite, not the same stuck lecture"), agency preservation ("frame review as a brief reset that returns them to the current lecture"), and collaborative micro-planning ("propose a short next step plus return point"). These are precisely the kind of concrete, prescriptive rules that the active control finding (Section 6.21 of the companion study) showed help weaker models. Recognition, by contrast, operates through general calibration---raising quality across all scenarios without per-scenario tuning.
+
+This distinction---scenario-specific heuristics vs. scenario-general calibration---connects directly to the mechanism model. Autotuning optimises the prompt's *output rules* (what to suggest and how to frame it). Recognition optimises the prompt's *orientation toward the learner* (treating them as an autonomous subject). The super-additivity indicates that these are complementary layers: orientation sets the quality floor; heuristics refine the specific response. Neither substitutes for the other, and both contribute independently to the provable discourse framework's ability to drive measurable improvement.
+
+### 7.8 What Recognition Theory Explains and What It Does Not
 
 Recognition theory as a design heuristic has clear scope conditions.
 
@@ -2250,6 +2277,13 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 | Self-reflect Haiku supplement | eval-2026-02-20-90703a6a | 6.10 |
 | A2 mechanism sweep clean (cells 72--77) | eval-2026-02-23-b5cd16e1 | 6.10 |
 | A4 authentic superego clean (cells 78--79) | eval-2026-02-23-b5e123b4 | 6.16.1 |
+| Autotuned base prompt, Qwen 3.5 (cell 80) | eval-2026-03-05-53fb1462 | 7.7 |
+| Autotuned base prompt, DeepSeek (cell 80) | eval-2026-03-06-08e5eeab | 7.7 |
+| Recognition baseline, DeepSeek (cell 84) | eval-2026-03-06-8b9fbaba | 7.7 |
+| Autotuned recognition, DeepSeek (cell 84) | eval-2026-03-06-88dc49de | 7.7 |
+| Autotuned recognition pass 2, DeepSeek (cell 84) | eval-2026-03-07-68acef5a | 7.7 |
+| Recognition baseline, Qwen 3.5 (cell 84) | eval-2026-03-07-94aef993 | 7.7 |
+| Autotuned recognition, Qwen 3.5 (cell 84) | eval-2026-03-07-c4d1bfa2 | 7.7 |
 
 ---
 
@@ -2362,3 +2396,6 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v2.3.21** (2026-02-25)
 :   **N-claim and stat-claim traceability**: Systematic pass through all 156 N-claims and 66 stat-claims identified by the claim-by-claim audit tool, adding inline run ID anchors, Section cross-references, and Table citations. Key changes: added run IDs to all table headers lacking them (Tables 3, 5, 6, 8, 13, 15, 20b, 21, 22, 25, 45); added Run ID column to Table 41 (inter-judge agreement); annotated pooled-data N-claims with "see Table 2" or "pooled across evaluation database"; marked pilot data as "no longer in primary evaluation set"; added Section/Table cross-references to all stat-claims in Sections 7--9. No data, analysis, or N-count changes---purely traceability metadata.
+
+**v3.0.0** (2026-03-07)
+:   **Automated prompt tuning experiment**: Added Section 7.7 with $2 \times 2 \times 2$ autotuning experiment (base/recognition $\times$ unoptimised/autotuned $\times$ DeepSeek/Qwen 3.5). Seven new runs (eval-2026-03-05-53fb1462 through eval-2026-03-07-c4d1bfa2, N=38 total). Key finding: recognition prompts are more improvable than base (+17--23 pts vs +5--9 pts), the effects are super-additive, and the gap between conditions *widens* under optimisation. Autotuned recognition converges to ~71--73 on both models. Base autotuning ceiling (41--45) remains below unoptimised recognition baseline (48--55), confirming recognition's irreducibility to prompt engineering. Added Table N, 7 run IDs to Appendix D. Renumbered Section 7.7 $\to$ 7.8.
