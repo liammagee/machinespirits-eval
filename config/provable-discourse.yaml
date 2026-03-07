@@ -1,5 +1,6 @@
 version: 1
 paper_path: docs/research/paper-full.md
+paper2_path: docs/research/paper-full-2.0.md
 manifest_path: config/paper-manifest.json
 db_path: data/evaluations.db
 audit_report_path: notes/paper-bug-audit.latest.json
