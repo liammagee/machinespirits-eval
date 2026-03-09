@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.17"
+version: "3.0.18"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1849,6 +1849,14 @@ The asymmetry is theoretically informative. Permission-based edits (Haiku-style)
 
 This finding connects to the prompt density alternative explanation (Section 7.9): if prompt elaboration were uniformly beneficial, the Qwen-optimised prompts (which add ~300 lines of detailed instruction) should improve Haiku. Instead, they degrade it catastrophically. The result provides direct experimental evidence that prompt *content and targeting* matter more than prompt *volume*---and that the relationship between prompt complexity and output quality is non-monotonic.
 
+#### 7.8.4 Implications for Superego Redundancy
+
+The universal substitution finding (Section 6.4: superego benefit collapses to near-zero under recognition on strong models) is reinforced and sharpened by the dimension-targeted optimisation experiment. The Qwen session's winning edit included a new superego intervention strategy ("Scaffolding Intervention") that catches a specific failure mode---emotional validation without conceptual scaffolding---and forces ego revision. This designed-in error correction was part of the bilateral fix that lifted Qwen's adaptive responsiveness from 1.75 to 3.75. By contrast, the Haiku session's failed passes (1--3) added analogous superego strategies, and every addition *degraded* performance: the strong model's already-calibrated output did not benefit from additional correction, and the superego rules made the output formulaic rather than adaptive.
+
+This sharpens the substitution claim in both directions. On weak models, the superego is not merely "somewhat useful" (the Gemini Flash residual of +12.3, Section 6.4.1)---its value can be substantially amplified by designing targeted intervention strategies for specific failure modes. The baseline superego provides generic error correction; a prompt-optimised superego provides *failure-mode-specific* correction that the weak model's ego cannot achieve through calibration alone. On strong models, the superego is not merely "redundant" (near-zero delta)---actively adding superego scaffolding is *destructive*, degrading performance below baseline. The gradient from helpful to harmful runs through the same capability threshold that governs the prosthesis-straitjacket inversion.
+
+One limitation: the Qwen superego fix worked as part of a bilateral change (ego, superego, and learner prompts all changed together), so the superego's independent contribution cannot be isolated from this experiment. The factorial design (Section 6.4) provides the controlled isolation; the prompt lab provides a worked example of how to amplify the superego's value when it does have a role.
+
 ### 7.9 What Recognition Theory Explains and What It Does Not
 
 Recognition theory as a design heuristic has clear scope conditions.
@@ -2632,6 +2640,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.18** (2026-03-09)
+:   **Superego redundancy refinement** (§7.8.4): Added subsection connecting prompt lab findings to the universal substitution claim. On weak models, targeted superego strategies amplify error correction beyond the baseline residual. On strong models, adding superego scaffolding is actively destructive, not merely redundant. Sharpens the substitution gradient from "helpful" to "harmful" across the capability threshold.
 
 **v3.0.17** (2026-03-09)
 :   **Dimension-targeted optimisation and cross-model transfer** (new §7.8): Added three subsections covering dimension-targeted prompt optimisation on specific rubric dimensions (§7.8.1), M3 engineering through prompt intervention (§7.8.2), and the cross-model prompt transfer experiment with prosthesis-straitjacket inversion finding (§7.8.3). Added fifth future work direction (§9) on model-stratified prompt optimisation and optimisation threshold mapping. Old §7.8 (prompt density) renumbered to §7.9. Data from prompt lab sessions on Qwen 3.5 9B and Haiku 4.5 (N=3 per transfer cell, 10 autotune iterations on Qwen, 6 on Haiku).
