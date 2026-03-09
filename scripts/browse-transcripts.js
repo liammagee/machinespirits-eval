@@ -642,6 +642,7 @@ const PAGE_HTML = `<!DOCTYPE html>
   .run-item { padding:6px 16px; cursor:pointer; font-size:11px; border-bottom:1px solid var(--border-soft); }
   .run-item:hover { background:var(--hover); }
   .run-item.open { background:var(--selected); }
+  .run-item.focused { outline:2px solid var(--accent); outline-offset:-2px; }
   .run-header { display:flex; justify-content:space-between; align-items:center; }
   .run-date { font-weight:600; color:var(--text); }
   .run-count { color:var(--muted); font-size:10px; }
@@ -3200,11 +3201,74 @@ function highlight(idx) {
   activeStep = idx;
 }
 
+// ── Sidebar keyboard navigation ─────────────────────────────────────────────
+let sidebarFocusIdx = -1;
+
+function getSidebarItems() {
+  return Array.from(document.querySelectorAll('.run-item:not([style*="display:none"])'));
+}
+
+function getDialogueItems() {
+  return Array.from(document.querySelectorAll('.dlg-item'));
+}
+
+function focusSidebarRun(idx) {
+  const items = getSidebarItems();
+  if (!items.length) return;
+  idx = Math.max(0, Math.min(idx, items.length - 1));
+  document.querySelectorAll('.run-item.focused').forEach(el => el.classList.remove('focused'));
+  items[idx].classList.add('focused');
+  items[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  sidebarFocusIdx = idx;
+}
+
+function navigateSidebarDialogue(direction) {
+  const dlgItems = getDialogueItems();
+  if (!dlgItems.length) return;
+  // Find currently active dialogue
+  let curIdx = dlgItems.findIndex(el => el.classList.contains('active'));
+  let nextIdx = curIdx + direction;
+  if (nextIdx < 0) nextIdx = dlgItems.length - 1;
+  if (nextIdx >= dlgItems.length) nextIdx = 0;
+  const nextEl = dlgItems[nextIdx];
+  if (!nextEl) return;
+  // Extract dialogueId from onclick attribute
+  const match = nextEl.getAttribute('onclick')?.match(/loadDialogue\("([^"]+)"\)/);
+  if (match) {
+    nextEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    loadDialogue(match[1]);
+  }
+}
+
 document.addEventListener('keydown', e => {
-  if (!totalSteps) return;
   if (e.target.tagName === 'INPUT') return;
-  if (e.key === 'ArrowDown' || e.key === 'j') { e.preventDefault(); highlight(Math.min(activeStep + 1, totalSteps - 1)); }
-  if (e.key === 'ArrowUp' || e.key === 'k') { e.preventDefault(); highlight(Math.max(activeStep - 1, 0)); }
+
+  // [ / ] — navigate between dialogues in the sidebar (always available)
+  if (e.key === '[') { e.preventDefault(); navigateSidebarDialogue(-1); return; }
+  if (e.key === ']') { e.preventDefault(); navigateSidebarDialogue(1); return; }
+
+  // Enter on focused run — toggle open/close
+  if (e.key === 'Enter' && sidebarFocusIdx >= 0) {
+    const items = getSidebarItems();
+    if (items[sidebarFocusIdx]) {
+      const runId = items[sidebarFocusIdx].dataset.run;
+      if (runId) { e.preventDefault(); toggleRun(runId); return; }
+    }
+  }
+
+  // Arrow keys: navigate transcript steps if a dialogue is loaded, else navigate runs
+  if (e.key === 'ArrowDown' || e.key === 'j') {
+    e.preventDefault();
+    if (totalSteps > 0) { highlight(Math.min(activeStep + 1, totalSteps - 1)); }
+    else { focusSidebarRun(sidebarFocusIdx + 1); }
+    return;
+  }
+  if (e.key === 'ArrowUp' || e.key === 'k') {
+    e.preventDefault();
+    if (totalSteps > 0) { highlight(Math.max(activeStep - 1, 0)); }
+    else { focusSidebarRun(Math.max(sidebarFocusIdx - 1, 0)); }
+    return;
+  }
 });
 
 // ── Init ────────────────────────────────────────────────────────────────────

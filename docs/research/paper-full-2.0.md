@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.16"
+version: "3.0.17"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1797,7 +1797,59 @@ The qualitative character of the autotuned edits reinforces the mechanistic inte
 
 This distinction---scenario-specific heuristics vs. scenario-general calibration---connects directly to the mechanism model. Autotuning optimises the prompt's *output rules* (what to suggest and how to frame it). Recognition optimises the prompt's *orientation toward the learner* (treating them as an autonomous subject). The super-additivity indicates that these are complementary layers: orientation sets the quality floor; heuristics refine the specific response. Neither substitutes for the other, and both contribute independently to the provable discourse framework's ability to drive measurable improvement.
 
-### 7.8 What Recognition Theory Explains and What It Does Not
+### 7.8 Dimension-Targeted Optimisation and Cross-Model Transfer
+
+Section 7.7 demonstrated that automated prompt tuning, guided by the per-dimension rubric, can substantially improve tutoring quality---with recognition prompts more improvable than base prompts, and the gap widening under optimisation. A follow-up experiment extends this finding in three directions: (1) targeting specific rubric dimensions rather than overall score, (2) testing whether modulation-oriented prompt edits can unlock the adaptive responsiveness that Section 6.3 found absent as a general mechanism, and (3) testing whether model-specific prompt optimisations transfer across capability levels.
+
+#### 7.8.1 Dimension-Targeted Optimisation
+
+We extended the autotuning loop with a `--target-dims` parameter that optimises for specific rubric dimensions rather than overall score. Targeting `adaptive_responsiveness` (tutor modulation, 15% weight) and `conceptual_progression` (learner learning, 20% weight) on a single challenging scenario (`mood_frustration_to_breakthrough`, cell 8 bilateral architecture), we ran parallel optimisation sessions on two models: Qwen 3.5 9B (local, via LM Studio) and Claude Haiku 4.5 (OpenRouter). Each session used a hill-climbing loop with an LLM recommender (Claude Opus 4.6) proposing edits, N=1 replication per iteration, and accept/revert decisions based on the composite target dimension score.
+
+**Table N+1: Dimension-targeted autotuning results (frustration scenario, cell 8)**
+
+| | Qwen 3.5 9B | Haiku 4.5 |
+|---|---|---|
+| Baseline target dims | 35.0 | 90.0 |
+| Best target dims | **75.0** (+114%) | **95.0** (+5.6%) |
+| Adaptive responsiveness | 1.75 → 3.75 | 4.50 → 4.75 |
+| Iterations to beat baseline | 1 | 4 (after guidance change) |
+| Lines of prompt added | ~300 | ~60 |
+| Key edit | Scaffolded elicitation algorithm | State-change tracking heuristic |
+
+The two models required qualitatively different prompt interventions. Qwen's baseline tutor responded to frustrated learners with generic elicitation ("What specifically feels nonsensical?")---a failure mode the 9B model could not resolve without explicit instruction. The winning edit added a highest-priority "Scaffolded Elicitation Rule" mandating 2--3 specific diagnostic probes with substantive content, a superego intervention strategy that flags emotional support without scaffolding as a critical failure, and bilateral learner prompt changes teaching the learner to engage with offered scaffolding. The total addition was ~300 lines across five prompt files, including worked examples and anti-patterns.
+
+Haiku's baseline was already scoring 90 on the target dimensions. Three automated optimisation passes *degraded* performance (90 → 73--85) by adding heavy-handed prescriptive rules---the same over-engineering pattern that helped Qwen actively harmed Haiku by making its output formulaic. The winning pass, which beat the baseline only after operator-provided guidance steering ("be dramatic; try different roles; really provoke the learner"), added just ~60 lines: a single identity statement about tracking state changes, a 6-line adaptive tracking heuristic, and one worked example. The distinction---prescriptive rules vs. tonal permission---maps directly onto the cognitive prosthesis finding (Section 6.6): weak models need explicit scaffolding as a prosthesis; strong models need permission to exercise capabilities they already possess.
+
+Both sessions converged on a **bilateral fix pattern**: tutor and learner prompts changed together. Qwen's fix taught the tutor to scaffold and the learner to engage with scaffolding. Haiku's fix taught the tutor to track state changes and the learner to show cumulative progression. Unilateral changes (tutor-only or learner-only) were less effective in both cases.
+
+#### 7.8.2 Can Prompt Optimisation Create Adaptive Responsiveness?
+
+The M3 null finding (Section 6.3: all slope $d \leq 0.15$) was established under unoptimised prompts. The dimension-targeted experiment provides evidence that adaptive responsiveness can be *created through prompt optimisation* on weak models and *enhanced* on strong ones---but the mechanism differs.
+
+Qwen's best transcript (iteration 6) shows a genuine four-stage modulation arc: scaffolding with diagnostic options (Turn 0) → tracking the learner's specific choice (Turn 1) → re-scaffolding with sub-anchors within the chosen topic (Turn 2) → stepping back to respect learner autonomy (Turn 3). This strategy shift across turns was absent at baseline and appeared only after explicit scaffolding rules were added to the prompt. The prompt *created* modulation by providing an algorithm the model could follow.
+
+Haiku's best transcript shows a different kind of modulation: direct challenge (Turn 0) → naming a specific state change (Turn 1) → assigning a concrete task tied to the learner's own question (Turn 2) → *reframing what breakthrough means* (Turn 3). Turn 3 is particularly revealing: the tutor adapts its *interpretation* of the learner's state, not just its tracking of it. This modulation was already latent in Haiku's capabilities; the prompt merely encouraged it.
+
+This result does not contradict the M3 null finding. The pooled analysis (N=432) tested whether *experimental conditions* (recognition vs. base, single vs. multi-agent) produce differential trajectory slopes. They do not. But within a single condition, individual prompt optimisation can create or enhance turn-over-turn adaptation---particularly on scenarios with clear emotional arcs and sustained multi-turn demands. The prompt lab confirms what the trajectory-specific analysis (Section 6.3, disengagement scenario $d = 1.63$) already suggested: M3 is conditional on scenario type, turn count, and now, prompt-level intervention. It is not a general mechanism of recognition, but it can be engineered into specific contexts.
+
+#### 7.8.3 Cross-Model Prompt Transfer
+
+If prompt optimisation is model-specific (as Section 7.8.1 implies), then optimised prompts should not transfer well across capability levels. We tested this directly by running each model's best-performing prompts on the other model (N=3 replications each, same scenario and cell, judged by Sonnet 4.6).
+
+**Table N+2: Cross-model transfer matrix (target dimension scores, frustration scenario)**
+
+| | Qwen-optimised prompts | Haiku-optimised prompts | Baseline prompts |
+|---|---|---|---|
+| **Qwen 3.5 9B** | **75.0** (native) | **52.2** (transfer) | 35.0 |
+| **Haiku 4.5** | **62.2** (transfer) | **95.0** (native) | 90.0 |
+
+The transfer results are asymmetrically destructive. Heavy-to-strong transfer (Qwen-optimised prompts on Haiku) produces a **27.8-point regression** below Haiku's unoptimised baseline (62.2 vs. 90.0)---the prescriptive scaffolding rules that served as a cognitive prosthesis for Qwen become a cognitive straitjacket for Haiku, overriding its natural ability to read the situation and respond adaptively. Light-to-weak transfer (Haiku-optimised prompts on Qwen) produces a **17.2-point improvement** over Qwen's baseline (52.2 vs. 35.0) but falls **22.8 points short** of Qwen's native optimisation (52.2 vs. 75.0)---the lightweight heuristics help somewhat but provide insufficient scaffolding for the weak model.
+
+The asymmetry is theoretically informative. Permission-based edits (Haiku-style) are **safe but insufficient** for weak models: they do not actively harm, but they leave capability on the table. Rule-based edits (Qwen-style) are **high-reward on target but destructive off-target**: they unlock capability on weak models but degrade strong ones. This suggests an inverted-U relationship between prompt complexity and model capability---not merely diminishing returns, but active harm beyond the optimum. The practical implication is that prompt optimisation must be model-stratified: a universal "best prompt" does not exist across capability levels, and deploying heavy scaffolding prompts on models that do not need them risks worse-than-baseline performance.
+
+This finding connects to the prompt density alternative explanation (Section 7.9): if prompt elaboration were uniformly beneficial, the Qwen-optimised prompts (which add ~300 lines of detailed instruction) should improve Haiku. Instead, they degrade it catastrophically. The result provides direct experimental evidence that prompt *content and targeting* matter more than prompt *volume*---and that the relationship between prompt complexity and output quality is non-monotonic.
+
+### 7.9 What Recognition Theory Explains and What It Does Not
 
 Recognition theory as a design heuristic has clear scope conditions.
 
@@ -1875,13 +1927,15 @@ A distinctive contribution is the argument that the evaluation apparatus itself-
 
 ### What comes next
 
-Three directions are most pressing. First, **mechanism isolation runs** will disentangle calibration from error correction by testing recognition-only (no superego) and superego-only (no recognition) conditions in isolation. The current factorial confounds the two supported mechanisms; direct isolation would test whether the universal substitution pattern and model-dependent residual observed across models also appears within a single model when one mechanism is surgically removed.
+Five directions are most pressing. First, **mechanism isolation runs** will disentangle calibration from error correction by testing recognition-only (no superego) and superego-only (no recognition) conditions in isolation. The current factorial confounds the two supported mechanisms; direct isolation would test whether the universal substitution pattern and model-dependent residual observed across models also appears within a single model when one mechanism is surgically removed.
 
 Second, **systematic superego critique taxonomy coding** (400+ exchanges) will provide the within-case evidence needed for Mechanism 2 (error correction). The pilot's qualitative assessment identified compliance versus strategic revision patterns, but a formal taxonomy with frequency distributions by condition is needed to establish the causal chain from superego critique category to ego revision type to output quality.
 
 Third, **human expert validation of process-level claims** would address the recursive evaluation concern identified in Section 8.2. The procedure is: (1) sample 30--50 ego-superego exchanges stratified across conditions and models from the logged dialogue traces; (2) have two independent human coders classify each superego critique into the 10-category taxonomy (Section 5.3) and rate the ego's revision as substantive, partial, or cosmetic; (3) compute inter-rater reliability (Cohen's $\kappa$) and human-LLM agreement against the automated classifier's labels; (4) report whether the LLM-generated categories correspond to expert judgment or reveal systematic blind spots. The logged trace infrastructure makes this feasible without re-running any dialogues: each exchange is structured, reproducible, and linked to its scored output.
 
 Fourth, **human learner validation** remains the critical open question. The Gemini Flash finding---that weaker generation models produce recognition-sensitive learner effects (d = 1.20) while stronger models do not---suggests that real learners, who presumably have more limited capacity than frontier LLMs, might show substantial recognition-mediated learning gains. A study comparing recognition-enhanced tutoring with human learners---measuring not just satisfaction and engagement but conceptual understanding and transfer---would provide the ultimate test of whether the mechanisms identified here translate into pedagogical value.
+
+Fifth, **model-stratified prompt optimisation** would extend the cross-model transfer findings (Section 7.8.3). The current transfer experiment used a single scenario and two models; a systematic study varying model capability (from 9B local to frontier), scenario type (single-turn, multi-turn frustration, extended trajectory), and optimisation target (overall score vs. specific dimensions like adaptive responsiveness) would map the boundaries of the prosthesis-straitjacket inversion. Of particular interest is the **optimisation threshold**: at what model capability level does heavy scaffolding transition from beneficial to destructive? The existing data suggests this threshold falls between Qwen 3.5 9B and Haiku 4.5, but finer-grained capability sampling would locate it more precisely. The practical payoff is an **adaptive prompt selection policy**: given a model's capability profile, automatically selecting the appropriate level of prompt scaffolding---heavy for weak models, light for strong---rather than deploying a universal prompt.
 
 ### The broader implication
 
@@ -2578,6 +2632,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.17** (2026-03-09)
+:   **Dimension-targeted optimisation and cross-model transfer** (new §7.8): Added three subsections covering dimension-targeted prompt optimisation on specific rubric dimensions (§7.8.1), M3 engineering through prompt intervention (§7.8.2), and the cross-model prompt transfer experiment with prosthesis-straitjacket inversion finding (§7.8.3). Added fifth future work direction (§9) on model-stratified prompt optimisation and optimisation threshold mapping. Old §7.8 (prompt density) renumbered to §7.9. Data from prompt lab sessions on Qwen 3.5 9B and Haiku 4.5 (N=3 per transfer cell, 10 autotune iterations on Qwen, 6 on Haiku).
 
 **v3.0.16** (2026-03-07)
 :   **Fix ≤ rendering**: Unicode ≤ (U+2264) does not render in the xelatex font (appears as blank/replacement character in PDF), while ≥ renders correctly. Replaced all 16 body-text `≤` with LaTeX math expressions: `d ≤ 0.15` → `$d \leq 0.15$`, `≤ 0` → `$\leq$ 0`, etc. Verified ≥ (Unicode) renders correctly and left unchanged.

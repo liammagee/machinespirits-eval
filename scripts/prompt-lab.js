@@ -53,6 +53,8 @@ Usage:
   node scripts/prompt-lab.js status [options]
   node scripts/prompt-lab.js recommend [options]
   node scripts/prompt-lab.js autotune [options]
+  node scripts/prompt-lab.js import [options]
+  node scripts/prompt-lab.js reset [options]
   node scripts/prompt-lab.js diff [options]
 
 Commands:
@@ -62,6 +64,8 @@ Commands:
   status     Show prompt files, scored iterations, and recommendations for a session
   recommend  Ask a recommender model for prompt revisions based on a scored iteration
   autotune   Generate prompt variants, rerun the benchmark, and keep/revert by score
+  import     Import an existing eval run into the session as a new iteration
+  reset      Restore working prompts to baseline (or a specific iteration snapshot)
   diff       Show prompt diffs between baseline/current/iteration snapshots
 
 Shared Options:
@@ -87,6 +91,13 @@ Recommend/Autotune:
                          Which scored iteration to optimize from (default: best)
   --target <tutor|learner|both>
                          Which prompt family the recommender may edit (default: both)
+  --target-dims <dims>   Comma-separated rubric dimensions to optimize for (e.g.
+                         adaptive_responsiveness,conceptual_progression). When set,
+                         autotune compares on the average of these dimensions instead
+                         of overall score, and the recommender is told to focus on them.
+  --guidance <text>      Free-form instruction appended to the recommender prompt. Use this
+                         to steer the rewriter (e.g. "focus on question-asking behavior",
+                         "make the tutor reference learner phrasing explicitly").
   --apply                For recommend: apply the proposed prompt rewrite to the working prompt dir
   --iterations <n>       For autotune: number of recommendation/eval passes (default: 3)
   --keep-worse           For autotune: keep working prompts even if a candidate scores worse
@@ -574,11 +585,12 @@ function getScoredIterations(session) {
 }
 
 function getBestScoredIteration(session) {
-  return (
-    [...getScoredIterations(session)].sort(
-      (a, b) => (b.summary.primaryScore || 0) - (a.summary.primaryScore || 0),
-    )[0] || null
-  );
+  const useTargetDims = session.targetDimensions?.length > 0;
+  const getScore = (entry) =>
+    useTargetDims ? (entry.targetDimScore ?? entry.summary?.primaryScore ?? null) : (entry.summary?.primaryScore ?? null);
+
+  const scored = getScoredIterations(session).filter((entry) => getScore(entry) != null);
+  return scored.sort((a, b) => (getScore(b) || 0) - (getScore(a) || 0))[0] || null;
 }
 
 function getLatestIteration(session) {
@@ -731,6 +743,63 @@ function averageOrNull(values) {
   return numeric.reduce((sum, value) => sum + value, 0) / numeric.length;
 }
 
+function parseTargetDims(raw) {
+  if (!raw) return null;
+  const dims = raw
+    .split(',')
+    .map((d) => d.trim())
+    .filter(Boolean);
+  return dims.length > 0 ? dims : null;
+}
+
+/**
+ * Compute composite score for specific rubric dimensions from a single result row.
+ * Tutor dims are in row.scores (flat: dim → score|{score,reasoning}).
+ * Learner dims are in row.learnerScores (per-turn: { "0": { scores: { dim: {score} } } }).
+ * Returns a 0-100 scale value (dimension scores are 1-5, multiplied by 20).
+ */
+function computeTargetDimScoreForRow(row, targetDims) {
+  if (!targetDims || targetDims.length === 0) return null;
+  const values = [];
+
+  for (const dim of targetDims) {
+    // Check tutor scores (flat object: dim → score or dim → { score, reasoning })
+    if (row.scores && row.scores[dim] != null) {
+      const raw = row.scores[dim];
+      const val = typeof raw === 'number' ? raw : raw?.score;
+      if (val != null) values.push(val);
+      continue;
+    }
+
+    // Check learner per-turn scores
+    if (row.learnerScores) {
+      const turnScores = [];
+      for (const turnData of Object.values(row.learnerScores)) {
+        const turnDimScores = turnData?.scores || turnData;
+        const dimData = turnDimScores?.[dim];
+        const val = typeof dimData === 'number' ? dimData : dimData?.score;
+        if (val != null) turnScores.push(val);
+      }
+      if (turnScores.length > 0) {
+        values.push(turnScores.reduce((a, b) => a + b, 0) / turnScores.length);
+      }
+    }
+  }
+
+  if (values.length === 0) return null;
+  return (values.reduce((a, b) => a + b, 0) / values.length) * 20;
+}
+
+/**
+ * Compute average target-dimension composite across multiple run rows.
+ */
+function computeTargetDimScoreFromRows(rows, targetDims) {
+  if (!targetDims || targetDims.length === 0 || !rows || rows.length === 0) return null;
+  const perRow = rows.map((row) => computeTargetDimScoreForRow(row, targetDims)).filter(Number.isFinite);
+  if (perRow.length === 0) return null;
+  return perRow.reduce((a, b) => a + b, 0) / perRow.length;
+}
+
 function getPrimaryMetricName(rows) {
   return rows.some((row) => row.tutorFirstTurnScore != null) ? 'tutorFirstTurnScore' : 'tutorOverallScore';
 }
@@ -833,6 +902,7 @@ function summarizeRun(runId, profileName, scenarioId) {
 
 function refreshSessionSummaries(session) {
   let changed = false;
+  const hasTargetDims = session.targetDimensions?.length > 0;
 
   for (const iteration of session.iterations || []) {
     if (!iteration.runId) continue;
@@ -840,6 +910,16 @@ function refreshSessionSummaries(session) {
     if (JSON.stringify(iteration.summary || null) !== JSON.stringify(updatedSummary)) {
       iteration.summary = updatedSummary;
       changed = true;
+    }
+
+    if (hasTargetDims) {
+      const rows = getRunRows(iteration.runId, session.profileName, session.scenarioId);
+      const latestRows = selectLatestRowsPerDialogue(rows);
+      const newTds = computeTargetDimScoreFromRows(latestRows, session.targetDimensions);
+      if (iteration.targetDimScore !== newTds) {
+        iteration.targetDimScore = newTds;
+        changed = true;
+      }
     }
   }
 
@@ -1335,7 +1415,8 @@ Rules:
 - Make minimal, targeted edits grounded in the benchmark evidence.
 - CRITICAL: Preserve ALL markdown headings, XML section tags, and document structure from the original file. Your output will be rejected if any heading or tag is missing.
 - Never introduce visible chain-of-thought, [INTERNAL]/[EXTERNAL], or <think> output requirements.
-- Aim to improve the target metric without making the learner or tutor generic, repetitive, or role-leaky.
+- Aim to improve the target metric (or target dimensions, if specified) without making the learner or tutor generic, repetitive, or role-leaky.
+- When target_dimensions are specified, focus your edits specifically on improving those rubric dimensions. Other dimensions should not regress but are secondary.
 ${structuralInventory}
 Return JSON with exactly this shape:
 {
@@ -1362,7 +1443,7 @@ Session:
 - tutor_model: ${session.modelRef}
 - judge_model: ${formatJudgeSelection(session)}
 - target_scope: ${targetScope}
-- target_metric: tutorFirstTurnScore
+- target_metric: ${session.targetDimensions?.length > 0 ? `dimension composite: ${session.targetDimensions.join(', ')}` : 'tutorFirstTurnScore'}${session.targetDimensions?.length > 0 ? `\n- target_dimensions: ${session.targetDimensions.join(', ')}\n- PRIORITY: Your edits MUST specifically improve these dimensions. For tutor dimensions (e.g. adaptive_responsiveness), modify tutor prompts to produce behaviors that score higher on the rubric criteria. For learner dimensions (e.g. conceptual_progression), modify learner prompts to produce more progressive, cumulative learning.` : ''}
 - basis_iteration: ${basisIteration?.iteration ?? 'n/a'}
 - basis_run_id: ${basisIteration?.runId ?? 'n/a'}
 - basis_score: ${basisSummary?.primaryScore ?? 'n/a'}
@@ -1384,7 +1465,7 @@ ${promptSections}
 
 Benchmark evidence:
 ${resultSections || '- no stored result rows found'}
-
+${session.guidance ? `\nAdditional guidance from the operator:\n${session.guidance}\n` : ''}
 Generate concrete prompt revisions. Return JSON only.`,
     analysis,
   };
@@ -2040,19 +2121,19 @@ function resolvePromptDirSpec(session, spec) {
   if (effectiveSpec === 'latest') {
     const latest = getLatestIteration(session);
     if (!latest) throw new Error('No iterations available.');
-    return path.join(latest.snapshotDir, 'prompts');
+    return latest.snapshotDir ? path.join(latest.snapshotDir, 'prompts') : session.baselineDir;
   }
   if (effectiveSpec === 'best') {
     const best = getBestScoredIteration(session);
     if (!best) throw new Error('No scored iterations available.');
-    return path.join(best.snapshotDir, 'prompts');
+    return best.snapshotDir ? path.join(best.snapshotDir, 'prompts') : session.baselineDir;
   }
 
   const numeric = parseInt(effectiveSpec, 10);
   if (Number.isFinite(numeric)) {
     const iteration = getIterationByNumber(session, numeric);
     if (!iteration) throw new Error(`Iteration not found: ${numeric}`);
-    return path.join(iteration.snapshotDir, 'prompts');
+    return iteration.snapshotDir ? path.join(iteration.snapshotDir, 'prompts') : session.baselineDir;
   }
 
   throw new Error(`Unknown prompt diff spec: ${effectiveSpec}`);
@@ -2136,6 +2217,10 @@ function printAutotuneSessionSummary(session, options = {}) {
   console.log(`  Recommender: ${recommenderLabel || resolveRecommenderConfig().modelRef}`);
   console.log(`  Basis selection: ${basisMode}`);
   console.log(`  Target scope: ${targetScope}`);
+  if (session.targetDimensions?.length > 0) {
+    console.log(`  Target dimensions: ${session.targetDimensions.join(', ')}`);
+    console.log('  Comparison metric: target dimension composite');
+  }
   console.log(`  Planned passes: ${rounds}`);
   console.log(`  Runs per iteration: ${session.runsPerIteration || DEFAULT_RUNS_PER_ITERATION}`);
   console.log(`  Parallelism: ${session.parallelism || 1}`);
@@ -2152,9 +2237,16 @@ function printIterationTable(session) {
     return;
   }
 
+  const hasTargetDims = session.targetDimensions?.length > 0;
+
   console.log('\nIterations:');
-  console.log('  #  Src  Mode  Keep  Score      n  ΔPrev  ΔBest  Latency   Run ID');
-  console.log('  ' + '─'.repeat(99));
+  if (hasTargetDims) {
+    console.log('  #  Src  Mode  Keep  Score  TgtDm      n  ΔPrev  ΔBest  Latency   Run ID');
+    console.log('  ' + '─'.repeat(106));
+  } else {
+    console.log('  #  Src  Mode  Keep  Score      n  ΔPrev  ΔBest  Latency   Run ID');
+    console.log('  ' + '─'.repeat(99));
+  }
   for (const run of runs) {
     const summary = run.summary || {};
     const latency =
@@ -2164,15 +2256,22 @@ function printIterationTable(session) {
           ? `${(summary.latencyMs / 1000).toFixed(1)}s`
           : `${summary.latencyMs}ms`;
     const score = summary.primaryScore == null ? '--' : summary.primaryScore.toFixed(1);
+    const tgtDm = run.targetDimScore == null ? '--' : run.targetDimScore.toFixed(1);
     const deltaPrev = run.comparison?.deltaVsPrevious == null ? '--' : formatDelta(run.comparison.deltaVsPrevious);
     const deltaBest = run.comparison?.deltaVsBestBefore == null ? '--' : formatDelta(run.comparison.deltaVsBestBefore);
     const source = run.origin === 'autotune' ? 'A' : run.origin === 'baseline' ? 'B' : 'M';
     const mode = run.dryRun ? 'mock' : 'live';
     const keep = run.accepted == null ? '--' : run.accepted ? 'yes' : run.revertedToIteration ? 'revert' : 'no';
     const n = summary.totalRuns != null ? `${summary.scoredRuns ?? summary.totalRuns}/${summary.totalRuns}` : '--';
-    console.log(
-      `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${n.padStart(6)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
-    );
+    if (hasTargetDims) {
+      console.log(
+        `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${tgtDm.padStart(5)}  ${n.padStart(6)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
+      );
+    } else {
+      console.log(
+        `  ${String(run.iteration).padStart(2)}  ${source.padStart(3)}  ${mode.padStart(4)}  ${keep.padStart(6)}  ${score.padStart(5)}  ${n.padStart(6)}  ${deltaPrev.padStart(6)}  ${deltaBest.padStart(6)}  ${latency.padStart(7)}   ${run.runId}`,
+      );
+    }
   }
 }
 
@@ -2338,10 +2437,22 @@ async function runSessionIteration(session, options = {}) {
   }
 
   const summary = summarizeRun(runId, session.profileName, scenarioId);
+  const hasTargetDims = session.targetDimensions?.length > 0;
+  let targetDimScore = null;
+  if (hasTargetDims) {
+    const rows = getRunRows(runId, session.profileName, scenarioId);
+    const latestRows = selectLatestRowsPerDialogue(rows);
+    targetDimScore = computeTargetDimScoreFromRows(latestRows, session.targetDimensions);
+  }
   const previous = getLatestIteration(session);
   const baseline = getBaselineScoredIteration(session);
   const bestBefore = getBestScoredIteration(session);
   const promptHashes = getPromptHashesFromDir(session.promptDir, session.promptFiles);
+
+  // For target-dim mode, use targetDimScore for deltas; otherwise use primaryScore
+  const getIterScore = (iter) =>
+    hasTargetDims ? (iter?.targetDimScore ?? null) : (iter?.summary?.primaryScore ?? null);
+  const currentScore = hasTargetDims ? targetDimScore : summary.primaryScore;
 
   const entry = {
     iteration,
@@ -2360,21 +2471,22 @@ async function runSessionIteration(session, options = {}) {
     snapshotDir,
     promptHashes,
     summary,
+    targetDimScore,
     comparison: {
       previousIteration: previous?.iteration ?? null,
       deltaVsPrevious:
-        previous?.summary?.primaryScore != null && summary.primaryScore != null
-          ? summary.primaryScore - previous.summary.primaryScore
+        getIterScore(previous) != null && currentScore != null
+          ? currentScore - getIterScore(previous)
           : null,
       baselineIteration: baseline?.iteration ?? null,
       deltaVsBaseline:
-        baseline?.summary?.primaryScore != null && summary.primaryScore != null
-          ? summary.primaryScore - baseline.summary.primaryScore
+        getIterScore(baseline) != null && currentScore != null
+          ? currentScore - getIterScore(baseline)
           : null,
       bestBeforeIteration: bestBefore?.iteration ?? null,
       deltaVsBestBefore:
-        bestBefore?.summary?.primaryScore != null && summary.primaryScore != null
-          ? summary.primaryScore - bestBefore.summary.primaryScore
+        getIterScore(bestBefore) != null && currentScore != null
+          ? currentScore - getIterScore(bestBefore)
           : null,
     },
     accepted: null,
@@ -2398,6 +2510,11 @@ async function runSessionIteration(session, options = {}) {
   console.log(
     `  Primary metric (${summary.metricName}): ${summary.primaryScore == null ? 'n/a' : summary.primaryScore.toFixed(1)}`,
   );
+  if (hasTargetDims && targetDimScore != null) {
+    console.log(
+      `  Target dims (${session.targetDimensions.join(', ')}): ${targetDimScore.toFixed(1)}`,
+    );
+  }
   if (summary.totalRuns > 1) {
     console.log(`  Replications: ${summary.scoredRuns}/${summary.totalRuns} scored`);
   }
@@ -2408,10 +2525,12 @@ async function runSessionIteration(session, options = {}) {
     }
   }
   if (entry.comparison.deltaVsBaseline != null) {
-    console.log(`  Delta vs baseline: ${formatDelta(entry.comparison.deltaVsBaseline)}`);
+    const label = hasTargetDims ? 'Delta vs baseline (target dims)' : 'Delta vs baseline';
+    console.log(`  ${label}: ${formatDelta(entry.comparison.deltaVsBaseline)}`);
   }
   if (entry.comparison.deltaVsBestBefore != null) {
-    console.log(`  Delta vs best prior: ${formatDelta(entry.comparison.deltaVsBestBefore)}`);
+    const label = hasTargetDims ? 'Delta vs best prior (target dims)' : 'Delta vs best prior';
+    console.log(`  ${label}: ${formatDelta(entry.comparison.deltaVsBestBefore)}`);
   }
   if (summary.tutorHolisticOverallScore != null) {
     console.log(`  Tutor holistic: ${summary.tutorHolisticOverallScore.toFixed(1)}`);
@@ -2463,6 +2582,9 @@ async function handleInit() {
     copyPromptFile(baselinePromptsDir(sessionId), prompt.filename, prompt.sourcePath);
   }
 
+  const targetDimensions = parseTargetDims(getOption('target-dims', null));
+  const guidance = getOption('guidance', null);
+
   const session = {
     sessionId,
     createdAt: new Date().toISOString(),
@@ -2479,6 +2601,8 @@ async function handleInit() {
       getOption('runs', String(DEFAULT_RUNS_PER_ITERATION)),
       DEFAULT_RUNS_PER_ITERATION,
     ),
+    targetDimensions: targetDimensions || null,
+    guidance: guidance || null,
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
     resolvedTutorProfileName: blueprint.resolvedTutorProfileName,
@@ -2490,6 +2614,13 @@ async function handleInit() {
 
   saveSession(session);
   printPromptFiles(session);
+  if (targetDimensions) {
+    console.log(`\nTarget dimensions: ${targetDimensions.join(', ')}`);
+    console.log('  Autotune will optimize for the average of these dimensions instead of overall score.');
+  }
+  if (guidance) {
+    console.log(`  Guidance: ${guidance}`);
+  }
   console.log('\nNext steps:');
   console.log(`  1. Edit the prompt files in ${session.promptDir}`);
   console.log(`  2. Run: node scripts/prompt-lab.js run --session ${sessionId}`);
@@ -2547,6 +2678,8 @@ async function handleFork() {
       getOption('runs', String(sourceSession.runsPerIteration || DEFAULT_RUNS_PER_ITERATION)),
       sourceSession.runsPerIteration || DEFAULT_RUNS_PER_ITERATION,
     ),
+    targetDimensions: parseTargetDims(getOption('target-dims', null)) || sourceSession.targetDimensions || null,
+    guidance: getOption('guidance', null) || sourceSession.guidance || null,
     promptDir: path.join(dir, 'prompts'),
     baselineDir: baselinePromptsDir(sessionId),
     resolvedTutorProfileName: sourceSession.resolvedTutorProfileName,
@@ -2592,6 +2725,8 @@ async function handleRun() {
 
 async function handleRecommend() {
   const session = loadSession(resolveSessionId());
+  const cliGuidance = getOption('guidance', null);
+  if (cliGuidance) session.guidance = cliGuidance;
   const targetScope = normalizeTargetScope(getOption('target', 'both'));
   const artifact = await generateRecommendation(session, {
     basis: getOption('basis', 'best'),
@@ -2614,6 +2749,11 @@ async function handleRecommend() {
 
 async function handleAutotune() {
   const session = loadSession(resolveSessionId());
+  // Allow CLI --target-dims and --guidance to override session's stored values
+  const cliTargetDims = parseTargetDims(getOption('target-dims', null));
+  if (cliTargetDims) session.targetDimensions = cliTargetDims;
+  const cliGuidance = getOption('guidance', null);
+  if (cliGuidance) session.guidance = cliGuidance;
   const rounds = parseInt(getOption('iterations', String(DEFAULT_AUTOTUNE_ITERATIONS)), 10);
   const basisMode = getOption('basis', 'best');
   const recommenderRef = getOption('recommender', null);
@@ -2746,21 +2886,27 @@ async function handleAutotune() {
     console.log(`  Step 3/4 complete in ${formatDuration(Date.now() - evaluationStartedAt)}`);
 
     const latestSession = loadSession(refreshed.sessionId);
+    // Propagate targetDimensions to latestSession in case it was loaded fresh from disk
+    latestSession.targetDimensions = refreshed.targetDimensions;
     const latestEntry = getIterationByNumber(latestSession, entry.iteration);
+
+    const useTargetDims = refreshed.targetDimensions?.length > 0;
+    const getCmpScore = (iter) =>
+      useTargetDims ? (iter?.targetDimScore ?? null) : (iter?.summary?.primaryScore ?? null);
+
+    const candidateScore = getCmpScore(latestEntry);
+    const bestBeforeScore = getCmpScore(bestBefore);
     const accepted =
-      latestEntry?.summary?.primaryScore != null &&
-      (bestBefore?.summary?.primaryScore == null ||
-        latestEntry.summary.primaryScore >= bestBefore.summary.primaryScore);
+      candidateScore != null && (bestBeforeScore == null || candidateScore >= bestBeforeScore);
 
     if (latestEntry) {
       latestEntry.accepted = accepted;
+      const basisScore = getCmpScore(basisIteration);
       latestEntry.comparison = {
         ...latestEntry.comparison,
         basisIteration: basisIteration.iteration,
         deltaVsBasis:
-          latestEntry.summary?.primaryScore != null && basisIteration.summary?.primaryScore != null
-            ? latestEntry.summary.primaryScore - basisIteration.summary.primaryScore
-            : null,
+          candidateScore != null && basisScore != null ? candidateScore - basisScore : null,
       };
     }
 
@@ -2770,22 +2916,25 @@ async function handleAutotune() {
       accepted,
     });
 
+    const scoreLabel = useTargetDims ? 'target dims' : 'primary';
     console.log('  Step 4/4: Compare against best prior');
-    if (latestEntry?.summary?.primaryScore != null) {
-      console.log(`    Candidate score: ${latestEntry.summary.primaryScore.toFixed(1)}`);
+    if (candidateScore != null) {
+      console.log(`    Candidate ${scoreLabel} score: ${candidateScore.toFixed(1)}`);
     } else {
       console.log('    Candidate score: n/a');
     }
-    if (bestBefore?.summary?.primaryScore != null) {
+    if (bestBeforeScore != null) {
       console.log(
-        `    Best prior score: ${bestBefore.summary.primaryScore.toFixed(1)} (iteration ${bestBefore.iteration})`,
+        `    Best prior ${scoreLabel} score: ${bestBeforeScore.toFixed(1)} (iteration ${bestBefore.iteration})`,
       );
     }
     if (!accepted && !keepWorse && bestBefore) {
-      const bestDir = path.join(bestBefore.snapshotDir, 'prompts');
+      const bestDir = bestBefore.snapshotDir
+        ? path.join(bestBefore.snapshotDir, 'prompts')
+        : latestSession.baselineDir;
       restoreWorkingPromptsFromDir(latestSession, bestDir);
       if (latestEntry) latestEntry.revertedToIteration = bestBefore.iteration;
-      console.log(`    Decision: reverted to iteration ${bestBefore.iteration}`);
+      console.log(`    Decision: reverted to iteration ${bestBefore.iteration}${!bestBefore.snapshotDir ? ' (baseline)' : ''}`);
     } else if (accepted) {
       console.log('    Decision: accepted');
     } else {
@@ -2805,6 +2954,91 @@ async function handleAutotune() {
   const finished = loadSession(session.sessionId);
   console.log('');
   printIterationTable(finished);
+}
+
+async function handleImport() {
+  const session = loadSession(resolveSessionId());
+  const runId = getOption('run-id', null);
+  if (!runId) throw new Error('--run-id is required');
+  const modelRef = getOption('model', session.modelRef);
+  const notes = getOption('notes', null);
+
+  const rows = getRunRows(runId, session.profileName, session.scenarioId);
+  if (rows.length === 0) {
+    // Try without profile filter in case the run used a different profile name
+    const allRows = evaluationStore.getResults(runId, { scenarioId: session.scenarioId });
+    if (allRows.length === 0) {
+      throw new Error(`No rows found for run ${runId} with scenario ${session.scenarioId}`);
+    }
+    rows.push(...allRows);
+  }
+
+  const latestRows = selectLatestRowsPerDialogue(rows);
+  const summary = aggregateRunRows(latestRows);
+
+  const hasTargetDims = session.targetDimensions?.length > 0;
+  let targetDimScore = null;
+  if (hasTargetDims) {
+    targetDimScore = computeTargetDimScoreFromRows(latestRows, session.targetDimensions);
+  }
+
+  const history = session.iterations || [];
+  const iteration = history.length + 1;
+  const previous = history.length > 0 ? history[history.length - 1] : null;
+  const getIterScore = (iter) =>
+    hasTargetDims ? (iter?.targetDimScore ?? null) : (iter?.summary?.primaryScore ?? null);
+  const currentScore = hasTargetDims ? targetDimScore : summary.primaryScore;
+
+  const entry = {
+    iteration,
+    createdAt: new Date().toISOString(),
+    runId,
+    scenarioId: session.scenarioId,
+    modelRef,
+    usedRubric: true,
+    dryRun: false,
+    notes: notes || `imported from ${runId}`,
+    origin: 'import',
+    snapshotDir: null,
+    promptHashes: null,
+    summary,
+    targetDimScore,
+    comparison: {
+      previousIteration: previous?.iteration ?? null,
+      deltaVsPrevious:
+        getIterScore(previous) != null && currentScore != null
+          ? currentScore - getIterScore(previous)
+          : null,
+    },
+    accepted: null,
+    revertedToIteration: null,
+  };
+
+  session.iterations = [...history, entry];
+  saveSession(session);
+
+  console.log(`Imported run ${runId} as iteration ${iteration}`);
+  console.log(`  Model: ${modelRef}`);
+  console.log(`  Primary score: ${summary.primaryScore?.toFixed(1) ?? 'n/a'}`);
+  if (hasTargetDims && targetDimScore != null) {
+    console.log(`  Target dims (${session.targetDimensions.join(', ')}): ${targetDimScore.toFixed(1)}`);
+  }
+  console.log(`  Rows: ${latestRows.length}`);
+}
+
+async function handleReset() {
+  const session = loadSession(resolveSessionId());
+  const fromSpec = getOption('from', 'baseline');
+  const sourceDir = resolvePromptDirSpec(session, fromSpec);
+
+  restoreWorkingPromptsFromDir(session, sourceDir);
+  saveSession(session);
+  console.log(`Reset working prompts to: ${fromSpec}`);
+  console.log(`  Source: ${sourceDir}`);
+  console.log(`  Working dir: ${session.promptDir}`);
+  if (fromSpec !== 'baseline') {
+    console.log('  Tip: use --from baseline to restore the original prompts');
+  }
 }
 
 async function handleDiff() {
@@ -2840,11 +3074,19 @@ async function handleStatus() {
   printIterationTable(session);
   printRecommendationTable(session);
 
+  if (session.targetDimensions?.length > 0) {
+    console.log(`\nTarget dimensions: ${session.targetDimensions.join(', ')}`);
+  }
+  if (session.guidance) {
+    console.log(`Guidance: ${session.guidance}`);
+  }
+
   const best = getBestScoredIteration(session);
   if (best) {
-    console.log(
-      `\nBest score: ${best.summary.primaryScore?.toFixed(1) ?? 'n/a'} (iteration ${best.iteration}, ${best.dryRun ? 'mock' : 'live'})`,
-    );
+    const scoreLabel = session.targetDimensions?.length > 0 && best.targetDimScore != null
+      ? `target dims: ${best.targetDimScore.toFixed(1)}, overall: ${best.summary.primaryScore?.toFixed(1) ?? 'n/a'}`
+      : `${best.summary.primaryScore?.toFixed(1) ?? 'n/a'}`;
+    console.log(`\nBest score: ${scoreLabel} (iteration ${best.iteration}, ${best.dryRun ? 'mock' : 'live'})`);
   }
 }
 
@@ -2869,6 +3111,12 @@ async function main() {
       return;
     case 'autotune':
       await handleAutotune();
+      return;
+    case 'import':
+      await handleImport();
+      return;
+    case 'reset':
+      await handleReset();
       return;
     case 'diff':
       await handleDiff();
