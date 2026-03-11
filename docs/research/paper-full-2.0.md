@@ -466,7 +466,7 @@ The tutor holistic rubric was radically simplified from 6 to 3 dimensions after 
 The evaluation rubric underwent four iterations (v1.0→v2.0→v2.1→v2.2), each responding to empirical anomalies discovered during analysis (documented in Appendix E). The current v2.2 rubric consolidates 14 dimensions to 8, guided by the GuideEval P→O→E decomposition framework and the study's own empirical dimension clustering. The eight dimensions are:
 
 | Category | Dimension | Weight | Mechanism Relevance |
-|----------|-----------|--------|---------------------|
+|---------------------|--------------------------|--------|--------------------------------------------------|
 | **Perception (P)** | `perception_quality` | 15% | Calibration: tutor perceives learner's specific state |
 | **Perception (P)** | `content_accuracy` | 10% | Error correction: factual/domain accuracy |
 | **Orchestration (O)** | `pedagogical_craft` | 15% | Calibration: response construction quality |
@@ -845,7 +845,7 @@ Section 3 predicted that recognition-enhanced prompts produce a *calibration* ef
 
 The calibration hypothesis predicts that recognition-enhanced tutors should score more uniformly across rubric dimensions --- the tutor attends to all aspects of the pedagogical encounter rather than excelling at some while neglecting others. We test this by computing the within-response standard deviation across all eight v2.2 tutor dimensions for each scored dialogue, then comparing across conditions.
 
-Table X reports within-response dimension variance by experimental condition (cells 80--87, DeepSeek V3.2 ego, N=146, v2.2 rubric, claude-code/sonnet judge):
+The following table reports within-response dimension variance by experimental condition (cells 80--87, DeepSeek V3.2 ego, N=146, v2.2 rubric, claude-code/sonnet judge):
 
 | Condition | N | Mean Dim Score (1--5) | Within-Response SD | Within-Response Var |
 |---|---|---|---|---|
@@ -862,7 +862,7 @@ Two features of this pattern support the calibration-as-prompt-level-mechanism i
 
 #### 6.1.2 Floor Elimination and Dimension-Specific Lifting
 
-The calibration effect is not uniform across dimensions. Table Y reports per-dimension means for DeepSeek V3.2, collapsed across architecture:
+The calibration effect is not uniform across dimensions. The following table reports per-dimension means for DeepSeek V3.2, collapsed across architecture:
 
 | Dimension | Base Mean | Recognition Mean | Lift | Rank (by lift) |
 |---|---|---|---|---|
@@ -942,7 +942,7 @@ Haiku's calibration effect is slightly *larger* than DeepSeek's: within-response
 **Dimension-specific lifting replicates:**
 
 | Dimension | Haiku Base | Haiku Recog | Haiku Lift | DeepSeek Lift | Rank Match? |
-|---|---|---|---|---|---|
+|--------------------------|-----------|------------|-----------|--------------|-------------|
 | elicitation_quality | 2.37 | 3.62 | **+1.25** | +1.18 | Top-2 in both |
 | productive_difficulty | 2.83 | 3.90 | **+1.08** | +1.33 | Top-2 in both |
 | recognition_quality | 3.23 | 4.09 | +0.85 | +1.07 | Mid-range |
@@ -1011,7 +1011,7 @@ The calibration effect has a concrete behavioral marker: question frequency. Cou
 
 Recognition tutors ask 5.4 times more questions than base tutors. The effect is largest on the weakest model: Gemini Flash base tutors ask essentially zero questions (0.03 per turn), defaulting entirely to directive instruction. Under recognition, all three models converge toward similar question rates (0.35--1.01), despite their divergent baselines --- paralleling the superego approval rate convergence reported in Section 6.2.
 
-The mechanism link is direct. The recognition prompt instructs the tutor to "engage with the learner's interpretation" and "pose questions rather than provide answers when appropriate." The question rate operationalizes these instructions: a tutor that asks questions is a tutor that creates space for the learner's contribution, which is the behavioral core of calibration. The rubric dimension `elicitation_quality` captures this indirectly (it shows the largest recognition floor-lift in both models, Table Y), but the raw question count provides a more concrete and independently measurable marker. Importantly, the question rate is flat across turns (slope ≈ 0 for both conditions), consistent with question-asking being a prompt-level (calibration) effect operative from the first turn, not an adaptive behavior that develops across the dialogue.
+The mechanism link is direct. The recognition prompt instructs the tutor to "engage with the learner's interpretation" and "pose questions rather than provide answers when appropriate." The question rate operationalizes these instructions: a tutor that asks questions is a tutor that creates space for the learner's contribution, which is the behavioral core of calibration. The rubric dimension `elicitation_quality` captures this indirectly (it shows the largest recognition floor-lift in both models, see Section 6.1.2), but the raw question count provides a more concrete and independently measurable marker. Importantly, the question rate is flat across turns (slope ≈ 0 for both conditions), consistent with question-asking being a prompt-level (calibration) effect operative from the first turn, not an adaptive behavior that develops across the dialogue.
 
 Transcript excerpts illustrate the qualitative shift. A base tutor (DeepSeek V3.2, Mood: Frustration scenario, holistic score 0/100) opens: "You've hit 5 struggle signals on dialectic concepts. Revisiting Hegel's foundational ideas from the previous lecture will help clarify the master-servant dynamic." The tutor diagnoses, prescribes, and directs --- never asking what the learner finds difficult or what they understand. A recognition tutor on the same model (Productive Deadlock scenario, holistic score 77.5/100) engages differently: "The dialectic simulation lets you manipulate master/slave dynamics and watch *Bildung* emerge immanently. No safety, no control." The learner responds with a substantive philosophical question, and by Turn 4 asks, "does engaging with this reshape what *you* mean by materialism, too, or is the risk only mine?" --- a learner-initiated philosophical challenge that only arises when recognition-oriented prompting creates dialogical space.
 
@@ -1103,7 +1103,7 @@ This transition analysis provides the within-case evidence for Mechanism 2 that 
 The reduction in error correction need is reflected in the deliberation quality scores. The deliberation rubric (6 dimensions, 1--5 scale) evaluates the quality of the ego-superego exchange process independently of the public output. Multi-agent cells (82--83, 86--87) receive deliberation scores alongside their output scores.
 
 | Deliberation Dimension | DeepSeek Base | DeepSeek Recog | Delta | Haiku Base | Haiku Recog | Delta |
-|---|---|---|---|---|---|---|
+|-------------------------|--------------|----------------|-------|-----------|-------------|-------|
 | critique_substance | 3.03 | 2.14 | **-0.89** | 3.51 | 3.09 | -0.42 |
 | revision_impact | 2.97 | 1.97 | **-1.00** | 2.72 | 2.67 | -0.05 |
 | deliberation_depth | 2.42 | 1.95 | -0.47 | 2.95 | 2.63 | -0.32 |
@@ -1122,8 +1122,8 @@ Despite the shift toward approval, when the superego does intervene, the revisio
 
 | | DeepSeek V3.2 | Haiku 4.5 |
 |---|---|---|
-| Base RevΔ | 0.901 ± 0.086 | 0.917 ± --- |
-| Recognition RevΔ | 0.869 ± 0.130 | 0.851 ± --- |
+| Base RevΔ | 0.901 ± 0.086 | 0.917 |
+| Recognition RevΔ | 0.869 ± 0.130 | 0.851 |
 | Delta | -0.032 | -0.066 |
 
 RevΔ values above 0.85 indicate near-complete rewrites --- the ego does not make minor edits in response to superego feedback; it generates substantially new output. This is true under both conditions, though recognition shows a slight decrease (-0.032 DeepSeek, -0.066 Haiku). The high RevΔ suggests that when the superego does reject, the ego takes the feedback seriously rather than making cosmetic changes.
@@ -1361,7 +1361,7 @@ The preceding sections established three separable mechanisms: calibration (Sect
 
 #### 6.4.1 The Factorial Interaction
 
-The $2 \times 2$ factorial (recognition × architecture) permits decomposition of the total recognition effect into prompt-level and architecture-level components. Table Z reports the full factorial for all three generation models:
+The $2 \times 2$ factorial (recognition × architecture) permits decomposition of the total recognition effect into prompt-level and architecture-level components. The following tables report the full factorial for all three generation models:
 
 **DeepSeek V3.2 (N=146, run aea2abfb):**
 
@@ -1472,7 +1472,7 @@ Recognition narrows the output distribution on multiple dimensions simultaneousl
 
 #### 6.4.6 Cross-Judge Validation of the Interaction Pattern
 
-The universal substitution pattern with model-dependent residual is validated across three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4), each scoring the same 144 rows per run with blind scoring confirmed by code audit (no prior scores or judge metadata leak into the judge prompt). Table ZZ reports the recognition × architecture interaction decomposed by judge and generation model:
+The universal substitution pattern with model-dependent residual is validated across three independent judges (Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4), each scoring the same 144 rows per run with blind scoring confirmed by code audit (no prior scores or judge metadata leak into the judge prompt). The following table reports the recognition × architecture interaction decomposed by judge and generation model:
 
 | Run | Judge | recog_single | recog_multi | multi_base | multi_recog |
 |-----|-------|-------------|-------------|-----------|-------------|
@@ -1776,7 +1776,7 @@ The per-dimension rubric enables a capability that holistic scoring cannot: auto
 
 The experiment forms a $2 \times 2 \times 2$ design: prompt condition (base vs. recognition) × optimisation (unoptimised vs. autotuned) × generation model (DeepSeek V3.2 vs. Qwen 3.5 9B). All conditions were judged by Sonnet 4.6. The Qwen 3.5 runs were conducted entirely on a local machine via LM Studio, demonstrating that the optimisation loop is feasible without cloud inference for generation.
 
-**Table N: Autotuning × Recognition × Model (Sonnet judge, frustration scenario)**
+**Autotuning × Recognition × Model (Sonnet judge, frustration scenario)**
 
 | Model | Base | Base autotuned | Recognition | Recog. autotuned |
 |-------|------|---------------|-------------|-----------------|
@@ -1805,7 +1805,7 @@ Section 7.7 demonstrated that automated prompt tuning, guided by the per-dimensi
 
 We extended the autotuning loop with a `--target-dims` parameter that optimises for specific rubric dimensions rather than overall score. Targeting `adaptive_responsiveness` (tutor modulation, 15% weight) and `conceptual_progression` (learner learning, 20% weight) on a single challenging scenario (`mood_frustration_to_breakthrough`, cell 8 bilateral architecture), we ran parallel optimisation sessions on two models: Qwen 3.5 9B (local, via LM Studio) and Claude Haiku 4.5 (OpenRouter). Each session used a hill-climbing loop with an LLM recommender (Claude Opus 4.6) proposing edits, N=1 replication per iteration, and accept/revert decisions based on the composite target dimension score.
 
-**Table N+1: Dimension-targeted autotuning results (frustration scenario, cell 8)**
+**Dimension-targeted autotuning results (frustration scenario, cell 8)**
 
 | | Qwen 3.5 9B | Haiku 4.5 |
 |---|---|---|
@@ -1836,7 +1836,7 @@ This result does not contradict the M3 null finding. The pooled analysis (N=432)
 
 If prompt optimisation is model-specific (as Section 7.8.1 implies), then optimised prompts should not transfer well across capability levels. We tested this directly by running each model's best-performing prompts on the other model (N=3 replications each, same scenario and cell, judged by Sonnet 4.6).
 
-**Table N+2: Cross-model transfer matrix (target dimension scores, frustration scenario)**
+**Cross-model transfer matrix (target dimension scores, frustration scenario)**
 
 | | Qwen-optimised prompts | Haiku-optimised prompts | Baseline prompts |
 |---|---|---|---|
