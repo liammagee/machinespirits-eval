@@ -305,9 +305,10 @@ Documented in CLAUDE.md: `tests/` for integration tests, `services/__tests__/` f
 
 ## D. Theoretical / Mechanistic Research
 
-### D1. Mechanistic Understanding (OPEN RESEARCH)
-Why does recognition-oriented prompting change model behavior? What internal representations shift?
-- Activation analysis, attention patterns, gradient analysis
+### D1. Mechanistic Understanding (PARTIALLY ADDRESSED)
+Why does recognition-oriented prompting change model behavior?
+- ~~First-pass lexicon decomposition~~ — `scripts/analyze-recognition-lexicon.js` (2026-04-16). Complements `analyze-text-behaviors.js` §2 (data-driven JSD) with a theory-driven 10-concept Hegelian lexicon. Each tutor response gets per-concept density; Cohen's d (recog − base) and Pearson r (density × rubric score) flag which concepts are both distinctive AND quality-correlated. First pass on all scored rows (N=10,304): overall d=0.22, r=0.27. Top mechanism markers: `genuine` (d=+0.45, r=0.19) and `transformation` (d=+0.42, r=0.17). `recognition` (d=+0.20, r=0.15) and `struggle` (d=+0.19, r=0.17) moderate. Counterintuitive finding: `hegel`/`master-slave` has NEGATIVE d (−0.30) — base cells name the theory more than recog cells, which suggests enactment replaces explicit naming. `dialectic` is widespread and quality-correlated but not condition-distinctive (generic quality marker).
+- Activation analysis, attention patterns, gradient analysis (still open — requires white-box access)
 - Paper ref: Section 8.2 Future Direction #4
 
 ### D2. Cross-Application Transfer (OPEN RESEARCH)
