@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.26"
+version: "3.0.27"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -2249,7 +2249,7 @@ mood_frustration_to_breakthrough,mutual_transformation_journey \
   --runs 5
 ```
 
-### B.6 Resolution Strategy Coding (Section 6.20)
+### B.6 Resolution Strategy Coding (Paper 1.0, Section 6.20)
 
 ```bash
 # Code impasse dialogues into Hegelian resolution strategies
@@ -2259,7 +2259,7 @@ node scripts/code-impasse-strategies.js \
 # Output: exports/impasse-strategy-coding-<timestamp>.json and .md
 ```
 
-### B.7 Dialectical Superego Modulation (Section 6.8)
+### B.7 Dialectical Superego Modulation (Paper 1.0, Section 6.8)
 
 ```bash
 # Standard ego + divergent superego (cells 22-27)
@@ -2281,7 +2281,7 @@ CELLS+=",cell_33_recog_dialectical_advocate_unified"
 node scripts/eval-cli.js run --profiles "$CELLS" --runs 5
 ```
 
-### B.8 Mechanism Robustness (Section 6.10)
+### B.8 Mechanism Robustness (Paper 1.0, Section 6.10)
 
 ```bash
 # Scripted learner mechanisms (cells 40-59), Haiku ego
@@ -2331,7 +2331,7 @@ node scripts/eval-cli.js run --profiles "$CELLS" \
   --runs 5
 ```
 
-### B.8b Prompt Elaboration Baseline (Section 6.21)
+### B.8b Prompt Elaboration Baseline (Paper 1.0, Section 6.21)
 
 ```bash
 # Naive baseline, Haiku ego
@@ -2345,7 +2345,7 @@ node scripts/eval-cli.js run \
   --runs 6 --model openrouter.kimi
 ```
 
-### B.8c Token Budget Sensitivity (Section 6.22)
+### B.8c Token Budget Sensitivity (Paper 1.0, Section 6.22)
 
 ```bash
 # Token budget dose-response (256, 512, 2048), Haiku ego
@@ -2367,7 +2367,7 @@ node scripts/eval-cli.js run \
   --runs 3
 ```
 
-### B.9 Qualitative Transcript Assessment (Section 6.11)
+### B.9 Qualitative Transcript Assessment (Paper 1.0, Section 6.11)
 
 ```bash
 # Assess transcripts with Opus
@@ -2425,7 +2425,7 @@ Where:
 | Tutor Adaptation | 5% | Bilateral |
 | Learner Growth | 5% | Bilateral |
 
-Standard dimensions (including Productive Struggle and Epistemic Honesty) account for 81% of raw weight; recognition dimensions 29.9%; bilateral dimensions 10%. Raw weights total 120.9% and are normalized at scoring time. Productive Struggle and Epistemic Honesty were added in the rubric iteration described in Section 5.1, with corresponding reductions to Actionability and Tone (10% to 8% each). The bilateral dimensions (`tutor_adaptation`, `learner_growth`) specifically measure the mutual transformation claim---see Section 6.15.
+Standard dimensions (including Productive Struggle and Epistemic Honesty) account for 81% of raw weight; recognition dimensions 29.9%; bilateral dimensions 10%. Raw weights total 120.9% and are normalized at scoring time. Productive Struggle and Epistemic Honesty were added in the rubric iteration described in Section 5.1, with corresponding reductions to Actionability and Tone (10% to 8% each). The bilateral dimensions (`tutor_adaptation`, `learner_growth`) specifically measure the mutual transformation claim---see Paper 1.0, Section 6.15.
 
 ### C.3 Recognition Dimension Criteria
 
@@ -2681,6 +2681,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.27** (2026-04-16)
+:   **Appendix B cross-reference disambiguation** (P5): Added explicit "Paper 1.0" markers to six Appendix B section headers (B.6 Section 6.20, B.7 Section 6.8, B.8 Section 6.10, B.8b Section 6.21, B.8c Section 6.22, B.9 Section 6.11) and to Appendix C.2's "see Section 6.15" reference in the dimension weights paragraph. Paper 2.0's §6 has only six subsections (6.1--6.6), so the original unqualified "Section 6.X" pointers in Appendix B were stranded cross-references under a standalone read of Paper 2.0. The figure/table numbering audit otherwise confirmed that in-text "Section 6.10/6.16/6.21/6.22" mentions already carry "of the companion study" or "(Paper 1.0, ...)" qualifiers (lines 154, 644, 1814, 1890, 1898). No other figure, table, or section-reference drift was found. Addresses v4 roadmap P5.
 
 **v3.0.26** (2026-04-16)
 :   **Learner superego paradox: rubric-artifact mechanism** (M6/C4 partial): Added a DB-only mechanism check to §8.1 addressing the learner superego paradox (d=3.05 deficit for ego-superego learners vs unified learners). Query on cells 1/2/5/6 (Opus 4.6 judge, N=613/108/499/157) separates learner *behaviour* from learner *score*: the ego-superego architecture produces ~2.5$\times$ more output tokens (13,193--15,547 vs 5,125--6,675) and ~4$\times$ more API calls (9.0--10.4 vs 2.3) --- i.e., *more* deliberation and *more* generated text --- yet scores 12--18 points *lower* on the learner rubric. Per-dimension inspection of the learner_scores JSON shows ego-superego learners score well on `deliberation_depth` and `revision_signals` (dimensions that reward the internal process) but poorly on `conceptual_engagement` and `question_quality` (dimensions that reward content in the final external message). The most parsimonious account is therefore a rubric-measurement artifact: the rubric as currently constructed rewards content-rich external output, while the ego-superego architecture spends generative effort on deliberation-internal content that does not land in the output channel the rubric scores. Reframes the paradox from "internal self-critique degrades the learner" to "the rubric does not reward the kind of behaviour the architecture produces." Addresses v4 roadmap M6/C4 alternative test (regress learner score on length/complexity features) with a DB-only analysis; the stronger test (higher-capability learner model, \$2K) remains pending. No new runs --- purely a re-analysis of existing data.
