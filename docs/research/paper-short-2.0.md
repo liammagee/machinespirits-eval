@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mechanism Tracing in Recognition-Oriented AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "1.1.0"
+version: "1.1.1"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -127,7 +127,7 @@ A distinctive contribution is the evaluation apparatus itself. The provable disc
 
 **Synthetic learners.** All evaluations use LLM-generated learner turns. The supported mechanisms trace tutor-internal processes observable regardless of learner type, but pedagogical significance awaits human learner validation.
 
-**Recursive evaluation.** Mechanism claims are LLM-assessed claims about LLM-internal processes. Cross-judge validation mitigates this for factorial-level claims (9/9 cells unanimous), but process-level claims (critique taxonomy, revision quality) remain unvalidated by human expert coding. The required validation---two coders, 30--50 exchanges, Cohen's $\kappa$---is the most important outstanding step.
+**Recursive evaluation.** Mechanism claims are LLM-assessed claims about LLM-internal processes. Cross-judge validation mitigates this for factorial-level claims (9/9 cells unanimous), but process-level claims (critique taxonomy, revision quality) remain unvalidated by human expert coding. The pilot apparatus is operationalised in the repository (`scripts/human-validation-sample.js` for stratified sampling, `docs/research/human-coding-codebook.md` v1.0 for the per-category codebook, `scripts/human-validation-analyze.js` for Cohen's $\kappa$ / Fleiss' $\kappa$ / per-category F1 / confusion matrices, plus an inter-LLM κ baseline as lower-bound reference). Target floor: $\kappa \geq 0.60$. Execution cost reduces to rater recruitment + ~1 hour/rater; rater data is the only remaining step.
 
 **Prompt density.** The recognition prompt (~5,100 tokens) is substantially larger than the baseline. Four evidence lines argue against reducing the effect to prompt density: placebo control (length-matched, no recognition theory), prompt elaboration baseline (344-line base hurts strong models), autotuning (gap widens under optimization), and mediation (42.4% through question-asking). However, prompt content and prompt density are not fully separable.
 
@@ -141,7 +141,7 @@ A distinctive contribution is the evaluation apparatus itself. The provable disc
 
 Recognition theory, operationalized as a design heuristic rather than an ontological claim, provides a framework for building AI systems whose outputs are specifically adapted to user input rather than generically responsive. Two mechanisms are supported: calibration (prompt-level output distribution narrowing) and error correction (architecture-level critique with universal substitution and model-dependent residual). Adaptive responsiveness is null on the primary pre-registered analysis, with a pending boundary-condition effect (10-turn disengagement, single model, single judge) awaiting replication. Three findings remain unexplained: the model-dependent residual architecture benefit (why Gemini Flash 3.0 alone retains +12.3 pts of superego benefit under recognition), the M3 primary null, and the learner superego paradox (d=3.05).
 
-Four directions are most pressing: replicating the pending M3 boundary-condition effect on additional models and judges, systematic superego critique taxonomy coding by human expert raters, human-learner validation (the genuine replication barrier at ~\$20K--50K per N=200 cohort), and a frontier-tier fourth-model replication to test whether recognition saturates against an already-calibrated strong generator. The methodological contribution---process tracing adapted for agent architectures, provable discourse for machine-verifiable research claims, with judge-adjusted rather than judge-pooled effect-size reporting---is transferable regardless of domain.
+Four directions are most pressing: replicating the pending M3 boundary-condition effect on additional models and judges, executing the now-operationalised human-coding pilot (§5 Limitations; infrastructure delivered, rater data outstanding), human-learner validation (the genuine replication barrier at ~\$20K--50K per N=200 cohort), and a frontier-tier fourth-model replication to test whether recognition saturates against an already-calibrated strong generator. The methodological contribution---process tracing adapted for agent architectures, provable discourse for machine-verifiable research claims, with judge-adjusted rather than judge-pooled effect-size reporting---is transferable regardless of domain.
 
 ## References
 
