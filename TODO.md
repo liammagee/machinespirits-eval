@@ -121,40 +121,38 @@ node scripts/eval-cli.js evaluate <runId>
 - Check interaction: does Writing Pad benefit recognition more than base?
 - Paper ref: Section 8.1 Limitation #10
 
-### A6. Domain Expansion (MEDIUM — design ready, requires content authoring)
-Only 2 domains tested (philosophy via course 479, elementary math via course 101).
+### A6. Domain Expansion (MEDIUM — Phases 1 & 2 authoring complete, eval runs pending)
+Tests whether recognition transfers across domains. Originally only 2 domains tested (philosophy via 479, elementary math via 101). Now 3 authored.
 
 **Current infrastructure:**
 - Content switching via env vars: `EVAL_CONTENT_PATH` and `EVAL_SCENARIOS_FILE`
 - Course 479 (EPOL philosophy, 8 lectures) — primary evaluation domain
-- Course 101 (elementary fractions, 2 lectures) — test domain, minimal scenarios
-- All 18 current scenarios reference only course 479
+- Course 101 (elementary fractions, 2 lectures) — math test domain, 11 scenarios (5 single-turn, 6 multi-turn)
+- Course 201 (introductory programming, 4 lectures) — programming test domain, 8 scenarios (5 single-turn, 3 multi-turn) — added 2026-04-16
 
 **Experimental design:**
-- **Phase 1 — Expand existing math domain** (lowest effort):
-  - Author 4-6 more elementary math scenarios for course 101 (matching complexity levels of core philosophy scenarios)
-  - Run cells 1 vs 5 (base vs recog) on math scenarios to test recognition transfer
-  - N = 2 cells × 3 runs × ~6 scenarios = 36 rows
-- **Phase 2 — New STEM domain** (medium effort):
-  - Author course 201: introductory programming (variables, loops, debugging)
-  - 4-6 lectures + 6-8 scenarios covering: misconceptions, frustration, impasse, growth
-  - Run same cells 1 vs 5 on programming domain
-- **Phase 3 — Creative/social-emotional** (higher effort):
+- ~~**Phase 1 — Expand existing math domain**~~ (authoring complete): 11 scenarios in `content-test-elementary/scenarios-elementary.yaml`, exceeds the 4-6 spec. Run cells 1 vs 5 × 3 runs × ~6 scenarios = 36 rows — pending API budget.
+- ~~**Phase 2 — New STEM domain (programming)**~~ (authoring complete): `content-test-programming/courses/201/` (4 lectures: Variables, If/Else, Loops, Debugging) + `scenarios-programming.yaml` (8 scenarios: 5 single-turn + 3 multi-turn). All 8 validate against `eval-cli.js validate-config` and all 3 multi-turn dry-run pass. Python is the example language. Recognition-relevant multi-turn scenarios: `code_frustration_to_breakthrough` (infinite loops), `code_misconception_correction` (= vs ==), `code_productive_deadlock` (range half-open convention). Run cells 1 vs 5 × 3 runs × 8 scenarios = 48 rows — pending API budget.
+- **Phase 3 — Creative/social-emotional** (higher effort, not yet started):
   - Course 301: creative writing feedback
   - Course 401: social-emotional learning
   - These test whether recognition transfers to non-analytical domains
 
-**Prerequisites (Phase 1):**
-- [ ] Author additional math scenarios in `content-test-elementary/scenarios-elementary.yaml`
-- [ ] Ensure scenario structure matches core scenarios (course_ids, follow_up_actions, etc.)
-- [ ] Validate with `eval-cli.js validate-config`
+**Prerequisites (Phase 1):** ~~done~~ — 11 scenarios authored, validated, dry-runs pass.
 
-**Commands (Phase 1):**
+**Prerequisites (Phase 2):** ~~done~~ — course 201 and 8 scenarios authored, validated, multi-turn dry-runs pass.
+
+**Commands:**
 ```bash
-# Run math domain evaluation
+# Run math domain evaluation (Phase 1)
 EVAL_CONTENT_PATH=./content-test-elementary \
 EVAL_SCENARIOS_FILE=./content-test-elementary/scenarios-elementary.yaml \
 node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --description "A6 domain expansion: elementary math"
+
+# Run programming domain evaluation (Phase 2)
+EVAL_CONTENT_PATH=./content-test-programming \
+EVAL_SCENARIOS_FILE=./content-test-programming/scenarios-programming.yaml \
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --description "A6 domain expansion: intro programming"
 
 # Judge
 node scripts/eval-cli.js evaluate <runId>
