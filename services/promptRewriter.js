@@ -15,6 +15,16 @@ import { unifiedAIProvider } from '@machinespirits/tutor-core';
 import * as evalConfigLoader from './evalConfigLoader.js';
 
 /**
+ * Single seam for synthesis-failure logging. Centralises the format so a
+ * future telemetry counter can be added in one place without touching the
+ * 8 call sites.
+ */
+function logSynthesisError(operation, error) {
+  const name = error?.name && error.name !== 'Error' ? ` (${error.name})` : '';
+  console.error(`[promptRewriter] ${operation} failed${name}: ${error?.message || error}`);
+}
+
+/**
  * Extract a compact metrics object from a unifiedAIProvider response.
  * These metrics are attached to consolidatedTrace entries so the
  * transcript formatter can display model/tokens/latency/cost per call.
@@ -494,7 +504,7 @@ ${directives}
 </session_evolution>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] LLM directive synthesis failed:', error.message);
+    logSynthesisError('LLM directive synthesis', error);
     // Fallback to template-based directives (no metrics — no LLM call)
     const fallbackText = synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
     return fallbackText ? { text: fallbackText, metrics: null } : null;
@@ -731,7 +741,7 @@ Apply these adjustments when reviewing the ego's next response. Your criteria sh
 </superego_disposition>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Superego disposition synthesis failed:', error.message);
+    logSynthesisError('Superego disposition synthesis', error);
     return null;
   }
 }
@@ -906,7 +916,7 @@ Apply these insights in my next response. Where the critic helped, internalize t
 </ego_self_reflection>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Ego self-reflection failed:', error.message);
+    logSynthesisError('Ego self-reflection', error);
     // Fallback to template-based directives (no metrics — no LLM call)
     const fallbackText = synthesizeDirectives({ turnResults, consolidatedTrace, conversationHistory });
     return fallbackText ? { text: fallbackText, metrics: null } : null;
@@ -1146,7 +1156,7 @@ Apply these insights in my next review. Evolve what I evaluate, not just how str
 </superego_self_reflection>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Superego self-reflection failed:', error.message);
+    logSynthesisError('Superego self-reflection', error);
     return null;
   }
 }
@@ -1551,7 +1561,7 @@ This shared understanding should guide both of us in the next turn.
 </ego_response_to_critic>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Ego response to superego failed:', error.message);
+    logSynthesisError('Ego response to superego', error);
     return null;
   }
 }
@@ -1786,7 +1796,7 @@ ${profileText}
 </${tag}>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Tutor profile of learner failed:', error.message);
+    logSynthesisError('Tutor profile of learner', error);
     return null;
   }
 }
@@ -1879,7 +1889,7 @@ ${profileText}
 </tutor_profile>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Learner profile of tutor failed:', error.message);
+    logSynthesisError('Learner profile of tutor', error);
     return null;
   }
 }
@@ -1998,7 +2008,7 @@ ${planText}
 </strategy_plan>`;
     return { text, metrics };
   } catch (error) {
-    console.error('[promptRewriter] Strategy plan failed:', error.message);
+    logSynthesisError('Strategy plan', error);
     return null;
   }
 }
