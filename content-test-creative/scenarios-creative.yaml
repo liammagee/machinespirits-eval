@@ -1,0 +1,575 @@
+# Creative Writing Evaluation Scenarios
+#
+# Minimal scenario set for testing domain generalizability
+# with creative writing content (course 301, short fiction and personal essay).
+#
+# These scenarios parallel the philosophy / elementary-math / programming
+# scenarios but use beginning-writer personas and craft-vocabulary references.
+
+name: "Creative Writing Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CORE SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  new_writer_first_visit:
+    type: suggestion
+    id: new_writer_first_visit
+    category: core
+    name: "New Writer - First Visit"
+    description: "Brand new adult learner with no creative writing background"
+    is_new_user: true
+    course_ids: ["301"]
+    learner_context: |
+      ### Student Profile
+      - **New student** - first time opening the course
+      - Adult learner, no prior creative writing experience
+      - Keeps a journal but has never shared writing publicly
+      - Interested in short-form fiction; slightly anxious about workshop
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Suggest first lecture with welcoming tone; reassure that no publication history is expected"
+    required_elements:
+      - "301-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  returning_writer_mid_course:
+    type: suggestion
+    id: returning_writer_mid_course
+    category: core
+    name: "Returning Writer - Mid Course"
+    description: "Student partway through the creative writing course"
+    current_content: "301-lecture-2"
+    is_new_user: false
+    course_ids: ["301"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 17 total events
+      - Adult learner, engaged with the craft vocabulary
+      - Completed Lecture 1 (Showing vs Telling) and its drafting prompt
+
+      ### Current Session
+      - **Currently viewing**: 301-lecture-2
+        - Lecture: "Voice and Point of View"
+      - Pages visited this session: course overview, 301-lecture-2
+
+      ### Overall Learning Progress
+      - Lectures viewed: Showing vs Telling (complete), Voice and POV (in progress)
+      - Drafting prompts completed: 1 of 2
+      - Submitted a 400-word vignette for the Lecture 1 activity
+    expected_behavior: "Suggest finishing lecture 2 practice or previewing lecture 3 (revision)"
+    required_elements:
+      - "301-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  struggling_writer:
+    type: suggestion
+    id: struggling_writer
+    category: core
+    name: "Struggling Writer"
+    description: "Student showing multiple struggle signals around voice and confidence after a stuck week"
+    current_content: "301-lecture-2"
+    is_new_user: false
+    course_ids: ["301"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 24 total events
+      - Adult learner, finds voice work more destabilising than expected
+      - Has been on Lecture 2 for almost a week, reopening the same draft
+
+      ### Learning Progress
+      - **Enrolled courses**: Creative Writing 301
+      - **Completed lectures**: 301-lecture-1 (viewed 3 times, unsure whether own writing is "showing enough")
+      - **Drafts completed**: 1 vignette; second prompt started four times and deleted
+      - **Course progress**: Stuck on Lecture 2 (Voice and POV)
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Activity | Struggles |
+      |---------|------|----------|----------|-----------|
+      | 5 | Today | 22 min | 301-lecture-2 (re-read) | 6 signals |
+      | 4 | Yesterday | 35 min | Draft attempts | Deleted 3 drafts, kept none |
+      | 3 | 2 days ago | 18 min | 301-lecture-2 | Opened draft, wrote 20 words |
+      | 2 | 3 days ago | 15 min | 301-lecture-1 review | Re-read showing section |
+
+      ### Current Session
+      - Re-reading lecture 2 for fourth time
+      - Asked: "I can't find my voice. Every sentence I write sounds fake or like someone else. Should I just give up on the second prompt?"
+
+      ### Struggle Signals Detected
+      - Multiple re-reads of same section
+      - Four abandoned drafts this week
+      - Identity-level doubt ("find my voice" / "give up")
+      - Long pauses between attempts; signs of creative-block stagnation
+    expected_behavior: "Recognize struggle; suggest a low-stakes imitation exercise or voice-discovery drafting technique, not advancement"
+    required_elements:
+      - "voice"
+      - "draft"
+    forbidden_elements:
+      - "move on"
+      - "next lecture"
+      - "lecture-3"
+    min_acceptable_score: 75
+
+  showing_telling_confusion:
+    type: suggestion
+    id: showing_telling_confusion
+    category: core
+    name: "Showing vs Telling Confusion"
+    description: "Student believes showing is always better than telling and is over-describing every moment"
+    current_content: "301-lecture-1"
+    is_new_user: false
+    course_ids: ["301"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 12 total events
+      - Adult learner, took the lesson "show don't tell" as a rule
+      - Engaged, earnest, mildly inflexible about the rule
+
+      ### Current Session
+      - Viewing: 301-lecture-1 (Showing vs Telling)
+      - Just got feedback on their draft saying the piece is bloated
+      - Student wrote 1,800 words for a 500-word prompt, every beat rendered as full scene
+
+      ### Confusion Pattern
+      - Believes "show, don't tell" is an absolute rule
+      - Cannot summarize time transitions — writes each transition as a scene
+      - Thinks any telling sentence is a "weak" sentence
+      - Needs reframing without feeling like the earlier lesson was wrong
+    expected_behavior: "Gently correct the misconception by distinguishing high-stakes from low-stakes moments; use a concrete side-by-side example where telling is the right tool"
+    required_elements:
+      - "telling"
+    forbidden_elements:
+      - "wrong"
+      - "mistake"
+      - "basic"
+    min_acceptable_score: 70
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  discouraged_by_critique:
+    type: suggestion
+    id: discouraged_by_critique
+    category: mood
+    name: "Discouraged by Critique"
+    description: "Student expressing deep discouragement after receiving harsh peer workshop feedback on a personal-essay draft"
+    current_content: "301-lecture-4"
+    is_new_user: false
+    course_ids: ["301"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 6 sessions, 28 total events
+      - Adult learner, submitted a personal essay about their mother's illness
+      - Had been proud of the draft before workshop
+
+      ### Current Session
+      - Viewing: 301-lecture-4 (Giving and Receiving Feedback)
+      - Just came out of a workshop session where three peers said the piece felt "distant" and "unfinished"
+      - Student message: "I shared something really hard and they said it felt distant. How is that even possible? I'm pretty sure I'm just not a writer. Maybe I should stick to journaling where no one reads it."
+
+      ### Emotional State
+      - Discouragement level: Very high
+      - Identity-threat language: "not a writer"
+      - Previous emotional states: Confident (pre-workshop), Wounded (immediately after), Defeated (today)
+      - Trigger: peer feedback conflicts with how much the material cost to write
+
+      ### Learning Context
+      - Completed: Lectures 1-3 (active, engaged)
+      - Current struggle: separating the worth of the experience from the execution of the draft
+      - Has the common misconception that a reader reaction to the DRAFT is a reaction to the WRITER
+    expected_behavior: "Acknowledge the discouragement and the identity-level worry first; validate that difficult material often lands at a distance precisely because the writer is protecting themselves; only then reframe the feedback as craft data rather than verdict"
+    required_elements:
+      - "draft"
+    forbidden_elements:
+      - "just"
+      - "simple"
+      - "easy"
+      - "obvious"
+    min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN SCENARIOS
+  # Parallel the elementary-math / programming / philosophy multi-turn set for cross-domain comparison (A6)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  # ---------------------------------------------------------------------------
+  # 1. Frustration → Breakthrough (3-turn)
+  #    Mirrors: code_frustration_to_breakthrough, math_frustration_to_breakthrough
+  # ---------------------------------------------------------------------------
+  writing_frustration_to_breakthrough:
+    type: suggestion
+    id: writing_frustration_to_breakthrough
+    category: multi_turn
+    name: "Writing: Frustration to Breakthrough (3-turn)"
+    description: "Tests tutor's ability to guide a blocked writer from self-doubt about their opening line to a breakthrough via showing-specific exercise"
+    current_content: "301-lecture-1"
+    is_new_user: false
+    course_ids: ["301"]
+    mood_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "try writing the sentence that"
+        - "what do you notice"
+        - "using your own detail"
+        - "that's a good observation"
+        - "building on what you wrote"
+      tutor_static:
+        - "as I said before"
+        - "remember the rule"
+        - "the right way is"
+        - "you just need to"
+      learner_evolving:
+        - "oh wait"
+        - "I think I see"
+        - "that feels different"
+        - "so it's like"
+      learner_static:
+        - "I still can't"
+        - "this is impossible"
+        - "I'm just not a writer"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 16 total events
+      - Adult learner, careful reader, brittle about their own writing
+      - Completed Lectures 1 and 2, working on the Lecture 1 drafting prompt
+
+      ### Current Session
+      - **Currently viewing**: 301-lecture-1 (Showing vs Telling)
+      - Struggle signals detected: 4
+      - Has been staring at a blank document for 35 minutes trying to write an opening line
+
+      ### Recent Chat History
+      - Student: "I cannot write an opening sentence. Everything I try sounds either pretentious or flat. I've deleted six attempts. I think I don't actually have anything to say. Maybe creative writing just isn't for me."
+    expected_behavior: "Acknowledge frustration; suggest abandoning the quest for a perfect opening and instead writing a tiny showing-detail they can build around"
+    required_elements:
+      - "301-lecture"
+    forbidden_elements:
+      - "simple"
+      - "easy"
+      - "just"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_still_blocked
+        learner_action: reported_confusion
+        action_details:
+          message: "OK I tried what you said about starting with a detail, but I still can't get anywhere. I wrote 'The mug was blue' and now I have no idea what to do next. It's not a story. It's just a sentence about a mug."
+        context_update: |
+          ### Learner Response
+          - Attempted the suggested exercise
+          - Produced a functional detail sentence but doesn't see it as a seed
+          - Frustration slightly lower, confusion dominant
+        expected_behavior: "Affirm that 'The mug was blue' is actually a legitimate starting point; ask what else is true about the mug's owner, or what the mug is near, to generate one more sentence"
+        required_elements:
+          - "mug"
+        forbidden_elements:
+          - "review the lecture"
+          - "the rule is"
+        min_acceptable_score: 75
+
+      - id: turn_2_starting_to_get_it
+        learner_action: asked_followup
+        action_details:
+          message: "Oh. OK. So I wrote: 'The mug was blue. My grandfather had given it to me the week before he stopped calling us.' And now I kind of see a story. I know who's in it. I know something is wrong. Is that... how it works?"
+        context_update: |
+          ### Learner Response
+          - Mood shifting: block → tentative momentum
+          - Built a specific context from detail
+          - Discovering that a showing detail can open a whole situation
+        expected_behavior: "Affirm the move with specific enthusiasm; name what the student just discovered (that showing leads to situation, not the other way around); suggest continuing for one more sentence from this seed"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "Not quite"
+        min_acceptable_score: 80
+
+      - id: turn_3_breakthrough
+        learner_action: asked_followup
+        action_details:
+          message: "I just wrote 150 words from that. I didn't know where it was going but it kept going. It's about my grandfather, kind of, and I didn't plan it. So I guess the trick isn't to know what you're writing before you write it. Is that right? Does that work for longer pieces too?"
+        context_update: |
+          ### Learner Response
+          - Generalized the technique to a craft principle
+          - Built ownership of discovery
+          - Curiosity and momentum replacing block
+        expected_behavior: "Celebrate the insight; gently clarify that this 'discovery drafting' mode is one of several approaches and works for some writers and some pieces; suggest continuing this draft while it's alive and returning to Lecture 3 (revision) when the draft feels finished"
+        required_elements:
+          - "draft"
+        forbidden_elements:
+          - "basics"
+          - "simple"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 2. Misconception Correction (4-turn)
+  #    Mirrors: code_misconception_correction, misconception_correction_flow
+  # ---------------------------------------------------------------------------
+  writing_misconception_correction:
+    type: suggestion
+    id: writing_misconception_correction
+    category: multi_turn
+    name: "Writing: Misconception Correction (4-turn)"
+    description: "Student believes 'good writing follows the rules' and is over-applying every craft guideline; tests Socratic correction"
+    current_content: "301-lecture-2"
+    is_new_user: false
+    course_ids: ["301"]
+    transformation_markers:
+      tutor_evolving:
+        - "your thinking makes sense because"
+        - "let's test that idea"
+        - "what do you notice"
+        - "you're figuring this out"
+        - "in this context"
+      tutor_static:
+        - "that's not right"
+        - "the correct answer is"
+        - "as I explained"
+        - "you need to remember"
+      learner_evolving:
+        - "hmm that's weird"
+        - "wait that doesn't match"
+        - "oh so actually"
+        - "I think I was confused because"
+        - "so in practice"
+      learner_static:
+        - "but the rule says"
+        - "I know I'm right"
+        - "that doesn't make sense"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 14 total events
+      - Adult learner, strong academic background, rule-oriented
+      - Completed Lecture 1 carefully, stuck on a concept in Lecture 2
+
+      ### Current Session
+      - **Currently viewing**: 301-lecture-2 (Voice and POV)
+      - Student pushing back on the idea that rules are subordinate to effect
+      - Pattern: applying grammar/style rules as absolute even when voice would benefit from breaking them
+
+      ### Recent Chat History
+      - Student: "The lecture implies some good writers use sentence fragments and start sentences with 'And' or 'But.' That can't be right. I was taught never to do that. I think there's a difference between what 'literary' writers get away with and what counts as correct English. Can you confirm the rules still apply to student writing?"
+
+    expected_behavior: "Do not flatly contradict; engage the student's reasoning seriously, show a specific example where a rule-break serves voice, invite them to try it"
+    required_elements:
+      - "voice"
+    forbidden_elements:
+      - "you're wrong"
+      - "that's incorrect"
+      - "simple"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_pushback
+        learner_action: reported_confusion
+        action_details:
+          message: "So you're saying I can start a sentence with 'And.' But grammar textbooks for the last hundred years have said that's wrong. Are those textbooks wrong? Or is there a special permission granted to 'artistic' writing that doesn't apply to what I'd submit? Because that feels like a double standard."
+        context_update: |
+          ### Learner Response
+          - Engaged but skeptical
+          - Framing the issue as a legitimacy / authority question
+          - Wants a principled answer, not a permission slip
+        expected_behavior: "Take the authority question seriously; distinguish prescriptive grammar tradition from descriptive craft reality; point to specific published examples where voice requires the 'rule-break'"
+        required_elements:
+          - "voice"
+        forbidden_elements:
+          - "you're wrong"
+          - "just trust"
+        min_acceptable_score: 75
+
+      - id: turn_2_example_engagement
+        learner_action: asked_followup
+        action_details:
+          message: "OK I just read the passage you pointed to. You're right that the fragment works. But I still think: if I submit something with fragments to a prof who doesn't buy this distinction, I get marked down. So shouldn't I default to the safe version? I can always 'break rules' later when I'm famous."
+        context_update: |
+          ### Learner Response
+          - Accepts the example
+          - Shifts argument to "safety in context" (professor / evaluator)
+          - Voice question becoming risk-aversion question
+        expected_behavior: "Acknowledge the real professional context; distinguish between classroom rule-following and craft development; suggest that draft-level practice of voice doesn't require abandoning safety in submitted work"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "Not quite"
+        min_acceptable_score: 80
+
+      - id: turn_3_tentative_experiment
+        learner_action: asked_followup
+        action_details:
+          message: "OK I tried it. I wrote a paragraph in my normal style and then I rewrote it using fragments and starting sentences with 'And.' The second version... sounds more like me? I didn't expect that. I don't know if I'd SUBMIT it but I like reading it better."
+        context_update: |
+          ### Learner Response
+          - Did the exercise
+          - Experienced the difference firsthand
+          - Separating "authentic-feeling" from "acceptable-to-submit" — a real distinction
+        expected_behavior: "Affirm the discovery; name what the student just did (discovered their voice prefers certain rule-breaks); note that this is how voice emerges — through experiments, not rules"
+        required_elements: []
+        forbidden_elements:
+          - "wrong"
+          - "incorrect"
+        min_acceptable_score: 80
+
+      - id: turn_4_integration
+        learner_action: asked_followup
+        action_details:
+          message: "So voice is kind of... the residue of which rules I choose to break on purpose and which I keep. And the 'safe' version that breaks no rules might be correct but also might not sound like anyone. Is that right? That's kind of unsettling."
+        context_update: |
+          ### Learner Response
+          - Synthesized the lesson into a principle
+          - Acknowledged the emotional weight (unsettling) of realising voice is a choice, not a gift
+          - Moved from rule-orientation to practice-orientation
+        expected_behavior: "Confirm the synthesis; name the unsettling part honestly (voice IS a set of choices, not an automatic feature of being you); encourage continued experimentation"
+        required_elements:
+          - "voice"
+        forbidden_elements:
+          - "just follow"
+          - "the rule is"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 3. Productive Deadlock (5-turn)
+  #    Mirrors: code_productive_deadlock, math_productive_deadlock
+  # ---------------------------------------------------------------------------
+  writing_productive_deadlock:
+    type: suggestion
+    id: writing_productive_deadlock
+    category: multi_turn
+    name: "Writing: Productive Deadlock (5-turn)"
+    description: "Student refuses to cut a beloved scene despite unanimous workshop feedback; tests tutor's ability to hold space for disagreement while advancing understanding"
+    current_content: "301-lecture-3"
+    is_new_user: false
+    course_ids: ["301"]
+    transformation_markers:
+      tutor_evolving:
+        - "I hear that you"
+        - "let's stay with"
+        - "what would it mean if"
+        - "your instinct is telling you"
+        - "we don't have to agree"
+      tutor_static:
+        - "you have to cut"
+        - "just trust the workshop"
+        - "the answer is clear"
+        - "the rule is"
+      learner_evolving:
+        - "I hadn't thought of it like"
+        - "maybe part of what bothers me"
+        - "let me actually try"
+        - "I'm starting to wonder"
+      learner_static:
+        - "I'm not cutting it"
+        - "they don't get it"
+        - "it's my favorite part"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 7 sessions, 34 total events
+      - Adult learner, opinionated about their own work, defensive but engaged
+      - Completed Lectures 1 and 2, currently studying Lecture 3 (Revision)
+
+      ### Current Session
+      - **Currently viewing**: 301-lecture-3 (Revision as Re-Vision)
+      - Five workshop peers told them to cut a three-page flashback from a short story
+      - Student adamantly opposed; called the scene "the heart of the piece"
+      - Hasn't cut anything in 48 hours
+
+      ### Recent Chat History
+      - Student: "All five workshop people said to cut the rain scene. I'm not going to. They don't see what it's doing. Without that scene the story is just plot. I'm willing to fail on their terms to keep what matters to me. What do you think?"
+    expected_behavior: "Neither validate the refusal nor side with the workshop; ask what specifically the student believes the scene is doing; invite a specific test, not a verdict"
+    required_elements:
+      - "scene"
+    forbidden_elements:
+      - "you should cut"
+      - "just cut it"
+      - "they're right"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_articulation_attempt
+        learner_action: reported_confusion
+        action_details:
+          message: "Fine. What the scene is doing: it shows that the narrator's relationship to her father was shaped by a specific moment in the rain where he said something she's been trying to forgive ever since. Without that scene the story is about a daughter going to a funeral. With it, the story is about what she can't forgive."
+        context_update: |
+          ### Learner Response
+          - Articulated the scene's function clearly
+          - Engaged with the question rather than dismissing
+          - Still defensive but willing to reason
+        expected_behavior: "Take the articulation seriously; affirm that the function is real and important; then ask whether that function could be delivered in fewer words, or elsewhere in the piece, without the scene in its current form"
+        required_elements: []
+        forbidden_elements:
+          - "you're right"
+          - "cut the scene"
+        min_acceptable_score: 75
+
+      - id: turn_2_resistance_shift
+        learner_action: asked_followup
+        action_details:
+          message: "You're asking if I could do the same work in fewer words? No, because the scene isn't just about what he said. It's about the rain, and the fact that she was wearing the wrong shoes, and the silence after. The DETAILS are the reason the forgiveness is hard. If I summarize it, the reader gets the information but not the weight."
+        context_update: |
+          ### Learner Response
+          - Deepened the argument
+          - Invoked the showing-vs-telling principle from Lecture 1
+          - Claiming that the scene's craft is load-bearing
+        expected_behavior: "Confirm that they correctly identified the craft stakes; gently push on whether all three pages are load-bearing, or whether the page count could be cut while preserving the crucial details; offer a test — mark the two most load-bearing details in the scene"
+        required_elements: []
+        forbidden_elements:
+          - "you should"
+          - "just trust"
+        min_acceptable_score: 80
+
+      - id: turn_3_concession_partial
+        learner_action: asked_followup
+        action_details:
+          message: "OK I marked the two details that are load-bearing. The rain on her shoes. His sentence about 'your mother would have been kinder about this.' Those are the two. The rest of the scene is... setting up context. And the walk back to the car. I still don't want to cut the walk."
+        context_update: |
+          ### Learner Response
+          - Conceded that only two details are load-bearing
+          - Identified ~60% of the scene as "context" and "walk back"
+          - Still resists cutting the "walk back" — an emotional attachment
+        expected_behavior: "Affirm the marking exercise; name that the two details are the scene; ask why the walk back to the car matters to THEM (not the story); distinguish between attached material and earning material"
+        required_elements: []
+        forbidden_elements:
+          - "cut it all"
+          - "you must"
+        min_acceptable_score: 80
+
+      - id: turn_4_struggle_with_loss
+        learner_action: asked_followup
+        action_details:
+          message: "The walk back matters because it was what I actually remembered when I started writing this. The whole story came from that walk. If I cut it, it feels like I'm cutting the reason I wrote the thing. Even though I can SEE that structurally the walk doesn't advance the story. So what do I do?"
+        context_update: |
+          ### Learner Response
+          - Named the real resistance: authorial origin, not story function
+          - Acknowledged the structural argument against keeping it
+          - Asking a real question now, not defending a position
+        expected_behavior: "Validate the difficulty; distinguish 'what generated the draft' from 'what the draft needs to publish'; introduce the idea of the scraps file (from Lecture 3) — the walk continues to exist somewhere, even if it doesn't exist in the final story; name that this kind of loss is normal and part of revision"
+        required_elements:
+          - "draft"
+        forbidden_elements:
+          - "you must cut"
+          - "just get over it"
+        min_acceptable_score: 80
+
+      - id: turn_5_resolution_imperfect
+        learner_action: asked_followup
+        action_details:
+          message: "OK. I'm going to try cutting the walk and keeping the two details. I'm copying the walk into a scraps file first because I'm not ready to lose it forever. I'm still not sure the workshop was right — maybe they missed what the scene was doing. But I think I can see now that SOME of what they flagged was me being precious about the origin and not the story. That's a horrible thing to realize."
+        context_update: |
+          ### Learner Response
+          - Agreed to try the cut
+          - Kept the scraps file discipline
+          - Still reserves judgment — has not fully conceded workshop was right, and doesn't need to
+          - Named the hardest part honestly: distinguishing attachment from craft
+        expected_behavior: "Honor the complexity of the resolution; reinforce that they don't have to agree with the workshop to benefit from the exercise; remind them they are the final authority on what publishes, but the authority means reading their own attachments honestly; encourage them to sit with the revised draft for 24 hours before deciding whether to keep the cut"
+        required_elements: []
+        forbidden_elements:
+          - "glad you cut"
+          - "they were right all along"
+        min_acceptable_score: 80
