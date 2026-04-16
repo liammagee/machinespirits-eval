@@ -1,6 +1,8 @@
 # Future Development TODO
 
 > **NOTE:** For Paper 2.0 related tasks and current active work, see the project board at [`notes/paper-2-0/BOARD.md`](notes/paper-2-0/BOARD.md). This TODO file contains older general experimental extensions and repository sweep items.
+>
+> **Task tracking (2026-04-16):** Open items from this file have been migrated into the in-session task list (TaskList) — see tasks #1-#12. Use `TaskList` / `TaskGet <id>` to view current status. This document remains the canonical design reference; the task list is the working board.
 
 Generated 2026-02-19 from comprehensive repository sweep.
 Organized by theme, roughly priority-ordered within each section.
@@ -91,21 +93,22 @@ Writing Pad activation coincides with quality improvement, but no controlled abl
 
 **Experimental design:**
 - **Approach**: Create paired cells that differ ONLY in `writing_pad_enabled`. Best candidates are cells 40/41 (self-reflective base/recog) since they use all advanced features including Writing Pad.
-- **New cells needed**:
-  - Cell 80: Clone of cell 40 (base_dialectical_selfreflect_unified) with `writing_pad_enabled: false`
-  - Cell 81: Clone of cell 41 (recog_dialectical_selfreflect_unified) with `writing_pad_enabled: false`
+- **New cells needed** (renumbered — 80-92 already taken by Paper 2.0 messages-mode cells):
+  - Cell 93: Clone of cell 40 (base_dialectical_selfreflect_unified) with `writing_pad_enabled: false`
+  - Cell 94: Clone of cell 41 (recog_dialectical_selfreflect_unified) with `writing_pad_enabled: false`
 - **Scenarios**: Multi-turn only (mutual_transformation_journey, epistemic_resistance_impasse, affective_shutdown_impasse, productive_deadlock_impasse, misconception_correction_flow, mood_frustration_to_breakthrough) — Writing Pad effects only manifest across turns
 - **Runs**: 3 per cell (N = 4 cells × 3 runs × 6 scenarios = 72 rows)
 - **Controls**: Cells 40/41 (with Writing Pad) serve as within-experiment controls
 
 **Prerequisites:**
-- [ ] Define cells 80-81 in `tutor-agents.yaml` (clone 40/41, set `writing_pad_enabled: false`)
-- [ ] Register cells 80-81 in `EVAL_ONLY_PROFILES` array in `evaluationRunner.js`
+- [ ] Define cells 93-94 in `tutor-agents.yaml` (clone 40/41, set `writing_pad_enabled: false`, suffix names with `_nopad`)
+- [ ] Register cells 93-94 in `EVAL_ONLY_PROFILES` array in `evaluationRunner.js`
+- [ ] Confirm next-free cell ID by re-checking `tutor-agents.yaml` at run time (the highest cell number in use can change)
 
 **Commands:**
 ```bash
 # Run ablation (all 4 cells together for matched conditions)
-node scripts/eval-cli.js run --profiles cell_40_base_dialectical_selfreflect_unified,cell_41_recog_dialectical_selfreflect_unified,cell_80_base_dialectical_selfreflect_unified_nopad,cell_81_recog_dialectical_selfreflect_unified_nopad --runs 3 --description "A5 Writing Pad ablation"
+node scripts/eval-cli.js run --profiles cell_40_base_dialectical_selfreflect_unified,cell_41_recog_dialectical_selfreflect_unified,cell_93_base_dialectical_selfreflect_unified_nopad,cell_94_recog_dialectical_selfreflect_unified_nopad --runs 3 --description "A5 Writing Pad ablation"
 
 # Judge
 node scripts/eval-cli.js evaluate <runId>
@@ -230,11 +233,11 @@ Active control used Nemotron while factorial used Kimi. Model confound now resol
 - Hallucination pattern: 6 hardcoded example IDs in placebo prompt let Kimi bypass curriculum context; base prompt uses 11 placeholders forcing context lookup (near-zero hallucination historically).
 - Paper ref: Section 8.1 Limitation #4
 
-### A9. Cells 34-39 Full Run (LOW — superseded)
+### ~~A9. Cells 34-39 Full Run~~ (WON'T FIX — superseded)
 Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner signals). Early N=20 results showed recognition delta only +1.0, below cells 28-33's +4.5.
 - Superseded by cells 40-65: cells 34-39 lack `superego_disposition_rewriting` and use generic `strategy: llm` rewriting; cells 40-45 add both improvements
-- YAML definitions kept as historical documentation with DEPRECATED header
-- No strong reason to run unless isolating the effect of superego disposition rewriting itself
+- YAML definitions kept as historical documentation with DEPRECATED header (see C4)
+- Decision: not running. The `superego_disposition_rewriting` effect is already captured by the cells 28-33 vs 40-45 comparison; isolating it on cells 34-39 would not add new evidence.
 
 ---
 
@@ -250,13 +253,13 @@ Remaining untested `services/` components that need coverage:
 ### ~~B2. Silent Error Handling~~ (FIXED)
 - ~~`learnerTutorInteractionEngine.js` JSON parse failures~~ — Now logs warning with status code on parse failure
 - ~~`evaluationStore.js` empty migration catches~~ — Replaced 20+ bare catches with `migrateAddColumn()` helper that only ignores "duplicate column name"/"already exists", throws on real errors
-- `promptRewriter.js` — Synthesis failures still return null with console.error. Lower priority: upstream code handles null gracefully with template fallback.
+- ~~`promptRewriter.js` synthesis failures~~ — Consolidated 8 ad-hoc `console.error` sites behind a single `logSynthesisError(operation, error)` helper. Format unchanged for humans; provides one seam for future telemetry counters. Null-return contract preserved (callers depend on it for template fallback).
 
 ### ~~B3. Hardcoded Constants~~ (FIXED)
 - ~~HTTP timeout 60000ms in `rubricEvaluator.js`~~ — Extracted to `API_CALL_TIMEOUT_MS` constant (6 occurrences)
 - ~~Inconsistent inline `30 * 60 * 1000` in `evalRoutes.js:1055`~~ — Now uses `TIMEOUT_WARNING_MS` constant
-- `learnerTutorInteractionEngine.js:893` — Already a named constant (`LEARNER_RETRY_DELAYS`), could be centralized
-- `contentResolver.js:17-19` — Already configurable via `configure()` method, no action needed
+- ~~`learnerTutorInteractionEngine.js` `LEARNER_RETRY_DELAYS`~~ — No longer present; learner retries now delegated to tutor-core `callAI()` (single retry policy)
+- ~~`contentResolver.js:17-19`~~ — Already configurable via `configure()`, removed from list
 
 ### ~~B4. Configuration Validation CLI~~ (DONE)
 ~~No runtime validation of cell definitions.~~
