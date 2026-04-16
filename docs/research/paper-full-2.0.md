@@ -1,8 +1,8 @@
 ---
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
-date: "March 2026"
-version: "3.0.28"
+date: "April 2026"
+version: "3.0.29"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -2686,6 +2686,9 @@ This appendix is a flat per-version log of all paper revisions. Two judge panels
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.29** (2026-04-16)
+:   **Title-page date sync**: Updated frontmatter `date: "March 2026"` → `date: "April 2026"` to match actual revision cadence (10 revisions in April: v3.0.20 -- v3.0.28 plus the short paper v1.1.0). The short paper was already April 2026 after the P4 sync (v1.1.0), so the full paper title page was the sole remaining drift. No body content changed; single-line frontmatter edit.
 
 **v3.0.28** (2026-04-16)
 :   **Revision-history judge-panel disambiguation** (P2): Added an orientation header to Appendix E explaining that entries v1.0--v2.3.21 are pilot-study (Paper 1.0) revisions using Opus 4.5/4.6, while entries v3.0.0+ are Paper 2.0 mechanism revisions validated by the Sonnet/Gemini-Pro/GPT triple-judge panel reported in the abstract. Opus 4.6 is retained for specific side-analyses (§8.1 learner-paradox DB check, §6.4.2 isolation runs) and those uses are labelled in-place. Addresses the v4 P2 concern that revision-history mentions of Opus 4.5/4.6 could be read as conflicting with the abstract's three-judge claim. No body-text changes; purely a reader-orientation note. Closes v4 roadmap P2.
