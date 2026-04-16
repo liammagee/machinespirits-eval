@@ -317,7 +317,7 @@ Test recognition-oriented design beyond tutoring:
 
 ### D3. Insight-Action Gap (PARTIALLY ADDRESSED)
 Self-reflection produces awareness without behavioral change; profiling produces adaptation.
-- Measure gap quantitatively (semantic similarity of reflections vs behavior)
+- ~~Measure gap quantitatively (semantic similarity of reflections vs behavior)~~ — `scripts/analyze-insight-action-gap.js` (2026-04-16). Computes per-cell coupling (cosine of `ego_self_reflection` text vs same-turn final tutor message), gap = `1 − coupling`, turn drift baseline, and cell-level base-vs-recog Cohen's d. First pass on 14 reflection-mechanism cells (eval-2026-02-13-8d40e086 + eval-2026-02-14-49b33fdd + eval-2026-02-14-e0e3a622): mean gap 0.42, recog gap > base gap (d ≈ -1.05, n=7 per group), gap > turn drift across all cells.
 - Test whether explicit directive bridges gap
 - Paper ref: Finding 11
 

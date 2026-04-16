@@ -215,6 +215,7 @@ node scripts/eval-cli.js export <runId> --format csv       # Export results
 | `analyze-trajectory-curves.js <runId...>` | Per-dimension turn-by-turn trajectory curves (§6.12) |
 | `analyze-within-test-change.js [<runId>]` | Symmetric first-to-last delta (rubric + text-proxy) (§6.15) |
 | `analyze-learning-stagnation.js [<runId>]` | Learning stagnation detection in multi-turn dialogues (§6.15) |
+| `analyze-insight-action-gap.js <runId...>` | Insight-action gap on reflection-mechanism cells (Finding 11 / D3) |
 | `analyze-rubric-consistency.js` | 5-level cross-rubric consistency checks (§5.4) |
 | `analyze-eval-costs.js` | Token usage and cost breakdown |
 | `analyze-interaction-evals.js` | Bilateral interaction scoring |
