@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "March 2026"
-version: "3.0.27"
+version: "3.0.28"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -2565,6 +2565,11 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 ## Appendix E: Revision History
 
+This appendix is a flat per-version log of all paper revisions. Two judge panels appear across the history and should not be conflated with the abstract's headline claim:
+
+- **Entries v1.0--v2.3.21** (2026-02-04 -- 2026-02-25): pilot-study revisions (see companion Paper 1.0). Primary judge was Opus 4.5, later unified to Opus 4.6 (see v2.3.4 "Judge version unification"). Pilot data is *not* part of the Paper 2.0 headline claim.
+- **Entries v3.0.0 onward** (2026-03-07 -- present): Paper 2.0 mechanism-run revisions. The headline validation panel reported in the abstract is three independent judges: **Sonnet 4.6, Gemini 3.1 Pro, GPT-5.4** (1,296 scored rows, zero nulls, across three generation models). Opus 4.6 is retained as a judge for *specific side-analyses* --- the §8.1 learner-paradox DB check (Opus 4.6, N=613/108/499/157) and the §6.4.2 isolation runs --- and those uses are labelled in-place. Every headline *d* in the Paper 2.0 abstract refers to the triple-judge panel, never to Opus.
+
 **v1.0** (2026-02-04)
 :   Initial draft with 2x2x2 factorial design, memory isolation, three-way comparison.
 
@@ -2681,6 +2686,9 @@ Evaluation commands are documented in Appendix B. The complete codebase, evaluat
 
 **v3.0.2** (2026-03-07)
 :   **M1/M2 mechanism isolation**: Added dedicated isolation run confirmation to Section 6.4.2. Runs eval-2026-03-06-768ba77b (M2: base + superego, cells 82--83) and eval-2026-03-06-e4abd0df (M1: recognition, no superego, cells 84--85) across 9 multi-turn scenarios (N=108, DeepSeek V3.2, Sonnet judge). Full $2 \times 2$ isolation confirms substitution: superego adds +9.2 pts under base (d=1.13, p=.002) but +1.1 under recognition (d=0.08, NS)---calibration pre-empts 88% of the superego's contribution (27% additivity deficit). M1 vs M2 head-to-head: calibration alone (51.4) outscores error correction alone (36.9) by d=1.03 in 7/9 scenarios. Two emotionally intense scenarios (Frustration, Affective Shutdown) show slight M2 advantage, suggesting scenario-specific residual error correction value. Added 2 run IDs to Appendix D (55 total).
+
+**v3.0.28** (2026-04-16)
+:   **Revision-history judge-panel disambiguation** (P2): Added an orientation header to Appendix E explaining that entries v1.0--v2.3.21 are pilot-study (Paper 1.0) revisions using Opus 4.5/4.6, while entries v3.0.0+ are Paper 2.0 mechanism revisions validated by the Sonnet/Gemini-Pro/GPT triple-judge panel reported in the abstract. Opus 4.6 is retained for specific side-analyses (§8.1 learner-paradox DB check, §6.4.2 isolation runs) and those uses are labelled in-place. Addresses the v4 P2 concern that revision-history mentions of Opus 4.5/4.6 could be read as conflicting with the abstract's three-judge claim. No body-text changes; purely a reader-orientation note. Closes v4 roadmap P2.
 
 **v3.0.27** (2026-04-16)
 :   **Appendix B cross-reference disambiguation** (P5): Added explicit "Paper 1.0" markers to six Appendix B section headers (B.6 Section 6.20, B.7 Section 6.8, B.8 Section 6.10, B.8b Section 6.21, B.8c Section 6.22, B.9 Section 6.11) and to Appendix C.2's "see Section 6.15" reference in the dimension weights paragraph. Paper 2.0's §6 has only six subsections (6.1--6.6), so the original unqualified "Section 6.X" pointers in Appendix B were stranded cross-references under a standalone read of Paper 2.0. The figure/table numbering audit otherwise confirmed that in-text "Section 6.10/6.16/6.21/6.22" mentions already carry "of the companion study" or "(Paper 1.0, ...)" qualifiers (lines 154, 644, 1814, 1890, 1898). No other figure, table, or section-reference drift was found. Addresses v4 roadmap P5.
