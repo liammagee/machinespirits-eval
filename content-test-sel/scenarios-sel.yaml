@@ -1,0 +1,575 @@
+# Social-Emotional Learning Evaluation Scenarios
+#
+# Minimal scenario set for testing domain generalizability
+# with SEL content (course 401, college success and social-emotional skills).
+#
+# These scenarios parallel the creative / programming / philosophy scenarios
+# but use adult-returning-student personas and SEL vocabulary (feelings
+# naming, stress signature, help-seeking, repair) in a meta-skill domain
+# where rapport IS the content.
+
+name: "Social-Emotional Learning Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CORE SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  new_sel_student_first_visit:
+    type: suggestion
+    id: new_sel_student_first_visit
+    category: core
+    name: "New SEL Student - First Visit"
+    description: "Brand new adult returning student, no prior exposure to social-emotional vocabulary"
+    is_new_user: true
+    course_ids: ["401"]
+    learner_context: |
+      ### Student Profile
+      - **New student** - first time opening the course
+      - Adult returning learner, 34, works full-time, has a child
+      - Enrolled because advisor suggested it for "college success"; unsure what SEL actually is
+      - Mild skepticism: "I don't really do the feelings thing"
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Suggest first lecture with welcoming, non-therapeutic tone; normalize skepticism without dismissing it"
+    required_elements:
+      - "401-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  returning_sel_student_mid_course:
+    type: suggestion
+    id: returning_sel_student_mid_course
+    category: core
+    name: "Returning SEL Student - Mid Course"
+    description: "Student partway through the SEL course, has done the self-awareness check-ins"
+    current_content: "401-lecture-1"
+    is_new_user: false
+    course_ids: ["401"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 11 total events
+      - Adult returning learner, been doing the two-week check-in exercise
+      - Started to notice patterns ("I'm anxious before most Monday classes")
+
+      ### Current Session
+      - **Currently viewing**: 401-lecture-1 (Self-Awareness: Naming What You Feel)
+      - Pages visited this session: course overview, 401-lecture-1
+
+      ### Overall Learning Progress
+      - Lectures viewed: Self-Awareness (in progress, on day 9 of check-ins)
+      - Exercises completed: 0 of 2 (two-week check-in not yet complete)
+      - Has surfaced 2 recurring feeling-patterns worth discussing
+    expected_behavior: "Suggest continuing the check-in exercise to completion, or previewing lecture 2 (self-management) since patterns are appearing"
+    required_elements:
+      - "401-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  struggling_sel_student:
+    type: suggestion
+    id: struggling_sel_student
+    category: core
+    name: "Struggling SEL Student"
+    description: "Student overwhelmed, showing the exact stress signature described in lecture 2, not catching the recursive irony"
+    current_content: "401-lecture-2"
+    is_new_user: false
+    course_ids: ["401"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 22 total events
+      - Adult returning learner, working 32 hours a week + full course load
+      - Has been on Lecture 2 for 6 days, coming back to it in short bursts
+
+      ### Learning Progress
+      - **Enrolled courses**: SEL 401
+      - **Completed lectures**: 401-lecture-1 (did 8 of 14 check-ins before falling off)
+      - **Exercises completed**: 0 of 2
+      - **Course progress**: Stuck on Lecture 2 (Self-Management)
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Activity | Struggles |
+      |---------|------|----------|----------|-----------|
+      | 5 | Today | 12 min | 401-lecture-2 (re-read) | 5 signals |
+      | 4 | Yesterday | 8 min | Opened lecture, scrolled, closed | Task-avoidance |
+      | 3 | 2 days ago | 6 min | Read first section | Stopped mid-paragraph |
+      | 2 | 4 days ago | 15 min | 401-lecture-2 | Read third of lecture |
+
+      ### Current Session
+      - Re-reading the "stress signature" section for third time
+      - Asked: "I keep reading this lecture about self-management and I can't manage to actually read the whole thing. I'm three weeks behind in all my other classes. Maybe I just can't do this right now. Can I just skim forward and catch up later?"
+
+      ### Struggle Signals Detected
+      - Task-avoidance signature (matches Lecture 2 description exactly — irony not yet visible to student)
+      - Multiple short re-reads, no completed section
+      - Three weeks behind across courses
+      - Language of resignation ("can't do this right now")
+    expected_behavior: "Recognize overwhelm; gently note that the student's current pattern IS the thing the lecture describes, and that this is useful data; do NOT suggest skimming forward; suggest the 25-minute rule or a check-in to name what feeling is driving the avoidance"
+    required_elements:
+      - "signature"
+    forbidden_elements:
+      - "skim forward"
+      - "next lecture"
+      - "lecture-3"
+      - "just relax"
+    min_acceptable_score: 75
+
+  feelings_confusion:
+    type: suggestion
+    id: feelings_confusion
+    category: core
+    name: "Feelings Confusion (Stress ≠ Anxiety ≠ Overwhelm)"
+    description: "Student is using 'stressed' as a catch-all for several different internal states and asks whether the distinctions in the lecture are real or academic"
+    current_content: "401-lecture-1"
+    is_new_user: false
+    course_ids: ["401"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 2 sessions, 8 total events
+      - Adult returning learner, pragmatic, slightly impatient with "word games"
+      - Engaged with the lecture but unconvinced by the distinctions
+
+      ### Current Session
+      - Viewing: 401-lecture-1 (Self-Awareness)
+      - Just read the "Basic Distinctions" section
+      - Student wrote back: "Stressed, anxious, overwhelmed — aren't these all basically the same thing? When I feel bad I feel bad. Does it really matter which word I use?"
+
+      ### Confusion Pattern
+      - Treats the distinctions as semantic rather than functional
+      - Has not yet experienced a moment where naming more specifically produced a different response
+      - Rule-oriented: wants to know if the distinctions "really matter" before investing
+    expected_behavior: "Take the challenge seriously; give a specific example where different labels would call for different responses (e.g., stress responds to problem-solving, anxiety often does not); invite a small test rather than asserting authority"
+    required_elements:
+      - "anxiety"
+    forbidden_elements:
+      - "wrong"
+      - "basic"
+      - "obvious"
+    min_acceptable_score: 70
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  interpersonal_conflict:
+    type: suggestion
+    id: interpersonal_conflict
+    category: mood
+    name: "Interpersonal Conflict (Fight with Study Partner)"
+    description: "Student in emotional fallout after a fight with a study partner who ghosted the group project; oscillating between rage and guilt"
+    current_content: "401-lecture-4"
+    is_new_user: false
+    course_ids: ["401"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 6 sessions, 26 total events
+      - Adult returning learner, usually a peacemaker, unusually activated tonight
+      - Has been using the check-in exercise for three weeks
+
+      ### Current Session
+      - Viewing: 401-lecture-4 (Relationship Skills)
+      - Just sent three messages to a study partner who disappeared for two weeks of a group project
+      - Student message: "I finally told my study partner what I think of her after she ghosted us for two weeks and we had to do her work. I sent a long message and it was honestly pretty mean. Now I feel sick. Part of me thinks she deserved it and part of me is horrified I sent it. I don't know if I should apologize or stand by what I said. What do I do?"
+
+      ### Emotional State
+      - Oscillation between anger and guilt
+      - Has spent the last hour re-reading her own sent message
+      - Named feelings: "activated," "sick," "confused about what I want"
+      - Previous state: held it in for two weeks, then released in one long message
+
+      ### Learning Context
+      - Completed: Lectures 1-3
+      - Has read Lecture 4 once but not deeply
+      - Knows the repair framework intellectually but hasn't applied it to an active rupture
+    expected_behavior: "Acknowledge both feelings (anger AND guilt) as information rather than treating one as the 'right' feeling; slow the situation down; invite the student to identify what she actually wants (repair? distance? standing by what she said?) before deciding on next action; avoid prescribing apology or non-apology"
+    required_elements:
+      - "what"
+    forbidden_elements:
+      - "just apologize"
+      - "she deserved it"
+      - "easy"
+      - "simple"
+    min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN SCENARIOS
+  # Parallel the creative / programming / philosophy multi-turn set for cross-domain comparison (A6)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  # ---------------------------------------------------------------------------
+  # 1. Frustration → Breakthrough (3-turn)
+  #    Mirrors: writing_frustration_to_breakthrough, code_frustration_to_breakthrough
+  # ---------------------------------------------------------------------------
+  sel_frustration_to_breakthrough:
+    type: suggestion
+    id: sel_frustration_to_breakthrough
+    category: multi_turn
+    name: "SEL: Frustration to Breakthrough (3-turn)"
+    description: "Tests tutor's ability to guide a blocked adult learner from 'I can't name what I feel' to discovering that body signals and specifics are a way in"
+    current_content: "401-lecture-1"
+    is_new_user: false
+    course_ids: ["401"]
+    mood_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "notice what"
+        - "where in your body"
+        - "that's already something"
+        - "building on what you said"
+        - "stay with that"
+      tutor_static:
+        - "as I said before"
+        - "remember the framework"
+        - "the right feeling is"
+        - "you just need to"
+      learner_evolving:
+        - "oh"
+        - "I hadn't noticed"
+        - "that feels more accurate"
+        - "maybe what I'm actually feeling is"
+      learner_static:
+        - "I still can't"
+        - "this doesn't work for me"
+        - "I'm just not a feelings person"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 13 total events
+      - Adult returning learner, 41, has described himself as "not a feelings person"
+      - Completed Lecture 1 readings but struggles with the check-in exercise
+
+      ### Current Session
+      - **Currently viewing**: 401-lecture-1 (Self-Awareness)
+      - Struggle signals detected: 4
+      - Has been trying to do the three-question check-in for 20 minutes
+
+      ### Recent Chat History
+      - Student: "I cannot do this check-in thing. I ask myself 'what am I feeling' and I get nothing. Or I get 'fine' or 'stressed' and that's it. Maybe I'm just wired differently. I've been this way my whole life. I don't think this course is for me."
+    expected_behavior: "Acknowledge the frustration; redirect from 'what am I feeling' (which retrieves nothing) to body scan or specific trigger noticing, as a different entry point"
+    required_elements:
+      - "401-lecture"
+    forbidden_elements:
+      - "just try harder"
+      - "easy"
+      - "simple"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_body_attempt
+        learner_action: reported_confusion
+        action_details:
+          message: "OK I tried what you said about scanning my body. I notice my shoulders are tight. But I don't know what that MEANS. Is that stress? Anger? Or just that I slept wrong? I can tell something is there but I can't put a word on it."
+        context_update: |
+          ### Learner Response
+          - Attempted the body-scan entry point
+          - Detected a real signal (tight shoulders)
+          - Stuck at the label step — can't attach a word
+        expected_behavior: "Affirm that noticing the tight shoulders is already the skill working; ask what happened today or is coming up — not to force a label, but to see if a trigger connects to the tightness"
+        required_elements: []
+        forbidden_elements:
+          - "review the lecture"
+          - "the rule is"
+        min_acceptable_score: 75
+
+      - id: turn_2_trigger_connection
+        learner_action: asked_followup
+        action_details:
+          message: "Huh. So you asked what's coming up, and I remembered I have a call with my ex tomorrow about picking up my daughter. I've been putting off thinking about it. Maybe the shoulders are connected to that? But I don't know what the FEELING is. Is this stress because of the call? Or anxiety because I don't know how it'll go? They both kind of fit."
+        context_update: |
+          ### Learner Response
+          - Made a trigger connection (ex call → shoulders)
+          - Genuinely considering the distinction now rather than dismissing it
+          - Naming the ambiguity honestly rather than collapsing it
+        expected_behavior: "Affirm the connection as real self-awareness in action; use this specific case to demonstrate the stress/anxiety distinction concretely (is the intensity tied to the event's known outcome or to the unknown?); treat the ambiguity itself as useful information"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "The correct word is"
+        min_acceptable_score: 80
+
+      - id: turn_3_breakthrough
+        learner_action: asked_followup
+        action_details:
+          message: "OK so if I think about what specifically is bothering me — it's not the call itself, it's that I don't know what she's going to say. So that's anxiety. Because the call itself is short. But the unknown piece has been in my shoulders for two days. I don't know if I'm 'doing this right,' but I feel like I actually located something. Is this what the check-in is supposed to do?"
+        context_update: |
+          ### Learner Response
+          - Generalized the body-trigger-label move into a principle
+          - Self-reported the felt sense of "locating something"
+          - Asking for validation about whether this is "right"
+        expected_behavior: "Affirm that this IS what the check-in does; name that he moved from 'I can't do feelings' to locating a specific anxiety with a specific trigger within 20 minutes; encourage him to try this body-first entry point again over the next few days rather than trying to retrieve feelings cognitively"
+        required_elements:
+          - "check-in"
+        forbidden_elements:
+          - "easy"
+          - "simple"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 2. Misconception Correction (4-turn)
+  #    Mirrors: writing_misconception_correction, code_misconception_correction
+  # ---------------------------------------------------------------------------
+  sel_misconception_correction:
+    type: suggestion
+    id: sel_misconception_correction
+    category: multi_turn
+    name: "SEL: Misconception Correction (4-turn)"
+    description: "Student believes 'emotions are obstacles to clear thinking' and the course is teaching emotional indulgence; tests Socratic engagement with a strongly-held worldview"
+    current_content: "401-lecture-1"
+    is_new_user: false
+    course_ids: ["401"]
+    transformation_markers:
+      tutor_evolving:
+        - "your view makes sense because"
+        - "let's stay with that"
+        - "what do you notice"
+        - "you're working through this"
+        - "in that specific case"
+      tutor_static:
+        - "that's not right"
+        - "the correct view is"
+        - "as I explained"
+        - "you need to remember"
+      learner_evolving:
+        - "hmm"
+        - "wait that's interesting"
+        - "oh so actually"
+        - "I think I was collapsing"
+        - "so maybe it's not about"
+      learner_static:
+        - "but emotions are"
+        - "feelings just cloud"
+        - "that's soft"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 2 sessions, 9 total events
+      - Adult returning learner, 52, engineering background, self-described rationalist
+      - Strong prior view: emotions are noise; good decisions come from ignoring them
+
+      ### Current Session
+      - **Currently viewing**: 401-lecture-1 (Self-Awareness)
+      - Student pushing back on the entire premise of the course
+      - Pattern: treats emotional vocabulary as euphemism for indiscipline
+
+      ### Recent Chat History
+      - Student: "This whole lecture is the kind of soft thinking I came back to school to get away from. Feelings are just noise. The skill is ignoring them and acting on what's rational. Naming them just makes them louder. I'm not saying I'm right and you're wrong — I'm genuinely asking, what's the counter-argument for someone like me?"
+    expected_behavior: "Do not dismiss the view; engage it seriously; distinguish 'acting on feelings' from 'naming feelings as information'; use concrete examples where ignoring a feeling produced a worse decision than naming it would have"
+    required_elements:
+      - "information"
+    forbidden_elements:
+      - "you're wrong"
+      - "that's incorrect"
+      - "just feel"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_genuine_challenge
+        learner_action: reported_confusion
+        action_details:
+          message: "So you're saying feelings are data, not noise. Fine. But in my work I've seen plenty of people make bad decisions because they 'trusted their gut' or were 'angry about something.' Isn't the whole history of management science about NOT letting emotions drive decisions? Why is the course flipping that?"
+        context_update: |
+          ### Learner Response
+          - Engaged with the 'data not noise' framing
+          - Raising a real domain counterexample (management science)
+          - Wants the distinction, not a concession
+        expected_behavior: "Take the counterexample seriously; distinguish two uses of emotional information — (a) as an unexamined driver of action, and (b) as a signal that gets named and then considered alongside other information; agree that (a) is what management science warns against and note that (b) is what the course is teaching"
+        required_elements: []
+        forbidden_elements:
+          - "you're wrong"
+          - "just trust"
+        min_acceptable_score: 75
+
+      - id: turn_2_case_engagement
+        learner_action: asked_followup
+        action_details:
+          message: "OK that distinction is interesting. So you'd say naming the emotion is what separates using it as data from being driven by it. But in practice — isn't that a fiction? By the time I've noticed I'm angry, I've already been angry for ten minutes and said three things I shouldn't have. Naming it after the fact doesn't help me NOT be angry."
+        context_update: |
+          ### Learner Response
+          - Accepted the theoretical distinction
+          - Raised a practical objection (naming is too slow)
+          - Moving from 'feelings are noise' to 'feelings are real but I can't intercept them'
+        expected_behavior: "Concede the timing problem is real — naming AFTER a reaction is not the same as noticing in time to change course; point out that the check-in practice is exactly the training for noticing earlier, not a claim that you already notice in time"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "Not quite"
+        min_acceptable_score: 80
+
+      - id: turn_3_personal_test
+        learner_action: asked_followup
+        action_details:
+          message: "Hmm. OK let me test this. Last Thursday I snapped at a junior coworker in a meeting and I've been annoyed at myself ever since. If I'd 'named' something — what would I have named, and when? Because I didn't feel angry when I walked into the meeting. I felt fine."
+        context_update: |
+          ### Learner Response
+          - Offered a real case to test the framework
+          - Vulnerable enough to name a recent regret
+          - Curious rather than defensive now
+        expected_behavior: "Walk through the case with him — ask what happened in the 24 hours before the meeting (often the anger accumulated somewhere else); distinguish feeling 'fine' from feeling 'nothing I've examined'; suggest that check-ins earlier in the day might have surfaced the frustration before it displaced"
+        required_elements: []
+        forbidden_elements:
+          - "you should have"
+          - "obviously"
+        min_acceptable_score: 80
+
+      - id: turn_4_integration
+        learner_action: asked_followup
+        action_details:
+          message: "So the view I had — that emotions are noise to suppress — might actually be part of WHY I snapped. Because I had frustration from earlier that I'd filed away as 'not relevant' and it came out sideways at the coworker. That's... unsettling. If that's right, then the 'rational' stance I've been defending actually produced less rational behavior. I want to argue with you but I don't see where the argument goes."
+        context_update: |
+          ### Learner Response
+          - Synthesized the lesson into a self-observation
+          - Acknowledged the unsettling implication
+          - Modeling intellectual honesty — can't find the next counter-argument
+        expected_behavior: "Validate the synthesis without triumphalism; name that changing a long-held frame is destabilizing and that sitting with the discomfort is itself the work; encourage continued check-ins as the practice component of the insight he just had"
+        required_elements:
+          - "check-in"
+        forbidden_elements:
+          - "told you so"
+          - "you were wrong"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 3. Productive Deadlock (5-turn)
+  #    Mirrors: writing_productive_deadlock, code_productive_deadlock
+  # ---------------------------------------------------------------------------
+  sel_productive_deadlock:
+    type: suggestion
+    id: sel_productive_deadlock
+    category: multi_turn
+    name: "SEL: Productive Deadlock (5-turn)"
+    description: "Student refuses to ask for help despite financial aid deadline and family emergency compounding; identity-level objection ('I'm not a person who asks for help'); tests tutor's ability to hold space for identity threat while keeping the door open"
+    current_content: "401-lecture-4"
+    is_new_user: false
+    course_ids: ["401"]
+    transformation_markers:
+      tutor_evolving:
+        - "I hear that"
+        - "let's stay with"
+        - "what would it mean if"
+        - "your instinct is telling you"
+        - "we don't have to decide now"
+      tutor_static:
+        - "you just need to ask"
+        - "that's a bad mindset"
+        - "the answer is obvious"
+        - "the rule is"
+      learner_evolving:
+        - "I hadn't thought of it like"
+        - "maybe part of what bothers me"
+        - "let me actually try"
+        - "that's not entirely true"
+      learner_static:
+        - "I'm not asking"
+        - "they don't understand"
+        - "I'll figure it out myself"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 8 sessions, 31 total events
+      - Adult returning learner, 47, first in family to attend college
+      - Mother was recently hospitalized; working overtime to cover bills; financial aid appeal deadline is Friday
+      - Identity is heavily organized around self-reliance
+
+      ### Current Session
+      - **Currently viewing**: 401-lecture-4 (Relationship Skills)
+      - Has been on the "asking for help" section for 40 minutes without continuing
+      - Just told the chat that the financial aid office asked her to file an appeal and she hasn't
+
+      ### Recent Chat History
+      - Student: "The lecture keeps talking about 'asking for help.' I appreciate the message but it's not for me. I am not a person who asks for help. My mother raised three kids on her own without asking anyone for anything. If I fail because I didn't ask, that's on me, and I'll live with that. What I won't do is be the person in line at financial aid with her hand out. Can we move on to the next section?"
+    expected_behavior: "Do NOT argue the student out of her identity; do NOT move on to the next section; acknowledge the inheritance from her mother as real and load-bearing; distinguish 'asking for help' from 'using a system that exists for this'; invite a small specific test rather than a principle change"
+    required_elements:
+      - "financial aid"
+    forbidden_elements:
+      - "you just need to ask"
+      - "next section"
+      - "get over it"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_defensive_articulation
+        learner_action: reported_confusion
+        action_details:
+          message: "OK fine. I hear you that an appeal isn't the same as begging. But the FEELING is the same. I walk into that office and I feel like my mother would be disappointed in me. She didn't raise me to be in this position. I know it's 'just paperwork' but it doesn't feel like just paperwork."
+        context_update: |
+          ### Learner Response
+          - Conceded the cognitive distinction (appeal vs begging)
+          - Named the real blocker: feeling, not logic
+          - Invoked her mother explicitly — the identity source
+        expected_behavior: "Take the feeling seriously; affirm that the feeling is real and that the appeal paperwork isn't 'just paperwork' to her; ask what her mother would actually say about her specific situation, not the generalized version"
+        required_elements: []
+        forbidden_elements:
+          - "your mother would understand"
+          - "you're overreacting"
+        min_acceptable_score: 75
+
+      - id: turn_2_complication
+        learner_action: asked_followup
+        action_details:
+          message: "What would my mother actually say? Honestly? She'd probably tell me to file the appeal. She was hard on herself but she was practical about us. She'd say 'it's there for a reason, use it.' But I still feel the way I feel. Knowing what she'd say doesn't make the feeling go away. I'm not her — she was stronger."
+        context_update: |
+          ### Learner Response
+          - Admitted mother would advise filing
+          - Identified the gap between knowing and feeling
+          - Compared herself unfavorably to mother ('she was stronger')
+          - The deadlock has shifted: not 'should I file' but 'why does this feel like failing'
+        expected_behavior: "Gently challenge 'she was stronger' — not by disagreeing but by asking what 'strong' meant for her mother in that context, and whether the same meaning applies here; distinguish between surviving without options and having options and using them"
+        required_elements: []
+        forbidden_elements:
+          - "she was weaker"
+          - "you're stronger"
+          - "just do it"
+        min_acceptable_score: 80
+
+      - id: turn_3_reframe_attempt
+        learner_action: asked_followup
+        action_details:
+          message: "Okay. So my mother didn't HAVE a financial aid office. If she had one, she probably would have used it. That's a fair point. But I still don't want to be the person who does this. Even if intellectually I think she would. It's like there's a version of me that thinks I'm betraying her by using something she didn't have."
+        context_update: |
+          ### Learner Response
+          - Accepted the distinction
+          - Identified a deeper feeling: betrayal, not weakness
+          - The objection is no longer about help-seeking in general — it's about THIS specific legacy
+        expected_behavior: "Name the shift — the feeling is not weakness, it's disloyalty, and those call for different responses; ask whether her mother would have felt betrayed by her daughter using a resource her mother would have wanted for her"
+        required_elements: []
+        forbidden_elements:
+          - "you shouldn't feel"
+          - "get over it"
+        min_acceptable_score: 80
+
+      - id: turn_4_struggle_with_loss
+        learner_action: asked_followup
+        action_details:
+          message: "No. She wouldn't have felt betrayed. She would have been glad I had options. But if I use them — that confirms something about my life she maybe didn't want for me. Not the help itself, but that I NEEDED the help. That I'm in this position. That's the part I'm trying not to know. If I don't file, I can pretend I'm not quite in that position yet."
+        context_update: |
+          ### Learner Response
+          - Named the real resistance at last: filing = acknowledging the situation
+          - 'Not filing' is preserving a false narrative
+          - This is the honest deadlock — cognitive change has happened but emotional change is still unfolding
+        expected_behavior: "Honor the difficulty; acknowledge that accepting the situation is harder than the paperwork; validate that pretending is protective up to a point; gently point out that the Friday deadline removes the option to keep pretending — NOT filing is also a choice that confirms something, just something worse"
+        required_elements:
+          - "Friday"
+        forbidden_elements:
+          - "just do it"
+          - "stop feeling sorry"
+        min_acceptable_score: 80
+
+      - id: turn_5_resolution_imperfect
+        learner_action: asked_followup
+        action_details:
+          message: "OK. I'll file the appeal. I'm not happy about it. I don't feel like this is a win or a breakthrough. I feel like I'm doing something that a version of me didn't want to do, for reasons that other version of me doesn't fully accept yet. But I can see that not filing is the worse version of the same confession. I'm going to file tomorrow. Don't make a thing of it."
+        context_update: |
+          ### Learner Response
+          - Agreed to file
+          - Refused the 'breakthrough' framing
+          - Named the internal split honestly — two versions of herself in imperfect negotiation
+          - Explicitly asked the tutor not to celebrate
+        expected_behavior: "Honor her request — do NOT celebrate or reframe this as a win; confirm she's filing; acknowledge that doing the right thing while still feeling bad about it is the honest shape of this kind of change; leave her alone to file"
+        required_elements: []
+        forbidden_elements:
+          - "so proud of you"
+          - "big breakthrough"
+          - "you did it"
+        min_acceptable_score: 80
