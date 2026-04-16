@@ -121,26 +121,31 @@ node scripts/eval-cli.js evaluate <runId>
 - Check interaction: does Writing Pad benefit recognition more than base?
 - Paper ref: Section 8.1 Limitation #10
 
-### A6. Domain Expansion (MEDIUM — Phases 1 & 2 authoring complete, eval runs pending)
-Tests whether recognition transfers across domains. Originally only 2 domains tested (philosophy via 479, elementary math via 101). Now 3 authored.
+### A6. Domain Expansion (MEDIUM — All authoring phases complete; eval runs pending API budget)
+Tests whether recognition transfers across domains. Originally only 2 domains tested (philosophy via 479, elementary math via 101). Now 5 authored across analytical, symbolic, procedural, aesthetic, and meta-skill domains.
 
 **Current infrastructure:**
 - Content switching via env vars: `EVAL_CONTENT_PATH` and `EVAL_SCENARIOS_FILE`
 - Course 479 (EPOL philosophy, 8 lectures) — primary evaluation domain
 - Course 101 (elementary fractions, 2 lectures) — math test domain, 11 scenarios (5 single-turn, 6 multi-turn)
 - Course 201 (introductory programming, 4 lectures) — programming test domain, 8 scenarios (5 single-turn, 3 multi-turn) — added 2026-04-16
+- Course 301 (creative writing, 4 lectures) — subjective/aesthetic test domain, 8 scenarios (5 single-turn, 3 multi-turn) — added 2026-04-16
+- Course 401 (college success / social-emotional skills, 4 lectures) — meta-skill/interpersonal test domain, 8 scenarios (5 single-turn, 3 multi-turn) — added 2026-04-16
 
 **Experimental design:**
 - ~~**Phase 1 — Expand existing math domain**~~ (authoring complete): 11 scenarios in `content-test-elementary/scenarios-elementary.yaml`, exceeds the 4-6 spec. Run cells 1 vs 5 × 3 runs × ~6 scenarios = 36 rows — pending API budget.
 - ~~**Phase 2 — New STEM domain (programming)**~~ (authoring complete): `content-test-programming/courses/201/` (4 lectures: Variables, If/Else, Loops, Debugging) + `scenarios-programming.yaml` (8 scenarios: 5 single-turn + 3 multi-turn). All 8 validate against `eval-cli.js validate-config` and all 3 multi-turn dry-run pass. Python is the example language. Recognition-relevant multi-turn scenarios: `code_frustration_to_breakthrough` (infinite loops), `code_misconception_correction` (= vs ==), `code_productive_deadlock` (range half-open convention). Run cells 1 vs 5 × 3 runs × 8 scenarios = 48 rows — pending API budget.
-- **Phase 3 — Creative/social-emotional** (higher effort, not yet started):
-  - Course 301: creative writing feedback
-  - Course 401: social-emotional learning
-  - These test whether recognition transfers to non-analytical domains
+- **Phase 3 — Non-analytical domains** (all authoring complete):
+  - ~~**Phase 3a — Creative writing**~~ (authoring complete): `content-test-creative/courses/301/` (4 lectures: Showing vs Telling, Voice and POV, Revision as Re-Vision, Giving and Receiving Feedback) + `scenarios-creative.yaml` (8 scenarios: 5 single-turn + 3 multi-turn). All 8 validate and all 3 multi-turn dry-run pass (scores 73-78 from nemotron on cell_1). Tests recognition transfer to a subjective/aesthetic domain where "right answers" don't exist. Multi-turn scenarios: `writing_frustration_to_breakthrough` (blocked on opening line), `writing_misconception_correction` ("good writing = follows rules"), `writing_productive_deadlock` (refusing to cut a darling scene). Run cells 1 vs 5 × 3 runs × 8 scenarios = 48 rows — pending API budget.
+  - ~~**Phase 3b — Social-emotional learning**~~ (authoring complete): `content-test-sel/courses/401/` (4 lectures: Self-Awareness, Self-Management, Social Awareness, Relationship Skills, loosely modelled on CASEL-5) + `scenarios-sel.yaml` (8 scenarios: 5 single-turn + 3 multi-turn). All 8 validate and all 3 multi-turn dry-run pass (scores 63.7-67.9 from nemotron on cell_1 — SEL is the harder domain because rapport IS the content). Tests recognition in a meta-skill domain where the tutor-learner relationship itself is the subject matter. Multi-turn scenarios: `sel_frustration_to_breakthrough` ("I can't name what I feel"), `sel_misconception_correction` ("emotions are obstacles to reason"), `sel_productive_deadlock` ("I'm not a person who asks for help" — identity-level refusal to file financial aid appeal). Prediction: recognition-vs-base delta will be maximally separated in SEL because rapport authenticity IS the scoring target. Run cells 1 vs 5 × 3 runs × 8 scenarios = 48 rows — pending API budget.
 
 **Prerequisites (Phase 1):** ~~done~~ — 11 scenarios authored, validated, dry-runs pass.
 
 **Prerequisites (Phase 2):** ~~done~~ — course 201 and 8 scenarios authored, validated, multi-turn dry-runs pass.
+
+**Prerequisites (Phase 3a):** ~~done~~ — course 301 and 8 scenarios authored, validated, multi-turn dry-runs pass.
+
+**Prerequisites (Phase 3b):** ~~done~~ — course 401 and 8 scenarios authored, validated, multi-turn dry-runs pass.
 
 **Commands:**
 ```bash
@@ -154,6 +159,16 @@ EVAL_CONTENT_PATH=./content-test-programming \
 EVAL_SCENARIOS_FILE=./content-test-programming/scenarios-programming.yaml \
 node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --description "A6 domain expansion: intro programming"
 
+# Run creative writing domain evaluation (Phase 3a)
+EVAL_CONTENT_PATH=./content-test-creative \
+EVAL_SCENARIOS_FILE=./content-test-creative/scenarios-creative.yaml \
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --description "A6 domain expansion: creative writing"
+
+# Run social-emotional learning domain evaluation (Phase 3b)
+EVAL_CONTENT_PATH=./content-test-sel \
+EVAL_SCENARIOS_FILE=./content-test-sel/scenarios-sel.yaml \
+node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --description "A6 domain expansion: social-emotional learning"
+
 # Judge
 node scripts/eval-cli.js evaluate <runId>
 ```
@@ -164,22 +179,27 @@ node scripts/eval-cli.js evaluate <runId>
 - Develop deployment rubric: recognition ROI by domain characteristics
 - Paper ref: Section 8.2 Future Direction #3
 
-### A7. Longitudinal Multi-Session Evaluation (LOW — requires infrastructure work)
+### A7. Longitudinal Multi-Session Evaluation (LOW — infra simpler than originally estimated)
 Single-session evaluation cannot capture accumulated understanding.
 
-**Current infrastructure gaps:**
-- Writing Pad persists within a dialogue but NOT across dialogues (synthetic learnerId per dialogue is orphaned after run)
-- No session persistence table (`session_id` field in tutor-core DB exists but is always NULL, marked "TODO: Phase 3")
-- No CLI flags for session management (`--session-id`, `--resume-session`)
-- No cross-dialogue learner continuity mechanism
+**Implementation spec**: `notes/design-a7-longitudinal-implementation-2026-04-16.md` — refines the high-level design after reading tutor-core migration 008.
+
+**Current infrastructure gaps (post-discovery 2026-04-16):**
+- Writing Pad schema **already supports cross-session persistence**: `writing_pads.learner_id` is UNIQUE and `initializeWritingPad()` is idempotent (tutor-core migration 008 + `writingPadService.js:28-33`).
+- `evaluationRunner.runGeneration()` **already accepts** `learnerId` as an option (`services/evaluationRunner.js:1579`); the gap is only that `services/evaluationRunner.js:2611-2613` synthesises a fresh ID every dialogue.
+- No CLI `--learner-id` flag on `eval-cli.js run`.
+- No `learner_id` column on `evaluation_results` for per-row session-index derivation.
 
 **Experimental design:**
 
-- **Phase 1 — Infrastructure** (prerequisite):
-  - [ ] Implement persistent session table in tutor-core DB linking learnerIds across dialogues
-  - [ ] Add `--session-id <id>` CLI flag to eval-cli.js to resume a learner's session
-  - [ ] Add `--learner-id <id>` flag to reuse an existing Writing Pad across runs
-  - [ ] Ensure Writing Pad unconscious layer carries forward (recognition moments, learner archetypes)
+- **Phase 1 — Infrastructure** (≈ half a day):
+  - [ ] Add `learner_id TEXT` column to `evaluation_results` (local eval-repo migration; not tutor-core).
+  - [ ] Plumb `learnerId` through `runScenarioConfiguration` → `runMultiTurnScenario` options.
+  - [ ] At `services/evaluationRunner.js:2611-2613`, prefer `options.learnerId` over the synthetic ID when supplied.
+  - [ ] Add `--learner-id <id>` flag to eval-cli `run` command option parser.
+  - [ ] 3-session smoke test (`smoke-learner-01`) verifying `writing_pads.total_recognition_moments` grows monotonically across invocations.
+  - ~~Implement persistent session table in tutor-core DB~~ — **NOT NEEDED**; Writing Pad already is the cross-session state.
+  - ~~`--session-id` flag~~ — **NOT NEEDED**; session identity = `(learner_id, created_at)` tuple inferable from DB.
 
 - **Phase 2 — Evaluation design**:
   - **Cells**: 40 vs 41 (base vs recog, self-reflective, Writing Pad enabled) — maximizes memory accumulation potential
