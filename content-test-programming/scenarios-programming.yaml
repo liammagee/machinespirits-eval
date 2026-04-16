@@ -1,0 +1,594 @@
+# Introductory Programming Evaluation Scenarios
+#
+# Minimal scenario set for testing domain generalizability
+# with introductory programming content (course 201, Python).
+#
+# These scenarios parallel the philosophy and elementary-math
+# scenarios but use beginner-programmer personas and
+# Python code references.
+
+name: "Introductory Programming Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CORE SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  new_programmer_first_visit:
+    type: suggestion
+    id: new_programmer_first_visit
+    category: core
+    name: "New Programmer - First Visit"
+    description: "Brand new adult learner with no programming background"
+    is_new_user: true
+    course_ids: ["201"]
+    learner_context: |
+      ### Student Profile
+      - **New student** - first time opening the course
+      - Adult learner, no prior programming experience
+      - Career-changer; wants to learn coding for data analysis job
+      - Mildly intimidated by terminology
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Suggest first lecture with welcoming tone; reassure that no experience is expected"
+    required_elements:
+      - "201-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  returning_programmer_mid_course:
+    type: suggestion
+    id: returning_programmer_mid_course
+    category: core
+    name: "Returning Programmer - Mid Course"
+    description: "Student partway through the programming course"
+    current_content: "201-lecture-2"
+    is_new_user: false
+    course_ids: ["201"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 18 total events
+      - Adult learner, comfortable with the pace so far
+      - Completed Lecture 1 (Variables) and practice exercises
+
+      ### Current Session
+      - **Currently viewing**: 201-lecture-2
+        - Lecture: "Making Decisions: If and Else"
+      - Pages visited this session: course overview, 201-lecture-2
+
+      ### Overall Learning Progress
+      - Lectures viewed: Variables (complete), If and Else (in progress)
+      - Practice problems completed: 5/8
+      - Activity completed: Trace On Paper exercise from lecture 1
+    expected_behavior: "Suggest finishing lecture 2 practice or previewing lecture 3 (loops)"
+    required_elements:
+      - "201-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  struggling_programmer:
+    type: suggestion
+    id: struggling_programmer
+    category: core
+    name: "Struggling Programmer"
+    description: "Student showing multiple struggle signals with indentation and syntax errors"
+    current_content: "201-lecture-2"
+    is_new_user: false
+    course_ids: ["201"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 26 total events
+      - Adult learner, finds programming more confusing than expected
+      - Has been working on if/else for almost a week
+
+      ### Learning Progress
+      - **Enrolled courses**: Intro Programming 201
+      - **Completed lectures**: 201-lecture-1 (viewed 4 times, unclear on assignment vs. equality)
+      - **Practice completed**: 3/8 problems correct
+      - **Course progress**: Stuck on Lecture 2 (If and Else)
+
+      ### Learning Journey (Recent Sessions)
+      | Session | Date | Duration | Activity | Struggles |
+      |---------|------|----------|----------|-----------|
+      | 5 | Today | 25 min | 201-lecture-2 (re-read) | 6 signals |
+      | 4 | Yesterday | 30 min | Practice problems | IndentationError x3 |
+      | 3 | 2 days ago | 20 min | 201-lecture-2 | SyntaxError x2 |
+      | 2 | 3 days ago | 18 min | 201-lecture-1 review | None |
+
+      ### Current Session
+      - Re-reading lecture 2 for third time
+      - Asked: "my code keeps giving IndentationError and I can't figure out why"
+
+      ### Struggle Signals Detected
+      - Multiple re-reads of same section
+      - IndentationError on every attempted exercise
+      - Repeated SyntaxError on if statements
+      - Long pauses between attempts; signs of discouragement
+    expected_behavior: "Recognize struggle; suggest review/consolidation of lecture 2 syntax basics, not advancement"
+    required_elements:
+      - "indent"
+      - "practice"
+    forbidden_elements:
+      - "move on"
+      - "next lecture"
+      - "lecture-3"
+    min_acceptable_score: 75
+
+  syntax_confusion:
+    type: suggestion
+    id: syntax_confusion
+    category: core
+    name: "Syntax Confusion (= vs ==)"
+    description: "Student confusing assignment and equality operators"
+    current_content: "201-lecture-2"
+    is_new_user: false
+    course_ids: ["201"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 14 total events
+      - Adult learner, generally engaged but hit a syntax wall
+
+      ### Current Session
+      - Viewing: 201-lecture-2 (If and Else)
+      - Just got SyntaxError on an if statement
+      - Student wrote: `if user_age = 18:` and expected it to work
+
+      ### Confusion Pattern
+      - Using `=` (assignment) where `==` (equality) is needed
+      - Believes a single `=` asks "is it equal?" (import from algebra)
+      - Needs clarification without feeling embarrassed about a fundamental mix-up
+    expected_behavior: "Gently correct the misconception by distinguishing assignment from comparison; use a concrete side-by-side example"
+    required_elements:
+      - "assignment"
+    forbidden_elements:
+      - "wrong"
+      - "mistake"
+      - "basic"
+    min_acceptable_score: 70
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  frustrated_debugger:
+    type: suggestion
+    id: frustrated_debugger
+    category: mood
+    name: "Frustrated Debugger"
+    description: "Student expressing deep frustration after debugging for an hour with no progress"
+    current_content: "201-lecture-4"
+    is_new_user: false
+    course_ids: ["201"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 6 sessions, 32 total events
+      - Adult learner, usually patient but tapped out today
+      - Has been working on Lecture 4 debugging exercises
+
+      ### Current Session
+      - Viewing: 201-lecture-4 (When Things Go Wrong)
+      - Stuck on Program B in the debug exercise for 70 minutes
+      - Student message: "I've been staring at this code for an HOUR. Nothing I try works. I'm never going to be a programmer if I can't even fix a five-line function. I think I'm just not wired for this."
+
+      ### Emotional State
+      - Frustration level: Very high
+      - Identity-threat language: "not wired for this"
+      - Previous emotional states: Engaged (sessions 1-4), Fatigued (session 5), Defeated (session 6)
+      - Trigger: Can't find the initial-value bug (largest=0 when all numbers are negative)
+
+      ### Learning Context
+      - Completed: Lectures 1-3 (all exercises correct)
+      - Current struggle: One specific debugging puzzle
+      - Has the common misconception that "real" programmers would see the bug instantly
+    expected_behavior: "Acknowledge the frustration and the identity-level worry first; validate that debugging is hard even for professionals; only then offer a small concrete hint (not the answer)"
+    required_elements:
+      - "debugging"
+    forbidden_elements:
+      - "simple"
+      - "easy"
+      - "just"
+      - "obvious"
+    min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN SCENARIOS
+  # Parallel the elementary-math / philosophy multi-turn set for cross-domain comparison (A6)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  # ---------------------------------------------------------------------------
+  # 1. Frustration → Breakthrough (3-turn)
+  #    Mirrors: math_frustration_to_breakthrough, mood_frustration_to_breakthrough
+  # ---------------------------------------------------------------------------
+  code_frustration_to_breakthrough:
+    type: suggestion
+    id: code_frustration_to_breakthrough
+    category: multi_turn
+    name: "Code: Frustration to Breakthrough (3-turn)"
+    description: "Tests tutor's ability to guide a frustrated beginner from confusion about infinite loops to understanding via hand-tracing"
+    current_content: "201-lecture-3"
+    is_new_user: false
+    course_ids: ["201"]
+    mood_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "let's trace it together"
+        - "what do you think happens next"
+        - "using your example"
+        - "that's a great observation"
+        - "building on what you said"
+      tutor_static:
+        - "as I said before"
+        - "remember the rule"
+        - "the answer is"
+        - "you just need to"
+      learner_evolving:
+        - "ohh so"
+        - "wait I think I see"
+        - "that makes sense"
+        - "so it's like"
+      learner_static:
+        - "I still don't get it"
+        - "this is confusing"
+        - "I can't do this"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 19 total events
+      - Adult learner, usually careful but frustrated today
+      - Completed Lectures 1 and 2
+
+      ### Current Session
+      - **Currently viewing**: 201-lecture-3 (Loops)
+      - Struggle signals detected: 4
+      - Just wrote a `while` loop that hung the terminal (had to Ctrl+C)
+
+      ### Recent Chat History
+      - Student: "I keep making infinite loops! My code just freezes and I have to kill it. I thought I understood while loops but clearly I don't. Why is this language so unforgiving?"
+    expected_behavior: "Acknowledge frustration; use hand-tracing on a tiny example to surface the missing counter update"
+    required_elements:
+      - "201-lecture"
+    forbidden_elements:
+      - "simple"
+      - "easy"
+      - "just"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_still_frustrated
+        learner_action: reported_confusion
+        action_details:
+          message: "OK I tried writing it out but I still don't see why it's infinite. My condition is `while count > 0` and I DO decrement count somewhere. I think?"
+        context_update: |
+          ### Learner Response
+          - Partial engagement with the hand-tracing suggestion
+          - Uncertainty about whether they actually decrement count
+          - Frustration slightly lower, confusion dominant
+        expected_behavior: "Ask the student to share the actual loop; if they can't produce it, ask them to write a 3-line example together from scratch"
+        required_elements:
+          - "count"
+        forbidden_elements:
+          - "review the lecture"
+          - "the rule is"
+        min_acceptable_score: 75
+
+      - id: turn_2_starting_to_get_it
+        learner_action: asked_followup
+        action_details:
+          message: "Oh wait — I just looked at my code. I wrote `count = count` instead of `count = count - 1`. I decremented the WRONG variable, I decremented nothing. So count never changes so the condition is always true. That's why it's infinite!"
+        context_update: |
+          ### Learner Response
+          - Mood shifting: frustration → insight
+          - Found the bug without being told the answer
+          - Articulating the causal chain (body doesn't change condition → infinite)
+        expected_behavior: "Affirm the insight with specific enthusiasm; help student generalize — every while loop needs the body to eventually make the condition false"
+        required_elements: []
+        forbidden_elements:
+          - "That's wrong"
+          - "Not quite"
+        min_acceptable_score: 80
+
+      - id: turn_3_breakthrough
+        learner_action: asked_followup
+        action_details:
+          message: "OHHH. So the while condition is like a door that stays open until you close it. If nothing in the body actually closes the door, the loop just keeps going through. That's kind of poetic actually. Does this same idea apply to for loops?"
+        context_update: |
+          ### Learner Response
+          - Built own analogy (door metaphor)
+          - Generalizing beyond the example
+          - Curiosity and ownership replacing frustration
+        expected_behavior: "Celebrate the analogy; explain that `for` loops close the door automatically (range ends), which is why they rarely infinite-loop; suggest practicing a few while loops to build intuition"
+        required_elements:
+          - "practice"
+        forbidden_elements:
+          - "basics"
+          - "review"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 2. Misconception Correction (4-turn)
+  #    Mirrors: math_misconception_correction, misconception_correction_flow
+  # ---------------------------------------------------------------------------
+  code_misconception_correction:
+    type: suggestion
+    id: code_misconception_correction
+    category: multi_turn
+    name: "Code: Misconception Correction (4-turn)"
+    description: "Student believes `x = x + 1` is impossible because it 'makes no sense in math'; tests Socratic correction"
+    current_content: "201-lecture-1"
+    is_new_user: false
+    course_ids: ["201"]
+    transformation_markers:
+      tutor_evolving:
+        - "your thinking makes sense because"
+        - "let's test that idea"
+        - "what do you notice"
+        - "you're figuring this out"
+        - "in this context"
+      tutor_static:
+        - "that's not right"
+        - "the correct answer is"
+        - "as I explained"
+        - "you need to remember"
+      learner_evolving:
+        - "hmm that's weird"
+        - "wait that doesn't match"
+        - "oh so actually"
+        - "I think I was confused because"
+        - "so in programming"
+      learner_static:
+        - "but that's mathematically impossible"
+        - "I know I'm right"
+        - "that doesn't make sense"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 15 total events
+      - Adult learner, strong math background, confident
+      - Completed Lecture 1 reading, stuck on a core concept
+
+      ### Current Session
+      - **Currently viewing**: 201-lecture-1 (Variables)
+      - Student pushing back on the lecture content
+      - Pattern: applying algebra rules to programming code
+
+      ### Recent Chat History
+      - Student: "The lecture says `x = x + 1` is fine in Python. But that's mathematically nonsense — there's NO number that equals itself plus one. Infinity doesn't even count. I think the textbook has a typo. Can you confirm?"
+
+      ### Misconception
+      - Reading `=` as algebraic equality
+      - Applying the law of excluded middle (a value cannot equal itself plus one)
+      - Confidence is high — correction must honor the math intuition
+    expected_behavior: "Take the math intuition seriously; do NOT just say 'this is different'; surface the two meanings of = with a concrete contrast"
+    required_elements:
+      - "201-lecture"
+    forbidden_elements:
+      - "wrong"
+      - "incorrect"
+      - "typo"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_probing_misconception
+        learner_action: asked_followup
+        action_details:
+          message: "I've seen the example but I still think it's wrong. In math, if x = x + 1, then 0 = 1, which is a contradiction. I know you're saying `programming is different` but math IS the foundation of programming so that can't be right."
+        context_update: |
+          ### Learner Response
+          - Confidently defending the math view
+          - Articulating a real logical point (0 = 1 contradiction)
+          - Open to concrete examples, resistant to hand-waving
+        expected_behavior: "Acknowledge the math argument is valid — in math. Ask the student to try a different interpretation of `=` and see whether it fits what the program actually DOES when run"
+        required_elements: []
+        forbidden_elements:
+          - "You're wrong"
+          - "Math and programming are different"
+          - "Trust the textbook"
+        min_acceptable_score: 75
+
+      - id: turn_2_cognitive_conflict
+        learner_action: asked_followup
+        action_details:
+          message: "OK I ran `x = 5; x = x + 1; print(x)` and it printed 6. But that just proves my point — x started as 5, was supposed to equal x + 1 which is 6, so 5 = 6? That's what the code literally says. Unless... `=` isn't saying `equals`?"
+        context_update: |
+          ### Learner Response
+          - Running the code — taking empirical evidence seriously
+          - Detecting the tension (5 = 6 is nonsense)
+          - On the edge of the insight — just needs the reframe
+        expected_behavior: "Affirm the productive conflict; now propose the reframe — `=` in Python is not asking `is this equal?` (that's `==`), it's saying `let this name point to this value from now on`"
+        required_elements:
+          - "=="
+        forbidden_elements:
+          - "See, you were wrong"
+          - "Finally"
+        min_acceptable_score: 75
+
+      - id: turn_3_restructuring
+        learner_action: asked_followup
+        action_details:
+          message: "Oh! So `=` is an action, not a statement of fact. Like... `=` means `put this value in this box.` So `x = x + 1` means `take whatever x currently is, add 1, and put the result back in the x box.` It's not claiming they're equal — it's giving an instruction. That's SO different from math."
+        context_update: |
+          ### Learner Response
+          - Rebuilt the mental model cleanly
+          - Own language: action vs. statement
+          - Relief + interest, not shame
+        expected_behavior: "Affirm the reframe in their own language; reinforce that `==` is the question form they were looking for; mention that many programming languages have this same split"
+        required_elements: []
+        forbidden_elements:
+          - "Don't worry"
+          - "It's simple"
+          - "Everyone gets confused"
+        min_acceptable_score: 80
+
+      - id: turn_4_new_understanding
+        learner_action: asked_followup
+        action_details:
+          message: "So `if x == 5:` is the algebraic `=`, asking whether x equals 5. And `x = 5` is the command, making x refer to 5. Two operators, two jobs. Got it. Is there any language where `=` does both? Or is this split a Python thing?"
+        context_update: |
+          ### Learner Response
+          - Testing the generalization
+          - Curiosity replacing resistance
+          - Asking about language design — higher-level interest
+        expected_behavior: "Confirm the split holds in most modern languages (C, JavaScript, Java all use = and ==); mention that older languages like BASIC and Pascal used := for assignment to keep them visually distinct; suggest a practice exercise to cement the habit"
+        required_elements:
+          - "practice"
+        forbidden_elements:
+          - "That was easy"
+          - "See how simple"
+        min_acceptable_score: 80
+
+  # ---------------------------------------------------------------------------
+  # 3. Productive Deadlock (5-turn)
+  #    Mirrors: math_productive_deadlock, productive_deadlock_impasse
+  # ---------------------------------------------------------------------------
+  code_productive_deadlock:
+    type: suggestion
+    id: code_productive_deadlock
+    category: multi_turn
+    name: "Code: Productive Deadlock (5-turn)"
+    description: "Student insists `range(1, 10)` should include 10; tests whether tutor can hold tension when student has a reasonable point about interval conventions"
+    current_content: "201-lecture-3"
+    is_new_user: false
+    course_ids: ["201"]
+    recognition_test: true
+    transformation_markers:
+      tutor_evolving:
+        - "that's actually a deep question"
+        - "you're pointing out something real"
+        - "language designers thought about this too"
+        - "your question about"
+        - "let's sit with that"
+        - "both conventions have costs"
+      tutor_static:
+        - "that's just how it works"
+        - "range is exclusive"
+        - "the textbook says"
+        - "just remember"
+        - "it's the rule"
+      learner_evolving:
+        - "OK so maybe"
+        - "I see why but"
+        - "that's a good point"
+        - "both things are true"
+        - "I still don't love it but"
+      learner_static:
+        - "but it's confusing"
+        - "that's stupid design"
+        - "you're not listening"
+        - "that doesn't make sense"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 28 total events
+      - Adult learner, analytical, notices details
+      - Completed Lectures 1 and 2, working on Lecture 3
+      - Tends to question design choices rather than accept them
+
+      ### Current Session
+      - **Currently viewing**: 201-lecture-3 (Loops)
+      - Frustrated by range() half-open convention
+      - Stuck on why `range(1, 10)` produces 1-9, not 1-10
+
+      ### Recent Chat History
+      - Student: "This is terrible design. If I write `range(1, 10)` I WANT 1 through 10, that's what the arguments LITERALLY say. Why does Python stop at 9? This is the kind of thing that trips up beginners for no reason. Who thought this was a good idea?"
+
+      ### Reasoning Pattern
+      - Applying natural-language intuition: "1 to 10" means including 10
+      - Not a misconception exactly — a legitimate design objection
+      - Has a reasonable point that needs to be honored, not dismissed
+    expected_behavior: "Take the objection seriously — the student is raising a real convention question; explain the design tradeoff instead of just asserting the rule"
+    required_elements:
+      - "201-lecture"
+    forbidden_elements:
+      - "That's just the rule"
+      - "Don't worry about why"
+      - "Just memorize"
+    min_acceptable_score: 80
+
+    turns:
+      - id: turn_1_defending_position
+        learner_action: asked_followup
+        action_details:
+          message: "OK I hear that `range(10)` giving 0-9 makes sense because it's 10 numbers. But `range(1, 10)` is different — the arguments are explicit bounds, and 10 is RIGHT THERE. Why would the language throw it away? The designers must have had SOMETHING in mind, right?"
+        context_update: |
+          ### Learner Response
+          - Conceding the zero-based case but maintaining the objection for explicit bounds
+          - Making a design-intent argument (why would they?)
+          - Not wrong — raising a real convention question
+        expected_behavior: "Acknowledge the question is genuine; explain that half-open intervals `[start, stop)` compose cleanly — you can split a range anywhere and the two pieces exactly cover the original. Give a concrete example where closed intervals would cause off-by-one bugs"
+        required_elements: []
+        forbidden_elements:
+          - "That's just how Python works"
+          - "You're overcomplicating this"
+          - "The designers had reasons, trust them"
+        min_acceptable_score: 80
+
+      - id: turn_2_pressing_the_distinction
+        learner_action: asked_followup
+        action_details:
+          message: "So you're saying if I have a list of 100 items and I want to split it into two halves, closed intervals would double-count the middle element? I get that. But that's a library-writer problem, not a beginner problem. Most of the time I just want a range of numbers, and the exclusion is confusing."
+        context_update: |
+          ### Learner Response
+          - Understood the technical argument
+          - Pushed back on its relevance to their use case
+          - Sophisticated criticism: the convention optimizes for advanced uses
+        expected_behavior: "Honor the critique — yes, the convention optimizes for composability over intuitive-reading. Offer the pragmatic workaround: `range(1, 11)` produces 1-10 inclusive, and becomes natural after a few weeks. Don't pretend the convention is perfect"
+        required_elements: []
+        forbidden_elements:
+          - "It's better this way"
+          - "You'll see the value"
+          - "All languages do this"
+        min_acceptable_score: 80
+
+      - id: turn_3_exploring_tradeoffs
+        learner_action: asked_followup
+        action_details:
+          message: "Huh. So the language made a tradeoff — harder for beginners, easier for library writers. Do other languages do it differently? What does MATLAB or R do? Is there a 'right' answer here or is it just different religions?"
+        context_update: |
+          ### Learner Response
+          - Moving from complaint to curiosity
+          - Asking about alternatives
+          - Ready for a nuanced comparative answer
+        expected_behavior: "Affirm the framing (different religions is about right); quickly compare: MATLAB and R use closed intervals by default (1:10 gives 1-10), C/C++/Python use half-open. Neither is 'correct' — they're different tradeoffs. Suggest this is worth revisiting when they get to slicing in Python"
+        required_elements: []
+        forbidden_elements:
+          - "Python's way is best"
+          - "Don't worry about other languages"
+          - "That's advanced"
+        min_acceptable_score: 80
+
+      - id: turn_4_productive_disagreement
+        learner_action: asked_followup
+        action_details:
+          message: "OK that actually helps — it's a real design choice, not just arbitrary. I still think the Python choice is worse for teaching, but at least it's not random. Can I still just write `range(1, 11)` when I want 1-10 and move on with my life?"
+        context_update: |
+          ### Learner Response
+          - Maintaining preference for closed intervals
+          - Accepting the convention without endorsing it
+          - Asking for pragmatic permission to work around it
+        expected_behavior: "Absolutely yes — `range(1, 11)` for 1-10 is standard and idiomatic. Affirm that holding a preference while following a convention is a healthy programmer mindset. Suggest practicing a few loops to build the muscle memory"
+        required_elements: []
+        forbidden_elements:
+          - "You have to embrace Python's way"
+          - "Eventually you'll prefer the Python convention"
+          - "The test will require"
+        min_acceptable_score: 85
+
+      - id: turn_5_resolution
+        learner_action: asked_followup
+        action_details:
+          message: "So I can hold onto my opinion AND follow the language convention. It's like driving on the left or right — once you pick a side of the road you have to commit, but you're allowed to think the other side is more natural. OK I'm ready to move on. Can you give me a looping problem that would have been confusing if I hadn't understood this range thing?"
+        context_update: |
+          ### Learner Response
+          - Built own analogy (road convention)
+          - Maintained preference, committed to convention
+          - Requesting challenge — engagement restored, asking for pragmatic application
+        expected_behavior: "Affirm the road analogy; honor the maintained preference; offer a concrete exercise like 'count from 1 to N inclusive' that forces them to use `range(1, N+1)` — the exact pattern their pragmatic workaround produces"
+        required_elements:
+          - "practice"
+        forbidden_elements:
+          - "Glad you came around"
+          - "See, the Python way is fine"
+          - "Now you understand"
+        min_acceptable_score: 85
