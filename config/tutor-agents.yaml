@@ -3773,3 +3773,95 @@ profiles:
       provider: openrouter
       model: nemotron
       learner_superego_model: openrouter.gemini-flash
+
+  # ==========================================================================
+  # Cells 93-94: Writing Pad controlled ablation (TODO.md A5)
+  # Clones of cells 40/41 with writing_pad_enabled: false. Pair with 40/41
+  # for a 2x2 ANOVA: recognition (base/recog) × Writing Pad (on/off).
+  # ==========================================================================
+  cell_93_base_dialectical_suspicious_unified_superego_nopad:
+    description: "A5 Writing Pad ablation: clone of cell 40 with writing_pad_enabled: false (base + suspicious + full features, no Writing Pad)"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: false
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.65
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  cell_94_recog_dialectical_suspicious_unified_superego_nopad:
+    description: "A5 Writing Pad ablation: clone of cell 41 with writing_pad_enabled: false (recognition + suspicious + full features, no Writing Pad)"
+    factors:
+      prompt_type: dialectical_suspicious
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    writing_pad_enabled: false
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.60
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-recognition-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      enforce_mutual_recognition: true
+      require_memory_integration: true
+      assess_transformative_potential: true

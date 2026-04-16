@@ -243,11 +243,9 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 
 ## B. Code Quality & Infrastructure
 
-### B1. Test Coverage Gaps (IN PROGRESS)
-Tests added for `processUtils.js` (100%), `streamingReporter.js` (100%), `progressLogger.js` (100%), `learnerConfigLoader.js` (91%), `apiMessageFormatter.js` (100%), `apiPayloadCapture.js` (94%), `liveApiReporter.js` (98%), `provableDiscourse.js` (60%), `promptRewriter.js` (55%), and `codexSessionService.js` (91%). `mockProvider.js` already tested in `dryRun.test.js` (100%).
-Overall project line coverage is at ~45% (partially due to CLI scripts being inherently untestable).
-Remaining untested `services/` components that need coverage:
-- `services/promptRecommendationService.js` (14% coverage) — 508 LOC, hard to test (requires API mocking), optional feature
+### ~~B1. Test Coverage Gaps~~ (DONE)
+Tests added for `processUtils.js` (100%), `streamingReporter.js` (100%), `progressLogger.js` (100%), `learnerConfigLoader.js` (91%), `apiMessageFormatter.js` (100%), `apiPayloadCapture.js` (94%), `liveApiReporter.js` (98%), `provableDiscourse.js` (60%), `promptRewriter.js` (55%), `codexSessionService.js` (91%), and `promptRecommendationService.js` (14% → 87% line, 100% function — 2026-04-16). `mockProvider.js` already tested in `dryRun.test.js` (100%).
+Overall project line coverage is at ~45% (partially due to CLI scripts being inherently untestable). All meaningful service-layer untested gaps are now closed; the residual `promptRecommendationService.js` uncovered lines are the optional Anthropic SDK path (peer dep, intentionally skipped) and a couple of fallback config paths.
 
 
 ### ~~B2. Silent Error Handling~~ (FIXED)
