@@ -191,6 +191,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_90_messages_recog_single_unified',
   'cell_91_messages_recog_multi_unified_gemflash',
   'cell_92_messages_recog_single_psycho_gemflash',
+  'cell_93_base_dialectical_suspicious_unified_superego_nopad',
+  'cell_94_recog_dialectical_suspicious_unified_superego_nopad',
 ];
 
 /**
