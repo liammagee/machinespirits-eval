@@ -20,6 +20,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 | `compare-transformation.js` | (none — reads recent dialogue logs) | No | Transformation metrics (adaptation, growth indices) from log files | 6.7 | Dialogue logs in `logs/tutor-dialogues/` |
 | `analyze-prosthesis.js` | (none — hardcoded run ID) | No | Cognitive prosthesis dimension analysis for cells 66-68 | 6.14 | Run `eval-2026-02-17-25aaae85` scored |
 | `analyze-insight-action-gap.js` | `<runId...> [--json] [--output PATH] [--min-pairs N]` | No | Insight-action coupling: cosine similarity between `ego_self_reflection` and same-turn final tutor message; reports gap, turn drift, and gap-minus-drift per cell | Finding 11 / TODO §D3 | Multi-turn rows on reflection-mechanism cells (40-45, 46-53, 60-63, 72-77) with dialogue logs |
+| `analyze-recognition-lexicon.js` | `[<runId...>] [--json] [--output PATH] [--min-rows N]` | No | Theory-driven mechanism decomposition: per-response density of 10 Hegelian recognition concepts, with Cohen's d (recog − base) and Pearson r (density × score) per concept | TODO §D1 | Any scored rows (`suggestions` populated and `tutor_first_turn_score`/`overall_score` non-null) |
 
 ## Qualitative Analysis
 
@@ -55,6 +56,7 @@ npm run analyze:change         # analyze-within-test-change.js
 npm run analyze:modulation     # analyze-modulation-learning.js
 npm run analyze:stagnation     # analyze-learning-stagnation.js
 npm run analyze:gap            # analyze-insight-action-gap.js (needs <runId>)
+npm run analyze:lexicon        # analyze-recognition-lexicon.js (runs on all scored rows; optional <runId>)
 ```
 
 Pass args after `--`: `npm run analyze:traces -- <runId>`

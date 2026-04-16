@@ -46,6 +46,7 @@
     "analyze:modulation": "node scripts/analyze-modulation-learning.js",
     "analyze:stagnation": "node scripts/analyze-learning-stagnation.js",
     "analyze:gap": "node scripts/analyze-insight-action-gap.js",
+    "analyze:lexicon": "node scripts/analyze-recognition-lexicon.js",
     "superego:extract": "node scripts/extract-superego-critiques.js",
     "superego:extract:stats": "node scripts/extract-superego-critiques.js --stats",
     "superego:classify:calibrate": "node scripts/classify-superego-critiques.js --sample 20 --tutor-only --model or-haiku",
