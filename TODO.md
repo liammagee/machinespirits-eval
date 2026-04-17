@@ -356,10 +356,14 @@ Self-reflection produces awareness without behavioral change; profiling produces
 - Test whether explicit directive bridges gap
 - Paper ref: Finding 11
 
-### D4. Disposition Gradient Replication
-Hostile superegos become productive under recognition (suspicious +19.0, adversary +10.9, advocate +2.6). Untested on other domains.
-- Replicate on other domains/scenarios
-- Test on learner side
+### D4. Disposition Gradient Replication — RESOLVED v3.0.39 (architecture-scope-limit)
+Finding: the suspicious > adversary > advocate gradient is **dialectical-ego-architecture-specific** (cells 40-45), not a universal property of the recognition mechanism (§6.6.8).
+- Dialectical ego × philosophy (cells 40-45, Haiku × Opus, n=17-18): susp d=0.85, adv d=0.62, advocate d=0.51 — monotone, reproduces.
+- Standard ego × philosophy (cells 22-27, Haiku × Opus, n=5-10): REVERSED (advocate d=1.70, adv d=0.97, susp d=-0.01).
+- Standard ego × SEL (cells 22-27, eval-2026-04-17-4a9b765a, Haiku × Sonnet, n=22-24 per cell, 141/144 judged): non-monotonic (susp d=1.25, adv d=0.53, advocate d=1.09).
+- Cells 40-45 × SEL (clean architecture-matched domain test): deferred on cost grounds.
+- Learner-side disposition variants: out of scope for v4; requires new cells.
+- Artifacts: `scripts/analyze-d4-disposition-gradient.js`, `exports/d4-disposition-gradient.md`.
 
 ---
 
