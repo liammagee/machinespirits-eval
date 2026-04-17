@@ -331,9 +331,23 @@ Why does recognition-oriented prompting change model behavior?
 - Activation analysis, attention patterns, gradient analysis (still open — requires white-box access)
 - Paper ref: Section 8.2 Future Direction #4
 
-### D2. Cross-Application Transfer (OPEN RESEARCH)
-Test recognition-oriented design beyond tutoring:
-- Mental health chatbots, customer service, creative writing feedback, code review
+### D2. Cross-Application Transfer (Path 1 RESOLVED v3.0.38, Path 2 DEFERRED)
+Test recognition-oriented design beyond tutoring.
+
+**Path 1 (RESOLVED v3.0.38)** — single-application adjacency test:
+- Content package `content-test-support/` (course 501: Peer Support Listener Training) — 4 lectures (Listening as Skill, Reflective Statements, Sitting With Distress, Discomfort as Data), 4 core + 1 mood scenarios (`scenarios-support.yaml`)
+- Run: eval-2026-04-17-6766015b, cells 1 (base) vs 5 (recog), single-prompt mode, Haiku 4.5 × Sonnet 4.6, n=15 per cell
+- **Result**: base 52.25 (SD 9.63), recog 69.92 (SD 12.73), Δ = 17.67, **d = 1.57** ("very large"). Closest A6 adjacency (SEL) d = 1.82 — Δd = −0.25, inside A6 range (d = 1.45–2.71)
+- Integrated as §6.6.7 "Cross-Application Adjacency Pilot" in paper-full-2.0.md; analysis script `scripts/analyze-d2-support-pilot.js` + report `exports/d2-support-pilot.md`
+- Directional claim (recognition improves tutor quality) survives a shift into a domain where the skill being coached runs counter to traditional pedagogy
+
+**Path 2 (deferred — separate-paper scope)** — true cross-application with role-reframed prompts:
+- Author `tutor-ego-support.md` and `tutor-ego-support-recognition.md` prompt variants that recast the tutor role from "pedagogical guide" to "peer support listener"
+- Register new cells in `config/tutor-agents.yaml` + `EVAL_ONLY_PROFILES` (e.g., cells 91-92 for support base/recog)
+- Run across 3 applications: peer support listener, customer service, code review
+- Matching content packages + scenario sets for each application
+- Cost: ~$25-40 API across 3 applications × 2 cells × 3 runs × 5 scenarios
+- Deferred because: (a) requires tutor-core prompt authoring, (b) marked as separate-paper scope in v4 roadmap, (c) would extend the paper's length beyond target
 - Paper ref: Section 8.2 Future Direction #5
 
 ### D3. Insight-Action Gap (PARTIALLY ADDRESSED)
