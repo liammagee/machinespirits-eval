@@ -98,7 +98,7 @@ describe('callLearnerAI empty-content retry', () => {
     assert.equal(callCount, 1);
   });
 
-  it.skip('handles exceptions gracefully by returning empty (preserved behavior)', async () => {
+  it('propagates retry exceptions when the first call returned empty', async () => {
     let callCount = 0;
     globalThis.fetch = async () => {
       callCount++;
@@ -108,10 +108,10 @@ describe('callLearnerAI empty-content retry', () => {
       throw new Error('Network failure on retry');
     };
 
-    const result = await callLearnerAI(makeAgentConfig(), 'system', 'user', 'learner_ego');
-
-    // callAI will swallow the retry exception if it already has a (successful but empty) result
-    assert.equal(result.content, '');
-    assert.ok(callCount > 1);
+    await assert.rejects(
+      () => callLearnerAI(makeAgentConfig(), 'system', 'user', 'learner_ego'),
+      /Network failure on retry/,
+    );
+    assert.ok(callCount > 1, 'retry should have been attempted');
   });
 });
