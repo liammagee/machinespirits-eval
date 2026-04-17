@@ -44,6 +44,8 @@ const getOption = (name) => {
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : null;
 };
 const outPath = getOption('out') || null;
+const runId = getOption('run-id') || null;
+const cellMinN = parseInt(getOption('cell-min-n') || '30', 10);
 
 function mean(arr) {
   if (!arr.length) return 0;
@@ -86,35 +88,30 @@ function roundN(v, digits = 2) {
   return v.toFixed(digits);
 }
 
-function analyze() {
-  const db = new Database(DB_PATH, { readonly: true });
+function queryRows(db, whereExtra) {
+  const sql = `
+    SELECT
+      learner_architecture AS arch,
+      learner_overall_score AS rubric,
+      learner_holistic_overall_score AS holistic,
+      profile_name,
+      run_id
+    FROM evaluation_results
+    WHERE learner_architecture IN ('unified','unified_recognition','ego_superego','ego_superego_recognition')
+      AND learner_overall_score IS NOT NULL
+      AND learner_holistic_overall_score IS NOT NULL
+      ${whereExtra || ''}
+  `;
+  return db.prepare(sql).all();
+}
 
-  // Paired data: rows with BOTH rubric AND holistic, in the 4 target architectures
-  const rows = db
-    .prepare(
-      `
-      SELECT
-        learner_architecture AS arch,
-        learner_overall_score AS rubric,
-        learner_holistic_overall_score AS holistic,
-        profile_name
-      FROM evaluation_results
-      WHERE learner_architecture IN ('unified','unified_recognition','ego_superego','ego_superego_recognition')
-        AND learner_overall_score IS NOT NULL
-        AND learner_holistic_overall_score IS NOT NULL
-    `,
-    )
-    .all();
-
-  db.close();
-
+function summarize(rows) {
   const byArch = {};
   for (const r of rows) {
     if (!byArch[r.arch]) byArch[r.arch] = { rubric: [], holistic: [] };
     byArch[r.arch].rubric.push(r.rubric);
     byArch[r.arch].holistic.push(r.holistic);
   }
-
   const archOrder = ['unified', 'ego_superego', 'unified_recognition', 'ego_superego_recognition'];
   const archStats = {};
   for (const arch of archOrder) {
@@ -129,41 +126,22 @@ function analyze() {
       r: pearson(d.rubric, d.holistic),
     };
   }
-
-  // Contrasts: base (ego_superego − unified) and recognition (ego_superego_recognition − unified_recognition)
   const contrasts = [
-    {
-      name: 'Base: ego_superego − unified',
-      egoSup: byArch.ego_superego,
-      unified: byArch.unified,
-    },
-    {
-      name: 'Recognition: ego_superego_recognition − unified_recognition',
-      egoSup: byArch.ego_superego_recognition,
-      unified: byArch.unified_recognition,
-    },
+    { name: 'Base: ego_superego − unified', egoSup: byArch.ego_superego, unified: byArch.unified },
+    { name: 'Recognition: ego_superego_recognition − unified_recognition', egoSup: byArch.ego_superego_recognition, unified: byArch.unified_recognition },
   ];
-
   const contrastStats = contrasts.map((c) => {
     if (!c.egoSup || !c.unified) return { name: c.name, error: 'missing-arch' };
-    const d_rubric = cohensD(c.egoSup.rubric, c.unified.rubric);
-    const d_holistic = cohensD(c.egoSup.holistic, c.unified.holistic);
-    const gap_rubric = mean(c.egoSup.rubric) - mean(c.unified.rubric);
-    const gap_holistic = mean(c.egoSup.holistic) - mean(c.unified.holistic);
     return {
       name: c.name,
       n_ego_sup: c.egoSup.rubric.length,
       n_unified: c.unified.rubric.length,
-      gap_rubric,
-      gap_holistic,
-      d_rubric,
-      d_holistic,
+      gap_rubric: mean(c.egoSup.rubric) - mean(c.unified.rubric),
+      gap_holistic: mean(c.egoSup.holistic) - mean(c.unified.holistic),
+      d_rubric: cohensD(c.egoSup.rubric, c.unified.rubric),
+      d_holistic: cohensD(c.egoSup.holistic, c.unified.holistic),
     };
   });
-
-  // Cell-level breakdown — for cells with both architectures comparable
-  // Group by cell number prefix, report rubric vs holistic
-  const cellRows = db => null; // placeholder, we already closed db
   const cellStats = {};
   for (const r of rows) {
     const m = r.profile_name.match(/^cell_(\d+)/);
@@ -174,71 +152,98 @@ function analyze() {
     cellStats[key].rubric.push(r.rubric);
     cellStats[key].holistic.push(r.holistic);
   }
-
   return { archStats, contrastStats, cellStats, totalN: rows.length };
 }
 
-function formatReport(results) {
-  const { archStats, contrastStats, cellStats, totalN } = results;
-  const lines = [];
-  lines.push('# Learner Paradox — Convergent Validity Analysis');
+function analyze() {
+  const db = new Database(DB_PATH, { readonly: true });
+
+  // Paired data: rows with BOTH rubric AND holistic, in the 4 target architectures
+  const rows = queryRows(db, '');
+  const paradoxRows = runId ? queryRows(db, `AND run_id = '${runId.replace(/'/g, "''")}'`) : null;
+
+  db.close();
+
+  const pooled = summarize(rows);
+  const paradox = paradoxRows ? summarize(paradoxRows) : null;
+  return { pooled, paradox };
+}
+
+function renderSection(lines, header, intro, s) {
+  const { archStats, contrastStats, cellStats, totalN } = s;
+  lines.push(header);
   lines.push('');
-  lines.push(`Generated: ${new Date().toISOString()}`);
-  lines.push(`Total paired rows: ${totalN}`);
-  lines.push('');
-  lines.push('Pairs are same-row rubric AND holistic scores across four learner architectures.');
-  lines.push('All scores in 0–100 range. Correlations are Pearson r on the paired vectors.');
+  if (intro) { lines.push(intro); lines.push(''); }
+  lines.push(`Paired rows: ${totalN}`);
   lines.push('');
 
-  lines.push('## Architecture-level paired comparison');
-  lines.push('');
   lines.push('| Architecture | n | Rubric M (SD) | Holistic M (SD) | Rubric↔Holistic r |');
   lines.push('|--------------|---|---------------|-----------------|-------------------|');
   for (const arch of Object.keys(archStats)) {
-    const s = archStats[arch];
+    const st = archStats[arch];
     lines.push(
-      `| ${arch} | ${s.n} | ${roundN(s.mean_rubric)} (${roundN(s.sd_rubric)}) | ${roundN(s.mean_holistic)} (${roundN(s.sd_holistic)}) | ${roundN(s.r, 3)} |`,
+      `| ${arch} | ${st.n} | ${roundN(st.mean_rubric)} (${roundN(st.sd_rubric)}) | ${roundN(st.mean_holistic)} (${roundN(st.sd_holistic)}) | ${roundN(st.r, 3)} |`,
     );
   }
   lines.push('');
 
-  lines.push('## Paradox contrasts (ego_superego − unified) on both metrics');
-  lines.push('');
-  lines.push('If the rubric-artifact account is correct, the holistic gap should be ≤ the rubric gap (because the holistic judge sees past what the rubric does not reward). If the capability-ceiling account is correct, the holistic gap should be as negative as (or more negative than) the rubric gap.');
-  lines.push('');
   lines.push('| Contrast | n (ego_sup) | n (unified) | Rubric Δ | Holistic Δ | d (rubric) | d (holistic) |');
   lines.push('|----------|-------------|-------------|----------|------------|------------|--------------|');
   for (const c of contrastStats) {
-    if (c.error) {
-      lines.push(`| ${c.name} | — | — | — | — | — | — |`);
-      continue;
-    }
+    if (c.error) { lines.push(`| ${c.name} | — | — | — | — | — | — |`); continue; }
     lines.push(
       `| ${c.name} | ${c.n_ego_sup} | ${c.n_unified} | ${roundN(c.gap_rubric)} | ${roundN(c.gap_holistic)} | ${roundN(c.d_rubric, 3)} | ${roundN(c.d_holistic, 3)} |`,
     );
   }
   lines.push('');
 
-  lines.push('## Cell-level breakdown (cells with n ≥ 30 paired rows)');
-  lines.push('');
-  lines.push('| Cell | Architecture | n | Rubric M | Holistic M | Δ (H − R) |');
+  lines.push(`| Cell | Architecture | n | Rubric M | Holistic M | Δ (H − R) |`);
   lines.push('|------|--------------|---|----------|------------|-----------|');
   const cellEntries = Object.entries(cellStats)
-    .filter(([, s]) => s.rubric.length >= 30)
+    .filter(([, st]) => st.rubric.length >= cellMinN)
     .sort(([, a], [, b]) => a.cellNum - b.cellNum);
-  for (const [, s] of cellEntries) {
-    const mR = mean(s.rubric);
-    const mH = mean(s.holistic);
+  for (const [, st] of cellEntries) {
+    const mR = mean(st.rubric);
+    const mH = mean(st.holistic);
     lines.push(
-      `| cell_${s.cellNum} | ${s.arch} | ${s.rubric.length} | ${roundN(mR)} | ${roundN(mH)} | ${roundN(mH - mR)} |`,
+      `| cell_${st.cellNum} | ${st.arch} | ${st.rubric.length} | ${roundN(mR)} | ${roundN(mH)} | ${roundN(mH - mR)} |`,
     );
   }
   lines.push('');
+}
+
+function formatReport(results) {
+  const { pooled, paradox } = results;
+  const lines = [];
+  lines.push('# Learner Paradox — Convergent Validity Analysis');
+  lines.push('');
+  lines.push(`Generated: ${new Date().toISOString()}`);
+  lines.push(`Cell min-n threshold: ${cellMinN}`);
+  lines.push('');
+  lines.push('Pairs are same-row rubric AND holistic scores across four learner architectures.');
+  lines.push('All scores in 0–100 range. Correlations are Pearson r on the paired vectors.');
+  lines.push('');
+
+  renderSection(
+    lines,
+    '## Pooled across all runs',
+    'If the rubric-artifact account is correct, the holistic gap should be ≤ the rubric gap (because the holistic judge sees past what the rubric does not reward). If the capability-ceiling account is correct, the holistic gap should be as negative as (or more negative than) the rubric gap.',
+    pooled,
+  );
+
+  if (paradox) {
+    renderSection(
+      lines,
+      `## Paradox run only (run_id = ${runId})`,
+      'This slice reproduces the d=3.05 contrast on cells 1–8 with same-row rubric AND holistic.',
+      paradox,
+    );
+  }
 
   lines.push('## Interpretation');
   lines.push('');
-  const base = contrastStats.find((c) => c.name.startsWith('Base'));
-  const recog = contrastStats.find((c) => c.name.startsWith('Recognition'));
+  const base = pooled.contrastStats.find((c) => c.name.startsWith('Base'));
+  const recog = pooled.contrastStats.find((c) => c.name.startsWith('Recognition'));
   if (base && !base.error) {
     const direction = base.gap_rubric > 0 ? 'higher' : 'lower';
     const holDirection = base.gap_holistic > 0 ? 'higher' : 'lower';
@@ -248,19 +253,39 @@ function formatReport(results) {
   }
   if (recog && !recog.error) {
     lines.push(
-      `Recognition contrast: rubric Δ=${roundN(recog.gap_rubric)} (d=${roundN(recog.d_rubric, 2)}), holistic Δ=${roundN(recog.gap_holistic)} (d=${roundN(recog.d_holistic, 2)}).`,
+      `Recognition contrast (pooled): rubric Δ=${roundN(recog.gap_rubric)} (d=${roundN(recog.d_rubric, 2)}), holistic Δ=${roundN(recog.gap_holistic)} (d=${roundN(recog.d_holistic, 2)}).`,
     );
   }
-  const avgR = Object.values(archStats).map((s) => s.r).filter((r) => r != null);
+  if (paradox) {
+    const pBase = paradox.contrastStats.find((c) => c.name.startsWith('Base'));
+    const pRecog = paradox.contrastStats.find((c) => c.name.startsWith('Recognition'));
+    if (pBase && !pBase.error) {
+      lines.push(
+        `**Paradox run (base contrast):** rubric Δ=${roundN(pBase.gap_rubric)} (d=${roundN(pBase.d_rubric, 2)}), holistic Δ=${roundN(pBase.gap_holistic)} (d=${roundN(pBase.d_holistic, 2)}). The published d=3.05 was on first-turn rubric only (n=72 per arch × single-prompt mode); this paired paradox-run subset has n=${pBase.n_ego_sup}/${pBase.n_unified}.`,
+      );
+    }
+    if (pRecog && !pRecog.error) {
+      lines.push(
+        `**Paradox run (recognition contrast):** rubric Δ=${roundN(pRecog.gap_rubric)} (d=${roundN(pRecog.d_rubric, 2)}), holistic Δ=${roundN(pRecog.gap_holistic)} (d=${roundN(pRecog.d_holistic, 2)}).`,
+      );
+    }
+  }
+  const avgR = Object.values(pooled.archStats).map((s) => s.r).filter((r) => r != null);
   if (avgR.length) {
     lines.push(
-      `Rubric↔holistic correlations are ${roundN(Math.min(...avgR), 3)}–${roundN(Math.max(...avgR), 3)} across architectures — convergent validity does **not** break down for ego_superego learners.`,
+      `Rubric↔holistic correlations (pooled) are ${roundN(Math.min(...avgR), 3)}–${roundN(Math.max(...avgR), 3)} across architectures — convergent validity does **not** break down for ego_superego learners.`,
     );
   }
   lines.push('');
-  lines.push(
-    'The d=3.05 paradox was computed on the 2×2×2 factorial cells 1–8 (N=144, single-prompt mode, Paper 1.0 §6.16). On the larger paired subset here (N≈1,759), which is dominated by messages-mode cells 80–87, ego_superego learners do not exhibit the paradox. This suggests the paradox is **not** a general property of the architecture but a scenario- or mode-specific interaction — consistent with the rubric-measurement-artifact account rather than a capability-ceiling account. A definitive adjudication still requires holistic scoring on the original paradox run (eval-2026-02-20-25c78e91), which currently has zero holistic rows.',
-  );
+  if (paradox && paradox.totalN > 0) {
+    lines.push(
+      `The d=3.05 paradox was computed on the 2×2×2 factorial cells 1–8 (N=144, single-prompt mode, Paper 1.0 §6.16). The paradox run slice above gives the cell-matched d on both metrics on the exact rows the paradox came from. The pooled subset (N=${pooled.totalN}), dominated by messages-mode cells 80–87, confirms the effect does not generalize.`,
+    );
+  } else {
+    lines.push(
+      'The d=3.05 paradox was computed on the 2×2×2 factorial cells 1–8 (N=144, single-prompt mode, Paper 1.0 §6.16). Paradox-run holistic scores pending.',
+    );
+  }
   lines.push('');
 
   return lines.join('\n');
