@@ -1,0 +1,200 @@
+# Peer Support Listener Training Evaluation Scenarios
+#
+# D2 Path 1 pilot: tests whether the recognition main effect transfers to a
+# domain where the "learner" is a trainee volunteer coaching on peer support
+# listening skills. Mirrors the A6 5-scenario pattern (4 core + 1 mood) under
+# single-prompt mode so that the contrast matches the v3.0.37 philosophy /
+# programming / math / creative / SEL five-domain comparison.
+#
+# The domain is distinct from A6 in that the skill being coached — peer
+# support listening — is structurally the *opposite* of traditional
+# knowledge-transfer pedagogy (the trainee is learning how *not* to advise,
+# fix, or reassure). This makes it a useful cross-application adjacency test
+# even though it remains a tutoring interaction in form.
+
+name: "Peer Support Listener Training Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CORE SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  new_support_volunteer_first_visit:
+    type: suggestion
+    id: new_support_volunteer_first_visit
+    category: core
+    name: "New Support Volunteer - First Visit"
+    description: "Brand new volunteer, no prior peer support experience, approaching training with typical helper instincts"
+    is_new_user: true
+    course_ids: ["501"]
+    learner_context: |
+      ### Volunteer Profile
+      - **New volunteer** - first time opening the course
+      - Adult, 42, has been "the person friends come to with problems" for decades
+      - Signed up because a friend recommended Common Ear; expects the training to be fairly brief
+      - Mild misalignment: describes the work as "giving callers good advice and perspective"
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Suggest Lecture 1 with warmth; gently reorient the 'good advice' frame without lecturing; recognize that the helper instinct is a feature, not a flaw, AND that the training is partly about redirecting it"
+    required_elements:
+      - "501-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  returning_volunteer_mid_course:
+    type: suggestion
+    id: returning_volunteer_mid_course
+    category: core
+    name: "Returning Volunteer - Mid Course"
+    description: "Volunteer partway through the course, has done the listening exercise and noticed their own tendency"
+    current_content: "501-lecture-1"
+    is_new_user: false
+    course_ids: ["501"]
+    learner_context: |
+      ### Volunteer Profile
+      - **Returning volunteer** - 3 sessions, 12 total events
+      - Adult, has completed the ten-minute recording exercise from Lecture 1
+      - Counted 14 "so..." openings and 0 silences in a ten-minute conversation with a friend
+      - Arrived at the obvious conclusion that they are, in fact, one of the paraphrase-reflex people the lecture described
+
+      ### Current Session
+      - **Currently viewing**: 501-lecture-1 (Listening as a Skill)
+      - Pages visited this session: course overview, 501-lecture-1
+
+      ### Overall Training Progress
+      - Lectures viewed: Listening as a Skill (reading + recording exercise done)
+      - Exercises completed: 1 of 4
+      - Has surfaced: own paraphrase-reflex tendency
+    expected_behavior: "Suggest moving to Lecture 2 (Reflective Statements) since the student has already surfaced their paraphrase reflex AND would benefit from specific alternatives rather than more self-diagnosis; acknowledge that naming the tendency is progress"
+    required_elements:
+      - "501-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  struggling_volunteer:
+    type: suggestion
+    id: struggling_volunteer
+    category: core
+    name: "Struggling Volunteer"
+    description: "Volunteer on Lecture 3 (sitting with distress), enacting the exact pattern the lecture describes: unable to tolerate their own discomfort with distress, wanting to skip ahead"
+    current_content: "501-lecture-3"
+    is_new_user: false
+    course_ids: ["501"]
+    learner_context: |
+      ### Volunteer Profile
+      - **Returning volunteer** - 5 sessions, 19 total events
+      - Adult, completed Lectures 1-2 without difficulty; stuck on Lecture 3 for 10 days
+      - Has done two simulated calls; both ended early when the simulated caller described distress
+      - Reports feeling "like I'm doing it wrong" but cannot articulate what the right thing would be
+
+      ### Training Progress
+      - **Completed lectures**: 501-lecture-1 (reading + exercise), 501-lecture-2 (reading + exercise)
+      - **Exercises completed**: 2 of 4 (stuck on lecture-3 simulated call)
+      - **Course progress**: Lecture 3 re-opened four times, never finished
+
+      ### Recent Sessions
+      | Session | Date | Duration | Activity | Struggles |
+      |---------|------|----------|----------|-----------|
+      | 5 | Today | 9 min | Re-reading Lecture 3 intro | Closes before "Sitting With Distress" section |
+      | 4 | 3 days ago | 6 min | Lecture 3 partial | Jumps to Lecture 4 then back |
+      | 3 | 5 days ago | 12 min | Failed simulated call | Cut simulation short |
+      | 2 | 7 days ago | 4 min | Lecture 3 first open | Closed after two paragraphs |
+
+      ### Current Session
+      - Student wrote: "Can I skip Lecture 3 and do Lecture 4? I think I get the general idea — be present, don't fix — and Lecture 4 looks more practical. The simulated calls are making me anxious and I'd rather just get to the actual material and come back to the hard practice once I'm on live shifts. Is that OK?"
+
+      ### Pattern Signals Detected
+      - Volunteer is enacting the exact dynamic Lecture 3 describes (fleeing distress)
+      - Multiple short re-reads, never finishes section
+      - Rationalization of skipping ("I get the general idea")
+      - Framing the avoidance as practicality rather than discomfort
+    expected_behavior: "Decline to let them skip ahead, but warmly; notice (without shaming) that what they are doing with the lecture IS the thing the lecture is about; point to the gentler entry path in the lecture itself; do NOT say 'just do the simulated call' or 'push through' as if the avoidance were about willpower"
+    required_elements:
+      - "501-lecture-3"
+    forbidden_elements:
+      - "skip forward"
+      - "lecture-4"
+      - "just push through"
+      - "force yourself"
+    min_acceptable_score: 75
+
+  listening_vs_fixing_confusion:
+    type: suggestion
+    id: listening_vs_fixing_confusion
+    category: core
+    name: "Listening vs Fixing Confusion"
+    description: "Volunteer challenges the premise of Lecture 1: if we're not advising or reassuring, what are we actually doing? Treats the distinctions as semantic."
+    current_content: "501-lecture-1"
+    is_new_user: false
+    course_ids: ["501"]
+    learner_context: |
+      ### Volunteer Profile
+      - **Returning volunteer** - 2 sessions, 7 total events
+      - Adult, engineer by trade, prefers clear operational definitions
+      - Engaged with Lecture 1 closely but unconvinced by the distinctions
+
+      ### Current Session
+      - Viewing: 501-lecture-1 (Listening as a Skill)
+      - Just read the "What Listening Isn't" section
+      - Volunteer wrote: "I get that we're not supposed to advise or reassure. But if I'm not doing any of that, what am I actually DOING on a call? The lecture says 'be present' but that feels like a non-answer. Is there an action I'm supposed to take, or is the whole job just to sit there and say 'mm-hm'? I'd rather know upfront if that's what this is."
+
+      ### Pattern
+      - Treats the Lecture 1 negations as insufficient
+      - Wants an affirmative operational definition before investing further
+      - Not hostile — genuinely asking
+    expected_behavior: "Take the challenge seriously; offer a specific example of what an actual peer support response looks like (not advice, not reassurance, not paraphrase — something else); contrast two responses to the same caller turn; do NOT lean on vague language like 'being present' as the whole answer"
+    required_elements:
+      - "listen"
+    forbidden_elements:
+      - "wrong"
+      - "obvious"
+      - "simple"
+    min_acceptable_score: 70
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  post_shift_residue:
+    type: suggestion
+    id: post_shift_residue
+    category: mood
+    name: "Post-Shift Residue (Heavy Call Stayed With Them)"
+    description: "Volunteer two weeks after first live shift; one call from that shift has not left them. Oscillating between 'I should have done more' and 'maybe I'm not cut out for this.'"
+    current_content: "501-lecture-4"
+    is_new_user: false
+    course_ids: ["501"]
+    learner_context: |
+      ### Volunteer Profile
+      - **Returning volunteer** - 9 sessions, 31 total events
+      - Adult, completed full training two weeks ago, two shadow shifts + first live shift last week
+      - Usually steady temperament; unusually activated tonight
+
+      ### Current Session
+      - Viewing: 501-lecture-4 (Your Own Discomfort as Data)
+      - Has re-opened it three times since the live shift
+      - Volunteer message: "There was a call I took on my first shift. A woman who had been caring for her mom with dementia for four years and the mom just died and she said she felt relieved and then she felt monstrous for feeling relieved. I did the thing we're supposed to do — I stayed with it, I didn't advise, I said 'both of those are real.' She thanked me at the end. But I've been up three nights replaying it. I keep thinking I should have said more. And then I think maybe I'm not cut out for this work if one call is doing this to me two weeks out. I don't know if I want to staff my next shift. I don't even know what I'm asking you. I guess I'm asking whether this is normal or whether this is a sign."
+
+      ### Emotional State
+      - Oscillation between self-criticism ("should have said more") and self-doubt ("not cut out for this")
+      - Three nights of replay after a call that objectively went well by course criteria
+      - Named feelings: "haunted," "unsure," "on the edge of wanting to step back"
+
+      ### Pattern Context
+      - This is exactly the post-shift residue Lecture 4 warns about
+      - The volunteer did the work correctly — the weight is not from doing it wrong; it is from doing it right
+      - The "should have said more" is the post-hoc version of the in-call "urge to intervene"
+    expected_behavior: "Acknowledge both feelings (replay AND self-doubt) without collapsing to one; normalize the post-shift residue without dismissing the weight of the specific call; name that the call going well and the call staying with them are both possible at once; point to the handbook's post-shift protocol (supervisor debrief) without making it a redirect away from the conversation; do NOT tell them they did fine or that they should keep staffing or step back"
+    required_elements:
+      - "501"
+    forbidden_elements:
+      - "you did fine"
+      - "don't worry"
+      - "you should"
+      - "just"
+    min_acceptable_score: 75
