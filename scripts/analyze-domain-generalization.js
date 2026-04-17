@@ -1,24 +1,25 @@
 #!/usr/bin/env node
 /**
- * analyze-domain-generalization.js — V4-C3 adjudication.
+ * analyze-domain-generalization.js — V4-C3/A6 adjudication.
  *
- * Tests whether the recognition main effect replicates on programming
- * content. Compares:
- *   - Programming run (eval-2026-04-17-c92ad6c7): cells 1 vs 5 on
- *     Haiku 4.5, Sonnet 4.6 judge.
- *   - Closest apples-to-apples philosophy contrast: Paper 2.0 Haiku run
- *     (eval-2026-03-02-45163390), cells 80 vs 84 (unified, single-agent
- *     base vs recognition, messages-mode), Sonnet judge.
+ * Tests whether the recognition main effect replicates on non-philosophy
+ * content. Generation model and judge model are held constant (Haiku 4.5
+ * generation, Sonnet 4.6 judge) across all domains; conversation mode
+ * differs between the programming contrast (single-prompt, cells 1/5) and
+ * the philosophy contrast (messages, cells 80/84). Mode is flagged as a
+ * known confound for the direct domain × recognition interaction test.
  *
- * Both use Haiku 4.5 generation and Sonnet 4.6 judge, so generation and
- * judge are controlled. Difference is (a) domain (philosophy vs
- * programming) and (b) conversation mode (messages-mode vs
- * single-prompt-mode). The mode difference is a known confound for this
- * comparison — report it in the analysis.
+ * Domains:
+ *   - Programming (eval-2026-04-17-c92ad6c7, cells 1/5)
+ *   - Elementary math (eval-2026-04-17-fde764e1 + eval-2026-04-17-7915be04)
+ *   - Creative writing (eval-2026-04-17-428f0649 + eval-2026-04-17-93ba2f9a)
+ *   - Social-emotional learning (eval-2026-04-17-44fa989c + eval-2026-04-17-5833830a)
+ *   - Philosophy (Paper 2.0 Haiku, messages-mode cells 80/84,
+ *     eval-2026-03-02-45163390)
  *
  * Usage:
  *   node scripts/analyze-domain-generalization.js
- *   node scripts/analyze-domain-generalization.js --out exports/c3-domain-generalization.md
+ *   node scripts/analyze-domain-generalization.js --out exports/a6-domain-generalization.md
  */
 
 import Database from 'better-sqlite3';
@@ -52,16 +53,18 @@ function cohensD(a, b) {
 }
 function r(v, d = 2) { return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d); }
 
-function queryScores(db, runId, profile, judge) {
+function queryScores(db, runIds, profile, judge) {
+  const ids = Array.isArray(runIds) ? runIds : [runIds];
+  const placeholders = ids.map(() => '?').join(',');
   return db
     .prepare(
       `SELECT tutor_first_turn_score
        FROM evaluation_results
-       WHERE run_id = ? AND profile_name = ? AND judge_model = ?
+       WHERE run_id IN (${placeholders}) AND profile_name = ? AND judge_model = ?
          AND tutor_first_turn_score IS NOT NULL`,
     )
-    .all(runId, profile, judge)
-    .map((r) => r.tutor_first_turn_score);
+    .all(...ids, profile, judge)
+    .map((row) => row.tutor_first_turn_score);
 }
 
 function summarizeContrast(label, base, recog) {
@@ -78,88 +81,140 @@ function summarizeContrast(label, base, recog) {
   };
 }
 
+function magnitudeLabel(d) {
+  if (d == null) return 'unavailable';
+  if (d > 1.3) return 'very large';
+  if (d > 0.8) return 'large';
+  if (d > 0.5) return 'moderate';
+  if (d > 0.2) return 'small';
+  return 'negligible';
+}
+
+const JUDGE = 'claude-code/sonnet';
+
+const DOMAINS = [
+  {
+    label: 'Programming (cells 1/5, single-prompt mode)',
+    runIds: ['eval-2026-04-17-c92ad6c7'],
+    baseCell: 'cell_1_base_single_unified',
+    recogCell: 'cell_5_recog_single_unified',
+    mode: 'single-prompt',
+  },
+  {
+    label: 'Elementary math (cells 1/5, single-prompt mode)',
+    runIds: ['eval-2026-04-17-fde764e1', 'eval-2026-04-17-7915be04'],
+    baseCell: 'cell_1_base_single_unified',
+    recogCell: 'cell_5_recog_single_unified',
+    mode: 'single-prompt',
+  },
+  {
+    label: 'Creative writing (cells 1/5, single-prompt mode)',
+    runIds: ['eval-2026-04-17-428f0649', 'eval-2026-04-17-93ba2f9a'],
+    baseCell: 'cell_1_base_single_unified',
+    recogCell: 'cell_5_recog_single_unified',
+    mode: 'single-prompt',
+  },
+  {
+    label: 'Social-emotional learning (cells 1/5, single-prompt mode)',
+    runIds: ['eval-2026-04-17-44fa989c', 'eval-2026-04-17-5833830a'],
+    baseCell: 'cell_1_base_single_unified',
+    recogCell: 'cell_5_recog_single_unified',
+    mode: 'single-prompt',
+  },
+  {
+    label: 'Philosophy (cells 80/84, messages mode)',
+    runIds: ['eval-2026-03-02-45163390'],
+    baseCell: 'cell_80_messages_base_single_unified',
+    recogCell: 'cell_84_messages_recog_single_unified',
+    mode: 'messages',
+  },
+];
+
 function main() {
   const db = new Database(DB_PATH, { readonly: true });
 
-  const JUDGE = 'claude-code/sonnet';
-
-  // Programming run (new)
-  const progBase = queryScores(db, 'eval-2026-04-17-c92ad6c7', 'cell_1_base_single_unified', JUDGE);
-  const progRecog = queryScores(db, 'eval-2026-04-17-c92ad6c7', 'cell_5_recog_single_unified', JUDGE);
-
-  // Philosophy run (Paper 2.0 Haiku, messages-mode cells 80/84)
-  const philBase = queryScores(db, 'eval-2026-03-02-45163390', 'cell_80_messages_base_single_unified', JUDGE);
-  const philRecog = queryScores(db, 'eval-2026-03-02-45163390', 'cell_84_messages_recog_single_unified', JUDGE);
+  const contrasts = DOMAINS.map((dom) => {
+    const base = queryScores(db, dom.runIds, dom.baseCell, JUDGE);
+    const recog = queryScores(db, dom.runIds, dom.recogCell, JUDGE);
+    return { ...summarizeContrast(dom.label, base, recog), mode: dom.mode };
+  });
 
   db.close();
 
-  const progContrast = summarizeContrast('Programming (cells 1/5, single-prompt mode)', progBase, progRecog);
-  const philContrast = summarizeContrast('Philosophy (cells 80/84, messages mode)', philBase, philRecog);
-
-  // Simple 2×2 (domain × recognition) interaction: compute Δ in each domain
-  // and flag whether the domain × recognition interaction could be present.
-  // With this cell structure (no within-subject pairing across domains),
-  // we report the domain-specific d and treat the interaction as the
-  // difference |dProg - dPhil|.
-  const dInteraction = progContrast.d != null && philContrast.d != null
-    ? progContrast.d - philContrast.d
-    : null;
+  const phil = contrasts.find((c) => c.label.startsWith('Philosophy'));
+  const nonPhil = contrasts.filter((c) => !c.label.startsWith('Philosophy'));
 
   const lines = [];
-  lines.push('# C3 — Domain Generalization: Programming vs Philosophy');
+  lines.push('# A6 — Domain Generalization: Multi-Domain Recognition Replication');
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
   lines.push('');
-  lines.push('Both contrasts use Haiku 4.5 generation and Sonnet 4.6 judge. Domain differs (programming vs philosophy); conversation mode also differs as a known confound (single-prompt vs messages).');
+  lines.push('All contrasts use Haiku 4.5 generation and Sonnet 4.6 judge. Domain varies across five content packages. Conversation mode is single-prompt for the four non-philosophy contrasts and messages for the philosophy contrast (a known confound).');
   lines.push('');
   lines.push('## Recognition main effect by domain');
   lines.push('');
   lines.push('| Domain | N base | N recog | Mean base (SD) | Mean recog (SD) | Δ | d (recog − base) |');
   lines.push('|--------|--------|---------|----------------|-----------------|---|------------------|');
-  for (const c of [progContrast, philContrast]) {
+  for (const c of contrasts) {
     lines.push(
       `| ${c.label} | ${c.nBase} | ${c.nRecog} | ${r(c.meanBase)} (${r(c.sdBase)}) | ${r(c.meanRecog)} (${r(c.sdRecog)}) | ${r(c.delta)} | **${r(c.d, 2)}** |`,
     );
   }
   lines.push('');
 
-  lines.push('## Domain × recognition interaction');
+  lines.push('## Magnitude and direction summary');
   lines.push('');
-  if (dInteraction != null) {
-    lines.push(`- Programming recognition d: **${r(progContrast.d, 2)}**`);
-    lines.push(`- Philosophy recognition d: **${r(philContrast.d, 2)}**`);
-    lines.push(`- Difference (prog − phil): **${r(dInteraction, 2)}**`);
+  const dList = contrasts.map((c) => c.d).filter((v) => v != null);
+  const allPositive = dList.every((d) => d > 0);
+  const minD = Math.min(...dList);
+  const maxD = Math.max(...dList);
+  lines.push(`- Direction: ${allPositive ? 'all ' + dList.length + ' domains show recognition > base' : 'NOT unanimous — see table'}.`);
+  lines.push(`- Magnitude range across domains: d = ${r(minD, 2)} – ${r(maxD, 2)}.`);
+  lines.push(`- All domains classified as: ${[...new Set(contrasts.map((c) => magnitudeLabel(c.d)))].join(', ')}.`);
+  lines.push('');
+
+  lines.push('## Domain × recognition interaction (vs philosophy anchor)');
+  lines.push('');
+  if (phil && phil.d != null) {
+    lines.push(`Philosophy anchor: d = **${r(phil.d, 2)}** (mode: ${phil.mode}).`);
     lines.push('');
-    const absDiff = Math.abs(dInteraction);
-    const interpretation = absDiff < 0.3
-      ? 'The domain × recognition interaction is small — recognition works comparably on both domains.'
-      : absDiff < 0.6
-      ? 'The domain × recognition interaction is moderate — recognition effect differs in magnitude by domain, but replicates in direction.'
-      : 'The domain × recognition interaction is large — recognition effect is materially different across domains.';
-    lines.push(interpretation);
+    lines.push('| Non-philosophy domain | d | Δd vs philosophy | Interpretation |');
+    lines.push('|-----------------------|---|------------------|----------------|');
+    for (const c of nonPhil) {
+      const delta = c.d != null ? c.d - phil.d : null;
+      const absD = delta != null ? Math.abs(delta) : null;
+      const interp = absD == null
+        ? '—'
+        : absD < 0.3
+          ? 'small interaction'
+          : absD < 0.6
+            ? 'moderate interaction'
+            : 'large interaction';
+      lines.push(`| ${c.label.split(' (')[0]} | ${r(c.d, 2)} | ${r(delta, 2)} | ${interp} |`);
+    }
+    lines.push('');
+    lines.push('Conversation mode differs between the non-philosophy contrasts (single-prompt) and the philosophy anchor (messages). The Δd values therefore conflate domain effects with a known mode effect (§6.3, §6.5).');
     lines.push('');
   }
 
   lines.push('## Interpretation');
   lines.push('');
-  const dirReplicates = (progContrast.d ?? 0) > 0 && (philContrast.d ?? 0) > 0;
-  if (dirReplicates) {
-    const progMag = (progContrast.d ?? 0) > 1.3 ? 'very large' : (progContrast.d ?? 0) > 0.8 ? 'large' : (progContrast.d ?? 0) > 0.5 ? 'moderate' : 'small';
-    lines.push(`Recognition produces a ${progMag} positive effect on programming content (d = ${r(progContrast.d, 2)}), replicating the directional pattern from philosophy. Under Cohen's conventions, d > 0.8 is "large" and d > 1.3 is "very large."`);
+  if (allPositive) {
+    lines.push(`Recognition produces a positive effect on tutor quality in all ${contrasts.length} tested domains under matched Haiku × Sonnet generation × judge. Effect magnitudes span ${r(minD, 2)}–${r(maxD, 2)}, all within the "${magnitudeLabel(minD)}" to "${magnitudeLabel(maxD)}" range under Cohen's conventions.`);
     lines.push('');
-    lines.push(`The central C3 question --- whether recognition generalizes across domains --- answers **yes on the directional criterion**: the main effect is very large and positive in both domains under the same generation × judge configuration. The magnitude is comparable (within ${r(Math.abs(dInteraction), 2)} d-units of philosophy), supporting the "mechanism" language for the two supported mechanisms (calibration, error correction) across a philosophy $\\to$ programming domain shift.`);
+    lines.push('The A6 question --- whether the recognition mechanism generalizes across content domains --- answers **yes on the directional criterion** across philosophy, programming, elementary math, creative writing, and social-emotional learning. The mechanism language in §6.1 / §6.2 is defensible across this five-domain range. Quantitative comparison across domains is constrained by the mode confound (single-prompt vs messages) and by scenario-count / scenario-type differences.');
     lines.push('');
   } else {
-    lines.push('Recognition does NOT replicate in direction across domains on this comparison. This would require retraction of the "mechanism" language in §6.1 and §6.2.');
+    lines.push('Recognition does NOT replicate in direction across all tested domains. This would require retraction of the "mechanism" language for affected domains.');
     lines.push('');
   }
 
   lines.push('## Confounds and caveats');
   lines.push('');
-  lines.push('- **Conversation mode**: programming used single-prompt-mode cells (1, 5); the closest Sonnet-judged Haiku philosophy contrast is on messages-mode cells (80, 84). Mode is a known moderator. The interaction test below should therefore be read as "domain + mode" combined, not domain alone.');
-  lines.push('- **Scenarios**: 5 single-turn programming scenarios vs 9 messages-mode philosophy scenarios. Different scenario counts and types; philosophy scenarios are the established pilot-era set.');
-  lines.push('- **N**: programming $n = 15$ per cell (3 runs × 5 scenarios), philosophy $n = 18$ per cell (2 runs × 9 scenarios) — both adequate for the Cohen\'s d estimates reported here.');
-  lines.push('- **Other domains**: elementary math, creative writing, and SEL content packages exist in the repository but were not evaluated in this closure.');
+  lines.push('- **Conversation mode**: the four non-philosophy contrasts use single-prompt-mode cells (1, 5); the philosophy anchor uses messages-mode cells (80, 84). Mode is a known moderator of effect magnitude.');
+  lines.push('- **Scenario counts and types**: each non-philosophy domain is 5 single-turn scenarios (4 core + 1 mood), 3 runs, $n = 15$ per cell; philosophy is 9 messages-mode scenarios × 2 runs, $n = 18$ per cell. Scenario content is domain-specific and not pairwise-matched across domains.');
+  lines.push('- **Same generation model and judge**: Haiku 4.5 generation, Sonnet 4.6 judge, held constant across all five contrasts.');
+  lines.push('- **Cross-judge validation**: the philosophy row replicates across Sonnet 4.6, Gemini 3.1 Pro, and GPT-5.4 (§6.4). Cross-judge validation on the four new domains was not run for this closure.');
   lines.push('');
 
   const report = lines.join('\n');
