@@ -82,7 +82,9 @@ Authenticity-focused superego scored *worse* on every dimension including authen
 - Standard control: cells 60-61 from eval-2026-02-20-0fbca69e (N=64)
 - Paper ref: Section 6.16.1, 7.5, 8.2
 
-### A5. Writing Pad Controlled Ablation (MEDIUM — design ready, not yet run)
+### A5. Writing Pad Controlled Ablation ~~(MEDIUM — design ready, not yet run)~~ [RESOLVED v3.0.40]
+**Closed 2026-04-19.** Run eval-2026-04-17-f1e851c3 (N=252, 4 cells × 3 runs × 21 scenarios, nemotron × kimi-k2.5, Sonnet judge). 2×2 ANOVA: recognition F=27.10, p<.001, η²=.097 (large); Writing Pad F=3.96, p=.048, η²=.014 (marginal, opposite direction — pad OFF scores 3.2 pts higher); interaction F=0.82, p=.366 (null). Recognition holds without pad (d=0.74 vs 0.56 with pad). **Writing Pad is not load-bearing for the recognition effect.** Full analysis in `exports/a5-writing-pad.md`; paper §6.6.9.
+
 Writing Pad activation coincides with quality improvement, but no controlled ablation exists.
 
 **Current state:**
