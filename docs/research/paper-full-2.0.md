@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "3.0.40"
+version: "3.0.41"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1780,6 +1780,27 @@ Two-way ANOVA (Type I, $df_{\text{error}} = 248$): the **recognition main effect
 The Writing Pad is therefore **not load-bearing** for the recognition effect on this architecture. Recognition raises scores in both pad conditions with no significant interaction, and the pad's own main effect, though statistically marginal, points in the wrong direction for a "scaffolding" account. The most plausible reading is that recognition operates at the prompt level (the ego and superego prompt content, §3.5) rather than via the three-layer memory architecture. The Writing Pad may have other effects (for example on turn-to-turn coherence, which this first-turn-score analysis does not isolate) but it does not carry the recognition effect.
 
 Three scope limits qualify this. First, the ablation is run on a single ego-model pair (Nemotron $\times$ Kimi) and a single superego disposition (suspicious); mechanism decomposition in §6.6.4 shows mechanism-to-architecture coupling varies with model capability. Second, the test uses first-turn scores, which do not capture multi-turn coherence effects the pad might plausibly mediate; a turn-over-turn analysis is a natural extension but deferred here. Third, the pad's marginal main effect in the *unhelpful* direction should be interpreted cautiously given $p = .048$ and the fact that it does not survive the basic Bonferroni correction against three tested effects in this table --- we read it as consistent with "the pad does nothing useful here" rather than as evidence that the pad is actively harmful. Full analysis in `exports/a5-writing-pad.md`; reproducible via `scripts/analyze-a5-writing-pad.js`.
+
+#### 6.6.10 Capability Threshold for Cognitive Prosthesis
+
+Section 6.6.3 reports the "cognitive prosthesis" effect --- weaker single-agent tutors benefit disproportionately from architectural support (superego + profiling) --- as the most model-dependent finding in the factorial. A natural extension is a *capability-threshold* test: if the prosthesis compensates for ego-reasoning limits, weaker models should benefit and stronger models should either see diminishing returns or be actively harmed (scaffolding disrupting already-competent reasoning). A3 tests this by running cell 66 (recognition $\times$ bidirectional-profiling prosthesis, descriptive variant) across six ego models spanning a $\sim$26-point baseline capability range, and comparing each to its matched cell 5 (recognition, single-agent, no prosthesis) baseline.
+
+| Ego Model | Judge | Baseline (cell 5) | Prosthesis (cell 66) | $\Delta$ | 95% CI | Cohen's $d$ |
+|---|---|---|---|---|---|---|
+| Qwen 3.5 | Sonnet$^{\dagger}$ | 65.65 ($n$=63) | 66.33 ($n$=59) | +0.68 | [-4.14, 5.50] | 0.05 |
+| Nemotron | Opus 4.6 | 66.38 ($n$=84) | 48.28 ($n$=30) | -18.11 | [-23.80, -12.42] | -1.29 |
+| GLM-4.7 | Opus / Sonnet$^{\ddagger}$ | 83.96 ($n$=30) | 58.91 ($n$=63) | -25.05 | [-29.87, -20.24] | -2.01 |
+| DeepSeek V3.2 | Opus / Sonnet$^{\ddagger}$ | 84.20 ($n$=30) | 53.92 ($n$=43) | -30.27 | [-36.36, -24.19] | -2.23 |
+| Kimi K2.5 | Opus / Sonnet$^{\ddagger}$ | 89.93 ($n$=219) | 64.55 ($n$=44) | -25.38 | [-29.80, -20.96] | -2.59 |
+| Haiku 4.5 | Opus / Sonnet$^{\ddagger}$ | 91.25 ($n$=107) | 69.14 ($n$=48) | -22.10 | [-26.22, -17.99] | -2.30 |
+
+$^{\dagger}$ within-judge matched. $^{\ddagger}$ cross-judge (baseline opus-4.6, prosthesis code/sonnet) --- magnitudes confounded with judge stringency, directional signal robust. All runs use Kimi K2.5 as superego; $N_{\text{total}} = 947$ rows. Full analysis in `exports/a3-capability-threshold.md`.
+
+Three findings stand out. First, **the capability-threshold hypothesis is not supported**. If prosthesis compensated for weak ego reasoning, Qwen 3.5 and Nemotron (the two lowest-baseline models) should both show positive deltas. Instead, Qwen 3.5 shows a null effect ($d = 0.05$, CI includes zero) while Nemotron shows substantial harm ($d = -1.29$). Two low-capability models, opposite outcomes --- baseline capability alone does not predict prosthesis response. Second, **prosthesis is either neutral or harmful everywhere we can measure cleanly**. Of the six models tested, five show 95% confidence intervals on $\Delta$ that lie entirely below zero; none shows a confidence interval entirely above zero. Third, a simple linear regression of $\Delta$ on baseline capability gives slope $= -0.71$ ($r = -0.74$, $R^2 = 0.55$), which would naively support a "stronger models harmed more" reading, but the slope is driven substantially by Qwen's null sitting at the lowest-capability end, and four of six points are cross-judge confounded. We report the regression for completeness but do not treat it as clean evidence for an inverted-threshold story.
+
+The paper-1.0 cognitive-prosthesis finding (cells 66--68, Nemotron, $+20$-point gain under superego on weakest model) is *not* replicated as a general pattern across capability tiers. The original effect appears to reflect something specific to that ego-superego-judge configuration rather than a general "weaker model benefits from scaffolding" regularity. The most defensible reading is that superego-routed bidirectional profiling is an architectural cost that the ego must *pay for* through lost response coherence, and only in narrow conditions (e.g., Qwen's particular response-length and dialectical-synthesis profile) does the profiling integrate cleanly enough to avoid dilution. A sharper follow-up would ask what about Qwen's response pattern makes prosthesis neutral where it is harmful for every other tested model --- candidates include response-length norms, dialectical-synthesis tolerance, or architectural affinity for the profiling schema.
+
+Three caveats qualify this. First, four of six comparisons are cross-judge (Opus 4.6 on baseline, code/sonnet on prosthesis) because the prosthesis cells were judged in a later sweep than the baselines; judge-stringency drift inflates the cross-judge $|\Delta|$ magnitudes. Within-judge comparisons (Qwen, Nemotron) are the cleanest evidence and still disagree with each other. Second, effective $n$ fell below the 63-target for several prosthesis cells because OpenRouter credits exhausted mid-run; the smallest ($n=30$ for Nemotron, $n=43$ for DeepSeek) still support clear directional inference within the available judge but reduce precision on the regression. Third, A3 tests only the descriptive prosthesis variant (cell 66); the prescriptive (cell 67) and adversary (cell 68) variants may behave differently and are not evaluated here. Reproducible via `scripts/analyze-a3-capability-threshold.js`.
 
 ## 7. Discussion
 

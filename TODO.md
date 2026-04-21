@@ -26,55 +26,19 @@ Full 2×7 matrix (recognition × 7 mechanisms) with dynamic learner. All 7 mecha
 - Haiku supplements: eval-2026-02-20-57ba525c, eval-2026-02-20-90703a6a
 - Paper ref: Section 6.10, 6.16.1, 8.2
 
-### A3. Capability Threshold Mapping (MEDIUM — design ready, not yet run)
-Nemotron falls below and Haiku falls above the minimum ego capability threshold for mechanism benefit. The threshold boundary is unmapped.
+### A3. Capability Threshold Mapping ~~(MEDIUM — design ready, not yet run)~~ [RESOLVED 2026-04-20 — hypothesis not supported]
+**Closed 2026-04-20.** Ran cell 66 (recognition × bidirectional-profiling prosthesis, descriptive) across six ego models vs cell 5 (recognition, single-agent) baselines; kimi-k2.5 superego throughout. Run IDs: eval-2026-04-20-{0bbdb49a (Qwen), ad22a157 (DeepSeek), 3a2ea3cc (Kimi), f30da006 (Haiku)} plus existing GLM-4.7 and Nemotron data. $N_{\text{total}} = 947$ rows. Capability-threshold hypothesis **not supported**: Qwen 3.5 (lowest baseline) shows null effect while Nemotron (second-lowest) shows substantial harm — same tier, opposite outcomes. 5/6 models have 95% CI on Δ entirely below zero; none above zero.
 
-**Known anchors:**
-- Nemotron 30B (free): mechanisms **hurt** (−15 pts, cognitive prosthesis cells 66-68)
-- Haiku 4.5 (paid): mechanisms **help** (+20 pts)
+| Model | Baseline | Prosthesis | Δ | d | Judge |
+|---|---|---|---|---|---|
+| Qwen 3.5 | 65.65 (n=63) | 66.33 (n=59) | +0.68 | 0.05 | Sonnet (matched) |
+| Nemotron | 66.38 (n=84) | 48.28 (n=30) | -18.11 | -1.29 | Opus 4.6 (matched) |
+| GLM-4.7 | 83.96 (n=30) | 58.91 (n=63) | -25.05 | -2.01 | cross-judge |
+| DeepSeek V3.2 | 84.20 (n=30) | 53.92 (n=43) | -30.27 | -2.23 | cross-judge |
+| Kimi K2.5 | 89.93 (n=219) | 64.55 (n=44) | -25.38 | -2.59 | cross-judge |
+| Haiku 4.5 | 91.25 (n=107) | 69.14 (n=48) | -22.10 | -2.30 | cross-judge |
 
-**Experimental design:**
-- **Cells**: 1 (base_single_unified) vs 5 (recog_single_unified) — single-agent, no superego, scripted learner. Cleanest pair to isolate recognition main effect per model.
-- **Models** (4 intermediate, all available on OpenRouter as of Feb 2026):
-  1. `openrouter.glm47` — GLM-4.7 (likely near Nemotron tier)
-  2. `openrouter.qwen3.5` — Qwen 3.5 397B MoE / 17B active (mid-low)
-  3. `openrouter.deepseek` — DeepSeek V3.2 (mid-range)
-  4. `openrouter.kimi-k2.5` — Kimi K2.5 (known capable, used as superego; probably just below Haiku)
-- **Scenarios**: All 18 (no cluster filtering — full scenario coverage for robust means)
-- **Runs**: 3 per cell (N = 4 models × 2 cells × 3 runs × 18 scenarios = 432 rows)
-- **Superego**: None (cells 1 & 5 are single-agent, `superego: null`)
-- **Learner**: Scripted (unified), consistent across models
-
-**Commands** (run sequentially per model to avoid OpenRouter rate limits):
-```bash
-# 1. GLM-4.7
-node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.glm47 --description "A3 capability threshold: GLM-4.7"
-
-# 2. Qwen 3.5
-node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.qwen3.5 --description "A3 capability threshold: Qwen 3.5"
-
-# 3. DeepSeek V3.2
-node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.deepseek --description "A3 capability threshold: DeepSeek V3.2"
-
-# 4. Kimi K2.5
-node scripts/eval-cli.js run --profiles cell_1_base_single_unified,cell_5_recog_single_unified --runs 3 --ego-model openrouter.kimi-k2.5 --description "A3 capability threshold: Kimi K2.5"
-
-# Judge each run (replace <runId> with actual IDs):
-node scripts/eval-cli.js evaluate <runId>
-```
-
-**Analysis:**
-- Plot recognition delta (recog − base) by model for each of the 6 data points (4 new + 2 anchors)
-- Identify crossover: at what capability level does delta flip from negative to positive?
-- Correlate with model properties: parameter count, context window, instruction-following benchmarks
-- Look for scenario-level patterns: does the threshold vary by scenario complexity?
-
-**Notes:**
-- `--ego-model` overrides only the ego; superego is null for these cells so no interaction
-- OpenRouter free-model rate limit is account-level across all free models — space runs out or use `--parallelism 1`
-- Kimi K2.5 and DeepSeek may need `--max-tokens 4000` if reasoning tokens consume budget
-- Existing Nemotron and Haiku data from factorial runs can serve as anchors (no need to re-run)
-- Paper ref: Section 8.2 Future Direction #11
+Regression Δ ~ baseline: slope = -0.71, r = -0.74, R² = 0.55. OpenRouter credits exhausted mid-run three times; effective n below 63 for some prosthesis cells. Full analysis: `exports/a3-capability-threshold.md`. Script: `scripts/analyze-a3-capability-threshold.js`. Paper §6.6.10.
 
 ### A4. Learner Superego Redesign (COMPLETE — null result)
 Authenticity-focused superego scored *worse* on every dimension including authenticity itself (3.7 vs 4.1 standard). The recognition inversion is structural, not a prompt calibration issue.
