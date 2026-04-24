@@ -498,7 +498,7 @@ Fixed comprehensively:
 
 Three recurring patterns worth documenting for future experiment cycles:
 
-**1. EVAL_ONLY_PROFILES registration is necessary but not sufficient for new cells.** Adding a cell to `config/tutor-agents.yaml` + `EVAL_ONLY_PROFILES` is 2 of 3 steps — the third is adding a dispatch branch in `resolveEvalProfile` (`services/evaluationRunner.js:~220-248`) for the new `prompt_type`. Without it, cells silently fall back to `'budget'` and run the base prompt. Caught A10 v1 only after generation completed and `/ultrareview` traced the raw outputs (bug_007). A lightweight regression test — "for each `EVAL_ONLY_PROFILES` cell with a novel `prompt_type`, assert `resolveEvalProfile(cell).resolvedProfileName !== 'budget'`" — would prevent this class of silent failure. Not yet implemented (documented as pending in A10).
+**1. EVAL_ONLY_PROFILES registration is necessary but not sufficient for new cells.** Adding a cell to `config/tutor-agents.yaml` + `EVAL_ONLY_PROFILES` is 2 of 3 steps — the third is adding a dispatch branch in `resolveEvalProfile` (`services/evaluationRunner.js:~220-248`) for the new `prompt_type`. Without it, cells silently fall back to `'budget'` and run the base prompt. Caught A10 v1 only after generation completed and `/ultrareview` traced the raw outputs (bug_007). Regression test added in `tests/regression-bug-007.test.js` (commit `8578683`): for each `EVAL_ONLY_PROFILES` cell with a non-base `prompt_type`, asserts `resolveEvalProfile(cell).resolvedProfileName !== 'budget'`, plus a stronger second assertion that no non-base `prompt_type` resolves to `'budget'` across all cells using it. Verified to catch the bug by manually disabling the dispatch branch.
 
 **2. Subscription-judge fill passes hit backoff walls that OpenRouter doesn't.** A10b Sonnet and Opus both plateaued at ~80% coverage after 2-3 fill passes; OpenRouter-paid GPT-5.2 hit 100% coverage in one shot on the same dialogues. The failures are subscription-side retry-give-up behaviour, not data-structural issues (the logs are readable — GPT proved it). Future fill strategy: for comprehensive coverage on subscription judges, plan for 3+ passes with adequate wall-clock gaps; for one-shot coverage, use OpenRouter. Relatedly: trying to push subscription judges past their natural backoff wall is token-expensive for little marginal data gain — lock verdicts at ~80% coverage rather than grinding for the last 20%.
 
@@ -512,7 +512,7 @@ Three recurring patterns worth documenting for future experiment cycles:
 
 Opened from the 2026-04-22 paper critique. Purely editorial — no new data required. Goal: raise the apparent rigor-to-claim ratio before any further experimental work.
 
-### F1. Collapse M3-Disengagement Exposure (HIGH) — IN PROGRESS v3.0.43
+### ~~F1. Collapse M3-Disengagement Exposure~~ (DONE v3.0.43)
 The disengagement exploratory finding (d=1.63, 1 model, 1 judge, 1 scenario, n=12/condition) currently appears in 13 places across the paper (abstract, §1 intro, §1 three-mechanism list, §1 contributions, §3 preface, §3.2 note-on-evidence, §6.3.2, §6.3.8, §6.4.3 table, §6.4.5, §7 intro, §7.8.2, §9 conclusion, §9 broader implication, §9 Hegelian closer). Carrying too much narrative weight for a "pending replication" finding.
 
 - [x] Keep the full canonical treatment at §6.3.2 (prose, table, figure)
@@ -521,7 +521,7 @@ The disengagement exploratory finding (d=1.63, 1 model, 1 judge, 1 scenario, n=1
 - [x] Shorten §3.2 note-on-evidence and §7.8.2 mentions
 - Paper ref: v3.0.43
 
-### F2. Rewrite §6.1 Calibration Lead for PCA Consistency (HIGH) — IN PROGRESS v3.0.43
+### ~~F2. Rewrite §6.1 Calibration Lead for PCA Consistency~~ (DONE v3.0.43)
 §6.1 repeatedly claims recognition "narrows the dimension profile" while §8.6 reports PC1 = 80.7% (one underlying factor). The within-response SD metric is legitimate (it's the within-response scatter across 8 dimensions), but the "narrowing 8 independent dimensions" framing overstates independence.
 
 - [x] §6.1 section intro: clarify that the 8 dimensions load on a single factor plus content_accuracy (§8.6)
@@ -529,7 +529,7 @@ The disengagement exploratory finding (d=1.63, 1 model, 1 judge, 1 scenario, n=1
 - [x] Tweak figure caption (`figure-calibration-variance.png`) — same measure, less strong language
 - Paper ref: v3.0.43
 
-### F3. Report Judge-Pooled d as Headline (HIGH) — IN PROGRESS v3.0.43
+### ~~F3. Report Judge-Pooled d as Headline~~ (DONE v3.0.43)
 §8.3 reports Sonnet d = 1.88, Gemini-3.1-Pro d = 1.44, GPT-5.4 d = 1.56, pooled d ≈ 1.63. Most headline d's in §1 and §6 (including "d = 1.85 floor-lifting improvement" in abstract/§1) are Sonnet-only. Reviewers who read §8.3 will catch the slippage.
 
 - [x] Abstract: add pooled d ≈ 1.63 with Sonnet-only d = 1.88 as upper bound
