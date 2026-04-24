@@ -246,7 +246,7 @@ Three-judge triangulation at full $n$ on cells 1 (base) vs 5 (recognition) vs 95
 - Pedagogical taxonomy: `docs/pedagogical-taxonomy.md`
 - Paper: v3.0.48 §7.9
 
-**Pending regression test (not blocking)**: assert that `resolveEvalProfile(cell).resolvedProfileName !== 'budget'` for each `EVAL_ONLY_PROFILES` cell unless the YAML explicitly has `prompt_type: base`. Would catch the bug_007 pattern automatically for any future new `prompt_type`.
+**Regression test for bug_007 (DONE 2026-04-24)**: `tests/regression-bug-007.test.js` asserts that for each `EVAL_ONLY_PROFILES` cell with `factors.prompt_type ≠ 'base'`, `resolveEvalProfile(cell).resolvedProfileName !== 'budget'`. Plus a stronger second assertion that no non-base `prompt_type` resolves to 'budget' across all cells using it. Verified to catch the bug (manually disabled the matched_pedagogical dispatch branch → test fails with the exact diagnostic). 2/2 pass on the current configuration.
 
 **Original design retained below for provenance:**
 #### A10 (pre-registration)
