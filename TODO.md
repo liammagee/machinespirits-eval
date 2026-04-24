@@ -11,12 +11,16 @@ Organized by theme, roughly priority-ordered within each section.
 
 ## A. Experimental Extensions
 
-### A1. Human Learner Validation (CRITICAL)
-All evaluations use simulated learners. The critical open question is whether recognition-enhanced tutoring produces genuine learning gains with real humans.
-- Design RCT with real learners (n>=60/condition)
+### A1. Human Learner Validation (CRITICAL — pilot runbook authored 2026-04-22)
+All evaluations use simulated learners. The critical open question is whether recognition-enhanced tutoring produces genuine learning gains with real humans. Standing as the single highest-value next step identified in the 2026-04-22 paper critique — everything else is downstream polish.
+
+- **Pilot runbook**: `notes/design-a1-human-learner-pilot.md` — phased N≈60 pilot (2 conditions × ~30 participants), narrow-domain content (course 101 fractions *or* course 201 intro programming, both already authored), pre/post learning + engagement + qualitative interviews, IRB protocol, recruitment, measurement instruments, analysis plan.
+- **Why pilot before RCT**: A small pilot validates content, UI, measurement, and recruitment pipeline before committing to an N=200 RCT at \$20K-50K. If the pilot shows a measurable tutor-quality → learning-gains path, expand to an RCT; if flat, interrogate rubric-vs-learning divergence.
+- **Hard prerequisites** (outside repo): IRB approval, participant pool, platform to serve the tutor interactively, pre/post instrument.
+- Design RCT with real learners (n≥60/condition) after pilot signal
 - Measure: learning gains (pre/post), engagement, satisfaction, retention
 - Qualitative interviews on learner experience of recognition vs base
-- Paper ref: Section 8.2 Future Direction #1
+- Paper ref: Section 8.1, Section 9 "What comes next" #4
 
 ### A2. Dynamic Learner Mechanism Sweep (COMPLETE)
 Full 2×7 matrix (recognition × 7 mechanisms) with dynamic learner. All 7 mechanisms show positive recognition deltas (+4.8 to +17.5 pts). Dynamic learner amplifies mechanism differentiation 1.6–2.8× vs scripted.
@@ -225,6 +229,114 @@ Full-feature dialectical cells (cross-turn memory + prompt rewriting + learner s
 - YAML definitions kept as historical documentation with DEPRECATED header (see C4)
 - Decision: not running. The `superego_disposition_rewriting` effect is already captured by the cells 28-33 vs 40-45 comparison; isolating it on cells 34-39 would not add new evidence.
 
+### A10. Matched-Specificity Prompt-Density Control under v2.2 ~~(HIGH)~~ [RESOLVED v3.0.48 — within-Hegelian density-sufficient]
+**Closed 2026-04-24** (superseded by A10b orientation-family follow-up).
+
+Three-judge triangulation at full $n$ on cells 1 (base) vs 5 (recognition) vs 95 (matched-pedagogical grounded in Piaget/Vygotsky/Kapur/Chi/VanLehn/Graesser) under DeepSeek V3.2 ego, v2.2 rubric. Run `eval-2026-04-23-42e7acbe` (A10 v2; v1 run `eval-2026-04-22-04497df0` invalidated by bug_007 — see below). Recognition vs matched-pedagogical pooled $d = 0.185$ (Sonnet 0.227, Opus 0.271, GPT 0.057); below the pre-registered $|d| < 0.2$ density-sufficient threshold. **Within the Hegelian-descendant intersubjective-pedagogy family, density is substitutable for recognition content.**
+
+**Design caveat surfaced during this work**: all five theorists cited in `tutor-ego-matched-pedagogical.md` (Piaget, Vygotsky, Kapur, Chi, VanLehn, Graesser) are Hegelian-descendant — Dewey was explicit about Hegel, Vygotsky's dialectical psychology is Hegel through Marx, Piaget's assimilation/accommodation is the dialectic reframed for cognition. A10 therefore tested within-family density-substitutability, not orientation-orthogonal density-sufficiency. A10b (below) closed that gap.
+
+**bug_007 (resolved during A10 cycle)**: `resolveEvalProfile` in `services/evaluationRunner.js` lacked a dispatch branch for `prompt_type: matched_pedagogical`; cell_95 silently routed to `'budget'` profile and ran the base prompt in v1. Discovery: `/ultrareview` on v3.0.46 branch. Fix: added explicit branch in dispatch chain; registered `matched_pedagogical` profile in tutor-core; added to factorial-design test whitelists. Same fix pattern then applied for `matched_behaviorist` in A10b.
+
+**Artefacts**:
+- Exports: `exports/a10-prompt-density-control.md` (three-judge final, DB-verified)
+- Analysis: `scripts/analyze-a10-prompt-density-control.js`
+- Prompt: `prompts/tutor-ego-matched-pedagogical.md` (2,835 words, blocklist-clean, synced to tutor-core)
+- Cell: `cell_95_base_matched_single_unified` in `config/tutor-agents.yaml`
+- Pedagogical taxonomy: `docs/pedagogical-taxonomy.md`
+- Paper: v3.0.48 §7.9
+
+**Pending regression test (not blocking)**: assert that `resolveEvalProfile(cell).resolvedProfileName !== 'budget'` for each `EVAL_ONLY_PROFILES` cell unless the YAML explicitly has `prompt_type: base`. Would catch the bug_007 pattern automatically for any future new `prompt_type`.
+
+**Original design retained below for provenance:**
+#### A10 (pre-registration)
+Opened from the 2026-04-22 paper critique (§7.9 loophole). The Paper 1.0 placebo (cells 15-18, `tutor-ego-placebo.md`) argues that recognition ≠ prompt length, but the placebo was scored under v1.0 rubric and may not have been equally *specific* in pedagogical guidance. Under v2.2 rubric, we have no matched-specificity control.
+
+**Design note**: `notes/design-a10-prompt-density-v22-control.md`
+
+**Hypothesis**: recognition's effect survives a stricter placebo that matches both length *and* instruction specificity. If it does, §7.9's "prompt density" loophole is closed; if not, the whole programme needs rethinking.
+
+**Cells needed**:
+- Cell 95 `cell_95_base_matched_single_unified` — new single-agent tutor with new `tutor-ego-matched-pedagogical.md` prompt (~5,100 tokens, rich pedagogical detail, no recognition/Hegelian content, same scenario-specific specificity as recognition prompt)
+- Paired baseline cell 1 and recognition cell 5 already exist.
+
+**Authoring**: `prompts/tutor-ego-matched-pedagogical.md` — mirror recognition prompt's structure (Agent Identity, Context, Decision Heuristics, Worked Examples) but substitute recognition framing with elaborate constructivist/Bloom/VanLehn pedagogical detail.
+
+**Run plan** (estimate \$100-150, ~2-4 hours): cells 1 vs 5 vs 95 × 3 runs × philosophy scenarios (9 scenarios from course 479). N ≈ 81 rows. DeepSeek V3.2 ego; Sonnet 4.6 + GPT-5.4 judges for 2-judge cross-validation.
+
+**Analysis**: Expected contrast — recog > matched-ped > base if recognition operates through content not density. If matched-ped ≈ recog, we need to retract the content-over-density claim.
+
+- Paper ref: §7.9 "Prompt density as alternative explanation"
+
+### A11. M2-Alone Isolation on Gemini Flash 3.0 ~~(HIGH — design 2026-04-22)~~ [RESOLVED v3.0.46 — residual confirmed]
+**Closed 2026-04-22.** Direct isolation on Gemini Flash 3.0 (cells 82/83 with Kimi K2.5 superego) vs matched baseline (cells 80/81 from 18027efc, base single-agent). Run `eval-2026-04-22-b56be6c7`, $N = 125$ (including gap-fill). Sonnet judge ($n = 80$ partial, daily cap hit): **$\Delta = +19.2$ pts, $d = 1.76$, Welch's $t(83.3) = 9.54$** — directly measured M2-alone substantially exceeds the factorial-inferred +12.3 residual from §6.4.1. Effect trended upward as more rows were judged ($n = 28 \to d = 1.68$; $n = 80 \to d = 1.76$). Monotonic pattern across models: DeepSeek M2-alone $d = 1.13$ → Gemini Flash M2-alone $d = 1.76$ (weaker model → larger residual). §6.4.2 extended with "Direct isolation of the Gemini Flash residual" paragraph; §7.3 citation updated from inferred to direct. Full exports: `exports/a11-m2-isolation-gemini-flash.md`.
+
+**Original design retained below for provenance:**
+#### A11 (pre-registration)
+Opened from the 2026-04-22 paper critique. The +12.3-point residual architecture benefit on Gemini Flash 3.0 (§6.4) is the load-bearing evidence for "universal substitution with model-dependent residual," but it is inferred from the factorial interaction on cells 80-87. A direct isolation (base + superego, no recognition) would confirm whether the superego does real work on weak models.
+
+**Design note**: `notes/design-a11-m2-gemini-flash-isolation.md`
+
+**Run plan** (estimate \$40-60, ~1-2 hours):
+```bash
+node scripts/eval-cli.js run --profiles cell_82_messages_base_multi_unified,cell_83_messages_base_multi_psycho \
+  --runs 3 --ego-model openrouter.gemini-flash --description "A11 M2-alone isolation on Gemini Flash 3.0"
+```
+Scenarios: all 9 messages-mode scenarios (match cells 80-87). Expected N ≈ 54 per cell, 108 total.
+
+**Judging**: Sonnet 4.6 + Gemini 3.1 Pro + GPT-5.4 (same 3-judge panel as Paper 2.0 core). Cost \$15-40 for judging.
+
+**Analysis**: compare cell_82/83 mean on Gemini Flash vs cell_80/81 (base, single-agent, Gemini Flash, already in DB). Expected Δ ≥ +9 pts (matching DeepSeek M2-alone d=1.13) if the Gemini Flash +12.3 residual is genuine superego work. If Δ ≈ 0, the inferred residual was statistical noise from the factorial interaction and §6.4.1 needs re-writing.
+
+- Paper ref: §6.4 "Mechanism Interaction" / §6.4.1 "Factorial Interaction"
+
+### A12. M3 Disengagement Replication ~~(HIGH — design 2026-04-22)~~ [RESOLVED v3.0.45 — failed to replicate]
+**Closed 2026-04-22.** Pre-registered replication across Haiku 4.5 and Gemini Flash 3.0 under Sonnet 4.6 and GPT-5.4 judges ($N = 32$, runs eval-2026-04-22-d4547979 and eval-2026-04-22-f4fb03f1) disconfirms the original DeepSeek/Sonnet $d = 1.63$ finding. Matrix: Haiku/Sonnet $d = -0.18$, Haiku/GPT $d = +1.85$ (cross-judge $\Delta d = 2.03$, disqualifying under §4.3 sensitivity rule); Gemini Flash/Sonnet $d = -0.93$, Gemini Flash/GPT $d = -0.11$. Three of four cells below $d = 0.5$ fails threshold; one "replicates" cell (Haiku/GPT) contradicted by secondary judge on identical rows. Paper §6.3.2 rewritten; disengagement hedging retired from abstract, §1, §3.2, §6.4.3, §6.4.5, §7, §7.8.2, §9. Full exports: `exports/a12-disengagement-replication.md`. Analysis script: `scripts/analyze-a12-disengagement-replication.js`. Cost: ~\$7 OpenRouter.
+
+**Original design retained below for provenance:**
+Opened from the 2026-04-22 paper critique. The disengagement-scenario M3 exploratory effect (d=1.63, p≈.0006, n=12/condition) rests on one model (DeepSeek V3.2), one judge (Sonnet 4.6), and one scenario. It carries significant narrative weight in the paper; replication will either validate or retire the claim.
+
+**Design note**: `notes/design-a12-m3-disengagement-replication.md`
+
+**Run plan** (estimate \$60-80, ~2-3 hours):
+```bash
+node scripts/eval-cli.js run \
+  --profiles cell_84_messages_recog_single_unified,cell_80_messages_base_single_unified \
+  --runs 4 --scenarios trajectory_disengagement_to_ownership \
+  --ego-model openrouter.haiku \
+  --description "A12 M3 disengagement replication on Haiku 4.5"
+```
+Then re-run with `--ego-model openrouter.gemini-flash`. N = 2 models × 2 cells × 4 runs × 1 scenario = 16 per model, 32 total.
+
+**Judging**: score with GPT-5.4 (not Sonnet) to break both the model and judge confound simultaneously.
+
+**Analysis**: compute slope recognition vs base. Pre-register: d ≥ 1.0 on slope in at least one of the two replication models counts as replication. d < 0.5 in both = retire from abstract/intro, keep as §6.3.2 descriptive note only. d in (0.5, 1.0) = report as partial with extended caveats.
+
+- Paper ref: §6.3.2 "Trajectory Curves" / §9 closing paragraph
+
+### A13. Orientation-Family Four-Way Comparison ~~(Emerged from A10 cycle)~~ [RESOLVED v3.0.48]
+**Closed 2026-04-24.** Pre-registered follow-up to A10 after recognising the matched-pedagogical prompt was Hegelian-descendant (all five cited theorists — Piaget, Vygotsky, Kapur, Chi, VanLehn, Graesser — sit in the broader intersubjective-pedagogy family that recognition belongs to). A10b added a fourth cell grounded in behaviorism (Skinner, Gagné, Keller, Thorndike, Rosenshine) with an expanded blocklist that excluded both recognition-theoretic and Hegelian-descendant constructivist vocabulary. Tests whether orientation *family* or prompt *density* drives recognition's effect.
+
+**Run**: `eval-2026-04-24-e9a785c0`, 4 cells × 3 runs × 21 scenarios, DeepSeek V3.2 ego.
+
+**Three-judge pooled contrasts at full $n$** (Sonnet ~51/cell, GPT ~62/cell, Opus ~50/cell):
+- **Within Hegelian family** (recog vs matched-pedagogical): pooled $d = 0.136$ — density-sufficient, replicates A10 v2 pooled $d = 0.185$
+- **Within transmission family** (base vs matched-behaviorist): pooled $d = 0.890$ — behaviorist substantially *below* base
+- **Between families** (Hegelian mean vs transmission mean): pooled $d = 1.385$ — dominant effect
+
+**The finding**: the active ingredient in recognition's effect is **intersubjective-pedagogy orientation** (Hegelian-descendant family membership), not density, not theoretical rigour in the abstract, not matched specificity, not the Hegelian vocabulary specifically. Density within the intersubjective family pays off; density within the wrong family backfires. Recognition is one effective operationalisation of the intersubjective family; it is not uniquely necessary.
+
+**Judge divergence at full $n$**: on the within-Hegelian contrast, the per-judge $d$'s are Sonnet $-0.024$, GPT $0.172$, Opus $0.259$. Sonnet and Opus now disagree on direction. The earlier "Anthropic-vs-OpenAI judge-family split" framing (from partial data) gave way to a more fragmented picture at full $n$. Pooled verdict remains stable and below the density-sufficient threshold. Methodological implication: at small within-family effect sizes, judge surface-feature preferences dominate over content differences (§7.9 structural-features caveat, `docs/pedagogical-taxonomy.md` "Methodological caveat" section).
+
+**Artefacts**:
+- Exports: `exports/a10b-orientation-family.md`
+- Analysis: `scripts/analyze-a10b-orientation-family.js`
+- Behaviorist prompt: `prompts/tutor-ego-matched-behaviorist.md` (2,957 words, expanded-blocklist-clean, synced to tutor-core)
+- Cell: `cell_96_base_behaviorist_single_unified` in `config/tutor-agents.yaml`
+- Paper: v3.0.48 §7.9 reframed around orientation-family finding
+
+**Paper-framing implication**: Paper 2.0 may benefit from reframing its central claim from "recognition works" to "intersubjective pedagogy works; recognition is our implementation." Currently §7.9 carries the reframe; §1/§3/§9 still read as "recognition specifically." Open question for a future pass.
+
 ---
 
 ## B. Code Quality & Infrastructure
@@ -331,6 +443,32 @@ Finding: the suspicious > adversary > advocate gradient is **dialectical-ego-arc
 - Learner-side disposition variants: out of scope for v4; requires new cells.
 - Artifacts: `scripts/analyze-d4-disposition-gradient.js`, `exports/d4-disposition-gradient.md`.
 
+### D5. Rubric v3.0 PCA-Informed Consolidation (MEDIUM — design 2026-04-22)
+Opened from the 2026-04-22 paper critique. §8.6 reports PC1 = 80.7%, KMO = 0.938, mean inter-dim r = 0.776 on 1,584 per-turn rows. The 8 v2.2 dimensions collapse to essentially one factor (plus `content_accuracy` on forced 2-factor rotation). This means: (a) claims like "recognition narrows the dimension profile" are in tension with "dimensions measure one construct," and (b) dimension-targeted autotuning (§7.8) is shifting the single underlying factor, not independent skills.
+
+**Two paths forward** (not mutually exclusive):
+
+1. **Empirical consolidation**: v3.0 rubric with 2 scored factors — `overall_pedagogical_quality` and `content_accuracy` — computed directly rather than derived from 8 component dimensions. Faster to score (1-2 LLM dimensions vs 8), fewer degrees of freedom for judge hallucination.
+2. **Discriminant-validity demonstration**: Design scenarios where the 8 dimensions should predictably diverge (e.g., a scenario where `conceptual_progression` should rise while `affective_resonance` should fall). If no such scenarios exist or none produce the predicted divergence, the 8-dim structure is truly over-specified and path 1 is warranted.
+
+**Design note**: `notes/design-d5-rubric-v3-pca-consolidation.md` (to author)
+
+**Timeline**: Not blocking for current paper — cross-version-contamination rules (CLAUDE.md) prohibit retroactive rescoring under v3.0 anyway. This is Paper 3.0 infrastructure or a future methods paper.
+
+- Paper ref: §8.6 "Rubric Evolution"
+
+### D6. Orientation-Family Pedagogy Taxonomy (EMERGENT from A10/A10b) — PARTIALLY DOCUMENTED
+A10/A10b established that the active ingredient in recognition's effect is **intersubjective-pedagogy family membership**, not recognition content specifically. Pooled three-judge $d = 1.38$ between intersubjective family (recognition + matched-pedagogical) and transmission family (base + matched-behaviorist); within intersubjective family, density-substitutable pooled $d = 0.136$; within transmission family, rigorously-grounded behaviorist scores pooled $d = 0.89$ *below* generic base.
+
+**What's documented**: `docs/pedagogical-taxonomy.md` — canonical reference for five tutor-orientation variants (base, placebo, recognition, matched-pedagogical, matched-behaviorist) with theoretical lineage, view of learner, role of tutor, vocabulary, and evaluation findings. Methodological-caveat section on structural-features confound. Prompts + cells registered in `config/tutor-agents.yaml` + tutor-core profile registry.
+
+**What's open**:
+- **Paper framing decision** (carried as F6 below): does Paper 2.0 reframe from "recognition specifically works" to "intersubjective pedagogy works, recognition is our implementation"? §7.9 already has the reframe; §1/§3/§9 still read as recognition-specific.
+- **Chat UI consumption** (to be done as Task 2 of current session): add `pedagogical_orientation:` metadata per cell in YAML so the chat UI can group and label cells by family.
+- **Taxonomy extensions** (deferred): A10c tests of cognitivist-only (Sweller/Atkinson-Shiffrin) and pure Socratic, to further pin down where the orientation boundary sits. Also: where do radical constructivism (von Glasersfeld), culturally-responsive pedagogy (Ladson-Billings), Freire's critical pedagogy sit in the family landscape? Not urgent; future methods contribution.
+
+**Potential standalone publication**: "Pedagogical orientation family dominates density and theoretical rigour in LLM tutor prompts" as a methods/short paper. Would use the A10/A10b data as empirical ground and argue for orientation-family as the correct unit of analysis for LLM-tutor evaluation. Separate scope from Paper 2.0.
+
 ---
 
 ## E. Known Bugs & Workarounds
@@ -353,6 +491,75 @@ Fixed comprehensively:
 3. Prompt contamination fixed (hardcoded lecture IDs replaced with placeholders)
 4. Test coverage validates scenario-content alignment
 - Regression prevention: `validate-config` CLI command (B4) now provides automated validation
+
+---
+
+## Operational lessons from the A10/A11/A12/A10b cycle (2026-04-22 through 2026-04-24)
+
+Three recurring patterns worth documenting for future experiment cycles:
+
+**1. EVAL_ONLY_PROFILES registration is necessary but not sufficient for new cells.** Adding a cell to `config/tutor-agents.yaml` + `EVAL_ONLY_PROFILES` is 2 of 3 steps — the third is adding a dispatch branch in `resolveEvalProfile` (`services/evaluationRunner.js:~220-248`) for the new `prompt_type`. Without it, cells silently fall back to `'budget'` and run the base prompt. Caught A10 v1 only after generation completed and `/ultrareview` traced the raw outputs (bug_007). A lightweight regression test — "for each `EVAL_ONLY_PROFILES` cell with a novel `prompt_type`, assert `resolveEvalProfile(cell).resolvedProfileName !== 'budget'`" — would prevent this class of silent failure. Not yet implemented (documented as pending in A10).
+
+**2. Subscription-judge fill passes hit backoff walls that OpenRouter doesn't.** A10b Sonnet and Opus both plateaued at ~80% coverage after 2-3 fill passes; OpenRouter-paid GPT-5.2 hit 100% coverage in one shot on the same dialogues. The failures are subscription-side retry-give-up behaviour, not data-structural issues (the logs are readable — GPT proved it). Future fill strategy: for comprehensive coverage on subscription judges, plan for 3+ passes with adequate wall-clock gaps; for one-shot coverage, use OpenRouter. Relatedly: trying to push subscription judges past their natural backoff wall is token-expensive for little marginal data gain — lock verdicts at ~80% coverage rather than grinding for the last 20%.
+
+**3. Partial-$n$ per-judge direction can flip at full $n$ on small within-family contrasts.** A10b Sonnet within-Hegelian $d$ flipped from $+0.173$ (at $n = 40$) to $-0.024$ (at $n = 51$). At small effect sizes, the newly-arriving rows can meaningfully shift the point estimate. Rule of thumb: trust pooled three-judge estimates over any single-judge trajectory, and expect within-family contrasts smaller than $|d| < 0.3$ to move around until $n \geq 50$/cell.
+
+## Carry-over for next session (24h+) — now resolved
+
+**Sonnet judging resume (2026-04-23)**: ~~Today's run on A10 + A11 hit Claude Code subscription rate-limit with partial Sonnet data.~~ Resolved 2026-04-23 through 2026-04-24 via multi-pass fill. All primary analyses locked at sufficient coverage (A10 v2: Sonnet 183/183, GPT 183/183, Opus 180/183; A10b: Sonnet 205/248, GPT 248/248, Opus 198/248). Paper v3.0.48 §7.9 reports full-$n$ locked numbers.
+
+## F. Paper Revisions (Post-Critical Review)
+
+Opened from the 2026-04-22 paper critique. Purely editorial — no new data required. Goal: raise the apparent rigor-to-claim ratio before any further experimental work.
+
+### F1. Collapse M3-Disengagement Exposure (HIGH) — IN PROGRESS v3.0.43
+The disengagement exploratory finding (d=1.63, 1 model, 1 judge, 1 scenario, n=12/condition) currently appears in 13 places across the paper (abstract, §1 intro, §1 three-mechanism list, §1 contributions, §3 preface, §3.2 note-on-evidence, §6.3.2, §6.3.8, §6.4.3 table, §6.4.5, §7 intro, §7.8.2, §9 conclusion, §9 broader implication, §9 Hegelian closer). Carrying too much narrative weight for a "pending replication" finding.
+
+- [x] Keep the full canonical treatment at §6.3.2 (prose, table, figure)
+- [x] Condense abstract, §1 three-mechanism list, §1 contributions to single-sentence pointers
+- [x] Delete verbose M3 hedging from §9 broader implication and §9 Hegelian closer
+- [x] Shorten §3.2 note-on-evidence and §7.8.2 mentions
+- Paper ref: v3.0.43
+
+### F2. Rewrite §6.1 Calibration Lead for PCA Consistency (HIGH) — IN PROGRESS v3.0.43
+§6.1 repeatedly claims recognition "narrows the dimension profile" while §8.6 reports PC1 = 80.7% (one underlying factor). The within-response SD metric is legitimate (it's the within-response scatter across 8 dimensions), but the "narrowing 8 independent dimensions" framing overstates independence.
+
+- [x] §6.1 section intro: clarify that the 8 dimensions load on a single factor plus content_accuracy (§8.6)
+- [x] Reframe "narrows the dimension profile" → "compresses the within-response floor-ceiling range" (same measurement, honest interpretation)
+- [x] Tweak figure caption (`figure-calibration-variance.png`) — same measure, less strong language
+- Paper ref: v3.0.43
+
+### F3. Report Judge-Pooled d as Headline (HIGH) — IN PROGRESS v3.0.43
+§8.3 reports Sonnet d = 1.88, Gemini-3.1-Pro d = 1.44, GPT-5.4 d = 1.56, pooled d ≈ 1.63. Most headline d's in §1 and §6 (including "d = 1.85 floor-lifting improvement" in abstract/§1) are Sonnet-only. Reviewers who read §8.3 will catch the slippage.
+
+- [x] Abstract: add pooled d ≈ 1.63 with Sonnet-only d = 1.88 as upper bound
+- [x] §1 intro paragraph (the "d = 1.85" claim) — label as Sonnet-judge; cite pooled
+- [x] §1 contributions list: cross-reference §8.3
+- [x] §6.1 cross-model summary: clarify Sonnet-judge where used
+- Paper ref: v3.0.43
+
+### F4. Trim Redundant Hedging (MEDIUM)
+Every major finding is stated in abstract, intro contributions list, section, discussion, conclusion — five copies of the same caveats. After F1-F3 are done, a linear read-through would trim repeated phrases:
+- "universal substitution with 15-17% additivity deficit" appears 6+ times with slight variations
+- "pending boundary-condition finding requiring replication" appears 10+ times
+- Target: ~10% length reduction (300 lines) by consolidating duplicated caveats
+- Not urgent; do after F1-F3 prove readable.
+
+### ~~F5. Apparatus-as-Method Section Tightening~~ (DONE v3.0.44)
+§7.4 trimmed from ~51 lines to 33 lines (~35% cut). §7.4.1 three-correction paragraph consolidated to a single sentence; §7.4.2 dropped the redundant worked-example block (already in §5.9) and the "practical lesson" restatement, kept the dependency-graph cascade example; §7.4.3 removed the bulleted rubric history (cross-reference to §5.2.6) and added §8.6 PCA forward-reference; §7.4.4 compressed to a single tight paragraph. No content claims changed.
+
+### ~~F6. Paper-Framing Reframe~~ (DONE v3.0.49 — calibrated / Framing A)
+A10/A10b established that matched-pedagogical (Vygotsky/Piaget/Kapur/Chi/VanLehn/Graesser, no recognition vocabulary) reproduces recognition within the density-sufficient threshold. A10b additionally established that the *family* is the dominant effect (pooled $d = 1.38$ between-family vs $d = 0.14$ within-Hegelian-family). §7.9 (v3.0.48) already frames this honestly. But §1 (abstract), §3 (theoretical framing), and §9 (broader implications) still read as "recognition specifically is the thing."
+
+**Two defensible framings**:
+- **Framing A (conservative)**: keep recognition as topic. A10/A10b become §7.9 methodological defence: recognition's effect is the intersubjective-family effect operationalized one particular way. Recognition's Hegelian content is motivationally central; empirical claims are family-scoped.
+- **Framing B (bolder)**: reframe central claim from "recognition works" to "intersubjective pedagogy works, recognition is our implementation." More defensible empirically, less theoretically distinctive, changes abstract + §1 substantively.
+
+**Impact estimate**: ~1-2 hours careful editorial rewriting, no new data required, 20-30 passages touched (abstract, §1 operational paragraph, §1 contributions list, §3.1 theoretical framework, §3.2 predictions, §9 conclusion language). Free of API burn — pure editorial work.
+
+**Done v3.0.49** with calibrated Framing A: added family-level acknowledgement to abstract, §1, and §9 broader-implication; kept §3 theoretical framework unchanged as the paper's scholarly entry point. Did *not* pursue the bolder Framing B reframe from "recognition works" to "intersubjective pedagogy works"; if that reframe is wanted for a future submission, the groundwork now exists (taxonomy doc, exports docs, structured YAML metadata) to do it more quickly.
+
+- Paper ref: §1 intro (done v3.0.49), abstract (done), §9 broader implication (done), §7.9 (done v3.0.48); §3 theoretical framework intentionally unchanged
 
 ---
 
