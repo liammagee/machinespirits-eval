@@ -52,6 +52,8 @@ const VALID_PROMPT_TYPES = [
   'memory',
   'recognition_nomem',
   'naive',
+  'matched_pedagogical',
+  'matched_behaviorist',
   'divergent_suspicious',
   'divergent_adversary',
   'divergent_advocate',
@@ -125,6 +127,8 @@ describe('factorial design — config integrity', () => {
       memory: 'memory',
       recognition_nomem: 'recog',
       naive: 'naive',
+      matched_pedagogical: 'matched',
+      matched_behaviorist: 'behaviorist',
       divergent_suspicious: 'suspicious',
       divergent_adversary: 'adversary',
       divergent_advocate: 'advocate',
@@ -172,6 +176,8 @@ describe('factorial design — prompt file assignment', () => {
     memory: 'tutor-ego-memory.md',
     recognition_nomem: 'tutor-ego-recognition-nomem.md',
     naive: 'tutor-ego-naive.md',
+    matched_pedagogical: 'tutor-ego-matched-pedagogical.md',
+    matched_behaviorist: 'tutor-ego-matched-behaviorist.md',
   };
 
   // Expected superego prompt file for each prompt_type

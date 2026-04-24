@@ -193,6 +193,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_92_messages_recog_single_psycho_gemflash',
   'cell_93_base_dialectical_suspicious_unified_superego_nopad',
   'cell_94_recog_dialectical_suspicious_unified_superego_nopad',
+  'cell_95_base_matched_single_unified',
+  'cell_96_base_behaviorist_single_unified',
 ];
 
 /**
@@ -240,6 +242,18 @@ export function resolveEvalProfile(profileName) {
       resolvedProfileName = recognitionMode ? 'dialectical_adversary_recognition' : 'dialectical_adversary';
     } else if (promptType === 'dialectical_advocate') {
       resolvedProfileName = recognitionMode ? 'dialectical_advocate_recognition' : 'dialectical_advocate';
+    } else if (promptType === 'matched_pedagogical') {
+      // A10 density control: pedagogical prompt of matched specificity, zero recognition content.
+      // Registered in tutor-core as 'matched_pedagogical' profile pointing at tutor-ego-matched-pedagogical.md.
+      // If tutor-core does not have the profile registered (e.g. published package), the existence
+      // check below falls back to 'budget' explicitly, which is the correct behaviour (the A10
+      // experiment cannot run against a published-tutor-core install without the profile there).
+      resolvedProfileName = 'matched_pedagogical';
+    } else if (promptType === 'matched_behaviorist') {
+      // A10b density control: matched-specificity behaviorist prompt orthogonal to recognition's
+      // intersubjective family. Grounded in Skinner/Gagné/Keller/Thorndike/Rosenshine.
+      // Registered in tutor-core as 'matched_behaviorist' profile pointing at tutor-ego-matched-behaviorist.md.
+      resolvedProfileName = 'matched_behaviorist';
     } else if (recognitionMode) {
       resolvedProfileName = 'recognition';
     } else {

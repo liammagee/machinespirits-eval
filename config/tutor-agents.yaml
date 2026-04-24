@@ -70,6 +70,86 @@
 
 active_profile: budget
 
+# ============================================================================
+# PEDAGOGICAL ORIENTATION TAXONOMY
+# ============================================================================
+# Metadata about each tutor-ego prompt_type, keyed by the `factors.prompt_type`
+# value in each cell profile below. Canonical reference: docs/pedagogical-taxonomy.md.
+# Consumed by the chat UI (routes/chatRoutes.js + public/chat/) to group cells by
+# pedagogical orientation and surface comparative tooltips. Empirical findings
+# from A10/A10b (eval runs eval-2026-04-23-42e7acbe and eval-2026-04-24-e9a785c0,
+# paper §7.9 v3.0.48) establish orientation-family as the dominant axis of
+# variation: between-family pooled d ≈ 1.38, within-Hegelian pooled d ≈ 0.14,
+# within-transmission pooled d ≈ 0.89.
+
+pedagogical_orientations:
+  base:
+    family: transmission
+    short_label: "Base (generic pedagogical)"
+    lineage: "Anglo-American teacher-trainer tradition; no single named theorist"
+    view_of_learner: "Information recipient; some soft-constructivist framing (engage with input)"
+    role_of_tutor: "Provide specific, actionable content suggestions"
+    key_mechanism: "Generic pedagogical best practice"
+    vocabulary: ["suggest", "explain", "guide", "engage with"]
+    prompt_file: tutor-ego.md
+    approx_length_words: 1950
+
+  placebo:
+    family: neutral
+    short_label: "Placebo (length-matched, no theory)"
+    lineage: "Authored for Paper 1.0 active control; no specific theorist"
+    view_of_learner: "Individual with unique patterns; generic adaptive-teaching framing"
+    role_of_tutor: "Adapt guidance to learner state; be responsive"
+    key_mechanism: "Responsive calibration without theoretical grounding"
+    vocabulary: ["adapt", "calibrate", "respond to learner input", "appropriate challenge"]
+    prompt_file: tutor-ego-placebo.md
+    approx_length_words: 2390
+
+  recognition:
+    family: intersubjective
+    subfamily: hegelian_recognition
+    short_label: "Recognition (Hegelian mutual-recognition)"
+    lineage: "Hegel (Phenomenology, master-slave dialectic); Honneth (Struggle for Recognition); Huttunen and Stojanov on recognition in pedagogy"
+    view_of_learner: "Autonomous subject with valid interpretations; co-constitutive partner"
+    role_of_tutor: "Recognise learner contributions; engage dialectically with resistance; maintain productive tension; repair after failures to recognise"
+    key_mechanism: "Mutual recognition"
+    vocabulary: ["recognition", "autonomous subject", "mutual transformation", "dialectical engagement", "productive tension", "repair after misrecognition"]
+    prompt_file: tutor-ego-recognition.md
+    approx_length_words: 2810
+    evaluation_effect_pooled_d_vs_base: 1.21  # A10b pooled
+
+  matched_pedagogical:
+    family: intersubjective
+    subfamily: hegelian_constructivist
+    short_label: "Matched-pedagogical (Hegelian-family constructivism)"
+    lineage: "Vygotsky (ZPD); Piaget (assimilation/accommodation); Kapur (productive failure); Chi (ICAP); VanLehn (step-level scaffolding); Graesser (AutoTutor affective dynamics). All Hegelian-descendant."
+    view_of_learner: "Active thinking agent with current schema that must be disturbed to learn"
+    role_of_tutor: "Diagnose current understanding; scaffold productive struggle at the specific step; prefer minimum effective assistance; push up the ICAP engagement ladder"
+    key_mechanism: "Cognitive disequilibrium resolved through scaffolding"
+    vocabulary: ["ZPD", "productive struggle", "scaffolding", "disequilibrium", "step-level intervention", "ICAP", "diagnostic question", "minimum effective assistance"]
+    prompt_file: tutor-ego-matched-pedagogical.md
+    approx_length_words: 2835
+    evaluation_effect_pooled_d_vs_base: 1.05  # A10b pooled
+    evaluation_note: "Matches recognition within pooled d = 0.14 (A10b) / 0.19 (A10 v2) — density-sufficient within the Hegelian-descendant family."
+
+  matched_behaviorist:
+    family: transmission
+    subfamily: behaviorist_explicit_instruction
+    short_label: "Matched-behaviorist (explicit instruction)"
+    lineage: "Skinner (operant conditioning); Gagné (Nine Events of Instruction); Keller (PSI / mastery learning); Thorndike (Laws of Effect/Exercise/Readiness); Rosenshine (Principles of Instruction)."
+    view_of_learner: "Organism whose behaviour is shaped by contingencies; a responder to be reinforced toward mastery criterion"
+    role_of_tutor: "Manage learning contingencies; break content into smallest teachable units; sequence simple-to-complex via chaining; immediate corrective feedback; reinforce correct performance; require mastery before advancement"
+    key_mechanism: "Reinforced repetition toward mastery criterion"
+    vocabulary: ["contingency", "reinforcement", "stimulus", "response", "mastery criterion", "feedback cycle", "worked example", "guided practice", "independent practice", "chaining", "fading", "automaticity", "clear objective", "task analysis"]
+    prompt_file: tutor-ego-matched-behaviorist.md
+    approx_length_words: 2957
+    evaluation_effect_pooled_d_vs_base: -0.89  # A10b: substantially BELOW base (transmission-family)
+    evaluation_note: "Scores substantially below generic base prompt (pooled d = 0.89). Rigorously-authored prompt in the wrong pedagogical family is counterproductive."
+
+# ============================================================================
+# CELL PROFILES
+# ============================================================================
+
 profiles:
   # ===========================================================================
   # DEVELOPMENT PROFILE (not part of factorial design)
@@ -3865,3 +3945,60 @@ profiles:
       enforce_mutual_recognition: true
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # Cell 95: A10 matched-specificity prompt-density control
+  # Rich pedagogical prompt (~2,830 words, length-matched to recognition prompt)
+  # grounded in named educational research (Piaget, Vygotsky, Bloom, VanLehn,
+  # Kapur, Chi, Graesser). Zero recognition/Hegelian content — blocklist-checked
+  # in the prompt source header. Used by A10 to test whether recognition's effect
+  # is reducible to prompt density/specificity rather than content.
+  # See notes/design-a10-prompt-density-v22-control.md
+  cell_95_base_matched_single_unified:
+    description: "A10 control: matched-specificity pedagogical prompt (length-matched to recognition, no recognition content), single-agent tutor, unified learner"
+    factors:
+      prompt_type: matched_pedagogical
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: deepseek
+      prompt_file: tutor-ego-matched-pedagogical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
+
+  # Cell 96: A10b matched-specificity behaviorist density control
+  # Rich behaviorist / explicit-instruction prompt (~2,960 words, length-matched to recognition)
+  # grounded in Skinner / Gagné / Keller / Thorndike / Rosenshine. Genuinely orthogonal to the
+  # Hegelian-descendant intersubjective family that cell_95 represents. Broader blocklist than
+  # cell_95 — excludes both recognition-theoretic vocabulary AND constructivist vocabulary
+  # (ZPD, Piaget, accommodation, disequilibrium, Kapur, productive struggle, ICAP, Chi, Dewey,
+  # Freire, dialectic, scaffold-as-Vygotskian). See notes/design-a10-prompt-density-v22-control.md
+  # and docs/pedagogical-taxonomy.md.
+  cell_96_base_behaviorist_single_unified:
+    description: "A10b control: matched-specificity behaviorist prompt, genuinely orthogonal to Hegelian-descendant family, single-agent tutor, unified learner"
+    factors:
+      prompt_type: matched_behaviorist
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: deepseek
+      prompt_file: tutor-ego-matched-behaviorist.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego: null
