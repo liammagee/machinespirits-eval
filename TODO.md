@@ -548,7 +548,7 @@ Every major finding is stated in abstract, intro contributions list, section, di
 ### ~~F5. Apparatus-as-Method Section Tightening~~ (DONE v3.0.44)
 §7.4 trimmed from ~51 lines to 33 lines (~35% cut). §7.4.1 three-correction paragraph consolidated to a single sentence; §7.4.2 dropped the redundant worked-example block (already in §5.9) and the "practical lesson" restatement, kept the dependency-graph cascade example; §7.4.3 removed the bulleted rubric history (cross-reference to §5.2.6) and added §8.6 PCA forward-reference; §7.4.4 compressed to a single tight paragraph. No content claims changed.
 
-### ~~F6. Paper-Framing Reframe~~ (DONE v3.0.49 — calibrated / Framing A)
+### ~~F6. Paper-Framing Reframe~~ (DONE v3.0.49 Framing A → v3.0.50 Framing B+ "primacy + descent")
 A10/A10b established that matched-pedagogical (Vygotsky/Piaget/Kapur/Chi/VanLehn/Graesser, no recognition vocabulary) reproduces recognition within the density-sufficient threshold. A10b additionally established that the *family* is the dominant effect (pooled $d = 1.38$ between-family vs $d = 0.14$ within-Hegelian-family). §7.9 (v3.0.48) already frames this honestly. But §1 (abstract), §3 (theoretical framing), and §9 (broader implications) still read as "recognition specifically is the thing."
 
 **Two defensible framings**:
@@ -557,9 +557,11 @@ A10/A10b established that matched-pedagogical (Vygotsky/Piaget/Kapur/Chi/VanLehn
 
 **Impact estimate**: ~1-2 hours careful editorial rewriting, no new data required, 20-30 passages touched (abstract, §1 operational paragraph, §1 contributions list, §3.1 theoretical framework, §3.2 predictions, §9 conclusion language). Free of API burn — pure editorial work.
 
-**Done v3.0.49** with calibrated Framing A: added family-level acknowledgement to abstract, §1, and §9 broader-implication; kept §3 theoretical framework unchanged as the paper's scholarly entry point. Did *not* pursue the bolder Framing B reframe from "recognition works" to "intersubjective pedagogy works"; if that reframe is wanted for a future submission, the groundwork now exists (taxonomy doc, exports docs, structured YAML metadata) to do it more quickly.
+**Done v3.0.49** with calibrated Framing A: added family-level acknowledgement to abstract, §1, and §9 broader-implication; kept §3 theoretical framework unchanged as the paper's scholarly entry point.
 
-- Paper ref: §1 intro (done v3.0.49), abstract (done), §9 broader implication (done), §7.9 (done v3.0.48); §3 theoretical framework intentionally unchanged
+**Refined v3.0.50** with Framing B+ "primacy + descent": empirical generalisability is real (matched-pedagogical reproduces recognition within $|d| < 0.2$), but recognition theory remains the most explicit philosophical articulation of an intersubjective-pedagogy orientation its constructivist descendants inherit, often without direct attribution. §1 added a careful three-circle genealogical account distinguishing direct Hegelian descendants (Dewey, Vygotsky, Honneth, *Bildung*) from structurally-Hegelian descendants (Piaget, Kapur) from cognate-but-not-descended pedagogically-adjacent traditions (Chi, VanLehn, Graesser). §3 added a level-of-analysis framing note positioning the three mechanisms as recognition theory's specific articulation of commitments the broader family carries tacitly. §9 extended the family-level passage with explicit "empirical generalisability does not displace recognition theory" reasoning. Paper now ships at the Framing B+ level — empirically generous, theoretically careful.
+
+- Paper ref: abstract, §1 intro, §9 broader implication (all done v3.0.49 Framing A → v3.0.50 Framing B+); §3 theoretical framework (level-of-analysis framing note added v3.0.50); §7.9 (done v3.0.48)
 
 ---
 
