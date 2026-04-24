@@ -538,12 +538,8 @@ The disengagement exploratory finding (d=1.63, 1 model, 1 judge, 1 scenario, n=1
 - [x] §6.1 cross-model summary: clarify Sonnet-judge where used
 - Paper ref: v3.0.43
 
-### F4. Trim Redundant Hedging (MEDIUM)
-Every major finding is stated in abstract, intro contributions list, section, discussion, conclusion — five copies of the same caveats. After F1-F3 are done, a linear read-through would trim repeated phrases:
-- "universal substitution with 15-17% additivity deficit" appears 6+ times with slight variations
-- "pending boundary-condition finding requiring replication" appears 10+ times
-- Target: ~10% length reduction (300 lines) by consolidating duplicated caveats
-- Not urgent; do after F1-F3 prove readable.
+### ~~F4. Trim Redundant Hedging~~ (DONE v3.0.51)
+Universal-substitution restatements compressed from 22 to 15 occurrences with single canonical numerical homes (§6.4.2/§6.4.2.1 mechanistic account; §6.4.6 cross-judge; §7.3 §7-level interpretation; §8.3 cross-judge magnitudes; abstract headline). Other mentions compressed to bare cross-references. Pattern-2 hedging ("pending boundary-condition") was already retired in v3.0.43 (F1) + v3.0.45 (A12 closure); surviving occurrences are deliberately framed as historical references. Net change: ~480 words trimmed across ~18 paragraphs; line count unchanged (mid-paragraph compression). Original 300-line target was over-ambitious — the restatements are within paragraphs, not whole lines, so trimming preserves all canonical statements while removing duplicated numbers. Closes F-series editorial cycle (F1-F6 all resolved).
 
 ### ~~F5. Apparatus-as-Method Section Tightening~~ (DONE v3.0.44)
 §7.4 trimmed from ~51 lines to 33 lines (~35% cut). §7.4.1 three-correction paragraph consolidated to a single sentence; §7.4.2 dropped the redundant worked-example block (already in §5.9) and the "practical lesson" restatement, kept the dependency-graph cascade example; §7.4.3 removed the bulleted rubric history (cross-reference to §5.2.6) and added §8.6 PCA forward-reference; §7.4.4 compressed to a single tight paragraph. No content claims changed.
