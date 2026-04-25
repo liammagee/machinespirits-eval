@@ -54,13 +54,21 @@ app.get('/health', (req, res) => {
 // API routes
 import evalRoutes from './routes/evalRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import pilotRoutes from './routes/pilotRoutes.js';
 app.use('/api/eval', evalRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/pilot', pilotRoutes);
 
 // Serve the interactive chat UI
 const chatPublicDir = path.join(__dirname, 'public', 'chat');
 if (existsSync(chatPublicDir)) {
   app.use('/chat', express.static(chatPublicDir));
+}
+
+// Serve the participant-facing pilot UI (A1 human-learner study)
+const pilotPublicDir = path.join(__dirname, 'public', 'pilot');
+if (existsSync(pilotPublicDir)) {
+  app.use('/pilot', express.static(pilotPublicDir));
 }
 
 // Serve components as static files

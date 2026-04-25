@@ -1,0 +1,217 @@
+# Fractions test bank — A1 Human Learner Pilot
+#
+# ────────────────────────────────────────────────────────────────────────────
+# PLACEHOLDER CONTENT. NOT FOR DATA COLLECTION.
+# Replace with NAEP-derived items per runbook §3.2 Option 1 before IRB submission.
+# Items here exist to wire and dogfood the UI; psychometric properties are not
+# established and the difficulty curve is not balanced.
+# ────────────────────────────────────────────────────────────────────────────
+#
+# Two parallel 10-item forms (A, B). Counterbalanced per session by UUID parity:
+# even-suffix sessions get A pretest / B posttest; odd get B / A.
+#
+# Item types (per runbook §3.2):
+#   procedural — direct computation (add/subtract same-denominator)
+#   conceptual — what the fraction represents
+#   transfer   — applied/word-problem reasoning
+
+forms:
+  A:
+    - id: fr-a-001
+      type: procedural
+      stem: "What is 1/4 + 2/4?"
+      choices:
+        - { value: a, label: "2/8" }
+        - { value: b, label: "3/4" }
+        - { value: c, label: "3/8" }
+        - { value: d, label: "1/2" }
+      correct: b
+
+    - id: fr-a-002
+      type: procedural
+      stem: "What is 5/8 − 2/8?"
+      choices:
+        - { value: a, label: "3/0" }
+        - { value: b, label: "7/8" }
+        - { value: c, label: "3/8" }
+        - { value: d, label: "3/16" }
+      correct: c
+
+    - id: fr-a-003
+      type: conceptual
+      stem: "Which fraction is larger?"
+      choices:
+        - { value: a, label: "1/3" }
+        - { value: b, label: "1/4" }
+        - { value: c, label: "they are equal" }
+      correct: a
+
+    - id: fr-a-004
+      type: conceptual
+      stem: "A pizza is cut into 8 equal slices. You eat 3 of them. What fraction of the pizza did you eat?"
+      choices:
+        - { value: a, label: "3/5" }
+        - { value: b, label: "3/8" }
+        - { value: c, label: "5/8" }
+        - { value: d, label: "8/3" }
+      correct: b
+
+    - id: fr-a-005
+      type: conceptual
+      stem: "Which of the following is equivalent to 1/2?"
+      choices:
+        - { value: a, label: "1/4" }
+        - { value: b, label: "2/3" }
+        - { value: c, label: "2/4" }
+        - { value: d, label: "1/3" }
+      correct: c
+
+    - id: fr-a-006
+      type: procedural
+      stem: "What is 1/3 of 12?"
+      choices:
+        - { value: a, label: "3" }
+        - { value: b, label: "4" }
+        - { value: c, label: "6" }
+        - { value: d, label: "9" }
+      correct: b
+
+    - id: fr-a-007
+      type: conceptual
+      stem: "Which point on the number line below best represents 3/4? (Number line shown 0 to 1.)"
+      choices:
+        - { value: a, label: "About 1/4 of the way from 0 to 1" }
+        - { value: b, label: "Halfway between 0 and 1" }
+        - { value: c, label: "About 3/4 of the way from 0 to 1" }
+        - { value: d, label: "Just past 1" }
+      correct: c
+
+    - id: fr-a-008
+      type: transfer
+      stem: "Maya read 2/5 of a book on Monday and 1/5 of it on Tuesday. What fraction of the book has she read in total?"
+      choices:
+        - { value: a, label: "3/10" }
+        - { value: b, label: "2/25" }
+        - { value: c, label: "3/5" }
+        - { value: d, label: "2/5" }
+      correct: c
+
+    - id: fr-a-009
+      type: transfer
+      stem: "A recipe calls for 3/4 cup of sugar. If you halve the recipe, how much sugar do you need?"
+      choices:
+        - { value: a, label: "3/8 cup" }
+        - { value: b, label: "1/2 cup" }
+        - { value: c, label: "3/2 cup" }
+        - { value: d, label: "1/4 cup" }
+      correct: a
+
+    - id: fr-a-010
+      type: transfer
+      stem: "There are 24 students in a class. 1/4 of them ride the bus. How many ride the bus?"
+      choices:
+        - { value: a, label: "4" }
+        - { value: b, label: "6" }
+        - { value: c, label: "8" }
+        - { value: d, label: "12" }
+      correct: b
+
+  B:
+    - id: fr-b-001
+      type: procedural
+      stem: "What is 2/5 + 1/5?"
+      choices:
+        - { value: a, label: "3/10" }
+        - { value: b, label: "3/5" }
+        - { value: c, label: "2/25" }
+        - { value: d, label: "3/0" }
+      correct: b
+
+    - id: fr-b-002
+      type: procedural
+      stem: "What is 7/10 − 3/10?"
+      choices:
+        - { value: a, label: "4/10" }
+        - { value: b, label: "4/0" }
+        - { value: c, label: "10/4" }
+        - { value: d, label: "1/10" }
+      correct: a
+
+    - id: fr-b-003
+      type: conceptual
+      stem: "Which fraction is smaller?"
+      choices:
+        - { value: a, label: "1/5" }
+        - { value: b, label: "1/6" }
+        - { value: c, label: "they are equal" }
+      correct: b
+
+    - id: fr-b-004
+      type: conceptual
+      stem: "A chocolate bar is divided into 6 equal pieces. You give 2 to a friend. What fraction did you give away?"
+      choices:
+        - { value: a, label: "2/4" }
+        - { value: b, label: "1/3" }
+        - { value: c, label: "2/8" }
+        - { value: d, label: "6/2" }
+      correct: b
+
+    - id: fr-b-005
+      type: conceptual
+      stem: "Which of the following is equivalent to 2/3?"
+      choices:
+        - { value: a, label: "3/2" }
+        - { value: b, label: "4/6" }
+        - { value: c, label: "2/6" }
+        - { value: d, label: "2/4" }
+      correct: b
+
+    - id: fr-b-006
+      type: procedural
+      stem: "What is 1/2 of 18?"
+      choices:
+        - { value: a, label: "6" }
+        - { value: b, label: "8" }
+        - { value: c, label: "9" }
+        - { value: d, label: "12" }
+      correct: c
+
+    - id: fr-b-007
+      type: conceptual
+      stem: "On a number line from 0 to 1, where does 1/3 fall?"
+      choices:
+        - { value: a, label: "About 1/3 of the way from 0 to 1" }
+        - { value: b, label: "About halfway between 0 and 1" }
+        - { value: c, label: "About 2/3 of the way from 0 to 1" }
+        - { value: d, label: "Just before 0" }
+      correct: a
+
+    - id: fr-b-008
+      type: transfer
+      stem: "Sam ran 1/4 mile, then ran another 2/4 mile. How far did Sam run in total?"
+      choices:
+        - { value: a, label: "2/16 mile" }
+        - { value: b, label: "3/8 mile" }
+        - { value: c, label: "3/4 mile" }
+        - { value: d, label: "1/2 mile" }
+      correct: c
+
+    - id: fr-b-009
+      type: transfer
+      stem: "A recipe needs 2/3 cup of flour. If you triple the recipe, how much flour do you need?"
+      choices:
+        - { value: a, label: "2 cups" }
+        - { value: b, label: "6/9 cup" }
+        - { value: c, label: "2/9 cup" }
+        - { value: d, label: "5/3 cup" }
+      correct: a
+
+    - id: fr-b-010
+      type: transfer
+      stem: "20 marbles are in a bag. 3/5 of them are blue. How many marbles are blue?"
+      choices:
+        - { value: a, label: "5" }
+        - { value: b, label: "8" }
+        - { value: c, label: "12" }
+        - { value: d, label: "15" }
+      correct: c

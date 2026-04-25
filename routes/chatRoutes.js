@@ -20,6 +20,7 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as contentResolver from '../services/contentResolver.js';
 import interactionEngine, { extractTutorMessage } from '../services/learnerTutorInteractionEngine.js';
+import * as pilotStore from '../services/pilotStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -614,7 +615,7 @@ function normalizeLearnerDeliberation(entries) {
 }
 
 router.post('/turn', async (req, res) => {
-  const {
+  let {
     cellName,
     history = [],
     learnerMessage,
@@ -622,11 +623,47 @@ router.post('/turn', async (req, res) => {
     lectureRef = null,
     useClaudeCli = false,
   } = req.body || {};
+  const sessionId = req.body?.sessionId || null;
 
-  if (!cellName) return res.status(400).json({ error: 'cellName is required' });
   if (!learnerMessage || !String(learnerMessage).trim()) {
     return res.status(400).json({ error: 'learnerMessage is required' });
   }
+
+  // Pilot mode: the session record is authoritative for cellName, lectureRef,
+  // history, and substrate. Anything client-supplied for those fields is
+  // ignored to preserve blinding and prevent participants from steering
+  // their own assignment.
+  let pilotSession = null;
+  if (sessionId) {
+    pilotSession = pilotStore.getSession(sessionId);
+    if (!pilotSession) {
+      return res.status(404).json({ error: `pilot session ${sessionId} not found` });
+    }
+    if (pilotSession.status !== pilotStore.PILOT_STATUSES.TUTORING) {
+      return res.status(409).json({
+        error: `pilot session not in tutoring phase (current: ${pilotSession.status})`,
+        code: 'PILOT_WRONG_PHASE',
+      });
+    }
+    if (pilotStore.isTutoringExpired(pilotSession)) {
+      pilotStore.endTutoring(sessionId, { reason: 'timed_out' });
+      return res.status(410).json({
+        error: 'tutoring time cap exceeded',
+        code: 'PILOT_TIMED_OUT',
+      });
+    }
+    cellName = pilotSession.condition_cell;
+    lectureRef = pilotSession.scenario_lecture_ref;
+    useClaudeCli = false; // pilot is locked to OpenRouter
+    // Authoritative server-side history — replay from DB rather than trust client
+    const dbTurns = pilotStore.listTurns(sessionId);
+    history = dbTurns.map((t) => ({ role: t.role, content: t.content }));
+    if (!topic || topic === 'general conversation') {
+      topic = 'fractions tutoring session';
+    }
+  }
+
+  if (!cellName) return res.status(400).json({ error: 'cellName is required' });
 
   const data = evalConfigLoader.loadTutorAgents();
   const profile = data?.profiles?.[cellName];
@@ -651,6 +688,57 @@ router.post('/turn', async (req, res) => {
       curriculum,
       useClaudeCli: !!useClaudeCli,
     });
+
+    if (pilotSession) {
+      // Persist BOTH the learner message and the tutor response. config_hash
+      // is computed once and shared across the pair (same model state for
+      // this round); dialogue_content_hash is computed cumulatively inside
+      // pilotStore.appendTurn.
+      const egoPromptText = loadPromptFile(profile.ego.prompt_file);
+      const superegoPromptText = profile.superego
+        ? loadPromptFile(profile.superego.prompt_file)
+        : '';
+      const configHash = pilotStore.computeConfigHash({
+        cellName,
+        egoConfig: profile.ego,
+        superegoConfig: profile.superego,
+        egoPromptText,
+        superegoPromptText,
+        topic,
+        lectureText: curriculum?.text || '',
+      });
+
+      pilotStore.appendTurn(sessionId, {
+        role: 'learner',
+        content: String(learnerMessage),
+        configHash,
+      });
+
+      const egoEntry = trace.deliberation.find((d) => d.role === 'ego');
+      const superegoEntry = trace.deliberation.find((d) => d.role === 'superego');
+
+      const tutorTurn = pilotStore.appendTurn(sessionId, {
+        role: 'tutor',
+        content: trace.finalMessage,
+        deliberation: trace.deliberation,
+        wasRevised: trace.wasRevised,
+        configHash,
+        inputTokens: trace.totals?.inputTokens,
+        outputTokens: trace.totals?.outputTokens,
+        latencyMs: trace.totals?.latencyMs,
+        egoModel: egoEntry?.model || null,
+        superegoModel: superegoEntry?.model || null,
+      });
+
+      const refreshed = pilotStore.getSession(sessionId);
+      return res.json({
+        finalMessage: trace.finalMessage,
+        sessionId,
+        turnIndex: tutorTurn.turnIndex,
+        tutoringTimeRemainingMs: pilotStore.tutoringTimeRemainingMs(refreshed),
+      });
+    }
+
     if (curriculum) {
       trace.curriculum = {
         courseId: curriculum.courseId,

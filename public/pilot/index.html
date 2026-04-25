@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<meta name="robots" content="noindex" />
+<title>Fractions Tutoring Study</title>
+<meta name="description" content="A short study about how people learn fractions with an AI tutor." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
+
+<style>
+  :root {
+    --paper:    #fafaf7;
+    --paper-2:  #f1efe7;
+    --ink:      #1a1a1a;
+    --ink-2:    #3d3d3d;
+    --ink-3:    #6f6f6f;
+    --rule:     #d8d4ca;
+    --accent:   #2d5d6e;
+    --accent-2: #1f4252;
+    --warn:     #b35c1a;
+    --good:     #3a6a3a;
+    --shadow:   rgba(0,0,0,0.06);
+    --max-w:    640px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--max-w); margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+  header {
+    border-bottom: 1px solid var(--rule);
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+  }
+  .progress {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
+  .timer--warn { color: var(--warn); }
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 1.5rem 0 0.5rem;
+    line-height: 1.2;
+  }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+  p { margin: 0.6rem 0; color: var(--ink-2); }
+  .lede { font-size: 1.05rem; color: var(--ink); margin-bottom: 1.5rem; }
+  .small { font-size: 0.88rem; color: var(--ink-3); }
+  .muted { color: var(--ink-3); }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+
+  button, .btn {
+    display: inline-block;
+    padding: 0.75rem 1.4rem;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: white;
+    font: inherit;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  button:hover:not(:disabled), .btn:hover { background: var(--accent-2); border-color: var(--accent-2); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary {
+    background: transparent;
+    color: var(--accent);
+  }
+  button.secondary:hover:not(:disabled) {
+    background: var(--paper-2);
+    color: var(--accent-2);
+  }
+  button.danger {
+    border-color: var(--warn);
+    background: transparent;
+    color: var(--warn);
+  }
+  button.danger:hover:not(:disabled) { background: var(--warn); color: white; }
+
+  .actions { margin-top: 1.5rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font: inherit;
+    background: white;
+    color: var(--ink);
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+    border-color: var(--accent);
+  }
+  label.field { display: block; margin: 1rem 0; }
+  label.field > span { display: block; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.95rem; }
+
+  fieldset {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.75rem 1rem 1rem;
+    margin: 1rem 0;
+  }
+  fieldset legend {
+    padding: 0 0.4rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .radio-group, .check-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .radio-row, .check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .radio-row:hover, .check-row:hover { background: var(--paper-2); }
+  .radio-row input, .check-row input { margin-top: 0.25rem; flex-shrink: 0; }
+  .radio-row span, .check-row span { color: var(--ink); }
+
+  .item-card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .item-card .stem { font-size: 1.05rem; font-weight: 500; margin-bottom: 1rem; }
+  .item-card .meta { font-size: 0.78rem; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+
+  .scale {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+  .scale label {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    cursor: pointer;
+    background: white;
+    transition: background 0.1s;
+  }
+  .scale label:hover { background: var(--paper-2); }
+  .scale input { display: none; }
+  .scale input:checked + span { font-weight: 700; }
+  .scale label:has(input:checked) {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .scale-anchor { font-size: 0.78rem; color: var(--ink-3); margin-top: 0.3rem; display: flex; justify-content: space-between; }
+
+  /* chat */
+  .chat-window {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px var(--shadow);
+    min-height: 320px;
+    max-height: 60vh;
+    overflow-y: auto;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .bubble {
+    max-width: 85%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    line-height: 1.5;
+  }
+  .bubble--learner {
+    background: var(--accent);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble--tutor {
+    background: var(--paper-2);
+    color: var(--ink);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .bubble--system {
+    background: transparent;
+    color: var(--ink-3);
+    font-style: italic;
+    font-size: 0.88rem;
+    align-self: center;
+    text-align: center;
+  }
+  .bubble :first-child { margin-top: 0; }
+  .bubble :last-child { margin-bottom: 0; }
+  .bubble pre, .bubble code {
+    background: rgba(0,0,0,0.05);
+    border-radius: 3px;
+    padding: 0.1em 0.3em;
+    font-size: 0.92em;
+  }
+  .bubble--learner pre, .bubble--learner code { background: rgba(255,255,255,0.18); }
+
+  .composer {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+  }
+  .composer textarea { min-height: 56px; max-height: 200px; }
+  .composer button { padding: 0.6rem 1.4rem; }
+
+  .pending {
+    color: var(--ink-3);
+    font-size: 0.88rem;
+    font-style: italic;
+    align-self: flex-start;
+  }
+
+  .error-banner {
+    background: rgba(179,92,26,0.1);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+  .info-banner {
+    background: rgba(45,93,110,0.06);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+  }
+
+  .completion-code {
+    display: inline-block;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 1.2rem;
+    padding: 0.6rem 1rem;
+    background: var(--paper-2);
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    margin: 0.75rem 0;
+    user-select: all;
+  }
+
+  /* For consent prose */
+  .consent-text { background: white; border: 1px solid var(--rule); border-radius: 4px; padding: 1rem 1.25rem; max-height: 50vh; overflow-y: auto; font-size: 0.95rem; }
+  .consent-text h3:first-child { margin-top: 0; }
+  .consent-text ul { padding-left: 1.2rem; }
+
+  @media (max-width: 480px) {
+    .wrap { padding: 1rem; }
+    h2 { font-size: 1.35rem; }
+    .scale { flex-direction: column; }
+    .scale label { padding: 0.4rem 0.6rem; text-align: left; }
+  }
+</style>
+</head>
+<body x-data="pilotApp()" x-init="init()" x-cloak>
+  <header>
+    <h1>Fractions Tutoring Study</h1>
+    <div class="progress" x-show="phase !== 'loading' && phase !== 'landing'" x-text="progressLabel"></div>
+    <div class="timer" :class="{ 'timer--warn': timerSeconds < 120 }"
+         x-show="phase === 'tutoring'" x-text="timerDisplay"></div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- ─────────────── LOADING ─────────────── -->
+    <section x-show="phase === 'loading'">
+      <p class="muted">Loading…</p>
+    </section>
+
+    <!-- ─────────────── ERROR ─────────────── -->
+    <template x-if="errorMessage">
+      <div class="error-banner" role="alert" x-text="errorMessage"></div>
+    </template>
+
+    <!-- ─────────────── LANDING ─────────────── -->
+    <section x-show="phase === 'landing'">
+      <h2>Welcome</h2>
+      <p class="lede">
+        This study looks at how people learn fractions with an AI tutor.
+        It takes about 30 minutes. There are no right or wrong things to say —
+        we're studying the tutor, not you.
+      </p>
+      <p>You'll do a short check, have a 15-minute conversation with an AI tutor,
+         do another short check, and answer a few questions about your experience.</p>
+
+      <label class="field">
+        <span>Your participant ID (from Prolific or the study link)</span>
+        <input type="text" x-model.trim="prolificPid"
+               placeholder="e.g. 5f8a3b2c4d5e6f7g8h9i0j1k"
+               autocomplete="off" autocapitalize="none" />
+      </label>
+      <p class="small muted">Without a participant ID, you can still preview the study —
+        but your responses will not be eligible for payment.</p>
+
+      <div class="actions">
+        <button @click="enroll()" :disabled="pending">Begin study</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── CONSENT ─────────────── -->
+    <section x-show="phase === 'consent'">
+      <h2>Consent</h2>
+      <p class="lede">Please read the following before you continue.</p>
+      <article class="consent-text">
+        <h3>About this study</h3>
+        <p>You're being invited to take part in a research study about AI tutors
+        and fractions. The study is conducted by the Machine Spirits research
+        group. <strong>This is placeholder consent text for development.
+        It will be replaced with IRB-approved language before recruitment.</strong></p>
+
+        <h3>What you'll do</h3>
+        <ul>
+          <li>Answer ten short multiple-choice questions about fractions (about 5 minutes)</li>
+          <li>Have a 15-minute typed conversation with an AI tutor</li>
+          <li>Answer ten more multiple-choice questions about fractions</li>
+          <li>Tell us briefly what you thought of the conversation</li>
+        </ul>
+
+        <h3>Privacy</h3>
+        <p>We record your typed messages with the tutor and your answers to the
+        questions. We do not record your name, email, or any personally
+        identifying details beyond your participant ID. We may share or publish
+        de-identified data.</p>
+
+        <h3>Risks</h3>
+        <p>The risks are minimal. Some questions may feel difficult. You can
+        stop at any time without penalty.</p>
+
+        <h3>Your rights</h3>
+        <p>Participation is voluntary. You may stop the study at any time. If
+        you have questions, contact the research team at the address provided
+        in the study listing.</p>
+      </article>
+
+      <label class="field" style="margin-top: 1.5rem;">
+        <span class="check-row" style="cursor: pointer;">
+          <input type="checkbox" x-model="consentChecked" />
+          <span>I have read this information and consent to take part.</span>
+        </span>
+      </label>
+      <div class="actions">
+        <button @click="submitConsent()" :disabled="!consentChecked || pending">Continue</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── INTAKE ─────────────── -->
+    <section x-show="phase === 'intake'">
+      <h2>About you</h2>
+      <p class="lede">A few quick questions before we begin.</p>
+
+      <fieldset>
+        <legend>Age</legend>
+        <div class="radio-group">
+          <template x-for="band in ageBands" :key="band">
+            <label class="radio-row">
+              <input type="radio" :value="band" x-model="intake.age_band" />
+              <span x-text="band"></span>
+            </label>
+          </template>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Highest level of math you've completed</legend>
+        <div class="radio-group">
+          <template x-for="level in mathLevels" :key="level.value">
+            <label class="radio-row">
+              <input type="radio" :value="level.value" x-model="intake.prior_math" />
+              <span x-text="level.label"></span>
+            </label>
+          </template>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>How comfortable are you working with fractions?</legend>
+        <div class="scale">
+          <template x-for="n in [1,2,3,4,5]" :key="n">
+            <label>
+              <input type="radio" :value="n" x-model.number="intake.comfort_self" />
+              <span x-text="n"></span>
+            </label>
+          </template>
+        </div>
+        <div class="scale-anchor">
+          <span>1 — not at all</span>
+          <span>5 — very comfortable</span>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button @click="submitIntake()" :disabled="!intakeComplete || pending">Continue</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── PRETEST INTRO ─────────────── -->
+    <section x-show="phase === 'pretest_intro'">
+      <h2>Quick check</h2>
+      <p class="lede">Before the tutoring conversation, please answer
+         <span x-text="pretestItems.length"></span> short questions about fractions.</p>
+      <p>There's no time limit. Pick the answer you think is best.
+         If you're not sure, just take your best guess.</p>
+      <div class="actions">
+        <button @click="startPretest()" :disabled="pending">Begin questions</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── PRETEST + POSTTEST (shared template) ─────────────── -->
+    <section x-show="phase === 'pretest' || phase === 'posttest'">
+      <h2 x-text="phase === 'pretest' ? 'Quick check (before)' : 'Quick check (after)'"></h2>
+      <template x-if="currentItem">
+        <div>
+          <p class="muted">
+            Question <span x-text="currentItemIndex + 1"></span>
+            of <span x-text="(phase === 'pretest' ? pretestItems : posttestItems).length"></span>
+          </p>
+          <div class="item-card">
+            <div class="stem" x-text="currentItem.stem"></div>
+            <div class="radio-group">
+              <template x-for="choice in currentItem.choices" :key="choice.value">
+                <label class="radio-row">
+                  <input type="radio"
+                         :name="'item-' + currentItem.id"
+                         :value="choice.value"
+                         x-model="currentResponses[currentItem.id]" />
+                  <span x-text="choice.label"></span>
+                </label>
+              </template>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="secondary" @click="prevItem()" x-show="currentItemIndex > 0">Back</button>
+            <button x-show="!isLastItem" @click="nextItem()"
+                    :disabled="!currentResponses[currentItem.id]">Next</button>
+            <button x-show="isLastItem" @click="submitTest()"
+                    :disabled="!currentResponses[currentItem.id] || pending">Submit answers</button>
+          </div>
+        </div>
+      </template>
+    </section>
+
+    <!-- ─────────────── TUTORING INTRO ─────────────── -->
+    <section x-show="phase === 'tutoring_intro'">
+      <h2>Tutoring conversation</h2>
+      <p class="lede">You'll now have a 15-minute conversation with an AI tutor about fractions.</p>
+      <ul style="color: var(--ink-2); padding-left: 1.2rem;">
+        <li>Ask whatever you'd like. The tutor is here to help you think.</li>
+        <li>Type as little or as much as you want per turn.</li>
+        <li>The tutor takes a few seconds to respond — that's normal.</li>
+        <li>A timer at the top of the page counts down from 15 minutes.</li>
+        <li>You can end the conversation early using the button at the bottom.</li>
+      </ul>
+      <div class="actions">
+        <button @click="startTutoring()" :disabled="pending">Begin tutoring</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── TUTORING CHAT ─────────────── -->
+    <section x-show="phase === 'tutoring'">
+      <div class="chat-window" x-ref="chatWindow">
+        <div class="bubble bubble--system">
+          The tutor is ready when you are. Try asking what you'd like to learn or
+          where you tend to get stuck with fractions.
+        </div>
+        <template x-for="(t, i) in turns" :key="i">
+          <div class="bubble" :class="`bubble--${t.role}`">
+            <template x-if="t.role === 'tutor'">
+              <div x-html="md(t.content)"></div>
+            </template>
+            <template x-if="t.role === 'learner'">
+              <div x-text="t.content"></div>
+            </template>
+          </div>
+        </template>
+        <div class="pending" x-show="pending">The tutor is thinking…</div>
+      </div>
+
+      <form @submit.prevent="sendMessage()" class="composer">
+        <textarea x-model="input" placeholder="Type your message…"
+                  @keydown.enter.exact.prevent="sendMessage()"
+                  :disabled="pending || timerSeconds <= 0"></textarea>
+        <button type="submit" :disabled="pending || !input.trim() || timerSeconds <= 0">Send</button>
+      </form>
+
+      <div class="actions" style="margin-top: 0.75rem; justify-content: space-between;">
+        <span class="small muted" x-show="timerSeconds > 0">
+          You can keep talking until the timer runs out.
+        </span>
+        <button class="danger" @click="confirmEndTutoring()">End conversation early</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── POSTTEST INTRO ─────────────── -->
+    <section x-show="phase === 'posttest_intro'">
+      <h2>One more quick check</h2>
+      <p class="lede">Now that the conversation is over, please answer another
+         <span x-text="posttestItems.length || 10"></span> short questions about fractions.</p>
+      <p>Same format as before. There's no time limit.</p>
+      <div class="actions">
+        <button @click="startPosttest()" :disabled="pending">Begin questions</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── EXIT SURVEY ─────────────── -->
+    <section x-show="phase === 'exit'">
+      <h2>How was that?</h2>
+      <p class="lede">Just a few quick questions about your experience.</p>
+
+      <h3>Workload</h3>
+      <p class="small muted">For each, pick a number from 1 (very low) to 5 (very high).</p>
+
+      <template x-for="dim in nasaDimensions" :key="dim.key">
+        <fieldset>
+          <legend x-text="dim.label"></legend>
+          <p class="small muted" x-text="dim.help"></p>
+          <div class="scale">
+            <template x-for="n in [1,2,3,4,5]" :key="n">
+              <label>
+                <input type="radio" :name="'tlx-' + dim.key" :value="n" x-model.number="exit.nasa_tlx[dim.key]" />
+                <span x-text="n"></span>
+              </label>
+            </template>
+          </div>
+          <div class="scale-anchor">
+            <span x-text="dim.low"></span>
+            <span x-text="dim.high"></span>
+          </div>
+        </fieldset>
+      </template>
+
+      <h3>The conversation</h3>
+
+      <template x-for="q in engagementQuestions" :key="q.key">
+        <fieldset>
+          <legend x-text="q.label"></legend>
+          <div class="scale">
+            <template x-for="n in [1,2,3,4,5]" :key="n">
+              <label>
+                <input type="radio" :name="'eng-' + q.key" :value="n" x-model.number="exit.engagement_likert[q.key]" />
+                <span x-text="n"></span>
+              </label>
+            </template>
+          </div>
+          <div class="scale-anchor">
+            <span>1 — strongly disagree</span>
+            <span>5 — strongly agree</span>
+          </div>
+        </fieldset>
+      </template>
+
+      <h3>In your own words</h3>
+
+      <label class="field">
+        <span>What was one moment where you felt the tutor got it right?</span>
+        <textarea x-model="exit.open_ended.tutor_got_right"
+                  maxlength="800" placeholder="Optional"></textarea>
+        <span class="small muted">
+          <span x-text="(exit.open_ended.tutor_got_right || '').length"></span> / 800
+        </span>
+      </label>
+
+      <label class="field">
+        <span>What was one moment where you felt misunderstood?</span>
+        <textarea x-model="exit.open_ended.felt_misunderstood"
+                  maxlength="800" placeholder="Optional"></textarea>
+        <span class="small muted">
+          <span x-text="(exit.open_ended.felt_misunderstood || '').length"></span> / 800
+        </span>
+      </label>
+
+      <div class="actions">
+        <button @click="submitExit()" :disabled="!exitComplete || pending">Submit and finish</button>
+      </div>
+    </section>
+
+    <!-- ─────────────── DONE ─────────────── -->
+    <section x-show="phase === 'done'">
+      <h2>Thank you.</h2>
+      <p class="lede">You're done. We really appreciate the time you took.</p>
+      <p>Your completion code:</p>
+      <div class="completion-code" x-text="completionCode"></div>
+      <p class="small muted">Paste this code back on Prolific to receive your payment.
+         (For development sessions, the code is your session ID.)</p>
+    </section>
+
+    <!-- ─────────────── ABANDONED / TIMED OUT ─────────────── -->
+    <section x-show="phase === 'terminal'">
+      <h2 x-text="terminalTitle"></h2>
+      <p class="lede" x-text="terminalMessage"></p>
+    </section>
+
+  </main>
+
+<script>
+function pilotApp() {
+  return {
+    // session
+    session: null,
+    sessionId: null,
+    prolificPid: '',
+    forceCondition: null,
+
+    // ui state
+    phase: 'loading',          // loading | landing | consent | intake |
+                               // pretest_intro | pretest | tutoring_intro |
+                               // tutoring | posttest_intro | posttest |
+                               // exit | done | terminal
+    pending: false,
+    errorMessage: '',
+
+    // intake
+    consentChecked: false,
+    intake: { age_band: null, prior_math: null, comfort_self: null },
+    ageBands: ['18–24', '25–34', '35–44', '45–54', '55–64', '65+'],
+    mathLevels: [
+      { value: 'middle_school',     label: 'Middle school or less' },
+      { value: 'some_high_school',  label: 'Some high school' },
+      { value: 'high_school',       label: 'Finished high school' },
+      { value: 'some_college',      label: 'Some college / vocational' },
+      { value: 'college_no_math',   label: 'College degree (not math-heavy)' },
+      { value: 'college_math',      label: 'College degree in a math-heavy field' },
+    ],
+
+    // tests
+    pretestItems: [],
+    posttestItems: [],
+    currentResponses: {},      // { item_id: choice_value }
+    currentItemIndex: 0,
+    questionStartedAt: 0,
+    responseTimes: {},         // { item_id: ms }
+
+    // tutoring
+    turns: [],                 // [{ role, content }]
+    input: '',
+    tutoringEndsAt: null,
+    timerSeconds: 0,
+    timerInterval: null,
+
+    // exit survey
+    exit: {
+      nasa_tlx: { mental: null, physical: null, temporal: null,
+                  performance: null, effort: null, frustration: null },
+      engagement_likert: { understood: null, would_use_again: null, learned_something: null },
+      open_ended: { tutor_got_right: '', felt_misunderstood: '' },
+    },
+    nasaDimensions: [
+      { key: 'mental', label: 'Mental demand',
+        help: 'How mentally demanding was the conversation?',
+        low: 'Very low', high: 'Very high' },
+      { key: 'physical', label: 'Physical demand',
+        help: 'How physically demanding (typing, reading)?',
+        low: 'Very low', high: 'Very high' },
+      { key: 'temporal', label: 'Time pressure',
+        help: 'How rushed did you feel?',
+        low: 'Very relaxed', high: 'Very rushed' },
+      { key: 'performance', label: 'Sense of progress',
+        help: 'How successful did you feel in learning?',
+        low: 'Felt no progress', high: 'Felt I learned a lot' },
+      { key: 'effort', label: 'Effort',
+        help: 'How hard did you have to work?',
+        low: 'Very little', high: 'A lot' },
+      { key: 'frustration', label: 'Frustration',
+        help: 'How frustrated did you feel?',
+        low: 'Not at all', high: 'Very' },
+    ],
+    engagementQuestions: [
+      { key: 'understood',         label: 'I felt the tutor understood what I was asking.' },
+      { key: 'would_use_again',    label: 'I would want to use this tutor again.' },
+      { key: 'learned_something',  label: 'I learned something new.' },
+    ],
+
+    // ──────────────────────────────────────────────────────────────────────
+
+    async init() {
+      const params = new URLSearchParams(window.location.search);
+      const urlSession = params.get('session');
+      const lsSession = localStorage.getItem('pilot_session_id');
+      const sid = urlSession || lsSession;
+      this.prolificPid = params.get('PROLIFIC_PID') || params.get('prolific_pid') || '';
+      this.forceCondition = params.get('force') || null;
+
+      if (sid) {
+        try {
+          await this.loadSession(sid);
+        } catch (err) {
+          // session is gone or invalid; clear and show landing
+          localStorage.removeItem('pilot_session_id');
+          this.phase = 'landing';
+        }
+      } else {
+        this.phase = 'landing';
+      }
+    },
+
+    md(text) {
+      if (!text) return '';
+      try { return marked.parse(String(text), { breaks: true, gfm: true }); }
+      catch { return String(text).replace(/</g, '&lt;'); }
+    },
+
+    setError(msg) {
+      this.errorMessage = msg || '';
+      if (msg) {
+        setTimeout(() => { this.errorMessage = ''; }, 6000);
+      }
+    },
+
+    async fetchJson(url, opts = {}) {
+      const res = await fetch(url, {
+        ...opts,
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = data?.error || `Request failed (${res.status})`;
+        throw new Error(msg);
+      }
+      return data;
+    },
+
+    persistSession() {
+      if (this.sessionId) localStorage.setItem('pilot_session_id', this.sessionId);
+      const url = new URL(window.location.href);
+      if (this.sessionId && url.searchParams.get('session') !== this.sessionId) {
+        url.searchParams.set('session', this.sessionId);
+        window.history.replaceState({}, '', url.toString());
+      }
+    },
+
+    async loadSession(sid) {
+      const data = await this.fetchJson(`/api/pilot/session/${sid}`);
+      this.session = data.session;
+      this.sessionId = data.session.id;
+      this.persistSession();
+      await this.applySessionPhase(data);
+    },
+
+    async applySessionPhase(data) {
+      const status = this.session.status;
+      switch (status) {
+        case 'enrolled':
+          this.phase = 'consent'; break;
+        case 'consented':
+          this.phase = 'intake'; break;
+        case 'intake_done':
+          this.phase = 'pretest_intro';
+          await this.preloadPretestItems();
+          break;
+        case 'pretest_in_progress':
+          this.phase = 'pretest';
+          await this.preloadPretestItems();
+          this.startQuestionTimer();
+          break;
+        case 'pretest_done':
+          this.phase = 'tutoring_intro'; break;
+        case 'tutoring':
+          await this.resumeTutoring(data?.tutoringTimeRemainingMs);
+          break;
+        case 'tutoring_done':
+          this.phase = 'posttest_intro';
+          await this.preloadPosttestItems();
+          break;
+        case 'posttest_in_progress':
+          this.phase = 'posttest';
+          await this.preloadPosttestItems();
+          this.startQuestionTimer();
+          break;
+        case 'posttest_done':
+          this.phase = 'exit'; break;
+        case 'completed':
+          this.phase = 'done'; break;
+        case 'abandoned':
+        case 'timed_out':
+          this.phase = 'terminal'; break;
+        default:
+          this.phase = 'landing';
+      }
+    },
+
+    get progressLabel() {
+      const labels = {
+        consent:        'step 1 of 6',
+        intake:         'step 2 of 6',
+        pretest_intro:  'step 3 of 6',
+        pretest:        'step 3 of 6',
+        tutoring_intro: 'step 4 of 6',
+        tutoring:       'step 4 of 6',
+        posttest_intro: 'step 5 of 6',
+        posttest:       'step 5 of 6',
+        exit:           'step 6 of 6',
+        done:           'finished',
+      };
+      return labels[this.phase] || '';
+    },
+
+    get terminalTitle() {
+      if (this.session?.status === 'timed_out') return 'Session ended';
+      return 'Session ended';
+    },
+    get terminalMessage() {
+      if (this.session?.status === 'timed_out') {
+        return 'The tutoring time ran out. Your session has been recorded.';
+      }
+      return 'This session has been closed.';
+    },
+    get completionCode() {
+      return this.sessionId ? this.sessionId.slice(0, 8).toUpperCase() : '';
+    },
+
+    // ─── enroll / consent / intake ────────────────────────────────────────
+
+    async enroll() {
+      this.pending = true;
+      try {
+        const body = {};
+        if (this.prolificPid) body.participant_pid = this.prolificPid;
+        if (this.forceCondition) body.force_condition = this.forceCondition;
+        const data = await this.fetchJson('/api/pilot/enroll', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+        this.session = data.session;
+        this.sessionId = data.session.id;
+        this.persistSession();
+        await this.applySessionPhase(data);
+      } catch (err) {
+        this.setError(err.message);
+      } finally {
+        this.pending = false;
+      }
+    },
+
+    async submitConsent() {
+      this.pending = true;
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/consent`, {
+          method: 'POST', body: JSON.stringify({ consented: true }),
+        });
+        this.session = data.session;
+        await this.applySessionPhase(data);
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+
+    get intakeComplete() {
+      return !!(this.intake.age_band && this.intake.prior_math && this.intake.comfort_self);
+    },
+    async submitIntake() {
+      this.pending = true;
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/intake`, {
+          method: 'POST', body: JSON.stringify(this.intake),
+        });
+        this.session = data.session;
+        await this.applySessionPhase(data);
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+
+    // ─── pre/post test ────────────────────────────────────────────────────
+
+    async preloadPretestItems() {
+      if (this.pretestItems.length) return;
+      const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/items?phase=pretest`);
+      this.pretestItems = data.items;
+    },
+    async preloadPosttestItems() {
+      if (this.posttestItems.length) return;
+      const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/items?phase=posttest`);
+      this.posttestItems = data.items;
+    },
+
+    async startPretest() {
+      this.pending = true;
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/pretest/start`, { method: 'POST' });
+        this.session = data.session;
+        this.currentItemIndex = 0;
+        this.currentResponses = {};
+        this.responseTimes = {};
+        await this.preloadPretestItems();
+        this.phase = 'pretest';
+        this.startQuestionTimer();
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+
+    async startPosttest() {
+      this.pending = true;
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/posttest/start`, { method: 'POST' });
+        this.session = data.session;
+        this.currentItemIndex = 0;
+        this.currentResponses = {};
+        this.responseTimes = {};
+        await this.preloadPosttestItems();
+        this.phase = 'posttest';
+        this.startQuestionTimer();
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+
+    get currentItem() {
+      if (this.phase === 'pretest') return this.pretestItems[this.currentItemIndex];
+      if (this.phase === 'posttest') return this.posttestItems[this.currentItemIndex];
+      return null;
+    },
+
+    get isLastItem() {
+      const list = this.phase === 'pretest' ? this.pretestItems : this.posttestItems;
+      return this.currentItemIndex === list.length - 1;
+    },
+
+    startQuestionTimer() { this.questionStartedAt = Date.now(); },
+    recordResponseTime() {
+      if (!this.currentItem) return;
+      const ms = Date.now() - (this.questionStartedAt || Date.now());
+      this.responseTimes[this.currentItem.id] = ms;
+      this.questionStartedAt = Date.now();
+    },
+
+    nextItem() {
+      if (!this.currentResponses[this.currentItem.id]) return;
+      this.recordResponseTime();
+      this.currentItemIndex++;
+    },
+    prevItem() {
+      if (this.currentItemIndex > 0) {
+        this.recordResponseTime();
+        this.currentItemIndex--;
+      }
+    },
+
+    async submitTest() {
+      if (!this.currentItem || !this.currentResponses[this.currentItem.id]) return;
+      this.recordResponseTime();
+      this.pending = true;
+      try {
+        const items = this.phase === 'pretest' ? this.pretestItems : this.posttestItems;
+        const responses = items.map((it, i) => ({
+          item_id: it.id,
+          item_position: i,
+          response_value: this.currentResponses[it.id] || null,
+          response_ms: this.responseTimes[it.id] || null,
+        }));
+        const url = this.phase === 'pretest'
+          ? `/api/pilot/session/${this.sessionId}/pretest/submit`
+          : `/api/pilot/session/${this.sessionId}/posttest/submit`;
+        const data = await this.fetchJson(url, {
+          method: 'POST', body: JSON.stringify({ responses }),
+        });
+        this.session = data.session;
+        await this.applySessionPhase(data);
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+
+    // ─── tutoring ─────────────────────────────────────────────────────────
+
+    async startTutoring() {
+      this.pending = true;
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/tutoring/start`, { method: 'POST' });
+        this.session = data.session;
+        this.tutoringEndsAt = data.tutoringEndsAt;
+        this.turns = [];
+        this.phase = 'tutoring';
+        this.startTimer();
+        this.scrollChat();
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+
+    async resumeTutoring(remainingMs) {
+      // Tutoring restored on reload — fetch the session's existing turns from
+      // the admin? No — that requires a token. For pilot use, the session row
+      // has tutoring_started_at; we compute the timer from there.
+      this.tutoringEndsAt = (this.session.tutoring_started_at || Date.now())
+        + (remainingMs ?? 15 * 60 * 1000);
+      this.phase = 'tutoring';
+      this.startTimer();
+      // We don't replay tutor messages on reload (privacy of intermediate
+      // text); the participant continues from a cleared chat window.
+      this.turns = [{
+        role: 'tutor',
+        content: 'Welcome back. The conversation continues — keep going from wherever you left off.',
+      }];
+      this.scrollChat();
+    },
+
+    startTimer() {
+      this.tickTimer();
+      this.timerInterval = setInterval(() => this.tickTimer(), 1000);
+    },
+    tickTimer() {
+      if (!this.tutoringEndsAt) return;
+      const remaining = Math.max(0, Math.floor((this.tutoringEndsAt - Date.now()) / 1000));
+      this.timerSeconds = remaining;
+      if (remaining <= 0 && this.phase === 'tutoring') {
+        this.endTutoring('timed_out');
+      }
+    },
+    get timerDisplay() {
+      const m = Math.floor(this.timerSeconds / 60);
+      const s = this.timerSeconds % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    },
+
+    scrollChat() {
+      this.$nextTick(() => {
+        const el = this.$refs.chatWindow;
+        if (el) el.scrollTop = el.scrollHeight;
+      });
+    },
+
+    async sendMessage() {
+      const msg = (this.input || '').trim();
+      if (!msg || this.pending || this.timerSeconds <= 0) return;
+      this.input = '';
+      this.turns.push({ role: 'learner', content: msg });
+      this.scrollChat();
+      this.pending = true;
+      try {
+        const data = await this.fetchJson('/api/chat/turn', {
+          method: 'POST',
+          body: JSON.stringify({ sessionId: this.sessionId, learnerMessage: msg }),
+        });
+        this.turns.push({ role: 'tutor', content: data.finalMessage });
+        if (typeof data.tutoringTimeRemainingMs === 'number') {
+          this.tutoringEndsAt = Date.now() + data.tutoringTimeRemainingMs;
+        }
+      } catch (err) {
+        if (err.message.toLowerCase().includes('timed out')) {
+          this.endTutoring('timed_out');
+        } else {
+          this.turns.push({
+            role: 'system',
+            content: `(message could not be sent: ${err.message})`,
+          });
+          this.setError(err.message);
+        }
+      } finally {
+        this.pending = false;
+        this.scrollChat();
+      }
+    },
+
+    async confirmEndTutoring() {
+      const ok = window.confirm('End the conversation now? You can\'t come back to it.');
+      if (!ok) return;
+      await this.endTutoring('completed');
+    },
+
+    async endTutoring(reason = 'completed') {
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+        this.timerInterval = null;
+      }
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/tutoring/complete`, {
+          method: 'POST', body: JSON.stringify({ reason }),
+        });
+        this.session = data.session;
+        await this.applySessionPhase(data);
+      } catch (err) {
+        this.setError(err.message);
+        // Even if the API call fails, move forward — the server cap will catch up
+        await this.loadSession(this.sessionId);
+      }
+    },
+
+    // ─── exit survey ──────────────────────────────────────────────────────
+
+    get exitComplete() {
+      const t = this.exit.nasa_tlx;
+      const e = this.exit.engagement_likert;
+      return Object.values(t).every((v) => typeof v === 'number')
+          && Object.values(e).every((v) => typeof v === 'number');
+    },
+    async submitExit() {
+      this.pending = true;
+      try {
+        const data = await this.fetchJson(`/api/pilot/session/${this.sessionId}/exit`, {
+          method: 'POST', body: JSON.stringify(this.exit),
+        });
+        this.session = data.session;
+        localStorage.removeItem('pilot_session_id');
+        await this.applySessionPhase(data);
+      } catch (err) { this.setError(err.message); }
+      finally { this.pending = false; }
+    },
+  };
+}
+</script>
+
+<style>[x-cloak] { display: none !important; }</style>
+</body>
+</html>
