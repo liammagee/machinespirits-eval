@@ -1,0 +1,4 @@
+name: "@machinespirits/history-tech"
+version: "1.0.0"
+content:
+  courses: "./courses"

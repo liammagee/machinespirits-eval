@@ -17,6 +17,7 @@
  *   npm start
  */
 
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -52,7 +53,15 @@ app.get('/health', (req, res) => {
 
 // API routes
 import evalRoutes from './routes/evalRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 app.use('/api/eval', evalRoutes);
+app.use('/api/chat', chatRoutes);
+
+// Serve the interactive chat UI
+const chatPublicDir = path.join(__dirname, 'public', 'chat');
+if (existsSync(chatPublicDir)) {
+  app.use('/chat', express.static(chatPublicDir));
+}
 
 // Serve components as static files
 const componentsDir = path.join(__dirname, 'components');
@@ -102,6 +111,12 @@ if (isStandalone) {
 <body>
   <h1>Machine Spirits Eval</h1>
   <p>Evaluation system running in standalone mode.</p>
+
+  <h2>Interactive</h2>
+  <div class="endpoint">
+    <strong><a href="/chat">/chat</a></strong>
+    <p>Explore tutor architectures interactively — play the learner, watch the ego/superego deliberation for any cell from <code>tutor-agents.yaml</code>.</p>
+  </div>
 
   <h2>API Endpoints</h2>
 

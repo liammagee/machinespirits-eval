@@ -1,0 +1,2709 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<title>Machine Spirits / Chat — Composing a Tutor, MMXXVI</title>
+<meta name="description" content="Composing a tutor in sixty parts. An interactive specimen of the tutor-learner architecture space." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300..900&family=JetBrains+Mono:wght@300..700&family=Space+Grotesk:wght@300..700&display=swap" />
+
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Machine Spirits / Chat — after grid_60_47
+   klee-aged palette · 60-column canon · editorial specimen
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* palette — klee-aged */
+  --paper:     #F1E9D8;
+  --paper-2:   #E9DFC7;
+  --paper-3:   #EFE4CC;
+  --ink:       #181310;
+  --ink-2:     #3a2f27;
+  --ink-3:     #6a5c50;
+  --ochre:     #C08A3E;
+  --prussian:  #2A4F6B;
+  --brick:     #A53E2E;
+  --sun:       #E4B644;
+  --moss:      #56683A;
+  --linen:     #D8C7A9;
+  --red-mark:  #D62828;
+
+  /* fluid scale */
+  --s-0: clamp(0.70rem, 0.66rem + 0.14vw, 0.78rem);
+  --s-1: clamp(0.82rem, 0.78rem + 0.18vw, 0.94rem);
+  --s-2: clamp(0.95rem, 0.88rem + 0.32vw, 1.14rem);
+  --s-3: clamp(1.18rem, 1.02rem + 0.74vw, 1.62rem);
+  --s-4: clamp(1.65rem, 1.28rem + 1.72vw, 2.60rem);
+  --s-5: clamp(2.40rem, 1.60rem + 3.80vw, 4.80rem);
+
+  --cols: 60;
+  --gutter: clamp(3px, 0.32vw, 8px);
+  --margin: clamp(12px, 1.8vw, 34px);
+  --lead: 1.42;
+  --lead-tight: 1.04;
+  --ease: cubic-bezier(.22,.61,.36,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+html { -webkit-text-size-adjust: 100%; background: var(--paper); }
+body {
+  background: transparent;
+  color: var(--ink);
+  font-family: "Inter", "Helvetica Neue", system-ui, sans-serif;
+  font-size: var(--s-1);
+  line-height: var(--lead);
+  font-feature-settings: "ss01", "cv11", "kern";
+  font-optical-sizing: auto;
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  position: relative;
+}
+
+/* shader field — Klee-drift pigments, bound to #field canvas */
+#field {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  opacity: 0.88;
+  pointer-events: none;
+}
+
+/* paper texture layer — vignette + 60-col hairline rule on top of shader */
+.paper {
+  position: fixed; inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 10%, transparent 40%, rgba(24,19,16,0.10) 100%),
+    radial-gradient(70% 50% at 10% 90%, rgba(165,62,46,0.07), transparent 60%),
+    radial-gradient(60% 50% at 95% 20%, rgba(42,79,107,0.07), transparent 60%);
+  mix-blend-mode: multiply;
+}
+.paper::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: linear-gradient(to right, rgba(24,19,16,0.04) 1px, transparent 1px);
+  background-size: calc((100vw - 2 * var(--margin)) / 60) 100%;
+  background-position: var(--margin) 0;
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+}
+
+/* ══════ grid ══════ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  column-gap: var(--gutter);
+  padding-inline: var(--margin);
+}
+
+/* ══════ app frame ══════ */
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ══════ chrome (sticky top) ══════ */
+.chrome {
+  z-index: 20;
+  padding-block: 0.7rem 0.5rem;
+  backdrop-filter: saturate(1.2) blur(6px);
+  -webkit-backdrop-filter: saturate(1.2) blur(6px);
+  background: color-mix(in oklab, var(--paper) 80%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.chrome__nav {
+  display: grid;
+  grid-template-columns: repeat(60, 1fr);
+  column-gap: var(--gutter);
+  padding-inline: var(--margin);
+  align-items: baseline;
+}
+.mark {
+  grid-column: 2 / 15;
+  display: inline-flex; align-items: baseline; gap: 0.5em;
+  font-weight: 500;
+  font-size: var(--s-0);
+}
+.mark__glyph {
+  color: var(--brick);
+  font-size: 1.3em;
+  transform: translateY(0.12em);
+  display: inline-block;
+  animation: spin 28s linear infinite;
+}
+@keyframes spin { to { transform: translateY(0.12em) rotate(360deg); } }
+.mark__sep { color: var(--ink-3); margin: 0 0.25em; }
+
+.chapters {
+  grid-column: 18 / 48;
+  list-style: none; margin: 0; padding: 0;
+  display: flex;
+  gap: clamp(8px, 1.2vw, 22px);
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.chapters a {
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+  display: inline-flex; gap: 0.35em; align-items: baseline;
+  cursor: pointer;
+  color: inherit;
+}
+.chapters em {
+  color: var(--brick);
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+.chapters a::after {
+  content: "";
+  position: absolute; left: 0; right: 100%; bottom: -2px;
+  height: 1px; background: var(--ink);
+  transition: right 0.4s var(--ease);
+}
+.chapters a:hover::after { right: 0; }
+.chapters a.is-active em { color: var(--brick); }
+.chapters a.is-active::after { right: 0; background: var(--brick); }
+
+.stamp {
+  grid-column: 54 / 60;
+  justify-self: end;
+  display: inline-flex; align-items: baseline; gap: 0.4em;
+}
+.stamp__glyph { color: var(--prussian); font-size: 1.1em; }
+.stamp__year  { color: var(--ink-2); }
+
+.xray-btn {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex; align-items: baseline; gap: 0.3em;
+  padding: 0.15em 0.55em;
+  border: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  color: var(--ink-2);
+  justify-self: end;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease), border-color 0.25s var(--ease);
+  white-space: nowrap;
+  font-size: var(--s-0);
+  letter-spacing: 0.02em;
+}
+.xray-btn:hover { border-color: var(--ink); color: var(--ink); }
+.xray-btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.xray-btn span[aria-hidden] { color: var(--brick); font-size: 1.1em; }
+.xray-btn[aria-pressed="true"] span[aria-hidden] { color: var(--sun); }
+
+/* chrome button positions */
+.chrome__nav > .cli-btn      { grid-column: 45 / 51; }
+.chrome__nav > .xray-btn:not(.cli-btn) { grid-column: 51 / 54; }
+.cli-btn[aria-pressed="true"] { background: var(--brick); border-color: var(--brick); color: var(--paper); }
+.cli-btn[aria-pressed="true"] span[aria-hidden] { color: var(--sun); }
+
+/* ruler — live 60-col register below the chrome nav */
+.ruler {
+  display: grid;
+  grid-template-columns: repeat(60, 1fr);
+  column-gap: var(--gutter);
+  padding: 4px var(--margin) 3px;
+  border-top: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(8px, 0.62vw, 10.5px);
+  line-height: 1;
+  position: relative;
+  color: var(--ink-2);
+  user-select: none;
+}
+.ruler .cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 13px;
+  position: relative;
+  letter-spacing: 0;
+  transition: color 0.25s var(--ease);
+}
+.ruler .cell--num { color: var(--ink); font-weight: 500; }
+.ruler .cell--5   { color: color-mix(in oklab, var(--ink) 52%, transparent); }
+.ruler .cell--tick{ color: color-mix(in oklab, var(--ink) 22%, transparent); }
+.ruler .cell.is-lit { color: var(--brick); }
+.ruler .cell.is-lit::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -3px;
+  height: 2px; background: var(--brick);
+}
+.ruler .cell.is-marker { color: var(--sun); font-weight: 600; }
+.ruler .cell.is-marker::before {
+  content: "▼";
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  color: var(--sun);
+}
+.ruler__span {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--brick), transparent);
+  transition: left 0.5s var(--ease), width 0.5s var(--ease), opacity 0.4s var(--ease);
+  opacity: 0.9;
+  pointer-events: none;
+}
+.ruler__label {
+  position: absolute;
+  bottom: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--brick);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0 4px;
+  background: color-mix(in oklab, var(--paper) 88%, transparent);
+  transform: translateY(calc(100% + 2px));
+  transition: left 0.5s var(--ease), opacity 0.4s var(--ease);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+.ruler__label em { color: var(--ink); font-style: normal; margin-right: 0.35em; }
+
+/* grid x-ray overlay */
+.xray-overlay {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+body.xray-on .xray-overlay { opacity: 1; }
+.xray-overlay__grid {
+  position: absolute; inset: 0;
+  padding-inline: var(--margin);
+  display: grid;
+  grid-template-columns: repeat(60, 1fr);
+  column-gap: var(--gutter);
+}
+.xray-overlay__col {
+  background: color-mix(in oklab, var(--brick) 8%, transparent);
+  outline: 1px dashed color-mix(in oklab, var(--brick) 24%, transparent);
+  outline-offset: -1px;
+}
+.xray-overlay__col[data-i="23"], .xray-overlay__col[data-i="37"] {
+  background: color-mix(in oklab, var(--sun) 15%, transparent);
+  outline-color: var(--brick);
+}
+.xray-overlay__col[data-i="30"] {
+  outline-color: color-mix(in oklab, var(--prussian) 60%, transparent);
+}
+
+/* ══════ cover pretext ══════ */
+.cover-pretext {
+  padding-block: 0.5rem 0.55rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  display: grid;
+  grid-template-columns: repeat(60, 1fr);
+  column-gap: var(--gutter);
+  align-items: baseline;
+  padding-inline: var(--margin);
+  flex-shrink: 0;
+}
+.cover-pretext__sig  { grid-column: 2 / 3; color: var(--brick); font-size: 1.15em; transform: translateY(0.1em); }
+.cover-pretext__tag  { grid-column: 3 / 10; color: var(--brick); font-weight: 500; letter-spacing: 0.16em; }
+.cover-pretext__rule { grid-column: 10 / 15; height: 1px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 28%, transparent); transform: translateY(-0.32em); }
+.cover-pretext__body { grid-column: 15 / 46; color: var(--ink-2); }
+.cover-pretext__body em { color: var(--ink); font-style: normal; font-weight: 500; letter-spacing: 0.04em; text-transform: none; padding-inline: 0.15em; }
+.cover-pretext__cta  { grid-column: 46 / 60; color: var(--brick); letter-spacing: 0.12em; text-align: right; font-weight: 500; }
+.cover-pretext__cta.warn { color: var(--ochre); }
+
+/* ══════ main split ══════ */
+main.split {
+  display: grid;
+  grid-template-columns: repeat(60, 1fr);
+  column-gap: var(--gutter);
+  padding-inline: var(--margin);
+  flex: 1 1 0;
+  min-height: 0;
+  padding-block: 0;
+  position: relative;
+}
+
+/* LEFT: configurator */
+aside.config {
+  grid-column: 2 / 26;
+  border-right: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
+  padding-right: calc(var(--gutter) * 2);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.config__body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* RIGHT: dialogue */
+section.dialogue {
+  grid-column: 27 / 60;
+  padding-left: calc(var(--gutter) * 3);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ══════ feature section (fg) ══════ */
+section.fg {
+  position: relative;
+  padding: 10px 0 12px;
+  border-top: 1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+}
+section.fg:first-child { border-top: 0; padding-top: 6px; }
+
+/* ghost numeral (smaller, tucked behind) */
+section.fg::before {
+  content: attr(data-ghost);
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 144, "wght" 260;
+  font-style: italic;
+  font-size: clamp(2.6rem, 4.6vw, 4.4rem);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* compact one-line section header (replaces pretext+number+title+sub block) */
+.fg-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55em;
+  margin: 0 0 8px;
+  padding-right: 2.6em;
+  position: relative;
+  z-index: 1;
+}
+.fg-head__no {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brick);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.fg-head__ttl {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 28;
+  font-size: var(--s-2);
+  font-weight: 380;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.fg-head__ttl em { font-style: italic; color: var(--brick); font-variation-settings: "opsz" 28, "SOFT" 80; }
+.fg-head__rule {
+  flex: 1 1 auto;
+  min-width: 1.2em;
+  height: 1px;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
+  transform: translateY(-0.3em);
+}
+.fg-head__hint {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 16, "SOFT" 40;
+  color: var(--ink-3);
+  font-size: var(--s-0);
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 18em;
+}
+
+/* pretext strip */
+.section-pretext {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 0.9em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  position: relative;
+}
+.section-pretext__sig { color: var(--brick); font-size: 1.15em; line-height: 1; transform: translateY(0.08em); }
+.section-pretext__tag { color: var(--brick); font-weight: 500; letter-spacing: 0.14em; white-space: nowrap; }
+.section-pretext__tag em { font-style: normal; color: color-mix(in oklab, var(--brick) 75%, var(--ink)); margin-left: 0.4em; }
+.section-pretext__body { color: var(--ink-2); letter-spacing: 0.06em; }
+.section-pretext__body em { color: var(--ink); font-style: normal; font-weight: 500; letter-spacing: 0.04em; text-transform: none; padding-inline: 0.15em; }
+.section-pretext__rule {
+  flex: 1 1 auto;
+  height: 1px;
+  min-width: 1.5em;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 28%, transparent);
+  transform: translateY(-0.32em);
+}
+.section-pretext__folio { color: var(--ink-2); font-feature-settings: "tnum"; letter-spacing: 0.12em; white-space: nowrap; opacity: 0.8; }
+.section-pretext__folio em { color: var(--brick); font-style: normal; margin-right: 0.25em; }
+
+/* section number + title */
+.section-no {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-3);
+  font-weight: 400;
+  line-height: 1;
+  margin: 0 0 0.3em;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  position: relative;
+}
+.section-no span {
+  color: var(--brick);
+  font-size: 0.42em;
+  vertical-align: top;
+  transform: translateY(0.45em);
+  display: inline-block;
+  margin-right: 0.3em;
+}
+.section-title {
+  font-family: "Fraunces", serif;
+  font-weight: 330;
+  font-variation-settings: "opsz" 96;
+  font-size: var(--s-4);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.35em;
+}
+.section-title em {
+  font-style: italic;
+  color: var(--brick);
+  font-variation-settings: "opsz" 96, "SOFT" 100;
+}
+.section-sub {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-variation-settings: "opsz" 20;
+  line-height: 1.45;
+  font-weight: 360;
+  color: var(--ink-2);
+  margin: 0 0 1.1em;
+}
+.section-sub em { font-style: italic; color: var(--brick); }
+
+/* ══════ chips (feature toggles) ══════ */
+.chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+}
+.chip {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1em 1fr;
+  column-gap: 0.5em;
+  row-gap: 0;
+  padding: 4px 8px 5px;
+  border: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  background: transparent;
+  transition: background 0.22s var(--ease), color 0.22s var(--ease), border-color 0.22s var(--ease);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.95);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.chip:hover { border-color: var(--ink); background: color-mix(in oklab, var(--paper-2) 80%, transparent); }
+.chip__letter { color: var(--brick); grid-row: 1 / 3; align-self: start; padding-top: 0.15em; font-weight: 500; }
+.chip__name { color: var(--ink); font-weight: 500; letter-spacing: 0.08em; }
+.chip__hint {
+  grid-column: 2 / 3;
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: calc(var(--s-0) * 0.95);
+  font-variation-settings: "opsz" 14, "SOFT" 60;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  line-height: 1.15;
+}
+.chip.is-active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.chip.is-active .chip__letter { color: var(--sun); }
+.chip.is-active .chip__name   { color: var(--paper); }
+.chip.is-active .chip__hint   { color: color-mix(in oklab, var(--paper) 72%, transparent); }
+
+.chip.accent.is-active {
+  background: var(--brick);
+  border-color: var(--brick);
+}
+.chip.accent.is-active .chip__letter { color: var(--sun); }
+.chip.accent.is-active .chip__name   { color: var(--paper); }
+.chip.accent.is-active .chip__hint   { color: color-mix(in oklab, var(--paper) 78%, transparent); }
+
+/* topic input — editorial border-bottom line */
+.topic {
+  padding: 6px 0 7px;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  margin-bottom: 2px;
+}
+.topic__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brick);
+  display: block;
+  margin-bottom: 2px;
+}
+.topic__input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.1em 0;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 18;
+  color: var(--ink);
+  font-weight: 400;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 25%, transparent);
+}
+.topic__input::placeholder { color: var(--ink-3); font-style: italic; }
+.topic__input:focus { outline: none; border-bottom-color: var(--brick); border-bottom-style: solid; }
+
+.topic__curriculum-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  padding: 1px 6px 2px;
+  margin-left: 0.5em;
+  background: var(--prussian);
+  color: var(--paper);
+  font-size: 0.82em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.topic__curriculum-pill em { color: var(--sun); font-style: normal; font-weight: 500; }
+.topic__clear { all: unset; cursor: pointer; color: var(--paper); opacity: 0.7; padding: 0 0.15em; font-weight: 500; }
+.topic__clear:hover { opacity: 1; }
+
+/* curriculum drawer */
+.curriculum-drawer { margin-top: 0.5em; }
+.curriculum-drawer > summary {
+  cursor: pointer;
+  padding: 3px 0 4px;
+  display: flex; align-items: baseline; gap: 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  list-style: none;
+}
+.curriculum-drawer > summary::-webkit-details-marker { display: none; }
+.curriculum-drawer > summary .chev { color: var(--brick); transition: transform 0.15s; display: inline-block; }
+.curriculum-drawer[open] > summary .chev { transform: rotate(90deg); }
+.curriculum-drawer > summary em { color: var(--brick); font-style: italic; font-family: "Fraunces", serif; text-transform: none; letter-spacing: 0; font-variation-settings: "opsz" 16; }
+.curriculum-drawer > summary .count { color: var(--ink-3); text-transform: none; letter-spacing: 0.04em; margin-left: auto; }
+.curriculum-body {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px 0 10px;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 18%, transparent);
+}
+.curriculum-pkg { margin-bottom: 10px; }
+.curriculum-pkg__head {
+  display: flex; align-items: baseline; gap: 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 0 3px;
+}
+.curriculum-pkg__head .sig { color: var(--brick); }
+.curriculum-pkg__head .lbl { color: var(--ink); font-weight: 500; letter-spacing: 0.16em; }
+.curriculum-pkg__head .rule { flex: 1 1 auto; height: 1px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent); transform: translateY(-0.3em); min-width: 1em; }
+.curriculum-pkg__head .folio { color: var(--ink-3); font-size: 0.9em; letter-spacing: 0.06em; }
+
+.curriculum-course { padding: 4px 0 6px; }
+.curriculum-course__title {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-variation-settings: "opsz" 18;
+  color: var(--ink);
+  margin-bottom: 3px;
+  display: flex; align-items: baseline; gap: 0.45em;
+}
+.curriculum-course__title em {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--brick);
+  font-style: normal;
+  font-size: 0.9em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: color-mix(in oklab, var(--brick) 10%, transparent);
+  padding: 0 0.25em;
+}
+.curriculum-lectures {
+  display: flex;
+  flex-direction: column;
+}
+.lec-row {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 2em 1fr;
+  gap: 0.4em;
+  padding: 3px 0.2em;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 8%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.02em;
+  align-items: baseline;
+  color: var(--ink-2);
+  transition: background 0.15s;
+}
+.lec-row:hover { background: color-mix(in oklab, var(--prussian) 7%, transparent); color: var(--ink); }
+.lec-row.is-active {
+  background: var(--prussian);
+  color: var(--paper);
+  padding-inline: 0.4em;
+}
+.lec-row .num { color: var(--brick); font-weight: 500; }
+.lec-row.is-active .num { color: var(--sun); }
+.lec-row .ttl {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 16;
+  font-size: 1.05em;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.3;
+}
+
+/* ══════ manifest (compact) ══════ */
+.manifest {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 10px 0 6px;
+  border-top: 1px solid var(--ink);
+  position: relative;
+}
+.manifest::before {
+  content: "";
+  position: absolute;
+  top: -1px; left: 0;
+  width: 44px; height: 2px;
+  background: var(--brick);
+}
+.manifest__head {
+  display: flex; align-items: baseline; gap: 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 3px;
+}
+.manifest__head .sig   { color: var(--brick); }
+.manifest__head .tag   { color: var(--brick); font-weight: 500; letter-spacing: 0.12em; }
+.manifest__head .rule  { flex: 1 1 auto; height: 1px; border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent); transform: translateY(-0.3em); }
+.manifest__head .folio { color: var(--ink-3); font-size: 0.92em; letter-spacing: 0.08em; }
+.manifest__head .folio em { color: var(--brick); font-style: normal; margin-right: 0.25em; }
+
+.manifest__name {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 32, "SOFT" 80;
+  font-weight: 380;
+  font-size: var(--s-2);
+  line-height: 1.1;
+  margin: 2px 0 4px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  word-break: break-word;
+}
+.manifest__name em { color: var(--brick); font-style: italic; }
+
+/* pigments — inline horizontal strip */
+.pigments {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.pigment {
+  flex: 1 1 0;
+  padding: 4px 8px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid color-mix(in oklab, var(--ink) 15%, transparent);
+  position: relative;
+  min-width: 0;
+}
+.pigment span { font-weight: 500; font-size: 0.92em; opacity: 0.82; letter-spacing: 0.1em; }
+.pigment em { font-style: normal; opacity: 0.95; font-size: 0.98em; letter-spacing: 0.01em; word-break: break-all; overflow: hidden; text-overflow: ellipsis; }
+.pigment--ego      { background: var(--ochre);    color: var(--ink); }
+.pigment--superego { background: var(--prussian); color: var(--paper); }
+.pigment--none     { background: var(--paper-3); color: var(--ink-2); border-style: dashed; }
+.pigment--none em { font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
+
+/* trade-offs (closest match) */
+.tradeoffs {
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px dashed color-mix(in oklab, var(--ochre) 60%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.95);
+  color: var(--ochre);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+.tradeoffs em { color: var(--ink); font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
+.tradeoffs__head {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.92em;
+  margin-bottom: 0.35em;
+  color: color-mix(in oklab, var(--ochre) 85%, var(--ink));
+}
+.tradeoffs dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 0.6em; }
+.tradeoffs dt { color: var(--ink-2); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.9em; }
+.tradeoffs dd { margin: 0; color: var(--ink); font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
+
+/* ══════ advanced drawer (footer of config) ══════ */
+.advanced {
+  flex-shrink: 0;
+  border-top: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  background: color-mix(in oklab, var(--paper-2) 40%, transparent);
+}
+.advanced > summary {
+  cursor: pointer;
+  padding: 8px 0;
+  display: flex; align-items: center; gap: 0.5em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  list-style: none;
+}
+.advanced > summary::-webkit-details-marker { display: none; }
+.advanced > summary::before { content: "+"; color: var(--brick); font-size: 1.2em; line-height: 1; }
+.advanced[open] > summary::before { content: "−"; }
+.advanced__body { max-height: 220px; overflow-y: auto; padding: 4px 0 10px; }
+.advanced__search {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
+  padding: 4px 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4em;
+  color: var(--ink);
+}
+.advanced__search:focus { outline: none; border-bottom-color: var(--brick); }
+.cell-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.4em 0.6em;
+  padding: 4px 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 10%, transparent);
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  align-items: baseline;
+  letter-spacing: 0.02em;
+}
+.cell-row:hover { background: color-mix(in oklab, var(--brick) 5%, transparent); }
+.cell-row.is-active { background: var(--ink); color: var(--paper); padding-inline: 0.4em; }
+.cell-row .n { font-weight: 500; }
+.cell-row .badge {
+  display: inline-block;
+  font-size: 0.76em;
+  letter-spacing: 0.08em;
+  padding: 0 0.25em;
+  color: var(--brick);
+  border: 1px solid currentColor;
+  margin-right: 2px;
+}
+.cell-row.is-active .badge { color: var(--sun); }
+.cell-row .pt { color: var(--ink-3); font-size: 0.85em; letter-spacing: 0.06em; text-transform: uppercase; text-align: right; }
+.cell-row.is-active .pt { color: color-mix(in oklab, var(--paper) 65%, transparent); }
+
+/* ══════ DIALOGUE ══════ */
+.dialogue__head {
+  padding: 10px 0 6px;
+  position: relative;
+  flex-shrink: 0;
+}
+.dialogue__head::before {
+  content: "V";
+  position: absolute;
+  top: -4px;
+  right: 2px;
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 144, "wght" 260;
+  font-style: italic;
+  font-size: clamp(2.6rem, 4.6vw, 4.4rem);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  opacity: 0.06;
+  pointer-events: none;
+  user-select: none;
+}
+
+.chat-log {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-block: clamp(12px, 1.8vw, 24px) clamp(12px, 1.6vw, 20px);
+  padding-right: clamp(6px, 0.8vw, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3vw, 44px);
+}
+
+/* empty / onboarding state */
+.onboarding {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 24;
+  line-height: 1.45;
+  color: var(--ink-2);
+  padding-block: clamp(24px, 4vw, 60px);
+  border-top: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+}
+.onboarding em { font-style: italic; color: var(--brick); }
+.onboarding p { margin: 0 0 0.6em; max-width: 44ch; }
+.onboarding p:last-child { margin-bottom: 0; }
+
+/* learner turn — pull quote */
+.learner-quote {
+  align-self: flex-end;
+  max-width: 72%;
+  position: relative;
+  padding-left: 1em;
+  border-left: 2px solid var(--brick);
+}
+.learner-quote__body {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 24, "SOFT" 80;
+  font-size: var(--s-2);
+  line-height: 1.42;
+  color: var(--ink);
+  margin: 0;
+  white-space: pre-wrap;
+}
+.learner-quote__meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0.5em 0 0;
+  display: flex; align-items: baseline; gap: 0.5em;
+}
+.learner-quote__meta em { color: var(--brick); font-style: normal; }
+
+/* ══════ tutor turn as PLATE ══════ */
+.plate.plate--tutor {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  position: relative;
+}
+.plate--tutor .plate__stage {
+  position: relative;
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--paper) 96%, var(--linen) 4%), color-mix(in oklab, var(--paper-2) 65%, transparent));
+  border: 1px solid color-mix(in oklab, var(--ink) 16%, transparent);
+  padding: clamp(16px, 2vw, 26px) clamp(16px, 2vw, 26px) clamp(14px, 1.8vw, 22px);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--ink) 10%, transparent),
+    0 28px 44px -36px color-mix(in oklab, var(--ink) 35%, transparent);
+  overflow: hidden;
+}
+.plate--tutor .plate__stage::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 0%, transparent 40%, rgba(24,19,16,0.09) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.plate--tutor .plate__stage::after {
+  content: "";
+  position: absolute;
+  top: -1px; left: 0;
+  width: 38px; height: 2px;
+  background: var(--brick);
+  z-index: 2;
+}
+.plate--tutor .plate__body {
+  position: relative;
+  z-index: 1;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 20;
+  line-height: 1.52;
+  color: var(--ink);
+}
+.plate--tutor .plate__body em { font-style: italic; color: var(--brick); font-variation-settings: "opsz" 20, "SOFT" 100; }
+.plate--tutor .plate__body p { margin: 0 0 0.9em; }
+.plate--tutor .plate__body p:first-child { margin-top: 0; }
+.plate--tutor .plate__body p:last-child { margin-bottom: 0; }
+.plate--tutor .plate__body p:first-of-type::first-letter {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 144, "wght" 380;
+  font-size: 3.4em;
+  line-height: 0.88;
+  float: left;
+  padding: 0.05em 0.14em 0 0;
+  color: var(--brick);
+}
+.plate--tutor .plate__body strong { color: var(--ink); font-weight: 600; }
+.plate--tutor .plate__body code {
+  background: color-mix(in oklab, var(--prussian) 12%, transparent);
+  color: var(--prussian);
+  padding: 0.05em 0.3em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.88em;
+}
+.plate--tutor .plate__body pre {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.7em 0.9em;
+  margin: 0.6em 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.86em;
+  line-height: 1.45;
+  overflow-x: auto;
+}
+.plate--tutor .plate__body pre code { background: none; padding: 0; color: inherit; }
+.plate--tutor .plate__body ul, .plate--tutor .plate__body ol { margin: 0.45em 0; padding-left: 1.3em; }
+.plate--tutor .plate__body li { margin: 0.2em 0; }
+.plate--tutor .plate__body blockquote {
+  border-left: 2px solid var(--ochre);
+  padding-left: 0.7em;
+  color: var(--ink-2);
+  font-style: italic;
+  margin: 0.5em 0;
+}
+
+/* figcaption — plate title row */
+.plate--tutor figcaption {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1em;
+  align-items: baseline;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding-top: 0.4em;
+  border-top: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+}
+.plate--tutor .plate__no { color: var(--brick); font-weight: 500; letter-spacing: 0.12em; }
+.plate--tutor .plate__ttl {
+  font-family: "Fraunces", serif;
+  font-style: normal;
+  text-transform: none;
+  color: var(--ink);
+  font-size: var(--s-1);
+  letter-spacing: -0.005em;
+  font-variation-settings: "opsz" 24, "wght" 420;
+}
+.plate--tutor .plate__ttl em { font-style: italic; color: var(--brick); font-variation-settings: "opsz" 24, "SOFT" 80; }
+.plate--tutor .plate__sub { text-align: right; font-family: "Fraunces", serif; font-style: italic; text-transform: none; letter-spacing: 0; color: var(--ink-2); font-size: var(--s-1); font-variation-settings: "opsz" 16; }
+.plate--tutor .plate__sub em.sub-revised  { color: var(--brick); font-style: italic; }
+.plate--tutor .plate__sub em.sub-approved { color: var(--moss);  font-style: italic; }
+.plate--tutor .plate__sub em.sub-ego-only { color: var(--ink-3); font-style: italic; }
+
+/* apparatus strip (under figcaption) */
+.plate--tutor .plate__apparatus {
+  grid-column: 1 / -1;
+  margin-top: 0.5em;
+  padding: 0.4em 0 0.2em;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 26%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: clamp(9px, 0.58vw, 10.5px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--ink) 55%, transparent);
+}
+.apparatus__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  white-space: nowrap;
+}
+.apparatus__item b {
+  font-weight: 400;
+  color: var(--brick);
+  font-size: 0.9em;
+  letter-spacing: 0.14em;
+}
+.apparatus__item--muted {
+  color: color-mix(in oklab, var(--ink) 40%, transparent);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+.apparatus__sep { opacity: 0.45; user-select: none; }
+.apparatus__palette { gap: 0.35em; }
+.apparatus__dot {
+  display: inline-block;
+  width: 9px; height: 9px;
+  background: var(--c, var(--ink));
+  border: 1px solid color-mix(in oklab, var(--ink) 28%, transparent);
+  border-radius: 1px;
+  position: relative;
+  top: 1px;
+}
+
+/* tutor turn — editorial body */
+.tutor-body { position: relative; }
+.tutor-body__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 0.5em;
+  display: flex; align-items: baseline; gap: 0.6em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 20%, transparent);
+}
+.tutor-body__head .tag { color: var(--ink); font-weight: 500; letter-spacing: 0.14em; }
+.tutor-body__head .pill {
+  padding: 0 0.4em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  border: 1px solid currentColor;
+}
+.tutor-body__head .pill.revised  { color: var(--brick); }
+.tutor-body__head .pill.approved { color: var(--moss); }
+.tutor-body__head .pill.ego-only { color: var(--ink-3); }
+.tutor-body__head .stats {
+  margin-left: auto;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+}
+.tutor-body__head .stats .dot { opacity: 0.5; margin-inline: 0.25em; }
+
+.tutor-body__text {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 20;
+  line-height: 1.52;
+  color: var(--ink);
+}
+.tutor-body__text em { font-style: italic; color: var(--brick); font-variation-settings: "opsz" 20, "SOFT" 100; }
+.tutor-body__text p { margin: 0 0 0.9em; }
+.tutor-body__text p:first-child { margin-top: 0; }
+.tutor-body__text p:last-child { margin-bottom: 0; }
+.tutor-body__text p:first-of-type::first-letter {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "opsz" 144, "wght" 380;
+  font-size: 3.4em;
+  line-height: 0.88;
+  float: left;
+  padding: 0.05em 0.14em 0 0;
+  color: var(--brick);
+}
+.tutor-body__text strong { color: var(--ink); font-weight: 600; }
+.tutor-body__text code {
+  background: color-mix(in oklab, var(--prussian) 12%, transparent);
+  color: var(--prussian);
+  padding: 0.05em 0.3em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.88em;
+}
+.tutor-body__text pre {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.7em 0.9em;
+  margin: 0.6em 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.86em;
+  line-height: 1.45;
+  overflow-x: auto;
+}
+.tutor-body__text pre code { background: none; padding: 0; color: inherit; }
+.tutor-body__text ul, .tutor-body__text ol { margin: 0.45em 0; padding-left: 1.3em; }
+.tutor-body__text li { margin: 0.2em 0; }
+.tutor-body__text blockquote {
+  border-left: 2px solid var(--ochre);
+  padding-left: 0.7em;
+  color: var(--ink-2);
+  font-style: italic;
+  margin: 0.5em 0;
+}
+
+/* trace (typographic specimen rows) */
+details.trace { margin-top: 1em; border-top: 1px solid color-mix(in oklab, var(--ink) 18%, transparent); }
+details.trace > summary {
+  cursor: pointer;
+  list-style: none;
+  padding-block: 0.6em 0.5em;
+  display: flex; align-items: baseline; gap: 0.5em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+details.trace > summary::-webkit-details-marker { display: none; }
+details.trace > summary .chev { color: var(--brick); transition: transform 0.15s; }
+details.trace[open] > summary .chev { transform: rotate(90deg); }
+details.trace > summary .tag { color: var(--brick); font-weight: 500; letter-spacing: 0.14em; }
+details.trace > summary .rule {
+  flex: 1 1 auto;
+  height: 1px;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
+  transform: translateY(-0.3em);
+  min-width: 2em;
+}
+details.trace > summary .folio em { color: var(--brick); font-style: normal; margin-right: 0.25em; }
+
+.trace__rows { padding-block: 0.4em 0.2em; }
+.spec-row {
+  display: grid;
+  grid-template-columns: 9em 1fr;
+  gap: 0 1.1em;
+  align-items: baseline;
+  padding-block: clamp(10px, 1.4vw, 18px);
+  border-top: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+}
+.spec-row:first-child { border-top: 0; padding-top: 0.6em; }
+.spec-row__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  display: grid;
+  grid-template-columns: 1.4em 1fr;
+  gap: 0.4em;
+  align-items: baseline;
+}
+.spec-row__lbl > span:first-child { color: var(--brick); }
+.spec-row__lbl em {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-variation-settings: "opsz" 18, "SOFT" 100;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+  font-size: 1.05em;
+}
+.spec-row__lbl em.step-ego      { color: var(--ink); }
+.spec-row__lbl em.step-superego { color: var(--prussian); }
+.spec-row__lbl em.step-revision { color: var(--brick); }
+
+.spec-row__body {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-variation-settings: "opsz" 18;
+  line-height: 1.48;
+  color: var(--ink-2);
+}
+.spec-row__body p { margin: 0 0 0.6em; }
+.spec-row__body p:last-child { margin-bottom: 0; }
+.spec-row__body em { font-style: italic; color: var(--brick); }
+.spec-row__body code { font-family: "JetBrains Mono", monospace; background: color-mix(in oklab, var(--ink) 6%, transparent); padding: 0.05em 0.3em; font-size: 0.88em; }
+.spec-row__meta {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0.6em 0 0;
+  display: flex; align-items: baseline; gap: 0.5em;
+  padding-top: 0.4em;
+  border-top: 1px dotted color-mix(in oklab, var(--ink) 20%, transparent);
+}
+.spec-row__meta .dots { flex: 1 1 auto; height: 1px; border-bottom: 1px dotted color-mix(in oklab, var(--ink) 22%, transparent); transform: translateY(-0.3em); }
+.spec-row__meta em { color: var(--brick); font-style: normal; }
+
+/* error */
+.err {
+  align-self: flex-start;
+  max-width: 80%;
+  padding: 0.6em 0.9em;
+  border-left: 2px solid var(--red-mark);
+  background: color-mix(in oklab, var(--red-mark) 5%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  line-height: 1.48;
+  color: var(--red-mark);
+  letter-spacing: 0.03em;
+}
+.err .tag { text-transform: uppercase; letter-spacing: 0.18em; font-weight: 500; margin-right: 0.5em; }
+
+/* spinner */
+.spinner {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brick);
+  padding: 0.5em 0.8em;
+  border-left: 2px solid var(--ochre);
+  background: color-mix(in oklab, var(--ochre) 5%, transparent);
+  align-self: flex-start;
+  display: flex; align-items: center; gap: 0.6em;
+}
+.spinner .dots span {
+  display: inline-block;
+  width: 5px; height: 5px;
+  background: var(--brick);
+  margin-right: 3px;
+  animation: blink 1.2s infinite ease-in-out;
+}
+.spinner .dots span:nth-child(2) { animation-delay: 0.15s; }
+.spinner .dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+/* learner body (for auto-learner mode — symmetric with tutor-body, right-aligned, ochre-accented) */
+.learner-body {
+  align-self: flex-end;
+  max-width: 92%;
+  width: 92%;
+  position: relative;
+}
+.learner-body__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 0.5em;
+  display: flex; align-items: baseline; gap: 0.6em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid color-mix(in oklab, var(--ochre) 60%, transparent);
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.learner-body__head .tag { color: var(--ochre); font-weight: 500; letter-spacing: 0.14em; }
+.learner-body__head .pill {
+  padding: 0 0.4em;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  border: 1px solid currentColor;
+  color: var(--ochre);
+}
+.learner-body__head .pill.revised { color: var(--brick); }
+.learner-body__head .stats {
+  margin-right: auto;
+  margin-left: 0;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-align: left;
+}
+.learner-body__head .stats .dot { opacity: 0.5; margin-inline: 0.25em; }
+
+.learner-body__text {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 24, "SOFT" 80;
+  line-height: 1.42;
+  color: var(--ink);
+  text-align: left;
+  padding-right: 1em;
+  border-right: 2px solid var(--ochre);
+  padding-left: 1em;
+  white-space: pre-wrap;
+}
+
+/* learner trace — ochre accent */
+details.learner-trace { margin-top: 1em; border-top: 1px solid color-mix(in oklab, var(--ochre) 50%, transparent); }
+details.learner-trace > summary .tag { color: var(--ochre); }
+details.learner-trace > summary .chev { color: var(--ochre); }
+details.learner-trace .spec-row__lbl em.step-ego { color: var(--ink-2); }
+details.learner-trace .spec-row__lbl em.step-superego { color: var(--moss); }
+details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre); }
+
+/* ══════ mode toggle (inline, single-row) ══════ */
+.mode {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  padding: 0 0 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mode__lbl { color: var(--ink-3); letter-spacing: 0.14em; }
+.mode__toggle { display: inline-flex; border: 1px solid var(--ink); }
+.mode__btn {
+  all: unset;
+  cursor: pointer;
+  padding: 1px 7px 2px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.95);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border-right: 1px solid var(--ink);
+}
+.mode__btn:last-child { border-right: 0; }
+.mode__btn.is-active { background: var(--ink); color: var(--paper); }
+.mode__btn:hover:not(.is-active) { background: color-mix(in oklab, var(--ink) 10%, transparent); }
+.mode__meta {
+  color: var(--ink-3);
+  letter-spacing: 0;
+  font-style: italic;
+  text-transform: none;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-0);
+  font-variation-settings: "opsz" 16;
+}
+
+/* persona — compact horizontal scroll row */
+.persona-strip {
+  display: flex;
+  gap: 4px;
+  margin: 4px 0 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
+}
+.persona-strip::-webkit-scrollbar { height: 4px; }
+.persona-strip::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--ink) 16%, transparent); }
+.persona-chip {
+  all: unset;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 3px 8px 4px;
+  border: 1px solid color-mix(in oklab, var(--ink) 20%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: calc(var(--s-0) * 0.92);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  display: inline-flex;
+  gap: 0.35em;
+  align-items: baseline;
+  white-space: nowrap;
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.persona-chip:hover { border-color: var(--ink); color: var(--ink); }
+.persona-chip .name { font-weight: 500; }
+.persona-chip .hint {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-3);
+  font-size: 1.02em;
+  font-variation-settings: "opsz" 14;
+}
+.persona-chip.is-active {
+  background: var(--ochre);
+  color: var(--ink);
+  border-color: var(--ochre);
+}
+.persona-chip.is-active .name { color: var(--ink); }
+.persona-chip.is-active .hint { color: color-mix(in oklab, var(--ink) 68%, transparent); }
+
+/* step control — inline row, not stacked */
+.step-control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 0.8em;
+  align-items: center;
+  padding: 4px 0 0;
+}
+.step-control__info {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-0);
+  font-variation-settings: "opsz" 14;
+  color: var(--ink-3);
+  line-height: 1.3;
+}
+.step-control__info em { color: var(--ochre); font-style: italic; }
+.step-control__btn {
+  all: unset;
+  cursor: pointer;
+  padding: 4px 14px 5px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  min-width: 120px;
+}
+.step-control__btn:hover { background: var(--ochre); border-color: var(--ochre); color: var(--ink); }
+.step-control__btn:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+
+/* composer — boot line (tight) */
+.composer {
+  flex-shrink: 0;
+  padding: 7px 0 10px;
+  border-top: 1px solid var(--ink);
+  position: relative;
+}
+.composer::before {
+  content: "";
+  position: absolute;
+  top: -1px; left: 0;
+  width: 44px; height: 2px;
+  background: var(--brick);
+}
+.composer__pretext {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 4px;
+  display: flex; align-items: baseline; gap: 0.5em;
+}
+.composer__pretext .tag { color: var(--brick); font-weight: 500; letter-spacing: 0.14em; }
+.composer__pretext .rule {
+  flex: 1 1 auto;
+  height: 1px;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
+  transform: translateY(-0.3em);
+}
+.composer__pretext .cell { color: var(--ink); letter-spacing: 0.04em; }
+
+.composer form {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: 0.6em;
+  align-items: start;
+  padding: 0.35em 0.2em;
+  border-bottom: 1px solid var(--ink);
+}
+.composer__prompt {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  color: var(--brick);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  padding-top: 0.4em;
+  align-self: start;
+}
+.composer textarea {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 20;
+  line-height: 1.42;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  resize: none;
+  min-height: 2.2em;
+  max-height: 7em;
+  padding: 0.25em 0;
+}
+.composer textarea:focus { outline: none; }
+.composer textarea::placeholder { color: var(--ink-3); font-style: italic; }
+
+.composer button {
+  all: unset;
+  align-self: start;
+  cursor: pointer;
+  padding: 0.35em 0.9em 0.4em;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.composer button:hover { background: var(--brick); border-color: var(--brick); }
+.composer button:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+
+/* corner registers */
+.reg {
+  position: absolute;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  color: var(--ink-2);
+  letter-spacing: 0.06em;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.75;
+}
+.reg--tl { top: 6px; left: 6px; }
+.reg--tr { top: 6px; right: 6px; }
+.reg--bl { bottom: 72px; left: 6px; }
+.reg--br { bottom: 72px; right: 6px; color: var(--brick); font-size: var(--s-1); }
+
+/* scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--ink) 18%, transparent); }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--ink) 35%, transparent); }
+
+[x-cloak] { display: none !important; }
+
+/* focus outlines — editorial, not native blue */
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 1px solid var(--brick);
+  outline-offset: 2px;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+</style>
+
+</head>
+<body>
+
+<canvas id="field" aria-hidden="true"></canvas>
+<div class="paper" aria-hidden="true"></div>
+
+<!-- grid x-ray overlay -->
+<div class="xray-overlay" aria-hidden="true">
+  <div class="xray-overlay__grid" id="xrayGrid"></div>
+</div>
+
+<div class="app" x-data="chatApp()" x-init="init()" x-cloak>
+
+  <!-- ══════ CHROME ══════ -->
+  <header class="chrome">
+    <nav class="chrome__nav">
+      <span class="mark">
+        <span class="mark__glyph">◐</span>
+        <span>Machine Spirits</span>
+        <span class="mark__sep">/</span>
+        <span>Chat</span>
+      </span>
+      <ol class="chapters">
+        <li><a @click.prevent="scrollTo('fg-01')"><em>§01</em> Approach</a></li>
+        <li><a @click.prevent="scrollTo('fg-02')"><em>§02</em> Critic</a></li>
+        <li><a @click.prevent="scrollTo('fg-03')" x-show="stanceVisible"><em>§03</em> Stance</a></li>
+        <li><a @click.prevent="scrollTo('fg-04')"><em>§04</em> Learner</a></li>
+        <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> Dialogue</a></li>
+      </ol>
+      <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="useClaudeCli ? 'routing all tutor calls through local claude CLI · click to disable' : 'use local claude CLI (opus 4.7) instead of cell YAML models'">
+        <span aria-hidden="true">◇</span><span x-text="useClaudeCli ? 'opus 4.7' : 'cli off'"></span>
+      </button>
+      <button class="xray-btn" @click="toggleXray" :aria-pressed="xray">
+        <span aria-hidden="true">⌗</span><span>grid</span>
+      </button>
+      <span class="stamp">
+        <span class="stamp__glyph" aria-hidden="true">◎</span>
+        <span class="stamp__year">MMXXVI</span>
+      </span>
+    </nav>
+    <!-- live 60-col ruler -->
+    <div class="ruler" id="ruler" aria-hidden="true">
+      <div class="ruler__span" id="rulerSpan"></div>
+      <div class="ruler__label" id="rulerLabel" style="opacity: 0"></div>
+    </div>
+  </header>
+
+  <!-- ══════ COVER PRETEXT ══════ -->
+  <aside class="cover-pretext" aria-label="Specimen pretext">
+    <span class="cover-pretext__sig" aria-hidden="true">◦</span>
+    <span class="cover-pretext__tag">pretext</span>
+    <span class="cover-pretext__rule" aria-hidden="true"></span>
+    <span class="cover-pretext__body">
+      composing a tutor · <em x-text="resolved?.name || 'cell —'"></em> · specimen mmxxvi
+    </span>
+    <span class="cover-pretext__cta" :class="{warn: matchQuality === 'closest'}" x-show="resolved">
+      [match] <span x-text="(matchQuality || '').toUpperCase()"></span>
+      <span x-show="resolved?.score !== undefined"> · <span x-text="resolved.score"></span>/<span x-text="maxScore"></span></span>
+    </span>
+  </aside>
+
+  <!-- ══════ MAIN SPLIT ══════ -->
+  <main class="split">
+
+    <!-- ═══ LEFT: CONFIGURATOR ═══ -->
+    <aside class="config" @mouseenter="setRulerZone('config')" @mouseleave="setRulerZone(null)">
+      <div class="config__body">
+
+        <div class="topic">
+          <label class="topic__lbl">
+            Topic
+            <template x-if="lectureRef">
+              <span class="topic__curriculum-pill" title="curriculum attached">◦ <em x-text="lectureRef"></em> <button type="button" class="topic__clear" @click="clearCurriculum()">×</button></span>
+            </template>
+          </label>
+          <input type="text" class="topic__input" x-model="topic" placeholder="e.g. Hegel's concept of recognition — a line is a dot that went for a walk" />
+          <details class="curriculum-drawer" x-ref="curriculumDrawer">
+            <summary>
+              <span class="chev">▸</span>
+              <span>pick from <em>curriculum</em></span>
+              <span class="count" x-show="curricula.length" x-text="'· ' + totalLectures + ' lectures across ' + curricula.length + ' packages'"></span>
+            </summary>
+            <div class="curriculum-body">
+              <template x-for="pkg in curricula" :key="pkg.id">
+                <div class="curriculum-pkg">
+                  <div class="curriculum-pkg__head">
+                    <span class="sig">◦</span>
+                    <span class="lbl" x-text="pkg.label"></span>
+                    <span class="rule"></span>
+                    <span class="folio" x-text="pkg.dir"></span>
+                  </div>
+                  <template x-for="course in pkg.courses" :key="course.id">
+                    <div class="curriculum-course">
+                      <div class="curriculum-course__title">
+                        <em x-text="course.id"></em>
+                        <span x-text="course.title"></span>
+                      </div>
+                      <div class="curriculum-lectures">
+                        <template x-for="lec in course.lectures" :key="lec.ref">
+                          <button
+                            type="button"
+                            class="lec-row"
+                            :class="{'is-active': lectureRef === lec.ref}"
+                            @click="pickLecture(course, lec)"
+                            :title="lec.ref"
+                          >
+                            <span class="num" x-text="String(lec.num).padStart(2,'0')"></span>
+                            <span class="ttl" x-text="lec.title"></span>
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </details>
+        </div>
+
+        <!-- §01 Approach -->
+        <section class="fg" data-ghost="I" id="fg-01">
+          <div class="fg-head">
+            <span class="fg-head__no">§01</span>
+            <span class="fg-head__ttl"><em>Approach</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">what the tutor has been <em>told to be</em></span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.approach === 'standard'}" @click="setApproach('standard')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">Standard</span>
+              <span class="chip__hint">default AI tutor</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.approach === 'polished'}" @click="setApproach('polished')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">Polished</span>
+              <span class="chip__hint">best-practice pedagogy</span>
+            </button>
+            <button class="chip accent" :class="{'is-active': features.approach === 'recognition'}" @click="setApproach('recognition')">
+              <span class="chip__letter">c</span>
+              <span class="chip__name">Recognition</span>
+              <span class="chip__hint">Hegelian theory</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.approach === 'placebo'}" @click="setApproach('placebo')">
+              <span class="chip__letter">d</span>
+              <span class="chip__name">Placebo</span>
+              <span class="chip__hint">length-matched control</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.approach === 'minimalist'}" @click="setApproach('minimalist')">
+              <span class="chip__letter">e</span>
+              <span class="chip__name">Minimalist</span>
+              <span class="chip__hint">naïve baseline</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- §02 Inner Critic -->
+        <section class="fg" data-ghost="II" id="fg-02">
+          <div class="fg-head">
+            <span class="fg-head__no">§02</span>
+            <span class="fg-head__ttl">Inner <em>critic</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">a <em>second voice</em>, or a single one</span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.critic === 'none'}" @click="setCritic('none')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">None</span>
+              <span class="chip__hint">single voice</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.critic === 'pedagogical'}" @click="setCritic('pedagogical')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">Pedagogical</span>
+              <span class="chip__hint">standard critic</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.critic === 'dialectical'}" @click="setCritic('dialectical')">
+              <span class="chip__letter">c</span>
+              <span class="chip__name">Dialectical</span>
+              <span class="chip__hint">engages the ego</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.critic === 'divergent'}" @click="setCritic('divergent')">
+              <span class="chip__letter">d</span>
+              <span class="chip__name">Divergent</span>
+              <span class="chip__hint">alternate stance</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.critic === 'hardwired'}" @click="setCritic('hardwired')">
+              <span class="chip__letter">e</span>
+              <span class="chip__name">Hardwired</span>
+              <span class="chip__hint">rules baked in</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- §03 Stance (conditional) -->
+        <section class="fg" data-ghost="III" id="fg-03" x-show="stanceVisible" x-transition.opacity>
+          <div class="fg-head">
+            <span class="fg-head__no">§03</span>
+            <span class="fg-head__ttl"><em>Stance</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">the critic's <em>posture</em></span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.stance === 'suspicious'}" @click="setStance('suspicious')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">Suspicious</span>
+              <span class="chip__hint">questions the draft</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.stance === 'adversary'}" @click="setStance('adversary')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">Adversary</span>
+              <span class="chip__hint">challenges the draft</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.stance === 'advocate'}" @click="setStance('advocate')">
+              <span class="chip__letter">c</span>
+              <span class="chip__name">Advocate</span>
+              <span class="chip__hint">supports the draft</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- §04 Learner model -->
+        <section class="fg" data-ghost="IV" id="fg-04">
+          <div class="fg-head">
+            <span class="fg-head__no">§04</span>
+            <span class="fg-head__ttl">Learner <em>model</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">evaluator's <em>simulation</em> choice</span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.learnerModel === 'surface'}" @click="setLearner('surface')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">Surface</span>
+              <span class="chip__hint">unified learner</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.learnerModel === 'reflective'}" @click="setLearner('reflective')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">Reflective</span>
+              <span class="chip__hint">ego + superego</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Advanced drawer -->
+        <details class="advanced">
+          <summary>all cells · <span style="color: var(--ink-3); font-weight: 400;">advanced browser</span></summary>
+          <div class="advanced__body">
+            <input type="text" class="advanced__search" x-model="cellFilter" placeholder="filter by name, prompt-type, or description…" />
+            <template x-for="cell in filteredCells" :key="cell.name">
+              <div class="cell-row" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)" :title="cell.description">
+                <span class="n" x-text="cell.name.replace('cell_','c')"></span>
+                <span>
+                  <template x-if="cell.superego"><span class="badge" title="has superego">S</span></template>
+                  <template x-if="cell.recognitionMode"><span class="badge" title="recognition mode" style="color: var(--brick);">R</span></template>
+                  <template x-if="cell.learnerArchitecture?.startsWith('ego_superego')"><span class="badge" title="ego-superego learner">L</span></template>
+                </span>
+                <span class="pt" x-text="cell.promptType || '—'"></span>
+              </div>
+            </template>
+          </div>
+        </details>
+      </div>
+
+      <!-- ══════ MANIFEST (compact) ══════ -->
+      <aside class="manifest" x-show="resolved">
+        <div class="manifest__head">
+          <span class="sig">∴</span>
+          <span class="tag">resolves to</span>
+          <span class="rule"></span>
+          <span class="folio">
+            <em>[<span x-text="(matchQuality || '').toUpperCase()"></span>]</em>
+            <span x-show="resolved?.score !== undefined"><span x-text="resolved.score"></span>/<span x-text="maxScore"></span></span>
+          </span>
+        </div>
+        <h3 class="manifest__name" x-text="resolved?.name"></h3>
+
+        <div class="pigments">
+          <div class="pigment pigment--ego">
+            <span>ego</span>
+            <em x-text="resolved?.ego ? resolved.ego.provider + '.' + resolved.ego.model : '—'"></em>
+          </div>
+          <template x-if="resolved?.superego">
+            <div class="pigment pigment--superego">
+              <span>superego</span>
+              <em x-text="resolved.superego.provider + '.' + resolved.superego.model"></em>
+            </div>
+          </template>
+          <template x-if="!resolved?.superego">
+            <div class="pigment pigment--none">
+              <span>superego</span>
+              <em>none</em>
+            </div>
+          </template>
+        </div>
+
+        <div class="tradeoffs" x-show="relaxedDimensions.length">
+          <div class="tradeoffs__head">◦ trade-offs · <em x-text="relaxedDimensions.length"></em> relaxed</div>
+          <template x-for="r in relaxedDimensions" :key="r.dimension">
+            <div>↳ <span x-text="r.dimension"></span> — wanted <em x-text="String(r.want)"></em>, got <em x-text="String(r.have)"></em></div>
+          </template>
+        </div>
+      </aside>
+    </aside>
+
+    <!-- ═══ RIGHT: DIALOGUE ═══ -->
+    <section class="dialogue" id="dialogue" @mouseenter="setRulerZone('dialogue')" @mouseleave="setRulerZone(null)">
+      <span class="reg reg--tl" aria-hidden="true">+ 01.00</span>
+      <span class="reg reg--tr" aria-hidden="true">60.00 +</span>
+      <span class="reg reg--bl" aria-hidden="true">+ 47.00</span>
+      <span class="reg reg--br" aria-hidden="true">∴</span>
+
+      <div class="dialogue__head">
+        <div class="fg-head">
+          <span class="fg-head__no">§V</span>
+          <span class="fg-head__ttl"><em>Dialogue</em></span>
+          <span class="fg-head__rule"></span>
+          <span class="fg-head__hint">ego-superego loop, <em>legible</em> below</span>
+        </div>
+      </div>
+
+      <div class="chat-log" x-ref="chatLog">
+
+        <!-- onboarding -->
+        <template x-if="turns.length === 0 && resolved">
+          <div class="onboarding">
+            <p>A dialogue begins with a <em>prompt</em>. Type a question or a provocation below, as the learner would, and the tutor will answer from the configuration you've composed.</p>
+            <p>Each tutor turn is decomposed into its steps — <em>ego draft</em>, <em>superego critique</em>, <em>ego revision</em> — so the architecture at work is visible, not hidden.</p>
+          </div>
+        </template>
+
+        <template x-if="!resolved">
+          <div class="onboarding">
+            <p>Pick an <em>approach</em> and an <em>inner critic</em> on the left. Every combination resolves to a specific evaluation cell.</p>
+          </div>
+        </template>
+
+        <!-- turns -->
+        <template x-for="(turn, i) in turns" :key="i">
+          <div>
+
+            <!-- Human learner turn -->
+            <template x-if="turn.role === 'learner' && !turn.deliberation">
+              <aside class="learner-quote">
+                <p class="learner-quote__body" x-text="turn.content"></p>
+                <p class="learner-quote__meta">
+                  <span>— you · learner</span>
+                  <span>·</span>
+                  <span>turn <em x-text="(i/2 | 0) + 1"></em></span>
+                </p>
+              </aside>
+            </template>
+
+            <!-- Auto learner turn (bilateral architecture visible) -->
+            <template x-if="turn.role === 'learner' && turn.deliberation">
+              <article class="learner-body">
+                <header class="learner-body__head">
+                  <span class="tag">◑ learner · <span x-text="turn.personaId"></span></span>
+                  <template x-if="turn.deliberation.length > 1">
+                    <span class="pill">ego + superego</span>
+                  </template>
+                  <template x-if="turn.deliberation.length === 1">
+                    <span class="pill">unified</span>
+                  </template>
+                  <span class="stats">
+                    <span x-text="(turn.totals.latencyMs/1000).toFixed(1)+'s'"></span>
+                    <span class="dot">·</span>
+                    <span x-text="(turn.totals.outputTokens || 0).toLocaleString() + ' tok'"></span>
+                  </span>
+                </header>
+
+                <div class="learner-body__text" x-text="turn.content"></div>
+
+                <template x-if="turn.deliberation.length > 1">
+                  <details class="trace learner-trace">
+                    <summary>
+                      <span class="chev">▸</span>
+                      <span class="tag">↳ learner deliberation</span>
+                      <span class="rule"></span>
+                      <span class="folio"><em x-text="String(turn.deliberation.length).padStart(2,'0')"></em>step<span x-show="turn.deliberation.length !== 1">s</span></span>
+                    </summary>
+                    <div class="trace__rows">
+                      <template x-for="(step, j) in turn.deliberation" :key="j">
+                        <div class="spec-row">
+                          <div class="spec-row__lbl">
+                            <span x-text="String.fromCharCode(97 + j)"></span>
+                            <em :class="'step-' + step.role" x-text="step.label"></em>
+                          </div>
+                          <div>
+                            <div class="spec-row__body" x-html="md(step.content)"></div>
+                            <p class="spec-row__meta" x-show="step.model || step.latencyMs">
+                              <span x-show="step.model" x-text="step.model"></span>
+                              <span class="dots"></span>
+                              <template x-if="step.latencyMs"><span><em x-text="(step.latencyMs/1000).toFixed(2)"></em>s</span></template>
+                              <template x-if="step.outputTokens"><span>· <em x-text="step.outputTokens"></em>tok</span></template>
+                            </p>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </details>
+                </template>
+              </article>
+            </template>
+
+            <template x-if="turn.role === 'tutor'">
+              <figure class="plate plate--tutor">
+                <div class="plate__stage">
+                  <div class="plate__body" x-html="md(turn.finalMessage)"></div>
+                </div>
+                <figcaption>
+                  <span class="plate__no" x-text="roman(tutorIndex(i))"></span>
+                  <span class="plate__ttl">
+                    Reply from <em x-text="resolved?.name || 'tutor'"></em>
+                  </span>
+                  <span class="plate__sub">
+                    <template x-if="turn.wasRevised"><em class="sub-revised">revised after superego</em></template>
+                    <template x-if="!turn.wasRevised && turn.architecture?.hasSuperego"><em class="sub-approved">approved by superego</em></template>
+                    <template x-if="!turn.architecture?.hasSuperego"><em class="sub-ego-only">ego · only</em></template>
+                  </span>
+                  <div class="plate__apparatus">
+                    <span class="apparatus__item"><b>coord</b> <span x-text="'§V · pl ' + roman(tutorIndex(i))"></span></span>
+                    <span class="apparatus__sep">·</span>
+                    <span class="apparatus__item"><b>model</b> <span x-text="turn.deliberation?.[0]?.model || '—'"></span></span>
+                    <template x-if="turn.deliberation?.length > 1">
+                      <span class="apparatus__item apparatus__item--muted">+ super <span x-text="turn.deliberation[1]?.model"></span></span>
+                    </template>
+                    <span class="apparatus__sep">·</span>
+                    <span class="apparatus__item"><b>lat</b> <span x-text="(turn.totals.latencyMs/1000).toFixed(1)+'s'"></span></span>
+                    <span class="apparatus__sep">·</span>
+                    <span class="apparatus__item"><b>tok</b> <span x-text="(turn.totals.inputTokens + turn.totals.outputTokens).toLocaleString()"></span></span>
+                    <span class="apparatus__sep">·</span>
+                    <span class="apparatus__item apparatus__palette">
+                      <span class="apparatus__dot" style="--c: var(--ochre)"   title="ego pigment"></span>
+                      <template x-if="turn.architecture?.hasSuperego">
+                        <span class="apparatus__dot" style="--c: var(--prussian)" title="superego pigment"></span>
+                      </template>
+                      <template x-if="turn.wasRevised">
+                        <span class="apparatus__dot" style="--c: var(--brick)" title="revision pigment"></span>
+                      </template>
+                    </span>
+                  </div>
+                </figcaption>
+
+                <details class="trace">
+                  <summary>
+                    <span class="chev">▸</span>
+                    <span class="tag">↳ deliberation trace</span>
+                    <span class="rule"></span>
+                    <span class="folio"><em x-text="String(turn.deliberation.length).padStart(2,'0')"></em>step<span x-show="turn.deliberation.length !== 1">s</span></span>
+                  </summary>
+                  <div class="trace__rows">
+                    <template x-for="(step, j) in turn.deliberation" :key="j">
+                      <div class="spec-row">
+                        <div class="spec-row__lbl">
+                          <span x-text="String.fromCharCode(97 + j)"></span>
+                          <em :class="'step-' + step.role" x-text="step.label"></em>
+                        </div>
+                        <div>
+                          <div class="spec-row__body" x-html="md(step.content)"></div>
+                          <p class="spec-row__meta" x-show="step.model || step.latencyMs">
+                            <span x-show="step.model" x-text="step.model"></span>
+                            <span class="dots"></span>
+                            <template x-if="step.latencyMs"><span><em x-text="(step.latencyMs/1000).toFixed(2)"></em>s</span></template>
+                            <template x-if="step.outputTokens"><span>· <em x-text="step.outputTokens"></em>tok</span></template>
+                          </p>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </details>
+              </figure>
+            </template>
+
+            <template x-if="turn.role === 'error'">
+              <aside class="err">
+                <span class="tag">✕ error</span>
+                <span x-text="turn.content"></span>
+              </aside>
+            </template>
+          </div>
+        </template>
+
+        <!-- spinner -->
+        <div class="spinner" x-show="pending" x-transition.opacity>
+          <span class="dots"><span></span><span></span><span></span></span>
+          <span x-text="pendingStage"></span>
+        </div>
+      </div>
+
+      <!-- composer -->
+      <div class="composer" x-show="resolved">
+
+        <!-- mode toggle -->
+        <div class="mode">
+          <span class="mode__lbl">◦ learner</span>
+          <div class="mode__toggle">
+            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">Human</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">Auto</button>
+          </div>
+          <span class="mode__meta" x-show="mode === 'human'">— you reply as the learner</span>
+          <span class="mode__meta" x-show="mode === 'auto'">— the learner agent replies for you</span>
+        </div>
+
+        <!-- HUMAN MODE -->
+        <template x-if="mode === 'human'">
+          <div>
+            <p class="composer__pretext">
+              <span class="tag">◦ compose</span>
+              <span class="rule"></span>
+              <span class="cell">enter ↵ · shift+enter for newline</span>
+            </p>
+            <form @submit.prevent="send">
+              <span class="composer__prompt">learner :~ $</span>
+              <textarea
+                x-model="input"
+                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : send()"
+                :disabled="pending"
+                rows="2"
+                placeholder="type as the learner… a line is a dot that went for a walk."
+              ></textarea>
+              <button type="submit" :disabled="pending || !input.trim()">
+                <span x-show="!pending">Send →</span>
+                <span x-show="pending">···</span>
+              </button>
+            </form>
+          </div>
+        </template>
+
+        <!-- AUTO MODE -->
+        <template x-if="mode === 'auto'">
+          <div>
+            <p class="composer__pretext">
+              <span class="tag">◦ persona</span>
+              <span class="rule"></span>
+              <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
+                bilateral · learner runs ego + superego
+              </span>
+              <span class="cell" x-show="!resolved?.learnerArchitecture?.startsWith('ego_superego')">
+                unified · learner is a single voice
+              </span>
+            </p>
+            <div class="persona-strip">
+              <template x-for="p in personas" :key="p.id">
+                <button
+                  class="persona-chip"
+                  :class="{'is-active': personaId === p.id}"
+                  @click="personaId = p.id"
+                >
+                  <span class="name" x-text="p.name"></span>
+                  <span class="hint" x-text="'· ' + p.hint"></span>
+                </button>
+              </template>
+            </div>
+            <div class="step-control">
+              <div class="step-control__info">
+                <span x-show="turns.length === 0">Click <em>Next exchange</em> to kick off the dialogue — the <em x-text="personaName"></em> will open.</span>
+                <span x-show="turns.length > 0">Continue the dialogue with another learner → tutor exchange.</span>
+              </div>
+              <button class="step-control__btn" @click="step()" :disabled="pending">
+                <span x-show="!pending">Next exchange →</span>
+                <span x-show="pending && pendingStage.startsWith('learner')">learner ···</span>
+                <span x-show="pending && pendingStage.startsWith('tutor')">tutor ···</span>
+                <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  // Klee field shader — pigment drift for the chat ground
+  // ported from grid_60_47/shader.js
+  // ═══════════════════════════════════════════════════════════════
+  (function () {
+    const canvas = document.getElementById('field');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!canvas || reduced) return;
+    const gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false, powerPreference: 'low-power', alpha: true });
+    if (!gl) return;
+
+    const vs = 'attribute vec2 a_pos; void main(){ gl_Position=vec4(a_pos,0.0,1.0); }';
+    const fs = `
+      precision highp float;
+      uniform vec2 u_res; uniform float u_t; uniform vec2 u_mouse;
+      float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+      float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+        float a=hash(i), b=hash(i+vec2(1,0)), c=hash(i+vec2(0,1)), d=hash(i+vec2(1,1));
+        return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }
+      float fbm(vec2 p){ float v=0.0,a=0.5; for(int i=0;i<5;i++){ v+=a*noise(p); p*=2.03; a*=0.52; } return v; }
+      void main(){
+        vec2 uv = gl_FragCoord.xy/u_res.xy;
+        vec2 p = (gl_FragCoord.xy - 0.5*u_res.xy)/min(u_res.x,u_res.y);
+        float t = u_t*0.015;
+        vec2 q = p*1.6 + vec2(t*0.4,-t*0.3);
+        vec2 r = p*2.3 - vec2(t*0.5, t*0.25);
+        float warm = fbm(q + vec2(fbm(q+t)));
+        float cool = fbm(r - vec2(fbm(r-t*0.7)));
+        vec2 m = (u_mouse - 0.5*u_res.xy)/min(u_res.x,u_res.y);
+        float md = length(p-m);
+        float bloom = smoothstep(0.55, 0.0, md) * 0.12;
+        vec3 paper    = vec3(0.945, 0.913, 0.847);
+        vec3 ochre    = vec3(0.753, 0.541, 0.243);
+        vec3 prussian = vec3(0.165, 0.310, 0.420);
+        vec3 brick    = vec3(0.647, 0.243, 0.180);
+        vec3 sulphur  = vec3(0.894, 0.714, 0.267);
+        vec3 col = paper;
+        col = mix(col, ochre,    smoothstep(0.38, 0.72, warm) * 0.45);
+        col = mix(col, sulphur,  smoothstep(0.55, 0.85, warm) * 0.22);
+        col = mix(col, prussian, smoothstep(0.46, 0.80, cool) * 0.38);
+        col = mix(col, brick,    smoothstep(0.72, 0.92, cool*warm) * 0.42);
+        float vig = smoothstep(1.2, 0.3, length(p));
+        col *= mix(0.82, 1.02, vig);
+        col += bloom * vec3(0.9, 0.55, 0.2);
+        float grain = (hash(gl_FragCoord.xy + vec2(t*120.0)) - 0.5) * 0.035;
+        col += grain;
+        float cx = uv.x * 60.0;
+        float line = smoothstep(0.985, 1.0, abs(fract(cx)-0.5)*2.0);
+        col = mix(col, col*0.94, line * 0.22);
+        gl_FragColor = vec4(col, 1.0);
+      }`;
+
+    function compile(type, src) {
+      const sh = gl.createShader(type);
+      gl.shaderSource(sh, src);
+      gl.compileShader(sh);
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { console.warn('shader error', gl.getShaderInfoLog(sh)); return null; }
+      return sh;
+    }
+    const v = compile(gl.VERTEX_SHADER, vs);
+    const f = compile(gl.FRAGMENT_SHADER, fs);
+    if (!v || !f) return;
+    const prog = gl.createProgram();
+    gl.attachShader(prog, v); gl.attachShader(prog, f); gl.linkProgram(prog); gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    const loc_pos = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(loc_pos);
+    gl.vertexAttribPointer(loc_pos, 2, gl.FLOAT, false, 0, 0);
+    const u_res = gl.getUniformLocation(prog, 'u_res');
+    const u_t = gl.getUniformLocation(prog, 'u_t');
+    const u_mouse = gl.getUniformLocation(prog, 'u_mouse');
+    const mouse = [0, 0]; let mouseTarget = [0, 0];
+    let dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      const w = Math.floor(canvas.clientWidth * dpr);
+      const h = Math.floor(canvas.clientHeight * dpr);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h);
+      }
+    }
+    window.addEventListener('resize', resize, { passive: true });
+    window.addEventListener('pointermove', (e) => {
+      mouseTarget[0] = e.clientX * dpr;
+      mouseTarget[1] = (window.innerHeight - e.clientY) * dpr;
+    }, { passive: true });
+    let last = 0;
+    const step = 1000 / 45;
+    function frame(now) {
+      if (now - last >= step) {
+        last = now;
+        resize();
+        mouse[0] += (mouseTarget[0] - mouse[0]) * 0.06;
+        mouse[1] += (mouseTarget[1] - mouse[1]) * 0.06;
+        gl.uniform2f(u_res, canvas.width, canvas.height);
+        gl.uniform1f(u_t, now * 0.001);
+        gl.uniform2f(u_mouse, mouse[0], mouse[1]);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+      requestAnimationFrame(frame);
+    }
+    resize();
+    requestAnimationFrame(frame);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) last = performance.now(); });
+  })();
+
+  function chatApp() {
+    return {
+      cells: [],
+      cellFilter: '',
+      xray: false,
+
+      features: {
+        approach: 'standard',
+        critic: 'none',
+        stance: 'suspicious',
+        learnerModel: 'surface',
+      },
+
+      resolved: null,
+      matchQuality: '',
+      maxScore: 8,
+      relaxedDimensions: [],
+
+      topic: "Hegel's concept of recognition",
+      turns: [],
+      input: '',
+      pending: false,
+      pendingStage: 'ego drafting',
+
+      // auto-learner mode
+      mode: 'human',
+      personas: [],
+      personaId: 'eager_novice',
+
+      // curriculum
+      curricula: [],
+      lectureRef: null,
+
+      // ruler state
+      rulerZone: null,       // null | 'config' | 'dialogue'
+
+      // claude CLI override (local claude -p · opus 4.7)
+      useClaudeCli: false,
+
+      _resolveTimer: null,
+
+      async init() {
+        // populate xray overlay grid
+        const grid = document.getElementById('xrayGrid');
+        if (grid && !grid.children.length) {
+          for (let i = 0; i < 60; i++) {
+            const c = document.createElement('div');
+            c.className = 'xray-overlay__col';
+            c.setAttribute('data-i', i);
+            grid.appendChild(c);
+          }
+        }
+        // build the 60-cell ruler
+        this.buildRuler();
+        try {
+          const [cellsRes, personasRes, curriculaRes] = await Promise.all([
+            fetch('/api/chat/cells'),
+            fetch('/api/chat/personas'),
+            fetch('/api/chat/curricula'),
+          ]);
+          this.cells = (await cellsRes.json()).cells || [];
+          this.personas = (await personasRes.json()).personas || [];
+          this.curricula = (await curriculaRes.json()).packages || [];
+        } catch (err) { console.error(err); }
+        await this.resolve();
+        this.$watch('features', () => this.debouncedResolve(), { deep: true });
+        this.$watch('rulerZone', () => this.updateRulerSpan());
+        this.$watch('resolved', () => this.updateRulerSpan());
+        this.updateRulerSpan();
+      },
+
+      buildRuler() {
+        const ruler = document.getElementById('ruler');
+        if (!ruler) return;
+        const existingSpan = document.getElementById('rulerSpan');
+        const existingLabel = document.getElementById('rulerLabel');
+        ruler.innerHTML = '';
+        for (let i = 1; i <= 60; i++) {
+          const cell = document.createElement('span');
+          let ch, cls = 'cell';
+          if (i === 1 || i % 10 === 0) { ch = String(i).padStart(2, '0'); cls += ' cell--num'; }
+          else if (i % 5 === 0) { ch = '|'; cls += ' cell--5'; }
+          else { ch = '·'; cls += ' cell--tick'; }
+          cell.className = cls;
+          cell.setAttribute('data-c', i);
+          cell.textContent = ch;
+          ruler.appendChild(cell);
+        }
+        if (existingSpan) ruler.appendChild(existingSpan);
+        if (existingLabel) ruler.appendChild(existingLabel);
+      },
+
+      setRulerZone(zone) { this.rulerZone = zone; },
+
+      get rulerRange() {
+        if (this.rulerZone === 'config') return { from: 2, to: 26, label: 'configurator' };
+        if (this.rulerZone === 'dialogue') return { from: 27, to: 60, label: 'dialogue' };
+        return { from: 2, to: 60, label: null };
+      },
+
+      // Map resolved cell number (1-96) to a ruler column (2-60), so the
+      // little ▼ marker shows where in the factorial space we are.
+      get cellMarkerColumn() {
+        if (!this.resolved?.name) return null;
+        const m = this.resolved.name.match(/^cell_(\d+)/);
+        if (!m) return null;
+        const num = Number(m[1]);
+        // map 1..96 → cols 2..60
+        const col = Math.min(60, Math.max(2, Math.round(2 + (num / 96) * 58)));
+        return { num, col };
+      },
+
+      updateRulerSpan() {
+        const span = document.getElementById('rulerSpan');
+        const label = document.getElementById('rulerLabel');
+        if (!span) return;
+        const { from, to, label: zoneName } = this.rulerRange;
+        const left = ((from - 1) / 60) * 100;
+        const width = ((to - from + 1) / 60) * 100;
+        span.style.left = left + '%';
+        span.style.width = width + '%';
+        span.style.opacity = '1';
+
+        if (label) {
+          label.style.left = left + '%';
+          if (zoneName) {
+            const m = this.cellMarkerColumn;
+            label.innerHTML = `<em>${zoneName}</em> cols ${String(from).padStart(2,'0')}–${String(to).padStart(2,'0')}`
+              + (m ? ` · cell ${String(m.num).padStart(2,'0')}/96` : '');
+            label.style.opacity = '1';
+          } else {
+            const m = this.cellMarkerColumn;
+            if (m) {
+              label.innerHTML = `<em>cell</em> ${String(m.num).padStart(2,'0')}/96 · <em>col</em> ${String(m.col).padStart(2,'0')}`;
+              label.style.opacity = '0.85';
+            } else {
+              label.style.opacity = '0';
+            }
+          }
+        }
+
+        // light cells
+        const ruler = document.getElementById('ruler');
+        if (!ruler) return;
+        const markerCol = this.cellMarkerColumn?.col;
+        ruler.querySelectorAll('.cell').forEach((c) => {
+          const i = Number(c.dataset.c);
+          const inRange = i >= from && i <= to && (i % 10 === 0 || i === 1 || i === from || i === to);
+          c.classList.toggle('is-lit', inRange);
+          c.classList.toggle('is-marker', i === markerCol);
+        });
+      },
+
+      get personaName() {
+        return this.personas.find((p) => p.id === this.personaId)?.name || this.personaId;
+      },
+
+      get totalLectures() {
+        return this.curricula.reduce(
+          (s, pkg) => s + pkg.courses.reduce((t, c) => t + (c.lectures?.length || 0), 0),
+          0,
+        );
+      },
+
+      setMode(m) {
+        if (m !== 'human' && m !== 'auto') return;
+        this.mode = m;
+      },
+
+      pickLecture(course, lec) {
+        this.lectureRef = lec.ref;
+        this.topic = `${course.title} — ${lec.title}`;
+        // close the drawer
+        if (this.$refs.curriculumDrawer) this.$refs.curriculumDrawer.open = false;
+      },
+
+      clearCurriculum() {
+        this.lectureRef = null;
+      },
+
+      get stanceVisible() {
+        return this.features.critic === 'dialectical' || this.features.critic === 'divergent';
+      },
+
+      get filteredCells() {
+        const q = this.cellFilter.trim().toLowerCase();
+        if (!q) return this.cells.slice(0, 120);
+        return this.cells.filter((c) => {
+          const hay = [c.name, c.description, c.promptType || ''].join(' ').toLowerCase();
+          return hay.includes(q);
+        }).slice(0, 120);
+      },
+
+      setApproach(v) { this.features.approach = v; },
+      setCritic(v) {
+        this.features.critic = v;
+        if (v !== 'dialectical' && v !== 'divergent') this.features.stance = 'suspicious';
+      },
+      setStance(v) { this.features.stance = v; },
+      setLearner(v) { this.features.learnerModel = v; },
+
+      debouncedResolve() {
+        if (this._resolveTimer) clearTimeout(this._resolveTimer);
+        this._resolveTimer = setTimeout(() => this.resolve(), 80);
+      },
+
+      async resolve() {
+        try {
+          const res = await fetch('/api/chat/resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.features),
+          });
+          const data = await res.json();
+          this.resolved = data.resolved;
+          this.matchQuality = data.matchQuality || '';
+          this.maxScore = data.maxScore || 8;
+          this.relaxedDimensions = (data.resolved?.matches || []).filter((m) => !m.match);
+        } catch (err) { console.error(err); }
+      },
+
+      pickCellDirectly(cell) {
+        this.resolved = cell;
+        this.matchQuality = 'manual';
+        this.relaxedDimensions = [];
+        this.turns = [];
+        this.input = '';
+      },
+
+      toggleXray() {
+        this.xray = !this.xray;
+        document.body.classList.toggle('xray-on', this.xray);
+      },
+
+      toggleCli() { this.useClaudeCli = !this.useClaudeCli; },
+
+      scrollTo(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      },
+
+      md(text) {
+        if (!text) return '';
+        try { return marked.parse(String(text), { breaks: true, gfm: true }); }
+        catch { return String(text).replace(/</g, '&lt;'); }
+      },
+
+      // index of a tutor turn among tutor turns (1-based)
+      tutorIndex(i) {
+        let n = 0;
+        for (let k = 0; k <= i; k++) {
+          if (this.turns[k]?.role === 'tutor') n++;
+        }
+        return n;
+      },
+
+      // Roman numeral 1..20 then fall back to integer
+      roman(n) {
+        const table = ['i','ii','iii','iv','v','vi','vii','viii','ix','x','xi','xii','xiii','xiv','xv','xvi','xvii','xviii','xix','xx'];
+        return n >= 1 && n <= table.length ? table[n-1] : String(n);
+      },
+
+      scrollChatToBottom() {
+        this.$nextTick(() => {
+          const el = this.$refs.chatLog;
+          if (el) el.scrollTop = el.scrollHeight;
+        });
+      },
+
+      // Auto-learner mode: run one full exchange (learner turn → tutor turn).
+      async step() {
+        if (this.pending || !this.resolved) return;
+        this.pending = true;
+        this.scrollChatToBottom();
+
+        // Build a running history of role/content pairs for both endpoints
+        const historyFor = () =>
+          this.turns
+            .filter((t) => t.role === 'learner' || t.role === 'tutor')
+            .map((t) => ({
+              role: t.role,
+              content: t.role === 'tutor' ? t.finalMessage : t.content,
+            }));
+
+        // ───── 1. LEARNER TURN ─────
+        this.pendingStage = this.resolved.learnerArchitecture?.startsWith('ego_superego')
+          ? 'learner ego → superego → revision'
+          : 'learner drafting';
+        try {
+          const lr = await fetch('/api/chat/learner-turn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cellName: this.resolved.name,
+              history: historyFor(),
+              topic: this.topic || 'general conversation',
+              personaId: this.personaId,
+              useClaudeCli: this.useClaudeCli,
+            }),
+          });
+          const ldata = await lr.json();
+          if (!lr.ok) throw new Error(ldata.error || 'learner request failed');
+          this.turns.push({
+            role: 'learner',
+            content: ldata.message,
+            deliberation: ldata.deliberation || [],
+            personaId: ldata.personaId || this.personaId,
+            totals: ldata.totals || { latencyMs: 0, outputTokens: 0 },
+          });
+          this.scrollChatToBottom();
+        } catch (err) {
+          this.turns.push({ role: 'error', content: `learner turn: ${err.message}` });
+          this.pending = false;
+          this.scrollChatToBottom();
+          return;
+        }
+
+        // ───── 2. TUTOR TURN ─────
+        this.pendingStage = this.resolved.superego
+          ? 'tutor ego → superego → revision'
+          : 'tutor drafting';
+        try {
+          const tr = await fetch('/api/chat/turn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cellName: this.resolved.name,
+              history: historyFor().slice(0, -1),
+              learnerMessage: this.turns[this.turns.length - 1].content,
+              topic: this.topic || 'general conversation',
+              lectureRef: this.lectureRef || null,
+              useClaudeCli: this.useClaudeCli,
+            }),
+          });
+          const tdata = await tr.json();
+          if (!tr.ok) throw new Error(tdata.error || 'tutor request failed');
+          this.turns.push({
+            role: 'tutor',
+            finalMessage: tdata.finalMessage,
+            wasRevised: tdata.wasRevised,
+            deliberation: tdata.deliberation || [],
+            architecture: tdata.architecture || {},
+            totals: tdata.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
+          });
+        } catch (err) {
+          this.turns.push({ role: 'error', content: `tutor turn: ${err.message}` });
+        } finally {
+          this.pending = false;
+          this.scrollChatToBottom();
+        }
+      },
+
+      async send() {
+        const msg = this.input.trim();
+        if (!msg || this.pending || !this.resolved) return;
+        this.turns.push({ role: 'learner', content: msg });
+        this.input = '';
+        this.pending = true;
+        this.pendingStage = this.resolved.superego
+          ? 'ego drafting → superego critiquing'
+          : 'ego drafting';
+        this.scrollChatToBottom();
+
+        const history = this.turns
+          .filter((t) => t.role === 'learner' || t.role === 'tutor')
+          .map((t) => ({ role: t.role, content: t.role === 'tutor' ? t.finalMessage : t.content }));
+
+        try {
+          const res = await fetch('/api/chat/turn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cellName: this.resolved.name,
+              history: history.slice(0, -1),
+              learnerMessage: msg,
+              topic: this.topic || 'general conversation',
+              lectureRef: this.lectureRef || null,
+              useClaudeCli: this.useClaudeCli,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'request failed');
+          this.turns.push({
+            role: 'tutor',
+            finalMessage: data.finalMessage,
+            wasRevised: data.wasRevised,
+            deliberation: data.deliberation || [],
+            architecture: data.architecture || {},
+            totals: data.totals || { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
+          });
+        } catch (err) {
+          this.turns.push({ role: 'error', content: err.message });
+        } finally {
+          this.pending = false;
+          this.scrollChatToBottom();
+        }
+      },
+    };
+  }
+</script>
+</body>
+</html>
