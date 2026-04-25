@@ -11,6 +11,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@300..900&family=JetBrains+Mono:wght@300..700&family=Space+Grotesk:wght@300..700&display=swap" />
 
+<!-- D6 orientation helpers (effect-size binning, family grouping, compare
+     defaults). Loads as a deferred ES module before Alpine so window.OH
+     is populated when Alpine evaluates x-data. -->
+<script type="module">
+  import * as OH from './orientation-helpers.js';
+  window.OH = OH;
+</script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
 
@@ -863,6 +870,34 @@ section.fg::before {
   font-family: "JetBrains Mono", monospace;
 }
 .lineage__effect.is-negative { background: var(--prussian); }
+/* Effect-size magnitude opacity ramp — Cohen's bins map to visual
+   intensity so very-large effects read as such at a glance. Trivial
+   bands stay nearly invisible to avoid overstating null findings. */
+.lineage__effect.mag-trivial    { opacity: 0.40; }
+.lineage__effect.mag-small      { opacity: 0.60; }
+.lineage__effect.mag-medium     { opacity: 0.78; }
+.lineage__effect.mag-large      { opacity: 0.92; }
+.lineage__effect.mag-very-large { opacity: 1.00; font-weight: 600; }
+/* Cell-row chip (advanced drawer): same magnitude language but smaller
+   and unobtrusive so it doesn't crowd the row. */
+.cell-row__effect {
+  display: inline-block;
+  margin-left: 0.3em;
+  padding: 0 0.25em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.74em;
+  letter-spacing: 0.04em;
+  color: var(--paper);
+  background: var(--brick);
+  border-radius: 0;
+  vertical-align: 0.05em;
+}
+.cell-row__effect.is-negative   { background: var(--prussian); }
+.cell-row__effect.mag-trivial    { opacity: 0.40; }
+.cell-row__effect.mag-small      { opacity: 0.60; }
+.cell-row__effect.mag-medium     { opacity: 0.78; }
+.cell-row__effect.mag-large      { opacity: 0.92; }
+.cell-row__effect.mag-very-large { opacity: 1.00; font-weight: 600; }
 .lineage__detail {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1837,7 +1872,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
     </span>
     <span class="cover-pretext__cta" :class="{warn: matchQuality === 'closest'}" x-show="resolved">
       [match] <span x-text="(matchQuality || '').toUpperCase()"></span>
-      <span x-show="resolved?.score !== undefined"> · <span x-text="resolved.score"></span>/<span x-text="maxScore"></span></span>
+      <span x-show="resolved?.score !== undefined"> · <span x-text="resolved?.score ?? ''"></span>/<span x-text="maxScore"></span></span>
     </span>
   </aside>
 
@@ -2029,7 +2064,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <input type="text" class="advanced__search" x-model="cellFilter" placeholder="filter by name, prompt-type, or description…" />
             <template x-for="cell in filteredCells" :key="cell.name">
               <div class="cell-row" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)"
-                   :title="(cell.orientation ? cell.orientation.shortLabel + ' · ' + cell.orientation.keyMechanism + '\n' : '') + (cell.description || '')">
+                   :title="orientationTooltip(cell.orientation) + (cell.description ? '\n\n' + cell.description : '')">
                 <span class="n" x-text="cell.name.replace('cell_','c')"></span>
                 <span>
                   <template x-if="cell.orientation">
@@ -2039,6 +2074,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                   <template x-if="cell.superego"><span class="badge" title="has superego">S</span></template>
                   <template x-if="cell.recognitionMode"><span class="badge" title="recognition mode" style="color: var(--brick);">R</span></template>
                   <template x-if="cell.learnerArchitecture?.startsWith('ego_superego')"><span class="badge" title="ego-superego learner">L</span></template>
+                  <template x-if="cell.orientation?.effectVsBase != null">
+                    <span class="cell-row__effect"
+                          :class="'mag-' + effectMagnitude(cell.orientation?.effectVsBase) + ((cell.orientation?.effectVsBase ?? 0) < 0 ? ' is-negative' : '')"
+                          :title="'Pooled three-judge Cohen d vs base — magnitude: ' + effectMagnitude(cell.orientation?.effectVsBase)"
+                          x-text="formatEffectSize(cell.orientation?.effectVsBase)"></span>
+                  </template>
                 </span>
                 <span class="pt" x-text="cell.promptType || '—'"></span>
               </div>
@@ -2055,7 +2096,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <span class="rule"></span>
           <span class="folio">
             <em>[<span x-text="(matchQuality || '').toUpperCase()"></span>]</em>
-            <span x-show="resolved?.score !== undefined"><span x-text="resolved.score"></span>/<span x-text="maxScore"></span></span>
+            <span x-show="resolved?.score !== undefined"><span x-text="resolved?.score ?? ''"></span>/<span x-text="maxScore"></span></span>
           </span>
         </div>
         <h3 class="manifest__name" x-text="resolved?.name"></h3>
@@ -2068,7 +2109,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <template x-if="resolved?.superego">
             <div class="pigment pigment--superego">
               <span>superego</span>
-              <em x-text="resolved.superego.provider + '.' + resolved.superego.model"></em>
+              <em x-text="resolved?.superego ? resolved.superego.provider + '.' + resolved.superego.model : ''"></em>
             </div>
           </template>
           <template x-if="!resolved?.superego">
@@ -2089,24 +2130,34 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- Pedagogical orientation (D6) — surfaces the orientation-family
              metadata that docs/pedagogical-taxonomy.md catalogues. The
              effectiveFamily field collapses architectural_variant cells
-             (dialectical_*/divergent_*) to the family of their paired ego. -->
-        <div class="lineage" x-show="resolved?.orientation">
-          <div class="lineage__head">
-            <span class="lineage__family" :data-family="resolved.orientation.effectiveFamily" x-text="resolved.orientation.effectiveFamily"></span>
-            <span class="lineage__label" x-text="resolved.orientation.shortLabel"></span>
-            <template x-if="resolved.orientation.effectVsBase != null">
-              <span class="lineage__effect" :class="{'is-negative': resolved.orientation.effectVsBase < 0}"
-                    :title="'Pooled three-judge Cohen d vs base prompt'">
-                d=<span x-text="(resolved.orientation.effectVsBase >= 0 ? '+' : '') + resolved.orientation.effectVsBase.toFixed(2)"></span>
-              </span>
-            </template>
+             (dialectical_*/divergent_*) to the family of their paired ego.
+             Wrapped in <template x-if> so inner expressions are not
+             evaluated until `resolved.orientation` is populated; inline
+             optional chaining is a belt-and-suspenders guard against
+             Alpine's pre-mount expression evaluation race. -->
+        <template x-if="resolved?.orientation">
+          <div class="lineage">
+            <div class="lineage__head">
+              <span class="lineage__family"
+                    :data-family="resolved?.orientation?.effectiveFamily || ''"
+                    :title="orientationTooltip(resolved?.orientation)"
+                    x-text="resolved?.orientation?.effectiveFamily || ''"></span>
+              <span class="lineage__label" x-text="resolved?.orientation?.shortLabel || ''"></span>
+              <template x-if="resolved?.orientation?.effectVsBase != null">
+                <span class="lineage__effect"
+                      :class="'mag-' + effectMagnitude(resolved?.orientation?.effectVsBase) + ((resolved?.orientation?.effectVsBase ?? 0) < 0 ? ' is-negative' : '')"
+                      :title="'Pooled three-judge Cohen d vs base prompt — magnitude: ' + effectMagnitude(resolved?.orientation?.effectVsBase)">
+                  d=<span x-text="formatEffectSize(resolved?.orientation?.effectVsBase)"></span>
+                </span>
+              </template>
+            </div>
+            <dl class="lineage__detail">
+              <dt>learner</dt><dd x-text="resolved?.orientation?.viewOfLearner || ''"></dd>
+              <dt>tutor</dt><dd x-text="resolved?.orientation?.roleOfTutor || ''"></dd>
+              <dt>mechanism</dt><dd x-text="resolved?.orientation?.keyMechanism || ''"></dd>
+            </dl>
           </div>
-          <dl class="lineage__detail">
-            <dt>learner</dt><dd x-text="resolved.orientation.viewOfLearner"></dd>
-            <dt>tutor</dt><dd x-text="resolved.orientation.roleOfTutor"></dd>
-            <dt>mechanism</dt><dd x-text="resolved.orientation.keyMechanism"></dd>
-          </dl>
-        </div>
+        </template>
 
         <!-- D6 compare-orientations: collapsible side-by-side contrast panel.
              Default contrast is the "natural opposite" (transmission ↔
@@ -2120,8 +2171,13 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <div class="compare__pick">
               <label for="compare-cell-pick">vs</label>
               <select id="compare-cell-pick" x-model="compareCellName">
-                <template x-for="c in compareCandidates" :key="c.name">
-                  <option :value="c.name" x-text="c.orientation.effectiveFamily.toUpperCase().slice(0,1) + ' · ' + c.name.replace('cell_','c') + ' · ' + c.orientation.shortLabel"></option>
+                <template x-for="grp in groupedCompareCandidates" :key="grp.family">
+                  <optgroup :label="grp.label">
+                    <template x-for="c in grp.cells" :key="c.name">
+                      <option :value="c.name"
+                              x-text="c.name.replace('cell_','c') + ' · ' + (c.orientation?.shortLabel || c.promptType || c.name) + (c.orientation?.effectVsBase != null ? '  (d=' + formatEffectSize(c.orientation.effectVsBase) + ')' : '')"></option>
+                    </template>
+                  </optgroup>
                 </template>
               </select>
             </div>
@@ -2780,28 +2836,25 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       // each side and shared. Used to surface the orientation contrast in
       // a compact, scannable way (taxonomy doc "Suggested UX moves #3").
       get compareVocabDiff() {
-        const a = this.resolved?.orientation?.vocabulary || [];
-        const b = this.compareCell?.orientation?.vocabulary || [];
-        const setA = new Set(a);
-        const setB = new Set(b);
-        const onlyA = a.filter((w) => !setB.has(w));
-        const onlyB = b.filter((w) => !setA.has(w));
-        const shared = a.filter((w) => setB.has(w));
-        return { onlyA, onlyB, shared };
+        return window.OH.vocabularyDiff(
+          this.resolved?.orientation?.vocabulary,
+          this.compareCell?.orientation?.vocabulary
+        );
       },
 
-      // D6 compare default: "natural contrast" choice given the resolved cell's
-      // family. The point is to pick a comparison the reader will learn from
-      // rather than a random other cell.
-      compareDefault() {
-        const fam = this.resolved?.orientation?.effectiveFamily;
-        const pt = this.resolved?.orientation?.promptType;
-        if (pt === 'matched_pedagogical') return 'cell_96_base_behaviorist_single_unified';
-        if (pt === 'matched_behaviorist') return 'cell_95_base_matched_single_unified';
-        if (fam === 'intersubjective') return 'cell_1_base_single_unified';
-        if (fam === 'transmission')    return 'cell_5_recog_single_unified';
-        return 'cell_5_recog_single_unified';
-      },
+      // D6 compare default: "natural contrast" choice given the resolved
+      // cell's family. Delegates to the helpers module for symmetry with
+      // the test suite (single source of truth).
+      compareDefault() { return window.OH.compareDefault(this.resolved?.orientation); },
+
+      // D6 helpers — single source of truth lives in
+      // public/chat/orientation-helpers.js (loaded as window.OH before
+      // Alpine inits). Methods below delegate; tests import the module
+      // directly. See tests/chat-orientation-helpers.test.js.
+      get groupedCompareCandidates() { return window.OH.groupCellsByFamily(this.compareCandidates); },
+      effectMagnitude(d)   { return window.OH.effectMagnitude(d); },
+      formatEffectSize(d)  { return window.OH.formatEffectSize(d); },
+      orientationTooltip(o) { return window.OH.orientationTooltip(o); },
 
       setApproach(v) { this.features.approach = v; },
       setCritic(v) {
