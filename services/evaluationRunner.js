@@ -196,6 +196,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_95_base_matched_single_unified',
   'cell_96_base_behaviorist_single_unified',
   'cell_97_base_dialectical_suspicious_unified_directive',
+  'cell_98_base_dialectical_suspicious_unified_two_pass',
 ];
 
 /**
@@ -245,6 +246,12 @@ export function resolveEvalProfile(profileName) {
       // dialectical_suspicious tutor-core profile is correct because the architectural
       // behaviour (negotiation rounds, rejection budget, superego coupling) is identical;
       // the prompt content is the only treatment variable.
+      resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
+    } else if (promptType === 'dialectical_suspicious_two_pass') {
+      // D3 Bridge 1 (two-pass reflection-as-input): same pipeline as
+      // dialectical_suspicious. The architectural change is at the eval-runner
+      // level (Phase-1 reflection injected into contextStr); the tutor-core
+      // profile resolution is unchanged.
       resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
     } else if (promptType === 'dialectical_adversary') {
       resolvedProfileName = recognitionMode ? 'dialectical_adversary_recognition' : 'dialectical_adversary';
@@ -2595,6 +2602,104 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
 }
 
 /**
+ * D3 Bridge 1 — Phase 1 reflection (two-pass reflection-as-input).
+ *
+ * Cells with `two_pass_reflection: true` get a Phase-1 ego call that
+ * produces a brief plain-text noticing about the learner's current state
+ * (using prompts/tutor-ego-reflectonly.md). The result is prepended to
+ * the next call's contextStr as a "Tutor's Prior Reflection On This Turn"
+ * block — i.e., the reflection is fed back as *content the model reads*,
+ * not as a system-prompt directive.
+ *
+ * Empirical hypothesis (D3-architectural design note):
+ * LLMs follow concrete recent-context tokens better than abstract
+ * meta-instructions. If true, the Phase-2 ego will couple its message
+ * to the reflection more reliably than under cell 97's directive rider.
+ *
+ * Returns the plain-text reflection on success, null on failure (caller
+ * proceeds without the augmentation — degrades gracefully to cell-40
+ * behaviour).
+ */
+const REFLECTONLY_PROMPT_PATH = path.join(EVAL_ROOT, 'prompts', 'tutor-ego-reflectonly.md');
+let _reflectonlyPromptCache = null;
+function loadReflectonlyPrompt() {
+  if (_reflectonlyPromptCache) return _reflectonlyPromptCache;
+  try {
+    _reflectonlyPromptCache = fs.readFileSync(REFLECTONLY_PROMPT_PATH, 'utf8');
+  } catch (e) {
+    console.error('[evaluationRunner] reflectonly prompt missing:', e.message);
+    _reflectonlyPromptCache = '';
+  }
+  return _reflectonlyPromptCache;
+}
+
+async function generatePhase1Reflection({ contextStr, learnerMessage, modelAlias, log }) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    log('[two-pass] OPENROUTER_API_KEY missing; skipping Phase-1 reflection', 'warn');
+    return null;
+  }
+  const systemPrompt = loadReflectonlyPrompt();
+  if (!systemPrompt) {
+    log('[two-pass] reflectonly prompt not loadable; skipping Phase-1', 'warn');
+    return null;
+  }
+
+  // Resolve provider/model via the same alias path everything else uses.
+  let modelId;
+  try {
+    const resolved = evalConfigLoader.resolveModel(modelAlias);
+    modelId = resolved.model;
+  } catch (e) {
+    log(`[two-pass] could not resolve ${modelAlias}: ${e.message}`, 'warn');
+    return null;
+  }
+
+  const userMessage = `### Learner Context\n\n${contextStr || '(no context)'}\n\n` +
+    (learnerMessage ? `### Learner Just Said\n\n"${learnerMessage}"\n\n` : '') +
+    `Produce your noticing now (2–4 sentences, plain prose, first-person).`;
+
+  try {
+    const start = Date.now();
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://machinespirits-eval.local',
+        'X-Title': 'Machine Spirits Eval (D3 Bridge 1 Phase 1)',
+      },
+      body: JSON.stringify({
+        model: modelId,
+        temperature: 0.5,
+        max_tokens: 400,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+      }),
+    });
+    const latencyMs = Date.now() - start;
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      log(`[two-pass] Phase-1 ${response.status}: ${body.slice(0, 200)}`, 'warn');
+      return null;
+    }
+    const payload = await response.json();
+    const content = payload.choices?.[0]?.message?.content?.trim() || '';
+    if (!content) {
+      log('[two-pass] Phase-1 empty content; skipping', 'warn');
+      return null;
+    }
+    log(`[two-pass] Phase-1 reflection generated (${content.length} chars, ${latencyMs}ms)`, 'info');
+    return content;
+  } catch (e) {
+    log(`[two-pass] Phase-1 fetch failed: ${e.message}`, 'warn');
+    return null;
+  }
+}
+
+/**
  * Run a multi-turn test as an iterative loop.
  *
  * Each turn goes through the SAME generateAndEvaluateTurn() code path as
@@ -3029,6 +3134,34 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         learnerTrajectory,
         conversationMode,
       });
+    }
+
+    // D3 Bridge 1 — two-pass reflection-as-input.
+    // For cells with `two_pass_reflection: true`, run a Phase-1 ego call now
+    // to produce a brief plain-text noticing, then prepend it to contextStr
+    // so the standard Phase-2 dialectical loop reads the reflection as
+    // *content in its user message* rather than as a system-prompt directive.
+    // Hypothesis: LLMs follow concrete recent-context tokens better than
+    // abstract meta-instructions; if so, message↔reflection coupling rises.
+    let _phase1ReflectionApplied = false;
+    if (rawProfile?.two_pass_reflection) {
+      const learnerMessageForReflection = isInitialTurn
+        ? null
+        : turnDef?.action_details?.message || null;
+      const reflection = await generatePhase1Reflection({
+        contextStr,
+        learnerMessage: learnerMessageForReflection,
+        modelAlias: `${rawProfile.ego.provider}.${rawProfile.ego.model}`,
+        log,
+      });
+      if (reflection) {
+        // Prepend as a structured block. Goes BEFORE the existing context
+        // so the model encounters it first when reading top-down.
+        contextStr =
+          `### Tutor's Prior Reflection On This Turn\n\n${reflection}\n\n---\n\n` +
+          (contextStr || '');
+        _phase1ReflectionApplied = true;
+      }
     }
 
     const structuredContextStr = structureLearnerContext(contextStr);

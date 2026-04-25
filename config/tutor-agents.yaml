@@ -253,6 +253,19 @@ pedagogical_orientations:
     approx_length_words: 3161
     evaluation_note: "D3 cell 97. Tests whether the insight-action gap (mean coupling 0.42 in cells 40-45) is bridgeable by an explicit directive. Length confound: +348 words / +12.4% vs control. Pre-registered thresholds: d ≥ 0.5 = bridgeable; 0.3 ≤ d < 0.5 = suggestive; d < 0.3 = structural. See notes/design-d3-explicit-directive-bridge.md."
 
+  dialectical_suspicious_two_pass:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego (two-pass) × suspicious superego"
+    lineage: "Same as dialectical_suspicious; adds a Phase-1 ego call that produces a plain-text reflection (tutor-ego-reflectonly.md) which is prepended to the next call's user-message context — i.e., reflection seen as content rather than instructed via system prompt."
+    view_of_learner: "Inherits from paired ego prompt (base only; D3 Bridge 1 starts on the base variant)"
+    role_of_tutor: "Same as dialectical_suspicious; the architectural change is upstream — a Phase-1 reflection is generated separately and fed back as context."
+    key_mechanism: "Reflection-as-input via two-pass orchestration (insight-action bridge by architecture, not by prompt)"
+    vocabulary: ["prior reflection", "noticing", "two-pass", "reflection-as-content"]
+    prompt_file: tutor-ego-dialectical.md
+    approx_length_words: 2813
+    evaluation_note: "D3 Bridge 1 cell 98. Tests the architectural alternative to cell 97's prompt-rider directive: instead of telling the ego to 'act on what you noticed,' a separate Phase-1 call produces a noticing in plain text, and the existing ego prompt receives it as recent-context input. Cost: +1 cheap LLM call per turn (~10% of total turn cost). Pre-registered thresholds same as cell 97. See notes/design-d3-architectural-bridges.md."
+
   dialectical_adversary:
     family: architectural_variant
     subfamily: dialectical_synthesis
@@ -4215,6 +4228,63 @@ profiles:
       model: nemotron
       staging: front
       prompt_file: tutor-ego-dialectical-directive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 98: D3 Bridge 1 (two-pass reflection-as-input).
+  # Identical to cell 40 in every dimension except the new
+  # `two_pass_reflection: true` flag, which adds a Phase-1 ego call that
+  # produces a plain-text reflection (using prompts/tutor-ego-reflectonly.md)
+  # before each turn's standard dialectical loop runs. The Phase-1 reflection
+  # is prepended to contextStr so the Phase-2 ego encounters it as content
+  # in its user message rather than as a system-prompt directive.
+  # Tests whether the insight-action gap measured in cell 40 (mean coupling
+  # 0.60 in the D3-prompt run) closes when the reflection is fed back as
+  # recent context rather than instructed via prompt rider (the cell-97
+  # approach, which D3 found null at d ≈ 0.1).
+  # Cost overhead: +1 cheap LLM call per turn (~10% of total turn cost).
+  # Design note: notes/design-d3-architectural-bridges.md (Bridge 1).
+  cell_98_base_dialectical_suspicious_unified_two_pass:
+    description: "D3 Bridge 1 cell 98: base dialectical ego with Phase-1 reflection-as-input + suspicious superego (architecture matches cell 40; adds two_pass_reflection flag)"
+    factors:
+      prompt_type: dialectical_suspicious_two_pass
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    two_pass_reflection: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.65
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
       hyperparameters:
         temperature: 0.6
         max_tokens: 8000
