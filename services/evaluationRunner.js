@@ -195,6 +195,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_94_recog_dialectical_suspicious_unified_superego_nopad',
   'cell_95_base_matched_single_unified',
   'cell_96_base_behaviorist_single_unified',
+  'cell_97_base_dialectical_suspicious_unified_directive',
 ];
 
 /**
@@ -237,6 +238,13 @@ export function resolveEvalProfile(profileName) {
     } else if (promptType === 'divergent_advocate') {
       resolvedProfileName = recognitionMode ? 'advocate_recognition' : 'advocate';
     } else if (promptType === 'dialectical_suspicious') {
+      resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
+    } else if (promptType === 'dialectical_suspicious_directive') {
+      // D3 directive bridge variant: same pipeline as dialectical_suspicious; only the
+      // ego prompt_file differs (tutor-ego-dialectical-directive.md). Reusing the
+      // dialectical_suspicious tutor-core profile is correct because the architectural
+      // behaviour (negotiation rounds, rejection budget, superego coupling) is identical;
+      // the prompt content is the only treatment variable.
       resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
     } else if (promptType === 'dialectical_adversary') {
       resolvedProfileName = recognitionMode ? 'dialectical_adversary_recognition' : 'dialectical_adversary';
