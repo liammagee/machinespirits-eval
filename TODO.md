@@ -444,10 +444,12 @@ Documented in CLAUDE.md: `tests/` for integration tests, `services/__tests__/` f
 
 ## D. Theoretical / Mechanistic Research
 
-### D1. Mechanistic Understanding (PARTIALLY ADDRESSED)
+### D1. Mechanistic Understanding (PARTIALLY ADDRESSED — lexical channel closed 2026-04-25)
 Why does recognition-oriented prompting change model behavior?
 - ~~First-pass lexicon decomposition~~ — `scripts/analyze-recognition-lexicon.js` (2026-04-16). Complements `analyze-text-behaviors.js` §2 (data-driven JSD) with a theory-driven 10-concept Hegelian lexicon. Each tutor response gets per-concept density; Cohen's d (recog − base) and Pearson r (density × rubric score) flag which concepts are both distinctive AND quality-correlated. First pass on all scored rows (N=10,304): overall d=0.22, r=0.27. Top mechanism markers: `genuine` (d=+0.45, r=0.19) and `transformation` (d=+0.42, r=0.17). `recognition` (d=+0.20, r=0.15) and `struggle` (d=+0.19, r=0.17) moderate. Counterintuitive finding: `hegel`/`master-slave` has NEGATIVE d (−0.30) — base cells name the theory more than recog cells, which suggests enactment replaces explicit naming. `dialectic` is widespread and quality-correlated but not condition-distinctive (generic quality marker).
-- Activation analysis, attention patterns, gradient analysis (still open — requires white-box access)
+- ~~Second-pass orientation-family lexicon decomposition~~ — `scripts/analyze-d1-orientation-lexicon.js` (2026-04-25). Adds an INTERSUBJECTIVE lexicon (Vygotskian/constructivist/dialogic terms — scaffolding/ZPD/sense-making/productive struggle/etc.) and runs both lexicons over A10b's 4-cell matched-specificity set (`eval-2026-04-24-e9a785c0`, Sonnet judge, n≈51/cell). **Finding: both lexicons are markers, not mediators.** Cell_5 (recognition) uses Hegelian vocab moderately (d=+1.01 vs cell_95) but only trace intersubjective vocab. Cell_95 (matched-pedagogical) is hyper-dense in intersubjective vocab (~13× cell_5) and *suppresses* Hegelian vocab below cell_1 baseline (d=-0.52). Yet cells 5 and 95 score equivalently (~49) — A10b's score equivalence reproduces. The two intersubjective-family cells use almost entirely non-overlapping vocabularies and produce equivalent rubric scores; neither lexicon is the load-bearing channel. Pooled intersubjective r=0.37 outperforms Hegelian r=0.17 but within-cell r's are inconsistent (cell_1 r=-0.29 vs cell_96 r=+0.23 on the same lexicon, opposite signs). **Implication**: the orientation-family mechanism lives at a structural/pragmatic level (turn-taking, question-asking, learner-acknowledgement) that bag-of-concepts cannot reach. The lexical channel is now closed as a candidate mediator. Report: `exports/d1-orientation-lexicon.md`.
+- Higher-order behavioral coding (question rates, acknowledgement structure, turn-taking) — open, doable in black-box, lower priority than white-box but tractable
+- Activation analysis, attention patterns, gradient analysis (still open — requires white-box access; needs running open-weights model locally with interpretability tooling like TransformerLens/nnsight)
 - Paper ref: Section 8.2 Future Direction #4
 
 ### D2. Cross-Application Transfer (Path 1 RESOLVED v3.0.38, Path 2 DEFERRED)
@@ -460,12 +462,12 @@ Test recognition-oriented design beyond tutoring.
 - Integrated as §6.6.7 "Cross-Application Adjacency Pilot" in paper-full-2.0.md; analysis script `scripts/analyze-d2-support-pilot.js` + report `exports/d2-support-pilot.md`
 - Directional claim (recognition improves tutor quality) survives a shift into a domain where the skill being coached runs counter to traditional pedagogy
 
-**Path 2 (deferred — separate-paper scope)** — true cross-application with role-reframed prompts:
-- Author `tutor-ego-support.md` and `tutor-ego-support-recognition.md` prompt variants that recast the tutor role from "pedagogical guide" to "peer support listener"
-- Register new cells in `config/tutor-agents.yaml` + `EVAL_ONLY_PROFILES` (e.g., cells 91-92 for support base/recog)
-- Run across 3 applications: peer support listener, customer service, code review
-- Matching content packages + scenario sets for each application
-- Cost: ~$25-40 API across 3 applications × 2 cells × 3 runs × 5 scenarios
+**Path 2 (deferred — separate-paper scope; design ready 2026-04-25)** — true cross-application with role-reframed prompts:
+- **Design note**: `notes/design-d2-path2-cross-application.md` (2026-04-25) — full prompt-authoring spec, cell-registration plan (cells 98-103 core, 104-105 conditional), content-package authoring (`content-test-cs/`, `content-test-review/`, `content-test-therapy/` conditional), run plan, three-judge scoring, mediator analysis cross-link to D1, analysis pre-registration ($d \geq 1.0$ on 2/3 *core* applications threshold), effort estimate (core: 5-7 engineer-days + ~$45-75 API; therapy add-on: +5-8 days + ~$15-25 + 6-10 weeks IRB lead)
+- Three core applications spanning role-relationship spectrum: peer support listener (symmetric, high reciprocity), customer service (service-asymmetric, transactional), code reviewer (expert-asymmetric, collaborative critique).
+- One **conditional** application (decided at run prep): therapeutic listener (care-asymmetric, high reciprocity) — theoretically the strongest test case for recognition (Honneth care-relation territory) but gated on six safety scaffolding requirements in design-note §2.1 (framing constraints in prompt, refusal-and-refer pathway, deployment-isolation flag enforced by test, separate IRB pathway, participant-pool isolation, pre-registered halt criteria). If included, IRB lead time dominates the schedule; if excluded, §2.1 + cells 104-105 + therapy content package strike from the brief.
+- Six core cells (98-103) + two conditional cells (104-105), two prompts per application, two-to-three new content packages
+- Open decisions captured in design note §9: rubric strategy (v2.2 unchanged vs role-neutral subset), generation model (Haiku for D2 continuity vs DeepSeek for Paper 2.0 alignment), application set substitutions, **therapy include/exclude** (the schedule-defining decision)
 - Deferred because: (a) requires tutor-core prompt authoring, (b) marked as separate-paper scope in v4 roadmap, (c) would extend the paper's length beyond target
 - Paper ref: Section 8.2 Future Direction #5
 
@@ -492,7 +494,7 @@ Opened from the 2026-04-22 paper critique. §8.6 reports PC1 = 80.7%, KMO = 0.93
 1. **Empirical consolidation**: v3.0 rubric with 2 scored factors — `overall_pedagogical_quality` and `content_accuracy` — computed directly rather than derived from 8 component dimensions. Faster to score (1-2 LLM dimensions vs 8), fewer degrees of freedom for judge hallucination.
 2. **Discriminant-validity demonstration**: Design scenarios where the 8 dimensions should predictably diverge (e.g., a scenario where `conceptual_progression` should rise while `affective_resonance` should fall). If no such scenarios exist or none produce the predicted divergence, the 8-dim structure is truly over-specified and path 1 is warranted.
 
-**Design note**: `notes/design-d5-rubric-v3-pca-consolidation.md` (to author)
+**Design note**: `notes/design-d5-rubric-v3-pca-consolidation.md` (authored 2026-04-22, 147 lines). Covers: motivation from §8.6 PCA, what breaks (4 items), v3.0 sketch (single-factor empirical consolidation + optional discriminant-validity pre-test), Framing A (quiet infrastructure for Paper 3.0) vs Framing B (standalone methods paper), effort estimate (5-8 engineer-days, no new generation runs), four open decisions captured in §5 ("What to decide before starting"). Status: **decisions pending** rather than design pending.
 
 **Timeline**: Not blocking for current paper — cross-version-contamination rules (CLAUDE.md) prohibit retroactive rescoring under v3.0 anyway. This is Paper 3.0 infrastructure or a future methods paper.
 
