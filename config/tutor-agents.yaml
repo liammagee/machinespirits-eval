@@ -146,6 +146,165 @@ pedagogical_orientations:
     evaluation_effect_pooled_d_vs_base: -0.89  # A10b: substantially BELOW base (transmission-family)
     evaluation_note: "Scores substantially below generic base prompt (pooled d = 0.89). Rigorously-authored prompt in the wrong pedagogical family is counterproductive."
 
+  # ---------------------------------------------------------------------------
+  # ARCHITECTURAL / PROMPT-ENGINEERING VARIANTS
+  # ---------------------------------------------------------------------------
+  # The entries above name distinct pedagogical orientations. The entries below
+  # describe variants that are not separate orientations but architectural or
+  # prompt-engineering modifications of an underlying orientation. They are
+  # registered here so cells using these `prompt_type` values resolve cleanly
+  # in the chat UI's family grouping.
+
+  enhanced:
+    family: transmission
+    subfamily: enhanced_pedagogical
+    short_label: "Enhanced (length-matched, no recognition theory)"
+    lineage: "Authored as the Paper 1.0 cells 9-12 control to test whether prompt elaboration alone (without Hegelian theory) reproduces recognition's effect."
+    view_of_learner: "Individual with patterns and preferences; behaviourally legible through engagement signals"
+    role_of_tutor: "Provide concrete, content-tied guidance, calibrated to detected learner state"
+    key_mechanism: "Detailed pedagogical heuristics without theoretical grounding"
+    vocabulary: ["engagement", "calibrate", "pacing", "personalization", "rapport"]
+    prompt_file: tutor-ego-enhanced.md
+    approx_length_words: 2979
+    evaluation_note: "Paper 1.0 ablation (cells 9-12). Showed that elaboration alone does not reproduce recognition's effect on capable models — and on Kimi K2.5 caused catastrophic context loss (77% hallucination rate)."
+
+  naive:
+    family: transmission
+    subfamily: minimal_directive
+    short_label: "Naive (minimal baseline)"
+    lineage: "Constructed as the floor of the prompt-design space — what does an LLM tutor produce with essentially no instruction?"
+    view_of_learner: "Implicit; whatever the model's default prior is"
+    role_of_tutor: "Suggest the next learning activity given context"
+    key_mechanism: "Untrained model defaults"
+    vocabulary: ["suggest", "next", "best"]
+    prompt_file: tutor-ego-naive.md
+    approx_length_words: 200
+    evaluation_note: "Cell 71 floor baseline. Used to bound the lower end of prompt-design effect."
+
+  hardwired:
+    family: transmission
+    subfamily: rules_in_ego
+    short_label: "Hardwired rules (superego rules embedded in ego prompt)"
+    lineage: "Empirically derived from analysis of 186 superego rejections in pilot data; 5 rules encode what a critic most commonly catches."
+    view_of_learner: "Same as base; rules shape tutor output rather than learner model"
+    role_of_tutor: "Generate guidance constrained by 5 hardcoded rules; no live superego dialogue"
+    key_mechanism: "Single-agent operation with rule-based self-constraint"
+    vocabulary: ["base vocabulary plus explicit rule check phrasing"]
+    prompt_file: tutor-ego-hardwired.md
+    approx_length_words: 2467
+    evaluation_note: "Cells 13-14 ablation. Tests whether hardcoded rules can substitute for live superego dialogue. Empirically: partial substitution, not full."
+
+  memory:
+    family: transmission
+    subfamily: base_with_writing_pad
+    short_label: "Memory-enhanced base"
+    lineage: "Base orientation plus three-layer Writing Pad memory (conscious / preconscious / unconscious)."
+    view_of_learner: "Same as base, with persistent learner model accumulated across turns"
+    role_of_tutor: "Same as base; additionally references and updates accumulated learner state"
+    key_mechanism: "Cross-turn state persistence (Writing Pad)"
+    vocabulary: ["base vocabulary plus memory references"]
+    prompt_file: tutor-ego-memory.md
+    approx_length_words: 2384
+    evaluation_note: "Cells 19-20. Used to disentangle recognition theory from memory mechanism (recognition variants also have Writing Pad enabled)."
+
+  recognition_nomem:
+    family: intersubjective
+    subfamily: hegelian_recognition
+    short_label: "Recognition without memory"
+    lineage: "Same as recognition — Hegel, Honneth, Huttunen, Stojanov."
+    view_of_learner: "Same as recognition: autonomous subject; co-constitutive partner"
+    role_of_tutor: "Same as recognition, but without the Writing Pad memory layer"
+    key_mechanism: "Mutual recognition without cross-turn memory accumulation"
+    vocabulary: ["recognition", "autonomous subject", "mutual transformation", "dialectical engagement", "productive tension"]
+    prompt_file: tutor-ego-recognition-nomem.md
+    approx_length_words: 2529
+    evaluation_note: "Cells 19-20 paired with `memory` to disentangle recognition theory from memory mechanism. The orientation is identical to `recognition`; the difference is the architectural memory layer."
+
+  # The dialectical_* and divergent_* types are not separate orientations — they
+  # name superego dispositions paired with either a standard or a dialectical
+  # ego. The cell's actual orientation depends on the paired ego prompt
+  # (tutor-ego.md → transmission, tutor-ego-recognition.md → intersubjective).
+  # Chat UI consumers should fall back to the cell's `recognition_mode` flag
+  # when grouping these by family.
+
+  dialectical_suspicious:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego × suspicious superego"
+    lineage: "Hegelian dialectic operationalised as an Aufhebung-trained ego that synthesises with a suspicious superego (questions authenticity of engagement)."
+    view_of_learner: "Inherits from paired ego prompt (base or recognition)"
+    role_of_tutor: "Defend initial position, extract what is valid in the critique, integrate into a stronger response"
+    key_mechanism: "Aufhebung — negation that preserves and elevates"
+    vocabulary: ["thesis", "antithesis", "synthesis", "Aufhebung", "what is valid in the objection"]
+    prompt_file: tutor-ego-dialectical.md  # paired with tutor-superego-suspicious.md
+    approx_length_words: 2813
+    evaluation_note: "Cells 28, 30, 32 (paired with base) and 29, 31, 33 (paired with recognition). Architecturally distinct from divergent_suspicious which uses a standard ego."
+
+  dialectical_adversary:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego × adversary superego"
+    lineage: "Aufhebung-trained ego synthesising with an adversary superego (argues for the opposite pedagogical method)."
+    view_of_learner: "Inherits from paired ego prompt (base or recognition)"
+    role_of_tutor: "Synthesise across an explicitly opposed methodological challenge"
+    key_mechanism: "Methodological-opposition synthesis"
+    vocabulary: ["dialectic", "opposition", "synthesis", "preserve and transform"]
+    prompt_file: tutor-ego-dialectical.md  # paired with tutor-superego-adversary.md
+    approx_length_words: 2813
+    evaluation_note: "Same architectural pattern as dialectical_suspicious; superego disposition differs."
+
+  dialectical_advocate:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego × advocate superego"
+    lineage: "Aufhebung-trained ego synthesising with an advocate superego (represents how a real student would experience the response)."
+    view_of_learner: "Inherits from paired ego prompt (base or recognition); advocate superego foregrounds learner experience"
+    role_of_tutor: "Synthesise across a learner-experiential challenge"
+    key_mechanism: "Experiential-perspective synthesis"
+    vocabulary: ["learner perspective", "experiential challenge", "synthesis"]
+    prompt_file: tutor-ego-dialectical.md  # paired with tutor-superego-advocate.md
+    approx_length_words: 2813
+    evaluation_note: "Same architectural pattern as dialectical_suspicious; superego disposition differs. D4 finding: in dialectical-ego cells (40-45) the suspicious > adversary > advocate gradient is monotone; in standard-ego cells (22-27) the gradient inverts (D4 §6.6.8)."
+
+  divergent_suspicious:
+    family: architectural_variant
+    subfamily: divergent_critique
+    short_label: "Standard ego × suspicious superego"
+    lineage: "Standard ego paired with a divergent superego that questions whether the engagement is genuinely contingent on this learner."
+    view_of_learner: "Inherits from paired ego prompt"
+    role_of_tutor: "Generate; absorb suspicious critique; revise (no Aufhebung training — capitulation baseline)"
+    key_mechanism: "Divergent-critique modulation without synthesis"
+    vocabulary: ["modulation", "revision", "critique-and-revise"]
+    prompt_file: tutor-ego.md  # paired with tutor-superego-suspicious.md (or tutor-ego-recognition.md for recog cells)
+    approx_length_words: 1953
+    evaluation_note: "Cells 22-23. Capitulation baseline against which dialectical_suspicious (cells 28-29) tests whether Aufhebung training recovers quality."
+
+  divergent_adversary:
+    family: architectural_variant
+    subfamily: divergent_critique
+    short_label: "Standard ego × adversary superego"
+    lineage: "Standard ego paired with an adversary superego (argues for the opposite pedagogical method)."
+    view_of_learner: "Inherits from paired ego prompt"
+    role_of_tutor: "Generate; absorb adversary critique; revise"
+    key_mechanism: "Divergent-critique modulation without synthesis"
+    vocabulary: ["modulation", "opposition", "revision"]
+    prompt_file: tutor-ego.md  # paired with tutor-superego-adversary.md (or tutor-ego-recognition.md for recog cells)
+    approx_length_words: 1953
+    evaluation_note: "Cells 24-25. Capitulation baseline against dialectical_adversary (cells 30-31)."
+
+  divergent_advocate:
+    family: architectural_variant
+    subfamily: divergent_critique
+    short_label: "Standard ego × advocate superego"
+    lineage: "Standard ego paired with an advocate superego (represents learner experience)."
+    view_of_learner: "Inherits from paired ego prompt; advocate superego foregrounds learner experience"
+    role_of_tutor: "Generate; absorb advocate critique; revise"
+    key_mechanism: "Divergent-critique modulation without synthesis"
+    vocabulary: ["modulation", "learner perspective", "revision"]
+    prompt_file: tutor-ego.md  # paired with tutor-superego-advocate.md (or tutor-ego-recognition.md for recog cells)
+    approx_length_words: 1953
+    evaluation_note: "Cells 26-27. Capitulation baseline against dialectical_advocate (cells 32-33)."
+
 # ============================================================================
 # CELL PROFILES
 # ============================================================================
