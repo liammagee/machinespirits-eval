@@ -1809,6 +1809,7 @@ export async function runEvaluation(options = {}) {
     maxTokensOverride = null, // CLI --max-tokens override (replaces ego max_tokens hyperparameter)
     showMessages = false, // true for truncated, 'full' for untruncated API message display
     liveApi = false, // --live: stream one-line display per API call in real time
+    learnerId: explicitLearnerId = null, // A7 Longitudinal: shared Writing Pad across runs
   } = options;
 
   const log = verbose ? console.log : () => {};
@@ -2096,6 +2097,7 @@ export async function runEvaluation(options = {}) {
           runId: run.id,
           runNum,
           liveApiReporter,
+          learnerId: explicitLearnerId,
         });
 
         // Store result (better-sqlite3 is synchronous, thread-safe for concurrent writes)
@@ -2374,6 +2376,7 @@ async function runSingleTest(scenario, config, options = {}) {
     judgeCliModel = null,
     _dryRun = false,
     checkpointState = null,
+    learnerId = null, // A7 Longitudinal: external Writing Pad ID
   } = options;
 
   // Create a log function that calls both console and onLog callback
@@ -2402,11 +2405,19 @@ async function runSingleTest(scenario, config, options = {}) {
       judgeCliModel,
       checkpointState,
       liveApiReporter: options.liveApiReporter,
+      learnerId,
     });
   }
 
   // Single-turn evaluation (original logic)
-  return runSingleTurnTest(scenario, config, fullScenario, { ...options, log, judgeOverride, judgeCli, judgeCliModel });
+  return runSingleTurnTest(scenario, config, fullScenario, {
+    ...options,
+    log,
+    judgeOverride,
+    judgeCli,
+    judgeCliModel,
+    learnerId,
+  });
 }
 
 /**
@@ -2424,6 +2435,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     judgeCliModel = null,
     dryRun = false,
     showMessages = false,
+    learnerId = null, // A7 Longitudinal: passes through to result row only
   } = options;
 
   // Resolve model aliases through eval's providers.yaml
@@ -2562,6 +2574,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
     evaluationReasoning: rubricResult?.summary,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    learnerId,
     configHash,
     ...promptVersions,
     dialogueResult: {
@@ -2597,6 +2610,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     showMessages = false,
     checkpointState = null,
     liveApiReporter: liveReporter = null,
+    learnerId: explicitLearnerId = null, // A7 Longitudinal: pre-empts the synthetic ID
   } = options;
 
   log(`[evaluationRunner] Running multi-turn scenario: ${scenario.id}`);
@@ -2622,14 +2636,20 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const dialogueId = checkpointState?.dialogueId || `dialogue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   dialogueEngine.setCurrentDialogueId(dialogueId);
 
-  // Generate synthetic learnerId for Writing Pad persistence across turns (or restore)
+  // Resolve learnerId for Writing Pad persistence across turns (and, if explicit,
+  // across runs — A7 Longitudinal). Precedence: checkpoint > explicit (--learner-id)
+  // > synthetic per-dialogue ID.
   const learnerId =
-    checkpointState?.learnerId || `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
+    checkpointState?.learnerId
+    || explicitLearnerId
+    || `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
   if (checkpointState) {
     log(
       `[evaluationRunner] Resuming from checkpoint: turn ${checkpointState.lastCompletedTurn + 1} (dialogueId=${dialogueId})`,
       'info',
     );
+  } else if (explicitLearnerId) {
+    log(`[evaluationRunner] Reusing learnerId for Writing Pad (cross-session): ${learnerId}`, 'info');
   } else {
     log(`[evaluationRunner] Generated learnerId for Writing Pad: ${learnerId}`, 'info');
   }
@@ -3999,6 +4019,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       null,
     factors: resolvedConfig.factors || null,
     learnerArchitecture: resolvedConfig.learnerArchitecture || null,
+    learnerId,
     conversationMode,
     dialogueContentHash,
     configHash,
