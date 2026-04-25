@@ -11,15 +11,33 @@ Organized by theme, roughly priority-ordered within each section.
 
 ## A. Experimental Extensions
 
-### A1. Human Learner Validation (CRITICAL — pilot runbook authored 2026-04-22)
+### A1. Human Learner Validation (CRITICAL — engineering layer complete 2026-04-25)
 All evaluations use simulated learners. The critical open question is whether recognition-enhanced tutoring produces genuine learning gains with real humans. Standing as the single highest-value next step identified in the 2026-04-22 paper critique — everything else is downstream polish.
 
 - **Pilot runbook**: `notes/design-a1-human-learner-pilot.md` — phased N≈60 pilot (2 conditions × ~30 participants), narrow-domain content (course 101 fractions *or* course 201 intro programming, both already authored), pre/post learning + engagement + qualitative interviews, IRB protocol, recruitment, measurement instruments, analysis plan.
 - **Why pilot before RCT**: A small pilot validates content, UI, measurement, and recruitment pipeline before committing to an N=200 RCT at \$20K-50K. If the pilot shows a measurable tutor-quality → learning-gains path, expand to an RCT; if flat, interrogate rubric-vs-learning divergence.
-- **Hard prerequisites** (outside repo): IRB approval, participant pool, platform to serve the tutor interactively, pre/post instrument.
-- Design RCT with real learners (n≥60/condition) after pilot signal
-- Measure: learning gains (pre/post), engagement, satisfaction, retention
-- Qualitative interviews on learner experience of recognition vs base
+
+**Engineering — DONE** (commits `4cb8e5b` chat UI, `8e513ae` pilot infrastructure):
+- Persistence: `services/pilotStore.js` — 4 tables in `data/evaluations.db` (`pilot_sessions`, `pilot_turns`, `pilot_test_items`, `pilot_exit_survey`), state-machine guard, block-randomized condition picker, per-turn `config_hash` + cumulative `dialogue_content_hash`, blinded-view helper.
+- Routes: `routes/pilotRoutes.js` — 13 endpoints (enroll → consent → intake → pretest → tutoring → posttest → exit, plus token-gated admin); `routes/chatRoutes.js POST /turn` accepts optional `sessionId` and overrides `cellName`/`history`/`substrate` from server-side session record (blinding + tamper-resistance).
+- Item bank: `services/pilotItemBank.js` + `config/pilot/fractions-items.yaml` — form-counterbalanced (UUID parity), server-side answer-key scoring; items YAML carries placeholder content flagged for IRB replacement.
+- Participant UI: `public/pilot/index.html` — single-file Alpine.js, 8 phase sections, 15-min countdown, resume via `?session=<uuid>` or localStorage, calm minimalist aesthetic distinct from `/chat` specimen viewer.
+- Ingestion: `scripts/ingest-pilot-sessions.js` — completed pilot sessions → `evaluation_results` rows + dialogue log files in eval-runner format; idempotent. After ingestion `eval-cli.js evaluate <runId>` scores transcripts under v2.2 rubric, enabling §4.3 mediator analysis without code surgery.
+- Tests: 15 pass across 3 suites (`tests/pilot.test.js`); end-to-end live-LLM smoke confirmed for both cell_1 (terse-instructional) and cell_5 (empathy-first) on 2026-04-25.
+
+**Still gating recruitment** (content/legal track, not engineering):
+- IRB approval at host institution
+- Real consent text (placeholder flagged in `public/pilot/index.html` consent block)
+- NAEP-derived 10×2 fractions items (placeholder flagged in `config/pilot/fractions-items.yaml` preamble)
+- NASA-TLX validated wording (current labels in HTML are paraphrases; real wording is public domain but specific)
+- OSF pre-registration of §4.1 thresholds before any data collection
+- Internal dogfood N=5 (runbook §7) — feasibility check before opening Prolific
+- Prolific recruitment + payment plumbing
+
+**Out-of-scope of pilot, kept for RCT phase**:
+- RCT with real learners (n≥60/condition) after pilot signal
+- Longitudinal multi-session (split as §A7)
+- Three-arm matched-specificity comparison (split as §A10b density-resolved 2026-04-24)
 - Paper ref: Section 8.1, Section 9 "What comes next" #4
 
 ### A2. Dynamic Learner Mechanism Sweep (COMPLETE)
