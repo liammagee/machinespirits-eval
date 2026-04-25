@@ -60,6 +60,7 @@ const VALID_PROMPT_TYPES = [
   'dialectical_suspicious',
   'dialectical_adversary',
   'dialectical_advocate',
+  'dialectical_suspicious_directive',
 ];
 
 // ============================================================================
@@ -135,6 +136,10 @@ describe('factorial design — config integrity', () => {
       dialectical_suspicious: 'dialectical',
       dialectical_adversary: 'dialectical',
       dialectical_advocate: 'dialectical',
+      // Directive bridge variant (cell 97): adds 'directive' suffix on the
+      // dialectical name pattern. Cell name like
+      // cell_97_base_dialectical_suspicious_unified_directive.
+      dialectical_suspicious_directive: 'dialectical',
     };
 
     // Divergent/dialectical cells encode multi-agent status via superego type name, not "multi"/"single"
@@ -192,6 +197,7 @@ describe('factorial design — prompt file assignment', () => {
     dialectical_suspicious: 'tutor-superego-suspicious.md',
     dialectical_adversary: 'tutor-superego-adversary.md',
     dialectical_advocate: 'tutor-superego-advocate.md',
+    dialectical_suspicious_directive: 'tutor-superego-suspicious.md',
   };
 
   it('each cell uses the correct ego prompt file for its prompt_type', () => {
@@ -202,8 +208,14 @@ describe('factorial design — prompt file assignment', () => {
         // Divergent cells use base or recognition ego depending on recognition_mode
         expected = profile.recognition_mode ? 'tutor-ego-recognition.md' : 'tutor-ego.md';
       } else if (pt.startsWith('dialectical_')) {
-        // Dialectical cells use dialectical or recognition-dialectical ego
-        expected = profile.recognition_mode ? 'tutor-ego-recognition-dialectical.md' : 'tutor-ego-dialectical.md';
+        // Dialectical cells use dialectical or recognition-dialectical ego.
+        // Directive bridge variant (cell 97) uses tutor-ego-dialectical-directive.md
+        // — an explicit "act on what you noticed" rider on the dialectical ego.
+        if (pt === 'dialectical_suspicious_directive') {
+          expected = 'tutor-ego-dialectical-directive.md';
+        } else {
+          expected = profile.recognition_mode ? 'tutor-ego-recognition-dialectical.md' : 'tutor-ego-dialectical.md';
+        }
       } else {
         expected = egoPromptFiles[pt];
       }

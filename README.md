@@ -16,7 +16,7 @@ The system runs automated tutoring dialogues across configurable experimental ce
 
 ## Prerequisites
 
-- **Node.js** >= 18.0.0
+- **Node.js** >= 20.0.0
 - **@machinespirits/tutor-core** >= 0.5.0 (peer dependency)
 - At least one AI provider API key (see below)
 

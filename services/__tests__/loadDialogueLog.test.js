@@ -10,12 +10,18 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '../..');
-const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+
+// Hermetic logs root — set BEFORE the dynamic import of evaluationStore.js
+// so its module-level DIALOGUE_LOGS_DIR resolves to our temp tree, not the
+// repo's logs/ symlink (which is read-only / non-writable in CI sandboxes).
+const TMP_LOGS_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'loadDialogueLog-test-'));
+process.env.EVAL_LOGS_DIR = TMP_LOGS_ROOT;
+const LOGS_DIR = path.join(TMP_LOGS_ROOT, 'tutor-dialogues');
 
 // ── Fixtures ──────────────────────────────────────────────────────────────
 
@@ -60,12 +66,9 @@ before(async () => {
 });
 
 after(() => {
-  // Clean up test file
-  try {
-    fs.unlinkSync(TEST_FILE);
-  } catch {
-    // ignore
-  }
+  // Clean up test file + temp logs root
+  try { fs.unlinkSync(TEST_FILE); } catch { /* ignore */ }
+  try { fs.rmSync(TMP_LOGS_ROOT, { recursive: true, force: true }); } catch { /* ignore */ }
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────
