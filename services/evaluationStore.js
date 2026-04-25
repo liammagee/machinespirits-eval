@@ -310,6 +310,12 @@ migrateAddColumn(
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_prompt_version TEXT`, 'learner_prompt_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN prompt_content_hash TEXT`, 'prompt_content_hash');
 
+// A7 Longitudinal: cross-session Writing Pad persistence keyed by learner_id.
+// Populated when --learner-id is supplied to `eval-cli.js run`; NULL otherwise.
+// Session ordering is derived: ROW_NUMBER() OVER (PARTITION BY learner_id ORDER BY created_at).
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_id TEXT`, 'learner_id');
+db.exec(`CREATE INDEX IF NOT EXISTS idx_results_learner ON evaluation_results(learner_id)`);
+
 // P0 Provenance: score audit trail (append-only)
 db.exec(`
   CREATE TABLE IF NOT EXISTS score_audit (
@@ -637,6 +643,7 @@ export function storeResult(runId, result) {
       tutor_superego_prompt_version,
       learner_prompt_version,
       prompt_content_hash,
+      learner_id,
       created_at
     ) VALUES (
       ?, ?, ?, ?,
@@ -655,6 +662,7 @@ export function storeResult(runId, result) {
       ?,
       ?,
       ?, ?, ?, ?,
+      ?,
       ?
     )
   `);
@@ -712,6 +720,7 @@ export function storeResult(runId, result) {
     result.tutorSuperegoPromptVersion || null,
     result.learnerPromptVersion || null,
     result.promptContentHash || null,
+    result.learnerId || null,
     new Date().toISOString(),
   );
 

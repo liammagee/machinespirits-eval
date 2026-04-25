@@ -65,6 +65,10 @@ import 'dotenv/config';
  *                          For 'runs': auto-refresh mode (default: 20 most recent; override with --limit)
  *   --as <side>            For 'play': tutor or learner (default: tutor)
  *   --role <role>          For 'play': ego, superego, or both (default: ego)
+ *   --learner-id <id>      For 'run' (A7 Longitudinal): reuse a Writing Pad across runs.
+ *                          When supplied, ALL dialogues in this invocation share the ID,
+ *                          letting tutor-core's Writing Pad accumulate state session-over-session.
+ *                          Omit for per-dialogue synthetic IDs (default behaviour).
  *
  * The default `run` uses the 2x2x2 factorial design:
  *   Factor A: Recognition prompts (off / on)
@@ -1533,6 +1537,9 @@ async function main() {
         const learnerSuperegoModelOverride = getOption('learner-superego-model');
         const transcriptMode = getFlag('transcript');
         const maxTokensOverride = getOption('max-tokens');
+        // A7 Longitudinal: when supplied, ALL dialogues in this invocation share
+        // the Writing Pad keyed by this ID. Omit for per-dialogue synthetic IDs.
+        const learnerIdOpt = getOption('learner-id');
 
         // --show-messages or --show-messages=full
         const showMessagesRaw = args.find((a) => a === '--show-messages' || a.startsWith('--show-messages='));
@@ -1692,6 +1699,7 @@ async function main() {
           maxTokensOverride: maxTokensOverride ? parseInt(maxTokensOverride, 10) : null,
           showMessages,
           liveApi,
+          learnerId: learnerIdOpt || null,
         });
         // Extract unique model aliases used across all configs (ego + superego)
         const extractAlias = (raw) => {
