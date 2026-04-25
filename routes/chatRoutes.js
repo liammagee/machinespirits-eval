@@ -18,7 +18,6 @@ import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
-import * as contentResolver from '../services/contentResolver.js';
 import interactionEngine, { extractTutorMessage } from '../services/learnerTutorInteractionEngine.js';
 import * as pilotStore from '../services/pilotStore.js';
 
@@ -616,10 +615,12 @@ function normalizeLearnerDeliberation(entries) {
 }
 
 router.post('/turn', async (req, res) => {
+  // learnerMessage is only read; the others are mutated by the pilot-mode
+  // override block below (cellName, lectureRef, history, topic, useClaudeCli).
+  const { learnerMessage } = req.body || {};
   let {
     cellName,
     history = [],
-    learnerMessage,
     topic = 'general conversation',
     lectureRef = null,
     useClaudeCli = false,
@@ -884,7 +885,7 @@ async function callClaudeCli({ system, user }) {
     let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => {
-      try { proc.kill('SIGKILL'); } catch {}
+      try { proc.kill('SIGKILL'); } catch { /* already exited */ }
       reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms`));
     }, CLAUDE_CLI_TIMEOUT_MS);
     proc.stdout.on('data', (d) => { stdout += d.toString(); });

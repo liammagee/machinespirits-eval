@@ -48,6 +48,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
+// Logs root is overridable via EVAL_LOGS_DIR for sandboxed/CI runs that
+// can't write through the symlinked logs/ → ../machinespirits-eval-private
+// tree. Default preserves the existing behaviour.
+const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
 
 // Initialize database — override with EVAL_DB_PATH env var for test isolation
 const dbPath = process.env.EVAL_DB_PATH || path.join(DATA_DIR, 'evaluations.db');
@@ -1442,7 +1446,7 @@ export function exportToCsv(runId) {
  * Records the complete provenance anchor for a run: every row's dialogue hash,
  * config hash, and scoring metadata.
  */
-const MANIFESTS_DIR = path.join(ROOT_DIR, 'logs', 'run-manifests');
+const MANIFESTS_DIR = path.join(LOGS_ROOT, 'run-manifests');
 
 function writeRunManifest(runId, run, results, completedAt) {
   try {
@@ -2877,7 +2881,7 @@ export function updateInteractionLearnerScores(evalId, evaluation) {
 
 // ── Dialogue log loading ───────────────────────────────────────────────────
 
-const DIALOGUE_LOGS_DIR = path.join(ROOT_DIR, 'logs', 'tutor-dialogues');
+const DIALOGUE_LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
 
 /**
  * Load a dialogue log file from disk by its dialogueId.

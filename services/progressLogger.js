@@ -1,7 +1,10 @@
 /**
  * Progress Logger — JSONL event writer for cross-process eval monitoring.
  *
- * One file per run at logs/eval-progress/<runId>.jsonl.
+ * One file per run at <logs-root>/eval-progress/<runId>.jsonl, where the
+ * logs root defaults to ROOT_DIR/logs but can be overridden with the
+ * EVAL_LOGS_DIR env var (useful for sandboxed CI runs that can't write
+ * to the real symlinked logs/ tree).
  * Each line is a self-contained JSON object with timestamp + runId + eventType.
  */
 
@@ -12,7 +15,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const PROGRESS_DIR = path.join(ROOT_DIR, 'logs', 'eval-progress');
+const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
+const PROGRESS_DIR = path.join(LOGS_ROOT, 'eval-progress');
 
 export class ProgressLogger {
   constructor(runId) {

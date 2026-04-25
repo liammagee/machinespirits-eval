@@ -8,7 +8,7 @@ This is the evaluation and analysis companion to [`@machinespirits/tutor-core`](
 
 The system runs automated tutoring dialogues across configurable experimental cells, then scores them with LLM judges against a multi-dimensional rubric. It supports:
 
-- **Factorial evaluation** — 70 tutor agent cells varying recognition theory, architecture, learner type, and mechanism design
+- **Factorial evaluation** — ~97 tutor agent cells varying recognition theory, architecture, learner type, and mechanism design
 - **Multi-turn dialogues** — Learner agents with their own ego-superego deliberation
 - **Multi-judge validation** — Cross-judge reliability via Claude Opus, GPT-5.2, and others
 - **Placebo/active controls** — Length-matched prompts without recognition theory
@@ -17,7 +17,7 @@ The system runs automated tutoring dialogues across configurable experimental ce
 ## Prerequisites
 
 - **Node.js** >= 18.0.0
-- **@machinespirits/tutor-core** >= 0.3.1 (peer dependency)
+- **@machinespirits/tutor-core** >= 0.5.0 (peer dependency)
 - At least one AI provider API key (see below)
 
 ## Installation
@@ -130,9 +130,9 @@ tests/                     Test suites
 
 ### Key configuration files
 
-- `config/tutor-agents.yaml` — All 70 experimental cells and their prompt mappings
+- `config/tutor-agents.yaml` — All ~97 experimental cells and their prompt mappings
 - `config/suggestion-scenarios.yaml` — Learner scenarios (single-turn and multi-turn)
-- `config/evaluation-rubric.yaml` — Scoring rubric (6 dimensions)
+- `config/evaluation-rubric.yaml` — Tutor rubric (v2.2, 8 dimensions); see also `config/rubrics/v{1.0,2.0,2.1,2.2}/` for versioned rubrics
 - `config/providers.yaml` — AI provider and model configuration
 
 ## Experimental Design
@@ -145,7 +145,7 @@ The core factorial design crosses three factors:
 | B: Tutor architecture | Single-agent vs Ego+Superego |
 | C: Learner architecture | Single-agent vs Multi-agent |
 
-Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo controls (15-18), memory isolation (19-20), dynamic prompt rewriting (21), dialectical superego modulation (22-39), self-reflective evolution (40-45), insight-action mechanisms (46-53), other-ego profiling (54-59), and dynamic learner mechanism testing (60-70).
+Additional cells test enhanced prompts (9-12), hardwired rules (13-14), placebo controls (15-18), memory isolation (19-20), dynamic prompt rewriting (21), dialectical superego modulation (22-39), self-reflective evolution (40-45), insight-action mechanisms (46-53), other-ego profiling (54-59), dynamic learner mechanism testing (60-79), messages-mode variants (80-90), and pedagogical-orientation density controls (95-96). See `config/tutor-agents.yaml` for the canonical mapping; new cells should be cross-referenced with `services/evaluationRunner.js::EVAL_ONLY_PROFILES` and the `resolveEvalProfile` dispatch.
 
 ## Reproducing Paper Findings
 
