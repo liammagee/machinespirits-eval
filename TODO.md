@@ -169,25 +169,25 @@ node scripts/eval-cli.js evaluate <runId>
 - Develop deployment rubric: recognition ROI by domain characteristics
 - Paper ref: Section 8.2 Future Direction #3
 
-### A7. Longitudinal Multi-Session Evaluation (LOW — infra simpler than originally estimated)
+### A7. Longitudinal Multi-Session Evaluation (Phase 1 DONE 2026-04-24, Phase 2 pending API budget)
 Single-session evaluation cannot capture accumulated understanding.
 
 **Implementation spec**: `notes/design-a7-longitudinal-implementation-2026-04-16.md` — refines the high-level design after reading tutor-core migration 008.
 
 **Current infrastructure gaps (post-discovery 2026-04-16):**
 - Writing Pad schema **already supports cross-session persistence**: `writing_pads.learner_id` is UNIQUE and `initializeWritingPad()` is idempotent (tutor-core migration 008 + `writingPadService.js:28-33`).
-- `evaluationRunner.runGeneration()` **already accepts** `learnerId` as an option (`services/evaluationRunner.js:1579`); the gap is only that `services/evaluationRunner.js:2611-2613` synthesises a fresh ID every dialogue.
-- No CLI `--learner-id` flag on `eval-cli.js run`.
-- No `learner_id` column on `evaluation_results` for per-row session-index derivation.
+- ~~`evaluationRunner.runGeneration()` **already accepts** `learnerId` as an option (`services/evaluationRunner.js:1579`); the gap is only that `services/evaluationRunner.js:2611-2613` synthesises a fresh ID every dialogue.~~ [CLOSED 2026-04-24]
+- ~~No CLI `--learner-id` flag on `eval-cli.js run`.~~ [CLOSED 2026-04-24]
+- ~~No `learner_id` column on `evaluation_results` for per-row session-index derivation.~~ [CLOSED 2026-04-24]
 
 **Experimental design:**
 
-- **Phase 1 — Infrastructure** (≈ half a day):
-  - [ ] Add `learner_id TEXT` column to `evaluation_results` (local eval-repo migration; not tutor-core).
-  - [ ] Plumb `learnerId` through `runScenarioConfiguration` → `runMultiTurnScenario` options.
-  - [ ] At `services/evaluationRunner.js:2611-2613`, prefer `options.learnerId` over the synthetic ID when supplied.
-  - [ ] Add `--learner-id <id>` flag to eval-cli `run` command option parser.
-  - [ ] 3-session smoke test (`smoke-learner-01`) verifying `writing_pads.total_recognition_moments` grows monotonically across invocations.
+- **Phase 1 — Infrastructure** [DONE 2026-04-24]:
+  - [x] ~~Add `learner_id TEXT` column to `evaluation_results` (local eval-repo migration; not tutor-core).~~ — `services/evaluationStore.js:312-316`. Indexed on `learner_id` for fast longitudinal queries.
+  - [x] ~~Plumb `learnerId` through `runScenarioConfiguration` → `runMultiTurnScenario` options.~~ — Threaded `runEvaluation` (option `learnerId`) → `runSingleTest` → both `runMultiTurnTest` and `runSingleTurnTest`. Returned in result objects so `storeResult` persists it.
+  - [x] ~~At `services/evaluationRunner.js:2611-2613`, prefer `options.learnerId` over the synthetic ID when supplied.~~ — Precedence: checkpoint > explicit > synthetic. Distinct log line on cross-session reuse.
+  - [x] ~~Add `--learner-id <id>` flag to eval-cli `run` command option parser.~~ — `scripts/eval-cli.js`. Help comment updated.
+  - [x] ~~3-session smoke test verifying `writing_pads.total_recognition_moments` grows monotonically across invocations.~~ — `scripts/smoke-a7-longitudinal.sh`. **Live smoke run 2026-04-24 PASSED** all four v2 criteria on cell 41 × `smoke-learner-a7-1777077255` × scenarios `new_user_first_visit` → `returning_user_mid_course` → `misconception_correction_flow` (3 sessions, ~30 min wall-clock, ~\$0.50): exactly one `writing_pads` row reused across sessions; `updated_at` (01:02:13) > `created_at` (00:39:15) by 23 minutes; **4 `recognition_moments` accumulated** under the single pad (4 dialectical-conflict events across the 3 dialogues); evolved learner archetype to "autonomous"; all 3 `evaluation_results` rows carry `learner_id`. **Architectural correction surfaced during the run**: the original A7 design pointed at `node_modules/.../tutor-core/data/writing-pads.db` but tutor-core's `writingPadService` actually writes to `lms.sqlite` (default path, override via `AUTH_DB_PATH`); `total_recognition_moments` counter is not auto-incremented on `recognition_moments` insert (use `COUNT(*) FROM recognition_moments` for the true count). Smoke script v2 fixed; v1 reported FAIL only because of the path bug. Full discussion: `notes/design-a7-longitudinal-implementation-2026-04-16.md` "Implementation outcomes" section.
   - ~~Implement persistent session table in tutor-core DB~~ — **NOT NEEDED**; Writing Pad already is the cross-session state.
   - ~~`--session-id` flag~~ — **NOT NEEDED**; session identity = `(learner_id, created_at)` tuple inferable from DB.
 
@@ -482,7 +482,11 @@ A10/A10b established that the active ingredient in recognition's effect is **int
 
 **What's open**:
 - **Paper framing decision** (carried as F6 below): does Paper 2.0 reframe from "recognition specifically works" to "intersubjective pedagogy works, recognition is our implementation"? §7.9 already has the reframe; §1/§3/§9 still read as recognition-specific.
-- **Chat UI consumption** (to be done as Task 2 of current session): add `pedagogical_orientation:` metadata per cell in YAML so the chat UI can group and label cells by family.
+- **Chat UI consumption** — backend plumbing DONE 2026-04-24, frontend rendering deferred to in-flight chat-UI work (see untracked `public/chat/index.html` from sibling session):
+  - **YAML metadata**: `config/tutor-agents.yaml` carries a top-level `pedagogical_orientations:` map keyed by `prompt_type` (16 entries covering every cell prompt_type). Schema documented at `docs/pedagogical-taxonomy.md`.
+  - **API surface**: `routes/chatRoutes.js` `summarizeCell()` resolves orientation metadata per cell — including `effectiveFamily` derivation for architectural-variant types (`dialectical_*`, `divergent_*`) where the family depends on the paired ego (recognition_mode true → `intersubjective`; false → `transmission`). `/cells` and `/resolve` endpoints surface both per-cell orientation and the top-level map.
+  - **Regression test**: `tests/pedagogical-orientation-coverage.test.js` asserts every cell prompt_type has an entry and every entry has the required schema fields. Mirrors the bug_007 dispatch-coverage pattern.
+  - **Open**: frontend rendering (family-grouped selector, hover tooltips, effect-size chips) — `cells[].orientation` and top-level `orientations` are now consumable from `/cells`; rendering moves are detailed in `docs/pedagogical-taxonomy.md` "Suggested UX moves". Belongs in the chat-UI integration session.
 - **Taxonomy extensions** (deferred): A10c tests of cognitivist-only (Sweller/Atkinson-Shiffrin) and pure Socratic, to further pin down where the orientation boundary sits. Also: where do radical constructivism (von Glasersfeld), culturally-responsive pedagogy (Ladson-Billings), Freire's critical pedagogy sit in the family landscape? Not urgent; future methods contribution.
 
 **Potential standalone publication**: "Pedagogical orientation family dominates density and theoretical rigour in LLM tutor prompts" as a methods/short paper. Would use the A10/A10b data as empirical ground and argue for orientation-family as the correct unit of analysis for LLM-tutor evaluation. Separate scope from Paper 2.0.
