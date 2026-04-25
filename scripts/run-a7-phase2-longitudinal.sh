@@ -40,10 +40,18 @@ set -euo pipefail
 
 # ─── Config ──────────────────────────────────────────────────────────────
 LEARNERS_PER_CELL="${LEARNERS_PER_CELL:-5}"
-CELLS=(
-  "cell_40_base_dialectical_suspicious_unified_superego"
-  "cell_41_recog_dialectical_suspicious_unified_superego"
-)
+# CELLS_OVERRIDE: comma-separated cell names; lets a single-arc dry run
+# target one cell without editing the script (e.g.
+# `LEARNERS_PER_CELL=1 CELLS_OVERRIDE=cell_41_recog_... bash scripts/run-...`).
+# Default is the full base-vs-recog pair.
+if [ -n "${CELLS_OVERRIDE:-}" ]; then
+  IFS=',' read -ra CELLS <<< "${CELLS_OVERRIDE}"
+else
+  CELLS=(
+    "cell_40_base_dialectical_suspicious_unified_superego"
+    "cell_41_recog_dialectical_suspicious_unified_superego"
+  )
+fi
 # Session order — intentional difficulty curve. Earliest sessions establish
 # baseline rapport / surface struggles; later sessions test whether
 # accumulated pad state (recognition moments, archetype evolution, prior
