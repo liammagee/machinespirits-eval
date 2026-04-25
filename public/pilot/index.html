@@ -11,8 +11,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous" />
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@13.0.3/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"></script>
 
 <style>
   :root {
@@ -754,6 +757,31 @@ function pilotApp() {
       catch { return String(text).replace(/</g, '&lt;'); }
     },
 
+    // Render KaTeX inline/display math inside the chat window after Alpine
+    // has flushed its DOM update. Tutor cells emit \( ... \) and \[ ... \]
+    // delimiters; without this, participants see raw backslashes.
+    renderMath() {
+      this.$nextTick(() => {
+        if (typeof renderMathInElement !== 'function') return;
+        const el = this.$refs.chatWindow;
+        if (!el) return;
+        try {
+          renderMathInElement(el, {
+            delimiters: [
+              { left: '\\[', right: '\\]', display: true },
+              { left: '\\(', right: '\\)', display: false },
+              { left: '$$',  right: '$$',  display: true  },
+            ],
+            throwOnError: false,
+            ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+          });
+        } catch (err) {
+          // KaTeX failures should never break the chat — fall back silently
+          console.warn('[pilot] katex render skipped:', err?.message || err);
+        }
+      });
+    },
+
     setError(msg) {
       this.errorMessage = msg || '';
       if (msg) {
@@ -1067,6 +1095,7 @@ function pilotApp() {
         const el = this.$refs.chatWindow;
         if (el) el.scrollTop = el.scrollHeight;
       });
+      this.renderMath();
     },
 
     async sendMessage() {
@@ -1074,19 +1103,78 @@ function pilotApp() {
       if (!msg || this.pending || this.timerSeconds <= 0) return;
       this.input = '';
       this.turns.push({ role: 'learner', content: msg });
+      // Reserve the tutor bubble up front and append deltas as they arrive.
+      const tutorIdx = this.turns.length;
+      this.turns.push({ role: 'tutor', content: '' });
       this.scrollChat();
       this.pending = true;
+
       try {
-        const data = await this.fetchJson('/api/chat/turn', {
+        const res = await fetch('/api/chat/turn?stream=1', {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessionId: this.sessionId, learnerMessage: msg }),
         });
-        this.turns.push({ role: 'tutor', content: data.finalMessage });
-        if (typeof data.tutoringTimeRemainingMs === 'number') {
-          this.tutoringEndsAt = Date.now() + data.tutoringTimeRemainingMs;
+        if (!res.ok || !res.body) {
+          // Server returned a JSON error before the stream began.
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `HTTP ${res.status}`);
         }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let lastScrollLen = 0;
+        let streamErr = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          // SSE messages are separated by blank lines (\n\n).
+          const events = buffer.split('\n\n');
+          buffer = events.pop();
+          for (const evt of events) {
+            const line = evt.trim();
+            if (!line.startsWith('data:')) continue;
+            const payload = line.slice(5).trim();
+            if (!payload) continue;
+            let obj;
+            try { obj = JSON.parse(payload); } catch { continue; }
+            if (obj.delta) {
+              this.turns[tutorIdx].content += obj.delta;
+              // Scroll occasionally during streaming so long replies stay
+              // visible without thrashing on every token.
+              if (this.turns[tutorIdx].content.length - lastScrollLen > 200) {
+                lastScrollLen = this.turns[tutorIdx].content.length;
+                this.$nextTick(() => {
+                  const el = this.$refs.chatWindow;
+                  if (el) el.scrollTop = el.scrollHeight;
+                });
+              }
+            } else if (obj.replace) {
+              this.turns[tutorIdx].content = obj.replace;
+            } else if (obj.done) {
+              if (typeof obj.tutoringTimeRemainingMs === 'number') {
+                this.tutoringEndsAt = Date.now() + obj.tutoringTimeRemainingMs;
+              }
+              if (obj.finalMessage && obj.finalMessage !== this.turns[tutorIdx].content) {
+                this.turns[tutorIdx].content = obj.finalMessage;
+              }
+            } else if (obj.error) {
+              streamErr = new Error(obj.error);
+            }
+          }
+        }
+        if (streamErr) throw streamErr;
       } catch (err) {
-        if (err.message.toLowerCase().includes('timed out')) {
+        // Drop the empty/partial tutor bubble before showing the error,
+        // unless we received some content already.
+        if (!this.turns[tutorIdx]?.content) {
+          this.turns.splice(tutorIdx, 1);
+        }
+        if (err.message.toLowerCase().includes('timed out')
+            || err.message.toLowerCase().includes('time cap')) {
           this.endTutoring('timed_out');
         } else {
           this.turns.push({
@@ -1097,7 +1185,7 @@ function pilotApp() {
         }
       } finally {
         this.pending = false;
-        this.scrollChat();
+        this.scrollChat();      // final scroll + KaTeX render once tutor is complete
       }
     },
 
