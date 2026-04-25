@@ -822,6 +822,74 @@ section.fg::before {
 .tradeoffs dt { color: var(--ink-2); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.9em; }
 .tradeoffs dd { margin: 0; color: var(--ink); font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
 
+/* ══════ pedagogical orientation (manifest insert) ══════ */
+/* family-chip + short label + (optional) effect-vs-base d, plus
+   view-of-learner / role-of-tutor / key-mechanism in editorial italic.
+   Surfaces the docs/pedagogical-taxonomy.md axes that A10/A10b found
+   to be the dominant variation across cells. */
+.lineage {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in oklab, var(--prussian) 50%, transparent);
+  font-size: calc(var(--s-0) * 0.96);
+  line-height: 1.42;
+}
+.lineage__head {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.45em;
+}
+.lineage__family {
+  display: inline-block;
+  padding: 0 0.4em;
+  border: 1px solid currentColor;
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.lineage__family[data-family="transmission"]   { color: var(--ochre); }
+.lineage__family[data-family="intersubjective"] { color: var(--prussian); }
+.lineage__family[data-family="neutral"]        { color: var(--moss); }
+.lineage__family[data-family="architectural_variant"] { color: var(--ink-3); border-style: dashed; }
+.lineage__label { color: var(--ink); font-style: italic; font-family: "Fraunces", serif; letter-spacing: 0; }
+.lineage__effect {
+  display: inline-block;
+  padding: 0 0.3em;
+  background: var(--brick);
+  color: var(--paper);
+  font-size: 0.78em;
+  letter-spacing: 0.06em;
+  font-family: "JetBrains Mono", monospace;
+}
+.lineage__effect.is-negative { background: var(--prussian); }
+.lineage__detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1px 0.6em;
+  font-family: "Fraunces", serif;
+  font-size: 0.94em;
+}
+.lineage__detail dt { color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.78em; font-family: "JetBrains Mono", monospace; align-self: baseline; padding-top: 0.18em; }
+.lineage__detail dd { margin: 0; color: var(--ink); font-style: italic; }
+
+/* family micro-chip used in the cell-row list (advanced drawer) */
+.cell-row .fam {
+  display: inline-block;
+  width: 0.95em; height: 0.95em;
+  border: 1px solid currentColor;
+  text-align: center;
+  line-height: 0.85em;
+  font-size: 0.7em;
+  margin-right: 2px;
+  font-family: "JetBrains Mono", monospace;
+}
+.cell-row .fam[data-family="transmission"]   { color: var(--ochre); }
+.cell-row .fam[data-family="intersubjective"] { color: var(--prussian); }
+.cell-row .fam[data-family="neutral"]        { color: var(--moss); }
+.cell-row .fam[data-family="architectural_variant"] { color: var(--ink-3); border-style: dashed; }
+.cell-row.is-active .fam { color: var(--sun); }
+
 /* ══════ advanced drawer (footer of config) ══════ */
 .advanced {
   flex-shrink: 0;
@@ -1873,9 +1941,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <div class="advanced__body">
             <input type="text" class="advanced__search" x-model="cellFilter" placeholder="filter by name, prompt-type, or description…" />
             <template x-for="cell in filteredCells" :key="cell.name">
-              <div class="cell-row" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)" :title="cell.description">
+              <div class="cell-row" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)"
+                   :title="(cell.orientation ? cell.orientation.shortLabel + ' · ' + cell.orientation.keyMechanism + '\n' : '') + (cell.description || '')">
                 <span class="n" x-text="cell.name.replace('cell_','c')"></span>
                 <span>
+                  <template x-if="cell.orientation">
+                    <span class="fam" :data-family="cell.orientation.effectiveFamily"
+                          x-text="cell.orientation.effectiveFamily?.[0]?.toUpperCase() || '·'"></span>
+                  </template>
                   <template x-if="cell.superego"><span class="badge" title="has superego">S</span></template>
                   <template x-if="cell.recognitionMode"><span class="badge" title="recognition mode" style="color: var(--brick);">R</span></template>
                   <template x-if="cell.learnerArchitecture?.startsWith('ego_superego')"><span class="badge" title="ego-superego learner">L</span></template>
@@ -1924,6 +1997,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <template x-for="r in relaxedDimensions" :key="r.dimension">
             <div>↳ <span x-text="r.dimension"></span> — wanted <em x-text="String(r.want)"></em>, got <em x-text="String(r.have)"></em></div>
           </template>
+        </div>
+
+        <!-- Pedagogical orientation (D6) — surfaces the orientation-family
+             metadata that docs/pedagogical-taxonomy.md catalogues. The
+             effectiveFamily field collapses architectural_variant cells
+             (dialectical_*/divergent_*) to the family of their paired ego. -->
+        <div class="lineage" x-show="resolved?.orientation">
+          <div class="lineage__head">
+            <span class="lineage__family" :data-family="resolved.orientation.effectiveFamily" x-text="resolved.orientation.effectiveFamily"></span>
+            <span class="lineage__label" x-text="resolved.orientation.shortLabel"></span>
+            <template x-if="resolved.orientation.effectVsBase != null">
+              <span class="lineage__effect" :class="{'is-negative': resolved.orientation.effectVsBase < 0}"
+                    :title="'Pooled three-judge Cohen d vs base prompt'">
+                d=<span x-text="(resolved.orientation.effectVsBase >= 0 ? '+' : '') + resolved.orientation.effectVsBase.toFixed(2)"></span>
+              </span>
+            </template>
+          </div>
+          <dl class="lineage__detail">
+            <dt>learner</dt><dd x-text="resolved.orientation.viewOfLearner"></dd>
+            <dt>tutor</dt><dd x-text="resolved.orientation.roleOfTutor"></dd>
+            <dt>mechanism</dt><dd x-text="resolved.orientation.keyMechanism"></dd>
+          </dl>
         </div>
       </aside>
     </aside>
