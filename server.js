@@ -71,6 +71,12 @@ if (existsSync(pilotPublicDir)) {
   app.use('/pilot', express.static(pilotPublicDir));
 }
 
+// Serve the operator-facing admin dashboard (token-gated; calls /api/pilot/admin/*)
+const pilotAdminDir = path.join(__dirname, 'public', 'pilot-admin');
+if (existsSync(pilotAdminDir)) {
+  app.use('/pilot-admin', express.static(pilotAdminDir));
+}
+
 // Serve components as static files
 const componentsDir = path.join(__dirname, 'components');
 if (existsSync(componentsDir)) {

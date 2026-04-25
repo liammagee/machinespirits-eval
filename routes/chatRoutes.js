@@ -678,6 +678,102 @@ router.post('/turn', async (req, res) => {
     });
   }
 
+  // Streaming branch: ?stream=1 + single-agent cell + OpenRouter substrate.
+  // Multi-agent cells fall through to the non-streaming path because the
+  // superego review needs the complete ego output before it can begin.
+  // Claude CLI substrate is also non-streaming (the CLI returns once).
+  const wantsStream = req.query.stream === '1' || req.query.stream === 'true';
+  if (wantsStream && !profile.superego && !useClaudeCli) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+    const send = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+
+    try {
+      const curriculum = lectureRef ? loadCurriculumContext(lectureRef) : null;
+      const result = await streamSingleAgentTurn({
+        profile,
+        apiKey,
+        history,
+        learnerMessage: String(learnerMessage),
+        topic: String(topic),
+        curriculum,
+        onDelta: (d) => send({ delta: d }),
+      });
+
+      // Some ego prompts emit JSON suggestion arrays — extract the prose.
+      // If the cleaned text differs, tell the client to replace its
+      // accumulator with the canonical version.
+      const renderableFinal = extractTutorMessage(result.finalMessage) || result.finalMessage;
+      if (renderableFinal !== result.finalMessage) {
+        send({ replace: renderableFinal });
+      }
+
+      if (pilotSession) {
+        const egoPromptText = loadPromptFile(profile.ego.prompt_file);
+        const configHash = pilotStore.computeConfigHash({
+          cellName,
+          egoConfig: profile.ego,
+          superegoConfig: null,
+          egoPromptText,
+          superegoPromptText: '',
+          topic,
+          lectureText: curriculum?.text || '',
+        });
+
+        pilotStore.appendTurn(sessionId, {
+          role: 'learner',
+          content: String(learnerMessage),
+          configHash,
+        });
+
+        const tutorTurn = pilotStore.appendTurn(sessionId, {
+          role: 'tutor',
+          content: renderableFinal,
+          deliberation: result.deliberation,
+          wasRevised: false,
+          configHash,
+          inputTokens: result.inputTokens,
+          outputTokens: result.outputTokens,
+          latencyMs: result.latencyMs,
+          egoModel: result.egoModel,
+        });
+
+        const refreshed = pilotStore.getSession(sessionId);
+        send({
+          done: true,
+          finalMessage: renderableFinal,
+          sessionId,
+          turnIndex: tutorTurn.turnIndex,
+          tutoringTimeRemainingMs: pilotStore.tutoringTimeRemainingMs(refreshed),
+        });
+      } else {
+        send({
+          done: true,
+          finalMessage: renderableFinal,
+          architecture: {
+            hasSuperego: false,
+            promptType: profile.factors?.prompt_type || null,
+            recognitionMode: !!profile.recognition_mode,
+          },
+          totals: {
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+            latencyMs: result.latencyMs,
+          },
+        });
+      }
+    } catch (err) {
+      console.error('[chat] stream turn error:', err);
+      send({ error: err.message });
+    } finally {
+      res.end();
+    }
+    return;
+  }
+
   try {
     const curriculum = lectureRef ? loadCurriculumContext(lectureRef) : null;
     const trace = await runTutorTurn({
@@ -867,6 +963,134 @@ async function callModel(apiKey, { modelId, system, user, temperature, maxTokens
     latencyMs,
     inputTokens: payload.usage?.prompt_tokens || 0,
     outputTokens: payload.usage?.completion_tokens || 0,
+  };
+}
+
+// Streaming single-agent path: only the ego call, OpenRouter `stream: true`,
+// each delta forwarded via `onDelta` callback. Returns the same shape as a
+// single-agent runTutorTurn would, so the caller can persist identically.
+//
+// Multi-agent cells (with superego) intentionally fall through to the
+// non-streaming runTutorTurn — we'd have to buffer the ego output for the
+// superego review anyway, defeating the streaming benefit.
+async function streamSingleAgentTurn({
+  profile, apiKey, history, learnerMessage, topic, curriculum = null, onDelta,
+}) {
+  const conversationContext = recentContext(history);
+  const egoModelRef = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
+  const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
+  const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
+  const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
+
+  const curriculumBlock = curriculum
+    ? `
+
+==============================
+CURRICULUM CONTEXT
+==============================
+You are currently teaching **${curriculum.courseTitle}** (${curriculum.courseId}), specifically Lecture ${curriculum.lectureNum}.
+Draw from this material where relevant; ground your response in its specifics rather than generic knowledge.
+
+--- LECTURE CONTENT (${curriculum.lectureRef}) ---
+${curriculum.text}
+--- END LECTURE CONTENT ---
+`
+    : '';
+
+  const egoSystem = `${egoPromptBody || 'You are a thoughtful AI tutor.'}
+${curriculumBlock}
+Topic: ${topic}
+
+Recent conversation:
+${conversationContext || '(none)'}
+
+The learner just said:
+"${learnerMessage}"
+
+Draft your initial response as a tutor. Be warm but intellectually challenging. Don't be condescending. Build on their words. Provide ONLY the response text (no JSON, no meta-commentary).`;
+
+  const start = Date.now();
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+      'HTTP-Referer': 'http://localhost:8081/chat',
+      'X-Title': 'Machine Spirits Chat (streaming)',
+    },
+    body: JSON.stringify({
+      model: egoModelRef.model,
+      temperature: egoTemp,
+      max_tokens: egoMaxTokens,
+      stream: true,
+      messages: [
+        { role: 'system', content: egoSystem },
+        { role: 'user', content: learnerMessage },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`OpenRouter ${response.status}: ${body.slice(0, 200)}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let accumulated = '';
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop(); // partial last line stays in buffer
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data:')) continue;
+      const data = trimmed.slice(5).trim();
+      if (data === '[DONE]' || !data) continue;
+      try {
+        const obj = JSON.parse(data);
+        const delta = obj.choices?.[0]?.delta?.content || '';
+        if (delta) {
+          accumulated += delta;
+          if (typeof onDelta === 'function') onDelta(delta);
+        }
+        if (obj.usage) {
+          inputTokens = obj.usage.prompt_tokens || inputTokens;
+          outputTokens = obj.usage.completion_tokens || outputTokens;
+        }
+      } catch {
+        // partial chunk; safe to skip — line will reassemble next loop
+      }
+    }
+  }
+  const latencyMs = Date.now() - start;
+  if (!inputTokens) inputTokens = Math.ceil((egoSystem + learnerMessage).length / 4);
+  if (!outputTokens) outputTokens = Math.ceil(accumulated.length / 4);
+
+  return {
+    finalMessage: accumulated,
+    egoModel: egoModelRef.model,
+    egoProvider: profile.ego.provider,
+    inputTokens,
+    outputTokens,
+    latencyMs,
+    deliberation: [{
+      role: 'ego',
+      label: 'Ego — initial draft',
+      content: accumulated,
+      model: egoModelRef.model,
+      provider: profile.ego.provider,
+      temperature: egoTemp,
+      latencyMs,
+      inputTokens,
+      outputTokens,
+    }],
   };
 }
 
