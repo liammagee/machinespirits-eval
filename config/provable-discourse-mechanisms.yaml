@@ -4,7 +4,13 @@ description: "Mechanistic claims for Paper 2.0 — calibration, error correction
 claims:
   # ── Calibration mechanism ─────────────────────────────────────
   - id: paper2.calibration.variance_reduction
-    description: "Recognition narrows tutor output distribution (lower cross-dimension variance)."
+    description: "Recognition narrows tutor output distribution on the 2x2x2 factorial (cells 1-8)."
+    # Scope: 2x2x2 factorial cells (1-8) only — matching the paper's "core
+    # evidence comes from the 2x2x2 factorial" framing (§6.1). Pooling across
+    # all rows in the DB dilutes the signal because v2.2-rubric extras and
+    # mechanism-variant cells (22-79) widen variance distributions, returning
+    # d ≈ -0.25 globally vs d ≈ -0.50 on the factorial. Cells 1-8 are
+    # base/recog × single/multi × unified/ego_superego.
     source_keys:
       - "stat|0|dimension variance reduction"
     statement:
@@ -19,11 +25,21 @@ claims:
         not_null: [tutor_first_turn_score]
         like:
           judge_model: "%claude%"
+        like_any:
+          profile_name:
+            - "cell_1_%"
+            - "cell_2_%"
+            - "cell_3_%"
+            - "cell_4_%"
+            - "cell_5_%"
+            - "cell_6_%"
+            - "cell_7_%"
+            - "cell_8_%"
     assertion:
       op: lte
       expected: -0.3
     remediation:
-      - "If variance reduction d drifts above -0.3, update calibration claims or re-scope runs."
+      - "If variance reduction d drifts above -0.3 on the 2x2x2 factorial, update calibration claims or investigate generation drift in cells 1-8."
 
   - id: paper2.calibration.recognition_cluster_d
     description: "Recognition-theoretic dimensions show large recognition effect (d > 0.50)."
