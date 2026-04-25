@@ -517,6 +517,16 @@ function buildWhereClause(filters = {}) {
     }
   }
 
+  if (filters.like_any && typeof filters.like_any === 'object') {
+    for (const [column, values] of Object.entries(filters.like_any)) {
+      if (!Array.isArray(values) || values.length === 0) continue;
+      const col = ensureColumnName(column);
+      const ors = values.map(() => `${col} LIKE ?`).join(' OR ');
+      clauses.push(`(${ors})`);
+      params.push(...values);
+    }
+  }
+
   if (filters.equals && typeof filters.equals === 'object') {
     for (const [column, value] of Object.entries(filters.equals)) {
       clauses.push(`${ensureColumnName(column)} = ?`);

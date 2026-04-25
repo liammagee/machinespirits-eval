@@ -4972,8 +4972,12 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
           };
           const learnerCtxForTutor = dialogueLog.learnerContext || null;
 
-          // Normalize a single turn's parsed scores
-          function normalizeTutorTurnResult(turnIndex, parsed) {
+          // Normalize a single turn's parsed scores. Provenance fields
+          // (judgeInputHash, judgeTimestamp, contentTurnId) are required for
+          // paper2.provenance.judge_input_hashes audit and to keep
+          // re-judgments machine-verifiable; missing them silently degrades
+          // provenance over time.
+          function normalizeTutorTurnResult(turnIndex, parsed, judgeInputHash, contentTurnId) {
             const normalizedScores = {};
             for (const [key, value] of Object.entries(parsed.scores || {})) {
               if (typeof value === 'object' && value !== null) {
@@ -4997,6 +5001,9 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
                   ? rubricEvaluator.calculateRecognitionScore(normalizedScores)
                   : null,
               summary: parsed.summary,
+              judgeInputHash: judgeInputHash || null,
+              judgeTimestamp: new Date().toISOString(),
+              contentTurnId: contentTurnId || null,
             };
           }
 
@@ -5012,17 +5019,25 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
                 learnerContext: learnerCtxForTutor,
               });
               if (batchedPrompt) {
+                // Hash the batched prompt once; every per-turn result that
+                // came out of this batched call shares the same input hash.
+                const batchedHash = createHash('sha256').update(batchedPrompt).digest('hex');
                 const parsed = await retryWithBackoff(async () => callJudge(batchedPrompt), {});
                 if (Array.isArray(parsed.turns)) {
                   for (const turnData of parsed.turns) {
-                    const r = normalizeTutorTurnResult(turnData.turn_index, turnData);
+                    const tIdx = turnData.turn_index;
+                    const ctid = turnResults[tIdx]?.contentTurnId || null;
+                    const r = normalizeTutorTurnResult(tIdx, turnData, batchedHash, ctid);
                     tutorTurnScores[r.turnIndex] = {
                       scores: r.scores,
                       overallScore: r.overallScore,
                       baseScore: r.baseScore,
                       recognitionScore: r.recognitionScore,
                       summary: r.summary,
+                      judgeInputHash: r.judgeInputHash,
+                      judgeTimestamp: r.judgeTimestamp,
                       judgeModel,
+                      contentTurnId: r.contentTurnId,
                     };
                   }
                 }
@@ -5053,15 +5068,20 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
                   learnerContext: learnerCtxForTutor,
                 });
                 if (!prompt) continue;
+                const turnHash = createHash('sha256').update(prompt).digest('hex');
                 const parsed = await retryWithBackoff(async () => callJudge(prompt), {});
-                const r = normalizeTutorTurnResult(i, parsed);
+                const ctid = turnResults[i]?.contentTurnId || null;
+                const r = normalizeTutorTurnResult(i, parsed, turnHash, ctid);
                 tutorTurnScores[r.turnIndex] = {
                   scores: r.scores,
                   overallScore: r.overallScore,
                   baseScore: r.baseScore,
                   recognitionScore: r.recognitionScore,
                   summary: r.summary,
+                  judgeInputHash: r.judgeInputHash,
+                  judgeTimestamp: r.judgeTimestamp,
                   judgeModel,
+                  contentTurnId: r.contentTurnId,
                 };
               } catch (turnErr) {
                 log(`    tutor-turn-${i} FAIL: ${turnErr.message}`);
