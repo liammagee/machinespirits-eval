@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "3.0.51"
+version: "3.0.52"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -113,11 +113,13 @@ The contributions of this paper are:
 
 - Cross-judge validation with three independent judges (Sonnet, Gemini 3.1 Pro, GPT-5.4) with recognition as the dominant effect — unanimous across all 9 judge × run cells (Section 6.4.6, Section 8.3)
 
+- A pre-registered orientation-family density control (A10/A10b) locating the active ingredient at the **intersubjective-pedagogy orientation** level rather than recognition's specific Hegelian vocabulary: matched-specificity constructivist prompts (Vygotsky / Piaget / Kapur / Chi / VanLehn / Graesser) reproduce recognition's effect within pooled $d = 0.14$--$0.19$, while matched-specificity behaviorist prompts (Skinner / Gagné / Keller / Thorndike / Rosenshine) score pooled $d = 0.89$ *below* the generic baseline; between-family pooled $d = 1.38$ dominates within-family contrasts by an order of magnitude (Section 7.9)
+
 - The evaluation apparatus itself as a transferable methodology for mechanistic LLM evaluation, including provable discourse infrastructure that machine-verifies paper claims against data (Section 7)
 
 The architecture is designed as a research instrument for mechanism observability rather than a deployable tutoring system; its computational cost (~225,000 input tokens per 10-turn multi-agent dialogue, Section 8.7) reflects this priority.
 
-The paper is organized as follows. Section 2 reviews related work in AI tutoring, process tracing, and mechanism-oriented AI research. Section 3 develops the theoretical framework, motivating three candidate mechanism predictions from recognition theory. Section 4 presents the system architecture with emphasis on observability for process tracing. Section 5 describes the process tracing methodology. Section 6 reports mechanism-level results: calibration (Section 6.1), error correction (Section 6.2), adaptive responsiveness and its conditional emergence (Section 6.3), mechanism interaction (Section 6.4), the tutor-learner asymmetry (Section 6.5), and model dependence (Section 6.6). Section 7 discusses the apparatus-as-method argument. Section 8 addresses limitations, and Section 9 concludes.
+The paper is organized as follows. Section 2 reviews related work in AI tutoring, process tracing, and mechanism-oriented AI research. Section 3 develops the theoretical framework, motivating three candidate mechanism predictions from recognition theory. Section 4 presents the system architecture with emphasis on observability for process tracing. Section 5 describes the process tracing methodology. Section 6 reports mechanism-level results: calibration (Section 6.1), error correction (Section 6.2), adaptive responsiveness and its conditional emergence (Section 6.3), mechanism interaction (Section 6.4), the tutor-learner asymmetry (Section 6.5), and model dependence (Section 6.6). Section 7 discusses the apparatus-as-method argument and a pre-registered orientation-family density control (Section 7.9, A10/A10b) that locates the active ingredient at the intersubjective-pedagogy orientation level. Section 8 addresses limitations, and Section 9 concludes.
 
 ## 2. Related Work
 
