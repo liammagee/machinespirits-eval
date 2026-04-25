@@ -1,5 +1,5 @@
 ---
-id: "801"
+id: "901"
 title: "AI Literacy: Reading Charisma in the Algorithmic Era"
 subtitle: "From Weber's Aura to Sora's Influencers"
 description: "Generative AI now mediates the production of public figures: the educator, the lifestyle influencer, the salesperson, the fictional persona. This course teaches the analytical tools needed to read those figures critically — to see how their authority is constructed, what craft underlies their apparent intimacy, and which features of charisma current models can and cannot reproduce. We start from a century of theory on charismatic leadership, work through the multimodal anatomy of a viral short-form video, and end with a hands-on critical method: prompt-and-compare, the practice of running a real cultural artifact through a generator and auditing what changes."

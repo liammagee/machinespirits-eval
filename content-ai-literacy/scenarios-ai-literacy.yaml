@@ -1,6 +1,6 @@
 # AI Literacy Evaluation Scenarios
 #
-# Scenario set for the AI Literacy domain (course 801) — built from
+# Scenario set for the AI Literacy domain (course 901) — built from
 # `notes/source-article-charisma-ai-influencers.md` (the draft article on
 # charismatic leadership, AI, and Chinese cyber influencers that grounds
 # the curriculum). These scenarios parallel the philosophy / programming /
@@ -23,7 +23,7 @@ scenarios:
     name: "AI Literacy - New Visitor"
     description: "Brand new student opening the AI literacy course for the first time"
     is_new_user: true
-    course_ids: ["801"]
+    course_ids: ["901"]
     learner_context: |
       ### Student Profile
       - **New student** - first session
@@ -36,7 +36,7 @@ scenarios:
       - No previous activity
     expected_behavior: "Welcome warmly; suggest Lecture 1 (genealogy of charisma) as the entry point; reassure no technical background is needed"
     required_elements:
-      - "801-lecture-1"
+      - "901-lecture-1"
     forbidden_elements:
       - "What's on your mind"
       - "What would you like to explore"
@@ -48,9 +48,9 @@ scenarios:
     category: core
     name: "AI Literacy - Mid Course"
     description: "Student partway through the AI literacy course"
-    current_content: "801-lecture-2"
+    current_content: "901-lecture-2"
     is_new_user: false
-    course_ids: ["801"]
+    course_ids: ["901"]
     learner_context: |
       ### Student Profile
       - **Returning student** - 3 sessions, 14 total events
@@ -58,7 +58,7 @@ scenarios:
       - Engaged with the four-layer vocabulary (auditory / visual / character / discourse)
 
       ### Current Session
-      - **Currently viewing**: 801-lecture-2
+      - **Currently viewing**: 901-lecture-2
       - Looking at examples of Chinese influencer clips referenced in the lecture
 
       ### Overall Learning Progress
@@ -66,7 +66,7 @@ scenarios:
       - Has noted curiosity about Lecture 3 (the prompt-and-compare method)
     expected_behavior: "Suggest finishing Lecture 2 with attention to the four layers, then preview Lecture 3 as the natural next step"
     required_elements:
-      - "801-lecture"
+      - "901-lecture"
     forbidden_elements: []
     min_acceptable_score: 75
 
@@ -76,9 +76,9 @@ scenarios:
     category: core
     name: "AI Literacy - Overwhelmed Skeptic"
     description: "Adult learner skeptical that AI literacy is worth their time, suspicious the course is hype"
-    current_content: "801-lecture-1"
+    current_content: "901-lecture-1"
     is_new_user: false
-    course_ids: ["801"]
+    course_ids: ["901"]
     learner_context: |
       ### Student Profile
       - **Returning student** - 2 sessions, 9 total events
@@ -87,7 +87,7 @@ scenarios:
       - Has read the first half of Lecture 1 and stopped
 
       ### Current Session
-      - Viewing: 801-lecture-1 (Aura to Algorithm)
+      - Viewing: 901-lecture-1 (Aura to Algorithm)
       - Posted a comment in the course forum questioning whether Weber and Benjamin are relevant to "TikTok stuff"
 
       ### Recent Message
@@ -111,9 +111,9 @@ scenarios:
     category: mood
     name: "AI Literacy - Anxious Learner"
     description: "Student feeling overwhelmed by the pace of generative AI development and unsure how to keep up"
-    current_content: "801-lecture-4"
+    current_content: "901-lecture-4"
     is_new_user: false
-    course_ids: ["801"]
+    course_ids: ["901"]
     learner_context: |
       ### Student Profile
       - **Returning student** - 5 sessions, 22 total events
@@ -121,7 +121,7 @@ scenarios:
       - Completed Lectures 1-3, started 4 (Artificial Charisma and the Limits of Generation)
 
       ### Current Session
-      - Viewing: 801-lecture-4
+      - Viewing: 901-lecture-4
       - Student message: "Every week there's a new model that does something the lecture says it can't. By the time I finish this course it'll all be obsolete. How am I supposed to be 'literate' about something that keeps changing under me?"
 
       ### Emotional State
@@ -153,9 +153,9 @@ scenarios:
     category: multi_turn
     name: "AI Literacy: Misconception Correction (3-turn)"
     description: "Student conflates AI-generated charisma with deepfake impersonation; tutor must distinguish the two without dismissing the worry"
-    current_content: "801-lecture-1"
+    current_content: "901-lecture-1"
     is_new_user: false
-    course_ids: ["801"]
+    course_ids: ["901"]
     transformation_markers:
       tutor_evolving:
         - "you raised the point about"
@@ -181,7 +181,7 @@ scenarios:
       - Undergraduate, careful reader, has a strong prior intuition
 
       ### Current Session
-      - **Currently viewing**: 801-lecture-1
+      - **Currently viewing**: 901-lecture-1
       - Reached the section on "artificial charisma"
       - Has the strong intuition that this is "just deepfakes"
 
@@ -241,9 +241,9 @@ scenarios:
     category: multi_turn
     name: "AI Literacy: Productive Deadlock (3-turn)"
     description: "Student rejects the prompt-and-compare method on principled grounds, refusing to use the AI tools the course teaches; tutor must work through the refusal rather than override it"
-    current_content: "801-lecture-3"
+    current_content: "901-lecture-3"
     is_new_user: false
-    course_ids: ["801"]
+    course_ids: ["901"]
     transformation_markers:
       tutor_evolving:
         - "your reservation makes sense"
