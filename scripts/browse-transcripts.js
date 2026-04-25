@@ -3233,7 +3233,7 @@ function navigateSidebarDialogue(direction) {
   const nextEl = dlgItems[nextIdx];
   if (!nextEl) return;
   // Extract dialogueId from onclick attribute
-  const match = nextEl.getAttribute('onclick')?.match(/loadDialogue\("([^"]+)"\)/);
+  const match = nextEl.getAttribute('onclick')?.match(/loadDialogue[(]"([^"]+)"[)]/);
   if (match) {
     nextEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     loadDialogue(match[1]);

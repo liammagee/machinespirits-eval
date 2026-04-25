@@ -38,7 +38,8 @@ import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DIALOGUE_LOGS_DIR = path.join(ROOT_DIR, 'logs', 'tutor-dialogues');
+const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
+const DIALOGUE_LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
 
 // ─── CLI parsing ──────────────────────────────────────────────────────────
 

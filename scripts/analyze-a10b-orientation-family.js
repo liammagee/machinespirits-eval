@@ -66,7 +66,7 @@ console.log(`# A10b Four-Way Orientation-Family Comparison — Analysis`);
 console.log(`Run: ${a10bRun.id}`);
 console.log(`Description: ${a10bRun.description}`);
 console.log(`Cells:`);
-for (const [key, c] of Object.entries(CELLS)) {
+for (const c of Object.values(CELLS)) {
   console.log(`  - ${c.name} (${c.label}, family: ${c.family})`);
 }
 console.log('');

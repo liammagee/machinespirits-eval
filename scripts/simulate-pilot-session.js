@@ -230,7 +230,7 @@ function buildResponses(items, pCorrect) {
 }
 
 // We need the answer key client-side for the simulator. Load it directly.
-let ITEM_CORRECT_BY_ID = new Map();
+const ITEM_CORRECT_BY_ID = new Map();
 async function loadAnswerKey() {
   const yaml = await import('yaml');
   const itemsPath = path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
@@ -480,7 +480,7 @@ async function main() {
 
   // Determine sessions to run
   const allConditions = ['cell_1_base_single_unified', 'cell_5_recog_single_unified'];
-  let plan = [];
+  const plan = [];
   if (args.condition) {
     const n = args.participants ?? 1;
     for (let i = 0; i < n; i++) plan.push(args.condition);
