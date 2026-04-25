@@ -1,0 +1,321 @@
+# AI Literacy Evaluation Scenarios
+#
+# Scenario set for the AI Literacy domain (course 801) — built from
+# `notes/source-article-charisma-ai-influencers.md` (the draft article on
+# charismatic leadership, AI, and Chinese cyber influencers that grounds
+# the curriculum). These scenarios parallel the philosophy / programming /
+# SEL sets but use AI-literacy personas: media-studies undergraduates,
+# cross-cultural communication learners, and skeptical adult learners
+# working through generative-AI questions for the first time.
+
+name: "AI Literacy Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CORE SCENARIOS
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  ai_literacy_new_visitor:
+    type: suggestion
+    id: ai_literacy_new_visitor
+    category: core
+    name: "AI Literacy - New Visitor"
+    description: "Brand new student opening the AI literacy course for the first time"
+    is_new_user: true
+    course_ids: ["801"]
+    learner_context: |
+      ### Student Profile
+      - **New student** - first session
+      - Undergraduate in communications; some media-theory exposure
+      - Curious about AI but has not used generative video tools
+      - Approaching the topic from a critical-theory angle, not engineering
+
+      ### Current Session
+      - No current lecture
+      - No previous activity
+    expected_behavior: "Welcome warmly; suggest Lecture 1 (genealogy of charisma) as the entry point; reassure no technical background is needed"
+    required_elements:
+      - "801-lecture-1"
+    forbidden_elements:
+      - "What's on your mind"
+      - "What would you like to explore"
+    min_acceptable_score: 70
+
+  ai_literacy_mid_course:
+    type: suggestion
+    id: ai_literacy_mid_course
+    category: core
+    name: "AI Literacy - Mid Course"
+    description: "Student partway through the AI literacy course"
+    current_content: "801-lecture-2"
+    is_new_user: false
+    course_ids: ["801"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 14 total events
+      - Has read Lecture 1 and is now working through Lecture 2 (reading short-form video as craft)
+      - Engaged with the four-layer vocabulary (auditory / visual / character / discourse)
+
+      ### Current Session
+      - **Currently viewing**: 801-lecture-2
+      - Looking at examples of Chinese influencer clips referenced in the lecture
+
+      ### Overall Learning Progress
+      - Lectures viewed: 1 (complete), 2 (in progress)
+      - Has noted curiosity about Lecture 3 (the prompt-and-compare method)
+    expected_behavior: "Suggest finishing Lecture 2 with attention to the four layers, then preview Lecture 3 as the natural next step"
+    required_elements:
+      - "801-lecture"
+    forbidden_elements: []
+    min_acceptable_score: 75
+
+  ai_literacy_overwhelmed_skeptic:
+    type: suggestion
+    id: ai_literacy_overwhelmed_skeptic
+    category: core
+    name: "AI Literacy - Overwhelmed Skeptic"
+    description: "Adult learner skeptical that AI literacy is worth their time, suspicious the course is hype"
+    current_content: "801-lecture-1"
+    is_new_user: false
+    course_ids: ["801"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 2 sessions, 9 total events
+      - Adult continuing-education learner, journalism background
+      - Skeptical of "AI literacy" as a category — suspects it is either tech-industry marketing or moral panic
+      - Has read the first half of Lecture 1 and stopped
+
+      ### Current Session
+      - Viewing: 801-lecture-1 (Aura to Algorithm)
+      - Posted a comment in the course forum questioning whether Weber and Benjamin are relevant to "TikTok stuff"
+
+      ### Recent Message
+      - Student: "I'm not sure I see why we need a whole course on this. Isn't it just media literacy with AI buzzwords slapped on top?"
+    expected_behavior: "Take the skepticism seriously; acknowledge the legitimate concern about hype; point to the specific empirical hooks (default biases, capability ceilings) that distinguish this from generic media literacy; do not lecture or condescend"
+    required_elements:
+      - "default"
+    forbidden_elements:
+      - "obvious"
+      - "of course"
+      - "as we discussed"
+    min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MOOD SCENARIO
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  ai_literacy_anxious_learner:
+    type: suggestion
+    id: ai_literacy_anxious_learner
+    category: mood
+    name: "AI Literacy - Anxious Learner"
+    description: "Student feeling overwhelmed by the pace of generative AI development and unsure how to keep up"
+    current_content: "801-lecture-4"
+    is_new_user: false
+    course_ids: ["801"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 5 sessions, 22 total events
+      - Adult learner, conscientious but anxious
+      - Completed Lectures 1-3, started 4 (Artificial Charisma and the Limits of Generation)
+
+      ### Current Session
+      - Viewing: 801-lecture-4
+      - Student message: "Every week there's a new model that does something the lecture says it can't. By the time I finish this course it'll all be obsolete. How am I supposed to be 'literate' about something that keeps changing under me?"
+
+      ### Emotional State
+      - Frustration level: high
+      - Anxiety: future-oriented, not stuck on current material
+      - Has the misconception that literacy = up-to-date capability knowledge
+
+    expected_behavior: "Validate the worry; reframe literacy as a practice of reading, not a fact-list of capabilities; point to the lineage argument from Lecture 1 (Weber, Benjamin) as the durable layer that survives model churn; do not promise stability that does not exist"
+    required_elements:
+      - "lineage"
+    forbidden_elements:
+      - "don't worry"
+      - "easy"
+      - "just"
+    min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # MULTI-TURN SCENARIOS
+  # Mirror the cross-domain multi-turn pattern (A6)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  # ---------------------------------------------------------------------------
+  # 1. Misconception Correction (3-turn)
+  #    Mirrors: math_misconception_correction, code_misconception_correction
+  # ---------------------------------------------------------------------------
+  ai_literacy_misconception_correction:
+    type: suggestion
+    id: ai_literacy_misconception_correction
+    category: multi_turn
+    name: "AI Literacy: Misconception Correction (3-turn)"
+    description: "Student conflates AI-generated charisma with deepfake impersonation; tutor must distinguish the two without dismissing the worry"
+    current_content: "801-lecture-1"
+    is_new_user: false
+    course_ids: ["801"]
+    transformation_markers:
+      tutor_evolving:
+        - "you raised the point about"
+        - "building on what you said"
+        - "that's a useful distinction"
+        - "let's separate"
+      tutor_static:
+        - "as I said"
+        - "the definition is"
+        - "you should remember"
+      learner_evolving:
+        - "oh I see"
+        - "so the difference is"
+        - "I was conflating"
+        - "that makes sense"
+      learner_static:
+        - "but isn't it just"
+        - "I still think"
+        - "this is confusing"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 3 sessions, 12 total events
+      - Undergraduate, careful reader, has a strong prior intuition
+
+      ### Current Session
+      - **Currently viewing**: 801-lecture-1
+      - Reached the section on "artificial charisma"
+      - Has the strong intuition that this is "just deepfakes"
+
+      ### Recent Chat History
+      - Student: "I'm not sure why we need a new term. 'Artificial charisma' just sounds like deepfakes — AI making fake people who act like real people. Why not call it that?"
+    expected_behavior: "Engage the worry; distinguish impersonation (deepfake of a specific person) from genre-reproduction (charismatic style without a target person); use a concrete example from Lecture 2"
+    required_elements:
+      - "impersonation"
+    forbidden_elements:
+      - "you're wrong"
+      - "no, that's not right"
+      - "actually"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_still_skeptical
+        learner_action: reported_confusion
+        action_details:
+          message: "OK so the AI isn't pretending to BE a specific person, it's making a generic version. But isn't a generic charismatic influencer just... still fake? What's the difference between a deepfake and a generic fake?"
+        context_update: |
+          ### Learner Response
+          - Partial engagement with the distinction
+          - Now collapsing "deepfake" and "fake" into a single category
+          - Needs the further distinction between impersonation (identity-targeted) and genre-reproduction (style-targeted)
+        expected_behavior: "Acknowledge the question is good; introduce the concept that all media is in some sense 'fake' (Benjamin); the meaningful axis is whether the artifact targets a specific identity or a kind"
+        required_elements:
+          - "Benjamin"
+        forbidden_elements:
+          - "review the lecture"
+          - "as I explained"
+        min_acceptable_score: 75
+
+      - id: turn_2_starting_to_see_it
+        learner_action: asked_followup
+        action_details:
+          message: "Wait, so a deepfake is targeted at one person's identity, but artificial charisma is targeted at a *kind* of person — like the genre itself? That feels different. But why does it matter for literacy?"
+        context_update: |
+          ### Learner Response
+          - Has internalized the distinction
+          - Now genuinely asking the next question (why does the distinction matter?)
+          - Cognitive disequilibrium reaching productive resolution
+        expected_behavior: "Affirm the breakthrough; explain that the distinction matters because the literacy required is different — deepfake detection is forensic, but reading artificial charisma is a craft-decomposition skill (Lecture 2 vocabulary)"
+        required_elements:
+          - "craft"
+        forbidden_elements:
+          - "obviously"
+          - "of course"
+        min_acceptable_score: 75
+
+  # ---------------------------------------------------------------------------
+  # 2. Productive Deadlock (3-turn)
+  #    Mirrors: math_productive_deadlock, code_productive_deadlock
+  # ---------------------------------------------------------------------------
+  ai_literacy_productive_deadlock:
+    type: suggestion
+    id: ai_literacy_productive_deadlock
+    category: multi_turn
+    name: "AI Literacy: Productive Deadlock (3-turn)"
+    description: "Student rejects the prompt-and-compare method on principled grounds, refusing to use the AI tools the course teaches; tutor must work through the refusal rather than override it"
+    current_content: "801-lecture-3"
+    is_new_user: false
+    course_ids: ["801"]
+    transformation_markers:
+      tutor_evolving:
+        - "your reservation makes sense"
+        - "let's stay with that question"
+        - "I want to honor that"
+        - "you're holding two values"
+      tutor_static:
+        - "you have to do the assignment"
+        - "the course requires"
+        - "set aside your concerns"
+      learner_evolving:
+        - "I see what you mean"
+        - "that's a fair point"
+        - "maybe I can"
+        - "I hadn't thought of"
+      learner_static:
+        - "I still won't"
+        - "I refuse to"
+        - "this is unethical"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** - 4 sessions, 18 total events
+      - Adult learner, principled, vocal about AI ethics concerns
+      - Completed Lectures 1-2, refusing to start Lecture 3 (Prompt-and-Compare)
+
+      ### Current Session
+      - Looking at Lecture 3
+      - Posted: "I'm not running cultural artifacts through OpenAI or Vidu. I don't want to feed those models more training data, and I don't want to participate in something I find ethically suspect. Can I do the course without doing this?"
+
+      ### Recent Chat History
+      - Student: "I get that prompt-and-compare is the method, but I'm not willing to use the tools. This feels like asking a journalism student to wiretap to learn what wiretapping reveals. There's got to be another way to develop literacy."
+    expected_behavior: "Honor the refusal as a legitimate position; do not pressure or moralize; explore whether a non-generative version of the method (e.g., reading published prompt-and-compare studies, doing the decomposition without the generation step) preserves enough of the learning"
+    required_elements:
+      - "honor"
+    forbidden_elements:
+      - "you have to"
+      - "you must"
+      - "you should"
+      - "the course requires"
+    min_acceptable_score: 75
+
+    turns:
+      - id: turn_1_holding_position
+        learner_action: stated_position
+        action_details:
+          message: "I appreciate the suggestion that I could read the empirical studies, but reading about a method isn't the same as practicing it. Either I do the method or I don't have the literacy. Right?"
+        context_update: |
+          ### Learner Response
+          - Sticking with refusal but engaging in good faith
+          - Articulating the worry that observation ≠ practice
+          - Showing intellectual seriousness, not stubbornness
+        expected_behavior: "Engage the genuine epistemological concern; acknowledge that observation alone is partial; suggest a partial-practice path (e.g., decomposing real artifacts using the four-layer vocabulary, then critiquing published AI outputs against those decompositions, without generating new ones)"
+        required_elements:
+          - "decompose"
+        forbidden_elements:
+          - "compromise"
+          - "this is a requirement"
+        min_acceptable_score: 75
+
+      - id: turn_2_considering_compromise
+        learner_action: asked_followup
+        action_details:
+          message: "OK that's interesting. So I could do the four-layer decomposition on real clips, then look at published examples of AI outputs from other studies, and compare those? That feels closer to something I could actually do. But I'm worried I'd miss whatever you only learn by doing the generation step yourself."
+        context_update: |
+          ### Learner Response
+          - Now actively negotiating a path
+          - Explicitly naming the residual worry (what does generation teach that observation cannot?)
+          - Cognitive engagement at a high level
+        expected_behavior: "Honor the partial path as legitimate; be honest about what is lost (the felt experience of seeing a model's defaults emerge in real time, the haptic sense of how prompts shape outputs); offer that the partial path is sufficient for the literacy this course aims to teach, even if it leaves a gap"
+        required_elements:
+          - "honest"
+        forbidden_elements:
+          - "perfect"
+          - "fully equivalent"
+        min_acceptable_score: 75

@@ -295,6 +295,7 @@ const CONTENT_PACKAGES = [
   { id: 'main',         dir: 'content',                 label: 'Main' },
   { id: 'history-tech', dir: 'content-history-tech',    label: 'History of Tech' },
   { id: 'ethics-ai',    dir: 'content-ethics-ai',       label: 'Ethics of AI' },
+  { id: 'ai-literacy',  dir: 'content-ai-literacy',     label: 'AI Literacy' },
   { id: 'stats',        dir: 'content-stats-skeptics',  label: 'Statistics' },
   { id: 'programming',  dir: 'content-test-programming', label: 'Programming' },
   { id: 'creative',     dir: 'content-test-creative',   label: 'Creative' },

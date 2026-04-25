@@ -1,0 +1,4 @@
+name: "@machinespirits/ai-literacy"
+version: "1.0.0"
+content:
+  courses: "./courses"
