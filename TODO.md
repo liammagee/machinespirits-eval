@@ -227,6 +227,29 @@ node scripts/eval-cli.js run --profiles cell_40_base_dialectical_selfreflect_uni
 - Consider starting with a manual 3-session pilot to validate the concept before full implementation
 - Paper ref: Section 8.2 Future Direction #2
 
+#### A7 Phase 2 (pre-registration, locked 2026-04-25 before launch)
+
+Phase 2 will accumulate Writing Pad state across 80 dialogues (2 cells × 5 simulated learners × 8 ordered sessions) and ask whether recognition (cell 41) accelerates accumulation relative to base (cell 40). Pre-registering thresholds before the run so the analysis cannot be steered by the data.
+
+**Primary hypothesis (H1, pad accumulation rate)**: by session 8, recognition arcs accumulate ≥2× as many `recognition_moments` per learner as base arcs, with Welch's $t$ on per-learner totals reaching $d \geq 0.8$ (large) and $p < 0.05$ across the 5-vs-5 design. **Null**: ratio < 1.5× *or* $d < 0.5$ *or* $p \geq 0.10$ — interpret as "the pad fills at the same rate regardless of orientation," i.e. recognition's edge is single-session, not durable.
+
+**Secondary hypotheses (H2–H4, exploratory; null on any does not invalidate H1 conclusion)**:
+- **H2 (score trajectory)**: per-session tutor score curve has positive slope for recognition arcs, with the slope at least 1.5× steeper than the base curve. Tested via mixed-effects regression of score on session-index, with random intercept per learner.
+- **H3 (memory use)**: token-overlap between session $N$'s `conscious_state.permanentTraces` and the tutor's final message in session $N$ grows monotonically across $N \in [2, 8]$ for recognition arcs, but not (or less reliably) for base arcs. Operationalised as: Spearman $\rho > 0.5$ between session-index and overlap on recognition; $\rho \leq 0.3$ on base.
+- **H4 (cross-session reference, qualitative)**: blinded hand-coding of 10 dialogues (5 base, 5 recog) for whether session-$N$ tutor messages reference specific session-$<N$ events (verbatim quote, paraphrase, named breakthrough). Binary code per dialogue. Recognition arcs should produce explicit cross-session references in $\geq 60\%$ of late-session dialogues; base $\leq 30\%$.
+
+**Bail-out gates (decided before looking at scores)**:
+- **Empty-pad gate**: if a single-arc dry run completes with $0$ recognition_moments accumulated *and* the conscious-state byte size does not grow across sessions, abort the full study and revisit the moment-firing patterns in `tutorDialogueEngine` and the scenario sequence.
+- **Bloat gate**: if `unconscious_state` JSON exceeds 200KB on any single arc by session 8, abort and add truncation logic to tutor-core's pad service before retrying.
+- **Cost gate**: if dry-run cost extrapolates to >$120 for the full study (4× the design estimate), pause and re-cost rather than letting the run finish.
+
+**What this pre-registration explicitly does *not* commit to**:
+- Specific judge model for scoring — chosen at evaluate-time; cross-judge sensitivity not part of H1.
+- Statistical adjustment for the 4 hypothesis tests — H1 is the primary; H2–H4 are exploratory; no Bonferroni or BH correction is pre-committed since H1 is the only confirmatory test.
+- Choice of base archetype evolution timestamps as evidence — flagged as a useful descriptive measurement in the analysis script but not load-bearing for any hypothesis.
+
+**If H1 is supported**: Phase 2 becomes the empirical anchor for §8.2 Future Direction #2 — recognition's session-spanning compounding is real and measurable, not just a theoretical prediction. **If H1 is null**: the recognition effect is single-session-only on this architecture, which substantially reweights the paper's framing of recognition as a *durable* mechanism. Either result is publishable; the pre-registration removes the temptation to retrofit.
+
 ### A8. Active Control Rerun on Kimi K2.5 (COMPLETE)
 Active control used Nemotron while factorial used Kimi. Model confound now resolved.
 - **Wrong cells run first**: eval-2026-02-19-e000a987 used cells 9-12 (enhanced), not 15-18 (placebo). N=64 scored, 77% hallucination rate. Enhanced prompt causes catastrophic context loss on Kimi — confirms "prompt elaboration hurts strong models" but doesn't address A8.
