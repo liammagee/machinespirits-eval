@@ -873,6 +873,93 @@ section.fg::before {
 .lineage__detail dt { color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.78em; font-family: "JetBrains Mono", monospace; align-self: baseline; padding-top: 0.18em; }
 .lineage__detail dd { margin: 0; color: var(--ink); font-style: italic; }
 
+/* compare-orientations panel (manifest insert) — D6 task 4.
+   Renders below .lineage as a collapsible details element. Lets the user
+   contrast the resolved cell's orientation with a chosen second cell.
+   Default contrast picks "natural opposite" (transmission ↔ intersubjective). */
+.compare {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in oklab, var(--moss) 50%, transparent);
+  font-size: calc(var(--s-0) * 0.94);
+}
+.compare > summary {
+  cursor: pointer;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.92em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: 2px 0;
+  list-style: none;
+}
+.compare > summary::-webkit-details-marker { display: none; }
+.compare > summary::before { content: "+ "; color: var(--moss); font-weight: 700; }
+.compare[open] > summary::before { content: "− "; }
+.compare__body { padding: 6px 0 2px; }
+.compare__pick {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4em;
+  margin-bottom: 0.5em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.92em;
+}
+.compare__pick label { color: var(--ink-3); letter-spacing: 0.06em; }
+.compare__pick select {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 22%, transparent);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1em;
+  color: var(--ink);
+  padding: 1px 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.compare__pick select:focus { outline: none; border-bottom-color: var(--moss); }
+.compare__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.7em;
+  margin-bottom: 0.45em;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 8%, transparent);
+  padding-top: 0.3em;
+}
+.compare__row dt {
+  grid-column: 1 / -1;
+  color: var(--ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78em;
+  font-family: "JetBrains Mono", monospace;
+  margin-bottom: 0.1em;
+}
+.compare__row dd { margin: 0; font-family: "Fraunces", serif; font-style: italic; color: var(--ink); }
+.compare__row dd.is-l { padding-right: 0.3em; }
+.compare__row dd.is-r { padding-left: 0.3em; border-left: 1px solid color-mix(in oklab, var(--ink) 10%, transparent); }
+.compare__vocab {
+  margin-top: 0.45em;
+  padding-top: 0.3em;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 8%, transparent);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 0.5em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.86em;
+}
+.compare__vocab dt { color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.78em; align-self: baseline; padding-top: 0.1em; }
+.compare__vocab dd { margin: 0; color: var(--ink); }
+.compare__word {
+  display: inline-block;
+  padding: 0 0.25em;
+  margin-right: 0.2em;
+  margin-bottom: 0.15em;
+  font-size: 0.92em;
+  border: 1px solid currentColor;
+}
+.compare__word.is-only-l { color: var(--ochre); }
+.compare__word.is-only-r { color: var(--prussian); }
+.compare__word.is-shared { color: var(--ink-3); border-style: dashed; }
+
 /* family micro-chip used in the cell-row list (advanced drawer) */
 .cell-row .fam {
   display: inline-block;
@@ -2020,6 +2107,70 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <dt>mechanism</dt><dd x-text="resolved.orientation.keyMechanism"></dd>
           </dl>
         </div>
+
+        <!-- D6 compare-orientations: collapsible side-by-side contrast panel.
+             Default contrast is the "natural opposite" (transmission ↔
+             intersubjective; matched-pedagogical ↔ matched-behaviorist).
+             User can override via the inline select. -->
+        <details class="compare" x-show="resolved?.orientation && compareCell">
+          <summary>
+            compare with <span x-text="compareCell?.orientation?.shortLabel || compareCell?.name || ''"></span>
+          </summary>
+          <div class="compare__body">
+            <div class="compare__pick">
+              <label for="compare-cell-pick">vs</label>
+              <select id="compare-cell-pick" x-model="compareCellName">
+                <template x-for="c in compareCandidates" :key="c.name">
+                  <option :value="c.name" x-text="c.orientation.effectiveFamily.toUpperCase().slice(0,1) + ' · ' + c.name.replace('cell_','c') + ' · ' + c.orientation.shortLabel"></option>
+                </template>
+              </select>
+            </div>
+
+            <template x-if="resolved?.orientation && compareCell?.orientation">
+              <div>
+                <dl class="compare__row">
+                  <dt>learner</dt>
+                  <dd class="is-l" x-text="resolved?.orientation?.viewOfLearner || ''"></dd>
+                  <dd class="is-r" x-text="compareCell?.orientation?.viewOfLearner || ''"></dd>
+                </dl>
+                <dl class="compare__row">
+                  <dt>tutor</dt>
+                  <dd class="is-l" x-text="resolved?.orientation?.roleOfTutor || ''"></dd>
+                  <dd class="is-r" x-text="compareCell?.orientation?.roleOfTutor || ''"></dd>
+                </dl>
+                <dl class="compare__row">
+                  <dt>mechanism</dt>
+                  <dd class="is-l" x-text="resolved?.orientation?.keyMechanism || ''"></dd>
+                  <dd class="is-r" x-text="compareCell?.orientation?.keyMechanism || ''"></dd>
+                </dl>
+
+                <dl class="compare__vocab">
+                  <dt>only ←</dt>
+                  <dd>
+                    <template x-for="w in compareVocabDiff.onlyA" :key="'la-'+w">
+                      <span class="compare__word is-only-l" x-text="w"></span>
+                    </template>
+                    <template x-if="!compareVocabDiff.onlyA.length"><span style="color: var(--ink-3); font-style: italic;">(none — all shared with right)</span></template>
+                  </dd>
+                  <dt>only →</dt>
+                  <dd>
+                    <template x-for="w in compareVocabDiff.onlyB" :key="'rb-'+w">
+                      <span class="compare__word is-only-r" x-text="w"></span>
+                    </template>
+                    <template x-if="!compareVocabDiff.onlyB.length"><span style="color: var(--ink-3); font-style: italic;">(none — all shared with left)</span></template>
+                  </dd>
+                  <dt>shared</dt>
+                  <dd>
+                    <template x-for="w in compareVocabDiff.shared" :key="'sh-'+w">
+                      <span class="compare__word is-shared" x-text="w"></span>
+                    </template>
+                    <template x-if="!compareVocabDiff.shared.length"><span style="color: var(--ink-3); font-style: italic;">(no shared vocabulary)</span></template>
+                  </dd>
+                </dl>
+              </div>
+            </template>
+          </div>
+        </details>
       </aside>
     </aside>
 
@@ -2418,6 +2569,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       maxScore: 8,
       relaxedDimensions: [],
 
+      // D6 compare-orientations: which cell to contrast with the resolved one.
+      // Default null → auto-pick a "natural opposite" via compareCell getter.
+      compareCellName: null,
+
       topic: "Hegel's concept of recognition",
       turns: [],
       input: '',
@@ -2591,6 +2746,61 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           const hay = [c.name, c.description, c.promptType || ''].join(' ').toLowerCase();
           return hay.includes(q);
         }).slice(0, 120);
+      },
+
+      // D6 compare-orientations: list of candidate cells the user can pick
+      // for the compare panel. Filters to cells with orientation metadata,
+      // excludes the currently-resolved cell, sorts by family then number.
+      get compareCandidates() {
+        return this.cells
+          .filter((c) => c.orientation && c.name !== this.resolved?.name)
+          .sort((a, b) => {
+            const fa = a.orientation.effectiveFamily || '';
+            const fb = b.orientation.effectiveFamily || '';
+            if (fa !== fb) return fa.localeCompare(fb);
+            const na = parseInt(a.name.match(/^cell_(\d+)/)?.[1] || '999', 10);
+            const nb = parseInt(b.name.match(/^cell_(\d+)/)?.[1] || '999', 10);
+            return na - nb;
+          });
+      },
+
+      // Auto-pick a "natural contrast" — the most informative comparison
+      // depends on the resolved cell. For an intersubjective cell, contrast
+      // with cell_1 (transmission-family base). For a transmission cell,
+      // contrast with cell_5 (recognition). For matched-pedagogical, contrast
+      // with matched-behaviorist (the orthogonal family). User can override
+      // via the compare picker.
+      get compareCell() {
+        const target = this.compareCellName
+          || this.compareDefault();
+        return this.cells.find((c) => c.name === target) || null;
+      },
+
+      // Vocabulary diff between resolved and compareCell — words unique to
+      // each side and shared. Used to surface the orientation contrast in
+      // a compact, scannable way (taxonomy doc "Suggested UX moves #3").
+      get compareVocabDiff() {
+        const a = this.resolved?.orientation?.vocabulary || [];
+        const b = this.compareCell?.orientation?.vocabulary || [];
+        const setA = new Set(a);
+        const setB = new Set(b);
+        const onlyA = a.filter((w) => !setB.has(w));
+        const onlyB = b.filter((w) => !setA.has(w));
+        const shared = a.filter((w) => setB.has(w));
+        return { onlyA, onlyB, shared };
+      },
+
+      // D6 compare default: "natural contrast" choice given the resolved cell's
+      // family. The point is to pick a comparison the reader will learn from
+      // rather than a random other cell.
+      compareDefault() {
+        const fam = this.resolved?.orientation?.effectiveFamily;
+        const pt = this.resolved?.orientation?.promptType;
+        if (pt === 'matched_pedagogical') return 'cell_96_base_behaviorist_single_unified';
+        if (pt === 'matched_behaviorist') return 'cell_95_base_matched_single_unified';
+        if (fam === 'intersubjective') return 'cell_1_base_single_unified';
+        if (fam === 'transmission')    return 'cell_5_recog_single_unified';
+        return 'cell_5_recog_single_unified';
       },
 
       setApproach(v) { this.features.approach = v; },
