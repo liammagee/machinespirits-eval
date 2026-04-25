@@ -240,6 +240,19 @@ pedagogical_orientations:
     approx_length_words: 2813
     evaluation_note: "Cells 28, 30, 32 (paired with base) and 29, 31, 33 (paired with recognition). Architecturally distinct from divergent_suspicious which uses a standard ego."
 
+  dialectical_suspicious_directive:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego (directive) × suspicious superego"
+    lineage: "Same as dialectical_suspicious; adds an explicit 'Acting On What You Noticed' rider that instructs the ego to couple self-reflection to the suggestion."
+    view_of_learner: "Inherits from paired ego prompt (base only; D3 starts on the base variant before extending to recognition)"
+    role_of_tutor: "Same as dialectical_suspicious, plus: name the specific noticing, build the suggestion FROM it, and make the link traceable."
+    key_mechanism: "Self-reflection coupled to action by directive (insight-action bridge)"
+    vocabulary: ["name what you noticed", "build from", "make the link traceable", "synthesis", "Aufhebung"]
+    prompt_file: tutor-ego-dialectical-directive.md
+    approx_length_words: 3161
+    evaluation_note: "D3 cell 97. Tests whether the insight-action gap (mean coupling 0.42 in cells 40-45) is bridgeable by an explicit directive. Length confound: +348 words / +12.4% vs control. Pre-registered thresholds: d ≥ 0.5 = bridgeable; 0.3 ≤ d < 0.5 = suggestive; d < 0.3 = structural. See notes/design-d3-explicit-directive-bridge.md."
+
   dialectical_adversary:
     family: architectural_variant
     subfamily: dialectical_synthesis
@@ -4161,3 +4174,58 @@ profiles:
         temperature: 0.6
         max_tokens: 8000
     superego: null
+
+  # Cell 97: D3 explicit-directive bridge variant of cell 40.
+  # Identical to cell_40_base_dialectical_suspicious_unified_superego in every dimension
+  # (architecture, models, hyperparameters, superego, dialectical negotiation, writing pad,
+  # superego disposition rewriting) except for the ego prompt_file, which is replaced by
+  # tutor-ego-dialectical-directive.md. The directive prompt is a verbatim clone of
+  # tutor-ego-dialectical.md plus an "Acting On What You Noticed" rider that explicitly
+  # instructs the ego to couple its self-reflection text to the final suggestion.
+  # Tests whether the insight-action gap measured in cells 40-45
+  # (mean coupling 0.42, recog gap > base gap d ≈ -1.05) is closeable by directive,
+  # or whether it is a structural property of LLM self-reflection.
+  # Length confound: directive prompt is ~3,160 words vs cell 40's ~2,810 words (+12.4%).
+  # Design note: notes/design-d3-explicit-directive-bridge.md.
+  cell_97_base_dialectical_suspicious_unified_directive:
+    description: "D3 directive bridge cell 97: base ego with explicit 'act on what you noticed' rider + suspicious superego + full features + superego rewriting (matched to cell 40)"
+    factors:
+      prompt_type: dialectical_suspicious_directive
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.65
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical-directive.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
