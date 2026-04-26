@@ -280,6 +280,32 @@ Full registry: `scripts/ANALYSIS-SCRIPTS.md`. Workflow guide: `docs/analysis-too
 | `test-latency.js` | Latency test across all configured models |
 | `seed-db.js` | Initialize database with sample data |
 
+## Paper Authoring Discipline
+
+**Source of truth**: `docs/research/paper-full-2.0.md` is the canonical document for all empirical claims, analyses, numbers, tables, interpretations, and methodology that derive from the project's data. **Spin-off papers, short papers, slides, talk decks, and blog posts must not introduce original claims not first added to `paper-full-2.0.md`.**
+
+**Why this rule exists**: Sync drift between the main paper and spin-offs creates three failure modes — citation ambiguity (which document is the canonical reference for claim X?), divergent numerical reporting (a correction in one document doesn't propagate to readers of the other), and review burden (each spin-off requires re-validating claims against the data rather than against the main paper). One source-of-truth document prevents all three.
+
+**How to apply when drafting or iterating on a spin-off**:
+1. Copy or reframe content from `paper-full-2.0.md`. Cite section numbers explicitly.
+2. If a new claim feels necessary in the spin-off, **stop and add it to `paper-full-2.0.md` first** (with version bump and revision-history entry). Then the spin-off inherits it.
+3. If a new analysis or new dataset would strengthen the spin-off, the analysis goes into `scripts/`, the report into `exports/`, the interpretive prose into `paper-full-2.0.md` (new section or §-extension), and only then is the spin-off updated.
+
+**Exceptions — genuinely fresh content allowed in spin-offs**:
+- Framing prose (abstract, introduction, related work, conclusion) that does not claim new empirical results.
+- Citation context for spin-off-specific references (e.g., causal-inference textbooks for the methods paper) when those citations do not bear on Paper 2.0's claims.
+- Spin-off-specific methodology framing that re-presents existing data through a different lens (e.g., the methods paper's "Application protocol" framing of paper-full-2.0.md §7.10.1's existing replication data) without introducing new empirical claims.
+
+**What violates the rule**:
+- New analyses, new numbers, new tables, new empirical claims that do not appear in `paper-full-2.0.md`.
+- Re-running a script with different parameters and reporting the result only in a spin-off.
+- Adding a new dataset or external comparison only to the spin-off.
+- Introducing a new figure derived from data only in a spin-off.
+
+**Mechanism for catching violations**: when reviewing a spin-off, search for any numerical claim or empirical assertion and confirm it traces to a specific section of `paper-full-2.0.md`. If it doesn't, the claim either belongs in `paper-full-2.0.md` (add it) or shouldn't be in the spin-off (remove it).
+
+The methods-paper skeleton (`notes/methods-paper-skeleton.md`) operationalises this rule for the methods-paper extraction with a "hard rule" section. The same logic applies to all other spin-offs (short paper, slides, blog posts, conference talks).
+
 ## Common Commands
 
 ```bash
