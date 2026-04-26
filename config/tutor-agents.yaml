@@ -4420,9 +4420,13 @@ profiles:
       model: kimi-k2.5
       staging: back
       prompt_file: tutor-id-director.md
+      # 12000: id needs headroom for JSON envelope + ~600-1200 token
+      # generated_prompt + reasoning. Smoke runs with 6000 hit truncation in
+      # 2/3 turns. With jsonrepair as safety net, 12000 is comfortably above
+      # observed natural stop points (~3500-4500 tokens).
       hyperparameters:
         temperature: 0.5
-        max_tokens: 6000
+        max_tokens: 12000
 
   cell_101_recog_id_director_charisma:
     description: "Id-Director (cell 101): same architecture as cell 100, with recognition_mode=true so id-authored prompts embed Hegelian recognition framing alongside charismatic register"
@@ -4453,4 +4457,4 @@ profiles:
       prompt_file: tutor-id-director.md
       hyperparameters:
         temperature: 0.5
-        max_tokens: 6000
+        max_tokens: 12000

@@ -490,6 +490,13 @@ export function getTutorProfile(profileName, options = {}) {
     dialogue: profile.dialogue,
     ego: profile.ego ? { ...profile.ego } : null,
     superego: profile.superego ? { ...profile.superego } : null,
+    // Factors block: includes prompt_type, multi_agent_*, and experimental
+    // factors like id_director (cell 100/101). Carried through so callers
+    // can branch on architectural variants without re-reading the YAML.
+    factors: profile.factors ? { ...profile.factors } : null,
+    recognition_mode: profile.recognition_mode ?? false,
+    learner_architecture: profile.learner_architecture || null,
+    conversation_mode: profile.conversation_mode || null,
   };
 
   // Resolve ego model through providers.yaml
