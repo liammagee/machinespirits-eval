@@ -199,6 +199,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_97_base_dialectical_suspicious_unified_directive',
   'cell_98_base_dialectical_suspicious_unified_two_pass',
   'cell_99_base_dialectical_coupling_unified_superego',
+  'cell_100_id_director_charisma',
+  'cell_101_recog_id_director_charisma',
 ];
 
 /**
