@@ -26,6 +26,8 @@
  *     judge configured in evaluation-rubric.yaml.
  */
 
+import 'dotenv/config';
+
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -42,7 +44,10 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const EVAL_ROOT = path.resolve(__dirname, '..');
-const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'transcripts');
+// Dialogue logs land in logs/tutor-dialogues/<dialogueId>.json — see
+// dialogueLogService.js. Earlier code paths used logs/transcripts/ which
+// holds processed transcript exports rather than raw turn-by-turn logs.
+const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
 
 function parseArgs(argv) {
   const args = argv.slice(2);
