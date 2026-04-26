@@ -169,10 +169,22 @@ node scripts/eval-cli.js evaluate <runId>
 - Develop deployment rubric: recognition ROI by domain characteristics
 - Paper ref: Section 8.2 Future Direction #3
 
-### A7. Longitudinal Multi-Session Evaluation (Phase 1 DONE 2026-04-24, Phase 2 RUN 2026-04-26 — H1 rejected, reversed direction)
+### A7. Longitudinal Multi-Session Evaluation (Phase 1 DONE 2026-04-24, Phase 2 RUN 2026-04-26 — H1 rejected reversed, H2 supported)
 Single-session evaluation cannot capture accumulated understanding.
 
-**Phase 2 result (2026-04-26):** Full study of 80 dialogues (10 arcs × 8 sessions) under timestamp `1777173286` complete; final cost \$3.67 (33× under the \$120 cost gate). Pre-registered H1 (recog ≥ 2× base on per-learner moment count, d ≥ 0.8 in recog favour, p < 0.05) **rejected** with significance in the *opposite* direction: base mean 25.0 moments/arc vs recog mean 19.2 (Cohen's $d = 2.07$ in *base* favour, Welch's $t(4.84) = 3.27$, $p = 0.017$). Substantive interpretation: H1's moment-count proxy measured *ego↔superego disagreement*, not *recognition work*. Recognition arcs accumulate fewer moments because the recognition ego is internally pre-aligned with the superego's principles, so first-pass suggestions draw less objection; base ego, lacking that pre-alignment, requires more dialectical correction. The pre-registration's "null" framing didn't anticipate a reversed-direction result; honest framing is "H1 was the wrong test for the right question." Surfaced two tutor-core bugs mid-experiment: missing recognitionOrchestrator integration in the dialogue flow, and a UTC-parsing bug in `shouldConsolidateToUnconscious`. Both fixed (tutor-core `7174e28`, eval `ef80af9`); 3-session smoke verified end-to-end pad consolidation works post-fix. H2 (per-session score trajectory) judging in progress; H3 (conscious↔message overlap) and H4 (blinded cross-session-reference coding) deferred. Full report: `exports/a7-phase2-longitudinal-1777173286.md`.
+**Phase 2 result (2026-04-26):** Full study of 80 dialogues (10 arcs × 8 sessions) under timestamp `1777173286` complete; final cost \$3.67 generation + \$1-2 judging, both well under the \$120 cost gate.
+
+- **H1 (primary, pre-registered) rejected, reversed direction**: base mean 25.0 moments/arc vs recog mean 19.2 (Cohen's $d = 2.07$ in *base* favour, Welch's $t(4.84) = 3.27$, $p = 0.017$). Pre-reg called for $d \geq 0.8$ in recog favour; observed $d$ has opposite sign with large magnitude.
+- **H2 (exploratory, pre-registered) supported**: recog arcs gain $+1.31$ points/session across the 8-session arc; base arcs lose $-1.08$ points/session. Slope difference is $+2.39$ points/session in recog favour, Welch $t(7.88) = 1.99$, $p = 0.032$. Across all sessions, recog mean score 43.81 vs base 34.72 — Cohen's $d = 0.70$ medium effect in recog favour.
+
+**Combined interpretation (H1 + H2):** the recognition mechanism is *ego pre-alignment with superego principles*. Recognition arcs produce **fewer** dialectical events (H1 reversed) because the ego makes first-pass proposals the superego has less reason to object to, but produce **higher and improving** scores (H2 supported) because that pre-alignment yields better outputs that compound across sessions. The pre-registration's H1 used moment-count as a proxy for "recognition work," which turned out to measure *ego↔superego disagreement* rather than recognition quality. The H2 measurement caught what H1 missed.
+
+**Methodological notes:**
+- Surfaced two tutor-core bugs mid-experiment: missing `recognitionOrchestrator` integration in `tutorDialogueEngine`, and a UTC-parsing bug in `shouldConsolidateToUnconscious` (`age` went negative on non-UTC hosts, silently skipping consolidation forever). Both fixed: tutor-core `7174e28`, eval `ef80af9`. 3-session smoke verified end-to-end pad consolidation works post-fix; full study ran against the fixed pipeline.
+- Mid-run OpenRouter `402` exhausted credits caught the heaviest scenarios late — bash script's "Don't bail on per-session failure" policy reported "Failed arcs: 0/10" while only 68/80 dialogues persisted. Resume script (`9974bf0`) re-ran the 12 missing sessions after credits replenished. Resumed sessions ran out of original sequence; for H2 trajectory analysis, sensitivity check on in-sequence arcs only (n=4 base, n=3 recog) preserves the directional finding (base mean slope $-1.10$, recog mean slope $+0.72$).
+- H3 (conscious↔message overlap) and H4 (blinded cross-session-reference hand-coding) deferred. Both measurable from current data.
+
+Full report: `exports/a7-phase2-longitudinal-1777173286.md`.
 
 **Implementation spec**: `notes/design-a7-longitudinal-implementation-2026-04-16.md` — refines the high-level design after reading tutor-core migration 008.
 
