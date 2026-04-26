@@ -2,10 +2,18 @@
 title: "Two Methods-Level Corrections for LLM-Tutor Mediator Analysis: Within-Cell Diagnostics and Rubric Over-Specification"
 author: "Liam Magee"
 date: "April 2026"
-version: "0.2.0"
+version: "0.3.0"
 # Target venue: NeurIPS 2026 workshop on evaluation/benchmarking for foundation
 # models (anticipated Sept 2026 deadline). 4-page short-paper format = ~3,200
 # word target. Backup: COLM 2027 (Mar 2027 deadline, 8-page main / 4-page short).
+#
+# Template note: this draft uses the project's pandoc + xelatex pipeline
+# (header.tex). When the specific NeurIPS 2026 workshop CFP publishes its
+# required style file (typically neurips_2026.sty or a workshop-specific
+# variant), the conversion is mechanical: pandoc has good NeurIPS template
+# support via --template, and the markdown source is template-agnostic. Estimate
+# ~2 hours for the conversion plus a proofreading pass. Conversion is deferred
+# until the CFP is published.
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -107,7 +115,7 @@ The diagnostic was developed against one corpus (A10b) and one judge (Sonnet 4.6
 
 The single-turn-vs-multi-turn split has a clean pragmatic interpretation. In single-turn settings, ending the response with a question is the only available channel to cede initiative back to the learner. In multi-turn settings, the rubric scores the full dialogue arc; ending the *final* turn with a question leaves the conversation unresolved, and the judges penalise it. The same surface feature signals different pragmatic acts in different discourse contexts. The diagnostic's logic itself produces this scope condition: criterion 3 is checked within-cell, and the same feature can meet it in one set of cells and fail it in another. The mediator interpretation is correctly hedged to its applicable scope.
 
-**Beyond the source apparatus.** The applications above share one recognition-theoretic corpus. A stronger generality claim --- that the diagnostic transfers to LLM-tutor evaluation pipelines using different rubrics, prompts, and judges --- requires application to independently published rubrics [@chi2014icap; @hashemi2024llmrubric]. The protocol is straightforward: extract per-row condition labels, dimension scores, and a candidate feature; compute the three criteria per cell and pooled; report the verdict. We leave this as future work, noting that the source-apparatus replications above already demonstrate stability across 3 judges, 3 generation models, 3 domains, 2 applications, 2 turn modes, and 3 architectures.
+**Beyond the source apparatus.** The applications above share one recognition-theoretic corpus. A stronger generality claim --- that the diagnostic transfers to LLM-tutor evaluation pipelines using different rubrics, prompts, and judges --- requires application to independently published rubrics. We document the procedure for such application as an explicit six-step protocol [@magee2026geist §8.6.2]: identify the family partition, compute the candidate feature per row, test criterion 1 (family $|d| \geq 0.5$), test criterion 2 (within-family $|d| < 0.5$), test criterion 3 (within-cell $r > 0$ in each family-member cell), pair with PCA over-specification check on the source rubric. Reference scripts for steps 2--5 are open-sourced; data-loading is the only extension point. Candidate independent rubrics include MathTutorBench [@macina2025mathtutorbench], ICAP-aligned LLM-as-judge studies [@chi2014icap], and LLM-Rubric [@hashemi2024llmrubric]. We leave application to those rubrics as future work. The source-apparatus replications above already demonstrate stability across 3 judges, 3 generation models, 3 domains, 2 applications, 2 turn modes, and 3 architectures, and the explicit application protocol makes the procedural argument for transfer; converting that procedural argument to an empirical one is the natural next step.
 
 # 6. Related work
 
@@ -124,5 +132,17 @@ We have argued that two assumptions underlying common LLM-tutor mediator analyse
 The corrections are most informative where they would change a published conclusion. A feature with significant pooled-r that fails the within-cell criterion is a candidate retraction; a per-dimension claim under PC1 $\geq 70\%$ is a candidate hedge. Application to one already-published mechanism analysis [@magee2026geist] revealed exactly this pattern: of seven candidate response-level features, only one survived all three criteria, and one exhibited a textbook Simpson's paradox that pooled-r alone would have presented as a strong mediator.
 
 We are not arguing that pooled-r mediator analyses should be abandoned; they are useful exploratory tools, and many published findings will survive the within-cell check intact. We argue only that pooled-r should be reported *alongside* within-cell r, and that rubric-dimension claims should be reported *alongside* PCA dimensionality. The practical recommendation is small: add a within-cell-r column to mediator tables, and add a "PCA dimensionality" line to rubric descriptions. With these two additions the field can begin to distinguish family markers from within-cell mediators, and per-dimension claims from underlying-construct claims, more reliably than current practice allows.
+
+# Acknowledgments
+
+This methods paper extracts and generalises material developed during the empirical work reported in @magee2026geist. The application protocol in §5 documents existing analysis scripts; the diagnostic itself was developed iteratively through the five-pass mechanism analysis on the recognition-theoretic apparatus. We thank readers of pre-submission drafts for feedback on the framing of the Simpson's-paradox illustration and on the scope of the rubric over-specification claim.
+
+# Author contributions and conflict-of-interest statement
+
+The author declares no financial conflicts of interest. The recognition-theoretic apparatus that supplies the worked example [@magee2026geist] is the author's prior work; the methods paper extracts and generalises material from that paper without introducing new empirical claims (per the source-of-truth discipline documented in the project's authoring guidelines). All analysis scripts and per-row data referenced in §3 and §5 are open-sourced under the same license as the source apparatus.
+
+# About the author
+
+Liam Magee is a researcher in AI evaluation, specialising in mediator analysis and methodological transparency for LLM-as-judge pipelines. The recognition-theoretic apparatus that supplies the worked example for this paper is the author's primary research programme; the present methods paper documents and generalises one strand of methodological infrastructure developed in that programme.
 
 # References
