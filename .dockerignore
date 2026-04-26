@@ -1,0 +1,16 @@
+# Keep the docker build context small for the static /findings/ deploy.
+# Only public/findings/ is COPY'd by the Dockerfile, but excluding everything
+# else means faster context uploads and no chance of leaking secrets.
+
+# everything except what we need
+**
+
+# allow the public/findings/ tree
+!public/
+public/*
+!public/findings/
+!public/findings/**
+
+# allow the deploy directory itself
+!deploy/
+!deploy/**
