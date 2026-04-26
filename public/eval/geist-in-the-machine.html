@@ -1051,10 +1051,11 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
       <a href="#interior">iii. interior voice</a>
       <a href="#experiment">iv. experiment</a>
       <a href="#findings">v. findings</a>
-      <a href="#diagnostic">vi. diagnostic</a>
-      <a href="#integrate">vii. integrate</a>
-      <a href="#currents">viii. deeper currents</a>
-      <a href="#cite">ix. cite</a>
+      <a href="#longitudinal">vi. across sessions</a>
+      <a href="#diagnostic">vii. diagnostic</a>
+      <a href="#integrate">viii. integrate</a>
+      <a href="#currents">ix. deeper currents</a>
+      <a href="#cite">x. cite</a>
     </nav>
   </div>
   <div class="rail__progress" id="railProgress"></div>
@@ -1105,10 +1106,11 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     <a href="#interior"><span class="num">iii.</span>The interior voice</a>
     <a href="#experiment"><span class="num">iv.</span>The experiment</a>
     <a href="#findings"><span class="num">v.</span>What survived</a>
-    <a href="#diagnostic"><span class="num">vi.</span>The diagnostic</a>
-    <a href="#integrate"><span class="num">vii.</span>Integrate</a>
-    <a href="#currents"><span class="num">viii.</span>Deeper currents</a>
-    <a href="#cite"><span class="num">ix.</span>Cite</a>
+    <a href="#longitudinal"><span class="num">vi.</span>Across sessions</a>
+    <a href="#diagnostic"><span class="num">vii.</span>The diagnostic</a>
+    <a href="#integrate"><span class="num">viii.</span>Integrate</a>
+    <a href="#currents"><span class="num">ix.</span>Deeper currents</a>
+    <a href="#cite"><span class="num">x.</span>Cite</a>
   </nav>
 </header>
 
@@ -1593,12 +1595,137 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     §VI. THE DIAGNOSTIC
+     §VI. ACROSS SESSIONS (A7 PHASE 2)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="longitudinal">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">vi.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">Beyond a single conversation.</p>
+      <h2 class="s__h">Across sessions, what recognition <em>does</em> (and doesn't).</h2>
+      <p class="lede-p">
+        §V tests recognition <em>within</em> a single 3–5-turn dialogue. A follow-up study (A7 Phase 2) extends the time scale: ten simulated learners, each returning for eight sequential conversations with the same tutor under the same identity. The tutor's <em>Writing Pad</em> — a three-layer memory store — persists between sessions. Five learners get the recognition tutor; five get the matched dialectical baseline. Eighty dialogues, $5 of compute, four pre-registered hypotheses locked before launch.
+      </p>
+      <p>
+        The headline result reverses the primary hypothesis and confirms the exploratory one. The substantive interpretation that survives the reversal is <em>stronger</em> than the original prediction allowed for — and it has a sharp design implication.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">why pre-register</span>
+        H1 was rejected with a large effect in the <em>opposite</em> direction. Without the pre-registration locking the prediction before launch, the temptation to retrofit the story would have been overwhelming. Because the prediction was locked, the reversal is real evidence — and H2, also pre-registered, gives the substantive frame the rejected H1 couldn't. <span class="cite">6.6.11</span>
+      </div>
+    </aside>
+  </div>
+
+  <hr class="drop" />
+
+  <!-- claim 1: H1 reversed -->
+  <div class="diag">
+    <div class="body">
+      <div class="claim">
+        <div class="claim__no">i.</div>
+        <h3 class="claim__h">Recognition produces <em>fewer</em> dialectical events, not more.</h3>
+        <div class="claim__body">
+          <p>
+            The pre-registered primary hypothesis (H1) predicted that recognition arcs would accumulate at least 2× as many <code>recognition_moment</code> events per learner as the base condition. A <code>recognition_moment</code> is a recorded thesis–antithesis disagreement between the ego (proposing the next tutor message) and the superego (critiquing it). The intuition behind H1: more recognition work happening means more dialectical conflict to record.
+          </p>
+          <p>
+            The data went the other way. Base mean 25.0 events per arc; recognition mean 19.2. Cohen's $d = 2.07$ in the <em>base</em> condition's favour, Welch's $t(4.84) = 3.27$, $p = 0.017$. The pre-registered effect is statistically significant in the opposite direction.
+          </p>
+          <div class="claim__counter">
+            What this means: counting moments measures how often the two agents <em>disagreed</em>, not how much recognition is happening. The recognition ego, internally aligned with the superego's principles, produces first-pass suggestions the superego has less reason to object to — so fewer thesis–antithesis events fire. Base ego, lacking that pre-alignment, requires more correction. <em>H1 was the wrong test for the right question</em>.
+          </div>
+        </div>
+      </div>
+
+      <!-- claim 2: H2 supported + 9-pt mean score gap -->
+      <div class="claim">
+        <div class="claim__no">ii.</div>
+        <h3 class="claim__h">Across the eight-session arc, the score <em>trajectory</em> separates the conditions cleanly.</h3>
+        <div class="claim__body">
+          <p>
+            Per-session tutor scores regressed on canonical session index 1–8: recognition arcs gain <strong>+1.31 points per session</strong>, base arcs lose <strong>−1.08 points per session</strong>. The slope difference is +2.39 points/session in recognition's favour, Welch's $t(7.88) = 1.99$, $p = 0.032$. Across all 80 sessions, recognition mean score is <strong>43.8</strong> versus base <strong>34.7</strong> — a 9-point gap, Cohen's $d = 0.70$ (medium effect).
+          </p>
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>measure</th>
+                <th>base</th>
+                <th>recognition</th>
+                <th>verdict</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Recognition moments per arc <small style="color:var(--ink-3);font-style:italic;">(H1, primary)</small></td>
+                <td class="mono">25.0</td>
+                <td class="mono">19.2</td>
+                <td class="verdict no">recog uses <em>fewer</em>; $p = 0.017$</td>
+              </tr>
+              <tr>
+                <td>Score slope across sessions <small style="color:var(--ink-3);font-style:italic;">(H2)</small></td>
+                <td class="mono">−1.08 / sess</td>
+                <td class="mono">+1.31 / sess</td>
+                <td class="verdict yes">recog improves; $p = 0.032$</td>
+              </tr>
+              <tr>
+                <td>Mean score across all sessions</td>
+                <td class="mono">34.7</td>
+                <td class="mono">43.8</td>
+                <td class="verdict yes">recog +9 pts ($d = 0.70$)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Recognition produces <em>fewer</em> corrections during dialogue but <em>higher</em> output quality, and the gap <em>widens</em> across the eight-session arc rather than fading. The longer-horizon mechanism is therefore not adaptive responsiveness (within-dialogue trajectories are recognition-invariant; see <span class="cite">6.3</span>). It is <strong>ego pre-alignment</strong> with superego principles — recognition's effect lives in what the model proposes <em>first</em>, and that quality compounds across sessions through the persistent learner state in the Writing Pad.
+          </p>
+          <div class="claim__counter">
+            <strong>Design implication.</strong> If you have a long-running chatbot relationship to design — tutor, peer-support listener, code-review companion — the lesson is not "schedule more dialectical conflict." It is: <em>tune the first-pass system prompt to be already-aligned with what your supervising layer enforces</em>. The supervising layer should be there to catch the rare misalignment, not to do most of the corrective work. The compound effect across sessions only emerges when the ego rarely needs correction.
+          </div>
+        </div>
+      </div>
+
+      <!-- claim 3: H3 + H4 inconclusive at this n -->
+      <div class="claim">
+        <div class="claim__no">iii.</div>
+        <h3 class="claim__h">Two secondary measurements <em>cannot</em> be load-bearing at this sample size.</h3>
+        <div class="claim__body">
+          <p>
+            Two further pre-registered measurements aimed at the same mechanism — does the recognition tutor <em>use</em> the accumulated pad state more than the base tutor? — both returned inconclusive results once given adequate data.
+          </p>
+          <ul>
+            <li>
+              <strong>H3 (token overlap).</strong> Per-arc Spearman ρ between session index and Jaccard overlap of cumulative pad traces with the tutor's session-N message: recog mean ρ = 0.39, base 0.16 — directional, but only 3/5 arcs meet the pre-registered ρ &gt; 0.5 threshold. A <em>novel-token</em> refinement that strips out generic lecture vocabulary (Hegel, master–slave, recognition — present in <em>both</em> conditions for topic-continuity reasons) does not corroborate: recog mean recurrence 64.4%, base 68.3% (Welch's $t = -1.00$, $p \approx 0.32$). Both conditions propagate pad content into later messages at similar rates; the difference, if any, is too small to detect at $n=5{+}5$.
+            </li>
+            <li>
+              <strong>H4 (cross-session reference, blinded coding).</strong> A first sample (one late-session dialogue per arc, $n=10$, permissive coder) showed recognition referencing prior sessions at 40% versus 20% for base — directionally as predicted, $p = 1.00$ at that $n$. Augmenting to $n=40$ (four late-session dialogues per arc, conservative coder) <em>reverses</em> the direction: base 40%, recognition 25%, $p = 0.50$. The original signal was a small-sample / permissive-coding artefact. At adequate $n$ with strict criteria, cross-session referencing does not cleanly separate the two conditions.
+            </li>
+          </ul>
+          <div class="claim__counter">
+            What survives at strength: H1 reversed, H2 supported, the 9-point mean-score gap. H3 and H4 are too noisy at the $n=5{+}5$ design to anchor independent claims. A larger longitudinal study (twenty learners per condition or more) could plausibly close them out — but the substantive claim about pre-alignment doesn't need them.
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="mr">
+      <div class="note note--ink">
+        <span class="note__lbl">tutor-core bugs surfaced</span>
+        Phase 2 surfaced two upstream bugs that fixed mid-experiment: (a) <code>recognitionOrchestrator.processDialogueResult</code> was never called from the dialogue engine, leaving conscious-state empty; (b) <code>shouldConsolidateToUnconscious</code> parsed SQLite UTC timestamps as local time, making the age check return negative and silently skipping consolidation forever on non-UTC hosts. Tutor-core <code>v0.5.3</code> ships the timestamp fix; the orchestrator-call gap is documented as a known issue. <span class="cite">6.6.11</span>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §VII. THE DIAGNOSTIC
      ═══════════════════════════════════════════════════════════════ -->
 <section class="s shell" id="diagnostic">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">vi.</span></div>
+      <div class="s__num">§<span class="glyph">vii.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">A portable check before you ship.</p>
@@ -1702,7 +1829,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 <section class="s shell" id="integrate">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">vii.</span></div>
+      <div class="s__num">§<span class="glyph">viii.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">From paper to product.</p>
@@ -1897,7 +2024,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 <section class="s shell" id="currents">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">viii.</span></div>
+      <div class="s__num">§<span class="glyph">ix.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">Stepping back.</p>
@@ -1963,7 +2090,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 <section class="s shell" id="cite">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">ix.</span></div>
+      <div class="s__num">§<span class="glyph">x.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">For your reference list — and your own runs.</p>
