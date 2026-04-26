@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "3.0.54"
+version: "3.0.55"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -2164,7 +2164,33 @@ This has two implications for the mechanism findings. First, the calibration eff
 
 **Implication for §7.8 dimension-targeted optimisation.** The PCA finding also bears on §7.8.1's dimension-targeted autotuning results. Targeting `adaptive_responsiveness` or `conceptual_progression` as optimisation objectives does not isolate empirically independent skills; those dimensions load on the same underlying tutor-quality factor as the others. The §7.8.1 results should therefore be read as *shifts in the single underlying construct via prompt changes whose wording foregrounds a particular facet*, not as selective movement of one skill while others are held constant. This does not invalidate the §7.8 findings --- prompt optimisation did improve scores substantially (Qwen target dims 35 → 75), cross-model transfer did produce the prosthesis-straitjacket inversion, and these results are informative about how to engineer prompt interventions for different model capabilities. But the mechanistic interpretation is one of *shaping the overall quality factor* rather than *building a specific pedagogical skill*, and readers should not treat per-dimension improvements as evidence of independent constructs being independently tunable.
 
-**Methodological pairing with §7.10 (Simpson's-paradox at the response level).** A second methods-level caution arose from the §7.10 D1 mechanism analysis: mediator-criteria checks must use within-group correlations when the predictor varies across groups. Embedding-similarity to an intersubjective canonical was *positively* correlated with score when pooled across the four A10b cells ($r = +0.26$) but reversed sign within each intersubjective cell ($r = -0.28$ in cell_5, $r = -0.24$ in cell_95) --- a textbook Simpson's paradox driven by the cell_96 transmission outlier anchoring the lower-left of the pooled scatter. Together with the PCA over-specification finding above, these pair as two methods-level cautions for any future mediator analysis on LLM-tutor data: (1) the v2.2 rubric's eight dimensions reduce to one underlying construct so per-dimension claims should be hedged accordingly; and (2) pooled-$r$ in mediator analysis can be entirely driven by between-group variance rather than within-group mechanism. Together they could form the empirical core of a methods-paper contribution beyond Paper 2.0; for the present paper they are documented here as caveats that any reader applying the apparatus elsewhere should account for.
+**Methodological pairing with §7.10 (Simpson's-paradox at the response level).** A second methods-level caution arose from the §7.10 D1 mechanism analysis: mediator-criteria checks must use within-group correlations when the predictor varies across groups. Embedding-similarity to an intersubjective canonical was *positively* correlated with score when pooled across the four A10b cells ($r = +0.26$) but reversed sign within each intersubjective cell ($r = -0.28$ in cell_5, $r = -0.24$ in cell_95) --- a textbook Simpson's paradox driven by the cell_96 transmission outlier anchoring the lower-left of the pooled scatter. Together with the PCA over-specification finding above, these pair as two methods-level cautions for any future mediator analysis on LLM-tutor data: (1) the v2.2 rubric's eight dimensions reduce to one underlying construct so per-dimension claims should be hedged accordingly; and (2) pooled-$r$ in mediator analysis can be entirely driven by between-group variance rather than within-group mechanism. Together they could form the empirical core of a methods-paper contribution beyond Paper 2.0; for the present paper they are documented here as caveats that any reader applying the apparatus elsewhere should account for. §8.6.1 below makes the second caution explicit as a portable diagnostic.
+
+#### 8.6.1 The three-criterion within-cell mediator diagnostic
+
+The §7.10 mechanism analysis used a specific diagnostic to distinguish *family markers* (features that distinguish prompt families but do not predict scores within a family) from *within-cell mediators* (features that predict scores even when the prompt is held constant). We articulate the diagnostic explicitly here because the same logic applies to any LLM-tutor evaluation that contrasts prompt families and seeks response-level mechanisms.
+
+A response-level feature qualifies as a within-cell mediator candidate when all three criteria are met:
+
+1. **Large family contrast** ($|d| \geq 0.5$ between the family containing the recognition cell and a contrasting transmission family). The feature distinguishes the families. If it does not, it cannot mediate the family-level effect.
+2. **Small within-family contrast** ($|d| < 0.5$ between two cells within the same family, e.g., recognition vs matched-pedagogical). Both family-member prompts elicit the feature; if only one does, the feature is a *prompt marker* (specific to one prompt) rather than a *family marker* (shared across the family).
+3. **Positive within-cell Pearson $r$ with score** in each family-member cell. When the prompt is held constant, the feature still predicts higher scores. This isolates the response-level mediating role from cross-cell variance that the family contrast already captures.
+
+The §7.10 worked example applied this diagnostic to the D1 five-pass feature sequence on the A10b 4-cell corpus:
+
+| Feature | Criterion 1 (family d) | Criterion 2 (within-family d) | Criterion 3 (within-cell r in cell_5 / cell_95) | Verdict |
+|---|---|---|---|---|
+| Hegelian lexicon density | small | very large (cell_5 $\gg$ cell_95) | small | Prompt marker only |
+| Intersubjective lexicon density | moderate | very large (cell_95 $\gg$ cell_5) | mixed signs across cells | Prompt marker only |
+| Question-mark rate | 0.61 | 0.47 (cell_5 $3\times$ cell_95) | small | Prompt marker, modest predictor |
+| Scaffolding-move imperatives | 0.59 | 0.12 | $+0.19$ / $+0.05$ | Family marker, weak mediator |
+| Broad acknowledgement | 0.14 | small | $-0.18$ / $-0.31$ | Negative correlate (anti-mediator) |
+| **Ends-with-question** (single-turn cells) | **categorical** (4.5\% / 2.1\% vs 0\%) | **0.13** | **$+0.325$ / $+0.392$** | **Mediator** |
+| Intersub. canonical similarity (embedding) | **0.81** | 0.27 | **$-0.28$ / $-0.24$** (negative within-cell, positive pooled) | Family marker; **Simpson's paradox disqualifies as mediator** |
+
+A feature passes the mediator bar only by satisfying all three criteria; failure on any one disqualifies the feature as a within-cell mediator while potentially preserving its role as a family marker, prompt marker, or negative correlate. The diagnostic is most informative when criterion 3 fails despite criteria 1--2 passing: that pattern indicates Simpson's paradox, where a feature appears mediating across families (criterion 1 large, pooled $r > 0$) but the within-cell direction reveals that the cross-family score gap, not the within-family feature variation, was carrying the pooled correlation.
+
+The diagnostic generalises beyond the recognition--transmission contrast. Any factorial design with a family-level main effect and candidate response-level mediators can apply the three-criterion check, and the §8.6 PCA finding adds a complementary rubric-construct caution: per-dimension "mediation" claims should be hedged when the rubric's dimensions are not discriminantly valid. Together the rubric-construct caution and the within-cell-mediator diagnostic constitute two independent methods-level corrections that any future LLM-tutor evaluation should account for. Their empirical foundations are documented here as Paper 2.0 caveats; a separate methods-paper extraction is the natural vehicle for arguing their generality across published LLM-tutor evaluation pipelines.
 
 ### 8.7 Computational Cost Asymmetry
 
@@ -2926,6 +2952,15 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.55** (2026-04-26)
+:   **§8.6.1 named three-criterion within-cell mediator diagnostic.** Adds a new subsection §8.6.1 (~520 words) immediately after the §8.6 "Methodological pairing with §7.10" paragraph. The diagnostic was implicit across §7.10 + §7.10.1 + §8.6 ("only one feature satisfies all three within-cell mediator criteria --- large family contrast, small within-intersubjective contrast, AND positive within-cell correlation"); v3.0.55 articulates it explicitly as a portable methodology with named criteria and a worked example.
+
+The three criteria are stated formally: (1) large family contrast ($|d| \geq 0.5$); (2) small within-family contrast ($|d| < 0.5$); (3) positive within-cell Pearson $r$ in each family-member cell. The worked example tabulates the D1 five-pass feature sequence with each feature's verdict (Hegelian/intersubjective lexicon = prompt markers; scaffolding moves = family marker, weak mediator; broad acknowledgement = negative correlate; ends-with-question = mediator in single-turn cells; intersub. canonical similarity = family marker, Simpson's paradox disqualifies as mediator).
+
+The diagnostic generalises beyond the recognition--transmission contrast: any factorial design with a family-level main effect and candidate response-level mediators can apply the three-criterion check. Pairs with the §8.6 PCA over-specification finding as the two independent methods-level corrections that any future LLM-tutor evaluation should account for. §8.6.1 closes by noting that a separate methods-paper extraction is the natural vehicle for arguing the diagnostic's generality across published LLM-tutor evaluation pipelines (skeleton: `notes/methods-paper-skeleton.md`).
+
+Net change: ~+520 words in §8.6.1; no data, analysis, or N-count changes. The diagnostic was applied throughout §7.10 already; v3.0.55 names it.
 
 **v3.0.54** (2026-04-26)
 :   **§7.10.1 D1 mechanism analysis: replication, multivariate control, and a single-turn-vs-multi-turn scope condition.** Adds a new subsection §7.10.1 (~600 words) consolidating four follow-up analyses on the §7.10 ends-with-question mediator finding and the intersub_advantage Simpson's-paradox finding.
