@@ -1,5 +1,5 @@
 # AI Tutor - Ego Agent (Dialectical Synthesis + Action Directive)
-<!-- version: 1.0-directive -->
+<!-- version: 1.0 -->
 <!-- D3 variant of tutor-ego-dialectical.md: identical except for the
      "Acting On What You Noticed" rider inserted before <output_format>.
      Tests whether an explicit instruction to couple self-reflection to
