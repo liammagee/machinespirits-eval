@@ -13,8 +13,21 @@
  * Static prompt: prompts/tutor-id-director.md
  */
 
-import { tutorConfigLoader as defaultTutorConfig } from '@machinespirits/tutor-core';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+import { jsonrepair } from 'jsonrepair';
+
+import {
+  tutorConfigLoader as defaultTutorConfig,
+  tutorDialogueEngine,
+} from '@machinespirits/tutor-core';
 import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
+
+const __engineFile = fileURLToPath(import.meta.url);
+const __engineDir = path.dirname(__engineFile);
+const PROMPTS_DIR = path.resolve(__engineDir, '..', 'prompts');
 
 const _deps = {
   tutorConfig: defaultTutorConfig,
@@ -115,17 +128,42 @@ export function parseIdConstruction(rawText) {
 
   let text = rawText.trim();
 
-  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fenceMatch) text = fenceMatch[1].trim();
+  // Strip ```json fences if present. Use a tolerant pattern: opening fence
+  // is required; closing fence is optional (responses may be truncated at
+  // the model's max_tokens before the closing fence is emitted).
+  const openFence = text.match(/^```(?:json)?\s*/);
+  if (openFence) {
+    text = text.slice(openFence[0].length);
+    const closeFence = text.lastIndexOf('```');
+    if (closeFence !== -1) text = text.slice(0, closeFence).trim();
+  }
 
-  const objMatch = text.match(/\{[\s\S]*\}/);
-  if (objMatch) text = objMatch[0];
+  // Narrow to the outermost {...} if there's preamble/postamble.
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    text = text.slice(firstBrace, lastBrace + 1);
+  } else if (firstBrace !== -1) {
+    // No closing brace (truncation). Take everything from { onward; jsonrepair
+    // will try to close it.
+    text = text.slice(firstBrace);
+  }
 
   let parsed;
+  let usedRepair = false;
   try {
     parsed = JSON.parse(text);
-  } catch (e) {
-    return fallbackConstruction(`json_parse_error: ${e.message}`, rawText);
+  } catch (firstErr) {
+    try {
+      const repaired = jsonrepair(text);
+      parsed = JSON.parse(repaired);
+      usedRepair = true;
+    } catch (repairErr) {
+      return fallbackConstruction(
+        `json_parse_error: ${firstErr.message} (jsonrepair also failed: ${repairErr.message})`,
+        rawText,
+      );
+    }
   }
 
   if (
@@ -141,7 +179,7 @@ export function parseIdConstruction(rawText) {
     persona_delta: typeof parsed.persona_delta === 'string' ? parsed.persona_delta : 'UNKNOWN',
     stage_directions: typeof parsed.stage_directions === 'string' ? parsed.stage_directions : '',
     reasoning: typeof parsed.reasoning === 'string' ? parsed.reasoning : '',
-    parse_status: 'ok',
+    parse_status: usedRepair ? 'ok_via_jsonrepair' : 'ok',
   };
 }
 
@@ -319,5 +357,393 @@ export async function runIdDirectedTurn({
     internalDeliberation,
     strategy: 'id_directed',
     suggestsEnding: false,
+  };
+}
+
+// ============================================================================
+// Runner-side adapter: generate a single suggestion via the id-director path,
+// returning a result shape compatible with tutorApi.generateSuggestions so
+// the eval runner can drop it in at services/evaluationRunner.js.
+//
+// Signature mirrors the inputs that evaluationRunner already has at the call
+// site. Reads prompt files directly from prompts/ since tutor-core's profile
+// loader does not know about cell 100/101.
+// ============================================================================
+
+function readPromptFile(filename, fallback = '') {
+  if (!filename) return fallback;
+  const filePath = path.join(PROMPTS_DIR, filename);
+  try {
+    return fs.readFileSync(filePath, 'utf-8');
+  } catch (err) {
+    console.warn(
+      `[idDirectorEngine] Could not read prompt file ${filename}: ${err.message}; using fallback.`,
+    );
+    return fallback;
+  }
+}
+
+/**
+ * Parse the eval-runner's learnerContext block to extract the most recent
+ * learner message and a plain-prose history excerpt.
+ *
+ * The runner builds learnerContext as a structured markdown document with
+ * sections like `### Student Profile` and `### Recent Chat History`. For
+ * cells using tutor-core's standard ego (which is trained on those tags),
+ * passing the raw block as the user prompt works fine. For id-director
+ * cells, the id-authored persona has no training affinity for those tags —
+ * smaller models try to interpret them as task instructions and leak
+ * meta-reasoning into their reply. So we parse the block here and send the
+ * ego only what it needs: the latest learner message, with a clean prose
+ * excerpt of prior turns for context.
+ */
+function parseStructuredLearnerContext(learnerContext) {
+  if (!learnerContext || typeof learnerContext !== 'string') {
+    return { latestLearnerMessage: '', priorExchanges: [] };
+  }
+
+  // The "Recent Chat History" section is what we want. It looks like:
+  //   ### Recent Chat History
+  //   - Student: "..."
+  //   - Tutor: "..."
+  //   - Student: "..."
+  const chatHeaderIdx = learnerContext.search(/###\s*Recent\s+Chat\s+History/i);
+  const chatBlock = chatHeaderIdx === -1 ? '' : learnerContext.slice(chatHeaderIdx);
+
+  // Match lines like `- Student: "..."` or `- Tutor: "..."`. Quotes may be
+  // straight or curly; allow multi-line content terminated by the next `- Role:`.
+  const exchanges = [];
+  if (chatBlock) {
+    const lineRe = /^-\s*(Student|Tutor|Learner|Teacher|User|Assistant)\s*:\s*"?([\s\S]*?)"?\s*$/gim;
+    const lines = chatBlock.split('\n').filter((l) => /^-\s*(Student|Tutor|Learner|Teacher|User|Assistant)\s*:/i.test(l));
+    for (const raw of lines) {
+      const m = lineRe.exec(raw);
+      lineRe.lastIndex = 0;
+      if (m) {
+        const role = /tutor|teacher|assistant/i.test(m[1]) ? 'tutor' : 'learner';
+        const content = (m[2] || '').replace(/^["“]|["”]$/g, '').trim();
+        if (content) exchanges.push({ role, content });
+      }
+    }
+  }
+
+  // Latest learner message: last exchange with role:learner; if none, fall
+  // back to the entire learnerContext string (best-effort).
+  let latestLearnerMessage = '';
+  for (let i = exchanges.length - 1; i >= 0; i--) {
+    if (exchanges[i].role === 'learner') {
+      latestLearnerMessage = exchanges[i].content;
+      break;
+    }
+  }
+  if (!latestLearnerMessage) {
+    // Last-ditch: maybe the structure is different. Use the raw block.
+    latestLearnerMessage = learnerContext.trim();
+  }
+
+  return { latestLearnerMessage, priorExchanges: exchanges };
+}
+
+/**
+ * Extract the most recent learner message and a recent-history excerpt from
+ * tutorApi's context object. Prefers messageHistory (messages-mode); falls
+ * back to parsing the structured learnerContext for single-prompt mode.
+ */
+function extractLearnerInputs(context) {
+  const messageHistory = Array.isArray(context?.messageHistory) ? context.messageHistory : [];
+
+  // Messages-mode path (e.g., cell_82+ with conversation_mode: messages)
+  if (messageHistory.length > 0) {
+    let learnerMessage = '';
+    for (let i = messageHistory.length - 1; i >= 0; i--) {
+      const m = messageHistory[i];
+      if (m?.role === 'user' && typeof m.content === 'string' && m.content.trim()) {
+        learnerMessage = m.content.trim();
+        break;
+      }
+    }
+    const excerpt = messageHistory
+      .slice(-6)
+      .map((m) => `${(m.role || '').toUpperCase()}: ${m.content || ''}`)
+      .join('\n\n');
+    return {
+      learnerMessage,
+      historyExcerpt: excerpt || '(no prior turns)',
+      messageHistory,
+    };
+  }
+
+  // Single-prompt / multi-turn path: parse the structured learnerContext block.
+  const { latestLearnerMessage, priorExchanges } = parseStructuredLearnerContext(
+    context?.learnerContext || '',
+  );
+  const recent = priorExchanges.slice(-6, -1); // last few, excluding the current message
+  const excerpt =
+    recent.length > 0
+      ? recent.map((e) => `${e.role.toUpperCase()}: ${e.content}`).join('\n\n')
+      : '(no prior turns)';
+  return {
+    learnerMessage: latestLearnerMessage || '(no current learner message)',
+    historyExcerpt: excerpt,
+    messageHistory: [], // ego call should NOT receive a messageHistory in this path
+  };
+}
+
+/**
+ * Build the id agent's user message (matches the schema declared in
+ * prompts/tutor-id-director.md: <dialogue_history>, <current_learner_message>,
+ * <curriculum_context>, <previous_persona>, <recognition_mode>).
+ */
+function buildIdRunnerUserMessage({
+  historyExcerpt,
+  learnerMessage,
+  curriculumContext,
+  previousPersona,
+  recognitionMode,
+}) {
+  return [
+    '<dialogue_history>',
+    historyExcerpt,
+    '</dialogue_history>',
+    '',
+    '<current_learner_message>',
+    learnerMessage,
+    '</current_learner_message>',
+    '',
+    '<curriculum_context>',
+    curriculumContext || '(no curriculum context provided)',
+    '</curriculum_context>',
+    '',
+    '<previous_persona>',
+    previousPersona,
+    '</previous_persona>',
+    '',
+    '<recognition_mode>',
+    recognitionMode ? 'true' : 'false',
+    '</recognition_mode>',
+  ].join('\n');
+}
+
+/**
+ * Generate a single id-directed tutor suggestion.
+ *
+ * Returns a result object matching the shape of tutorApi.generateSuggestions:
+ *   { success, suggestions: [{message}], metadata: {...}, dialogueTrace: [...] }
+ *
+ * @param {Object} context - From tutorApi.buildContext (has learnerContext,
+ *   curriculumContext, simulationsContext, messageHistory).
+ * @param {Object} resolvedConfig - Resolved cell config from the runner.
+ * @param {Object} evalCellProfile - Eval-repo cell profile (from
+ *   evalConfigLoader.getTutorProfile) — must have factors.id_director: true.
+ * @param {Object} [options]
+ * @param {string} [options.previousPersona] - Override previous-persona summary.
+ * @returns {Promise<Object>} tutorApi-shaped result
+ */
+export async function generateIdDirectedSuggestion(context, resolvedConfig, evalCellProfile, options = {}) {
+  const startTime = Date.now();
+  const { previousPersona = 'FIRST_TURN' } = options;
+
+  if (!evalCellProfile || evalCellProfile.factors?.id_director !== true) {
+    throw new Error(
+      'generateIdDirectedSuggestion called with a non-id-director cell. ' +
+        'Caller must guard on evalCellProfile.factors.id_director === true.',
+    );
+  }
+
+  const idCell = evalCellProfile.superego;
+  const egoCell = evalCellProfile.ego;
+  if (!idCell?.prompt_file || !idCell?.model) {
+    return {
+      success: false,
+      error: 'Id-director cell missing superego (id) prompt_file or model in YAML.',
+      suggestions: [],
+      metadata: { latencyMs: Date.now() - startTime },
+    };
+  }
+  if (!egoCell?.model) {
+    return {
+      success: false,
+      error: 'Id-director cell missing ego model in YAML.',
+      suggestions: [],
+      metadata: { latencyMs: Date.now() - startTime },
+    };
+  }
+
+  const idStaticPrompt = readPromptFile(idCell.prompt_file, '');
+  if (!idStaticPrompt) {
+    return {
+      success: false,
+      error: `Id prompt file ${idCell.prompt_file} not found in prompts/.`,
+      suggestions: [],
+      metadata: { latencyMs: Date.now() - startTime },
+    };
+  }
+
+  const recognitionMode = evalCellProfile.recognition_mode === true;
+  const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
+  const curriculumContext = context?.curriculumContext || '';
+
+  const idUserMessage = buildIdRunnerUserMessage({
+    historyExcerpt,
+    learnerMessage,
+    curriculumContext,
+    previousPersona,
+    recognitionMode,
+  });
+
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let apiCalls = 0;
+  let totalCost = 0;
+
+  // ── Step 1: id authors the ego prompt ──
+  // tutorDialogueEngine.callAI requires { provider, providerConfig, model,
+  // hyperparameters } — providerConfig carries the API key + isConfigured flag.
+  // tutor-core's getAgentConfig assembles this for registered profiles; we
+  // assemble it manually here because cell 100/101 aren't in tutor-core's
+  // registry.
+  const idProviderConfig = _deps.tutorConfig.getProviderConfig(idCell.provider);
+  if (!idProviderConfig?.isConfigured) {
+    return {
+      success: false,
+      error: `Provider ${idCell.provider} not configured (missing API key) — id agent`,
+      suggestions: [],
+      metadata: { latencyMs: Date.now() - startTime, profileName: resolvedConfig?.profileName },
+    };
+  }
+  const idAgentConfig = {
+    provider: idCell.provider,
+    providerConfig: idProviderConfig,
+    model: idCell.resolvedModel || idProviderConfig.models?.[idCell.model] || idCell.model,
+    hyperparameters: idCell.hyperparameters || { temperature: 0.5, max_tokens: 6000 },
+    prompt: idStaticPrompt,
+    isConfigured: idProviderConfig.isConfigured,
+  };
+  const idResponse = await tutorDialogueEngine.callAI(
+    idAgentConfig,
+    idStaticPrompt,
+    idUserMessage,
+    'tutor_id',
+    {},
+  );
+  // tutorDialogueEngine.callAI returns { text, model, provider, latencyMs,
+  // inputTokens, outputTokens, ... } — fields are flat, not nested under
+  // a `usage` object as some other LLM SDKs use.
+  totalInputTokens += idResponse?.inputTokens || 0;
+  totalOutputTokens += idResponse?.outputTokens || 0;
+  totalCost += idResponse?.cost || 0;
+  apiCalls += 1;
+
+  const construction = parseIdConstruction(idResponse?.text || '');
+  if (construction.parse_status === 'fallback') {
+    console.warn(
+      `[idDirectorEngine.runnerAdapter] ${construction.parse_failure_reason} — falling back to minimal persona.`,
+    );
+  }
+
+  // ── Step 2: ego executes against the constructed prompt ──
+  const egoSystemPrompt = construction.generated_prompt;
+  const egoProviderConfig = _deps.tutorConfig.getProviderConfig(egoCell.provider);
+  if (!egoProviderConfig?.isConfigured) {
+    return {
+      success: false,
+      error: `Provider ${egoCell.provider} not configured (missing API key) — ego agent`,
+      suggestions: [],
+      metadata: { latencyMs: Date.now() - startTime, profileName: resolvedConfig?.profileName },
+    };
+  }
+  const egoAgentConfig = {
+    provider: egoCell.provider,
+    providerConfig: egoProviderConfig,
+    model: egoCell.resolvedModel || egoProviderConfig.models?.[egoCell.model] || egoCell.model,
+    hyperparameters: egoCell.hyperparameters || { temperature: 0.7, max_tokens: 4000 },
+    prompt: egoSystemPrompt,
+    isConfigured: egoProviderConfig.isConfigured,
+  };
+
+  // For multi-turn cells, pass messageHistory so the ego sees the conversation
+  // context. The ego's *system prompt* is the id's authored prompt; the user
+  // turn is the most recent learner message.
+  const egoResponse = await tutorDialogueEngine.callAI(
+    egoAgentConfig,
+    egoSystemPrompt,
+    learnerMessage,
+    'tutor_ego',
+    { messageHistory: messageHistory.length > 0 ? messageHistory : null },
+  );
+  totalInputTokens += egoResponse?.inputTokens || 0;
+  totalOutputTokens += egoResponse?.outputTokens || 0;
+  totalCost += egoResponse?.cost || 0;
+  apiCalls += 1;
+
+  const externalMessage = (egoResponse?.text || '').trim();
+  if (!externalMessage) {
+    return {
+      success: false,
+      error: 'Ego returned empty content under id-directed prompt.',
+      suggestions: [],
+      metadata: { latencyMs: Date.now() - startTime, profileName: resolvedConfig?.profileName },
+    };
+  }
+
+  // ── Build a dialogue trace mirroring the existing convention so downstream
+  //    analysers (turnComparisonAnalyzer, dialogueTraceAnalyzer) recognise it.
+  const trace = [
+    {
+      agent: 'tutor',
+      action: 'context_input',
+      detail: `learnerMessage: ${learnerMessage.slice(0, 200)}`,
+      timestamp: new Date().toISOString(),
+    },
+    {
+      agent: 'id',
+      action: 'construct',
+      detail: JSON.stringify({
+        persona_delta: construction.persona_delta,
+        stage_directions: construction.stage_directions,
+        reasoning: construction.reasoning,
+        generated_prompt_head: egoSystemPrompt.slice(0, 320),
+        parse_status: construction.parse_status,
+      }),
+      metrics: {
+        provider: idCell.provider,
+        model: idCell.resolvedModel || idCell.model,
+        inputTokens: idResponse?.inputTokens || 0,
+        outputTokens: idResponse?.outputTokens || 0,
+      },
+      timestamp: new Date().toISOString(),
+    },
+    {
+      agent: 'ego',
+      action: 'execute',
+      detail: `(generated_prompt: ${egoSystemPrompt.length} chars)`,
+      metrics: {
+        provider: egoCell.provider,
+        model: egoCell.resolvedModel || egoCell.model,
+        inputTokens: egoResponse?.inputTokens || 0,
+        outputTokens: egoResponse?.outputTokens || 0,
+      },
+      timestamp: new Date().toISOString(),
+    },
+  ];
+
+  return {
+    success: true,
+    suggestions: [{ message: externalMessage }],
+    metadata: {
+      provider: egoCell.provider,
+      model: egoCell.resolvedModel || egoCell.model,
+      hyperparameters: egoCell.hyperparameters || {},
+      profileName: resolvedConfig?.profileName,
+      latencyMs: Date.now() - startTime,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+      dialogueRounds: 0, // id-director is single-pass per turn
+      converged: true,
+      apiCalls,
+      totalCost,
+      idConstruction: construction, // bonus: surface for trace logging downstream
+    },
+    dialogueTrace: trace,
   };
 }
