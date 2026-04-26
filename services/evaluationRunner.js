@@ -198,6 +198,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_96_base_behaviorist_single_unified',
   'cell_97_base_dialectical_suspicious_unified_directive',
   'cell_98_base_dialectical_suspicious_unified_two_pass',
+  'cell_99_base_dialectical_coupling_unified_superego',
 ];
 
 /**
@@ -253,6 +254,14 @@ export function resolveEvalProfile(profileName) {
       // dialectical_suspicious. The architectural change is at the eval-runner
       // level (Phase-1 reflection injected into contextStr); the tutor-core
       // profile resolution is unchanged.
+      resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
+    } else if (promptType === 'dialectical_coupling') {
+      // D3 Bridge 2 (coupling-targeted superego): same pipeline as
+      // dialectical_suspicious. The architectural change is in the superego
+      // prompt content (tutor-superego-coupling.md), which retargets critique
+      // at reflection-action coupling rather than authenticity. The
+      // tutor-core profile resolution is unchanged because the dialectical
+      // negotiation loop is identical; only the critique target shifts.
       resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
     } else if (promptType === 'dialectical_adversary') {
       resolvedProfileName = recognitionMode ? 'dialectical_adversary_recognition' : 'dialectical_adversary';
