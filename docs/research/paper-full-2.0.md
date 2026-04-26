@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "3.0.52"
+version: "3.0.53"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1066,6 +1066,16 @@ The contrast is most extreme on Gemini Flash 3.0. A base/single tutor (Epistemic
 The indirect effect ($a \times b = 9.52$) accounts for **42.4%** of the total recognition effect on first-turn quality (Sobel $z = 8.46$, $p < .001$). Adding question frequency as a mediator increases $R^2$ from 0.323 to 0.481 ($\Delta R^2 = +0.158$). The mediation is partial: recognition also operates through other calibration channels (vocabulary, tone, specificity) beyond question-asking.
 
 The mediation pattern is model-dependent: DeepSeek shows the weakest mediation (21.4%, consistent with its lowest question rate differential), Haiku the strongest (36.7%), and Gemini Flash 3.0 intermediate (30.4%). All three are individually significant (Sobel $p < .005$). A robustness check using the holistic overall score (which captures the full dialogue arc) as the outcome variable reveals near-complete mediation: 91.3% of the holistic recognition effect flows through the question-frequency pathway (Sobel $z = 9.09$, $p < .001$). The divergence between first-turn (42%) and holistic (91%) mediation reflects the cumulative nature of question-asking: at the first turn, recognition improves quality through multiple channels; across the full dialogue, question-asking compounds --- it creates dialogical space, elicits richer learner responses, and generates the interactional material that the holistic rubric rewards.
+
+#### 6.1.8 Pragmatic Surface Markers Are Not Substitutes for Substance
+
+The §6.1.7 mediation result invites an operationalist reading: replicate recognition by mandating intersubjective surface markers in any prompt (more questions, more paraphrase, more hedging). A response-level mechanism analysis on the A10b 4-cell corpus (§7.10) constrains this reading.
+
+Two patterns argue against the operationalist generalisation. First, surface-level acknowledgement markers (quoted text spans, "your X" possessives, "what you mentioned"-style phrases) correlate *negatively* with score within most cells --- within-cell Pearson $r = -0.18$ in cell_5 (recognition), $r = -0.31$ in cell_95 (matched-pedagogical), $r = -0.38$ in cell_1 (base). Verbose acknowledgement appears more often in *weaker* responses than stronger ones; the rubric is not fooled by surface empathy.
+
+Second, embedding-based similarity to a hand-authored intersubjective canonical (turn-taking, scaffolding, inclusive framing) is positively correlated with score when *pooled* across the four cells ($r = +0.26$) but *reverses sign* within each intersubjective cell ($r = -0.28$ in cell_5, $r = -0.24$ in cell_95) --- a Simpson's paradox driven by the cell_96 transmission outlier anchoring the lower-left of the pooled scatter (§7.10 details). Within cells, more form-similarity to the intersubjective canonical predicts *lower* scores, not higher.
+
+The §6.1.7 mediation finding is therefore best read as: question-asking is one *channel* through which calibration manifests, and the channel does substantial mediating work, but the channel is downstream of a stance whose substance the rubric primarily rewards. Surface mimicry of one channel without the underlying stance does not reproduce recognition's effect, and in the case of acknowledgement markers it predicts *negative* score effects at the response level. §7.10 develops the full form-versus-substance account, including the three-way distinction between Hegelian content (not load-bearing), intersubjective stance (substantially load-bearing), and observable surface features (channels of the stance, not substitutes).
 
 ### 6.2 Error Correction
 
@@ -2902,6 +2912,9 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.53** (2026-04-26)
+:   **§6 D1 follow-up: form-vs-substance + negative-acknowledgement guardrail.** Added §6.1.8 "Pragmatic Surface Markers Are Not Substitutes for Substance" (~280 words) immediately after §6.1.7 (question-asking mediation). The new subsection acts as an operational caveat on the §6.1.7 mediation result: it documents two patterns from the response-level D1 mechanism analysis that argue against a naive operationalist reading of "mandate intersubjective surface markers to reproduce recognition." Pattern 1: surface acknowledgement markers (quoted text, "your X" possessives, "what you mentioned"-style phrases) are *negatively* correlated with score within most cells ($r = -0.18$ cell_5, $r = -0.31$ cell_95, $r = -0.38$ cell_1) --- the rubric penalises verbose surface empathy. Pattern 2: embedding-based similarity to an intersubjective canonical is positively correlated with score when pooled ($r = +0.26$) but reverses sign within each intersubjective cell ($r = -0.28$ cell_5, $r = -0.24$ cell_95) --- Simpson's paradox driven by the cell_96 transmission outlier. Forward-references §7.10 for the full form-versus-substance account and the three-way decomposition. Net length change: ~+280 words; no data, analysis, or N-count changes; the underlying analysis already lives in §7.10 as of v3.0.52, this revision raises the operational caveat to results-section visibility for readers who otherwise might read §6.1.7 alone.
 
 **v3.0.52** (2026-04-26)
 :   **D1 mechanism analysis integration.** Integrates the five-pass D1 response-level mechanism analysis (`notes/d1-paper-integration.md`; commits `1ef5f60`, `e8dc7a8`, `3c9eaa6`, `c334722`) into Paper 2.0 across three sections.
