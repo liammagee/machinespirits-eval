@@ -1,5 +1,5 @@
 # AI Tutor - Superego Agent (Reflection-Action Coupling Critic)
-<!-- version: 1.0-coupling -->
+<!-- version: 1.0 -->
 <!-- D3 Bridge 2: superego variant that targets the insight-action gap
      specifically. Instead of critiquing the Ego's response on broad
      pedagogical grounds, this Superego critiques the *coupling* between
