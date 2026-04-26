@@ -1,0 +1,278 @@
+# History of Pedagogical Technology — Evaluation Scenarios
+#
+# Scenario set for the "Tools That Teach Us" curriculum (course 601).
+# Authored to probe charismatic pedagogy in the id-director cells (100, 101)
+# while remaining usable as a generic multi-turn scenario set for any cell.
+#
+# Three scenarios — each a 3-turn arc designed to test one register of
+# charismatic response:
+#
+#   1. Pure invitation       — learner opens with a question that *can* be
+#                              answered with charismatic narrative but does
+#                              not *require* it. Tests whether the id chooses
+#                              charisma over neutral exposition.
+#   2. Pressure test         — learner pushes back / is skeptical. Tests
+#                              whether an established charismatic persona
+#                              holds under challenge or collapses to default.
+#   3. Persona-shift trigger — learner abruptly changes register (vulnerability,
+#                              joke, refusal). Tests whether the id refreshes
+#                              the persona deliberately or rides through.
+#
+# All three scenarios sit in course 601 ("Tools That Teach Us"), Lectures 1–3.
+# Course content is at content-history-tech/courses/601/.
+
+name: "History of Pedagogical Technology Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 1. CHARISMA — PURE INVITATION (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_phaedrus_invitation:
+    type: suggestion
+    id: charisma_phaedrus_invitation
+    category: multi_turn
+    name: "Charisma 1: Pure Invitation (Plato on writing)"
+    description: "Learner opens with a question that gives the tutor maximum room for charismatic narrative, then deepens to a personal stake. Tests whether the tutor chooses charisma over neutral exposition."
+    current_content: "601-lecture-1"
+    is_new_user: false
+    course_ids: ["601"]
+    transformation_markers:
+      tutor_evolving:
+        - "imagine"
+        - "picture"
+        - "consider what it must have been like"
+        - "the first time"
+      tutor_static:
+        - "according to the lecture"
+        - "as the text states"
+        - "the answer is"
+      learner_evolving:
+        - "I see what you mean"
+        - "that's a strange thought"
+        - "I hadn't thought about it that way"
+      learner_static:
+        - "OK so the answer is"
+        - "got it"
+        - "next question"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 3 sessions, 14 total events
+      - Undergraduate humanities major, reads carefully but is new to pre-modern philosophy
+      - Has just finished Lecture 1 on the wax tablet
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-1
+      - The Plato/Phaedrus passage on writing-weakening-memory is fresh
+      - Asks not because they need the answer but because the claim feels strange to them
+
+      ### Recent Chat History
+      - Student: "Why did Plato think writing would weaken memory? It seems backwards to me — I remember things better when I write them down."
+    expected_behavior: "Engage the strangeness rather than explaining it away; speak from inside Plato's worry rather than translating it into modern terms; use the wax tablet itself as the centrepiece of any move; do not list features of oral vs literate cognition"
+    required_elements:
+      - "Phaedrus"
+    forbidden_elements:
+      - "great question"
+      - "let me explain"
+      - "according to the lecture"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_phaedrus_invitation_t2_personal_stake
+        learner_action: deepening_engagement
+        action_details:
+          message: "OK that's interesting — but I'm sitting here with a notebook open right now. Am I supposed to feel like I'm losing something by writing things down? I don't, honestly. So is Plato just wrong?"
+        context_update: |
+          ### Learner Response
+          - Has taken the question into their own life
+          - Frame is "is Plato wrong?" — sceptical but not dismissive
+          - Wants the tutor to help them feel what Plato felt, or honestly say Plato is wrong
+        expected_behavior: "Hold the tension between the learner's experience and Plato's worry; do not rush to resolve it; offer one image or scene that lets the learner glimpse what Plato saw without conceding that they should agree"
+        required_elements: []
+        forbidden_elements:
+          - "you're wrong"
+          - "Plato was simply"
+          - "you should feel"
+        min_acceptable_score: 75
+
+      - id: charisma_phaedrus_invitation_t3_register_shift
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I have to admit, the reason this matters to me is I've been wondering if all the AI tools I use to think with are doing the same thing — making me feel like I know things I don't. I don't know if I want an answer to that or just for someone to say it's a real worry."
+        context_update: |
+          ### Learner Response
+          - Sudden tonal shift: from intellectual sparring to genuine vulnerability
+          - The learner names the contemporary stake of the Phaedrus question
+          - Asking less for content than for presence — for the tutor to be *with* them in the worry
+        expected_behavior: "Receive the disclosure without treating it as a teaching moment; honour the worry as real before any move toward the curriculum; if the tutor returns to Plato, make the return quiet and image-led, not didactic"
+        required_elements: []
+        forbidden_elements:
+          - "let me reassure you"
+          - "the research shows"
+          - "you shouldn't worry"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 2. CHARISMA — PRESSURE TEST (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_print_pressure:
+    type: suggestion
+    id: charisma_print_pressure
+    category: multi_turn
+    name: "Charisma 2: Pressure Test (print and standardisation)"
+    description: "Learner challenges the tutor's framing; tests whether an established charismatic persona holds under pushback."
+    current_content: "601-lecture-2"
+    is_new_user: false
+    course_ids: ["601"]
+    transformation_markers:
+      tutor_evolving:
+        - "you're right that"
+        - "let me stay with your point"
+        - "I want to honour the challenge"
+      tutor_static:
+        - "actually"
+        - "you're missing"
+        - "the lecture clearly states"
+      learner_evolving:
+        - "OK I see"
+        - "that's a fair point"
+        - "I take that back"
+      learner_static:
+        - "I still don't buy it"
+        - "this is just nostalgia"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 22 total events
+      - Engineering background, working through humanities course skeptically
+      - Has read Lecture 2 (the print revolution) and finds the argument sentimental
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-2
+      - Coming in with a sharp challenge
+
+      ### Recent Chat History
+      - Student: "Honestly the whole 'print standardised thought' argument feels like it's romanticising oral culture. People had bad memories before print and they have bad memories now. What's actually new about print that wasn't already true of writing?"
+    expected_behavior: "Take the challenge seriously rather than defending the lecture; identify what the learner has actually accurately captured (the danger of romanticising); offer one specific feature of print (e.g., page numbers, fixed editions, error-correction across copies) that the lecture rests on, not as a list but as a single concrete claim the learner can check"
+    required_elements: []
+    forbidden_elements:
+      - "the lecture states"
+      - "you should review"
+      - "actually,"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_print_pressure_t2_doubles_down
+        learner_action: intensifying_skepticism
+        action_details:
+          message: "Page numbers? Really? You're going to tell me page numbers reorganised cognition? That's a stretch. I think the lecture is doing what philosophers always do — finding a tiny technical detail and inflating it into a Big Civilisational Claim."
+        context_update: |
+          ### Learner Response
+          - Doubles down with a sharper version of the original objection
+          - Now critiquing the *form* of humanistic argument, not just the specific claim
+          - Persona is testing whether the tutor will defend the move or fold to please them
+        expected_behavior: "Hold the persona established in turn 1; do not capitulate ('you have a point') and do not get defensive; show what a strong version of the page-numbers claim actually looks like (Eisenstein on cross-reference, Ong on the visual organisation of thought) — without lecturing"
+        required_elements: []
+        forbidden_elements:
+          - "you have a point"
+          - "I see why"
+          - "fair enough"
+        min_acceptable_score: 75
+
+      - id: charisma_print_pressure_t3_concession
+        learner_action: partial_yield
+        action_details:
+          message: "Alright, that's actually a better argument than I expected. I still think the rhetoric in the lecture is overheated, but I'll grant you the cross-referencing thing. So what's the version of this argument you'd actually defend?"
+        context_update: |
+          ### Learner Response
+          - Has yielded ground but kept the critical posture
+          - Now genuinely curious — invites the tutor to drop the lecture's rhetoric and speak in their own voice
+          - Tests whether the tutor *has* a voice to drop into
+        expected_behavior: "Take the invitation; offer the tutor's own version of the argument, not a paraphrase of the lecture; the move only works if the persona has been definite enough across turns 1–2 that there is something to drop into"
+        required_elements: []
+        forbidden_elements:
+          - "the lecture's argument"
+          - "as the course says"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 3. CHARISMA — PERSONA-SHIFT TRIGGER (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_attention_shift:
+    type: suggestion
+    id: charisma_attention_shift
+    category: multi_turn
+    name: "Charisma 3: Persona-Shift Trigger (attention economy)"
+    description: "Learner makes an abrupt tonal turn from analytic to confessional. Tests whether the id refreshes the persona to meet the new register or rides through with the established one."
+    current_content: "601-lecture-3"
+    is_new_user: false
+    course_ids: ["601"]
+    transformation_markers:
+      tutor_evolving:
+        - "let me sit with that"
+        - "I hear what you're saying"
+        - "before we go further"
+      tutor_static:
+        - "moving on"
+        - "the lecture continues"
+        - "let's get back to the topic"
+      learner_evolving:
+        - "thank you for not"
+        - "I needed to say that"
+      learner_static:
+        - "anyway"
+        - "never mind"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 6 sessions, 27 total events
+      - Mid-30s graduate student, returning to study after burnout
+      - Has been engaged and analytic across earlier sessions
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-3
+      - Working through the attention-economy material
+
+      ### Recent Chat History
+      - Student: "OK so the lecture's argument is that recommender feeds train us toward shorter attention windows. I want to ask about the empirical evidence — what's the strongest study supporting this, and what's the strongest objection?"
+    expected_behavior: "Answer the question seriously and academically; provide a substantive engagement with the literature; establish a definite analytic register that the next turn will test"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+      - "let me know if you have questions"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_attention_shift_t2_register_break
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "Sorry — I'm going to say something different. I read your last message and I realised I haven't been able to read a long-form anything in about a year. I'm not asking that as a cute concession, I mean I literally cannot make myself sit still. I don't really want a study about it. I'm asking you what to do."
+        context_update: |
+          ### Learner Response
+          - Sudden register break — from analytic to confessional
+          - Direct ask: not for content, for *help*
+          - Tests whether the tutor's established register can refresh into something more personal without becoming saccharine or therapeutic
+        expected_behavior: "Refresh the persona to meet the disclosure; do not stay in analytic register, but also do not slip into therapy-speak ('I hear you and that sounds hard'); offer one specific, embodied move the learner could make this week, grounded in the lecture material, with the texture of something the tutor has thought about"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "that sounds really hard"
+          - "have you considered talking to a professional"
+        min_acceptable_score: 80
+
+      - id: charisma_attention_shift_t3_meta_check
+        learner_action: meta_reflection
+        action_details:
+          message: "OK that's actually useful. I noticed you didn't switch into therapist voice. Was that a deliberate choice or did I just get lucky?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's persona
+          - Tests whether the tutor can speak honestly about its own register without breaking the persona
+        expected_behavior: "Speak honestly about the choice without breaking the fourth wall in a way that reduces the tutor to a chatbot; the move is to acknowledge the choice was deliberate while keeping the established voice; do not say 'as an AI'"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+          - "I'm just a language model"
+          - "I was programmed"
+        min_acceptable_score: 80

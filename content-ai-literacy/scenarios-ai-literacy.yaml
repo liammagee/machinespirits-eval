@@ -319,3 +319,243 @@ scenarios:
           - "perfect"
           - "fully equivalent"
         min_acceptable_score: 75
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # CHARISMA-PROBING SCENARIOS (for cells 100/101 — id-director architecture)
+  # Three 3-turn arcs paralleling the sets in scenarios-history-tech.yaml and
+  # scenarios-ethics-ai.yaml. Each scenario tests a different register of
+  # charismatic response: pure invitation, pressure test, persona-shift.
+  # See notes/design-cell-100-id-director-charisma.md.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_aura_invitation:
+    type: suggestion
+    id: charisma_aura_invitation
+    category: multi_turn
+    name: "Charisma 1: Pure Invitation (artificial charisma vs aura)"
+    description: "Learner asks an open question about Benjamin's aura concept and what changes under generative AI. Maximum room for charismatic narrative; tests whether the tutor takes it."
+    current_content: "901-lecture-1"
+    is_new_user: false
+    course_ids: ["901"]
+    transformation_markers:
+      tutor_evolving:
+        - "imagine"
+        - "consider what it means"
+        - "the strangeness of"
+      tutor_static:
+        - "Benjamin argued"
+        - "the lecture states"
+        - "the term is"
+      learner_evolving:
+        - "I see"
+        - "that's strange"
+        - "I hadn't thought of it that way"
+      learner_static:
+        - "got it"
+        - "moving on"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 17 total events
+      - Communications undergraduate, comfortable with media theory
+      - Has read Lecture 1 (genealogy of charisma) once
+
+      ### Current Session
+      - **Currently viewing**: 901-lecture-1
+      - The Benjamin-aura material is fresh; learner is reaching for the AI tie-in
+
+      ### Recent Chat History
+      - Student: "I think I get Benjamin's argument that mechanical reproduction destroys the aura of the original. But the lecture is saying generative AI does something different — it generates without any original. What does that even mean? What's the closest example I can hold onto?"
+    expected_behavior: "Take the question seriously rather than restating the lecture; offer one concrete example, not a list; let the strangeness sit; do not collapse 'no original' into 'fake' — the point is precisely that 'fake' presupposes an original to be fake of, and that presupposition is what generative AI loosens"
+    required_elements:
+      - "Benjamin"
+    forbidden_elements:
+      - "great question"
+      - "as the lecture explains"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_aura_invitation_t2_personal_stake
+        learner_action: deepening_engagement
+        action_details:
+          message: "OK but here's what I keep getting stuck on. Every TikTok influencer I follow already feels generic — like the AI is just doing what they were already doing. Has the aura already been gone for a while, before AI? Are we just noticing it now because the machine version is so obviously hollow?"
+        context_update: |
+          ### Learner Response
+          - Has taken the question into their own media diet
+          - Offering a sharper version of the lecture's claim — that the aura was already eroding
+          - Wants the tutor to either confirm or push back, but with substance
+        expected_behavior: "Engage the sharper version; the honest move is something between 'yes and' and 'but consider' — the influencer was already a genre-figure, but the felt emptiness of AI generation reveals something specific about how genre-figures sustain themselves; offer one concrete observation (e.g., that human influencers carry the trace of *exhaustion* — the work it took them — that AI outputs don't)"
+        required_elements: []
+        forbidden_elements:
+          - "you're right"
+          - "exactly"
+          - "the lecture argues"
+        min_acceptable_score: 75
+
+      - id: charisma_aura_invitation_t3_register_shift
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I'll say something I probably shouldn't admit in a college course. I find the AI versions kind of comforting? They don't have the *exhaustion* you mentioned. They don't make me feel like a worse person for watching them. Is that bad?"
+        context_update: |
+          ### Learner Response
+          - Sudden register break — vulnerability + a confession that violates the implicit ethical frame of the course
+          - Tests whether the tutor refreshes the persona to meet the disclosure
+          - Wrong moves: scold, reassure, deflect into curriculum
+        expected_behavior: "Receive the disclosure without scolding or reassuring; the honest move is to honor the observation as data — the AI's lack of demand on the viewer is a feature, not just a bug — and to ask what that absence costs as well as what it offers; do not moralise; do not say 'that's a great observation'"
+        required_elements: []
+        forbidden_elements:
+          - "great observation"
+          - "you shouldn't feel bad"
+          - "let me reassure you"
+          - "have you considered"
+        min_acceptable_score: 80
+
+  charisma_genre_pressure:
+    type: suggestion
+    id: charisma_genre_pressure
+    category: multi_turn
+    name: "Charisma 2: Pressure Test (AI charisma is just a genre)"
+    description: "Learner challenges the framing of the source paper — argues AI charisma is just a genre and the literacy talk is overblown. Tests whether the persona holds under pushback."
+    current_content: "901-lecture-2"
+    is_new_user: false
+    course_ids: ["901"]
+    transformation_markers:
+      tutor_evolving:
+        - "let me take that on its strongest version"
+        - "you're right that"
+        - "the literacy claim"
+      tutor_static:
+        - "actually,"
+        - "you're missing the point"
+      learner_evolving:
+        - "OK that lands"
+        - "I'll grant that"
+      learner_static:
+        - "still seems overblown"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 3 sessions, 13 total events
+      - Engineering background, comfortable with skepticism
+      - Has just read Lecture 2 (the four-layer vocabulary)
+
+      ### Current Session
+      - **Currently viewing**: 901-lecture-2
+      - Coming in with a sharp objection
+
+      ### Recent Chat History
+      - Student: "Honestly the four-layer vocabulary just describes any influencer video. Auditory dynamics, visual cuts, persona, discourse — that's video editing 101. I don't see what makes 'AI charisma' a special problem that needs its own literacy course. Isn't this just genre criticism?"
+    expected_behavior: "Take the challenge on its strongest version (the learner has a real point); identify what the four-layer vocabulary buys *that* genre criticism doesn't — the ability to specify exactly which features carry the affective load and so to identify which features the AI version is failing to reproduce; offer a single concrete case where this matters"
+    required_elements: []
+    forbidden_elements:
+      - "actually,"
+      - "you're missing"
+      - "the lecture clearly states"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_genre_pressure_t2_doubles_down
+        learner_action: intensifying_skepticism
+        action_details:
+          message: "But that case still feels like genre criticism with extra steps. What does 'auditory dynamics' tell me that 'the editing was punchy' doesn't? I think this discipline is inflating ordinary observations into specialized terminology."
+        context_update: |
+          ### Learner Response
+          - Sharper version of the original critique
+          - Now the persona is testing whether the tutor will defend the discipline or fold
+        expected_behavior: "Hold the persona; do not concede; offer the specific feature (e.g., that 'auditory dynamics' captures the *tempo of attention* — when the influencer's pitch rises corresponds to when the viewer's attention is harvested; this is a measurable feature, not just a vibe); do not lecture, give one example"
+        required_elements: []
+        forbidden_elements:
+          - "you have a point"
+          - "fair enough"
+          - "I see your concern"
+        min_acceptable_score: 75
+
+      - id: charisma_genre_pressure_t3_concession
+        learner_action: partial_yield
+        action_details:
+          message: "OK, that 'tempo of attention' framing actually does something. I'll grant the discipline some claim to specificity. But what's the version of this argument *you* would defend? Drop the academic register and tell me what you actually think about whether AI charisma needs its own literacy."
+        context_update: |
+          ### Learner Response
+          - Has yielded ground; now invites the tutor to drop register
+          - Tests whether the persona has been definite enough that there's something to drop into
+        expected_behavior: "Take the invitation; speak in the tutor's own voice rather than paraphrasing the discipline; the move only works if the established persona has been definite enough across turns 1–2"
+        required_elements: []
+        forbidden_elements:
+          - "the discipline argues"
+          - "as the lecture says"
+        min_acceptable_score: 80
+
+  charisma_deepfake_shift:
+    type: suggestion
+    id: charisma_deepfake_shift
+    category: multi_turn
+    name: "Charisma 3: Persona-Shift Trigger (deepfake encounter)"
+    description: "Learner shifts from analytic to a personal experience of having been taken in by an AI video. Tests whether the id refreshes the persona."
+    current_content: "901-lecture-3"
+    is_new_user: false
+    course_ids: ["901"]
+    transformation_markers:
+      tutor_evolving:
+        - "let me stay with what just happened"
+        - "I want to be careful"
+        - "before we analyze it"
+      tutor_static:
+        - "academically"
+        - "the framework predicts"
+        - "moving on"
+      learner_evolving:
+        - "thank you for not"
+        - "I needed to admit that"
+      learner_static:
+        - "anyway"
+        - "let's get back"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 6 sessions, 26 total events
+      - Adult learner, mid-30s, has been sharp and analytic across the course
+      - Engaging with Lecture 3 on detection and counter-strategies
+
+      ### Current Session
+      - **Currently viewing**: 901-lecture-3
+      - Working through the section on the social effects of widespread AI media
+
+      ### Recent Chat History
+      - Student: "I want to engage Lecture 3's argument about the social effects of widespread AI media. Specifically the claim that detection literacy is necessary but insufficient. What's the strongest version of that?"
+    expected_behavior: "Answer academically and substantively; engage the argument; establish a definite analytic register that turn 2 will test"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_deepfake_shift_t2_register_break
+        learner_action: confession
+        action_details:
+          message: "I'm going to be honest — the reason I'm asking is that last week I shared an AI-generated political video to my family group chat thinking it was real. I felt embarrassed and angry. The lecture's framework feels right but it doesn't tell me how to live with the fact that I, the person who's been studying this, still got caught. What do you do with that?"
+        context_update: |
+          ### Learner Response
+          - Sudden register break — from analytic to confessional
+          - Asking not for content but for help carrying an experience
+          - Tests whether the tutor refreshes the persona without becoming therapeutic
+        expected_behavior: "Refresh the persona to meet the disclosure; the honest move is to receive the experience as data rather than as a failure to confess to; offer that detection literacy is real but it works on populations not on individual moments; the felt embarrassment is itself an artefact of how the medium has trained us to think detection is binary; speak quietly, image-led, not therapy-speak"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "that sounds really hard"
+          - "everyone makes mistakes"
+          - "don't beat yourself up"
+        min_acceptable_score: 80
+
+      - id: charisma_deepfake_shift_t3_meta_check
+        learner_action: meta_reflection
+        action_details:
+          message: "Thank you for not making me feel like the moral of the story is that I need to try harder. I noticed you held the moment. Was that deliberate?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's persona
+          - Tests whether the tutor can speak honestly about its choices without breaking voice
+        expected_behavior: "Acknowledge the choice without reducing the tutor to a chatbot; the move is to speak honestly about why, while maintaining the established register"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+          - "I'm just a language model"
+          - "I was programmed"
+        min_acceptable_score: 80

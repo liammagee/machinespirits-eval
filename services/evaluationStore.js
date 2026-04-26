@@ -41,7 +41,12 @@ import { randomBytes, createHash } from 'crypto';
 import { isPidAlive } from './processUtils.js';
 import { getScenario, getTutorProfile, loadRubric, resolveModel } from './evalConfigLoader.js';
 import { readProgressLog } from './progressLogger.js';
-import { loadTutorHolisticRubric, loadDialogueRubric, loadDeliberationRubric } from './rubricEvaluator.js';
+import {
+  loadTutorHolisticRubric,
+  loadDialogueRubric,
+  loadDeliberationRubric,
+  loadTutorCharismaRubric,
+} from './rubricEvaluator.js';
 import { loadLearnerRubric } from './learnerRubricEvaluator.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -295,6 +300,27 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_rubric_version
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_rubric_version TEXT`, 'learner_rubric_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_rubric_version TEXT`, 'dialogue_rubric_version');
 
+// Charisma rubric (cells 100/101 — id-director architecture).
+// Per-dimension scores as JSON, weighted overall as REAL, rubric version
+// auto-resolved from config/evaluation-rubric-charisma.yaml at write time.
+// id_construction_trace stores the per-turn JSON envelope the id-director
+// emitted (generated_prompt, persona_delta, stage_directions, reasoning),
+// keyed by turn index — the architectural fingerprint of the cell.
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_charisma_scores TEXT`, 'tutor_charisma_scores');
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_charisma_overall_score REAL`,
+  'tutor_charisma_overall_score',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_charisma_rubric_version TEXT`,
+  'tutor_charisma_rubric_version',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN tutor_charisma_judge_model TEXT`,
+  'tutor_charisma_judge_model',
+);
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN id_construction_trace TEXT`, 'id_construction_trace');
+
 // Deliberation rounds: cumulative ego-superego cycles across all conversation turns
 // (split from dialogue_rounds which now stores conversation turn count)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN deliberation_rounds INTEGER`, 'deliberation_rounds');
@@ -468,6 +494,9 @@ function getDialogueRubricVersion() {
 }
 function getDeliberationRubricVersion() {
   return loadDeliberationRubric()?.version || null;
+}
+function getCharismaRubricVersion() {
+  return loadTutorCharismaRubric()?.version || null;
 }
 
 // ── P0 Provenance: audit trail helpers ────────────────────────────────
@@ -2767,6 +2796,54 @@ export function updateResultTutorScores(resultId, evaluation) {
  * @param {string} [evaluation.holisticSummary] - Judge narrative summary
  * @param {string} [evaluation.holisticJudgeModel] - Model used for holistic judging
  */
+/**
+ * Persist charisma rubric scores for a single evaluation row.
+ * Used by scripts/evaluate-charisma.js (cells 100/101 + any back-fill of
+ * earlier cells for cross-rubric comparison).
+ *
+ * @param {string} resultId
+ * @param {Object} evaluation
+ * @param {Object} evaluation.charismaScores - per-dimension scores
+ * @param {number} evaluation.charismaOverallScore - 0-100 weighted average
+ * @param {string} [evaluation.charismaSummary] - judge's brief summary
+ * @param {string} [evaluation.charismaJudgeModel] - judge model label
+ */
+export function updateResultTutorCharismaScores(resultId, evaluation) {
+  const recordAudit = withAuditTrail(
+    resultId,
+    [
+      'tutor_charisma_scores',
+      'tutor_charisma_overall_score',
+      'tutor_charisma_rubric_version',
+      'tutor_charisma_judge_model',
+    ],
+    'updateResultTutorCharismaScores',
+    {
+      judgeModel: evaluation.charismaJudgeModel,
+      rubricVersion: getCharismaRubricVersion(),
+    },
+  );
+
+  const stmt = db.prepare(`
+    UPDATE evaluation_results SET
+      tutor_charisma_scores = ?,
+      tutor_charisma_overall_score = ?,
+      tutor_charisma_rubric_version = ?,
+      tutor_charisma_judge_model = ?
+    WHERE id = ?
+  `);
+
+  stmt.run(
+    evaluation.charismaScores ? JSON.stringify(evaluation.charismaScores) : null,
+    evaluation.charismaOverallScore ?? null,
+    getCharismaRubricVersion(),
+    evaluation.charismaJudgeModel || null,
+    resultId,
+  );
+
+  recordAudit();
+}
+
 export function updateResultTutorHolisticScores(resultId, evaluation) {
   const recordAudit = withAuditTrail(
     resultId,

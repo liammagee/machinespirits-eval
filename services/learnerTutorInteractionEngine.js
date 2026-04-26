@@ -13,6 +13,8 @@ const { callAI } = tutorDialogueEngine;
 import * as learnerWritingPad from './memory/learnerWritingPad.js';
 import * as tutorWritingPad from './memory/tutorWritingPad.js';
 import { stripThinkBlocks } from './evaluationTextSanitizer.js';
+import { runIdDirectedTurn } from './idDirectorEngine.js';
+import { getTutorProfile as getEvalTutorProfile } from './evalConfigLoader.js';
 
 // ============================================================================
 // Interaction Engine Configuration
@@ -483,6 +485,39 @@ function buildLearnerPrompt(agentConfig, persona, additionalContext) {
  * Run a tutor turn in response to learner
  */
 async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutorProfileName, topic, llmCall, trace) {
+  // Get tutor configuration from profile
+  const _profile = tutorConfig.getActiveProfile(tutorProfileName);
+  const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
+  const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
+
+  // Cell 100/101: id-director architecture. The id authors a fresh ego
+  // system prompt each turn; the ego executes once. Dispatch to the id
+  // engine and short-circuit the conventional ego-then-superego path.
+  //
+  // The factors block lives in eval-repo's tutor-agents.yaml (cell config),
+  // not in tutor-core's profile registry — `tutorConfig` above resolves to
+  // a tutor-core base profile (e.g. 'budget') when the cell isn't registered
+  // there. So consult eval-repo's config loader directly for the factor.
+  let evalCellProfile = null;
+  try {
+    evalCellProfile = getEvalTutorProfile(tutorProfileName);
+  } catch {
+    /* not an eval cell — leave null */
+  }
+  if (evalCellProfile?.factors?.id_director === true) {
+    return runIdDirectedTurn({
+      learnerId,
+      sessionId,
+      learnerMessage,
+      history,
+      tutorProfileName,
+      topic,
+      llmCall,
+      trace,
+      evalCellProfile,
+    });
+  }
+
   // Get tutor memory for this learner
   const tutorMemory = tutorWritingPad.buildNarrativeSummary(learnerId, sessionId);
 
@@ -491,11 +526,6 @@ async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutor
     .slice(-6)
     .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
-
-  // Get tutor configuration from profile
-  const _profile = tutorConfig.getActiveProfile(tutorProfileName);
-  const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
-  const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
 
   // Tutor internal deliberation
   const internalDeliberation = [];

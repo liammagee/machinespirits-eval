@@ -4370,3 +4370,87 @@ profiles:
     intervention_strategies:
       require_memory_integration: true
       assess_transformative_potential: true
+
+  # ─── Cells 100 / 101: Id-Director architecture (experimental) ─────────────
+  # Inverted topology: a back-stage "id" agent (re-uses the superego: slot
+  # but functions as a director / authorial source) writes a fresh ego system
+  # prompt every turn. The ego is then instantiated per-turn against the
+  # just-authored prompt and produces the learner-visible message. The id
+  # never speaks externally; the ego has no durable identity across turns.
+  #
+  # Optimisation target: charismatic pedagogy as operationalised in
+  # config/evaluation-rubric-charisma.yaml (8 dimensions, Weber-derived).
+  # Cell 100 tests pure charisma; cell 101 stacks Hegelian recognition on
+  # top to test interaction.
+  #
+  # Curriculum-agnostic: the runner sets contentPackagePath per evaluation,
+  # so the same cell runs against courses 601 (history-of-tech), 701 (ethics
+  # of AI), and 901 (AI literacy).
+  #
+  # Symmetry note: deliberately broken — unified learner only for v1, to
+  # isolate the tutor-side mechanism. Symmetric learner-id queued as cell
+  # 102/103 follow-up.
+  #
+  # Design doc: notes/design-cell-100-id-director-charisma.md
+  # Engine: services/idDirectorEngine.js
+  cell_100_id_director_charisma:
+    description: "Id-Director (cell 100): back-stage id authors a fresh ego prompt each turn; charisma-optimised; base prompt_type (no recognition vocabulary in id-authored prompts)"
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 6000
+
+  cell_101_recog_id_director_charisma:
+    description: "Id-Director (cell 101): same architecture as cell 100, with recognition_mode=true so id-authored prompts embed Hegelian recognition framing alongside charismatic register"
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 6000
