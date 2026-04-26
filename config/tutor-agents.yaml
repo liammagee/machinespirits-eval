@@ -266,6 +266,19 @@ pedagogical_orientations:
     approx_length_words: 2813
     evaluation_note: "D3 Bridge 1 cell 98. Tests the architectural alternative to cell 97's prompt-rider directive: instead of telling the ego to 'act on what you noticed,' a separate Phase-1 call produces a noticing in plain text, and the existing ego prompt receives it as recent-context input. Cost: +1 cheap LLM call per turn (~10% of total turn cost). Pre-registered thresholds same as cell 97. See notes/design-d3-architectural-bridges.md."
 
+  dialectical_coupling:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego × coupling-targeted superego"
+    lineage: "Same as dialectical_suspicious in architecture; the Superego's critique target is retargeted from broad pedagogical / authenticity concerns to the specific question of whether the Ego's message embodies its own reasoning."
+    view_of_learner: "Inherits from paired ego prompt (base only; D3 Bridge 2 starts on the base variant)"
+    role_of_tutor: "Same as dialectical_suspicious; the architectural change is in critique scope — the superego applies a 3-step coupling test (extract noticing → look for traces in message → assign severity) and demands revision when the message is decoupled from its own stated reflection."
+    key_mechanism: "Coupling-targeted error correction (insight-action bridge via critique retargeting)"
+    vocabulary: ["coupling auditor", "noticing", "trace the link", "coupling severity", "decoupled reflection"]
+    prompt_file: tutor-ego-dialectical.md  # paired with tutor-superego-coupling.md
+    approx_length_words: 2813
+    evaluation_note: "D3 Bridge 2 cell 99. Reuses the paper's already-strong error-correction mechanism (Mechanism 2, §6.2) but retargets it specifically at coupling. Cost: same as cell 40 (no extra LLM calls; only the superego prompt content differs). Pre-registered thresholds same as cells 97/98. See notes/design-d3-architectural-bridges.md."
+
   dialectical_adversary:
     family: architectural_variant
     subfamily: dialectical_synthesis
@@ -4293,6 +4306,64 @@ profiles:
       model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego-suspicious.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 99: D3 Bridge 2 (coupling-targeted superego).
+  # Identical to cell 40 in every dimension except the superego prompt:
+  # tutor-superego-coupling.md replaces tutor-superego-suspicious.md.
+  # The new superego is a coupling auditor — its single job is to verify
+  # that the Ego's message visibly embodies the Ego's reasoning. It applies
+  # a 3-step test (extract noticing → look for traces in message → assign
+  # severity) and demands revision when the message is decoupled from its
+  # own stated reflection.
+  # Tests whether retargeting the (already-strong) error-correction mechanism
+  # at the coupling problem closes the insight-action gap that cell 97's
+  # prompt-rider directive failed to bridge.
+  # The dialectical engine handles the negotiation loop unchanged — only
+  # the critique target shifts.
+  # Design note: notes/design-d3-architectural-bridges.md (Bridge 2/3,
+  # ordered after Bridge 1 for sequencing).
+  cell_99_base_dialectical_coupling_unified_superego:
+    description: "D3 Bridge 2 cell 99: base dialectical ego + coupling-targeted superego (architecture matches cell 40; superego retargeted at reflection-action coupling)"
+    factors:
+      prompt_type: dialectical_coupling
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: coupling
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.65
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-coupling.md
       hyperparameters:
         temperature: 0.2
         max_tokens: 8000
