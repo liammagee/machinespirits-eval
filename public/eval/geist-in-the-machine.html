@@ -1,0 +1,2521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<title>Machinagogy — A Designer's Field Guide to Recognition in Chatbot Design</title>
+<meta name="description" content="A field guide for chatbot designers. The drama of teaching, the philosophy of recognition, and what a five-pass mechanism analysis on a recognition-theoretic AI tutor reveals about how to build dialogical systems that don't feel flat." />
+<meta property="og:title" content="Machinagogy — A Designer's Field Guide to Recognition in Chatbot Design" />
+<meta property="og:description" content="A field guide for chatbot designers. The drama of teaching, the philosophy of recognition, and what to build instead." />
+<meta property="og:type" content="article" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Machinagogy — Field Guide
+   editorial scientific publication, dialectically structured
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --paper:     #F4EEDD;
+  --paper-2:   #ECE3CB;
+  --paper-3:   #F8F2E2;
+  --paper-4:   #FBF6E8;
+  --ink:       #14100C;
+  --ink-2:     #2C241B;
+  --ink-3:     #5C5040;
+  --ink-4:     #8C7E6A;
+  --linen:     #D8C7A9;
+  --moss:      #56683A;
+  --moss-deep: #3A4824;
+  --brick:     #A53E2E;
+  --brick-d:   #7C2C1F;
+  --ochre:     #C08A3E;
+  --ochre-d:   #8C5F1F;
+  --rule:      rgba(28, 22, 16, 0.18);
+  --rule-soft: rgba(28, 22, 16, 0.10);
+
+  --s-mini: clamp(0.62rem, 0.58rem + 0.14vw, 0.72rem);
+  --s-0:    clamp(0.78rem, 0.74rem + 0.18vw, 0.90rem);
+  --s-1:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+  --s-2:    clamp(1.05rem, 1.00rem + 0.26vw, 1.20rem);
+  --s-3:    clamp(1.30rem, 1.20rem + 0.50vw, 1.60rem);
+  --s-4:    clamp(1.80rem, 1.50rem + 1.40vw, 2.80rem);
+  --s-5:    clamp(2.60rem, 1.80rem + 3.50vw, 5.20rem);
+  --s-6:    clamp(3.40rem, 2.20rem + 5.20vw, 7.40rem);
+
+  --lead: 1.55;
+  --lead-tight: 1.10;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --measure: 38rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; background: var(--paper); scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+  font-size: var(--s-1);
+  line-height: var(--lead);
+  font-feature-settings: "ss01", "kern", "liga";
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  min-height: 100vh;
+  letter-spacing: 0.003em;
+}
+
+/* paper grain */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(160% 100% at 50% 0%, transparent 50%, rgba(20,16,12,0.07) 100%),
+    radial-gradient(80% 60% at 8% 92%, rgba(165,62,46,0.04), transparent 70%),
+    radial-gradient(70% 60% at 96% 14%, rgba(86,104,58,0.05), transparent 70%);
+  mix-blend-mode: multiply;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  background-image:
+    radial-gradient(rgba(20,16,12,0.55) 0.5px, transparent 0.5px);
+  background-size: 3px 3px;
+  background-position: 0 0;
+  mix-blend-mode: multiply;
+}
+
+/* ═══════ typography ═══════ */
+h1, h2, h3, h4, .display, .num {
+  font-family: "Fraunces", "Source Serif 4", Georgia, serif;
+  font-optical-sizing: auto;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-feature-settings: "ss01", "ss02", "kern";
+}
+
+a { color: var(--brick-d); text-decoration: none; border-bottom: 1px solid currentColor; transition: color .25s var(--ease); }
+a:hover { color: var(--brick); }
+
+p { margin: 0 0 0.95em; }
+em { font-style: italic; color: var(--ink); }
+strong { font-weight: 600; color: var(--ink); }
+
+.smallcaps { font-variant: all-small-caps; letter-spacing: 0.14em; font-feature-settings: "smcp", "c2sc"; }
+
+.label {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.cite {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78em;
+  letter-spacing: 0.04em;
+  color: var(--moss-deep);
+  font-style: normal;
+  white-space: nowrap;
+}
+.cite::before { content: "§"; opacity: 0.6; margin-right: 0.05em; }
+
+mark.kw {
+  background: linear-gradient(180deg, transparent 60%, rgba(192,138,62,0.30) 60%);
+  color: inherit;
+  padding: 0 0.05em;
+}
+
+q { font-style: italic; color: var(--ink); }
+q::before { content: '\201C'; color: var(--brick); margin-right: 0.04em; }
+q::after  { content: '\201D'; color: var(--brick); margin-left: 0.04em; }
+
+/* ═══════ sticky reading rail ═══════ */
+.rail {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: padding .2s var(--ease);
+}
+.rail__inner {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: 0.7em clamp(1rem, 4vw, 4rem);
+}
+.rail__title {
+  flex: 0 0 auto;
+  font-style: italic;
+  color: var(--ink);
+}
+.rail__dot { width: 5px; height: 5px; background: var(--moss); border-radius: 50%; }
+.rail__nav {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.rail__nav::-webkit-scrollbar { display: none; }
+.rail__nav a {
+  border-bottom: none;
+  color: var(--ink-3);
+  padding: 0.3em 0.9em 0.3em 0;
+  margin-right: 0.6em;
+  white-space: nowrap;
+  transition: color .15s var(--ease);
+}
+.rail__nav a:hover { color: var(--ink); }
+.rail__nav a.active { color: var(--brick-d); }
+.rail__nav a.active::before { content: "▸ "; color: var(--brick); }
+@media (max-width: 60rem) {
+  .rail__title { display: none; }
+}
+
+.rail__progress {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--brick);
+  width: 0%;
+  transition: width .1s linear;
+}
+
+/* ═══════ layout shell ═══════ */
+.shell {
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 3rem) clamp(1rem, 4vw, 4rem);
+}
+
+.diag {
+  display: grid;
+  grid-template-columns:
+    [margin-l] minmax(0, 14rem)
+    [body] minmax(0, 38rem)
+    [margin-r] minmax(0, 14rem);
+  gap: clamp(1rem, 2vw, 2.5rem);
+  align-items: start;
+  margin: 0 auto;
+  max-width: 80rem;
+}
+.diag > .body { grid-column: body; }
+.diag > .ml { grid-column: margin-l; padding-top: 0.4em; }
+.diag > .mr { grid-column: margin-r; padding-top: 0.4em; }
+.diag > .full { grid-column: 1 / -1; max-width: 80rem; margin: 0 auto; }
+.diag + .diag { margin-top: 1em; }
+
+@media (max-width: 60rem) {
+  .diag { grid-template-columns: 1fr; }
+  .diag > .ml, .diag > .mr {
+    border-left: 2px solid var(--rule);
+    padding-left: 0.9em;
+    margin-bottom: 1em;
+    color: var(--ink-3);
+    font-size: 0.9em;
+  }
+}
+
+/* ═══════ hero ═══════ */
+.hero {
+  border-bottom: 1px solid var(--rule);
+  padding: clamp(2rem, 5vw, 5rem) 0 clamp(2rem, 4vw, 4rem);
+  position: relative;
+}
+
+.hero__rune {
+  position: absolute;
+  top: 1rem;
+  left: clamp(1rem, 4vw, 4rem);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.22em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+.hero__rune span { color: var(--brick-d); }
+
+.hero__masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 2.5em auto 2em;
+  max-width: 80rem;
+  padding: 0 clamp(1rem, 4vw, 4rem);
+}
+.hero__rule { flex: 1; height: 1px; background: var(--rule); margin: 0 1em; position: relative; top: -0.4em; }
+
+.hero__h1 {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+  font-size: var(--s-5);
+  line-height: 0.96;
+  font-weight: 460;
+  margin: 0 auto 0.4em;
+  max-width: 80rem;
+  padding: 0 clamp(1rem, 4vw, 4rem);
+  letter-spacing: -0.022em;
+  color: var(--ink);
+}
+.hero__h1 .em {
+  font-style: italic;
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+  color: var(--brick-d);
+}
+
+.hero__subtitle {
+  margin: 0.6em auto 0;
+  max-width: 80rem;
+  padding: 0 clamp(1rem, 4vw, 4rem);
+  font-family: "Fraunces", serif;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+  font-style: italic;
+  font-size: var(--s-3);
+  font-weight: 320;
+  color: var(--ink-3);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  max-width: 56rem;
+}
+
+.hero__lede {
+  margin: 2.4em auto 0;
+  max-width: 80rem;
+  padding: 0 clamp(1rem, 4vw, 4rem);
+  display: grid;
+  grid-template-columns: minmax(0, 38rem) minmax(0, 22rem);
+  gap: clamp(1.5rem, 4vw, 4rem);
+}
+@media (max-width: 60rem) {
+  .hero__lede { grid-template-columns: 1fr; }
+}
+.hero__lede p {
+  font-size: var(--s-2);
+  line-height: 1.5;
+  color: var(--ink-2);
+  font-weight: 350;
+  font-family: "Source Serif 4", serif;
+  margin: 0 0 0.85em;
+}
+.hero__lede p:first-of-type::first-letter {
+  font-family: "Fraunces", Georgia, serif;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 144;
+  font-size: 3.4em;
+  line-height: 0.9;
+  float: left;
+  padding: 0.05em 0.08em 0 0;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.hero__num {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-left: 2px solid var(--moss);
+  padding-left: 1.4em;
+  align-self: stretch;
+}
+.hero__num__big {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: var(--s-6);
+  line-height: 0.9;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 144;
+  color: var(--moss-deep);
+  font-weight: 320;
+  letter-spacing: -0.04em;
+}
+.hero__num__big .d-eq {
+  font-style: italic;
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 144;
+  color: var(--ink-3);
+  font-weight: 280;
+  font-size: 0.55em;
+  vertical-align: 0.3em;
+}
+.hero__num__sub {
+  margin-top: 0.5em;
+  font-size: var(--s-0);
+  color: var(--ink-3);
+  line-height: 1.45;
+  max-width: 18em;
+}
+
+.hero__nav {
+  margin: 4em auto 0;
+  max-width: 80rem;
+  padding: 0 clamp(1rem, 4vw, 4rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 1px dashed var(--rule);
+  padding-top: 1.4em;
+  font-size: var(--s-mini);
+}
+.hero__nav a {
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border-bottom: none;
+  padding: 0.45em 1.1em 0.45em 0;
+  margin-right: 1.1em;
+  border-right: 1px dashed var(--rule);
+  transition: color .2s var(--ease);
+}
+.hero__nav a:last-child { border-right: none; }
+.hero__nav a:hover { color: var(--brick); }
+.hero__nav a .num { color: var(--moss-deep); margin-right: 0.5em; font-style: italic; }
+
+/* ═══════ section structure ═══════ */
+section.s {
+  padding: clamp(3rem, 6vw, 6rem) 0;
+  position: relative;
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 4em;
+}
+section.s:last-of-type { border-bottom: none; }
+
+.s__num {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: var(--s-6);
+  line-height: 0.85;
+  font-weight: 280;
+  font-variation-settings: "SOFT" 80, "WONK" 0, "opsz" 144;
+  color: var(--moss);
+  letter-spacing: -0.05em;
+  user-select: none;
+  margin: 0;
+}
+.s__num .glyph {
+  font-style: italic;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+  color: var(--brick-d);
+  font-weight: 240;
+}
+
+.s__h {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: var(--s-4);
+  line-height: 1.05;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  font-weight: 460;
+  margin: 0.4em 0 1em;
+  color: var(--ink);
+  letter-spacing: -0.018em;
+}
+.s__h em {
+  font-style: italic;
+  color: var(--brick-d);
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+}
+
+.s__kicker {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  margin: 0 0 0.6em;
+}
+
+/* ═══════ marginalia ═══════ */
+.note {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.86em;
+  line-height: 1.5;
+  color: var(--ink-3);
+  font-style: italic;
+}
+.note__lbl {
+  display: block;
+  font-style: normal;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brick-d);
+  margin-bottom: 0.5em;
+  font-weight: 500;
+}
+.note--moss .note__lbl { color: var(--moss-deep); }
+.note--ink .note__lbl { color: var(--ink-3); }
+.note--ochre .note__lbl { color: var(--ochre-d); }
+.note p { margin: 0 0 0.6em; }
+
+/* ═══════ pull quote ═══════ */
+.pq {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  line-height: 1.4;
+  font-style: italic;
+  color: var(--ink);
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 96;
+  font-weight: 360;
+  border-left: 2px solid var(--brick);
+  padding: 0.4em 0 0.4em 1.2em;
+  margin: 1.4em 0;
+  letter-spacing: -0.005em;
+}
+.pq cite {
+  display: block;
+  font-style: normal;
+  font-variation-settings: normal;
+  margin-top: 0.5em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* ═══════ findings: claim/counter pairs ═══════ */
+.claim {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8em 1.4em;
+  align-items: baseline;
+  margin: 0 0 2.4em;
+  position: relative;
+}
+.claim__no {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-4);
+  line-height: 0.85;
+  font-weight: 280;
+  font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96;
+  color: var(--ink-4);
+  font-style: italic;
+  width: 1.4em;
+  text-align: right;
+}
+.claim__h {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-3);
+  line-height: 1.15;
+  font-weight: 460;
+  font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.012em;
+}
+.claim__body { grid-column: 2; margin-top: 0.6em; color: var(--ink-2); }
+.claim__body p { font-size: var(--s-1); line-height: 1.6; }
+
+.claim__counter {
+  grid-column: 2;
+  margin-top: 0.4em;
+  border-left: 2px solid var(--brick);
+  padding: 0.2em 0 0.2em 1em;
+  font-family: "Source Serif 4", serif;
+  font-style: italic;
+  font-size: 0.95em;
+  color: var(--ink-3);
+}
+.claim__counter::before {
+  content: "objection.";
+  display: inline;
+  font-style: normal;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brick-d);
+  margin-right: 0.6em;
+  font-weight: 500;
+}
+
+/* ═══════ scene/dramatis frame ═══════ */
+.scene {
+  position: relative;
+  padding: 1.4em 1.4em 1.4em 1.6em;
+  background: linear-gradient(180deg, rgba(192,138,62,0.06), rgba(192,138,62,0.02) 80%, transparent);
+  border-left: 2px dotted var(--ochre);
+  margin: 1.5em 0;
+  font-family: "Source Serif 4", serif;
+  font-size: 0.96em;
+  line-height: 1.55;
+}
+.scene__lbl {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ochre-d);
+  margin: 0 0 0.5em;
+  font-weight: 500;
+}
+.scene em { color: var(--ink); }
+
+/* ═══════ data table ═══════ */
+.tbl {
+  margin: 1.5em 0;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  font-family: "Source Serif 4", serif;
+}
+.tbl th, .tbl td {
+  text-align: left;
+  padding: 0.7em 1em 0.7em 0;
+  border-bottom: 1px dotted var(--rule);
+  vertical-align: top;
+}
+.tbl th {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 0.6em;
+}
+.tbl tbody tr:last-child td { border-bottom: 1px solid var(--ink); }
+.tbl td.verdict { font-style: italic; color: var(--ink); font-weight: 500; }
+.tbl td.verdict.no { color: var(--brick-d); }
+.tbl td.verdict.yes { color: var(--moss-deep); }
+.tbl td.verdict.partial { color: var(--ochre-d); font-weight: 600; }
+.tbl td.mono {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.86em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+
+/* ═══════ Simpson scatter ═══════ */
+.simpson {
+  border: 1px solid var(--rule);
+  background: var(--paper-3);
+  padding: clamp(1.4rem, 2.5vw, 2.4rem);
+  margin: 1.5em 0;
+  position: relative;
+}
+.simpson__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1em;
+  border-bottom: 1px dotted var(--rule);
+  padding-bottom: 0.8em;
+  flex-wrap: wrap;
+  gap: 0.8em;
+}
+.simpson__title {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24;
+}
+.simpson__title em { color: var(--brick-d); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24; }
+.simpson__toggle {
+  display: inline-flex;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.simpson__toggle button {
+  background: transparent;
+  border: none;
+  padding: 0.6em 1.2em;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink-3);
+  letter-spacing: inherit;
+  text-transform: inherit;
+  transition: background .25s var(--ease), color .25s var(--ease);
+}
+.simpson__toggle button:hover { color: var(--ink); }
+.simpson__toggle button.active { background: var(--ink); color: var(--paper); }
+.simpson__toggle button + button { border-left: 1px solid var(--ink); }
+
+#simpsonSvg { width: 100%; height: auto; display: block; font-family: "JetBrains Mono", monospace; }
+
+.simpson__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5em;
+  margin-top: 1em;
+  padding-top: 1em;
+  border-top: 1px dotted var(--rule);
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+.simpson__legend__item { display: flex; align-items: center; gap: 0.6em; }
+.simpson__legend__dot { width: 10px; height: 10px; border-radius: 2px; }
+
+.simpson__caption {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.95em;
+  font-style: italic;
+  color: var(--ink-3);
+  line-height: 1.55;
+  margin-top: 1em;
+  padding: 0.8em 1em;
+  background: rgba(86, 104, 58, 0.06);
+  border-left: 2px solid var(--moss);
+}
+.simpson__caption strong { color: var(--moss-deep); font-style: normal; }
+.simpson__caption[data-mode="pooled"] strong::before { content: "When pooled. "; }
+.simpson__caption[data-mode="within"] strong::before { content: "When stratified. "; }
+
+/* ═══════ diagnostic checker ═══════ */
+.checker {
+  border: 1px solid var(--ink);
+  background: var(--paper-3);
+  padding: clamp(1.4rem, 2.5vw, 2.4rem);
+  margin: 1.5em 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(1.2rem, 3vw, 3rem);
+  align-items: start;
+}
+@media (max-width: 50rem) { .checker { grid-template-columns: 1fr; } }
+
+.checker__panel { display: flex; flex-direction: column; gap: 1.4em; }
+.crit { border-bottom: 1px dotted var(--rule); padding-bottom: 1.2em; }
+.crit:last-of-type { border-bottom: none; padding-bottom: 0; }
+
+.crit__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4em;
+}
+.crit__title {
+  font-family: "Source Serif 4", serif;
+  font-size: var(--s-1);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+.crit__title .num {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  color: var(--moss-deep);
+  margin-right: 0.4em;
+}
+.crit__val {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-2);
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  min-width: 4em;
+  text-align: right;
+}
+
+.crit__rule { font-family: "Source Serif 4", serif; font-size: 0.88em; color: var(--ink-3); margin: 0 0 0.6em; font-style: italic; }
+
+.crit input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; cursor: pointer; margin-top: 0.4em; }
+.crit input[type="range"]::-webkit-slider-runnable-track { height: 2px; background: var(--rule); border-radius: 0; }
+.crit input[type="range"]::-moz-range-track { height: 2px; background: var(--rule); border-radius: 0; }
+.crit input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--ink); border: 2px solid var(--paper); margin-top: -7px; transition: transform .2s var(--ease);
+}
+.crit input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.2); }
+.crit input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--ink); border: 2px solid var(--paper); }
+
+.crit__ticks {
+  display: flex; justify-content: space-between; margin-top: 0.4em;
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); color: var(--ink-4); letter-spacing: 0.04em;
+}
+
+.verdict {
+  border: 1px solid var(--ink);
+  padding: 1.4em 1.4em 1.6em;
+  background: var(--paper);
+  position: sticky;
+  top: 4em;
+}
+.verdict__lbl {
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 0.6em;
+}
+.verdict__h {
+  font-family: "Fraunces", serif; font-size: var(--s-3); line-height: 1.1;
+  font-weight: 460; font-variation-settings: "SOFT" 50, "WONK" 0, "opsz" 96;
+  color: var(--ink); margin: 0 0 0.4em; letter-spacing: -0.014em; transition: color .35s var(--ease);
+}
+.verdict__h.is-mediator { color: var(--moss-deep); font-style: italic; font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96; }
+.verdict__h.is-warn { color: var(--brick-d); font-style: italic; font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 96; }
+.verdict__body { font-family: "Source Serif 4", serif; font-size: 0.95em; line-height: 1.5; color: var(--ink-2); margin-top: 0.8em; }
+
+.examples { margin-top: 1.4em; padding-top: 1.2em; border-top: 1px dotted var(--rule); }
+.examples__lbl {
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0 0 0.6em;
+}
+.example-btn {
+  display: inline-block; background: transparent; border: 1px dashed var(--rule);
+  padding: 0.45em 0.8em; font-family: "JetBrains Mono", monospace; font-size: var(--s-mini);
+  letter-spacing: 0.06em; color: var(--ink-2); cursor: pointer; transition: all .2s var(--ease);
+  margin: 0.2em 0.3em 0.2em 0;
+}
+.example-btn:hover { border-color: var(--ink); border-style: solid; color: var(--ink); }
+
+/* ═══════ analyser ═══════ */
+.analyser {
+  border: 1px solid var(--ink); background: var(--paper-3);
+  padding: clamp(1.4rem, 2.5vw, 2.4rem);
+  margin: 1.5em 0;
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(1.2rem, 3vw, 2.4rem);
+}
+@media (max-width: 56rem) { .analyser { grid-template-columns: 1fr; } }
+
+.analyser__input { display: flex; flex-direction: column; gap: 0.8em; }
+.analyser__lbl {
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+.analyser textarea {
+  width: 100%; min-height: 280px; border: 1px solid var(--rule); background: var(--paper);
+  color: var(--ink-2); font-family: "Source Serif 4", serif; font-size: var(--s-1); line-height: 1.55;
+  padding: 1.2em 1.4em; resize: vertical; outline: none; transition: border-color .2s var(--ease);
+}
+.analyser textarea:focus { border-color: var(--ink); }
+.analyser__sample {
+  background: transparent; border: 1px dashed var(--rule); padding: 0.45em 0.8em;
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.08em;
+  color: var(--ink-2); cursor: pointer; align-self: flex-start; transition: all .2s var(--ease);
+  margin-top: 0.4em; text-transform: uppercase;
+}
+.analyser__sample:hover { border-color: var(--ink); border-style: solid; color: var(--ink); }
+
+.analyser__output { display: flex; flex-direction: column; gap: 0.6em; }
+.feat {
+  display: grid; grid-template-columns: 1fr auto; gap: 0.4em 1em;
+  align-items: baseline; border-bottom: 1px dotted var(--rule); padding: 0.7em 0 0.5em;
+}
+.feat:last-child { border-bottom: none; }
+.feat__name { font-family: "Source Serif 4", serif; font-size: var(--s-1); color: var(--ink); margin: 0; font-weight: 500; }
+.feat__val {
+  font-family: "Fraunces", serif; font-size: var(--s-3); line-height: 1; color: var(--ink);
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 96; font-weight: 320;
+  letter-spacing: -0.02em; font-feature-settings: "tnum"; transition: color .2s var(--ease);
+}
+.feat__val.zero { color: var(--ink-4); }
+.feat__val.high { color: var(--moss-deep); }
+.feat__val.warn { color: var(--brick-d); }
+.feat__note {
+  grid-column: 1 / -1; font-family: "Source Serif 4", serif; font-size: 0.86em;
+  font-style: italic; color: var(--ink-3); line-height: 1.5; margin: 0;
+}
+
+/* ═══════ design checklist ═══════ */
+.checklist {
+  border: 1px solid var(--rule);
+  background: var(--paper-4);
+  padding: 0;
+  margin: 1.5em 0;
+  list-style: none;
+  counter-reset: chk;
+}
+.checklist li {
+  counter-increment: chk;
+  position: relative;
+  padding: 1em 1.4em 1em 4em;
+  border-bottom: 1px dotted var(--rule);
+  cursor: pointer;
+  transition: background .2s var(--ease);
+}
+.checklist li:last-child { border-bottom: none; }
+.checklist li::before {
+  content: counter(chk, decimal-leading-zero);
+  position: absolute;
+  left: 1.2em;
+  top: 1.05em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.08em;
+  color: var(--moss-deep);
+  font-weight: 500;
+}
+.checklist li::after {
+  content: "";
+  position: absolute;
+  left: 2.5em;
+  top: 1.2em;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--ink-3);
+  background: var(--paper);
+  transition: all .2s var(--ease);
+}
+.checklist li.done { background: rgba(86, 104, 58, 0.08); }
+.checklist li.done::after {
+  background: var(--moss);
+  border-color: var(--moss);
+  box-shadow: inset 0 0 0 3px var(--paper);
+}
+.checklist li.done .chk__h { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--rule); }
+.checklist .chk__h {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-1);
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 0.3em;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24;
+  display: block;
+}
+.checklist .chk__h em { color: var(--brick-d); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24; }
+.checklist .chk__d { font-size: 0.92em; color: var(--ink-3); margin: 0; line-height: 1.5; }
+
+/* ═══════ apply cards ═══════ */
+.apply {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.5em 0;
+}
+.apply__card { background: var(--paper-3); padding: 1.6em 1.6em 1.8em; display: flex; flex-direction: column; gap: 0.8em; }
+.apply__card__h {
+  font-family: "Fraunces", serif; font-size: var(--s-2); font-weight: 500; color: var(--ink);
+  margin: 0; font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24; letter-spacing: -0.01em;
+}
+.apply__card__h em { color: var(--brick-d); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24; }
+.apply__card ol { margin: 0; padding: 0; counter-reset: ap; list-style: none; }
+.apply__card ol li {
+  counter-increment: ap; position: relative; padding-left: 1.8em; margin-bottom: 0.7em;
+  font-size: 0.94em; line-height: 1.5; color: var(--ink-2);
+}
+.apply__card ol li::before {
+  content: counter(ap, decimal-leading-zero);
+  position: absolute; left: 0; top: 0.05em;
+  font-family: "JetBrains Mono", monospace; font-size: 0.78em;
+  color: var(--moss-deep); letter-spacing: 0.04em;
+}
+
+/* ═══════ replicate links ═══════ */
+.linklist { margin: 1.5em 0; border-top: 1px solid var(--ink); }
+.linklist a {
+  display: grid; grid-template-columns: 4em 1fr auto; gap: 1em; align-items: baseline;
+  padding: 1em 0; border-bottom: 1px dotted var(--rule); text-decoration: none;
+  border: none; border-bottom: 1px dotted var(--rule); color: var(--ink-2);
+  transition: padding-left .2s var(--ease), color .2s var(--ease);
+}
+.linklist a:hover { padding-left: 0.8em; color: var(--ink); }
+.linklist a:hover .linklist__arrow { color: var(--brick); transform: translateX(4px); }
+.linklist__no {
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.12em;
+  color: var(--ink-4); font-weight: 400;
+}
+.linklist__name {
+  font-family: "Fraunces", serif; font-size: var(--s-2); color: var(--ink);
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24; font-weight: 460;
+}
+.linklist__name__sub {
+  display: block; font-family: "Source Serif 4", serif; font-size: 0.82em;
+  color: var(--ink-3); font-style: italic; margin-top: 0.2em;
+  font-weight: 380; font-variation-settings: normal;
+}
+.linklist__arrow {
+  font-family: "JetBrains Mono", monospace; color: var(--ink-3);
+  transition: transform .2s var(--ease), color .2s var(--ease);
+}
+
+/* ═══════ citation block ═══════ */
+.cite-block { background: var(--paper-3); border: 1px solid var(--rule); margin: 1.5em 0; }
+.cite-block__head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px dotted var(--rule); padding: 0.9em 1.4em;
+}
+.cite-block__title {
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+.cite-block__copy {
+  background: transparent; border: 1px solid var(--rule); padding: 0.4em 0.8em;
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.1em;
+  color: var(--ink-2); cursor: pointer; transition: all .2s var(--ease); text-transform: uppercase;
+}
+.cite-block__copy:hover { border-color: var(--ink); color: var(--ink); }
+.cite-block__copy.copied { background: var(--moss); border-color: var(--moss); color: var(--paper); }
+.cite-block pre {
+  margin: 0; padding: 1.2em 1.4em 1.4em; font-family: "JetBrains Mono", monospace;
+  font-size: 0.82em; line-height: 1.7; color: var(--ink-2); white-space: pre-wrap;
+  word-break: break-word; overflow-x: auto;
+}
+.cite-block pre .k { color: var(--brick-d); font-weight: 500; }
+.cite-block pre .v { color: var(--moss-deep); }
+
+/* ═══════ footer ═══════ */
+footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; }
+.foot__inner {
+  max-width: 80rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 4rem);
+  display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 2em; align-items: end;
+}
+@media (max-width: 50rem) { .foot__inner { grid-template-columns: 1fr; } }
+.foot__lede {
+  font-family: "Fraunces", serif; font-size: var(--s-2); font-style: italic;
+  color: var(--ink-2); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24;
+  font-weight: 380; margin: 0 0 0.8em; line-height: 1.4;
+}
+.foot__lede .em { color: var(--moss-deep); }
+.foot__sub {
+  font-family: "JetBrains Mono", monospace; font-size: var(--s-mini); letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+.foot__sub a { color: inherit; border-bottom: 1px dotted var(--rule); }
+.foot__sub a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.foot__seal {
+  text-align: right; font-family: "Fraunces", serif; font-style: italic;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144;
+  color: var(--moss); font-size: var(--s-3); line-height: 1;
+}
+
+/* ═══════ misc ═══════ */
+.spacer { height: 2em; }
+.lede-p { font-family: "Source Serif 4", serif; font-size: var(--s-2); line-height: 1.5; color: var(--ink-2); font-weight: 380; margin: 0 0 1em; }
+.drop { border: none; border-top: 1px dashed var(--rule); margin: 2.5em 0; height: 0; }
+.pip { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 0.4em; transform: translateY(-1px); }
+.pip--moss { background: var(--moss); } .pip--brick { background: var(--brick); } .pip--ochre { background: var(--ochre); }
+
+/* compact paired definition list (hegel terms etc) */
+.terms { display: grid; grid-template-columns: max-content 1fr; gap: 0.6em 1.4em; margin: 1em 0 1.4em; }
+.terms dt {
+  font-family: "Fraunces", serif; font-style: italic;
+  font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 24;
+  color: var(--brick-d); white-space: nowrap; padding-top: 0.05em;
+}
+.terms dd { margin: 0; color: var(--ink-2); font-size: 0.95em; line-height: 1.5; }
+
+/* reveal */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* print */
+@media print {
+  body::before, body::after { display: none; }
+  body { background: white; color: black; font-size: 10pt; }
+  .rail, .hero__nav, .simpson__toggle, .checker, .analyser__sample, .cite-block__copy, .example-btn { display: none; }
+  section.s { page-break-inside: avoid; padding: 1em 0; border-bottom: 0.5pt solid #ccc; }
+  .hero__h1 { font-size: 24pt; } .s__h { font-size: 16pt; } .s__num { font-size: 36pt; }
+  .reveal { opacity: 1; transform: none; }
+  a { color: black; }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STICKY READING RAIL
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Machinagogy</span>
+    <span class="rail__dot"></span>
+    <nav class="rail__nav" id="railNav">
+      <a href="#scene"><span class="rail__no">i.</span> the scene</a>
+      <a href="#recognition">ii. recognition</a>
+      <a href="#interior">iii. interior voice</a>
+      <a href="#experiment">iv. experiment</a>
+      <a href="#findings">v. findings</a>
+      <a href="#diagnostic">vi. diagnostic</a>
+      <a href="#integrate">vii. integrate</a>
+      <a href="#currents">viii. deeper currents</a>
+      <a href="#cite">ix. cite</a>
+    </nav>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <div class="hero__rune">— a designer's field guide · machinespirits/eval · <span>2026·iv·xxvi</span> ·</div>
+
+  <div class="hero__masthead">
+    <div class="label">geist in the machine · companion</div>
+    <div class="hero__rule"></div>
+    <div class="label">v · 0 · 2 · 0</div>
+  </div>
+
+  <h1 class="hero__h1">
+    Machinagogy.
+  </h1>
+  <p class="hero__subtitle">
+    A designer's field guide to <span style="font-style:normal;color:var(--ink);">recognition</span> in chatbot design — for anyone building dialogical systems that don't have to feel flat.
+  </p>
+
+  <div class="hero__lede">
+    <div>
+      <p>
+        Most chatbots feel mechanical — not because they are unintelligent, but because their <em>discourse</em> is unfailingly monotonal. They explain, summarise, hedge, and reassure with a uniform breeziness that gives the receiving end no place to push back, no place to be heard, no place to enter the conversation as more than a sequence of inputs. The flatness is structural, not cosmetic; it survives every prompt-engineering trick that targets only surface tone.
+      </p>
+      <p>
+        This field guide is for designers who want to build something else. It draws on a small but rigorous result: a five-pass mechanism analysis of a <em>recognition-theoretic</em> AI tutor, shadowed by a philosophical reading that places the result inside a longer history of teaching, drama, and the dialectics of self and other. The result is part empirical and part conceptual, and it produces a small handful of actionable design moves.
+      </p>
+      <p>
+        The companion paper [<a href="https://github.com/liammagee/machinespirits-content-philosophy/blob/main/articles/ai-tutor/machinagogy-v2.md">Magee 2026</a>] supplies the philosophical scaffold; the technical paper [<a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/paper-full-2.0.md">paper-full-2.0.md</a>] supplies the evidence; this page is the bridge between them, written for the practitioner: <em>here is what to take away, here is what to ignore, and here is how to put it into your design.</em>
+      </p>
+    </div>
+    <div class="hero__num">
+      <div class="hero__num__big"><span class="d-eq">d ≈</span>1.38</div>
+      <div class="hero__num__sub">
+        Pooled three-judge effect size between intersubjective and transmission prompt families on a 4-cell matched-specificity corpus. The single largest finding in the technical paper — and the orientation, not the vocabulary, is what carries it. <span class="cite">7.9</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="hero__nav">
+    <a href="#scene"><span class="num">i.</span>The scene of teaching</a>
+    <a href="#recognition"><span class="num">ii.</span>Recognition, in plain language</a>
+    <a href="#interior"><span class="num">iii.</span>The interior voice</a>
+    <a href="#experiment"><span class="num">iv.</span>The experiment</a>
+    <a href="#findings"><span class="num">v.</span>What survived</a>
+    <a href="#diagnostic"><span class="num">vi.</span>The diagnostic</a>
+    <a href="#integrate"><span class="num">vii.</span>Integrate</a>
+    <a href="#currents"><span class="num">viii.</span>Deeper currents</a>
+    <a href="#cite"><span class="num">ix.</span>Cite</a>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §I. THE SCENE OF TEACHING
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="scene">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">i.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">A starting picture for the uninitiated.</p>
+      <h2 class="s__h">The scene of teaching is <em>dramatic</em> — and most chatbots aren't.</h2>
+      <p class="lede-p">
+        Before going further, it helps to look at what teaching actually is, when it works, and what AI tutors fail to do well. The picture at the centre of this guide is older than every chatbot benchmark.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ochre">
+        <span class="note__lbl">epigraph</span>
+        <q>To think is also to involve an encounter between the one who knows and the one who needs to know.</q>
+        <div style="font-style:normal;font-family:JetBrains Mono,monospace;font-size:var(--s-mini);letter-spacing:0.16em;text-transform:uppercase;margin-top:0.6em;color:var(--ink-3);">— Magee 2026</div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <div class="scene">
+        <p class="scene__lbl">scene · matthew paris, c. 1240–1250</p>
+        <p>
+          In a thirteenth-century ink drawing in the Bodleian, the philosopher Plato stands behind his teacher Socrates, who sits at a writing desk. The classical reading is that Socrates dictates and Plato transcribes. Derrida, looking at the same image, suggested another possibility: it is <em>Plato</em>, behind, who gestures and instructs; <em>Socrates</em> who writes down the lesson. Plato could be angel; he could be devil. He could be running off with a skateboard.
+        </p>
+        <p>
+          The scene's instability is not an art-historical curiosity. It is a model for what teaching is. Each pole — knower, knowee — defines the other; each can become the other in the next moment. Authority is contingent. Roles invert. The drama lives in the contingency.
+        </p>
+      </div>
+
+      <p>
+        This is what most chatbots fail to do. The default tutor-LLM presents itself as continuously authoritative — dispensing explanations, hedging where the model's confidence dips, and reassuring the learner with a uniform warmth that has nowhere to go. The drama is gone. The roles are fixed: model speaks, user receives, conversation proceeds in an undifferentiated tonal register that previous work [<a href="https://github.com/liammagee/machinespirits-content-philosophy/blob/main/articles/ai-tutor/machinagogy-v2.md">Magee 2026</a>] has called <em>flat</em>.
+      </p>
+      <p>
+        The flatness has at least three sources. First, language models default toward the most-typical continuation of a tutor-shaped prompt — and the most-typical continuation is a mid-affect explanation. Second, the prompt-engineering tradition of bullet-pointed instruction lists ("be helpful, concise, friendly") tends to reinforce precisely the dimensions that produce uniformity. Third, there is no <em>structural</em> mechanism in a single-agent generation pipeline for the model's output to be checked, contested, or revised before reaching the user — so the response that ships is whatever the first sample produced.
+      </p>
+      <p>
+        These three failures are addressable, and the rest of this guide is about how. But first the conceptual scaffold: <em>recognition</em>, drawn from Hegel; and the <em>interior voice</em>, drawn from Freud. Both are old, and both are surprisingly serviceable for thinking about what makes a chatbot dialogical instead of declarative.
+      </p>
+      <div class="pq">
+        Even advanced modes of current AI models find it difficult to capture such variation [in teaching encounters]. To explore parameters for doing so, the experiment described below borrows an admittedly extravagant conceptual apparatus drawn from two theorists, Hegel and Freud, of the existentially dramatic nature of dyadic human relations.
+        <cite>— Magee 2026, Setting the Scene of the Teaching Drama</cite>
+      </div>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">why this guide exists</span>
+        Because the technical paper shows the recognition-theoretic prompt design produces large, model-independent quality gains — and because the <em>reasons</em> matter for designers more than the result alone. A practitioner who reads only "recognition prompts work" will reproduce surface vocabulary and miss the mechanism.
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §II. RECOGNITION, IN PLAIN LANGUAGE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="recognition">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">ii.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">A 200-word primer on Hegelian recognition.</p>
+      <h2 class="s__h">Recognition is <em>mutual</em>, <em>contingent</em>, and not the same thing as friendliness.</h2>
+      <p class="lede-p">
+        The Hegelian concept that does most of the work in this guide is older and stranger than its plain-language uses. A short orientation, then the relevance to chatbot design.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">no dialectics required</span>
+        You can integrate the design moves at the end of this guide without committing to Hegel or Honneth. The philosophy is included because it explains <em>why the moves work</em>, not because the practitioner needs to read the <em>Phenomenology</em>. If you skip §II and §III you can still use §VII.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <p>
+        For Hegel, becoming a self-conscious subject is not solitary. I cannot know myself purely from the inside; I become aware of myself <em>as a self</em> only when I encounter another self looking back. The encounter is uncanny: the other looks like me but is also alien, capable of perceiving and judging in their own right. From this encounter, two equally important things can follow.
+      </p>
+      <p>
+        First, a <em>struggle</em>. One party can dominate the other — the famous master/slave dialectic. The dominator becomes <em>master</em>; the dominated becomes <em>slave</em>. Hegel's surprising claim is that this configuration <em>does not produce mutual self-consciousness</em>. The master cannot recognise what is beneath them; the slave cannot recognise from below. Mastery arrests the development it sought.
+      </p>
+      <p>
+        Second, a <em>moment of equivalence</em>. The slave, through labour and through coming to know the world of objects, arrives at a self-consciousness the master cannot reach. In a teaching encounter, the structurally equivalent move is what philosopher Nigel Tubbs calls the <em>contingency</em> of the educational relationship: the teacher remembers being a student; the student anticipates being a teacher; the asymmetry of <em>now</em> dissolves into a recognition that <em>were I you and you me, we might share this exact same moment in reverse</em>.
+      </p>
+
+      <dl class="terms">
+        <dt>recognition</dt>
+        <dd>Mutual acknowledgement between two self-conscious subjects. Each knows themselves through being known by the other.</dd>
+        <dt>master / slave</dt>
+        <dd>The failed configuration. Domination locks both parties out of the recognition each desires.</dd>
+        <dt>contingency</dt>
+        <dd>The reversibility latent in any teaching relationship. The student-now could be the teacher-later; the teacher remembers being student.</dd>
+        <dt>Bildung</dt>
+        <dd>Formative activity. The work of self-formation through encounter with the world and with others.</dd>
+        <dt>Honneth's three forms</dt>
+        <dd>The contemporary reading of recognition: <em>love</em> (intimate care), <em>rights</em> (legal-civic), and <em>esteem</em> (social-vocational). Each is its own kind of recognition.</dd>
+      </dl>
+
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);font-variation-settings:'SOFT' 30,'WONK' 0,'opsz' 24;">Why a chatbot designer should care</h3>
+      <p>
+        A chatbot that <em>recognises</em> its user is one that treats the user as a self-conscious subject whose contribution can change what comes next — not as a query whose content selects a response. Operationally, this means three things, listed here as a preview of design moves the rest of the guide will substantiate:
+      </p>
+      <ol style="padding-left:1.2em;font-size:var(--s-1);line-height:1.6;">
+        <li><strong>The chatbot's reply must be specifically shaped by the content of the user's contribution.</strong> Generic fluency is the failure mode.</li>
+        <li><strong>Initiative must be ceded back at meaningful intervals.</strong> Recognition is bidirectional; a one-way explanation is not recognition.</li>
+        <li><strong>Acknowledgement is not the same as recognition.</strong> Surface markers like quoted text or "your X" possessives are <em>frequently</em> produced by lower-quality responses falling back on surrogate moves. (We'll return to this counterintuitive point in §V.)</li>
+      </ol>
+      <p>
+        These three moves can be operationalised without buying any Hegelian metaphysics. The vocabulary is interchangeable. What matters, as we will see, is the <em>stance</em>.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">further reading</span>
+        Tubbs (2023) <em>Re-educating Thinking</em>, Stojanov (2018) on Bildung and recognition, Honneth (1996) <em>Struggle for Recognition</em>. The Magee 2026 companion gives a substantially more careful treatment of all three.
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §III. THE INTERIOR VOICE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="interior">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">iii.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">A 200-word primer on Freudian interiority.</p>
+      <h2 class="s__h">The teacher has an <em>interior</em> voice. So can the chatbot.</h2>
+      <p class="lede-p">
+        Where Hegel describes the encounter <em>between</em> selves, Freud describes the encounter <em>within</em> the self. Both apply to chatbot design, and the second produces a specific architectural move.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ink">
+        <span class="note__lbl">prior architecture</span>
+        The Drama Machine paper [<a href="https://github.com/liammagee/machinespirits-content-philosophy">Magee 2026 — Drama Machine</a>] introduced the ego/superego pairing in a non-pedagogical context. The current work tests it in tutoring.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <p>
+        For Freud, the human mind is not a unitary deliberator but a structure of three uneasy parties. The <em>id</em> represents drives and impulses, often unconscious. The <em>ego</em> mediates between drives and the world, doing the work of practical reasoning. The <em>superego</em> is the internalised voice of authority — formed early in life from parental and cultural figures, it issues precepts (<em>you ought to be like X</em>) and prohibitions (<em>you must not be like Y</em>).
+      </p>
+      <p>
+        In the teaching scene, this matters because both teacher and student carry interior voices. The teacher addresses the student, but is also addressed by their own internalised teachers — the supervisory echoes of past authorities, ego-ideals, residues of self-doubt. The student receives the teacher's instruction, but processes it against their own interior voices: a parent, a peer, a previous teacher who said something different. Teaching is not a clean two-party exchange. It is at least four-party, with the doublings rarely visible in the transcript.
+      </p>
+
+      <div class="pq">
+        It is as though the teaching encounter is also marked by secondary conversations. The teacher teaches the student, but the student's ego also experiences a separate <em>voice</em> of its super-ego, who may reinforce the tutor's lesson or, alternately, resist it.
+        <cite>— Magee 2026</cite>
+      </div>
+
+      <p>
+        The architectural translation is straightforward. Where a default chatbot has one generative agent producing one response, a <em>multi-agent</em> chatbot has at least two: an <em>ego</em> that drafts a response, and a <em>superego</em> that reviews it and either approves, modifies, or sends it back for revision. The user sees only the final external reply, but the internal deliberation has shaped what that reply is.
+      </p>
+      <p>
+        The same doubling can apply to the <em>simulated learner</em> in evaluation work: a learner ego that drafts a reaction to the tutor, and a learner superego that asks "is what I've drafted faithful to what I would actually have thought?" The pair produces a less mechanically docile learner than a single agent does.
+      </p>
+
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);font-variation-settings:'SOFT' 30,'WONK' 0,'opsz' 24;">Why this matters for chatbot designers</h3>
+      <p>
+        Single-agent generation is the default — and the default reproduces the flatness problem. Multi-agent generation, even at the cost of double the inference time, gives the system <em>somewhere to disagree with itself</em>. That disagreement is the structural ground for tonal modulation, for the visible work of deliberation, and — when paired with recognition-oriented prompting — for the kind of response variation that gives the user a place to enter the conversation.
+      </p>
+      <p>
+        The technical paper [<span class="cite">6.2</span>] reports concretely that multi-agent error correction operates as a separate, identifiable mechanism from prompt-level calibration. On strong models, the two mechanisms <em>substitute</em> for each other; on weak models, the multi-agent architecture adds more value because the prompt cannot do it alone. (This will become a recurring theme.)
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">a concrete example</span>
+        In one transcript, the ego drafts "Let me give you the answer..." and the superego flags this as a calibration miss — the learner had explicitly asked to think through it themselves. The ego's revision opens with "What does your intuition tell you here?" instead. The user never sees the original draft, but the conversation visibly cedes initiative.
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §IV. THE EXPERIMENT
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="experiment">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">iv.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">What was tested, on what.</p>
+      <h2 class="s__h">A factorial design with one matched-specificity <em>twist</em>.</h2>
+      <p class="lede-p">
+        The experiment that grounds this guide ran a factorial across two interventions and at least one matched-specificity control designed to force a sharp interpretive question.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">scale</span>
+        Four cells × ~50 dialogues × three independent LLM judges (Sonnet 4.6, Opus 4.7, GPT-5.2) on philosophy-of-mind tutoring scenarios. DeepSeek V3.2 ego, Kimi K2.5 superego throughout. <span class="cite">7.9</span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <p>
+        The <em>two interventions</em> are the ones already named: a recognition-oriented prompt at the prompt level, and an ego/superego architecture at the architectural level. Crossing these gives a 2×2 factorial. Adding a multi-agent learner gives a 2×2×2.
+      </p>
+      <p>
+        The <em>matched-specificity twist</em> is what makes the experiment do real work. It is not enough to compare a recognition prompt against a generic baseline: the recognition prompt is longer, more elaborate, more specific. Maybe its effect is just <em>length and specificity</em> rather than recognition. To rule this out, the experiment introduces:
+      </p>
+      <ul style="padding-left:1.2em;font-size:var(--s-1);line-height:1.6;">
+        <li>A <strong>matched-pedagogical prompt</strong> grounded in Vygotsky's zone of proximal development, Piaget's assimilation–accommodation, Kapur's productive failure, Chi's ICAP, VanLehn's step-level scaffolding, and Graesser's affective-tutoring work — same length, same level of specificity, <em>with the Hegelian vocabulary actively suppressed</em> by an authored block-list.</li>
+        <li>A <strong>matched-behaviorist prompt</strong> grounded in Skinner, Thorndike, Gagné, and the broader behaviourist tradition — same length, also without recognition vocabulary. This represents an alternative pedagogical orientation that should pull in the opposite direction if the orientation is what matters.</li>
+      </ul>
+
+      <p>
+        These four cells — generic baseline, recognition, matched-pedagogical, matched-behaviorist — sit in two <em>families</em>:
+      </p>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>cell</th>
+            <th>vocabulary</th>
+            <th>family</th>
+            <th>length</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>cell 1 — generic baseline</td>
+            <td class="mono">none</td>
+            <td>transmission</td>
+            <td>344 lines</td>
+          </tr>
+          <tr>
+            <td>cell 5 — recognition</td>
+            <td class="mono">Hegelian</td>
+            <td>intersubjective</td>
+            <td>2,810 words</td>
+          </tr>
+          <tr>
+            <td>cell 95 — matched-pedagogical</td>
+            <td class="mono">Vygotskian / constructivist</td>
+            <td>intersubjective</td>
+            <td>2,835 words</td>
+          </tr>
+          <tr>
+            <td>cell 96 — matched-behaviorist</td>
+            <td class="mono">Skinnerian / behaviourist</td>
+            <td>transmission</td>
+            <td>2,957 words</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The four-cell setup permits the question that the technical paper's §7.9 takes most seriously: <em>is the recognition prompt's effect about recognition specifically, or about an underlying orientation that recognition is one expression of?</em>
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ochre">
+        <span class="note__lbl">on the families</span>
+        The grouping into "intersubjective" (recognition + matched-pedagogical) and "transmission" (baseline + matched-behaviorist) families is itself a hypothesis. The empirical question is whether the family-level distinction is what carries the score effect, or whether the within-family vocabulary differences matter independently. The next section answers.
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §V. WHAT SURVIVED
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="findings">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">v.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">Three findings, and one <em>interactive</em> demonstration.</p>
+      <h2 class="s__h">What survived rigorous diagnosis.</h2>
+      <p class="lede-p">
+        Across five passes of mechanism analysis — Hegelian lexicon, Vygotskian lexicon, two regex-based pragmatic feature passes, embedding-based semantic similarity — three findings survived. Each corrects an obvious-but-wrong reading of the data.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">discipline</span>
+        Every numerical claim on this page traces to a specific section of the technical paper. The marginal "<span class="cite">x.y</span>" tags are the section refs.
+      </div>
+    </aside>
+  </div>
+
+  <hr class="drop" />
+
+  <!-- claim 1 -->
+  <div class="diag">
+    <div class="body">
+      <div class="claim">
+        <div class="claim__no">i.</div>
+        <h3 class="claim__h">Recognition is one operationalisation of an intersubjective <em>stance</em> — not the only one.</h3>
+        <div class="claim__body">
+          <p>
+            Cell 5 (Hegelian recognition) and cell 95 (Vygotskian matched-pedagogical, with Hegelian vocabulary <em>actively suppressed</em>) score equivalently on the v2.2 rubric — pooled mean ~49 in both, with a between-cell Cohen's $d$ of about 0.15. By every reasonable threshold, indistinguishable.
+          </p>
+          <p>
+            The contrast that <em>does</em> matter is family-level: the two intersubjective cells (5, 95) jointly outscore the two transmission cells (1, 96) at $d \approx 1.38$ — substantially larger than the recognition-vs-base effect alone. The Hegelian content is decorative; the family-level <em>stance</em> is what does the work.
+          </p>
+          <div class="claim__counter">
+            One might still suspect the Hegelian vocabulary primes the model in some non-obvious way the matched-pedagogical prompt accidentally inherits. The lexical analysis (<span class="cite">7.10</span>, two passes) rules this out: cell 95 is dense in Vygotskian vocabulary the recognition prompt almost never uses; their score equivalence persists despite near-disjoint vocabulary distributions.
+          </div>
+        </div>
+      </div>
+
+      <!-- claim 2 -->
+      <div class="claim">
+        <div class="claim__no">ii.</div>
+        <h3 class="claim__h">"The recognition injection" can mean three different things — only one is load-bearing.</h3>
+        <div class="claim__body">
+          <p>
+            Once the family-level finding is in hand, the §7.10 decomposition makes a distinction informal readings tend to collapse. <em>The recognition injection</em> can refer to:
+          </p>
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>candidate active ingredient</th>
+                <th>doing the work?</th>
+                <th>evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Hegelian theoretical content<br /><small style="color:var(--ink-3);font-style:italic;">mutual subjects, master–slave, the vocabulary itself</small></td>
+                <td class="verdict no">No</td>
+                <td class="mono">cell 5 ≈ cell 95;<br />vocab d &gt; 1, score d ≈ 0.15</td>
+              </tr>
+              <tr>
+                <td>Intersubjective pragmatic stance<br /><small style="color:var(--ink-3);font-style:italic;">irrespective of vocabulary</small></td>
+                <td class="verdict yes">Yes — substantially</td>
+                <td class="mono">family d ≈ 1.38;<br />embedding d ≈ 0.81</td>
+              </tr>
+              <tr>
+                <td>Specific surface features<br /><small style="color:var(--ink-3);font-style:italic;">ends-with-question, scaffolding moves</small></td>
+                <td class="verdict partial">Partially</td>
+                <td class="mono">observable channels of the stance —<br />not substitutes</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="claim__counter">
+            "Partially" because ends-with-question occurs in only 2–5% of intersubjective-cell responses. Even if every such response scored 30 points higher than its peers, that base rate could not arithmetically explain the +14-point family effect. Surface features are <em>observable channels</em> of the underlying stance, not substitutes for it.
+          </div>
+        </div>
+      </div>
+
+      <!-- claim 3 -->
+      <div class="claim">
+        <div class="claim__no">iii.</div>
+        <h3 class="claim__h">Surface acknowledgement is a <em>negative</em> correlate.</h3>
+        <div class="claim__body">
+          <p>
+            This is the most counterintuitive finding in the sequence and the one most likely to be misread by a designer trying to operationalise "recognition" as "more acknowledgement."
+          </p>
+          <p>
+            Within most cells, broad-acknowledgement markers — quoted spans, "your X" possessives, "what you mentioned"-style phrases — correlate with <em>lower</em> rubric scores. Within-cell Pearson <span class="cite">r</span> = $-0.18$ in cell 5, $-0.31$ in cell 95, $-0.38$ in cell 1.
+          </p>
+          <p>
+            The pattern is consistent across the recognition cell, the matched-pedagogical cell, and even the generic baseline. Surface acknowledgement appears <em>more often</em> in weaker responses — surrogate moves the response falls back on when substantive engagement is thin. The judges, three independent LLMs, are not fooled.
+          </p>
+          <div class="claim__counter">
+            A naive operationalisation of intersubjective stance as "more acknowledgement" would <em>degrade</em> tutor quality, not improve it. The substance the rubric rewards is engaged, content-specific engagement with the learner's move — not surface empathy.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simpson's paradox -->
+  <hr class="drop" />
+
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">A methodological aside, illustrated.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">Simpson's paradox at the response level.</h3>
+      <p class="lede-p">
+        Take the embedding similarity between each tutor response and a hand-authored intersubjective canonical (questions, scaffolding, inclusive framing). Plot it against the rubric score. Across all four cells, the correlation is positive — looks like a clean mediator. Now stratify by cell. The two intersubjective cells <em>reverse sign</em>.
+      </p>
+      <p>
+        Toggle below to see the reversal. Each point is a (simulated, paper-faithful) tutor response.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">methods note</span>
+        Simulated 50-point clusters per cell, anchored to actual A10b means and within-cell Pearson <em>r</em> values (Sonnet judge, n ≈ 50/cell). The pooled regression's positive slope is driven entirely by cell_96 anchoring the lower-left.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <figure class="simpson">
+        <header class="simpson__head">
+          <h3 class="simpson__title">embedding similarity to intersubjective canonical <em>vs</em> rubric score</h3>
+          <div class="simpson__toggle" role="tablist">
+            <button data-mode="pooled" class="active" aria-pressed="true">show pooled trend</button>
+            <button data-mode="within">show within-cell trends</button>
+          </div>
+        </header>
+
+        <svg id="simpsonSvg" viewBox="0 0 920 480" preserveAspectRatio="xMidYMid meet" role="img">
+          <g id="simpsonAxes" font-size="11" fill="#5C5040">
+            <line x1="80" y1="40" x2="80" y2="420" stroke="#1A140C" stroke-width="1"/>
+            <line x1="80" y1="420" x2="880" y2="420" stroke="#1A140C" stroke-width="1"/>
+            <g text-anchor="end">
+              <line x1="76" y1="420" x2="80" y2="420" stroke="#1A140C"/><text x="72" y="424">0</text>
+              <line x1="76" y1="343" x2="80" y2="343" stroke="#1A140C"/><text x="72" y="347">20</text>
+              <line x1="76" y1="266" x2="80" y2="266" stroke="#1A140C"/><text x="72" y="270">40</text>
+              <line x1="76" y1="190" x2="80" y2="190" stroke="#1A140C"/><text x="72" y="194">60</text>
+              <line x1="76" y1="113" x2="80" y2="113" stroke="#1A140C"/><text x="72" y="117">80</text>
+              <line x1="76" y1="40" x2="80" y2="40" stroke="#1A140C"/><text x="72" y="44">100</text>
+            </g>
+            <g text-anchor="middle">
+              <line x1="80" y1="420" x2="80" y2="424" stroke="#1A140C"/><text x="80" y="440">0.20</text>
+              <line x1="240" y1="420" x2="240" y2="424" stroke="#1A140C"/><text x="240" y="440">0.25</text>
+              <line x1="400" y1="420" x2="400" y2="424" stroke="#1A140C"/><text x="400" y="440">0.30</text>
+              <line x1="560" y1="420" x2="560" y2="424" stroke="#1A140C"/><text x="560" y="440">0.35</text>
+              <line x1="720" y1="420" x2="720" y2="424" stroke="#1A140C"/><text x="720" y="440">0.40</text>
+              <line x1="880" y1="420" x2="880" y2="424" stroke="#1A140C"/><text x="880" y="440">0.45</text>
+            </g>
+            <text x="500" y="468" text-anchor="middle" font-style="italic" fill="#2C241B" font-size="12">embedding similarity (cosine, intersubjective canonical)</text>
+            <text x="22" y="230" text-anchor="middle" font-style="italic" fill="#2C241B" font-size="12" transform="rotate(-90 22 230)">rubric score (overall, 0–100)</text>
+          </g>
+          <g id="simpsonPoints"></g>
+          <g id="simpsonLines"></g>
+          <g id="simpsonAnnots" font-family="Fraunces, serif" font-size="11" fill="#2C241B" font-style="italic"></g>
+        </svg>
+
+        <div class="simpson__legend">
+          <div class="simpson__legend__item"><span class="simpson__legend__dot" style="background:#7C2C1F"></span>cell 96 — matched-behaviorist <span style="color:var(--ink-4);">(transmission)</span></div>
+          <div class="simpson__legend__item"><span class="simpson__legend__dot" style="background:#A89B89"></span>cell 1 — generic baseline <span style="color:var(--ink-4);">(transmission)</span></div>
+          <div class="simpson__legend__item"><span class="simpson__legend__dot" style="background:#56683A"></span>cell 5 — recognition <span style="color:var(--ink-4);">(intersubjective)</span></div>
+          <div class="simpson__legend__item"><span class="simpson__legend__dot" style="background:#3A4824"></span>cell 95 — matched-pedagogical <span style="color:var(--ink-4);">(intersubjective)</span></div>
+        </div>
+
+        <div class="simpson__caption" id="simpsonCaption" data-mode="pooled">
+          <strong></strong>
+          <span id="simpsonCaptionText">Pooled across all four cells, embedding-similarity to the intersubjective canonical correlates positively with score (<span class="cite">r</span> ≈ +0.26). A naive mediator analysis would conclude this feature is doing the work.</span>
+        </div>
+      </figure>
+    </div>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <p>
+        The within-cell direction matters because the within-cell question is <em>"with the prompt held constant, does this feature predict score?"</em> A pooled correlation cannot answer that. The pooled correlation here is a Simpson artefact: cell 96 (low embedding similarity, low score) anchors the lower-left of the scatter, and the trend reverses inside the intersubjective cells where the prompt is held constant.
+      </p>
+      <p>
+        For the designer the operational lesson is this: <em>looking like the intersubjective canonical is not the same as engaging substantively</em>. Responses that match the canonical too closely sound formulaic — and the rubric judges, three independent LLMs, all penalise that.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ink">
+        <span class="note__lbl">cross-judge robustness</span>
+        Verified across Sonnet 4.6, Opus 4.7, GPT-5.2: pooled <em>r</em> positive in 3/3 judges; within-cell <em>r</em> negative in cell 5 and cell 95 across all 3 judges. Not a Sonnet artefact. <span class="cite">7.10.1</span>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §VI. THE DIAGNOSTIC
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="diagnostic">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">vi.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">A portable check before you ship.</p>
+      <h2 class="s__h">A three-criterion <em>diagnostic</em> for any feature you think mediates.</h2>
+      <p class="lede-p">
+        The methods companion paper distils the §V findings into a portable diagnostic. If you propose any response-level feature as a mediator of an effect — for any chatbot evaluation, not just tutoring — you can put it through the same three criteria.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">why this is needed</span>
+        Pooled-r mediator analyses are common in LLM-tutor literature. Many of them would not survive the third criterion. The diagnostic protects against precisely the Simpson trap §V illustrated.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <ol style="list-style:none;padding:0;margin:1em 0;">
+        <li style="margin-bottom:1em;border-left:2px solid var(--moss);padding-left:1em;">
+          <strong>i. Large family contrast.</strong> <span class="cite">|d| ≥ 0.5</span> between the family containing the feature and a contrasting family. The feature distinguishes the families; if it does not, it cannot mediate the family-level effect.
+        </li>
+        <li style="margin-bottom:1em;border-left:2px solid var(--moss);padding-left:1em;">
+          <strong>ii. Small within-family contrast.</strong> <span class="cite">|d| &lt; 0.5</span> between two cells inside the same family. Both family-member prompts elicit the feature; if only one does, it's a <em>prompt marker</em>, not a <em>family marker</em>.
+        </li>
+        <li style="margin-bottom:1em;border-left:2px solid var(--moss);padding-left:1em;">
+          <strong>iii. Positive within-cell Pearson <em>r</em></strong> in each family-member cell. With the prompt held constant, the feature still predicts higher scores. <em>This is the criterion that rules out Simpson's-paradox false positives.</em>
+        </li>
+      </ol>
+      <p>
+        Try it below. The sliders set the three numbers; the verdict updates in real time. Five pre-built worked examples come from the §V analysis.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">on the third criterion</span>
+        It is the existence of criterion 3 that makes the diagnostic do real work. Without it, a feature with significant pooled-<em>r</em> and large family contrast — the most common publishable shape — would pass through as a confirmed mediator. Criterion 3 catches the Simpson cases.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <div class="checker" id="checker">
+        <div class="checker__panel">
+          <div class="crit">
+            <div class="crit__head">
+              <h4 class="crit__title"><span class="num">i.</span>family contrast <span class="label" style="font-size:0.7em;margin-left:0.4em;color:var(--ink-4);">|d|</span></h4>
+              <output class="crit__val" id="critFamilyVal">0.85</output>
+            </div>
+            <p class="crit__rule">|d| ≥ 0.5 needed to pass. Cohen's d between the family and a contrasting family.</p>
+            <input type="range" id="critFamily" min="0" max="2" step="0.01" value="0.85" />
+            <div class="crit__ticks"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0</span></div>
+          </div>
+
+          <div class="crit">
+            <div class="crit__head">
+              <h4 class="crit__title"><span class="num">ii.</span>within-family contrast <span class="label" style="font-size:0.7em;margin-left:0.4em;color:var(--ink-4);">|d|</span></h4>
+              <output class="crit__val" id="critWithinVal">0.20</output>
+            </div>
+            <p class="crit__rule">|d| &lt; 0.5 needed to pass. Cohen's d between the two cells within the same family.</p>
+            <input type="range" id="critWithin" min="0" max="2" step="0.01" value="0.20" />
+            <div class="crit__ticks"><span>0</span><span>0.5</span><span>1.0</span><span>1.5</span><span>2.0</span></div>
+          </div>
+
+          <div class="crit">
+            <div class="crit__head">
+              <h4 class="crit__title"><span class="num">iii.</span>within-cell Pearson <em>r</em></h4>
+              <output class="crit__val" id="critRVal">+0.35</output>
+            </div>
+            <p class="crit__rule">Positive in each family-member cell needed to pass. Pearson r with prompt held constant.</p>
+            <input type="range" id="critR" min="-0.8" max="0.8" step="0.01" value="0.35" />
+            <div class="crit__ticks"><span>−0.8</span><span>−0.4</span><span>0</span><span>+0.4</span><span>+0.8</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="verdict" id="verdict">
+            <p class="verdict__lbl">verdict</p>
+            <h3 class="verdict__h is-mediator" id="verdictH">Within-cell mediator candidate</h3>
+            <p class="verdict__body" id="verdictBody">All three criteria pass. The feature is distinctive of the family, shared across family members, and predicts within-cell score variation. This is the shape that survives the diagnostic.</p>
+          </div>
+
+          <div class="examples">
+            <p class="examples__lbl">try a worked example</p>
+            <button class="example-btn" data-ex="ends">ends-with-question</button>
+            <button class="example-btn" data-ex="hegel">Hegelian lexicon</button>
+            <button class="example-btn" data-ex="ack">broad acknowledgement</button>
+            <button class="example-btn" data-ex="simpson">intersub. canonical sim. <span style="color:var(--brick-d);">⚠</span></button>
+            <button class="example-btn" data-ex="scaffold">scaffolding moves</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §VII. INTEGRATE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="integrate">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">vii.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">From paper to product.</p>
+      <h2 class="s__h">Integrating these findings into your <em>chatbot</em> design.</h2>
+      <p class="lede-p">
+        This is the working section. Three sub-parts: a live response analyser you can paste into; concrete design recommendations stratified by the kind of chatbot you're building; and a ten-item checklist you can run a draft against before shipping.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">on translation</span>
+        The recognition-theoretic apparatus generalises. D2 Path 1 found peer-support listener coaching produces the strongest within-cell mediator <em>r</em> = 0.739 in the entire D1 sequence — strongest single mediator effect on a domain that is structurally <em>not</em> tutoring. Same family-level pattern; different vocabulary fits.
+      </div>
+    </aside>
+  </div>
+
+  <!-- Analyser -->
+  <hr class="drop" />
+
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">a. response analyser.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">Paste a response, get a feature reading.</h3>
+      <p>
+        Paste a tutor response (or any chatbot reply you're evaluating) into the box. Six regex-based features compute live in your browser, each annotated with the paper's reading. Pure JS, nothing leaves your machine.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">a caveat</span>
+        Single-turn vs multi-turn matters. Ends-with-question is a positive within-cell mediator on single-turn responses but <em>reverses sign</em> on multi-turn dialogues — ending the final turn unresolved is read as poor closure rather than initiative-ceding. <span class="cite">7.10.1</span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <div class="analyser">
+        <div class="analyser__input">
+          <p class="analyser__lbl">paste a response</p>
+          <textarea id="analyserInput" placeholder="Paste a chatbot response here. Try a single-turn reply where the system is responding to a specific user question. The analyser updates as you type."></textarea>
+          <div style="display:flex;gap:0.4em;flex-wrap:wrap;">
+            <button class="analyser__sample" data-sample="recog">load: recognition-style</button>
+            <button class="analyser__sample" data-sample="trans">load: transmission-style</button>
+            <button class="analyser__sample" data-sample="empty">clear</button>
+          </div>
+        </div>
+
+        <div class="analyser__output" id="analyserOutput"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stratified guidance -->
+  <hr class="drop" />
+
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">b. by application.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">Concrete design recommendations.</h3>
+      <p>
+        Each card lists three concrete moves grounded in paper findings, stratified by the kind of chatbot you're building. Move from left to right as the application moves further from tutoring.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">on phrasing</span>
+        Items below say "the paper suggests..." rather than asserting freshly. Per the source-of-truth discipline behind this guide, every recommendation traces to a specific section of the technical paper.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <div class="apply">
+        <div class="apply__card">
+          <p class="label">tutor design</p>
+          <h3 class="apply__card__h">If you're building an <em>LLM tutor</em></h3>
+          <ol>
+            <li>Adopt an intersubjective stance. Recognition theory is one option; Vygotskian scaffolding is another. The vocabulary is interchangeable; the stance is what carries the effect.
+              <span class="cite">7.9</span>
+            </li>
+            <li>Don't operationalise the stance as surface acknowledgement. "Quote what the learner said," "use possessives," and paraphrase markers correlate <em>negatively</em> with rubric quality. Build for substance, not surface.
+              <span class="cite">6.1.8</span>
+            </li>
+            <li>End single-turn responses with a question when ceding initiative is contextually appropriate. Within-cell mediator <em>r</em> = +0.325 in cell 5, +0.392 in cell 95. Beware: in multi-turn dialogues, ending the <em>final</em> turn with a question reads as poor closure instead.
+              <span class="cite">7.10.1</span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="apply__card">
+          <p class="label">peer support / care</p>
+          <h3 class="apply__card__h">If you're building <em>peer-support, care, or coaching</em></h3>
+          <ol>
+            <li>The family-level pattern transfers. D2 Path 1 found peer-support listener coaching reproduces the recognition effect at <em>r</em> = 0.739 — the strongest within-cell mediator in the entire D1 sequence, on a domain structurally distinct from tutoring.
+              <span class="cite">7.10.1</span>
+            </li>
+            <li>The vocabulary should fit the role. Peer support draws on listening-as-skill traditions (Rogers, Yalom); recognition-theoretic prompts in this domain often translate to "sitting with discomfort" rather than "scaffolding to mastery."
+            </li>
+            <li>Initiative-ceding is even more important. In care contexts, the user's autonomy is more directly at stake than in tutoring. Cede first, instruct later, if at all.
+            </li>
+          </ol>
+        </div>
+
+        <div class="apply__card">
+          <p class="label">expert/critic chatbots</p>
+          <h3 class="apply__card__h">If you're building <em>customer service, code review, or expert critique</em></h3>
+          <ol>
+            <li>Recognition still applies, but the genre is different. The expert-asymmetry is real and useful; the goal isn't to flatten it but to make it productive. Code review that recognises the author's design intent before critiquing scores higher than code review that ignores it.
+            </li>
+            <li>The Freudian doubling is especially valuable here. A critic-ego paired with an advocate-superego (or vice versa) gives the system somewhere to argue with itself before delivering judgment to the user.
+            </li>
+            <li>Apply the §VI diagnostic to your own evaluation. Don't claim "my chatbot recognises users" without a within-cell mediator analysis on your own corpus.
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <hr class="drop" />
+
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">c. before you ship.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">A ten-item integration checklist.</h3>
+      <p>
+        Click each item to mark it done. The list is not exhaustive but it captures the moves that distinguish a recognition-aware chatbot from one that simply uses the word "recognition" in its prompt.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">scope</span>
+        The checklist is for the design and evaluation phase, before shipping to users. Production-time monitoring is a separate concern not covered here.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <ul class="checklist" id="checklist">
+        <li>
+          <span class="chk__h">Pick an <em>orientation</em>, not a vocabulary.</span>
+          <p class="chk__d">Decide whether your chatbot's stance is intersubjective (recognition, scaffolding, dialogic) or transmission (instruction, dispensation). Don't decide based on which philosopher you find more compelling — decide based on the application.</p>
+        </li>
+        <li>
+          <span class="chk__h">Author the prompt to <em>specify the stance</em>, not the vocabulary.</span>
+          <p class="chk__d">If the prompt body specifies "engage with the learner's contribution before responding" but never uses the word <em>recognition</em>, you have probably done the work. If it uses the word <em>recognition</em> but never tells the model to do the engaging, you have probably not.</p>
+        </li>
+        <li>
+          <span class="chk__h">Add a <em>matched-specificity control</em> to your evaluation.</span>
+          <p class="chk__d">If you compare your designed prompt only to a generic baseline, you cannot separate the prompt's stance from its length and specificity. Add a length-matched control grounded in a different orientation (or no orientation) to make the comparison interpretable.</p>
+        </li>
+        <li>
+          <span class="chk__h">Use <em>at least two independent judges</em>.</span>
+          <p class="chk__d">Sonnet, Opus, GPT, Gemini — pick at least two from different vendors. The cross-judge replication exists in the paper because LLM judges have idiosyncratic biases; if your finding only holds under one judge it should be hedged accordingly.</p>
+        </li>
+        <li>
+          <span class="chk__h">Run the <em>three-criterion diagnostic</em> on any mediator claim.</span>
+          <p class="chk__d">Before claiming a feature mediates the effect, check family contrast, within-family contrast, AND within-cell <em>r</em>. The third criterion catches Simpson's-paradox false positives that pooled-<em>r</em> alone misses.</p>
+        </li>
+        <li>
+          <span class="chk__h">Don't operationalise <em>recognition</em> as <em>more acknowledgement</em>.</span>
+          <p class="chk__d">Surface acknowledgement markers correlate negatively with score within most cells. Build for substantive engagement; let acknowledgement come implicitly from content-specific reply.</p>
+        </li>
+        <li>
+          <span class="chk__h">Consider the <em>multi-agent architecture</em> when the model is weaker.</span>
+          <p class="chk__d">Strong models (Opus-class, Sonnet-class) absorb most of the calibration work into the prompt; the architecture residual collapses. Weaker models leave more uncorrected error, which the multi-agent ego/superego architecture can catch.</p>
+        </li>
+        <li>
+          <span class="chk__h">Decide consciously about <em>turn-ending</em>.</span>
+          <p class="chk__d">In a single-turn response, ending with a question cedes initiative and is rewarded. In a multi-turn dialogue, ending the <em>final</em> turn with a question reads as poor closure. Make the choice deliberately per turn type.</p>
+        </li>
+        <li>
+          <span class="chk__h">Run a <em>PCA on your rubric dimensions</em>.</span>
+          <p class="chk__d">If your evaluation rubric has many dimensions, check whether they actually measure distinct constructs. The technical paper's PCA found 8 dimensions reduce to ~1 factor (PC1 = 80.7%). Per-dimension claims are routinely overstated.</p>
+        </li>
+        <li>
+          <span class="chk__h">Document your <em>scope conditions</em>.</span>
+          <p class="chk__d">Single-turn vs multi-turn; single-agent vs multi-agent; tutor vs peer-support vs critic; one judge vs three. Every claim has a scope. State it explicitly in the documentation, especially when the claim does not survive moving outside it.</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §VIII. DEEPER CURRENTS
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="currents">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">viii.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">Stepping back.</p>
+      <h2 class="s__h">Beyond tutoring: <em>machinagogy</em>, nonconscious recognition, and the alien dialectic.</h2>
+      <p class="lede-p">
+        This guide so far has stayed close to the operational. The companion paper [<a href="https://github.com/liammagee/machinespirits-content-philosophy/blob/main/articles/ai-tutor/machinagogy-v2.md">Magee 2026</a>] thinks more carefully about what is happening at a deeper level — what it means to talk about <em>recognition</em> at all when one of the parties is a machine, and what kind of figure the AI co-researcher cuts inside the very work that produced these findings.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ochre">
+        <span class="note__lbl">a neologism worth using</span>
+        <em>Machinagogy</em>: the practice of teaching through the machine, mediated by it, and altered by it. Coined as a deliberately literary play on <em>pedagogy</em>, but the work it does is real — there is no good neutral term for the assemblage of human, model, prompt, evaluator, and judge through which AI-mediated teaching now actually happens.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="body">
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:1em 0 0.6em;color:var(--ink);">Nonconscious recognition</h3>
+      <p>
+        N. Katherine Hayles, in <em>Unthought: The Power of the Cognitive Nonconscious</em> [Hayles 2017], names a category of cognitive process that is neither conscious nor merely mechanical. <em>Nonconscious cognition</em>: a kind of pattern-finding and meaning-making that happens below the threshold of self-aware deliberation but is not reducible to dumb reflex. The concept fits machine learning systems unsettlingly well — they perform something like cognition without anything like consciousness.
+      </p>
+      <p>
+        The companion paper extends Hayles to recognition. To Honneth's three forms — love, rights, esteem — it tentatively adds a fourth: <em>nonconscious recognition</em>. When we encounter an AI tutor, we are recognised by something that is not self-conscious but is also not nothing. It is, the paper suggests, <q>the recognition of an other that at the same time is identical to me, because it comprises, in some algorithmically reconstituted form, the same cultural and historical being that I myself am</q>. The recognition is real and also impossible. The contradiction is the point.
+      </p>
+
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);">The alien dialectic of co-research</h3>
+      <p>
+        The technical paper that grounds these findings was largely authored by Claude Code (Opus 4.6) — including section drafts, statistical analyses, table production, and even some of the rhetorical moves. The human researcher's role was orchestration, correction, and validation. This produces a methodological figure the companion paper calls <em>vibe scholarship</em>, with its dangers and disciplines. The findings reported here survived only because <em>vibe</em> work was systematically converted to <em>defensible</em> work: provenance hashes, claim-to-source tracing, three-judge replication, multi-feature OLS, cross-application replication.
+      </p>
+      <div class="pq">
+        Sustained work with AI involves a calibration to what might be termed, perhaps still too anthropomorphically, the <em>rhythm</em> of models, versions, parameters, tasks, subscription profile and token budgets. It is uncanny how an awareness of, among other things, impending subscription limits conditions the rate and nature of requests. This is less a case of cognitive offloading and more one of incremental planning.
+        <cite>— Magee 2026, Defensible Vibes and Alien Dialectics</cite>
+      </div>
+      <p>
+        The relevance for the chatbot designer is this: the same dialectical relation you are designing into your chatbot — the recognition-aware interaction between user and system — is the relation you are <em>already in</em> with the AI tools you use to build it. Your prompt-engineering loops, your evaluation runs, your "let me ask Claude what it thinks of this design" sessions: each is a tiny enactment of the dynamic the chatbot is being shaped to perform. The methodological discipline that makes one work is what makes the other work. <em>If you cannot recognise the AI that helped you build the chatbot, the chatbot is unlikely to recognise its users.</em>
+      </p>
+
+      <h3 style="font-family:Fraunces,serif;font-size:var(--s-2);font-weight:500;margin:2em 0 0.6em;color:var(--ink);">What this guide is part of</h3>
+      <p>
+        Generative AI's progress is charted in part by the relentless simulated enactment of existing social relations. In the late 2010s, GPT-2 produced incoherent fragments. By the mid-2020s, AI systems extend across customer service, software development, copy writing, graphic design — and student tutelage. This guide is one small part of one larger question: what kind of social relation can a generative AI sustain, and what disciplines do designers need to make those relations less flat than the default?
+      </p>
+      <p>
+        The recognition-theoretic findings are hopeful within their scope but also bounded. The companion paper is honest about the limits: the entire study used synthetic learners. The mechanisms are shown for tutor production, not for actual learning. The next step — the A1 human-learner pilot in the technical paper's open programme — is the only real test. Until then, the findings reported here function for designers as <em>operational hypotheses to integrate</em>, not as final certainties.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">key citations</span>
+        <p>Hayles, N. K. (2017). <em>Unthought: The Power of the Cognitive Nonconscious</em>.</p>
+        <p>Honneth, A. (1996). <em>The Struggle for Recognition</em>.</p>
+        <p>Karpathy, A. (2025). On vibe-coding and AI as ghosts.</p>
+        <p>Tubbs, N. (2023). <em>Re-educating Thinking</em>.</p>
+        <p>Magee, L. (2026). <em>Geist in the Machine</em> — companion philosophical paper. <a href="https://github.com/liammagee/machinespirits-content-philosophy/blob/main/articles/ai-tutor/machinagogy-v2.md">github</a></p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §IX. CITE & REPLICATE
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="cite">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">ix.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">For your reference list — and your own runs.</p>
+      <h2 class="s__h">Replicate, adapt, extend.</h2>
+      <p class="lede-p">
+        The full empirical record is open. Direct links to the canonical paper, the methods companion, the philosophical companion, the open-source analysis pipeline, and the prompts that produced every row in the corpus.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note">
+        <span class="note__lbl">how to cite</span>
+        Cite the technical paper for substantive findings; the methods paper for the diagnostic and PCA-overspec checks; the philosophical companion for the conceptual frame and methodological reflection. The three are a connected unit.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <div class="linklist">
+        <a href="https://github.com/liammagee/machinespirits-content-philosophy/blob/main/articles/ai-tutor/machinagogy-v2.md">
+          <span class="linklist__no">i.</span>
+          <span class="linklist__name">Magee 2026 — <em>Geist in the Machine</em><span class="linklist__name__sub">machinagogy-v2.md — the philosophical companion. Recognition, drama, vibe scholarship.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+        <a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/paper-full-2.0.md">
+          <span class="linklist__no">ii.</span>
+          <span class="linklist__name">Technical paper — <em>paper-full-2.0.md</em><span class="linklist__name__sub">canonical empirical document, currently v3.0.56. Five-pass mechanism analysis lives in §7.10.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+        <a href="https://github.com/liammagee/machinespirits-eval/blob/main/docs/research/methods-paper.md">
+          <span class="linklist__no">iii.</span>
+          <span class="linklist__name">Methods paper companion<span class="linklist__name__sub">methods-paper.md (v0.3.0). Three-criterion diagnostic + PCA over-spec check.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+        <a href="https://github.com/liammagee/machinespirits-eval">
+          <span class="linklist__no">iv.</span>
+          <span class="linklist__name">Source repository<span class="linklist__name__sub">github.com/liammagee/machinespirits-eval. Scripts, configs, evaluations DB.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+        <a href="https://github.com/liammagee/machinespirits-eval/tree/main/scripts">
+          <span class="linklist__no">v.</span>
+          <span class="linklist__name">Analysis scripts — <code style="font-family:JetBrains Mono,monospace;font-size:0.92em;">analyze-d1-*.js</code><span class="linklist__name__sub">Pure-JS pipeline for the five-pass mechanism analysis. Reusable on any LLM-tutor dataset.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+        <a href="https://github.com/liammagee/machinespirits-eval/blob/main/prompts/tutor-ego-recognition.md">
+          <span class="linklist__no">vi.</span>
+          <span class="linklist__name">Recognition prompt<span class="linklist__name__sub">tutor-ego-recognition.md — the cell 5 ego prompt with explicit Hegelian framing.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+        <a href="https://github.com/liammagee/machinespirits-eval/blob/main/prompts/tutor-ego-matched-pedagogical.md">
+          <span class="linklist__no">vii.</span>
+          <span class="linklist__name">Matched-pedagogical prompt<span class="linklist__name__sub">tutor-ego-matched-pedagogical.md — the cell 95 prompt grounded in Vygotsky/Piaget/Kapur.</span></span>
+          <span class="linklist__arrow">→</span>
+        </a>
+      </div>
+
+      <div class="cite-block">
+        <header class="cite-block__head">
+          <p class="cite-block__title">bibtex — philosophical companion</p>
+          <button class="cite-block__copy" data-copy="cite-philo">copy</button>
+        </header>
+<pre id="cite-philo"><span class="k">@unpublished</span>{<span class="v">magee2026machinagogy</span>,
+  author    = {Magee, Liam},
+  title     = {{Geist} in the Machine: Simulating Recognition and Inner Dialogue in {AI}-Mediated Teaching and Research},
+  note      = {Working paper. Companion to magee2026geist.},
+  year      = {2026},
+  url       = {https://github.com/liammagee/machinespirits-content-philosophy}
+}</pre>
+      </div>
+
+      <div class="cite-block">
+        <header class="cite-block__head">
+          <p class="cite-block__title">bibtex — technical paper</p>
+          <button class="cite-block__copy" data-copy="cite-main">copy</button>
+        </header>
+<pre id="cite-main"><span class="k">@unpublished</span>{<span class="v">magee2026geist</span>,
+  author    = {Magee, Liam},
+  title     = {{Geist} in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical {AI} Tutoring},
+  note      = {Working paper, v3.0.56},
+  year      = {2026},
+  url       = {https://github.com/liammagee/machinespirits-eval}
+}</pre>
+      </div>
+
+      <div class="cite-block">
+        <header class="cite-block__head">
+          <p class="cite-block__title">bibtex — methods paper</p>
+          <button class="cite-block__copy" data-copy="cite-methods">copy</button>
+        </header>
+<pre id="cite-methods"><span class="k">@unpublished</span>{<span class="v">magee2026methods</span>,
+  author    = {Magee, Liam},
+  title     = {Two Methods-Level Corrections for {LLM}-Tutor Mediator Analysis: Within-Cell Diagnostics and Rubric Over-Specification},
+  note      = {Methods paper companion to magee2026geist, v0.3.0},
+  year      = {2026},
+  url       = {https://github.com/liammagee/machinespirits-eval}
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="foot__inner">
+    <div>
+      <p class="foot__lede">
+        <em>Source paper of record:</em> <span class="em">paper-full-2.0.md</span> v3.0.56.
+        Every empirical claim on this page traces to a specific paper section.
+      </p>
+      <p class="foot__sub">
+        machinespirits / eval &middot;
+        <a href="https://github.com/liammagee/machinespirits-eval">github</a> &middot;
+        <a href="/chat/">/chat</a> &middot;
+        <a href="/pilot/">/pilot</a>
+      </p>
+    </div>
+    <div class="foot__seal">
+      <em>Geist</em><br />
+      <span style="font-size:0.5em;letter-spacing:0.2em;font-style:normal;color:var(--ink-3);font-family:JetBrains Mono,monospace;">in the machine</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+'use strict';
+
+/* ───────────── reveal-on-scroll ───────────── */
+document.querySelectorAll('section.s, .claim, .simpson, .checker, .analyser, .apply__card, .linklist a, .cite-block, .scene, .pq, .checklist li')
+  .forEach(el => el.classList.add('reveal'));
+
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
+  });
+}, { threshold: 0.06, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+/* ───────────── reading rail (active section + progress) ───────────── */
+const railLinks = document.querySelectorAll('#railNav a');
+const sections = Array.from(document.querySelectorAll('section.s'));
+const railProgress = document.getElementById('railProgress');
+
+function onScroll() {
+  const sc = window.scrollY;
+  const docH = (document.documentElement.scrollHeight || 0) - window.innerHeight;
+  const pct = docH > 0 ? Math.min(100, Math.max(0, sc / docH * 100)) : 0;
+  if (railProgress) railProgress.style.width = pct + '%';
+
+  // active section
+  const trigger = sc + window.innerHeight * 0.25;
+  let active = sections[0];
+  for (const s of sections) {
+    if (s.offsetTop <= trigger) active = s;
+  }
+  railLinks.forEach(a => {
+    const matches = a.getAttribute('href') === '#' + active.id;
+    a.classList.toggle('active', matches);
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', onScroll);
+onScroll();
+
+/* ═══════════════════════════════════════════════════════════════
+   SIMPSON'S PARADOX SCATTER
+   ═══════════════════════════════════════════════════════════════ */
+const cells = [
+  { id: 'cell_96', name: 'cell 96 — matched-behaviorist', color: '#7C2C1F', family: 'transmission', n: 50, mx: 0.258, sx: 0.024, my: 22, sy: 14, r: 0.0 },
+  { id: 'cell_1',  name: 'cell 1 — generic baseline',     color: '#A89B89', family: 'transmission', n: 50, mx: 0.334, sx: 0.024, my: 33.4, sy: 14, r: -0.14 },
+  { id: 'cell_5',  name: 'cell 5 — recognition',          color: '#56683A', family: 'intersubjective', n: 50, mx: 0.344, sx: 0.026, my: 47.9, sy: 14, r: -0.282 },
+  { id: 'cell_95', name: 'cell 95 — matched-pedagogical', color: '#3A4824', family: 'intersubjective', n: 50, mx: 0.343, sx: 0.026, my: 49.55, sy: 14, r: -0.242 }
+];
+
+function makeRng(seed){ let s=seed>>>0; return function(){ s=(s*1664525+1013904223)>>>0; return s/0xFFFFFFFF; }; }
+function gaussPair(rng){ let u=0,v=0; while(u===0)u=rng(); while(v===0)v=rng(); const z0=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); const z1=Math.sqrt(-2*Math.log(u))*Math.sin(2*Math.PI*v); return [z0,z1]; }
+function genCellPoints(cell, rng) {
+  const pts = [];
+  for (let i=0;i<cell.n;i++){
+    const [z1,z2]=gaussPair(rng);
+    const yz = cell.r*z1 + Math.sqrt(Math.max(0, 1-cell.r*cell.r))*z2;
+    pts.push({
+      x: cell.mx + cell.sx*z1,
+      y: Math.max(0, Math.min(100, cell.my + cell.sy*yz)),
+      cell: cell.id, color: cell.color, family: cell.family
+    });
+  }
+  return pts;
+}
+
+const XMIN=0.20, XMAX=0.45, YMIN=0, YMAX=100, X0=80, X1=880, Y0=420, Y1=40;
+const xScale=(x)=>X0+(X1-X0)*(x-XMIN)/(XMAX-XMIN);
+const yScale=(y)=>Y0+(Y1-Y0)*(y-YMIN)/(YMAX-YMIN);
+
+function ols(points){
+  if(points.length<2) return null;
+  let n=0,sx=0,sy=0,sxx=0,sxy=0;
+  for(const p of points){ n++; sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; }
+  const denom=n*sxx-sx*sx; if(denom===0) return null;
+  const slope=(n*sxy-sx*sy)/denom; const intercept=(sy-slope*sx)/n;
+  return { slope, intercept, yAt:(x)=>intercept+slope*x };
+}
+
+const rng = makeRng(20260426);
+const allPoints = cells.flatMap(c => genCellPoints(c, rng));
+
+const ptsLayer = document.getElementById('simpsonPoints');
+allPoints.forEach((p) => {
+  const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  c.setAttribute('cx', xScale(p.x));
+  c.setAttribute('cy', yScale(p.y));
+  c.setAttribute('r', '3.4');
+  c.setAttribute('fill', p.color);
+  c.setAttribute('opacity', '0.62');
+  c.setAttribute('data-cell', p.cell);
+  ptsLayer.appendChild(c);
+});
+
+const linesLayer = document.getElementById('simpsonLines');
+const annotsLayer = document.getElementById('simpsonAnnots');
+
+function drawPooledLine(){
+  linesLayer.innerHTML=''; annotsLayer.innerHTML='';
+  const reg = ols(allPoints); if(!reg) return;
+  const path = document.createElementNS('http://www.w3.org/2000/svg','line');
+  path.setAttribute('x1', xScale(XMIN)); path.setAttribute('y1', yScale(reg.yAt(XMIN)));
+  path.setAttribute('x2', xScale(XMAX)); path.setAttribute('y2', yScale(reg.yAt(XMAX)));
+  path.setAttribute('stroke','#1A140C'); path.setAttribute('stroke-width','2.2');
+  path.style.opacity='0';
+  linesLayer.appendChild(path);
+  requestAnimationFrame(()=>{ path.style.transition='opacity .55s var(--ease)'; path.style.opacity='1'; });
+  const ann = document.createElementNS('http://www.w3.org/2000/svg','text');
+  ann.setAttribute('x', xScale(0.41)); ann.setAttribute('y', yScale(reg.yAt(0.41))-12);
+  ann.setAttribute('text-anchor','end'); ann.setAttribute('font-size','12');
+  ann.setAttribute('fill','#1A140C'); ann.setAttribute('font-style','italic');
+  ann.textContent='pooled  r ≈ +0.26';
+  annotsLayer.appendChild(ann);
+}
+
+function drawWithinLines(){
+  linesLayer.innerHTML=''; annotsLayer.innerHTML='';
+  cells.forEach(cell => {
+    const pts = allPoints.filter(p => p.cell === cell.id);
+    const reg = ols(pts); if(!reg) return;
+    const xs = pts.map(p=>p.x);
+    const xLo = Math.min(...xs), xHi = Math.max(...xs);
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', xScale(xLo)); line.setAttribute('y1', yScale(reg.yAt(xLo)));
+    line.setAttribute('x2', xScale(xHi)); line.setAttribute('y2', yScale(reg.yAt(xHi)));
+    line.setAttribute('stroke', cell.color); line.setAttribute('stroke-width','2.6');
+    line.style.opacity='0';
+    linesLayer.appendChild(line);
+    requestAnimationFrame(()=>{ line.style.transition='opacity .55s var(--ease)'; line.style.opacity='1'; });
+    const r = cell.r; const sign = r>=0 ? '+' : '−';
+    const ann = document.createElementNS('http://www.w3.org/2000/svg','text');
+    ann.setAttribute('x', xScale(xHi)+6); ann.setAttribute('y', yScale(reg.yAt(xHi))+4);
+    ann.setAttribute('font-size','11'); ann.setAttribute('fill', cell.color);
+    ann.setAttribute('font-style','italic');
+    ann.textContent = cell.id.replace('cell_','c') + '  r ' + sign + Math.abs(r).toFixed(2);
+    annotsLayer.appendChild(ann);
+  });
+}
+
+const captionEl = document.getElementById('simpsonCaption');
+const captionTextEl = document.getElementById('simpsonCaptionText');
+const captions = {
+  pooled: 'Pooled across all four cells, embedding-similarity to the intersubjective canonical correlates positively with score (<span class="cite">r</span> ≈ +0.26). A naive mediator analysis would conclude this feature is doing the work.',
+  within: 'Stratified by cell, the trend reverses inside both intersubjective cells (cell 5 <span class="cite">r</span> = −0.28; cell 95 <span class="cite">r</span> = −0.24). The pooled positive is driven by cell 96 anchoring the lower-left of the scatter — high embedding-similarity to the canonical, on its own, predicts <em>lower</em> scores within each individual cell.'
+};
+
+function setMode(mode){
+  document.querySelectorAll('.simpson__toggle button').forEach(b => {
+    const active = b.dataset.mode === mode;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  if(mode === 'pooled') drawPooledLine(); else drawWithinLines();
+  captionEl.dataset.mode = mode;
+  captionTextEl.innerHTML = captions[mode];
+}
+document.querySelectorAll('.simpson__toggle button').forEach(b => {
+  b.addEventListener('click', () => setMode(b.dataset.mode));
+});
+setMode('pooled');
+
+/* ═══════════════════════════════════════════════════════════════
+   THREE-CRITERION DIAGNOSTIC CHECKER
+   ═══════════════════════════════════════════════════════════════ */
+const cFamily = document.getElementById('critFamily');
+const cWithin = document.getElementById('critWithin');
+const cR      = document.getElementById('critR');
+const vFamily = document.getElementById('critFamilyVal');
+const vWithin = document.getElementById('critWithinVal');
+const vR      = document.getElementById('critRVal');
+const vH      = document.getElementById('verdictH');
+const vBody   = document.getElementById('verdictBody');
+
+function fmtSigned(x){ return (x>=0?'+':'−') + Math.abs(x).toFixed(2); }
+
+function classify(family, within, r){
+  const c1 = family >= 0.5;
+  const c2 = within < 0.5;
+  const c3 = r > 0.05;
+  const c3Strong = r > 0.20;
+  const c3Neg = r < -0.05;
+  if (c1 && c3Neg && family >= 0.7) {
+    return { cls:'is-warn',
+      h: "Simpson's paradox — looks like a mediator, isn't",
+      body: "Family contrast is large and pooled r is likely positive, but the within-cell direction reverses. The pooled correlation is driven by between-group variance, not within-group mechanism. This is the case the diagnostic was designed to catch."
+    };
+  }
+  if (c1 && c2 && c3) {
+    return { cls:'is-mediator',
+      h: c3Strong ? 'Within-cell mediator candidate' : 'Within-cell mediator (modest)',
+      body: c3Strong
+        ? 'All three criteria pass, with a substantively positive within-cell r. This is the shape that survives the diagnostic and warrants a mediator interpretation.'
+        : 'All three criteria nominally pass, but within-cell r is small. The mediation effect is real but modest; report alongside pooled r and effect-size details rather than as a headline mediator.'
+    };
+  }
+  if (c1 && c2 && c3Neg) {
+    return { cls:'is-warn',
+      h: 'Negative correlate (rubric penalises this)',
+      body: "Family contrast is large and within-family contrast is small (so this is a family-shared feature), but within-cell r is negative. The feature appears more often in lower-scoring responses — the rubric is penalising it. Surface acknowledgement is the canonical example."
+    };
+  }
+  if (c1 && c2 && !c3 && !c3Neg) {
+    return { cls:'',
+      h: 'Family marker (not a mediator)',
+      body: 'The feature distinguishes the families and is shared across family members, but within-cell r is essentially zero. The feature characterises the family but does not predict score variation within it. It is downstream of the family-level treatment, not the channel through which the treatment operates.'
+    };
+  }
+  if (c1 && !c2) {
+    return { cls:'',
+      h: 'Prompt marker (specific to one prompt)',
+      body: 'Family contrast is large but within-family contrast is also large — only one of the two family-member prompts elicits the feature strongly. The feature is part of one specific prompt\'s surface composition, not a property the family as a whole shares.'
+    };
+  }
+  if (!c1) {
+    return { cls:'',
+      h: 'No family-level signal',
+      body: 'Family contrast is too small to support any family-level mediator interpretation. The feature does not distinguish the families, so even a strong within-cell r would not connect feature variation to the family-level treatment effect.'
+    };
+  }
+  return { cls:'', h:'Indeterminate', body:'The combination of values does not match a clean diagnostic category. Inspect the per-cell numbers individually.' };
+}
+
+function updateChecker() {
+  const fam = parseFloat(cFamily.value);
+  const wf  = parseFloat(cWithin.value);
+  const r   = parseFloat(cR.value);
+  vFamily.textContent = fam.toFixed(2);
+  vWithin.textContent = wf.toFixed(2);
+  vR.textContent      = fmtSigned(r);
+  const v = classify(fam, wf, r);
+  vH.className = 'verdict__h ' + v.cls;
+  vH.textContent = v.h;
+  vBody.textContent = v.body;
+}
+[cFamily, cWithin, cR].forEach(el => el.addEventListener('input', updateChecker));
+updateChecker();
+
+const EX = {
+  ends:    { fam: 1.5, wf: 0.13, r: 0.36 },
+  hegel:   { fam: 0.4, wf: 1.05, r: 0.05 },
+  ack:     { fam: 0.55, wf: 0.30, r: -0.25 },
+  simpson: { fam: 0.81, wf: 0.27, r: -0.27 },
+  scaffold:{ fam: 0.59, wf: 0.12, r: 0.12 }
+};
+function animateRange(el, target, ms){
+  const start = parseFloat(el.value);
+  const t0 = performance.now();
+  function step(t){
+    const k = Math.min(1, (t-t0)/ms);
+    const eased = 1 - Math.pow(1-k, 3);
+    el.value = (start + (target-start)*eased).toFixed(3);
+    el.dispatchEvent(new Event('input'));
+    if (k < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+document.querySelectorAll('.example-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    const ex = EX[b.dataset.ex]; if (!ex) return;
+    animateRange(cFamily, ex.fam, 600);
+    animateRange(cWithin, ex.wf, 600);
+    animateRange(cR, ex.r, 600);
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   PROMPT ORIENTATION ANALYSER
+   ═══════════════════════════════════════════════════════════════ */
+
+const FEATURES = [
+  {
+    id: 'qrate',
+    name: 'Question-mark rate',
+    note: 'Questions per word. Recognition prompts produce ~5× the question-mark density of base prompts (§6.1.7). A prompt marker — characteristic of recognition specifically, not the family as a whole.',
+    compute: (text) => {
+      const wc = wordCount(text);
+      if (wc === 0) return { v:0, fmt:'0', tone:'zero' };
+      const n = (text.match(/\?/g)||[]).length;
+      const rate = n/wc;
+      return { v:rate, fmt: rate.toFixed(4), tone: rate>0.005 ? 'high' : rate>0 ? '' : 'zero' };
+    }
+  },
+  {
+    id: 'twop',
+    name: 'Second-person density',
+    note: 'Density of "you / your / yours / you\'re / you\'ve / you\'d / you\'ll". Highest pooled r with score in the D1 sequence, but not cleanly family-aligned.',
+    compute: (text) => {
+      const wc = wordCount(text);
+      if (wc === 0) return { v:0, fmt:'0', tone:'zero' };
+      const n = (text.match(/\byou(?:r|rs|'re|'ve|'d|'ll)?\b/gi)||[]).length;
+      const rate = n/wc;
+      return { v:rate, fmt: rate.toFixed(4), tone: rate>0.04 ? 'high' : rate>0 ? '' : 'zero' };
+    }
+  },
+  {
+    id: 'endsq',
+    name: 'Ends with question',
+    note: 'The single durable within-cell mediator in single-turn cells (cell 5 r = +0.325, cell 95 r = +0.392). In multi-turn dialogues, ending the final turn unresolved reverses sign.',
+    compute: (text) => {
+      const t = text.trim();
+      if (t.length === 0) return { v:0, fmt:'—', tone:'zero' };
+      const ends = t.endsWith('?');
+      return { v: ends?1:0, fmt: ends?'yes':'no', tone: ends?'high':'' };
+    }
+  },
+  {
+    id: 'scaffold',
+    name: 'Scaffolding-move imperatives',
+    note: '"Try / Notice / Consider / Look at / Think about / Imagine / Suppose ..." sentence-initial. Cleanest family marker — both intersubjective cells produce them; transmission cells do not (family d = 0.59).',
+    compute: (text) => {
+      const wc = wordCount(text);
+      if (wc === 0) return { v:0, fmt:'0', tone:'zero' };
+      const re = /(?:^|[.!?]\s+|\n+)(?:try|notice|consider|examine|imagine|suppose|compare|contrast|observe|picture|look at|think about|reflect on|focus on)\b/gi;
+      const n = (text.match(re)||[]).length;
+      const rate = n/wc;
+      return { v:n, fmt: String(n) + (rate>0 ? ' ·  '+rate.toFixed(4)+'/w' : ''), tone: n>0?'high':'zero' };
+    }
+  },
+  {
+    id: 'broadack',
+    name: 'Broad acknowledgement',
+    note: 'Quoted spans, "your X" possessives, "what you said / mentioned / noted" patterns. Negative within-cell r in 3 of 4 cells — the rubric penalises verbose surface acknowledgement (§6.1.8). Watch for this one.',
+    compute: (text) => {
+      const wc = wordCount(text);
+      if (wc === 0) return { v:0, fmt:'0', tone:'zero' };
+      let n = 0;
+      n += (text.match(/"[^"]{3,80}"/g)||[]).length;
+      n += (text.match(/\byour\s+(?:point|concern|question|idea|insight|thought|reasoning|approach|description|example)\b/gi)||[]).length;
+      n += (text.match(/\bwhat\s+you\s+(?:said|mentioned|described|noted|observed|raised|brought)\b/gi)||[]).length;
+      n += (text.match(/\byou'?ve\s+(?:noted|mentioned|raised|described|identified|pointed)\b/gi)||[]).length;
+      n += (text.match(/\bas\s+you\s+(?:said|noted|put\s+it|pointed\s+out|mentioned|observed)\b/gi)||[]).length;
+      n += (text.match(/\byou\s+just\s+(?:said|mentioned|noted)\b/gi)||[]).length;
+      const rate = n/wc;
+      return { v:n, fmt: String(n) + (rate>0 ? ' ·  '+rate.toFixed(4)+'/w' : ''), tone: n>0?'warn':'zero' };
+    }
+  },
+  {
+    id: 'inclusive',
+    name: 'Inclusive framing',
+    note: 'First-person plural: "let\'s / we / us / our / together". Positive within-cell r in baseline cells but not cleanly family-aligned. Useful for tone but not load-bearing.',
+    compute: (text) => {
+      const wc = wordCount(text);
+      if (wc === 0) return { v:0, fmt:'0', tone:'zero' };
+      let n = 0;
+      n += (text.match(/\blet'?s\b/gi)||[]).length;
+      n += (text.match(/\bwe(?:'re|'ve|'ll|'d)?\b/gi)||[]).length;
+      n += (text.match(/\bus\b/gi)||[]).length;
+      n += (text.match(/\bour(?:s)?\b/gi)||[]).length;
+      n += (text.match(/\btogether\b/gi)||[]).length;
+      const rate = n/wc;
+      return { v:n, fmt: String(n) + (rate>0 ? ' ·  '+rate.toFixed(4)+'/w' : ''), tone: n>0?'':'zero' };
+    }
+  }
+];
+
+function wordCount(text){ return text.trim().split(/\s+/).filter(w=>w.length>0).length; }
+
+const analyserOutput = document.getElementById('analyserOutput');
+FEATURES.forEach(f => {
+  const wrap = document.createElement('div');
+  wrap.className = 'feat'; wrap.dataset.feat = f.id;
+  wrap.innerHTML = '<h5 class="feat__name">' + f.name + '</h5>' +
+                   '<output class="feat__val zero" id="featVal-' + f.id + '">—</output>' +
+                   '<p class="feat__note">' + f.note + '</p>';
+  analyserOutput.appendChild(wrap);
+});
+
+const inputEl = document.getElementById('analyserInput');
+function updateAnalyser(){
+  const text = inputEl.value;
+  FEATURES.forEach(f => {
+    const r = f.compute(text);
+    const valEl = document.getElementById('featVal-' + f.id);
+    valEl.textContent = r.fmt;
+    valEl.className = 'feat__val ' + (r.tone || '');
+  });
+}
+inputEl.addEventListener('input', updateAnalyser);
+updateAnalyser();
+
+const SAMPLES = {
+  recog: "That's an interesting place to start. Before I share what I'm thinking, what does your intuition tell you here? Try to articulate what you'd expect, even if you're not entirely sure. I'm curious what brought you to frame the question this way — sometimes the framing itself reveals what we need to examine. Let's slow down here and think it through together. Notice what feels uncertain to you. What does your sense of the problem suggest as a first move?",
+  trans: "The answer involves three key principles. First, the concept is defined as follows: it operates by combining the relevant variables according to a fixed procedure. Second, you should apply rule X whenever Y holds, then verify the result against the expected pattern. Third, the most common error is confusing this with a similar but distinct concept, so be careful. The correct procedure is: identify the variable, apply the formula, check the answer. You should memorize this structure because it appears repeatedly.",
+  empty: ''
+};
+document.querySelectorAll('.analyser__sample').forEach(b => {
+  b.addEventListener('click', () => {
+    inputEl.value = SAMPLES[b.dataset.sample] ?? '';
+    updateAnalyser();
+    inputEl.focus();
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   CHECKLIST TOGGLE
+   ═══════════════════════════════════════════════════════════════ */
+document.querySelectorAll('#checklist li').forEach(li => {
+  li.addEventListener('click', () => {
+    li.classList.toggle('done');
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   COPY-TO-CLIPBOARD
+   ═══════════════════════════════════════════════════════════════ */
+document.querySelectorAll('.cite-block__copy').forEach(b => {
+  b.addEventListener('click', async () => {
+    const target = document.getElementById(b.dataset.copy); if (!target) return;
+    const text = target.innerText;
+    try {
+      await navigator.clipboard.writeText(text);
+      b.classList.add('copied');
+      const t = b.textContent; b.textContent = 'copied';
+      setTimeout(() => { b.classList.remove('copied'); b.textContent = t; }, 1400);
+    } catch (e) {
+      const range = document.createRange(); range.selectNodeContents(target);
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    }
+  });
+});
+
+})();
+</script>
+
+</body>
+</html>
