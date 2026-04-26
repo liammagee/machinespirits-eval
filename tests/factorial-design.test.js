@@ -62,6 +62,7 @@ const VALID_PROMPT_TYPES = [
   'dialectical_advocate',
   'dialectical_suspicious_directive',
   'dialectical_suspicious_two_pass',
+  'dialectical_coupling',
 ];
 
 // ============================================================================
@@ -145,6 +146,9 @@ describe('factorial design — config integrity', () => {
       // 'two_pass' suffix on the dialectical name pattern. Cell name like
       // cell_98_base_dialectical_suspicious_unified_two_pass.
       dialectical_suspicious_two_pass: 'dialectical',
+      // Coupling-targeted superego bridge variant (cell 99): cell name
+      // like cell_99_base_dialectical_coupling_unified_superego.
+      dialectical_coupling: 'dialectical',
     };
 
     // Divergent/dialectical cells encode multi-agent status via superego type name, not "multi"/"single"
@@ -204,6 +208,7 @@ describe('factorial design — prompt file assignment', () => {
     dialectical_advocate: 'tutor-superego-advocate.md',
     dialectical_suspicious_directive: 'tutor-superego-suspicious.md',
     dialectical_suspicious_two_pass: 'tutor-superego-suspicious.md',
+    dialectical_coupling: 'tutor-superego-coupling.md',
   };
 
   it('each cell uses the correct ego prompt file for its prompt_type', () => {
