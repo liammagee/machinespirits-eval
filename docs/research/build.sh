@@ -69,6 +69,15 @@ build_paper2_short() {
   echo "  -> ${P2S_PDF}"
 }
 
+build_methods_paper() {
+  local VM=$(grep '^version:' methods-paper.md 2>/dev/null | head -1 | sed 's/version: *"\(.*\)"/\1/')
+  if [ -z "$VM" ]; then VM="dev"; fi
+  local MP_PDF="methods-paper-v${VM}.pdf"
+  echo "Building ${MP_PDF} (Methods Paper) ..."
+  pandoc "${PANDOC_OPTS[@]}" methods-paper.md -o "${MP_PDF}"
+  echo "  -> ${MP_PDF}"
+}
+
 build_paper2_slides() {
   local V2SL=$(grep '^version:' slides-2.0.md 2>/dev/null | head -1 | sed 's/version: *"\(.*\)"/\1/' || echo "")
   if [ -z "$V2SL" ]; then V2SL="dev"; fi
@@ -126,6 +135,9 @@ case "${1:-full}" in
     build_paper2
     build_paper2_short
     build_paper2_slides
+    ;;
+  methods)
+    build_methods_paper
     ;;
   all)
     build_full
