@@ -16,6 +16,7 @@ import {
   tutorConfigLoader,
   monitoringService,
   tutorDialogueEngine as dialogueEngine,
+  memoryDynamicsService,
   setQuietMode,
 } from '@machinespirits/tutor-core';
 import * as rubricEvaluator from './rubricEvaluator.js';
@@ -2410,9 +2411,10 @@ async function runSingleTest(scenario, config, options = {}) {
   // Check if this is a multi-turn scenario
   const isMultiTurn = evalConfigLoader.isMultiTurnScenario(scenario.id);
 
+  let result;
   if (isMultiTurn) {
     log('Detected multi-turn scenario', 'info');
-    return runMultiTurnTest(scenario, config, fullScenario, {
+    result = await runMultiTurnTest(scenario, config, fullScenario, {
       ...options,
       log,
       judgeOverride,
@@ -2422,17 +2424,43 @@ async function runSingleTest(scenario, config, options = {}) {
       liveApiReporter: options.liveApiReporter,
       learnerId,
     });
+  } else {
+    // Single-turn evaluation (original logic)
+    result = await runSingleTurnTest(scenario, config, fullScenario, {
+      ...options,
+      log,
+      judgeOverride,
+      judgeCli,
+      judgeCliModel,
+      learnerId,
+    });
   }
 
-  // Single-turn evaluation (original logic)
-  return runSingleTurnTest(scenario, config, fullScenario, {
-    ...options,
-    log,
-    judgeOverride,
-    judgeCli,
-    judgeCliModel,
-    learnerId,
-  });
+  // A7 Longitudinal — eager pad-layer consolidation on session end.
+  // The recognition_moments table fills correctly during dialogue, but
+  // tutor-core's autoConsolidateToUnconscious has a 7-day age gate aimed
+  // at production background jobs. Eval sessions complete in minutes, so
+  // moments would never settle into writing_pads.unconscious_state.
+  // Calling runBackgroundMaintenance with minAge: 0 here makes the pad's
+  // permanent_traces / total_recognition_moments counter visible to the
+  // *next* session under the same learner_id — required for the A7
+  // Phase 2 H3 "memory use" measurement and for any tutor logic that
+  // queries pad state across sessions. Failures are non-fatal.
+  if (learnerId) {
+    try {
+      const maint = memoryDynamicsService.runBackgroundMaintenance(learnerId, {
+        consolidation: { minAge: 0, requireTransformative: false },
+      });
+      const consolidated = maint?.tasks?.consolidation?.consolidated ?? 0;
+      if (consolidated > 0) {
+        log(`[evaluationRunner] Consolidated ${consolidated} recognition moment(s) to unconscious for ${learnerId}`, 'info');
+      }
+    } catch (err) {
+      log(`[evaluationRunner] Pad consolidation failed for ${learnerId}: ${err.message}`, 'warn');
+    }
+  }
+
+  return result;
 }
 
 /**
