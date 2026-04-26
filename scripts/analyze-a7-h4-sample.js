@@ -8,8 +8,10 @@
  *    dialogue."
  *
  * Method:
- *   - Sample one "late-session" dialogue per arc (sessions 5-8). 10 arcs
- *     → 10 dialogues (5 base + 5 recog), balanced.
+ *   - Sample N "late-session" dialogues per arc (sessions 5-8); N
+ *     defaults to 1 (the pre-registered design) and can be bumped to
+ *     up to 4 for power augmentation. 10 arcs × N → 10·N dialogues
+ *     balanced across conditions.
  *   - Shuffle by a deterministic seed (so the sample is reproducible).
  *   - For each dialogue, extract:
  *       (a) the tutor's last suggestion in the session, and
@@ -23,10 +25,12 @@
  *
  * Usage:
  *   node scripts/analyze-a7-h4-sample.js --timestamp 1777173286
+ *   node scripts/analyze-a7-h4-sample.js --timestamp 1777173286 --n-per-arc 4
  *
- * Outputs:
- *   exports/a7-h4-blinded-1777173286.md   (the dialogues to code)
- *   data/a7-h4-key-1777173286.json        (the unblinding key)
+ * Outputs (filename includes n-per-arc when > 1):
+ *   exports/a7-h4-blinded-1777173286.md           (n=1, default)
+ *   exports/a7-h4-blinded-1777173286-n4.md        (n=4, augmented)
+ *   data/a7-h4-key-1777173286[-n4].json           (matching key)
  */
 
 import fs from 'fs';
@@ -40,6 +44,8 @@ const REPO_ROOT = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const tsIdx = args.indexOf('--timestamp');
 const TIMESTAMP = tsIdx !== -1 ? args[tsIdx + 1] : '1777173286';
+const nIdx = args.indexOf('--n-per-arc');
+const N_PER_ARC = nIdx !== -1 ? parseInt(args[nIdx + 1], 10) : 1;
 const SEED = 42;
 
 const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
@@ -86,8 +92,18 @@ for (const arc of arcs) {
     )
     .all(arc, ...LATE_SESSIONS);
   if (candidates.length === 0) continue;
-  const pick = candidates[Math.floor(rand() * candidates.length)];
-  samples.push({ arc, ...pick });
+  if (N_PER_ARC >= candidates.length) {
+    // Use all of them
+    for (const c of candidates) samples.push({ arc, ...c });
+  } else {
+    // Random sample without replacement
+    const indices = candidates.map((_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    for (let k = 0; k < N_PER_ARC; k++) samples.push({ arc, ...candidates[indices[k]] });
+  }
 }
 
 // Shuffle samples for blinded ordering
@@ -201,8 +217,9 @@ const keyDir = path.join(REPO_ROOT, 'data');
 fs.mkdirSync(outDir, { recursive: true });
 fs.mkdirSync(keyDir, { recursive: true });
 
-const blindedPath = path.join(outDir, `a7-h4-blinded-${TIMESTAMP}.md`);
-const keyPath = path.join(keyDir, `a7-h4-key-${TIMESTAMP}.json`);
+const suffix = N_PER_ARC > 1 ? `-n${N_PER_ARC}` : '';
+const blindedPath = path.join(outDir, `a7-h4-blinded-${TIMESTAMP}${suffix}.md`);
+const keyPath = path.join(keyDir, `a7-h4-key-${TIMESTAMP}${suffix}.json`);
 
 fs.writeFileSync(blindedPath, blindedLines.join('\n'));
 fs.writeFileSync(keyPath, JSON.stringify(key, null, 2));
