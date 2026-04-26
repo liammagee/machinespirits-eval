@@ -37,8 +37,20 @@ function loadLog(filename) {
 /** Known non-agent system entries that can appear in traces. */
 const SYSTEM_AGENTS = new Set(['system']);
 
+/**
+ * Bidirectional-profiling and self-reflection agents that run between turns
+ * and don't belong to either side's deliberation block. Treated like system
+ * entries: they segment the trace but are filtered before block analysis.
+ */
+const PROFILING_AGENTS = new Set([
+  'learner_other_ego',
+  'tutor_other_ego',
+  'ego_self_reflection',
+]);
+
 /** True if this entry is a learner-side entry (any learner agent label). */
 function isLearnerEntry(entry) {
+  if (PROFILING_AGENTS.has(entry.agent)) return false;
   return entry.agent === 'learner' || entry.agent.startsWith('learner_');
 }
 
@@ -49,7 +61,7 @@ function isTutorEntry(entry) {
 
 /**
  * Segment a flat dialogueTrace into alternating tutor/learner blocks.
- * Each block is { type: 'tutor'|'learner'|'system', entries: [...] }.
+ * Each block is { type: 'tutor'|'learner'|'system'|'profiling', entries: [...] }.
  * Consecutive entries of the same side are grouped together.
  */
 function segmentTrace(trace) {
@@ -59,6 +71,7 @@ function segmentTrace(trace) {
   for (const entry of trace) {
     let type;
     if (SYSTEM_AGENTS.has(entry.agent)) type = 'system';
+    else if (PROFILING_AGENTS.has(entry.agent)) type = 'profiling';
     else if (isLearnerEntry(entry)) type = 'learner';
     else type = 'tutor';
 
@@ -74,12 +87,13 @@ function segmentTrace(trace) {
 }
 
 /**
- * Filter out system segments and merge adjacent same-type segments that were
- * split by interleaved system entries (e.g. system/memory_cycle between
- * ego/revise and tutor/final_output).
+ * Filter out system + profiling segments and merge adjacent same-type segments
+ * that were split by interleaved system/profiling entries (e.g. system/memory_cycle
+ * between ego/revise and tutor/final_output, or learner_other_ego/profile_tutor
+ * between turn-N tutor block and turn-N+1 learner block).
  */
 function getNonSystemSegments(trace) {
-  const raw = segmentTrace(trace).filter((s) => s.type !== 'system');
+  const raw = segmentTrace(trace).filter((s) => s.type !== 'system' && s.type !== 'profiling');
   const merged = [];
   for (const seg of raw) {
     if (merged.length > 0 && merged[merged.length - 1].type === seg.type) {
