@@ -169,8 +169,10 @@ node scripts/eval-cli.js evaluate <runId>
 - Develop deployment rubric: recognition ROI by domain characteristics
 - Paper ref: Section 8.2 Future Direction #3
 
-### A7. Longitudinal Multi-Session Evaluation (Phase 1 DONE 2026-04-24, Phase 2 pending API budget)
+### A7. Longitudinal Multi-Session Evaluation (Phase 1 DONE 2026-04-24, Phase 2 RUN 2026-04-26 — H1 rejected, reversed direction)
 Single-session evaluation cannot capture accumulated understanding.
+
+**Phase 2 result (2026-04-26):** Full study of 80 dialogues (10 arcs × 8 sessions) under timestamp `1777173286` complete; final cost \$3.67 (33× under the \$120 cost gate). Pre-registered H1 (recog ≥ 2× base on per-learner moment count, d ≥ 0.8 in recog favour, p < 0.05) **rejected** with significance in the *opposite* direction: base mean 25.0 moments/arc vs recog mean 19.2 (Cohen's $d = 2.07$ in *base* favour, Welch's $t(4.84) = 3.27$, $p = 0.017$). Substantive interpretation: H1's moment-count proxy measured *ego↔superego disagreement*, not *recognition work*. Recognition arcs accumulate fewer moments because the recognition ego is internally pre-aligned with the superego's principles, so first-pass suggestions draw less objection; base ego, lacking that pre-alignment, requires more dialectical correction. The pre-registration's "null" framing didn't anticipate a reversed-direction result; honest framing is "H1 was the wrong test for the right question." Surfaced two tutor-core bugs mid-experiment: missing recognitionOrchestrator integration in the dialogue flow, and a UTC-parsing bug in `shouldConsolidateToUnconscious`. Both fixed (tutor-core `7174e28`, eval `ef80af9`); 3-session smoke verified end-to-end pad consolidation works post-fix. H2 (per-session score trajectory) judging in progress; H3 (conscious↔message overlap) and H4 (blinded cross-session-reference coding) deferred. Full report: `exports/a7-phase2-longitudinal-1777173286.md`.
 
 **Implementation spec**: `notes/design-a7-longitudinal-implementation-2026-04-16.md` — refines the high-level design after reading tutor-core migration 008.
 
