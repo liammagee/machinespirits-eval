@@ -109,6 +109,24 @@ function sd(arr) {
   return Math.sqrt(arr.reduce((s, v) => s + (v - m) ** 2, 0) / (arr.length - 1));
 }
 
+// D1 cross-pollination: per-cell ends-with-question rate.
+// Sibling D1 (commits e8dc7a8 / 3c9eaa6 / c334722) found that
+// `ends-with-question` survives as the sole within-cell mediator across
+// 5 passes of structural-features analysis. Adding the diagnostic here
+// lets us see whether D3 architectural bridges (cell 98+) shift this
+// rate alongside coupling — same-channel vs different-channel
+// architectural intervention.
+//
+// Strips trailing whitespace, closing quotes, parens, and trailing
+// emoji-like characters before checking the final char. This is the
+// same convention the sibling's pass-3 regex uses.
+function endsWithQuestion(text) {
+  if (!text || typeof text !== 'string') return false;
+  // Strip trailing whitespace and common closers.
+  const stripped = text.replace(/[\s)\]}"'’””’.*]*$/u, '').trim();
+  return stripped.endsWith('?');
+}
+
 function cohensD(a, b) {
   if (a.length < 2 || b.length < 2) return 0;
   const pooled = Math.sqrt(((a.length - 1) * sd(a) ** 2 + (b.length - 1) * sd(b) ** 2) / (a.length + b.length - 2));
@@ -148,15 +166,20 @@ export function extractReflectionActionPairs(trace) {
     if (!reflection) continue;
 
     let action = null;
+    let actionMessage = null; // message-only text, for ends-with-question check
     for (let i = start + 1; i < end; i++) {
       const e = trace[i];
       if (e.agent !== 'ego') continue;
       if (!['generate', 'revise', 'generate_final'].includes(e.action)) continue;
       const text = (e.suggestions || []).map((s) => `${s.title || ''} ${s.message || ''} ${s.reasoning || ''}`).join(' ').trim();
-      if (text) action = text; // keep latest within the window (revise wins over earlier generate)
+      const messageOnly = (e.suggestions || []).map((s) => s.message || '').filter(Boolean).join(' ').trim();
+      if (text) {
+        action = text; // keep latest within the window (revise wins over earlier generate)
+        actionMessage = messageOnly;
+      }
     }
     if (!action) continue;
-    pairs.push({ turn: reflectionEntry.turnIndex ?? r, reflection, action });
+    pairs.push({ turn: reflectionEntry.turnIndex ?? r, reflection, action, actionMessage });
   }
 
   return pairs;
@@ -226,6 +249,12 @@ export function aggregateByCell(allPairs) {
     const jaccards = g.pairs.map((pp) => jaccard(pp.reflection, pp.action));
     const gaps = cosines.map((c) => 1 - c);
 
+    // Cross-pollination with sibling D1 finding: per-cell ends-with-question
+    // rate. Looks at `actionMessage` only (not title/reasoning) so the
+    // pragmatic act is read off the surface delivery, not internal monologue.
+    const eowqHits = g.pairs.filter((pp) => endsWithQuestion(pp.actionMessage)).length;
+    const eowqDenom = g.pairs.filter((pp) => pp.actionMessage).length;
+
     summary.push({
       profile: g.profile,
       condition: isRecog(g.profile) ? 'recog' : 'base',
@@ -243,6 +272,9 @@ export function aggregateByCell(allPairs) {
       // message would be. If ≈0, the reflection is essentially "average drift"
       // away from action — i.e. no special coupling produced by reflecting.
       gapMinusDrift: mean(gaps) - mean(g.drifts),
+      // D1 cross-pollination: ends-with-question rate (sibling's within-cell mediator).
+      endsWithQuestionRate: eowqDenom > 0 ? eowqHits / eowqDenom : null,
+      endsWithQuestionDenom: eowqDenom,
     });
   }
 
@@ -276,6 +308,7 @@ export function buildReport({ runIds, summary, minPairs }) {
   lines.push('- **Gap** — `1 − Coupling`. Big numbers mean the insight stayed cognitive.');
   lines.push('- **Turn drift** — cosine distance between consecutive final tutor messages on the same dialogue. The "how much does the tutor change between turns at all" baseline.');
   lines.push('- **Gap − Drift** — diagnostic. If ≈ 0, reflection content is no more present in next-turn behavior than any neighbouring turn would be (i.e. reflection adds no special coupling).');
+  lines.push('- **EoQ%** — fraction of `actionMessage` ending in `?`. The sibling D1 fifth-pass found `ends-with-question` is the sole within-cell mediator of the orientation-family effect (commits e8dc7a8 / 3c9eaa6 / c334722); reporting it here lets cross-checking of whether D3 architectural bridges shift the same channel.');
   lines.push('');
 
   if (filtered.length === 0) {
@@ -295,6 +328,7 @@ export function buildReport({ runIds, summary, minPairs }) {
       { key: 'meanGap', label: 'Gap', fmt: (v) => v.toFixed(3) },
       { key: 'meanTurnDrift', label: 'Turn drift', fmt: (v) => v.toFixed(3) },
       { key: 'gapMinusDrift', label: 'Gap−Drift', fmt: (v) => v.toFixed(3) },
+      { key: 'endsWithQuestionRate', label: 'EoQ%', fmt: (v) => v == null ? '—' : `${(v * 100).toFixed(0)}%` },
     ]),
   );
   lines.push('');
