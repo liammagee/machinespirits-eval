@@ -4462,28 +4462,31 @@ profiles:
   # ─── Cells 102 / 103: Id-Director with learner-register classifier ────────
   # Identical to cells 100/101 except a register classifier runs FIRST each
   # turn — reads the learner's most recent message, emits a structured
-  # register tag, and the id consumes that tag via <learner_register> in its
-  # user message + <learner_register_directive> in its prompt.
+  # register tag (vulnerable_disclosure / sceptical_pushback /
+  # operational_request / meta_observation / analytic_engagement /
+  # curious_invitation / disengaged), and the id consumes that tag via
+  # <learner_register> in its user message + <learner_register_directive>
+  # in its prompt.
   #
-  # Motivation: pilot findings (docs/cell-100-pilot-findings.md §6.1) found
-  # a persona-shift floor — both rubrics, all curricula, all persona-shift
-  # scenarios scored last-turn v2.2 in the 20-35 range. Three rounds of
-  # prompt iteration on the id moved Turn 0 and Turn 1 substantially but
-  # did not move the persona-shift floor. Hypothesis: the limitation is
-  # information-structural, not prompt-rhetorical — the id needs the
-  # learner's register as *structured input*, not as a directive about
-  # what to watch for.
+  # Result (pilot 2026-04-27, n=27 per cell across 3 curricula × 3 scenario
+  # types × 3 reps; full data: docs/cell-100-pilot-findings-addendum.md):
   #
-  # Test: compare cell_102 last-turn v2.2 on persona-shift scenarios to
-  # cell_100's ~26.5 floor. If structured input lifts that floor by 10+
-  # points the architecture is genuinely more responsive; if not, the
-  # limit is at the ego layer not the id's authoring layer.
+  #   c102 lifts last-turn v2.2 on persona-shift scenarios from c100's 24.3
+  #   floor to 81.7 (+57). c103 (with recognition) reaches 87.6 (+63) and
+  #   maintains that uniformity across invitation (86.5) and pressure (86.5)
+  #   scenarios — the only cell in the family with no remaining frontier the
+  #   architecture can't reach above 80. c103 is the architectural champion.
+  #
+  # NOTE: an earlier single-scenario smoke test (commit 3c7f701) generalised
+  # incorrectly to a "negative result" framing. That smoke conclusion was
+  # overturned at pilot scale; see findings addendum for full retraction.
+  # Cells 102/103 are now the recommended path for new work.
   #
   # Classifier reuses the id model (kimi-k2.5) by default; can be overridden
   # via classifier_model / classifier_provider if a faster/smaller model is
   # preferred. Classifier prompt: prompts/learner-register-classifier.md.
   cell_102_id_director_charisma_register:
-    description: "Id-Director (cell 102): cell 100 + learner-register classifier; tests whether structured register input lifts the persona-shift floor"
+    description: "Id-Director (cell 102): cell 100 + register classifier. Pilot result: lifts persona-shift floor from 24.3 → 81.7 last-turn v2.2 (+57); strong on charisma too (62.9 mean). One of the family's two recommended cells (with c103). See docs/cell-100-pilot-findings-addendum.md."
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4523,7 +4526,7 @@ profiles:
         max_tokens: 4000
 
   cell_103_recog_id_director_charisma_register:
-    description: "Id-Director (cell 103): cell 101 + learner-register classifier; tests whether structured register input lifts the recognition-variant persona-shift floor"
+    description: "Id-Director (cell 103): cell 102 + recognition disposition. Pilot result: ARCHITECTURAL CHAMPION — last-turn v2.2 86.9 mean, uniform across all 3 scenario types (invitation 86.5, pressure 86.5, persona-shift 87.6). Recognition costs ~1 charisma point vs c102 but lifts v2.2 by ~7 across the board. See docs/cell-100-pilot-findings-addendum.md."
     factors:
       prompt_type: recognition
       multi_agent_tutor: true
@@ -4572,14 +4575,22 @@ profiles:
   #                                    single-move; favour curriculum
   #                                    engagement
   #
-  # Hypothesis from docs/cell-100-pilot-findings.md §4.2: the prompt-budget
-  # axis trades charisma against pedagogical engagement. These cells make
-  # the trade-off explicit. Cell_100 final's "balanced" tuning sits between
-  # them; if the hypothesis is right, cell_104 should outscore cell_100 on
-  # the charisma rubric and underscore on v2.2; cell_105 should do the
-  # reverse.
+  # Original hypothesis (docs/cell-100-pilot-findings.md §4.2 / §7.3):
+  # the prompt-budget axis trades charisma against pedagogical engagement.
+  # cell_104 should outscore c100 on charisma but underscore on v2.2;
+  # cell_105 should do the reverse.
+  #
+  # Pilot result (n=27 each): HYPOTHESIS WRONG. cell_104 (verbose) beats
+  # cell_105 (terse) on BOTH rubrics:
+  #   v2.2 last-turn:  c104 = 75.8   c105 = 56.6
+  #   charisma:        c104 = 63.6   c105 = 33.3
+  # Mechanism: terse 200-400 token prompts UNDER-SPECIFY the ego, producing
+  # brief responses that score low on both rubrics' content dimensions.
+  # The prompt-budget axis is NON-MONOTONIC; there's an optimum around
+  # 700-1200 tokens. Cell 100 final's 400-800 range is plausibly near it.
+  # See docs/cell-100-pilot-findings-addendum.md §3 for full breakdown.
   cell_104_id_director_charisma_tuned:
-    description: "Id-Director (cell 104): cell 100 + id_tuning:charisma — verbose generated_prompts, looser single-move constraint, optimised for rhetorical luxury"
+    description: "Id-Director (cell 104): cell 100 + id_tuning:charisma (verbose 800-1500 token id prompts). Pilot result: HIGHEST CHARISMA in family at 63.6 mean (within 1 point of c102/c103) and strong v2.2 (75.8 last-turn mean) without the classifier. Verbose authoring alone provides much of what the classifier provides. See docs/cell-100-pilot-findings-addendum.md §3."
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4611,7 +4622,7 @@ profiles:
         max_tokens: 16000
 
   cell_105_id_director_pedagogy_tuned:
-    description: "Id-Director (cell 105): cell 100 + id_tuning:pedagogy — terse generated_prompts (200-400 tokens), strict single-move, optimised for curriculum engagement"
+    description: "Id-Director (cell 105): cell 100 + id_tuning:pedagogy (terse 200-400 token id prompts). Pilot result: WORST in family except baseline — 56.6 mean v2.2 last-turn, 33.3 mean charisma. Terse prompts UNDER-SPECIFY the ego rather than trading rhetoric for pedagogy. The findings doc §7.3 prediction was directionally wrong; the prompt-budget axis is non-monotonic. Useful as the lower-bound documentation of that axis. See docs/cell-100-pilot-findings-addendum.md §3."
     factors:
       prompt_type: base
       multi_agent_tutor: true
