@@ -4561,3 +4561,83 @@ profiles:
         # JSON envelope is ~150 tokens; 4000 is comfortable headroom and
         # mirrors the 12000 the id itself uses.
         max_tokens: 4000
+
+  # ─── Cells 104 / 105: Id-tuning axis ──────────────────────────────────────
+  # Mirror cell_100 except for an `id_tuning` factor that biases the id's
+  # generated_prompt budget and single-move constraint:
+  #
+  #   cell_104  id_tuning: charisma  → 800–1500 token prompts, looser
+  #                                    single-move; favour rhetorical luxury
+  #   cell_105  id_tuning: pedagogy  → 200–400 token prompts, strict
+  #                                    single-move; favour curriculum
+  #                                    engagement
+  #
+  # Hypothesis from docs/cell-100-pilot-findings.md §4.2: the prompt-budget
+  # axis trades charisma against pedagogical engagement. These cells make
+  # the trade-off explicit. Cell_100 final's "balanced" tuning sits between
+  # them; if the hypothesis is right, cell_104 should outscore cell_100 on
+  # the charisma rubric and underscore on v2.2; cell_105 should do the
+  # reverse.
+  cell_104_id_director_charisma_tuned:
+    description: "Id-Director (cell 104): cell 100 + id_tuning:charisma — verbose generated_prompts, looser single-move constraint, optimised for rhetorical luxury"
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
+
+  cell_105_id_director_pedagogy_tuned:
+    description: "Id-Director (cell 105): cell 100 + id_tuning:pedagogy — terse generated_prompts (200-400 tokens), strict single-move, optimised for curriculum engagement"
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: pedagogy
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 12000

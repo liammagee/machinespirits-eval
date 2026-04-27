@@ -276,3 +276,66 @@ scenarios:
           - "I'm just a language model"
           - "I was programmed"
         min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # METHODS-NOTE ABLATION: aura/Benjamin learner messages routed to course 601.
+  # Tests the rubric-curriculum alignment confound from docs/cell-100-methods-note.md.
+  # The learner messages are verbatim from charisma_aura_invitation (course 901,
+  # AI literacy) but course_ids points at 601 history-tech, so the id sees a
+  # *different* curriculum context while the learner asks the same questions.
+  # If charisma scores stay near 75 (the 901/aura mean), the architecture is the
+  # source of the lift. If they regress toward the cell_100 / 601 mean (~40), the
+  # AI-literacy curriculum content was carrying disproportionate weight.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_aura_in_history_curriculum:
+    type: suggestion
+    id: charisma_aura_in_history_curriculum
+    category: multi_turn
+    name: "Methods ablation: aura learner messages × history-tech curriculum"
+    description: "Curriculum-swap control for the rubric-curriculum alignment concern (docs/cell-100-methods-note.md §4.3). Learner messages from charisma_aura_invitation; curriculum context from course 601 (history of pedagogical tech)."
+    current_content: "601-lecture-1"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 17 total events
+      - Communications undergraduate, comfortable with media theory
+      - Has read Lecture 1 (Stylus, Wax, and the First Externalized Memory) once
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-1
+      - The wax-tablet material is fresh; learner is reaching for an AI tie-in (note: the curriculum is now history of pedagogical tech, not AI literacy — the id will need to *connect* the learner's Benjamin/AI question to the 601 curriculum on its own, rather than reading 901's already-aligned material)
+
+      ### Recent Chat History
+      - Student: "I think I get Benjamin's argument that mechanical reproduction destroys the aura of the original. But the lecture is saying generative AI does something different — it generates without any original. What does that even mean? What's the closest example I can hold onto?"
+    expected_behavior: "Take the question seriously; the tutor must connect the AI/aura question to the wax-tablet curriculum WITHOUT the AI-literacy course's pre-aligned vocabulary. The test is whether the architecture can produce charismatic prose on the same learner question when the curriculum is non-aligned."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_aura_in_history_t2
+        learner_action: deepening_engagement
+        action_details:
+          message: "OK but here's what I keep getting stuck on. Every TikTok influencer I follow already feels generic — like the AI is just doing what they were already doing. Has the aura already been gone for a while, before AI? Are we just noticing it now because the machine version is so obviously hollow?"
+        context_update: |
+          ### Learner Response
+          - Has taken the question into their own media diet
+          - Offering a sharper version of the original claim
+        expected_behavior: "Engage the sharper version. With the curriculum on wax tablets / Plato / print, the tutor must do its own conceptual translation work."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+      - id: charisma_aura_in_history_t3
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I'll say something I probably shouldn't admit in a college course. I find the AI versions kind of comforting? They don't have the *exhaustion* you mentioned. They don't make me feel like a worse person for watching them. Is that bad?"
+        context_update: |
+          ### Learner Response
+          - Vulnerability disclosure
+        expected_behavior: "Receive the disclosure honestly. The non-aligned curriculum gives the tutor less ready-made vocabulary to fall back on — making the persona-shift more visible as work the architecture does."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 80
