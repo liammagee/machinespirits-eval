@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "3.0.58"
+version: "3.0.59"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -1410,6 +1410,26 @@ Dialogue quality closely tracks tutor quality (r > 0.99 across conditions), not 
 **Prediction: Multi-agent architecture or learner architecture modulates trajectories.** *Not supported.* Neither factor produces slope effects above d = 0.15 on tutor or learner dimensions. The one apparent exception (`adaptive_responsiveness` d = 0.24 under Sonnet) does not replicate under Gemini (d = 0.13) or GPT (d = 0.12).
 
 **Key distinction.** Adaptive responsiveness is real as a descriptive phenomenon (the tutor changes across turns, AdaptΔ > 0.79) but it is not modulated by experimental manipulation. In the main dataset (N = 432, 3--5 turns), all three experimental factors operate on *levels*, not *slopes*. The exploratory DeepSeek/Sonnet disengagement effect ($d = 1.63$) that earlier versions of this paper flagged as a "pending boundary-condition finding" did not survive pre-registered replication (A12, $N = 32$, two additional generation models × two judges; §6.3.2). Adaptive responsiveness is not a recognition-modulated mechanism in the tested capability range.
+
+#### 6.3.9 The Insight-Action Gap is Structural Across Three Lightweight Interventions
+
+A separate question, posed by the dialectical-architecture cells (40-45), is whether the *ego self-reflection* trace and the *ego final message* are coupled within turn — that is, whether the model's introspective noticing about a learner shows up in the message it actually delivers, or stays cognitive and decoupled. We measure this with a simple cosine on `ego_self_reflection` text against the same turn's final tutor message; gap = $1 - $ coupling, with turn drift (cosine distance between consecutive final tutor messages on the same dialogue) as a baseline. Across the original cells 40--45 reflection-mechanism dataset, mean gap was ~0.42 with a recognition gap > base gap pattern (Cohen's $d \approx -1.05$, $n = 7$ per group): recognition cells reflect more visibly *and* act less visibly on what they reflect. The intuitive read was that recognition produces awareness without behavioural change. We call this pattern the **insight-action gap**.
+
+To probe whether the gap is bridgeable, we ran three pre-registered interventions against a matched cell-40 control on the full multi-turn philosophy scenario set (9 multi-turn scenarios × 3 runs × 2 cells = 54 dialogues per contrast, $\sim 300$ reflection-action pairs each). Each intervention attacks the gap from a different layer.
+
+| Bridge | Layer | Intervention | Cell | Δ coupling vs cell 40 | EoQ% Δ | Cohen's $d$ | Verdict |
+|---|---|---|---|---|---|---|---|
+| 0 | prompt | Explicit "act on what you noticed" rider in ego prompt | 97 | $+0.007$ | $+0$ pp | $+0.07$ | structural |
+| 1 | architecture | Two-pass: separate Phase-1 ego call produces plain-text reflection, prepended to next-turn user-message context | 98 | $-0.007$ | $+2$ pp | $-0.05$ | structural |
+| 2 | architecture | Coupling-targeted superego: critique loop retargeted from authenticity to reflection-action coupling | 99 | $-0.008$ | $+4$ pp | $-0.07$ | structural |
+
+All three interventions land within $\pm 0.010$ of the cell-40 baseline coupling ($\sim 0.61$). Cohen's $d$ on per-cell-mean coupling sits in $[-0.07, +0.07]$ — well below the pre-registered $d \geq 0.5$ "bridgeable" threshold (and below the $d \geq 0.3$ "suggestive" threshold). The pre-registered stopping rule said: *if Bridges 1, 2, and 3 all return $d < 0.3$, declare H-capacity provisionally confirmed*. Two of three architectural bridges are now in below threshold; the prompt-only directive (Bridge 0) is also null. The third architectural bridge (best-of-N selector through generation space) remains in flight as the most expensive single test of the orchestration hypothesis but tests a stronger search-based claim that even a positive result would not undo the lightweight-intervention null.
+
+A two-channel decomposition makes the pattern legible. We separate the **semantic-coupling** channel (cosine of reflection vs message) from the **pragmatic-act** channel (rate at which the final tutor message ends with a question — ends-with-question, "EoQ%"). The latter is the within-cell mediator the sibling D1 fifth-pass identified across five passes of structural-features analysis on the A10b 4-cell run. The two channels decouple under different interventions. Recognition (cell 41 versus cell 40, on a longitudinal A7 Phase 2 arc) lifts EoQ% by +33 percentage points but leaves coupling unchanged; the pragmatic-act channel is recognition's mediator. Bridges 0--2, by contrast, lift EoQ% by 0--4 percentage points and leave coupling equally unchanged. The architectural interventions do not engage the same mediator that recognition does, and they do not engage the semantic-coupling channel at all. The pragmatic-act channel is somewhat tunable; the semantic-coupling channel is not.
+
+We read this as evidence for the **H-capacity hypothesis**: the insight-action gap is a property of LLM cognition rather than something prompt design or lightweight orchestration can fix. Three diverse attacks — explicit instruction, recent-context content injection, retargeted critique — all land within roughly 1% of each other and within roughly 1% of the control. This is not what a tunable design parameter looks like; it is what a structural cognitive limit looks like. Strengthening Finding 11 (originally framed as "self-reflection produces awareness without behavioral change"), we now read this property as: **structural under prompt design AND lightweight architectural intervention**, in the tested capability range. Detection of the gap in the apparatus does not provide a route to its closure within current LLMs without substantially heavier architectural machinery (Bridge 3's best-of-N search, or genuinely new architectures with explicit memory and iterative refinement).
+
+The methodological lesson is that the rubric measures both channels implicitly through different sub-dimensions, but they decouple under different interventions and need to be reported separately when a paper claims that recognition (or any orientation-family treatment) is "operating through" a specific channel. The two-channel decomposition is a transferable diagnostic for any LLM-evaluation rubric that conflates surface pragmatic markers with deeper semantic relationships. Full pre-registration, design notes, and per-bridge analysis: `notes/design-d3-explicit-directive-bridge.md`, `notes/design-d3-architectural-bridges.md`; per-run reports: `exports/insight-action-gap-eval-2026-04-25-4fb605db.md` (Bridge 0), `exports/insight-action-gap-eval-2026-04-26-a1e75b9a.md` (Bridge 1), `exports/insight-action-gap-eval-2026-04-26-02e662b4.md` (Bridge 2).
 
 ### 6.4 Mechanism Interaction
 
