@@ -202,6 +202,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_99_base_dialectical_coupling_unified_superego',
   'cell_100_id_director_charisma',
   'cell_101_recog_id_director_charisma',
+  'cell_102_id_director_charisma_register',
+  'cell_103_recog_id_director_charisma_register',
 ];
 
 /**

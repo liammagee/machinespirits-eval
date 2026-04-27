@@ -4458,3 +4458,106 @@ profiles:
       hyperparameters:
         temperature: 0.5
         max_tokens: 12000
+
+  # ─── Cells 102 / 103: Id-Director with learner-register classifier ────────
+  # Identical to cells 100/101 except a register classifier runs FIRST each
+  # turn — reads the learner's most recent message, emits a structured
+  # register tag, and the id consumes that tag via <learner_register> in its
+  # user message + <learner_register_directive> in its prompt.
+  #
+  # Motivation: pilot findings (docs/cell-100-pilot-findings.md §6.1) found
+  # a persona-shift floor — both rubrics, all curricula, all persona-shift
+  # scenarios scored last-turn v2.2 in the 20-35 range. Three rounds of
+  # prompt iteration on the id moved Turn 0 and Turn 1 substantially but
+  # did not move the persona-shift floor. Hypothesis: the limitation is
+  # information-structural, not prompt-rhetorical — the id needs the
+  # learner's register as *structured input*, not as a directive about
+  # what to watch for.
+  #
+  # Test: compare cell_102 last-turn v2.2 on persona-shift scenarios to
+  # cell_100's ~26.5 floor. If structured input lifts that floor by 10+
+  # points the architecture is genuinely more responsive; if not, the
+  # limit is at the ego layer not the id's authoring layer.
+  #
+  # Classifier reuses the id model (kimi-k2.5) by default; can be overridden
+  # via classifier_model / classifier_provider if a faster/smaller model is
+  # preferred. Classifier prompt: prompts/learner-register-classifier.md.
+  cell_102_id_director_charisma_register:
+    description: "Id-Director (cell 102): cell 100 + learner-register classifier; tests whether structured register input lifts the persona-shift floor"
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      register_classifier: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      classifier_prompt_file: learner-register-classifier.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 12000
+      classifier_hyperparameters:
+        temperature: 0.2
+        # 4000: kimi-k2.5 was burning the 800 budget on internal reasoning
+        # before emitting visible output on 2 of 3 smoke turns. The actual
+        # JSON envelope is ~150 tokens; 4000 is comfortable headroom and
+        # mirrors the 12000 the id itself uses.
+        max_tokens: 4000
+
+  cell_103_recog_id_director_charisma_register:
+    description: "Id-Director (cell 103): cell 101 + learner-register classifier; tests whether structured register input lifts the recognition-variant persona-shift floor"
+    factors:
+      prompt_type: recognition
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      register_classifier: true
+    learner_architecture: unified_recognition
+    recognition_mode: true
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      classifier_prompt_file: learner-register-classifier.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 12000
+      classifier_hyperparameters:
+        temperature: 0.2
+        # 4000: kimi-k2.5 was burning the 800 budget on internal reasoning
+        # before emitting visible output on 2 of 3 smoke turns. The actual
+        # JSON envelope is ~150 tokens; 4000 is comfortable headroom and
+        # mirrors the 12000 the id itself uses.
+        max_tokens: 4000

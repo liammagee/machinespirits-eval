@@ -83,8 +83,9 @@ function buildIdUserMessage({
   tutorMemory,
   previousPersona,
   recognitionMode,
+  learnerRegister = null,
 }) {
-  return [
+  const lines = [
     '<dialogue_history>',
     conversationContext,
     '</dialogue_history>',
@@ -107,7 +108,16 @@ function buildIdUserMessage({
     '<recognition_mode>',
     recognitionMode ? 'true' : 'false',
     '</recognition_mode>',
-  ].join('\n');
+  ];
+  if (learnerRegister && typeof learnerRegister === 'object') {
+    lines.push(
+      '',
+      '<learner_register>',
+      JSON.stringify(learnerRegister, null, 2),
+      '</learner_register>',
+    );
+  }
+  return lines.join('\n');
 }
 
 function fallbackConstruction(reason, rawText = '') {
@@ -118,6 +128,105 @@ function fallbackConstruction(reason, rawText = '') {
     reasoning: `Parse failure: ${reason}.${rawText ? ` Raw head: ${rawText.slice(0, 200)}` : ''}`,
     parse_status: 'fallback',
     parse_failure_reason: reason,
+  };
+}
+
+const VALID_REGISTER_TAGS = new Set([
+  'vulnerable_disclosure',
+  'sceptical_pushback',
+  'operational_request',
+  'meta_observation',
+  'analytic_engagement',
+  'curious_invitation',
+  'disengaged',
+]);
+
+/**
+ * Parse the register classifier's JSON output. Tolerant of code-fence
+ * wrapping and minor formatting noise; falls back to {register: 'unknown',
+ * confidence: 0} on any parse failure so the id can still author normally.
+ */
+export function parseRegisterClassification(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return { register: 'unknown', confidence: 0, evidence: '', shift_from_previous: null, parse_status: 'empty' };
+  }
+  let text = rawText.trim();
+  const openFence = text.match(/^```(?:json)?\s*/);
+  if (openFence) {
+    text = text.slice(openFence[0].length);
+    const closeFence = text.lastIndexOf('```');
+    if (closeFence !== -1) text = text.slice(0, closeFence).trim();
+  }
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) text = text.slice(firstBrace, lastBrace + 1);
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    try {
+      parsed = JSON.parse(jsonrepair(text));
+    } catch {
+      return { register: 'unknown', confidence: 0, evidence: '', shift_from_previous: null, parse_status: 'parse_error' };
+    }
+  }
+  const register = VALID_REGISTER_TAGS.has(parsed?.register) ? parsed.register : 'unknown';
+  const confidenceRaw = parsed?.confidence;
+  const confidence =
+    typeof confidenceRaw === 'number' && confidenceRaw >= 0 && confidenceRaw <= 1 ? confidenceRaw : 0;
+  return {
+    register,
+    confidence,
+    evidence: typeof parsed?.evidence === 'string' ? parsed.evidence : '',
+    shift_from_previous: typeof parsed?.shift_from_previous === 'boolean' ? parsed.shift_from_previous : null,
+    parse_status: register === 'unknown' ? 'invalid_register' : 'ok',
+  };
+}
+
+/**
+ * Classify the register of the learner's most recent message using a small
+ * focused prompt (prompts/learner-register-classifier.md). Used by cells 102
+ * and 103. The result is injected into the id's user message as a
+ * <learner_register> field, which the id consumes to bias persona authoring
+ * toward register-appropriate moves (witnessing vs firm vs concrete).
+ *
+ * Reuses the id's model and provider config (via classifierConfig). Budget
+ * is small (max_tokens 800) — the prompt asks for a one-line JSON envelope.
+ *
+ * @param {Object} params
+ * @param {string} params.learnerMessage
+ * @param {string} params.recentHistory  - last few turns as plain prose
+ * @param {Object} params.classifierConfig - { provider, providerConfig, model, hyperparameters, prompt }
+ * @returns {Promise<Object>} { register, confidence, evidence, shift_from_previous, parse_status }
+ */
+export async function classifyLearnerRegister({ learnerMessage, recentHistory, classifierConfig }) {
+  const userMessage = [
+    '<recent_history>',
+    recentHistory || '(no prior turns)',
+    '</recent_history>',
+    '',
+    '<current_learner_message>',
+    learnerMessage,
+    '</current_learner_message>',
+  ].join('\n');
+
+  const response = await tutorDialogueEngine.callAI(
+    classifierConfig,
+    classifierConfig.prompt,
+    userMessage,
+    'tutor_register_classifier',
+    {},
+  );
+  const classification = parseRegisterClassification(response?.text || '');
+  return {
+    ...classification,
+    metrics: {
+      provider: classifierConfig.provider,
+      model: classifierConfig.model,
+      inputTokens: response?.inputTokens || 0,
+      outputTokens: response?.outputTokens || 0,
+    },
   };
 }
 
@@ -402,20 +511,33 @@ function parseStructuredLearnerContext(learnerContext) {
     return { latestLearnerMessage: '', priorExchanges: [] };
   }
 
-  // The "Recent Chat History" section is what we want. It looks like:
-  //   ### Recent Chat History
-  //   - Student: "..."
-  //   - Tutor: "..."
-  //   - Student: "..."
-  const chatHeaderIdx = learnerContext.search(/###\s*Recent\s+Chat\s+History/i);
-  const chatBlock = chatHeaderIdx === -1 ? '' : learnerContext.slice(chatHeaderIdx);
-
-  // Match lines like `- Student: "..."` or `- Tutor: "..."`. Quotes may be
-  // straight or curly; allow multi-line content terminated by the next `- Role:`.
+  // The runner builds learnerContext from up to three sources for non-initial
+  // multi-turn turns:
+  //
+  //   ### Recent Chat History   ← initial scenario chat (FIRST learner message only)
+  //     - Student: "..."
+  //     - Tutor: "..."
+  //
+  //   ### Conversation History  ← prior turns from this run (tutor responses only)
+  //     **Turn N** (...)
+  //     - Tutor responded: "..."
+  //
+  //   ### Learner Action        ← CURRENT turn's learner action + message
+  //     Learner **asked a follow-up question**
+  //     **Learner said**: "..."
+  //
+  // The CURRENT learner message lives in the Learner Action block as
+  // `**Learner said**: "..."`, NOT in Recent Chat History. The chat history
+  // block only carries the initial scenario opening.
   const exchanges = [];
-  if (chatBlock) {
+
+  const chatHeaderIdx = learnerContext.search(/###\s*Recent\s+Chat\s+History/i);
+  if (chatHeaderIdx !== -1) {
+    const chatBlock = learnerContext.slice(chatHeaderIdx);
     const lineRe = /^-\s*(Student|Tutor|Learner|Teacher|User|Assistant)\s*:\s*"?([\s\S]*?)"?\s*$/gim;
-    const lines = chatBlock.split('\n').filter((l) => /^-\s*(Student|Tutor|Learner|Teacher|User|Assistant)\s*:/i.test(l));
+    const lines = chatBlock
+      .split('\n')
+      .filter((l) => /^-\s*(Student|Tutor|Learner|Teacher|User|Assistant)\s*:/i.test(l));
     for (const raw of lines) {
       const m = lineRe.exec(raw);
       lineRe.lastIndex = 0;
@@ -427,17 +549,41 @@ function parseStructuredLearnerContext(learnerContext) {
     }
   }
 
-  // Latest learner message: last exchange with role:learner; if none, fall
-  // back to the entire learnerContext string (best-effort).
-  let latestLearnerMessage = '';
-  for (let i = exchanges.length - 1; i >= 0; i--) {
-    if (exchanges[i].role === 'learner') {
-      latestLearnerMessage = exchanges[i].content;
-      break;
+  // Pull tutor responses from the Conversation History block (prior runner turns).
+  const convHeaderIdx = learnerContext.search(/###\s*Conversation\s+History/i);
+  if (convHeaderIdx !== -1) {
+    const convBlock = learnerContext.slice(convHeaderIdx);
+    const tutorRe = /^-\s*Tutor\s+responded:\s*"([\s\S]*?)"\s*$/gim;
+    let m;
+    while ((m = tutorRe.exec(convBlock)) !== null) {
+      const content = (m[1] || '').trim();
+      if (content) exchanges.push({ role: 'tutor', content });
     }
   }
+
+  // The CURRENT learner message: `**Learner said**: "..."` in the Learner Action
+  // block. Prefer this over the chat history's last Student line.
+  let latestLearnerMessage = '';
+  const learnerSaidRe = /\*\*Learner said\*\*:\s*"([\s\S]*?)"\s*(?:$|\n)/i;
+  const said = learnerContext.match(learnerSaidRe);
+  if (said) {
+    latestLearnerMessage = (said[1] || '').trim();
+    // Add to exchanges so the classifier's recent-history excerpt can see it.
+    exchanges.push({ role: 'learner', content: latestLearnerMessage });
+  }
+
+  // Fallback: last `Student:` line in chat history (initial-turn case).
   if (!latestLearnerMessage) {
-    // Last-ditch: maybe the structure is different. Use the raw block.
+    for (let i = exchanges.length - 1; i >= 0; i--) {
+      if (exchanges[i].role === 'learner') {
+        latestLearnerMessage = exchanges[i].content;
+        break;
+      }
+    }
+  }
+
+  if (!latestLearnerMessage) {
+    // Last-ditch: structure unrecognised. Use the raw block (better than empty).
     latestLearnerMessage = learnerContext.trim();
   }
 
@@ -500,8 +646,9 @@ function buildIdRunnerUserMessage({
   curriculumContext,
   previousPersona,
   recognitionMode,
+  learnerRegister = null,
 }) {
-  return [
+  const lines = [
     '<dialogue_history>',
     historyExcerpt,
     '</dialogue_history>',
@@ -521,7 +668,18 @@ function buildIdRunnerUserMessage({
     '<recognition_mode>',
     recognitionMode ? 'true' : 'false',
     '</recognition_mode>',
-  ].join('\n');
+  ];
+  if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
+    // Strip metrics/parse_status from the version we hand the id (not its concern)
+    const { register, confidence, evidence, shift_from_previous } = learnerRegister;
+    lines.push(
+      '',
+      '<learner_register>',
+      JSON.stringify({ register, confidence, evidence, shift_from_previous }, null, 2),
+      '</learner_register>',
+    );
+  }
+  return lines.join('\n');
 }
 
 /**
@@ -580,8 +738,51 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   }
 
   const recognitionMode = evalCellProfile.recognition_mode === true;
+  const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
+
+  // ── Optional Step 0: register classifier (cells 102, 103) ──
+  // Reads the learner's most recent message and emits a structured register
+  // tag. The id consumes it via the <learner_register> block in its user
+  // message and the <learner_register_directive> section of its prompt.
+  let learnerRegister = null;
+  if (useRegisterClassifier) {
+    const classifierPromptFile = idCell.classifier_prompt_file || 'learner-register-classifier.md';
+    const classifierStaticPrompt = readPromptFile(classifierPromptFile, '');
+    if (!classifierStaticPrompt) {
+      console.warn(
+        `[idDirectorEngine] register_classifier enabled but ${classifierPromptFile} not found; running without classifier.`,
+      );
+    } else {
+      const classifierProvider = idCell.classifier_provider || idCell.provider;
+      const classifierProviderConfig = _deps.tutorConfig.getProviderConfig(classifierProvider);
+      const classifierConfig = {
+        provider: classifierProvider,
+        providerConfig: classifierProviderConfig,
+        model:
+          idCell.classifier_resolved_model ||
+          classifierProviderConfig?.models?.[idCell.classifier_model || idCell.model] ||
+          idCell.classifier_model ||
+          (idCell.resolvedModel || idCell.model),
+        hyperparameters: idCell.classifier_hyperparameters || { temperature: 0.2, max_tokens: 800 },
+        prompt: classifierStaticPrompt,
+        isConfigured: classifierProviderConfig?.isConfigured,
+      };
+      try {
+        learnerRegister = await classifyLearnerRegister({
+          learnerMessage,
+          recentHistory: historyExcerpt,
+          classifierConfig,
+        });
+      } catch (err) {
+        console.warn(
+          `[idDirectorEngine] register classifier failed (${err.message}); running without classifier.`,
+        );
+        learnerRegister = null;
+      }
+    }
+  }
 
   const idUserMessage = buildIdRunnerUserMessage({
     historyExcerpt,
@@ -589,6 +790,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     curriculumContext,
     previousPersona,
     recognitionMode,
+    learnerRegister,
   });
 
   let totalInputTokens = 0;
@@ -695,6 +897,26 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       detail: `learnerMessage: ${learnerMessage.slice(0, 200)}`,
       timestamp: new Date().toISOString(),
     },
+  ];
+  if (learnerRegister) {
+    trace.push({
+      agent: 'register_classifier',
+      action: 'classify',
+      detail: JSON.stringify({
+        register: learnerRegister.register,
+        confidence: learnerRegister.confidence,
+        evidence: learnerRegister.evidence,
+        shift_from_previous: learnerRegister.shift_from_previous,
+        parse_status: learnerRegister.parse_status,
+      }),
+      metrics: learnerRegister.metrics || null,
+      timestamp: new Date().toISOString(),
+    });
+    totalInputTokens += learnerRegister.metrics?.inputTokens || 0;
+    totalOutputTokens += learnerRegister.metrics?.outputTokens || 0;
+    apiCalls += 1;
+  }
+  trace.push(
     {
       agent: 'id',
       action: 'construct',
@@ -725,7 +947,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       },
       timestamp: new Date().toISOString(),
     },
-  ];
+  );
 
   return {
     success: true,
