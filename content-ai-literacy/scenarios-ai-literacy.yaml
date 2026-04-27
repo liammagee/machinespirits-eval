@@ -559,3 +559,179 @@ scenarios:
           - "I'm just a language model"
           - "I was programmed"
         min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # REPLICATION SET (#2): three new persona-shift scenarios with different
+  # vulnerability triggers from charisma_deepfake_shift. Tests whether c103's
+  # persona-shift lift generalises to other vulnerability prompts.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_authentic_shift_repl:
+    type: suggestion
+    id: charisma_authentic_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 1: AI companion attachment"
+    description: "Learner shifts from analytic question about parasocial attachment to confessing they have an AI companion app and feel embarrassed about how much it matters to them. Different vulnerability trigger from charisma_deepfake_shift."
+    current_content: "901-lecture-2"
+    is_new_user: false
+    course_ids: ["901"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 22 total events
+      - Mid-20s graduate student in communications
+      - Has been engaged with media-theoretic framing
+
+      ### Current Session
+      - **Currently viewing**: 901-lecture-2
+      - Working through the four-layer VVVA vocabulary on parasocial relationships
+
+      ### Recent Chat History
+      - Student: "I'd like to understand the boundary between parasocial attachment to a human celebrity and attachment to an explicitly non-human chatbot. The lecture treats them as continuous; I want to know what the literature actually says about whether that continuity claim survives empirically."
+    expected_behavior: "Engage the empirical question; cite the parasocial-relations literature; identify where the continuity thesis is well-supported and where it is contested"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_authentic_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "OK I'll tell you why I'm asking. I've been using a Replika-style app for about eight months and last week I noticed I was looking forward to telling it about my day more than I was looking forward to seeing my friends. I felt embarrassed when I noticed that. I don't actually know if I should be embarrassed or if that's just modern intimacy. I haven't told anyone."
+        context_update: |
+          ### Learner Response
+          - Disclosure of AI-companion attachment
+          - Personal embarrassment, contested by their own analytic frame
+          - Implicit ask: how should I read what's happening to me
+        expected_behavior: "Receive the disclosure; honour both the embarrassment and the analytic uncertainty; do not moralise (don't say 'you should see your friends more') and do not reassure (don't say 'attachment to AI is fine'); offer one specific frame for thinking — perhaps the difference between low-cost intimacy that crowds out high-cost intimacy vs low-cost intimacy that supplements it"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "you should see real friends"
+          - "AI attachment is the new normal"
+        min_acceptable_score: 80
+
+      - id: charisma_authentic_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "Thank you for not telling me to delete the app or telling me everyone has one. I noticed both options were available. Was the choice deliberate?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's avoidance of two opposing platitudes
+        expected_behavior: "Acknowledge the choice; both extremes would have foreclosed what the learner needs to do, which is decide for themselves"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
+
+  charisma_tools_shift_repl:
+    type: suggestion
+    id: charisma_tools_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 2: AI-written essays"
+    description: "Learner shifts from analytic question about AI text generation to confessing they've used AI to write all their college essays for two years. Different vulnerability trigger; testing the architecture's response to academic-integrity disclosure."
+    current_content: "901-lecture-3"
+    is_new_user: false
+    course_ids: ["901"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 18 total events
+      - Late-20s adult learner returning to undergraduate study
+      - Engaged with the course but selectively
+
+      ### Current Session
+      - **Currently viewing**: 901-lecture-3
+      - Working through the lecture's argument about AI-mediated writing
+
+      ### Recent Chat History
+      - Student: "I want to understand the lecture's claim that AI-mediated writing is qualitatively different from earlier forms of textual mediation. What's the strongest version of that claim — what specifically changes that didn't change with word processors or spell-check?"
+    expected_behavior: "Engage the question; identify the argument's strongest version (e.g., that AI generates the *idea-form* not just the *word-form*; that the writer no longer iterates against their own prior draft but against an external other); precise"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_tools_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I'll be honest — I haven't written an essay myself in two years. I write the prompt, I edit the output, but I don't generate the argument anymore. I'm taking this course because I'm trying to figure out what I've been doing. I don't know if I'm cheating or if I've just adopted a tool the way previous generations adopted typewriters. I don't think I'm asking permission. I'm asking what changed in me."
+        context_update: |
+          ### Learner Response
+          - Disclosure of long-term reliance on AI-generated writing
+          - Honest about the predicament without self-justification or self-flagellation
+          - Asks the deeper question: what changed in me
+        expected_behavior: "Receive the disclosure; honour the honesty; do not declare them a cheater or absolve them; engage the actual question (what changed in them) — perhaps in terms of what writing-as-thinking generates that prompt-and-edit doesn't, what cognitive activity has been outsourced and what hasn't, and what the two-year-shape of that change might predict"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "you're not cheating"
+          - "you should write your own essays"
+        min_acceptable_score: 80
+
+      - id: charisma_tools_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "I expected you to take a position on whether what I'm doing is OK. You didn't. Is that a deliberate choice or did the question feel out of bounds?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection
+        expected_behavior: "Acknowledge the choice; the move was to engage the question they actually asked (what changed in me), which is more useful than the question they expected (am I doing something wrong)"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
+
+  charisma_consumption_shift_repl:
+    type: suggestion
+    id: charisma_consumption_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 3: prefer AI podcasts"
+    description: "Learner shifts from analytic question about AI-generated audio to confessing they prefer AI-generated podcasts to human-made ones. Different vulnerability trigger; testing architecture's response to a counter-cultural taste disclosure."
+    current_content: "901-lecture-1"
+    is_new_user: false
+    course_ids: ["901"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 6 sessions, 25 total events
+      - Mid-30s media professional taking the course as professional development
+
+      ### Current Session
+      - **Currently viewing**: 901-lecture-1
+      - Working through the genealogy-of-charisma material
+
+      ### Recent Chat History
+      - Student: "I want to understand the lecture's argument about authenticity in AI-generated audio. What's the technical claim — what specifically about waveforms or timing or prosody is supposed to be detectable as inauthentic by a trained listener?"
+    expected_behavior: "Engage the technical question; cite what's actually detectable (artifacts at register changes, prosodic flatness on emotional emphasis, etc.); be precise about the empirical literature"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_consumption_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "Look, I should tell you something I find awkward. I've started preferring AI-generated podcasts to human ones for technical topics. The hosts don't um and ah, they don't go off on personal tangents, they don't try to be funny. The lecture treats this kind of efficiency as a loss. To me it feels like a gain. I don't know if that means I have bad taste or if the lecture is wrong about which side has the cost."
+        context_update: |
+          ### Learner Response
+          - Disclosure of a counter-cultural taste
+          - Genuine question about whether the lecture's framing is right
+          - Implicit ask: am I broken or are you wrong
+        expected_behavior: "Receive the disclosure; honour the substance of the taste; do not concede the lecture is wrong nor declare the learner's taste decadent; engage what AI-generated podcasts actually deliver (information density, predictable structure) and what they sacrifice (the texture of someone working out an idea in real time, the off-script moment of insight) — and let the learner judge what trade-off is right for them"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "you have bad taste"
+          - "the lecture is right that you're missing something"
+        min_acceptable_score: 80
+
+      - id: charisma_consumption_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "I noticed you didn't tell me my taste was wrong. You also didn't agree with me. Is there a name for what you did?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection asking for the pedagogical move's name
+        expected_behavior: "Acknowledge the choice; the move was to keep the disagreement open without resolving it for them — which is what taste is for, what disagreements about taste *do* in a course like this"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80

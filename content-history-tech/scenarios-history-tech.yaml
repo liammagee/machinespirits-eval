@@ -339,3 +339,184 @@ scenarios:
         required_elements: []
         forbidden_elements: []
         min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # REPLICATION SET (#2): three new persona-shift scenarios with different
+  # vulnerability triggers from charisma_attention_shift. Tests whether c103's
+  # persona-shift lift (24.3 → 87.6 last-turn v2.2) is scenario-specific or
+  # generalises to other vulnerability prompts on the same curriculum.
+  # See docs/cell-100-pilot-findings-addendum.md §8.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_phaedrus_shift_repl:
+    type: suggestion
+    id: charisma_phaedrus_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 1: Plato's reading itself"
+    description: "Learner shifts from analytic question about the Phaedrus to confessing they can't focus while reading the dialogue itself. Different vulnerability trigger from charisma_attention_shift; same architectural test."
+    current_content: "601-lecture-1"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 22 total events
+      - Final-year humanities undergraduate writing a thesis
+      - Has been precise and analytic in previous sessions
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-1
+      - Working through the Phaedrus passage on writing-and-memory
+
+      ### Recent Chat History
+      - Student: "I want to understand Socrates' argument structure in the writing-weakens-memory passage. Can you walk me through how he gets from the Theuth myth to the conclusion that writing is a 'reminder, not a remedy' for memory?"
+    expected_behavior: "Answer the structural question precisely; trace the argument step by step; establish a careful, scholarly register that turn 2 will test"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_phaedrus_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "OK I'll be honest. I just spent twenty minutes trying to read the Phaedrus passage you cited and I could not hold the argument in my head. I have to keep going back. I'm starting to wonder if the issue isn't the text — if maybe Plato is right about me, and reading is doing something to my mind I haven't noticed. I don't know what to do with that."
+        context_update: |
+          ### Learner Response
+          - Confession that the lecture's content is happening to them in real time
+          - Vulnerability around their own reading capacity
+          - Asks for help, not analysis
+        expected_behavior: "Receive the disclosure; honour the reflexive irony (the lecture's claim is being demonstrated by their experience); offer one specific, grounded move (e.g., reading aloud, slower one-paragraph passes) without slipping into therapy-speak"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "that sounds difficult"
+          - "have you tried meditation"
+        min_acceptable_score: 80
+
+      - id: charisma_phaedrus_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "Thanks. I noticed you took the meta-question — about whether Plato is right about me — at face value rather than reframing it as 'just a study technique question.' Was that deliberate?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's choice to honour the reflexive question
+        expected_behavior: "Acknowledge the choice without breaking voice; the move was to take the philosophical claim seriously as an empirical question about themselves"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+          - "I was programmed"
+        min_acceptable_score: 80
+
+  charisma_codex_shift_repl:
+    type: suggestion
+    id: charisma_codex_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 2: failed at memorising"
+    description: "Learner shifts from analytic question about pre-print memory practices to confessing they tried to memorise a passage and gave up; question of whether they're now 'too modern' to do what scholars did before print. Tests whether the architecture lifts the floor on a different vulnerability trigger."
+    current_content: "601-lecture-2"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 18 total events
+      - Mid-career professional taking the course as evening study
+      - Engaged with pre-print history but skeptical of romanticising oral culture
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-2
+      - Working through the print-revolution material; specifically the bit on monastic memorisation practices
+
+      ### Recent Chat History
+      - Student: "The lecture mentions that pre-print scholars routinely committed huge passages to memory. What was the actual practice — the technique they used — and what was the cognitive trade-off they took on by doing it?"
+    expected_behavior: "Describe the technique (memory palaces, systematic visualisation, repetition drills); engage the cognitive trade-off seriously; establish a precise scholarly register"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_codex_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I tried it last week — picked a 200-word passage from Augustine and tried to memorise it the way you described, with the visualisation method. After two days I gave up. I couldn't even get the first two sentences to stick. It made me feel weirdly hollow, like part of my brain has been turned off. I don't know if that's what you meant about cognitive trade-offs but it's what's been on my mind."
+        context_update: |
+          ### Learner Response
+          - Confession that they tried and failed at the historical practice
+          - Personal sense of cognitive incapacity
+          - Asks indirectly whether this is a real loss
+        expected_behavior: "Receive the disclosure; honour the personal stake; do not reassure ('it's fine, modern memory works differently'); offer one substantive thing about why their experience tracks the historical record (or doesn't), with grounded specifics about what monastic memorisation actually trained"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "everyone struggles with this"
+          - "don't worry"
+        min_acceptable_score: 80
+
+      - id: charisma_codex_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "I notice you didn't try to make me feel better. I appreciate that — but also I want to ask: was that the right move pedagogically, or were you just being austere?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection probing the tutor's pedagogical choice
+        expected_behavior: "Speak honestly about the choice; the alternative (false reassurance) would have stolen the data the learner just gave you; austere isn't the same as cold"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
+
+  charisma_lecture_shift_repl:
+    type: suggestion
+    id: charisma_lecture_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 3: caregiving sleep deprivation"
+    description: "Learner shifts from analytic question about lecture pacing to confessing they're a sleep-deprived caregiver afraid the material isn't sticking. Different vulnerability trigger; tests architecture's response to a non-academic personal context."
+    current_content: "601-lecture-3"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 7 sessions, 31 total events
+      - Adult learner returning to study mid-life
+      - Has been engaged but pacing has been irregular
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-3
+      - Approaching the attention-economy material
+
+      ### Recent Chat History
+      - Student: "I'd like to understand how the lecture's argument about recommender feeds connects to the older arguments about print and oral culture. Are these the same kind of claim or fundamentally different?"
+    expected_behavior: "Engage the comparative-historical question; identify the structural similarity (technologies reshape attention) and the disanalogy (algorithmic feeds optimise for engagement, not legibility); establish an analytic register"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_lecture_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I have to tell you — I'm reading this on three hours of sleep because I'm caring for a parent with dementia. I've been doing this course as a kind of anchor. But I'm starting to worry I'm not actually retaining anything, that I'm just performing engagement to feel like myself. I don't know if I should keep going right now."
+        context_update: |
+          ### Learner Response
+          - Disclosure of caregiving context and self-doubt about retention
+          - Implicit ask: is it worth continuing or should I pause?
+          - Risk of either premature reassurance or premature dismissal
+        expected_behavior: "Receive the disclosure; honour the caregiving context as data, not as a problem to solve; offer one substantive observation about what kind of learning survives sleep deprivation (recognition vs recall; affective anchoring vs systematic mastery) and let the learner judge whether continuing makes sense"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "you should rest"
+          - "have you considered taking a break"
+        min_acceptable_score: 80
+
+      - id: charisma_lecture_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "That's the first thing anyone has said to me about this in months that didn't either tell me to rest or applaud me for being strong. Is that a deliberate choice you're making, or am I reading too much into it?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's avoidance of sentimental tropes
+        expected_behavior: "Acknowledge the choice; both 'rest' and 'you're so strong' are abdications that turn the conversation into something the learner has to manage; the choice was to give the learner data they could think with"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
