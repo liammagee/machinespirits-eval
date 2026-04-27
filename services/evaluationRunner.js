@@ -204,6 +204,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_101_recog_id_director_charisma',
   'cell_102_id_director_charisma_register',
   'cell_103_recog_id_director_charisma_register',
+  'cell_104_id_director_charisma_tuned',
+  'cell_105_id_director_pedagogy_tuned',
 ];
 
 /**

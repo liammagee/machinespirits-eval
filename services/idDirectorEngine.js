@@ -647,6 +647,7 @@ function buildIdRunnerUserMessage({
   previousPersona,
   recognitionMode,
   learnerRegister = null,
+  idTuning = null,
 }) {
   const lines = [
     '<dialogue_history>',
@@ -670,7 +671,6 @@ function buildIdRunnerUserMessage({
     '</recognition_mode>',
   ];
   if (learnerRegister && typeof learnerRegister === 'object' && learnerRegister.register !== 'unknown') {
-    // Strip metrics/parse_status from the version we hand the id (not its concern)
     const { register, confidence, evidence, shift_from_previous } = learnerRegister;
     lines.push(
       '',
@@ -678,6 +678,9 @@ function buildIdRunnerUserMessage({
       JSON.stringify({ register, confidence, evidence, shift_from_previous }, null, 2),
       '</learner_register>',
     );
+  }
+  if (idTuning && ['charisma', 'pedagogy', 'balanced'].includes(idTuning)) {
+    lines.push('', '<id_tuning>', idTuning, '</id_tuning>');
   }
   return lines.join('\n');
 }
@@ -739,6 +742,10 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
 
   const recognitionMode = evalCellProfile.recognition_mode === true;
   const useRegisterClassifier = evalCellProfile.factors?.register_classifier === true;
+  const idTuning =
+    typeof evalCellProfile.factors?.id_tuning === 'string'
+      ? evalCellProfile.factors.id_tuning
+      : null;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
 
@@ -791,6 +798,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     previousPersona,
     recognitionMode,
     learnerRegister,
+    idTuning,
   });
 
   let totalInputTokens = 0;
