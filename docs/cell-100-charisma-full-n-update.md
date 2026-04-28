@@ -3,7 +3,7 @@
 > **Note on cell IDs (2026-04-28):** the id-director family is paper cells 101–107; the historical `evaluation_results` rows still use the original `cell_100_*` to `cell_107_*` profile names. The mapping is `cell_100` → c101, `cell_101` → c102, ..., `cell_105` → c106, `cell_106` → c107 (smoke), `cell_107` → c107 (new persona-shift evals).
 
 **Date:** 2026-04-28
-**Question:** With charisma scoring complete across the full 430-row matrix under a single consistent judge (Claude Code CLI Sonnet 4.5), do the headline findings of the original cross-judge sanity check (`docs/cell-100-cross-judge-sanity-check.md`, n≈10 paired) hold?
+**Question:** With charisma scoring complete across the full 430-row matrix under a single consistent judge (Claude Code CLI Sonnet 4.6, `claude-sonnet-4-6` resolved by the CLI's `--model sonnet` alias and now pinned explicitly in `config/providers.yaml`), do the headline findings of the original cross-judge sanity check (`docs/cell-100-cross-judge-sanity-check.md`, n≈10 paired) hold?
 **Method:** Re-score all 311 previously-unscored charisma rows + add c107 generation runs (10 successful) under `claude-code.sonnet` via the Claude Code CLI subscription. Required two engine fixes (provider branch in `services/rubricEvaluator.js::callJudgeModel`, override-key wrapper in `scripts/evaluate-charisma.js::scoreRow`) and one env fix (delete `ANTHROPIC_API_KEY` in spawn env so CLI uses subscription rather than API).
 **Result:** **Two of the four findings of the cross-judge sanity check are refined; the other two strengthen.**
 
@@ -83,15 +83,19 @@ c107 generation audit trail (the resumed 17 evals after OpenRouter top-up):
 - `eval-2026-04-28-5606193c` (901, authentic + consumption): 6 evals, charisma mean 64.2, v2.2 mean 81.0
 - Plus 9 smoke (codex/design/tools, 3 each) under same CLI Sonnet rubric.
 
-## 5. Methodology note: CLI vs OpenRouter Sonnet
+## 5. Methodology note: CLI vs OpenRouter Sonnet (same model, different sampling)
 
 A single-row comparison of the same dialogue scored under both paths (charisma rubric):
-- OpenRouter Sonnet at temp=0.2: 46.25
-- CLI Sonnet at default sampling: 65.0
+- OpenRouter Sonnet 4.6 at temp=0.2: 46.25
+- CLI Sonnet 4.6 at default sampling: 65.0
 
-A 19-point spread on a single row. The variance is bounded across the matrix (per-cell means stayed within ±5 of the OpenRouter Sonnet baseline), but for any row-level comparison the judge path matters. **The headline numbers in this doc are CLI Sonnet at default sampling**, n=430.
+A 19-point spread on a single row, **but both paths route to `claude-sonnet-4-6`** — the spread is from temperature/sampling differences, not model differences. The CLI does not honour the rubric YAML's `temperature: 0.2` setting; it uses Claude Code's default sampling. Run-to-run variance under default-temp CLI scoring is wider than at temp=0.2, but per-cell means stayed within ±5 of the OpenRouter-temp-0.2 baseline.
 
-The CLI path is preferable for long-running judge passes because it goes through the user's Claude Code subscription rather than per-token API billing — same model, no credit ceiling. The engine fix is in commit `<TBD>`: a `claude-code` provider in `callJudgeModel`, env-stripping of `ANTHROPIC_API_KEY` in the spawn environment to force subscription mode, and a wrapper-key fix in `evaluate-charisma.js` so `--judge` overrides actually take effect.
+**Model pinning.** The CLI defaults to `claude-sonnet-4-6` when given the bare `--model sonnet` alias, but to insulate the headline numbers from any future change in the CLI's bare-alias default, `config/providers.yaml` now maps `claude-code.sonnet → claude-sonnet-4-6` explicitly. Aliases for `claude-code.sonnet-4-5` and `claude-code.sonnet-4-6` are also available for explicit selection.
+
+**The headline numbers in this doc are CLI Sonnet 4.6 at default sampling**, n=430 (cells 101–106) + n=27 (cell 107) = 457 paired rows. Audit-trail label in DB: `tutor_charisma_judge_model = 'claude-code.sonnet'`.
+
+The CLI path is preferable for long-running judge passes because it goes through the user's Claude Code subscription rather than per-token API billing — same model, no credit ceiling. The engine fixes shipped in commit `ca9aa94`: a `claude-code` provider in `callJudgeModel`, env-stripping of `ANTHROPIC_API_KEY` in the spawn environment to force subscription mode, and a wrapper-key fix in `evaluate-charisma.js` so `--judge` overrides actually take effect. Model pinning shipped in commit `<TBD>`.
 
 ## 6. Implications for paper integration
 
