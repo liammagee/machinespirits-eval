@@ -9,6 +9,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'node:child_process';
 import yaml from 'yaml';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
@@ -70,6 +71,13 @@ function debugLog(...args) {
  *   "openrouter/nvidia/nemotron-..."         → "nemotron"
  */
 export function normalizeJudgeLabel(provider, model) {
+  // The CLI judge path is identified by provider; preserve the existing
+  // `claude-code/<alias>` convention used elsewhere in the codebase
+  // (eval-cli.js, score-transcript-samples.js) so the DB judge_model column
+  // is consistent across scoring paths.
+  if (provider === 'claude-code') {
+    return `claude-code/${model}`;
+  }
   // For known model IDs, extract the canonical name
   const MODEL_MAP = {
     'anthropic/claude-opus-4.5': 'claude-opus-4.5',
@@ -811,6 +819,45 @@ async function callJudgeModel(prompt, overrides = {}) {
       }
       throw err;
     }
+  }
+
+  if (provider === 'claude-code') {
+    // Spawn `claude -p -` so the judge runs through the user's Claude Code
+    // subscription rather than a metered API. Avoids OpenRouter / Anthropic
+    // credit ceilings on long judge passes.
+    //
+    // CRITICAL: unset ANTHROPIC_API_KEY in the child env. When set, `claude`
+    // routes via API mode (per-call billing) rather than the subscription.
+    // The whole point of using the CLI is to avoid API credit metering.
+    return await new Promise((resolve, reject) => {
+      const args = ['-p', '-', '--output-format', 'text'];
+      if (model) args.push('--model', model);
+      const env = { ...process.env };
+      delete env.CLAUDE_CODE;
+      delete env.CLAUDECODE;
+      delete env.ANTHROPIC_API_KEY;
+      delete env.ANTHROPIC_AUTH_TOKEN;
+      const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+      let out = '';
+      let err = '';
+      const cliTimeout = setTimeout(() => {
+        try { child.kill('SIGKILL'); } catch (_) {}
+        reject(new Error('claude CLI judge timed out after 180s'));
+      }, 180_000);
+      child.stdout.on('data', (d) => { out += d; });
+      child.stderr.on('data', (d) => { err += d; });
+      child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+      child.on('close', (code) => {
+        clearTimeout(cliTimeout);
+        if (code !== 0) {
+          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code}`));
+        } else {
+          resolve(out);
+        }
+      });
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
   }
 
   throw new Error(`Unsupported judge provider: ${provider}`);

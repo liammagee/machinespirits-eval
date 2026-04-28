@@ -13,6 +13,16 @@ providers:
       sonnet: claude-sonnet-4-5
       opus: claude-opus-4-6
 
+  # Spawns the local `claude` CLI as a subprocess and uses the user's Claude
+  # Code subscription. No API key required; isConfigured is forced true via
+  # evalConfigLoader. Use as judge model `claude-code.sonnet` etc.
+  claude-code:
+    default_model: sonnet
+    models:
+      haiku: haiku
+      sonnet: sonnet
+      opus: opus
+
   openai:
     api_key_env: OPENAI_API_KEY
     base_url: https://api.openai.com/v1/chat/completions
