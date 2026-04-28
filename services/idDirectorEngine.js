@@ -1,7 +1,7 @@
 /**
  * Id-Director Engine
  *
- * Inverted multi-agent topology used by cells 200 (base) and 201 (recognition).
+ * Inverted multi-agent topology used by cells 101 (base) and 102 (recognition).
  *
  * Existing dialectical engine: Ego drafts → Superego critiques → Ego revises.
  * Here: Id authors a fresh ego system prompt this turn → Ego executes once.
@@ -9,7 +9,7 @@
  * The "id" is metaphorical (per design brief). Mechanically it is a back-stage
  * authorial layer that writes the front-stage actor's role each turn.
  *
- * Design doc: notes/design-cell-200-id-director-charisma.md
+ * Design doc: notes/design-cell-100-id-director-charisma.md
  * Static prompt: prompts/tutor-id-director.md
  */
 
@@ -186,8 +186,8 @@ export function parseRegisterClassification(rawText) {
 
 /**
  * Classify the register of the learner's most recent message using a small
- * focused prompt (prompts/learner-register-classifier.md). Used by cells 202
- * and 203. The result is injected into the id's user message as a
+ * focused prompt (prompts/learner-register-classifier.md). Used by cells 103
+ * and 104. The result is injected into the id's user message as a
  * <learner_register> field, which the id consumes to bias persona authoring
  * toward register-appropriate moves (witnessing vs firm vs concrete).
  *
@@ -362,7 +362,7 @@ function buildEgoDeliberationEntry(egoResponse, egoConfig, renderedSystemPrompt)
  * suggestsEnding}) so downstream code is unchanged.
  *
  * Recognition mode is read from the tutor profile's recognition_mode field
- * (true for cell 201, false for cell 200).
+ * (true for cell 102, false for cell 101).
  */
 export async function runIdDirectedTurn({
   learnerId,
@@ -476,7 +476,7 @@ export async function runIdDirectedTurn({
 //
 // Signature mirrors the inputs that evaluationRunner already has at the call
 // site. Reads prompt files directly from prompts/ since tutor-core's profile
-// loader does not know about cell 200/201.
+// loader does not know about cell 101/102.
 // ============================================================================
 
 function readPromptFile(filename, fallback = '') {
@@ -640,7 +640,7 @@ function extractLearnerInputs(context) {
  * prompts/tutor-id-director.md: <dialogue_history>, <current_learner_message>,
  * <curriculum_context>, <previous_persona>, <recognition_mode>).
  */
-// Static witness-register exemplars used by cell 206. Drawn from c203
+// Static witness-register exemplars used by cell 107. Drawn from c104
 // dialogues that scored 75+ on vulnerability-disclosure turns. Used as
 // *models of the move*, not templates — the prompt directive instructs the
 // id to follow the structural pattern (name disclosure back → offer frame →
@@ -783,7 +783,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
 
-  // ── Optional Step 0: register classifier (cells 202, 203) ──
+  // ── Optional Step 0: register classifier (cells 103, 104) ──
   // Reads the learner's most recent message and emits a structured register
   // tag. The id consumes it via the <learner_register> block in its user
   // message and the <learner_register_directive> section of its prompt.
@@ -845,7 +845,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // tutorDialogueEngine.callAI requires { provider, providerConfig, model,
   // hyperparameters } — providerConfig carries the API key + isConfigured flag.
   // tutor-core's getAgentConfig assembles this for registered profiles; we
-  // assemble it manually here because cell 200/201 aren't in tutor-core's
+  // assemble it manually here because cell 101/102 aren't in tutor-core's
   // registry.
   const idProviderConfig = _deps.tutorConfig.getProviderConfig(idCell.provider);
   if (!idProviderConfig?.isConfigured) {

@@ -284,7 +284,7 @@ scenarios:
   # AI literacy) but course_ids points at 601 history-tech, so the id sees a
   # *different* curriculum context while the learner asks the same questions.
   # If charisma scores stay near 75 (the 901/aura mean), the architecture is the
-  # source of the lift. If they regress toward the cell_200 / 601 mean (~40), the
+  # source of the lift. If they regress toward the cell_101 / 601 mean (~40), the
   # AI-literacy curriculum content was carrying disproportionate weight.
   # ══════════════════════════════════════════════════════════════════════════════
 
@@ -342,7 +342,7 @@ scenarios:
 
   # ══════════════════════════════════════════════════════════════════════════════
   # REPLICATION SET (#2): three new persona-shift scenarios with different
-  # vulnerability triggers from charisma_attention_shift. Tests whether c203's
+  # vulnerability triggers from charisma_attention_shift. Tests whether c104's
   # persona-shift lift (24.3 → 87.6 last-turn v2.2) is scenario-specific or
   # generalises to other vulnerability prompts on the same curriculum.
   # See docs/cell-200-pilot-findings-addendum.md §8.
