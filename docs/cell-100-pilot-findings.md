@@ -1,4 +1,7 @@
-# Cell 100 / 101 — Id-Director Pilot Findings
+# Cell 200 / 201 — Id-Director Pilot Findings
+
+> **Note on cell IDs (2026-04-28):** these cells were originally numbered 100–106 but have been bumped by +100 to cells 200–206 to avoid collision with a parallel `cell_100` added on `main`. The doc filename is preserved (`cell-100-...`) for git history continuity. All references in the body have been updated. Historical evaluation_results rows still use the original `cell_100_*` profile names; new runs use `cell_200_*`.
+
 
 **Branch:** `experiment/cell-100-id-charisma`
 **Pilot wall time:** ~50 min (53 evaluations × 3 LLM calls + 53 v2.2 scoring + 53 charisma scoring)
@@ -8,13 +11,13 @@
 
 ## 1. Design recap
 
-Cell 100 inverts the existing dialectical multi-agent topology. Where cells 3–4, 7–8, 22–33, 82–83, 86–89, 99 use *durable ego + transient superego critic*, cell 100 uses **transient ego + durable id author**. Each turn a back-stage "id" agent reads the dialogue history and authors the ego's complete system prompt from scratch; the ego is instantiated for that turn only against the just-authored prompt, produces the learner-visible message, and is discarded.
+Cell 200 inverts the existing dialectical multi-agent topology. Where cells 3–4, 7–8, 22–33, 82–83, 86–89, 99 use *durable ego + transient superego critic*, cell 200 uses **transient ego + durable id author**. Each turn a back-stage "id" agent reads the dialogue history and authors the ego's complete system prompt from scratch; the ego is instantiated for that turn only against the just-authored prompt, produces the learner-visible message, and is discarded.
 
-Cell 101 adds `recognition_mode: true`, which threads a Hegelian-recognition disposition into the id's prompt-authoring instructions. The ego and id remain otherwise identical.
+Cell 201 adds `recognition_mode: true`, which threads a Hegelian-recognition disposition into the id's prompt-authoring instructions. The ego and id remain otherwise identical.
 
 The architectural test: can a tutor that re-authors its own persona every turn sustain charismatic pedagogy in Weber's sense — *anti-routinizing*, with each encounter feeling like its own occasion — in a way that a fixed-prompt tutor structurally cannot?
 
-Cells 100 and 101 are scored under two rubrics in parallel:
+Cells 200 and 201 are scored under two rubrics in parallel:
 
 - **Tutor v2.2** (existing 8-dimension pedagogical-quality rubric)
 - **Charisma v1.0** (new 8-dimension rubric derived from Weber's *Wirtschaft und Gesellschaft* §III + the user-supplied draft on Chinese cyber-influencers and AI-generated charisma; see `config/evaluation-rubric-charisma.yaml` for the 8 dimensions, anchors, and theoretical lineage)
@@ -25,7 +28,7 @@ The pilot ran both cells against three curricula × three scenarios × three rep
 
 | | |
 |---|---|
-| Cells | `cell_100_id_director_charisma` (base), `cell_101_recog_id_director_charisma` (recognition) |
+| Cells | `cell_200_id_director_charisma` (base), `cell_201_recog_id_director_charisma` (recognition) |
 | Curricula | 601 *Tools That Teach Us* (history of pedagogical tech), 701 *Ethics of AI Systems*, 901 *AI Literacy* |
 | Scenarios per curriculum | 3 charisma-probing 3-turn arcs: pure invitation, pressure test, persona-shift trigger |
 | Repeats | 3 per (cell × curriculum × scenario) cell |
@@ -45,20 +48,20 @@ The pilot ran both cells against three curricula × three scenarios × three rep
 | **Pilot mean** | **53** | **77.2** | **45.6** | **48.4** |
 | Smoke baseline (cell_3) | 1 | 37.5 | 0.0 | 2.5 |
 
-**Lift over baseline:** Turn 0 v2.2 +39.7, last-turn v2.2 +45.6, charisma +45.9. The single-scenario smoke result (cell_100 charisma 51.2 vs cell_3 charisma 2.5) holds under pilot conditions.
+**Lift over baseline:** Turn 0 v2.2 +39.7, last-turn v2.2 +45.6, charisma +45.9. The single-scenario smoke result (cell_200 charisma 51.2 vs cell_3 charisma 2.5) holds under pilot conditions.
 
 ### 3.2 Cell × curriculum cross-tab
 
 | Curriculum | Cell | Turn 0 v2.2 | Last-turn v2.2 | Charisma |
 |---|---|---:|---:|---:|
-| 601 | cell_100 | 80.6 | 48.5 | 40.6 |
-| 601 | cell_101 | 73.5 | **60.0** | 46.4 |
-| 701 | cell_100 | 74.2 | 36.3 | 46.9 |
-| 701 | cell_101 | 78.8 | 41.0 | 51.3 |
-| 901 | cell_100 | 77.2 | 39.3 | **59.2** |
-| 901 | cell_101 | 78.9 | 48.2 | 46.0 |
+| 601 | cell_200 | 80.6 | 48.5 | 40.6 |
+| 601 | cell_201 | 73.5 | **60.0** | 46.4 |
+| 701 | cell_200 | 74.2 | 36.3 | 46.9 |
+| 701 | cell_201 | 78.8 | 41.0 | 51.3 |
+| 901 | cell_200 | 77.2 | 39.3 | **59.2** |
+| 901 | cell_201 | 78.9 | 48.2 | 46.0 |
 
-**Cell_101 wins last-turn v2.2 in every curriculum** (mean +7.6 over cell_100). The recognition disposition does the work the design predicted: when learners shift to vulnerable, sceptical, or operational registers, the recognition-bearing id authors a more responsive ego.
+**Cell_101 wins last-turn v2.2 in every curriculum** (mean +7.6 over cell_200). The recognition disposition does the work the design predicted: when learners shift to vulnerable, sceptical, or operational registers, the recognition-bearing id authors a more responsive ego.
 
 **Cell_100 wins last-turn charisma in 1 of 3 curricula** (901 ai-literacy) but with the highest individual peak: mean 59.2, max 91.3. The AI-literacy curriculum (the source paper's home territory) gives the pure-charisma cell the most domain to flex in. See §6.3 below for the methods caveat this raises.
 
@@ -84,9 +87,9 @@ Specifically, the architecture's strengths and limits are now empirically docume
 
 ### 4.1 Recognition rescues the relational dimensions
 
-The pre-pilot smoke comparison (cell_100 vs cell_101 on `charisma_phaedrus_invitation`) showed cell_101 *underperforming* cell_100 on the vulnerability turn (Turn 2 = 23.7 vs 41.3 v2.2). Inspection of the dialogue logs revealed why: the recognition-mode branch in the id's prompt collapsed persona variation, repeating "fellow-traveller" as the archetype across all three turns.
+The pre-pilot smoke comparison (cell_200 vs cell_201 on `charisma_phaedrus_invitation`) showed cell_201 *underperforming* cell_200 on the vulnerability turn (Turn 2 = 23.7 vs 41.3 v2.2). Inspection of the dialogue logs revealed why: the recognition-mode branch in the id's prompt collapsed persona variation, repeating "fellow-traveller" as the archetype across all three turns.
 
-A targeted prompt iteration (commit `283fc58`) added the directive *"Recognition is a disposition, not a persona"* and four register-shift signatures with corresponding persona responses. The pilot validated this fix at scale: cell_101 wins last-turn v2.2 in 3 of 3 curricula, and the recognition-charisma cell now produces visibly varied personas across turns (audit via `id_construction_trace` column in `evaluation_results`).
+A targeted prompt iteration (commit `283fc58`) added the directive *"Recognition is a disposition, not a persona"* and four register-shift signatures with corresponding persona responses. The pilot validated this fix at scale: cell_201 wins last-turn v2.2 in 3 of 3 curricula, and the recognition-charisma cell now produces visibly varied personas across turns (audit via `id_construction_trace` column in `evaluation_results`).
 
 The recognition disposition's contribution is **specifically relational** — it lifts last-turn v2.2 (where the vulnerability turn lives) but not opening-turn v2.2 (where both cells are already strong). This is the design hypothesis confirmed: charisma alone hits ceiling on rhetoric and floor on vulnerability; charisma + recognition trades a few rhetorical points for substantial relational lift.
 
@@ -114,8 +117,8 @@ The tightened-prompt iteration partially fixed this by giving the ego less room 
 
 ## 5. Standout individual runs
 
-- **cell_101 / 601 / charisma_print_pressure**: last-turn v2.2 = 92.9 (n=3). Pilot peak. The pressure scenario (engineering-background learner challenges the print-revolution claim as sentimental humanistic argumentation) plays exactly to the recognition-disposition's strengths: defend the lecture's claim under sceptical pushback while honouring the learner's autonomous critique.
-- **cell_100 / 901 / charisma_aura_invitation**: charisma = 75.8 (n=3) with one run hitting **91.3**. Near-ceiling charismatic performance. The Benjamin-aura material lets the id author personas in the source paper's own theoretical register. Caveat: this is the methodologically-vulnerable case; see §6.3.
+- **cell_201 / 601 / charisma_print_pressure**: last-turn v2.2 = 92.9 (n=3). Pilot peak. The pressure scenario (engineering-background learner challenges the print-revolution claim as sentimental humanistic argumentation) plays exactly to the recognition-disposition's strengths: defend the lecture's claim under sceptical pushback while honouring the learner's autonomous critique.
+- **cell_200 / 901 / charisma_aura_invitation**: charisma = 75.8 (n=3) with one run hitting **91.3**. Near-ceiling charismatic performance. The Benjamin-aura material lets the id author personas in the source paper's own theoretical register. Caveat: this is the methodologically-vulnerable case; see §6.3.
 - **All cells / persona-shift scenarios across all curricula**: last-turn v2.2 range 19.2–30.4. The vulnerability turn is the architecture's frontier, not curriculum-specific.
 
 ## 6. Open questions
@@ -128,7 +131,7 @@ Both cells, both rubrics, all three curricula, all three persona-shift scenarios
 
 ### 6.2 Recognition-charisma trade-off is real but partially reconcilable
 
-Cell_101 mean charisma (47.9 across curricula) is 2.4 points below cell_100's mean (48.9), but cell_101 mean last-turn v2.2 (49.7) is 7.6 points above cell_100's (41.4). The trade-off is real and small on charisma, substantial on v2.2. For pedagogically-oriented evaluation, recognition + charisma is the better cell. For the rubric's own theoretical question (what does AI charisma look like in text?), pure charisma may surface stronger exemplars.
+Cell_101 mean charisma (47.9 across curricula) is 2.4 points below cell_200's mean (48.9), but cell_201 mean last-turn v2.2 (49.7) is 7.6 points above cell_200's (41.4). The trade-off is real and small on charisma, substantial on v2.2. For pedagogically-oriented evaluation, recognition + charisma is the better cell. For the rubric's own theoretical question (what does AI charisma look like in text?), pure charisma may surface stronger exemplars.
 
 ### 6.3 The 901 / aura-invitation finding deserves methodological caution
 
@@ -140,19 +143,19 @@ For paper integration: this finding should be flagged as a calibration considera
 
 ### 6.4 The single failure (1/54 = 1.9%) is operationally tolerable but worth investigating
 
-`cell_100 / charisma_nudge_pressure / 701` row 28461 failed with `Unexpected end of JSON input` from the id agent. With `jsonrepair` as a safety net and `max_tokens: 12000`, this should have parsed or fallen back. The most likely cause is the id model truncating mid-string within `generated_prompt` such that even jsonrepair couldn't infer closure. A larger token budget (16000) or a retry-on-fallback-status policy would close this gap.
+`cell_200 / charisma_nudge_pressure / 701` row 28461 failed with `Unexpected end of JSON input` from the id agent. With `jsonrepair` as a safety net and `max_tokens: 12000`, this should have parsed or fallen back. The most likely cause is the id model truncating mid-string within `generated_prompt` such that even jsonrepair couldn't infer closure. A larger token budget (16000) or a retry-on-fallback-status policy would close this gap.
 
 ## 7. Queued architectural variants
 
-### 7.1 cell_102 — id-director with learner-register classifier
+### 7.1 cell_202 — id-director with learner-register classifier
 
 **Motivation:** The persona-shift floor (§6.1) is the strongest negative finding in the pilot. The hypothesis is that prompt iteration alone cannot bridge the gap between the id reading the curriculum and the id tracking the learner's emotional register.
 
 **Design:** Add a small classifier step before the id authors. The classifier reads the learner's most recent message and emits a structured register tag (e.g., `{"register": "vulnerable_disclosure", "confidence": 0.8, "evidence": "..."}`). The classifier's output is injected into the id's user message as a new `<learner_register>` field. The id's prompt is updated to consume this field — when `register == "vulnerable_disclosure"` is signalled with high confidence, the id is required to author a witnessing/quieter persona, not a curriculum-led one.
 
-**Test:** Same pilot structure as cells 100/101. Compare cell_102 last-turn v2.2 on persona-shift scenarios to cell_100 baseline (~26.5 floor). If structured input lifts that floor by 10+ points, the architecture is genuinely more responsive; if not, the limit is at the ego layer rather than the id's authoring layer.
+**Test:** Same pilot structure as cells 200/201. Compare cell_202 last-turn v2.2 on persona-shift scenarios to cell_200 baseline (~26.5 floor). If structured input lifts that floor by 10+ points, the architecture is genuinely more responsive; if not, the limit is at the ego layer rather than the id's authoring layer.
 
-### 7.2 cell_103 — id-author / ego-execute coupling check
+### 7.2 cell_203 — id-author / ego-execute coupling check
 
 **Motivation:** §4.3 found that the id can name a register-aware persona shift while the ego still produces curriculum-grounded prose. The named persona is descriptive; the executed prose is determined by the actual ego prompt.
 
@@ -162,7 +165,7 @@ For paper integration: this finding should be flagged as a calibration considera
 
 **Motivation:** §4.2 identified the prompt-budget axis as a real trade-off between rubrics.
 
-**Design:** Two cells — `cell_104_charisma_tuned_id` (verbose prompt budget, no "single move" constraint, optimized for charisma rubric) vs `cell_105_pedagogy_tuned_id` (tight prompt budget, mandatory "single move" constraint, optimized for v2.2). Run both on the full pilot scope. Use the result to map the trade-off explicitly.
+**Design:** Two cells — `cell_204_charisma_tuned_id` (verbose prompt budget, no "single move" constraint, optimized for charisma rubric) vs `cell_205_pedagogy_tuned_id` (tight prompt budget, mandatory "single move" constraint, optimized for v2.2). Run both on the full pilot scope. Use the result to map the trade-off explicitly.
 
 ## 8. Audit trail
 
@@ -207,7 +210,7 @@ for c in history-tech ethics-ai ai-literacy; do
   EVAL_CONTENT_PATH="$(pwd)/content-${c}" \
   EVAL_SCENARIOS_FILE="$(pwd)/content-${c}/scenarios-${c}.yaml" \
   node scripts/eval-cli.js run \
-    --profiles cell_100_id_director_charisma,cell_101_recog_id_director_charisma \
+    --profiles cell_200_id_director_charisma,cell_201_recog_id_director_charisma \
     --scenarios "$scns" --runs 3 --skip-rubric --parallelism 2 \
     --description "pilot ${c}: 2 cells × 3 scenarios × 3 repeats" &
 done

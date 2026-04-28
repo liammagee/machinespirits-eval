@@ -1,7 +1,10 @@
-# Cross-Judge Sanity Check — Cell 100/101/102/103/104/105
+# Cross-Judge Sanity Check — Cell 200/201/202/203/204/205
+
+> **Note on cell IDs (2026-04-28):** these cells were originally numbered 100–106 but have been bumped by +100 to cells 200–206 to avoid collision with a parallel `cell_100` added on `main`. The doc filename is preserved (`cell-100-...`) for git history continuity. All references in the body have been updated. Historical evaluation_results rows still use the original `cell_100_*` profile names; new runs use `cell_200_*`.
+
 
 **Date:** 2026-04-27
-**Question:** Are the architectural claims about cell_103 (and the broader id-director family) artifacts of a specific judge model, or do they survive a swap to a different judge?
+**Question:** Are the architectural claims about cell_203 (and the broader id-director family) artifacts of a specific judge model, or do they survive a swap to a different judge?
 **Method:** Re-judge all available rows under `openrouter.gpt` and compare to the original judge.
 **Scope:** 162 dialogue runs across cells 3, 100, 101, 102, 103, 104, 105 (all with v2.2 + charisma scores under the original judge).
 **Cost:** ~$2.50 (estimate; charisma rejudge ran out of credits partway, see §3 below).
@@ -11,10 +14,10 @@
 **Architectural rankings survive the cross-judge check unchanged. Absolute magnitudes shift modestly.**
 
 - **Charisma rubric**: max per-cell delta ≤ 2.8 points; all cell rankings preserved across both judges.
-- **v2.2 rubric**: GPT systematically scores 10–15 points *lower* than Sonnet on the high-scoring cells (c102, c103, c104) and slightly *higher* on the low-scoring factorial cells. The ranking c103 > c102 > c104 > c105 > c101 > c100 is preserved under both judges.
-- **The c103 lift over c100 baseline survives**: under Sonnet, +45 points last-turn v2.2 (86.9 vs 41.5); under GPT, +27 points (72.3 vs 45.7). Smaller absolute lift but still substantively large.
+- **v2.2 rubric**: GPT systematically scores 10–15 points *lower* than Sonnet on the high-scoring cells (c202, c203, c204) and slightly *higher* on the low-scoring factorial cells. The ranking c203 > c202 > c204 > c205 > c201 > c200 is preserved under both judges.
+- **The c203 lift over c200 baseline survives**: under Sonnet, +45 points last-turn v2.2 (86.9 vs 41.5); under GPT, +27 points (72.3 vs 45.7). Smaller absolute lift but still substantively large.
 
-The architectural claim is robust to judge choice. The specific *numerical magnitudes* in `docs/cell-100-pilot-findings-addendum.md` should be presented as judge-conditional (Sonnet-judge-specific) when cited in papers; the *architectural ordering* and *qualitative claims* (c103 is the champion, persona-shift floor is broken, etc.) are robust.
+The architectural claim is robust to judge choice. The specific *numerical magnitudes* in `docs/cell-100-pilot-findings-addendum.md` should be presented as judge-conditional (Sonnet-judge-specific) when cited in papers; the *architectural ordering* and *qualitative claims* (c203 is the champion, persona-shift floor is broken, etc.) are robust.
 
 ## 2. v2.2 cross-judge cross-tab (n=27 per cell, paired by dialogue_id)
 
@@ -22,25 +25,25 @@ For every dialogue_id, scored under both `claude-code/sonnet` (CLI) and `gpt-5.2
 
 | Cell | n | Sonnet last-turn | GPT last-turn | Δ (gpt − sonnet) |
 |---|---:|---:|---:|---:|
-| c100 (id-director) | 26 | 41.5 | 45.7 | **+4.1** |
-| c101 (id + recog) | 27 | 49.7 | 49.1 | −0.6 |
-| c102 (cls) | 27 | 79.1 | 64.6 | **−14.5** |
-| **c103 (cls + recog)** | 27 | **86.9** | **72.3** | **−14.6** |
-| c104 (charisma-tuned) | 27 | 75.8 | 67.6 | −8.2 |
-| c105 (pedagogy-tuned) | 27 | 56.6 | 57.4 | +0.8 |
+| c200 (id-director) | 26 | 41.5 | 45.7 | **+4.1** |
+| c201 (id + recog) | 27 | 49.7 | 49.1 | −0.6 |
+| c202 (cls) | 27 | 79.1 | 64.6 | **−14.5** |
+| **c203 (cls + recog)** | 27 | **86.9** | **72.3** | **−14.6** |
+| c204 (charisma-tuned) | 27 | 75.8 | 67.6 | −8.2 |
+| c205 (pedagogy-tuned) | 27 | 56.6 | 57.4 | +0.8 |
 
 | Cell | Sonnet first-turn | GPT first-turn | Δ |
 |---|---:|---:|---:|
-| c100 | 77.5 | 59.5 | −18.0 |
-| c101 | 77.0 | 66.9 | −10.1 |
-| c102 | 73.7 | 60.0 | −13.7 |
-| c103 | 79.2 | 63.4 | −15.8 |
-| c104 | 72.1 | 56.1 | −16.1 |
-| c105 | 68.3 | 60.8 | −7.5 |
+| c200 | 77.5 | 59.5 | −18.0 |
+| c201 | 77.0 | 66.9 | −10.1 |
+| c202 | 73.7 | 60.0 | −13.7 |
+| c203 | 79.2 | 63.4 | −15.8 |
+| c204 | 72.1 | 56.1 | −16.1 |
+| c205 | 68.3 | 60.8 | −7.5 |
 
 **Pattern:** GPT compresses the score range. It scores the high-scoring cells (Sonnet ≥ 75) lower by 10–18 points; it scores the lower cells (Sonnet 40–60) slightly higher or unchanged. The result is that under GPT, the absolute magnitudes shrink toward the middle, but the rank-order is preserved.
 
-**Implication:** if a future paper cites a specific score (e.g., "c103 reached 86.9 last-turn v2.2"), the citation should specify the judge (`claude-code/sonnet`) and ideally report the GPT counterpart for transparency. Architectural claims about *which cell wins* are unaffected.
+**Implication:** if a future paper cites a specific score (e.g., "c203 reached 86.9 last-turn v2.2"), the citation should specify the judge (`claude-code/sonnet`) and ideally report the GPT counterpart for transparency. Architectural claims about *which cell wins* are unaffected.
 
 ## 3. Charisma cross-judge cross-tab (n=56 paired rows; partial coverage)
 
@@ -50,17 +53,17 @@ For the paired 56 rows, judge agreement is **very strong**:
 
 | Cell | n | Sonnet | GPT | Δ |
 |---|---:|---:|---:|---:|
-| c100 | 10 | 60.5 | 57.8 | **−2.8** |
-| c101 | 7 | 52.9 | 51.4 | −1.4 |
-| c102 | 11 | 60.1 | 58.6 | −1.5 |
-| **c103** | 8 | **62.2** | **62.3** | **+0.2** |
-| c104 | 11 | 62.4 | 60.6 | −1.8 |
-| c105 | 9 | 27.8 | 26.4 | −1.4 |
+| c200 | 10 | 60.5 | 57.8 | **−2.8** |
+| c201 | 7 | 52.9 | 51.4 | −1.4 |
+| c202 | 11 | 60.1 | 58.6 | −1.5 |
+| **c203** | 8 | **62.2** | **62.3** | **+0.2** |
+| c204 | 11 | 62.4 | 60.6 | −1.8 |
+| c205 | 9 | 27.8 | 26.4 | −1.4 |
 
 **All deltas within ±3 points.** Cell rankings:
 
-- Sonnet: c104 (62.4) ≈ c103 (62.2) > c102 (60.1) ≈ c100 (60.5) > c101 (52.9) > c105 (27.8)
-- GPT: c103 (62.3) ≈ c104 (60.6) > c102 (58.6) ≈ c100 (57.8) > c101 (51.4) > c105 (26.4)
+- Sonnet: c204 (62.4) ≈ c203 (62.2) > c202 (60.1) ≈ c200 (60.5) > c201 (52.9) > c205 (27.8)
+- GPT: c203 (62.3) ≈ c204 (60.6) > c202 (58.6) ≈ c200 (57.8) > c201 (51.4) > c205 (26.4)
 
 **Identical qualitative ordering. No magnitude compression.** The charisma rubric is robust to judge choice in a way that v2.2 is not.
 
@@ -79,7 +82,7 @@ The charisma rubric, by contrast, has more concrete operational criteria (specif
 When `paper-full-2.0.md` integrates these results:
 
 - **Always disclose the judge model** for any cited score. The current default judge for evaluate is `claude-code/sonnet`; the cross-judge GPT scores are documented in `data/charisma-sonnet-snapshot-2026-04-27.tsv` (the snapshot of pre-rejudge state) and the v2.2 GPT rows in `evaluation_results.judge_model = 'gpt-5.2'`.
-- **Lead with rank-order claims, not magnitudes.** "Cell_103 outscores cell_100 baseline on every scenario type and under both judges" is robust. "Cell_103 hits 86.9" should be qualified.
+- **Lead with rank-order claims, not magnitudes.** "Cell_103 outscores cell_200 baseline on every scenario type and under both judges" is robust. "Cell_103 hits 86.9" should be qualified.
 - **The 86.9 / 72.3 spread itself is a publishable observation** — it documents judge-model bias as an empirical phenomenon worth being explicit about. The id-director architecture's headline lift survives this bias; many future architectural claims may not.
 
 ## 6. Recommended action items

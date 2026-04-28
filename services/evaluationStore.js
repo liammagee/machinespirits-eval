@@ -300,7 +300,7 @@ migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_rubric_version
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN learner_rubric_version TEXT`, 'learner_rubric_version');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_rubric_version TEXT`, 'dialogue_rubric_version');
 
-// Charisma rubric (cells 100/101 — id-director architecture).
+// Charisma rubric (cells 200/201 — id-director architecture).
 // Per-dimension scores as JSON, weighted overall as REAL, rubric version
 // auto-resolved from config/evaluation-rubric-charisma.yaml at write time.
 // id_construction_trace stores the per-turn JSON envelope the id-director
@@ -2798,7 +2798,7 @@ export function updateResultTutorScores(resultId, evaluation) {
  */
 /**
  * Persist charisma rubric scores for a single evaluation row.
- * Used by scripts/evaluate-charisma.js (cells 100/101 + any back-fill of
+ * Used by scripts/evaluate-charisma.js (cells 200/201 + any back-fill of
  * earlier cells for cross-rubric comparison).
  *
  * @param {string} resultId

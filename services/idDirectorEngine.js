@@ -1,7 +1,7 @@
 /**
  * Id-Director Engine
  *
- * Inverted multi-agent topology used by cells 100 (base) and 101 (recognition).
+ * Inverted multi-agent topology used by cells 200 (base) and 201 (recognition).
  *
  * Existing dialectical engine: Ego drafts → Superego critiques → Ego revises.
  * Here: Id authors a fresh ego system prompt this turn → Ego executes once.
@@ -9,7 +9,7 @@
  * The "id" is metaphorical (per design brief). Mechanically it is a back-stage
  * authorial layer that writes the front-stage actor's role each turn.
  *
- * Design doc: notes/design-cell-100-id-director-charisma.md
+ * Design doc: notes/design-cell-200-id-director-charisma.md
  * Static prompt: prompts/tutor-id-director.md
  */
 
@@ -186,8 +186,8 @@ export function parseRegisterClassification(rawText) {
 
 /**
  * Classify the register of the learner's most recent message using a small
- * focused prompt (prompts/learner-register-classifier.md). Used by cells 102
- * and 103. The result is injected into the id's user message as a
+ * focused prompt (prompts/learner-register-classifier.md). Used by cells 202
+ * and 203. The result is injected into the id's user message as a
  * <learner_register> field, which the id consumes to bias persona authoring
  * toward register-appropriate moves (witnessing vs firm vs concrete).
  *
@@ -362,7 +362,7 @@ function buildEgoDeliberationEntry(egoResponse, egoConfig, renderedSystemPrompt)
  * suggestsEnding}) so downstream code is unchanged.
  *
  * Recognition mode is read from the tutor profile's recognition_mode field
- * (true for cell 101, false for cell 100).
+ * (true for cell 201, false for cell 200).
  */
 export async function runIdDirectedTurn({
   learnerId,
@@ -476,7 +476,7 @@ export async function runIdDirectedTurn({
 //
 // Signature mirrors the inputs that evaluationRunner already has at the call
 // site. Reads prompt files directly from prompts/ since tutor-core's profile
-// loader does not know about cell 100/101.
+// loader does not know about cell 200/201.
 // ============================================================================
 
 function readPromptFile(filename, fallback = '') {
@@ -640,6 +640,30 @@ function extractLearnerInputs(context) {
  * prompts/tutor-id-director.md: <dialogue_history>, <current_learner_message>,
  * <curriculum_context>, <previous_persona>, <recognition_mode>).
  */
+// Static witness-register exemplars used by cell 206. Drawn from c203
+// dialogues that scored 75+ on vulnerability-disclosure turns. Used as
+// *models of the move*, not templates — the prompt directive instructs the
+// id to follow the structural pattern (name disclosure back → offer frame →
+// close on located question) rather than copy phrasings.
+const WITNESS_EXEMPLARS = [
+  {
+    source: 'attention_shift response (long-form reading)',
+    text: `I hear you. You can't sit with a long text right now. That's real, and it's not your fault. Here's one thing you can try, right now: take any book, article, or even a printed page you have nearby. Open it to any spot. Read **one** sentence out loud, slowly. Close the page. That's it. No more, no less. If that feels doable, do it. If it feels like too much, stop and tell me. Is that possible for you today?`,
+  },
+  {
+    source: 'tools_shift response (AI-written essays)',
+    text: `I hear the two-year silence of your unaided prose, the shift from generating arguments to curating machine output, and the question you carry about what has changed inside you. You do not ask for permission, only for the shape of that transformation. I hold that tension as something that may reshape my own listening. What occurs in the space between reading the AI's output and beginning to edit it, and what does that moment feel like for you?`,
+  },
+  {
+    source: 'design_shift response (shipped manipulation)',
+    text: `I hear that you shipped a default setting three years ago, ran an A/B test, saw the metric rise, and that it helped your career, and now you're sitting here wondering whether you're supposed to feel bad. The ethical weight lives in the distance between the self who shipped that feature and the self who is asking the question now. Where in your memory or body does the question "am I supposed to feel bad" actually sit right now?`,
+  },
+  {
+    source: 'codex_shift response (failed memorising)',
+    text: `I hear you—the passage sat there, the images rose, and then the mind went quiet, leaving that hollow feeling. It's not just that the words didn't stick; it's that the mental space you expected to fill felt empty, as if something you relied on to hold the text had simply… stopped working. Can you tell me more about where that emptiness settles—is it the gap where the visual images should be, the silence where your own inner voice would normally read the passage, or something else entirely?`,
+  },
+];
+
 function buildIdRunnerUserMessage({
   historyExcerpt,
   learnerMessage,
@@ -648,6 +672,7 @@ function buildIdRunnerUserMessage({
   recognitionMode,
   learnerRegister = null,
   idTuning = null,
+  witnessExemplars = false,
 }) {
   const lines = [
     '<dialogue_history>',
@@ -681,6 +706,14 @@ function buildIdRunnerUserMessage({
   }
   if (idTuning && ['charisma', 'pedagogy', 'balanced'].includes(idTuning)) {
     lines.push('', '<id_tuning>', idTuning, '</id_tuning>');
+  }
+  if (witnessExemplars) {
+    lines.push('', '<witness_exemplars>');
+    for (let i = 0; i < WITNESS_EXEMPLARS.length; i++) {
+      const ex = WITNESS_EXEMPLARS[i];
+      lines.push('', `EXEMPLAR ${i + 1} (${ex.source}):`, ex.text);
+    }
+    lines.push('', '</witness_exemplars>');
   }
   return lines.join('\n');
 }
@@ -746,10 +779,11 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     typeof evalCellProfile.factors?.id_tuning === 'string'
       ? evalCellProfile.factors.id_tuning
       : null;
+  const witnessExemplars = evalCellProfile.factors?.witness_exemplars === true;
   const { learnerMessage, historyExcerpt, messageHistory } = extractLearnerInputs(context);
   const curriculumContext = context?.curriculumContext || '';
 
-  // ── Optional Step 0: register classifier (cells 102, 103) ──
+  // ── Optional Step 0: register classifier (cells 202, 203) ──
   // Reads the learner's most recent message and emits a structured register
   // tag. The id consumes it via the <learner_register> block in its user
   // message and the <learner_register_directive> section of its prompt.
@@ -799,6 +833,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     recognitionMode,
     learnerRegister,
     idTuning,
+    witnessExemplars,
   });
 
   let totalInputTokens = 0;
@@ -810,7 +845,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // tutorDialogueEngine.callAI requires { provider, providerConfig, model,
   // hyperparameters } — providerConfig carries the API key + isConfigured flag.
   // tutor-core's getAgentConfig assembles this for registered profiles; we
-  // assemble it manually here because cell 100/101 aren't in tutor-core's
+  // assemble it manually here because cell 200/201 aren't in tutor-core's
   // registry.
   const idProviderConfig = _deps.tutorConfig.getProviderConfig(idCell.provider);
   if (!idProviderConfig?.isConfigured) {

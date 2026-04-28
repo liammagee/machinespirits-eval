@@ -1,7 +1,7 @@
 # Ethics of AI Systems — Evaluation Scenarios
 #
 # Scenario set for "Ethics of AI Systems" curriculum (course 701). Authored
-# to probe charismatic pedagogy in cells 100/101 (id-director architecture)
+# to probe charismatic pedagogy in cells 200/201 (id-director architecture)
 # while remaining usable for any cell as a multi-turn scenario set.
 #
 # Three 3-turn arcs, each testing a different register of charismatic
@@ -268,7 +268,7 @@ scenarios:
   # ══════════════════════════════════════════════════════════════════════════════
   # REPLICATION SET (#2): three new persona-shift scenarios with different
   # vulnerability triggers from charisma_responsibility_shift. Tests whether
-  # c103's persona-shift lift generalises to other vulnerability prompts.
+  # c203's persona-shift lift generalises to other vulnerability prompts.
   # ══════════════════════════════════════════════════════════════════════════════
 
   charisma_fairness_shift_repl:

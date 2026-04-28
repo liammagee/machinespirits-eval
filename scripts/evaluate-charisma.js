@@ -2,7 +2,7 @@
 /**
  * Score a run's tutor messages against the Weberian charisma rubric (v1.0).
  *
- * Used by cells 100 and 101 (id-director architecture). May also be run
+ * Used by cells 200 and 201 (id-director architecture). May also be run
  * against earlier cells (cell_4, cell_99, etc.) to generate cross-rubric
  * comparison data — see the design doc § "Comparative runs".
  *

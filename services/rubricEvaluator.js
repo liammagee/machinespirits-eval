@@ -1646,7 +1646,7 @@ ${exampleScores}
 }
 
 // ============================================================================
-// Charisma Evaluation (cells 100/101 — id-director architecture)
+// Charisma Evaluation (cells 200/201 — id-director architecture)
 // ============================================================================
 
 const charismaCacheMap = new Map();
