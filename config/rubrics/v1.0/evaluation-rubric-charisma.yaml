@@ -1,7 +1,7 @@
 # Charisma Rubric — v1.0
 #
 # Weber-derived 8-dimension rubric for charismatic pedagogy in text-mediated
-# tutoring. Used by cells 200 and 201 (id-director architecture) and any
+# tutoring. Used by cells 101 and 102 (id-director architecture) and any
 # subsequent cell that opts into charisma scoring. Scored independently of
 # evaluation-rubric.yaml (v2.2) so the two can be cross-correlated.
 #

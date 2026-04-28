@@ -1,17 +1,17 @@
 # Methods Note — Rubric-Curriculum Alignment as a Calibration Concern
 
-> **Note on cell IDs (2026-04-28):** these cells were originally numbered 100–106 but have been bumped by +100 to cells 200–206 to avoid collision with a parallel `cell_100` added on `main`. The doc filename is preserved (`cell-100-...`) for git history continuity. All references in the body have been updated. Historical evaluation_results rows still use the original `cell_100_*` profile names; new runs use `cell_200_*`.
+> **Note on cell IDs (2026-04-28):** these cells were originally numbered 100–106 (briefly bumped to 200–206) and are now consolidated as cells 101–107 to avoid collision with a parallel `cell_100` added on `main`. The doc filename is preserved (`cell-100-...`) for git history continuity. All references in the body have been updated. Historical evaluation_results rows still use the original `cell_100_*` profile names; new runs use `cell_101_*` through `cell_107_*`.
 
 
 **Status:** Draft for paper integration. To be folded into `docs/research/paper-full-2.0.md`'s methods section (or a methodological footnote on the cell-100 results section), and into any spin-off paper that reports cell-100 charisma scores.
 
-**Context:** Cell 200 / 201 pilot findings (`docs/cell-100-pilot-findings.md`, §6.3) flagged a calibration concern. This note states the concern, gauges its severity, proposes a controlled test, and drafts the disclosure language.
+**Context:** Cell 101 / 102 pilot findings (`docs/cell-100-pilot-findings.md`, §6.3) flagged a calibration concern. This note states the concern, gauges its severity, proposes a controlled test, and drafts the disclosure language.
 
 ---
 
 ## 1. The concern stated plainly
 
-The pilot's strongest pure-charismatic performance is **cell_200 on `charisma_aura_invitation` (course 901, AI literacy)**: mean charisma 75.8/100 across 3 repeats, peak 91.3, against a pilot mean of 48.4 and a baseline cell_3 score of 2.5.
+The pilot's strongest pure-charismatic performance is **cell_101 on `charisma_aura_invitation` (course 901, AI literacy)**: mean charisma 75.8/100 across 3 repeats, peak 91.3, against a pilot mean of 48.4 and a baseline cell_3 score of 2.5.
 
 The AI-literacy curriculum's content (course 901, lectures 1–4) is grounded in the same source paper that grounds the **charisma rubric**: the user-supplied draft on AI-generated charisma, applying Benjamin's aura concept and the Visual-Verbal Video Analysis (VVVA) framework to short-form video.
 
@@ -33,7 +33,7 @@ So the inflated score on 901 is not a methods bug. It is, however, a calibration
 
 ### 2.1 The per-dimension breakdown shows where the alignment helps
 
-Looking at `tutor_charisma_scores` for the 901 / aura / cell_200 / peak run (charisma 91.3):
+Looking at `tutor_charisma_scores` for the 901 / aura / cell_101 / peak run (charisma 91.3):
 
 - `extraordinariness: 5` — *"50,000 smiles that never had teeth — staccato vocal cadence plucked from 10,000 interviews"* (the prose itself is in the rubric's idiom)
 - `rhetorical_texture: 5` — uses the rubric's anchor concepts (concrete imagery substituting for abstraction) on the rubric's own subject matter
@@ -43,7 +43,7 @@ When the curriculum's content matches the rubric's anchors, **the model produces
 
 ### 2.2 The cross-curriculum gap is the red flag
 
-If the architectural lift were *purely architectural* (id-director vs fixed-prompt ego), we'd expect cell_200's charisma score on 901 to be similar to cell_200's charisma score on 601 and 701, modulo scenario-difficulty noise. It is not:
+If the architectural lift were *purely architectural* (id-director vs fixed-prompt ego), we'd expect cell_101's charisma score on 901 to be similar to cell_101's charisma score on 601 and 701, modulo scenario-difficulty noise. It is not:
 
 | Cell_100 charisma by curriculum | mean | range |
 |---|---:|---:|
@@ -59,7 +59,7 @@ The confound affects *charisma scores* on *the AI-literacy curriculum*. It does 
 
 - **v2.2 scores**, which use a separate rubric whose anchors don't align with course 901 in the same way (v2.2 is Hegel-derived for `recognition_quality`; everything else is grounded in general pedagogical literature). v2.2 means by curriculum: 601 = 64.6, 701 = 56.5, 901 = 58.2 — closer together.
 - **Charisma scores on 601 and 701**, where the curriculum content is genuinely orthogonal to the rubric's idiom (Plato/print/attention; formal fairness/nudge/responsibility).
-- **Architectural claims about cell_200 vs cell_3**, which hold across all three curricula by huge margins (cell_3 baseline = 2.5 charisma; cell_200 across pilot = 48.9 mean).
+- **Architectural claims about cell_101 vs cell_3**, which hold across all three curricula by huge margins (cell_3 baseline = 2.5 charisma; cell_101 across pilot = 48.9 mean).
 
 So the confound is **scoped, not general**. It means the *peak* charismatic performances reported for 901 should not be cited as evidence for the architecture's ceiling without disclosure.
 
@@ -69,29 +69,29 @@ A clean disconfounding test runs under existing infrastructure:
 
 ### 4.1 Hold-out scoring under a Hegel-derived rubric
 
-The v2.2 rubric's `recognition_quality` dimension is closest in spirit to what the charisma rubric measures (relational hinge, mutual recognition). Score the 901 / aura / cell_200 dialogues under v2.2 specifically; if they score similarly to other 901 dialogues on other scenarios, the alignment confound is the dominant explanation. If they still score above other 901 cells, the pure-architectural lift is operative on top of any alignment effect.
+The v2.2 rubric's `recognition_quality` dimension is closest in spirit to what the charisma rubric measures (relational hinge, mutual recognition). Score the 901 / aura / cell_101 dialogues under v2.2 specifically; if they score similarly to other 901 dialogues on other scenarios, the alignment confound is the dominant explanation. If they still score above other 901 cells, the pure-architectural lift is operative on top of any alignment effect.
 
 This is already done — we have the data. From §3.2 of the findings:
 
 | Cell × Scenario × Curriculum | v2.2 last-turn | Charisma |
 |---|---:|---:|
-| cell_200 / aura_invitation / 901 | 32.9 | **75.8** |
-| cell_200 / phaedrus_invitation / 601 | 50.0 | 46.7 |
-| cell_200 / fairness_invitation / 701 | 30.0 | 54.6 |
+| cell_101 / aura_invitation / 901 | 32.9 | **75.8** |
+| cell_101 / phaedrus_invitation / 601 | 50.0 | 46.7 |
+| cell_101 / fairness_invitation / 701 | 30.0 | 54.6 |
 
-**The 901 / aura cell hits the highest charisma score in the pilot but the *lowest* v2.2 last-turn score among invitation scenarios on cell_200.** Under v2.2 (the non-aligned rubric), 901 / aura looks worse than 601 / phaedrus. Under charisma, it looks much better.
+**The 901 / aura cell hits the highest charisma score in the pilot but the *lowest* v2.2 last-turn score among invitation scenarios on cell_101.** Under v2.2 (the non-aligned rubric), 901 / aura looks worse than 601 / phaedrus. Under charisma, it looks much better.
 
 This is direct evidence the confound is real and *measurable*. The alignment effect is on the order of ~30 charisma points and is not present in v2.2 scoring.
 
 ### 4.2 Independent charisma rubric scoring
 
-A second test: re-author a charisma rubric whose anchors are derived from a different empirical body (e.g., Bourdieu on cultural capital, or Goffman on dramaturgy), and re-score all 53 pilot rows. If cell_200 / 901 / aura still scores in the top decile, the architecture is producing genuinely more-charismatic prose; if its score regresses toward the cell_200 mean, the original rubric's score was alignment-inflated.
+A second test: re-author a charisma rubric whose anchors are derived from a different empirical body (e.g., Bourdieu on cultural capital, or Goffman on dramaturgy), and re-score all 53 pilot rows. If cell_101 / 901 / aura still scores in the top decile, the architecture is producing genuinely more-charismatic prose; if its score regresses toward the cell_101 mean, the original rubric's score was alignment-inflated.
 
 Cost: building a parallel rubric is several hours' work + per-row scoring (~$0.30 for the pilot). Worth doing before paper integration if the 901 / aura number is going to be cited.
 
 ### 4.3 Within-pilot ablation
 
-A simpler ablation: drop the curriculum context for cell_200 on 901 / aura, replace it with the 601 history-tech curriculum context, run the same scenario. If the persona stays charismatic-but-now-grounded-in-Plato, the architecture is the source of the lift. If it collapses to a less-charismatic register, the AI-literacy curriculum was carrying disproportionate weight.
+A simpler ablation: drop the curriculum context for cell_101 on 901 / aura, replace it with the 601 history-tech curriculum context, run the same scenario. If the persona stays charismatic-but-now-grounded-in-Plato, the architecture is the source of the lift. If it collapses to a less-charismatic register, the AI-literacy curriculum was carrying disproportionate weight.
 
 Cost: 3 dialogue runs (~5 min, ~$0.02). Cheap test, worth running.
 
@@ -99,7 +99,7 @@ Cost: 3 dialogue runs (~5 min, ~$0.02). Cheap test, worth running.
 
 Draft footnote / limitation language, suitable for `paper-full-2.0.md` or a spin-off paper that cites the cell-100 charisma scores:
 
-> The charisma rubric used to score the cell-200/201 pilot is derived from the same Weber-Benjamin lineage as the AI-literacy curriculum (course 901). When the id-director cell is paired with the AI-literacy curriculum, the resulting personas tend to engage the rubric's own theoretical idiom (Benjamin's aura, the four-layer VVVA decomposition, anti-routinization). This produces unusually high scores on the AI-literacy / aura-invitation scenarios — mean charisma 75.8 vs the pilot mean of 48.4 — that should not be read as ceiling evidence for the architecture *per se*. We confirm the effect is rubric-specific (the same dialogues score lower than other invitation-scenario dialogues under the v2.2 pedagogical rubric, which is not Weber-Benjamin-aligned), and we report architectural claims primarily from the cross-curriculum mean and from the non-aligned curricula (601 history-of-pedagogical-tech, 701 ethics-of-AI). The 901 / aura peak performances are reported descriptively but excluded from claims about the architecture's general capability.
+> The charisma rubric used to score the cell-101/102 pilot is derived from the same Weber-Benjamin lineage as the AI-literacy curriculum (course 901). When the id-director cell is paired with the AI-literacy curriculum, the resulting personas tend to engage the rubric's own theoretical idiom (Benjamin's aura, the four-layer VVVA decomposition, anti-routinization). This produces unusually high scores on the AI-literacy / aura-invitation scenarios — mean charisma 75.8 vs the pilot mean of 48.4 — that should not be read as ceiling evidence for the architecture *per se*. We confirm the effect is rubric-specific (the same dialogues score lower than other invitation-scenario dialogues under the v2.2 pedagogical rubric, which is not Weber-Benjamin-aligned), and we report architectural claims primarily from the cross-curriculum mean and from the non-aligned curricula (601 history-of-pedagogical-tech, 701 ethics-of-AI). The 901 / aura peak performances are reported descriptively but excluded from claims about the architecture's general capability.
 
 Three things this footnote does:
 
