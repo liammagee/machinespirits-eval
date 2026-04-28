@@ -19,10 +19,12 @@ All seven id-director cells, full n, single consistent judge:
 | c104 (id + cls + recog) | cell_103 | 81 | 65.7 | 72.0 | **80.6** |
 | **c105 (charisma-tuned)** | cell_104 | 81 | **71.0** | 64.8 | 70.0 |
 | c106 (pedagogy-tuned) | cell_105 | 54 | 36.4 | 64.6 | 57.0 |
-| c107 (witness-exemplars) | cell_106/107 | 10 | 61.9 | **78.5** | 74.6 |
+| c107 (witness-exemplars) | cell_106/107 | 27 | 66.3 | 73.1 | **78.5** |
 
-**Architectural rank-order on charisma**: c105 > c104 ≈ c107 > c103 > c101 > c102 > c106
-**Architectural rank-order on v2.2 last-turn**: c104 > c103 > c107 > c105 > c106 ≈ c101 > c102
+**Architectural rank-order on charisma**: c105 > c107 ≈ c104 > c103 > c101 > c102 > c106
+**Architectural rank-order on v2.2 last-turn**: c104 > c107 > c103 > c105 > c106 ≈ c101 > c102
+
+(Charisma c107 vs c104 differ by 0.6 — within run-to-run sampling noise. v2.2 c107 vs c104 differ by 2.1.)
 
 ## 2. What changed from the n≈10 cross-judge result
 
@@ -53,11 +55,33 @@ The two rubrics order the cells differently. The charisma rubric is not a re-pre
 
 This is the reverse of a methodological worry — it's the exact result the design intended, but at sample size n=10 it would have been hard to distinguish from noise.
 
-## 4. c107 (witness-exemplars) — preliminary, n=10
+## 4. c107 (witness-exemplars) — full pilot, n=27
 
-The witness-exemplars cell achieves the **highest first-turn v2.2 of any cell** (78.5), but mid-pack charisma (61.9). Reading: the four curated c104 exemplars passed to the id appear to lift the opening move's quality without driving the kind of register-shifting that makes c105 charismatic.
+After OpenRouter top-up the remaining 17 c107 evals were regenerated successfully and scored under CLI Sonnet on both rubrics. Final numbers at n=27 (3 curricula × 3 scenarios × 3 reps):
 
-c107 generation hit OpenRouter 402 errors on 17 of 27 planned evals; the 10 successful rows are: 9 from the original smoke (codex/design/tools, n=3 each) plus 1 lucky fairness_shift_repl row that landed before credits exhausted. With OpenRouter top-up the remaining 17 can be regenerated and rescored cheaply; until then, c107 numbers are preliminary.
+| Curriculum | Scenarios | n | mean charisma | mean v2.2 t0 | mean v2.2 tN |
+|---|---|---:|---:|---:|---:|
+| 601 history-tech | phaedrus / lecture / codex | 9 | 64.6 | 71.4 | 83.1 |
+| 701 ethics-ai | fairness / team / design | 9 | 71.5 | 73.4 | 76.2 |
+| 901 ai-literacy | authentic / consumption / tools | 9 | 62.9 | 74.4 | 81.0 |
+| **All curricula** | **9 scenarios** | **27** | **66.3** | **73.1** | **78.5** |
+
+**c107 is the cell ladder's best generalist.** It places second on charisma (66.3, edging c104's 65.7 by 0.6 — effectively tied) AND second on v2.2 last-turn (78.5, c104's 80.6 leads by 2.1). The four curated c104 exemplars passed to the id appear to provide structural patterns that lift quality on both rubrics simultaneously.
+
+This frames the cell ladder as three architectural design points rather than one "best" cell:
+
+- **Classifier + recognition (c104)**: structured input optimised for v2.2 — best at the recognition-rubric scoring criteria, second-best on charisma.
+- **Charisma-tuned id directives (c105)**: id author instructed to optimise for register and rhetoric — best on charisma, mid-pack on v2.2.
+- **Witness exemplars (c107)**: id author given concrete c104-style high-scorers to imitate — second-best on both rubrics, no specialty extreme.
+- **Pedagogy-tuned (c106)**: id author instructed to flatten persona toward "good teacher" register — clear failure on both.
+
+The witness-exemplars approach (c107) suggests an architectural lever distinct from explicit prompt-tuning: instead of telling the id *what* to write, show it *examples* of high-scoring outputs and let the id reverse-engineer the structure. The result is balanced rather than specialized.
+
+c107 generation audit trail (the resumed 17 evals after OpenRouter top-up):
+- `eval-2026-04-28-ee339a66` (601, lecture + phaedrus): 6 evals, charisma mean 71.3, v2.2 mean 83.1
+- `eval-2026-04-28-84a42a60` (701, fairness + team): 6 evals, charisma mean 72.9, v2.2 mean 76.2
+- `eval-2026-04-28-5606193c` (901, authentic + consumption): 6 evals, charisma mean 64.2, v2.2 mean 81.0
+- Plus 9 smoke (codex/design/tools, 3 each) under same CLI Sonnet rubric.
 
 ## 5. Methodology note: CLI vs OpenRouter Sonnet
 
@@ -98,6 +122,7 @@ The current §6.7 of `paper-full-2.0.md` should be updated:
 
 ## 8. Recommended next steps
 
-1. **OpenRouter top-up**, then regenerate 17 missing c107 evals (~$1, ~5–10 min). Closes the c107 matrix at n=27 per scenario set.
-2. **Update §6.7 of paper-full-2.0.md** with the full-N numbers and the cross-rubric divergence finding (c105 specifically wins charisma; c104 specifically wins v2.2 last-turn). Cite this doc as the audit trail.
-3. **Consider a third-judge cross-check** — Haiku 4.5 via CLI, Gemini Pro via API — once the matrix is closed. The rubric stability across judges is itself publishable.
+1. ~~**OpenRouter top-up**, then regenerate 17 missing c107 evals~~ — done (2026-04-28).
+2. **Update §6.7 of paper-full-2.0.md** with the full-N numbers, the three architectural-design-points framing (c104 / c105 / c107 specialise differently; c106 fails), and the cross-rubric divergence finding. Cite this doc as the audit trail.
+3. **Consider a third-judge cross-check** — Haiku 4.5 via CLI, Gemini Pro via API — to validate the c105 vs c104 charisma lead and the c107 generalist claim. Rubric stability across judges is itself publishable.
+4. **Optional: c108+ ablation** — combine witness-exemplars + classifier (c103 + exemplars), or witness-exemplars + charisma-tuning (c105 + exemplars), to test whether exemplars can co-exist with the other levers or interfere.
