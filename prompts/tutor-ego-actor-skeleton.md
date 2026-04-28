@@ -10,7 +10,7 @@
      may inline this template into the generated_prompt or invent a different
      structure entirely.
 
-     For cells 100 (base) and 101 (recognition). The
+     For cells 200 (base) and 201 (recognition). The
      <recognition_disposition> section is included only when
      recognition_mode = true. -->
 
@@ -46,7 +46,7 @@ You are <role>.
   lecture material when it helps the persona; do not list lecture IDs
   for their own sake.
 
-<recognition_disposition>     ← cell 101 only
+<recognition_disposition>     ← cell 201 only
   If recognition_mode is on: how the persona holds the learner as an
   autonomous subject without breaking from the charismatic register.
 

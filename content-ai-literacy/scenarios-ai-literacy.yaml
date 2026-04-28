@@ -321,11 +321,11 @@ scenarios:
         min_acceptable_score: 75
 
   # ══════════════════════════════════════════════════════════════════════════════
-  # CHARISMA-PROBING SCENARIOS (for cells 100/101 — id-director architecture)
+  # CHARISMA-PROBING SCENARIOS (for cells 200/201 — id-director architecture)
   # Three 3-turn arcs paralleling the sets in scenarios-history-tech.yaml and
   # scenarios-ethics-ai.yaml. Each scenario tests a different register of
   # charismatic response: pure invitation, pressure test, persona-shift.
-  # See notes/design-cell-100-id-director-charisma.md.
+  # See notes/design-cell-200-id-director-charisma.md.
   # ══════════════════════════════════════════════════════════════════════════════
 
   charisma_aura_invitation:
@@ -562,7 +562,7 @@ scenarios:
 
   # ══════════════════════════════════════════════════════════════════════════════
   # REPLICATION SET (#2): three new persona-shift scenarios with different
-  # vulnerability triggers from charisma_deepfake_shift. Tests whether c103's
+  # vulnerability triggers from charisma_deepfake_shift. Tests whether c203's
   # persona-shift lift generalises to other vulnerability prompts.
   # ══════════════════════════════════════════════════════════════════════════════
 

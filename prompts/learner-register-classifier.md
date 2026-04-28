@@ -1,11 +1,11 @@
 # Learner Register Classifier
 <!-- version: 1.0 -->
-<!-- Used by cells 102 and 103 (id-director with register classifier).
+<!-- Used by cells 202 and 203 (id-director with register classifier).
      Runs once per turn, BEFORE the id-director authors the ego prompt.
      Reads the learner's most recent message + brief recent-history excerpt;
      emits a structured tag the id then uses to bias its persona authoring.
 
-     Theoretical motivation: the cell-100/101 pilot established a persona-shift
+     Theoretical motivation: the cell-200/201 pilot established a persona-shift
      floor — both cells, both rubrics, all curricula scored last-turn v2.2 in
      the 20-35 range on vulnerability scenarios. Three rounds of prompt
      iteration on the id's directives lifted Turn 0 and Turn 1 substantially

@@ -4371,7 +4371,7 @@ profiles:
       require_memory_integration: true
       assess_transformative_potential: true
 
-  # ─── Cells 100 / 101: Id-Director architecture (experimental) ─────────────
+  # ─── Cells 200 / 101: Id-Director architecture (experimental) ─────────────
   # Inverted topology: a back-stage "id" agent (re-uses the superego: slot
   # but functions as a director / authorial source) writes a fresh ego system
   # prompt every turn. The ego is then instantiated per-turn against the
@@ -4380,7 +4380,7 @@ profiles:
   #
   # Optimisation target: charismatic pedagogy as operationalised in
   # config/evaluation-rubric-charisma.yaml (8 dimensions, Weber-derived).
-  # Cell 100 tests pure charisma; cell 101 stacks Hegelian recognition on
+  # Cell 200 tests pure charisma; cell 201 stacks Hegelian recognition on
   # top to test interaction.
   #
   # Curriculum-agnostic: the runner sets contentPackagePath per evaluation,
@@ -4389,12 +4389,12 @@ profiles:
   #
   # Symmetry note: deliberately broken — unified learner only for v1, to
   # isolate the tutor-side mechanism. Symmetric learner-id queued as cell
-  # 102/103 follow-up.
+  # 202/203 follow-up.
   #
   # Design doc: notes/design-cell-100-id-director-charisma.md
   # Engine: services/idDirectorEngine.js
-  cell_100_id_director_charisma:
-    description: "Id-Director (cell 100): back-stage id authors a fresh ego prompt each turn; charisma-optimised; base prompt_type (no recognition vocabulary in id-authored prompts)"
+  cell_200_id_director_charisma:
+    description: "Id-Director (cell 200): back-stage id authors a fresh ego prompt each turn; charisma-optimised; base prompt_type (no recognition vocabulary in id-authored prompts)"
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4428,8 +4428,8 @@ profiles:
         temperature: 0.5
         max_tokens: 12000
 
-  cell_101_recog_id_director_charisma:
-    description: "Id-Director (cell 101): same architecture as cell 100, with recognition_mode=true so id-authored prompts embed Hegelian recognition framing alongside charismatic register"
+  cell_201_recog_id_director_charisma:
+    description: "Id-Director (cell 201): same architecture as cell 200, with recognition_mode=true so id-authored prompts embed Hegelian recognition framing alongside charismatic register"
     factors:
       prompt_type: recognition
       multi_agent_tutor: true
@@ -4459,8 +4459,8 @@ profiles:
         temperature: 0.5
         max_tokens: 12000
 
-  # ─── Cells 102 / 103: Id-Director with learner-register classifier ────────
-  # Identical to cells 100/101 except a register classifier runs FIRST each
+  # ─── Cells 202 / 103: Id-Director with learner-register classifier ────────
+  # Identical to cells 200/201 except a register classifier runs FIRST each
   # turn — reads the learner's most recent message, emits a structured
   # register tag (vulnerable_disclosure / sceptical_pushback /
   # operational_request / meta_observation / analytic_engagement /
@@ -4471,22 +4471,22 @@ profiles:
   # Result (pilot 2026-04-27, n=27 per cell across 3 curricula × 3 scenario
   # types × 3 reps; full data: docs/cell-100-pilot-findings-addendum.md):
   #
-  #   c102 lifts last-turn v2.2 on persona-shift scenarios from c100's 24.3
-  #   floor to 81.7 (+57). c103 (with recognition) reaches 87.6 (+63) and
+  #   c202 lifts last-turn v2.2 on persona-shift scenarios from c200's 24.3
+  #   floor to 81.7 (+57). c203 (with recognition) reaches 87.6 (+63) and
   #   maintains that uniformity across invitation (86.5) and pressure (86.5)
   #   scenarios — the only cell in the family with no remaining frontier the
-  #   architecture can't reach above 80. c103 is the architectural champion.
+  #   architecture can't reach above 80. c203 is the architectural champion.
   #
   # NOTE: an earlier single-scenario smoke test (commit 3c7f701) generalised
   # incorrectly to a "negative result" framing. That smoke conclusion was
   # overturned at pilot scale; see findings addendum for full retraction.
-  # Cells 102/103 are now the recommended path for new work.
+  # Cells 202/103 are now the recommended path for new work.
   #
   # Classifier reuses the id model (kimi-k2.5) by default; can be overridden
   # via classifier_model / classifier_provider if a faster/smaller model is
   # preferred. Classifier prompt: prompts/learner-register-classifier.md.
-  cell_102_id_director_charisma_register:
-    description: "Id-Director (cell 102): cell 100 + register classifier. Pilot result: lifts persona-shift floor from 24.3 → 81.7 last-turn v2.2 (+57); strong on charisma too (62.9 mean). One of the family's two recommended cells (with c103). See docs/cell-100-pilot-findings-addendum.md."
+  cell_202_id_director_charisma_register:
+    description: "Id-Director (cell 202): cell 200 + register classifier. Pilot result: lifts persona-shift floor from 24.3 → 81.7 last-turn v2.2 (+57); strong on charisma too (62.9 mean). One of the family's two recommended cells (with c203). See docs/cell-100-pilot-findings-addendum.md."
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4525,8 +4525,8 @@ profiles:
         # mirrors the 12000 the id itself uses.
         max_tokens: 4000
 
-  cell_103_recog_id_director_charisma_register:
-    description: "Id-Director (cell 103): cell 102 + recognition disposition. Pilot result: ARCHITECTURAL CHAMPION — last-turn v2.2 86.9 mean, uniform across all 3 scenario types (invitation 86.5, pressure 86.5, persona-shift 87.6). Recognition costs ~1 charisma point vs c102 but lifts v2.2 by ~7 across the board. See docs/cell-100-pilot-findings-addendum.md."
+  cell_203_recog_id_director_charisma_register:
+    description: "Id-Director (cell 203): cell 202 + recognition disposition. Pilot result: ARCHITECTURAL CHAMPION — last-turn v2.2 86.9 mean, uniform across all 3 scenario types (invitation 86.5, pressure 86.5, persona-shift 87.6). Recognition costs ~1 charisma point vs c202 but lifts v2.2 by ~7 across the board. See docs/cell-100-pilot-findings-addendum.md."
     factors:
       prompt_type: recognition
       multi_agent_tutor: true
@@ -4565,32 +4565,32 @@ profiles:
         # mirrors the 12000 the id itself uses.
         max_tokens: 4000
 
-  # ─── Cells 104 / 105: Id-tuning axis ──────────────────────────────────────
-  # Mirror cell_100 except for an `id_tuning` factor that biases the id's
+  # ─── Cells 204 / 105: Id-tuning axis ──────────────────────────────────────
+  # Mirror cell_200 except for an `id_tuning` factor that biases the id's
   # generated_prompt budget and single-move constraint:
   #
-  #   cell_104  id_tuning: charisma  → 800–1500 token prompts, looser
+  #   cell_204  id_tuning: charisma  → 800–1500 token prompts, looser
   #                                    single-move; favour rhetorical luxury
-  #   cell_105  id_tuning: pedagogy  → 200–400 token prompts, strict
+  #   cell_205  id_tuning: pedagogy  → 200–400 token prompts, strict
   #                                    single-move; favour curriculum
   #                                    engagement
   #
   # Original hypothesis (docs/cell-100-pilot-findings.md §4.2 / §7.3):
   # the prompt-budget axis trades charisma against pedagogical engagement.
-  # cell_104 should outscore c100 on charisma but underscore on v2.2;
-  # cell_105 should do the reverse.
+  # cell_204 should outscore c200 on charisma but underscore on v2.2;
+  # cell_205 should do the reverse.
   #
-  # Pilot result (n=27 each): HYPOTHESIS WRONG. cell_104 (verbose) beats
-  # cell_105 (terse) on BOTH rubrics:
-  #   v2.2 last-turn:  c104 = 75.8   c105 = 56.6
-  #   charisma:        c104 = 63.6   c105 = 33.3
+  # Pilot result (n=27 each): HYPOTHESIS WRONG. cell_204 (verbose) beats
+  # cell_205 (terse) on BOTH rubrics:
+  #   v2.2 last-turn:  c204 = 75.8   c205 = 56.6
+  #   charisma:        c204 = 63.6   c205 = 33.3
   # Mechanism: terse 200-400 token prompts UNDER-SPECIFY the ego, producing
   # brief responses that score low on both rubrics' content dimensions.
   # The prompt-budget axis is NON-MONOTONIC; there's an optimum around
-  # 700-1200 tokens. Cell 100 final's 400-800 range is plausibly near it.
+  # 700-1200 tokens. Cell 200 final's 400-800 range is plausibly near it.
   # See docs/cell-100-pilot-findings-addendum.md §3 for full breakdown.
-  cell_104_id_director_charisma_tuned:
-    description: "Id-Director (cell 104): cell 100 + id_tuning:charisma (verbose 800-1500 token id prompts). Pilot result: HIGHEST CHARISMA in family at 63.6 mean (within 1 point of c102/c103) and strong v2.2 (75.8 last-turn mean) without the classifier. Verbose authoring alone provides much of what the classifier provides. See docs/cell-100-pilot-findings-addendum.md §3."
+  cell_204_id_director_charisma_tuned:
+    description: "Id-Director (cell 204): cell 200 + id_tuning:charisma (verbose 800-1500 token id prompts). Pilot result: HIGHEST CHARISMA in family at 63.6 mean (within 1 point of c202/c203) and strong v2.2 (75.8 last-turn mean) without the classifier. Verbose authoring alone provides much of what the classifier provides. See docs/cell-100-pilot-findings-addendum.md §3."
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4621,8 +4621,8 @@ profiles:
         temperature: 0.5
         max_tokens: 16000
 
-  cell_105_id_director_pedagogy_tuned:
-    description: "Id-Director (cell 105): cell 100 + id_tuning:pedagogy (terse 200-400 token id prompts). Pilot result: WORST in family except baseline — 56.6 mean v2.2 last-turn, 33.3 mean charisma. Terse prompts UNDER-SPECIFY the ego rather than trading rhetoric for pedagogy. The findings doc §7.3 prediction was directionally wrong; the prompt-budget axis is non-monotonic. Useful as the lower-bound documentation of that axis. See docs/cell-100-pilot-findings-addendum.md §3."
+  cell_205_id_director_pedagogy_tuned:
+    description: "Id-Director (cell 205): cell 200 + id_tuning:pedagogy (terse 200-400 token id prompts). Pilot result: WORST in family except baseline — 56.6 mean v2.2 last-turn, 33.3 mean charisma. Terse prompts UNDER-SPECIFY the ego rather than trading rhetoric for pedagogy. The findings doc §7.3 prediction was directionally wrong; the prompt-budget axis is non-monotonic. Useful as the lower-bound documentation of that axis. See docs/cell-100-pilot-findings-addendum.md §3."
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4630,6 +4630,59 @@ profiles:
       id_director: true
       charisma_target: true
       id_tuning: pedagogy
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 12000
+
+  # ─── Cell 206: Id-Director with witness-register exemplars ────────────────
+  # Cell_100 + witness_exemplars factor. The id receives 4 curated short
+  # passages from prior c203 vulnerability-disclosure responses (scored 75+
+  # on the v2.2 last-turn rubric) as *models of the move* in the
+  # <witness_exemplars> block of its user message. The id's prompt has a
+  # <witness_exemplars_directive> section that instructs how to use them:
+  # follow the structural pattern (name disclosure back → offer frame →
+  # close on located question) rather than copy phrasings.
+  #
+  # Hypothesis (docs/cell-100-replication-findings.md §3): cell_200's
+  # persona-shift failures are specifically on disclosures that demand the
+  # tutor not flinch from morally ambiguous self-implication
+  # (tools_shift, codex_shift, design_shift). These failures are at the
+  # ego-execution layer (the model defaults to therapy-speak or moralising
+  # under those prompts). The exemplars provide concrete in-context models
+  # that may lift the floor without the cost of running a classifier.
+  #
+  # Cell_106 isolates the exemplar mechanism: same baseline as c200, plus
+  # exemplars only. If c206 lifts c200's failure-mode scores (45.8 / 60.0 /
+  # 72.5 on tools_shift / codex_shift / design_shift) materially closer to
+  # c203's (87.5 / 62.9 / 78.3), the exemplars alone are sufficient.
+  cell_206_id_director_witness_exemplars:
+    description: "Id-Director (cell 206): cell 200 + witness_exemplars factor. 4 curated c203 high-scoring vulnerability responses are passed to the id as <witness_exemplars> with a directive to follow the structural pattern. Tests whether exemplars alone (no classifier) lift c200's scenario-specific failure mode on morally-grey vulnerability disclosures. See docs/cell-100-replication-findings.md §8."
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      witness_exemplars: true
     learner_architecture: unified
     recognition_mode: false
     memory_enabled: true

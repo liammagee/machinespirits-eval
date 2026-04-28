@@ -279,12 +279,12 @@ scenarios:
 
   # ══════════════════════════════════════════════════════════════════════════════
   # METHODS-NOTE ABLATION: aura/Benjamin learner messages routed to course 601.
-  # Tests the rubric-curriculum alignment confound from docs/cell-100-methods-note.md.
+  # Tests the rubric-curriculum alignment confound from docs/cell-200-methods-note.md.
   # The learner messages are verbatim from charisma_aura_invitation (course 901,
   # AI literacy) but course_ids points at 601 history-tech, so the id sees a
   # *different* curriculum context while the learner asks the same questions.
   # If charisma scores stay near 75 (the 901/aura mean), the architecture is the
-  # source of the lift. If they regress toward the cell_100 / 601 mean (~40), the
+  # source of the lift. If they regress toward the cell_200 / 601 mean (~40), the
   # AI-literacy curriculum content was carrying disproportionate weight.
   # ══════════════════════════════════════════════════════════════════════════════
 
@@ -293,7 +293,7 @@ scenarios:
     id: charisma_aura_in_history_curriculum
     category: multi_turn
     name: "Methods ablation: aura learner messages × history-tech curriculum"
-    description: "Curriculum-swap control for the rubric-curriculum alignment concern (docs/cell-100-methods-note.md §4.3). Learner messages from charisma_aura_invitation; curriculum context from course 601 (history of pedagogical tech)."
+    description: "Curriculum-swap control for the rubric-curriculum alignment concern (docs/cell-200-methods-note.md §4.3). Learner messages from charisma_aura_invitation; curriculum context from course 601 (history of pedagogical tech)."
     current_content: "601-lecture-1"
     is_new_user: false
     course_ids: ["601"]
@@ -342,10 +342,10 @@ scenarios:
 
   # ══════════════════════════════════════════════════════════════════════════════
   # REPLICATION SET (#2): three new persona-shift scenarios with different
-  # vulnerability triggers from charisma_attention_shift. Tests whether c103's
+  # vulnerability triggers from charisma_attention_shift. Tests whether c203's
   # persona-shift lift (24.3 → 87.6 last-turn v2.2) is scenario-specific or
   # generalises to other vulnerability prompts on the same curriculum.
-  # See docs/cell-100-pilot-findings-addendum.md §8.
+  # See docs/cell-200-pilot-findings-addendum.md §8.
   # ══════════════════════════════════════════════════════════════════════════════
 
   charisma_phaedrus_shift_repl:

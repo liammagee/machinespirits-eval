@@ -490,7 +490,7 @@ async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutor
   const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
   const superegoConfig = tutorConfig.getAgentConfig('superego', tutorProfileName);
 
-  // Cell 100/101: id-director architecture. The id authors a fresh ego
+  // Cell 200/201: id-director architecture. The id authors a fresh ego
   // system prompt each turn; the ego executes once. Dispatch to the id
   // engine and short-circuit the conventional ego-then-superego path.
   //

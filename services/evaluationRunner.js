@@ -200,12 +200,13 @@ export const EVAL_ONLY_PROFILES = [
   'cell_97_base_dialectical_suspicious_unified_directive',
   'cell_98_base_dialectical_suspicious_unified_two_pass',
   'cell_99_base_dialectical_coupling_unified_superego',
-  'cell_100_id_director_charisma',
-  'cell_101_recog_id_director_charisma',
-  'cell_102_id_director_charisma_register',
-  'cell_103_recog_id_director_charisma_register',
-  'cell_104_id_director_charisma_tuned',
-  'cell_105_id_director_pedagogy_tuned',
+  'cell_200_id_director_charisma',
+  'cell_201_recog_id_director_charisma',
+  'cell_202_id_director_charisma_register',
+  'cell_203_recog_id_director_charisma_register',
+  'cell_204_id_director_charisma_tuned',
+  'cell_205_id_director_pedagogy_tuned',
+  'cell_206_id_director_witness_exemplars',
 ];
 
 /**
@@ -1657,8 +1658,8 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     return { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod };
   }
 
-  // ── Id-director cells (cell 100/101): bypass tutor-core's generateSuggestions ──
-  // tutor-core's profile registry doesn't know cell 100/101 — it would remap
+  // ── Id-director cells (cell 200/201): bypass tutor-core's generateSuggestions ──
+  // tutor-core's profile registry doesn't know cell 200/201 — it would remap
   // them to a generic 'budget' profile (resolveEvalProfile, see line 215).
   // For cells with factors.id_director:true we route through the eval-repo
   // engine instead, which calls a back-stage "id" agent to author a fresh
@@ -2567,7 +2568,7 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   context.isNewUser = fullScenario.is_new_user;
 
   // Resolve profile: extract dialogue/recognition settings and remap to tutor-core profile.
-  // Preserve the original eval-cell name (e.g. cell_100_id_director_charisma) on
+  // Preserve the original eval-cell name (e.g. cell_200_id_director_charisma) on
   // resolvedConfig.evalCellProfileName so downstream code (specifically the
   // id-director dispatch in generateAndEvaluateTurn) can look up factors that
   // tutor-core's profile registry does not have.
