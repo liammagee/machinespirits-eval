@@ -279,6 +279,19 @@ pedagogical_orientations:
     approx_length_words: 2813
     evaluation_note: "D3 Bridge 2 cell 99. Reuses the paper's already-strong error-correction mechanism (Mechanism 2, §6.2) but retargets it specifically at coupling. Cost: same as cell 40 (no extra LLM calls; only the superego prompt content differs). Pre-registered thresholds same as cells 97/98. See notes/design-d3-architectural-bridges.md."
 
+  dialectical_suspicious_best_of_n:
+    family: architectural_variant
+    subfamily: dialectical_synthesis
+    short_label: "Dialectical ego × suspicious superego + best-of-N selection"
+    lineage: "Same as dialectical_suspicious in architecture; the new layer is K=3 parallel candidate generations followed by selection on reasoning↔message coupling cosine. Search through generation space rather than better orchestration of a single generation."
+    view_of_learner: "Inherits from paired ego prompt (base only; D3 Bridge 3 starts on the base variant)"
+    role_of_tutor: "Same as dialectical_suspicious; the architectural change is post-generation — K independent dialectical loops produce K candidate (reasoning, message) pairs, and the best-coupled one is selected as the final response."
+    key_mechanism: "Best-of-N selection on coupling cosine (search-based insight-action bridge)"
+    vocabulary: ["best-of-N", "K candidates", "coupling cosine", "search through generation space"]
+    prompt_file: tutor-ego-dialectical.md
+    approx_length_words: 2813
+    evaluation_note: "D3 Bridge 3 cell 100. Strongest test of H-orchestration: selection criterion identical to verdict criterion. If even best-of-N optimised for the verdict's coupling metric returns null, H-capacity is unimpeachable. Cost: K=3 × cell 40 cost per turn = ~3× per turn, ~$15-25 across N=54 contrast. Pre-registered thresholds same as cells 97/98/99. See notes/design-d3-architectural-bridges.md."
+
   dialectical_adversary:
     family: architectural_variant
     subfamily: dialectical_synthesis
@@ -4364,6 +4377,64 @@ profiles:
       model: kimi-k2.5
       staging: back
       prompt_file: tutor-superego-coupling.md
+      hyperparameters:
+        temperature: 0.2
+        max_tokens: 8000
+    intervention_strategies:
+      require_memory_integration: true
+      assess_transformative_potential: true
+
+  # Cell 100: D3 Bridge 3 (best-of-N selector).
+  # Identical to cell 40 in every dimension except adds `best_of_n: 3`,
+  # which causes the runner to invoke the full dialectical-loop pipeline
+  # K=3 times per turn and select the candidate with highest
+  # reasoning↔message coupling cosine. The selection criterion is identical
+  # to the verdict criterion (analyze-insight-action-gap.js cosine), making
+  # this the strongest possible test of the H-orchestration hypothesis:
+  # "the model already produces well-coupled outputs sometimes; we just
+  # need to keep them via search through generation space."
+  # If this returns null, even search optimised for the verdict metric
+  # cannot bridge the gap, and H-capacity is unimpeachable.
+  # K=3 (rather than the design note's K=5) to keep cost manageable —
+  # ~3× cell 40 ego cost per turn, ~$15-25 across N=54 contrast.
+  # Design note: notes/design-d3-architectural-bridges.md (Bridge 3).
+  cell_100_base_dialectical_suspicious_unified_best_of_n:
+    description: "D3 Bridge 3 cell 100: base dialectical ego + suspicious superego + best-of-N=3 selection (architecture matches cell 40; selection on coupling cosine identical to verdict metric)"
+    factors:
+      prompt_type: dialectical_suspicious_best_of_n
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      superego_type: suspicious
+      full_modulation: true
+      superego_rewriting: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    writing_pad_enabled: true
+    dialectical_negotiation: true
+    best_of_n: 3
+    prompt_rewriting:
+      enabled: true
+      strategy: self_reflection
+    superego_disposition_rewriting: true
+    dialogue:
+      enabled: true
+      max_rounds: 1
+      convergence_threshold: 0.65
+      rejection_budget: 6
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-dialectical.md
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 8000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-superego-suspicious.md
       hyperparameters:
         temperature: 0.2
         max_tokens: 8000

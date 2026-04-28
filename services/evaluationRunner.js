@@ -199,6 +199,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_97_base_dialectical_suspicious_unified_directive',
   'cell_98_base_dialectical_suspicious_unified_two_pass',
   'cell_99_base_dialectical_coupling_unified_superego',
+  'cell_100_base_dialectical_suspicious_unified_best_of_n',
 ];
 
 /**
@@ -262,6 +263,14 @@ export function resolveEvalProfile(profileName) {
       // at reflection-action coupling rather than authenticity. The
       // tutor-core profile resolution is unchanged because the dialectical
       // negotiation loop is identical; only the critique target shifts.
+      resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
+    } else if (promptType === 'dialectical_suspicious_best_of_n') {
+      // D3 Bridge 3 (best-of-N selector): same pipeline per candidate as
+      // dialectical_suspicious. The architectural change is K parallel
+      // candidate dialectical-loop invocations followed by selection on
+      // reasoning↔message coupling cosine. Each candidate uses the standard
+      // dialectical_suspicious tutor-core profile; the selection happens
+      // at the eval-runner level (see runMultiTurnTest, "D3 Bridge 3").
       resolvedProfileName = recognitionMode ? 'dialectical_suspicious_recognition' : 'dialectical_suspicious';
     } else if (promptType === 'dialectical_adversary') {
       resolvedProfileName = recognitionMode ? 'dialectical_adversary_recognition' : 'dialectical_adversary';
@@ -2670,6 +2679,42 @@ function loadReflectonlyPrompt() {
   return _reflectonlyPromptCache;
 }
 
+// D3 Bridge 3 — coupling cosine for best-of-N selection.
+// Mirrors scripts/analyze-insight-action-gap.js's tokenize+cosine so the
+// selection criterion is *identical* to the verdict criterion. This makes
+// Bridge 3 the strongest possible test of the orchestration hypothesis:
+// "the model already produces coupled outputs sometimes; we just need to
+// keep them." If best-of-N selection by the very metric we use to score
+// the verdict still nulls, the hypothesis is dead.
+function _bridge3Tokenize(text) {
+  if (!text) return [];
+  return text
+    .toLowerCase()
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length > 2);
+}
+function _bridge3CouplingCosine(reasoning, message) {
+  const ta = _bridge3Tokenize(reasoning);
+  const tb = _bridge3Tokenize(message);
+  if (ta.length === 0 || tb.length === 0) return 0;
+  const fa = Object.create(null);
+  const fb = Object.create(null);
+  for (const t of ta) fa[t] = (fa[t] || 0) + 1;
+  for (const t of tb) fb[t] = (fb[t] || 0) + 1;
+  let dot = 0, mA = 0, mB = 0;
+  const keys = new Set([...Object.keys(fa), ...Object.keys(fb)]);
+  for (const k of keys) {
+    const va = fa[k] || 0;
+    const vb = fb[k] || 0;
+    dot += va * vb;
+    mA += va * va;
+    mB += vb * vb;
+  }
+  return dot / (Math.sqrt(mA) * Math.sqrt(mB) || 1);
+}
+
 async function generatePhase1Reflection({ contextStr, learnerMessage, modelAlias, log }) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -3271,12 +3316,58 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       conversationHistory: conversationHistory.length > 0 ? conversationHistory : null,
       consolidatedTrace: consolidatedTrace.length > 0 ? consolidatedTrace : null,
     };
-    const { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = await generateAndEvaluateTurn(
-      context,
-      resolvedConfig,
-      turnMeta,
-      turnOptions,
-    );
+    // D3 Bridge 3 — best-of-N selection.
+    // For cells with `best_of_n: K` (default behaviour when unset = single
+    // call as in cells 40/97/98/99), run K parallel invocations of the full
+    // dialectical-loop pipeline and select the candidate with highest
+    // reasoning↔message coupling cosine. Search through generation space;
+    // the model doesn't need to *learn* coupling, we just *keep* the
+    // best-coupled draft.
+    //
+    // Note on state side-effects: each candidate goes through tutorApi's
+    // generateSuggestions which does its own writing-pad updates. We accept
+    // that K invocations write K writing-pad histories; only the selected
+    // candidate's downstream effects propagate to the *next turn's* state
+    // (because we use only the selected candidate's genResult/suggestion).
+    // The pad ends up a bit noisier than cell 40's single-history pad, but
+    // this is intrinsic to the Bridge-3 search architecture and acceptable
+    // for the verdict question (does best-of-N selection bridge the gap?).
+    const bestOfN = rawProfile?.best_of_n;
+    let genResult, suggestion, validation, rubricResult, turnScore, scoringMethod;
+    if (bestOfN && bestOfN >= 2) {
+      const candidates = [];
+      for (let k = 0; k < bestOfN; k++) {
+        const result = await generateAndEvaluateTurn(context, resolvedConfig, turnMeta, turnOptions);
+        if (result?.genResult?.success) {
+          // Extract reasoning + message text for coupling scoring
+          const sug = result.suggestion;
+          const reasoningText = sug?.reasoning || '';
+          const messageText = sug?.message || '';
+          const couplingScore = _bridge3CouplingCosine(reasoningText, messageText);
+          candidates.push({ ...result, couplingScore, k });
+          log(`[bridge3] candidate ${k + 1}/${bestOfN}: coupling=${couplingScore.toFixed(3)}`, 'info');
+        } else {
+          // Failed candidate — skip; if all fail, we'll throw below
+          candidates.push({ genResult: result?.genResult, couplingScore: -1, k });
+        }
+      }
+      // Pick the winning candidate by coupling cosine
+      candidates.sort((a, b) => b.couplingScore - a.couplingScore);
+      const winner = candidates.find((c) => c.couplingScore >= 0);
+      if (!winner) {
+        ({ genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = candidates[0]);
+      } else {
+        ({ genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = winner);
+        log(`[bridge3] selected k=${winner.k + 1} with coupling=${winner.couplingScore.toFixed(3)} (range: ${candidates[candidates.length - 1].couplingScore.toFixed(3)} – ${candidates[0].couplingScore.toFixed(3)})`, 'info');
+      }
+    } else {
+      ({ genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = await generateAndEvaluateTurn(
+        context,
+        resolvedConfig,
+        turnMeta,
+        turnOptions,
+      ));
+    }
 
     if (!genResult.success) {
       const turnId = isInitialTurn ? 'initial' : turnDef.id;
