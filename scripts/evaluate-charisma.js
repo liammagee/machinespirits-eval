@@ -131,7 +131,10 @@ async function scoreRow(row, { judgeOverride, verbose }) {
     console.log(`  prompt length: ${prompt.length} chars`);
   }
 
-  const judgeOverrides = judgeOverride ? { model: judgeOverride } : {};
+  // getAvailableJudge() expects overrides.judgeOverride.model. Without the
+  // wrapper the --judge flag is silently ignored and scoring falls through to
+  // the rubric YAML's default judge (openrouter.sonnet).
+  const judgeOverrides = judgeOverride ? { judgeOverride: { model: judgeOverride } } : {};
   let responseText;
   try {
     responseText = await callJudgeModel(prompt, judgeOverrides);
