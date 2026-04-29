@@ -50,6 +50,29 @@ function cellSortKey(name) {
   return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
 }
 
+// Canonical id-director cell scores under v2.2 last-turn and the Weberian
+// 8-dimension charisma rubric. Numbers from the full-N CLI Sonnet 4.6 pass
+// (docs/cell-100-charisma-full-n-update.md, 2026-04-28); c109 is still
+// pilot-N=6 (no confirmatory run yet) and is flagged so the UI can mark it
+// as such. The chat UI surfaces these via the resolved-cell panel; they are
+// not recomputed at chat time.
+const CHARISMA_PROFILES = {
+  cell_101: { designPoint: 'baseline',            label: 'Baseline id-director',         v22LastTurn: 55.5, charisma: 59.9, n: 79, blurb: 'Inversion alone — no classifier, no exemplars, no tuning.' },
+  cell_102: { designPoint: 'baseline-recog',      label: 'Baseline + recognition',       v22LastTurn: 49.4, charisma: 54.1, n: 54, blurb: 'Recognition vocabulary only — both rubrics drift down.' },
+  cell_103: { designPoint: 'classifier',          label: 'Classifier only',              v22LastTurn: 75.8, charisma: 64.3, n: 81, blurb: 'Register classifier lifts persona-shift floor; no recognition yet.' },
+  cell_104: { designPoint: 'v22-specialist',      label: 'v2.2 specialist',              v22LastTurn: 80.6, charisma: 65.7, n: 81, blurb: 'Classifier + recognition — wins v2.2, mid on charisma.' },
+  cell_105: { designPoint: 'charisma-specialist', label: 'Charisma specialist',          v22LastTurn: 70.0, charisma: 71.0, n: 81, blurb: 'Verbose 800–1500 token id directives — wins charisma, mid on v2.2.' },
+  cell_106: { designPoint: 'failure',             label: 'Shared floor',                 v22LastTurn: 57.0, charisma: 36.4, n: 54, blurb: 'Terse 200–400 token directives under-specify the ego — fails both rubrics.' },
+  cell_107: { designPoint: 'generalist',          label: 'Balanced generalist',          v22LastTurn: 78.5, charisma: 66.3, n: 27, blurb: 'Witness exemplars only — second on both rubrics, best balance.' },
+  cell_108: { designPoint: 'composer-classifier', label: 'Classifier + exemplars',       v22LastTurn: 72.6, charisma: 71.4, n: 27, blurb: 'Pilot lift regressed at full N — non-text levers compose roughly additively, not super-additively.' },
+  cell_109: { designPoint: 'composer-charisma',   label: 'Charisma-tuning + exemplars',  v22LastTurn: 59.6, charisma: 77.7, n:  6, blurb: 'Two text-heavy levers stack — ego instruction-following degrades. Pilot N only.', pilotOnly: true },
+};
+
+function charismaProfileFor(name) {
+  const baseName = name?.match(/^cell_\d+/)?.[0] || null;
+  return baseName ? (CHARISMA_PROFILES[baseName] || null) : null;
+}
+
 function summarizeCell(name, profile, orientations = {}) {
   const factors = profile.factors || {};
   const ego = profile.ego
@@ -91,6 +114,15 @@ function summarizeCell(name, profile, orientations = {}) {
     conversationMode: profile.conversation_mode || null,
     dialogueEnabled: !!profile.dialogue?.enabled,
     maxRounds: profile.dialogue?.max_rounds ?? 0,
+    // id-director extension: cells 101-109 use a back-stage id agent to author
+    // the ego prompt each turn, scored under both v2.2 and the Weberian
+    // charisma rubric. See public/eval/geist-in-the-machine.html §VII.
+    idDirector: !!factors.id_director,
+    charismaTarget: !!factors.charisma_target,
+    witnessExemplars: !!factors.witness_exemplars,
+    registerClassifier: !!factors.register_classifier,
+    idTuning: factors.id_tuning || null,
+    charismaProfile: factors.id_director ? charismaProfileFor(name) : null,
     ego,
     superego,
     orientation: orientation
@@ -191,6 +223,10 @@ const VOICE_TO_PROMPT_TYPE = {
   recognition: 'recognition',
   placebo: 'placebo',
   minimalist: 'naive',
+  // The charismatic approach maps onto the id-director family (cells 101-109).
+  // All id-director cells share prompt_type:base; the `idDirector` target
+  // dimension below is what biases resolution toward them.
+  charismatic: 'base',
 };
 
 const DIMENSION_WEIGHTS = [
@@ -198,10 +234,11 @@ const DIMENSION_WEIGHTS = [
   { dimension: 'criticPresent', weight: 2 },
   { dimension: 'learnerModel', weight: 2 },
   { dimension: 'recognitionMode', weight: 1 },
+  { dimension: 'idDirector', weight: 3 },
 ];
 
 function normalizeFeatures(raw) {
-  const approach = ['standard', 'polished', 'recognition', 'placebo', 'minimalist'].includes(raw.approach)
+  const approach = ['standard', 'polished', 'recognition', 'placebo', 'minimalist', 'charismatic'].includes(raw.approach)
     ? raw.approach
     : 'standard';
   const critic = ['none', 'pedagogical', 'dialectical', 'divergent', 'hardwired'].includes(raw.critic)
@@ -210,20 +247,35 @@ function normalizeFeatures(raw) {
   let stance = ['suspicious', 'adversary', 'advocate'].includes(raw.stance) ? raw.stance : 'suspicious';
   if (critic !== 'dialectical' && critic !== 'divergent') stance = null;
   const learnerModel = raw.learnerModel === 'reflective' ? 'reflective' : 'surface';
-  return { approach, critic, stance, learnerModel };
+  // charismaVariant: which design-point on the Pareto frontier the user wants
+  // when approach==='charismatic'. Defaults to the balanced generalist (c107).
+  const charismaVariant = ['generalist', 'v22-specialist', 'charisma-specialist'].includes(raw.charismaVariant)
+    ? raw.charismaVariant
+    : 'generalist';
+  return { approach, critic, stance, learnerModel, charismaVariant };
 }
 
-function deriveTarget({ approach, critic, stance, learnerModel }) {
+function deriveTarget({ approach, critic, stance, learnerModel, charismaVariant }) {
   let promptType;
   if (critic === 'hardwired') promptType = 'hardwired';
   else if (critic === 'dialectical') promptType = `dialectical_${stance}`;
   else if (critic === 'divergent') promptType = `divergent_${stance}`;
   else promptType = VOICE_TO_PROMPT_TYPE[approach] || 'base';
+  // The v2.2-specialist frontier point (cell_104) is the only id-director cell
+  // with prompt_type:recognition; aligning the target here so the recognition
+  // vocabulary in the id's directives lines up with the recognitionMode flag
+  // below. Without this, cell_104 loses the promptType dimension (worth 3) and
+  // gets out-scored by cell_101 (base/no-recognition) on a 3-vs-1 trade.
+  if (approach === 'charismatic' && charismaVariant === 'v22-specialist') {
+    promptType = 'recognition';
+  }
   return {
     promptType,
     criticPresent: critic !== 'none' && critic !== 'hardwired',
     learnerArchitecture: learnerModel === 'reflective' ? 'ego_superego' : 'unified',
-    recognitionMode: approach === 'recognition',
+    recognitionMode: approach === 'recognition' || (approach === 'charismatic' && charismaVariant === 'v22-specialist'),
+    idDirector: approach === 'charismatic',
+    charismaVariant,
   };
 }
 
@@ -260,12 +312,33 @@ function scoreCell(cell, target) {
     have: cell.recognitionMode,
     match: cell.recognitionMode === target.recognitionMode,
   });
+  // id-director dimension (weight 3) — charismatic approach biases here
+  matches.push({
+    dimension: 'idDirector',
+    want: target.idDirector,
+    have: cell.idDirector,
+    match: cell.idDirector === target.idDirector,
+  });
 
-  const score = matches.reduce((s, m) => {
+  let score = matches.reduce((s, m) => {
     if (!m.match) return s;
     const w = DIMENSION_WEIGHTS.find((d) => d.dimension === m.dimension)?.weight || 0;
     return s + w;
   }, 0);
+
+  // Charisma variant tiebreak: when the user picks an id-director frontier
+  // point, prefer the matching design-point cell. Generalist → c107 (witness
+  // exemplars only), v22-specialist → c104 (classifier + recognition),
+  // charisma-specialist → c105 (id_tuning:charisma).
+  if (target.idDirector && cell.idDirector) {
+    if (target.charismaVariant === 'generalist' && cell.witnessExemplars && !cell.registerClassifier && cell.idTuning !== 'charisma') {
+      score += 1;
+    } else if (target.charismaVariant === 'v22-specialist' && cell.recognitionMode && cell.registerClassifier) {
+      score += 1;
+    } else if (target.charismaVariant === 'charisma-specialist' && cell.idTuning === 'charisma' && !cell.witnessExemplars) {
+      score += 1;
+    }
+  }
 
   return { cell, score, matches };
 }
