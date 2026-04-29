@@ -40,7 +40,7 @@ const learnerConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'learner-a
 // temperature conventions because the architecture is different. They
 // are excluded from convention tests below; their own conventions are
 // enforced in their dedicated test file (idDirectorEngine.test.js) and
-// design doc (notes/design-cell-100-id-director-charisma.md).
+// the cell-100 phase docs (docs/cell-100-*.md, esp. methods-note).
 const isIdDirectorCell = (profile) => profile?.factors?.id_director === true;
 
 // All cell profiles (cell_1 through cell_N)
