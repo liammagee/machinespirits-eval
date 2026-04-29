@@ -34,9 +34,23 @@ const configDir = path.join(__dirname, '..', 'config');
 const tutorConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'tutor-agents.yaml'), 'utf8'));
 const learnerConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'learner-agents.yaml'), 'utf8'));
 
+// Cells with factors.id_director:true are an experimental architectural
+// variant (back-stage id authors a fresh ego prompt each turn). They
+// deliberately depart from the factorial design's prompt-file and
+// temperature conventions because the architecture is different. They
+// are excluded from convention tests below; their own conventions are
+// enforced in their dedicated test file (idDirectorEngine.test.js) and
+// design doc (notes/design-cell-100-id-director-charisma.md).
+const isIdDirectorCell = (profile) => profile?.factors?.id_director === true;
+
 // All cell profiles (cell_1 through cell_N)
 const cellNames = Object.keys(tutorConfig.profiles).filter((name) => /^cell_\d/.test(name));
 const cells = Object.fromEntries(cellNames.map((name) => [name, tutorConfig.profiles[name]]));
+
+// Cells subject to the factorial design's strict conventions
+// (excludes id-director cells; see comment above).
+const factorialCellNames = cellNames.filter((n) => !isIdDirectorCell(cells[n]));
+const factorialCells = Object.fromEntries(factorialCellNames.map((name) => [name, cells[name]]));
 
 // Core 8 factorial cells (base + recognition)
 const coreCellNames = cellNames.filter((n) => /^cell_[1-8]_/.test(n));
@@ -159,7 +173,7 @@ describe('factorial design — config integrity', () => {
     // Divergent/dialectical cells encode multi-agent status via superego type name, not "multi"/"single"
     const isDivergent = (pt) => pt.startsWith('divergent_') || pt.startsWith('dialectical_');
 
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       const { prompt_type, multi_agent_tutor } = profile.factors;
       const expectedSubstr = namePatterns[prompt_type];
       assert.ok(
@@ -218,7 +232,7 @@ describe('factorial design — prompt file assignment', () => {
   };
 
   it('each cell uses the correct ego prompt file for its prompt_type', () => {
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       const pt = profile.factors.prompt_type;
       let expected;
       if (pt.startsWith('divergent_')) {
@@ -241,10 +255,10 @@ describe('factorial design — prompt file assignment', () => {
   });
 
   it('multi-agent cells use the correct superego prompt file for their prompt_type', () => {
-    const multiCells = cellNames.filter((n) => cells[n].factors.multi_agent_tutor);
+    const multiCells = factorialCellNames.filter((n) => factorialCells[n].factors.multi_agent_tutor);
     for (const name of multiCells) {
-      const expected = superegoPromptFiles[cells[name].factors.prompt_type];
-      assert.strictEqual(cells[name].superego.prompt_file, expected, `${name} superego prompt_file`);
+      const expected = superegoPromptFiles[factorialCells[name].factors.prompt_type];
+      assert.strictEqual(factorialCells[name].superego.prompt_file, expected, `${name} superego prompt_file`);
     }
   });
 });
@@ -273,17 +287,22 @@ describe('factorial design — model consistency', () => {
   });
 
   it('all ego models use temperature 0.6', () => {
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       assert.strictEqual(profile.ego.hyperparameters.temperature, 0.6, `${name} ego temperature`);
     }
   });
 
   it('superego uses temperature 0.2 (lower than ego)', () => {
-    const multiCells = cellNames.filter((n) => cells[n].factors.multi_agent_tutor);
+    const multiCells = factorialCellNames.filter((n) => factorialCells[n].factors.multi_agent_tutor);
     for (const name of multiCells) {
-      assert.strictEqual(cells[name].superego.hyperparameters.temperature, 0.2, `${name} superego temperature`);
+      assert.strictEqual(
+        factorialCells[name].superego.hyperparameters.temperature,
+        0.2,
+        `${name} superego temperature`,
+      );
       assert.ok(
-        cells[name].superego.hyperparameters.temperature < cells[name].ego.hyperparameters.temperature,
+        factorialCells[name].superego.hyperparameters.temperature <
+          factorialCells[name].ego.hyperparameters.temperature,
         `${name} superego temp should be lower than ego temp`,
       );
     }

@@ -226,9 +226,16 @@ export function getProviderConfig(providerName, options = {}) {
   }
 
   const apiKey = provider.api_key_env ? process.env[provider.api_key_env] || '' : '';
-  // Providers without api_key_env (local, lmstudio, etc.) only need base_url
+  // Providers without api_key_env (local, lmstudio, etc.) only need base_url.
+  // claude-code spawns the local `claude` CLI, which manages its own auth via
+  // the user's Claude Code subscription, so it is always considered configured.
   const needsApiKey = Boolean(provider.api_key_env);
-  const isConfigured = needsApiKey ? Boolean(apiKey) : Boolean(provider.base_url);
+  const isConfigured =
+    providerName === 'claude-code'
+      ? true
+      : needsApiKey
+        ? Boolean(apiKey)
+        : Boolean(provider.base_url);
 
   return {
     ...provider,
@@ -490,6 +497,13 @@ export function getTutorProfile(profileName, options = {}) {
     dialogue: profile.dialogue,
     ego: profile.ego ? { ...profile.ego } : null,
     superego: profile.superego ? { ...profile.superego } : null,
+    // Factors block: includes prompt_type, multi_agent_*, and experimental
+    // factors like id_director (cell 101/102). Carried through so callers
+    // can branch on architectural variants without re-reading the YAML.
+    factors: profile.factors ? { ...profile.factors } : null,
+    recognition_mode: profile.recognition_mode ?? false,
+    learner_architecture: profile.learner_architecture || null,
+    conversation_mode: profile.conversation_mode || null,
   };
 
   // Resolve ego model through providers.yaml
