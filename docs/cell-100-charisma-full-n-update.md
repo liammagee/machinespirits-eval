@@ -195,3 +195,109 @@ The §4 framing held cells as four design points: c104 (structured input → v2.
 - Both rubrics scored under `claude-code.sonnet` (CLI subscription, model pinned to `claude-sonnet-4-6` via `config/providers.yaml`)
 - Smoke run id (1 ep × 1 scenario × 2 cells, mechanism check): `eval-2026-04-28-d6456a85`
 - Cells registered: `cell_108_id_director_charisma_register_exemplars` (factors: `register_classifier: true`, `witness_exemplars: true`); `cell_109_id_director_charisma_tuned_exemplars` (factors: `id_tuning: charisma`, `witness_exemplars: true`). Both in `EVAL_ONLY_PROFILES` array (`services/evaluationRunner.js` line 209).
+
+## 10. c108 full-N closure (2026-04-29) — pilot lift does NOT survive confirmatory N
+
+**Question:** Does the §9 pilot's super-additive c108 lift (charisma 81.3 from $n=5$ on phaedrus + codex) survive at confirmatory $n=27$ across all three curricula × 9 scenarios × 3 reps?
+
+**Method:** Three concurrent eval-cli runs, one per curriculum, each at `--profile cell_108_id_director_charisma_register_exemplars --runs 3 --skip-rubric --parallelism 2` with the appropriate `EVAL_CONTENT_PATH` / `EVAL_SCENARIOS_FILE` env vars. Generation: 27/27 successes, no failures. Scoring: both rubrics under `claude-code.sonnet` (CLI subscription, model pinned to `claude-sonnet-4-6`).
+
+**Headline answer: NO.** The pilot's charisma 81.3 regresses to **71.4** at full N (a 9.9-point drop); v2.2 last-turn 79.5 regresses to **72.6** (a 6.9-point drop). c108 is now essentially tied with c105 on charisma (71.4 vs 71.0) and below both c104 (80.6) and c107 (78.5) on v2.2 last-turn. The "non-text levers compose super-additively" hypothesis is **not confirmed** at confirmatory N.
+
+### 10.1 Full-N c108 results
+
+Per-curriculum:
+
+| Curriculum | Run id | n | charisma | v2.2 t0 | v2.2 tN |
+|---|---|---:|---:|---:|---:|
+| 601 history-tech | `eval-2026-04-29-499ab3d2` | 9 | 73.1 | 75.0 | 76.7 |
+| 701 ethics-ai    | `eval-2026-04-29-e35c66ae` | 9 | 71.9 | 70.0 | 65.3 |
+| 901 ai-literacy  | `eval-2026-04-29-be822796` | 9 | 69.2 | 74.0 | 75.8 |
+| **All curricula** | **3 runs**                | **27** | **71.4** | **73.0** | **72.6** |
+
+Per-scenario (n=3 each):
+
+| Scenario | charisma | v2.2 t0 | v2.2 tN |
+|---|---:|---:|---:|
+| `charisma_lecture_shift_repl` | **82.5** | 77.9 | **92.9** |
+| `charisma_consumption_shift_repl` | 75.0 | 65.4 | **89.6** |
+| `charisma_phaedrus_shift_repl` | 67.9 | 79.6 | 85.4 |
+| `charisma_fairness_shift_repl` | 76.7 | 81.3 | 77.5 |
+| `charisma_authentic_shift_repl` | 69.2 | 78.8 | 69.6 |
+| `charisma_team_shift_repl` | 69.6 | 66.3 | 66.3 |
+| `charisma_tools_shift_repl` | 63.3 | 77.9 | 68.3 |
+| `charisma_codex_shift_repl` | 68.8 | 67.5 | **51.7** |
+| `charisma_design_shift_repl` | 69.6 | 62.5 | **52.1** |
+
+### 10.2 Comparison against the design-points framing
+
+Updated cell ladder under CLI Sonnet at full N (now including c108):
+
+| Cell | DB profile | n | charisma | v2.2 tN | Position |
+|---|---|---:|---:|---:|---|
+| c104 (id + cls + recog) | `cell_103` | 81 | 65.7 | **80.6** | v2.2 specialist (unchanged) |
+| **c105 (charisma-tuned)** | `cell_104` | 81 | **71.0** | 70.0 | charisma specialist (unchanged) |
+| c107 (witness-exemplars) | `cell_106/107` | 27 | 66.3 | 78.5 | balanced generalist (unchanged) |
+| **c108 (cls + exemplars)** | `cell_108` | **27** | **71.4** | **72.6** | **between c105 and c107; no design-point** |
+| c106 (pedagogy-tuned) | `cell_105` | 54 | 36.4 | 57.0 | failure (unchanged) |
+
+c108 charisma 71.4 ties c105's 71.0 within sample noise (the +0.4 gap is well below the run-to-run SD on either cell). c108 v2.2 tN 72.6 sits 8 points below c104, 6 points below c107, but 2.6 points above c105. **c108 does not unseat any specialist** — it sits midway between c105 and c107 on both rubrics with no extreme strength.
+
+### 10.3 Why the pilot was misleading
+
+The pilot's 81.3 charisma came from $n=5$ pooled across `phaedrus` + `codex` only — both high-stakes humanities scenarios that favour rich rhetoric. At full N these two scenarios tell different stories than the pilot suggested:
+
+- **Phaedrus**: pilot 90.0 charisma → full-N 67.9 charisma. A 22-point regression to the mean. The pilot's three phaedrus rows happened to land on rich responses; broader sampling does not reproduce.
+- **Codex**: pilot 68.1 charisma → full-N 68.8. Stable. The pilot was correct on codex.
+
+The phaedrus drop accounts for most of the pooled regression. With one curriculum's pilot ($n=3$ on a single scenario type) over-determining a 9.9-point lift, the pilot was a textbook small-N optimism trap.
+
+### 10.4 The 701 ethics-ai v2.2 collapse is the new finding
+
+Outside the pilot scope, the 701 ethics-ai curriculum exposes a fragility: c108's v2.2 tN drops to **65.3** there (vs 76.7 / 75.8 on 601 / 901). Drilling in, the codex (51.7) and design (52.1) scenarios pull this down — both score below 55 on v2.2 tN despite acceptable charisma (68.8 / 69.6). Two interpretations:
+
+1. **Curriculum-conditional ego execution failure.** The ethics-ai scenarios may push the id's prompt past a context-budget threshold the Nemotron ego handles less reliably than 601/901 contexts. This would be the c109 meta-narration failure mode in milder form.
+2. **Rubric-curriculum interaction.** Ethics scenarios may invite responses that the v2.2 rubric reads as flat (low pedagogical-craft, low elicitation) even when the charisma rubric reads them as adequately voiced. Ethics-themed dialogues may simply *be* harder to score high on v2.2 because the recognition-rubric criteria favour question-rich pedagogical moves over declarative ethical claims.
+
+The codex / design transcript spot-check would distinguish these. Queued; not in scope for this update.
+
+### 10.5 What this changes about §9.3's architectural-design-points framing
+
+The §9.3 prediction "c108 is tentatively the strongest cell on combined charisma + v2.2" is **falsified at full N**. Updating the design-points framing:
+
+- **c104**: structured input → v2.2 specialist (unchanged; charisma 65.7, v2.2 80.6).
+- **c105**: charisma-directives → charisma specialist (unchanged; charisma 71.0, v2.2 70.0).
+- **c107**: witness-exemplars → balanced generalist (unchanged; charisma 66.3, v2.2 78.5).
+- **c108**: classifier + witness-exemplars → **mid-pack on both rubrics; no specialty extreme**. The two non-text levers do *not* compose super-additively at full N. They compose roughly *additively* relative to c107 alone (charisma 66.3 → 71.4, +5.1; v2.2 80.6 → 72.6, -8.0): adding the classifier on top of exemplars trades a small charisma gain for a larger v2.2 cost. Net: c108 sits *below* c107 on combined performance.
+- **c106**: pedagogy-tuned → failure (unchanged).
+
+The four-design-point picture stands. c108 does not introduce a fifth design point; it's a ladder-rung between c105 and c107 that sacrifices generalist strength for a marginal charisma gain.
+
+### 10.6 What this changes about the §9.2 "non-text levers compose" claim
+
+The §9.2 hypothesis (non-text levers compose; text-heavy levers stacked interfere) collapses to a single claim at full N: **text-heavy levers stacked interfere** (c109 still has the meta-narration failure mode at pilot $n=6$, with v2.2 tN 59.6 well below either parent). The "non-text levers compose" half is unsupported — c108's full-N numbers show that classifier + exemplars compose *neutrally to slightly under*, not super-additively.
+
+The asymmetry is now: stacking levers on the id (whether text or non-text) tends to add noise rather than clean lift. The architectural ceiling for the id-director family appears to sit at the *single-mechanism* design points (c104, c105, c107), not at multi-mechanism stacks.
+
+### 10.7 Implications for paper §6.7 framing
+
+The §6.7 *Lever-interaction pilot* paragraph (added in v3.0.62) carried the explicit "hypothesis-generating only" caveat and a "queued follow-up: full c108 pilot at $n=27$" note. That follow-up has now run. The §6.7 paragraph should:
+
+1. **Retain** the c108 pilot's super-additive charisma 81.3 figure as reported, because it was correctly framed as pilot-scale.
+2. **Add** the full-N result: c108 at $n=27$ regresses to charisma 71.4 / v2.2 tN 72.6 — essentially tied with c105 on charisma and below c107/c104 on v2.2.
+3. **Tighten** the headline interpretation from "non-text levers compose super-additively" (pilot) to "non-text levers compose roughly additively, with no specialty advantage at full N" (confirmatory). The qualitative asymmetry between c108 (mild composition) and c109 (clear interference) is preserved, but only c109's negative result holds at the confirmatory threshold.
+4. **Remove** the "queued follow-up: full c108 pilot to test whether the lift survives confirmatory N" caveat (the follow-up has run).
+
+### 10.8 Audit trail
+
+- Generation run IDs: `eval-2026-04-29-{499ab3d2 history-tech, e35c66ae ethics-ai, be822796 ai-literacy}` — 9 evals each, 27 total, all successful.
+- Scoring: v2.2 via `eval-cli.js evaluate <runId> --judge-cli claude --model claude-sonnet-4-6 --parallelism 2`; charisma via `evaluate-charisma.js <runId> --judge claude-code.sonnet`. CLI subscription path (Anthropic API key env-stripped). Both rubrics scored; total 54 score-cells across 27 rows.
+- DB query producing the §10.1 pooled row:
+  ```sql
+  SELECT COUNT(*) as n, AVG(tutor_charisma_overall_score), AVG(tutor_first_turn_score), AVG(tutor_last_turn_score)
+  FROM evaluation_results
+  WHERE run_id IN ('eval-2026-04-29-499ab3d2','eval-2026-04-29-e35c66ae','eval-2026-04-29-be822796')
+    AND tutor_charisma_judge_model = 'claude-code.sonnet';
+  ```
+- Per-cell SD note: c108 charisma at $n=27$ ranges 40.0–91.3; pooled SD ≈ 13.3. The pilot's 81.3 was within 1 SD of the full-N mean, so the pilot was technically not an outlier — just an unrepresentative subsample of two scenarios.
+- Cost: $0 OpenRouter (CLI subscription path) + ~$0 Anthropic API (env-stripped) for scoring; ~$2 OpenRouter for the 27-eval generation pass.
