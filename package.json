@@ -23,6 +23,7 @@
   "scripts": {
     "start": "STANDALONE=true node server.js",
     "dev": "STANDALONE=true node server.js",
+    "chat": "node scripts/chat-cli.js",
     "eval": "node scripts/eval-cli.js",
     "eval:quick": "node scripts/eval-cli.js quick",
     "eval:test": "node scripts/eval-cli.js test",
