@@ -224,10 +224,14 @@ function isRecog(profile) {
 }
 
 function hasReflectionMechanism(profile) {
-  // Cells with self_reflection_evolution_enabled in tutor-agents.yaml
-  // (40-45 dialectical+suspicious/adversary/advocate; 60-63 selfreflect_psycho;
-  // 72-77 A2 sweep variants; superego pre_analyze cells share the trace shape).
-  return /selfreflect|dialectical_(?:suspicious|adversary|advocate)|_quantitative|_erosion|_intersubjective|_combined/.test(profile);
+  // Cells with self_reflection_evolution_enabled in tutor-agents.yaml.
+  // Original pattern: 40-45 dialectical+suspicious/adversary/advocate; 60-63
+  // selfreflect_psycho; 72-77 A2 sweep variants. Then D3 added cells 97
+  // (dialectical_suspicious_directive), 98 (dialectical_suspicious_two_pass),
+  // 99 (dialectical_coupling). Generalised the dialectical_* match to any
+  // dialectical_<word> so future bridges (cell 100+) don't silently fall
+  // through this filter.
+  return /selfreflect|dialectical_\w+|_quantitative|_erosion|_intersubjective|_combined/.test(profile);
 }
 
 // ── Aggregation ─────────────────────────────────────────────────────────
