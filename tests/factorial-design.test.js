@@ -63,6 +63,7 @@ const VALID_PROMPT_TYPES = [
   'dialectical_suspicious_directive',
   'dialectical_suspicious_two_pass',
   'dialectical_coupling',
+  'dialectical_suspicious_best_of_n',
 ];
 
 // ============================================================================
@@ -149,6 +150,10 @@ describe('factorial design — config integrity', () => {
       // Coupling-targeted superego bridge variant (cell 99): cell name
       // like cell_99_base_dialectical_coupling_unified_superego.
       dialectical_coupling: 'dialectical',
+      // Best-of-N selector bridge variant (cell 100): K=3 dialectical-loop
+      // candidates per turn, selection by reflection-action coupling cosine.
+      // Cell name like cell_100_base_dialectical_suspicious_unified_best_of_n.
+      dialectical_suspicious_best_of_n: 'dialectical',
     };
 
     // Divergent/dialectical cells encode multi-agent status via superego type name, not "multi"/"single"
@@ -209,6 +214,7 @@ describe('factorial design — prompt file assignment', () => {
     dialectical_suspicious_directive: 'tutor-superego-suspicious.md',
     dialectical_suspicious_two_pass: 'tutor-superego-suspicious.md',
     dialectical_coupling: 'tutor-superego-coupling.md',
+    dialectical_suspicious_best_of_n: 'tutor-superego-suspicious.md',
   };
 
   it('each cell uses the correct ego prompt file for its prompt_type', () => {
