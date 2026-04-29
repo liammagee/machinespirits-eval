@@ -4705,3 +4705,95 @@ profiles:
       hyperparameters:
         temperature: 0.5
         max_tokens: 12000
+
+  # ─── Cells 108 / 109: Witness-exemplar composition pilots ─────────────────
+  # Two minimal-design cells testing whether the c107 witness-exemplar
+  # mechanism composes with the c103 classifier mechanism (c108) and with the
+  # c105 charisma-tuning mechanism (c109). Each is a one-factor extension of
+  # an existing cell:
+  #
+  #   cell_108 = cell_103 + witness_exemplars
+  #     Question: do exemplars and classifier provide overlapping or additive
+  #     lift? If overlapping, c108 ≈ c103 (both already provide the
+  #     persona-shift floor). If additive, c108 > c103 and approaches or
+  #     exceeds c104.
+  #
+  #   cell_109 = cell_105 + witness_exemplars
+  #     Question: can exemplars raise c105's v2.2 toward c107's level (78.5)
+  #     while preserving c105's charisma advantage (71.0)? If the levers
+  #     compose, c109 should lead the family on charisma AND be at least
+  #     c107-level on v2.2.
+  #
+  # Pilot scope (small): 601 history-tech curriculum, 2 persona-shift
+  # replication scenarios (phaedrus_shift_repl, codex_shift_repl), 3 reps.
+  # n=12 per cell at full pilot. Scored under CLI Sonnet 4.6 on v2.2 +
+  # charisma. See docs/cell-100-charisma-full-n-update.md follow-up section.
+  cell_108_id_director_charisma_register_exemplars:
+    description: "Id-Director (cell 108): cell 103 + witness_exemplars. Composes the register classifier and witness-exemplar mechanisms. Pilot question: do the two persona-shift floor-lifters overlap or compose?"
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      register_classifier: true
+      witness_exemplars: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      classifier_prompt_file: learner-register-classifier.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 12000
+      classifier_hyperparameters:
+        temperature: 0.2
+        max_tokens: 4000
+
+  cell_109_id_director_charisma_tuned_exemplars:
+    description: "Id-Director (cell 109): cell 105 + witness_exemplars. Composes the charisma-tuning (verbose 800-1500 token id prompts) and witness-exemplar mechanisms. Pilot question: can exemplars lift c105's v2.2 toward c107's 78.5 without erasing c105's charisma advantage?"
+    factors:
+      prompt_type: base
+      multi_agent_tutor: true
+      multi_agent_learner: false
+      id_director: true
+      charisma_target: true
+      id_tuning: charisma
+      witness_exemplars: true
+    learner_architecture: unified
+    recognition_mode: false
+    memory_enabled: true
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: openrouter
+      model: nemotron
+      staging: front
+      prompt_file: tutor-ego-actor-skeleton.md
+      hyperparameters:
+        temperature: 0.7
+        max_tokens: 4000
+    superego:
+      provider: openrouter
+      model: kimi-k2.5
+      staging: back
+      prompt_file: tutor-id-director.md
+      hyperparameters:
+        temperature: 0.5
+        max_tokens: 16000
