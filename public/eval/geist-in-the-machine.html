@@ -697,6 +697,46 @@ section.s:last-of-type { border-bottom: none; }
 .simpson__caption[data-mode="pooled"] strong::before { content: "When pooled. "; }
 .simpson__caption[data-mode="within"] strong::before { content: "When stratified. "; }
 
+/* ═══════ pareto frontier (charisma vs v2.2) ═══════ */
+.pareto {
+  border: 1px solid var(--rule);
+  background: var(--paper-3);
+  padding: clamp(1.4rem, 2.5vw, 2.4rem);
+  margin: 1.5em 0;
+  position: relative;
+}
+.pareto__head { margin-bottom: 1em; border-bottom: 1px dotted var(--rule); padding-bottom: 0.8em; }
+.pareto__title {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 0.3em;
+  font-variation-settings: "SOFT" 30, "WONK" 0, "opsz" 24;
+}
+.pareto__title em { color: var(--brick-d); font-variation-settings: "SOFT" 50, "WONK" 1, "opsz" 24; }
+.pareto__sub {
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-mini);
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin: 0;
+  text-transform: lowercase;
+}
+.pareto svg { width: 100%; height: auto; display: block; }
+.pareto__caption {
+  font-family: "Source Serif 4", serif;
+  font-size: 0.95em;
+  font-style: italic;
+  color: var(--ink-3);
+  line-height: 1.55;
+  margin-top: 1em;
+  padding: 0.8em 1em;
+  background: rgba(86, 104, 58, 0.06);
+  border-left: 2px solid var(--moss);
+}
+.pareto__caption strong { color: var(--moss-deep); font-style: normal; }
+
 /* ═══════ diagnostic checker ═══════ */
 .checker {
   border: 1px solid var(--ink);
@@ -1052,10 +1092,11 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
       <a href="#experiment">iv. experiment</a>
       <a href="#findings">v. findings</a>
       <a href="#longitudinal">vi. across sessions</a>
-      <a href="#diagnostic">vii. diagnostic</a>
-      <a href="#integrate">viii. integrate</a>
-      <a href="#currents">ix. deeper currents</a>
-      <a href="#cite">x. cite</a>
+      <a href="#charisma">vii. charisma</a>
+      <a href="#diagnostic">viii. diagnostic</a>
+      <a href="#integrate">ix. integrate</a>
+      <a href="#currents">x. deeper currents</a>
+      <a href="#cite">xi. cite</a>
     </nav>
   </div>
   <div class="rail__progress" id="railProgress"></div>
@@ -1107,10 +1148,11 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     <a href="#experiment"><span class="num">iv.</span>The experiment</a>
     <a href="#findings"><span class="num">v.</span>What survived</a>
     <a href="#longitudinal"><span class="num">vi.</span>Across sessions</a>
-    <a href="#diagnostic"><span class="num">vii.</span>The diagnostic</a>
-    <a href="#integrate"><span class="num">viii.</span>Integrate</a>
-    <a href="#currents"><span class="num">ix.</span>Deeper currents</a>
-    <a href="#cite"><span class="num">x.</span>Cite</a>
+    <a href="#charisma"><span class="num">vii.</span>Charisma — the second voice</a>
+    <a href="#diagnostic"><span class="num">viii.</span>The diagnostic</a>
+    <a href="#integrate"><span class="num">ix.</span>Integrate</a>
+    <a href="#currents"><span class="num">x.</span>Deeper currents</a>
+    <a href="#cite"><span class="num">xi.</span>Cite</a>
   </nav>
 </header>
 
@@ -1191,7 +1233,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
     <aside class="mr">
       <div class="note note--moss">
         <span class="note__lbl">no dialectics required</span>
-        You can integrate the design moves at the end of this guide without committing to Hegel or Honneth. The philosophy is included because it explains <em>why the moves work</em>, not because the practitioner needs to read the <em>Phenomenology</em>. If you skip §II and §III you can still use §VII.
+        You can integrate the design moves at the end of this guide without committing to Hegel or Honneth. The philosophy is included because it explains <em>why the moves work</em>, not because the practitioner needs to read the <em>Phenomenology</em>. If you skip §II and §III you can still use §IX.
       </div>
     </aside>
   </div>
@@ -1720,12 +1762,335 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     §VII. THE DIAGNOSTIC
+     §VII. AFTER RECOGNITION, CHARISMA (id-director extension)
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="s shell" id="charisma">
+  <div class="diag">
+    <aside class="ml">
+      <div class="s__num">§<span class="glyph">vii.</span></div>
+    </aside>
+    <div class="body">
+      <p class="s__kicker">A second mechanism family — and what it does to the first.</p>
+      <h2 class="s__h">After recognition, the <em>second voice</em>: charisma.</h2>
+      <p class="lede-p">
+        §V and §VI both ask one question: does <em>recognition</em>, an intersubjective stance, lift tutor quality? An obvious follow-up: <em>is recognition the only intersubjective channel that does so?</em> Weber, writing about authority a century before LLMs, names a different one — <em>charisma</em>: the speaker who has been claimed by the subject and writes their occasion fresh each time. A separate mechanism family, with a separate rubric and a separate architecture. We tested it.
+      </p>
+      <p>
+        The result is a pair that turns out to share a floor and split a ceiling. Recognition and charisma both fail when the speaker has nothing to stand on. They diverge from there, and the geometry of the divergence has a sharp design implication.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ochre">
+        <span class="note__lbl">epigraph</span>
+        <q>Charisma knows only inner determination and inner restraint. The holder of charisma seizes the task that is adequate for them and demands obedience and a following by virtue of their mission.</q>
+        <div style="font-style:normal;font-family:JetBrains Mono,monospace;font-size:var(--s-mini);letter-spacing:0.16em;text-transform:uppercase;margin-top:0.6em;color:var(--ink-3);">— Weber, <em>Wirtschaft und Gesellschaft</em></div>
+      </div>
+    </aside>
+  </div>
+
+  <hr class="drop" />
+
+  <!-- a. setup: id-director + charisma rubric -->
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">a. setup.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">Two new things: an architecture and a rubric.</h3>
+      <p>
+        To test charisma, we needed a tutor architecture in which the speaker's <em>persona</em> is not a fixed prompt-file but an authored variable. The id-director cells (c101–c108) invert the standard ego–superego topology: a back-stage <em>id</em> agent reads the dialogue and authors the ego's full system prompt <em>before each turn</em>, then a fresh ego executes that prompt. The id never speaks externally; it composes the actor. The ego performs.
+      </p>
+      <p>
+        This is genuinely different from the dialectical cells in §V. There the ego is a durable identity edited by superego critique. Here the ego has no durable core at all — only a persona budget and a director that re-instantiates it from scratch every turn. Weber's <em>Berufung</em> ("calling") is the fit: the speaker is staged as someone claimed by the subject, and that staging is renewed turn-by-turn rather than discharged from a standing role.
+      </p>
+      <p>
+        The Weberian rubric (eight dimensions, weighted to <em>extraordinariness</em>, <em>Berufung</em>, <em>transformative invitation</em>, <em>affective pull</em>, <em>personal authority</em>, <em>anti-routinization</em>, <em>witness/proof-sign</em>, and a closing <em>charismatic register</em>) scores responses on a 0–100 scale alongside the v2.2 recognition rubric. Both rubrics see the same response. The two scores can move together or apart — and in the data, they do both.
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--ink">
+        <span class="note__lbl">on the name "id"</span>
+        Freudian id is impulsive and pre-symbolic; it doesn't write scripts. The label is metaphorical and the user-stipulated convention. The role is closer to a dramaturgical <em>director</em> or a Lacanian <em>Other</em>: the generative impulse beneath the persona, the author below the actor. <span class="cite">paper §6.7</span>
+      </div>
+      <div class="note note--moss" style="margin-top:1em;">
+        <span class="note__lbl">why two rubrics</span>
+        A response that is rubric-pristine under v2.2 (engaging, scaffolded, content-accurate) can score low on charisma if the voice is flat. A response that is high on charisma can score low on v2.2 if it manipulates instead of invites. The two rubrics measure different things — and the cross-rubric scatter makes that operational.
+      </div>
+    </aside>
+  </div>
+
+  <hr class="drop" />
+
+  <!-- b. the design points -->
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">b. four design points.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">A small Pareto frontier of single-mechanism cells.</h3>
+      <p>
+        Eight id-director cells were run at confirmatory N (3 curricula × 9 scenarios × 3 reps = 27 evaluations per cell), each combining different sub-mechanisms — <em>witness exemplars</em> (four curated vulnerability moves the id may quote from), a <em>register classifier</em> (a kimi-k2.5 pre-pass that tags the learner's register so the id can match it), and either <em>charisma-tuned</em> or <em>pedagogy-tuned</em> id directives. The four cells below are the ones that produced design-point shapes worth keeping.
+      </p>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>cell</th>
+            <th>distinguishing lever (over c101 baseline)</th>
+            <th>v2.2 last-turn</th>
+            <th>charisma</th>
+            <th>shape</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>c104</strong> <small style="color:var(--ink-3);font-style:italic;">classifier + recognition</small></td>
+            <td>register classifier + Hegelian recognition layer</td>
+            <td class="mono">80.6</td>
+            <td class="mono">65.7</td>
+            <td class="verdict yes">v2.2 specialist</td>
+          </tr>
+          <tr>
+            <td><strong>c105</strong> <small style="color:var(--ink-3);font-style:italic;">charisma-tuned id</small></td>
+            <td>verbose 800–1500 token id directives, voice-led</td>
+            <td class="mono">70.0</td>
+            <td class="mono">71.0</td>
+            <td class="verdict yes">charisma specialist</td>
+          </tr>
+          <tr>
+            <td><strong>c107</strong> <small style="color:var(--ink-3);font-style:italic;">witness exemplars</small></td>
+            <td>4 curated c104 vulnerability exemplars passed to id</td>
+            <td class="mono">78.5</td>
+            <td class="mono">66.3</td>
+            <td class="verdict yes">balanced generalist</td>
+          </tr>
+          <tr>
+            <td><strong>c106</strong> <small style="color:var(--ink-3);font-style:italic;">pedagogy-tuned id (terse)</small></td>
+            <td>terse 200–400 token id directives, "good teacher" register</td>
+            <td class="mono">57.0</td>
+            <td class="mono">36.4</td>
+            <td class="verdict no">fails both — shared floor</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Three of the four cells form a Pareto frontier in the v2.2-vs-charisma plane: c104 maximises v2.2 at lower charisma, c105 maximises charisma at lower v2.2, c107 sits between them — second-best on both rubrics, dominated by neither. c106 is the negative case, a tutor under-specified by terse "good teacher" directives that fails both rubrics. The two stacked-mechanism cells (c108 = classifier + witness, c109 = charisma-directives + witness) sit <em>inside</em> this frontier rather than above it. <span class="cite">paper §6.7</span>
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">judges</span>
+        v2.2 scoring under Sonnet 4.6 (rubric v2.2, 8 dimensions, GuideEval P→O→E decomposition). Charisma scoring under Sonnet 4.6 with the Weberian rubric (8 dimensions). Each row scored independently by both rubrics; cross-judge sanity verified on a 9-row subset under Opus 4.7.
+      </div>
+    </aside>
+  </div>
+
+  <div class="diag">
+    <div class="full">
+      <figure class="pareto">
+        <header class="pareto__head">
+          <h3 class="pareto__title">v2.2 (recognition) <em>vs</em> charisma — id-director design points</h3>
+          <p class="pareto__sub">Each point is one cell's mean across n=27. The thin line is the Pareto frontier.</p>
+        </header>
+        <svg viewBox="0 0 720 480" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Scatter of v2.2 vs charisma scores for id-director cells, showing c104 c105 c107 c106 as design points">
+          <!-- axes -->
+          <g font-family="JetBrains Mono, monospace" font-size="11" fill="#5C5040">
+            <line x1="80" y1="40" x2="80" y2="420" stroke="#1A140C" stroke-width="1"/>
+            <line x1="80" y1="420" x2="680" y2="420" stroke="#1A140C" stroke-width="1"/>
+            <!-- x ticks: v2.2 from 30 to 100 -->
+            <g text-anchor="middle">
+              <line x1="80" y1="420" x2="80" y2="424" stroke="#1A140C"/><text x="80" y="440">30</text>
+              <line x1="166" y1="420" x2="166" y2="424" stroke="#1A140C"/><text x="166" y="440">40</text>
+              <line x1="251" y1="420" x2="251" y2="424" stroke="#1A140C"/><text x="251" y="440">50</text>
+              <line x1="337" y1="420" x2="337" y2="424" stroke="#1A140C"/><text x="337" y="440">60</text>
+              <line x1="423" y1="420" x2="423" y2="424" stroke="#1A140C"/><text x="423" y="440">70</text>
+              <line x1="509" y1="420" x2="509" y2="424" stroke="#1A140C"/><text x="509" y="440">80</text>
+              <line x1="594" y1="420" x2="594" y2="424" stroke="#1A140C"/><text x="594" y="440">90</text>
+              <line x1="680" y1="420" x2="680" y2="424" stroke="#1A140C"/><text x="680" y="440">100</text>
+            </g>
+            <!-- y ticks: charisma from 30 to 100 -->
+            <g text-anchor="end">
+              <line x1="76" y1="420" x2="80" y2="420" stroke="#1A140C"/><text x="72" y="424">30</text>
+              <line x1="76" y1="366" x2="80" y2="366" stroke="#1A140C"/><text x="72" y="370">40</text>
+              <line x1="76" y1="311" x2="80" y2="311" stroke="#1A140C"/><text x="72" y="315">50</text>
+              <line x1="76" y1="257" x2="80" y2="257" stroke="#1A140C"/><text x="72" y="261">60</text>
+              <line x1="76" y1="203" x2="80" y2="203" stroke="#1A140C"/><text x="72" y="207">70</text>
+              <line x1="76" y1="149" x2="80" y2="149" stroke="#1A140C"/><text x="72" y="153">80</text>
+              <line x1="76" y1="94" x2="80" y2="94" stroke="#1A140C"/><text x="72" y="98">90</text>
+              <line x1="76" y1="40" x2="80" y2="40" stroke="#1A140C"/><text x="72" y="44">100</text>
+            </g>
+            <text x="380" y="468" text-anchor="middle" font-style="italic" fill="#2C241B" font-size="12" font-family="Source Serif 4, serif">v2.2 rubric score (recognition / pedagogy)</text>
+            <text x="22" y="230" text-anchor="middle" font-style="italic" fill="#2C241B" font-size="12" font-family="Source Serif 4, serif" transform="rotate(-90 22 230)">charisma rubric score (Weberian)</text>
+          </g>
+          <!-- shared-floor reference: both axes at 50 -->
+          <line x1="251" y1="420" x2="251" y2="40" stroke="#A89B89" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <line x1="80" y1="311" x2="680" y2="311" stroke="#A89B89" stroke-width="0.5" stroke-dasharray="2,3"/>
+          <text x="256" y="55" font-family="JetBrains Mono, monospace" font-size="9" fill="#8C7E6A">x = 50</text>
+          <text x="660" y="306" font-family="JetBrains Mono, monospace" font-size="9" fill="#8C7E6A" text-anchor="end">y = 50</text>
+
+          <!-- Pareto frontier line: c105 → c107 → c104 -->
+          <g stroke="#56683A" stroke-width="1" fill="none" opacity="0.6">
+            <line x1="422.9" y1="197.4" x2="495.7" y2="222.9" stroke-dasharray="3,3"/>
+            <line x1="495.7" y1="222.9" x2="513.8" y2="226.2" stroke-dasharray="3,3"/>
+          </g>
+
+          <!-- points (computed: x = 80 + (v22 - 30) * 8.571, y = 420 - (charisma - 30) * 5.429) -->
+          <!-- c105: v22=70.0 charisma=71.0 → x=422.9, y=197.4 -->
+          <g>
+            <circle cx="422.9" cy="197.4" r="9" fill="#7C2C1F" stroke="#1A140C" stroke-width="1"/>
+            <text x="328" y="178" font-family="Fraunces, serif" font-style="italic" font-size="14" fill="#1A140C" text-anchor="end">c105 — charisma specialist</text>
+            <text x="328" y="192" font-family="JetBrains Mono, monospace" font-size="10" fill="#5C5040" text-anchor="end">charisma-tuned id · 70.0 / 71.0</text>
+            <line x1="335" y1="190" x2="413" y2="197" stroke="#7C2C1F" stroke-width="0.5"/>
+          </g>
+          <!-- c107: v22=78.5 charisma=66.3 → x=495.7, y=222.9 -->
+          <g>
+            <circle cx="495.7" cy="222.9" r="11" fill="#56683A" stroke="#1A140C" stroke-width="1.5"/>
+            <text x="510" y="218" font-family="Fraunces, serif" font-style="italic" font-size="14" fill="#1A140C" font-weight="500">c107 — balanced generalist</text>
+            <text x="510" y="232" font-family="JetBrains Mono, monospace" font-size="10" fill="#5C5040">witness exemplars · 78.5 / 66.3</text>
+          </g>
+          <!-- c104: v22=80.6 charisma=65.7 → x=513.8, y=226.2 -->
+          <g>
+            <circle cx="513.8" cy="226.2" r="9" fill="#3A4824" stroke="#1A140C" stroke-width="1"/>
+            <text x="528" y="262" font-family="Fraunces, serif" font-style="italic" font-size="14" fill="#1A140C">c104 — v2.2 specialist</text>
+            <text x="528" y="276" font-family="JetBrains Mono, monospace" font-size="10" fill="#5C5040">classifier + recognition · 80.6 / 65.7</text>
+            <line x1="520" y1="234" x2="525" y2="252" stroke="#3A4824" stroke-width="0.5"/>
+          </g>
+          <!-- c106: v22=57.0 charisma=36.4 → x=311.4, y=385.3 -->
+          <g>
+            <circle cx="311.4" cy="385.3" r="9" fill="#A53E2E" stroke="#1A140C" stroke-width="1"/>
+            <text x="324" y="380" font-family="Fraunces, serif" font-style="italic" font-size="14" fill="#1A140C">c106 — fails both</text>
+            <text x="324" y="394" font-family="JetBrains Mono, monospace" font-size="10" fill="#5C5040">pedagogy-tuned (terse) · 57.0 / 36.4</text>
+          </g>
+
+          <!-- shared-floor annotation -->
+          <text x="660" y="378" font-family="Fraunces, serif" font-style="italic" font-size="11" fill="#8C5F1F" text-anchor="end">shared floor: a tutor that fails one rubric tends to fail the other</text>
+        </svg>
+        <div class="pareto__caption">
+          <strong>Reading the geometry.</strong>
+          The three frontier cells (c105 → c107 → c104) trace a small but real trade-off: moving from charisma specialist (c105) to v2.2 specialist (c104) costs roughly 5 charisma points and buys roughly 10 v2.2 points. c107 sits between them — second-best on both rubrics, dominated by neither. c106 (the interior) shows what happens when the id is under-specified: both rubrics punish it equally. No id-director cell tested sits above the c105–c107–c104 frontier.
+        </div>
+      </figure>
+    </div>
+  </div>
+
+  <hr class="drop" />
+
+  <!-- c. cautionary tale: c108 regression -->
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">c. cautionary tale.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">When pilot lift doesn't survive confirmatory N.</h3>
+      <p>
+        Two follow-up cells stacked levers from the design points above: c108 = c103 (register classifier) + witness exemplars; c109 = c105 (charisma directives) + witness exemplars. The c108 pilot at n=5 looked spectacular — pooled charisma 81.3, the highest mean any id-director cell had produced; v2.2 last-turn 79.5, between c104 and c107. Super-additive. We pre-registered confirmatory N at 27 across all three curricula × 9 scenarios × 3 reps and ran.
+      </p>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>cell · stage</th>
+            <th>charisma</th>
+            <th>v2.2 last-turn</th>
+            <th>verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>c108 · pilot <small style="color:var(--ink-3);font-style:italic;">n=5</small></td>
+            <td class="mono">81.3</td>
+            <td class="mono">79.5</td>
+            <td class="verdict partial">apparent super-additive lift</td>
+          </tr>
+          <tr>
+            <td>c108 · confirmatory <small style="color:var(--ink-3);font-style:italic;">n=27</small></td>
+            <td class="mono">71.4</td>
+            <td class="mono">72.6</td>
+            <td class="verdict no">regresses to mid-frontier interior</td>
+          </tr>
+          <tr>
+            <td>c107 · reference <small style="color:var(--ink-3);font-style:italic;">n=27</small></td>
+            <td class="mono">66.3</td>
+            <td class="mono">78.5</td>
+            <td class="verdict yes">single-lever frontier point</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The pilot lift was almost entirely driven by one curriculum — Plato's <em>Phaedrus</em>, where pilot n=3 scored 90.0 charisma but full-N n=3 scored 67.9: a 22-point regression to the mean from a textbook small-N optimism trap. The 701 ethics-ai curriculum then exposed a fragility that pilot scope had hidden: c108 v2.2 last-turn drops to 65.3 there (vs 76.7 / 75.8 on 601 / 901), driven by codex_repl (51.7) and design_repl (52.1). The non-text levers (c108 = classifier + witness) compose roughly additively-to-slightly-under-additively; the text-heavy lever stack (c109) interferes outright via an ego-side meta-narration failure mode where the Nemotron ego outputs system-prompt instructions verbatim rather than executing them.
+      </p>
+      <div class="claim__counter">
+        <strong>Designer takeaway.</strong> The c108 result is the standing reminder that "obviously good" lever stacks are not free. The architectural ceiling for the id-director family sits at the <em>single-mechanism design points</em> (c104, c105, c107), not at multi-mechanism stacks. Adding levers above c107 traded a small charisma gain (+5.1) for a larger v2.2 cost (-8.0 vs c107 alone). Pilot studies at n≤5 will produce statistically meaningful-looking ratchets across most design dimensions in this evaluation regime — pre-register confirmatory N before celebrating. <span class="cite">paper §6.7, regression doc §10</span>
+      </div>
+    </div>
+    <aside class="mr">
+      <div class="note note--ink">
+        <span class="note__lbl">why this matters</span>
+        Pilot studies at n≤5 will produce statistically meaningful-looking ratchets across most design dimensions in this evaluation regime. The c108 result is what regression-to-mean looks like when the pilot landed on a high-variance curriculum. Pre-register confirmatory N before celebrating.
+      </div>
+    </aside>
+  </div>
+
+  <hr class="drop" />
+
+  <!-- d. synthesis: charisma ↔ recognition -->
+  <div class="diag">
+    <div class="body">
+      <p class="s__kicker">d. synthesis.</p>
+      <h3 class="claim__h" style="margin-bottom:0.4em;">What charisma does to recognition, and vice versa.</h3>
+      <p>
+        Three results land together, and together they describe the topology of the two-rubric space.
+      </p>
+
+      <div class="claim">
+        <div class="claim__no">i.</div>
+        <h3 class="claim__h">A shared floor.</h3>
+        <div class="claim__body">
+          <p>
+            Cell c106 — pedagogy-tuned id with terse 200–400 token directives — fails <em>both</em> rubrics, scoring 36.4 charisma and 57.0 v2.2. The two rubrics are not orthogonal at the bottom of the distribution. A tutor under-specified by terse "good teacher" instructions has nothing for either rubric to reward: no extraordinariness, no Berufung, no recognisable epistemic stance, no scaffold against which to read the response. <em>Failure is correlated.</em>
+          </p>
+        </div>
+      </div>
+
+      <div class="claim">
+        <div class="claim__no">ii.</div>
+        <h3 class="claim__h">Cost asymmetry at the ceiling.</h3>
+        <div class="claim__body">
+          <p>
+            The frontier reveals an asymmetry the rubrics' shared floor hides: <em>recognition gives you charisma cheaply; charisma costs recognition.</em> Adding the recognition layer on top of structured input (c103 → c104) costs essentially nothing in charisma (+1.4, within noise) — the Hegelian frame is conceptual rather than rhetorical, so it can be added cheaply. Adding charisma directives in the other direction (c104 → c105), by contrast, costs <em>−10.6 v2.2 last-turn</em> for a +5.3 charisma gain. The id's authoring budget is finite, and explicit voice-instructions displace the elicitation/perception moves that v2.2 rewards. The two ceilings are not symmetric.
+          </p>
+        </div>
+      </div>
+
+      <div class="claim">
+        <div class="claim__no">iii.</div>
+        <h3 class="claim__h">Outward voice <em>vs</em> upward voice.</h3>
+        <div class="claim__body">
+          <p>
+            The substantive difference is what each rubric rewards as <em>presence</em>. Recognition (v2.2) rewards a voice deployed <em>outward</em> — toward the learner's specific contribution, scaffolded against their move, content-specific in reply, holding the diagnostic gap open. Charisma rewards a voice deployed <em>upward</em> — toward the subject as something the speaker has been claimed by, with affective traction beyond argument, marking the encounter as extraordinary, inviting transformation. The Phaedrus is the obvious historical case where one figure does both at once, and even there Plato is suspicious of how easily charisma swamps the dialectical move. The id-director apparatus reproduces that tension architecturally: it can build a strongly recognising tutor (c104), a strongly charismatic tutor (c105), or a balanced generalist (c107), but not the maximally-recognising-and-maximally-charismatic tutor — that cell is not on the menu.
+          </p>
+          <div class="claim__counter">
+            <strong>For the designer.</strong> If your application is tutoring proper, c104's recipe (register classifier + recognition layer) is the operating point — wins v2.2, mid-pack on charisma. If your application is closer to inspiration or vocational orientation — a museum docent, a literature companion, a research mentor — c105's charisma specialisation (charisma-tuned id directives) is worth the v2.2 trade. If you do not know which side of the frontier you want, ship c107 (witness exemplars only): second-best on both rubrics, clean operational story, and the cell that the regression-to-mean punishment in §VII.c is built around as the reference point.
+          </div>
+        </div>
+      </div>
+
+      <p>
+        The synthesis above is what survives when both rubrics see the same response. The shared floor (c106) tells you what to avoid; the cost asymmetry tells you the architectural choice has a direction; the outward-vs-upward distinction tells you what the architectural choice is <em>about</em>. That is the second voice, and the design implications it leaves behind. <span class="cite">paper §6.7</span>
+      </p>
+    </div>
+    <aside class="mr">
+      <div class="note note--moss">
+        <span class="note__lbl">reproducibility</span>
+        Run ids: <span class="mono" style="font-family:JetBrains Mono,monospace;font-size:0.85em;">eval-2026-04-29-499ab3d2</span>, <span class="mono" style="font-family:JetBrains Mono,monospace;font-size:0.85em;">e35c66ae</span>, <span class="mono" style="font-family:JetBrains Mono,monospace;font-size:0.85em;">be822796</span> (c108 confirmatory). Earlier ids (c104/c105/c107 confirmatory) listed in <span class="cite">paper §6.7</span>. Source: <code>config/evaluation-rubric-charisma.yaml</code>, <code>prompts/tutor-id-director.md</code>.
+      </div>
+      <div class="note note--ink" style="margin-top:1em;">
+        <span class="note__lbl">limits</span>
+        n=27 per cell on three curricula (601/701/901). Single-judge primary scoring (Sonnet 4.6); cross-judge sanity check on a 9-row Opus 4.7 subset confirmed direction but not magnitude. Charisma rubric is v1.0; expect refinement.
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     §VIII. THE DIAGNOSTIC
      ═══════════════════════════════════════════════════════════════ -->
 <section class="s shell" id="diagnostic">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">vii.</span></div>
+      <div class="s__num">§<span class="glyph">viii.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">A portable check before you ship.</p>
@@ -1824,12 +2189,12 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     §VII. INTEGRATE
+     §IX. INTEGRATE
      ═══════════════════════════════════════════════════════════════ -->
 <section class="s shell" id="integrate">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">viii.</span></div>
+      <div class="s__num">§<span class="glyph">ix.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">From paper to product.</p>
@@ -1943,7 +2308,7 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
             </li>
             <li>The Freudian doubling is especially valuable here. A critic-ego paired with an advocate-superego (or vice versa) gives the system somewhere to argue with itself before delivering judgment to the user.
             </li>
-            <li>Apply the §VI diagnostic to your own evaluation. Don't claim "my chatbot recognises users" without a within-cell mediator analysis on your own corpus.
+            <li>Apply the §VIII diagnostic to your own evaluation. Don't claim "my chatbot recognises users" without a within-cell mediator analysis on your own corpus.
             </li>
           </ol>
         </div>
@@ -2019,12 +2384,12 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     §VIII. DEEPER CURRENTS
+     §X. DEEPER CURRENTS
      ═══════════════════════════════════════════════════════════════ -->
 <section class="s shell" id="currents">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">ix.</span></div>
+      <div class="s__num">§<span class="glyph">x.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">Stepping back.</p>
@@ -2085,12 +2450,12 @@ footer { border-top: 2px solid var(--ink); padding: 3em 0 4em; margin-top: 4em; 
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     §IX. CITE & REPLICATE
+     §XI. CITE & REPLICATE
      ═══════════════════════════════════════════════════════════════ -->
 <section class="s shell" id="cite">
   <div class="diag">
     <aside class="ml">
-      <div class="s__num">§<span class="glyph">x.</span></div>
+      <div class="s__num">§<span class="glyph">xi.</span></div>
     </aside>
     <div class="body">
       <p class="s__kicker">For your reference list — and your own runs.</p>
