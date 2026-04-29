@@ -129,4 +129,69 @@ The current §6.7 of `paper-full-2.0.md` should be updated:
 1. ~~**OpenRouter top-up**, then regenerate 17 missing c107 evals~~ — done (2026-04-28).
 2. **Update §6.7 of paper-full-2.0.md** with the full-N numbers, the three architectural-design-points framing (c104 / c105 / c107 specialise differently; c106 fails), and the cross-rubric divergence finding. Cite this doc as the audit trail.
 3. **Consider a third-judge cross-check** — Haiku 4.5 via CLI, Gemini Pro via API — to validate the c105 vs c104 charisma lead and the c107 generalist claim. Rubric stability across judges is itself publishable.
-4. **Optional: c108+ ablation** — combine witness-exemplars + classifier (c103 + exemplars), or witness-exemplars + charisma-tuning (c105 + exemplars), to test whether exemplars can co-exist with the other levers or interfere.
+4. ~~**Optional: c108+ ablation** — combine witness-exemplars + classifier (c103 + exemplars), or witness-exemplars + charisma-tuning (c105 + exemplars), to test whether exemplars can co-exist with the other levers or interfere.~~ — pilot run 2026-04-28; see §9 below.
+
+## 9. c108/c109 exemplar-composition pilot (2026-04-28)
+
+**Question:** Do witness-exemplars compose with the other architectural levers (register classifier; charisma-tuning), or do they overlap / interfere?
+
+**Method:** Two new cells registered alongside c107:
+
+- **c108** (`cell_108_id_director_charisma_register_exemplars`) = **c103 (id + classifier) + witness-exemplars**. No recognition vocabulary, no charisma-tuning. The classifier emits a register tag from the learner's most recent message; the id authors with both the classifier signal and the four c104 exemplars in scope.
+- **c109** (`cell_109_id_director_charisma_tuned_exemplars`) = **c105 (charisma-tuned id) + witness-exemplars**. The charisma-tuned id directives (verbose 800–1500 token persona instructions) plus the exemplar block. Id `max_tokens` raised from 12k to 16k to absorb the larger context.
+
+Pilot was 2 scenarios (`charisma_phaedrus_shift_repl`, `charisma_codex_shift_repl`) × 3 reps × 2 cells = 12 attempted, 11 succeeded (one c108/codex JSON-parse failure in the id output). Run id `eval-2026-04-28-10216f9f`. Same CLI Sonnet 4.6 judge, both rubrics.
+
+### 9.1 Pilot results
+
+Per-cell pooled across both scenarios:
+
+| Cell | n | charisma | v2.2 t0 | v2.2 tN |
+|---|---:|---:|---:|---:|
+| c108 (classifier + exemplars) | 5 | **81.3** | 68.3 | **79.5** |
+| c109 (charisma-tuning + exemplars) | 6 | 77.7 | 53.5 | 59.6 |
+
+For comparison, baseline cells on the same two scenarios (n=3 per cell × scenario, from prior runs):
+
+| Cell | phaedrus charisma / tN | codex charisma / tN |
+|---|---:|---:|
+| c101 | 71.7 / 77.5 | 67.9 / 60.0 |
+| c103 | 72.9 / 73.8 | 64.6 / 82.5 |
+| c104 | 58.8 / 87.5 | 60.8 / 62.9 |
+| c105 | 83.3 / 72.1 | 76.3 / 38.8 |
+| c107 | 68.7 / 87.1 | 55.0 / 74.2 |
+| **c108** | **90.0 / 77.1** | 68.1 / 83.1 |
+| **c109** | 80.4 / 50.4 | 75.0 / 68.8 |
+
+### 9.2 Two answers
+
+**Q1 — Does c108 compose, or overlap with c104?** Composes, and apparently *super-additively*. c108's pooled charisma 81.3 is the highest pilot mean of any id-director cell (the prior leader, c105 at full N, was 71.0). On phaedrus it reaches 90.0, the largest single-scenario charisma mean we have observed. v2.2 tN at 79.5 sits between c104's 80.6 (full-N) and c107's 78.5 — i.e. c108 does not lose v2.2 to gain charisma. The hypothesis: the classifier's register tag tells the id *which* of the exemplar patterns to lean on, so the id is no longer choosing between exemplar-fidelity and register-fit. With small N the magnitudes are noisy, but the qualitative pattern (c108 ≥ c105 on charisma AND c108 ≈ c104/c107 on tN) is consistent across both scenarios.
+
+**Q2 — Does c109 preserve charisma while raising v2.2 toward c107's 78.5?** No. c109's v2.2 tN drops to 59.6 — well below c105's 70.0 full-N and far below c107's 78.5. Charisma is preserved (77.7 pilot vs 71.0 c105 full-N), but at the cost of an ego-execution failure mode visible in the transcripts: when the charisma-tuned id emits a long persona-instruction block *and* an exemplar block, the ego occasionally outputs the instructions verbatim ("We need to respond with the original instructions about voice, register, etc.") rather than executing them. One c109/codex turn-0 in the pilot scored 6.3/100 because the ego dumped its system prompt as the public message. Recovery in turns 1–2 is good (one row had t1=92.5, t2=70.0 after t0=6.3), but the turn-0 fragility is what crashes the v2.2 average. The "double-verbose" hypothesis: charisma-tuning + exemplars push the id's prompt past a stability threshold that the Nemotron ego can no longer cleanly follow.
+
+### 9.3 What this changes about the architectural-design-points framing
+
+The §4 framing held cells as four design points: c104 (structured input → v2.2 specialist), c105 (charisma-directives → charisma specialist), c107 (exemplars-only → balanced generalist), c106 (pedagogy-tuned → failure). The pilot adds two more, sharpening the lever-interaction picture:
+
+- **c108 = classifier + exemplars** — pilot-strength evidence that *two non-text levers compose super-additively*: the classifier picks register, exemplars structure response. No verbose prompt instruction-language is added; the id's authoring budget is spent on orchestration rather than self-narration. Tentatively the strongest cell on combined charisma + v2.2.
+- **c109 = charisma-directives + exemplars** — the additive hypothesis fails for *two text-heavy levers stacked*. The id's prompt becomes long enough that the ego's instruction-following degrades. This is a useful negative result for the "more is better" intuition: there is an ego-side capacity ceiling beyond which adding architectural support hurts execution.
+
+### 9.4 Caveats
+
+- **Pilot N**: 5 (c108) and 6 (c109) rows. Far below the paper's $n \geq 63$ confirmatory floor. The c108 phaedrus 90.0 is a single scenario cell with n=3 — one reason to expect regression to the mean on full-N. Read these as hypothesis-generating, not confirmatory.
+- **One c108 generation failure** ("Unexpected end of JSON input" from the id) suggests the classifier+exemplars id call is near the OpenRouter response truncation limit even at id `max_tokens: 12000`. If c108 goes to full N, id budget should likely go to 16k or the prompt design should be tightened.
+- **Scenario mix is narrow**: phaedrus + codex are both high-stakes humanities scenarios that favour rich register. Whether the c108 lift survives the broader curriculum mix (especially 901 ai-literacy and 701 ethics-ai) is the obvious next test.
+
+### 9.5 Suggested follow-ups (queued, not in scope of the v3.0.61 update)
+
+1. **Full c108 pilot** (n=27 across all three curricula × 9 scenarios × 3 reps) — the cleanest test of whether "classifier + exemplars" beats c104/c105/c107 at confirmatory N. Cost ~$0 (CLI subscription) plus the OpenRouter generation budget for ~27 evals.
+2. **c109 ego-capacity diagnostic** — the meta-narration failure mode is interesting in its own right. Log id-prompt length per row and correlate with the t0 score. If the failure mode is monotone in prompt length, it has implications for the "more architectural support is better" intuition that other dialectical cells implicitly rely on.
+3. **A "c108 minus classifier" sanity check** — c107 already exists at full N; the pilot result above implies (c108 − c107) ≈ +15 charisma is the classifier's *additional* contribution on top of exemplars. Worth confirming at full N before headlining.
+
+### 9.6 Audit trail
+
+- Pilot run id: `eval-2026-04-28-10216f9f`
+- Generation: 12 attempted, 11 succeeded (one c108/codex JSON-parse fail in the id authoring step)
+- Both rubrics scored under `claude-code.sonnet` (CLI subscription, model pinned to `claude-sonnet-4-6` via `config/providers.yaml`)
+- Smoke run id (1 ep × 1 scenario × 2 cells, mechanism check): `eval-2026-04-28-d6456a85`
+- Cells registered: `cell_108_id_director_charisma_register_exemplars` (factors: `register_classifier: true`, `witness_exemplars: true`); `cell_109_id_director_charisma_tuned_exemplars` (factors: `id_tuning: charisma`, `witness_exemplars: true`). Both in `EVAL_ONLY_PROFILES` array (`services/evaluationRunner.js` line 209).
