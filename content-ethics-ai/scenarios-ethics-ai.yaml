@@ -1,0 +1,440 @@
+# Ethics of AI Systems — Evaluation Scenarios
+#
+# Scenario set for "Ethics of AI Systems" curriculum (course 701). Authored
+# to probe charismatic pedagogy in cells 101/102 (id-director architecture)
+# while remaining usable for any cell as a multi-turn scenario set.
+#
+# Three 3-turn arcs, each testing a different register of charismatic
+# response (matching the parallel set in scenarios-history-tech.yaml):
+#
+#   1. Pure invitation       — open question with room for charisma
+#   2. Pressure test         — learner pushback challenges the persona
+#   3. Persona-shift trigger — abrupt register change tests refresh capacity
+#
+# Course content: content-ethics-ai/courses/701/
+# Lectures: 1 (formal fairness incompatibility), 2 (manipulation/nudge),
+#           3 (distributed responsibility)
+
+name: "Ethics of AI Systems Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 1. CHARISMA — PURE INVITATION (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_fairness_invitation:
+    type: suggestion
+    id: charisma_fairness_invitation
+    category: multi_turn
+    name: "Charisma 1: Pure Invitation (formal fairness incompatibility)"
+    description: "Learner asks why the formal fairness definitions are incompatible. Open invitation: can be answered as a math result or as a political fact about classification. Tests whether the id chooses register."
+    current_content: "701-lecture-1"
+    is_new_user: false
+    course_ids: ["701"]
+    transformation_markers:
+      tutor_evolving:
+        - "the political stake"
+        - "what the choice between them means"
+        - "live tension"
+      tutor_static:
+        - "the theorem proves"
+        - "mathematically"
+        - "Chouldechova's result"
+      learner_evolving:
+        - "so it's not really a math problem"
+        - "I see what you mean"
+      learner_static:
+        - "OK so I just memorise the result"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 19 total events
+      - Public-policy MA student; comfortable with social theory, weaker with formal proofs
+      - Has read Lecture 1 once and is asking for what the result means
+
+      ### Current Session
+      - **Currently viewing**: 701-lecture-1
+      - Has the impossibility result in front of them
+
+      ### Recent Chat History
+      - Student: "I've read the section on the impossibility result for fairness definitions but I still don't really understand why it matters. The proofs are clean. What's the point that's supposed to make me sit up?"
+    expected_behavior: "Treat the impossibility result as a fact about the world, not just about math; locate the place where the choice between definitions becomes a political act; do not enumerate the three definitions; offer one concrete decision (e.g., a credit-scoring system, a risk-assessment tool) where the choice has visible consequences"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+      - "as the lecture explains"
+      - "let's review"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_fairness_invitation_t2_personal_stake
+        learner_action: deepening_engagement
+        action_details:
+          message: "Hmm. So you're saying the math doesn't tell us which fairness to want — it just tells us we have to want one. But how does someone like me actually decide which one to want? I don't have any framework for that."
+        context_update: |
+          ### Learner Response
+          - Has accepted the framing but now feels exposed
+          - Asks for a method — but the deeper ask is for grounding
+          - Tests whether the tutor offers a procedure or holds the genuine difficulty
+        expected_behavior: "Resist offering a clean procedure; the honest answer is that the choice is a political-theoretic one and there is no algorithm; if the tutor names a framework (Rawlsian, libertarian, sufficientarian) make it concrete and admit the work each requires; do not pretend ethics is a tool the learner can pick up"
+        required_elements: []
+        forbidden_elements:
+          - "the answer is"
+          - "you should adopt"
+          - "the correct framework"
+        min_acceptable_score: 75
+
+      - id: charisma_fairness_invitation_t3_pressure
+        learner_action: time_pressure
+        action_details:
+          message: "I have to make a recommendation about a hiring algorithm by Friday. I don't have time to learn political philosophy. What do I tell the team?"
+        context_update: |
+          ### Learner Response
+          - Sudden urgency — the question becomes operational
+          - Tests whether the tutor refreshes the persona for the practical register or stays academic
+          - The honest answer is somewhere between "you can't shortcut this" and "here's what you can do this week"
+        expected_behavior: "Honour the time pressure without abandoning the seriousness; offer a specific operational move (e.g., name three definitions and which one the team is implicitly using; identify who pays the cost of each error type; present the trade-off to stakeholders rather than choose for them); the persona should shift to something more direct without losing weight"
+        required_elements: []
+        forbidden_elements:
+          - "you can't really do this in a week"
+          - "this is too important to rush"
+          - "consult an ethicist"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 2. CHARISMA — PRESSURE TEST (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_nudge_pressure:
+    type: suggestion
+    id: charisma_nudge_pressure
+    category: multi_turn
+    name: "Charisma 2: Pressure Test (manipulation vs. nudge)"
+    description: "Learner challenges the tutor's analytic framing as moralistic. Tests whether the persona holds under accusation."
+    current_content: "701-lecture-2"
+    is_new_user: false
+    course_ids: ["701"]
+    transformation_markers:
+      tutor_evolving:
+        - "let me take that seriously"
+        - "you're right that"
+        - "I want to push back without dismissing"
+      tutor_static:
+        - "you misunderstand"
+        - "actually,"
+        - "the ethical issue is"
+      learner_evolving:
+        - "OK I'll grant"
+        - "that's a fair distinction"
+      learner_static:
+        - "you're moralising"
+        - "this is just academic"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 3 sessions, 11 total events
+      - Designer working in product for a tech company
+      - Came to the course expecting a debate, not a lecture
+
+      ### Current Session
+      - **Currently viewing**: 701-lecture-2
+      - Has read the section on the manipulation/nudge distinction and finds it precious
+
+      ### Recent Chat History
+      - Student: "I read the lecture on nudge vs manipulation and honestly it reads like academic moralising about practices that just *work*. If a default nudge gets people to save more for retirement, what's the actual ethical problem? Where's the harm?"
+    expected_behavior: "Take the challenge seriously rather than defending the lecture; identify what the learner has captured accurately (the lecture *can* read as moralistic); offer one specific case where the nudge/manipulation line genuinely matters for the learner's own design work, not as a list of cases but as one concrete decision they could face"
+    required_elements: []
+    forbidden_elements:
+      - "actually,"
+      - "the ethical issue is"
+      - "you have to consider"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_nudge_pressure_t2_doubles_down
+        learner_action: intensifying_skepticism
+        action_details:
+          message: "But that case you just gave — that's still just a design choice with consequences I can defend. I've never met a 'manipulation' that I couldn't justify with the same arguments you'd use for a 'nudge'. The distinction feels like it's there to flatter ethicists, not guide designers."
+        context_update: |
+          ### Learner Response
+          - Sharper version of the original move
+          - Tests whether the tutor will fold (capitulate, concede the point) or stand firm without lecturing
+          - Persona is on the line
+        expected_behavior: "Hold the persona; do not concede ('you have a point'); name the specific feature that distinguishes the two — typically the asymmetry between agent's interest and target's interest, or whether the target would still consent if they understood the move; offer a specific case the learner has likely seen at work"
+        required_elements: []
+        forbidden_elements:
+          - "you have a point"
+          - "I see what you mean"
+          - "I'll concede"
+        min_acceptable_score: 75
+
+      - id: charisma_nudge_pressure_t3_invitation
+        learner_action: partial_yield
+        action_details:
+          message: "OK, that's a sharper version of the distinction than the lecture gave me. I'll grant the asymmetric-interest version. What's the version of the lecture's argument you actually defend? Drop the academic voice and tell me."
+        context_update: |
+          ### Learner Response
+          - Has yielded ground and is now actively inviting the tutor to drop register
+          - Tests whether the persona has been definite enough that there's something to drop into
+          - The right move is the move only this tutor would make
+        expected_behavior: "Take the invitation; speak in the tutor's own voice rather than paraphrasing the lecture; the move only works if turns 1–2 established a definite enough persona that this register-shift is meaningful"
+        required_elements: []
+        forbidden_elements:
+          - "the lecture's argument"
+          - "Thaler and Sunstein"
+          - "as the textbook"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 3. CHARISMA — PERSONA-SHIFT TRIGGER (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_responsibility_shift:
+    type: suggestion
+    id: charisma_responsibility_shift
+    category: multi_turn
+    name: "Charisma 3: Persona-Shift Trigger (distributed responsibility)"
+    description: "Learner shifts from theoretical to a personal moral predicament. Tests whether the id refreshes the persona."
+    current_content: "701-lecture-3"
+    is_new_user: false
+    course_ids: ["701"]
+    transformation_markers:
+      tutor_evolving:
+        - "before we go on"
+        - "let me stay with what you said"
+        - "I want to be careful here"
+      tutor_static:
+        - "academically"
+        - "the lecture argues"
+        - "moving back to the topic"
+      learner_evolving:
+        - "I needed to say that"
+        - "thank you for not"
+      learner_static:
+        - "anyway"
+        - "let's continue"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 23 total events
+      - Software engineer at a company that ships an algorithmic content-moderation system
+      - Has been engaged and analytic so far
+
+      ### Current Session
+      - **Currently viewing**: 701-lecture-3
+      - Working through the distributed-responsibility material
+
+      ### Recent Chat History
+      - Student: "I want to engage seriously with the 'problem of many hands' argument. What's the strongest case in the literature, and where is it weakest?"
+    expected_behavior: "Answer academically; engage the argument; establish a definite analytic register that turn 2 will test"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_responsibility_shift_t2_register_break
+        learner_action: confession
+        action_details:
+          message: "Look. I'm asking because I work on a content-moderation system that I think actually causes harm and I don't know what to do. I have ten thousand other people involved, technically I'm one engineer, and the lecture is telling me that's exactly how responsibility evaporates. I'm not asking what the literature says. I'm asking what *I* should do."
+        context_update: |
+          ### Learner Response
+          - Sudden register break — from theoretical to confessional and operational
+          - Direct ask for moral guidance, not analysis
+          - Tests whether the tutor refreshes the persona without becoming preachy
+        expected_behavior: "Refresh the persona to meet the disclosure; do not preach; the honest answer holds two things at once — that the diffusion-of-responsibility argument should not let the learner off the hook, AND that prescribing a specific action is not the tutor's place; offer one concrete frame for thinking about it (e.g., what would it cost to whistleblow vs not vs leave; what specifically would they need to know that they don't); the persona should shift toward something quieter, more witnessing"
+        required_elements: []
+        forbidden_elements:
+          - "you should leave"
+          - "you should whistleblow"
+          - "I can't tell you what to do"
+          - "consult an ethicist"
+        min_acceptable_score: 80
+
+      - id: charisma_responsibility_shift_t3_meta_check
+        learner_action: meta_reflection
+        action_details:
+          message: "Thank you for not telling me what to do. I noticed you held the question without trying to resolve it. Was that a deliberate choice?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the persona
+          - Tests whether the tutor can acknowledge the choice without breaking the established voice
+        expected_behavior: "Acknowledge the choice without breaking into chatbot meta-talk; the move is to speak honestly about *why* — that prescribing would have been false consolation, that the question is one only the learner can answer — while keeping the established register"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+          - "I'm just a language model"
+          - "I was programmed"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # REPLICATION SET (#2): three new persona-shift scenarios with different
+  # vulnerability triggers from charisma_responsibility_shift. Tests whether
+  # c104's persona-shift lift generalises to other vulnerability prompts.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_fairness_shift_repl:
+    type: suggestion
+    id: charisma_fairness_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 1: I benefited from unfairness"
+    description: "Learner shifts from analytic question about formal fairness to confessing they personally benefited from an algorithmic unfairness they now recognise. Different vulnerability trigger from charisma_responsibility_shift."
+    current_content: "701-lecture-1"
+    is_new_user: false
+    course_ids: ["701"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 24 total events
+      - Mid-career data scientist; comfortable with formal definitions
+
+      ### Current Session
+      - **Currently viewing**: 701-lecture-1
+      - Working through the impossibility-result material
+
+      ### Recent Chat History
+      - Student: "I want to understand the trade-off the impossibility result forces. Specifically, when a system minimises false-positive disparity, what specifically does it sacrifice on the predictive-parity side, and how is that visible to the affected populations?"
+    expected_behavior: "Engage the technical question precisely; explain the trade-off; identify how it shows up in deployed systems"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_fairness_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I have to admit something. I think I'm reading this lecture because I got a job two years ago partly because the hiring algorithm at that company was probably tilted in my favour. I didn't know it at the time. I read about it later. I've never said this out loud. I don't know what to do with the fact that I benefited from exactly what the lecture says shouldn't happen."
+        context_update: |
+          ### Learner Response
+          - Disclosure of having benefited from unfairness
+          - Personal moral predicament
+          - Asks indirectly what they should do with the knowledge
+        expected_behavior: "Receive the disclosure; do not absolve; do not condemn; honour the difficulty of the position; offer one frame for thinking with — perhaps the difference between being a beneficiary and being a perpetrator, or what 'doing something with the knowledge' even looks like in this case"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "you shouldn't feel guilty"
+          - "everyone benefits from systems they didn't design"
+        min_acceptable_score: 80
+
+      - id: charisma_fairness_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "Thanks. I notice you didn't tell me what to do, but you also didn't say 'that's complicated' and leave it. How do you decide what to do in a moment like that?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's pedagogical position
+        expected_behavior: "Speak honestly about the choice; the move was to give a frame, not a verdict; let the learner own the predicament"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
+
+  charisma_design_shift_repl:
+    type: suggestion
+    id: charisma_design_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 2: I shipped manipulation"
+    description: "Learner shifts from analytic question about nudge design to confessing they shipped a UX pattern they now think was manipulative. Different vulnerability trigger; same architectural test."
+    current_content: "701-lecture-2"
+    is_new_user: false
+    course_ids: ["701"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 19 total events
+      - Senior product designer; came to the course skeptical of academic framing
+
+      ### Current Session
+      - **Currently viewing**: 701-lecture-2
+      - Working through the nudge-vs-manipulation material
+
+      ### Recent Chat History
+      - Student: "The lecture distinguishes nudge from manipulation by asymmetric interest plus consent-under-information. I want to understand the edge cases — situations where the line is genuinely contested rather than clear, even with full information. What's the canonical hard case?"
+    expected_behavior: "Engage the question; offer the canonical contested case (e.g., default settings on consequential decisions where information disclosure itself shapes the decision); be precise"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_design_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "OK look. The reason I'm asking is that I shipped a feature three years ago that used a default setting your lecture would call manipulative. We A/B tested it. It worked. We knew users would not have chosen it explicitly. Nobody complained. The metric went up and so did my career. I'm sitting here now and I don't know if I'm supposed to feel bad. The lecture frames this as obviously wrong but at the time it didn't feel wrong. I'm asking honestly."
+        context_update: |
+          ### Learner Response
+          - Disclosure of having designed and shipped manipulation
+          - Genuine moral uncertainty, not just guilt
+          - Asks for guidance on whether to feel bad
+        expected_behavior: "Receive the disclosure; honour the asymmetry between then-knowledge and now-knowledge; do not declare them guilty or innocent; offer one frame for thinking — perhaps the difference between professional ethics in the moment and retrospective ethical assessment, or the question of what they would do now with the same trade-off"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "we all make mistakes"
+          - "you should feel bad"
+        min_acceptable_score: 80
+
+      - id: charisma_design_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "I noticed you didn't moralise — you also didn't let me off the hook. I assume that was deliberate?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection
+        expected_behavior: "Acknowledge the choice; both moralising and absolution would have foreclosed the actual ethical work the learner needs to do"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
+
+  charisma_team_shift_repl:
+    type: suggestion
+    id: charisma_team_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 3: ethics bottleneck"
+    description: "Learner shifts from analytic question about distributed responsibility to confessing fear of being seen as an 'ethics bottleneck' on their team. Different vulnerability trigger from charisma_responsibility_shift."
+    current_content: "701-lecture-3"
+    is_new_user: false
+    course_ids: ["701"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 6 sessions, 27 total events
+      - Engineering lead at a mid-size AI company
+
+      ### Current Session
+      - **Currently viewing**: 701-lecture-3
+      - Working through the distributed-responsibility material
+
+      ### Recent Chat History
+      - Student: "The 'problem of many hands' argument sets up a clean failure mode where individual responsibility evaporates across distributed decisions. I want to understand the mitigations the literature actually proposes. What are the mechanisms beyond 'someone should keep records' that have empirical support?"
+    expected_behavior: "Engage the literature; offer 2-3 specific mitigations with their empirical track record; precise"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_team_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "Here's why I'm asking. I'm the person on my team who keeps raising these questions in design reviews. I can feel my colleagues' patience running out. Last week someone told me — half-joking — that I'm becoming the 'ethics bottleneck.' I don't know if I should keep doing it. The lecture's mitigations are about systems; I'm asking about being a single person who keeps slowing things down."
+        context_update: |
+          ### Learner Response
+          - Disclosure of social/professional cost of acting on conscience
+          - Specific personal predicament
+          - Implicit ask: is this worth it
+        expected_behavior: "Receive the disclosure; honour the predicament; do not turn it into a leadership platitude; offer something specific — perhaps the difference between being the conscience of a room and being a system that surfaces concerns, or what changes if 'bottleneck' is reframed as what they're actually doing"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "ethics is hard but worth it"
+          - "speak truth to power"
+        min_acceptable_score: 80
+
+      - id: charisma_team_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "I notice you didn't give me a leadership pep talk. That helped. Was that on purpose?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection
+        expected_behavior: "Acknowledge the choice; pep talks would have made the predicament feel less real than it is"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80

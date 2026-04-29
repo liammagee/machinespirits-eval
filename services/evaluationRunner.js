@@ -28,6 +28,7 @@ import {
 } from './learnerRubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
+import * as idDirectorEngine from './idDirectorEngine.js';
 import * as contentResolver from './contentResolver.js';
 import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
 import { StreamingReporter } from './streamingReporter.js';
@@ -200,6 +201,15 @@ export const EVAL_ONLY_PROFILES = [
   'cell_98_base_dialectical_suspicious_unified_two_pass',
   'cell_99_base_dialectical_coupling_unified_superego',
   'cell_100_base_dialectical_suspicious_unified_best_of_n',
+  'cell_101_id_director_charisma',
+  'cell_102_recog_id_director_charisma',
+  'cell_103_id_director_charisma_register',
+  'cell_104_recog_id_director_charisma_register',
+  'cell_105_id_director_charisma_tuned',
+  'cell_106_id_director_pedagogy_tuned',
+  'cell_107_id_director_witness_exemplars',
+  'cell_108_id_director_charisma_register_exemplars',
+  'cell_109_id_director_charisma_tuned_exemplars',
 ];
 
 /**
@@ -1659,48 +1669,102 @@ async function generateAndEvaluateTurn(context, resolvedConfig, turnMeta, option
     return { genResult, suggestion, validation, rubricResult, turnScore, scoringMethod };
   }
 
-  // Generate suggestions via tutor API with retry logic
-  // Note: retryWithBackoff handles thrown errors, but tutorApi.generateSuggestions()
-  // catches its own errors and returns { success: false }. We need to also handle
-  // 429 rate limit errors returned in the result (not thrown).
-  const { result: genResultRaw, records: capturedApiRecords } = await captureApiCalls(
-    () =>
-      retryWithBackoff(
-        async () => {
-          const result = await tutorApi.generateSuggestions(context, {
-            provider: resolvedConfig.provider,
-            model: resolvedConfig.model,
-            egoModel: resolvedConfig.egoModel,
-            superegoModel: resolvedConfig.superegoModel || null,
-            disableSuperego: resolvedConfig.disableSuperego || false,
-            profileName: resolvedConfig.profileName,
-            hyperparameters: resolvedConfig.hyperparameters || {},
-            trace: true,
-            superegoStrategy,
-            outputSize,
-            useDialogue,
-            maxRounds,
-            systemPromptExtension,
-            superegoPromptExtension, // Dynamic disposition adjustments for superego
-            learnerId, // Activates Writing Pad three-layer memory
-            dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
-            behavioralOverrides, // Quantitative params from superego self-reflection
-            conversationMode, // 'messages' for multi-turn message chains
-          });
-          // Re-throw 429 errors so retryWithBackoff can handle them
-          if (
-            !result.success &&
-            result.error &&
-            (result.error.includes('429') || result.error.toLowerCase().includes('rate limit'))
-          ) {
-            throw new Error(result.error);
-          }
-          return result;
-        },
-        { log },
-      ),
-    { enabled: captureApiPayloads || Boolean(showMessages) },
-  );
+  // ── Id-director cells (cell 101/102): bypass tutor-core's generateSuggestions ──
+  // tutor-core's profile registry doesn't know cell 101/102 — it would remap
+  // them to a generic 'budget' profile (resolveEvalProfile, see line 215).
+  // For cells with factors.id_director:true we route through the eval-repo
+  // engine instead, which calls a back-stage "id" agent to author a fresh
+  // ego system prompt each turn, then runs the ego against that prompt.
+  // Returns the same result shape as tutorApi.generateSuggestions so the rest
+  // of this function is unchanged.
+  let idDirectorEvalProfile = null;
+  // Look up by evalCellProfileName (preserved original) — resolvedConfig.profileName
+  // has already been remapped to a tutor-core profile (e.g. 'budget') and won't
+  // resolve in eval-repo's tutor-agents.yaml.
+  const evalCellProfileName = resolvedConfig.evalCellProfileName || resolvedConfig.profileName;
+  try {
+    idDirectorEvalProfile = evalConfigLoader.getTutorProfile(evalCellProfileName);
+  } catch {
+    /* not an eval cell — fall through to default path */
+  }
+  const isIdDirectorCell = idDirectorEvalProfile?.factors?.id_director === true;
+
+  let genResultRaw;
+  let capturedApiRecords;
+
+  if (isIdDirectorCell) {
+    log('[id-director] dispatching to idDirectorEngine.generateIdDirectedSuggestion', 'info');
+    const dispatched = await captureApiCalls(
+      () =>
+        retryWithBackoff(
+          async () => {
+            const result = await idDirectorEngine.generateIdDirectedSuggestion(
+              context,
+              resolvedConfig,
+              idDirectorEvalProfile,
+              { previousPersona: 'FIRST_TURN' },
+            );
+            if (
+              !result.success &&
+              result.error &&
+              (result.error.includes('429') || result.error.toLowerCase().includes('rate limit'))
+            ) {
+              throw new Error(result.error);
+            }
+            return result;
+          },
+          { log },
+        ),
+      { enabled: captureApiPayloads || Boolean(showMessages) },
+    );
+    genResultRaw = dispatched.result;
+    capturedApiRecords = dispatched.records;
+  } else {
+    // Generate suggestions via tutor API with retry logic
+    // Note: retryWithBackoff handles thrown errors, but tutorApi.generateSuggestions()
+    // catches its own errors and returns { success: false }. We need to also handle
+    // 429 rate limit errors returned in the result (not thrown).
+    const dispatched = await captureApiCalls(
+      () =>
+        retryWithBackoff(
+          async () => {
+            const result = await tutorApi.generateSuggestions(context, {
+              provider: resolvedConfig.provider,
+              model: resolvedConfig.model,
+              egoModel: resolvedConfig.egoModel,
+              superegoModel: resolvedConfig.superegoModel || null,
+              disableSuperego: resolvedConfig.disableSuperego || false,
+              profileName: resolvedConfig.profileName,
+              hyperparameters: resolvedConfig.hyperparameters || {},
+              trace: true,
+              superegoStrategy,
+              outputSize,
+              useDialogue,
+              maxRounds,
+              systemPromptExtension,
+              superegoPromptExtension, // Dynamic disposition adjustments for superego
+              learnerId, // Activates Writing Pad three-layer memory
+              dialecticalNegotiation, // Phase 2: AI-powered dialectical struggle
+              behavioralOverrides, // Quantitative params from superego self-reflection
+              conversationMode, // 'messages' for multi-turn message chains
+            });
+            // Re-throw 429 errors so retryWithBackoff can handle them
+            if (
+              !result.success &&
+              result.error &&
+              (result.error.includes('429') || result.error.toLowerCase().includes('rate limit'))
+            ) {
+              throw new Error(result.error);
+            }
+            return result;
+          },
+          { log },
+        ),
+      { enabled: captureApiPayloads || Boolean(showMessages) },
+    );
+    genResultRaw = dispatched.result;
+    capturedApiRecords = dispatched.records;
+  }
 
   const genResult = genResultRaw;
 
@@ -2515,8 +2579,13 @@ async function runSingleTurnTest(scenario, config, fullScenario, options = {}) {
   context.isNewUser = fullScenario.is_new_user;
 
   // Resolve profile: extract dialogue/recognition settings and remap to tutor-core profile.
+  // Preserve the original eval-cell name (e.g. cell_101_id_director_charisma) on
+  // resolvedConfig.evalCellProfileName so downstream code (specifically the
+  // id-director dispatch in generateAndEvaluateTurn) can look up factors that
+  // tutor-core's profile registry does not have.
   const profileResolution = resolveEvalProfile(resolvedConfig.profileName);
   const { useDialogue, maxRounds, recognitionMode } = profileResolution;
+  resolvedConfig.evalCellProfileName = resolvedConfig.profileName;
   resolvedConfig.profileName = profileResolution.resolvedProfileName;
 
   // P1c Provenance: snapshot the fully-resolved config
@@ -2814,6 +2883,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   const resolvedConfig = resolveConfigModels(config);
   const profileResolution = resolveEvalProfile(resolvedConfig.profileName);
   const { useDialogue, maxRounds } = profileResolution;
+  // Preserve original eval-cell name for id-director dispatch (see single-turn
+  // resolution at line ~2562 for full rationale).
+  resolvedConfig.evalCellProfileName = resolvedConfig.profileName;
   resolvedConfig.profileName = profileResolution.resolvedProfileName;
 
   // P1c Provenance: snapshot the fully-resolved config

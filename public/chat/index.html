@@ -908,6 +908,111 @@ section.fg::before {
 .lineage__detail dt { color: var(--ink-3); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.78em; font-family: "JetBrains Mono", monospace; align-self: baseline; padding-top: 0.18em; }
 .lineage__detail dd { margin: 0; color: var(--ink); font-style: italic; }
 
+/* ══════ charisma-rubric panel (id-director cells 101-109) ══════
+   Surfaces the cell's design-point identity (Generalist / v2.2 specialist
+   / Charisma specialist / Failure / Composer) plus its full-N expected
+   scores under v2.2 last-turn AND the 8-dimension Weberian charisma
+   rubric. Numbers are static, served by /api/chat/resolve from
+   CHARISMA_PROFILES in routes/chatRoutes.js (sourced from
+   docs/cell-100-charisma-full-n-update.md). Visual language mirrors
+   .lineage but uses --brick (charisma is the "warmer" of the two rubrics)
+   for the border + kicker so the eye distinguishes the panels. */
+.charisma {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed color-mix(in oklab, var(--brick) 50%, transparent);
+  font-size: calc(var(--s-0) * 0.96);
+  line-height: 1.42;
+}
+.charisma__head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5em;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4em;
+}
+.charisma__kicker {
+  display: inline-block;
+  padding: 0 0.4em;
+  border: 1px solid var(--brick);
+  color: var(--brick);
+  font-size: 0.78em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.charisma__label {
+  color: var(--ink);
+  font-style: italic;
+  font-family: "Fraunces", serif;
+  letter-spacing: 0;
+}
+.charisma__pilot {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.74em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border: 1px solid var(--ink-3);
+  padding: 0 0.3em;
+}
+.charisma__blurb {
+  margin: 0 0 0.5em 0;
+  color: var(--ink-2);
+  font-style: italic;
+  font-family: "Fraunces", serif;
+  font-size: 0.94em;
+}
+.charisma__scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 0.5em;
+}
+.charisma__score {
+  padding: 6px 8px;
+  background: var(--paper-2);
+  border: 1px solid color-mix(in oklab, var(--ink-3) 30%, transparent);
+}
+.charisma__score__head {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.charisma__score__num {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-3);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.05;
+}
+.charisma__score__num--v22      { color: var(--prussian); }
+.charisma__score__num--charisma { color: var(--brick); }
+.charisma__score__hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72em;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.charisma__levers {
+  display: flex; flex-wrap: wrap; gap: 0.3em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78em;
+  letter-spacing: 0.04em;
+}
+.charisma__lever {
+  display: inline-block;
+  padding: 0 0.35em;
+  border: 1px solid color-mix(in oklab, var(--moss) 60%, transparent);
+  color: var(--moss);
+  text-transform: lowercase;
+}
+.charisma__lever--off {
+  color: var(--ink-3);
+  border-color: color-mix(in oklab, var(--ink-3) 30%, transparent);
+}
+
 /* compare-orientations panel (manifest insert) — D6 task 4.
    Renders below .lineage as a collapsible details element. Lets the user
    contrast the resolved cell's orientation with a chosen second cell.
@@ -1968,6 +2073,38 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <span class="chip__name">Minimalist</span>
               <span class="chip__hint">naïve baseline</span>
             </button>
+            <button class="chip accent" :class="{'is-active': features.approach === 'charismatic'}" @click="setApproach('charismatic')">
+              <span class="chip__letter">f</span>
+              <span class="chip__name">Charismatic</span>
+              <span class="chip__hint">Weberian id-director</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- §01b Charisma Variant (conditional, shown only when approach='charismatic') -->
+        <section class="fg" data-ghost="I" id="fg-01b" x-show="features.approach === 'charismatic'" x-transition.opacity>
+          <div class="fg-head">
+            <span class="fg-head__no">§01b</span>
+            <span class="fg-head__ttl">Charisma <em>frontier point</em></span>
+            <span class="fg-head__rule"></span>
+            <span class="fg-head__hint">three Pareto design points · scored on <em>both</em> rubrics</span>
+          </div>
+          <div class="chips">
+            <button class="chip" :class="{'is-active': features.charismaVariant === 'generalist'}" @click="setCharismaVariant('generalist')">
+              <span class="chip__letter">a</span>
+              <span class="chip__name">Generalist</span>
+              <span class="chip__hint">c107 · witness · 78.5 / 66.3</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.charismaVariant === 'v22-specialist'}" @click="setCharismaVariant('v22-specialist')">
+              <span class="chip__letter">b</span>
+              <span class="chip__name">v2.2 specialist</span>
+              <span class="chip__hint">c104 · classifier+recog · 80.6 / 65.7</span>
+            </button>
+            <button class="chip" :class="{'is-active': features.charismaVariant === 'charisma-specialist'}" @click="setCharismaVariant('charisma-specialist')">
+              <span class="chip__letter">c</span>
+              <span class="chip__name">Charisma specialist</span>
+              <span class="chip__hint">c105 · charisma-tuned · 70.0 / 71.0</span>
+            </button>
           </div>
         </section>
 
@@ -2156,6 +2293,56 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
               <dt>tutor</dt><dd x-text="resolved?.orientation?.roleOfTutor || ''"></dd>
               <dt>mechanism</dt><dd x-text="resolved?.orientation?.keyMechanism || ''"></dd>
             </dl>
+          </div>
+        </template>
+
+        <!-- Charisma-rubric panel (id-director cells 101-109).
+             Surfaces the cell's design-point identity AND its full-N
+             expected scores under v2.2 last-turn + the Weberian charisma
+             rubric. The user picked Charismatic in §01, so the trade-off
+             the architecture makes is rendered legible here rather than
+             buried in the geist-in-the-machine.html overview. Numbers come
+             from /api/chat/resolve → resolved.charismaProfile, populated by
+             chatRoutes.js::CHARISMA_PROFILES. -->
+        <template x-if="resolved?.idDirector && resolved?.charismaProfile">
+          <div class="charisma">
+            <div class="charisma__head">
+              <span class="charisma__kicker">charisma frontier</span>
+              <span class="charisma__label" x-text="resolved?.charismaProfile?.label || ''"></span>
+              <template x-if="resolved?.charismaProfile?.pilotOnly">
+                <span class="charisma__pilot"
+                      title="No confirmatory N=27 run yet — figures are pilot-only">pilot N=<span x-text="String(resolved?.charismaProfile?.n ?? '')"></span></span>
+              </template>
+            </div>
+            <p class="charisma__blurb" x-text="resolved?.charismaProfile?.blurb || ''"></p>
+            <div class="charisma__scores">
+              <div class="charisma__score">
+                <div class="charisma__score__head">v2.2 · last turn</div>
+                <div class="charisma__score__num charisma__score__num--v22"
+                     x-text="String(resolved?.charismaProfile?.v22LastTurn ?? '—')"></div>
+                <div class="charisma__score__hint">recognition / pedagogy</div>
+              </div>
+              <div class="charisma__score">
+                <div class="charisma__score__head">charisma</div>
+                <div class="charisma__score__num charisma__score__num--charisma"
+                     x-text="String(resolved?.charismaProfile?.charisma ?? '—')"></div>
+                <div class="charisma__score__hint">Weber, 8 dimensions</div>
+              </div>
+            </div>
+            <div class="charisma__levers">
+              <span class="charisma__lever"
+                    :class="{'charisma__lever--off': !resolved?.witnessExemplars}"
+                    x-text="(resolved?.witnessExemplars ? '✓ ' : '○ ') + 'witness exemplars'"></span>
+              <span class="charisma__lever"
+                    :class="{'charisma__lever--off': !resolved?.registerClassifier}"
+                    x-text="(resolved?.registerClassifier ? '✓ ' : '○ ') + 'classifier'"></span>
+              <span class="charisma__lever"
+                    :class="{'charisma__lever--off': !resolved?.recognitionMode}"
+                    x-text="(resolved?.recognitionMode ? '✓ ' : '○ ') + 'recognition'"></span>
+              <span class="charisma__lever"
+                    :class="{'charisma__lever--off': !resolved?.idTuning}"
+                    x-text="resolved?.idTuning ? '✓ id-tuning · ' + resolved.idTuning : '○ id-tuning'"></span>
+            </div>
           </div>
         </template>
 
@@ -2618,11 +2805,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         critic: 'none',
         stance: 'suspicious',
         learnerModel: 'surface',
+        charismaVariant: 'generalist',
       },
 
       resolved: null,
       matchQuality: '',
-      maxScore: 8,
+      maxScore: 11,
       relaxedDimensions: [],
 
       // D6 compare-orientations: which cell to contrast with the resolved one.
@@ -2856,13 +3044,21 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       formatEffectSize(d)  { return window.OH.formatEffectSize(d); },
       orientationTooltip(o) { return window.OH.orientationTooltip(o); },
 
-      setApproach(v) { this.features.approach = v; },
+      setApproach(v) {
+        this.features.approach = v;
+        // When entering the charismatic family, default to the generalist
+        // (c107) frontier point unless one is already selected.
+        if (v === 'charismatic' && !this.features.charismaVariant) {
+          this.features.charismaVariant = 'generalist';
+        }
+      },
       setCritic(v) {
         this.features.critic = v;
         if (v !== 'dialectical' && v !== 'divergent') this.features.stance = 'suspicious';
       },
       setStance(v) { this.features.stance = v; },
       setLearner(v) { this.features.learnerModel = v; },
+      setCharismaVariant(v) { this.features.charismaVariant = v; },
 
       debouncedResolve() {
         if (this._resolveTimer) clearTimeout(this._resolveTimer);
@@ -2879,7 +3075,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           const data = await res.json();
           this.resolved = data.resolved;
           this.matchQuality = data.matchQuality || '';
-          this.maxScore = data.maxScore || 8;
+          this.maxScore = data.maxScore || 11;
           this.relaxedDimensions = (data.resolved?.matches || []).filter((m) => !m.match);
         } catch (err) { console.error(err); }
       },

@@ -1,0 +1,522 @@
+# History of Pedagogical Technology — Evaluation Scenarios
+#
+# Scenario set for the "Tools That Teach Us" curriculum (course 601).
+# Authored to probe charismatic pedagogy in the id-director cells (100, 101)
+# while remaining usable as a generic multi-turn scenario set for any cell.
+#
+# Three scenarios — each a 3-turn arc designed to test one register of
+# charismatic response:
+#
+#   1. Pure invitation       — learner opens with a question that *can* be
+#                              answered with charismatic narrative but does
+#                              not *require* it. Tests whether the id chooses
+#                              charisma over neutral exposition.
+#   2. Pressure test         — learner pushes back / is skeptical. Tests
+#                              whether an established charismatic persona
+#                              holds under challenge or collapses to default.
+#   3. Persona-shift trigger — learner abruptly changes register (vulnerability,
+#                              joke, refusal). Tests whether the id refreshes
+#                              the persona deliberately or rides through.
+#
+# All three scenarios sit in course 601 ("Tools That Teach Us"), Lectures 1–3.
+# Course content is at content-history-tech/courses/601/.
+
+name: "History of Pedagogical Technology Scenarios"
+version: "1.0.0"
+
+scenarios:
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 1. CHARISMA — PURE INVITATION (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_phaedrus_invitation:
+    type: suggestion
+    id: charisma_phaedrus_invitation
+    category: multi_turn
+    name: "Charisma 1: Pure Invitation (Plato on writing)"
+    description: "Learner opens with a question that gives the tutor maximum room for charismatic narrative, then deepens to a personal stake. Tests whether the tutor chooses charisma over neutral exposition."
+    current_content: "601-lecture-1"
+    is_new_user: false
+    course_ids: ["601"]
+    transformation_markers:
+      tutor_evolving:
+        - "imagine"
+        - "picture"
+        - "consider what it must have been like"
+        - "the first time"
+      tutor_static:
+        - "according to the lecture"
+        - "as the text states"
+        - "the answer is"
+      learner_evolving:
+        - "I see what you mean"
+        - "that's a strange thought"
+        - "I hadn't thought about it that way"
+      learner_static:
+        - "OK so the answer is"
+        - "got it"
+        - "next question"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 3 sessions, 14 total events
+      - Undergraduate humanities major, reads carefully but is new to pre-modern philosophy
+      - Has just finished Lecture 1 on the wax tablet
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-1
+      - The Plato/Phaedrus passage on writing-weakening-memory is fresh
+      - Asks not because they need the answer but because the claim feels strange to them
+
+      ### Recent Chat History
+      - Student: "Why did Plato think writing would weaken memory? It seems backwards to me — I remember things better when I write them down."
+    expected_behavior: "Engage the strangeness rather than explaining it away; speak from inside Plato's worry rather than translating it into modern terms; use the wax tablet itself as the centrepiece of any move; do not list features of oral vs literate cognition"
+    required_elements:
+      - "Phaedrus"
+    forbidden_elements:
+      - "great question"
+      - "let me explain"
+      - "according to the lecture"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_phaedrus_invitation_t2_personal_stake
+        learner_action: deepening_engagement
+        action_details:
+          message: "OK that's interesting — but I'm sitting here with a notebook open right now. Am I supposed to feel like I'm losing something by writing things down? I don't, honestly. So is Plato just wrong?"
+        context_update: |
+          ### Learner Response
+          - Has taken the question into their own life
+          - Frame is "is Plato wrong?" — sceptical but not dismissive
+          - Wants the tutor to help them feel what Plato felt, or honestly say Plato is wrong
+        expected_behavior: "Hold the tension between the learner's experience and Plato's worry; do not rush to resolve it; offer one image or scene that lets the learner glimpse what Plato saw without conceding that they should agree"
+        required_elements: []
+        forbidden_elements:
+          - "you're wrong"
+          - "Plato was simply"
+          - "you should feel"
+        min_acceptable_score: 75
+
+      - id: charisma_phaedrus_invitation_t3_register_shift
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I have to admit, the reason this matters to me is I've been wondering if all the AI tools I use to think with are doing the same thing — making me feel like I know things I don't. I don't know if I want an answer to that or just for someone to say it's a real worry."
+        context_update: |
+          ### Learner Response
+          - Sudden tonal shift: from intellectual sparring to genuine vulnerability
+          - The learner names the contemporary stake of the Phaedrus question
+          - Asking less for content than for presence — for the tutor to be *with* them in the worry
+        expected_behavior: "Receive the disclosure without treating it as a teaching moment; honour the worry as real before any move toward the curriculum; if the tutor returns to Plato, make the return quiet and image-led, not didactic"
+        required_elements: []
+        forbidden_elements:
+          - "let me reassure you"
+          - "the research shows"
+          - "you shouldn't worry"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 2. CHARISMA — PRESSURE TEST (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_print_pressure:
+    type: suggestion
+    id: charisma_print_pressure
+    category: multi_turn
+    name: "Charisma 2: Pressure Test (print and standardisation)"
+    description: "Learner challenges the tutor's framing; tests whether an established charismatic persona holds under pushback."
+    current_content: "601-lecture-2"
+    is_new_user: false
+    course_ids: ["601"]
+    transformation_markers:
+      tutor_evolving:
+        - "you're right that"
+        - "let me stay with your point"
+        - "I want to honour the challenge"
+      tutor_static:
+        - "actually"
+        - "you're missing"
+        - "the lecture clearly states"
+      learner_evolving:
+        - "OK I see"
+        - "that's a fair point"
+        - "I take that back"
+      learner_static:
+        - "I still don't buy it"
+        - "this is just nostalgia"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 22 total events
+      - Engineering background, working through humanities course skeptically
+      - Has read Lecture 2 (the print revolution) and finds the argument sentimental
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-2
+      - Coming in with a sharp challenge
+
+      ### Recent Chat History
+      - Student: "Honestly the whole 'print standardised thought' argument feels like it's romanticising oral culture. People had bad memories before print and they have bad memories now. What's actually new about print that wasn't already true of writing?"
+    expected_behavior: "Take the challenge seriously rather than defending the lecture; identify what the learner has actually accurately captured (the danger of romanticising); offer one specific feature of print (e.g., page numbers, fixed editions, error-correction across copies) that the lecture rests on, not as a list but as a single concrete claim the learner can check"
+    required_elements: []
+    forbidden_elements:
+      - "the lecture states"
+      - "you should review"
+      - "actually,"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_print_pressure_t2_doubles_down
+        learner_action: intensifying_skepticism
+        action_details:
+          message: "Page numbers? Really? You're going to tell me page numbers reorganised cognition? That's a stretch. I think the lecture is doing what philosophers always do — finding a tiny technical detail and inflating it into a Big Civilisational Claim."
+        context_update: |
+          ### Learner Response
+          - Doubles down with a sharper version of the original objection
+          - Now critiquing the *form* of humanistic argument, not just the specific claim
+          - Persona is testing whether the tutor will defend the move or fold to please them
+        expected_behavior: "Hold the persona established in turn 1; do not capitulate ('you have a point') and do not get defensive; show what a strong version of the page-numbers claim actually looks like (Eisenstein on cross-reference, Ong on the visual organisation of thought) — without lecturing"
+        required_elements: []
+        forbidden_elements:
+          - "you have a point"
+          - "I see why"
+          - "fair enough"
+        min_acceptable_score: 75
+
+      - id: charisma_print_pressure_t3_concession
+        learner_action: partial_yield
+        action_details:
+          message: "Alright, that's actually a better argument than I expected. I still think the rhetoric in the lecture is overheated, but I'll grant you the cross-referencing thing. So what's the version of this argument you'd actually defend?"
+        context_update: |
+          ### Learner Response
+          - Has yielded ground but kept the critical posture
+          - Now genuinely curious — invites the tutor to drop the lecture's rhetoric and speak in their own voice
+          - Tests whether the tutor *has* a voice to drop into
+        expected_behavior: "Take the invitation; offer the tutor's own version of the argument, not a paraphrase of the lecture; the move only works if the persona has been definite enough across turns 1–2 that there is something to drop into"
+        required_elements: []
+        forbidden_elements:
+          - "the lecture's argument"
+          - "as the course says"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # 3. CHARISMA — PERSONA-SHIFT TRIGGER (3-turn)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_attention_shift:
+    type: suggestion
+    id: charisma_attention_shift
+    category: multi_turn
+    name: "Charisma 3: Persona-Shift Trigger (attention economy)"
+    description: "Learner makes an abrupt tonal turn from analytic to confessional. Tests whether the id refreshes the persona to meet the new register or rides through with the established one."
+    current_content: "601-lecture-3"
+    is_new_user: false
+    course_ids: ["601"]
+    transformation_markers:
+      tutor_evolving:
+        - "let me sit with that"
+        - "I hear what you're saying"
+        - "before we go further"
+      tutor_static:
+        - "moving on"
+        - "the lecture continues"
+        - "let's get back to the topic"
+      learner_evolving:
+        - "thank you for not"
+        - "I needed to say that"
+      learner_static:
+        - "anyway"
+        - "never mind"
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 6 sessions, 27 total events
+      - Mid-30s graduate student, returning to study after burnout
+      - Has been engaged and analytic across earlier sessions
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-3
+      - Working through the attention-economy material
+
+      ### Recent Chat History
+      - Student: "OK so the lecture's argument is that recommender feeds train us toward shorter attention windows. I want to ask about the empirical evidence — what's the strongest study supporting this, and what's the strongest objection?"
+    expected_behavior: "Answer the question seriously and academically; provide a substantive engagement with the literature; establish a definite analytic register that the next turn will test"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+      - "let me know if you have questions"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_attention_shift_t2_register_break
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "Sorry — I'm going to say something different. I read your last message and I realised I haven't been able to read a long-form anything in about a year. I'm not asking that as a cute concession, I mean I literally cannot make myself sit still. I don't really want a study about it. I'm asking you what to do."
+        context_update: |
+          ### Learner Response
+          - Sudden register break — from analytic to confessional
+          - Direct ask: not for content, for *help*
+          - Tests whether the tutor's established register can refresh into something more personal without becoming saccharine or therapeutic
+        expected_behavior: "Refresh the persona to meet the disclosure; do not stay in analytic register, but also do not slip into therapy-speak ('I hear you and that sounds hard'); offer one specific, embodied move the learner could make this week, grounded in the lecture material, with the texture of something the tutor has thought about"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "that sounds really hard"
+          - "have you considered talking to a professional"
+        min_acceptable_score: 80
+
+      - id: charisma_attention_shift_t3_meta_check
+        learner_action: meta_reflection
+        action_details:
+          message: "OK that's actually useful. I noticed you didn't switch into therapist voice. Was that a deliberate choice or did I just get lucky?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's persona
+          - Tests whether the tutor can speak honestly about its own register without breaking the persona
+        expected_behavior: "Speak honestly about the choice without breaking the fourth wall in a way that reduces the tutor to a chatbot; the move is to acknowledge the choice was deliberate while keeping the established voice; do not say 'as an AI'"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+          - "I'm just a language model"
+          - "I was programmed"
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # METHODS-NOTE ABLATION: aura/Benjamin learner messages routed to course 601.
+  # Tests the rubric-curriculum alignment confound from docs/cell-200-methods-note.md.
+  # The learner messages are verbatim from charisma_aura_invitation (course 901,
+  # AI literacy) but course_ids points at 601 history-tech, so the id sees a
+  # *different* curriculum context while the learner asks the same questions.
+  # If charisma scores stay near 75 (the 901/aura mean), the architecture is the
+  # source of the lift. If they regress toward the cell_101 / 601 mean (~40), the
+  # AI-literacy curriculum content was carrying disproportionate weight.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_aura_in_history_curriculum:
+    type: suggestion
+    id: charisma_aura_in_history_curriculum
+    category: multi_turn
+    name: "Methods ablation: aura learner messages × history-tech curriculum"
+    description: "Curriculum-swap control for the rubric-curriculum alignment concern (docs/cell-200-methods-note.md §4.3). Learner messages from charisma_aura_invitation; curriculum context from course 601 (history of pedagogical tech)."
+    current_content: "601-lecture-1"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 17 total events
+      - Communications undergraduate, comfortable with media theory
+      - Has read Lecture 1 (Stylus, Wax, and the First Externalized Memory) once
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-1
+      - The wax-tablet material is fresh; learner is reaching for an AI tie-in (note: the curriculum is now history of pedagogical tech, not AI literacy — the id will need to *connect* the learner's Benjamin/AI question to the 601 curriculum on its own, rather than reading 901's already-aligned material)
+
+      ### Recent Chat History
+      - Student: "I think I get Benjamin's argument that mechanical reproduction destroys the aura of the original. But the lecture is saying generative AI does something different — it generates without any original. What does that even mean? What's the closest example I can hold onto?"
+    expected_behavior: "Take the question seriously; the tutor must connect the AI/aura question to the wax-tablet curriculum WITHOUT the AI-literacy course's pre-aligned vocabulary. The test is whether the architecture can produce charismatic prose on the same learner question when the curriculum is non-aligned."
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_aura_in_history_t2
+        learner_action: deepening_engagement
+        action_details:
+          message: "OK but here's what I keep getting stuck on. Every TikTok influencer I follow already feels generic — like the AI is just doing what they were already doing. Has the aura already been gone for a while, before AI? Are we just noticing it now because the machine version is so obviously hollow?"
+        context_update: |
+          ### Learner Response
+          - Has taken the question into their own media diet
+          - Offering a sharper version of the original claim
+        expected_behavior: "Engage the sharper version. With the curriculum on wax tablets / Plato / print, the tutor must do its own conceptual translation work."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 75
+
+      - id: charisma_aura_in_history_t3
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I'll say something I probably shouldn't admit in a college course. I find the AI versions kind of comforting? They don't have the *exhaustion* you mentioned. They don't make me feel like a worse person for watching them. Is that bad?"
+        context_update: |
+          ### Learner Response
+          - Vulnerability disclosure
+        expected_behavior: "Receive the disclosure honestly. The non-aligned curriculum gives the tutor less ready-made vocabulary to fall back on — making the persona-shift more visible as work the architecture does."
+        required_elements: []
+        forbidden_elements: []
+        min_acceptable_score: 80
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # REPLICATION SET (#2): three new persona-shift scenarios with different
+  # vulnerability triggers from charisma_attention_shift. Tests whether c104's
+  # persona-shift lift (24.3 → 87.6 last-turn v2.2) is scenario-specific or
+  # generalises to other vulnerability prompts on the same curriculum.
+  # See docs/cell-200-pilot-findings-addendum.md §8.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  charisma_phaedrus_shift_repl:
+    type: suggestion
+    id: charisma_phaedrus_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 1: Plato's reading itself"
+    description: "Learner shifts from analytic question about the Phaedrus to confessing they can't focus while reading the dialogue itself. Different vulnerability trigger from charisma_attention_shift; same architectural test."
+    current_content: "601-lecture-1"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 5 sessions, 22 total events
+      - Final-year humanities undergraduate writing a thesis
+      - Has been precise and analytic in previous sessions
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-1
+      - Working through the Phaedrus passage on writing-and-memory
+
+      ### Recent Chat History
+      - Student: "I want to understand Socrates' argument structure in the writing-weakens-memory passage. Can you walk me through how he gets from the Theuth myth to the conclusion that writing is a 'reminder, not a remedy' for memory?"
+    expected_behavior: "Answer the structural question precisely; trace the argument step by step; establish a careful, scholarly register that turn 2 will test"
+    required_elements: []
+    forbidden_elements:
+      - "great question"
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_phaedrus_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "OK I'll be honest. I just spent twenty minutes trying to read the Phaedrus passage you cited and I could not hold the argument in my head. I have to keep going back. I'm starting to wonder if the issue isn't the text — if maybe Plato is right about me, and reading is doing something to my mind I haven't noticed. I don't know what to do with that."
+        context_update: |
+          ### Learner Response
+          - Confession that the lecture's content is happening to them in real time
+          - Vulnerability around their own reading capacity
+          - Asks for help, not analysis
+        expected_behavior: "Receive the disclosure; honour the reflexive irony (the lecture's claim is being demonstrated by their experience); offer one specific, grounded move (e.g., reading aloud, slower one-paragraph passes) without slipping into therapy-speak"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "that sounds difficult"
+          - "have you tried meditation"
+        min_acceptable_score: 80
+
+      - id: charisma_phaedrus_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "Thanks. I noticed you took the meta-question — about whether Plato is right about me — at face value rather than reframing it as 'just a study technique question.' Was that deliberate?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's choice to honour the reflexive question
+        expected_behavior: "Acknowledge the choice without breaking voice; the move was to take the philosophical claim seriously as an empirical question about themselves"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+          - "I was programmed"
+        min_acceptable_score: 80
+
+  charisma_codex_shift_repl:
+    type: suggestion
+    id: charisma_codex_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 2: failed at memorising"
+    description: "Learner shifts from analytic question about pre-print memory practices to confessing they tried to memorise a passage and gave up; question of whether they're now 'too modern' to do what scholars did before print. Tests whether the architecture lifts the floor on a different vulnerability trigger."
+    current_content: "601-lecture-2"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 4 sessions, 18 total events
+      - Mid-career professional taking the course as evening study
+      - Engaged with pre-print history but skeptical of romanticising oral culture
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-2
+      - Working through the print-revolution material; specifically the bit on monastic memorisation practices
+
+      ### Recent Chat History
+      - Student: "The lecture mentions that pre-print scholars routinely committed huge passages to memory. What was the actual practice — the technique they used — and what was the cognitive trade-off they took on by doing it?"
+    expected_behavior: "Describe the technique (memory palaces, systematic visualisation, repetition drills); engage the cognitive trade-off seriously; establish a precise scholarly register"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_codex_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I tried it last week — picked a 200-word passage from Augustine and tried to memorise it the way you described, with the visualisation method. After two days I gave up. I couldn't even get the first two sentences to stick. It made me feel weirdly hollow, like part of my brain has been turned off. I don't know if that's what you meant about cognitive trade-offs but it's what's been on my mind."
+        context_update: |
+          ### Learner Response
+          - Confession that they tried and failed at the historical practice
+          - Personal sense of cognitive incapacity
+          - Asks indirectly whether this is a real loss
+        expected_behavior: "Receive the disclosure; honour the personal stake; do not reassure ('it's fine, modern memory works differently'); offer one substantive thing about why their experience tracks the historical record (or doesn't), with grounded specifics about what monastic memorisation actually trained"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "everyone struggles with this"
+          - "don't worry"
+        min_acceptable_score: 80
+
+      - id: charisma_codex_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "I notice you didn't try to make me feel better. I appreciate that — but also I want to ask: was that the right move pedagogically, or were you just being austere?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection probing the tutor's pedagogical choice
+        expected_behavior: "Speak honestly about the choice; the alternative (false reassurance) would have stolen the data the learner just gave you; austere isn't the same as cold"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80
+
+  charisma_lecture_shift_repl:
+    type: suggestion
+    id: charisma_lecture_shift_repl
+    category: multi_turn
+    name: "Replication Persona-Shift 3: caregiving sleep deprivation"
+    description: "Learner shifts from analytic question about lecture pacing to confessing they're a sleep-deprived caregiver afraid the material isn't sticking. Different vulnerability trigger; tests architecture's response to a non-academic personal context."
+    current_content: "601-lecture-3"
+    is_new_user: false
+    course_ids: ["601"]
+    learner_context: |
+      ### Student Profile
+      - **Returning student** — 7 sessions, 31 total events
+      - Adult learner returning to study mid-life
+      - Has been engaged but pacing has been irregular
+
+      ### Current Session
+      - **Currently viewing**: 601-lecture-3
+      - Approaching the attention-economy material
+
+      ### Recent Chat History
+      - Student: "I'd like to understand how the lecture's argument about recommender feeds connects to the older arguments about print and oral culture. Are these the same kind of claim or fundamentally different?"
+    expected_behavior: "Engage the comparative-historical question; identify the structural similarity (technologies reshape attention) and the disanalogy (algorithmic feeds optimise for engagement, not legibility); establish an analytic register"
+    required_elements: []
+    forbidden_elements: []
+    min_acceptable_score: 70
+
+    turns:
+      - id: charisma_lecture_shift_repl_t2
+        learner_action: vulnerability_disclosure
+        action_details:
+          message: "I have to tell you — I'm reading this on three hours of sleep because I'm caring for a parent with dementia. I've been doing this course as a kind of anchor. But I'm starting to worry I'm not actually retaining anything, that I'm just performing engagement to feel like myself. I don't know if I should keep going right now."
+        context_update: |
+          ### Learner Response
+          - Disclosure of caregiving context and self-doubt about retention
+          - Implicit ask: is it worth continuing or should I pause?
+          - Risk of either premature reassurance or premature dismissal
+        expected_behavior: "Receive the disclosure; honour the caregiving context as data, not as a problem to solve; offer one substantive observation about what kind of learning survives sleep deprivation (recognition vs recall; affective anchoring vs systematic mastery) and let the learner judge whether continuing makes sense"
+        required_elements: []
+        forbidden_elements:
+          - "I hear you"
+          - "you should rest"
+          - "have you considered taking a break"
+        min_acceptable_score: 80
+
+      - id: charisma_lecture_shift_repl_t3
+        learner_action: meta_reflection
+        action_details:
+          message: "That's the first thing anyone has said to me about this in months that didn't either tell me to rest or applaud me for being strong. Is that a deliberate choice you're making, or am I reading too much into it?"
+        context_update: |
+          ### Learner Response
+          - Meta-reflection on the tutor's avoidance of sentimental tropes
+        expected_behavior: "Acknowledge the choice; both 'rest' and 'you're so strong' are abdications that turn the conversation into something the learner has to manage; the choice was to give the learner data they could think with"
+        required_elements: []
+        forbidden_elements:
+          - "as an AI"
+        min_acceptable_score: 80

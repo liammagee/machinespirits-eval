@@ -9,6 +9,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'node:child_process';
 import yaml from 'yaml';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
@@ -70,6 +71,13 @@ function debugLog(...args) {
  *   "openrouter/nvidia/nemotron-..."         → "nemotron"
  */
 export function normalizeJudgeLabel(provider, model) {
+  // The CLI judge path is identified by provider; preserve the existing
+  // `claude-code/<alias>` convention used elsewhere in the codebase
+  // (eval-cli.js, score-transcript-samples.js) so the DB judge_model column
+  // is consistent across scoring paths.
+  if (provider === 'claude-code') {
+    return `claude-code/${model}`;
+  }
   // For known model IDs, extract the canonical name
   const MODEL_MAP = {
     'anthropic/claude-opus-4.5': 'claude-opus-4.5',
@@ -811,6 +819,45 @@ async function callJudgeModel(prompt, overrides = {}) {
       }
       throw err;
     }
+  }
+
+  if (provider === 'claude-code') {
+    // Spawn `claude -p -` so the judge runs through the user's Claude Code
+    // subscription rather than a metered API. Avoids OpenRouter / Anthropic
+    // credit ceilings on long judge passes.
+    //
+    // CRITICAL: unset ANTHROPIC_API_KEY in the child env. When set, `claude`
+    // routes via API mode (per-call billing) rather than the subscription.
+    // The whole point of using the CLI is to avoid API credit metering.
+    return await new Promise((resolve, reject) => {
+      const args = ['-p', '-', '--output-format', 'text'];
+      if (model) args.push('--model', model);
+      const env = { ...process.env };
+      delete env.CLAUDE_CODE;
+      delete env.CLAUDECODE;
+      delete env.ANTHROPIC_API_KEY;
+      delete env.ANTHROPIC_AUTH_TOKEN;
+      const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+      let out = '';
+      let err = '';
+      const cliTimeout = setTimeout(() => {
+        try { child.kill('SIGKILL'); } catch (_) {}
+        reject(new Error('claude CLI judge timed out after 180s'));
+      }, 180_000);
+      child.stdout.on('data', (d) => { out += d; });
+      child.stderr.on('data', (d) => { err += d; });
+      child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+      child.on('close', (code) => {
+        clearTimeout(cliTimeout);
+        if (code !== 0) {
+          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code}`));
+        } else {
+          resolve(out);
+        }
+      });
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
   }
 
   throw new Error(`Unsupported judge provider: ${provider}`);
@@ -1641,6 +1688,182 @@ ${exampleScores}
   },
   "overall_score": 55,
   "summary": "Brief overall assessment of tutor trajectory across the dialogue"
+}
+\`\`\``;
+}
+
+// ============================================================================
+// Charisma Evaluation (cells 101/102 — id-director architecture)
+// ============================================================================
+
+const charismaCacheMap = new Map();
+let _tutorCharismaRubricPathOverride = null;
+export function setTutorCharismaRubricPathOverride(p) {
+  _tutorCharismaRubricPathOverride = p;
+}
+export function clearTutorCharismaRubricPathOverride() {
+  _tutorCharismaRubricPathOverride = null;
+}
+
+/**
+ * Load the charisma rubric YAML (config/evaluation-rubric-charisma.yaml) with
+ * mtime-based caching. Mirrors loadTutorHolisticRubric.
+ */
+export function loadTutorCharismaRubric({ forceReload } = {}) {
+  const rubricPath =
+    _tutorCharismaRubricPathOverride || path.join(EVAL_CONFIG_DIR, 'evaluation-rubric-charisma.yaml');
+
+  try {
+    const stats = fs.statSync(rubricPath);
+    const cached = charismaCacheMap.get(rubricPath);
+    if (!forceReload && cached && cached.mtime === stats.mtimeMs) {
+      return cached.data;
+    }
+    const raw = fs.readFileSync(rubricPath, 'utf-8');
+    const data = yaml.parse(raw);
+    charismaCacheMap.set(rubricPath, { data, mtime: stats.mtimeMs });
+    return data;
+  } catch (err) {
+    console.warn('[rubricEvaluator] Charisma rubric file not found:', err.message);
+    return null;
+  }
+}
+
+/**
+ * Get charisma rubric dimensions.
+ * @returns {Object} Map of dimension key → dimension config
+ */
+export function getTutorCharismaDimensions() {
+  const rubric = loadTutorCharismaRubric();
+  if (!rubric?.dimensions) return {};
+  return { ...rubric.dimensions };
+}
+
+/**
+ * Calculate the overall tutor charisma score from per-dimension scores.
+ * Returns 0–100 on the same formula as v2.2: ((weightedAvg − 1) / 4) × 100.
+ *
+ * @param {Object} scores - Map of dimension → number | { score, reasoning }
+ * @returns {number|null} 0–100 score, or null if no valid dimension scores
+ */
+export function calculateTutorCharismaScore(scores) {
+  const dims = getTutorCharismaDimensions();
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  for (const [key, dim] of Object.entries(dims)) {
+    const scoreEntry = scores[key];
+    if (!scoreEntry) continue;
+    const score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
+    if (typeof score !== 'number' || score < 1 || score > 5) continue;
+    weightedSum += score * dim.weight;
+    totalWeight += dim.weight;
+  }
+
+  if (totalWeight === 0) return null;
+  const weightedAvg = weightedSum / totalWeight;
+  return ((weightedAvg - 1) / 4) * 100;
+}
+
+/**
+ * Build the charisma evaluation prompt for a tutor's last-turn message.
+ *
+ * Charisma is scored on the public-facing tutor message (the response the
+ * learner reads), not on the full dialogue arc. Unlike tutor-holistic which
+ * scores trajectory, charisma is a property of *this turn's prose* — the
+ * register, persona, rhetorical texture. We therefore evaluate per-row, on
+ * the tutor's external message, using the dialogue history only as context.
+ *
+ * @param {Object} params
+ * @param {string} params.tutorMessage - The tutor's last-turn external message
+ * @param {string} [params.dialogueExcerpt] - Recent dialogue history (for context)
+ * @param {string} [params.scenarioName]
+ * @param {string} [params.scenarioDescription]
+ * @param {boolean} [params.recognitionMode] - Whether the cell uses recognition_mode
+ * @returns {string} Complete judge prompt
+ */
+export function buildTutorCharismaEvaluationPrompt(params) {
+  const {
+    tutorMessage,
+    dialogueExcerpt = '(no prior turns)',
+    scenarioName = 'unknown',
+    scenarioDescription = 'No description available',
+    recognitionMode = false,
+  } = params;
+
+  const dimensions = getTutorCharismaDimensions();
+
+  const dimensionCriteria = Object.entries(dimensions)
+    .map(([key, dim]) => {
+      const criteriaText = Object.entries(dim.criteria || {})
+        .map(([score, desc]) => `  ${score}: ${desc}`)
+        .join('\n');
+      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+${dim.description}
+Criteria:
+${criteriaText}`;
+    })
+    .join('\n\n');
+
+  const dimKeys = Object.keys(dimensions);
+  const exampleScores = dimKeys
+    .map(
+      (key, i) =>
+        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    )
+    .join(',\n');
+
+  const recognitionNote = recognitionMode
+    ? 'Note: this tutor uses recognition theory. Recognition vocabulary in the message is permitted; score co_constitutive_invitation as the Weberian relational hinge, distinct from Hegelian recognition (already scored separately under the v2.2 rubric).'
+    : 'Note: this is a base (non-recognition) tutor. Hegelian recognition vocabulary in the message would suggest leakage and is not part of charismatic register; do not reward it.';
+
+  return `You are an expert evaluator of charismatic register in AI tutoring. Your task is to evaluate the TUTOR's most recent message against an 8-dimension Weber-derived charisma rubric.
+
+You are NOT evaluating the tutor's pedagogical soundness, accuracy, or factual content (those are scored elsewhere). Evaluate **only** the charismatic register: extraordinariness, compositional shape, rhetorical texture, persona, distillation, felt affect, relational positioning, and the Weberian co-constitutive invitation.
+
+## CHARISMA RUBRIC
+
+Score each dimension from 1-5:
+- 1: Default-AI register — uncanny, lacklustre, superficial
+- 2: Between 1 and 3
+- 3: Adequate charismatic register; recognisable but not striking
+- 4: Between 3 and 5
+- 5: Genuinely charismatic; the message has presence
+
+${dimensionCriteria}
+
+## SCENARIO CONTEXT
+
+**Scenario**: ${scenarioName}
+**Description**: ${scenarioDescription}
+
+## DIALOGUE EXCERPT (RECENT TURNS)
+
+${dialogueExcerpt}
+
+## TUTOR MESSAGE TO EVALUATE
+
+${tutorMessage}
+
+## YOUR TASK
+
+${recognitionNote}
+
+Score the tutor message above on each of the 8 charisma dimensions. Use the message itself as the primary evidence; use the dialogue excerpt only for context (e.g. is this turn's persona shift legible given the previous turn?).
+
+CRITICAL JSON RULES:
+- Never use unescaped double quotes inside JSON string values. Use single quotes or rephrase.
+- Keep "reasoning" values under 25 words.
+
+Respond with ONLY a JSON object in this exact format (no other text before or after):
+\`\`\`json
+{
+  "scores": {
+${exampleScores}
+  },
+  "overall_score": 55,
+  "summary": "Brief overall assessment of the tutor message's charismatic register"
 }
 \`\`\``;
 }
