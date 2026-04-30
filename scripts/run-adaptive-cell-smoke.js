@@ -46,12 +46,21 @@ console.log(JSON.stringify(summary, null, 2));
 const fails = [];
 const rows = evaluationStore.getResults(summary.runId);
 if (rows.length === 0) fails.push('no rows persisted');
+const expectedScenarioTypes = new Set([
+  'false_confusion', 'polite_false_mastery', 'resistance_to_insight',
+  'answer_seeking_to_productive_struggle', 'metaphor_boundary_case',
+  'affective_shutdown', 'repair_after_misrecognition', 'sophistication_upgrade',
+]);
+const seenTypes = new Set();
 for (const row of rows) {
   if (row.profileName !== profileName) fails.push(`profileName mismatch on ${row.scenarioId}: ${row.profileName}`);
-  if (row.scenarioType !== 'resistance_to_insight') fails.push(`scenarioType mismatch on ${row.scenarioId}: ${row.scenarioType}`);
+  if (!expectedScenarioTypes.has(row.scenarioType)) fails.push(`unexpected scenarioType on ${row.scenarioId}: ${row.scenarioType}`);
+  seenTypes.add(row.scenarioType);
   if (!row.dialogueId) fails.push(`no dialogueId on ${row.scenarioId}`);
   if (!Array.isArray(row.suggestions) || row.suggestions.length === 0) fails.push(`suggestions empty on ${row.scenarioId}`);
 }
+const missing = [...expectedScenarioTypes].filter((t) => !seenTypes.has(t));
+if (missing.length) fails.push(`missing scenario types: ${missing.join(', ')}`);
 
 if (fails.length) {
   console.error('\nCELL SMOKE FAILED:');
