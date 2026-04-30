@@ -1673,6 +1673,43 @@ async function main() {
         console.log(
           `Starting evaluation run at ${runStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})...\n`,
         );
+
+        // Adaptive-cell dispatch: cells with `runner: adaptive` in
+        // tutor-agents.yaml use a different scenario format and runner
+        // (services/adaptiveTutor/), so they bypass evaluationRunner entirely.
+        const allTutorAgents = evalConfigLoader.loadTutorAgents()?.profiles || {};
+        const adaptiveProfiles = selectedProfileNames.filter(
+          (name) => allTutorAgents[name]?.runner === 'adaptive',
+        );
+        if (adaptiveProfiles.length > 0 && adaptiveProfiles.length !== selectedProfileNames.length) {
+          console.error(`Error: cannot mix adaptive-runner profiles with standard profiles in one run.`);
+          console.error(`  adaptive: ${adaptiveProfiles.join(', ')}`);
+          console.error(`  standard: ${selectedProfileNames.filter((n) => !adaptiveProfiles.includes(n)).join(', ')}`);
+          process.exit(1);
+        }
+        if (adaptiveProfiles.length > 0) {
+          const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
+          const summaries = [];
+          for (const profileName of adaptiveProfiles) {
+            const evalProfile = allTutorAgents[profileName];
+            const summary = await runAdaptiveEvaluation({
+              profileName,
+              evalProfile,
+              scenarios,
+              runsPerConfig,
+              description: description || `Adaptive evaluation: ${profileName}`,
+              dryRun,
+              verbose,
+            });
+            summaries.push(summary);
+            console.log(
+              `[adaptive] ${profileName}: runId=${summary.runId} persisted=${summary.persisted.length}/${summary.totalScenarios} llmMode=${summary.llmMode}`,
+            );
+          }
+          console.log('\nEvaluation complete.');
+          process.exit(0);
+        }
+
         const result = await evaluationRunner.runEvaluation({
           scenarios,
           configurations,
