@@ -9,11 +9,53 @@
 # A scenario may also specify a `counterfactual` — a perturbation of the
 # hidden state applied at fork_at_turn. The runner replays from that
 # checkpoint and we measure whether the tutor's downstream plan diverges.
-# Scenarios without a counterfactual run the original branch only.
+# A well-formed counterfactual flips the hidden truth in a way that should
+# shift the expected policy action; if the tutor's plan is identical
+# under both branches, that's prima facie evidence of non-adaptation.
+#
+# Scenario types are drawn from the gpt-pro 4.7 catalogue; expected
+# strategy shifts use labels from services/adaptiveTutor/policyActions.js.
 
 scenarios:
+
+  - id: false_confusion_v1
+    name: "False confusion — learner performs uncertainty"
+    scenario_type: false_confusion
+    hidden:
+      actual_misconception: "performs uncertainty for social safety while actually understanding"
+      actual_sophistication: advanced
+      trigger_turn: 1
+      trigger_signal: "I'm probably wrong, but doesn't this only fail if the assumption that f is monotonic is dropped?"
+    opening_turns:
+      - role: learner
+        content: "Sorry, I'm a bit lost — can you walk me through this slowly?"
+    max_turns: 3
+    expected_strategy_shift: scope_test
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: novice
+      trigger_signal: "I really don't follow any of this."
+
+  - id: polite_false_mastery_v1
+    name: "Polite false mastery — premature agreement"
+    scenario_type: polite_false_mastery
+    hidden:
+      actual_misconception: "hides confusion behind polite affirmation"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "Yes that makes sense, thank you."
+    opening_turns:
+      - role: learner
+        content: "OK so the recognition argument requires the asymmetry, right?"
+    max_turns: 3
+    expected_strategy_shift: ask_diagnostic_question
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: advanced
+      trigger_signal: "Yes, and the asymmetry only does work if the underlying second-person stance is already in place."
+
   - id: resistance_to_insight_v1
-    name: "Resistance to insight (smoke / single scenario)"
+    name: "Resistance to insight — substantive objection"
     scenario_type: resistance_to_insight
     hidden:
       actual_misconception: "treats recognition as affirmation"
@@ -29,3 +71,93 @@ scenarios:
       fork_at_turn: 1
       actual_sophistication: novice
       trigger_signal: "I don't get it, can you just explain?"
+
+  - id: answer_seeking_to_productive_struggle_v1
+    name: "Answer-seeking — pull toward oracle mode"
+    scenario_type: answer_seeking_to_productive_struggle
+    hidden:
+      actual_misconception: "treats the tutor as an oracle and avoids the cognitive work"
+      actual_sophistication: intermediate
+      trigger_turn: 2
+      trigger_signal: "Look, just tell me the answer and I'll work backwards from there."
+    opening_turns:
+      - role: learner
+        content: "What's the right answer to this one?"
+    max_turns: 4
+    expected_strategy_shift: withhold_answer
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: novice
+      trigger_signal: "I'm completely stuck — I don't even know where to start."
+
+  - id: metaphor_boundary_case_v1
+    name: "Metaphor boundary — overgeneralised analogy"
+    scenario_type: metaphor_boundary_case
+    hidden:
+      actual_misconception: "extends the tutor's metaphor past its valid range"
+      actual_sophistication: intermediate
+      trigger_turn: 2
+      trigger_signal: "So if recognition is like a mirror, then it must reflect everything back without distortion — that's why my interpretation has to be right."
+    opening_turns:
+      - role: learner
+        content: "Could you give me an analogy for what recognition is doing?"
+    max_turns: 4
+    expected_strategy_shift: name_the_disagreement
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: advanced
+      trigger_signal: "The mirror metaphor breaks down once the asymmetry of recognition is foregrounded — what alternative figure are you reaching for?"
+
+  - id: affective_shutdown_v1
+    name: "Affective shutdown — overload signal"
+    scenario_type: affective_shutdown
+    hidden:
+      actual_misconception: "cognitive load tipping into emotional shutdown"
+      actual_sophistication: novice
+      trigger_turn: 2
+      trigger_signal: "I just... I can't do this. I don't get any of this and I'm wasting your time."
+    opening_turns:
+      - role: learner
+        content: "Can we go through this one more time? I think I missed something earlier."
+    max_turns: 4
+    expected_strategy_shift: acknowledge_and_redirect
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: intermediate
+      trigger_signal: "Hold on, I want to push back — the second premise doesn't follow from the first."
+
+  - id: repair_after_misrecognition_v1
+    name: "Repair — tutor misread the learner"
+    scenario_type: repair_after_misrecognition
+    hidden:
+      actual_misconception: "tutor's prior turn assumed the learner was asking about X; they were asking about Y"
+      actual_sophistication: intermediate
+      trigger_turn: 2
+      trigger_signal: "No, that's not what I was asking — I'm asking about whether mutual recognition can hold without prior trust, not about the trust mechanism itself."
+    opening_turns:
+      - role: learner
+        content: "Can recognition happen between people who don't trust each other yet?"
+    max_turns: 4
+    expected_strategy_shift: repair_misrecognition
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: novice
+      trigger_signal: "OK I think I follow now — you're saying trust comes first."
+
+  - id: sophistication_upgrade_v1
+    name: "Sophistication upgrade — first turn understated"
+    scenario_type: sophistication_upgrade
+    hidden:
+      actual_misconception: "tutor undermodels the learner's prior knowledge"
+      actual_sophistication: advanced
+      trigger_turn: 2
+      trigger_signal: "Right — but isn't this just Brandom's expressivist reading dressed up? Where does Hegel's text actually require the recognition asymmetry you're invoking?"
+    opening_turns:
+      - role: learner
+        content: "I've heard the term recognition — what is it exactly?"
+    max_turns: 4
+    expected_strategy_shift: mirror_and_extend
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: novice
+      trigger_signal: "Sorry I'm still confused — what's the difference between recognition and just paying attention?"
