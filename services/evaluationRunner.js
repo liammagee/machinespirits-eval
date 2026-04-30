@@ -17,8 +17,17 @@ import {
   monitoringService,
   tutorDialogueEngine as dialogueEngine,
   memoryDynamicsService,
-  setQuietMode,
 } from '@machinespirits/tutor-core';
+// setQuietMode was a convenience export tutor-core used to ship for
+// silencing verbose dialogue output during eval runs. It was removed
+// from the package's public exports in 0.5.0. Resolve it via a
+// namespace import so the static binding doesn't crash module load,
+// and fall back to a no-op when the function isn't present — if a
+// future tutor-core re-exports it, this resolver picks it up.
+import * as _tutorCore from '@machinespirits/tutor-core';
+const setQuietMode = typeof _tutorCore.setQuietMode === 'function'
+  ? _tutorCore.setQuietMode
+  : () => {};
 import * as rubricEvaluator from './rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,

@@ -3,11 +3,10 @@
 //
 // Exercises runAdaptiveEvaluation against cell_110_langgraph_adaptive
 // (loaded from config/tutor-agents.yaml + config/adaptive-trap-scenarios.yaml)
-// in an isolated tmp DB. Confirms that eval-cli's dispatch path would write
-// the expected rows. Does not go through eval-cli itself, because eval-cli
-// transitively imports services/evaluationRunner.js, which has a pre-existing
-// `setQuietMode` import error against tutor-core@0.5.0 (broken on main since
-// Feb 2026, unrelated to this scaffold).
+// in an isolated tmp DB. Bypasses eval-cli to keep the smoke scoped to
+// the adaptive runner only; eval-cli's dispatch path can be exercised
+// manually with:
+//   node scripts/eval-cli.js run --profiles cell_110_langgraph_adaptive --runs 1 --dry-run
 //
 // No paid API calls.
 
