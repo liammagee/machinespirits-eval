@@ -4868,3 +4868,34 @@ profiles:
       hyperparameters:
         temperature: 0.5
         max_tokens: 16000
+
+  # ===========================================================================
+  # ADAPTIVE-STATE CELL (LangGraph)
+  # ===========================================================================
+  # Externalised learner profile (Strategy 1) + programmatic constraints
+  # (Strategy 3) + counterfactual replay (Strategy 5). Bypasses tutor-core's
+  # dialogue engine entirely — the runner is services/adaptiveTutor/.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_110_langgraph_adaptive
+  cell_110_langgraph_adaptive:
+    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations)."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: openrouter
+      model: nemotron
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true

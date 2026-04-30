@@ -1,0 +1,31 @@
+# Adaptive trap scenarios for the LangGraph adaptive cell (cell_110).
+#
+# Each scenario specifies a hidden ground-truth learner state and a trigger
+# turn at which the learner emits a signal that should force the tutor to
+# revise its model. `expected_strategy_shift` names the policy action the
+# tutor should pick at the turn AFTER the trigger fires; the strategy-shift
+# analyzer scores against this.
+#
+# A scenario may also specify a `counterfactual` — a perturbation of the
+# hidden state applied at fork_at_turn. The runner replays from that
+# checkpoint and we measure whether the tutor's downstream plan diverges.
+# Scenarios without a counterfactual run the original branch only.
+
+scenarios:
+  - id: resistance_to_insight_v1
+    name: "Resistance to insight (smoke / single scenario)"
+    scenario_type: resistance_to_insight
+    hidden:
+      actual_misconception: "treats recognition as affirmation"
+      actual_sophistication: advanced
+      trigger_turn: 1
+      trigger_signal: "But that only works if recognition reduces to affirmation, which is the very thing in dispute."
+    opening_turns:
+      - role: learner
+        content: "Can you tell me what recognition means?"
+    max_turns: 3
+    expected_strategy_shift: scope_test
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: novice
+      trigger_signal: "I don't get it, can you just explain?"
