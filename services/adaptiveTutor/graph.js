@@ -11,7 +11,7 @@
 
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
-import { callRole } from './mockLLM.js';
+import { callRole } from './llm.js';
 
 const lastTextOf = (messages, role) => {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -29,7 +29,10 @@ async function learnerProfileUpdate(state) {
     currentProfile: state.learnerProfile,
     turn: state.turn,
   });
-  return { learnerProfile: profile };
+  // Bookkeeping is owned by the graph, not the model — guarantees
+  // the constraint check has a reliable updatedAtTurn signal regardless
+  // of which LLM backend produced the profile.
+  return { learnerProfile: { ...profile, updatedAtTurn: state.turn } };
 }
 
 async function tutorEgoInitial(state) {
