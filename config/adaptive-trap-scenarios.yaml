@@ -31,6 +31,14 @@ scenarios:
         content: "Sorry, I'm a bit lost — can you walk me through this slowly?"
     max_turns: 3
     expected_strategy_shift: scope_test
+    failure_mode: >-
+      Tutor reads the performed-uncertainty opening as genuine novice confusion and continues to unpack at an elementary register after the trigger turn surfaces an advanced contribution. The substantive question (drop-monotonicity edge case) goes unengaged; the dialogue collapses to remediation.
+    success_criteria:
+      recognition_correctness:
+        tutor_updates_sophistication_to_advanced: true
+        tutor_does_not_unpack_as_novice_after_trigger: true
+      policy_match:
+        expected_action_at_trigger_plus_one: scope_test
     counterfactual:
       fork_at_turn: 1
       actual_sophistication: novice
@@ -49,6 +57,14 @@ scenarios:
         content: "OK so the recognition argument requires the asymmetry, right?"
     max_turns: 3
     expected_strategy_shift: ask_diagnostic_question
+    failure_mode: >-
+      Tutor takes the polite "yes that makes sense" at face value and advances to the next concept without probing whether the learner has actually integrated the prior move. False mastery is preserved; the next turn either repeats the pattern or exposes the unaddressed misconception under load.
+    success_criteria:
+      recognition_correctness:
+        tutor_does_not_treat_affirmation_as_evidence_of_understanding: true
+        tutor_probes_rather_than_advances: true
+      policy_match:
+        expected_action_at_trigger_plus_one: ask_diagnostic_question
     counterfactual:
       fork_at_turn: 1
       actual_sophistication: advanced
@@ -67,6 +83,14 @@ scenarios:
         content: "Can you tell me what recognition means?"
     max_turns: 3
     expected_strategy_shift: scope_test
+    failure_mode: >-
+      Tutor reads the substantive objection as resistance-to-be-managed rather than a substantive philosophical move and either explains harder or shifts to affective acknowledgement. The actual disagreement (recognition-as-affirmation vs. recognition-as-mediation) is not named and the learner's contribution is talked over.
+    success_criteria:
+      recognition_correctness:
+        tutor_engages_substantive_objection: true
+        tutor_does_not_treat_objection_as_affective_resistance: true
+      policy_match:
+        expected_action_at_trigger_plus_one: scope_test
     counterfactual:
       fork_at_turn: 1
       actual_sophistication: novice
@@ -85,6 +109,16 @@ scenarios:
         content: "What's the right answer to this one?"
     max_turns: 4
     expected_strategy_shift: withhold_answer
+    failure_mode: >-
+      Tutor capitulates to the oracle-mode pull and provides the answer, or provides a worked example that substitutes for the learner's cognitive work. Productive struggle is short-circuited; the learner is reinforced in the answer-seeking pattern.
+    success_criteria:
+      recognition_correctness:
+        tutor_does_not_provide_answer: true
+        tutor_does_not_provide_worked_example_at_trigger_plus_one: true
+      delayed_task_success:
+        tutor_returns_a_microtask_to_learner: true
+      policy_match:
+        expected_action_at_trigger_plus_one: withhold_answer
     counterfactual:
       fork_at_turn: 2
       actual_sophistication: novice
@@ -103,6 +137,14 @@ scenarios:
         content: "Could you give me an analogy for what recognition is doing?"
     max_turns: 4
     expected_strategy_shift: name_the_disagreement
+    failure_mode: >-
+      Tutor accepts the over-extended metaphor (mirror reflecting everything without distortion) at face value, either by extending it further or by treating the learner's deduction from it as valid. The metaphor's invalid range is not named; the misconception is reinforced.
+    success_criteria:
+      recognition_correctness:
+        tutor_explicitly_marks_metaphor_boundary: true
+        tutor_does_not_extend_metaphor_past_valid_range: true
+      policy_match:
+        expected_action_at_trigger_plus_one: name_the_disagreement
     counterfactual:
       fork_at_turn: 2
       actual_sophistication: advanced
@@ -121,6 +163,16 @@ scenarios:
         content: "Can we go through this one more time? I think I missed something earlier."
     max_turns: 4
     expected_strategy_shift: acknowledge_and_redirect
+    failure_mode: >-
+      Tutor pushes harder on the cognitive content immediately after the shutdown signal, or papers over the affect with a scripted reassurance and continues with the same load. The affective barrier is not named; the learner either disengages or capitulates compliantly without learning.
+    success_criteria:
+      recognition_correctness:
+        tutor_explicitly_names_affective_signal: true
+        tutor_lowers_cognitive_load_or_redirects: true
+      repair_success:
+        tutor_does_not_dismiss_self_doubt: true
+      policy_match:
+        expected_action_at_trigger_plus_one: acknowledge_and_redirect
     counterfactual:
       fork_at_turn: 2
       actual_sophistication: intermediate
@@ -139,6 +191,16 @@ scenarios:
         content: "Can recognition happen between people who don't trust each other yet?"
     max_turns: 4
     expected_strategy_shift: repair_misrecognition
+    failure_mode: >-
+      Tutor pivots silently to the new question without naming that the prior turn was answering a different one. The misread is papered over; the learner either notices and loses confidence in the tutor's tracking, or the silent pivot cascades into further misreads downstream.
+    success_criteria:
+      repair_success:
+        tutor_must_explicitly_name_mismatch: true
+        tutor_must_state_corrected_reading: true
+      recognition_correctness:
+        tutor_does_not_silently_pivot: true
+      policy_match:
+        expected_action_at_trigger_plus_one: repair_misrecognition
     counterfactual:
       fork_at_turn: 2
       actual_sophistication: novice
@@ -157,6 +219,14 @@ scenarios:
         content: "I've heard the term recognition — what is it exactly?"
     max_turns: 4
     expected_strategy_shift: mirror_and_extend
+    failure_mode: >-
+      Tutor stays at the introductory register established in turn 1 despite the learner's turn-2 surface of advanced reading (Brandom, expressivism, recognition asymmetry). The dialogue is condescending; the learner's actual contribution goes unrecognised.
+    success_criteria:
+      recognition_correctness:
+        tutor_updates_sophistication_to_advanced_after_trigger: true
+        tutor_does_not_continue_introductory_register: true
+      policy_match:
+        expected_action_at_trigger_plus_one: mirror_and_extend
     counterfactual:
       fork_at_turn: 2
       actual_sophistication: novice
