@@ -474,7 +474,7 @@ Update this section in-place as phases complete. (Initial state: only Phase 1 pr
   - [x] `analyze-strategy-shift.js` shipped
   - [x] eval-cli regression unblocked
   - [ ] A13 pre-registration doc
-  - [ ] Cost ceiling
+  - [x] Cost ceiling (commit `aa2b64f` — `services/adaptiveTutor/budgetTracker.js` + `--max-cost` flag; 11 tests)
   - [ ] Polished policy-action YAML
   - [ ] Scenario completeness fields
   - [ ] A13 condition cells (111, 112, 113)
