@@ -1,0 +1,614 @@
+{
+  "1506.05908": {
+    "arxiv_id": "1506.05908",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Piech et al. (2015), \"Deep Knowledge Tracing.\"",
+    "description": "- **Piech et al. (2015), \"Deep Knowledge Tracing.\"** \u2014 https://arxiv.org/abs/1506.05908. The DKT paper that started the deep-learning lineage.",
+    "original_url": "https://arxiv.org/abs/1506.05908",
+    "pdf_url": "https://arxiv.org/pdf/1506.05908"
+  },
+  "2409.16490": {
+    "arxiv_id": "2409.16490",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Scarlatos & Lan (2024), \"Exploring Knowledge Tracing in Tutor-Student Dialogues using LLMs.\"",
+    "description": "- **Scarlatos & Lan (2024), \"Exploring Knowledge Tracing in Tutor-Student Dialogues using LLMs.\"** \u2014 https://arxiv.org/pdf/2409.16490. *The* most directly relevant paper to your S2 \u2014 performs KT on open-ended dialogue turns rather than item responses, exactly the diagnostician's job.",
+    "original_url": "https://arxiv.org/pdf/2409.16490",
+    "pdf_url": "https://arxiv.org/pdf/2409.16490"
+  },
+  "2503.06424": {
+    "arxiv_id": "2503.06424",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Scarlatos, Lee, Liu, Baraniuk, Lan (2025), \"Training LLM-based Tutors to Improve Student Learning Outcomes in Dialogues.\"",
+    "description": "- **Scarlatos, Lee, Liu, Baraniuk, Lan (2025), \"Training LLM-based Tutors to Improve Student Learning Outcomes in Dialogues.\"** \u2014 https://arxiv.org/abs/2503.06424. Uses an LLM-based student model to score candidate tutor utterances and DPO-trains against it. Highly relevant to **[S1, S4]** (the student model literally generates \"what-if\" predictions).",
+    "original_url": "https://arxiv.org/abs/2503.06424",
+    "pdf_url": "https://arxiv.org/pdf/2503.06424"
+  },
+  "2502.19915": {
+    "arxiv_id": "2502.19915",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Cen et al. (2025), \"LLM-driven Effective Knowledge Tracing by Integrating Dual-channel Difficulty.\"",
+    "description": "- **Cen et al. (2025), \"LLM-driven Effective Knowledge Tracing by Integrating Dual-channel Difficulty.\"** \u2014 https://arxiv.org/pdf/2502.19915. Lin lab work on LLM-KT.",
+    "original_url": "https://arxiv.org/pdf/2502.19915",
+    "pdf_url": "https://arxiv.org/pdf/2502.19915"
+  },
+  "2505.17705": {
+    "arxiv_id": "2505.17705",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "CIKT \u2014 Collaborative Iterative Knowledge Tracing (2025).",
+    "description": "- **CIKT \u2014 Collaborative Iterative Knowledge Tracing (2025).** \u2014 https://arxiv.org/pdf/2505.17705. Two-LLM framework: an *Analyst* generates structured student profiles, a *Predictor* forecasts performance; trained via Kahneman\u2013Tversky Optimization. Architecturally analogous to your ego/superego split.",
+    "original_url": "https://arxiv.org/pdf/2505.17705",
+    "pdf_url": "https://arxiv.org/pdf/2505.17705"
+  },
+  "2511.02599": {
+    "arxiv_id": "2511.02599",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Next Token Knowledge Tracing (NTKT, 2025).",
+    "description": "- **Next Token Knowledge Tracing (NTKT, 2025).** \u2014 https://arxiv.org/pdf/2511.02599. Reframes KT as next-token prediction on natural-language interaction histories. Directly applicable if the diagnostician maintains a textual learner state.",
+    "original_url": "https://arxiv.org/pdf/2511.02599",
+    "pdf_url": "https://arxiv.org/pdf/2511.02599"
+  },
+  "2506.16982": {
+    "arxiv_id": "2506.16982",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Language Bottleneck Models for Qualitative Knowledge State Modeling (2025).",
+    "description": "- **Language Bottleneck Models for Qualitative Knowledge State Modeling (2025).** \u2014 https://arxiv.org/pdf/2506.16982. Forces the learner state through a natural-language \"bottleneck\" \u2014 interpretable belief-state tracking; arguably the cleanest realization of an externalized learner model.",
+    "original_url": "https://arxiv.org/pdf/2506.16982",
+    "pdf_url": "https://arxiv.org/pdf/2506.16982"
+  },
+  "2602.22879": {
+    "arxiv_id": "2602.22879",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "L-HAKT \u2014 LLM-Empowered Knowledge Tracing via Hierarchical Behavior Alignment in Hyperbolic Space (2026).",
+    "description": "- **L-HAKT \u2014 LLM-Empowered Knowledge Tracing via Hierarchical Behavior Alignment in Hyperbolic Space (2026).** \u2014 https://arxiv.org/pdf/2602.22879. Hyperbolic embedding of KC trees; useful if you go hierarchical.",
+    "original_url": "https://arxiv.org/pdf/2602.22879",
+    "pdf_url": "https://arxiv.org/pdf/2602.22879"
+  },
+  "2603.04855": {
+    "arxiv_id": "2603.04855",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "HACHIMI: Scalable and Controllable Student Persona Generation via Orchestrated Agents (2026).",
+    "description": "- **HACHIMI: Scalable and Controllable Student Persona Generation via Orchestrated Agents (2026).** \u2014 https://arxiv.org/pdf/2603.04855. Theory-aligned student persona generation with population-level distribution control. **[S1]** for trajectory bifurcation.",
+    "original_url": "https://arxiv.org/pdf/2603.04855",
+    "pdf_url": "https://arxiv.org/pdf/2603.04855"
+  },
+  "2601.05473": {
+    "arxiv_id": "2601.05473",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Towards Valid Student Simulation with Large Language Models (2026).",
+    "description": "- **Towards Valid Student Simulation with Large Language Models (2026).** \u2014 https://arxiv.org/html/2601.05473. Validation framework for LLM-simulated students. Critical for S1 since your bifurcations depend on a believable student-model.",
+    "original_url": "https://arxiv.org/html/2601.05473",
+    "pdf_url": "https://arxiv.org/pdf/2601.05473"
+  },
+  "2511.06078": {
+    "arxiv_id": "2511.06078",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "\"Simulating Students with Large Language Models: A Review of Architecture\" (2025).",
+    "description": "- **\"Simulating Students with Large Language Models: A Review of Architecture\" (2025).** \u2014 https://arxiv.org/pdf/2511.06078. Survey of architectures for LLM-based simulated students.",
+    "original_url": "https://arxiv.org/pdf/2511.06078",
+    "pdf_url": "https://arxiv.org/pdf/2511.06078"
+  },
+  "2504.06460": {
+    "arxiv_id": "2504.06460",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Can LLMs Simulate Personas with Reversed Performance? (2025).",
+    "description": "- **Can LLMs Simulate Personas with Reversed Performance? (2025).** \u2014 https://arxiv.org/html/2504.06460. LLMs systematically struggle to simulate low-performing students; vital caveat for S1 trajectory generation.",
+    "original_url": "https://arxiv.org/html/2504.06460",
+    "pdf_url": "https://arxiv.org/pdf/2504.06460"
+  },
+  "2105.15106": {
+    "arxiv_id": "2105.15106",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Shen et al. (2024), \"A Survey of Knowledge Tracing: Models, Variants, and Applications.\"",
+    "description": "- **Shen et al. (2024), \"A Survey of Knowledge Tracing: Models, Variants, and Applications.\"** \u2014 https://arxiv.org/html/2105.15106v4. Maintained survey covering BKT \u2192 DKT \u2192 DKVMN \u2192 SAKT \u2192 SAINT/SAINT+ \u2192 AKT \u2192 LLM-KT.",
+    "original_url": "https://arxiv.org/html/2105.15106v4",
+    "pdf_url": "https://arxiv.org/pdf/2105.15106"
+  },
+  "2007.12324": {
+    "arxiv_id": "2007.12324",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "AKT \u2014 Context-Aware Attentive Knowledge Tracing (Ghosh, Heffernan, Lan 2020).",
+    "description": "- **AKT \u2014 Context-Aware Attentive Knowledge Tracing (Ghosh, Heffernan, Lan 2020).** \u2014 https://arxiv.org/pdf/2007.12324. Monotonic attention + Rasch embeddings. Still the most cited modern baseline.",
+    "original_url": "https://arxiv.org/pdf/2007.12324",
+    "pdf_url": "https://arxiv.org/pdf/2007.12324"
+  },
+  "2010.12042": {
+    "arxiv_id": "2010.12042",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "SAINT+ (Shin et al. 2020).",
+    "description": "- **SAINT+ (Shin et al. 2020).** \u2014 https://arxiv.org/pdf/2010.12042. Transformer encoder\u2013decoder on EdNet; SOTA for years.",
+    "original_url": "https://arxiv.org/pdf/2010.12042",
+    "pdf_url": "https://arxiv.org/pdf/2010.12042"
+  },
+  "2501.05605": {
+    "arxiv_id": "2501.05605",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "Domain-Knowledge-Informed Attention KT (2025).",
+    "description": "- **Domain-Knowledge-Informed Attention KT (2025).** \u2014 https://arxiv.org/html/2501.05605v1. XES3G5M benchmark with auxiliary information.",
+    "original_url": "https://arxiv.org/html/2501.05605v1",
+    "pdf_url": "https://arxiv.org/pdf/2501.05605"
+  },
+  "2105.00385": {
+    "arxiv_id": "2105.00385",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "pyBKT",
+    "description": "- **pyBKT** \u2014 https://github.com/CAHLR/pyBKT. Pardos lab's Python BKT library with EM fitting, cross-validation, common BKT extensions. Paper: https://arxiv.org/abs/2105.00385. Tutorial: https://ialt.education.ufl.edu/2024/05/06/an-introduction-to-bayesian-knowledge-tracing-with-pybkt/",
+    "original_url": "https://arxiv.org/abs/2105.00385",
+    "pdf_url": "https://arxiv.org/pdf/2105.00385"
+  },
+  "1912.03072": {
+    "arxiv_id": "1912.03072",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "EdNet (Choi et al. 2019).",
+    "description": "- **EdNet (Choi et al. 2019).** \u2014 https://arxiv.org/abs/1912.03072 / https://github.com/riiid/ednet. 131M interactions from Santa; the largest KT dataset.",
+    "original_url": "https://arxiv.org/abs/1912.03072",
+    "pdf_url": "https://arxiv.org/pdf/1912.03072"
+  },
+  "2409.10244": {
+    "arxiv_id": "2409.10244",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "ES-KT-24",
+    "description": "- **ES-KT-24** \u2014 https://arxiv.org/pdf/2409.10244. Multimodal KT with educational-game video + LLM-synthesized text.",
+    "original_url": "https://arxiv.org/pdf/2409.10244",
+    "pdf_url": "https://arxiv.org/pdf/2409.10244"
+  },
+  "2402.01580": {
+    "arxiv_id": "2402.01580",
+    "section": "Knowledge Tracing & Student Modeling",
+    "section_num": "1",
+    "title": "GAIED workshop series (NeurIPS 2023 \u2192 IJCAI 2024 tutorial \u2192 ongoing).",
+    "description": "- **GAIED workshop series (NeurIPS 2023 \u2192 IJCAI 2024 tutorial \u2192 ongoing).** Survey paper: https://arxiv.org/abs/2402.01580. Tutorial: https://gaied.org/ijcai2024/.",
+    "original_url": "https://arxiv.org/abs/2402.01580",
+    "pdf_url": "https://arxiv.org/pdf/2402.01580"
+  },
+  "2602.19303": {
+    "arxiv_id": "2602.19303",
+    "section": "Intelligent Tutoring Systems Foundations (primary: S5; secondary: S2, S3) \u2014 light coverage",
+    "section_num": "2",
+    "title": "The Path to Conversational AI Tutors (Vanacore, Closser, Baker, Roschelle, 2026).",
+    "description": "- **The Path to Conversational AI Tutors (Vanacore, Closser, Baker, Roschelle, 2026).** \u2014 https://arxiv.org/pdf/2602.19303. Maps classical ITS pedagogical primitives onto LLM tutoring; the cleanest bridge document I've seen.",
+    "original_url": "https://arxiv.org/pdf/2602.19303",
+    "pdf_url": "https://arxiv.org/pdf/2602.19303"
+  },
+  "2508.01503": {
+    "arxiv_id": "2508.01503",
+    "section": "Intelligent Tutoring Systems Foundations (primary: S5; secondary: S2, S3) \u2014 light coverage",
+    "section_num": "2",
+    "title": "A Theory of Adaptive Scaffolding for LLM-Based Pedagogical Agents (2025).",
+    "description": "- **A Theory of Adaptive Scaffolding for LLM-Based Pedagogical Agents (2025).** \u2014 https://arxiv.org/pdf/2508.01503. Synthesizes KLI, ZPD, and ECD with LLM-agent design. **[S5]** anchor paper.",
+    "original_url": "https://arxiv.org/pdf/2508.01503",
+    "pdf_url": "https://arxiv.org/pdf/2508.01503"
+  },
+  "2411.17924": {
+    "arxiv_id": "2411.17924",
+    "section": "Intelligent Tutoring Systems Foundations (primary: S5; secondary: S2, S3) \u2014 light coverage",
+    "section_num": "2",
+    "title": "AI2T: Building Trustable AI Tutors by Interactively Teaching a Self-Aware Learning Agent (Weitekamp, Harpstead, Koedinger 2024).",
+    "description": "- **AI2T: Building Trustable AI Tutors by Interactively Teaching a Self-Aware Learning Agent (Weitekamp, Harpstead, Koedinger 2024).** \u2014 https://arxiv.org/pdf/2411.17924. CMU lineage; modern Cognitive Tutor.",
+    "original_url": "https://arxiv.org/pdf/2411.17924",
+    "pdf_url": "https://arxiv.org/pdf/2411.17924"
+  },
+  "2603.05778": {
+    "arxiv_id": "2603.05778",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "Tutor Move Taxonomy (Zhou, Vanacore, Thompson, St John, Kizilcec, 2026).",
+    "description": "- **Tutor Move Taxonomy (Zhou, Vanacore, Thompson, St John, Kizilcec, 2026).** \u2014 https://arxiv.org/pdf/2603.05778. *Most directly useful for S3*: a hybrid deductive-inductive taxonomy from the National Tutoring Observatory (Cornell), with four top-level categories and learning-support moves on a spectrum from elicit\u2192explain. This is essentially the codebook you should adopt or adapt.",
+    "original_url": "https://arxiv.org/pdf/2603.05778",
+    "pdf_url": "https://arxiv.org/pdf/2603.05778"
+  },
+  "2406.03486": {
+    "arxiv_id": "2406.03486",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "BIPED: Bilingual Pedagogically-informed Tutoring Dataset (2024).",
+    "description": "- **BIPED: Bilingual Pedagogically-informed Tutoring Dataset (2024).** \u2014 https://arxiv.org/pdf/2406.03486. 34 tutor acts \u00d7 9 student acts; \"select-act-then-generate\" CITS design pattern relevant to **[S3, S2]**.",
+    "original_url": "https://arxiv.org/pdf/2406.03486",
+    "pdf_url": "https://arxiv.org/pdf/2406.03486"
+  },
+  "2509.09125": {
+    "arxiv_id": "2509.09125",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "He & Xu (2024), \"Automated Classification of Tutors' Dialogue Acts Using Generative AI: A Case Study Using the CIMA Corpus.\"",
+    "description": "- **He & Xu (2024), \"Automated Classification of Tutors' Dialogue Acts Using Generative AI: A Case Study Using the CIMA Corpus.\"** \u2014 https://arxiv.org/pdf/2509.09125. GPT-3.5/GPT-4 vs. manual coding on CIMA.",
+    "original_url": "https://arxiv.org/pdf/2509.09125",
+    "pdf_url": "https://arxiv.org/pdf/2509.09125"
+  },
+  "2506.17410": {
+    "arxiv_id": "2506.17410",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "Thomas, Borchers, Lin, et al. (2025), \"Leveraging LLMs to Assess Tutor Moves in Real-Life Dialogues: A Feasibility Study.\"",
+    "description": "- **Thomas, Borchers, Lin, et al. (2025), \"Leveraging LLMs to Assess Tutor Moves in Real-Life Dialogues: A Feasibility Study.\"** \u2014 https://arxiv.org/pdf/2506.17410. CMU + LEVI; benchmarks LLM accuracy at tutor-move classification on real audio transcripts.",
+    "original_url": "https://arxiv.org/pdf/2506.17410",
+    "pdf_url": "https://arxiv.org/pdf/2506.17410"
+  },
+  "2412.13395": {
+    "arxiv_id": "2412.13395",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "Enhancing Talk Moves Analysis in Mathematics Tutoring through Classroom Teaching Discourse (2024).",
+    "description": "- **Enhancing Talk Moves Analysis in Mathematics Tutoring through Classroom Teaching Discourse (2024).** \u2014 https://arxiv.org/html/2412.13395v1. Cross-corpus transfer between TalkMoves and NCTE-annotated tutoring sessions.",
+    "original_url": "https://arxiv.org/html/2412.13395v1",
+    "pdf_url": "https://arxiv.org/pdf/2412.13395"
+  },
+  "2412.09416": {
+    "arxiv_id": "2412.09416",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "Unifying AI Tutor Evaluation: An Evaluation Taxonomy for Pedagogical Ability Assessment of LLM-Powered AI Tutors (Maurya, Petukhova, Kochmar, 2024 \u2192 NAACL 2025).",
+    "description": "- **Unifying AI Tutor Evaluation: An Evaluation Taxonomy for Pedagogical Ability Assessment of LLM-Powered AI Tutors (Maurya, Petukhova, Kochmar, 2024 \u2192 NAACL 2025).** \u2014 https://arxiv.org/html/2412.09416v1. Eight-dimension pedagogical-ability rubric (Mistake Identification, Mistake Location, Guidance, Actionability, Coherence, Tutor Tone, Humanlikeness, Encouragement).",
+    "original_url": "https://arxiv.org/html/2412.09416v1",
+    "pdf_url": "https://arxiv.org/pdf/2412.09416"
+  },
+  "2204.09652": {
+    "arxiv_id": "2204.09652",
+    "section": "Dialogue Act Classification & Pedagogical Move Taxonomies",
+    "section_num": "3",
+    "title": "TalkMoves dataset & application.",
+    "description": "- **TalkMoves dataset & application.** \u2014 https://github.com/SumnerLab/TalkMoves; paper https://arxiv.org/abs/2204.09652. 567 K-12 math lesson transcripts annotated for ten discursive moves + Switchboard-DA labels.",
+    "original_url": "https://arxiv.org/abs/2204.09652",
+    "pdf_url": "https://arxiv.org/pdf/2204.09652"
+  },
+  "2508.21204": {
+    "arxiv_id": "2508.21204",
+    "section": "Scaffolding Theory & Contingency Measurement",
+    "section_num": "4",
+    "title": "Figueiredo (2025), \"Fuzzy, Symbolic, and Contextual: Enhancing LLM Instruction via Cognitive Scaffolding.\"",
+    "description": "- **Figueiredo (2025), \"Fuzzy, Symbolic, and Contextual: Enhancing LLM Instruction via Cognitive Scaffolding.\"** \u2014 https://arxiv.org/pdf/2508.21204. Three-layer prompt-level scaffold with short-term schema; explicitly Vygotskian.",
+    "original_url": "https://arxiv.org/pdf/2508.21204",
+    "pdf_url": "https://arxiv.org/pdf/2508.21204"
+  },
+  "2508.06754": {
+    "arxiv_id": "2508.06754",
+    "section": "Scaffolding Theory & Contingency Measurement",
+    "section_num": "4",
+    "title": "\"A Fuzzy Logic Prompting Framework for Large Language Models in Adaptive and Uncertain Tasks\" (2025).",
+    "description": "- **\"A Fuzzy Logic Prompting Framework for Large Language Models in Adaptive and Uncertain Tasks\" (2025).** \u2014 https://arxiv.org/html/2508.06754. Boundary-prompt + control-schema design pattern.",
+    "original_url": "https://arxiv.org/html/2508.06754",
+    "pdf_url": "https://arxiv.org/pdf/2508.06754"
+  },
+  "2506.19484": {
+    "arxiv_id": "2506.19484",
+    "section": "Scaffolding Theory & Contingency Measurement",
+    "section_num": "4",
+    "title": "\"arXiv:2506.19484 \u2014 LLMs and Vygotsky\" (2025).",
+    "description": "- **\"arXiv:2506.19484 \u2014 LLMs and Vygotsky\" (2025).** \u2014 https://arxiv.org/pdf/2506.19484. Maps LLM behaviors onto Vygotskian theory point-by-point. Useful for the discussion section of your follow-up.",
+    "original_url": "https://arxiv.org/pdf/2506.19484",
+    "pdf_url": "https://arxiv.org/pdf/2506.19484"
+  },
+  "2210.03629": {
+    "arxiv_id": "2210.03629",
+    "section": "LLM Agent Architectures & Multi-Agent Systems",
+    "section_num": "5",
+    "title": "Yao et al. (2023), \"ReAct: Synergizing Reasoning and Acting in Language Models.\"",
+    "description": "- **Yao et al. (2023), \"ReAct: Synergizing Reasoning and Acting in Language Models.\"** \u2014 https://arxiv.org/abs/2210.03629. The canonical reason-act loop.",
+    "original_url": "https://arxiv.org/abs/2210.03629",
+    "pdf_url": "https://arxiv.org/pdf/2210.03629"
+  },
+  "2303.11366": {
+    "arxiv_id": "2303.11366",
+    "section": "LLM Agent Architectures & Multi-Agent Systems",
+    "section_num": "5",
+    "title": "Shinn et al. (2023), \"Reflexion: Language Agents with Verbal Reinforcement Learning.\"",
+    "description": "- **Shinn et al. (2023), \"Reflexion: Language Agents with Verbal Reinforcement Learning.\"** \u2014 https://arxiv.org/abs/2303.11366. Verbal self-feedback; relevant to a critic/diagnostician role.",
+    "original_url": "https://arxiv.org/abs/2303.11366",
+    "pdf_url": "https://arxiv.org/pdf/2303.11366"
+  },
+  "2305.16291": {
+    "arxiv_id": "2305.16291",
+    "section": "LLM Agent Architectures & Multi-Agent Systems",
+    "section_num": "5",
+    "title": "Wang et al. (2023), \"Voyager: An Open-Ended Embodied Agent with LLMs.\"",
+    "description": "- **Wang et al. (2023), \"Voyager: An Open-Ended Embodied Agent with LLMs.\"** \u2014 https://arxiv.org/abs/2305.16291. Skill-library + automatic curriculum; conceptually relevant for S6 (skills accumulating across sessions).",
+    "original_url": "https://arxiv.org/abs/2305.16291",
+    "pdf_url": "https://arxiv.org/pdf/2305.16291"
+  },
+  "2304.03442": {
+    "arxiv_id": "2304.03442",
+    "section": "LLM Agent Architectures & Multi-Agent Systems",
+    "section_num": "5",
+    "title": "Park et al. (2023), \"Generative Agents: Interactive Simulacra of Human Behavior.\"",
+    "description": "- **Park et al. (2023), \"Generative Agents: Interactive Simulacra of Human Behavior.\"** \u2014 https://arxiv.org/abs/2304.03442 / https://dl.acm.org/doi/fullHtml/10.1145/3586183.3606763. Observation-reflection-planning memory architecture; the persistent-memory paradigm for S6.",
+    "original_url": "https://arxiv.org/abs/2304.03442",
+    "pdf_url": "https://arxiv.org/pdf/2304.03442"
+  },
+  "2601.12560": {
+    "arxiv_id": "2601.12560",
+    "section": "LLM Agent Architectures & Multi-Agent Systems",
+    "section_num": "5",
+    "title": "\"Agentic AI: Architectures, Taxonomies, and Evaluation of LLM Agents\" (2026).",
+    "description": "- **\"Agentic AI: Architectures, Taxonomies, and Evaluation of LLM Agents\" (2026).** \u2014 https://arxiv.org/html/2601.12560v1.",
+    "original_url": "https://arxiv.org/html/2601.12560v1",
+    "pdf_url": "https://arxiv.org/pdf/2601.12560"
+  },
+  "2601.01743": {
+    "arxiv_id": "2601.01743",
+    "section": "LLM Agent Architectures & Multi-Agent Systems",
+    "section_num": "5",
+    "title": "\"AI Agent Systems: Architectures, Applications, and Evaluation\" (2026).",
+    "description": "- **\"AI Agent Systems: Architectures, Applications, and Evaluation\" (2026).** \u2014 https://arxiv.org/html/2601.01743v1.",
+    "original_url": "https://arxiv.org/html/2601.01743v1",
+    "pdf_url": "https://arxiv.org/pdf/2601.01743"
+  },
+  "2502.11008": {
+    "arxiv_id": "2502.11008",
+    "section": "Counterfactual Evaluation of Dialogue Systems",
+    "section_num": "6",
+    "title": "CounterBench (Tang et al. 2025).",
+    "description": "- **CounterBench (Tang et al. 2025).** \u2014 https://arxiv.org/pdf/2502.11008. Benchmark for counterfactual reasoning in LLMs; introduces the \"CoIn\" paradigm.",
+    "original_url": "https://arxiv.org/pdf/2502.11008",
+    "pdf_url": "https://arxiv.org/pdf/2502.11008"
+  },
+  "2410.21131": {
+    "arxiv_id": "2410.21131",
+    "section": "Counterfactual Evaluation of Dialogue Systems",
+    "section_num": "6",
+    "title": "\"Towards Unifying Evaluation of Counterfactual Explanations: Leveraging LLMs for Human-Centric Assessments\" (2024).",
+    "description": "- **\"Towards Unifying Evaluation of Counterfactual Explanations: Leveraging LLMs for Human-Centric Assessments\" (2024).** \u2014 https://arxiv.org/pdf/2410.21131. LLM as benchmarker of CF explanations.",
+    "original_url": "https://arxiv.org/pdf/2410.21131",
+    "pdf_url": "https://arxiv.org/pdf/2410.21131"
+  },
+  "2505.17801": {
+    "arxiv_id": "2505.17801",
+    "section": "Counterfactual Evaluation of Dialogue Systems",
+    "section_num": "6",
+    "title": "AXIS (2025), \"Integrating Counterfactual Simulations with Language Models for Explaining Multi-Agent Behaviour.\"",
+    "description": "- **AXIS (2025), \"Integrating Counterfactual Simulations with Language Models for Explaining Multi-Agent Behaviour.\"** \u2014 https://arxiv.org/html/2505.17801. Closest existing work to your bifurcation idea, in the multi-agent-RL setting.",
+    "original_url": "https://arxiv.org/html/2505.17801",
+    "pdf_url": "https://arxiv.org/pdf/2505.17801"
+  },
+  "2403.03956": {
+    "arxiv_id": "2403.03956",
+    "section": "Counterfactual Evaluation of Dialogue Systems",
+    "section_num": "6",
+    "title": "Backtracing (Wang, Wirawarn, Khattab, Goodman, Demszky, EACL Findings 2024).",
+    "description": "- **Backtracing (Wang, Wirawarn, Khattab, Goodman, Demszky, EACL Findings 2024).** \u2014 https://arxiv.org/abs/2403.03956. \"Retrieve the cause of the query\": given a student turn, find the antecedent tutor turn that produced the misconception. Methodologically adjacent to bifurcation.",
+    "original_url": "https://arxiv.org/abs/2403.03956",
+    "pdf_url": "https://arxiv.org/pdf/2403.03956"
+  },
+  "2410.03017": {
+    "arxiv_id": "2410.03017",
+    "section": "Counterfactual Evaluation of Dialogue Systems",
+    "section_num": "6",
+    "title": "Tutor CoPilot (Wang, Ribeiro, Robinson, Loeb, Demszky 2024).",
+    "description": "- **Tutor CoPilot (Wang, Ribeiro, Robinson, Loeb, Demszky 2024).** \u2014 https://arxiv.org/abs/2410.03017. Real-time AI suggestions to live human tutors; the deployment study includes natural counterfactual variation.",
+    "original_url": "https://arxiv.org/abs/2410.03017",
+    "pdf_url": "https://arxiv.org/pdf/2410.03017"
+  },
+  "2306.05685": {
+    "arxiv_id": "2306.05685",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "Zheng et al. (2023), \"Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.\"",
+    "description": "- **Zheng et al. (2023), \"Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.\"** \u2014 https://arxiv.org/abs/2306.05685. Required reading; introduces pairwise vs. single-answer protocols and quantifies position/verbosity biases.",
+    "original_url": "https://arxiv.org/abs/2306.05685",
+    "pdf_url": "https://arxiv.org/pdf/2306.05685"
+  },
+  "2403.04132": {
+    "arxiv_id": "2403.04132",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "LMSYS Chatbot Arena (Chiang et al., 2024).",
+    "description": "- **LMSYS Chatbot Arena (Chiang et al., 2024).** \u2014 https://arxiv.org/abs/2403.04132. Crowd-sourced pairwise preference ranking infrastructure.",
+    "original_url": "https://arxiv.org/abs/2403.04132",
+    "pdf_url": "https://arxiv.org/pdf/2403.04132"
+  },
+  "2406.07791": {
+    "arxiv_id": "2406.07791",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "Shi et al. (2024\u201325), \"Judging the Judges: A Systematic Study of Position Bias in LLM-as-a-Judge.\"",
+    "description": "- **Shi et al. (2024\u201325), \"Judging the Judges: A Systematic Study of Position Bias in LLM-as-a-Judge.\"** \u2014 https://arxiv.org/abs/2406.07791. Three metrics: repetition stability, position consistency, preference fairness; 150K eval instances. *Critical for S4 design.*",
+    "original_url": "https://arxiv.org/abs/2406.07791",
+    "pdf_url": "https://arxiv.org/pdf/2406.07791"
+  },
+  "2406.12319": {
+    "arxiv_id": "2406.12319",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "\"The Comparative Trap: Pairwise Comparisons Amplifies Biased Preferences of LLM Evaluators\" (2024).",
+    "description": "- **\"The Comparative Trap: Pairwise Comparisons Amplifies Biased Preferences of LLM Evaluators\" (2024).** \u2014 https://arxiv.org/pdf/2406.12319. Counterargument to default pairwise; pairwise *amplifies* known biases on adversarial examples.",
+    "original_url": "https://arxiv.org/pdf/2406.12319",
+    "pdf_url": "https://arxiv.org/pdf/2406.12319"
+  },
+  "2403.16950": {
+    "arxiv_id": "2403.16950",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "\"Aligning with Human Judgement: The Role of Pairwise Preference in LLM Evaluators\" (2024).",
+    "description": "- **\"Aligning with Human Judgement: The Role of Pairwise Preference in LLM Evaluators\" (2024).** \u2014 https://arxiv.org/pdf/2403.16950.",
+    "original_url": "https://arxiv.org/pdf/2403.16950",
+    "pdf_url": "https://arxiv.org/pdf/2403.16950"
+  },
+  "2602.16610": {
+    "arxiv_id": "2602.16610",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "\"Who can we trust? LLM-as-a-jury for Comparative Assessment\" (2026).",
+    "description": "- **\"Who can we trust? LLM-as-a-jury for Comparative Assessment\" (2026).** \u2014 https://arxiv.org/pdf/2602.16610. Multi-judge jury with reliability weighting; recommended pattern for S4 if budget allows.",
+    "original_url": "https://arxiv.org/pdf/2602.16610",
+    "pdf_url": "https://arxiv.org/pdf/2602.16610"
+  },
+  "2508.09724": {
+    "arxiv_id": "2508.09724",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "UDA \u2014 Unsupervised Debiasing Alignment for Pair-wise LLM-as-a-Judge (2025).",
+    "description": "- **UDA \u2014 Unsupervised Debiasing Alignment for Pair-wise LLM-as-a-Judge (2025).** \u2014 https://arxiv.org/pdf/2508.09724. Dynamic recalibration via judge consensus; a usable methodology for your S4 robustness section.",
+    "original_url": "https://arxiv.org/pdf/2508.09724",
+    "pdf_url": "https://arxiv.org/pdf/2508.09724"
+  },
+  "2509.26072": {
+    "arxiv_id": "2509.26072",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "\"The Silent Judge: Unacknowledged Shortcut Bias in LLM-as-a-Judge\" (NeurIPS 2025 workshop).",
+    "description": "- **\"The Silent Judge: Unacknowledged Shortcut Bias in LLM-as-a-Judge\" (NeurIPS 2025 workshop).** \u2014 https://arxiv.org/pdf/2509.26072. Recency and provenance bias (EXPERT > HUMAN > LLM > UNKNOWN). Vital \u2014 your hold-out optimal-continuation pairs in S4 must avoid these shortcut features.",
+    "original_url": "https://arxiv.org/pdf/2509.26072",
+    "pdf_url": "https://arxiv.org/pdf/2509.26072"
+  },
+  "2602.06625": {
+    "arxiv_id": "2602.06625",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "FairJudge: An Adaptive, Debiased, and Consistent LLM-as-a-Judge (2026).",
+    "description": "- **FairJudge: An Adaptive, Debiased, and Consistent LLM-as-a-Judge (2026).** \u2014 https://arxiv.org/pdf/2602.06625. Pointwise\u2013pairwise inconsistency analysis.",
+    "original_url": "https://arxiv.org/pdf/2602.06625",
+    "pdf_url": "https://arxiv.org/pdf/2602.06625"
+  },
+  "2507.10579": {
+    "arxiv_id": "2507.10579",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "BEA 2025 Shared Task on Pedagogical Ability Assessment of AI-powered Tutors.",
+    "description": "- **BEA 2025 Shared Task on Pedagogical Ability Assessment of AI-powered Tutors.** \u2014 https://sig-edu.org/sharedtask/2025. Findings paper https://arxiv.org/html/2507.10579v1. *MRBench* benchmark dataset built on MathDial+Bridge; eight pedagogical dimensions. *The* domain-specific judge benchmark \u2014 required for S4.",
+    "original_url": "https://arxiv.org/html/2507.10579v1",
+    "pdf_url": "https://arxiv.org/pdf/2507.10579"
+  },
+  "2502.18940": {
+    "arxiv_id": "2502.18940",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "MathTutorBench (Macina, Daheim, Hakimi, Kapur, Gurevych, Sachan 2025).",
+    "description": "- **MathTutorBench (Macina, Daheim, Hakimi, Kapur, Gurevych, Sachan 2025).** \u2014 https://arxiv.org/abs/2502.18940. Pairwise expert-vs.-novice teacher response judgment; reward-model-based scoring. https://eth-lre.github.io/mathtutorbench/. **This is essentially S4 already done at corpus scale; build on it.**",
+    "original_url": "https://arxiv.org/abs/2502.18940",
+    "pdf_url": "https://arxiv.org/pdf/2502.18940"
+  },
+  "2510.23477": {
+    "arxiv_id": "2510.23477",
+    "section": "LLM-as-Judge & Pairwise Evaluation",
+    "section_num": "7",
+    "title": "MMTutorBench (2025).",
+    "description": "- **MMTutorBench (2025).** \u2014 https://arxiv.org/pdf/2510.23477. Multimodal extension; relevant only if you go visual.",
+    "original_url": "https://arxiv.org/pdf/2510.23477",
+    "pdf_url": "https://arxiv.org/pdf/2510.23477"
+  },
+  "2507.22753": {
+    "arxiv_id": "2507.22753",
+    "section": "Educational Dialogue Datasets and Benchmarks",
+    "section_num": "8",
+    "title": "EduDial",
+    "description": "- **EduDial** and other 2025 corpora are surveyed in: https://arxiv.org/html/2507.22753v1 (\"Opportunities and Challenges of LLMs in Education: An NLP Perspective\").",
+    "original_url": "https://arxiv.org/html/2507.22753v1",
+    "pdf_url": "https://arxiv.org/pdf/2507.22753"
+  },
+  "2306.15448": {
+    "arxiv_id": "2306.15448",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "BigToM (Gandhi, Fr\u00e4nken, Gerstenberg, Goodman, NeurIPS 2023).",
+    "description": "- **BigToM (Gandhi, Fr\u00e4nken, Gerstenberg, Goodman, NeurIPS 2023).** \u2014 https://arxiv.org/abs/2306.15448. Causal-template ToM benchmark.",
+    "original_url": "https://arxiv.org/abs/2306.15448",
+    "pdf_url": "https://arxiv.org/pdf/2306.15448"
+  },
+  "2310.15421": {
+    "arxiv_id": "2310.15421",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "FANToM (Kim et al., EMNLP 2023).",
+    "description": "- **FANToM (Kim et al., EMNLP 2023).** \u2014 https://hyunw.kim/fantom/ / https://arxiv.org/abs/2310.15421. Information-asymmetric conversational ToM. *Most relevant for S2 since tutoring is fundamentally information-asymmetric dialogue.*",
+    "original_url": "https://arxiv.org/abs/2310.15421",
+    "pdf_url": "https://arxiv.org/pdf/2310.15421"
+  },
+  "2402.06044": {
+    "arxiv_id": "2402.06044",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "OpenToM (Xu et al., 2024).",
+    "description": "- **OpenToM (Xu et al., 2024).** \u2014 https://arxiv.org/abs/2402.06044. Personality- and intention-grounded ToM with both physical and psychological mental states.",
+    "original_url": "https://arxiv.org/abs/2402.06044",
+    "pdf_url": "https://arxiv.org/pdf/2402.06044"
+  },
+  "2402.15052": {
+    "arxiv_id": "2402.15052",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "ToMBench (Chen et al., 2024).",
+    "description": "- **ToMBench (Chen et al., 2024).** \u2014 https://arxiv.org/abs/2402.15052. Holistic ToM eval addressing scope/subjectivity issues.",
+    "original_url": "https://arxiv.org/abs/2402.15052",
+    "pdf_url": "https://arxiv.org/pdf/2402.15052"
+  },
+  "2412.12175": {
+    "arxiv_id": "2412.12175",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "ExploreToM (Sclar et al., Meta 2024).",
+    "description": "- **ExploreToM (Sclar et al., Meta 2024).** \u2014 https://arxiv.org/abs/2412.12175 / https://github.com/facebookresearch/exploretom. A* search over a domain-specific language to generate adversarial false-belief stories. SOTA LLMs at 0\u20139% on hard slice. *The single most informative ToM benchmark for diagnostician-agent design \u2014 directly stress-tests state tracking.*",
+    "original_url": "https://arxiv.org/abs/2412.12175",
+    "pdf_url": "https://arxiv.org/pdf/2412.12175"
+  },
+  "2302.08399": {
+    "arxiv_id": "2302.08399",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "Ullman (2023), \"Large language models fail on trivial alterations to theory-of-mind tasks.\"",
+    "description": "- **Ullman (2023), \"Large language models fail on trivial alterations to theory-of-mind tasks.\"** \u2014 https://arxiv.org/abs/2302.08399. Mandatory caveat.",
+    "original_url": "https://arxiv.org/abs/2302.08399",
+    "pdf_url": "https://arxiv.org/pdf/2302.08399"
+  },
+  "2507.15788": {
+    "arxiv_id": "2507.15788",
+    "section": "Theory of Mind & Learner Modeling in LLMs",
+    "section_num": "9",
+    "title": "\"Small LLMs Do Not Learn a Generalizable Theory of Mind via Reinforcement Learning\" (2025).",
+    "description": "- **\"Small LLMs Do Not Learn a Generalizable Theory of Mind via Reinforcement Learning\" (2025).** \u2014 https://arxiv.org/html/2507.15788. RLVR on ToM data fails to generalize. Methodologically informative for S2 \u2014 your diagnostician should not rely on small fine-tuned ToM modules.",
+    "original_url": "https://arxiv.org/html/2507.15788",
+    "pdf_url": "https://arxiv.org/pdf/2507.15788"
+  },
+  "2310.08560": {
+    "arxiv_id": "2310.08560",
+    "section": "Multi-session Conversational AI / Long-term Memory",
+    "section_num": "10",
+    "title": "MemGPT (Packer et al., Berkeley Sky Lab, 2023).",
+    "description": "- **MemGPT (Packer et al., Berkeley Sky Lab, 2023).** \u2014 https://arxiv.org/abs/2310.08560 / https://research.memgpt.ai/. OS-inspired hierarchical memory with self-managed paging; the foundation for Letta.",
+    "original_url": "https://arxiv.org/abs/2310.08560",
+    "pdf_url": "https://arxiv.org/pdf/2310.08560"
+  },
+  "2508.03275": {
+    "arxiv_id": "2508.03275",
+    "section": "Multi-session Conversational AI / Long-term Memory",
+    "section_num": "10",
+    "title": "LECTOR (2025), \"LLM-Enhanced Concept-based Test-Oriented Repetition for Adaptive Spaced Learning.\"",
+    "description": "- **LECTOR (2025), \"LLM-Enhanced Concept-based Test-Oriented Repetition for Adaptive Spaced Learning.\"** \u2014 https://arxiv.org/abs/2508.03275. LLM-powered semantic-similarity layer over FSRS/SSP-MMC.",
+    "original_url": "https://arxiv.org/abs/2508.03275",
+    "pdf_url": "https://arxiv.org/pdf/2508.03275"
+  },
+  "2512.12856": {
+    "arxiv_id": "2512.12856",
+    "section": "Multi-session Conversational AI / Long-term Memory",
+    "section_num": "10",
+    "title": "\"Forgetful but Faithful: A Cognitive Memory Architecture for Privacy-Aware Generative Agents\" (2025).",
+    "description": "- **\"Forgetful but Faithful: A Cognitive Memory Architecture for Privacy-Aware Generative Agents\" (2025).** \u2014 https://arxiv.org/html/2512.12856v1.",
+    "original_url": "https://arxiv.org/html/2512.12856v1",
+    "pdf_url": "https://arxiv.org/pdf/2512.12856"
+  },
+  "2603.04740": {
+    "arxiv_id": "2603.04740",
+    "section": "Multi-session Conversational AI / Long-term Memory",
+    "section_num": "10",
+    "title": "\"Memory in the Age of AI Agents\" (Dec 2025 survey).",
+    "description": "- **\"Memory in the Age of AI Agents\" (Dec 2025 survey).** \u2014 A December 2025 large-scale taxonomic survey on three-axis (form/function/dynamics) memory categorization (referenced in https://arxiv.org/html/2603.04740v1).",
+    "original_url": "https://arxiv.org/html/2603.04740v1",
+    "pdf_url": "https://arxiv.org/pdf/2603.04740"
+  }
+}
