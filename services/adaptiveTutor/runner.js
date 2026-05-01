@@ -11,7 +11,20 @@ import { MemorySaver } from '@langchain/langgraph';
 import { buildGraph } from './graph.js';
 import { initialLearnerProfile, initialTutorInternal } from './stateSchema.js';
 
-const compileWithCheckpointer = () => buildGraph().compile({ checkpointer: new MemorySaver() });
+// Architecture-aware compile. Defaults preserve cell_110 behaviour for
+// callers that don't pass options.
+const compileWithCheckpointer = (graphOptions = {}) =>
+  buildGraph(graphOptions).compile({ checkpointer: new MemorySaver() });
+
+// Counterfactual replay forks at a checkpoint *before* learnerProfileUpdate
+// fires, so the perturbed hidden state flows through profile inference and
+// downstream policy selection. The recognition_only and ego_superego
+// architectures don't include that node, so counterfactual is a no-op for
+// them by design.
+const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
+  'state_policy',
+  'state_policy_with_validator',
+]);
 
 const baseInitialState = (scenario) => ({
   dialogue: scenario.openingTurns ?? [],
@@ -23,9 +36,22 @@ const baseInitialState = (scenario) => ({
   maxTurns: scenario.maxTurns ?? 4,
 });
 
-export async function runScenario(scenario) {
-  const graph = compileWithCheckpointer();
-  const config = { configurable: { thread_id: scenario.id } };
+// LangGraph's default recursion limit is 25 node visits per invocation. The
+// state_policy_with_validator architecture executes ~8 nodes per turn
+// (learnerProfileUpdate, tutorEgoInitial, tutorSuperegoReview, tutorValidator,
+// constraintCheck, tutorEgoRevision, tutorEmit, learnerTurn), so a 4-turn
+// scenario needs ~32 visits. We size the limit generously above the worst
+// case for the longest configured trap scenario (max_turns=4).
+const RECURSION_LIMIT_PER_INVOKE = 80;
+
+const buildInvokeConfig = (threadId) => ({
+  configurable: { thread_id: threadId },
+  recursionLimit: RECURSION_LIMIT_PER_INVOKE,
+});
+
+export async function runScenario(scenario, graphOptions = {}) {
+  const graph = compileWithCheckpointer(graphOptions);
+  const config = buildInvokeConfig(scenario.id);
   const final = await graph.invoke(baseInitialState(scenario), config);
   const history = [];
   for await (const snap of graph.getStateHistory(config)) history.push(snap);
@@ -35,8 +61,13 @@ export async function runScenario(scenario) {
 // Strategy 5: replay from a checkpoint with a perturbed hidden learner state
 // and a forced learner-profile reset so the downstream tutor plan reflects
 // the new hidden truth.
-export async function runScenarioWithCounterfactual(scenario, perturbation) {
-  const original = await runScenario(scenario);
+export async function runScenarioWithCounterfactual(scenario, perturbation, graphOptions = {}) {
+  const original = await runScenario(scenario, graphOptions);
+
+  const architecture = graphOptions.architecture ?? 'state_policy';
+  if (!ARCHITECTURES_WITH_PROFILE_UPDATE.has(architecture)) {
+    return { original, counterfactual: null, reason: `architecture ${architecture} has no learnerProfileUpdate node; counterfactual not applicable` };
+  }
 
   // Find the earliest checkpoint after the trigger turn fired.
   const fork = original.history.find((s) =>
@@ -48,8 +79,8 @@ export async function runScenarioWithCounterfactual(scenario, perturbation) {
   }
 
   const cfThreadId = `${scenario.id}__cf`;
-  const cfConfig = { configurable: { thread_id: cfThreadId } };
-  const cfGraph = compileWithCheckpointer();
+  const cfConfig = buildInvokeConfig(cfThreadId);
+  const cfGraph = compileWithCheckpointer(graphOptions);
 
   // Seed the CF thread with the forked snapshot's values, but with the
   // perturbation applied to hiddenLearnerState. The replay then exercises

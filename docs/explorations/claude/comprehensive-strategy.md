@@ -250,17 +250,26 @@ Edit `config/adaptive-trap-scenarios.yaml`: add `failure_mode` (string describin
 
 The cell as shipped (`cell_110_langgraph_adaptive`) is C3-equivalent (adaptive state + policy selector + recognition generator). A13 needs C1, C2, C4 to compare against; without them the run produces only C3 numbers and there's no contrast.
 
-- **`cell_111_a13_C1_recognition_only`** — `runner: standard`, single-agent recognition prompt, against `config/adaptive-trap-scenarios.yaml`. Cleanest implementation: write a thin scenario adapter so `runner: standard` cells consume `scenario_source: config/adaptive-trap-scenarios.yaml` by collapsing trap scenarios to single-prompt openings.
-- **`cell_112_a13_C2_egosuperego`** — `runner: standard`, current ego/superego architecture, recognition prompt, against the trap scenarios.
-- **`cell_113_a13_C4_validator`** — `runner: adaptive` (extends `cell_110`); add a small validator node to `services/adaptiveTutor/graph.js` between `tutorSuperegoReview` and `constraintCheck` that re-checks the policy-action label against the just-emitted `learnerProfile` and forces revision if mismatched. The `realLLM.js` `tutorSuperego` schema already returns `needsRevision` + `feedback`; the validator is structurally a second pass with stricter rules.
+- **`cell_111_a13_C1_recognition_only`** — `runner: adaptive`, `architecture: recognition_only`. Single LLM call per tutor turn (no superego, no profile update, no constraint check, no revision). Path A consolidation (see "Implementation deviation" below).
+- **`cell_112_a13_C2_egosuperego`** — `runner: adaptive`, `architecture: ego_superego`. Always-revise two-pass deliberation matching the project's standard ego/superego posture (no externalised profile, no constraint check). Path A consolidation.
+- **`cell_113_a13_C4_validator`** — `runner: adaptive`, `architecture: state_policy_with_validator` (extends `cell_110`). New `tutorValidator` node sits between `tutorSuperegoReview` and `constraintCheck` and reads the picked `policyAction` against `POLICY_ACTION_DETAILS`' trigger conditions and contraindications, writing to the same `constraintViolations` channel (with a `validator:` prefix) so the existing routing logic picks it up.
+
+**Implementation deviation (2026-05-01) — Path A vs Path B.** The bullets above land all four A13 cells on the adaptive runner with an `architecture` flag, instead of the literal "C1/C2 use `runner: standard` with a thin scenario adapter" reading. Three forcing constraints made literal Path B infeasible without a much larger surface change:
+1. `scripts/eval-cli.js:1694–1699` rejects mixing adaptive-runner and standard-runner profiles in a single command. Literal Path B would have required either two separate runIDs (breaking the single-Gate-B-run invariant) or lifting that guard (a substrate change).
+2. `analyze-strategy-shift.js` reads `policyAction` off the per-turn trace; the standard runner does not emit a `POLICY_ACTIONS`-enum label, so C1/C2 would have been unscoreable on the primary endpoint without bolting policy emission into tutor-core.
+3. Path A preserves uniform persistence, budget enforcement, and scenario plumbing across all 4 cells, so cell-to-cell comparisons are not confounded by harness shape.
+
+The trade-off is reduced production fidelity for the C1/C2 *baselines* — they are single-LLM-call and always-revise-two-pass adaptive-runner topologies, not tutor-core invocations. But the cleaner test of H1 (architecture is the only variable) arguably justifies it. Documented in `a13-pre-registration.md` deviation log.
 
 **Files.**
-- `config/tutor-agents.yaml` — three new cell blocks following the `cell_110` pattern at line 4879.
-- `services/evaluationRunner.js` — append three IDs to `EVAL_ONLY_PROFILES` (current entry for `cell_110_langgraph_adaptive` at line 222).
-- `services/adaptiveTutor/graph.js` — for C4 only: add `tutorValidator` node + edge between `tutorSuperegoReview` and `constraintCheck`. Gate with `validatorEnabled` flag from cell config so cell_110 (C3) keeps current graph shape.
-- `services/adaptiveTutor/index.js` — read `validator` flag from `evalProfile.adaptive` and pass to graph builder.
+- `config/tutor-agents.yaml` — three new cell blocks following the `cell_110` pattern at line 4879. cell_110 also receives an explicit `adaptive.architecture: state_policy` annotation (default behaviour, but now visible).
+- `services/evaluationRunner.js` — append three IDs to `EVAL_ONLY_PROFILES` (after `cell_110_langgraph_adaptive` at line 222).
+- `services/adaptiveTutor/graph.js` — refactored to switch topology on a `buildGraph({ architecture })` argument; exports `SUPPORTED_ARCHITECTURES`. Adds `tutorValidator` node used only by `state_policy_with_validator`.
+- `services/adaptiveTutor/runner.js` — `runScenario` / `runScenarioWithCounterfactual` accept a `graphOptions` arg threaded into compile. Counterfactual is auto-skipped for architectures without `learnerProfileUpdate`. `recursionLimit` raised to 80 to fit C4's ~8 nodes/turn × 4 turns.
+- `services/adaptiveTutor/index.js` — reads `evalProfile.adaptive.architecture` (defaults to `state_policy`), validates against `SUPPORTED_ARCHITECTURES`, threads through `graphOptions`. Persists `architecture` in run metadata.
+- `services/adaptiveTutor/mockLLM.js` + `services/adaptiveTutor/realLLM.js` — `tutorValidator` role added (deterministic mock fixture; real-LLM Zod schema + system prompt that consults the picked action's `POLICY_ACTION_DETAILS` block inline).
 
-**Acceptance.** Mock smoke runs all four cells, traces persist under each profile name. Strategy-shift analyzer aggregates by `profile_name` with distinct rows for cells 110/111/112/113.
+**Acceptance.** Mock smoke runs all four cells, traces persist under each profile name. Strategy-shift analyzer aggregates by `profile_name` with distinct rows for cells 110/111/112/113. **Verified 2026-05-01:** 4 cells × 8 scenarios = 32 rows across 4 distinct runIDs (`eval-2026-05-01-3fdb1d63`, `cfbbb724`, `33e38560`, `49396835`); architecture metadata correctly persisted per run; no test regressions vs. lock-time baseline (82 pre-existing failures, 0 new).
 
 #### What's deferred from Phase 1 (Ultraplan reinforcement)
 
@@ -477,7 +486,7 @@ Update this section in-place as phases complete. (Initial state: only Phase 1 pr
   - [x] Cost ceiling (commit `aa2b64f` — `services/adaptiveTutor/budgetTracker.js` + `--max-cost` flag; 11 tests)
   - [x] Polished policy-action YAML (`config/adaptive-policy-actions.yaml` + loader in `services/adaptiveTutor/policyActions.js`; expanded menu wired into `realLLM.js` ego prompts; mock smoke green with file present and absent)
   - [x] Scenario completeness fields (commit `78f9fe8` — `failure_mode` + `success_criteria` on all 8 scenarios; pure addition; analyzer extension still P1)
-  - [ ] A13 condition cells (111, 112, 113)
+  - [x] A13 condition cells (111, 112, 113) — Path A consolidation (all 4 cells on adaptive runner with `architecture` flag; `tutorValidator` node + role for C4); 32 mock rows persisted across 4 runIDs; pre-reg deviation logged
   - [ ] Real-LLM Gate B run
 - [ ] Phase 2: Pilot runs P2 / P3 / P4
 - [ ] Phase 3: P5 combined + revamped harness

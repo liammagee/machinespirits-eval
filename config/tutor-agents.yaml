@@ -4894,6 +4894,105 @@ profiles:
     adaptive:
       provider: openrouter
       model: nemotron
+      architecture: state_policy
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # A13 condition C1: recognition-only baseline (single LLM call per tutor turn,
+  # no superego, no profile update, no constraint check, no revision). Same
+  # adaptive runner / scenarios / persistence / scoring as cell_110 so
+  # strategy_shift_correctness can be compared directly across cells. The
+  # tutorEgoInitial node still emits a policy action, so the strategy-shift
+  # analyzer is scoreable against expected_strategy_shift.
+  # Path A deviation: the strategy doc proposed runner: standard with a
+  # scenario adapter; we collapsed all four A13 cells to the adaptive runner
+  # to keep persistence/scoring/budget-tracking uniform. Pre-reg locks the
+  # cell IDs and design intent, not the runner choice. See
+  # docs/explorations/claude/a13-pre-registration.md deviation log.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only
+  cell_111_a13_C1_recognition_only:
+    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_recognition_only
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: openrouter
+      model: nemotron
+      architecture: recognition_only
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # A13 condition C2: standard ego/superego architecture (two-pass deliberation)
+  # without externalised learner profile or constraint check. Matches the
+  # project's standard ego/superego posture; revises every turn. Same scenarios
+  # so strategy_shift_correctness contrasts cleanly against C1 and C3.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_112_a13_C2_egosuperego
+  cell_112_a13_C2_egosuperego:
+    description: "A13 condition C2: ego/superego two-pass tutor (always-revise) without externalised learner profile or constraint check. Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_ego_superego
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: openrouter
+      model: nemotron
+      architecture: ego_superego
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # A13 condition C4: state_policy + a stricter validator pass between
+  # superego and constraint check. Validator reads the picked policyAction
+  # against POLICY_ACTION_DETAILS' trigger conditions and contraindications
+  # and forces revision on mismatch. Tests whether a stricter second pass
+  # adds anything over C3.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_113_a13_C4_validator
+  cell_113_a13_C4_validator:
+    description: "A13 condition C4: state_policy + tutorValidator stricter second-pass check against POLICY_ACTION_DETAILS trigger conditions/contraindications. Tests whether the validator adds revision pressure over the cell_110 (C3) baseline."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_validator
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: openrouter
+      model: nemotron
+      architecture: state_policy_with_validator
       hyperparameters:
         temperature: 0.6
         max_tokens: 1500

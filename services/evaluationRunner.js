@@ -220,6 +220,9 @@ export const EVAL_ONLY_PROFILES = [
   'cell_108_id_director_charisma_register_exemplars',
   'cell_109_id_director_charisma_tuned_exemplars',
   'cell_110_langgraph_adaptive',
+  'cell_111_a13_C1_recognition_only',
+  'cell_112_a13_C2_egosuperego',
+  'cell_113_a13_C4_validator',
 ];
 
 /**

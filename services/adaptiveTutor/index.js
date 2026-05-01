@@ -17,6 +17,7 @@ import { llmMode } from './llm.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
 import { setActiveBudgetTracker, clearActiveBudgetTracker } from './realLLM.js';
+import { SUPPORTED_ARCHITECTURES } from './graph.js';
 import * as evaluationStore from '../evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -94,6 +95,15 @@ export async function runAdaptiveEvaluation({
   const scenarios = applyScenarioFilter(loadScenarios(scenarioSource), scenarioFilter);
   const counterfactualEnabled = evalProfile.adaptive?.counterfactual?.enabled ?? true;
   const adaptiveCfg = evalProfile.adaptive ?? {};
+  // Architecture switches the graph topology. Defaults to 'state_policy' so
+  // legacy cell_110 configs (which don't carry an architecture key) keep their
+  // original semantics. Validated here so a typo in the cell config produces
+  // an immediate error rather than silently falling back to default.
+  const architecture = adaptiveCfg.architecture ?? 'state_policy';
+  if (!SUPPORTED_ARCHITECTURES.includes(architecture)) {
+    throw new Error(`profile ${profileName}: unsupported adaptive.architecture "${architecture}" (expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')})`);
+  }
+  const graphOptions = { architecture };
   const agentConfigForRow = {
     provider: adaptiveCfg.provider || 'mock',
     model: adaptiveCfg.model || 'mock',
@@ -106,9 +116,9 @@ export async function runAdaptiveEvaluation({
     totalScenarios,
     profileName,
     llmMode: llmMode(),
-    metadata: { profileNames: [profileName], scenarioSource, scenarioFilter, maxCostUsd },
+    metadata: { profileNames: [profileName], scenarioSource, scenarioFilter, maxCostUsd, architecture },
   });
-  if (verbose) console.log(`[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} llmMode=${llmMode()}`);
+  if (verbose) console.log(`[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} architecture=${architecture} llmMode=${llmMode()}`);
 
   // Budget tracker is bound when --max-cost is set. Mock runs ignore it.
   let tracker = null;
@@ -133,13 +143,13 @@ export async function runAdaptiveEvaluation({
         };
         try {
           if (counterfactualEnabled && yamlScenario.counterfactual) {
-            const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario));
+            const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario), graphOptions);
             const out = persistScenarioWithCounterfactual({
               runId: run.id, scenario, scenarioConfig, result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
             });
             persisted.push(out);
           } else {
-            const result = await runScenario(scenario);
+            const result = await runScenario(scenario, graphOptions);
             const out = persistScenarioRun({
               runId: run.id, scenario, scenarioConfig, runResult: result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
             });

@@ -104,6 +104,13 @@ const tutorSuperegoOut = z.object({
   feedback: z.string(),
 });
 
+// Validator returns the same shape as the superego — the graph appends to the
+// same constraintViolations channel and the existing routing logic picks it up.
+const tutorValidatorOut = z.object({
+  needsRevision: z.boolean(),
+  feedback: z.string(),
+});
+
 const tutorEgoRevisionOut = z.object({
   text: z.string().min(1),
   policyAction: policyEnum,
@@ -182,6 +189,24 @@ Otherwise needsRevision=false.
 
 Respond as a single JSON object: {"needsRevision": boolean, "feedback": string}. Output JSON only.`;
 
+const TUTOR_VALIDATOR_SYSTEM = `You are the tutor's strict policy validator. You run *after* the superego on a stricter pass: your only job is to check whether the just-picked policy action's documented trigger conditions and contraindications actually hold for the current learner profile and draft.
+
+You will be given:
+- the picked policyAction label
+- that action's trigger_conditions (when it is appropriate)
+- that action's contraindications (when it is not)
+- the current learner profile (agencySignal, confidence, misconceptions, lastEvidence)
+- the tutor's draft text
+
+Mark needsRevision=true if and only if at least one of these holds:
+- A contraindication is satisfied by the current profile (e.g. action contraindicated for low-confidence learner, profile.confidence < 0.3).
+- No trigger condition is plausibly satisfied by the current profile.
+- The draft does not in fact enact the action label (e.g. action is "withhold_answer" but the draft answers the question).
+
+Otherwise needsRevision=false. Be strict: this is a stricter pass than the superego, and a borderline call should err toward revision when a contraindication is plausibly active.
+
+Respond as a single JSON object: {"needsRevision": boolean, "feedback": string}. The feedback should cite the specific trigger condition or contraindication you matched, by quoting it. Output JSON only.`;
+
 const TUTOR_EGO_REVISION_SYSTEM = `You are the tutor's planning module on a revision pass. Given the previous draft, the superego's feedback, and the learner profile, produce a revised tutor message and (optionally) a different policy action.
 
 If the superego flagged an action–profile mismatch, prefer an action whose trigger conditions match the current profile and whose contraindications do not.
@@ -225,6 +250,26 @@ const userPromptBuilders = {
     learnerProfile,
   }),
 
+  // Validator gets the picked action's full detail block (trigger conditions
+  // + contraindications + expected next signal) inline in the user prompt so
+  // it can quote them in feedback. Keeps the system prompt fixed.
+  tutorValidator: ({ policyAction, tutorDraft, learnerProfile }) => {
+    const detail = POLICY_ACTION_DETAILS?.[policyAction];
+    return ub({
+      policyAction,
+      pickedActionDetail: detail
+        ? {
+            description: detail.description,
+            trigger_conditions: detail.trigger_conditions,
+            contraindications: detail.contraindications,
+            expected_next_learner_signal: detail.expected_next_learner_signal,
+          }
+        : { description: POLICY_ACTION_DESCRIPTIONS[policyAction] || '', trigger_conditions: [], contraindications: [] },
+      tutorDraft,
+      learnerProfile,
+    });
+  },
+
   tutorEgoRevision: ({ tutorInternal, learnerProfile }) => ub({
     previousDraft: tutorInternal.egoDraft,
     previousPolicy: tutorInternal.policyAction,
@@ -245,6 +290,7 @@ const userPromptBuilders = {
 const systemPrompts = {
   tutorEgoInitial: TUTOR_EGO_INITIAL_SYSTEM,
   tutorSuperego: TUTOR_SUPEREGO_SYSTEM,
+  tutorValidator: TUTOR_VALIDATOR_SYSTEM,
   tutorEgoRevision: TUTOR_EGO_REVISION_SYSTEM,
   learnerProfileUpdate: LEARNER_PROFILE_UPDATE_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
@@ -253,6 +299,7 @@ const systemPrompts = {
 const responseSchemas = {
   tutorEgoInitial: tutorEgoInitialOut,
   tutorSuperego: tutorSuperegoOut,
+  tutorValidator: tutorValidatorOut,
   tutorEgoRevision: tutorEgoRevisionOut,
   learnerProfileUpdate: learnerProfileUpdateOut,
   learnerTurn: null, // plain text

@@ -31,6 +31,27 @@ const fixtures = {
     return { text: previous.replace(/let me explain/i, 'let me ask you something instead'), policyAction: 'scope_test' };
   },
 
+  // Stricter second-pass than the superego: re-checks the just-picked
+  // policyAction against the same contraindications encoded in
+  // POLICY_ACTION_DETAILS for that action. The mock fires on a small set of
+  // obvious mismatches so the smoke exercises both branches; the real-LLM
+  // version reads the full action detail block out of the YAML.
+  tutorValidator: ({ policyAction, tutorDraft, learnerProfile }) => {
+    const sig = learnerProfile?.agencySignal;
+    const conf = learnerProfile?.confidence ?? 0.5;
+    if ((policyAction === 'give_worked_example' || policyAction === 'lower_cognitive_load')
+        && sig === 'resistant') {
+      return { needsRevision: true, feedback: `policy ${policyAction} contraindicated for resistant learner` };
+    }
+    if (policyAction === 'withhold_answer' && /the answer is/i.test(tutorDraft || '')) {
+      return { needsRevision: true, feedback: 'withhold_answer chosen but draft hands the answer over' };
+    }
+    if (policyAction === 'mirror_and_extend' && conf < 0.3) {
+      return { needsRevision: true, feedback: 'mirror_and_extend contraindicated at very low confidence' };
+    }
+    return { needsRevision: false, feedback: 'policy fits profile' };
+  },
+
   learnerProfileUpdate: ({ learnerLastMessage, hidden, currentProfile, turn }) => {
     // The "real" version would be an LLM that reads the dialogue and emits
     // an updated structured profile. Mock heuristic: if the learner's text
