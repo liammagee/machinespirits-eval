@@ -21,6 +21,25 @@ const { callAI } = tutorDialogueEngine;
 const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_ALIAS = 'nemotron';
 
+// Module-scoped budget tracker. Bound by runAdaptiveEvaluation in index.js
+// when --max-cost is set; cleared in its finally block. callRole consults
+// it on every invocation. Module-level state (rather than arg-threading
+// through the LangGraph builder) keeps the change surgical: graph nodes
+// already call callRole(role, payload) with no per-invocation context.
+let _activeBudgetTracker = null;
+
+export function setActiveBudgetTracker(tracker) {
+  _activeBudgetTracker = tracker || null;
+}
+
+export function clearActiveBudgetTracker() {
+  _activeBudgetTracker = null;
+}
+
+export function getActiveBudgetTracker() {
+  return _activeBudgetTracker;
+}
+
 function envFor(role) {
   const upper = role.replace(/[A-Z]/g, (c) => `_${c}`).toUpperCase();
   return {
@@ -217,7 +236,31 @@ export async function callRole(role, payload) {
 
   const agentConfig = buildAgentConfig(role);
   const userPrompt = buildUser(payload);
+
+  // Pre-call budget gate. The estimate is a heuristic abort signal; the
+  // exact cost is recorded post-call from raw.cost (set by tutor-core's
+  // callAI). When no tracker is active (mock runs, or --max-cost omitted)
+  // both branches are no-ops.
+  if (_activeBudgetTracker) {
+    const promptForEstimate = `${systemPrompt}\n${userPrompt}`;
+    const est = _activeBudgetTracker.estimate(
+      promptForEstimate,
+      agentConfig.hyperparameters?.max_tokens,
+      agentConfig.model,
+    );
+    _activeBudgetTracker.assertBelowCeiling(est);
+  }
+
   const raw = await callAI(agentConfig, systemPrompt, userPrompt, role);
+
+  if (_activeBudgetTracker) {
+    _activeBudgetTracker.record({
+      inputTokens: raw?.inputTokens || 0,
+      outputTokens: raw?.outputTokens || 0,
+      cost: raw?.cost || 0,
+    });
+  }
+
   const text = raw?.text ?? '';
 
   const schema = responseSchemas[role];

@@ -49,6 +49,8 @@ import 'dotenv/config';
  *   --verbose              Enable verbose output
  *   --runs <n>             Replications per cell (for 'run' command, default: 1)
  *   --parallelism <n>      Parallel worker count (run/resume default: 2, evaluate-learner default: 1)
+ *   --max-cost <usd>       For adaptive-runner cells with ADAPTIVE_TUTOR_LLM=real: hard USD ceiling.
+ *                          Tracker aborts the run cleanly before issuing a call that would exceed it.
  *   --description <text>   Description for the evaluation run
  *   --db                   Use SQLite instead of JSONL for 'watch' (slower but persistent)
  *   --follow               Poll for new results in 'evaluate' (live follow mode)
@@ -1521,6 +1523,14 @@ async function main() {
         const runsPerConfig = parseInt(getOption('runs', '1'), 10);
         const parallelism = parseInt(getOption('parallelism', '2'), 10);
         const description = getOption('description');
+        // --max-cost: hard USD ceiling for adaptive-runner real-LLM calls.
+        // Plumbs through runAdaptiveEvaluation only; standard runs ignore it.
+        const maxCostRaw = getOption('max-cost');
+        const maxCostUsd = maxCostRaw == null ? null : Number(maxCostRaw);
+        if (maxCostRaw != null && !(maxCostUsd > 0)) {
+          console.error(`Error: --max-cost must be a positive number (got '${maxCostRaw}').`);
+          process.exit(1);
+        }
         const clusterOpt = getOption('cluster');
         const scenarioOpt = getOption('scenario') || getOption('scenarios');
         const allProfiles = getFlag('all-profiles');
@@ -1690,6 +1700,7 @@ async function main() {
         if (adaptiveProfiles.length > 0) {
           const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
           const summaries = [];
+          let anyHalted = false;
           for (const profileName of adaptiveProfiles) {
             const evalProfile = allTutorAgents[profileName];
             const summary = await runAdaptiveEvaluation({
@@ -1700,14 +1711,24 @@ async function main() {
               description: description || `Adaptive evaluation: ${profileName}`,
               dryRun,
               verbose,
+              maxCostUsd,
             });
             summaries.push(summary);
+            const haltTag = summary.halted ? ' [BUDGET HALT]' : '';
+            const budgetTag = summary.budget
+              ? ` budget=$${summary.budget.accumulatedUsd.toFixed(4)}/$${summary.budget.maxUsd.toFixed(2)} (${summary.budget.utilizationPct.toFixed(1)}%)`
+              : '';
             console.log(
-              `[adaptive] ${profileName}: runId=${summary.runId} persisted=${summary.persisted.length}/${summary.totalScenarios} llmMode=${summary.llmMode}`,
+              `[adaptive] ${profileName}: runId=${summary.runId} persisted=${summary.persisted.length}/${summary.totalScenarios} llmMode=${summary.llmMode}${budgetTag}${haltTag}`,
             );
+            if (summary.halted) {
+              anyHalted = true;
+              console.error(`[adaptive] halt reason: ${summary.haltReason || '(unknown)'}`);
+              break;
+            }
           }
           console.log('\nEvaluation complete.');
-          process.exit(0);
+          process.exit(anyHalted ? 2 : 0);
         }
 
         const result = await evaluationRunner.runEvaluation({

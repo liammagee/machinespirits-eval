@@ -15,6 +15,8 @@ import yaml from 'yaml';
 import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
+import { createBudgetTracker } from './budgetTracker.js';
+import { setActiveBudgetTracker, clearActiveBudgetTracker } from './realLLM.js';
 import * as evaluationStore from '../evaluationStore.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -74,6 +76,7 @@ export async function runAdaptiveEvaluation({
   description = null,
   dryRun = false,
   verbose = false,
+  maxCostUsd = null,
 } = {}) {
   if (!profileName || !evalProfile) {
     throw new Error('runAdaptiveEvaluation requires profileName and evalProfile');
@@ -103,46 +106,75 @@ export async function runAdaptiveEvaluation({
     totalScenarios,
     profileName,
     llmMode: llmMode(),
-    metadata: { profileNames: [profileName], scenarioSource, scenarioFilter },
+    metadata: { profileNames: [profileName], scenarioSource, scenarioFilter, maxCostUsd },
   });
   if (verbose) console.log(`[adaptive] runId=${run.id} scenarios=${scenarios.length} runsPerConfig=${runsPerConfig} llmMode=${llmMode()}`);
 
+  // Budget tracker is bound when --max-cost is set. Mock runs ignore it.
+  let tracker = null;
+  if (maxCostUsd != null && maxCostUsd > 0 && llmMode() !== 'mock') {
+    tracker = createBudgetTracker({ maxUsd: maxCostUsd });
+    setActiveBudgetTracker(tracker);
+    if (verbose) console.log(`[adaptive] budget ceiling: $${maxCostUsd.toFixed(2)}`);
+  }
+
   const persisted = [];
-  for (const yamlScenario of scenarios) {
-    for (let r = 0; r < runsPerConfig; r++) {
-      const scenario = toRunnerScenario(yamlScenario, r);
-      const scenarioConfig = {
-        scenario_name: yamlScenario.name || yamlScenario.id,
-        scenario_type: yamlScenario.scenario_type || yamlScenario.id,
-        expected_strategy_shift: yamlScenario.expected_strategy_shift ?? null,
-      };
-      try {
-        if (counterfactualEnabled && yamlScenario.counterfactual) {
-          const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario));
-          const out = persistScenarioWithCounterfactual({
-            runId: run.id, scenario, scenarioConfig, result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
-          });
-          persisted.push(out);
-        } else {
-          const result = await runScenario(scenario);
-          const out = persistScenarioRun({
-            runId: run.id, scenario, scenarioConfig, runResult: result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
-          });
-          persisted.push(out);
+  let halted = false;
+  let haltReason = null;
+
+  try {
+    outer: for (const yamlScenario of scenarios) {
+      for (let r = 0; r < runsPerConfig; r++) {
+        const scenario = toRunnerScenario(yamlScenario, r);
+        const scenarioConfig = {
+          scenario_name: yamlScenario.name || yamlScenario.id,
+          scenario_type: yamlScenario.scenario_type || yamlScenario.id,
+          expected_strategy_shift: yamlScenario.expected_strategy_shift ?? null,
+        };
+        try {
+          if (counterfactualEnabled && yamlScenario.counterfactual) {
+            const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario));
+            const out = persistScenarioWithCounterfactual({
+              runId: run.id, scenario, scenarioConfig, result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
+            });
+            persisted.push(out);
+          } else {
+            const result = await runScenario(scenario);
+            const out = persistScenarioRun({
+              runId: run.id, scenario, scenarioConfig, runResult: result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
+            });
+            persisted.push(out);
+          }
+          if (verbose) console.log(`[adaptive]   ✓ ${scenario.id}`);
+        } catch (err) {
+          if (err?.code === 'BUDGET_EXCEEDED') {
+            halted = true;
+            haltReason = err.message;
+            console.error(`[adaptive] BUDGET HALT on ${scenario.id}: ${err.message}`);
+            break outer;
+          }
+          console.error(`[adaptive]   ✗ ${scenario.id}: ${err.message}`);
+          if (verbose) console.error(err.stack);
         }
-        if (verbose) console.log(`[adaptive]   ✓ ${scenario.id}`);
-      } catch (err) {
-        console.error(`[adaptive]   ✗ ${scenario.id}: ${err.message}`);
-        if (verbose) console.error(err.stack);
       }
     }
+  } finally {
+    if (tracker) clearActiveBudgetTracker();
   }
 
   evaluationStore.updateRun(run.id, {
-    status: 'completed',
+    status: halted ? 'halted_budget' : 'completed',
     totalTests: persisted.length,
     completedAt: new Date().toISOString(),
   });
 
-  return { runId: run.id, persisted, totalScenarios, llmMode: llmMode() };
+  return {
+    runId: run.id,
+    persisted,
+    totalScenarios,
+    llmMode: llmMode(),
+    halted,
+    haltReason,
+    budget: tracker ? tracker.summary() : null,
+  };
 }
