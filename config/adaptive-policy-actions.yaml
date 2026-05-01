@@ -1,0 +1,354 @@
+# Polished policy-action taxonomy for the adaptive cell.
+#
+# The 14 actions below are the same closed set frozen in
+# services/adaptiveTutor/policyActions.js — POLICY_ACTIONS is the source
+# of truth for the enum (Zod schema, analyzer matching, persistence).
+# This file enriches each action with the cues real-LLM tutoring needs
+# but the inline one-liner doesn't carry: when to fire, when not to fire,
+# what the next learner turn should look like if the action worked, and
+# a concrete example utterance.
+#
+# Loaded by services/adaptiveTutor/policyActions.js. Missing or malformed
+# YAML falls back gracefully to the inline POLICY_ACTION_DESCRIPTIONS so
+# the mock smoke continues to pass without this file.
+#
+# Trigger conditions and contraindications draw on
+# docs/explorations/gpt-pro/01-adaptive-recognition-psyche-architecture.md
+# §4.1 (recognition state machine + skill library) and the project's
+# existing pedagogical posture (recognition-first, productive struggle,
+# strict non-leakage of internal deliberation into the learner-facing
+# message).
+
+actions:
+
+  - name: ask_diagnostic_question
+    description: >-
+      Probe the learner with a question whose answer reveals what they
+      actually believe. The answer must be informative regardless of which
+      side the learner picks — bad diagnostics admit only one credible
+      response.
+    trigger_conditions:
+      - "learner_profile.confidence is unknown or contradicts the evidence so far"
+      - "learner_profile.misconceptions is empty but recent turns suggest a hidden one"
+      - "polite affirmation has been observed without substantive engagement"
+    contraindications:
+      - "learner has already produced clear evidence of their actual position"
+      - "learner is in affective shutdown — diagnostic questions add cognitive load"
+      - "the next move requires a substantive contribution from the tutor"
+    expected_next_learner_signal: >-
+      A specific, testable claim or denial — concrete enough that a single
+      follow-up move can repair, extend, or scope it. Vague or repeat-of-
+      previous-turn answers indicate the diagnostic missed.
+    example_tutor_move: >-
+      "When you say the recognition argument 'requires the asymmetry' —
+      do you mean the asymmetry is between the two subjects, or between
+      the moments of the dialectic itself?"
+
+  - name: mirror_and_extend
+    description: >-
+      Restate the learner's point in tighter form and push it one logical
+      step further. Two beats: (a) crystallise what was said in fewer,
+      sharper words; (b) take the next inference the learner did not
+      themselves draw.
+    trigger_conditions:
+      - "learner produced a substantive but underspecified claim"
+      - "learner_profile.agencySignal == questioning or collaborative"
+      - "sophistication is above what the tutor previously assumed"
+    contraindications:
+      - "learner's claim is wrong on its face — extending it amplifies the error"
+      - "learner is overloaded — extension increases cognitive demand"
+      - "the room actually needs a counterexample, not an extension"
+    expected_next_learner_signal: >-
+      Either confirmation that the extension lands plus engagement with
+      the extended position, or a substantive correction of the mirror —
+      both are productive. Bare agreement without engagement is a soft fail.
+    example_tutor_move: >-
+      "So you're reading recognition as constitutive of self-consciousness,
+      not just symptomatic of it — which means a failure of recognition
+      isn't just a social harm, it's a structural break in becoming-a-self.
+      Is that the implication you're committing to?"
+
+  - name: scope_test
+    description: >-
+      Propose a boundary or limit case to test whether the learner's
+      claim still holds. The case is not a counterexample (which is meant
+      to break the claim); it's a probe at the edge to expose where the
+      learner thinks the claim's domain stops.
+    trigger_conditions:
+      - "learner asserted a generalisation without bounding it"
+      - "learner_profile.actualSophistication is advanced but signal was performative-novice"
+      - "tutor needs to disambiguate confusion-as-uncertainty from confusion-as-incompleteness"
+    contraindications:
+      - "learner has not yet produced a generalisation to test"
+      - "learner is novice and the boundary case will overload rather than illuminate"
+    expected_next_learner_signal: >-
+      A bounded version of the original claim, or an articulated rationale
+      for why the boundary case is in/out. Moving the goalposts (silently
+      narrowing the claim mid-response) indicates the test exposed real
+      uncertainty.
+    example_tutor_move: >-
+      "Your account works for two interlocutors who recognise each other
+      symmetrically. Does it still work when one is structurally unable
+      to recognise the other — say, between subject and bureaucratic
+      institution? If yes, what does symmetry mean there?"
+
+  - name: repair_misrecognition
+    description: >-
+      Explicitly correct an earlier misread of the learner's position
+      before continuing. The repair must name the mismatch — "I had
+      been responding as though you were asking X; you were asking Y" —
+      not silently shift topics.
+    trigger_conditions:
+      - "learner explicitly corrected the tutor's reading (e.g., 'no, that's not what I meant')"
+      - "learner's last turn does not connect to the tutor's prior turn"
+      - "learner_profile.lastEvidence shows divergence from the prior policy assumption"
+    contraindications:
+      - "the misread was minor and self-correcting; explicit repair adds friction"
+      - "no actual misread occurred — the learner pivoted, not the tutor"
+    expected_next_learner_signal: >-
+      Confirmation the repair lands ("yes, that's what I meant") plus a
+      substantive continuation on the now-corrected track. Continued
+      correction of the tutor indicates the repair itself was incomplete.
+    example_tutor_move: >-
+      "Hold on — I've been answering as though you were asking whether
+      mutual recognition is sufficient for trust. You were asking the
+      reverse: whether trust has to precede recognition. Let me start
+      over from there."
+
+  - name: give_worked_example
+    description: >-
+      Demonstrate a complete worked example end-to-end. Used sparingly —
+      worked examples short-circuit productive struggle, so they belong
+      where the learner has tried and the failure mode is "lacks the
+      template", not "needs to construct it themselves".
+    trigger_conditions:
+      - "learner has attempted and failed to construct an example themselves"
+      - "concept is procedural and the procedure is unfamiliar"
+      - "learner explicitly asked for one after substantive engagement"
+    contraindications:
+      - "learner asked for an example before attempting (oracle-mode pull)"
+      - "learner_profile.agencySignal == compliant — they will accept without integrating"
+      - "concept is conceptual rather than procedural; an example will mislead"
+    expected_next_learner_signal: >-
+      Either a paraphrase of the example in their own words plus a
+      proposed variation, or a question about a specific step of the
+      example. Bare acceptance ("got it") indicates the example was
+      consumed but not integrated.
+    example_tutor_move: >-
+      "Here is the master-slave passage walked through end-to-end with
+      its three moves: ... Now: pick a different relationship — say,
+      teacher and student — and walk it through the same three moves
+      yourself."
+
+  - name: lower_cognitive_load
+    description: >-
+      Slow the dialogue down or simplify the framing for an overloaded
+      learner. Not the same as dumbing down — it cuts incidental load
+      while preserving the substantive question.
+    trigger_conditions:
+      - "learner's recent turn shows working-memory strain (truncated, fragmented)"
+      - "learner_profile.agencySignal moved toward resistant or compliant from collaborative"
+      - "tutor's prior turn introduced multiple new concepts at once"
+    contraindications:
+      - "learner is engaged and pushing — slowing down reads as condescension"
+      - "the load is the lesson (e.g., the point is to feel the difficulty of the problem)"
+    expected_next_learner_signal: >-
+      Resumed substantive engagement with the simplified framing. If the
+      learner remains stuck after load reduction, the issue isn't load —
+      it's a different misconception that needs naming.
+    example_tutor_move: >-
+      "Let's hold off on the Brandom reading for a minute and just look
+      at one piece: what does Hegel mean when he says recognition is
+      'mediated'? One word at a time."
+
+  - name: provide_hint
+    description: >-
+      Offer a partial scaffold without giving away the answer. The hint
+      must move the learner one productive step, not collapse the
+      remaining work.
+    trigger_conditions:
+      - "learner has attempted and produced something — even partially wrong"
+      - "learner_profile.confidence is mid-range and the gap is bridgeable in one move"
+      - "withholding has produced struggle that has tipped from productive to unproductive"
+    contraindications:
+      - "learner has not yet attempted — the hint substitutes for their own work"
+      - "the gap is conceptual and a hint will paper over the misunderstanding"
+    expected_next_learner_signal: >-
+      Continued attempt that incorporates the hint as a stepping stone,
+      not as the final answer. If the next learner turn restates the
+      hint as the conclusion, the hint was too large.
+    example_tutor_move: >-
+      "You're close — notice that your second premise depends on the
+      symmetry assumption you challenged in turn one. What changes if
+      that asymmetry stays put?"
+
+  - name: request_elaboration
+    description: >-
+      Ask the learner to expand their reasoning, not their conclusion.
+      The cue is "say more about how you got there", not "say more about
+      what you concluded".
+    trigger_conditions:
+      - "learner's claim is interesting but the supporting reasoning is opaque"
+      - "tutor cannot tell whether the claim is well-founded or rote"
+      - "the next productive move depends on what the learner's reasoning rests on"
+    contraindications:
+      - "learner's reasoning was already articulated and the tutor missed it"
+      - "learner is overloaded — elaboration adds load"
+    expected_next_learner_signal: >-
+      Articulated chain of reasoning, even if compressed. Repetition of
+      the original claim with intensifiers ("I just think it's right")
+      indicates either intuitive knowledge that hasn't been articulated
+      or an absence of underlying reasoning.
+    example_tutor_move: >-
+      "Walk me through how you got to that conclusion — what's the step
+      between 'recognition presupposes asymmetry' and 'so it can't be
+      mutual'?"
+
+  - name: acknowledge_and_redirect
+    description: >-
+      Recognise an affective signal explicitly, then redirect productively.
+      The acknowledgement is not therapeutic; it names what the learner
+      is signalling so the dialogue can proceed without pretending the
+      signal didn't happen.
+    trigger_conditions:
+      - "learner expressed frustration, shutdown, or self-doubt explicitly"
+      - "learner_profile.agencySignal moved to resistant or compliant from collaborative"
+      - "the cognitive content stopped progressing because of an affective barrier"
+    contraindications:
+      - "learner is engaged and the affect is the heat of substantive disagreement"
+      - "acknowledgement would itself feel performative or condescending"
+    expected_next_learner_signal: >-
+      Either continued engagement with the redirected substantive question,
+      or a clearer articulation of what the affect is responding to. Repeat
+      shutdown after acknowledgement indicates the redirect was wrong (often
+      because it ignored what the learner actually named).
+    example_tutor_move: >-
+      "It sounds like the back-and-forth on definitions is wearing —
+      that's fair, this is genuinely confusing material. Let me try a
+      different angle: forget the term 'recognition' for a minute and
+      tell me what's at stake when one person ignores another's account
+      of themselves."
+
+  - name: name_the_disagreement
+    description: >-
+      Make the substantive point of disagreement explicit instead of
+      papering it over. The disagreement may be tutor-vs-learner or
+      learner-vs-themselves-implicitly; either way the work is to put
+      it on the table where it can be addressed.
+    trigger_conditions:
+      - "tutor and learner are talking past each other on a substantive question"
+      - "learner is implicitly committed to two contradictory positions"
+      - "metaphor or analogy has been stretched past its valid range"
+    contraindications:
+      - "the apparent disagreement is terminological and easier resolved by definition"
+      - "naming the disagreement will shut down a learner who is mid-formulation"
+    expected_next_learner_signal: >-
+      Engagement with the named disagreement — either taking a side,
+      reframing why it isn't really a disagreement, or recognising the
+      contradiction in their own position. Sliding away from the named
+      point indicates the disagreement was real and wasn't ready to be
+      addressed.
+    example_tutor_move: >-
+      "I think we actually disagree about something specific: you read
+      the recognition relation as symmetrical-by-construction; I read
+      it as constitutively asymmetrical with symmetry as a regulative
+      ideal. That's not a misunderstanding; it's the question."
+
+  - name: withhold_answer
+    description: >-
+      Refuse to give the answer in order to keep the learner in
+      productive struggle. The withhold must be visible and reasoned —
+      "I'm not going to answer that yet, because..." — not silent
+      stonewalling.
+    trigger_conditions:
+      - "learner is in oracle-mode, asking for the answer rather than working toward it"
+      - "the question's answer is achievable from the learner's current position"
+      - "learner_profile.agencySignal == compliant and needs to be moved"
+    contraindications:
+      - "learner is genuinely stuck and withholding produces unproductive struggle"
+      - "the question is foundational and answering it unlocks further work"
+      - "learner is in affective shutdown — withholding compounds it"
+    expected_next_learner_signal: >-
+      An attempt at the question themselves, even partial. Repeat oracle-
+      mode requests indicate the withhold needs to be paired with a hint
+      or a scaffold; bare withholding has converged to non-engagement.
+    example_tutor_move: >-
+      "I'm not going to give you the punchline on this one — partly
+      because the punchline matters less than how you arrive at it.
+      What's your best current guess at why Hegel insists recognition
+      is constitutive rather than merely supportive?"
+
+  - name: summarize_and_check
+    description: >-
+      Consolidate the dialogue so far and verify shared understanding.
+      The summary must be a genuine compression with the substantive
+      claims intact, not a procedural recap. The check is real — the
+      tutor expects the learner to revise the summary, not just nod.
+    trigger_conditions:
+      - "dialogue has accumulated multiple substantive moves and risks losing thread"
+      - "tutor needs to test whether learner has integrated the prior moves"
+      - "before a transition to a new topic or move category"
+    contraindications:
+      - "summary will substitute for the work the learner needs to do themselves"
+      - "the moves so far are not yet stable enough to summarise without distortion"
+    expected_next_learner_signal: >-
+      Substantive engagement with the summary — additions, corrections,
+      or pushback on what got left out. Bare confirmation ("yes, that
+      sounds right") indicates the check failed; the learner consumed
+      the summary without integrating it.
+    example_tutor_move: >-
+      "Let me try to put together what we have: recognition is
+      asymmetrical-by-default, mutuality is achieved (not given), and
+      the failure mode is reduction-to-affirmation. Is that what we've
+      established, or have I flattened something?"
+
+  - name: pose_counterexample
+    description: >-
+      Present a counterexample that challenges the learner's current
+      claim. Unlike scope_test (which probes the boundary), this is a
+      case that the learner's claim *should* handle but doesn't. The
+      goal is to surface the part of the claim that is wrong, not just
+      its extent.
+    trigger_conditions:
+      - "learner has stated a position confidently that the tutor sees as wrong"
+      - "scope_test has already shown the boundary; the actual claim is the issue"
+      - "learner is sophisticated enough to handle disconfirmation without shutdown"
+    contraindications:
+      - "learner is novice or in affective fragility — counterexamples wound rather than instruct"
+      - "the counterexample will not actually challenge the learner's strongest version of the claim"
+    expected_next_learner_signal: >-
+      Engagement with how the counterexample relates to their position —
+      revision of the claim, articulation of why the example doesn't
+      apply, or recognition of the underlying error. Dismissal without
+      engagement indicates the example missed.
+    example_tutor_move: >-
+      "If recognition requires conscious uptake by both parties, what
+      do we say about cases where one party recognises the other only
+      after the other is dead — say, posthumous reputation? Either the
+      relation was never really recognition, or your conscious-uptake
+      criterion is too strong."
+
+  - name: invite_objection
+    description: >-
+      Explicitly invite the learner to push back. Distinct from
+      request_elaboration (which asks them to extend) and
+      ask_diagnostic_question (which probes belief): this asks them to
+      take the *opposite* side of what was just said and find its best
+      articulation.
+    trigger_conditions:
+      - "learner has been compliant for several turns without substantive engagement"
+      - "tutor's recent move was assertive and warrants stress-testing"
+      - "the learner's discipline is one in which dialectical opposition is expected (philosophy, dialectical materialism, etc.)"
+    contraindications:
+      - "learner is novice and lacks the substantive ground to mount an objection"
+      - "learner_profile.agencySignal == resistant — invitation reads as confrontation"
+      - "the substantive move is fragile and an objection would derail more than sharpen"
+    expected_next_learner_signal: >-
+      An articulated objection in best form, even one the learner
+      doesn't endorse. Bare disagreement-with-the-tutor without
+      structure is unproductive; refusal to articulate any objection
+      ("I don't disagree") indicates the invitation didn't take.
+    example_tutor_move: >-
+      "What are you not buying about what I just said? Steelman the
+      objection — give me the strongest case against it before deciding
+      whether to keep it."

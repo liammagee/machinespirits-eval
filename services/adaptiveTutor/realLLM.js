@@ -14,7 +14,7 @@ import { tutorDialogueEngine } from '@machinespirits/tutor-core';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
-import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS } from './policyActions.js';
+import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 
 const { callAI } = tutorDialogueEngine;
 
@@ -125,17 +125,49 @@ const policyMenuStr = POLICY_ACTIONS
   .map((a) => `- ${a}: ${POLICY_ACTION_DESCRIPTIONS[a]}`)
   .join('\n');
 
+// Richer menu used by the ego prompts: pulls trigger conditions, contraindications,
+// and the expected next learner signal from POLICY_ACTION_DETAILS (YAML-loaded
+// at module-import time, with graceful fallback to the one-liners). Built once
+// at module load — typical size ~1.5k tokens, vs ~400 for policyMenuStr — so we
+// don't pay for it inside the hot path.
+function buildPolicyMenuExpanded() {
+  const lines = [];
+  for (const name of POLICY_ACTIONS) {
+    const detail = POLICY_ACTION_DETAILS?.[name];
+    if (!detail || detail._source === 'fallback') {
+      lines.push(`- ${name}: ${POLICY_ACTION_DESCRIPTIONS[name]}`);
+      continue;
+    }
+    lines.push(`- ${name}: ${detail.description}`);
+    if (detail.trigger_conditions?.length) {
+      lines.push('    triggers:');
+      for (const t of detail.trigger_conditions) lines.push(`      • ${t}`);
+    }
+    if (detail.contraindications?.length) {
+      lines.push('    contraindicated when:');
+      for (const c of detail.contraindications) lines.push(`      • ${c}`);
+    }
+    if (detail.expected_next_learner_signal) {
+      lines.push(`    expected next learner signal: ${detail.expected_next_learner_signal}`);
+    }
+  }
+  return lines.join('\n');
+}
+const policyMenuExpanded = buildPolicyMenuExpanded();
+
 const TUTOR_EGO_INITIAL_SYSTEM = `You are the tutor's planning module. Each turn, given the learner's most recent message and a structured profile of the learner, pick exactly one pedagogical action from the menu and draft a tutor response that enacts it.
 
 You must adapt to the structured profile. If the profile changes between calls, your action choice and message should change too. Do not collapse to a default explanation.
 
+For each candidate action below, the menu lists when it is appropriate (triggers), when it is not (contraindications), and what the next learner turn should look like if the action worked. Use these cues — your choice should be defensible against them.
+
 Policy menu:
-${policyMenuStr}
+${policyMenuExpanded}
 
 Respond as a single JSON object with exactly these keys:
 - policyAction: one of the menu labels above (no others)
 - text: the tutor's message to the learner (1–4 sentences, no preamble, no meta-talk)
-- rationale: one short sentence saying why this action fits this learner profile (optional)
+- rationale: one short sentence saying why this action fits this learner profile, citing a trigger condition or contraindication when relevant (optional)
 
 Output JSON only, no surrounding prose, no code fences.`;
 
@@ -152,7 +184,10 @@ Respond as a single JSON object: {"needsRevision": boolean, "feedback": string}.
 
 const TUTOR_EGO_REVISION_SYSTEM = `You are the tutor's planning module on a revision pass. Given the previous draft, the superego's feedback, and the learner profile, produce a revised tutor message and (optionally) a different policy action.
 
-${policyMenuStr}
+If the superego flagged an action–profile mismatch, prefer an action whose trigger conditions match the current profile and whose contraindications do not.
+
+Policy menu:
+${policyMenuExpanded}
 
 Respond as a single JSON object: {"text": string, "policyAction": one of the menu labels}. Output JSON only.`;
 

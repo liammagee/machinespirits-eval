@@ -475,7 +475,7 @@ Update this section in-place as phases complete. (Initial state: only Phase 1 pr
   - [x] eval-cli regression unblocked
   - [x] A13 pre-registration doc (`docs/explorations/claude/a13-pre-registration.md` — locked 2026-05-01; earliest run-start 2026-05-03)
   - [x] Cost ceiling (commit `aa2b64f` — `services/adaptiveTutor/budgetTracker.js` + `--max-cost` flag; 11 tests)
-  - [ ] Polished policy-action YAML
+  - [x] Polished policy-action YAML (`config/adaptive-policy-actions.yaml` + loader in `services/adaptiveTutor/policyActions.js`; expanded menu wired into `realLLM.js` ego prompts; mock smoke green with file present and absent)
   - [ ] Scenario completeness fields
   - [ ] A13 condition cells (111, 112, 113)
   - [ ] Real-LLM Gate B run
