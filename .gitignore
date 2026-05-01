@@ -72,3 +72,6 @@ docs/research/transcript-*.md
 docs/research/feedback-*.md
 docs/research/measurement-*.md
 docs/research/SESSION-NOTES-*.md
+
+# Literature PDFs — reproducible from arxiv_manifest.json + download_pdfs.sh
+docs/explorations/literature/pdfs/
