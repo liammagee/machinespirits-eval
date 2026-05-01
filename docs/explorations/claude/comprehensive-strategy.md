@@ -473,7 +473,7 @@ Update this section in-place as phases complete. (Initial state: only Phase 1 pr
   - [x] Adaptive scaffold shipped (consolidated-plan §1)
   - [x] `analyze-strategy-shift.js` shipped
   - [x] eval-cli regression unblocked
-  - [ ] A13 pre-registration doc
+  - [x] A13 pre-registration doc (`docs/explorations/claude/a13-pre-registration.md` — locked 2026-05-01; earliest run-start 2026-05-03)
   - [x] Cost ceiling (commit `aa2b64f` — `services/adaptiveTutor/budgetTracker.js` + `--max-cost` flag; 11 tests)
   - [ ] Polished policy-action YAML
   - [ ] Scenario completeness fields
