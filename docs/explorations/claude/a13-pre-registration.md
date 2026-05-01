@@ -188,7 +188,7 @@ If any of these are violated for genuinely good reasons (e.g., a bug in the anal
 
 ## Deviations log
 
-Empty at lock time. Append below as run proceeds.
+Append below as run proceeds.
 
 ```
 [YYYY-MM-DDTHH:MM±ZZZZ] (deviation type — short title)
@@ -196,3 +196,8 @@ What changed: ...
 Justification: ...
 Effect on analysis: ...
 ```
+
+[2026-05-01] (scenario file metadata addition — non-mutating)
+What changed: commit `78f9fe8` added `failure_mode` (string) and `success_criteria` (object) fields to all 8 scenarios in `config/adaptive-trap-scenarios.yaml` as part of Phase 1 §4 of comprehensive-strategy.md. Pre-reg lock at commit `bfbcfe8` references the version BEFORE this addition.
+Justification: pure addition. The load-bearing fields for the A13 design (id, scenario_type, hidden, opening_turns, max_turns, expected_strategy_shift, counterfactual) are unchanged — `git diff bfbcfe8..78f9fe8 -- config/adaptive-trap-scenarios.yaml` shows only `+` lines. The new fields are not consumed by the strategy-shift analyzer that scores the primary endpoint; they are scaffolding for post-Gate-B analyzer extensions (trigger_detection, state_update_accuracy, repair_success, delayed_task_success).
+Effect on analysis: none. Primary endpoint (`strategy_shift_correctness`) and decision rule are unaffected. The pre-reg lock remains valid against `bfbcfe8`; cross-reference `78f9fe8` for the augmented-but-equivalent file used at run time.
