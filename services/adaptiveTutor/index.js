@@ -142,16 +142,22 @@ export async function runAdaptiveEvaluation({
           expected_strategy_shift: yamlScenario.expected_strategy_shift ?? null,
         };
         try {
+          // Snapshot before / delta after lets us write per-scenario tokens
+          // and cost into the row while keeping the run-wide accumulator
+          // (which enforces --max-cost) intact.
+          const snap = tracker?.snapshot();
           if (counterfactualEnabled && yamlScenario.counterfactual) {
             const result = await runScenarioWithCounterfactual(scenario, buildPerturbation(yamlScenario), graphOptions);
+            const usage = tracker?.delta(snap);
             const out = persistScenarioWithCounterfactual({
-              runId: run.id, scenario, scenarioConfig, result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
+              runId: run.id, scenario, scenarioConfig, result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(), usage,
             });
             persisted.push(out);
           } else {
             const result = await runScenario(scenario, graphOptions);
+            const usage = tracker?.delta(snap);
             const out = persistScenarioRun({
-              runId: run.id, scenario, scenarioConfig, runResult: result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(),
+              runId: run.id, scenario, scenarioConfig, runResult: result, profileName, agentConfig: agentConfigForRow, llmMode: llmMode(), usage,
             });
             persisted.push(out);
           }

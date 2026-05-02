@@ -134,5 +134,28 @@ export function createBudgetTracker({ maxUsd } = {}) {
         utilizationPct: maxUsd > 0 ? (accumulated / maxUsd) * 100 : 0,
       };
     },
+
+    // Snapshot + delta lets callers compute per-scenario usage without
+    // resetting the run-wide accumulator that enforces --max-cost.
+    snapshot() {
+      const totalIn = calls.reduce((s, c) => s + c.inputTokens, 0);
+      const totalOut = calls.reduce((s, c) => s + c.outputTokens, 0);
+      return {
+        accumulatedUsd: accumulated,
+        callCount: calls.length,
+        totalInputTokens: totalIn,
+        totalOutputTokens: totalOut,
+      };
+    },
+
+    delta(snap) {
+      const now = this.snapshot();
+      return {
+        cost: now.accumulatedUsd - (snap?.accumulatedUsd ?? 0),
+        inputTokens: now.totalInputTokens - (snap?.totalInputTokens ?? 0),
+        outputTokens: now.totalOutputTokens - (snap?.totalOutputTokens ?? 0),
+        apiCalls: now.callCount - (snap?.callCount ?? 0),
+      };
+    },
   };
 }

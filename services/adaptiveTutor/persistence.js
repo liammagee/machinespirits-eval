@@ -128,7 +128,7 @@ function policyActionTrace(history) {
 }
 
 // Build the row to feed evaluationStore.storeResult().
-function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agentConfig, dialogueId, contentHash, llmMode, traceJson }) {
+function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agentConfig, dialogueId, contentHash, llmMode, traceJson, usage }) {
   const tutorTexts = tutorMessages(runResult.final);
   const policies = policyActionTrace(runResult.history);
   const summary = {
@@ -159,12 +159,12 @@ function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agen
     suggestions: tutorTexts,
     rawResponse: JSON.stringify(summary),
     latencyMs: 0,
-    inputTokens: 0,
-    outputTokens: 0,
-    cost: 0,
+    inputTokens: usage?.inputTokens ?? 0,
+    outputTokens: usage?.outputTokens ?? 0,
+    cost: usage?.cost ?? 0,
     dialogueRounds: tutorTexts.length,
     deliberationRounds: policies.length,
-    apiCalls: 0,
+    apiCalls: usage?.apiCalls ?? 0,
     dialogueId,
     dialogueContentHash: contentHash,
     success: true,
@@ -175,11 +175,11 @@ function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agen
 }
 
 // Public: persist a single (non-counterfactual) scenario run.
-export function persistScenarioRun({ runId, scenario, scenarioConfig, runResult, profileName, agentConfig, llmMode }) {
+export function persistScenarioRun({ runId, scenario, scenarioConfig, runResult, profileName, agentConfig, llmMode, usage }) {
   const dialogueId = makeDialogueId(scenario.id);
   const traceJson = buildTraceJson({ scenario, scenarioConfig, runResult, llmMode, profileName });
   const { contentHash } = writeTraceFile(dialogueId, traceJson);
-  const row = buildResultRow({ scenario, scenarioConfig, runResult, profileName, agentConfig, dialogueId, contentHash, llmMode, traceJson });
+  const row = buildResultRow({ scenario, scenarioConfig, runResult, profileName, agentConfig, dialogueId, contentHash, llmMode, traceJson, usage });
   const rowId = evaluationStore.storeResult(runId, row);
   return { rowId, dialogueId, contentHash };
 }
@@ -189,7 +189,7 @@ export function persistScenarioRun({ runId, scenario, scenarioConfig, runResult,
 // without an extra join. Counterfactual is the diagnostic — recording it as
 // a sibling row would double-count under conventional aggregations.
 export function persistScenarioWithCounterfactual({
-  runId, scenario, scenarioConfig, result, profileName, agentConfig, llmMode,
+  runId, scenario, scenarioConfig, result, profileName, agentConfig, llmMode, usage,
 }) {
   const dialogueId = makeDialogueId(scenario.id);
   const traceJson = buildTraceJson({
@@ -212,6 +212,7 @@ export function persistScenarioWithCounterfactual({
     contentHash,
     llmMode,
     traceJson,
+    usage,
   });
   const rowId = evaluationStore.storeResult(runId, row);
   return { rowId, dialogueId, contentHash, hasCounterfactual: Boolean(result.counterfactual) };
