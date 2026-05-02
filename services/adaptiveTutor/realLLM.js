@@ -1,22 +1,50 @@
 // Real-LLM backend for the adaptive cell.
 //
-// Maps each graph role onto a single tutor-core callAI() invocation, with
-// a JSON-shaped response and Zod validation against the role's expected
-// shape. The interface matches mockLLM.callRole exactly so the graph
-// nodes never know which backend is in use.
+// Maps each graph role onto a single LLM invocation, with a JSON-shaped
+// response and Zod validation against the role's expected shape. The
+// interface matches mockLLM.callRole exactly so the graph nodes never
+// know which backend is in use.
 //
-// Provider routing reuses tutor-core's tutorDialogueEngine.callAI — the
-// same path the existing tutor + learner agents use. Model resolution
-// goes through learnerConfigLoader.getProviderConfig so eval-repo's
-// provider table (config/providers.yaml) is the source of truth.
+// Provider routing goes through tutor-core's unifiedAIProvider.call — the
+// internal callAI() helper in tutorDialogueEngine.js is not exported in
+// 0.5.0, so we bridge the legacy (agentConfig, system, user, role) shape
+// to the public { provider, model, systemPrompt, messages, ... } shape
+// via an in-file adapter. Model alias resolution still goes through
+// learnerConfigLoader.getProviderConfig so eval-repo's provider table
+// (config/providers.yaml) remains the source of truth for `nemotron` etc.
 
-import { tutorDialogueEngine } from '@machinespirits/tutor-core';
+import { unifiedAIProvider } from '@machinespirits/tutor-core';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 
-const { callAI } = tutorDialogueEngine;
+// Adapter that bridges to tutor-core's public unifiedAIProvider.call while
+// preserving the (agentConfig, system, user, role) → flat-token-shape
+// contract the rest of this module + the budget tracker depend on.
+async function callAI(agentConfig, systemPrompt, userPrompt /* , role */) {
+  const { provider, model, hyperparameters } = agentConfig;
+  const response = await unifiedAIProvider.call({
+    provider,
+    model,
+    systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+    preset: 'direct',
+    config: {
+      temperature: hyperparameters?.temperature,
+      maxTokens: hyperparameters?.max_tokens,
+    },
+  });
+  return {
+    text: response.content || '',
+    model: response.model,
+    provider: response.provider,
+    latencyMs: response.latencyMs,
+    inputTokens: response.usage?.inputTokens || 0,
+    outputTokens: response.usage?.outputTokens || 0,
+    cost: response.usage?.cost || 0,
+  };
+}
 
 const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_ALIAS = 'nemotron';
