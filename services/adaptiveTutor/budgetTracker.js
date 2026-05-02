@@ -21,11 +21,19 @@
 //   assertBelowCeiling(estimateUsd)
 
 const COSTS_PER_1K_TOKENS = {
-  // Approximate Q1-2026 USD/1k tokens, [input, output]. Used only for the
-  // pre-call estimate; accumulator uses the actual cost from the API.
+  // Approximate Q1-2026 USD/1k tokens, [input, output]. Used by the pre-call
+  // estimate AND (via realLLM.js) by the post-call cost synthesizer for
+  // providers like Anthropic-direct that don't return cost in usage.
   'anthropic/claude-sonnet-4.6': [0.003, 0.015],
   'anthropic/claude-opus-4.6': [0.015, 0.075],
   'anthropic/claude-haiku-4.5': [0.0008, 0.004],
+  // Bare Anthropic IDs returned by the direct API (no provider prefix).
+  // Same per-token rates as the OpenRouter-prefixed variants — pricing
+  // tracks the model, not the route.
+  'claude-sonnet-4-5': [0.003, 0.015],
+  'claude-sonnet-4-6': [0.003, 0.015],
+  'claude-opus-4-6': [0.015, 0.075],
+  'claude-haiku-4-5': [0.0008, 0.004],
   'openai/gpt-5.2': [0.005, 0.015],
   'openai/gpt-5-mini': [0.00025, 0.001],
   'openai/gpt-5.4': [0.0075, 0.03],
@@ -44,7 +52,7 @@ const COSTS_PER_1K_TOKENS = {
 // silently burn through the ceiling on the basis of an underestimate.
 const DEFAULT_COSTS_PER_1K = [0.01, 0.03];
 
-function lookupRates(model) {
+export function lookupRates(model) {
   if (!model) return DEFAULT_COSTS_PER_1K;
   return COSTS_PER_1K_TOKENS[model] ?? DEFAULT_COSTS_PER_1K;
 }

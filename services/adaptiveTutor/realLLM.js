@@ -18,10 +18,18 @@ import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
+import { lookupRates } from './budgetTracker.js';
 
 // Adapter that bridges to tutor-core's public unifiedAIProvider.call while
 // preserving the (agentConfig, system, user, role) → flat-token-shape
 // contract the rest of this module + the budget tracker depend on.
+//
+// Cost synthesis: tutor-core's callAnthropic does not include `cost` in its
+// usage payload (only callOpenRouter does — OpenRouter echoes its own cost).
+// To keep the budget ceiling honest across providers, we synthesize cost
+// from tokens × the budgetTracker rate table whenever the provider didn't
+// report one. This keeps anthropic.sonnet a viable Gate B option without
+// flying blind on actual spend.
 async function callAI(agentConfig, systemPrompt, userPrompt /* , role */) {
   const { provider, model, hyperparameters } = agentConfig;
   const response = await unifiedAIProvider.call({
@@ -35,14 +43,21 @@ async function callAI(agentConfig, systemPrompt, userPrompt /* , role */) {
       maxTokens: hyperparameters?.max_tokens,
     },
   });
+  const inputTokens = response.usage?.inputTokens || 0;
+  const outputTokens = response.usage?.outputTokens || 0;
+  let cost = response.usage?.cost || 0;
+  if (cost === 0 && (inputTokens > 0 || outputTokens > 0)) {
+    const [inRate, outRate] = lookupRates(response.model || model);
+    cost = (inputTokens / 1000) * inRate + (outputTokens / 1000) * outRate;
+  }
   return {
     text: response.content || '',
     model: response.model,
     provider: response.provider,
     latencyMs: response.latencyMs,
-    inputTokens: response.usage?.inputTokens || 0,
-    outputTokens: response.usage?.outputTokens || 0,
-    cost: response.usage?.cost || 0,
+    inputTokens,
+    outputTokens,
+    cost,
   };
 }
 
