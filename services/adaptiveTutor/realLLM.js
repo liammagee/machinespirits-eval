@@ -30,9 +30,44 @@ import { lookupRates } from './budgetTracker.js';
 // from tokens × the budgetTracker rate table whenever the provider didn't
 // report one. This keeps anthropic.sonnet a viable Gate B option without
 // flying blind on actual spend.
-async function callAI(agentConfig, systemPrompt, userPrompt /* , role */) {
+//
+// Retry-on-network-error: a single transient blip (DNS, undici "terminated",
+// upstream 5xx, 429 rate limit) was enough to cascade-fail the first Gate B
+// attempt — once one connection in undici's pool went bad, the rest of the
+// run inherited the bad state without recovery. The wrapper retries at the
+// transport layer only; auth / validation / quota errors fall through fast.
+const RETRYABLE_ERROR_PATTERNS = [
+  /fetch failed/i,
+  /\bterminated\b/i,
+  /ECONNRESET/i,
+  /ECONNREFUSED/i,
+  /ETIMEDOUT/i,
+  /ENOTFOUND/i,
+  /socket hang up/i,
+  /network error/i,
+  /\b5\d\d\b/, // 500-series upstream errors
+  /\b429\b/,   // rate limit — back off, don't bail
+  /rate.?limit/i,
+];
+const NON_RETRYABLE_ERROR_PATTERNS = [
+  /\b401\b/,
+  /\b403\b/,
+  /unauthorized/i,
+  /forbidden/i,
+  /\b400\b/,
+  /invalid[_ ]api[_ ]key/i,
+  /no API key/i,
+];
+
+function isRetryableError(err) {
+  const msg = err?.message || String(err || '');
+  if (NON_RETRYABLE_ERROR_PATTERNS.some((re) => re.test(msg))) return false;
+  return RETRYABLE_ERROR_PATTERNS.some((re) => re.test(msg));
+}
+
+async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   const { provider, model, hyperparameters } = agentConfig;
-  const response = await unifiedAIProvider.call({
+  const callOnce = () => unifiedAIProvider.call({
     provider,
     model,
     systemPrompt,
@@ -43,6 +78,28 @@ async function callAI(agentConfig, systemPrompt, userPrompt /* , role */) {
       maxTokens: hyperparameters?.max_tokens,
     },
   });
+
+  const maxAttempts = 3;
+  const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
+  let response;
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      response = await callOnce();
+      lastErr = null;
+      break;
+    } catch (err) {
+      lastErr = err;
+      if (attempt === maxAttempts || !isRetryableError(err)) throw err;
+      const baseDelay = backoffsMs[attempt - 1];
+      const jitter = Math.floor(Math.random() * baseDelay * 0.2);
+      const delay = baseDelay + jitter;
+      console.warn(`[adaptive.realLLM] retry ${attempt}/${maxAttempts - 1} for ${role || 'call'} after ${delay}ms: ${(err?.message || String(err)).slice(0, 160)}`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  if (!response) throw lastErr || new Error('adaptiveTutor.realLLM: callAI exhausted retries with no response');
+
   const inputTokens = response.usage?.inputTokens || 0;
   const outputTokens = response.usage?.outputTokens || 0;
   let cost = response.usage?.cost || 0;
