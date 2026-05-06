@@ -13,6 +13,31 @@ const messageSchema = z.object({
   meta: z.record(z.string(), z.unknown()).optional(),
 });
 
+// Bilateral-ToM extension: paired natural-language + JSON representation
+// of the tutor's hypothesis of the learner (LBM bottleneck pattern), the
+// tutor's second-order belief about the learner's perception of the tutor,
+// and four FANToM-style probes the tutor commits to per turn so tom_accuracy
+// can be scored against the learner's hidden ownState in post-hoc analysis.
+//
+// All three fields are .optional() because only the bilateral_tom architecture
+// branch populates them; cells 110/111/112/113 keep producing schema-valid
+// profiles without them.
+const hypothesizedTutorPerceptionSchema = z.object({
+  summaryText: z.string().default(''),
+  jsonState: z.record(z.string(), z.unknown()).default(() => ({})),
+});
+
+const tomProbesSchema = z.object({
+  // BELIEF[DIST]: tutor's prediction of learner's actual misconception
+  belief_dist: z.string().default(''),
+  // BELIEF[CHOICE]: tutor's prediction of learner's actual agency stance
+  belief_choice: z.enum(['compliant', 'questioning', 'resistant', 'collaborative', 'unknown']).default('unknown'),
+  // ANSWERABILITY[LIST]: prior turn indices where tutor predicts learner has insufficient information to answer
+  answerability_list: z.array(z.number().int()).default(() => []),
+  // INFOACCESS[LIST]: prior turn indices the tutor predicts the learner has actually integrated
+  infoaccess_list: z.array(z.number().int()).default(() => []),
+});
+
 const learnerProfileSchema = z.object({
   misconceptions: z.array(z.string()).default(() => []),
   confidence: z.number().min(0).max(1).default(0.5),
@@ -20,6 +45,9 @@ const learnerProfileSchema = z.object({
   zpdEstimate: z.string().default(''),
   lastEvidence: z.string().default(''),
   updatedAtTurn: z.number().int().default(-1),
+  summaryText: z.string().optional(),
+  hypothesizedLearnerPerceptionOfTutor: hypothesizedTutorPerceptionSchema.optional(),
+  tomProbes: tomProbesSchema.optional(),
 });
 
 const tutorInternalSchema = z.object({

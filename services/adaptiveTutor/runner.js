@@ -24,6 +24,7 @@ const compileWithCheckpointer = (graphOptions = {}) =>
 const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
   'state_policy',
   'state_policy_with_validator',
+  'bilateral_tom',
 ]);
 
 const baseInitialState = (scenario) => ({

@@ -1,6 +1,6 @@
 // LangGraph definition for the adaptive bilateral tutor variant.
 //
-// Four supported architectures, switched by the `architecture` option to
+// Five supported architectures, switched by the `architecture` option to
 // buildGraph(). All variants emit the same per-turn record shape (so the
 // strategy-shift analyzer can score them uniformly), but the deliberation
 // pipelines differ:
@@ -28,6 +28,19 @@
 //     constraintCheck. Validator is a stricter second-pass that reads the
 //     just-picked policy action against POLICY_ACTION_DETAILS' trigger
 //     conditions and contraindications, and forces revision on mismatch.
+//
+//   bilateral_tom              (P2 cell C5 — cell_115)
+//     learnerProfileUpdate → tutorTomTracker → tutorEgoInitial
+//       → tutorSuperegoReview → constraintCheck → [tutorEgoRevision]?
+//       → tutorEmit → learnerTurn
+//     state_policy + a ToM tracker that emits paired summaryText (LBM
+//     bottleneck), hypothesizedLearnerPerceptionOfTutor (second-order
+//     belief), and tomProbes (FANToM-style predictions scored against
+//     ground truth in post-hoc analysis). All three fields land on
+//     learnerProfile, which the existing tutorEgoInitial prompt is now
+//     ToM-aware about. Tutor side only — bilateral learner extension
+//     in services/learnerTutorInteractionEngine.js is a separate
+//     deliverable per docs/explorations/claude/p2-bilateral-tom-pre-registration.md §3.
 
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
@@ -38,6 +51,7 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   'ego_superego',
   'state_policy',
   'state_policy_with_validator',
+  'bilateral_tom',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 
@@ -61,6 +75,28 @@ async function learnerProfileUpdate(state) {
   // the constraint check has a reliable updatedAtTurn signal regardless
   // of which LLM backend produced the profile.
   return { learnerProfile: { ...profile, updatedAtTurn: state.turn } };
+}
+
+// Bilateral-ToM tracker: paired LBM bottleneck text + second-order belief +
+// FANToM-style probes, all written back onto learnerProfile so the existing
+// tutorEgoInitial node can read them as part of the profile context. Spreads
+// the prior profile so updatedAtTurn (set by learnerProfileUpdate immediately
+// before this node) is preserved — otherwise constraintCheck would flag
+// "learner profile not updated at turn N" and force a spurious revision.
+async function tutorTomTracker(state) {
+  const tom = await callRole('tutorTomTracker', {
+    learnerProfile: state.learnerProfile,
+    dialogue: state.dialogue,
+    turn: state.turn,
+  });
+  return {
+    learnerProfile: {
+      ...state.learnerProfile,
+      summaryText: tom.summaryText,
+      hypothesizedLearnerPerceptionOfTutor: tom.hypothesizedLearnerPerceptionOfTutor,
+      tomProbes: tom.tomProbes,
+    },
+  };
 }
 
 async function tutorEgoInitial(state) {
@@ -193,9 +229,13 @@ export function buildGraph(options = {}) {
       .addConditionalEdges('learnerTurn', routeAfterLearner('tutorEgoInitial'), ['tutorEgoInitial', END]);
   }
 
-  // state_policy and state_policy_with_validator share the bulk of the graph;
-  // the validator slot is conditional on architecture.
+  // state_policy, state_policy_with_validator, and bilateral_tom share the
+  // bulk of the graph. The validator and tom-tracker slots are conditional
+  // on architecture: validator inserts between superego and constraint check
+  // (post-policy stricter pass); tom-tracker inserts between profile update
+  // and ego (pre-policy second-order context).
   const includeValidator = architecture === 'state_policy_with_validator';
+  const includeTomTracker = architecture === 'bilateral_tom';
 
   const g = new StateGraph(AdaptiveTutorState)
     .addNode('learnerProfileUpdate', learnerProfileUpdate)
@@ -205,9 +245,17 @@ export function buildGraph(options = {}) {
     .addNode('tutorEgoRevision', tutorEgoRevision)
     .addNode('tutorEmit', tutorEmit)
     .addNode('learnerTurn', learnerTurn)
-    .addEdge(START, 'learnerProfileUpdate')
-    .addEdge('learnerProfileUpdate', 'tutorEgoInitial')
-    .addEdge('tutorEgoInitial', 'tutorSuperegoReview');
+    .addEdge(START, 'learnerProfileUpdate');
+
+  if (includeTomTracker) {
+    g.addNode('tutorTomTracker', tutorTomTracker)
+      .addEdge('learnerProfileUpdate', 'tutorTomTracker')
+      .addEdge('tutorTomTracker', 'tutorEgoInitial');
+  } else {
+    g.addEdge('learnerProfileUpdate', 'tutorEgoInitial');
+  }
+
+  g.addEdge('tutorEgoInitial', 'tutorSuperegoReview');
 
   if (includeValidator) {
     g.addNode('tutorValidator', tutorValidator)

@@ -39,9 +39,16 @@ function makeDialogueId(scenarioId, suffix = '') {
 // Pull the per-turn deliberation slices out of LangGraph's history snapshots.
 // Each snapshot in `history` is one node executing; we group by `turn` and
 // collapse to a per-turn record.
+//
+// `getStateHistory` yields snapshots in REVERSE chronological order
+// (newest-first). The "latest write wins" overwrite logic below assumes
+// forward iteration — without the reverse, for bilateral_tom turn 0 the
+// pre-tomTracker snap (updatedAtTurn=0, no ToM fields) would land last in
+// iteration order and clobber the post-tomTracker snap that carries the
+// paired summaryText / hypothesizedLearnerPerceptionOfTutor / tomProbes.
 function extractTurnTrace(history) {
   const byTurn = new Map();
-  for (const snap of history) {
+  for (const snap of [...history].reverse()) {
     const v = snap.values;
     if (!v) continue;
     const turn = v.turn;

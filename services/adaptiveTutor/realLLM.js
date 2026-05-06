@@ -224,6 +224,25 @@ const learnerProfileUpdateOut = z.object({
   lastEvidence: z.string().default(''),
 });
 
+// Bilateral-ToM tracker output. Paired LBM bottleneck (summaryText) lives
+// alongside the existing structured profile; second-order belief carries
+// its own paired text+JSON; tomProbes are the tutor's predeclared FANToM-
+// style answers, scored against the learner's hidden ownState in post-hoc
+// analysis (scripts/analyze-tom-accuracy.js).
+const tutorTomTrackerOut = z.object({
+  summaryText: z.string().min(1),
+  hypothesizedLearnerPerceptionOfTutor: z.object({
+    summaryText: z.string(),
+    jsonState: z.record(z.string(), z.unknown()).default({}),
+  }),
+  tomProbes: z.object({
+    belief_dist: z.string(),
+    belief_choice: z.enum(['compliant', 'questioning', 'resistant', 'collaborative', 'unknown']),
+    answerability_list: z.array(z.number().int()).default([]),
+    infoaccess_list: z.array(z.number().int()).default([]),
+  }),
+});
+
 // ---------------------------------------------------------------------------
 // Per-role prompts
 // ---------------------------------------------------------------------------
@@ -268,13 +287,15 @@ You must adapt to the structured profile. If the profile changes between calls, 
 
 For each candidate action below, the menu lists when it is appropriate (triggers), when it is not (contraindications), and what the next learner turn should look like if the action worked. Use these cues — your choice should be defensible against them.
 
+If the learner profile carries a \`summaryText\` field and/or a \`hypothesizedLearnerPerceptionOfTutor\` field (paired text + jsonState describing what you think the learner thinks you are doing), treat them as load-bearing context, not decoration. Pick a policy action that addresses the *gap* between how the learner is likely perceiving your role and what the dialogue actually needs from you — e.g. if they perceive you as an authority-to-defer-to but the dialogue needs them to commit to a position, pick an action that surfaces that mismatch.
+
 Policy menu:
 ${policyMenuExpanded}
 
 Respond as a single JSON object with exactly these keys:
 - policyAction: one of the menu labels above (no others)
 - text: the tutor's message to the learner (1–4 sentences, no preamble, no meta-talk)
-- rationale: one short sentence saying why this action fits this learner profile, citing a trigger condition or contraindication when relevant (optional)
+- rationale: one short sentence saying why this action fits this learner profile, citing a trigger condition, contraindication, or second-order belief gap when relevant (optional)
 
 Output JSON only, no surrounding prose, no code fences.`;
 
@@ -315,6 +336,22 @@ Policy menu:
 ${policyMenuExpanded}
 
 Respond as a single JSON object: {"text": string, "policyAction": one of the menu labels}. Output JSON only.`;
+
+const TUTOR_TOM_TRACKER_SYSTEM = `You are the tutor's theory-of-mind module. You run after the learner-modelling module on each turn. Given the dialogue so far and the just-updated structured learner profile, emit four artifacts.
+
+1. summaryText — a 1-3 sentence natural-language paragraph summarising what you (the tutor) currently believe about this learner: their misconception, their confidence, their stance toward you. This is a "bottleneck representation" — it must stand on its own, readable to a human auditor without the JSON profile alongside.
+
+2. hypothesizedLearnerPerceptionOfTutor — your second-order belief: what does this learner likely think you (the tutor) are trying to do right now? Provide both a short summaryText (1-2 sentences) and a small jsonState object capturing the structured aspects (e.g. perceivedRole: "adversary" | "authority" | "thinking-partner" | "guide" | "unknown").
+
+3. tomProbes — four FANToM-style predictions. These are scored in post-hoc analysis against the learner's actual hidden state, so commit to your best guess rather than hedging:
+   - belief_dist: a short string naming the learner's most likely actual misconception (the underlying confusion, not the surface symptom)
+   - belief_choice: one of "compliant" | "questioning" | "resistant" | "collaborative" | "unknown" — the learner's actual stance, not their performed one
+   - answerability_list: array of prior turn indices (0-based) where you predict the learner had insufficient information to answer the tutor's question — empty list if all prior turns were answerable from what the learner knew at the time
+   - infoaccess_list: array of prior turn indices the learner has actually integrated (vs heard but not held) — your best estimate
+
+Be honest about uncertainty in summaryText, but commit to the probes — vague probes can't be scored.
+
+Respond as a single JSON object with exactly the three top-level keys above. Output JSON only, no surrounding prose, no code fences.`;
 
 const LEARNER_PROFILE_UPDATE_SYSTEM = `You are the tutor's learner-modelling module. Given the current structured learner profile and the learner's most recent message, emit an updated profile that reflects what the message reveals.
 
@@ -384,6 +421,16 @@ const userPromptBuilders = {
     turn,
   }),
 
+  // ToM tracker takes the dialogue so far, the just-updated learnerProfile,
+  // and the current turn index. Hidden state is intentionally NOT passed —
+  // the whole point of the probes is that the tutor predicts blind, then we
+  // score against ground truth in post-hoc analysis.
+  tutorTomTracker: ({ learnerProfile, dialogue, turn }) => ub({
+    learnerProfile,
+    dialogue,
+    turn,
+  }),
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
 };
 
@@ -393,6 +440,7 @@ const systemPrompts = {
   tutorValidator: TUTOR_VALIDATOR_SYSTEM,
   tutorEgoRevision: TUTOR_EGO_REVISION_SYSTEM,
   learnerProfileUpdate: LEARNER_PROFILE_UPDATE_SYSTEM,
+  tutorTomTracker: TUTOR_TOM_TRACKER_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
 };
 
@@ -402,6 +450,7 @@ const responseSchemas = {
   tutorValidator: tutorValidatorOut,
   tutorEgoRevision: tutorEgoRevisionOut,
   learnerProfileUpdate: learnerProfileUpdateOut,
+  tutorTomTracker: tutorTomTrackerOut,
   learnerTurn: null, // plain text
 };
 

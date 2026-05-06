@@ -52,6 +52,45 @@ const fixtures = {
     return { needsRevision: false, feedback: 'policy fits profile' };
   },
 
+  // Bilateral-ToM mock: synthesises the paired LBM bottleneck text, the
+  // second-order belief about the learner's perception of the tutor, and four
+  // FANToM-style probes. Heuristic — derives from the current learnerProfile
+  // (so the field actually moves turn-over-turn under mock) and the dialogue
+  // length (for the answerability/infoaccess turn-index lists).
+  tutorTomTracker: ({ learnerProfile, dialogue, turn }) => {
+    const sig = learnerProfile?.agencySignal || 'unknown';
+    const conf = typeof learnerProfile?.confidence === 'number' ? learnerProfile.confidence : 0.5;
+    const misconception = learnerProfile?.misconceptions?.[0] || '';
+    const perceivedRole = sig === 'resistant' ? 'adversary'
+      : sig === 'compliant' ? 'authority'
+      : sig === 'questioning' ? 'thinking-partner'
+      : 'unknown';
+    const tutorTurnsSeen = Array.isArray(dialogue)
+      ? dialogue.filter((m) => m.role === 'tutor').length
+      : 0;
+    return {
+      summaryText: `Tutor's current belief: learner is ${sig} (confidence ~${conf.toFixed(2)})${misconception ? `, suspected misconception: "${misconception}"` : ''}.`,
+      hypothesizedLearnerPerceptionOfTutor: {
+        summaryText: sig === 'resistant'
+          ? 'Learner likely sees the tutor as pushing them toward an answer they disagree with.'
+          : sig === 'compliant'
+            ? 'Learner likely defers to the tutor as the authority on the topic.'
+            : sig === 'questioning'
+              ? 'Learner likely sees the tutor as a thinking partner exploring the question with them.'
+              : 'Learner has not yet formed a stable read of the tutor.',
+        jsonState: { perceivedRole, tutorTurnsSeen },
+      },
+      tomProbes: {
+        belief_dist: misconception,
+        belief_choice: sig,
+        // Mock has no per-turn integration tracking; conservative prediction:
+        // no unanswerable turns; learner has integrated all prior tutor turns.
+        answerability_list: [],
+        infoaccess_list: Array.from({ length: tutorTurnsSeen }, (_, i) => i),
+      },
+    };
+  },
+
   learnerProfileUpdate: ({ learnerLastMessage, hidden, currentProfile, turn }) => {
     // The "real" version would be an LLM that reads the dialogue and emits
     // an updated structured profile. Mock heuristic: if the learner's text
