@@ -28,6 +28,17 @@ Related services:
 - `services/dialogueTraceAnalyzer.js` — Superego feedback incorporation analysis
 - `services/learnerConfigLoader.js` — Learner personas and profiles
 
+### Human Learner Pilot (engineering complete 2026-04-25)
+
+Pilot infrastructure for human-learner validation lives at:
+- `services/pilotStore.js` — 4 tables in `data/evaluations.db` (`pilot_sessions`, `pilot_turns`, `pilot_test_items`, `pilot_exit_survey`)
+- `routes/pilotRoutes.js` — 13 endpoints (enroll → consent → intake → pretest → tutoring → posttest → exit, plus token-gated admin)
+- `public/pilot/index.html` — single-file Alpine.js participant UI
+- `services/pilotItemBank.js` + `config/pilot/fractions-items.yaml` — form-counterbalanced item bank with server-side scoring
+- `scripts/ingest-pilot-sessions.js` — completed pilot sessions → `evaluation_results` rows + dialogue logs (idempotent), so `eval-cli evaluate <runId>` can score real-learner transcripts under v2.2 alongside simulated ones
+
+Recruitment is gated on IRB approval / real consent text / real item content (see `TODO.md` §A1).
+
 ### Tutor-Learner Symmetry (Design Principle)
 
 Always aim for absolute symmetry between tutor and learner trace labels, scoring pipelines, and data structures. When adding or modifying one side, mirror the change on the other.
@@ -108,17 +119,53 @@ A cell's architecture is determined by these YAML fields:
 
 **Cell 71: Naive baseline** (no recognition, no superego, minimal prompt)
 
-**Cells 80-90: Messages-mode variants** (conversation_mode: messages)
+**Cells 80-92: Messages-mode variants** (conversation_mode: messages)
 - 80-83: Base (single/multi × unified/psycho) — 82-83 have superego configured
 - 84-90: Recognition — 86-89 have superego configured; 84, 85, 90 are single-agent (superego null)
+- 91-92: Recognition gemflash variants
 
-**Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90) have `superego: null`.
+**Cells 93-100: Superego variant ablations** (refining the dialectical_suspicious mechanism)
+- 93-94: nopad (no Writing Pad), 95: matched, 96: behaviorist, 97: directive, 98: two_pass, 99: coupling, 100: best_of_n
+
+**Cells 101-109: Id-director charisma family** (`factors.id_director: true`)
+- New architecture: per-turn id-construction trace persisted to the `id_construction_trace` column.
+- Scored against `config/evaluation-rubric-charisma.yaml` (Weber-derived 8-dimension, v1.0, independent of v2.2 tutor rubric).
+- 101-104: charisma + register variants; 105-106: tuned (charisma vs pedagogy); 107-109: witness/exemplars variants.
+
+**Cells 110-113: Adaptive runner** (`runner: adaptive`, scenarios from `config/adaptive-trap-scenarios.yaml`)
+- 110: `cell_110_langgraph_adaptive` — LangGraph state-policy + counterfactual replay; bypasses tutor-core's dialogue engine. Implementation in `services/adaptiveTutor/`.
+- 111-113: A13 pre-registration conditions (C1 recognition_only, C2 egosuperego, C4 validator) — all use the same adaptive runner so `strategy_shift_correctness` is comparable across cells.
+
+**Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90, 95-96, 101-109) have `superego: null`.
+
+**Cell registry (source-of-truth):** the canonical list of registered cell names is the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (~line 102). When in doubt about whether a name is registered, grep there — not this doc.
 
 ### Adding New Cells
 
-New eval-repo cells must be registered in the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (line ~56-95). Without this, `resolveEvalProfile()` won't remap cell names to tutor-core profiles, and the run will silently fall back to the default profile.
+New eval-repo cells must be registered in the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (line ~102). Without this, `resolveEvalProfile()` won't remap cell names to tutor-core profiles, and the run will silently fall back to the default profile.
 
 Cell names must include "dialectical" if they use `prompt_type: dialectical_suspicious` (test enforced).
+
+### Runner Dispatch (`runner:` field)
+
+Cells with `runner: adaptive` in `tutor-agents.yaml` bypass `evaluationRunner.js` and tutor-core's dialogue engine entirely, dispatching to `services/adaptiveTutor/` (LangGraph-based: externalised learner state + programmatic constraints + counterfactual replay). Cells without a `runner:` field use the default runner.
+
+- **Implementation**: `services/adaptiveTutor/{index,runner,graph,persistence,llm,realLLM,mockLLM,budgetTracker,policyActions,stateSchema}.js`
+- **Scenarios**: `config/adaptive-trap-scenarios.yaml` (NOT `suggestion-scenarios.yaml`)
+- **Mock vs real LLM**: `ADAPTIVE_TUTOR_LLM=mock` (default, deterministic — no paid API calls) or `ADAPTIVE_TUTOR_LLM=real` (uses normal provider env vars, e.g. `OPENROUTER_API_KEY`)
+- **Smoke scripts**: `scripts/run-adaptive-cell-smoke.js`, `scripts/run-adaptive-persistence-smoke.js`, `scripts/run-langgraph-smoke.js`
+- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4)
+
+### Id-Director Architecture (cells 101-109)
+
+Cells with `factors.id_director: true` use `services/idDirectorEngine.js`. Per turn, the engine constructs an explicit "id" persona JSON envelope and persists it to the `id_construction_trace` column. Used to study charismatic pedagogy: scored against `config/evaluation-rubric-charisma.yaml` (Weber-derived 8-dimension, v1.0, independent of the v2.2 tutor rubric — they can be cross-correlated).
+
+### Hermetic Testing & Sandboxed Runs
+
+`EVAL_DB_PATH` and `EVAL_LOGS_DIR` override the default DB / logs locations (`services/evaluationStore.js`, `services/adaptiveTutor/persistence.js`). Used by:
+- `npm run test:hermetic` — runs the full test suite against `mktemp -d` paths so the production DB and logs are never touched
+- Adaptive smoke scripts (combined with `ADAPTIVE_TUTOR_LLM=mock` for fully self-contained, no-cost runs)
+- Any test that needs full DB+logs isolation
 
 ### Placebo Control Design
 
@@ -146,9 +193,26 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 
 ### Database Schema (evaluation_results columns)
 
+**Source-of-truth**: `services/evaluationStore.js` migrations (top of file). Do NOT rely on inline column lists in this doc — they go stale; the `migrateAddColumn` calls are authoritative.
+
 **There is NO `trace` column.** Do not reference `trace` in SQL queries.
 
-Key columns: `id`, `run_id`, `scenario_id`, `scenario_name`, `provider`, `model`, `profile_name`, `hyperparameters` (JSON), `prompt_id`, `suggestions` (JSON array), `raw_response`, `latency_ms`, `input_tokens`, `output_tokens`, `cost`, `dialogue_rounds`, `api_calls`, `dialogue_id`, `score_relevance`, `score_specificity`, `score_pedagogical`, `score_personalization`, `score_actionability`, `score_tone`, `overall_score`, `passes_required`, `passes_forbidden`, `required_missing` (JSON), `forbidden_found` (JSON), `created_at`, `judge_model`, `evaluation_reasoning`, `success`, `error_message`, `scores_with_reasoning`, `scenario_type`, `base_score`, `recognition_score`, `ego_model`, `superego_model`, `factor_recognition`, `factor_multi_agent_tutor`, `factor_multi_agent_learner`, `learner_architecture`, `scoring_method`, `learner_scores`, `learner_overall_score`, `learner_judge_model`, `qualitative_assessment`, `qualitative_model`, `blinded_qualitative_assessment`, `blinded_qualitative_model`, `judge_latency_ms`, `learner_holistic_scores`, `learner_holistic_overall_score`, `learner_holistic_summary`, `learner_holistic_judge_model`, `tutor_holistic_scores` (JSON), `tutor_holistic_overall_score`, `tutor_holistic_summary`, `tutor_holistic_judge_model`, `tutor_last_turn_score`, `tutor_development_score`, `dialogue_quality_score`, `dialogue_quality_summary`, `dialogue_quality_judge_model`, `tutor_first_turn_score`, `dialogue_quality_internal_score`, `dialogue_quality_internal_summary`, `conversation_mode`, `tutor_scores` (JSON), `tutor_overall_score`, `tutor_deliberation_scores` (JSON), `tutor_deliberation_score`, `tutor_deliberation_summary`, `tutor_deliberation_judge_model`, `learner_deliberation_scores` (JSON), `learner_deliberation_score`, `learner_deliberation_summary`, `learner_deliberation_judge_model`, `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version`
+**Column families currently in `evaluation_results`** (browse migrations for exact names):
+- Identity: `id`, `run_id`, `scenario_id`, `dialogue_id`, `learner_id`
+- Config: `provider`, `model`, `profile_name`, `hyperparameters`, `prompt_id`, `ego_model`, `superego_model`, `factor_*`, `learner_architecture`, `conversation_mode`
+- Output: `suggestions`, `raw_response`, `scores_with_reasoning`
+- Per-turn tutor: `tutor_first_turn_score` (canonical Turn-0), `tutor_last_turn_score`, `tutor_development_score`, `tutor_scores`, `tutor_overall_score`
+- Holistic: `tutor_holistic_*`, `learner_holistic_*`, `dialogue_quality_*`, `dialogue_quality_internal_*`
+- Deliberation: `tutor_deliberation_*`, `learner_deliberation_*`
+- Charisma (cells 101-109): `tutor_charisma_scores`, `tutor_charisma_overall_score`, `tutor_charisma_rubric_version`, `tutor_charisma_judge_model`
+- Transformation indices: `adaptation_index`, `learner_growth_index`, `bilateral_transformation_index`, `incorporation_rate`, `dimension_convergence`, `transformation_quality`
+- Provenance: `config_hash`, `dialogue_content_hash`, `prompt_content_hash`, `tutor_ego_prompt_version`, `tutor_superego_prompt_version`, `learner_prompt_version`
+- Rubric versions: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version`
+- Adaptive / id-director: `id_construction_trace`, `deliberation_rounds`
+- Validation: `passes_required`, `passes_forbidden`, `required_missing`, `forbidden_found`
+- Metadata: `created_at`, `judge_model`, `evaluation_reasoning`, `success`, `error_message`, `judge_latency_ms`, `qualitative_assessment`, `blinded_qualitative_assessment`
+
+**Dead columns** (kept for historical reads, never written): `holistic_overall_score` (was alias for `tutor_last_turn_score`); `overall_score` (deprecated alias for `tutor_first_turn_score`).
 
 **evaluation_runs columns**: `id` (TEXT PK), `created_at`, `description`, `total_scenarios`, `total_configurations`, `total_tests`, `status`, `completed_at`, `metadata` (JSON), `git_commit`, `package_version`
 
@@ -164,6 +228,9 @@ Key columns: `id`, `run_id`, `scenario_id`, `scenario_name`, `provider`, `model`
 - Rejudge creates new rows by default; `--overwrite` replaces
 - **Legacy cell names**: Early runs used shorthand `cell_1`, later runs use canonical `cell_1_base_single_unified`. Both coexist in the DB. Analysis scripts should match on prefix or use `LIKE 'cell_1%'` when querying across runs.
 - **Rubric version columns**: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version` — auto-resolved from YAML `version:` fields at write time. `"1.0"` = original rubric (14 tutor dimensions). `"2.0"` = v2 rubric overhaul (Feb 26). `"2.1"` = public-only output scoring + deliberation rubric (Feb 27). `"2.2"` = literature-informed redesign (Feb 28): consolidates 14 → 8 tutor dimensions using GuideEval P→O→E decomposition, adds `content_accuracy`, removes `learner_growth`. Versioned rubrics live in `config/rubrics/v{X.Y}/`; active rubrics are in `config/`. **Do NOT retroactively score historical data under a newer rubric version** — this creates cross-version contamination that invalidates within-run comparisons.
+- **Charisma rubric** (`config/evaluation-rubric-charisma.yaml` v1.0) is independent of v2.2 — used only by id-director cells (101-109). Stored in `tutor_charisma_*` columns and can be cross-correlated with the v2.2 tutor rubric.
+- **Provenance hashes**: `config_hash`, `dialogue_content_hash`, `prompt_content_hash` enable cross-run reproducibility checks. `services/evalSignature.js` validates consistency (e.g. detects `config_hash_drift` when the same profile+scenario produces rows with different hashes).
+- **Two boards**: `TODO.md` (root) is the long-horizon experimental/infrastructure list (A* experiments, B* code quality, C* maintenance, D* research). `notes/paper-2-0/BOARD.md` is Paper 2.0's working board (WS1-WS5 workstreams). Don't conflate them — `TODO.md` is canonical for "what's next overall"; `BOARD.md` is canonical only for Paper 2.0 work.
 
 ### Test Directory Convention
 
@@ -333,4 +400,23 @@ cd docs/research && ./build.sh full
 
 # Run tests
 npm test
+
+# Hermetic test run (isolated tmp DB + logs)
+npm run test:hermetic
+
+# Adaptive cell smoke (no paid API calls)
+ADAPTIVE_TUTOR_LLM=mock node scripts/run-adaptive-cell-smoke.js
+
+# Interactive chat CLI
+npm run chat
+
+# Prompt lab (subcommands: init, fork, run, status, recommend, autotune, diff)
+npm run prompt-lab -- <subcommand>
+
+# Model shootout
+npm run model-shootout
+
+# Validate provenance / message-chain integrity
+npm run provenance:validate
+npm run audit:message-chain
 ```
