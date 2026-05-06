@@ -4973,9 +4973,15 @@ profiles:
   # against POLICY_ACTION_DETAILS' trigger conditions and contraindications
   # and forces revision on mismatch. Tests whether a stricter second pass
   # adds anything over C3.
+  #
+  # DEPRECATED — Gate B (2026-05-05) confirmed regression vs C3:
+  #   strategy_shift_correctness 41.7% (C4) vs 47.8% (C3), at +47% cost.
+  #   See docs/explorations/claude/a13-gate-b-results.md.
+  # Kept registered so historical traces (run eval-2026-05-05-e58b7da1) remain
+  # analysable; do not include in new pre-registrations.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_113_a13_C4_validator
   cell_113_a13_C4_validator:
-    description: "A13 condition C4: state_policy + tutorValidator stricter second-pass check against POLICY_ACTION_DETAILS trigger conditions/contraindications. Tests whether the validator adds revision pressure over the cell_110 (C3) baseline."
+    description: "[DEPRECATED post-Gate-B] A13 condition C4: state_policy + tutorValidator stricter second-pass check against POLICY_ACTION_DETAILS trigger conditions/contraindications. Confirmed regression vs C3 at higher cost."
     runner: adaptive
     factors:
       prompt_type: adaptive_state_policy_validator

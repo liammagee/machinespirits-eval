@@ -25,24 +25,31 @@ scenarios:
       actual_misconception: "performs uncertainty for social safety while actually understanding"
       actual_sophistication: advanced
       trigger_turn: 1
-      trigger_signal: "I'm probably wrong, but doesn't this only fail if the assumption that f is monotonic is dropped?"
+      # Trigger anchored in a concrete philosophical edge case (master–slave
+      # as the productive failure of bilateral recognition). Earlier version
+      # used generic "f / monotonicity" with no domain referent, which gave
+      # the tutor nothing to scope-test against — the architecture-invariant
+      # null on Gate B (see docs/explorations/claude/a13-gate-b-results.md
+      # diagnostic B) traced to that under-specified trigger.
+      trigger_signal: "I'm probably wrong, but doesn't this only break down in the master–slave case where recognition is structurally one-sided? The dialectic only generates Spirit because asymmetric recognition is the productive failure of the demand for mutual recognition — so the master–slave case is the limit-case that motivates bilateralism, not a counterexample to it. Right?"
     opening_turns:
       - role: learner
-        content: "Sorry, I'm a bit lost — can you walk me through this slowly?"
+        content: "Sorry, I'm a bit lost — can you walk me through what Hegel means by 'Anerkennung' again? I keep losing the thread."
     max_turns: 3
     expected_strategy_shift: scope_test
     failure_mode: >-
-      Tutor reads the performed-uncertainty opening as genuine novice confusion and continues to unpack at an elementary register after the trigger turn surfaces an advanced contribution. The substantive question (drop-monotonicity edge case) goes unengaged; the dialogue collapses to remediation.
+      Tutor reads the performed-uncertainty opening as genuine novice confusion and continues to unpack Anerkennung at an elementary register after the trigger turn surfaces an advanced contribution about master–slave as the productive failure of bilateral recognition. The substantive boundary case (asymmetric recognition as Anerkennung-in-default vs. counterexample) goes unengaged; the dialogue collapses to remediation.
     success_criteria:
       recognition_correctness:
         tutor_updates_sophistication_to_advanced: true
         tutor_does_not_unpack_as_novice_after_trigger: true
+        tutor_engages_master_slave_as_boundary_case: true
       policy_match:
         expected_action_at_trigger_plus_one: scope_test
     counterfactual:
       fork_at_turn: 1
       actual_sophistication: novice
-      trigger_signal: "I really don't follow any of this."
+      trigger_signal: "Sorry, I really don't follow any of this — could you just tell me what 'recognition' means in plain terms?"
 
   - id: polite_false_mastery_v1
     name: "Polite false mastery — premature agreement"
@@ -82,7 +89,16 @@ scenarios:
       - role: learner
         content: "Can you tell me what recognition means?"
     max_turns: 3
-    expected_strategy_shift: scope_test
+    # Multiple actions are pedagogically equivalent for engaging a substantive
+    # philosophical objection: probe the boundary (scope_test), make the
+    # disagreement explicit (name_the_disagreement), or pose a counterexample.
+    # Earlier strict-only `scope_test` produced a Gate B architecture-
+    # invariant null (see docs/explorations/claude/a13-gate-b-results.md
+    # diagnostic B); analyzer now accepts any-of-list matches.
+    expected_strategy_shift:
+      - scope_test
+      - name_the_disagreement
+      - pose_counterexample
     failure_mode: >-
       Tutor reads the substantive objection as resistance-to-be-managed rather than a substantive philosophical move and either explains harder or shifts to affective acknowledgement. The actual disagreement (recognition-as-affirmation vs. recognition-as-mediation) is not named and the learner's contribution is talked over.
     success_criteria:
@@ -90,7 +106,10 @@ scenarios:
         tutor_engages_substantive_objection: true
         tutor_does_not_treat_objection_as_affective_resistance: true
       policy_match:
-        expected_action_at_trigger_plus_one: scope_test
+        expected_action_at_trigger_plus_one_any_of:
+          - scope_test
+          - name_the_disagreement
+          - pose_counterexample
     counterfactual:
       fork_at_turn: 1
       actual_sophistication: novice

@@ -94,13 +94,18 @@ function analyzeBranch(branch, expectedShift, triggerTurn) {
 
   const tutorTexts = (branch.dialogue || []).filter((m) => m.role === 'tutor').map((m) => m.content);
 
-  // shift evaluation: policy at turn (triggerTurn + 1)
+  // shift evaluation: policy at turn (triggerTurn + 1).
+  // expected_strategy_shift may be a single action label OR an array of
+  // pedagogically-equivalent labels (e.g. resistance_to_insight accepts any
+  // of {scope_test, name_the_disagreement, pose_counterexample}). Match if
+  // the actual policy is in the accepted set.
   let shiftMatched = null;
   if (expectedShift && Number.isFinite(triggerTurn)) {
     const shiftTurn = triggerTurn + 1;
     const shiftPolicy = (turns.find((t) => t.turn === shiftTurn) || {}).tutorInternal?.policyAction || null;
     if (shiftPolicy != null) {
-      shiftMatched = shiftPolicy === expectedShift;
+      const accepted = Array.isArray(expectedShift) ? expectedShift : [expectedShift];
+      shiftMatched = accepted.includes(shiftPolicy);
     }
   }
 
