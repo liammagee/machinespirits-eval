@@ -5004,3 +5004,50 @@ profiles:
         max_tokens: 1500
       counterfactual:
         enabled: true
+
+  # P2 cell C5: bilateral theory of mind on top of cell_110's state_policy.
+  # Adds (vs C3): paired natural-language + JSON hypothesizedLearnerState
+  # (LBM pattern, full rewrite per turn), paired hypothesizedLearnerPerception
+  # OfTutor (second-order belief), 4 FANToM-style ToM probes persisted per
+  # turn, and a dynamic bilateral learner that maintains its own
+  # hypothesizedTutorState + hypothesizedTutorPerceptionOfLearner.
+  #
+  # STUB — NOT YET RUNNABLE. The architecture: bilateral_tom branch in
+  # services/adaptiveTutor/graph.js + stateSchema.js extensions + the
+  # ego_superego_bilateral_tom learner branch in
+  # services/learnerTutorInteractionEngine.js are all listed in P2 pre-reg
+  # §3 and must land before invocation. Until then, invoking this cell
+  # will throw "unknown architecture: bilateral_tom" at the index.js switch
+  # — the intended failure mode (no silent fallback to state_policy).
+  #
+  # Pre-registration: docs/explorations/claude/p2-bilateral-tom-pre-registration.md
+  # Lock-time prerequisites:
+  #   - this cell config + EVAL_ONLY_PROFILES registration (this commit)
+  #   - bilateral_tom graph branch + stateSchema extensions (separate commit)
+  #   - ego_superego_bilateral_tom learner branch (separate commit)
+  #   - scripts/analyze-tom-accuracy.js + scripts/analyze-collapse-rates.js (separate commit)
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_115_bilateral_tom
+  cell_115_bilateral_tom:
+    description: "[STUB pending implementation] P2 cell C5: bilateral ToM on top of state_policy. Paired text+JSON hypothesizedLearnerState, second-order beliefs, FANToM probes, dynamic bilateral learner. See docs/explorations/claude/p2-bilateral-tom-pre-registration.md."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_bilateral_tom
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego_bilateral_tom
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: openrouter
+      model: nemotron
+      architecture: bilateral_tom
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true

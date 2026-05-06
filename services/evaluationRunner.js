@@ -223,6 +223,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
   'cell_113_a13_C4_validator',
+  'cell_115_bilateral_tom',
 ];
 
 /**
