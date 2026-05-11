@@ -50,11 +50,25 @@ const learnerProfileSchema = z.object({
   tomProbes: tomProbesSchema.optional(),
 });
 
+// idConstruction + idAuthoredPrompt are populated by the bilateral_tom_id_director_*
+// architectures (cells 121, 122). The id-author node parses the id-director response
+// into the construction envelope (mirrors services/idDirectorEngine.js parseIdConstruction)
+// and the ego-execute node consumes idAuthoredPrompt as its system prompt at call time.
+const idConstructionSchema = z.object({
+  generated_prompt: z.string().default(''),
+  persona_delta: z.string().default(''),
+  stage_directions: z.string().default(''),
+  reasoning: z.string().default(''),
+  parse_status: z.string().default(''),
+});
+
 const tutorInternalSchema = z.object({
   egoDraft: z.string().default(''),
   superegoFeedback: z.string().default(''),
   egoRevision: z.string().default(''),
   policyAction: z.string().default(''),
+  idConstruction: idConstructionSchema.optional(),
+  idAuthoredPrompt: z.string().default(''),
 });
 
 export const initialLearnerProfile = () => learnerProfileSchema.parse({});

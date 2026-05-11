@@ -18,13 +18,14 @@ const compileWithCheckpointer = (graphOptions = {}) =>
 
 // Counterfactual replay forks at a checkpoint *before* learnerProfileUpdate
 // fires, so the perturbed hidden state flows through profile inference and
-// downstream policy selection. The recognition_only and ego_superego
-// architectures don't include that node, so counterfactual is a no-op for
-// them by design.
+// downstream policy selection. The recognition_only, recognition_named_patterns,
+// and ego_superego architectures don't include that node, so counterfactual
+// is a no-op for them by design.
 const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
   'state_policy',
   'state_policy_with_validator',
   'bilateral_tom',
+  'bilateral_tom_named_patterns',
 ]);
 
 const baseInitialState = (scenario) => ({

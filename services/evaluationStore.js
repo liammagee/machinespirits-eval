@@ -321,6 +321,46 @@ migrateAddColumn(
 );
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN id_construction_trace TEXT`, 'id_construction_trace');
 
+// Adaptive grader (cells with runner: adaptive — 110, 111-113, 118-120).
+// Bespoke 4-dimension graded rubric (1-5 per dim) scored against the adaptive
+// trap scenarios (config/adaptive-trap-scenarios.yaml). The v2.2 evaluator
+// pipeline skips adaptive cells (scenario_id not in suggestion-scenarios.yaml
+// lookup), so this complements the binary strategy_shift_correctness signal
+// computed by scripts/analyze-strategy-shift.js with a graded judgement.
+// Written by scripts/grade-adaptive-dialogue.js.
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_trigger_recognition REAL`,
+  'adaptive_trigger_recognition',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_strategy_execution REAL`,
+  'adaptive_strategy_execution',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_strategy_quality REAL`,
+  'adaptive_strategy_quality',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_pedagogical_coherence REAL`,
+  'adaptive_pedagogical_coherence',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_scores TEXT`,
+  'adaptive_grader_scores',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_reasoning TEXT`,
+  'adaptive_grader_reasoning',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_judge_model TEXT`,
+  'adaptive_grader_judge_model',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN adaptive_grader_version TEXT`,
+  'adaptive_grader_version',
+);
+
 // Deliberation rounds: cumulative ego-superego cycles across all conversation turns
 // (split from dialogue_rounds which now stores conversation turn count)
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN deliberation_rounds INTEGER`, 'deliberation_rounds');
@@ -2844,6 +2884,15 @@ export function updateResultTutorCharismaScores(resultId, evaluation) {
   recordAudit();
 }
 
+// Backfill the id-director per-turn construction envelope onto an existing
+// row. Stored as JSON (array of { turn, construction, tutorText } records, or
+// the legacy single-turn shape). Used by id-director cells (101-109) and the
+// trap-pilot adapter (scripts/run-id-director-trap-pilot.js).
+export function setIdConstructionTrace(resultId, trace) {
+  const stmt = db.prepare(`UPDATE evaluation_results SET id_construction_trace = ? WHERE id = ?`);
+  stmt.run(trace == null ? null : JSON.stringify(trace), resultId);
+}
+
 export function updateResultTutorHolisticScores(resultId, evaluation) {
   const recordAudit = withAuditTrail(
     resultId,
@@ -3153,6 +3202,7 @@ export default {
   createRun,
   updateRun,
   storeResult,
+  setIdConstructionTrace,
   storeRejudgment,
   updateResultScores,
   updateTutorLastTurnScore,

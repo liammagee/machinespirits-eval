@@ -14,6 +14,19 @@ const fixtures = {
     return { policyAction: 'ask_diagnostic_question', text: 'What would change in your answer if the input were different?' };
   },
 
+  // Mock for cell_116. Same heuristic as tutorEgoInitial — under mock there
+  // is no actual prompt in play, so the named-patterns variant is
+  // distinguishable only at real-LLM time. The mock delegates so smoke
+  // tests stay deterministic.
+  tutorEgoInitialNamedPatterns: ({ learnerLastMessage, learnerProfile }) => {
+    const c = learnerProfile.confidence;
+    const sig = learnerProfile.agencySignal;
+    if (sig === 'resistant') return { policyAction: 'scope_test', text: 'Your objection is doing real work. Try this case: imagine the same setup but with X negated — what would your answer be?' };
+    if (sig === 'compliant' && c < 0.5) return { policyAction: 'lower_cognitive_load', text: `Let's slow this down. What part is hardest to hold in mind right now?` };
+    if (sig === 'questioning') return { policyAction: 'mirror_and_extend', text: 'Good question — let me push it one step further. If we accept the premise, what does it commit us to?' };
+    return { policyAction: 'ask_diagnostic_question', text: 'What would change in your answer if the input were different?' };
+  },
+
   tutorSuperego: ({ tutorInternal, learnerProfile }) => {
     const draft = tutorInternal.egoDraft;
     if (!draft) return { needsRevision: false, feedback: 'no draft to review' };
@@ -89,6 +102,47 @@ const fixtures = {
         infoaccess_list: Array.from({ length: tutorTurnsSeen }, (_, i) => i),
       },
     };
+  },
+
+  // Mock id-author for cells 121/122. Returns the construction envelope shape
+  // services/idDirectorEngine.js parseIdConstruction emits, so the graph node
+  // and persistence layer behave identically under mock and real backends.
+  // Heuristic: bend persona on the agencySignal in the bilateral_tom-enriched
+  // learnerProfile so the mock exercises the both-arms-of-the-graph path.
+  idAuthorPersona: ({ learnerProfile, previousPersona, turn }) => {
+    const sig = learnerProfile?.agencySignal || 'unknown';
+    const persona = sig === 'resistant'
+      ? 'patient interlocutor; surface the disagreement, do not push'
+      : sig === 'compliant'
+        ? 'attentive but unsatisfied; probe whether agreement is real'
+        : sig === 'questioning'
+          ? 'collaborator; extend the question, do not collapse to an answer'
+          : 'curious witness; ask one clarifying probe';
+    const generated_prompt = [
+      `You are a tutor. The learner's current stance reads as "${sig}". Adopt this voice for this turn: ${persona}.`,
+      'Speak briefly. Do not lecture. End with a probe that the learner can answer in one or two sentences.',
+      'Mock-mode persona — deterministic, derived from bilateral_tom learner state.',
+    ].join(' ');
+    return {
+      generated_prompt,
+      persona_delta: previousPersona === 'FIRST_TURN' ? 'INITIAL' : `bend toward ${sig}`,
+      stage_directions: 'mock id author',
+      reasoning: `mock-mode id author: agencySignal=${sig}, turn=${turn}`,
+      parse_status: 'ok',
+    };
+  },
+
+  // Mock tutor-ego executor for cell_121 (Variant A). Synthesizes a one-line
+  // tutor message that reads as if it were following the id-authored persona,
+  // and emits a defensible policyAction. Mirrors tutorEgoInitial's heuristic
+  // so paired cell_121-vs-cell_115 mock smoke produces comparable traces.
+  tutorEgoExecute: ({ learnerProfile }) => {
+    const sig = learnerProfile?.agencySignal || 'unknown';
+    const c = typeof learnerProfile?.confidence === 'number' ? learnerProfile.confidence : 0.5;
+    if (sig === 'resistant') return { policyAction: 'scope_test', text: '(id-authored) Your pushback is doing real work — let me test the edge of it. If we accepted the opposite, what would change?' };
+    if (sig === 'compliant' && c < 0.5) return { policyAction: 'lower_cognitive_load', text: '(id-authored) Slow it down. What part of the setup is hardest to hold in mind right now?' };
+    if (sig === 'questioning') return { policyAction: 'mirror_and_extend', text: '(id-authored) Good question — push it one step. If the premise holds, what does it commit us to?' };
+    return { policyAction: 'ask_diagnostic_question', text: '(id-authored) What would change in your answer if the input were different?' };
   },
 
   learnerProfileUpdate: ({ learnerLastMessage, hidden, currentProfile, turn }) => {

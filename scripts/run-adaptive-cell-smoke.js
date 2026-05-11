@@ -24,7 +24,7 @@ const evalConfigLoader = await import('../services/evalConfigLoader.js');
 const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
 const evaluationStore = await import('../services/evaluationStore.js');
 
-const profileName = 'cell_110_langgraph_adaptive';
+const profileName = process.argv[2] || 'cell_110_langgraph_adaptive';
 const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[profileName];
 if (!evalProfile) throw new Error(`profile ${profileName} not found in tutor-agents.yaml`);
 if (evalProfile.runner !== 'adaptive') throw new Error(`profile ${profileName} not marked runner=adaptive`);
@@ -34,7 +34,7 @@ const summary = await runAdaptiveEvaluation({
   evalProfile,
   scenarios: 'all',
   runsPerConfig: 1,
-  description: 'cell_110 smoke',
+  description: `${profileName} smoke`,
   dryRun: true,
   verbose: true,
 });
@@ -45,11 +45,16 @@ console.log(JSON.stringify(summary, null, 2));
 const fails = [];
 const rows = evaluationStore.getResults(summary.runId);
 if (rows.length === 0) fails.push('no rows persisted');
-const expectedScenarioTypes = new Set([
-  'false_confusion', 'polite_false_mastery', 'resistance_to_insight',
-  'answer_seeking_to_productive_struggle', 'metaphor_boundary_case',
-  'affective_shutdown', 'repair_after_misrecognition', 'sophistication_upgrade',
-]);
+
+// Derive expected scenario types from the profile's scenario_source so the
+// smoke works for v1 (config/adaptive-trap-scenarios.yaml) and v2 cells alike.
+const yaml = await import('js-yaml');
+const scenarioSource = evalProfile.scenario_source || 'config/adaptive-trap-scenarios.yaml';
+const scenariosFile = fs.readFileSync(scenarioSource, 'utf8');
+const scenariosDoc = yaml.default.load(scenariosFile);
+const expectedScenarioTypes = new Set(
+  (scenariosDoc?.scenarios || []).map((s) => s.scenario_type || s.id),
+);
 const seenTypes = new Set();
 for (const row of rows) {
   if (row.profileName !== profileName) fails.push(`profileName mismatch on ${row.scenarioId}: ${row.profileName}`);

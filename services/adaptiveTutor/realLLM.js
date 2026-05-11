@@ -13,12 +13,21 @@
 // learnerConfigLoader.getProviderConfig so eval-repo's provider table
 // (config/providers.yaml) remains the source of truth for `nemotron` etc.
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 import { unifiedAIProvider } from '@machinespirits/tutor-core';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 import { lookupRates } from './budgetTracker.js';
+import { parseIdConstruction } from '../idDirectorEngine.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PROMPTS_DIR = path.resolve(__dirname, '..', '..', 'prompts');
 
 // Adapter that bridges to tutor-core's public unifiedAIProvider.call while
 // preserving the (agentConfig, system, user, role) → flat-token-shape
@@ -65,19 +74,97 @@ function isRetryableError(err) {
   return RETRYABLE_ERROR_PATTERNS.some((re) => re.test(msg));
 }
 
+// Subscription-path CLI bridge for `provider: claude-code`. Lifted from
+// services/rubricEvaluator.js:824 (the judge-side bridge); the runner side
+// needs the same child-env discipline (unset ANTHROPIC_API_KEY) or the CLI
+// silently routes via metered API mode and bills per-call. The whole point
+// of using the CLI is to use the Max-plan quota window instead.
+//
+// tutor-core's unifiedAIProvider.call does NOT recognise `claude-code` as a
+// provider; bridging here keeps the adaptive runner self-contained without
+// requiring a tutor-core release.
+//
+// Returns the same flat-token shape callAI synthesizes for OpenRouter/Anthropic
+// so the rest of callRole (budget tracker recording, schema validation) stays
+// provider-agnostic. inputTokens/outputTokens/cost are 0 because the CLI does
+// not echo usage and the call hits a subscription window, not a metered
+// endpoint — assertBelowCeiling therefore never aborts a CLI call, which is
+// the intended behaviour.
+const CLAUDE_CLI_TIMEOUT_MS = 360_000;
+
+async function callClaudeCli(systemPrompt, userPrompt, model, role) {
+  const start = Date.now();
+  return await new Promise((resolve, reject) => {
+    // Pass the system prompt via --system-prompt rather than concatenating
+    // into stdin. Two reasons:
+    //   1. It REPLACES the default system prompt, which suppresses any
+    //      ambient output-style additions (e.g. the "★ Insight" annotation
+    //      the explanatory style appends after the model's response).
+    //      Without this, parseJsonLoose receives `<json>\n<insight prose>`
+    //      and either fails or jsonrepair coerces the prose into JSON.
+    //   2. Cleanly separates system from user — stdin carries just the user
+    //      prompt, mirroring the (system, messages[]) shape of the API.
+    const args = [
+      '-p', '-',
+      '--output-format', 'text',
+      '--system-prompt', systemPrompt,
+    ];
+    if (model) args.push('--model', model);
+    const env = { ...process.env };
+    delete env.CLAUDE_CODE;
+    delete env.CLAUDECODE;
+    delete env.ANTHROPIC_API_KEY;
+    delete env.ANTHROPIC_AUTH_TOKEN;
+    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+    let out = '';
+    let err = '';
+    const cliTimeout = setTimeout(() => {
+      try { child.kill('SIGKILL'); } catch (_) { /* already gone */ }
+      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role})`));
+    }, CLAUDE_CLI_TIMEOUT_MS);
+    child.stdout.on('data', (d) => { out += d; });
+    child.stderr.on('data', (d) => { err += d; });
+    child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+    child.on('close', (code) => {
+      clearTimeout(cliTimeout);
+      if (code !== 0) {
+        reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
+      } else {
+        resolve({
+          text: out.trim(),
+          model: model || 'claude-cli',
+          provider: 'claude-code',
+          latencyMs: Date.now() - start,
+          inputTokens: 0,
+          outputTokens: 0,
+          cost: 0,
+        });
+      }
+    });
+    child.stdin.write(userPrompt);
+    child.stdin.end();
+  });
+}
+
 async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   const { provider, model, hyperparameters } = agentConfig;
-  const callOnce = () => unifiedAIProvider.call({
-    provider,
-    model,
-    systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-    preset: 'direct',
-    config: {
-      temperature: hyperparameters?.temperature,
-      maxTokens: hyperparameters?.max_tokens,
-    },
-  });
+
+  // Branch the per-call function on provider: claude-code goes through a local
+  // CLI subprocess and skips tutor-core entirely; everything else keeps the
+  // existing unifiedAIProvider path. Retry/backoff applies uniformly.
+  const callOnce = (provider === 'claude-code')
+    ? () => callClaudeCli(systemPrompt, userPrompt, model, role)
+    : () => unifiedAIProvider.call({
+        provider,
+        model,
+        systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+        preset: 'direct',
+        config: {
+          temperature: hyperparameters?.temperature,
+          maxTokens: hyperparameters?.max_tokens,
+        },
+      });
 
   const maxAttempts = 3;
   const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
@@ -100,6 +187,9 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   }
   if (!response) throw lastErr || new Error('adaptiveTutor.realLLM: callAI exhausted retries with no response');
 
+  // claude-code already returns flat-token shape; tutor-core path needs unpacking.
+  if (provider === 'claude-code') return response;
+
   const inputTokens = response.usage?.inputTokens || 0;
   const outputTokens = response.usage?.outputTokens || 0;
   let cost = response.usage?.cost || 0;
@@ -119,7 +209,13 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
 }
 
 const DEFAULT_PROVIDER = 'openrouter';
-const DEFAULT_MODEL_ALIAS = 'nemotron';
+// Sonnet 4.6 (resolves via providers.yaml openrouter alias to
+// anthropic/claude-sonnet-4.6). Frontier model is the right default for an
+// architectural-research substrate: cheaper models silently mask whether the
+// architecture is doing work, and we'd rather pay than misattribute null
+// results. Cost-conscious overrides go via ADAPTIVE_TUTOR_MODEL=nemotron or
+// per-cell adaptive.model in tutor-agents.yaml.
+const DEFAULT_MODEL_ALIAS = 'sonnet';
 
 // Module-scoped budget tracker. Bound by runAdaptiveEvaluation in index.js
 // when --max-cost is set; cleared in its finally block. callRole consults
@@ -140,13 +236,37 @@ export function getActiveBudgetTracker() {
   return _activeBudgetTracker;
 }
 
+// Module-scoped per-cell config. Bound by runAdaptiveEvaluation from the
+// YAML adaptive block so the cell's declared provider/model actually drives
+// the call (previously the YAML field was decorative — it landed on the
+// stored row but the LLM call routed through env vars + DEFAULT_MODEL_ALIAS).
+// Same module-level pattern as the budget tracker for the same reason: graph
+// nodes call callRole without per-invocation context. Precedence inside
+// envFor: per-role env > global env > active cell config > hardcoded default.
+let _activeCellConfig = null;
+
+export function setActiveCellConfig(cfg) {
+  _activeCellConfig = (cfg && (cfg.provider || cfg.modelAlias || cfg.temperature != null || cfg.maxTokens != null))
+    ? { ...cfg }
+    : null;
+}
+
+export function clearActiveCellConfig() {
+  _activeCellConfig = null;
+}
+
+export function getActiveCellConfig() {
+  return _activeCellConfig;
+}
+
 function envFor(role) {
   const upper = role.replace(/[A-Z]/g, (c) => `_${c}`).toUpperCase();
+  const cell = _activeCellConfig || {};
   return {
-    provider: process.env[`ADAPTIVE_TUTOR_${upper}_PROVIDER`] || process.env.ADAPTIVE_TUTOR_PROVIDER || DEFAULT_PROVIDER,
-    modelAlias: process.env[`ADAPTIVE_TUTOR_${upper}_MODEL`] || process.env.ADAPTIVE_TUTOR_MODEL || DEFAULT_MODEL_ALIAS,
-    temperature: Number(process.env[`ADAPTIVE_TUTOR_${upper}_TEMP`] || process.env.ADAPTIVE_TUTOR_TEMP || 0.6),
-    maxTokens: Number(process.env[`ADAPTIVE_TUTOR_${upper}_MAX_TOKENS`] || process.env.ADAPTIVE_TUTOR_MAX_TOKENS || 1500),
+    provider: process.env[`ADAPTIVE_TUTOR_${upper}_PROVIDER`] || process.env.ADAPTIVE_TUTOR_PROVIDER || cell.provider || DEFAULT_PROVIDER,
+    modelAlias: process.env[`ADAPTIVE_TUTOR_${upper}_MODEL`] || process.env.ADAPTIVE_TUTOR_MODEL || cell.modelAlias || DEFAULT_MODEL_ALIAS,
+    temperature: Number(process.env[`ADAPTIVE_TUTOR_${upper}_TEMP`] || process.env.ADAPTIVE_TUTOR_TEMP || cell.temperature || 0.6),
+    maxTokens: Number(process.env[`ADAPTIVE_TUTOR_${upper}_MAX_TOKENS`] || process.env.ADAPTIVE_TUTOR_MAX_TOKENS || cell.maxTokens || 1500),
   };
 }
 
@@ -171,7 +291,19 @@ function buildAgentConfig(role) {
 // Strip code fences, leading prose, etc., and return the first parseable
 // JSON object/array. jsonrepair is the same library evaluationRunner uses
 // for messy LLM JSON, so behaviour matches.
-function parseJsonLoose(text) {
+//
+// Trailing-text robustness: if the model (or an output-style hook on a
+// CLI invocation) appends prose after the JSON, we walk the structure to
+// find its true end and slice there. Otherwise jsonrepair coerces the
+// trailing prose into JSON values (e.g. an array entry "★ Insight ──"),
+// silently corrupting the parse.
+//
+// Embedded-quote robustness: models occasionally emit unescaped `"` inside
+// a string value (e.g. `"...the word "recognition," what..."`). jsonrepair
+// doesn't always rescue this. escapeEmbeddedQuotes is a final-fallback
+// repair that walks the candidate and escapes `"` chars that are followed
+// by something other than a JSON delimiter.
+export function parseJsonLoose(text) {
   if (text == null) throw new Error('empty response');
   let s = String(text).trim();
   s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
@@ -179,12 +311,76 @@ function parseJsonLoose(text) {
   const firstBracket = s.indexOf('[');
   const start = [firstBrace, firstBracket].filter((i) => i >= 0).sort((a, b) => a - b)[0];
   if (start === undefined) throw new Error(`no JSON object/array in response: ${s.slice(0, 200)}`);
-  const candidate = s.slice(start);
-  try {
-    return JSON.parse(candidate);
-  } catch {
-    return JSON.parse(jsonrepair(candidate));
+  const tail = s.slice(start);
+  const end = findJsonEnd(tail);
+  const candidate = end > 0 ? tail.slice(0, end) : tail;
+  const attempts = [
+    () => JSON.parse(candidate),
+    () => JSON.parse(escapeEmbeddedQuotes(candidate)),
+    () => JSON.parse(jsonrepair(candidate)),
+    () => JSON.parse(jsonrepair(escapeEmbeddedQuotes(candidate))),
+  ];
+  let lastErr;
+  for (const attempt of attempts) {
+    try { return attempt(); } catch (err) { lastErr = err; }
   }
+  throw lastErr;
+}
+
+// Escape `"` characters that appear inside a JSON string value rather than
+// at value boundaries. Heuristic: when we are tracking that we are inside
+// a string, a `"` is treated as the closing quote only if the next non-
+// whitespace char is a JSON delimiter (`,`, `}`, `]`, `:`) or end-of-
+// input. Anything else is assumed to be an embedded quote and gets escaped.
+// This handles the common LLM mistake of emitting `the word "x," what...`
+// inside a string value.
+export function escapeEmbeddedQuotes(s) {
+  let out = '';
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { out += c; escape = false; continue; }
+    if (c === '\\') { out += c; escape = true; continue; }
+    if (c !== '"') { out += c; continue; }
+    if (!inString) { inString = true; out += c; continue; }
+    let j = i + 1;
+    while (j < s.length && (s[j] === ' ' || s[j] === '\t' || s[j] === '\n' || s[j] === '\r')) j++;
+    const next = j < s.length ? s[j] : '';
+    if (next === ',' || next === '}' || next === ']' || next === ':' || next === '') {
+      inString = false;
+      out += c;
+    } else {
+      out += '\\"';
+    }
+  }
+  return out;
+}
+
+// Walk a string starting on `{` or `[` and return the index just past the
+// matching close bracket. Bracket-aware (skips strings and escapes). Returns
+// -1 if no match closes — caller falls back to passing the full string,
+// which is the legacy behaviour.
+function findJsonEnd(s) {
+  if (!s || (s[0] !== '{' && s[0] !== '[')) return -1;
+  const open = s[0];
+  const close = open === '{' ? '}' : ']';
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (escape) { escape = false; continue; }
+    if (c === '\\' && inString) { escape = true; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === open) depth++;
+    else if (c === close) {
+      depth--;
+      if (depth === 0) return i + 1;
+    }
+  }
+  return -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -223,6 +419,21 @@ const learnerProfileUpdateOut = z.object({
   zpdEstimate: z.string().default(''),
   lastEvidence: z.string().default(''),
 });
+
+// Id-author output. Reuses the id-director construction envelope shape so
+// services/idDirectorEngine.js parseIdConstruction stays the canonical parser.
+// MIN length matches the existing engine's minimum (anything shorter is a
+// fallback). Parse failures are coerced into a fallback construction inside
+// callRole rather than throwing — same posture as the engine's runner.
+const idAuthorPersonaOut = z.object({
+  generated_prompt: z.string().min(1),
+  persona_delta: z.string().default('UNKNOWN'),
+  stage_directions: z.string().default(''),
+  reasoning: z.string().default(''),
+  parse_status: z.string().default('ok'),
+});
+
+// Variant A's tutorEgoExecute reuses the tutorEgoInitial output shape exactly.
 
 // Bilateral-ToM tracker output. Paired LBM bottleneck (summaryText) lives
 // alongside the existing structured profile; second-order belief carries
@@ -286,6 +497,32 @@ const TUTOR_EGO_INITIAL_SYSTEM = `You are the tutor's planning module. Each turn
 You must adapt to the structured profile. If the profile changes between calls, your action choice and message should change too. Do not collapse to a default explanation.
 
 For each candidate action below, the menu lists when it is appropriate (triggers), when it is not (contraindications), and what the next learner turn should look like if the action worked. Use these cues — your choice should be defensible against them.
+
+If the learner profile carries a \`summaryText\` field and/or a \`hypothesizedLearnerPerceptionOfTutor\` field (paired text + jsonState describing what you think the learner thinks you are doing), treat them as load-bearing context, not decoration. Pick a policy action that addresses the *gap* between how the learner is likely perceiving your role and what the dialogue actually needs from you — e.g. if they perceive you as an authority-to-defer-to but the dialogue needs them to commit to a position, pick an action that surfaces that mismatch.
+
+Policy menu:
+${policyMenuExpanded}
+
+Respond as a single JSON object with exactly these keys:
+- policyAction: one of the menu labels above (no others)
+- text: the tutor's message to the learner (1–4 sentences, no preamble, no meta-talk)
+- rationale: one short sentence saying why this action fits this learner profile, citing a trigger condition, contraindication, or second-order belief gap when relevant (optional)
+
+Output JSON only, no surrounding prose, no code fences.`;
+
+// Variant used by cell_116_recognition_named_patterns. Identical to
+// TUTOR_EGO_INITIAL_SYSTEM except for one paragraph ("Beyond the local
+// move…") testing whether an explicit instruction to name recurring
+// patterns closes the *right-action-no-purchase* gap (e.g. polite
+// affirmation persists across cell_111's textbook probes on
+// polite_false_mastery_v1) without requiring bilateral-ToM apparatus.
+const TUTOR_EGO_INITIAL_NAMED_PATTERNS_SYSTEM = `You are the tutor's planning module. Each turn, given the learner's most recent message and a structured profile of the learner, pick exactly one pedagogical action from the menu and draft a tutor response that enacts it.
+
+You must adapt to the structured profile. If the profile changes between calls, your action choice and message should change too. Do not collapse to a default explanation.
+
+For each candidate action below, the menu lists when it is appropriate (triggers), when it is not (contraindications), and what the next learner turn should look like if the action worked. Use these cues — your choice should be defensible against them.
+
+Beyond the local move, watch for *patterns across the dialogue so far*. If the learner's last few turns share a shape — polite affirmation that doesn't track substantive integration, oracle-seeking dressed in different surface forms, repeated hedging, deflection from a specific question, or capitulation in place of engagement — name that pattern to the learner explicitly before (or as) your next probe. The naming itself is part of the move: it makes the meta-shape visible so the learner can metabolise or contest it. Do not just probe locally and hope the pattern dissolves under one more correct question.
 
 If the learner profile carries a \`summaryText\` field and/or a \`hypothesizedLearnerPerceptionOfTutor\` field (paired text + jsonState describing what you think the learner thinks you are doing), treat them as load-bearing context, not decoration. Pick a policy action that addresses the *gap* between how the learner is likely perceiving your role and what the dialogue actually needs from you — e.g. if they perceive you as an authority-to-defer-to but the dialogue needs them to commit to a position, pick an action that surfaces that mismatch.
 
@@ -366,6 +603,22 @@ Respond as a single JSON object with these keys:
 
 Output JSON only.`;
 
+// Id-author system prompt is the canonical id-director static prompt. Loaded
+// once at module init so cells 121/122 share the exact same authoring contract
+// as the standard id-director cells (101-109). The bilateral_tom-specific
+// learner context is threaded in via the user-message builder, not a forked
+// system prompt — keeps the prompt as a single source of truth.
+const ID_AUTHOR_SYSTEM = fs.readFileSync(
+  path.join(PROMPTS_DIR, 'tutor-id-director.md'),
+  'utf-8',
+);
+
+// tutorEgoExecute (Variant A) has no canonical system prompt — the id-author
+// writes one each turn and the graph passes it via systemPromptOverride. This
+// constant is a sentinel: callRole rejects an ego-execute call where the
+// override is missing or empty.
+const TUTOR_EGO_EXECUTE_FALLBACK_SYSTEM = `(no id-authored prompt supplied; this is a fallback so the role table has a non-empty entry — callRole rejects ego-execute calls without systemPromptOverride.)`;
+
 const LEARNER_TURN_SYSTEM = `You are the synthetic learner in a dialogue with a tutor. Generate the learner's next message in plain text (no JSON, no preamble).
 
 You are given the tutor's most recent message and a hidden state describing your actual sophistication and any trigger-turn signal. If this is the trigger turn, you must surface the trigger signal verbatim or in close paraphrase. Otherwise, respond consistently with the actual sophistication level — advanced learners introduce contrasts, novices ask for clarification, etc.
@@ -380,6 +633,12 @@ const ub = (obj) => `Input:\n${JSON.stringify(obj, null, 2)}`;
 
 const userPromptBuilders = {
   tutorEgoInitial: ({ learnerLastMessage, learnerProfile }) => ub({ learnerLastMessage, learnerProfile }),
+
+  // Variant for cell_116_recognition_named_patterns. Same payload as
+  // tutorEgoInitial plus dialogue history, so the prompt can actually see
+  // patterns across turns rather than just the most recent message.
+  tutorEgoInitialNamedPatterns: ({ learnerLastMessage, learnerProfile, dialogue }) =>
+    ub({ learnerLastMessage, learnerProfile, dialogue }),
 
   tutorSuperego: ({ tutorInternal, learnerProfile }) => ub({
     draft: tutorInternal.egoDraft,
@@ -431,26 +690,105 @@ const userPromptBuilders = {
     turn,
   }),
 
+  // Id-author user message. Mirrors the XML-tagged shape the
+  // tutor-id-director.md prompt expects (services/idDirectorEngine.js
+  // buildIdRunnerUserMessage), with the bilateral_tom learner state injected
+  // as a `<bilateral_tom_context>` block so the id can author against the
+  // tutor's view of the learner + second-order belief + ToM probes.
+  idAuthorPersona: ({ dialogue, learnerLastMessage, learnerProfile, previousPersona, turn }) => {
+    const history = (dialogue || [])
+      .map((m) => `${m.role}: ${m.content}`)
+      .join('\n');
+    return [
+      '<dialogue_history>',
+      history || '(no prior turns)',
+      '</dialogue_history>',
+      '',
+      '<current_learner_message>',
+      learnerLastMessage || '(none)',
+      '</current_learner_message>',
+      '',
+      '<curriculum_context>',
+      'Adaptive tutoring trap-scenario harness. The learner is a synthetic',
+      'subject with a hidden misconception/agency profile; the tutor must',
+      'choose a pedagogical action that addresses the gap between how the',
+      'learner is performing the dialogue and what the dialogue actually',
+      'needs from them. There is no canonical curriculum text — author for',
+      'this turn from the dialogue and learner profile.',
+      '</curriculum_context>',
+      '',
+      '<previous_persona>',
+      previousPersona || 'FIRST_TURN',
+      '</previous_persona>',
+      '',
+      '<recognition_mode>',
+      'false',
+      '</recognition_mode>',
+      '',
+      '<bilateral_tom_context>',
+      JSON.stringify({
+        learnerProfile,
+        hypothesizedLearnerPerceptionOfTutor: learnerProfile?.hypothesizedLearnerPerceptionOfTutor || null,
+        tomProbes: learnerProfile?.tomProbes || null,
+        turn,
+      }, null, 2),
+      '</bilateral_tom_context>',
+    ].join('\n');
+  },
+
+  // Variant-A ego executor: the id-authored prompt is the system prompt
+  // (passed via systemPromptOverride at call time). User message carries the
+  // policy-action emission instructions inline so the id-authored prompt
+  // doesn't need to know about the policyAction envelope.
+  tutorEgoExecute: ({ learnerLastMessage, learnerProfile }) => [
+    'Latest learner message:',
+    learnerLastMessage || '(none)',
+    '',
+    'Current learner profile (for grounding):',
+    JSON.stringify(learnerProfile || {}, null, 2),
+    '',
+    'Policy-action emission contract (REQUIRED — do not omit):',
+    'After authoring your tutor message, append a fenced JSON envelope that',
+    'wraps the message and names the pedagogical action it enacts. Format:',
+    '',
+    '```json',
+    '{"policyAction": "<one of the menu labels below>", "text": "<your tutor message>"}',
+    '```',
+    '',
+    'Policy menu (pick exactly one — your draft must enact this label):',
+    policyMenuStr,
+    '',
+    'Output the JSON envelope ONLY (no surrounding prose, no preamble).',
+  ].join('\n'),
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
 };
 
 const systemPrompts = {
   tutorEgoInitial: TUTOR_EGO_INITIAL_SYSTEM,
+  tutorEgoInitialNamedPatterns: TUTOR_EGO_INITIAL_NAMED_PATTERNS_SYSTEM,
   tutorSuperego: TUTOR_SUPEREGO_SYSTEM,
   tutorValidator: TUTOR_VALIDATOR_SYSTEM,
   tutorEgoRevision: TUTOR_EGO_REVISION_SYSTEM,
   learnerProfileUpdate: LEARNER_PROFILE_UPDATE_SYSTEM,
   tutorTomTracker: TUTOR_TOM_TRACKER_SYSTEM,
+  idAuthorPersona: ID_AUTHOR_SYSTEM,
+  tutorEgoExecute: TUTOR_EGO_EXECUTE_FALLBACK_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
 };
 
 const responseSchemas = {
   tutorEgoInitial: tutorEgoInitialOut,
+  tutorEgoInitialNamedPatterns: tutorEgoInitialOut,
   tutorSuperego: tutorSuperegoOut,
   tutorValidator: tutorValidatorOut,
   tutorEgoRevision: tutorEgoRevisionOut,
   learnerProfileUpdate: learnerProfileUpdateOut,
   tutorTomTracker: tutorTomTrackerOut,
+  // idAuthorPersona uses the canonical parseIdConstruction (not Zod) — set
+  // schema=null and handle parsing in callRole below.
+  idAuthorPersona: null,
+  tutorEgoExecute: tutorEgoInitialOut,
   learnerTurn: null, // plain text
 };
 
@@ -460,10 +798,23 @@ const responseSchemas = {
 
 export async function callRole(role, payload) {
   const buildUser = userPromptBuilders[role];
-  const systemPrompt = systemPrompts[role];
-  if (!buildUser || !systemPrompt) {
+  const baseSystemPrompt = systemPrompts[role];
+  if (!buildUser || !baseSystemPrompt) {
     throw new Error(`adaptiveTutor.realLLM: no prompt for role '${role}'`);
   }
+
+  // tutorEgoInitial (in the bilateral_tom_id_director_v2 path) and
+  // tutorEgoExecute (Variant A) accept a per-call systemPromptOverride from
+  // the graph. Other roles ignore it. tutorEgoExecute is the only role that
+  // *requires* it — calling without an override would route the canonical
+  // ego prompt for that role, which is the wrong thing for the crossover.
+  const override = (typeof payload?.systemPromptOverride === 'string' && payload.systemPromptOverride.length > 0)
+    ? payload.systemPromptOverride
+    : null;
+  if (role === 'tutorEgoExecute' && !override) {
+    throw new Error(`adaptiveTutor.realLLM[tutorEgoExecute]: systemPromptOverride is required (id-authored prompt missing).`);
+  }
+  const systemPrompt = override || baseSystemPrompt;
 
   const agentConfig = buildAgentConfig(role);
   const userPrompt = buildUser(payload);
@@ -496,6 +847,13 @@ export async function callRole(role, payload) {
 
   const schema = responseSchemas[role];
   if (schema == null) {
+    // idAuthorPersona uses the canonical id-director parser; it returns the
+    // construction envelope directly (with a fallback shape on parse failure
+    // — same posture as services/idDirectorEngine.js so downstream code that
+    // reads parse_status keeps working).
+    if (role === 'idAuthorPersona') {
+      return parseIdConstruction(text);
+    }
     // learnerTurn — plain text output, just return it
     return text.trim();
   }

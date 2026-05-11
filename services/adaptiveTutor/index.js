@@ -16,7 +16,7 @@ import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
 import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
-import { setActiveBudgetTracker, clearActiveBudgetTracker } from './realLLM.js';
+import { setActiveBudgetTracker, clearActiveBudgetTracker, setActiveCellConfig, clearActiveCellConfig } from './realLLM.js';
 import { SUPPORTED_ARCHITECTURES } from './graph.js';
 import * as evaluationStore from '../evaluationStore.js';
 
@@ -128,6 +128,20 @@ export async function runAdaptiveEvaluation({
     if (verbose) console.log(`[adaptive] budget ceiling: $${maxCostUsd.toFixed(2)}`);
   }
 
+  // Make the cell's adaptive block actually drive the LLM call. Without this
+  // the YAML provider/model fields landed on the stored row but the call still
+  // routed via DEFAULT_MODEL_ALIAS/DEFAULT_PROVIDER (or env-var overrides).
+  // Per-role env vars still override the cell config inside envFor().
+  if (llmMode() !== 'mock') {
+    setActiveCellConfig({
+      provider: adaptiveCfg.provider,
+      modelAlias: adaptiveCfg.model,
+      temperature: adaptiveCfg.hyperparameters?.temperature,
+      maxTokens: adaptiveCfg.hyperparameters?.max_tokens,
+    });
+    if (verbose) console.log(`[adaptive] cell-config: provider=${adaptiveCfg.provider || '(default)'} model=${adaptiveCfg.model || '(default)'}`);
+  }
+
   const persisted = [];
   let halted = false;
   let haltReason = null;
@@ -176,6 +190,7 @@ export async function runAdaptiveEvaluation({
     }
   } finally {
     if (tracker) clearActiveBudgetTracker();
+    clearActiveCellConfig();
   }
 
   evaluationStore.updateRun(run.id, {

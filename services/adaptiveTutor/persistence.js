@@ -63,9 +63,13 @@ function extractTurnTrace(history) {
     if (v.learnerProfile && v.learnerProfile.updatedAtTurn === turn) {
       existing.learnerProfile = v.learnerProfile;
     }
-    if (v.tutorInternal && (v.tutorInternal.policyAction || v.tutorInternal.egoDraft)) {
+    if (v.tutorInternal && (v.tutorInternal.policyAction || v.tutorInternal.egoDraft || v.tutorInternal.idConstruction)) {
       // Keep the latest tutorInternal seen for this turn — node order means
       // the post-revision values will overwrite the initial draft fields.
+      // The idAuthorPersona node (cells 121/122) writes idConstruction +
+      // idAuthoredPrompt before the ego node fires, so this clause picks them
+      // up even when egoDraft/policyAction haven't been written yet on the
+      // first snap of the turn.
       existing.tutorInternal = v.tutorInternal;
     }
     if (Array.isArray(v.constraintViolations) && v.constraintViolations.length) {

@@ -15,6 +15,7 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { jsonrepair } from 'jsonrepair';
@@ -24,6 +25,87 @@ import {
   tutorDialogueEngine,
 } from '@machinespirits/tutor-core';
 import * as defaultTutorWritingPad from './memory/tutorWritingPad.js';
+
+// claude-code subscription bridge. Mirrors services/adaptiveTutor/realLLM.js::callClaudeCli
+// — see the longer comment there for why scrubbing ANTHROPIC_API_KEY from the
+// child env is critical (without it the CLI silently routes via metered API
+// mode and bills per-call). tutor-core's callAI does NOT recognise
+// `claude-code` as a provider; bridging here keeps cell_106 (id-director +
+// CLI) working without a tutor-core release.
+const CLAUDE_CLI_TIMEOUT_MS = 180_000;
+
+async function callClaudeCli({ systemPrompt, userPrompt, model, role, messageHistory }) {
+  // System prompt goes via --system-prompt (replaces the CLI's default,
+  // suppressing ambient output-style additions like the "★ Insight" block
+  // the explanatory style appends after responses). User content + inlined
+  // multi-turn history goes to stdin.
+  let userText = '';
+  if (Array.isArray(messageHistory) && messageHistory.length > 0) {
+    const transcript = messageHistory
+      .map((m) => `${m.role || 'user'}: ${m.content || ''}`)
+      .join('\n\n');
+    userText += `Conversation so far:\n${transcript}\n\n`;
+  }
+  userText += `Latest message:\n${userPrompt}`;
+  const start = Date.now();
+  return await new Promise((resolve, reject) => {
+    const args = [
+      '-p', '-',
+      '--output-format', 'text',
+      '--system-prompt', systemPrompt,
+    ];
+    if (model) args.push('--model', model);
+    const env = { ...process.env };
+    delete env.CLAUDE_CODE;
+    delete env.CLAUDECODE;
+    delete env.ANTHROPIC_API_KEY;
+    delete env.ANTHROPIC_AUTH_TOKEN;
+    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
+    let out = '';
+    let err = '';
+    const cliTimeout = setTimeout(() => {
+      try { child.kill('SIGKILL'); } catch (_) { /* already gone */ }
+      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role})`));
+    }, CLAUDE_CLI_TIMEOUT_MS);
+    child.stdout.on('data', (d) => { out += d; });
+    child.stderr.on('data', (d) => { err += d; });
+    child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+    child.on('close', (code) => {
+      clearTimeout(cliTimeout);
+      if (code !== 0) {
+        reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
+      } else {
+        resolve({
+          text: out.trim(),
+          model: model || 'claude-cli',
+          provider: 'claude-code',
+          latencyMs: Date.now() - start,
+          inputTokens: 0,
+          outputTokens: 0,
+          cost: 0,
+        });
+      }
+    });
+    child.stdin.write(userText);
+    child.stdin.end();
+  });
+}
+
+// Drop-in wrapper that routes claude-code through the local CLI and everything
+// else through tutor-core's metered callAI. Same return shape as
+// tutorDialogueEngine.callAI so call sites swap in unchanged.
+async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, opts = {}) {
+  if (agentConfig?.provider === 'claude-code') {
+    return await callClaudeCli({
+      systemPrompt,
+      userPrompt,
+      model: agentConfig.model,
+      role,
+      messageHistory: opts?.messageHistory,
+    });
+  }
+  return await tutorDialogueEngine.callAI(agentConfig, systemPrompt, userPrompt, role, opts);
+}
 
 const __engineFile = fileURLToPath(import.meta.url);
 const __engineDir = path.dirname(__engineFile);
@@ -211,7 +293,7 @@ export async function classifyLearnerRegister({ learnerMessage, recentHistory, c
     '</current_learner_message>',
   ].join('\n');
 
-  const response = await tutorDialogueEngine.callAI(
+  const response = await callAIWithCliBridge(
     classifierConfig,
     classifierConfig.prompt,
     userMessage,
@@ -864,7 +946,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     prompt: idStaticPrompt,
     isConfigured: idProviderConfig.isConfigured,
   };
-  const idResponse = await tutorDialogueEngine.callAI(
+  const idResponse = await callAIWithCliBridge(
     idAgentConfig,
     idStaticPrompt,
     idUserMessage,
@@ -909,7 +991,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  const egoResponse = await tutorDialogueEngine.callAI(
+  const egoResponse = await callAIWithCliBridge(
     egoAgentConfig,
     egoSystemPrompt,
     learnerMessage,

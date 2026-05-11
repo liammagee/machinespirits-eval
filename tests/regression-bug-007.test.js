@@ -52,6 +52,15 @@ describe('bug_007 regression: dispatch chain coverage for non-base prompt_types'
         continue;
       }
 
+      if (profile?.runner === 'adaptive') {
+        // Adaptive cells bypass evaluationRunner.js and tutor-core's dialogue
+        // engine entirely (CLAUDE.md: "Runner Dispatch"). resolveEvalProfile()
+        // is never called on their dispatch path, so dispatch coverage is
+        // not a meaningful invariant for them.
+        skipped.push({ cellName, reason: 'runner: adaptive (bypasses dispatch)' });
+        continue;
+      }
+
       const promptType = profile?.factors?.prompt_type;
       if (!promptType) {
         skipped.push({ cellName, reason: 'no prompt_type in factors' });
@@ -96,6 +105,7 @@ describe('bug_007 regression: dispatch chain coverage for non-base prompt_types'
     const promptTypeRoutes = {};
     for (const cellName of EVAL_ONLY_PROFILES) {
       const profile = profiles[cellName];
+      if (profile?.runner === 'adaptive') continue; // adaptive cells bypass dispatch
       const promptType = profile?.factors?.prompt_type;
       if (!promptType || promptType === 'base') continue;
 

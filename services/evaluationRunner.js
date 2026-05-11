@@ -224,6 +224,17 @@ export const EVAL_ONLY_PROFILES = [
   'cell_112_a13_C2_egosuperego',
   'cell_113_a13_C4_validator',
   'cell_115_bilateral_tom',
+  'cell_116_recognition_named_patterns',
+  'cell_117_bilateral_tom_named_patterns',
+  'cell_118_state_policy_minimal_profile',
+  'cell_119_state_policy_no_misconceptions',
+  'cell_120_state_policy_no_agency_signal',
+  'cell_111_a13_C1_recognition_only_v2',
+  'cell_115_bilateral_tom_v2',
+  'cell_116_recognition_named_patterns_v2',
+  'cell_117_bilateral_tom_named_patterns_v2',
+  'cell_121_bilateral_tom_id_director_v1',
+  'cell_122_bilateral_tom_id_director_v2',
 ];
 
 /**
