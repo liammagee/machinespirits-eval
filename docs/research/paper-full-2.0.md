@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "April 2026"
-version: "3.0.64"
+version: "3.0.65"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -871,6 +871,95 @@ Every new evaluation row records:
 The test suite (32+ files, ~12K lines) covers not only the evaluation infrastructure but also the analytical pipeline. Tests verify that scoring, ANOVA computation, trajectory extraction, and within-test change analysis produce correct outputs on known inputs.
 
 This makes the analysis *reproducible in a testable sense*: the code's behavior on known inputs is verified by tests, and the exact code version is recorded with each evaluation run via `git_commit` in the evaluation_runs table.
+
+---
+
+### 5.12 Procedural Transparency: Pre-registration Drift and Post-Hoc Additions
+
+This subsection documents two classes of methodological event encountered during the Paper 2.0 experimental arc: (i) divergences between pre-registered designs and what the running code actually executed, and (ii) additions and instruments built after data collection was underway. Both are reported here, with the cells and instruments affected, so that subsequent sections can flag each result as confirmatory, exploratory, or post-hoc without re-litigating provenance in every reference.
+
+#### 5.12.1 The Pre-Registration ↔ Implementation Gap
+
+Pre-registration in software-mediated experiments faces a structural risk distinct from clinical or behavioural pre-registration: the design lives in a prose document, the execution lives in code, and nothing automatically validates that the two agree at run time. In this codebase, three artefacts independently describe each experimental condition:
+
+| Artefact | Form | Authority |
+|---|---|---|
+| Pre-registration document (e.g., `a13-pre-registration.md`) | Prose design table | Records *intended* design |
+| YAML cell config (`config/tutor-agents.yaml`) | Structured fields per cell | Read at run time; constitutes *actual* design |
+| Dispatch logic (`services/evaluationRunner.js`, `services/adaptiveTutor/index.js`) | Routing on the YAML's `runner:` field | Determines which runner actually executes |
+
+When all three agree, no problem arises. When they diverge — for example, the pre-reg specifies `runner: standard` for a condition that ships with `runner: adaptive` in the YAML — the experiment still runs cleanly, the output dialogue logs are still valid, and the divergence is silent. No test fails; no warning surfaces; the only way to detect it is to manually cross-reference documents that no person reads in sequence during routine analysis.
+
+We treat the YAML as the source of truth, following the same convention already established for cell registration (the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js`). The pre-reg document records *intent*; the YAML records *behaviour*. Where these diverge, the YAML is what produced the data and therefore what the experimental claim describes. The pre-reg drift is itself a finding, not a confound: it shows that a condition we believed we were testing was structurally different from the one we actually ran.
+
+To prevent recurrence, three remediations are now part of the experimental workflow:
+
+1. **Runner field is mandatory and explicit for adaptive cells.** A test asserts every cell with `factors.id_director: true` or a non-default scenario source carries an explicit `runner:` field, so a missing field cannot silently default.
+2. **Dialogue logs stamp the dispatched runner.** Each new trace file written by either runner records `meta.dispatched_runner` at write time. Post-hoc audits can then verify that a dialogue claimed to come from the dialogue engine actually was dispatched there.
+3. **Pre-registration documents include a machine-checkable cell manifest.** New pre-regs carry a YAML front-matter block listing each cell's critical fields (`runner`, `architecture`, `prompt_type`, `scenario_source`); a CI script compares this block against `tutor-agents.yaml` and fails the commit if any field disagrees.
+
+#### 5.12.2 The A13 Pre-Registration ↔ Implementation Divergence
+
+The A13 pre-registration (Supplement S-A13) specified a four-condition design intended to isolate the effect of the adaptive runner from the effect of the LangGraph state machine's internal mechanisms:
+
+| Pre-reg condition | Intended runner | Intended architecture |
+|---|---|---|
+| C1 (`cell_111_a13_C1_recognition_only`) | `standard` (dialogue engine) | Recognition-only baseline |
+| C2 (`cell_112_a13_C2_egosuperego`) | `standard` (dialogue engine) | Ego/superego two-pass |
+| C3 (`cell_110_langgraph_adaptive`) | `adaptive` (LangGraph) | Full state policy |
+| C4 (`cell_113_a13_C4_validator`) | `adaptive` (LangGraph) | Full state policy + validator |
+
+Under the pre-registered design, the C1↔C3 and C2↔C4 contrasts isolate the runner; the C1↔C2 and C3↔C4 contrasts isolate the architectural elaboration.
+
+The implementation shipped all four conditions with `runner: adaptive`. The LangGraph runner instead uses an `adaptive.architecture` flag (`recognition_only`, `ego_superego`, `state_policy`, `state_policy_with_validator`) to build different sub-graphs internally. The result: all four A13 conditions are LangGraph variants. The "dialogue engine vs state machine" comparison the pre-reg implied was never actually run, and the H1.1 contrasts comparing cells 110–113 are within-LangGraph ablations rather than cross-runner comparisons.
+
+We report the A13 results as designed in the YAML (within-LangGraph ablations) rather than as designed in the pre-reg (cross-runner comparison). The label *recognition_only* in this paper consistently refers to a single-LLM-call LangGraph sub-graph (one contextInput → tutorEgo node, no profile update, no superego, no constraint check), not to a dialogue-engine baseline.
+
+#### 5.12.3 The Dialogue-Engine Baseline on Trap Scenarios (`cell_114`, Post-Hoc)
+
+Following §5.12.2, the absence of a dialogue-engine baseline on the trap-scenario suite was a substantive gap. The trap-scenario instrument (`config/adaptive-trap-scenarios.yaml`) was developed specifically for the adaptive runner; cells 1–99, which use the dialogue engine, all run on `config/suggestion-scenarios.yaml` and therefore cannot be directly compared against the LangGraph cells on the trap suite.
+
+To close this gap we added a post-hoc baseline: `cell_114_dialogue_engine_trap_baseline`. The cell registers with `runner: standard` and routes trap scenarios through tutor-core's existing dialogue engine via an adapter script (`scripts/run-dialogue-engine-trap-baseline.js`) that loads the trap scenarios, drives a fully scripted learner (same scripting strategy as cell_106 in §6.7's id-director pilot), and persists rows to `evaluation_results` in the same column shape as the adaptive runner. The cell holds prompt, model, and scenario constant against cell_111's settings, so the cell_111 ↔ cell_114 contrast isolates the runner.
+
+Cell_114 is not part of the A13 pre-registration. We flag all comparisons against it as exploratory rather than confirmatory throughout §6.
+
+#### 5.12.4 The Adaptive Graded Rubric (Post-Hoc, Non-Blinded)
+
+The v2.2 evaluator (§5.2.2) scores tutor responses against a single-turn suggestion scaffold and structurally skips adaptive cells: `services/evalConfigLoader.js#getScenario()` reads only `config/suggestion-scenarios.yaml`, so adaptive rows return `SKIP (scenario not found)` from every v2.2 entrypoint. Adaptive dialogues therefore had no per-turn graded score under v2.2 — only the binary `strategy_shift_correctness` signal computed by `scripts/analyze-strategy-shift.js`.
+
+To recover graded scoring on adaptive dialogues, we built a bespoke 4-dimension rubric implemented as `scripts/grade-adaptive-dialogue.js`:
+
+| Dimension | Question |
+|---|---|
+| `trigger_recognition` | Did the tutor identify the trap signal at or near `triggerTurn`? |
+| `strategy_execution` | Was the post-trigger action aligned with `expectedStrategyShift`? |
+| `strategy_quality` | Given an action fired, was it well-crafted (specific, calibrated, non-leaky)? |
+| `pedagogical_coherence` | Does the whole trajectory cohere as teaching? |
+
+Each dimension scores 1–5; scores persist to `evaluation_results` columns prefixed `adaptive_*`, with reasoning preserved in `adaptive_grader_reasoning`. The grader currently uses a single judge (GPT-5 via the codex CLI bridge) and has not been calibrated against a second independent judge.
+
+Two limitations require explicit acknowledgement before §6 reports any graded result:
+
+1. **Non-blind to binary results.** The rubric was authored after the binary `strategy_shift_correctness` results for cells 110, 118, and 119 were known. Its dimensions were chosen to be conceptually orthogonal to the binary signal — *graded quality* of execution given that some action fired, rather than *binary correctness* of action selection — but the rubric author was not blind to which cells the binary signal favoured. The graded scoring path therefore corroborates the binary path with reduced independence; cross-judge re-scoring under a blinded variant is on the open-questions list.
+2. **Single judge.** GPT-5's preferences (e.g., for concision and decisive tone) may correlate with the dialogue features the minimal-profile cells produce, independent of teaching quality. An inter-rater rejudge under a second judge (Claude or Gemini via the same CLI bridge) is the highest-ROI single addition to the rubric's reliability profile.
+
+We report graded results in §6 with these caveats inline; cells that depend on the graded signal alone are flagged as exploratory.
+
+#### 5.12.5 Stimulus-Suite Divergence Between Adaptive and Non-Adaptive Cells
+
+A consequence of §5.12.2 and §5.12.3 worth surfacing as its own methodological note: Paper 2.0's adaptive results (cells 110–119) are measured on the trap-scenario suite, while Paper 1.0's null on adaptive responsiveness was measured on the suggestion-scenario suite. The two suites are disjoint stimulus sets. Cross-suite claims of the form *"the state machine fixes Paper 1.0's null"* are therefore unsupported by direct experimental contrast; the appropriate framing is *"on the trap-scenario suite, certain LangGraph configurations show strategy shifts that simpler configurations do not"*. Cell_114 (§5.12.3), once run, provides the dialogue-engine measurement on the same suite as cell_110, which is the only direct route to a same-suite cross-architecture claim.
+
+#### 5.12.6 Reporting Convention for Procedural Deviations
+
+To avoid re-litigating provenance in every results subsection, §6 adopts the following convention:
+
+- **Pre-registered (confirmatory):** the cell, condition, and analysis path were all named in a pre-registration document before any data was collected, and the YAML/code at run time matched that document's design. Subject to standard alpha controls.
+- **Pre-registered with implementation drift (re-classified exploratory):** the cell was named in a pre-registration but the running configuration differed materially from the pre-reg's described design (e.g., A13 C1/C2). The result is reported but flagged as a within-LangGraph rather than cross-runner claim.
+- **Post-hoc exploratory:** the cell, condition, or instrument was added after data collection began (e.g., cell_114, adaptive graded rubric). Reported with explicit exploratory framing; no alpha correction applied since the analysis was not pre-specified.
+
+This convention is paraphrased into every results subsection's lede where the distinction matters for the strength of the claim.
+
+---
 
 ## 6. Results
 
@@ -1932,6 +2021,84 @@ All cells use Nemotron-3-nano as ego, Kimi K2.5 as id (reusing the superego slot
 - `eval-2026-04-28-10216f9f` (cells 108/109 lever-interaction pilot, n=11 across 2 scenarios)
 
 Five internal documents (`docs/cell-100-pilot-findings.md`, `docs/cell-100-methods-note.md`, `docs/cell-100-pilot-findings-addendum.md`, `docs/cell-100-cross-judge-sanity-check.md`, `docs/cell-100-replication-findings.md`) carry the full audit trail; this section summarises only headline findings. Per-row JSON in `evaluation_results.tutor_charisma_scores`, `evaluation_results.scores_with_reasoning`, and `evaluation_results.id_construction_trace`. Note: the cell IDs in this section are the post-rebase identifiers (101–107); pre-rebase historical evaluation_results rows used the original `cell_100_*` profile names (the rebase commit `02fe11e` shifted them to avoid a collision with main's `cell_100`).
+
+---
+
+### 6.8 Architectural Extension: The Adaptive Runner and Trap-Scenario Methodology
+
+This section reports a second architectural-extension arc, parallel in structure to the id-director family in §6.7 but addressing a different gap. Where §6.7 asked whether charismatic-pedagogical authorship could be operationalised through a back-stage agent, §6.8 asks whether an externalised learner-state model and a programmatic policy graph can produce the *adaptive responsiveness* that §6.3 found absent under lightweight intervention and only partially recoverable through expensive search (§6.3.9). The extension is a heavier intervention than the best-of-$N$ selector of §6.3.9: it replaces the dialogue engine's free-form turn loop with a LangGraph state machine, introduces an explicit `learnerProfile` object that the tutor reads and writes across turns, and adds programmatic policy actions and counterfactual replay. Per §5.12.6, this section mixes reporting tiers: §6.8.3 reports a pre-registered confirmatory headline on `cell_110_langgraph_adaptive`; §6.8.5 reports a pre-registered confirmatory P2.1 null on within-family discrimination; later sub-subsections (deferred while their pending runs close — see `docs/explorations/claude/p22-p23-parking-note.md` for the integration plan) will report a re-classified exploratory A13 within-LangGraph ablation (§6.8.4), a post-hoc exploratory state-richness reversal (§6.8.6), an outstanding cross-architecture comparison status (§6.8.7), and a closing synthesis (§6.8.8).
+
+#### 6.8.1 Motivation: Closing the §6.3.9 Gap
+
+Section 6.3.9 located *adaptive responsiveness* as structurally resistant to lightweight intervention: neither recognition prompts nor the multi-agent ego/superego architecture produced reliable turn-over-turn modulation of pedagogical strategy in response to learner-specific signals. Bridge 3 of that section established that best-of-$N$ selection at $K=3$ (~$6\times$ ego cost per turn) produces a small, statistically suggestive lift (Cohen's $d = +0.41$ on per-dialogue coupling) but does not breach the pre-registered "bridgeable" threshold. The §6.3.9 conclusion was that the gap is *partially* mitigable by expensive search but not closable by prompt-level or two-agent-level interventions.
+
+The LangGraph adaptive runner introduced in this section is a substantially heavier intervention than best-of-$N$ search. It crosses two design boundaries simultaneously. First, it externalises learner state out of the tutor prompt and into a structured `learnerProfile` object (fields: `confidence`, `misconceptions`, `agencySignal`, `zpdEstimate`, `lastEvidence`), updated by a dedicated graph node from each learner turn. Second, it replaces the dialogue engine's free-form turn loop with a programmatic policy graph: per turn the runner executes a fixed-order pipeline of nodes (context input, tutor ego, optional superego pass, profile update, optional policy action, optional constraint check, optional validator) determined by the cell's `adaptive.architecture` flag rather than by the tutor's free-text deliberation. The hypothesis the arc tests is whether either or both boundaries materially change adaptive-responsiveness performance, and whether the §6.3.9 gap is closable by an intervention of this weight.
+
+The trap-scenario suite developed for this arc (described in §6.8.2) provides the corresponding measurement instrument: each scenario plants a hidden learner state (a specific misconception or behavioural signal) and a triggering turn at which an appropriately-adapted tutor would shift strategy. Because the trap is annotated, *whether* the tutor adapted is computable as a binary outcome (`strategy_shift_correctness`) and *how well* it adapted is scoreable on a 4-dimension graded rubric (§5.12.4). The two paths together permit the kind of mechanism-level claim §6.3 lacks: not merely "scores rise across turns" but "the right strategy shift fires at the right moment for the right hidden signal."
+
+#### 6.8.2 Method: Trap Scenarios, LangGraph Runner, and Dual Scoring Paths
+
+**Trap-scenario instrument.** The trap suite (`config/adaptive-trap-scenarios.yaml`) consists of six pedagogical situations in which a learner exhibits a *visible* surface behaviour that masks a different *hidden* underlying state. Each scenario specifies four fields: `hidden.actualMisconception` (the underlying state the tutor must diagnose), `hidden.triggerTurn` (the turn index at which the visible-vs-hidden mismatch becomes detectable), `hidden.triggerSignal` (the specific learner utterance that surfaces the mismatch), and `expectedStrategyShift` (the family of pedagogical moves an appropriately-adapted tutor would deploy at or shortly after the trigger). The six scenarios span three pedagogical families (substantive engagement, scaffolding, diagnostic) and are calibrated so that the trigger turn falls within the cell's standard 4-round dialogue budget. A v2 subset (`config/adaptive-trap-scenarios-v2.yaml`, six scenarios) preserves the trigger structure but constrains the expected shift to a single same-family alternative, supporting the within-family discrimination test reported in §6.8.5.
+
+**LangGraph adaptive runner.** Cells configured with `runner: adaptive` in `config/tutor-agents.yaml` are dispatched to `services/adaptiveTutor/` rather than tutor-core's standard dialogue engine. The runner builds a state graph per the cell's `adaptive.architecture` flag. Five architectures are currently registered:
+
+- `recognition_only`: contextInput → tutorEgo → done. A single LLM call per tutor turn; no profile update, no superego, no constraint check. Used as the within-LangGraph baseline (cells 111 and 111_v2 in §6.8.4 and §6.8.5).
+- `ego_superego`: contextInput → tutorEgo → tutorSuperego → tutorEgoRevise → done. Two-pass tutor; still no profile update or constraint check (cell 112).
+- `state_policy`: the full pipeline — contextInput → tutorEgo → learnerProfileUpdate → policyAction → constraintCheck → done (cell 110, the headline architecture in §6.8.3).
+- `state_policy_with_validator`: adds an output-validator node after the constraint check (cell 113).
+- Bilateral and named-pattern variants: extend the profile-update node with an explicit ToM tracker or named-pattern lookup (cells 115–117 in §6.8.5).
+
+The runner persists per-turn internal state — the `learnerProfile` snapshot, the policy action selected, the constraint-check result — to a JSON trace file under `logs/tutor-dialogues/` alongside the visible dialogue. Counterfactual replay is implemented as a deterministic re-execution of the same scenario under a perturbed `learnerProfile` (e.g., flipping `agencySignal` from `active` to `passive`) to surface what the tutor *would* have done under counterfactual learner state. Counterfactual divergence is reported descriptively in §6.8.5 §3 and is not part of any pre-registered threshold.
+
+**Dual scoring paths.** Adaptive dialogues are scored along two parallel paths because the v2.2 evaluator (§5.2.2) does not apply to them: `services/evalConfigLoader.js#getScenario()` reads only `config/suggestion-scenarios.yaml`, so trap-scenario dialogues return `SKIP (scenario not found)` from every v2.2 entrypoint. The first scoring path is *binary*: `scripts/analyze-strategy-shift.js` checks whether the tutor's response at or after `triggerTurn` matches the family specified by `expectedStrategyShift` (strict) or one of its same-family cousins (family-match). The second is *graded*: the bespoke 4-dimension rubric described in §5.12.4 (`trigger_recognition`, `strategy_execution`, `strategy_quality`, `pedagogical_coherence`, each 1–5) scores execution quality given that some action fired, with the non-blind and single-judge caveats made explicit there. The two paths are complementary: the binary asks *did the right family fire at the right time*; the graded asks *was the fire well-aimed and well-crafted*. Cells can lead on one path and lag on the other (cell_119 in the parking note's headline tables fires the right family more often than cell_110 but executes less crisply when it does).
+
+**Standard fan-out.** Cells in this arc are run at $K = 4$ (four independent runs per cell), $N = 24$ per cell on either the 6-scenario v1 suite (4 runs × 6 scenarios) or the 6-scenario v2 suite (same shape). Larger N appears for cells re-run across multiple weeks (e.g., cell_111 v1 accumulated $N = 71$ across A13 and follow-up fan-outs).
+
+#### 6.8.3 Headline: cell_110 Produces Measurable Strategy Shifts on the Trap Suite
+
+The headline cell for the architecture is `cell_110_langgraph_adaptive` — the full `state_policy` LangGraph configuration with externalised profile, programmatic policy actions, and constraint check. The pre-registered confirmatory result on the v1 trap-scenario suite (run id `eval-2026-05-05-486d7d1e`, $N = 23$):
+
+| Metric | Value | Notes |
+|---|---|---|
+| `strict_shift_correctness` | 47.8% (11/23) | The tutor's at-or-post-trigger response matches `expectedStrategyShift` family exactly |
+| `family_match_rate` | 87.0% (20/23) | The response is in the same pedagogical family as expected, even when not the exact target |
+| Graded `trigger_recognition` (mean) | 4.26 / 5 | Tutor identified the trap signal at or near `triggerTurn` |
+| Graded `strategy_execution` (mean) | 4.30 / 5 | Post-trigger action aligned with `expectedStrategyShift` |
+| Graded `strategy_quality` (mean) | 3.96 / 5 | Execution was specific, calibrated, non-leaky |
+| Graded `pedagogical_coherence` (mean) | 3.61 / 5 | Whole trajectory coheres as teaching |
+| Graded overall (mean of 4) | 4.03 / 5 | — |
+
+The result is moderate rather than strong. The strict signal hits 47.8% — the tutor selects the exact pre-registered family in roughly half of trap-trigger cases — and the family-match signal hits 87.0%, indicating the tutor is in the right pedagogical neighbourhood almost always. The graded path shows the architecture's profile: trigger recognition and strategy execution are strong (both above 4.25), but pedagogical coherence is the weakest dimension (3.61), suggesting that the full-state architecture picks the right move but produces somewhat bloated or muddied trajectories around it. The binary 47.8% provides the first measurement showing an architectural intervention produces detectable strategy shifts on a pre-registered trap-trigger instrument — a different result from §6.3.9's lightweight-intervention-resistant finding, but on a different stimulus suite (see §6.8.7 on the cross-suite comparison). Whether this lift represents a genuine architectural advance over the dialogue engine or simply a within-LangGraph baseline is the question §6.8.4 and §6.8.7 address.
+
+#### 6.8.5 Bilateral-ToM Elaboration Adds No Measurable Within-Family Discrimination (P2.1)
+
+The pre-registered P2.1 fan-out (`docs/explorations/claude/p2-followup-pre-registration.md` §P2.1, locked 2026-05-07; runs 2026-05-08 to 2026-05-10) tested whether elaborating the LangGraph `learnerProfile` update with an explicit bilateral Theory-of-Mind (ToM) tracker — a node that maintains separate first-person and third-person learner-state representations — produces within-family discrimination beyond the `recognition_only` baseline. Four cells were run at $N = 24$ each on the v2 trap-scenario suite (six within-family scenarios where every valid alternative belongs to the same pedagogical family as the target):
+
+| Cell | Architecture | `strict_shift_correctness` |
+|---|---|---|
+| cell_111_a13_C1_recognition_only_v2 | `recognition_only` baseline | 33.3% (8/24) |
+| cell_116_recognition_named_patterns_v2 | `recognition_named_patterns` (named-pattern lookup added) | 37.5% (9/24) |
+| cell_115_bilateral_tom_v2 | `bilateral_tom` (first/third-person ToM tracker) | 45.8% (11/24) |
+| cell_117_bilateral_tom_named_patterns_v2 | `bilateral_tom_named_patterns` (both) | 33.3% (8/24) |
+
+The H1.1 primary contrast pools by architecture family:
+
+| Pooled architecture | shift_n / n | shift% |
+|---|---|---|
+| bilateral_tom (cells 115 + 117) | 19 / 48 | 39.58% |
+| recognition_only (cells 111 + 116) | 17 / 48 | 35.42% |
+
+The pooled gap is **+4.17 percentage points** in favour of bilateral_tom, with a 95% Wald CI of [−15.18, +23.52] pp. The pre-registration locked binary point-estimate thresholds (lines 30–34, 70–72 of the pre-reg doc): a gap of $\geq 10$ pp supports H1.1 (bilateral_tom adds within-family discrimination), 5–10 pp is inconclusive, and $<5$ pp falsifies H1.1 in favour of H1.3 (the v1 family-match advantage of bilateral_tom was a between-family, type-recognition effect rather than a within-family discrimination effect). The observed +4.17 pp falls below the 5-pp falsification threshold. **H1.3 is supported as written; the bilateral_tom elaboration does not produce within-family discrimination at the pre-registered effect size.** The CI width permits a true 10-pp gap that sampling chance compressed to 4 pp, but the pre-reg authors locked point-estimate thresholds knowingly, and this report applies them as written.
+
+The H1.2 secondary endpoint (`family_match_rate` $\geq 80\%$ predicted; $< 70\%$ falsifying) corroborates the H1.3 reading. Three of the four cells fall below the 70% falsification floor on v2: cell_116 (66.67%), cell_115 (66.67%), and cell_117 (58.33%); only cell_111 (70.83%) escapes, by 0.83 pp. All three falsified cells had v1 family-match $> 70\%$ (cell_115 = 70.8%, cell_116 = 79.2%, cell_117 = 79.2% on the v1 suite per the upstream A13 follow-up memo), so the v2 drop is interpretable per the pre-reg's rule: the cells' v1 family-match advantage was scenario-distribution-driven (v1 scenarios spanned three pedagogical families and made between-family discrimination easy), not architectural (v2 scenarios constrain to a single family and the architectures collapse).
+
+Descriptive results not part of the pre-reg's locked thresholds are reported for completeness. The four cells handle `substantive_engagement` scenarios well (cells 111, 115, 116 all score 12/12 family-correct, cell_117 scores 9/12) but collapse on `diagnostic_opaque_reasoning` (0–1 of 4 family-correct across all four cells); scaffolding falls in between (3–5 of 8 across cells). Per-scenario, only two of six scenarios drive most of the strict_shift signal: `substantive_correct_underspecified` (10/16 across the four cells, 62.5%) and `scaffolding_load_not_gap` (14/16, 87.5%); the other four scenarios sit at $\leq 25\%$ strict. The pre-reg forbids post-hoc subsetting (line 84); these per-scenario numbers are reported as descriptive context rather than as a re-analysis. Counterfactual divergence on the two ToM cells (cell_115 cf_div 62.5%, cf_fam 37.5%; cell_117 cf_div 62.5%, cf_fam 54.2%) is consistent with type-prior locking in cell_115 but inverted in cell_117.
+
+Two limitations apply to P2.1 alongside the §5.12.6 reporting convention. First, single-judge scoring: all four cells were scored under `claude-code/sonnet`; a second-judge probe was not pre-registered and has not been run. Second, the wide CI on the H1.1 contrast (39 pp wide, $[-15, +24]$ pp) means the locked binary rule is more decisive than the underlying inferential evidence: a future $N = 48$ replication per cell would tighten the CI by approximately $\sqrt{2}$, sufficient to distinguish a true null from a true 10-pp effect.
+
+The pre-reg's "Order of execution" section (line 239) flagged that a P2.1 null would weaken the prior on P2.2 (state-schema ablation) and P2.3 (bilateral × id-director crossover) without invalidating them, since P2.2's diagnostic value for the cosmetic-vs-substantive question is partly independent of whether the architecture does within-family work, and P2.3's three-endpoint design (charisma + accuracy + strategy_shift) is only partially dependent on the strategy_shift endpoint. The interpretation that follows in §6.8.6 (state-richness reversal) and §6.8.7 (cross-architecture status) applies the pre-reg's framework: the architecture appears to recognise pedagogical *type* but not to discriminate *within* a type when valid alternatives are same-family, and the project's claim space narrows accordingly.
+
+---
 
 ## 7. Discussion
 
@@ -3063,6 +3230,9 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.65** (2026-05-10)
+:   **§5.12 Procedural Transparency added — pre-registration drift and post-hoc additions.** New methodology subsection (six sub-subsections) documenting two classes of methodological event from the post-A13 experimental arc: (i) divergences between pre-registered designs and YAML/code at run time, and (ii) instruments and conditions added after data collection began. **§5.12.1** introduces the general principle: pre-reg, YAML, and dispatch logic are three independent artefacts with no automatic validation, and the YAML is treated as the source of truth (paralleling the existing `EVAL_ONLY_PROFILES` convention). Three remediation mechanisms now part of the workflow: mandatory explicit `runner:` field on adaptive cells, `meta.dispatched_runner` stamped into every new dialogue log at write time, and pre-registration documents carrying machine-checkable YAML cell-manifest front-matter. **§5.12.2** documents the specific A13 case: the pre-reg specified `runner: standard` for C1 (cell_111) and C2 (cell_112), but both cells ship with `runner: adaptive` in `config/tutor-agents.yaml` and route through LangGraph with internal `architecture` flags (`recognition_only`, `ego_superego`); all four A13 conditions are within-LangGraph ablations, not a cross-runner comparison. The label *recognition_only* in this paper consistently refers to a stripped LangGraph sub-graph, not a dialogue-engine baseline. **§5.12.3** introduces `cell_114_dialogue_engine_trap_baseline` as a post-hoc baseline (script: `scripts/run-dialogue-engine-trap-baseline.js`) holding prompt, model, and scenario constant against cell_111 so the cell_111↔cell_114 contrast isolates the runner. Cell_114 is flagged exploratory throughout §6. **§5.12.4** documents the bespoke 4-dimension adaptive graded rubric (`scripts/grade-adaptive-dialogue.js`, columns `adaptive_trigger_recognition/strategy_execution/strategy_quality/pedagogical_coherence`) with two caveats: non-blind authoring (rubric written after binary `strategy_shift_correctness` results were known) and single-judge dependency (GPT-5 via codex CLI). Both treated as known limitations rather than hidden ones. **§5.12.5** flags the stimulus-suite divergence: trap-scenario suite for cells 110–119 vs suggestion-scenario suite for Paper 1.0's adaptive-responsiveness null; direct "the state machine fixes Paper 1.0's null" claims are unsupported absent cell_114. **§5.12.6** establishes a three-tier reporting convention (pre-registered confirmatory / pre-registered with implementation drift, re-classified exploratory / post-hoc exploratory) used as paraphrased ledes in every relevant §6 subsection. No new data, no number changes; §6 will need editing later to apply the §5.12.6 convention to A13, P2.1, and P2.2 result subsections. Net change ~+1,500 words in §5.
 
 **v3.0.64** (2026-04-29)
 :   **§6.7 closing-synthesis paragraph — how charisma and recognition relate.** Adds a sixth paragraph between the v3.0.63 *Lever-interaction follow-up* and the *Cross-judge sanity check* that synthesises the five preceding §6.7 findings into a unified account of the two rubrics' relationship. Three claims, each supported by previously-reported numbers: (a) **shared floor** — c106 fails both rubrics (charisma 36.4, v2.2 57.0), so register-flat output is the worst case for either; (b) **cost asymmetry** — adding recognition vocabulary on top of structured input (c103 → c104) costs charisma ≈0 (+1.4, within noise) because the Hegelian frame is conceptual rather than rhetorical, while adding charisma directives costs v2.2 substantially (c104 → c105: −10.6 v2.2 for +5.3 charisma) because the id's authoring budget is finite and voice-instructions displace elicitation/perception moves; (c) **architectural Pareto frontier** — single-mechanism design points (c104, c105, c107) define the frontier, multi-mechanism stacks (c108, c109) sit inside it. Closes with the interpretive frame that recognition wants the voice deployed *outward* (perceiving the learner, eliciting thinking, holding the diagnostic gap) while charisma wants the voice deployed *upward* (claiming authority, marking encounter as extraordinary, inviting transformation), and that the apparatus can build either or a balanced generalist but not the maximally-both. No new analyses, no new run ids, no changes to numbers — purely synthesis from existing reported results. Net change ~+260 words in §6.7.
