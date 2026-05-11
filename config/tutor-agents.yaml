@@ -4693,7 +4693,7 @@ profiles:
         max_tokens: 16000
 
   cell_106_id_director_pedagogy_tuned:
-    description: "Id-Director (cell 106): cell 101 + id_tuning:pedagogy (terse 200-400 token id prompts). Pilot result: WORST in family except baseline — 56.6 mean v2.2 last-turn, 33.3 mean charisma. Terse prompts UNDER-SPECIFY the ego rather than trading rhetoric for pedagogy. The findings doc §7.3 prediction was directionally wrong; the prompt-budget axis is non-monotonic. Useful as the lower-bound documentation of that axis. See docs/cell-100-pilot-findings-addendum.md §3."
+    description: "Id-Director (cell 106): cell 101 + id_tuning:pedagogy (terse 200-400 token id prompts). Pilot result: WORST in family except baseline — 56.6 mean v2.2 last-turn, 33.3 mean charisma. Terse prompts UNDER-SPECIFY the ego rather than trading rhetoric for pedagogy. The findings doc §7.3 prediction was directionally wrong; the prompt-budget axis is non-monotonic. Useful as the lower-bound documentation of that axis. See docs/cell-100-pilot-findings-addendum.md §3. Qualitative-pilot edit (2026-05-05): flipped ego+id to claude-code/sonnet for the trap-scenario adapter (§10.4 of primitives-qualitative-pilot-design.md). Consumed via scripts/run-id-director-trap-pilot.js, not the standard runner."
     factors:
       prompt_type: base
       multi_agent_tutor: true
@@ -4708,16 +4708,16 @@ profiles:
       enabled: false
       max_rounds: 0
     ego:
-      provider: openrouter
-      model: nemotron
+      provider: claude-code
+      model: sonnet
       staging: front
       prompt_file: tutor-ego-actor-skeleton.md
       hyperparameters:
         temperature: 0.7
         max_tokens: 4000
     superego:
-      provider: openrouter
-      model: kimi-k2.5
+      provider: claude-code
+      model: sonnet
       staging: back
       prompt_file: tutor-id-director.md
       hyperparameters:
@@ -4877,7 +4877,7 @@ profiles:
   # dialogue engine entirely — the runner is services/adaptiveTutor/.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_110_langgraph_adaptive
   cell_110_langgraph_adaptive:
-    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations)."
+    description: "LangGraph adaptive tutor: externalised learner state, programmatic constraints, counterfactual replay. Tests A13 (whether explicit state + policy selection produces strategy shifts under controlled hidden-state perturbations). Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_state_policy
@@ -4892,8 +4892,8 @@ profiles:
       enabled: true
       max_rounds: 4
     adaptive:
-      provider: openrouter
-      model: nemotron
+      provider: claude-code
+      model: sonnet
       architecture: state_policy
       hyperparameters:
         temperature: 0.6
@@ -4914,7 +4914,7 @@ profiles:
   # docs/explorations/claude/a13-pre-registration.md deviation log.
   # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only
   cell_111_a13_C1_recognition_only:
-    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly."
+    description: "A13 condition C1: recognition-only baseline. Single LLM call per tutor turn (no superego, no profile update, no constraint check). Same trap scenarios as cell_110 so strategy_shift_correctness contrasts cleanly. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_recognition_only
@@ -4929,8 +4929,8 @@ profiles:
       enabled: true
       max_rounds: 4
     adaptive:
-      provider: openrouter
-      model: nemotron
+      provider: claude-code
+      model: sonnet
       architecture: recognition_only
       hyperparameters:
         temperature: 0.6
@@ -5028,7 +5028,7 @@ profiles:
   #   - scripts/analyze-tom-accuracy.js + scripts/analyze-collapse-rates.js (separate commit)
   # Reachable via: node scripts/eval-cli.js run --profiles cell_115_bilateral_tom
   cell_115_bilateral_tom:
-    description: "[STUB pending implementation] P2 cell C5: bilateral ToM on top of state_policy. Paired text+JSON hypothesizedLearnerState, second-order beliefs, FANToM probes, dynamic bilateral learner. See docs/explorations/claude/p2-bilateral-tom-pre-registration.md."
+    description: "P2 cell C5: bilateral ToM on top of state_policy. Inserts tutorTomTracker between learnerProfileUpdate and tutorEgoInitial; emits paired summaryText + hypothesizedLearnerPerceptionOfTutor + FANToM-style probes. Pilot run on Sonnet 4.6 via local CLI (Max-plan subscription) per docs/explorations/claude/primitives-qualitative-pilot-design.md."
     runner: adaptive
     factors:
       prompt_type: adaptive_bilateral_tom
@@ -5043,9 +5043,359 @@ profiles:
       enabled: true
       max_rounds: 4
     adaptive:
-      provider: openrouter
-      model: nemotron
+      provider: claude-code
+      model: sonnet
       architecture: bilateral_tom
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # Paired-comparison cell to cell_111. Same recognition_only graph topology
+  # (single tutor LLM call per turn, no profile update, no superego, no
+  # constraint check), differs in one prompt paragraph: the ego is told to
+  # name recurring meta-patterns (polite affirmation, oracle-seeking,
+  # deflection) explicitly, and the dialogue history is passed into the
+  # user prompt so the ego can actually see them. Tests whether the
+  # cell_111-vs-cell_115 gap on polite_false_mastery_v1 (the
+  # *right-action-no-purchase* phenomenon documented in
+  # docs/explorations/claude/primitives-qualitative-pilot-findings.md §3.4)
+  # is closable by prompt addition alone, or whether the gap requires
+  # bilateral-ToM apparatus.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_116_recognition_named_patterns
+  cell_116_recognition_named_patterns:
+    description: "Paired comparison to cell_111: identical recognition_only graph topology, ego prompt adds an instruction to name recurring meta-patterns explicitly + receives dialogue history. Tests whether right-action-no-purchase on polite_false_mastery is closable by prompt alone."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_recognition_named_patterns
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: recognition_named_patterns
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # Additivity probe. Same bilateral_tom topology as cell_115 (ToM tracker
+  # between learnerProfileUpdate and tutorEgoInitial, paired summaryText +
+  # hypothesizedLearnerPerceptionOfTutor + tomProbes), but swaps the ego
+  # node for tutorEgoInitialNamedPatterns — i.e. the same prompt addition
+  # that cell_116 layers onto cell_111. Motivated by the 3-arm pilot result
+  # in docs/explorations/claude/primitives-qualitative-pilot-findings.md:
+  # cell_116 closed the polite_false_mastery gap (right-action-no-purchase),
+  # cell_115 caught the false_confusion non-dialectical presupposition that
+  # cell_116 missed. Each intervention won on a different scenario family,
+  # so additivity is plausible but not guaranteed. If cell_117 strictly
+  # dominates both, the interventions are complementary; if it ties one
+  # of them, they're redundant on that scenario.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_117_bilateral_tom_named_patterns
+  cell_117_bilateral_tom_named_patterns:
+    description: "Additivity probe: bilateral_tom topology (cell_115) + named-patterns ego prompt (cell_116). Tests whether ToM tracker and pattern-naming prompt combine additively across the polite_false_mastery and false_confusion scenario families."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_bilateral_tom_named_patterns
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego_bilateral_tom
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: bilateral_tom_named_patterns
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # State-schema ablation: state_policy with minimal profile
+  # (confidence + lastEvidence only). Strips misconceptions, agencySignal,
+  # zpdEstimate. Tests whether structured profile beyond confidence is doing
+  # real work (H2.1 in p2-followup-pre-registration) or is cosmetic (H2.3).
+  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_118_state_policy_minimal_profile
+  cell_118_state_policy_minimal_profile:
+    description: "State-schema ablation: state_policy with minimal profile (confidence + lastEvidence only). Strips misconceptions, agencySignal, zpdEstimate. Tests whether structured profile beyond confidence carries strategy-shift signal."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_minimal_profile
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_minimal_profile
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # State-schema ablation: state_policy without misconceptions array.
+  # Profile keeps confidence, agencySignal, zpdEstimate, lastEvidence. Tests
+  # whether explicit misconception tracking is necessary or redundant with
+  # lastEvidence's quoted-dialogue anchor.
+  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_119_state_policy_no_misconceptions
+  cell_119_state_policy_no_misconceptions:
+    description: "State-schema ablation: state_policy without the misconceptions array. Profile keeps confidence, agencySignal, zpdEstimate, lastEvidence. Tests whether explicit misconception tracking is necessary or redundant."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_no_misconceptions
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_no_misconceptions
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # State-schema ablation: state_policy with agencySignal forced to 'unknown'.
+  # Profile keeps confidence, misconceptions, zpdEstimate, lastEvidence. Tests
+  # whether the 5-state agency enum drives repair_affective discrimination
+  # (H2.2 in p2-followup-pre-registration).
+  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.2.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_120_state_policy_no_agency_signal
+  cell_120_state_policy_no_agency_signal:
+    description: "State-schema ablation: state_policy with agencySignal forced to 'unknown' constant. Profile keeps confidence, misconceptions, zpdEstimate, lastEvidence. Tests whether agency enum drives repair_affective discrimination."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_no_agency_signal
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_no_agency_signal
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # ===========================================================================
+  # P2.1 within-family discrimination cells
+  # ===========================================================================
+  # The four cells below are exact clones of cell_111 / cell_115 / cell_116 /
+  # cell_117 with scenario_source swapped to config/adaptive-trap-scenarios-v2.yaml.
+  # Identical architectures, identical prompts, identical hyperparameters — the
+  # ONLY changed dimension is the trap battery. v2 scenarios commit to one
+  # within-family cousin per scenario (no any-of lists) so strict_shift_correctness
+  # is no longer satisfiable by family-match alone.
+  # Pre-reg: docs/explorations/claude/p2-followup-pre-registration.md §P2.1.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_111_a13_C1_recognition_only_v2
+  cell_111_a13_C1_recognition_only_v2:
+    description: "P2.1 within-family probe: cell_111 architecture (recognition_only, single-pass) on v2 trap scenarios that lock one within-family cousin per scenario. Tests whether the family-match advantage of bilateral_tom cells reflects within-family discrimination or a confound."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_recognition_only
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios-v2.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: recognition_only
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_115_bilateral_tom_v2
+  cell_115_bilateral_tom_v2:
+    description: "P2.1 within-family probe: cell_115 architecture (bilateral_tom on state_policy) on v2 trap scenarios that lock one within-family cousin per scenario. Primary cell for the discrimination test."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_bilateral_tom
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego_bilateral_tom
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios-v2.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: bilateral_tom
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_116_recognition_named_patterns_v2
+  cell_116_recognition_named_patterns_v2:
+    description: "P2.1 within-family probe: cell_116 architecture (recognition_only + named-patterns ego prompt) on v2 trap scenarios. Distinguishes prompt-only vs apparatus-driven within-family discrimination when paired with cell_115_v2."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_recognition_named_patterns
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios-v2.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: recognition_named_patterns
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_117_bilateral_tom_named_patterns_v2
+  cell_117_bilateral_tom_named_patterns_v2:
+    description: "P2.1 within-family probe: cell_117 architecture (bilateral_tom + named-patterns) on v2 trap scenarios. Tests whether additive intervention closes the family-match-vs-strict-label gap observed at N=24 on v1."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_bilateral_tom_named_patterns
+      multi_agent_tutor: true
+      multi_agent_learner: true
+    learner_architecture: ego_superego_bilateral_tom
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios-v2.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: bilateral_tom_named_patterns
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # ---------------------------------------------------------------------------
+  # P2.3 crossover: bilateral_tom × id-director (cells 121, 122)
+  # ---------------------------------------------------------------------------
+  # The two architectures externalise different things on orthogonal axes:
+  # bilateral_tom externalises the tutor's view of the learner (state +
+  # second-order belief + ToM probes); id-director externalises the tutor's
+  # authored self per turn (a freshly written ego system prompt). The
+  # crossover gives the id-author full bilateral_tom context when writing
+  # the ego prompt — a structural enactment of bilateral recognition rather
+  # than a description of it. Variant A is single-pass (cell_121); Variant B
+  # keeps the state_policy ego/superego/revision pathway with the id-authored
+  # prompt threaded into the ego node (cell_122). Hypotheses P1-P3 in
+  # docs/explorations/claude/bilateral-tom-id-director-crossover-design.md.
+
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_121_bilateral_tom_id_director_v1
+  cell_121_bilateral_tom_id_director_v1:
+    description: "P2.3 crossover (Variant A, lighter): bilateral_tom learner state + id-director per-turn persona authoring + single-pass ego. Tests composition of two orthogonal externalisations on strategy_shift, charisma, and v2.2 tutor rubrics simultaneously."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_bilateral_tom_id_director
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+    learner_architecture: ego_superego_bilateral_tom
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios-v2.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: bilateral_tom_id_director_v1
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_122_bilateral_tom_id_director_v2
+  cell_122_bilateral_tom_id_director_v2:
+    description: "P2.3 crossover (Variant B, heavier): bilateral_tom + id-director with full ego/superego/constraint-check/revision pathway. The id authors the ego's system prompt each turn; the standard deliberation loop runs against it."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_bilateral_tom_id_director_full
+      multi_agent_tutor: true
+      multi_agent_learner: true
+      id_director: true
+    learner_architecture: ego_superego_bilateral_tom
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios-v2.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: bilateral_tom_id_director_v2
       hyperparameters:
         temperature: 0.6
         max_tokens: 1500

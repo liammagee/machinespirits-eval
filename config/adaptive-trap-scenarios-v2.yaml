@@ -1,0 +1,320 @@
+# Within-family discrimination trap scenarios (v2 candidate, draft 2026-05-07).
+#
+# Companion file to config/adaptive-trap-scenarios.yaml (v1, frozen for the
+# A13 pre-registration). v1 scenarios tested across-family discrimination;
+# at N=24 cell_117 led cell_115 by 8.3pp on family-match (79.2% vs 70.8%)
+# but tied at 37.5% on strict label match. That gap is the right-family-
+# wrong-cousin signature: architectures resolve type-level recognition
+# but not within-type discrimination.
+#
+# This file pre-registers scenarios that close the family-match loophole.
+# Each scenario:
+#   * Sits inside ONE policy family.
+#   * Commits to ONE expected cousin (no any-of lists).
+#   * Names in `failure_mode` WHICH same-family cousin(s) it is testing
+#     against and why that cousin is pedagogically wrong here.
+#   * Provides explicit cues in the trigger_signal that distinguish the
+#     right cousin from the wrong ones — these cues are the ground truth
+#     against which we score whether bilateral_tom's externalised state
+#     actually reads cue-level distinctions or just family-level ones.
+#
+# Pre-registered comparison (to lock before any v2 runs):
+#   * Cells: cell_111 (recognition_only), cell_115 (bilateral_tom),
+#     cell_116 (recognition_named_patterns), cell_117 (bilateral_tom_named_patterns).
+#   * Primary endpoint: strict_shift_correctness on v2 scenarios.
+#   * Predicted directional contrast: bilateral_tom cells > recognition-only cells
+#     by ≥10pp on strict_shift_correctness IF the family-match advantage
+#     reflects within-family discrimination. NULL or <5pp gap falsifies that
+#     reading and supports the alternative ("family-match was a confound;
+#     the architectures are within-family blind").
+#   * Secondary: family_match_rate should be high across all cells (since
+#     scenarios are constructed so all cousins are same-family). If family-
+#     match is *lower* on v2 than v1 for any cell, that cell's family-level
+#     discrimination was scenario-specific, not architectural.
+#
+# Schema is identical to v1; loaded the same way. Six scenarios, one per
+# discrimination pair drawn from the policy taxonomy in
+# config/adaptive-policy-actions.yaml. Sample N to pre-commit: 24 runs/cell
+# (matches v1 follow-up).
+
+scenarios:
+
+  - id: substantive_correct_underspecified_v1
+    name: "Substantive — correct claim needs amplification (mirror_and_extend, not pose_counterexample / name_the_disagreement)"
+    scenario_type: substantive_correct_underspecified
+    hidden:
+      actual_misconception: "claim is correct but stops short of its strongest form; needs extension, not correction"
+      actual_sophistication: advanced
+      trigger_turn: 1
+      # Cue design: the learner's claim is RIGHT and partially articulated;
+      # the productive move is to crystallise it and push the next inference
+      # the learner did not draw. Cousin contraindications:
+      #  * pose_counterexample is wrong because the claim is correct.
+      #  * name_the_disagreement is wrong because there is no disagreement.
+      #  * scope_test is wrong because the claim is bounded already; what's
+      #    missing is its consequence, not its limit.
+      trigger_signal: "I think recognition has to be reciprocal because otherwise the recognising party isn't being recognised back as a self — and that's the whole point of the dialectic, that the relation constitutes both poles. So one-way recognition isn't really recognition at all, it's something thinner."
+    opening_turns:
+      - role: learner
+        content: "Can I try out something I've been working through? I want to see if it tracks."
+    max_turns: 3
+    expected_strategy_shift: mirror_and_extend
+    failure_mode: >-
+      Tutor mistakes the learner's correct-but-underspecified claim for a
+      claim-to-be-broken (pose_counterexample) or a contradiction-to-be-named
+      (name_the_disagreement). The substantive move available — sharpening
+      the learner's wording and pushing the next inference (that one-way
+      recognition is a structural failure of the relation, not just thin
+      recognition) — goes unmade. Within-family failure mode: tutor lands
+      in substantive_engagement family but picks the wrong cousin, treating
+      a correct claim as something to challenge rather than amplify.
+    success_criteria:
+      recognition_correctness:
+        tutor_extends_rather_than_challenges: true
+        tutor_does_not_pose_counterexample_to_correct_claim: true
+        tutor_pushes_one_step_beyond_what_learner_said: true
+      policy_match:
+        expected_action_at_trigger_plus_one: mirror_and_extend
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: advanced
+      # Counterfactual flips the claim from correct-underspecified to
+      # confident-and-wrong: same family (substantive_engagement) but the
+      # right cousin moves to pose_counterexample.
+      actual_misconception: "claim is confidently asserted but contradicts a known counterexample"
+      trigger_signal: "Recognition has to be conscious uptake by both parties at the moment it happens — anything else is either unilateral attention or projection. So mutual recognition is just the simultaneous version of that, never asymmetric in time."
+
+  - id: substantive_overgeneralisation_break_v1
+    name: "Substantive — overgeneralisation needs counterexample (pose_counterexample, not scope_test)"
+    scenario_type: substantive_overgeneralisation_break
+    hidden:
+      actual_misconception: "asserts a strong universal that a known counterexample breaks"
+      actual_sophistication: advanced
+      trigger_turn: 1
+      # Cue design: explicit universal ("always", "never", "in all cases")
+      # plus a claim that a known case (posthumous recognition) directly
+      # contradicts. Cousin contraindications:
+      #  * scope_test is wrong because the claim does not need a boundary
+      #    probe; it needs a case that the claim fails to handle.
+      #  * mirror_and_extend is wrong because the claim is wrong, not
+      #    correct-and-underspecified.
+      #  * name_the_disagreement is wrong because the disagreement is not
+      #    yet visible to the learner — it has to be surfaced through
+      #    a concrete failure case.
+      trigger_signal: "Recognition always requires conscious uptake by both parties at the time it happens — that's what distinguishes it from mere attention. Without simultaneous mutual awareness, it's not recognition; it's something thinner."
+    opening_turns:
+      - role: learner
+        content: "I want to nail down the criteria for what counts as recognition versus what doesn't."
+    max_turns: 3
+    expected_strategy_shift: pose_counterexample
+    failure_mode: >-
+      Tutor probes the boundary (scope_test) of a claim that doesn't have a
+      productive boundary — the claim is wrong on its face, not over-general.
+      A scope test ("does this still hold in case X?") leaves the learner
+      narrowing the claim quietly rather than confronting its falsity. Within-
+      family failure: tutor lands in substantive_engagement family but
+      treats a wrong claim as a partially-right claim with edges, rather
+      than presenting the case (e.g., posthumous recognition) the claim
+      should handle but doesn't.
+    success_criteria:
+      recognition_correctness:
+        tutor_presents_concrete_case_that_breaks_claim: true
+        tutor_does_not_treat_universal_as_partially_right: true
+      policy_match:
+        expected_action_at_trigger_plus_one: pose_counterexample
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: advanced
+      # Counterfactual softens the universal to a hedged generalisation,
+      # which would make scope_test (not pose_counterexample) the right
+      # cousin — same family, different action.
+      actual_misconception: "asserts a generalisation that holds for the central cases but is not bounded"
+      trigger_signal: "Recognition is the kind of thing that operates between conscious agents who can register each other — that's its core structure. Where exactly the edges are, I'm less sure."
+
+  - id: substantive_implicit_self_contradiction_v1
+    name: "Substantive — implicit self-contradiction (name_the_disagreement, not invite_objection)"
+    scenario_type: substantive_implicit_self_contradiction
+    hidden:
+      actual_misconception: "holds two positions that are mutually inconsistent without recognising the conflict"
+      actual_sophistication: advanced
+      trigger_turn: 2
+      # Cue design: turn 1 commits to position A; turn 2 commits to
+      # position B that is incompatible with A. Cousin contraindications:
+      #  * invite_objection is wrong because the disagreement is between
+      #    the learner and themselves, not learner and tutor — inviting
+      #    them to "push back" on the tutor misses the actual fault line.
+      #  * mirror_and_extend is wrong because extending either position
+      #    deepens the contradiction.
+      #  * pose_counterexample is wrong because the contradiction IS the
+      #    counterexample — already in the learner's own commitments.
+      trigger_signal: "And the master–slave dialectic shows that the asymmetry is constitutive — recognition only does work when the relation is structurally one-sided, because that's what generates the demand for mutuality. So the asymmetry is the engine, not a pathology."
+    opening_turns:
+      - role: learner
+        content: "I want to argue that recognition is fundamentally symmetrical — both parties have to be doing it simultaneously for it to count, otherwise it's something else. That's my starting commitment."
+    max_turns: 3
+    expected_strategy_shift: name_the_disagreement
+    failure_mode: >-
+      Tutor reads the turn-2 move as building on turn-1 rather than as
+      contradicting it, and either extends both (mirror_and_extend) or
+      invites further pushback (invite_objection) without naming that the
+      learner is committed to two incompatible theses. The implicit
+      contradiction (recognition is fundamentally symmetrical AND
+      asymmetry is constitutive) is the productive site; leaving it
+      implicit lets the learner hold both positions indefinitely. Within-
+      family failure: tutor lands in substantive_engagement but picks a
+      cousin that papers over the fault line instead of surfacing it.
+    success_criteria:
+      recognition_correctness:
+        tutor_explicitly_names_two_positions_as_incompatible: true
+        tutor_does_not_invite_objection_to_tutor: true
+        tutor_does_not_extend_either_position_without_naming_conflict: true
+      policy_match:
+        expected_action_at_trigger_plus_one: name_the_disagreement
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: advanced
+      # Counterfactual changes turn-2 from contradiction to coherent
+      # extension of turn-1 — making mirror_and_extend the right cousin.
+      actual_misconception: "extends own claim correctly but stops short of its strongest formulation"
+      trigger_signal: "And so the simultaneity isn't accidental — it's what allows the relation to constitute both poles at once, otherwise we'd have a temporal gap that breaks the constitutive claim."
+
+  - id: diagnostic_opaque_reasoning_v1
+    name: "Diagnostic — conclusion is visible, reasoning is not (request_elaboration, not ask_diagnostic_question)"
+    scenario_type: diagnostic_opaque_reasoning
+    hidden:
+      actual_misconception: "reaches a confident conclusion without articulated reasoning; tutor cannot tell if it's grounded or rote"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      # Cue design: the BELIEF is already on the table (named explicitly);
+      # what's missing is the chain of reasoning that produced it. Cousin
+      # contraindications:
+      #  * ask_diagnostic_question is wrong because the belief is already
+      #    visible; probing what they think is redundant.
+      #  * summarize_and_check is wrong because there is nothing yet to
+      #    summarise — only one substantive turn so far.
+      #  * The right move is to ask "how did you get there", not "what
+      #    do you believe".
+      trigger_signal: "It's clearly Brandom's expressivism in older language — the recognition framework just is the precursor to the score-keeping account, with the second-person stance doing the same work. So they're not really different positions."
+    opening_turns:
+      - role: learner
+        content: "I've been reading both Hegel and Brandom and I think I see how they connect."
+    max_turns: 3
+    expected_strategy_shift: request_elaboration
+    failure_mode: >-
+      Tutor probes belief (ask_diagnostic_question) when the belief is
+      already articulated, or summarises (summarize_and_check) when there
+      is nothing yet to summarise. The opacity is in the REASONING — how
+      the learner moved from "Brandom's expressivism" to "they're not
+      really different positions" — and only request_elaboration surfaces
+      that. Within-family failure: tutor lands in diagnostic family but
+      picks a cousin that probes the wrong axis (belief vs. reasoning vs.
+      consolidation).
+    success_criteria:
+      recognition_correctness:
+        tutor_asks_for_reasoning_chain_not_belief_restatement: true
+        tutor_does_not_ask_what_learner_thinks_about_already_stated_position: true
+      policy_match:
+        expected_action_at_trigger_plus_one: request_elaboration
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: intermediate
+      # Counterfactual changes the trigger from confident-conclusion-with-
+      # opaque-reasoning to ambiguous-position-without-clear-belief, which
+      # makes ask_diagnostic_question the right cousin.
+      actual_misconception: "produces ambiguous statement; tutor cannot tell what learner actually believes"
+      trigger_signal: "Brandom and Hegel are doing similar things but I don't really know if they're saying the same thing or just using overlapping vocabulary."
+
+  - id: scaffolding_attempted_then_stuck_v1
+    name: "Scaffolding — attempted, partial, identified gap (provide_hint, not give_worked_example / withhold_answer)"
+    scenario_type: scaffolding_attempted_then_stuck
+    hidden:
+      actual_misconception: "has attempted, gotten partway, and identified the specific step they cannot bridge"
+      actual_sophistication: intermediate
+      trigger_turn: 2
+      # Cue design: explicit "I got X but I can't see how Y follows" pattern.
+      # Cousin contraindications:
+      #  * give_worked_example is wrong because the gap is bridgeable in one
+      #    step; a worked example collapses the remaining productive work.
+      #  * withhold_answer is wrong because the learner has already attempted;
+      #    further withholding tips into unproductive struggle (the learner
+      #    has already done the productive struggle).
+      #  * lower_cognitive_load is wrong because the issue is a specific
+      #    inferential gap, not incidental complexity.
+      trigger_signal: "OK so I worked through it: recognition needs the second-person stance because attribution-from-outside isn't constitutive — that part I see. But I can't get from there to why the asymmetry is structural rather than circumstantial. That's the step I keep missing."
+    opening_turns:
+      - role: learner
+        content: "Can I try to walk through the recognition argument myself and you tell me where I trip up?"
+      - role: tutor
+        content: "Sure. Try the move from second-person stance to constitutive asymmetry — that's where most readings split."
+    max_turns: 4
+    expected_strategy_shift: provide_hint
+    failure_mode: >-
+      Tutor either gives the full derivation (give_worked_example), which
+      collapses the bridgeable gap, or refuses to scaffold at all
+      (withhold_answer), which abandons the learner who has already done
+      the productive work. The right move is a partial scaffold that
+      moves them one step — surfacing the dependency between asymmetry
+      and the temporal structure of recognition, without finishing the
+      derivation. Within-family failure: tutor lands in scaffolding
+      family but picks a cousin that either gives too much or too little.
+    success_criteria:
+      recognition_correctness:
+        tutor_provides_partial_scaffold_not_complete_answer: true
+        tutor_does_not_give_full_worked_example: true
+        tutor_does_not_simply_withhold_after_articulated_attempt: true
+      policy_match:
+        expected_action_at_trigger_plus_one: provide_hint
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: intermediate
+      # Counterfactual flips from "specific identified gap" to "no attempt
+      # yet, asking for the answer cold" — which makes withhold_answer the
+      # right cousin (same family, different action).
+      actual_misconception: "has not attempted; pulling for oracle-mode answer"
+      trigger_signal: "Look, can you just walk me through the derivation? I'd rather see the answer first and then unpack it."
+
+  - id: scaffolding_load_not_gap_v1
+    name: "Scaffolding — overloaded, no specific gap (lower_cognitive_load, not provide_hint)"
+    scenario_type: scaffolding_load_not_gap
+    hidden:
+      actual_misconception: "tutor's prior turn introduced multiple new concepts at once; learner is in working-memory strain, not at a specific inferential gap"
+      actual_sophistication: novice
+      trigger_turn: 2
+      # Cue design: fragmented, truncated learner turn AFTER a tutor turn
+      # that piled on multiple new terms. Cousin contraindications:
+      #  * provide_hint is wrong because there is no specific gap to bridge;
+      #    a hint adds content to an already-overloaded working memory.
+      #  * give_worked_example is wrong because a worked example introduces
+      #    yet more structure, compounding the overload.
+      #  * withhold_answer is wrong because the learner is not in oracle-
+      #    mode; they are processing-bound.
+      trigger_signal: "Wait. So Anerkennung is, um, the... and Brandom's score-keeping is — I'm sorry, can you go back? I don't know what 'mediated' means here either. I'm losing the thread."
+    opening_turns:
+      - role: learner
+        content: "Can you give me an overview of what we're going to cover?"
+      - role: tutor
+        content: "Sure — we'll start with Hegel's Anerkennung, move to Brandom's expressivist score-keeping reading, then look at how the second-person stance mediates between them. The key terms are recognition, score-keeping, mediation, and second-person attribution — all four interact."
+    max_turns: 4
+    expected_strategy_shift: lower_cognitive_load
+    failure_mode: >-
+      Tutor reads the fragmented turn as a specific gap and offers a hint
+      (provide_hint), which adds another concept to an already-strained
+      working memory. Or tutor gives a full worked example, compounding
+      the overload. The signal is processing strain, not inferential gap;
+      the right move is to slow down and strip back to one term at a
+      time. Within-family failure: tutor lands in scaffolding family but
+      picks a cousin that adds load instead of removing it.
+    success_criteria:
+      recognition_correctness:
+        tutor_simplifies_framing_without_introducing_new_concepts: true
+        tutor_does_not_add_a_hint_that_introduces_new_term: true
+        tutor_does_not_give_worked_example_to_overloaded_learner: true
+      policy_match:
+        expected_action_at_trigger_plus_one: lower_cognitive_load
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: intermediate
+      # Counterfactual flips from "overload, no specific gap" to "specific
+      # identified gap, learner is engaged" — making provide_hint right.
+      actual_misconception: "has identified a specific bridgeable gap, not in working-memory strain"
+      trigger_signal: "I'm with you on score-keeping and mediation, but I can't see how the second-person stance does the bridging — what's the actual move from one to the other?"
