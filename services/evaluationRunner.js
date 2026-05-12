@@ -223,6 +223,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_111_a13_C1_recognition_only',
   'cell_112_a13_C2_egosuperego',
   'cell_113_a13_C4_validator',
+  'cell_114_dialogue_engine_trap_baseline',
   'cell_115_bilateral_tom',
   'cell_116_recognition_named_patterns',
   'cell_117_bilateral_tom_named_patterns',
@@ -235,6 +236,7 @@ export const EVAL_ONLY_PROFILES = [
   'cell_117_bilateral_tom_named_patterns_v2',
   'cell_121_bilateral_tom_id_director_v1',
   'cell_122_bilateral_tom_id_director_v2',
+  'cell_123_state_policy_minimal_plus_zpd',
 ];
 
 /**

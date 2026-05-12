@@ -67,26 +67,26 @@ Updated prediction for resume: if `agencySignal` alone is the destabilising fiel
 ### Limits of this analysis
 
 - N=23 for cell_110 vs N=32 for the others; cell_110 confidence intervals are wider.
-- Single judge (codex CLI / GPT-5); no inter-rater check yet. Variance estimates assume the grader is calibrated.
+- ~~Single judge (codex CLI / GPT-5); no inter-rater check yet.~~ **Inter-rater check done 2026-05-11** — all 87 rows re-graded by Gemini (same prompt builder `scripts/lib/adaptiveGraderPrompt.js`, same rubric, via `scripts/rejudge-adaptive-inter-rater.js`). The graded *overall* cell ordering survives (cell_118 > cell_119 > cell_110 under both judges); absolute-score agreement is only fair (pooled QWκ=.35, Pearson r=.44, exact 43%, within-1 91%, Gemini ~0.56pt more lenient); the `strategy_execution` left-tail story does **not** survive (Gemini ceiling effect — cell_119's 11/32 ≤3 collapses to 2/32). Folded into `paper-full-2.0.md` §5.12.4 (v3.0.66). Report: `exports/adaptive-inter-rater-2026-05-11.md`.
 - Grader version `1.0`; no rubric revision after seeing the first ~10 rows. If a re-grade is wanted with a tweaked rubric, increment `GRADER_VERSION` in the script and use `--overwrite`.
 
 Raw per-row scores are in `evaluation_results` columns `adaptive_trigger_recognition`, `adaptive_strategy_execution`, `adaptive_strategy_quality`, `adaptive_pedagogical_coherence`, with reasoning in `adaptive_grader_reasoning` (JSON). Batch log: `/tmp/grade-adaptive-logs/batch1.log`.
 
 ### Engineering vs noise — what's actually driving the result?
 
-Three competing explanations for the cell_118 > cell_110 finding. Listed roughly in the order I currently weight them (~55% real effect / ~25% engineering artefact / ~20% small-N noise).
+Three competing explanations for the cell_118 > cell_110 finding. Listed roughly in the order I currently weight them. **Original weights: ~55% real effect / ~25% engineering artefact / ~20% small-N noise. Updated 2026-05-11 after the inter-rater rejudge** — the graded *overall* ordering replicated under a second judge (Gemini), nudging the headline-ordering weights to roughly **~65% real / ~20% artefact / ~15% small-N**; but the `strategy_execution` left-tail sub-claim is now GPT-5-only (Gemini's ceiling effect can't resolve it), so confidence in *that specific mechanism story* is lower than it was.
 
 **Pointing toward "this is a real effect":**
 
 1. Direction consistent across binary and graded paths. Two independent measurement systems agree on cell_118 > cell_119 and cell_118 > cell_110. Harder to write off as sampling noise than a single-metric result.
-2. The execution-dim distribution shift is clean (not just a mean difference). cell_119's left tail (11/32 ≤3) vs cell_110's (1/23) is a categorical change in error mode — not the shape you'd expect from sampling noise alone.
+2. The execution-dim distribution shift is clean (not just a mean difference). cell_119's left tail (11/32 ≤3) vs cell_110's (1/23) is a categorical change in error mode — not the shape you'd expect from sampling noise alone. **(Caveat 2026-05-11: this distribution shift is GPT-5-only. The Gemini rejudge compresses almost everything to 4–5 and shows no such tail — cell_119's ≤3 count drops to 2/32. Either the tail is a GPT-5 idiosyncrasy or Gemini's ceiling effect can't see it; this data can't distinguish. The point above is correspondingly weaker.)**
 3. A priori plausible from LLM literature. Categorical structured context (named misconceptions, fixed-vocab agency tags) makes LLMs more rigid; prose context (lastEvidence) is the format they handle best.
 
 **Pointing toward "too much engineering" (most worrying):**
 
 1. **The graded rubric was written after the binary results were known.** Claude wrote `scripts/grade-adaptive-dialogue.js` having already seen cell_118's binary lead. The four dimensions were chosen to be orthogonal to the binary signal, but the rubric is not blind — so the graded path does not fully replicate the result independently.
 2. **`expected_strategy_shift` annotations are experimenter-defined.** They encode our intuition about correct moves, presumably shaped by inspecting cell_110 dialogues. The binary metric is implicitly calibrated to the failure modes we saw in cell_110. Minimal-state cells could win partly because they produce different errors than the ones we calibrated against.
-3. **Single judge for the graded path; no inter-rater reliability check.** GPT-5 has preferences (brevity, decisive tone) that may align with what the minimal profile produces independently of teaching quality.
+3. ~~**Single judge for the graded path; no inter-rater reliability check.**~~ **Partly addressed 2026-05-11.** Gemini second-judge rejudge of all 87 rows: graded *overall* cell ordering replicates (cell_118 > cell_119 > cell_110 under both judges), so the headline isn't a single-judge artefact. But agreement is only fair (pooled QWκ=.35), so absolute graded *levels* aren't reliable; and GPT-5's `strategy_execution` left-tail on cell_119 doesn't replicate (Gemini ceiling effect). Still unaddressed: the rubric was non-blind for *both* judges (same rubric) — point 1 above stands. GPT-5 may still have preferences (brevity, decisive tone) that align with what the minimal profile produces — but if so, an independent vendor's judge with very different idiosyncrasies shares the bias on the *ordering*, which is the relevant claim.
 
 **Pointing toward "small N":**
 
@@ -96,13 +96,13 @@ Three competing explanations for the cell_118 > cell_110 finding. Listed roughly
 
 **Cheapest checks that move the needle:**
 
-| Check | Wallclock | Addresses |
-|---|---|---|
-| Rejudge the existing 87 rows with a second judge (Claude or Gemini via CLI bridge) | ~30 min | Engineering-artefact (single-judge); rubric-not-blind |
-| One more N=32 cell_110 run under fresh model state | ~60 min | Small-N for the weakest leg |
-| cell_120 (already in plan) | ~60 min | Field-isolation mechanism story |
+| Check | Wallclock | Addresses | Status |
+|---|---|---|---|
+| Rejudge the existing 87 rows with a second judge (Gemini via CLI bridge) | ~25 min actual | Engineering-artefact (single-judge) | **DONE 2026-05-11** — `exports/adaptive-inter-rater-2026-05-11.md`. Qualified pass: graded *overall* ordering replicates; agreement fair (QWκ=.35); execution-left-tail sub-claim GPT-5-only |
+| One more N=32 cell_110 run under fresh model state | ~60 min | Small-N for the weakest leg | not done |
+| cell_120 (already in plan) | ~60 min | Field-isolation mechanism story | parked |
 
-Running all three is the strongest validation; running just the rejudge is the highest-value single addition because it directly attacks the rubric-not-blind concern at near-zero cost.
+The rejudge (done 2026-05-11) was the highest-value single addition and it landed a **qualified pass** — the comparative ordering replicated under an independent vendor's judge, the execution-tail sub-claim did not, and absolute-score agreement is only fair. It does *not* close the rubric-not-blind concern (same rubric for both judges). Running the other two would still be the strongest validation of the small-N and field-isolation questions respectively.
 
 ---
 
@@ -113,7 +113,7 @@ Stepping back from cell-by-cell results to the broader architectural question. S
 ### Defensible findings
 
 1. **Bilateral ToM machinery adds nothing measurable.** P2.1 was a clean null on N=24 across four v2 cells. The bilateral elaboration over recognition_only didn't show up in `strategy_shift_correctness`. Real finding — negative, but real.
-2. **Within the state machine, less learner state is more.** P2.2 shows cell_118 (minimal) beats cell_110 (full) on both binary and graded scoring, with the caveats in the engineering-vs-noise section above. Within the architectural family, simpler wins.
+2. **Within the state machine, less learner state is more.** P2.2 shows cell_118 (minimal) beats cell_110 (full) on both binary and graded scoring — and the graded *overall* ordering (cell_118 > cell_119 > cell_110) replicates under an independent second judge (Gemini, 2026-05-11), so it is not a single-judge artefact. Caveats in the engineering-vs-noise section above; in particular the `strategy_execution`-left-tail sub-story is GPT-5-only and the cross-judge absolute-score agreement is only fair. Within the architectural family, simpler wins.
 3. **The trap-scenario methodology itself works.** Externally-defined `expected_strategy_shift` + counterfactual replay + binary correctness gave us a measurable phenomenon to study. That methodology is a contribution, distinct from the architecture it was used to test.
 
 ### What is **not** established
@@ -140,7 +140,7 @@ The exact sections to touch in `paper-full-2.0.md` are TBD — fold these as a c
 ### Re-prioritisation for resume
 
 Worth doing:
-- **Inter-rater rejudge** (~30 min, near-zero $). Best ROI move — directly attacks the strongest engineering-artefact concern (single-judge, non-blinded rubric).
+- ~~**Inter-rater rejudge**~~ **DONE 2026-05-11.** Gemini second judge, all 87 rows. Result: graded *overall* ordering replicates (cell_118 > cell_119 > cell_110); agreement fair (pooled QWκ=.35, r=.44); execution-left-tail sub-claim GPT-5-only; Gemini ~0.56pt more lenient. Folded into `paper-full-2.0.md` §5.12.4 (v3.0.66). Report: `exports/adaptive-inter-rater-2026-05-11.md`. Does *not* close the rubric-not-blind concern.
 - **cell_120** (~60 min). Closes the field-isolation mechanism question. Defensible as the last mechanism step.
 - **Re-run cell_106 (id-director) at N=32 on the 6 trap scenarios** (~60 min, no new engineering — `scripts/run-id-director-trap-pilot.js` already exists). Gives us a real architecture-vs-architecture comparison data point (LangGraph state machine vs id-director) at adequate N. The existing N=6 is too thin to anchor any cross-architecture claim.
 - **Build the dialogue-engine-on-trap-scenarios adapter and run it.** See "Closing the dialogue-engine gap" below for the full plan. This is the single most consequential addition for the paper's central claim about adaptive responsiveness, since without it we can only compare LangGraph variants to each other.
@@ -271,7 +271,7 @@ Each sub-subsection's lede applies the §5.12.6 three-tier reporting convention.
 
 **§6.8.5 P2.1 bilateral ToM null.** Re-prosecute the result from `p21-N24-results.md`: across four v2 cells testing the bilateral ToM elaboration over recognition_only at N=24 each, `strategy_shift_correctness` shows no measurable lift. This was pre-registered (Pre-reg P2 lines on H1.1); the null is confirmatory and reported as such. One short table with the four cells' shift% and 95% CIs.
 
-**§6.8.6 P2.2 state-richness reversal.** This is the longest sub-subsection. Apply §5.12.6 *re-classified exploratory* (the pre-reg's H2.1 dose-response prediction `cell_110 ≥ cell_119 ≥ cell_120 ≥ cell_118` is reversed in observation). Three tables: (a) per-cell binary shift% (cell_110 47.8 → cell_119 53.1 → cell_118 68.8); (b) per-cell graded 4-dim means with cell_119's left-tail-on-execution noted; (c) within-experiment same-day comparison (cell_118 vs cell_119 +15.7pp, artefact-free). Discuss the engineering-vs-noise question from the parking note (~55% real effect / ~25% engineering artefact / ~20% small-N noise) but trimmed to one paragraph rather than the full breakdown in the parking note. Defer the cell_120 disambiguator question to whenever cell_120 closes; if it doesn't close before publication, the section reports cells 110/118/119 only with the cell_120 dependency explicit.
+**§6.8.6 P2.2 state-richness reversal.** This is the longest sub-subsection. Apply §5.12.6 *re-classified exploratory* (the pre-reg's H2.1 dose-response prediction `cell_110 ≥ cell_119 ≥ cell_120 ≥ cell_118` is reversed in observation). Three tables: (a) per-cell binary shift% (cell_110 47.8 → cell_119 53.1 → cell_118 68.8); (b) per-cell graded 4-dim means with cell_119's left-tail-on-execution noted **as a GPT-5-only observation** (the §5.12.4 Gemini calibration does not reproduce it — ceiling effect); (c) within-experiment same-day comparison (cell_118 vs cell_119 +15.7pp, artefact-free). Discuss the engineering-vs-noise question from the parking note (post-rejudge weights ~65/20/15 for the headline ordering, which replicated under a second judge per §5.12.4 limitation 2) but trimmed to one paragraph rather than the full breakdown in the parking note. State that the graded *overall* ordering is two-judge-robust while absolute graded levels (cross-judge QWκ ≈ .35) and the execution-tail sub-story are not. Defer the cell_120 disambiguator question to whenever cell_120 closes; if it doesn't close before publication, the section reports cells 110/118/119 only with the cell_120 dependency explicit.
 
 **§6.8.7 Cross-architecture comparison.** State plainly that the cross-architecture comparison is the most consequential open question for the §6.8 arc and that the current evidence is thin. One short table: cell_106 (id-director) N=6 on the 6 trap scenarios; cell_114 (dialogue-engine baseline) N=24 if it runs, else "outstanding". Two-paragraph treatment: paragraph one summarises what the existing data does and does not support; paragraph two states the §5.12.5 stimulus-suite divergence (trap vs suggestion scenarios) and why claims of the form "the state machine fixes Paper 1.0's null" are unsupported by the current evidence base.
 
@@ -291,7 +291,7 @@ If token-budgeted, the drafting order is: 1 first (independent), 2 next once cel
 ### Edits beyond §6.8 itself
 
 - **§6.3.9 forward pointer.** One sentence added at the end of §6.3.9 directing the reader to §6.8 for the heavier-intervention attempt and to §6.8.8 for whether that attempt reversed the §6.3.9 finding.
-- **§8 Limitations.** Add a new sub-subsection (~§8.9 or §8.10, after the existing id-director limitations) covering: (a) the within-LangGraph nature of A13's comparison; (b) the non-blind graded rubric; (c) the stimulus-suite divergence between adaptive and non-adaptive cells. All three already have §5.12.X descriptions; §8 needs the reader-facing acknowledgment that these constrain the strength of §6.8's claims.
+- **§8 Limitations.** Add a new sub-subsection (~§8.9 or §8.10, after the existing id-director limitations) covering: (a) the within-LangGraph nature of A13's comparison; (b) the non-blind graded rubric — note that single-judge *variance* is now bounded by the §5.12.4 Gemini calibration (graded *overall* ordering replicates), but rubric-not-blind is unaddressed (same rubric for both judges), cross-judge absolute agreement is only fair (QWκ ≈ .35), and the `strategy_execution` left-tail is GPT-5-only; (c) the stimulus-suite divergence between adaptive and non-adaptive cells. All three already have §5.12.X descriptions; §8 needs the reader-facing acknowledgment that these constrain the strength of §6.8's claims.
 - **§9 Conclusion.** One paragraph addition: position the §6.8 arc as a methodology-and-falsification result alongside the §6.7 id-director extension, both as architectural extensions whose mechanism-level commitments did not behave as designed but whose harness-level contributions are real.
 - **Abstract.** Probably one sentence near the existing abstract's architectural-extension treatment, summarising the adaptive-runner findings in the same compressed form §6.7's id-director extension already gets. Skip if the abstract is already near its target length.
 - **Reproducibility appendix.** Add the relevant run-ids (cell_110 May 5 baseline, cell_115/116/117 P2.1, cells 118/119 P2.2) and any pending-cell run-ids once they close.

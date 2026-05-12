@@ -74,6 +74,7 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   'state_policy_minimal_profile',
   'state_policy_no_misconceptions',
   'state_policy_no_agency_signal',
+  'state_policy_minimal_plus_zpd',
   'bilateral_tom',
   'bilateral_tom_named_patterns',
   // P2.3 crossover (cells 121, 122): bilateral_tom learner state feeds an
@@ -98,6 +99,11 @@ const PROFILE_PROJECTIONS = Object.freeze({
   state_policy_minimal_profile: ['confidence', 'lastEvidence'],
   state_policy_no_misconceptions: ['confidence', 'agencySignal', 'zpdEstimate', 'lastEvidence'],
   state_policy_no_agency_signal: ['confidence', 'misconceptions', 'zpdEstimate', 'lastEvidence'],
+  // Post-hoc P2.2 follow-up (cell_123): minimal profile + zpdEstimate only.
+  // Disentangles whether zpdEstimate alone re-introduces the ~50% strict_shift
+  // floor shared by cells 110/119/120, or whether profile field-count is the
+  // operative variable. See §6.8.6.
+  state_policy_minimal_plus_zpd: ['confidence', 'lastEvidence', 'zpdEstimate'],
 });
 
 function projectProfileForArchitecture(profile, architecture) {

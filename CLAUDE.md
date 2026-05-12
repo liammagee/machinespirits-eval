@@ -132,9 +132,10 @@ A cell's architecture is determined by these YAML fields:
 - Scored against `config/evaluation-rubric-charisma.yaml` (Weber-derived 8-dimension, v1.0, independent of v2.2 tutor rubric).
 - 101-104: charisma + register variants; 105-106: tuned (charisma vs pedagogy); 107-109: witness/exemplars variants.
 
-**Cells 110-113: Adaptive runner** (`runner: adaptive`, scenarios from `config/adaptive-trap-scenarios.yaml`)
-- 110: `cell_110_langgraph_adaptive` — LangGraph state-policy + counterfactual replay; bypasses tutor-core's dialogue engine. Implementation in `services/adaptiveTutor/`.
-- 111-113: A13 pre-registration conditions (C1 recognition_only, C2 egosuperego, C4 validator) — all use the same adaptive runner so `strategy_shift_correctness` is comparable across cells.
+**Cells 110-114: Trap-scenario suite** (scenarios from `config/adaptive-trap-scenarios.yaml`)
+- 110: `cell_110_langgraph_adaptive` — `runner: adaptive`; LangGraph state-policy + counterfactual replay; bypasses tutor-core's dialogue engine. Implementation in `services/adaptiveTutor/`.
+- 111-113: `runner: adaptive`; A13 pre-registration conditions (C1 recognition_only, C2 egosuperego, C4 validator) — all use the same adaptive runner so `strategy_shift_correctness` is comparable across cells.
+- 114: `cell_114_dialogue_engine_trap_baseline` — `runner: standard`; tutor-core's base single-agent ego (= `budget` profile, no superego) driven on the *same* v1 trap suite with the *same* trap-steered LLM learner (`learnerTurn` mechanism). Adapter: `scripts/run-dialogue-engine-trap-baseline.js`. Post-hoc exploratory cross-architecture floor — NOT in the A13 pre-registration. Result: §6.8.4.
 
 **Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90, 95-96, 101-109) have `superego: null`.
 
@@ -154,7 +155,7 @@ Cells with `runner: adaptive` in `tutor-agents.yaml` bypass `evaluationRunner.js
 - **Scenarios**: `config/adaptive-trap-scenarios.yaml` (NOT `suggestion-scenarios.yaml`)
 - **Mock vs real LLM**: `ADAPTIVE_TUTOR_LLM=mock` (default, deterministic — no paid API calls) or `ADAPTIVE_TUTOR_LLM=real` (uses normal provider env vars, e.g. `OPENROUTER_API_KEY`)
 - **Smoke scripts**: `scripts/run-adaptive-cell-smoke.js`, `scripts/run-adaptive-persistence-smoke.js`, `scripts/run-langgraph-smoke.js`
-- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4)
+- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4). NOTE cell_114 uses `runner: standard` (tutor-core dialogue engine) on the same trap suite — its own adapter script, not this runner.
 
 ### Id-Director Architecture (cells 101-109)
 

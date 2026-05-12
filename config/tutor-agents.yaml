@@ -5005,6 +5005,41 @@ profiles:
       counterfactual:
         enabled: true
 
+  # Cross-architecture baseline (post-hoc, NOT in the A13 pre-reg). Runs
+  # tutor-core's standard single-agent ego — prompt_type: base, no superego,
+  # no externalised learner profile, no constraint check, no counterfactual —
+  # on the SAME adaptive trap scenarios as cell_110/111/112, driven by a
+  # scripted-trap learner. The non-LangGraph analogue of cell_111: lets the
+  # LangGraph adaptive family be compared against a plain ego loop on both
+  # binary strategy_shift_correctness (analyze-strategy-shift.js) and the 4-dim
+  # graded rubric (grade-adaptive-dialogue.js). Model held equal to cell_110/111
+  # (claude-code:sonnet) so the only varying factor is the runner.
+  # NOT reachable via eval-cli (runner: standard but bespoke scenario shape) —
+  # run via: node scripts/run-dialogue-engine-trap-baseline.js --profile=cell_114_dialogue_engine_trap_baseline --runs=4
+  # Rationale: docs/explorations/claude/p22-p23-parking-note.md "Closing the dialogue-engine gap".
+  cell_114_dialogue_engine_trap_baseline:
+    description: "Cross-architecture baseline: tutor-core's standard single-agent ego (prompt_type base, no superego) on the adaptive trap scenarios with a scripted-trap learner — the non-LangGraph analogue of cell_111. Post-hoc, exploratory (not in the A13 pre-reg). Run via scripts/run-dialogue-engine-trap-baseline.js."
+    runner: standard
+    factors:
+      prompt_type: base
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: scripted_trap
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: claude-code
+      model: sonnet
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+    superego: null
+
   # P2 cell C5: bilateral theory of mind on top of cell_110's state_policy.
   # Adds (vs C3): paired natural-language + JSON hypothesizedLearnerState
   # (LBM pattern, full rewrite per turn), paired hypothesizedLearnerPerception
@@ -5214,6 +5249,44 @@ profiles:
       provider: claude-code
       model: sonnet
       architecture: state_policy_no_agency_signal
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # Post-hoc P2.2 follow-up (NOT pre-registered): state_policy with minimal
+  # profile + zpdEstimate (confidence, lastEvidence, zpdEstimate). The 4-cell
+  # P2.2 ladder (cells 110/120/119/118) showed cells 110/119/120 cluster at
+  # ~50% strict_shift while the 2-field minimal cell_118 jumps to ~69% — a step,
+  # not a monotone dose-response. zpdEstimate is the only field present in all
+  # three ~50% cells and absent from cell_118, so "zpdEstimate destabilises" is
+  # consistent with the data — but so is "field-count" and "any of
+  # {misconceptions, agencySignal, zpdEstimate}". cell_123 adds zpdEstimate
+  # alone back onto the minimal profile: if it drops to ~50%, zpdEstimate is the
+  # operative field; if it stays ~69%, zpdEstimate is innocent. Behaviourally an
+  # exact clone of cell_118 except for the one extra projected field (same graph
+  # topology, same counterfactual no-op, same hyperparameters). Result: §6.8.6.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_123_state_policy_minimal_plus_zpd
+  cell_123_state_policy_minimal_plus_zpd:
+    description: "Post-hoc P2.2 follow-up: state_policy with minimal profile + zpdEstimate (confidence, lastEvidence, zpdEstimate). Disentangles whether zpdEstimate alone re-introduces the ~50% strict_shift floor shared by cells 110/119/120, or whether profile field-count is the operative variable. Not pre-registered."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_minimal_plus_zpd
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_minimal_plus_zpd
       hyperparameters:
         temperature: 0.6
         max_tokens: 1500
