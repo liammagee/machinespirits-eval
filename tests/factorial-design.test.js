@@ -43,13 +43,22 @@ const learnerConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'learner-a
 // the cell-100 phase docs (docs/cell-100-*.md, esp. methods-note).
 const isIdDirectorCell = (profile) => profile?.factors?.id_director === true;
 
+// Cells with an explicit `runner:` field (cells 110-125: the LangGraph
+// adaptive runner and the dialogue-engine trap baselines) bypass the
+// factorial design entirely — different prompt-type namespace
+// (`adaptive_*`), no `ego:`/`superego:` blocks for the adaptive variants
+// (the model lives under `adaptive:`), and a `claude-code` provider for
+// the trap baselines. Their conventions live in CLAUDE.md ("Runner
+// Dispatch") and the adaptive smoke scripts, not here.
+const hasRunner = (profile) => Boolean(profile?.runner);
+
 // All cell profiles (cell_1 through cell_N)
 const cellNames = Object.keys(tutorConfig.profiles).filter((name) => /^cell_\d/.test(name));
 const cells = Object.fromEntries(cellNames.map((name) => [name, tutorConfig.profiles[name]]));
 
 // Cells subject to the factorial design's strict conventions
-// (excludes id-director cells; see comment above).
-const factorialCellNames = cellNames.filter((n) => !isIdDirectorCell(cells[n]));
+// (excludes id-director cells and runner-dispatched cells; see comments above).
+const factorialCellNames = cellNames.filter((n) => !isIdDirectorCell(cells[n]) && !hasRunner(cells[n]));
 const factorialCells = Object.fromEntries(factorialCellNames.map((name) => [name, cells[name]]));
 
 // Core 8 factorial cells (base + recognition)
@@ -99,7 +108,7 @@ describe('factorial design — config integrity', () => {
 
   it('each cell has a factors block with prompt_type, multi_agent_tutor, multi_agent_learner', () => {
     const requiredKeys = ['multi_agent_learner', 'multi_agent_tutor', 'prompt_type'];
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       assert.ok(profile.factors, `${name} missing factors block`);
       const keys = Object.keys(profile.factors).sort();
       for (const k of requiredKeys) {
@@ -269,13 +278,13 @@ describe('factorial design — prompt file assignment', () => {
 
 describe('factorial design — model consistency', () => {
   it('all cells use openrouter as ego provider', () => {
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       assert.strictEqual(profile.ego.provider, 'openrouter', `${name} ego provider`);
     }
   });
 
   it('multi-agent cells have a superego config; single-agent cells have superego: null', () => {
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       if (profile.factors.multi_agent_tutor) {
         assert.ok(profile.superego && typeof profile.superego === 'object', `${name} should have superego config`);
         assert.ok(profile.superego.provider, `${name} superego should have provider`);
@@ -315,7 +324,7 @@ describe('factorial design — model consistency', () => {
 
 describe('factorial design — learner architecture wiring', () => {
   it('each cell learner_architecture maps to a valid profile in learner-agents.yaml', () => {
-    for (const [name, profile] of Object.entries(cells)) {
+    for (const [name, profile] of Object.entries(factorialCells)) {
       const arch = profile.learner_architecture;
       assert.ok(arch, `${name} missing learner_architecture`);
       assert.ok(
@@ -326,7 +335,7 @@ describe('factorial design — learner architecture wiring', () => {
   });
 
   it('base+unified cells use "unified" learner architecture', () => {
-    const matching = cellNames.filter(
+    const matching = factorialCellNames.filter(
       (n) => cells[n].factors.prompt_type === 'base' && !cells[n].factors.multi_agent_learner,
     );
     for (const name of matching) {
@@ -335,7 +344,7 @@ describe('factorial design — learner architecture wiring', () => {
   });
 
   it('base+psycho cells use "ego_superego" learner architecture', () => {
-    const matching = cellNames.filter(
+    const matching = factorialCellNames.filter(
       (n) => cells[n].factors.prompt_type === 'base' && cells[n].factors.multi_agent_learner,
     );
     for (const name of matching) {
@@ -344,7 +353,7 @@ describe('factorial design — learner architecture wiring', () => {
   });
 
   it('recognition+unified cells use "unified_recognition" learner architecture', () => {
-    const matching = cellNames.filter(
+    const matching = factorialCellNames.filter(
       (n) => cells[n].factors.prompt_type === 'recognition' && !cells[n].factors.multi_agent_learner,
     );
     for (const name of matching) {
@@ -353,7 +362,7 @@ describe('factorial design — learner architecture wiring', () => {
   });
 
   it('recognition+psycho cells use "ego_superego_recognition" learner architecture', () => {
-    const matching = cellNames.filter(
+    const matching = factorialCellNames.filter(
       (n) => cells[n].factors.prompt_type === 'recognition' && cells[n].factors.multi_agent_learner,
     );
     for (const name of matching) {

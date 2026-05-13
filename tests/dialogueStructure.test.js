@@ -475,7 +475,13 @@ describe('Group 4: cross-architecture consistency (all tutor-agents.yaml cells)'
   });
 
   it('every cell resolves egoModel', () => {
-    for (const name of Object.keys(allProfiles)) {
+    for (const [name, profile] of Object.entries(allProfiles)) {
+      // `runner: adaptive` cells (110-113, 124, …) route model config through
+      // the `adaptive:` block, not `ego:` — the adaptive runner reads
+      // `profile.adaptive.model` directly, so there is deliberately no egoModel
+      // to resolve. `runner: standard` trap baselines (114, 125) still carry an
+      // `ego:` block and resolve normally.
+      if (profile.runner === 'adaptive') continue;
       const resolved = resolveConfigModels({ profileName: name });
       assert.ok(resolved.egoModel, `${name}: egoModel should resolve`);
     }

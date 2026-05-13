@@ -50,6 +50,13 @@ describe('pedagogical orientation coverage', () => {
     const missing = new Set();
     for (const [cellName, profile] of Object.entries(profiles)) {
       if (!cellName.startsWith('cell_')) continue;
+      // Cells with an explicit `runner:` field (110-125: the LangGraph adaptive
+      // runner and the dialogue-engine trap baselines) bypass the chat UI and
+      // tutor-core's dialogue engine entirely, and use an `adaptive_*`
+      // prompt_type namespace that the orientations map deliberately does not
+      // cover. The orientations map exists to keep factorial cells visible in
+      // the chat UI — these never appear there.
+      if (profile?.runner) continue;
       const promptType = profile?.factors?.prompt_type;
       if (!promptType) continue;
       if (!orientations[promptType]) missing.add(promptType);
