@@ -455,6 +455,56 @@ vs cells 40-45 which add superego rewriting and use `strategy: self_reflection`.
 ~~Tests split between `tests/` and `services/__tests__/`.~~
 Documented in CLAUDE.md: `tests/` for integration tests, `services/__tests__/` for co-located unit tests.
 
+### C7. Paper-1.0 Audit Infrastructure Residue (PARTIAL — 2026-05-13)
+`npm run paper:bug-audit` (`scripts/validate-bug-claims.js`) and `scripts/generate-paper-tables.js`
+validate the frozen Paper 1.0 (`docs/research/paper-full.md` v2.3.21 + `config/paper-manifest.json`
+v1.8.0). Neither touches Paper 2.0 (`paper-full-2.0.md`); Paper 2.0's gate (`validate-paper-manifest.js`)
+is green. Two unambiguous tooling bugs fixed in `4724297` (tables-script epoch default; n-backtrack
+cross-run sums; 67 → 10 / 3 → 1 internal fails). Remaining items are Paper-1.0 prose/data
+reconciliation in a superseded paper; kept here as optional cleanup, prioritised cheap-first.
+
+- [ ] **C7.1 — `notes/major-bugs.md` Bug-4 over-claim (CHEAPEST).** Says "Impact (rescoring complete)"
+  and "backfilling … properly documented and rescoring validation passing"; references the dead
+  column `holistic_overall_score` (live column is `tutor_last_turn_score`). DB reality: 1,834 of
+  1,898 in-scope multi-turn rows lack the backfill (3.4 % coverage). Resolution: rewrite Bug-4's
+  Impact paragraph to honest "code fix in place going forward, paper discloses the historical gap,
+  backfill of `tutor_last_turn_score` incomplete and not planned — Paper 2.0 supersedes Paper 1.0
+  with clean v2.2-rubric data." Doc edit only, no API.
+
+- [ ] **C7.2 — `paper:bug-audit` Bug-4 cluster reframe.** Once C7.1 is in, demote
+  `multiturn-holistic-coverage` and `multiturn-turn0-risk` from `fail` to `warn` (they are
+  remediation-progress trackers for a superseded paper, not correctness checks), and update
+  `bug-reports-major`'s coverage map for Bug 4 to `[multiturn-selection-source,
+  paper-disclosure-bug4]` (code-fix-in-place + paper disclosure → resolved). Defensible because the
+  code defect IS fixed going forward, the paper itself discloses the gap, and Paper 2.0 supersedes
+  Paper 1.0 on clean data. Alternative path (NOT recommended): backfill `tutor_last_turn_score` on
+  the 1,834 rows — re-judges 1,834 last-turns from Feb runs, costs API spend + time, and risks
+  v2.2-rubric cross-contamination on v1.0/v2.0/v2.1 historical rows (CLAUDE.md anti-contamination
+  rule applies).
+
+- [ ] **C7.3 — §5.6 N=655 forward cross-reference.** Paper says "(N=655; Section 6.4, Table 8)" in
+  §5.6 (line 511); 655 doesn't sum cleanly from §6.4 manifest entries (60 + 119 + 120 + 117 + 120 =
+  536, not 655). Single residual of `paper-claims-n-backtrack`. Options: (a) extend
+  `evaluateNClaimsBacktracking` to follow explicit `Section X.Y` cross-references in the local
+  context and aggregate runs from those sections too — adds ~20 lines and might still not resolve
+  655 if it isn't a clean §6.4 sum; (b) add an explicit "multi-model probe across five ego models
+  (N=655)" aggregate entry to `paper-manifest.json` with the actual contributing run IDs; (c)
+  verify the paper's 655 against the underlying data and correct it. (c) is most likely correct but
+  requires the run-level recompute.
+
+- [ ] **C7.4 — `paper-full.md` prose-vs-manifest drift (LARGEST).** Ten residuals from
+  `generate-paper-tables.js`: line 1145 says `N=8,725 scored` (a different figure at that spot);
+  the manifest's `prose_n_references` expect seven `N=4,144 primary scored` patterns that the paper
+  doesn't contain (paper has `N=4,312` everywhere); Table-2 totals row, "52 key evaluations", and
+  "All 52" / "52 of the 52" phrasings aren't in the paper. Decide direction: lighter — update
+  `paper-manifest.json`'s `prose_n_references` / `totals` to match the frozen paper as it actually
+  reads (Paper 1.0 has shipped; the manifest's expectations are stale); heavier — edit the paper's
+  prose in seven sections. Lighter is more honest about Paper 1.0's frozen status.
+
+None of C7.* affects Paper 2.0 or any active research workstream. Skipping the section entirely is
+a defensible choice: leave the bug-audit failing as the truthful record of Paper 1.0's disclosed
+limitations, and Paper 2.0 carries the field forward.
+
 ---
 
 ## D. Theoretical / Mechanistic Research
