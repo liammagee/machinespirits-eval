@@ -334,6 +334,18 @@ export function resolveEvalProfile(profileName) {
     }
   }
 
+  // The dispatch-chain output *before* the published-package existence-check
+  // fallback below. `dispatchedProfileName` answers "did the if/else-if chain
+  // route this prompt_type by name?"; `resolvedProfileName` answers "what
+  // tutor-core profile will actually load?". They diverge only when the
+  // dispatch picked a dev-tutor-core-only profile (matched_pedagogical,
+  // matched_behaviorist, …) and the installed package doesn't register it.
+  // The bug_007 regression test asserts on `dispatchedProfileName`: a non-base
+  // prompt_type *dispatching* to 'budget' means there's no branch for it (the
+  // bug); *falling back* to 'budget' because the named profile is absent from a
+  // published install is documented graceful degradation, not a regression.
+  const dispatchedProfileName = resolvedProfileName;
+
   // For remapped eval-only profiles, verify the resolved name exists in tutor-core.
   // Eval-specific profiles (enhanced, placebo, dialectical_*, etc.) only exist in the
   // dev version of tutor-core. When the published package is installed, fall back to a
@@ -354,7 +366,7 @@ export function resolveEvalProfile(profileName) {
     }
   }
 
-  return { useDialogue, maxRounds, recognitionMode, resolvedProfileName };
+  return { useDialogue, maxRounds, recognitionMode, resolvedProfileName, dispatchedProfileName };
 }
 
 /**
