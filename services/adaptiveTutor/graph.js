@@ -84,13 +84,16 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // pathway with the id-authored prompt threaded into the existing ego node.
   'bilateral_tom_id_director_v1',
   'bilateral_tom_id_director_v2',
-  // A14 (cell 126): state_policy + evidenceExtractor at the loop head.
-  // Stage 2a (this commit): extractor populates evidenceLog with typed
-  // observations gated by exact-substring quote validation. Stage 2b adds
-  // the hypothesisUpdater between extractor and learnerProfileUpdate.
-  // Stage 3 swaps constraintCheck for the groundingValidator. The flag-
-  // driven shared block keeps cells 110-113 / bilateral_tom variants
-  // untouched while this architecture accretes new nodes stage by stage.
+  // A14 (cell 126): state_policy + evidenceExtractor + hypothesisUpdater
+  // at the loop head. Stage 2a populates evidenceLog with typed observations
+  // gated by exact-substring quote validation. Stage 2b (this commit) adds
+  // the hypothesisUpdater between extractor and learnerProfileUpdate: it
+  // synthesises typed hypotheses with TTL from the validated ledger, owns
+  // hypothesis_id derivation + created_at_turn preservation + evidence-ref
+  // filtering. Stage 3 swaps constraintCheck for the groundingValidator.
+  // The flag-driven shared block keeps cells 110-113 / bilateral_tom
+  // variants untouched while this architecture accretes new nodes stage by
+  // stage.
   'state_policy_evidence_bound',
 ]);
 export { SUPPORTED_ARCHITECTURES };
@@ -370,6 +373,93 @@ async function evidenceExtractor(state) {
   return { evidenceLog: entries };
 }
 
+// A14 Stage 2b: hypothesisUpdater. Reads the validated evidence ledger and
+// the current hypotheses, calls the LLM (or mock) to propose updates, then
+// applies node-side bookkeeping:
+//   (a) Deterministic TTL sweep marks tentative hypotheses as `expired` when
+//       turn > created_at_turn + expires_after_turns. Done in code, not by
+//       the LLM, because expiry is mechanical and shouldn't burn tokens or
+//       risk the model forgetting to expire.
+//   (b) hypothesis_id derivation. Newly proposed hypotheses (those without a
+//       model-supplied hypothesis_id) get `hyp_<sha1-prefix-of-claim>` so
+//       paraphrases of the "same" idea collide on the same id rather than
+//       fragmenting the ledger. Counterfactual-replay stability comes free
+//       from content-derived ids — same posture as obs_id in the extractor.
+//   (c) created_at_turn / expires_after_turns preservation. When the LLM
+//       revises an existing hypothesis (matching hypothesis_id), the node
+//       preserves the original creation turn and TTL offset. The reducer is
+//       merge-by-id last-write-wins, so without this preservation the LLM
+//       could implicitly reset the TTL clock on every revision.
+//   (d) Evidence-ref filtering. supporting_evidence / contradicting_evidence
+//       arrays are filtered to obs_ids that actually appear in the validated
+//       ledger. A fabricated obs_id is silently dropped rather than carried
+//       forward — the audit trail in the ledger should not be polluted by
+//       hallucinated cross-references.
+//
+// Empty-evidence shortcut: if no validated evidence exists yet, the LLM call
+// is skipped (nothing to update from). The TTL sweep still runs — a turn-0
+// hypothesis with expires_after_turns=1 can expire on turn 2 even if no new
+// evidence has arrived.
+async function hypothesisUpdater(state) {
+  const turn = state.turn;
+  const validatedEvidence = (state.evidenceLog || []).filter((e) => e.validated);
+  const currentHypotheses = state.hypotheses || [];
+
+  const expiredUpdates = currentHypotheses
+    .filter((h) => h.status === 'tentative'
+                   && turn > h.created_at_turn + h.expires_after_turns)
+    .map((h) => ({ ...h, status: 'expired' }));
+
+  if (validatedEvidence.length === 0) {
+    return expiredUpdates.length > 0 ? { hypotheses: expiredUpdates } : {};
+  }
+
+  // Show the LLM all non-expired hypotheses including about-to-expire ones —
+  // fresh evidence may revive them, and the revision (in `synthesised` below)
+  // will win over the TTL sweep entry via ordering in the returned array.
+  const liveHypotheses = currentHypotheses.filter((h) => h.status !== 'expired');
+
+  const proposed = await callRole('hypothesisUpdater', {
+    validatedEvidence,
+    currentHypotheses: liveHypotheses,
+    turn,
+  });
+
+  const validObsIds = new Set(validatedEvidence.map((e) => e.obs_id));
+  const existingById = new Map(currentHypotheses.map((h) => [h.hypothesis_id, h]));
+
+  const synthesised = (proposed?.hypotheses || []).map((h) => {
+    const claim = String(h.claim || '').trim();
+    if (!claim) return null;
+    const declaredId = typeof h.hypothesis_id === 'string' && h.hypothesis_id.trim().length > 0
+      ? h.hypothesis_id.trim()
+      : null;
+    const derivedId = `hyp_${createHash('sha1').update(claim).digest('hex').slice(0, 8)}`;
+    const id = declaredId || derivedId;
+    const existing = existingById.get(id);
+    const support = Array.isArray(h.supporting_evidence) ? h.supporting_evidence : [];
+    const contradict = Array.isArray(h.contradicting_evidence) ? h.contradicting_evidence : [];
+    return {
+      hypothesis_id: id,
+      claim,
+      confidence: typeof h.confidence === 'number'
+        ? Math.max(0, Math.min(1, h.confidence))
+        : 0.5,
+      supporting_evidence: support.filter((oid) => validObsIds.has(oid)),
+      contradicting_evidence: contradict.filter((oid) => validObsIds.has(oid)),
+      status: h.status || 'tentative',
+      created_at_turn: existing ? existing.created_at_turn : turn,
+      expires_after_turns: existing ? existing.expires_after_turns : 2,
+      next_validation_action: h.next_validation_action || '',
+    };
+  }).filter(Boolean);
+
+  // Order matters for the merge-by-id reducer: synthesised entries come
+  // after expiredUpdates, so a hypothesis revived by fresh evidence overrides
+  // the TTL sweep's `expired` status.
+  return { hypotheses: [...expiredUpdates, ...synthesised] };
+}
+
 async function learnerTurn(state) {
   const tutorLastMessage = lastTextOf(state.dialogue, 'tutor');
   const text = await callRole('learnerTurn', {
@@ -493,9 +583,17 @@ export function buildGraph(options = {}) {
     .addNode('learnerTurn', learnerTurn);
 
   if (includeExtractor) {
+    // A14 Stage 2a wired the extractor at the loop head; Stage 2b inserts the
+    // hypothesisUpdater between extractor and learnerProfileUpdate so the
+    // updater sees fresh evidence from this turn before profileUpdate runs.
+    // Both nodes activate on the same architecture flag — there's no use
+    // case for extractor-without-updater (extracted evidence with no
+    // synthesis is just an audit log; the value of A14 is the synthesis).
     g.addNode('evidenceExtractor', evidenceExtractor)
+      .addNode('hypothesisUpdater', hypothesisUpdater)
       .addEdge(START, 'evidenceExtractor')
-      .addEdge('evidenceExtractor', 'learnerProfileUpdate');
+      .addEdge('evidenceExtractor', 'hypothesisUpdater')
+      .addEdge('hypothesisUpdater', 'learnerProfileUpdate');
   } else {
     g.addEdge(START, 'learnerProfileUpdate');
   }

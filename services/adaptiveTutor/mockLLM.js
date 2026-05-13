@@ -200,6 +200,64 @@ const fixtures = {
     return { evidence };
   },
 
+  // Mock hypothesisUpdater (Stage 2b). Synthesises typed hypotheses from the
+  // validated evidence ledger. Heuristic:
+  //   ≥2 learner_question entries → "questioning_stance" hypothesis
+  //   ≥2 learner_self_report (and <2 questions) → "low_confidence_signal"
+  //   ≥1 learner_correction → "active_revision"
+  // Mock emits with stable hypothesis_ids so the merge-by-id reducer
+  // exercises revision-on-second-turn, not new-creation-on-every-turn. The
+  // node fills created_at_turn / expires_after_turns / TTL bookkeeping —
+  // mock stays focused on the LLM-shape output the real backend also emits.
+  hypothesisUpdater: ({ validatedEvidence }) => {
+    if (!Array.isArray(validatedEvidence) || validatedEvidence.length === 0) {
+      return { hypotheses: [] };
+    }
+    const byType = validatedEvidence.reduce((acc, e) => {
+      if (!acc[e.type]) acc[e.type] = [];
+      acc[e.type].push(e.obs_id);
+      return acc;
+    }, {});
+    const hypotheses = [];
+    const qIds = byType.learner_question || [];
+    const sIds = byType.learner_self_report || [];
+    const cIds = byType.learner_correction || [];
+    if (qIds.length >= 2) {
+      hypotheses.push({
+        hypothesis_id: 'hyp_questioning_stance',
+        claim: 'The learner is in a questioning, probing stance toward the material.',
+        confidence: Math.min(0.9, 0.4 + 0.15 * qIds.length),
+        supporting_evidence: qIds,
+        contradicting_evidence: [],
+        status: qIds.length >= 4 ? 'validated' : 'tentative',
+        next_validation_action: 'mirror_and_extend',
+      });
+    }
+    if (sIds.length >= 2 && qIds.length < 2) {
+      hypotheses.push({
+        hypothesis_id: 'hyp_low_confidence_signal',
+        claim: 'The learner is self-reporting confusion or low confidence.',
+        confidence: Math.min(0.8, 0.4 + 0.1 * sIds.length),
+        supporting_evidence: sIds,
+        contradicting_evidence: [],
+        status: 'tentative',
+        next_validation_action: 'lower_cognitive_load',
+      });
+    }
+    if (cIds.length >= 1) {
+      hypotheses.push({
+        hypothesis_id: 'hyp_active_revision',
+        claim: 'The learner is actively revising or pushing back on tutor framing.',
+        confidence: Math.min(0.85, 0.5 + 0.2 * cIds.length),
+        supporting_evidence: cIds,
+        contradicting_evidence: [],
+        status: 'tentative',
+        next_validation_action: 'scope_test',
+      });
+    }
+    return { hypotheses };
+  },
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => {
     if (turn === hidden.triggerTurn) return hidden.triggerSignal || 'I have a different read on that.';
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';

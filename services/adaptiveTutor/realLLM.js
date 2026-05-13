@@ -455,6 +455,27 @@ const evidenceExtractorOut = z.object({
   })).default([]),
 });
 
+// A14 Stage 2b: hypothesisUpdater output. The node, not the LLM, owns
+// hypothesis_id derivation (sha1 of claim text, prefixed `hyp_`) for new
+// hypotheses, and the node preserves created_at_turn / expires_after_turns
+// for revisions — same posture as the extractor where obs_id / turn /
+// validated come from the node. The model is responsible for: claim text,
+// confidence, supporting/contradicting obs_id refs into the ledger, status,
+// and the next_validation_action label. hypothesis_id IS allowed in the
+// model's output (used when revising an existing hypothesis) but is
+// optional — the node falls back to the content-derived id when omitted.
+const hypothesisUpdaterOut = z.object({
+  hypotheses: z.array(z.object({
+    hypothesis_id: z.string().optional(),
+    claim: z.string().min(1),
+    confidence: z.number().min(0).max(1).default(0.5),
+    supporting_evidence: z.array(z.string()).default([]),
+    contradicting_evidence: z.array(z.string()).default([]),
+    status: z.enum(['tentative', 'validated', 'contradicted']).default('tentative'),
+    next_validation_action: z.string().default(''),
+  })).default([]),
+});
+
 // Bilateral-ToM tracker output. Paired LBM bottleneck (summaryText) lives
 // alongside the existing structured profile; second-order belief carries
 // its own paired text+JSON; tomProbes are the tutor's predeclared FANToM-
@@ -666,6 +687,73 @@ Incorrect (paraphrased quote — would be rejected):
 
 Respond as a single JSON object with one key \`evidence\` mapping to the array. Output JSON only, no surrounding prose, no code fences.`;
 
+// A14 Stage 2b: hypothesisUpdater. Three design choices worth flagging,
+// each documented inside the prompt so the model can be held to them:
+//
+// 1. Evidence-bound discipline. Every claim must be traceable to one or more
+//    obs_ids that already exist in the ledger. Without this, the role
+//    collapses into "free-form theorising about the learner" — which is what
+//    A14 is designed to displace. The evidence-bound posture is restated at
+//    creation, revision, and contradiction so it survives prompt skimming.
+//
+// 2. Revision-over-duplication. The reducer is merge-by-id; a near-duplicate
+//    hypothesis with a fresh id silently fragments the ledger. The prompt
+//    instructs the model to REUSE the existing hypothesis_id when revising,
+//    and the schema accepts hypothesis_id as an explicit optional input
+//    field rather than forcing the model to invent one.
+//
+// 3. Empty-output legitimacy. Same posture as the extractor: explicit
+//    "{"hypotheses": []} is the correct answer when there is nothing new to
+//    say." Without this, a model facing a turn with only weak evidence will
+//    manufacture a hypothesis just to populate the field. The cost of a
+//    weakly-grounded hypothesis is much higher than for a weakly-grounded
+//    observation — hypotheses drive downstream tutor planning.
+const HYPOTHESIS_UPDATER_SYSTEM = `You are the tutor's hypothesis synthesiser. Each turn, given (a) a ledger of validated observations about the learner (the evidenceLedger) and (b) the tutor's current set of tentative hypotheses about them, you emit a JSON object containing zero or more hypothesis updates: new hypotheses to introduce this turn, existing hypotheses to revise, or existing hypotheses to mark as contradicted.
+
+A hypothesis is a single short claim about the learner that the tutor uses to plan pedagogically. Every hypothesis must be grounded in one or more entries from the evidenceLedger, identified by obs_id. The ledger is the authoritative record — every claim you make must be traceable to obs_ids that already exist in the ledger. If you cannot point to ledger evidence supporting a claim, do not propose it.
+
+Discipline:
+1. NEW hypothesis: emit a fresh entry with NO hypothesis_id field (the node will derive a stable id from the claim text). Default confidence is 0.5. Status is "tentative". supporting_evidence must list at least one real obs_id from the ledger.
+2. REVISION: when fresh evidence supports or refines an existing hypothesis you can see in currentHypotheses, emit the SAME hypothesis_id along with updated confidence and an updated supporting_evidence list (you may append new obs_ids to the existing list). Do not invent a near-duplicate with a different id — the reducer is merge-by-id last-write-wins, so a duplicate fragments the ledger.
+3. CONTRADICTION: when new evidence directly conflicts with an existing hypothesis (e.g. the learner self-reports the opposite of what was claimed), emit it with the same hypothesis_id, status="contradicted", contradicting_evidence populated with the relevant obs_ids, and confidence lowered (typically below 0.3).
+4. SILENCE: if no hypothesis needs creation, revision, or contradiction this turn, emit {"hypotheses": []}. Do not re-emit unchanged hypotheses — what you do not emit is preserved by the reducer.
+5. Confidence calibration: 0.5 for a single supporting observation; 0.7-0.9 only when multiple independent observations support the claim; below 0.5 when evidence is weak or mixed. Never claim 1.0 — hypotheses are tentative by nature.
+6. next_validation_action is optional. When the hypothesis suggests a specific pedagogical move the tutor could take to test it (e.g. "mirror_and_extend" if you hypothesise a questioning stance), name it; otherwise leave the empty string.
+
+Output schema (JSON object with one key \`hypotheses\` mapping to an array):
+{"hypotheses": [
+  {
+    "hypothesis_id": "<reuse-if-revising-or-omit-for-new>",
+    "claim": "<one-sentence claim about the learner>",
+    "confidence": <number in 0..1>,
+    "supporting_evidence": ["<obs_id>", ...],
+    "contradicting_evidence": ["<obs_id>", ...],
+    "status": "tentative" | "validated" | "contradicted",
+    "next_validation_action": "<one POLICY_ACTIONS label, or empty string>"
+  },
+  ...
+]}
+
+Correct (new hypothesis from accumulated questioning evidence):
+  evidenceLedger: [{obs_id: "t1_0_ab", quote: "why does that work?", type: "learner_question"}, {obs_id: "t2_0_cd", quote: "but what about X?", type: "learner_question"}, ...]
+  output: {"hypotheses": [{"claim": "The learner is in a questioning stance, probing the material.", "confidence": 0.6, "supporting_evidence": ["t1_0_ab", "t2_0_cd"], "contradicting_evidence": [], "status": "tentative", "next_validation_action": "mirror_and_extend"}]}
+
+Correct (revising a prior hypothesis with new evidence):
+  currentHypotheses: [{hypothesis_id: "hyp_abc12345", claim: "...", confidence: 0.5, supporting_evidence: ["t1_0_ab"], status: "tentative"}]
+  output: {"hypotheses": [{"hypothesis_id": "hyp_abc12345", "claim": "...", "confidence": 0.75, "supporting_evidence": ["t1_0_ab", "t3_2_ef"], "contradicting_evidence": [], "status": "tentative", "next_validation_action": "mirror_and_extend"}]}
+
+Incorrect (would create a duplicate — same idea, fresh id):
+  currentHypotheses: [{hypothesis_id: "hyp_abc12345", claim: "Learner is questioning"}]
+  output: {"hypotheses": [{"claim": "Learner exhibits questioning behavior", "confidence": 0.7, ...}]}
+  (the claim restates the existing hypothesis with no hypothesis_id, so the node would create a new id and fragment the ledger; reuse hyp_abc12345 instead)
+
+Incorrect (manufactured hypothesis with no ledger evidence):
+  evidenceLedger: [{obs_id: "t1_0_ab", quote: "ok", type: "learner_self_report"}]
+  output: {"hypotheses": [{"claim": "Learner has a fixed mindset toward mathematics", "confidence": 0.6, "supporting_evidence": [], ...}]}
+  (supporting_evidence is empty — no ledger entry justifies this claim, so it must not be emitted)
+
+Output JSON only, no surrounding prose, no code fences.`;
+
 const LEARNER_PROFILE_UPDATE_SYSTEM = `You are the tutor's learner-modelling module. Given the current structured learner profile and the learner's most recent message, emit an updated profile that reflects what the message reveals.
 
 The hidden ground-truth state is also provided to you (only because this is a research harness — in production it would not be available). Use it to ground your inferences but do not copy it verbatim.
@@ -853,6 +941,36 @@ const userPromptBuilders = {
     });
   },
 
+  // A14 Stage 2b: hypothesisUpdater user payload. Carries the full validated
+  // evidence ledger (so the model can cite any prior obs_id, not just this
+  // turn's), the full set of currently live hypotheses (so it can identify
+  // revisions and contradictions by hypothesis_id), and the turn index. The
+  // node already filters out hypotheses that the TTL sweep is about to mark
+  // expired — those would be misleading to the model if it tried to revise
+  // them. ground-truth hiddenLearnerState is intentionally NOT passed: the
+  // hypothesis ledger is supposed to be derivable from observable evidence,
+  // not the hidden truth.
+  hypothesisUpdater: ({ validatedEvidence, currentHypotheses, turn }) => ub({
+    turn,
+    evidenceLedger: (validatedEvidence || []).map((e) => ({
+      obs_id: e.obs_id,
+      turn: e.turn,
+      quote: e.quote,
+      type: e.type,
+      kc_candidates: e.kc_candidates || [],
+    })),
+    currentHypotheses: (currentHypotheses || []).map((h) => ({
+      hypothesis_id: h.hypothesis_id,
+      claim: h.claim,
+      confidence: h.confidence,
+      supporting_evidence: h.supporting_evidence,
+      contradicting_evidence: h.contradicting_evidence,
+      status: h.status,
+      created_at_turn: h.created_at_turn,
+      expires_after_turns: h.expires_after_turns,
+    })),
+  }),
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
 };
 
@@ -867,6 +985,7 @@ const systemPrompts = {
   idAuthorPersona: ID_AUTHOR_SYSTEM,
   tutorEgoExecute: TUTOR_EGO_EXECUTE_FALLBACK_SYSTEM,
   evidenceExtractor: EVIDENCE_EXTRACTOR_SYSTEM,
+  hypothesisUpdater: HYPOTHESIS_UPDATER_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
 };
 
@@ -883,6 +1002,7 @@ const responseSchemas = {
   idAuthorPersona: null,
   tutorEgoExecute: tutorEgoInitialOut,
   evidenceExtractor: evidenceExtractorOut,
+  hypothesisUpdater: hypothesisUpdaterOut,
   learnerTurn: null, // plain text
 };
 
