@@ -475,9 +475,17 @@ const idAuthorPersonaOut = z.object({
 // bookkeeping fields obs_id / turn / created_by / validated are filled in
 // by the graph node, not the model — same posture as learnerProfileUpdate
 // where updatedAtTurn comes from the node rather than the LLM.
+// quote is .nullable() because the model occasionally emits null for
+// `tutor_inference` entries where there's no learner-text to cite. The graph
+// node at services/adaptiveTutor/graph.js:371 coerces null to empty string via
+// `String(e.quote || '')` and the substring-match gate at line 380 then marks
+// the entry validated=false — exactly the desired behaviour for unsupported
+// inferences. Without .nullable() the whole Stage 2a turn crashes on what is
+// downstream-handled correctly. (Issue exposed by cell_126 run of
+// sophistication_upgrade_v1, 2026-05-13.)
 const evidenceExtractorOut = z.object({
   evidence: z.array(z.object({
-    quote: z.string().min(1),
+    quote: z.string().nullable(),
     type: z.enum(['learner_self_report', 'learner_action', 'learner_question', 'learner_correction', 'tutor_inference']),
     kc_candidates: z.array(z.string()).default([]),
   })).default([]),
