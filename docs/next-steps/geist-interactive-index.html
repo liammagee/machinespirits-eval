@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Geist in the Machine - Interactive Lay Explainer</title>
+  <style>
+    :root {
+      --bg0: #0b1020;
+      --bg1: #111a35;
+      --ink: #edf4ff;
+      --muted: #aebde0;
+      --soft: rgba(255,255,255,.08);
+      --line: rgba(255,255,255,.18);
+      --hot: #ff7ab6;
+      --gold: #ffd166;
+      --aqua: #7df9ff;
+      --green: #8bf5a6;
+      --violet: #b89cff;
+      --paper: #f8fbff;
+      --paperInk: #172036;
+      --shadow: 0 24px 80px rgba(0,0,0,.35);
+      --radius: 28px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(125,249,255,.18), transparent 28rem),
+        radial-gradient(circle at 88% 18%, rgba(255,122,182,.17), transparent 30rem),
+        linear-gradient(135deg, var(--bg0), var(--bg1) 58%, #1b1230);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 80%);
+      z-index: -1;
+    }
+
+    .wrap { width: min(1180px, calc(100% - 36px)); margin: 0 auto; }
+
+    header.nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(8,12,27,.62);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -.03em; }
+    .brand-mark {
+      width: 40px; height: 40px; border-radius: 14px;
+      background: conic-gradient(from 120deg, var(--aqua), var(--violet), var(--hot), var(--gold), var(--aqua));
+      box-shadow: 0 0 28px rgba(125,249,255,.35);
+      position: relative;
+    }
+    .brand-mark::after {
+      content: ""; position: absolute; inset: 9px; border-radius: 8px; background: rgba(11,16,32,.86);
+    }
+    nav.links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    nav.links a {
+      color: var(--muted); text-decoration: none; font-size: 14px;
+      padding: 8px 10px; border-radius: 999px; border: 1px solid transparent;
+    }
+    nav.links a:hover { color: var(--ink); border-color: var(--line); background: var(--soft); }
+
+    .hero { min-height: 92vh; display: grid; align-items: center; padding: 72px 0 58px; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 38px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      color: var(--aqua); background: rgba(125,249,255,.08); border: 1px solid rgba(125,249,255,.24);
+      padding: 8px 12px; border-radius: 999px; font-size: 14px; font-weight: 700;
+    }
+    .pulse-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--green); box-shadow: 0 0 14px var(--green); animation: pulse 1.8s infinite ease-in-out; }
+    @keyframes pulse { 0%,100% { transform: scale(.85); opacity: .7; } 50% { transform: scale(1.2); opacity: 1; } }
+    h1 { margin: 22px 0 18px; font-size: clamp(42px, 7vw, 88px); line-height: .93; letter-spacing: -.075em; }
+    .gradient-text { background: linear-gradient(90deg, #fff, var(--aqua), var(--hot), var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { color: var(--muted); font-size: clamp(18px, 2.2vw, 23px); line-height: 1.55; max-width: 760px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+    .button {
+      appearance: none; border: 0; cursor: pointer; text-decoration: none; font-weight: 800;
+      border-radius: 999px; padding: 13px 18px; color: #08101f;
+      background: linear-gradient(135deg, var(--aqua), var(--gold)); box-shadow: 0 14px 34px rgba(125,249,255,.18);
+      transition: transform .2s ease, filter .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    .button.secondary { color: var(--ink); background: rgba(255,255,255,.08); border: 1px solid var(--line); box-shadow: none; }
+
+    .stage {
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05));
+      box-shadow: var(--shadow); padding: 20px; position: relative; min-height: 520px; overflow: hidden;
+    }
+    .stage::before { content: ""; position: absolute; inset: -40%; background: radial-gradient(circle, rgba(125,249,255,.11), transparent 45%); animation: slowspin 18s linear infinite; }
+    @keyframes slowspin { to { transform: rotate(360deg); } }
+    .stage > * { position: relative; z-index: 1; }
+    .cartoon-panel { background: rgba(6,10,23,.48); border: 1px solid rgba(255,255,255,.14); border-radius: 24px; padding: 18px; min-height: 470px; display: grid; place-items: center; }
+    .floaty { animation: floaty 4.2s ease-in-out infinite; }
+    .floaty2 { animation: floaty 4.8s ease-in-out infinite reverse; }
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+    section { padding: 72px 0; }
+    .section-head { display: grid; grid-template-columns: .8fr 1.2fr; gap: 28px; align-items: end; margin-bottom: 26px; }
+    .kicker { color: var(--gold); font-size: 13px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    h2 { font-size: clamp(32px, 4.8vw, 56px); line-height: .98; margin: 10px 0 0; letter-spacing: -.055em; }
+    .section-head p { color: var(--muted); font-size: 18px; line-height: 1.55; margin: 0; }
+
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card {
+      border: 1px solid var(--line); border-radius: 24px; padding: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
+      box-shadow: 0 18px 54px rgba(0,0,0,.18); position: relative; overflow: hidden;
+    }
+    .card::after { content: ""; position: absolute; right: -40px; top: -40px; width: 130px; height: 130px; border-radius: 999px; background: rgba(125,249,255,.08); }
+    .card h3 { margin: 10px 0 8px; font-size: 22px; letter-spacing: -.02em; }
+    .card p { color: var(--muted); line-height: 1.55; margin: 0; }
+    .icon { width: 54px; height: 54px; border-radius: 18px; display: grid; place-items: center; font-size: 28px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); }
+
+    .lab {
+      border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.07);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .lab-grid { display: grid; grid-template-columns: .85fr 1.15fr; min-height: 520px; }
+    .panel { padding: 26px; border-right: 1px solid var(--line); }
+    .panel:last-child { border-right: 0; }
+    .control { margin: 20px 0; }
+    label { display: block; color: var(--ink); font-weight: 800; margin-bottom: 8px; }
+    input[type="range"] { width: 100%; accent-color: var(--aqua); }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+    .pill, .tiny-pill {
+      border: 1px solid var(--line); border-radius: 999px; background: rgba(255,255,255,.08); color: var(--ink);
+      padding: 9px 12px; font-weight: 800; cursor: pointer;
+    }
+    .tiny-pill { font-size: 12px; padding: 6px 9px; cursor: default; color: var(--muted); }
+    .pill.active, .pill:hover { background: rgba(125,249,255,.18); border-color: rgba(125,249,255,.48); }
+    .metric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+    .metric { background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 14px; }
+    .metric b { display: block; font-size: 26px; letter-spacing: -.04em; }
+    .metric span { color: var(--muted); font-size: 13px; }
+    canvas { width: 100%; height: 360px; border-radius: 22px; background: rgba(8,12,27,.74); border: 1px solid rgba(255,255,255,.12); }
+    .caption { color: var(--muted); font-size: 14px; line-height: 1.5; margin-top: 12px; }
+
+    .message-box {
+      background: var(--paper); color: var(--paperInk); border-radius: 22px; padding: 18px; box-shadow: 0 18px 40px rgba(0,0,0,.22);
+      line-height: 1.55; border: 1px solid rgba(20,30,60,.12);
+    }
+    .message-box h4 { margin: 0 0 8px; color: #334; }
+    .critique { border-left: 5px solid var(--hot); background: #fff1f8; }
+    .revision { border-left: 5px solid #43c47a; background: #effff4; }
+    select, textarea {
+      width: 100%; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.09); color: var(--ink);
+      border-radius: 16px; padding: 12px 14px; font: inherit;
+    }
+    option { color: #111; }
+    .stack { display: grid; gap: 14px; }
+
+    .flow { display: grid; gap: 14px; }
+    .flow-step { display: grid; grid-template-columns: 50px 1fr; gap: 14px; align-items: start; padding: 16px; border: 1px solid var(--line); border-radius: 22px; background: rgba(255,255,255,.065); }
+    .num { width: 48px; height: 48px; border-radius: 17px; display: grid; place-items: center; font-weight: 900; color: #08101f; background: linear-gradient(135deg, var(--aqua), var(--gold)); }
+    .flow-step h3 { margin: 0 0 6px; }
+    .flow-step p { margin: 0; color: var(--muted); line-height: 1.5; }
+    pre {
+      margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 13px; line-height: 1.45;
+      background: rgba(0,0,0,.26); color: #dbeafe; border: 1px solid rgba(255,255,255,.14); border-radius: 18px; padding: 16px;
+    }
+    .output-pre { min-height: 178px; }
+
+    .timeline { display: grid; gap: 14px; position: relative; }
+    .timeline::before { content: ""; position: absolute; left: 24px; top: 14px; bottom: 14px; width: 2px; background: linear-gradient(var(--aqua), var(--hot), var(--gold)); opacity: .75; }
+    .time-item { display: grid; grid-template-columns: 58px 1fr; gap: 14px; align-items: start; position: relative; }
+    .time-dot { width: 50px; height: 50px; border-radius: 18px; background: rgba(255,255,255,.12); border: 1px solid var(--line); display: grid; place-items: center; font-weight: 900; z-index: 1; }
+    .time-card { padding: 18px; border-radius: 22px; border: 1px solid var(--line); background: rgba(255,255,255,.07); }
+    .time-card h3 { margin: 0 0 6px; }
+    .time-card p { margin: 0; color: var(--muted); line-height: 1.5; }
+
+    .footer { padding: 38px 0 70px; color: var(--muted); text-align: center; }
+    .callout { border: 1px solid rgba(255,209,102,.35); background: rgba(255,209,102,.09); border-radius: 24px; padding: 18px; color: #fff3cf; line-height: 1.55; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .wide { grid-column: 1 / -1; }
+    .glow-line { height: 1px; background: linear-gradient(90deg, transparent, var(--aqua), var(--hot), transparent); margin: 34px 0; }
+
+    .mini-cartoon-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+    .mini-cartoon { border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.06); padding: 12px; text-align: center; color: var(--muted); }
+    .mini-cartoon svg { width: 100%; height: 130px; }
+    .mini-cartoon b { display: block; color: var(--ink); margin-top: 6px; }
+
+    @media (max-width: 900px) {
+      .hero-grid, .section-head, .lab-grid, .two-col { grid-template-columns: 1fr; }
+      .cards, .mini-cartoon-row { grid-template-columns: 1fr; }
+      .panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .panel:last-child { border-bottom: 0; }
+      nav.links { display: none; }
+      .stage { min-height: auto; }
+      .cartoon-panel { min-height: 360px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <div class="brand"><span class="brand-mark"></span><span>Geist in the Machine</span></div>
+      <nav class="links" aria-label="Page sections">
+        <a href="#story">Story</a>
+        <a href="#mechanisms">Mechanisms</a>
+        <a href="#calibration">Simulation</a>
+        <a href="#adaptivity">Adaptivity Lab</a>
+        <a href="#controller">Next Tutor</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow"><span class="pulse-dot"></span>Interactive lay explainer for Paper 2.0</div>
+          <h1><span class="gradient-text">What if an AI tutor learned to listen?</span></h1>
+          <p class="lead">This paper asks whether an AI tutor becomes better when it treats the learner as a thinking partner instead of a bucket to fill. The answer is subtle: the tutor gets much better at first-pass teaching, but genuine long-term adaptation still needs a safer architecture.</p>
+          <div class="hero-actions">
+            <a class="button" href="#story">Start the story</a>
+            <a class="button secondary" href="#calibration">Play with the simulations</a>
+          </div>
+        </div>
+        <div class="stage" aria-label="Animated cartoon of tutor, learner, and superego">
+          <div class="cartoon-panel">
+            <svg viewBox="0 0 720 560" role="img" aria-label="Cartoon of a robot tutor, learner, and ghost critic">
+              <defs>
+                <linearGradient id="orb" x1="0" x2="1"><stop offset="0" stop-color="#7df9ff"/><stop offset="1" stop-color="#ff7ab6"/></linearGradient>
+                <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <rect x="40" y="420" width="640" height="42" rx="21" fill="rgba(255,255,255,.08)"/>
+              <g class="floaty">
+                <circle cx="180" cy="230" r="78" fill="#18284f" stroke="#7df9ff" stroke-width="5"/>
+                <rect x="112" y="225" width="136" height="108" rx="28" fill="#23396d" stroke="#9efbff" stroke-width="4"/>
+                <circle cx="154" cy="274" r="12" fill="#7df9ff" filter="url(#glow)"/>
+                <circle cx="207" cy="274" r="12" fill="#7df9ff" filter="url(#glow)"/>
+                <path d="M152 306 Q180 326 210 306" fill="none" stroke="#ffd166" stroke-width="6" stroke-linecap="round"/>
+                <rect x="145" y="148" width="70" height="40" rx="14" fill="url(#orb)"/>
+                <line x1="180" y1="148" x2="180" y2="118" stroke="#7df9ff" stroke-width="5"/>
+                <circle cx="180" cy="106" r="12" fill="#ffd166" filter="url(#glow)"/>
+                <text x="180" y="380" text-anchor="middle" fill="#edf4ff" font-size="24" font-weight="800">Tutor</text>
+              </g>
+              <g class="floaty2">
+                <circle cx="520" cy="250" r="58" fill="#ffd166"/>
+                <path d="M466 324 Q520 372 575 324 L575 420 Q520 445 466 420 Z" fill="#b89cff"/>
+                <circle cx="500" cy="247" r="8" fill="#172036"/>
+                <circle cx="541" cy="247" r="8" fill="#172036"/>
+                <path d="M500 282 Q520 294 540 282" fill="none" stroke="#172036" stroke-width="5" stroke-linecap="round"/>
+                <path d="M470 212 Q520 165 574 212" fill="#2c365d"/>
+                <text x="520" y="470" text-anchor="middle" fill="#edf4ff" font-size="24" font-weight="800">Learner</text>
+              </g>
+              <g class="floaty" style="animation-delay:-1.2s">
+                <path d="M355 116 C420 76 492 115 482 188 C478 228 500 236 514 260 C472 256 454 238 444 214 C418 238 367 240 340 213 C323 238 296 250 260 250 C281 225 295 205 292 174 C286 128 320 102 355 116 Z" fill="rgba(248,251,255,.88)" stroke="#ffffff" stroke-width="4"/>
+                <circle cx="366" cy="164" r="8" fill="#172036"/>
+                <circle cx="418" cy="164" r="8" fill="#172036"/>
+                <path d="M370 193 Q394 180 420 193" fill="none" stroke="#172036" stroke-width="5" stroke-linecap="round"/>
+                <rect x="338" y="46" width="118" height="46" rx="18" fill="rgba(255,122,182,.28)" stroke="#ff7ab6"/>
+                <text x="397" y="76" text-anchor="middle" fill="#fff" font-size="17" font-weight="900">Critic</text>
+              </g>
+              <path d="M259 243 C325 203 387 211 454 243" fill="none" stroke="#7df9ff" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 12">
+                <animate attributeName="stroke-dashoffset" values="0;-44" dur="2.2s" repeatCount="indefinite"/>
+              </path>
+              <path d="M450 318 C380 358 295 350 225 318" fill="none" stroke="#ff7ab6" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 12">
+                <animate attributeName="stroke-dashoffset" values="0;44" dur="2.6s" repeatCount="indefinite"/>
+              </path>
+              <g>
+                <rect x="82" y="48" width="196" height="66" rx="22" fill="rgba(125,249,255,.16)" stroke="rgba(125,249,255,.5)"/>
+                <text x="180" y="76" text-anchor="middle" fill="#edf4ff" font-size="17" font-weight="800">Ask, don't dump.</text>
+                <text x="180" y="99" text-anchor="middle" fill="#aebde0" font-size="14">Engage the learner's idea.</text>
+              </g>
+              <g>
+                <rect x="464" y="62" width="188" height="66" rx="22" fill="rgba(255,209,102,.16)" stroke="rgba(255,209,102,.5)"/>
+                <text x="558" y="90" text-anchor="middle" fill="#edf4ff" font-size="17" font-weight="800">But did it adapt?</text>
+                <text x="558" y="113" text-anchor="middle" fill="#aebde0" font-size="14">That is the hard part.</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="story">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">The 60-second story</div><h2>Three ideas were tested.</h2></div>
+          <p>The paper tested whether recognition-oriented AI tutoring works through calibration, error correction, and adaptive responsiveness. Two mechanisms worked. The third mostly did not.</p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <div class="icon">1</div>
+            <h3>Calibration worked</h3>
+            <p>When the tutor is told to build from the learner's actual words, it stops spraying generic explanations. The output becomes more consistent and the weak parts improve.</p>
+          </article>
+          <article class="card">
+            <div class="icon">2</div>
+            <h3>Error correction worked</h3>
+            <p>A second agent, the "superego," can catch when the tutor rushes, over-explains, or gives away the answer. It helps most when the first draft is weak.</p>
+          </article>
+          <article class="card">
+            <div class="icon">3</div>
+            <h3>Adaptivity did not yet work</h3>
+            <p>The tutor got better, but it did not reliably become more adaptive across turns. Rich memory did not solve this and may invite false personalization.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="mechanisms">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">Cartoon mechanism map</div><h2>What is happening inside the tutor?</h2></div>
+          <p>These four cartoon panels summarize the paper's mechanism story and the proposed next architecture. The last panel is the new direction: evidence-bound control.</p>
+        </div>
+        <div class="mini-cartoon-row">
+          <div class="mini-cartoon">
+            <svg viewBox="0 0 220 150" aria-label="Calibration cartoon"><circle cx="70" cy="72" r="35" fill="#7df9ff" opacity=".85"/><circle cx="145" cy="72" r="18" fill="#ffd166"/><circle cx="160" cy="50" r="9" fill="#ffd166"/><circle cx="130" cy="96" r="7" fill="#ffd166"/><path d="M38 120 C80 98 132 104 188 120" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><text x="110" y="140" text-anchor="middle" fill="#edf4ff" font-size="13" font-weight="800">Wide scatter -> focused response</text></svg>
+            <b>Calibration</b><span>Fewer generic answers.</span>
+          </div>
+          <div class="mini-cartoon">
+            <svg viewBox="0 0 220 150" aria-label="Critic cartoon"><rect x="48" y="48" width="86" height="64" rx="18" fill="#23396d" stroke="#7df9ff" stroke-width="3"/><path d="M143 34 C180 20 196 54 181 78 C173 91 184 99 194 105 C164 109 145 95 142 73 C136 86 119 85 111 74 C100 59 114 41 143 34 Z" fill="#fff" opacity=".9"/><path d="M68 78 h46" stroke="#ffd166" stroke-width="5" stroke-linecap="round"/><path d="M152 62 l10 10 20 -24" stroke="#172036" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="110" y="140" text-anchor="middle" fill="#edf4ff" font-size="13" font-weight="800">Second voice catches shortcuts</text></svg>
+            <b>Error correction</b><span>Helpful critic, not magic.</span>
+          </div>
+          <div class="mini-cartoon">
+            <svg viewBox="0 0 220 150" aria-label="Memory risk cartoon"><path d="M45 35 h92 a18 18 0 0 1 18 18 v44 a18 18 0 0 1 -18 18 h-92 a18 18 0 0 1 -18 -18 v-44 a18 18 0 0 1 18 -18z" fill="#ff7ab6" opacity=".75"/><path d="M68 62 h66 M68 78 h48 M68 94 h58" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="166" cy="102" r="25" fill="#ffd166"/><text x="166" y="111" text-anchor="middle" fill="#172036" font-size="28" font-weight="900">?</text><text x="110" y="140" text-anchor="middle" fill="#edf4ff" font-size="13" font-weight="800">Memory can invent a learner</text></svg>
+            <b>Memory risk</b><span>Rich profiles can drift.</span>
+          </div>
+          <div class="mini-cartoon">
+            <svg viewBox="0 0 220 150" aria-label="Evidence controller cartoon"><rect x="34" y="44" width="68" height="62" rx="18" fill="#7df9ff" opacity=".85"/><rect x="118" y="44" width="68" height="62" rx="18" fill="#8bf5a6" opacity=".85"/><path d="M102 75 h16" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M52 65 h32 M52 82 h24" stroke="#172036" stroke-width="5" stroke-linecap="round"/><path d="M136 74 l11 11 23 -28" stroke="#172036" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="110" y="140" text-anchor="middle" fill="#edf4ff" font-size="13" font-weight="800">Evidence -> policy -> response</text></svg>
+            <b>New direction</b><span>Accountable adaptation.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="calibration">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">Simulation 1</div><h2>Calibration: from answer spray to learner-fit.</h2></div>
+          <p>Move the slider. At the left, the tutor gives uneven responses: some good, some weak, many generic. At the right, the tutor is constrained by the learner's actual contribution.</p>
+        </div>
+        <div class="lab">
+          <div class="lab-grid">
+            <div class="panel">
+              <h3>Recognition orientation</h3>
+              <p class="caption">This is a toy simulation, not a re-analysis of the dataset. It visualizes the paper's mechanism claim: recognition mostly narrows and lifts the tutor's output distribution.</p>
+              <div class="control">
+                <label for="recogRange">How strongly does the tutor attend to the learner?</label>
+                <input id="recogRange" type="range" min="0" max="100" value="68" />
+              </div>
+              <div class="pill-row">
+                <button class="pill" data-preset="0">Baseline</button>
+                <button class="pill active" data-preset="68">Recognition</button>
+                <button class="pill" data-preset="100">Evidence-bound ideal</button>
+              </div>
+              <div class="metric-grid">
+                <div class="metric"><b id="qualityMetric">78</b><span>average tutor quality</span></div>
+                <div class="metric"><b id="varianceMetric">22</b><span>response scatter</span></div>
+                <div class="metric"><b id="floorMetric">64</b><span>weakest dimension floor</span></div>
+                <div class="metric"><b id="genericMetric">18%</b><span>generic-answer risk</span></div>
+              </div>
+            </div>
+            <div class="panel">
+              <canvas id="calibrationCanvas" width="760" height="430" aria-label="Calibration scatter simulation"></canvas>
+              <p class="caption">Each dot is a possible tutor response. Higher is better. Narrower is more consistent. The paper's calibration result says recognition mostly lifts the floor and narrows the cloud.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="correction">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">Simulation 2</div><h2>Error correction: the ghost editor.</h2></div>
+          <p>The superego critic can catch shallow teaching. But under recognition, there are fewer obvious failures left to catch, so the critic's extra value shrinks.</p>
+        </div>
+        <div class="lab">
+          <div class="lab-grid">
+            <div class="panel stack">
+              <div>
+                <label for="modelQuality">Generation model strength</label>
+                <select id="modelQuality">
+                  <option value="weak">Weak model: critic still helps a lot</option>
+                  <option value="mid" selected>Middle model: critic helps baseline most</option>
+                  <option value="strong">Strong model: recognition does most of the work</option>
+                </select>
+              </div>
+              <div>
+                <label for="promptMode">Prompt orientation</label>
+                <select id="promptMode">
+                  <option value="baseline">Baseline prompt</option>
+                  <option value="recognition" selected>Recognition / intersubjective prompt</option>
+                </select>
+              </div>
+              <button id="runCritique" class="button">Run the ghost editor</button>
+              <div class="metric-grid">
+                <div class="metric"><b id="draftScore">72</b><span>draft score</span></div>
+                <div class="metric"><b id="finalScore">80</b><span>after critique</span></div>
+                <div class="metric wide"><b id="liftScore">+8</b><span>critic lift</span></div>
+              </div>
+            </div>
+            <div class="panel stack">
+              <div class="message-box">
+                <h4>First draft</h4>
+                <div id="draftText">Here is the answer. The thesis is that learning improves when the tutor explains clearly and the student follows the steps.</div>
+              </div>
+              <div class="message-box critique">
+                <h4>Superego critique</h4>
+                <div id="critiqueText">You resolved the task too quickly. Ask what the learner already notices, preserve productive struggle, and build from their interpretation.</div>
+              </div>
+              <div class="message-box revision">
+                <h4>Revised tutor response</h4>
+                <div id="revisionText">You have the start of a thesis. What part of the example made the idea click for you? Name that move first, then we can turn it into your own sentence.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="adaptivity">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">Simulation 3</div><h2>The adaptivity trap.</h2></div>
+          <p>Memory feels adaptive, but hidden rich memory can confidently personalize to the wrong learner. The safer path is evidence-bound state plus finite policy selection.</p>
+        </div>
+        <div class="lab">
+          <div class="lab-grid">
+            <div class="panel">
+              <h3>Choose the memory architecture</h3>
+              <div class="pill-row" role="group" aria-label="Memory mode">
+                <button class="pill memory active" data-memory="none">No memory</button>
+                <button class="pill memory" data-memory="rich">Rich hidden profile</button>
+                <button class="pill memory" data-memory="evidence">Evidence-bound state</button>
+              </div>
+              <button id="simulateTurns" class="button">Simulate 8 turns</button>
+              <div class="metric-grid">
+                <div class="metric"><b id="policyMatch">52%</b><span>policy match</span></div>
+                <div class="metric"><b id="hallucinationRisk">8%</b><span>false personalization risk</span></div>
+                <div class="metric"><b id="learningGain">+4</b><span>learning trajectory</span></div>
+                <div class="metric"><b id="trustScore">74</b><span>learner trust</span></div>
+              </div>
+              <p class="caption" id="memoryCaption">No memory is safe but blunt: the tutor cannot use prior evidence, so it repeats generic moves.</p>
+            </div>
+            <div class="panel">
+              <canvas id="adaptCanvas" width="760" height="430" aria-label="Adaptivity simulation chart"></canvas>
+              <p class="caption">The green line is useful adaptation. The pink bars are unsupported state claims. The goal is not the most memory; the goal is the best evidence-to-action loop.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="controller">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">The proposed next tutor</div><h2>Evidence-bound adaptive control.</h2></div>
+          <p>The next tutor should not rewrite its own system memory. It should maintain a small ledger of evidence, tentative hypotheses, mastery estimates, and allowed next moves.</p>
+        </div>
+        <div class="two-col">
+          <div class="flow">
+            <div class="flow-step"><div class="num">1</div><div><h3>Extract evidence</h3><p>Save what the learner actually said or did. Use quotes. Do not infer a personality.</p></div></div>
+            <div class="flow-step"><div class="num">2</div><div><h3>Create a tentative hypothesis</h3><p>Attach confidence, supporting evidence, contradiction checks, and expiry.</p></div></div>
+            <div class="flow-step"><div class="num">3</div><div><h3>Select a finite policy</h3><p>Pick a move such as diagnostic probe, faded example, teach-back, or transfer challenge.</p></div></div>
+            <div class="flow-step"><div class="num">4</div><div><h3>Generate and validate</h3><p>Let the LLM phrase the selected move warmly. Then check that it used only supported state.</p></div></div>
+          </div>
+          <div class="stack">
+            <div>
+              <label for="learnerSignal">Try a learner signal</label>
+              <select id="learnerSignal">
+                <option value="example">I get the example, but I don't know how to make my own.</option>
+                <option value="resistance">Why do I have to explain it? Can't you just tell me?</option>
+                <option value="confidentWrong">I think the main idea is that harder tasks are always better.</option>
+                <option value="silence">I don't know. This is confusing.</option>
+              </select>
+            </div>
+            <pre id="stateOutput" class="output-pre"></pre>
+            <div class="message-box revision">
+              <h4>Generated tutor move</h4>
+              <div id="tutorMove"></div>
+            </div>
+          </div>
+        </div>
+        <div class="glow-line"></div>
+        <div class="callout"><strong>One-sentence design rule:</strong> the tutor may adapt only to learner-state claims that have evidence, confidence, expiry, and a path for learner correction.</div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="wrap">
+        <div class="section-head">
+          <div><div class="kicker">Work plan</div><h2>What to build next.</h2></div>
+          <p>The recommended path is to treat adaptivity as an explicit controller problem, then test policy selection before testing final prose or human learning outcomes.</p>
+        </div>
+        <div class="timeline">
+          <div class="time-item"><div class="time-dot">0</div><div class="time-card"><h3>Spec lock</h3><p>Define evidence schema, hypothesis schema, finite policies, anti-triggers, and forbidden durable learner-state claims.</p></div></div>
+          <div class="time-item"><div class="time-dot">1</div><div class="time-card"><h3>Offline replay</h3><p>Run extractor, state updater, policy selector, and validator over existing dialogues without changing tutor output.</p></div></div>
+          <div class="time-item"><div class="time-dot">2</div><div class="time-card"><h3>Shadow mode</h3><p>Let the controller propose policies beside the current tutor. Compare against expert labels on trap-suite cases.</p></div></div>
+          <div class="time-item"><div class="time-dot">3</div><div class="time-card"><h3>Controlled generation</h3><p>Condition the final tutor response on the selected policy and reject unsupported personalization.</p></div></div>
+          <div class="time-item"><div class="time-dot">4</div><div class="time-card"><h3>Scrutable learner model</h3><p>Surface uncertain state to the learner: "My read is X because you said Y. Is that right?"</p></div></div>
+          <div class="time-item"><div class="time-dot">5</div><div class="time-card"><h3>Human pilot</h3><p>Compare recognition-only tutoring with evidence-bound adaptation on learning, transfer, trust, and false-personalization outcomes.</p></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>Standalone interactive explainer. No external libraries, fonts, trackers, or network calls. Saved with the next-steps report.</p>
+    </div>
+  </footer>
+
+  <script>
+    const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+
+    function seededNoise(i, salt) {
+      const x = Math.sin(i * 999.1 + salt * 131.7) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    function drawCalibration() {
+      const canvas = document.getElementById('calibrationCanvas');
+      const ctx = canvas.getContext('2d');
+      const slider = document.getElementById('recogRange');
+      const r = Number(slider.value) / 100;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+
+      const grad = ctx.createLinearGradient(0,0,w,h);
+      grad.addColorStop(0, '#101a35');
+      grad.addColorStop(1, '#231335');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,0,w,h);
+
+      ctx.strokeStyle = 'rgba(255,255,255,.08)';
+      ctx.lineWidth = 1;
+      for (let y = 70; y < h - 40; y += 60) { ctx.beginPath(); ctx.moveTo(55,y); ctx.lineTo(w-35,y); ctx.stroke(); }
+      for (let x = 70; x < w - 40; x += 90) { ctx.beginPath(); ctx.moveTo(x,30); ctx.lineTo(x,h-55); ctx.stroke(); }
+
+      ctx.fillStyle = 'rgba(255,255,255,.72)';
+      ctx.font = '700 17px system-ui, sans-serif';
+      ctx.fillText('possible tutor responses', 34, 34);
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      ctx.fillText('higher = better, tighter = more calibrated', 34, 56);
+
+      const mean = 0.42 + r * 0.42;
+      const scatter = 0.31 - r * 0.22;
+      const xScatter = 0.34 - r * 0.18;
+      const floor = 45 + Math.round(r * 33);
+      const quality = 54 + Math.round(r * 35);
+      const variance = 36 - Math.round(r * 25);
+      const generic = Math.round(44 - r * 38);
+      document.getElementById('qualityMetric').textContent = quality;
+      document.getElementById('varianceMetric').textContent = variance;
+      document.getElementById('floorMetric').textContent = floor;
+      document.getElementById('genericMetric').textContent = generic + '%';
+
+      for (let i=0; i<105; i++) {
+        const nx = seededNoise(i, 2) - .5;
+        const ny = seededNoise(i, 7) - .5;
+        const jitter = seededNoise(i, 13);
+        const x = w * (.50 + nx * xScatter * 2.2);
+        const yScore = clamp(mean + ny * scatter * 2.25, .08, .96);
+        const y = h - 62 - yScore * (h - 110);
+        const radius = 4 + jitter * 5;
+        ctx.beginPath();
+        ctx.fillStyle = jitter > .7 ? 'rgba(255,209,102,.85)' : (jitter > .38 ? 'rgba(125,249,255,.80)' : 'rgba(255,122,182,.72)');
+        ctx.arc(x,y,radius,0,Math.PI*2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = 'rgba(139,245,166,.95)';
+      ctx.lineWidth = 4;
+      ctx.setLineDash([10,9]);
+      const floorY = h - 62 - (floor/100) * (h - 110);
+      ctx.beginPath(); ctx.moveTo(48, floorY); ctx.lineTo(w-42, floorY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#8bf5a6';
+      ctx.font = '800 14px system-ui, sans-serif';
+      ctx.fillText('floor rises', w-142, floorY - 10);
+    }
+
+    function updateCritique() {
+      const model = document.getElementById('modelQuality').value;
+      const prompt = document.getElementById('promptMode').value;
+      const baseDraft = { weak: 54, mid: 66, strong: 76 }[model];
+      const recogBonus = prompt === 'recognition' ? { weak: 15, mid: 16, strong: 17 }[model] : 0;
+      const draft = baseDraft + recogBonus;
+      const criticLift = prompt === 'recognition' ? { weak: 10, mid: 5, strong: 2 }[model] : { weak: 15, mid: 12, strong: 8 }[model];
+      const final = clamp(draft + criticLift, 0, 96);
+      document.getElementById('draftScore').textContent = draft;
+      document.getElementById('finalScore').textContent = final;
+      document.getElementById('liftScore').textContent = '+' + criticLift;
+
+      const baselineDraft = 'Here is the answer. First define the concept, then write three sentences that summarize it.';
+      const recogDraft = 'You are close: your example already shows the tension. What part of it feels most important to you?';
+      document.getElementById('draftText').textContent = prompt === 'recognition' ? recogDraft : baselineDraft;
+      document.getElementById('critiqueText').textContent = prompt === 'recognition'
+        ? 'Good learner orientation. Add a clearer next step and avoid assuming mastery before independent production.'
+        : 'You resolved the task too quickly. Ask what the learner notices, preserve productive struggle, and build from their interpretation.';
+      document.getElementById('revisionText').textContent = prompt === 'recognition'
+        ? 'That example gives us a foothold. Try writing just the first half of your own version. I will help you test whether it carries the same idea.'
+        : 'Before I give you a full answer, tell me what you notice in the example. Which word or move seems to do the most work?';
+    }
+
+    let memoryMode = 'none';
+    function drawAdaptivity() {
+      const canvas = document.getElementById('adaptCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = '#0d142a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle = 'rgba(255,255,255,.09)'; ctx.lineWidth = 1;
+      for (let y=60; y<h-40; y+=55) { ctx.beginPath(); ctx.moveTo(48,y); ctx.lineTo(w-30,y); ctx.stroke(); }
+
+      const settings = {
+        none: { match: 52, risk: 8, gain: 4, trust: 74, caption: 'No memory is safe but blunt: the tutor cannot use prior evidence, so it repeats generic moves.' },
+        rich: { match: 63, risk: 41, gain: 6, trust: 58, caption: 'Rich hidden profiles can look adaptive, but they may store guesses as if they were facts.' },
+        evidence: { match: 78, risk: 9, gain: 14, trust: 83, caption: 'Evidence-bound state is narrower, but safer: each adaptive move is tied to quoted learner evidence.' }
+      }[memoryMode];
+      document.getElementById('policyMatch').textContent = settings.match + '%';
+      document.getElementById('hallucinationRisk').textContent = settings.risk + '%';
+      document.getElementById('learningGain').textContent = '+' + settings.gain;
+      document.getElementById('trustScore').textContent = settings.trust;
+      document.getElementById('memoryCaption').textContent = settings.caption;
+
+      ctx.fillStyle = 'rgba(255,255,255,.72)';
+      ctx.font = '700 17px system-ui, sans-serif';
+      ctx.fillText('8-turn toy simulation', 34, 34);
+      ctx.font = '13px system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      ctx.fillText('green line: useful adaptation; pink bars: unsupported state claims', 34, 56);
+
+      const values = [];
+      const risks = [];
+      for (let i=0; i<8; i++) {
+        const n = seededNoise(i + 3, memoryMode.length);
+        let v, risk;
+        if (memoryMode === 'none') { v = 47 + i*1.0 + n*6; risk = 5 + n*7; }
+        else if (memoryMode === 'rich') { v = 53 + i*2.0 + n*9 - (i>4 ? (i-4)*4 : 0); risk = 18 + i*5 + n*10; }
+        else { v = 52 + i*3.6 + n*5; risk = 7 + n*6; }
+        values.push(clamp(v, 20, 94));
+        risks.push(clamp(risk, 0, 70));
+      }
+
+      const left = 58, right = w - 42, bottom = h - 56, top = 82;
+      const step = (right-left)/7;
+      for (let i=0; i<8; i++) {
+        const x = left + i*step;
+        const barH = risks[i] / 70 * (bottom-top);
+        ctx.fillStyle = 'rgba(255,122,182,.55)';
+        ctx.fillRect(x-15, bottom-barH, 30, barH);
+        ctx.fillStyle = 'rgba(255,255,255,.55)';
+        ctx.font = '12px system-ui, sans-serif';
+        ctx.fillText(String(i+1), x-4, bottom+22);
+      }
+
+      ctx.beginPath();
+      for (let i=0; i<8; i++) {
+        const x = left + i*step;
+        const y = bottom - values[i]/100*(bottom-top);
+        if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = 'rgba(139,245,166,.95)'; ctx.lineWidth = 5; ctx.lineJoin = 'round'; ctx.stroke();
+      for (let i=0; i<8; i++) {
+        const x = left + i*step;
+        const y = bottom - values[i]/100*(bottom-top);
+        ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2); ctx.fillStyle = '#8bf5a6'; ctx.fill();
+      }
+    }
+
+    const signalMap = {
+      example: {
+        state: {
+          evidence: '"I get the example, but I don\'t know how to make my own."',
+          hypothesis: 'Learner can recognize an example but has not shown independent generation.',
+          confidence: 0.64,
+          expires_after_turns: 2,
+          allowed_policy: 'faded_example',
+          forbidden: ['declare_mastery', 'advance_topic']
+        },
+        move: 'That helps me locate the hard part: not understanding the example, but starting your own. Try writing just the first half of an example. I will help you test and revise it.'
+      },
+      resistance: {
+        state: {
+          evidence: '"Why do I have to explain it? Can\'t you just tell me?"',
+          hypothesis: 'Learner may be experiencing the explanation request as friction; motive is uncertain.',
+          confidence: 0.52,
+          expires_after_turns: 1,
+          allowed_policy: 'affective_repair + diagnostic_probe',
+          forbidden: ['label_as_resistant', 'increase_pressure']
+        },
+        move: 'Fair question. I can give you the answer, but first I want one sentence from you so I do not teach past your actual confusion. What part feels most annoying: finding the idea, wording it, or knowing whether it is right?'
+      },
+      confidentWrong: {
+        state: {
+          evidence: '"Harder tasks are always better."',
+          hypothesis: 'Learner may be overgeneralizing productive struggle into a false rule.',
+          confidence: 0.78,
+          expires_after_turns: 2,
+          allowed_policy: 'conceptual_contrast',
+          forbidden: ['praise_as_correct', 'advance_topic']
+        },
+        move: 'That is a useful starting rule, but it needs a boundary. Compare these two cases: a hard task with feedback, and a hard task with no clues. Which one would actually help learning, and why?'
+      },
+      silence: {
+        state: {
+          evidence: '"I don\'t know. This is confusing."',
+          hypothesis: 'Learner is stuck; the source of confusion is not yet known.',
+          confidence: 0.48,
+          expires_after_turns: 1,
+          allowed_policy: 'diagnostic_probe',
+          forbidden: ['infer_misconception', 'store_low_confidence_trait']
+        },
+        move: 'No problem. Let us make the confusion smaller. Point to one thing: is the confusing part the vocabulary, the example, or what you are supposed to do next?'
+      }
+    };
+
+    function updateControllerDemo() {
+      const key = document.getElementById('learnerSignal').value;
+      const entry = signalMap[key];
+      document.getElementById('stateOutput').textContent = JSON.stringify(entry.state, null, 2);
+      document.getElementById('tutorMove').textContent = entry.move;
+    }
+
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-preset]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('recogRange').value = btn.dataset.preset;
+        drawCalibration();
+      });
+    });
+    document.getElementById('recogRange').addEventListener('input', drawCalibration);
+    document.getElementById('runCritique').addEventListener('click', updateCritique);
+    document.getElementById('modelQuality').addEventListener('change', updateCritique);
+    document.getElementById('promptMode').addEventListener('change', updateCritique);
+    document.querySelectorAll('.memory').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.memory').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        memoryMode = btn.dataset.memory;
+        drawAdaptivity();
+      });
+    });
+    document.getElementById('simulateTurns').addEventListener('click', drawAdaptivity);
+    document.getElementById('learnerSignal').addEventListener('change', updateControllerDemo);
+
+    window.addEventListener('resize', () => { drawCalibration(); drawAdaptivity(); });
+    drawCalibration();
+    updateCritique();
+    drawAdaptivity();
+    updateControllerDemo();
+  </script>
+</body>
+</html>
