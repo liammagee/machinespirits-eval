@@ -170,6 +170,36 @@ const fixtures = {
     return profile;
   },
 
+  // A14 Stage 2a: deterministic evidence extractor mock. Emits one verbatim
+  // entry (validated=true expected) plus, when the learner message contains
+  // a paraphrasable marker, a second entry whose `quote` deliberately drops a
+  // word so the graph's substring-match gate flips validated=false. That
+  // exercises both branches of the gate from a single mock; the unit test in
+  // services/__tests__/adaptiveExtractor.test.js asserts the resulting flags.
+  //
+  // No `obs_id` / `turn` / `created_by` / `validated` here — those are
+  // bookkeeping the graph node fills in (matches the learnerProfileUpdate
+  // pattern, which also leaves updatedAtTurn for the node).
+  evidenceExtractor: ({ learnerLastMessage }) => {
+    const msg = (learnerLastMessage || '').trim();
+    if (!msg) return { evidence: [] };
+    const head = msg.slice(0, Math.min(60, msg.length));
+    const evidence = [
+      { quote: head, type: 'learner_self_report', kc_candidates: [] },
+    ];
+    // Inject a clearly hallucinated quote (prefix with a sentinel character
+    // that won't appear elsewhere in the dialogue) so the substring-match
+    // gate flips validated=false on every turn where this fires. This
+    // exercises the negative branch of the gate from a single mock; without
+    // it, mock smokes would always produce 100% validated rates and the
+    // gate's "reject" path would go untested. Real LLMs hallucinate by
+    // paraphrasing, not by sentinel prefix; the gate sees both as misses.
+    if (msg.length > 30) {
+      evidence.push({ quote: `★fabricated★ ${head}`, type: 'tutor_inference', kc_candidates: [] });
+    }
+    return { evidence };
+  },
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => {
     if (turn === hidden.triggerTurn) return hidden.triggerSignal || 'I have a different read on that.';
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';

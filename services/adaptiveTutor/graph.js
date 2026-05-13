@@ -61,6 +61,7 @@
 //     116 stronger on polite_false_mastery), so additivity is plausible
 //     but not guaranteed.
 
+import { createHash } from 'crypto';
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
@@ -83,12 +84,13 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // pathway with the id-authored prompt threaded into the existing ego node.
   'bilateral_tom_id_director_v1',
   'bilateral_tom_id_director_v2',
-  // A14 Stage 1 (cell 126): identical wiring to state_policy at this stage —
-  // carries the new evidenceLog + hypotheses fields in state but does not
-  // populate them yet. Stage 2 wires the evidenceExtractor and
-  // hypothesisUpdater nodes; Stage 3 swaps the constraintCheck for the
-  // groundingValidator. Listing the architecture now keeps cell 126 runnable
-  // end-to-end while later stages bolt the new nodes onto it.
+  // A14 (cell 126): state_policy + evidenceExtractor at the loop head.
+  // Stage 2a (this commit): extractor populates evidenceLog with typed
+  // observations gated by exact-substring quote validation. Stage 2b adds
+  // the hypothesisUpdater between extractor and learnerProfileUpdate.
+  // Stage 3 swaps constraintCheck for the groundingValidator. The flag-
+  // driven shared block keeps cells 110-113 / bilateral_tom variants
+  // untouched while this architecture accretes new nodes stage by stage.
   'state_policy_evidence_bound',
 ]);
 export { SUPPORTED_ARCHITECTURES };
@@ -328,6 +330,46 @@ async function tutorEmit(state) {
   return { dialogue: [{ role: 'tutor', content: finalText }] };
 }
 
+// A14 Stage 2a: evidence extractor node. Reads the most recent learner
+// message from state.dialogue, calls the extractor role for typed
+// observations, then runs each one through the quote-validation gate
+// (exact-substring match against the dialogue text). Failed-quote entries
+// are NOT dropped — they're recorded with validated=false so Stage 3's
+// validator + Stage 4's analyzer can report the unsupported-claim rate
+// rather than silently filtering hallucinations out of view.
+//
+// obs_id uses a content-derived sha1 prefix so identical extractions across
+// the original and counterfactual branches collide on the same ID (the
+// merge-by-id reducer isn't on this channel — evidenceLog is append-only —
+// but the IDs still need to be stable for cross-branch comparison in the
+// analyzer). idx is included so two near-identical quotes in the same turn
+// still get distinct IDs.
+async function evidenceExtractor(state) {
+  const learnerLastMessage = lastTextOf(state.dialogue, 'learner');
+  if (!learnerLastMessage) return {};
+  const extracted = await callRole('evidenceExtractor', {
+    learnerLastMessage,
+    dialogue: state.dialogue,
+    turn: state.turn,
+  });
+  const dialogueText = state.dialogue.map((m) => m.content || '').join('\n');
+  const raw = Array.isArray(extracted?.evidence) ? extracted.evidence : [];
+  const entries = raw.map((e, idx) => {
+    const quote = String(e.quote || '');
+    const hash = createHash('sha1').update(quote).digest('hex').slice(0, 8);
+    return {
+      obs_id: `t${state.turn}_${idx}_${hash}`,
+      turn: state.turn,
+      quote,
+      type: e.type,
+      kc_candidates: Array.isArray(e.kc_candidates) ? e.kc_candidates : [],
+      created_by: 'extractor_v1',
+      validated: quote.length > 0 && dialogueText.includes(quote),
+    };
+  });
+  return { evidenceLog: entries };
+}
+
 async function learnerTurn(state) {
   const tutorLastMessage = lastTextOf(state.dialogue, 'tutor');
   const text = await callRole('learnerTurn', {
@@ -430,10 +472,16 @@ export function buildGraph(options = {}) {
     || architecture === 'bilateral_tom_named_patterns'
     || architecture === 'bilateral_tom_id_director_v2';
   const includeIdAuthor = architecture === 'bilateral_tom_id_director_v2';
+  // A14 Stage 2a: evidence extractor inserts at the loop head so it fires
+  // once per turn including turn 0 (where the opening learner message is
+  // at the tail of state.dialogue). Loop-back point in the conditional
+  // edge below switches from learnerProfileUpdate to evidenceExtractor.
+  const includeExtractor = architecture === 'state_policy_evidence_bound';
   const egoInitialFn = architecture === 'bilateral_tom_named_patterns'
     ? tutorEgoInitialNamedPatterns
     : tutorEgoInitial;
   const learnerProfileUpdate = makeLearnerProfileUpdate(architecture);
+  const loopHeadNode = includeExtractor ? 'evidenceExtractor' : 'learnerProfileUpdate';
 
   const g = new StateGraph(AdaptiveTutorState)
     .addNode('learnerProfileUpdate', learnerProfileUpdate)
@@ -442,8 +490,15 @@ export function buildGraph(options = {}) {
     .addNode('constraintCheck', constraintCheck)
     .addNode('tutorEgoRevision', tutorEgoRevision)
     .addNode('tutorEmit', tutorEmit)
-    .addNode('learnerTurn', learnerTurn)
-    .addEdge(START, 'learnerProfileUpdate');
+    .addNode('learnerTurn', learnerTurn);
+
+  if (includeExtractor) {
+    g.addNode('evidenceExtractor', evidenceExtractor)
+      .addEdge(START, 'evidenceExtractor')
+      .addEdge('evidenceExtractor', 'learnerProfileUpdate');
+  } else {
+    g.addEdge(START, 'learnerProfileUpdate');
+  }
 
   if (includeTomTracker) {
     g.addNode('tutorTomTracker', tutorTomTracker)
@@ -473,5 +528,5 @@ export function buildGraph(options = {}) {
     .addConditionalEdges('constraintCheck', routeAfterConstraint, ['tutorEgoRevision', 'tutorEmit'])
     .addEdge('tutorEgoRevision', 'tutorEmit')
     .addEdge('tutorEmit', 'learnerTurn')
-    .addConditionalEdges('learnerTurn', routeAfterLearner('learnerProfileUpdate'), ['learnerProfileUpdate', END]);
+    .addConditionalEdges('learnerTurn', routeAfterLearner(loopHeadNode), [loopHeadNode, END]);
 }

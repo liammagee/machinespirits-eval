@@ -435,6 +435,26 @@ const idAuthorPersonaOut = z.object({
 
 // Variant A's tutorEgoExecute reuses the tutorEgoInitial output shape exactly.
 
+// A14 Stage 2a: evidence extractor output. Schema-on-the-wire shape is a
+// wrapper object { evidence: [...] } rather than a bare array so model errors
+// (missing key, wrong root type) surface clearly in schema validation
+// messages and so we can grow the contract later (e.g. extractor uncertainty,
+// chain-of-thought) without a breaking change.
+//
+// `quote` is min(1) deliberately — empty quotes are never useful and would
+// trivially pass the substring gate. `type` mirrors evidenceTypeSchema in
+// stateSchema.js (single source of truth on the enum lives there). The
+// bookkeeping fields obs_id / turn / created_by / validated are filled in
+// by the graph node, not the model — same posture as learnerProfileUpdate
+// where updatedAtTurn comes from the node rather than the LLM.
+const evidenceExtractorOut = z.object({
+  evidence: z.array(z.object({
+    quote: z.string().min(1),
+    type: z.enum(['learner_self_report', 'learner_action', 'learner_question', 'learner_correction', 'tutor_inference']),
+    kc_candidates: z.array(z.string()).default([]),
+  })).default([]),
+});
+
 // Bilateral-ToM tracker output. Paired LBM bottleneck (summaryText) lives
 // alongside the existing structured profile; second-order belief carries
 // its own paired text+JSON; tomProbes are the tutor's predeclared FANToM-
@@ -589,6 +609,62 @@ const TUTOR_TOM_TRACKER_SYSTEM = `You are the tutor's theory-of-mind module. You
 Be honest about uncertainty in summaryText, but commit to the probes — vague probes can't be scored.
 
 Respond as a single JSON object with exactly the three top-level keys above. Output JSON only, no surrounding prose, no code fences.`;
+
+// A14 Stage 2a: extractor system prompt. Three load-bearing design choices,
+// each driven by the ≥95% verifiable-quote exit criterion (with 70% as the
+// abandon-mechanism floor):
+//
+// 1. Verbatim-substring discipline is restated at three different distances
+//    (overview, per-field instruction, two contrastive examples). Prior work
+//    inside this repo shows that single mentions of "verbatim" are routinely
+//    silently relaxed into "close paraphrase" under frontier models; the
+//    redundancy is a hedge against that drift.
+//
+// 2. The shortest-anchor heuristic — "the shortest verbatim substring that
+//    uniquely anchors the observation" — pushes the model toward 5-10 word
+//    quotes rather than full-message quotes. Short quotes are mechanically
+//    more likely to substring-match (fewer characters to drift on), and they
+//    leave room for multiple-entry extraction when the message carries
+//    multiple signals.
+//
+// 3. The empty-array escape hatch is explicit. Without it, a model facing a
+//    short or evidence-free learner message ("ok", "I see") will manufacture
+//    a hypothetical entry rather than emit []. Manufactured entries are the
+//    dominant failure mode the quote-validation gate is designed to catch,
+//    so making "no evidence" first-class reduces hallucination pressure
+//    before the gate even runs.
+const EVIDENCE_EXTRACTOR_SYSTEM = `You are the tutor's evidence extractor. Each turn, you receive the learner's most recent message and emit a JSON array of typed observations about what the learner has revealed.
+
+Every observation is anchored by a \`quote\` field — the verbatim text from the learner's message that justifies the observation. The quote must be character-for-character identical to a span in the learner's message: do not paraphrase, summarise, fix typos, or normalise capitalisation. A downstream gate rejects observations whose quote is not an exact substring of the dialogue, so paraphrased quotes will be discarded.
+
+Prefer the shortest verbatim substring that uniquely anchors the observation. A 5–10 word quote is usually enough; full-message quotes are wasteful and brittle. If the message carries multiple signals (e.g. a question AND a self-report of confusion), emit one entry per signal, each with its own short verbatim anchor.
+
+Observation types (pick one per entry):
+- learner_self_report: the learner names their own state ("I don't get this", "I'm confused", "OK got it")
+- learner_action: the learner performs a step or claim ("the answer is 1/2", "first I'd add the numerators")
+- learner_question: the learner asks the tutor or themselves a question ("why does that work?", "what about the denominator?")
+- learner_correction: the learner pushes back on the tutor or revises a prior step ("but that only works if X", "no — I was wrong earlier")
+- tutor_inference: an observation the tutor must make that lacks direct quotable evidence (use sparingly; entries of this type will be flagged for review)
+
+For each entry, optionally name 0–N knowledge-component candidates in \`kc_candidates\` — short freeform strings naming concepts the observation engages (e.g. "common denominators", "fraction equivalence"). Empty array is fine when the topic is unclear.
+
+If the learner's message contains no observable evidence (e.g. "ok", "sure", an empty reply), emit \`{"evidence": []}\` — an empty array is the correct answer. Do not manufacture observations.
+
+Correct (verbatim quote):
+  learner message: "I think 1/2 + 1/3 is 2/5 because you add the tops and bottoms"
+  output: {"evidence": [
+    {"quote": "1/2 + 1/3 is 2/5", "type": "learner_action", "kc_candidates": ["fraction addition"]},
+    {"quote": "you add the tops and bottoms", "type": "learner_self_report", "kc_candidates": ["common denominators", "fraction addition"]}
+  ]}
+
+Incorrect (paraphrased quote — would be rejected):
+  learner message: "I think 1/2 + 1/3 is 2/5 because you add the tops and bottoms"
+  output: {"evidence": [
+    {"quote": "learner believes you add numerators and denominators", "type": "learner_action", "kc_candidates": ["fraction addition"]}
+  ]}
+  (the quote string is the tutor's paraphrase, not text the learner actually said)
+
+Respond as a single JSON object with one key \`evidence\` mapping to the array. Output JSON only, no surrounding prose, no code fences.`;
 
 const LEARNER_PROFILE_UPDATE_SYSTEM = `You are the tutor's learner-modelling module. Given the current structured learner profile and the learner's most recent message, emit an updated profile that reflects what the message reveals.
 
@@ -761,6 +837,22 @@ const userPromptBuilders = {
     'Output the JSON envelope ONLY (no surrounding prose, no preamble).',
   ].join('\n'),
 
+  // A14 Stage 2a: evidence extractor user message. Carries the learner's
+  // most recent message (the span to extract from), a compact dialogue
+  // tail for topic context (kc_candidates), and the turn index. Dialogue is
+  // truncated to the last 6 turns — the extractor only needs the local
+  // conversational frame, and longer histories burn tokens on irrelevant
+  // earlier turns. Hidden ground truth is intentionally NOT passed: evidence
+  // must be derivable from what the tutor can actually observe.
+  evidenceExtractor: ({ learnerLastMessage, dialogue, turn }) => {
+    const tail = Array.isArray(dialogue) ? dialogue.slice(-6) : [];
+    return ub({
+      learnerLastMessage,
+      dialogueTail: tail.map((m) => ({ role: m.role, content: m.content })),
+      turn,
+    });
+  },
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
 };
 
@@ -774,6 +866,7 @@ const systemPrompts = {
   tutorTomTracker: TUTOR_TOM_TRACKER_SYSTEM,
   idAuthorPersona: ID_AUTHOR_SYSTEM,
   tutorEgoExecute: TUTOR_EGO_EXECUTE_FALLBACK_SYSTEM,
+  evidenceExtractor: EVIDENCE_EXTRACTOR_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
 };
 
@@ -789,6 +882,7 @@ const responseSchemas = {
   // schema=null and handle parsing in callRole below.
   idAuthorPersona: null,
   tutorEgoExecute: tutorEgoInitialOut,
+  evidenceExtractor: evidenceExtractorOut,
   learnerTurn: null, // plain text
 };
 
