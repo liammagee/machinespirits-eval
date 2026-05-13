@@ -1927,6 +1927,50 @@ function sumManifestExpectedForRuns(manifest, runIds) {
   return { scored, attempts, n_evals: seen.size };
 }
 
+// C7.3 (TODO.md): when a paper claim cites a section or table cross-reference
+// in its local context (e.g. line 511's "(N=655; Table 8)" pointing forward to
+// §6.4's multi-model probe), aggregateRunEvidence and sumManifestExpectedForRuns
+// both miss it — they only consult run IDs cited on the same line, not forward
+// cross-refs. This helper resolves "Section X.Y" / "§X.Y" mentions to any
+// figures.* block whose `section` matches, and sums their per-run `expected_n`.
+// The total is a composite N (e.g. 179+119+120+117+120 = 655 for figure4) that
+// keys_evaluations doesn't represent because the underlying rows are spread
+// across multiple key_evaluations entries plus a profile-scoped slice of one.
+function findCrossReferencedFigureNs(manifest, contextText) {
+  if (!contextText) return [];
+  const sections = new Set();
+  const sectionRe = /(?:Section|§)\s*(\d+(?:\.\d+)?)/gi;
+  let m;
+  while ((m = sectionRe.exec(contextText)) !== null) {
+    sections.add(m[1]);
+  }
+  if (sections.size === 0) return [];
+
+  const figures = manifest?.figures || {};
+  const results = [];
+  for (const [figureKey, figure] of Object.entries(figures)) {
+    if (!figure || typeof figure !== 'object') continue;
+    if (!sections.has(String(figure.section))) continue;
+    const runs = figure.runs;
+    if (!runs || typeof runs !== 'object' || Array.isArray(runs)) continue;
+    let totalN = 0;
+    let hadExpectedN = false;
+    for (const entry of Object.values(runs)) {
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        const expectedN = Number(entry.expected_n || 0);
+        if (expectedN > 0) {
+          totalN += expectedN;
+          hadExpectedN = true;
+        }
+      }
+    }
+    if (hadExpectedN && totalN > 0) {
+      results.push({ figure_key: figureKey, section: figure.section, total_n: totalN });
+    }
+  }
+  return results;
+}
+
 function hasPaperTotalCue(text) {
   return /(primary scored|fifty key evaluations|key evaluations above)/i.test(text);
 }
@@ -2061,6 +2105,16 @@ function evaluateNClaimsBacktracking({
         }
       }
 
+      // Forward cross-references: when the claim's local context cites a
+      // section (e.g. "(N=655; Table 8)" near "Section 6.4"), surface the
+      // matching figures.* aggregate total. See findCrossReferencedFigureNs.
+      for (const ref of findCrossReferencedFigureNs(manifest, cueContext)) {
+        targetCounts.push({
+          label: `manifest_figure_${ref.figure_key}_total_n`,
+          value: ref.total_n,
+        });
+      }
+
       const exact = targetCounts.find((target) => target.value === claim.value);
       if (exact) {
         outcomes.push({
@@ -2142,6 +2196,23 @@ function evaluateNClaimsBacktracking({
           target_counts: targetCounts,
         });
       }
+      continue;
+    }
+
+    // Final fall-through: try figures.* cross-references even without nearby
+    // run IDs or section runs. Lines 10/46/495 of paper-full.md cite
+    // "(N=655; ... Section 6.4 ... Table 8)" but contain no inline run IDs,
+    // so the nearbyRunIds branch above can't fire. This catches them.
+    const fallthroughFigureRefs = findCrossReferencedFigureNs(manifest, cueContext);
+    const fallthroughExact = fallthroughFigureRefs.find((ref) => ref.total_n === claim.value);
+    if (fallthroughExact) {
+      outcomes.push({
+        status: 'pass',
+        reason: 'figure-cross-ref-exact',
+        ...details,
+        matched_metric: `manifest_figure_${fallthroughExact.figure_key}_total_n`,
+        matched_value: fallthroughExact.total_n,
+      });
       continue;
     }
 

@@ -480,15 +480,15 @@ reconciliation in a superseded paper; kept here as optional cleanup, prioritised
   for anyone querying historical state without gating bug resolution. Remaining 2 failures are
   C7.3 territory (§5.6 N=655 cross-reference) and its umbrella `paper-claims-suite`.
 
-- [ ] **C7.3 — §5.6 N=655 forward cross-reference.** Paper says "(N=655; Section 6.4, Table 8)" in
-  §5.6 (line 511); 655 doesn't sum cleanly from §6.4 manifest entries (60 + 119 + 120 + 117 + 120 =
-  536, not 655). Single residual of `paper-claims-n-backtrack`. Options: (a) extend
-  `evaluateNClaimsBacktracking` to follow explicit `Section X.Y` cross-references in the local
-  context and aggregate runs from those sections too — adds ~20 lines and might still not resolve
-  655 if it isn't a clean §6.4 sum; (b) add an explicit "multi-model probe across five ego models
-  (N=655)" aggregate entry to `paper-manifest.json` with the actual contributing run IDs; (c)
-  verify the paper's 655 against the underlying data and correct it. (c) is most likely correct but
-  requires the run-level recompute.
+- [x] **C7.3 — §5.6 N=655 forward cross-reference.** DONE 2026-05-13. Diagnosis: `figures.figure4`
+  in `paper-manifest.json` already encodes 655's composition (179 Kimi cells 1/3/5/7 + 119
+  Nemotron + 120 DeepSeek + 117 GLM + 120 Haiku = 655 ✓), but `evaluateNClaimsBacktracking` only
+  consulted `key_evaluations`. Fix: added `findCrossReferencedFigureNs` helper that scans the
+  claim's local context for `Section X.Y` / `§X.Y` mentions and surfaces matching `figures.*`
+  totals as additional target counts; wired into both the `nearbyRunIds` branch and the
+  fall-through branch. `paper-claims-n-backtrack` went `fail` → `warn` (1 internal fail → 0,
+  pass count 81 → 88). The line-511 claim plus the three fall-through 655 cases (lines 10, 46,
+  495) all now resolve via `manifest_figure_figure4_total_n`. Audit overall: 0 fails.
 
 - [ ] **C7.4 — `paper-full.md` prose-vs-manifest drift (LARGEST).** Ten residuals from
   `generate-paper-tables.js`: line 1145 says `N=8,725 scored` (a different figure at that spot);
