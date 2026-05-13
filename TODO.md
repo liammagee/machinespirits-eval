@@ -437,6 +437,49 @@ Net: the MVP would likely produce a publishable §6.X with two real findings (re
 
 **Paper integration** — single-paper discipline (`CLAUDE.md` §Paper Authoring Discipline): all empirical claims land in `paper-full-2.0.md` first. No spin-off paper. The report's framing as "the next paper" is rejected; this is a §6.X extension and a §7.X taxonomy table.
 
+### A15. Cross-Dialogue Retrieval-Augmented Adaptation (DESIGN SKETCH — recorded 2026-05-13, gated on A14)
+
+**Origin**: 2026-05-13 conversation on "lightweight training on learner responses, no weight updates." Sits adjacent to A14 but attacks a different time-scale: cross-dialogue memory rather than per-turn evidence binding. The architectural motivation: A14 explicitly does **not** address the multi-turn slope gap (§A14 adaptation-problem assessment) — within-dialogue evidence has no causal path to "response at turn 5 better than at turn 1." A persistent cache of (learner_state_pattern → policy_action → outcome) tuples across dialogues *does* have that causal path: a tutor entering its 5th turn with a new learner can retrieve 4-turn priors from prior learners with similar profiles. Complement to A14, not substitute.
+
+**Compose-with-A14**: cache keys would be derived from A14's typed apparatus — `(learner_state_summary, top_validated_evidence_entries, agencySignal+confidence)`. Without A14 in place, the keys would be ad-hoc text features (brittle) or raw dialogue embeddings (unstructured); with A14, they're typed and validated. This is why A15 is gated on A14 landing — the cleanest version of the experiment reuses Stage 2's extractor outputs rather than re-deriving its own key features.
+
+**Why "lightweight"**: no model-weight updates. Embedding + nearest-neighbor lookup + in-context augmentation of the policy-selection prompt. Same provider-agnostic posture as the rest of the project. "Training signal" is whether `strict_shift` fired on the retrieved analogue — no labels beyond what the existing trap-suite scoring produces. The two heavier readings of "lightweight training" (LoRA adapters, online RLHF) are explicitly out of scope: the maintenance burden of a fine-tuned artifact dominates the research-substrate's editability needs.
+
+**Adaptation-problem assessment** (which the MVP attacks):
+- Multi-turn slope under recognition (null in §6.X): **MVP attacks strongly.** Memory across dialogues makes turn-5 ≠ turn-1.
+- Triggered strategy shift on trap suite: **MVP attacks marginally.** Retrieved analogues may stabilise policy selection on ambiguous traps.
+- False personalization / unsupported claims: **MVP does not address.** A14's grounding validator is the right machinery for this.
+- Learner-grounded adaptation (§4.8 of A14 report): **deferred to A1 pilot.** Same human-loop constraint as A14.
+
+Net: a complement to A14. If both land, the paper has evidence-binding + cross-dialogue memory as two separable mechanisms with separable metrics. If A14 lands negatively (Stage 2 extractor < 70% verifiable-quote), A15 needs to re-derive its keys from raw dialogue features — falls back to a less-clean experiment but is still runnable.
+
+**Branch**: `experiment/retrieval-adaptation` (new branch, started off `main` after A14 merges back). Cache store is a schema migration that justifies isolation in the same way A14's was.
+
+**Staggered plan** — each stage is a stop-and-publish checkpoint:
+
+- [ ] **Stage 1 — Cache schema + key extraction** (~3-5 days). New `services/adaptiveTutor/memoryBank.js`: SQLite store for (cache_key, learner_state_snapshot, policy_action, outcome, source_dialogue_id, source_turn) tuples with an embedding column indexed via a cheap embedding model (voyage-3, text-embedding-3-small, or local sentence-transformers — pick on cost grounds at implementation time). Cache keys derived from A14's evidence-bound state at end-of-turn: `{learner_state_summary, top-N validated evidence quotes, agencySignal, confidence_bucket}`. Population script that walks existing cell_126 trace files and seeds the cache without disturbing the runner. **Exit**: cache populates from existing cell_126 traces; ~100-500 entries from the 8-scenario × 3-run sweep; key-collision rate < 50% (most dialogues hash to distinguishable neighborhoods).
+
+- [ ] **Stage 2 — Retrieval at policy selection** (~5-7 days). New `evidenceMemoryRetriever` node before `tutorEgoInitial`: embed the current learner-state snapshot, retrieve top-k similar past tuples, format as in-context examples in the policy-selection prompt. Add `cell_128_state_policy_evidence_bound_retrieval` cell (architecture: `state_policy_evidence_bound_retrieval`, falls through to evidence-bound topology with retriever inserted). **Exit**: cell_128 produces DB-tractable runs; ablation against cell_126 shows retrieval changes policy selection on ≥30% of turns (lower bound — if retrieval is being ignored entirely by the policy LLM, the mechanism is broken).
+
+- [ ] **Stage 3 — Analyzer + paper §6.Y** (~5-7 days). New `scripts/analyze-multi-turn-slope.js` reporting per-dimension turn-by-turn trajectory deltas across cells 110, 126, 128. Paper §6.Y in `paper-full-2.0.md` reporting retrieval-augmented vs evidence-only vs baseline on (strict_shift, multi-turn slope, retrieved-analogue diversity, retrieval-influenced-policy rate). Single-paper discipline: lands as §6.Y, not a spin-off. **Exit**: paper §6.Y drafted; claims trace to DB run IDs; validate-bug-claims passes.
+
+**Stop-and-publish checkpoints**:
+- After Stage 1: if cache keys hash to one neighborhood (>50% collision), the key derivation is informationless — stop with a notes/ writeup on key design, before building the retriever. Likely fix: add more discriminating fields, or move from `learner_state_summary` text to a structured tuple.
+- After Stage 2: if retrieval doesn't change policy selection on a measurable fraction of turns (<10%), the in-context augmentation is being ignored. Stop with a prompt-engineering writeup; consider stronger augmentation forms (explicit "in case X, do Y" injection rather than examples-as-context) before re-running.
+- After Stage 3: if cell_128's multi-turn slope doesn't beat cell_126/110, the cross-dialogue memory hypothesis is wrong on this scenario family. Negative result still publishable as §6.Y.
+
+**Explicitly out of scope for A15**:
+- LoRA / weight-update training of any kind (the heavier "lightweight training" reading)
+- Online RLHF using human-graded learner responses (A1 pilot territory)
+- Per-learner adaptation (requires real humans across sessions — A1 pilot territory)
+- Retrieval of whole prompts (only retrieve action-selection context, not the system prompt)
+- Cross-experiment knowledge transfer (e.g. using cell_110 cache for cell_126 runs — would confound the architectural comparison)
+- Embedding-model fine-tuning (use off-the-shelf throughout)
+
+**Paper integration**: §6.Y within paper-full-2.0.md, after A14's §6.X lands. Pre-registration as paired comparison cells 126 vs 128 on the existing trap suite, with secondary comparison vs cell_110. Same single-paper discipline as A14.
+
+**Decision gate**: do not start A15 until A14 Stage 4 has merged back to main AND the team has reviewed A14's empirical results. If A14 produces a strong positive (reduced unsupported-claim rate + measurable strict_shift improvement), A15 is the natural follow-up. If A14 produces a strong negative (extractor < 70%), A15 needs its key-derivation re-design before kickoff and the cost calculus shifts.
+
 ---
 
 ## B. Code Quality & Infrastructure
