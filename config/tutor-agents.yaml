@@ -5592,3 +5592,49 @@ profiles:
         max_tokens: 1500
       counterfactual:
         enabled: true
+
+  # ===========================================================================
+  # A14 — Evidence-Bound Adaptive Controller (cell 127, Stage 3: WITH validator)
+  # ===========================================================================
+  # Paired ablation against cell_126 (validator OFF) on the same trap scenarios.
+  # Topology adds a single node: groundingValidator runs after hypothesisUpdater
+  # and walks the tentative-hypothesis set, promoting hypotheses with ≥3
+  # supporting obs_ids and no contradiction to `validated`, and retiring
+  # hypotheses with ≥1 contradicting obs_id and confidence < 0.4 to
+  # `contradicted`. Stay-as-tentative is expressed by silence (no decision
+  # emitted). The "node owns bookkeeping, LLM owns verdict" pattern mirrors
+  # the updater — the validator emits {hypothesis_id, new_status, reasoning}
+  # only; the graph node preserves claim / evidence / created_at_turn.
+  #
+  # Comparison logic: cell_126 vs cell_127 isolates the retention layer's
+  # contribution to terminal-state hypothesis quality (status distribution,
+  # validated-fraction, contradicted-fraction). cell_126's Stage 2b smoke
+  # showed the updater rarely promotes (0/53 marked `validated`); cell_127
+  # fills that gap explicitly. Same provider, model, hyperparameters, and
+  # scenarios as cell_126 so the comparison is on validator presence alone.
+  # Origin: TODO.md A14 Stage 3.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_127_state_policy_evidence_bound_validated
+  cell_127_state_policy_evidence_bound_validated:
+    description: "A14 Stage 3: state_policy_evidence_bound + groundingValidator. Validator walks the tentative-hypothesis set each turn and decides promote-to-validated / retire-to-contradicted against the evidence ledger. Paired ablation against cell_126 (validator off vs on, same scenarios). Origin: TODO.md A14 Stage 3."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_evidence_bound_validated
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_evidence_bound_validated
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true

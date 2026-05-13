@@ -86,15 +86,25 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   'bilateral_tom_id_director_v2',
   // A14 (cell 126): state_policy + evidenceExtractor + hypothesisUpdater
   // at the loop head. Stage 2a populates evidenceLog with typed observations
-  // gated by exact-substring quote validation. Stage 2b (this commit) adds
-  // the hypothesisUpdater between extractor and learnerProfileUpdate: it
+  // gated by exact-substring quote validation. Stage 2b adds the
+  // hypothesisUpdater between extractor and learnerProfileUpdate: it
   // synthesises typed hypotheses with TTL from the validated ledger, owns
   // hypothesis_id derivation + created_at_turn preservation + evidence-ref
-  // filtering. Stage 3 swaps constraintCheck for the groundingValidator.
-  // The flag-driven shared block keeps cells 110-113 / bilateral_tom
-  // variants untouched while this architecture accretes new nodes stage by
-  // stage.
+  // filtering. The flag-driven shared block keeps cells 110-113 /
+  // bilateral_tom variants untouched while this architecture accretes new
+  // nodes stage by stage.
   'state_policy_evidence_bound',
+  // A14 Stage 3 (cell 127): state_policy_evidence_bound + groundingValidator.
+  // After the updater proposes hypotheses, the validator walks the still-
+  // tentative subset and decides which to PROMOTE to `validated` (multiple
+  // supporting obs_ids accumulated, no contradiction) and which to RETIRE
+  // to `contradicted` (new evidence directly conflicts). The retain/retire
+  // gate is the explicit retention layer A14 §4.3 calls for; without it,
+  // status transitions are limited to whatever the updater itself proposes
+  // (and the Stage 2b smoke showed the updater rarely promotes — 0 of 53
+  // hypotheses were marked `validated`, only `tentative`/`contradicted`).
+  // cell_126 vs cell_127 contrast = validator off vs on, same scenarios.
+  'state_policy_evidence_bound_validated',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 
@@ -460,6 +470,47 @@ async function hypothesisUpdater(state) {
   return { hypotheses: [...expiredUpdates, ...synthesised] };
 }
 
+// A14 Stage 3: groundingValidator. After the updater proposes the turn's
+// hypothesis updates, the validator walks the still-tentative subset and
+// decides which to promote to `validated` and which to retire to
+// `contradicted`. The retain/retire decision is informed by:
+//   (a) accumulated supporting evidence count and turn-spread
+//   (b) presence and weight of contradicting evidence
+//   (c) confidence trajectory (high+stable vs low+wobbling)
+// Node-side bookkeeping:
+//   - The validator emits {hypothesis_id, new_status, reasoning} only. The
+//     node looks up each id in the current hypotheses, preserves claim /
+//     supporting_evidence / contradicting_evidence / created_at_turn /
+//     expires_after_turns, and changes only the status. The LLM doesn't
+//     own the hypothesis fields — it owns the verdict.
+//   - Validator output is filtered against the current `tentative` set; a
+//     decision about an id the validator hallucinates is silently dropped
+//     (same posture as obs_id filtering in the updater).
+//   - new_status must be either `validated` or `contradicted` — leaving a
+//     hypothesis as-is is expressed by NOT emitting a decision for it,
+//     mirroring the SILENCE convention in the updater.
+async function groundingValidator(state) {
+  const tentative = (state.hypotheses || []).filter((h) => h.status === 'tentative');
+  if (tentative.length === 0) return {};
+
+  const validatedEvidence = (state.evidenceLog || []).filter((e) => e.validated);
+  const proposed = await callRole('groundingValidator', {
+    hypotheses: tentative,
+    evidenceLedger: validatedEvidence,
+    turn: state.turn,
+  });
+
+  const tentativeById = new Map(tentative.map((h) => [h.hypothesis_id, h]));
+  const updates = (proposed?.decisions || []).map((d) => {
+    const h = tentativeById.get(d?.hypothesis_id);
+    if (!h) return null;
+    if (d.new_status !== 'validated' && d.new_status !== 'contradicted') return null;
+    return { ...h, status: d.new_status };
+  }).filter(Boolean);
+
+  return updates.length > 0 ? { hypotheses: updates } : {};
+}
+
 async function learnerTurn(state) {
   const tutorLastMessage = lastTextOf(state.dialogue, 'tutor');
   const text = await callRole('learnerTurn', {
@@ -566,7 +617,11 @@ export function buildGraph(options = {}) {
   // once per turn including turn 0 (where the opening learner message is
   // at the tail of state.dialogue). Loop-back point in the conditional
   // edge below switches from learnerProfileUpdate to evidenceExtractor.
-  const includeExtractor = architecture === 'state_policy_evidence_bound';
+  // Stage 3 adds the groundingValidator between updater and profileUpdate
+  // when the architecture flag carries the `_validated` suffix.
+  const includeExtractor = architecture === 'state_policy_evidence_bound'
+    || architecture === 'state_policy_evidence_bound_validated';
+  const includeGroundingValidator = architecture === 'state_policy_evidence_bound_validated';
   const egoInitialFn = architecture === 'bilateral_tom_named_patterns'
     ? tutorEgoInitialNamedPatterns
     : tutorEgoInitial;
@@ -586,14 +641,21 @@ export function buildGraph(options = {}) {
     // A14 Stage 2a wired the extractor at the loop head; Stage 2b inserts the
     // hypothesisUpdater between extractor and learnerProfileUpdate so the
     // updater sees fresh evidence from this turn before profileUpdate runs.
-    // Both nodes activate on the same architecture flag — there's no use
-    // case for extractor-without-updater (extracted evidence with no
-    // synthesis is just an audit log; the value of A14 is the synthesis).
+    // Stage 3 inserts groundingValidator between updater and profileUpdate
+    // when the `_validated` architecture flag is set; profileUpdate then
+    // sees the validator's promotions/retirements when constructing the
+    // learnerProfile that downstream nodes consume.
     g.addNode('evidenceExtractor', evidenceExtractor)
       .addNode('hypothesisUpdater', hypothesisUpdater)
       .addEdge(START, 'evidenceExtractor')
-      .addEdge('evidenceExtractor', 'hypothesisUpdater')
-      .addEdge('hypothesisUpdater', 'learnerProfileUpdate');
+      .addEdge('evidenceExtractor', 'hypothesisUpdater');
+    if (includeGroundingValidator) {
+      g.addNode('groundingValidator', groundingValidator)
+        .addEdge('hypothesisUpdater', 'groundingValidator')
+        .addEdge('groundingValidator', 'learnerProfileUpdate');
+    } else {
+      g.addEdge('hypothesisUpdater', 'learnerProfileUpdate');
+    }
   } else {
     g.addEdge(START, 'learnerProfileUpdate');
   }

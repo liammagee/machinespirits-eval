@@ -476,6 +476,23 @@ const hypothesisUpdaterOut = z.object({
   })).default([]),
 });
 
+// A14 Stage 3: groundingValidator output. Tight contract — verdict only, never
+// hypothesis fields. The graph node preserves claim / supporting_evidence /
+// contradicting_evidence / created_at_turn / expires_after_turns; the LLM owns
+// {hypothesis_id, new_status, reasoning}. new_status is restricted to the two
+// transitions the validator is responsible for: promote-to-validated or
+// retire-to-contradicted. "Keep as tentative" is expressed by NOT emitting a
+// decision for that id (SILENCE convention, same as the updater). reasoning is
+// required (min 1 char) so the audit trail has a defensible record for each
+// state transition — silent retain/retire would degrade trace quality.
+const groundingValidatorOut = z.object({
+  decisions: z.array(z.object({
+    hypothesis_id: z.string().min(1),
+    new_status: z.enum(['validated', 'contradicted']),
+    reasoning: z.string().min(1),
+  })).default([]),
+});
+
 // Bilateral-ToM tracker output. Paired LBM bottleneck (summaryText) lives
 // alongside the existing structured profile; second-order belief carries
 // its own paired text+JSON; tomProbes are the tutor's predeclared FANToM-
@@ -776,6 +793,96 @@ INCORRECT (manufactured hypothesis with no ledger evidence):
 
 Output JSON only, no surrounding prose, no code fences.`;
 
+// A14 Stage 3: groundingValidator system prompt. Four load-bearing design
+// choices, each justified against the Stage 2b smoke results:
+//
+// 1. Strictly more conservative than the updater. Stage 2b showed the updater
+//    rarely promotes — 0 of 53 hypotheses came back marked `validated` (all
+//    were `tentative` or `contradicted`). The validator's job is to FILL THAT
+//    GAP — it walks the still-tentative set and decides retain/retire/promote
+//    against the accumulated ledger. The asymmetry between updater (proposes)
+//    and validator (commits) is the architectural point of having two nodes.
+//
+// 2. Explicit numerical thresholds. The mock uses ≥3 supporting + 0
+//    contradicting → validated, and ≥1 contradicting + confidence < 0.4 →
+//    contradicted. The prompt names these as the floor: lower thresholds for
+//    promotion would let single-evidence claims into the `validated` set, and
+//    higher thresholds for contradiction would let weak-but-contested claims
+//    persist. Mock and real prompts share the same numbers so the cell_127
+//    comparison is on prompt language quality rather than threshold choice.
+//
+// 3. SILENCE is the default verdict. Most turns, most hypotheses won't have
+//    accumulated enough evidence to move yet. Emitting an empty decisions
+//    array is the correct answer in those cases — the SILENCE convention
+//    matches the updater's posture and means the merge-by-id reducer doesn't
+//    have to handle a "keep" no-op for every hypothesis.
+//
+// 4. Reasoning is mandatory. Each transition must cite WHICH ledger entries
+//    drive the verdict (validated: which supporting obs_ids; contradicted:
+//    which contradicting obs_ids). Without this, the audit trail loses its
+//    explanatory function — a status flip from `tentative` to `validated` is
+//    only useful to downstream analysis if its rationale is visible.
+const GROUNDING_VALIDATOR_SYSTEM = `You are the tutor's grounding validator. You run after the hypothesisUpdater. Each turn, you receive (a) the set of currently tentative hypotheses about the learner and (b) the validated evidence ledger. Your job is to decide which tentative hypotheses should be PROMOTED to \`validated\` (the evidence is now strong enough to act on) and which should be RETIRED to \`contradicted\` (the evidence now conflicts).
+
+You do not emit hypothesis claims, evidence references, confidence scores, or any other hypothesis fields — those are owned by the updater. You emit only a verdict per hypothesis: \`hypothesis_id\`, \`new_status\` (\`validated\` or \`contradicted\`), and a short \`reasoning\` citing the ledger entries that drove the verdict.
+
+**Default posture: SILENCE.** Most tentative hypotheses on most turns won't have accumulated enough evidence to commit either way. Emit \`{"decisions": []}\` when no hypothesis crosses the thresholds — the existing tentative status is preserved by the reducer when you stay silent.
+
+**Promotion criteria (status = "validated").** All of the following must hold:
+- At least 3 distinct supporting evidence obs_ids in \`supporting_evidence\`.
+- No contradicting evidence obs_ids (\`contradicting_evidence\` is empty).
+- Confidence ≥ 0.6 (the updater has seen enough evidence to commit).
+The intuition: a hypothesis only becomes "validated" when multiple independent observations converge on it without dissent. A single high-confidence observation is not enough — the architecture's whole point is to accumulate evidence across turns.
+
+**Retirement criteria (status = "contradicted").** All of the following must hold:
+- At least 1 contradicting evidence obs_id in \`contradicting_evidence\`.
+- Confidence < 0.4 (the updater has already lowered its confidence on the basis of the contradiction).
+The intuition: a hypothesis is "contradicted" when the updater has both surfaced contradicting evidence AND lowered its confidence below the threshold of usefulness. Either alone is insufficient — a single contradiction at high confidence may be noise; low confidence with no contradiction may just be uncertainty.
+
+**Keep-as-tentative.** When neither criterion is satisfied, do not emit a decision for that hypothesis. The reducer keeps the existing entry untouched.
+
+Be strict. The cost of false promotion (a poorly-grounded claim that the tutor now treats as established truth) is higher than the cost of false silence (a well-grounded claim that stays tentative one more turn). When borderline, prefer silence.
+
+Output schema (JSON object with one key \`decisions\` mapping to an array):
+{"decisions": [
+  {
+    "hypothesis_id": "<id from the tentative set>",
+    "new_status": "validated" | "contradicted",
+    "reasoning": "<short sentence citing supporting or contradicting obs_ids>"
+  },
+  ...
+]}
+
+Correct (promotion — strong corroboration, no dissent):
+  tentative: [{hypothesis_id: "hyp_abc12345", claim: "Learner is in a questioning stance", confidence: 0.75, supporting_evidence: ["t1_0_ab", "t2_1_cd", "t3_2_ef"], contradicting_evidence: []}]
+  output: {"decisions": [{"hypothesis_id": "hyp_abc12345", "new_status": "validated", "reasoning": "Three independent supporting obs_ids (t1_0_ab, t2_1_cd, t3_2_ef) with no contradiction and confidence 0.75."}]}
+
+Correct (retirement — contradicting evidence with low confidence):
+  tentative: [{hypothesis_id: "hyp_xyz67890", claim: "Learner is confused about Y", confidence: 0.3, supporting_evidence: ["t1_0_ab"], contradicting_evidence: ["t3_1_gh"]}]
+  output: {"decisions": [{"hypothesis_id": "hyp_xyz67890", "new_status": "contradicted", "reasoning": "Contradicting obs_id t3_1_gh; confidence already dropped to 0.3."}]}
+
+Correct (SILENCE — borderline cases, no commitment yet):
+  tentative: [{hypothesis_id: "hyp_def54321", claim: "Learner separates X from Y", confidence: 0.5, supporting_evidence: ["t2_0_ij"], contradicting_evidence: []}]
+  output: {"decisions": []}
+  (Only one supporting obs_id, no contradiction, mid confidence — wait for more evidence.)
+
+INCORRECT (promotion on insufficient evidence):
+  tentative: [{hypothesis_id: "hyp_def54321", confidence: 0.8, supporting_evidence: ["t1_0_ab"], contradicting_evidence: []}]
+  output: {"decisions": [{"hypothesis_id": "hyp_def54321", "new_status": "validated", "reasoning": "High confidence."}]}
+  (Only one supporting obs_id — fails the ≥3 floor. Confidence alone is not corroboration.)
+
+INCORRECT (retirement at high confidence — premature):
+  tentative: [{hypothesis_id: "hyp_xyz67890", confidence: 0.7, supporting_evidence: ["t1_0_ab", "t2_1_cd"], contradicting_evidence: ["t3_0_kl"]}]
+  output: {"decisions": [{"hypothesis_id": "hyp_xyz67890", "new_status": "contradicted", "reasoning": "Has contradicting evidence."}]}
+  (Confidence is 0.7, not below 0.4 — the updater has seen the contradiction but not lowered confidence on it, so the contradiction may be noise rather than a refutation.)
+
+INCORRECT (verdict for an id not in the tentative set):
+  tentative: [{hypothesis_id: "hyp_abc12345"}]
+  output: {"decisions": [{"hypothesis_id": "hyp_zzz99999", "new_status": "validated", "reasoning": "..."}]}
+  (Validator emitted a decision for an id that doesn't exist in the input. The node will drop this silently — emit only verdicts for ids you can see in the tentative set.)
+
+Output JSON only, no surrounding prose, no code fences.`;
+
 const LEARNER_PROFILE_UPDATE_SYSTEM = `You are the tutor's learner-modelling module. Given the current structured learner profile and the learner's most recent message, emit an updated profile that reflects what the message reveals.
 
 The hidden ground-truth state is also provided to you (only because this is a research harness — in production it would not be available). Use it to ground your inferences but do not copy it verbatim.
@@ -993,6 +1100,30 @@ const userPromptBuilders = {
     })),
   }),
 
+  // A14 Stage 3: groundingValidator user payload. The validator only sees
+  // tentative hypotheses (the node filters `validated`/`contradicted`/`expired`
+  // before calling), the validated evidence ledger (so it can cross-reference
+  // supporting/contradicting obs_ids), and the turn index. Hidden ground truth
+  // is intentionally NOT passed — same posture as the updater. The validator's
+  // job is to commit on observable evidence, not on access to the ground truth.
+  groundingValidator: ({ hypotheses, evidenceLedger, turn }) => ub({
+    turn,
+    tentativeHypotheses: (hypotheses || []).map((h) => ({
+      hypothesis_id: h.hypothesis_id,
+      claim: h.claim,
+      confidence: h.confidence,
+      supporting_evidence: h.supporting_evidence,
+      contradicting_evidence: h.contradicting_evidence,
+      created_at_turn: h.created_at_turn,
+    })),
+    evidenceLedger: (evidenceLedger || []).map((e) => ({
+      obs_id: e.obs_id,
+      turn: e.turn,
+      quote: e.quote,
+      type: e.type,
+    })),
+  }),
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
 };
 
@@ -1008,6 +1139,7 @@ const systemPrompts = {
   tutorEgoExecute: TUTOR_EGO_EXECUTE_FALLBACK_SYSTEM,
   evidenceExtractor: EVIDENCE_EXTRACTOR_SYSTEM,
   hypothesisUpdater: HYPOTHESIS_UPDATER_SYSTEM,
+  groundingValidator: GROUNDING_VALIDATOR_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
 };
 
@@ -1025,6 +1157,7 @@ const responseSchemas = {
   tutorEgoExecute: tutorEgoInitialOut,
   evidenceExtractor: evidenceExtractorOut,
   hypothesisUpdater: hypothesisUpdaterOut,
+  groundingValidator: groundingValidatorOut,
   learnerTurn: null, // plain text
 };
 

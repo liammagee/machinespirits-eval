@@ -241,6 +241,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_125_dialogue_engine_crosssuite_baseline',
   // A14 Stage 1
   'cell_126_state_policy_evidence_bound',
+  // A14 Stage 3 (validator on)
+  'cell_127_state_policy_evidence_bound_validated',
 ];
 
 /**
