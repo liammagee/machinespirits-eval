@@ -92,8 +92,19 @@ function isRetryableError(err) {
 // the intended behaviour.
 const CLAUDE_CLI_TIMEOUT_MS = 360_000;
 
+// Set ADAPTIVE_TUTOR_CLI_TRACE=1 to log every claude-code CLI subprocess call
+// to stderr (start with role+prompt size, end with duration, timeout-fire with
+// role+role-call-elapsed). Originally added during task #34 to diagnose the
+// 48-min silent hang the Stage 2b post-tune smoke hit on sophistication_upgrade_v1
+// — without per-call timing the hang's root cause was unobservable. Off by
+// default so noisy smokes stay clean.
+const CLI_TRACE = process.env.ADAPTIVE_TUTOR_CLI_TRACE === '1';
+
 async function callClaudeCli(systemPrompt, userPrompt, model, role) {
   const start = Date.now();
+  if (CLI_TRACE) {
+    console.error(`[claude-cli] start role=${role} sys=${systemPrompt.length}ch usr=${userPrompt.length}ch model=${model || 'default'}`);
+  }
   return await new Promise((resolve, reject) => {
     // Pass the system prompt via --system-prompt rather than concatenating
     // into stdin. Two reasons:
@@ -118,11 +129,23 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
     const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
     let out = '';
     let err = '';
+    let firstByteAt = null;
     const cliTimeout = setTimeout(() => {
+      const elapsed = Date.now() - start;
+      // Always emit a stderr line on timeout, even without CLI_TRACE, so
+      // future smokes never repeat the silent-hang failure mode. firstByteAt
+      // distinguishes "child never produced any output" from "child stalled
+      // mid-stream" — the former points at CLI/network init issues, the
+      // latter at server-side stream completion.
+      const sawAny = firstByteAt != null;
+      console.error(`[claude-cli] TIMEOUT role=${role} elapsed=${elapsed}ms outBytes=${out.length} firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'}`);
       try { child.kill('SIGKILL'); } catch (_) { /* already gone */ }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role})`));
+      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length}, firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'})`));
     }, CLAUDE_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => { out += d; });
+    child.stdout.on('data', (d) => {
+      if (firstByteAt == null) firstByteAt = Date.now();
+      out += d;
+    });
     child.stderr.on('data', (d) => { err += d; });
     child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
     child.on('close', (code) => {
@@ -130,11 +153,16 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
       if (code !== 0) {
         reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
       } else {
+        const latencyMs = Date.now() - start;
+        if (CLI_TRACE) {
+          const ttfb = firstByteAt != null ? `${firstByteAt - start}ms` : 'no-output';
+          console.error(`[claude-cli] done  role=${role} latency=${latencyMs}ms ttfb=${ttfb} outBytes=${out.length}`);
+        }
         resolve({
           text: out.trim(),
           model: model || 'claude-cli',
           provider: 'claude-code',
-          latencyMs: Date.now() - start,
+          latencyMs,
           inputTokens: 0,
           outputTokens: 0,
           cost: 0,
