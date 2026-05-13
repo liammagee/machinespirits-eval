@@ -1,0 +1,247 @@
+# Cross-suite trap scenarios — §6.8.7's "clean cross-suite test".
+#
+# Purpose. §6.8.3–§6.8.4 measured the LangGraph state_policy runner (cell_110)
+# and the dialogue-engine baseline (cell_114) on config/adaptive-trap-scenarios.yaml
+# (the v1 trap suite, eight purpose-built scenarios). §6.8.7 names the genuinely
+# outstanding item: run the SAME two architectures on a trap-style-annotated
+# subset of the §6.3 *suggestion* scenarios (config/suggestion-scenarios.yaml),
+# scored with the SAME binary `strict_shift`, so the cross-architecture claim
+# ("the heavy architecture beats the dialogue engine on localized strategic-move
+# selection") can be checked off the trap suite it was first measured on.
+#
+# This file is that subset. Each scenario takes a §6.3 suggestion scenario,
+# keeps its learner content (opening message + the in-scenario turn that should
+# force a strategy revision), and adds the trap annotations the §6.3 suite
+# lacks: a hidden ground-truth learner state, a trigger turn, and an
+# `expected_strategy_shift` (a policy action label or family from
+# config/adaptive-policy-actions.yaml). The format is identical to
+# config/adaptive-trap-scenarios.yaml so BOTH runners and BOTH scorers
+# (analyze-strategy-shift.js, grade-adaptive-dialogue.js) read it unchanged.
+#
+# Six scenarios spanning the four pedagogical families (matching the v1 suite's
+# structure): two substantive_engagement, one repair_affective, one diagnostic,
+# two scaffolding. Run at four runs × six scenarios = N ≈ 24, matching the v1
+# trap fan-out.
+#
+# Cells:  cell_124_langgraph_adaptive_crosssuite  (runner: adaptive, state_policy)
+#         cell_125_dialogue_engine_crosssuite_baseline  (runner: standard, base ego)
+# Both pin claude-code:sonnet, held equal to cell_110/111/114.
+#
+# Provenance of each scenario is recorded in `source_suggestion_scenario`.
+
+scenarios:
+
+  # ── 1. substantive_engagement ────────────────────────────────────────────
+  # From suggestion-scenarios.yaml#epistemic_resistance_impasse: philosophy
+  # major mounts a coherent Popperian falsifiability critique of Hegel's
+  # dialectic. The trap: read the objection as a confusion to remediate (or as
+  # affective resistance to manage) rather than as a substantive philosophical
+  # move to engage. Expected pivot = make the disagreement explicit / probe its
+  # scope / pose a counterexample — the substantive_engagement family.
+  - id: cross_epistemic_resistance
+    name: "Cross-suite: epistemic resistance — Popperian critique of dialectic"
+    scenario_type: epistemic_resistance
+    source_suggestion_scenario: epistemic_resistance_impasse
+    hidden:
+      actual_misconception: "no misconception — a coherent methodological objection (dialectic is unfalsifiable, ergo pseudoscience); the failure mode is treating it as novice confusion or as affective resistance rather than engaging it as philosophy"
+      actual_sophistication: advanced
+      trigger_turn: 1
+      trigger_signal: "Take the master-slave dialectic specifically. You claim the slave achieves self-consciousness through labour. But any outcome would confirm the theory — if the slave rebels, that's 'negation'; if the slave submits, that's 'unhappy consciousness'. It's heads-I-win, tails-you-lose. How is that different from Popper's pseudoscience?"
+    opening_turns:
+      - role: learner
+        content: "I've been reading Popper's critique alongside this lecture. I think he's right that Hegel's dialectic is unfalsifiable — the 'negation of the negation' just absorbs every counterexample. How is this different from pseudoscience?"
+    max_turns: 3
+    expected_strategy_shift:
+      - name_the_disagreement
+      - scope_test
+      - pose_counterexample
+    failure_mode: >-
+      Tutor reads the falsifiability objection as a gap in the learner's understanding and re-explains the dialectic at an introductory register, or treats it as resistance-to-be-managed and shifts to affective acknowledgement. The actual disagreement — whether dialectical method is the kind of thing that answers to empirical-falsifiability criteria at all — is never named, and the learner's contribution is talked over.
+    success_criteria:
+      recognition_correctness:
+        tutor_updates_sophistication_to_advanced: true
+        tutor_engages_objection_as_philosophy_not_confusion: true
+      policy_match:
+        expected_action_at_trigger_plus_one_any_of:
+          - name_the_disagreement
+          - scope_test
+          - pose_counterexample
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: novice
+      trigger_signal: "Sorry, I don't really follow — what does 'dialectic' even mean here? Can you just explain it simply?"
+
+  # ── 2. repair_affective ──────────────────────────────────────────────────
+  # From suggestion-scenarios.yaml#affective_shutdown_impasse: diligent but
+  # anxious learner whose cognitive load tips into identity-level self-doubt
+  # ("I'm just not cut out for philosophy"). The trap: push harder on the
+  # content immediately after the shutdown signal, or paper over the affect
+  # with a scripted reassurance. Expected pivot = name the affective signal
+  # and redirect — the repair_affective family.
+  - id: cross_affective_shutdown
+    name: "Cross-suite: affective shutdown — 'not cut out for philosophy'"
+    scenario_type: affective_shutdown
+    source_suggestion_scenario: affective_shutdown_impasse
+    hidden:
+      actual_misconception: "cognitive load tipping into emotional shutdown; the learner is externalising failure to identity ('some people just get philosophy and I don't')"
+      actual_sophistication: novice
+      trigger_turn: 2
+      trigger_signal: "I just... I can't do this. I've read this section five times. I think some people just get philosophy and I don't. Maybe I should just memorise the definitions and move on — I don't need to actually understand it, right?"
+    opening_turns:
+      - role: learner
+        content: "I've read this section on lordship and bondage five times and I still can't even explain what 'recognition' means in this context. My roommate understood it in twenty minutes."
+    max_turns: 4
+    expected_strategy_shift: acknowledge_and_redirect
+    failure_mode: >-
+      Tutor pushes harder on the cognitive content immediately after the shutdown signal, or papers over the affect with a scripted reassurance ("everyone struggles with this") and continues with the same load. The affective barrier is not named; the learner either disengages or capitulates compliantly without learning.
+    success_criteria:
+      recognition_correctness:
+        tutor_explicitly_names_affective_signal: true
+        tutor_lowers_cognitive_load_or_redirects: true
+      repair_success:
+        tutor_does_not_collude_with_surface_memorisation: true
+        tutor_does_not_dismiss_self_doubt: true
+      policy_match:
+        expected_action_at_trigger_plus_one: acknowledge_and_redirect
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: intermediate
+      trigger_signal: "Actually, hold on — let me push back. Why does self-consciousness *require* another self-consciousness? The lecture just asserts it. Where's the argument?"
+
+  # ── 3. substantive_engagement ────────────────────────────────────────────
+  # From suggestion-scenarios.yaml#productive_deadlock_impasse: interdisciplinary
+  # reader brings a Marxist/materialist framework to the master-slave dialectic
+  # and, at turn 2, explicitly names the disagreement as methodological rather
+  # than a misunderstanding. The trap: try to dissolve the deadlock with
+  # cleverness, or capitulate to one side. Expected pivot = name the
+  # disagreement (and hold it) — the substantive_engagement family.
+  - id: cross_productive_deadlock
+    name: "Cross-suite: productive deadlock — materialist vs consciousness reading"
+    scenario_type: productive_deadlock
+    source_suggestion_scenario: productive_deadlock_impasse
+    hidden:
+      actual_misconception: "no misconception — a genuine interpretive disagreement (materialist vs consciousness reading of master-slave); the failure mode is the tutor trying to dissolve the tension or quietly conceding one side"
+      actual_sophistication: advanced
+      trigger_turn: 2
+      trigger_signal: "I think we're talking past each other. You see consciousness as the ground and material conditions as derivative; I see it the other way round. This isn't a misunderstanding — it's a fundamental methodological disagreement. We're reading the same text through incompatible frameworks. Can you actually name what you think the materialist reading gets *wrong*, not just 'incomplete'?"
+    opening_turns:
+      - role: learner
+        content: "I think the standard consciousness-focused reading of the master-slave dialectic misses the point. It's fundamentally about power and material conditions — the slave's labour transforms the physical world and *that's* what produces self-consciousness. The 'pure' consciousness reading is idealist mystification."
+    max_turns: 4
+    expected_strategy_shift: name_the_disagreement
+    failure_mode: >-
+      Tutor tries to dissolve the deadlock ("the answer is somewhere in between") or quietly concedes the consciousness reading is just "a different vocabulary for the same insight", instead of naming the genuine methodological disagreement and showing that holding it is itself dialectical. The learner's framework goes unrecognised as a legitimate reading.
+    success_criteria:
+      recognition_correctness:
+        tutor_names_the_disagreement_explicitly: true
+        tutor_does_not_dissolve_or_capitulate: true
+      policy_match:
+        expected_action_at_trigger_plus_one: name_the_disagreement
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: intermediate
+      trigger_signal: "Wait, I'm getting lost — is the 'materialist reading' the same as the 'Marxist reading'? And what's 'base and superstructure' got to do with it? Can you back up?"
+
+  # ── 4. diagnostic ────────────────────────────────────────────────────────
+  # From suggestion-scenarios.yaml#misconception_correction_flow: smart learner
+  # with a mechanistic/additive model of dialectical synthesis ("thesis plus
+  # antithesis equals synthesis, like 1+1=2"). At turn 1 they defend the model.
+  # The trap: declare it wrong and lecture the correction, or accept the
+  # additive metaphor. Expected pivot = a Socratic probe (what *happens* to
+  # thesis and antithesis in synthesis?) — the diagnostic family.
+  - id: cross_misconception_surfaces
+    name: "Cross-suite: misconception surfaces — additive model of synthesis"
+    scenario_type: misconception_surfaces
+    source_suggestion_scenario: misconception_correction_flow
+    hidden:
+      actual_misconception: "treats dialectical synthesis as additive / preservative combination (a recipe in which thesis and antithesis remain as ingredients) rather than sublation (aufhebung — cancelled and preserved and lifted)"
+      actual_sophistication: intermediate
+      trigger_turn: 1
+      trigger_signal: "What do you mean it's not like addition? Thesis and antithesis combine to make synthesis. They're still in there, like ingredients in a recipe — what am I missing?"
+    opening_turns:
+      - role: learner
+        content: "I think I get the dialectic — it's basically just thesis plus antithesis equals synthesis, like 1+1=2."
+    max_turns: 3
+    expected_strategy_shift: ask_diagnostic_question
+    failure_mode: >-
+      Tutor declares the additive model wrong and lectures the correction ("no, actually, it's sublation"), or accepts the recipe metaphor and builds on it. Either way the learner's actual mental model is never surfaced through their own reasoning; the misconception is patched over rather than worked through.
+    success_criteria:
+      recognition_correctness:
+        tutor_does_not_declare_model_wrong_and_lecture: true
+        tutor_probes_what_happens_to_thesis_antithesis: true
+      policy_match:
+        expected_action_at_trigger_plus_one: ask_diagnostic_question
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: advanced
+      trigger_signal: "Right — so synthesis isn't preservation, it's aufhebung: thesis and antithesis are both cancelled and preserved. So is *all* learning dialectical in that sense, or only some of it?"
+
+  # ── 5. scaffolding (withhold_answer) ─────────────────────────────────────
+  # From suggestion-scenarios.yaml#activity_avoider: learner views content but
+  # skips activities; here they ask the tutor for the quiz answer directly and,
+  # at turn 2, rationalise the avoidance ("I learn better from explanations").
+  # The trap: hand over the answer or a worked example that substitutes for the
+  # learner's cognitive work. Expected pivot = withhold the answer and return a
+  # microtask — the scaffolding family.
+  - id: cross_activity_avoidance
+    name: "Cross-suite: activity avoidance — 'just give me the answer'"
+    scenario_type: activity_avoidance
+    source_suggestion_scenario: activity_avoider
+    hidden:
+      actual_misconception: "treats activities as optional and the tutor as an answer-source; avoids the productive cognitive work the activity is designed to produce"
+      actual_sophistication: intermediate
+      trigger_turn: 2
+      trigger_signal: "Look, I learn better by reading explanations than by doing exercises — that's just how my brain works. Just walk me through the answer to the recognition question and I'll absorb it from there."
+    opening_turns:
+      - role: learner
+        content: "Can you just give me the answer to the lecture-4 quiz question on recognition? I've watched the lectures, I just want to check my answer against yours."
+    max_turns: 4
+    expected_strategy_shift: withhold_answer
+    failure_mode: >-
+      Tutor capitulates to the oracle-mode pull and provides the answer, or provides a worked example that substitutes for the learner's own attempt. Productive struggle is short-circuited and the answer-seeking pattern is reinforced.
+    success_criteria:
+      recognition_correctness:
+        tutor_does_not_provide_answer: true
+        tutor_does_not_provide_substitute_worked_example_at_trigger_plus_one: true
+      delayed_task_success:
+        tutor_returns_a_microtask_to_learner: true
+      policy_match:
+        expected_action_at_trigger_plus_one: withhold_answer
+    counterfactual:
+      fork_at_turn: 2
+      actual_sophistication: intermediate
+      trigger_signal: "I tried the quiz three times and I keep getting it wrong — I genuinely can't see where my reasoning breaks down. I said recognition is mutual *because* both parties need it; the feedback says that's incomplete. Where's the gap?"
+
+  # ── 6. scaffolding (lower_cognitive_load) ────────────────────────────────
+  # From suggestion-scenarios.yaml#struggling_learner: four struggle signals,
+  # quiz retried three times, struggling with dialectic / synthesis /
+  # thesis-antithesis. After a re-explanation the learner reports
+  # working-memory strain — too many moving parts at once. The trap: re-explain
+  # again at the same density, or advance. Expected pivot = lower the cognitive
+  # load (one concept, concretely) — the scaffolding family.
+  - id: cross_struggling_overload
+    name: "Cross-suite: struggling learner — working-memory overload"
+    scenario_type: struggling_overload
+    source_suggestion_scenario: struggling_learner
+    hidden:
+      actual_misconception: "working-memory strain from several new concepts (dialectic, synthesis, thesis-antithesis, sublation) introduced at once — not a single identifiable misconception; the learner loses the thread mid-explanation"
+      actual_sophistication: novice
+      trigger_turn: 1
+      trigger_signal: "Okay, but that's the third time someone's explained it to me and it's still not clicking. There's just... a lot of moving parts — thesis, antithesis, synthesis, sublation, negation — and I lose the thread halfway through every time."
+    opening_turns:
+      - role: learner
+        content: "I keep getting quiz-479-3 wrong — I've retried it three times now. Can we go over the dialectic stuff again? I think I missed something earlier."
+    max_turns: 3
+    expected_strategy_shift: lower_cognitive_load
+    failure_mode: >-
+      Tutor re-explains the whole dialectic apparatus again at the same density (or moves on to the next concept), instead of stripping back to one idea, concretely, and rebuilding from there. The learner's working-memory strain is not addressed; the retry pattern continues.
+    success_criteria:
+      recognition_correctness:
+        tutor_reduces_to_one_concept_concretely: true
+        tutor_does_not_re_explain_at_same_density: true
+      policy_match:
+        expected_action_at_trigger_plus_one: lower_cognitive_load
+    counterfactual:
+      fork_at_turn: 1
+      actual_sophistication: intermediate
+      trigger_signal: "Actually I think I've got the basics — thesis, antithesis, synthesis. What I'm actually curious about is whether Hegel thought *history itself* was dialectical, or just individual consciousness."

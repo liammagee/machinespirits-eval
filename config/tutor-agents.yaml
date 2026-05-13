@@ -5294,6 +5294,83 @@ profiles:
         enabled: true
 
   # ===========================================================================
+  # Cross-suite trap cells (§6.8.7's "clean cross-suite test")
+  # ===========================================================================
+  # cell_124 and cell_125 are exact architectural clones of cell_110 (LangGraph
+  # state_policy) and cell_114 (dialogue engine, base ego) — same runner, same
+  # provider/model (claude-code:sonnet), same hyperparameters — with the ONLY
+  # changed dimension being scenario_source: config/cross-suite-trap-scenarios.yaml,
+  # a trap-style-annotated subset of the §6.3 *suggestion* scenarios (six
+  # scenarios spanning the four pedagogical families, derived from
+  # epistemic_resistance_impasse / affective_shutdown_impasse /
+  # productive_deadlock_impasse / misconception_correction_flow / activity_avoider
+  # / struggling_learner). Lets the cell_110-vs-cell_114 comparison from §6.8.3–
+  # §6.8.4 be re-run on the suggestion family, scored with the same binary
+  # strict_shift (analyze-strategy-shift.js) and the same 4-dim graded rubric
+  # (grade-adaptive-dialogue.js). Post-hoc, exploratory (not in the A13 pre-reg).
+  # Rationale: docs/research/paper-full-2.0.md §6.8.7.
+  # Reachable via: ADAPTIVE_TUTOR_LLM=real node scripts/eval-cli.js run --profiles cell_124_langgraph_adaptive_crosssuite
+  cell_124_langgraph_adaptive_crosssuite:
+    description: "Cross-suite test: cell_110's LangGraph state_policy architecture on a trap-annotated subset of the §6.3 suggestion scenarios (config/cross-suite-trap-scenarios.yaml). Paired with cell_125 (dialogue-engine baseline) so the §6.8.3–§6.8.4 cross-architecture comparison can be checked off the trap suite it was first measured on. Post-hoc, exploratory (not in the A13 pre-reg). See §6.8.7."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
+  # Dialogue-engine baseline for the cross-suite test — the cell_114 analogue.
+  # tutor-core's standard single-agent ego (prompt_type: base, no superego, no
+  # externalised learner profile, no constraint check, no counterfactual) on
+  # config/cross-suite-trap-scenarios.yaml with the same trap-steered learnerTurn
+  # learner cell_124 uses. Model held equal to cell_124 (claude-code:sonnet) so
+  # the only varying factor is the runner — subject to the §5.12.3 prompt-scaffold
+  # confound (cell_125's ego prompt is assembled via tutor-core's base ego, not
+  # the adaptive runner's tutorEgoInitial builder), so it is a directional
+  # dialogue-engine floor, not a clean single-factor isolation — exactly as in
+  # §6.8.4 for cell_114.
+  # NOT reachable via eval-cli (runner: standard but bespoke scenario shape) —
+  # run via: node scripts/run-dialogue-engine-trap-baseline.js --profile=cell_125_dialogue_engine_crosssuite_baseline --runs=4
+  cell_125_dialogue_engine_crosssuite_baseline:
+    description: "Cross-suite dialogue-engine baseline: tutor-core's standard single-agent ego (prompt_type base, no superego) on config/cross-suite-trap-scenarios.yaml with a trap-steered learner — the cell_114 analogue for the §6.8.7 cross-suite test. Post-hoc, exploratory. Run via scripts/run-dialogue-engine-trap-baseline.js."
+    runner: standard
+    factors:
+      prompt_type: base
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: scripted_trap
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/cross-suite-trap-scenarios.yaml
+    dialogue:
+      enabled: false
+      max_rounds: 0
+    ego:
+      provider: claude-code
+      model: sonnet
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+    superego: null
+
+  # ===========================================================================
   # P2.1 within-family discrimination cells
   # ===========================================================================
   # The four cells below are exact clones of cell_111 / cell_115 / cell_116 /

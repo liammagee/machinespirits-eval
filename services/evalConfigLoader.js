@@ -504,6 +504,11 @@ export function getTutorProfile(profileName, options = {}) {
     recognition_mode: profile.recognition_mode ?? false,
     learner_architecture: profile.learner_architecture || null,
     conversation_mode: profile.conversation_mode || null,
+    // Runner dispatch + scenario source: carried through so adapter scripts
+    // (e.g. run-dialogue-engine-trap-baseline.js) can read scenario_source
+    // without re-reading the raw YAML. runner: 'standard' | 'adaptive' | undefined.
+    runner: profile.runner || null,
+    scenario_source: profile.scenario_source || null,
   };
 
   // Resolve ego model through providers.yaml

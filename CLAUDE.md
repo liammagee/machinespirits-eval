@@ -132,10 +132,11 @@ A cell's architecture is determined by these YAML fields:
 - Scored against `config/evaluation-rubric-charisma.yaml` (Weber-derived 8-dimension, v1.0, independent of v2.2 tutor rubric).
 - 101-104: charisma + register variants; 105-106: tuned (charisma vs pedagogy); 107-109: witness/exemplars variants.
 
-**Cells 110-114: Trap-scenario suite** (scenarios from `config/adaptive-trap-scenarios.yaml`)
+**Cells 110-125: Trap-scenario suite** (scenarios from `config/adaptive-trap-scenarios.yaml` unless noted; cells 115-123 are the P2.1 bilateral-ToM / P2.2 state-schema ablations — see `config/tutor-agents.yaml` and §6.8.5–.6 for those)
 - 110: `cell_110_langgraph_adaptive` — `runner: adaptive`; LangGraph state-policy + counterfactual replay; bypasses tutor-core's dialogue engine. Implementation in `services/adaptiveTutor/`.
 - 111-113: `runner: adaptive`; A13 pre-registration conditions (C1 recognition_only, C2 egosuperego, C4 validator) — all use the same adaptive runner so `strategy_shift_correctness` is comparable across cells.
 - 114: `cell_114_dialogue_engine_trap_baseline` — `runner: standard`; tutor-core's base single-agent ego (= `budget` profile, no superego) driven on the *same* v1 trap suite with the *same* trap-steered LLM learner (`learnerTurn` mechanism). Adapter: `scripts/run-dialogue-engine-trap-baseline.js`. Post-hoc exploratory cross-architecture floor — NOT in the A13 pre-registration. Result: §6.8.4.
+- 124-125: `cell_124_langgraph_adaptive_crosssuite` (`runner: adaptive`, cell_110's `state_policy` architecture) + `cell_125_dialogue_engine_crosssuite_baseline` (`runner: standard`, cell_114's dialogue-engine architecture), both on `config/cross-suite-trap-scenarios.yaml` — §6.8.7's "clean cross-suite test": six trap-annotated scenarios re-derived from the §6.3 suggestion suite, scored with the same binary `strict_shift`. cell_125 runs via the same `run-dialogue-engine-trap-baseline.js` adapter (it reads `profile.scenario_source`). Result: §6.8.7.
 
 **Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90, 95-96, 101-109) have `superego: null`.
 
@@ -152,10 +153,10 @@ Cell names must include "dialectical" if they use `prompt_type: dialectical_susp
 Cells with `runner: adaptive` in `tutor-agents.yaml` bypass `evaluationRunner.js` and tutor-core's dialogue engine entirely, dispatching to `services/adaptiveTutor/` (LangGraph-based: externalised learner state + programmatic constraints + counterfactual replay). Cells without a `runner:` field use the default runner.
 
 - **Implementation**: `services/adaptiveTutor/{index,runner,graph,persistence,llm,realLLM,mockLLM,budgetTracker,policyActions,stateSchema}.js`
-- **Scenarios**: `config/adaptive-trap-scenarios.yaml` (NOT `suggestion-scenarios.yaml`)
+- **Scenarios**: `config/adaptive-trap-scenarios.yaml` (NOT `suggestion-scenarios.yaml`); `config/cross-suite-trap-scenarios.yaml` for the §6.8.7 cross-suite cells (124-125). Both runners + both scorers (`analyze-strategy-shift.js`, `grade-adaptive-dialogue.js`) read either file unchanged — same scenario schema.
 - **Mock vs real LLM**: `ADAPTIVE_TUTOR_LLM=mock` (default, deterministic — no paid API calls) or `ADAPTIVE_TUTOR_LLM=real` (uses normal provider env vars, e.g. `OPENROUTER_API_KEY`)
 - **Smoke scripts**: `scripts/run-adaptive-cell-smoke.js`, `scripts/run-adaptive-persistence-smoke.js`, `scripts/run-langgraph-smoke.js`
-- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4). NOTE cell_114 uses `runner: standard` (tutor-core dialogue engine) on the same trap suite — its own adapter script, not this runner.
+- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4), 124 (cross-suite, §6.8.7). NOTE cells 114 and 125 use `runner: standard` (tutor-core dialogue engine) on the trap suites — their own adapter script (`run-dialogue-engine-trap-baseline.js`), not this runner.
 
 ### Id-Director Architecture (cells 101-109)
 
