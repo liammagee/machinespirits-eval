@@ -90,7 +90,17 @@ function main() {
   const manifest = JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
   const db = new Database(DB_PATH, { readonly: true });
 
-  const epoch = parseEpochArg(process.argv);
+  // config/paper-manifest.json enumerates Paper-1.0 evaluations by run_id, and the
+  // run_id list IS the scope — this script just counts the rows in those runs.
+  // Applying the analysis-script default epoch ('2.0' → tutor_rubric_version =
+  // '2.2') is wrong here: every manifest run predates the 2026-02-28 v2.2 cutover,
+  // so the filter excludes all of them (scored=0 across the board); and a handful
+  // of those runs have rows that were later re-judged under v2.1/v2.2, which a
+  // 'pilot' filter would then drop (e.g. eval-2026-02-14-e0e3a622: 299×v1.0 +
+  // 40×v2.1 + 21×v2.2 = 360, but 'pilot' counts only 339). Default to 'all' so the
+  // counts match the manifest's expected_scored exactly; an explicit --epoch still
+  // overrides for ad-hoc slicing.
+  const epoch = process.argv.includes('--epoch') ? parseEpochArg(process.argv) : 'all';
   const epochFilter = getEpochFilter(epoch);
   printEpochBanner(epoch);
 

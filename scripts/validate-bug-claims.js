@@ -1891,6 +1891,29 @@ function aggregateRunEvidence(runIds, runEvidenceIndex) {
   };
 }
 
+// Sum the manifest's expected_scored / expected_attempts across the *distinct*
+// key_evaluations entries that the given run IDs belong to. Counts each entry
+// once even if it lists several run IDs (and several of those happen to be in
+// `runIds`). Used by the N-backtracking check: when the paper cites two or more
+// runs together under one combined N (e.g. §6.3 "N=350" = the 262-row + 88-row
+// factorial runs), the right target is the *sum* of their per-run counts, not
+// the individual values aggregateRunEvidence keeps as a deduped set.
+function sumManifestExpectedForRuns(manifest, runIds) {
+  const wanted = new Set(runIds);
+  const seen = new Set();
+  let scored = 0;
+  let attempts = 0;
+  for (const e of manifest?.key_evaluations || []) {
+    if (!Array.isArray(e.run_ids) || !e.run_ids.some((r) => wanted.has(r))) continue;
+    const key = e.run_ids.join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    scored += Number(e.expected_scored || 0);
+    attempts += Number(e.expected_attempts || 0);
+  }
+  return { scored, attempts, n_evals: seen.size };
+}
+
 function hasPaperTotalCue(text) {
   return /(primary scored|fifty key evaluations|key evaluations above)/i.test(text);
 }
@@ -2014,6 +2037,15 @@ function evaluateNClaimsBacktracking({
       }
       if (hasGroundedCue(lowerContext)) {
         targetCounts.push({ label: 'db_grounded_rows', value: aggregate.grounded_rows });
+      }
+      const manifestSum = sumManifestExpectedForRuns(manifest, nearbyRunIds);
+      if (manifestSum.n_evals > 1) {
+        if (manifestSum.scored > 0) {
+          targetCounts.push({ label: 'manifest_expected_scored_sum', value: manifestSum.scored });
+        }
+        if (manifestSum.attempts > 0) {
+          targetCounts.push({ label: 'manifest_expected_attempts_sum', value: manifestSum.attempts });
+        }
       }
 
       const exact = targetCounts.find((target) => target.value === claim.value);
