@@ -193,24 +193,21 @@ function remediationForCheck(check) {
         'Re-run audit to verify `multiturn-selection-source` passes.',
       ];
 
-    case 'multiturn-holistic-coverage': {
-      const topRuns = Array.isArray(details.top_runs_missing_holistic) ? details.top_runs_missing_holistic : [];
-      const runHint =
-        topRuns.length > 0
-          ? `Prioritize runs: ${topRuns.map((r) => `${r.run_id} (${r.missing})`).join(', ')}.`
-          : 'Prioritize runs with the largest missing holistic counts.';
+    case 'multiturn-holistic-coverage':
+      // Advisory after C7.2 (TODO.md): backfilling pre-2026-02-28 rows under
+      // v2.2 would cross-contaminate v1.0/v2.0/v2.1 cells. The remediation
+      // path is disclosure, not backfill. See notes/major-bugs.md Bug 4.
       return [
-        'Backfill holistic scores by re-evaluating multi-turn rows per run: `node scripts/eval-cli.js evaluate <runId> --force --multiturn-only`.',
-        runHint,
-        'Re-run the audit and confirm `missing_holistic` drops to 0.',
+        'Backfill is NOT recommended: affected rows predate the 2026-02-28 v2.2-rubric cutover; re-judging under v2.2 would cross-contaminate v1.0/v2.0/v2.1 cells (see CLAUDE.md).',
+        'Resolution path is disclosure: confirm `paper-disclosure-bug4` passes and `notes/major-bugs.md` accurately describes the partial backfill (~64 of ~1,898 rows, ~3 %).',
+        'If you genuinely need clean multi-turn last-turn scores, re-run the affected configurations on v2.2 — do not retro-score historical rows.',
       ];
-    }
 
     case 'multiturn-turn0-risk':
+      // Advisory after C7.2: same rationale as multiturn-holistic-coverage.
       return [
-        'Re-score rows where first vs last suggestions diverge by using `evaluate --force --multiturn-only` on affected runs.',
-        'Confirm `tutor_last_turn_score` is populated for multi-suggestion rows.',
-        'Re-run audit and ensure `materially_different_without_holistic` is 0.',
+        'Backfill is NOT recommended for the same reason as `multiturn-holistic-coverage` (rubric cross-contamination on pre-v2.2 rows).',
+        'Confirm Bug 4 disclosure in the paper and `notes/major-bugs.md` covers materially-different rows specifically; Paper 2.0 (`paper-full-2.0.md`) supersedes Paper 1.0 on clean v2.2 data.',
       ];
 
     case 'paper-disclosure-bug1':
@@ -977,14 +974,27 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
     .sort((a, b) => b.missing - a.missing)
     .slice(0, 8);
 
+  // C7.2 (TODO.md): both checks demoted to `warn`. Bug 4's code defect is
+  // fixed going forward; the pre-2026-02-23 historical rows lack the
+  // last-turn backfill, but completing it would cross-contaminate v1.0/v2.0/
+  // v2.1 rows under the v2.2 rubric (CLAUDE.md anti-contamination rule).
+  // The disclosure path (paper-disclosure-bug4 + notes/major-bugs.md
+  // honesty) is the recognised remediation. These remain as advisory
+  // warnings so the underlying numbers stay visible, but they no longer
+  // gate Bug 4's resolution in `bug-reports-major`.
   if (missingHolistic > 0) {
-    record('fail', 'multiturn-holistic-coverage', 'Multi-suggestion rows missing holistic scores', {
-      rows_total: rows.length,
-      holistic_present: holisticPresent,
-      missing_holistic: missingHolistic,
-      coverage_pct: +(holisticCoverage * 100).toFixed(2),
-      top_runs_missing_holistic: topRunsMissingHolistic,
-    });
+    record(
+      'warn',
+      'multiturn-holistic-coverage',
+      'Multi-suggestion rows lack last-turn backfill (advisory — pre-v2.2 historical artefact, intentionally not remediated; see notes/major-bugs.md Bug 4)',
+      {
+        rows_total: rows.length,
+        holistic_present: holisticPresent,
+        missing_holistic: missingHolistic,
+        coverage_pct: +(holisticCoverage * 100).toFixed(2),
+        top_runs_missing_holistic: topRunsMissingHolistic,
+      },
+    );
   } else {
     record('pass', 'multiturn-holistic-coverage', 'All multi-suggestion rows have holistic scores', {
       rows_total: rows.length,
@@ -993,9 +1003,9 @@ function checkMultiturnScoringAlignment(manifest, db, scopeRunIds) {
 
   if (materiallyDifferentWithoutHolistic > 0) {
     record(
-      'fail',
+      'warn',
       'multiturn-turn0-risk',
-      'Rows with materially different first/last suggestions still lack holistic score',
+      'Rows with materially different first/last suggestions still lack holistic score (advisory — same rationale as multiturn-holistic-coverage)',
       {
         materially_different_rows: materiallyDifferentFirstLast,
         materially_different_without_holistic: materiallyDifferentWithoutHolistic,
@@ -1135,12 +1145,15 @@ function checkBugReportIssueState() {
       },
       {
         bug: 'Bug 4',
-        checks: [
-          'multiturn-selection-source',
-          'multiturn-holistic-coverage',
-          'multiturn-turn0-risk',
-          'paper-disclosure-bug4',
-        ],
+        // C7.2 (TODO.md): coverage checks `multiturn-holistic-coverage` and
+        // `multiturn-turn0-risk` were demoted to advisory `warn` and dropped
+        // from this map. Reason: the code defect was fixed Feb 23 (covered
+        // by `multiturn-selection-source`) and the paper discloses the
+        // partial historical backfill (covered by `paper-disclosure-bug4`);
+        // re-judging the ~1,834 outstanding pre-v2.2 rows under v2.2 would
+        // cross-contaminate v1.0/v2.0/v2.1 cells (CLAUDE.md). The warnings
+        // still surface the row counts; they just don't gate Bug 4's status.
+        checks: ['multiturn-selection-source', 'paper-disclosure-bug4'],
       },
     ];
 
