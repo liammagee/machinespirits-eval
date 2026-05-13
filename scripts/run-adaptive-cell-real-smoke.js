@@ -1,8 +1,14 @@
 #!/usr/bin/env node
-// Real-LLM smoke for cell_126 evidence-bound chain (A14 Stage 2a + 2b).
+// Real-LLM smoke for cell_126 / cell_127 evidence-bound chain (A14 Stage 2 + 3).
 //
-// Runs cell_126_state_policy_evidence_bound on a filterable subset of the
-// adaptive trap suite with ADAPTIVE_TUTOR_LLM=real, then reads the persisted
+// Default: cell_126_state_policy_evidence_bound (Stage 2a + 2b only).
+// Override via ADAPTIVE_PROFILE env var to run cell_127's Stage 3 ablation
+// (`ADAPTIVE_PROFILE=cell_127_state_policy_evidence_bound_validated`). cell_127
+// adds the groundingValidator pass after hypothesisUpdater; the contrast shows
+// up in the per-scenario statusDist (validated/tentative/contradicted counts).
+//
+// Runs the chosen profile on a filterable subset of the adaptive trap suite
+// with ADAPTIVE_TUTOR_LLM=real, then reads the persisted
 // trace files and reports two complementary calibration metrics:
 //
 //   (Stage 2a)  Verifiable-quote rate: (validated entries) / (total entries)
@@ -43,7 +49,7 @@ fs.mkdirSync(path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues'), { recursiv
 const evalConfigLoader = await import('../services/evalConfigLoader.js');
 const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
 
-const profileName = 'cell_126_state_policy_evidence_bound';
+const profileName = process.env.ADAPTIVE_PROFILE || 'cell_126_state_policy_evidence_bound';
 const scenarioFilter = process.argv[2] || DEFAULT_FILTER;
 const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[profileName];
 if (!evalProfile) throw new Error(`profile ${profileName} not found in tutor-agents.yaml`);
