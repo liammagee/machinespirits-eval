@@ -5551,3 +5551,44 @@ profiles:
         max_tokens: 1500
       counterfactual:
         enabled: true
+
+  # ===========================================================================
+  # A14 — Evidence-Bound Adaptive Controller (cell 126, Stage 1)
+  # ===========================================================================
+  # Architectural sibling of cell_110: same LangGraph state_policy topology,
+  # same scenarios, same hyperparameters, same counterfactual replay. What
+  # differs is the state schema: cell_126 carries the new top-level
+  # evidenceLog and hypotheses arrays (services/adaptiveTutor/stateSchema.js)
+  # that disciplined hypothesis-with-TTL state requires.
+  #
+  # At Stage 1 those fields are PRESENT BUT EMPTY — no node yet writes to
+  # them. Cell 126 is therefore behaviourally identical to cell_110 until
+  # Stage 2 lands the evidenceExtractor + hypothesisUpdater nodes. The cell
+  # is registered now so the smoke harness, persistence layer, and
+  # tutor-agents.yaml structure can all be exercised against the new schema
+  # before more substantive changes layer on. Origin: TODO.md A14.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_126_state_policy_evidence_bound
+  cell_126_state_policy_evidence_bound:
+    description: "A14 Stage 1: state_policy topology with new evidenceLog + hypotheses state fields wired through schema and persistence. No new nodes yet — behaviourally a clone of cell_110 until Stage 2 lands the evidenceExtractor and hypothesisUpdater. Origin: TODO.md A14."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_evidence_bound
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_evidence_bound
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true

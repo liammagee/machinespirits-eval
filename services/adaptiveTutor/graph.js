@@ -83,6 +83,13 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // pathway with the id-authored prompt threaded into the existing ego node.
   'bilateral_tom_id_director_v1',
   'bilateral_tom_id_director_v2',
+  // A14 Stage 1 (cell 126): identical wiring to state_policy at this stage —
+  // carries the new evidenceLog + hypotheses fields in state but does not
+  // populate them yet. Stage 2 wires the evidenceExtractor and
+  // hypothesisUpdater nodes; Stage 3 swaps the constraintCheck for the
+  // groundingValidator. Listing the architecture now keeps cell 126 runnable
+  // end-to-end while later stages bolt the new nodes onto it.
+  'state_policy_evidence_bound',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 

@@ -24,6 +24,7 @@ const compileWithCheckpointer = (graphOptions = {}) =>
 const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
   'state_policy',
   'state_policy_with_validator',
+  'state_policy_evidence_bound', // A14 Stage 1: falls through to state_policy topology in buildGraph, so the learnerProfileUpdate node is present and the fork point exists.
   'bilateral_tom',
   'bilateral_tom_named_patterns',
 ]);
