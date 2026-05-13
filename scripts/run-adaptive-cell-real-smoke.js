@@ -101,21 +101,46 @@ for (const f of files) {
   const rate = total > 0 ? validated / total : null;
 
   // Hypothesis-side aggregation. finalHypotheses already reflects the
-  // merge-by-id reducer's last-write-wins state, so duplicate-id counts
-  // can't be measured from terminal state alone — that requires per-turn
-  // snapshots which extractTurnTrace doesn't capture today. What WE can
-  // measure: how many synthesised hypotheses cite the ledger (grounded
-  // rate), claim-length distribution (proxy for "not a single-token
-  // hallucination"), status distribution, and created_at_turn spread
-  // (cheap proxy for "first creation vs revision survived").
+  // merge-by-id reducer's last-write-wins state, so we can't see the full
+  // per-turn revision history from terminal state. What we CAN see: a
+  // hypothesis whose supporting_evidence references obs_ids from turns
+  // later than its created_at_turn was extended after creation — i.e.
+  // revised — because the node preserves created_at_turn on re-emit. That
+  // gives us a lower-bound revision rate computable from terminal state
+  // alone, no schema change required. The bound is strict: revisions that
+  // add no new evidence (confidence-only updates, status flips with no new
+  // obs_ids) are invisible to this metric, so it under-counts rather than
+  // over-counts.
   const origHyp = Array.isArray(trace.original?.finalHypotheses) ? trace.original.finalHypotheses : [];
   const cfHyp = Array.isArray(trace.counterfactual?.finalHypotheses) ? trace.counterfactual.finalHypotheses : [];
   const allHyp = [...origHyp, ...cfHyp];
+  const allEvidence = [...origLog, ...cfLog];
+  const obsTurnIndex = new Map(allEvidence.map((e) => [e.obs_id, e.turn]));
+
   const grounded = allHyp.filter((h) => Array.isArray(h.supporting_evidence) && h.supporting_evidence.length > 0).length;
   const groundedRate = allHyp.length > 0 ? grounded / allHyp.length : null;
   const claimLens = allHyp.map((h) => (h.claim || '').length);
   const statusDist = allHyp.reduce((acc, h) => { acc[h.status || 'tentative'] = (acc[h.status || 'tentative'] || 0) + 1; return acc; }, {});
   const createdAtTurns = allHyp.map((h) => h.created_at_turn).filter((t) => typeof t === 'number');
+
+  // Revision-rate computation. For each hypothesis with a valid created_at_turn,
+  // find the max(turn) across supporting_evidence + contradicting_evidence obs_ids.
+  // If max(evidence_turn) > created_at_turn, the hypothesis was revised at least
+  // once after creation. Contradicted-status counts as a revision regardless
+  // (the status flip itself is revision evidence even if no new obs_ids attached).
+  let revised = 0;
+  let revisable = 0; // hypotheses created before the final turn (could in principle have been revised)
+  const maxTurn = allEvidence.reduce((m, e) => Math.max(m, e.turn), -1);
+  for (const h of allHyp) {
+    if (typeof h.created_at_turn !== 'number') continue;
+    if (h.created_at_turn >= maxTurn) continue; // created on or after the final turn — no opportunity for revision
+    revisable += 1;
+    const refs = [...(h.supporting_evidence || []), ...(h.contradicting_evidence || [])];
+    const refTurns = refs.map((oid) => obsTurnIndex.get(oid)).filter((t) => typeof t === 'number');
+    const maxRefTurn = refTurns.length > 0 ? Math.max(...refTurns) : h.created_at_turn;
+    if (maxRefTurn > h.created_at_turn || h.status === 'contradicted') revised += 1;
+  }
+  const revisionRate = revisable > 0 ? revised / revisable : null;
 
   perScenario.push({
     scenarioId: sid,
@@ -129,6 +154,9 @@ for (const f of files) {
       statusDist,
       createdAtTurns,
       sampleClaim: allHyp[0]?.claim?.slice(0, 80) || '(none)',
+      revised,
+      revisable,
+      revisionRate,
     },
   });
 }
@@ -146,10 +174,12 @@ console.log('\n--- per-scenario hypothesisUpdater (Stage 2b) stats ---');
 for (const s of perScenario) {
   const h = s.hyp;
   const gPct = h.groundedRate == null ? 'n/a' : `${(h.groundedRate * 100).toFixed(1)}%`;
+  const rPct = h.revisionRate == null ? 'n/a' : `${(h.revisionRate * 100).toFixed(1)}%`;
   const turnsStr = h.createdAtTurns.length > 0 ? `[${h.createdAtTurns.join(',')}]` : '[]';
   const statusStr = Object.entries(h.statusDist).map(([k, v]) => `${k}=${v}`).join(' ');
   console.log(`  ${s.scenarioId.padEnd(40)} hyp=${h.count}  grounded=${h.grounded}/${h.count} (${gPct})  avgClaimLen=${h.avgClaimLen.toFixed(0)}`);
   console.log(`    created_at_turns: ${turnsStr}  status: ${statusStr || '(none)'}`);
+  console.log(`    revised: ${h.revised}/${h.revisable} (${rPct})  [excludes hyp created on final turn — no revision opportunity]`);
   console.log(`    sample: "${h.sampleClaim}"`);
 }
 
@@ -200,6 +230,32 @@ if (allHypAll === 0) {
   if (gAggRate >= 0.95) console.log('  VERDICT: ≥95% — updater consistently cites the ledger.');
   else if (gAggRate >= 0.7) console.log('  VERDICT: ≥70% — soft gate cleared.');
   else console.log('  VERDICT: <70% — updater prompt iteration recommended.');
+}
+
+// Stage 2b revision aggregate. The grounded-rate gate doesn't catch the
+// "duplicate-on-every-turn" failure mode where the LLM keeps coining fresh
+// hypothesis_ids with paraphrased claims that the merge-by-id reducer can't
+// collapse. Revision rate measures whether any hypotheses survived more than
+// one turn — i.e. whether the controller actually maintains a learner model
+// rather than refreshing it from scratch each step. No fixed threshold; this
+// is a diagnostic, not a gate. Initial pre-tune baseline (claude-code/sonnet,
+// 3 trap scenarios, original prompt): ~0% (53 distinct hypotheses across 53
+// outputs; reducer never fired). Post-tune target: a non-trivial fraction
+// revised, with the absolute count of distinct hypotheses dropping.
+const revisedAll = perScenario.reduce((sum, s) => sum + s.hyp.revised, 0);
+const revisableAll = perScenario.reduce((sum, s) => sum + s.hyp.revisable, 0);
+if (revisableAll === 0) {
+  console.log('\n--- Stage 2b diagnostic (revision rate) ---');
+  console.log('  no hypotheses created before the final turn — revision rate undefined.');
+} else {
+  const rAggRate = revisedAll / revisableAll;
+  const rAggPct = (rAggRate * 100).toFixed(1);
+  console.log('\n--- Stage 2b diagnostic (revision rate, lower bound) ---');
+  console.log(`  revisable hypotheses:  ${revisableAll}  (created before final turn)`);
+  console.log(`  revised:               ${revisedAll}  (supporting_evidence span post-creation OR status=contradicted)`);
+  console.log(`  aggregate rate:        ${rAggPct}%`);
+  console.log('  (Diagnostic, no gate. Pre-tune baseline on 3-scenario smoke was ~0%;');
+  console.log('   a higher revision rate with a lower distinct-hypothesis count is the goal.)');
 }
 
 console.log(`\n(tmp dir kept for inspection: ${tmpDir})`);
