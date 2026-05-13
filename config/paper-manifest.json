@@ -628,12 +628,12 @@
   },
 
   "prose_n_references": [
-    { "location": "abstract", "pattern": "N=4,144 primary scored" },
-    { "location": "introduction (line ~44)", "pattern": "N=4,144 primary scored responses" },
-    { "location": "methods (Table 2 totals)", "pattern": "**4,144**" },
-    { "location": "methods (line ~580)", "pattern": "N=4,144 scored" },
-    { "location": "methods (line ~582)", "pattern": "N=4,144" },
-    { "location": "discussion (line ~1889)", "pattern": "N=4,144" },
-    { "location": "conclusion (line ~1973)", "pattern": "N=4,144 primary scored" }
+    { "location": "abstract", "pattern": "N=4,312 primary scored" },
+    { "location": "introduction (line ~44)", "pattern": "N=4,312 primary scored responses" },
+    { "location": "methods (Table 2 totals)", "pattern": "**4,312**" },
+    { "location": "methods (line ~587)", "pattern": "N=4,312 scored" },
+    { "location": "methods (line ~589)", "pattern": "N=4,312" },
+    { "location": "discussion (line ~1950)", "pattern": "N=4,312" },
+    { "location": "conclusion (line ~2040)", "pattern": "N=4,312 primary scored" }
   ]
 }

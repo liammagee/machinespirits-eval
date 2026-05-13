@@ -71,6 +71,16 @@ function numToWord(n) {
     48: 'forty-eight',
     49: 'forty-nine',
     50: 'fifty',
+    51: 'fifty-one',
+    52: 'fifty-two',
+    53: 'fifty-three',
+    54: 'fifty-four',
+    55: 'fifty-five',
+    56: 'fifty-six',
+    57: 'fifty-seven',
+    58: 'fifty-eight',
+    59: 'fifty-nine',
+    60: 'sixty',
   };
   return words[n] || String(n);
 }
@@ -250,7 +260,10 @@ function main() {
   const appendixEStart = paper.indexOf('## Appendix E');
   const mainBody = appendixEStart > 0 ? paper.substring(0, appendixEStart) : paper;
 
-  const nPattern = /N[=≈]\s*([\d,]+)\s*(?:primary\s+)?scored/g;
+  // Require "primary scored" — restricts to paper-total claims and excludes
+  // legitimately different-scope claims (e.g. §6.12.1's "N=8,725 scored responses"
+  // pools across the full multi-turn DB, which is outside the manifest's 4,312 scope).
+  const nPattern = /N[=≈]\s*([\d,]+)\s+primary\s+scored/g;
   let match;
   while ((match = nPattern.exec(mainBody)) !== null) {
     const found = match[1];
@@ -295,7 +308,7 @@ function main() {
 
   // Check: evaluation count in prose
   const countWord = numToWord(manifest.totals.evaluations);
-  const countPattern = new RegExp(`${countWord} key evaluations`, 'g');
+  const countPattern = new RegExp(`${countWord}\\s+(?:key\\s+)?evaluations`, 'g');
   const countMatches = paper.match(countPattern) || [];
   if (countMatches.length === 0) {
     console.log(`  ✗ "${countWord} key evaluations" not found in paper`);

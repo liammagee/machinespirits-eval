@@ -490,14 +490,16 @@ reconciliation in a superseded paper; kept here as optional cleanup, prioritised
   pass count 81 → 88). The line-511 claim plus the three fall-through 655 cases (lines 10, 46,
   495) all now resolve via `manifest_figure_figure4_total_n`. Audit overall: 0 fails.
 
-- [ ] **C7.4 — `paper-full.md` prose-vs-manifest drift (LARGEST).** Ten residuals from
-  `generate-paper-tables.js`: line 1145 says `N=8,725 scored` (a different figure at that spot);
-  the manifest's `prose_n_references` expect seven `N=4,144 primary scored` patterns that the paper
-  doesn't contain (paper has `N=4,312` everywhere); Table-2 totals row, "52 key evaluations", and
-  "All 52" / "52 of the 52" phrasings aren't in the paper. Decide direction: lighter — update
-  `paper-manifest.json`'s `prose_n_references` / `totals` to match the frozen paper as it actually
-  reads (Paper 1.0 has shipped; the manifest's expectations are stale); heavier — edit the paper's
-  prose in seven sections. Lighter is more honest about Paper 1.0's frozen status.
+- [x] **C7.4 — `paper-full.md` prose-vs-manifest drift (LARGEST).** Done in the lighter
+  direction (update validator + manifest to match what the frozen paper actually says, since
+  Paper 1.0 has shipped). Three categories addressed: (1) `nPattern` regex tightened from
+  `(?:primary\s+)?scored` to mandatory `\s+primary\s+scored`, so §6.12.1's legitimately
+  out-of-scope `N=8,725 scored responses` no longer trips the validator; (2) manifest's seven
+  stale `prose_n_references` updated from `N=4,144` → `N=4,312` with corrected line refs;
+  (3) `numToWord` expanded to cover 51–60 (so `numToWord(52)` returns `'fifty-two'` not `'52'`),
+  and the count regex loosened to `${countWord}\\s+(?:key\\s+)?evaluations` to match both
+  "fifty-two evaluations" and "fifty-two key evaluations" phrasings used in the paper.
+  `generate-paper-tables.js` now: 10 issues → 0. `paper:bug-audit` still 0 fails.
 
 None of C7.* affects Paper 2.0 or any active research workstream. Skipping the section entirely is
 a defensible choice: leave the bug-audit failing as the truthful record of Paper 1.0's disclosed
