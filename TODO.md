@@ -393,6 +393,50 @@ Then re-run with `--ego-model openrouter.gemini-flash`. N = 2 models × 2 cells 
 
 **Paper-framing implication**: Paper 2.0 may benefit from reframing its central claim from "recognition works" to "intersubjective pedagogy works; recognition is our implementation." Currently §7.9 carries the reframe; §1/§3/§9 still read as "recognition specifically." Open question for a future pass.
 
+### A14. Evidence-Bound Adaptive Controller (HIGH — design 2026-05-13)
+
+**Origin**: `docs/next-steps/next-steps-report.md` (May 2026 review of paper-full-2.0.md v3.0.74). The report's thesis is that genuine adaptation is not memory but *accountable action selection* — minimal typed learner state, quoted-evidence requirement, finite policy vocabulary, grounding validator, learner contestability. Substantial reuse from `services/adaptiveTutor/` (already has typed state, 14 policy actions, trap suite, counterfactual replay). Net-new mechanism: evidence ledger + hypothesis TTL + grounding validator.
+
+**Scope discipline**: the report sketches 7 experiments / 10 paper revisions / 5 implementation phases. This entry implements the **MVP only** — the genuinely-novel mechanism, on the existing trap suite, with two new cells. Everything else is deferred (knowledge tracing, action-plan best-of-N, human tutor co-pilot, etc.) until the MVP either lands or doesn't.
+
+**Adaptation problem assessment** (which the MVP attacks and which it doesn't):
+- Multi-turn slope under recognition (null in §6.X): **MVP does not address.** Mechanism has no causal path to "response at turn 5 better than at turn 1."
+- Triggered strategy shift on trap suite (partially positive, cells 110-113): **MVP attacks marginally.** Evidence-gated policy selection could tighten strict_shift.
+- False personalization / unsupported claims (not yet measured): **MVP attacks strongly.** Quoted-evidence requirement + TTL + grounding validator is exactly the right machinery.
+- Learner-grounded adaptation (§4.8 of report): **deferred to A1 pilot.** Requires real humans correcting the model; simulated learners can't generate the signal.
+
+Net: the MVP would likely produce a publishable §6.X with two real findings (reduced unsupported-claim rate, possibly improved strict_shift). It would not close the multi-turn-slope gap. The strongest move is making the unsupported-claim rate a first-class metric the paper reports across cells.
+
+**Branch**: `experiment/evidence-bound-adaptive`. Schema migrations and multi-week scope justify isolation (matches the pattern of the just-deleted `experiment/langgraph-adaptive`). Stage-by-stage PRs back to main rather than one monster merge.
+
+**Staggered plan** — each stage is a stop-and-publish checkpoint:
+
+- [ ] **Stage 1 — Schema + smoke** (~3-5 days). Extend `services/adaptiveTutor/stateSchema.js`: add `evidenceLog` ReducedValue (`obs_id`, `turn`, `quote`, `type`, `kc_candidates`, `validated`) and `hypotheses` ReducedValue (`hypothesis_id`, `claim`, `confidence`, `supporting_evidence`, `contradicting_evidence`, `status`, `expires_after_turns`). Extend `persistence.js` serialization. Add `state_policy_evidence_bound` to `SUPPORTED_ARCHITECTURES` in `graph.js` (initially same wiring as `state_policy`, just carries new fields). Add `cell_126_state_policy_evidence_bound` skeleton to `tutor-agents.yaml`. **Exit**: existing cells 110-113 still produce valid runs (no schema regression); mock smoke passes; new fields round-trip through DB.
+
+- [ ] **Stage 2 — Extractor + hypothesisUpdater** (~5-7 days). New `evidenceExtractor` node: real-LLM call producing JSON evidence array from learner's last message. **Quote-validation gate**: exact-substring match against dialogue text; reject extractor outputs whose `quote` field doesn't appear verbatim (catches verbatim hallucinations; paraphrase-as-quote still leaks). New `hypothesisUpdater` node: decays/expires past-TTL hypotheses, computes contradiction, proposes new hypotheses bounded by evidence. Wire into `state_policy_evidence_bound` edge list. **Exit**: ≥95% of extractor outputs have verifiable quote; hypothesis TTL state machine tested across multi-turn scenarios; real-LLM smoke passes.
+
+- [ ] **Stage 3 — Grounding validator + run** (~5-7 days). Upgrade `constraintCheck` → `groundingValidator`: hard-gates `tutorEmit` on (a) every learner-state reference in the tutor message traces to an `evidenceLog` entry, (b) no forbidden-claim patterns (closed list: broad-trait claims, durable-without-evidence claims, expired-hypothesis reuse), (c) response implements selected policy. Validator-reject loop with 2-pass budget then emit-with-flag. Add `cell_127_state_policy_evidence_bound_no_validator` ablation. Run both cells on `config/adaptive-trap-scenarios.yaml` (same suite as cells 110-113 for comparability). **Exit**: cells 126/127 produce DB-tractable runs; strict_shift comparable to or above cell 113; validator rejection rate below threshold (set during implementation).
+
+- [ ] **Stage 4 — Analyzer + paper §6.X** (~5-7 days). New `scripts/analyze-evidence-grounding.js` reporting `quoted_support_rate`, `unsupported_claim_rate`, `expired_state_reuse_rate`, `contradiction_rate` across cells 110-113, 126, 127. Add §6.X to `paper-full-2.0.md` reporting the new four metrics + strict_shift across all six cells. Add the adaptivity taxonomy table (§7.1 of report) as a new earlier paper section — this is the single most substantive paper revision in the report. Version-bump paper to v3.0.75+. **Exit**: paper §6.X drafted, claims trace to DB run IDs, validate-bug-claims passes.
+
+- [ ] **Stage 5 — DEFERRED to A1**. Learner-facing correction (§4.8 of report) requires pilot UI changes + real humans correcting the model. Belongs to the IRB-gated pilot, not this arc.
+
+**Explicitly out of scope for A14**:
+- Knowledge tracing over dialogue turns (§5.3 of report) — separate research project, drop or fold to single-column extension
+- Action-plan best-of-N (§5.5 of report) — interesting but doesn't load-bear on core claim
+- Human tutor co-pilot (Exp 6) — deployment concern, not science
+- Cross-session learner continuity (A6 in report's adaptivity taxonomy) — not attacked by this mechanism
+- Paper renames ("intersubjective orientation" §7.2 of report) — stylistic, can land independently
+- Revision-history relocation (§7.7 of report) — stylistic
+
+**Stop-and-publish checkpoints**:
+- After Stage 1: schema lands cleanly or doesn't. If the TTL semantics resist clean Zod modeling, stop with a 3-5 day investment and a notes/ writeup of why.
+- After Stage 2: if extractor's verifiable-quote rate falls below ~70% in real-LLM testing, the mechanism's foundational assumption is broken — stop with a negative-result writeup and reconsider before building the validator.
+- After Stage 3: if cells 126/127 don't beat cell 113 on strict_shift OR don't substantially reduce unsupported-claim rate, the validator isn't earning its complexity — stop with a §6.X-as-negative-result writeup (still publishable).
+- After Stage 4: paper section drafted. If draft doesn't survive internal review, stop without merging the branch.
+
+**Paper integration** — single-paper discipline (`CLAUDE.md` §Paper Authoring Discipline): all empirical claims land in `paper-full-2.0.md` first. No spin-off paper. The report's framing as "the next paper" is rejected; this is a §6.X extension and a §7.X taxonomy table.
+
 ---
 
 ## B. Code Quality & Infrastructure
