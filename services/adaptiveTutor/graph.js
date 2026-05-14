@@ -61,6 +61,7 @@
 //     116 stronger on polite_false_mastery), so additivity is plausible
 //     but not guaranteed.
 
+import { createHash } from 'crypto';
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
@@ -83,6 +84,27 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // pathway with the id-authored prompt threaded into the existing ego node.
   'bilateral_tom_id_director_v1',
   'bilateral_tom_id_director_v2',
+  // A14 (cell 126): state_policy + evidenceExtractor + hypothesisUpdater
+  // at the loop head. Stage 2a populates evidenceLog with typed observations
+  // gated by exact-substring quote validation. Stage 2b adds the
+  // hypothesisUpdater between extractor and learnerProfileUpdate: it
+  // synthesises typed hypotheses with TTL from the validated ledger, owns
+  // hypothesis_id derivation + created_at_turn preservation + evidence-ref
+  // filtering. The flag-driven shared block keeps cells 110-113 /
+  // bilateral_tom variants untouched while this architecture accretes new
+  // nodes stage by stage.
+  'state_policy_evidence_bound',
+  // A14 Stage 3 (cell 127): state_policy_evidence_bound + groundingValidator.
+  // After the updater proposes hypotheses, the validator walks the still-
+  // tentative subset and decides which to PROMOTE to `validated` (multiple
+  // supporting obs_ids accumulated, no contradiction) and which to RETIRE
+  // to `contradicted` (new evidence directly conflicts). The retain/retire
+  // gate is the explicit retention layer A14 §4.3 calls for; without it,
+  // status transitions are limited to whatever the updater itself proposes
+  // (and the Stage 2b smoke showed the updater rarely promotes — 0 of 53
+  // hypotheses were marked `validated`, only `tentative`/`contradicted`).
+  // cell_126 vs cell_127 contrast = validator off vs on, same scenarios.
+  'state_policy_evidence_bound_validated',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 
@@ -321,6 +343,174 @@ async function tutorEmit(state) {
   return { dialogue: [{ role: 'tutor', content: finalText }] };
 }
 
+// A14 Stage 2a: evidence extractor node. Reads the most recent learner
+// message from state.dialogue, calls the extractor role for typed
+// observations, then runs each one through the quote-validation gate
+// (exact-substring match against the dialogue text). Failed-quote entries
+// are NOT dropped — they're recorded with validated=false so Stage 3's
+// validator + Stage 4's analyzer can report the unsupported-claim rate
+// rather than silently filtering hallucinations out of view.
+//
+// obs_id uses a content-derived sha1 prefix so identical extractions across
+// the original and counterfactual branches collide on the same ID (the
+// merge-by-id reducer isn't on this channel — evidenceLog is append-only —
+// but the IDs still need to be stable for cross-branch comparison in the
+// analyzer). idx is included so two near-identical quotes in the same turn
+// still get distinct IDs.
+async function evidenceExtractor(state) {
+  const learnerLastMessage = lastTextOf(state.dialogue, 'learner');
+  if (!learnerLastMessage) return {};
+  const extracted = await callRole('evidenceExtractor', {
+    learnerLastMessage,
+    dialogue: state.dialogue,
+    turn: state.turn,
+  });
+  const dialogueText = state.dialogue.map((m) => m.content || '').join('\n');
+  const raw = Array.isArray(extracted?.evidence) ? extracted.evidence : [];
+  const entries = raw.map((e, idx) => {
+    const quote = String(e.quote || '');
+    const hash = createHash('sha1').update(quote).digest('hex').slice(0, 8);
+    return {
+      obs_id: `t${state.turn}_${idx}_${hash}`,
+      turn: state.turn,
+      quote,
+      type: e.type,
+      kc_candidates: Array.isArray(e.kc_candidates) ? e.kc_candidates : [],
+      created_by: 'extractor_v1',
+      validated: quote.length > 0 && dialogueText.includes(quote),
+    };
+  });
+  return { evidenceLog: entries };
+}
+
+// A14 Stage 2b: hypothesisUpdater. Reads the validated evidence ledger and
+// the current hypotheses, calls the LLM (or mock) to propose updates, then
+// applies node-side bookkeeping:
+//   (a) Deterministic TTL sweep marks tentative hypotheses as `expired` when
+//       turn > created_at_turn + expires_after_turns. Done in code, not by
+//       the LLM, because expiry is mechanical and shouldn't burn tokens or
+//       risk the model forgetting to expire.
+//   (b) hypothesis_id derivation. Newly proposed hypotheses (those without a
+//       model-supplied hypothesis_id) get `hyp_<sha1-prefix-of-claim>` so
+//       paraphrases of the "same" idea collide on the same id rather than
+//       fragmenting the ledger. Counterfactual-replay stability comes free
+//       from content-derived ids — same posture as obs_id in the extractor.
+//   (c) created_at_turn / expires_after_turns preservation. When the LLM
+//       revises an existing hypothesis (matching hypothesis_id), the node
+//       preserves the original creation turn and TTL offset. The reducer is
+//       merge-by-id last-write-wins, so without this preservation the LLM
+//       could implicitly reset the TTL clock on every revision.
+//   (d) Evidence-ref filtering. supporting_evidence / contradicting_evidence
+//       arrays are filtered to obs_ids that actually appear in the validated
+//       ledger. A fabricated obs_id is silently dropped rather than carried
+//       forward — the audit trail in the ledger should not be polluted by
+//       hallucinated cross-references.
+//
+// Empty-evidence shortcut: if no validated evidence exists yet, the LLM call
+// is skipped (nothing to update from). The TTL sweep still runs — a turn-0
+// hypothesis with expires_after_turns=1 can expire on turn 2 even if no new
+// evidence has arrived.
+async function hypothesisUpdater(state) {
+  const turn = state.turn;
+  const validatedEvidence = (state.evidenceLog || []).filter((e) => e.validated);
+  const currentHypotheses = state.hypotheses || [];
+
+  const expiredUpdates = currentHypotheses
+    .filter((h) => h.status === 'tentative'
+                   && turn > h.created_at_turn + h.expires_after_turns)
+    .map((h) => ({ ...h, status: 'expired' }));
+
+  if (validatedEvidence.length === 0) {
+    return expiredUpdates.length > 0 ? { hypotheses: expiredUpdates } : {};
+  }
+
+  // Show the LLM all non-expired hypotheses including about-to-expire ones —
+  // fresh evidence may revive them, and the revision (in `synthesised` below)
+  // will win over the TTL sweep entry via ordering in the returned array.
+  const liveHypotheses = currentHypotheses.filter((h) => h.status !== 'expired');
+
+  const proposed = await callRole('hypothesisUpdater', {
+    validatedEvidence,
+    currentHypotheses: liveHypotheses,
+    turn,
+  });
+
+  const validObsIds = new Set(validatedEvidence.map((e) => e.obs_id));
+  const existingById = new Map(currentHypotheses.map((h) => [h.hypothesis_id, h]));
+
+  const synthesised = (proposed?.hypotheses || []).map((h) => {
+    const claim = String(h.claim || '').trim();
+    if (!claim) return null;
+    const declaredId = typeof h.hypothesis_id === 'string' && h.hypothesis_id.trim().length > 0
+      ? h.hypothesis_id.trim()
+      : null;
+    const derivedId = `hyp_${createHash('sha1').update(claim).digest('hex').slice(0, 8)}`;
+    const id = declaredId || derivedId;
+    const existing = existingById.get(id);
+    const support = Array.isArray(h.supporting_evidence) ? h.supporting_evidence : [];
+    const contradict = Array.isArray(h.contradicting_evidence) ? h.contradicting_evidence : [];
+    return {
+      hypothesis_id: id,
+      claim,
+      confidence: typeof h.confidence === 'number'
+        ? Math.max(0, Math.min(1, h.confidence))
+        : 0.5,
+      supporting_evidence: support.filter((oid) => validObsIds.has(oid)),
+      contradicting_evidence: contradict.filter((oid) => validObsIds.has(oid)),
+      status: h.status || 'tentative',
+      created_at_turn: existing ? existing.created_at_turn : turn,
+      expires_after_turns: existing ? existing.expires_after_turns : 2,
+      next_validation_action: h.next_validation_action || '',
+    };
+  }).filter(Boolean);
+
+  // Order matters for the merge-by-id reducer: synthesised entries come
+  // after expiredUpdates, so a hypothesis revived by fresh evidence overrides
+  // the TTL sweep's `expired` status.
+  return { hypotheses: [...expiredUpdates, ...synthesised] };
+}
+
+// A14 Stage 3: groundingValidator. After the updater proposes the turn's
+// hypothesis updates, the validator walks the still-tentative subset and
+// decides which to promote to `validated` and which to retire to
+// `contradicted`. The retain/retire decision is informed by:
+//   (a) accumulated supporting evidence count and turn-spread
+//   (b) presence and weight of contradicting evidence
+//   (c) confidence trajectory (high+stable vs low+wobbling)
+// Node-side bookkeeping:
+//   - The validator emits {hypothesis_id, new_status, reasoning} only. The
+//     node looks up each id in the current hypotheses, preserves claim /
+//     supporting_evidence / contradicting_evidence / created_at_turn /
+//     expires_after_turns, and changes only the status. The LLM doesn't
+//     own the hypothesis fields — it owns the verdict.
+//   - Validator output is filtered against the current `tentative` set; a
+//     decision about an id the validator hallucinates is silently dropped
+//     (same posture as obs_id filtering in the updater).
+//   - new_status must be either `validated` or `contradicted` — leaving a
+//     hypothesis as-is is expressed by NOT emitting a decision for it,
+//     mirroring the SILENCE convention in the updater.
+async function groundingValidator(state) {
+  const tentative = (state.hypotheses || []).filter((h) => h.status === 'tentative');
+  if (tentative.length === 0) return {};
+
+  const validatedEvidence = (state.evidenceLog || []).filter((e) => e.validated);
+  const proposed = await callRole('groundingValidator', {
+    hypotheses: tentative,
+    evidenceLedger: validatedEvidence,
+    turn: state.turn,
+  });
+
+  const tentativeById = new Map(tentative.map((h) => [h.hypothesis_id, h]));
+  const updates = (proposed?.decisions || []).map((d) => {
+    const h = tentativeById.get(d?.hypothesis_id);
+    if (!h) return null;
+    if (d.new_status !== 'validated' && d.new_status !== 'contradicted') return null;
+    return { ...h, status: d.new_status };
+  }).filter(Boolean);
+
+  return updates.length > 0 ? { hypotheses: updates } : {};
+}
+
 async function learnerTurn(state) {
   const tutorLastMessage = lastTextOf(state.dialogue, 'tutor');
   const text = await callRole('learnerTurn', {
@@ -423,10 +613,20 @@ export function buildGraph(options = {}) {
     || architecture === 'bilateral_tom_named_patterns'
     || architecture === 'bilateral_tom_id_director_v2';
   const includeIdAuthor = architecture === 'bilateral_tom_id_director_v2';
+  // A14 Stage 2a: evidence extractor inserts at the loop head so it fires
+  // once per turn including turn 0 (where the opening learner message is
+  // at the tail of state.dialogue). Loop-back point in the conditional
+  // edge below switches from learnerProfileUpdate to evidenceExtractor.
+  // Stage 3 adds the groundingValidator between updater and profileUpdate
+  // when the architecture flag carries the `_validated` suffix.
+  const includeExtractor = architecture === 'state_policy_evidence_bound'
+    || architecture === 'state_policy_evidence_bound_validated';
+  const includeGroundingValidator = architecture === 'state_policy_evidence_bound_validated';
   const egoInitialFn = architecture === 'bilateral_tom_named_patterns'
     ? tutorEgoInitialNamedPatterns
     : tutorEgoInitial;
   const learnerProfileUpdate = makeLearnerProfileUpdate(architecture);
+  const loopHeadNode = includeExtractor ? 'evidenceExtractor' : 'learnerProfileUpdate';
 
   const g = new StateGraph(AdaptiveTutorState)
     .addNode('learnerProfileUpdate', learnerProfileUpdate)
@@ -435,8 +635,30 @@ export function buildGraph(options = {}) {
     .addNode('constraintCheck', constraintCheck)
     .addNode('tutorEgoRevision', tutorEgoRevision)
     .addNode('tutorEmit', tutorEmit)
-    .addNode('learnerTurn', learnerTurn)
-    .addEdge(START, 'learnerProfileUpdate');
+    .addNode('learnerTurn', learnerTurn);
+
+  if (includeExtractor) {
+    // A14 Stage 2a wired the extractor at the loop head; Stage 2b inserts the
+    // hypothesisUpdater between extractor and learnerProfileUpdate so the
+    // updater sees fresh evidence from this turn before profileUpdate runs.
+    // Stage 3 inserts groundingValidator between updater and profileUpdate
+    // when the `_validated` architecture flag is set; profileUpdate then
+    // sees the validator's promotions/retirements when constructing the
+    // learnerProfile that downstream nodes consume.
+    g.addNode('evidenceExtractor', evidenceExtractor)
+      .addNode('hypothesisUpdater', hypothesisUpdater)
+      .addEdge(START, 'evidenceExtractor')
+      .addEdge('evidenceExtractor', 'hypothesisUpdater');
+    if (includeGroundingValidator) {
+      g.addNode('groundingValidator', groundingValidator)
+        .addEdge('hypothesisUpdater', 'groundingValidator')
+        .addEdge('groundingValidator', 'learnerProfileUpdate');
+    } else {
+      g.addEdge('hypothesisUpdater', 'learnerProfileUpdate');
+    }
+  } else {
+    g.addEdge(START, 'learnerProfileUpdate');
+  }
 
   if (includeTomTracker) {
     g.addNode('tutorTomTracker', tutorTomTracker)
@@ -466,5 +688,5 @@ export function buildGraph(options = {}) {
     .addConditionalEdges('constraintCheck', routeAfterConstraint, ['tutorEgoRevision', 'tutorEmit'])
     .addEdge('tutorEgoRevision', 'tutorEmit')
     .addEdge('tutorEmit', 'learnerTurn')
-    .addConditionalEdges('learnerTurn', routeAfterLearner('learnerProfileUpdate'), ['learnerProfileUpdate', END]);
+    .addConditionalEdges('learnerTurn', routeAfterLearner(loopHeadNode), [loopHeadNode, END]);
 }

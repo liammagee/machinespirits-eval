@@ -83,7 +83,10 @@ function extractTurnTrace(history) {
 
 function buildTraceJson({ scenario, scenarioConfig, runResult, counterfactualResult, perturbation, llmMode, profileName }) {
   const trace = {
-    schemaVersion: 1,
+    // schemaVersion 2 (A14 Stage 1) adds finalEvidenceLog + finalHypotheses to
+    // each branch. Older trace files without these fields stay readable —
+    // analyzers default them to [] when absent.
+    schemaVersion: 2,
     profileName,
     scenario: {
       id: scenario.id,
@@ -98,6 +101,8 @@ function buildTraceJson({ scenario, scenarioConfig, runResult, counterfactualRes
       dialogue: runResult.final.dialogue,
       finalLearnerProfile: runResult.final.learnerProfile,
       finalTutorInternal: runResult.final.tutorInternal,
+      finalEvidenceLog: runResult.final.evidenceLog ?? [],
+      finalHypotheses: runResult.final.hypotheses ?? [],
       constraintViolations: runResult.final.constraintViolations,
       perTurn: extractTurnTrace(runResult.history),
     },
@@ -109,6 +114,8 @@ function buildTraceJson({ scenario, scenarioConfig, runResult, counterfactualRes
       dialogue: counterfactualResult.final.dialogue,
       finalLearnerProfile: counterfactualResult.final.learnerProfile,
       finalTutorInternal: counterfactualResult.final.tutorInternal,
+      finalEvidenceLog: counterfactualResult.final.evidenceLog ?? [],
+      finalHypotheses: counterfactualResult.final.hypotheses ?? [],
       constraintViolations: counterfactualResult.final.constraintViolations,
       perTurn: extractTurnTrace(counterfactualResult.history),
     };

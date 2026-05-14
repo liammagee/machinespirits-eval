@@ -170,6 +170,129 @@ const fixtures = {
     return profile;
   },
 
+  // A14 Stage 2a: deterministic evidence extractor mock. Emits one verbatim
+  // entry (validated=true expected) plus, when the learner message contains
+  // a paraphrasable marker, a second entry whose `quote` deliberately drops a
+  // word so the graph's substring-match gate flips validated=false. That
+  // exercises both branches of the gate from a single mock; the unit test in
+  // services/__tests__/adaptiveExtractor.test.js asserts the resulting flags.
+  //
+  // No `obs_id` / `turn` / `created_by` / `validated` here — those are
+  // bookkeeping the graph node fills in (matches the learnerProfileUpdate
+  // pattern, which also leaves updatedAtTurn for the node).
+  evidenceExtractor: ({ learnerLastMessage }) => {
+    const msg = (learnerLastMessage || '').trim();
+    if (!msg) return { evidence: [] };
+    const head = msg.slice(0, Math.min(60, msg.length));
+    const evidence = [
+      { quote: head, type: 'learner_self_report', kc_candidates: [] },
+    ];
+    // Inject a clearly hallucinated quote (prefix with a sentinel character
+    // that won't appear elsewhere in the dialogue) so the substring-match
+    // gate flips validated=false on every turn where this fires. This
+    // exercises the negative branch of the gate from a single mock; without
+    // it, mock smokes would always produce 100% validated rates and the
+    // gate's "reject" path would go untested. Real LLMs hallucinate by
+    // paraphrasing, not by sentinel prefix; the gate sees both as misses.
+    if (msg.length > 30) {
+      evidence.push({ quote: `★fabricated★ ${head}`, type: 'tutor_inference', kc_candidates: [] });
+    }
+    return { evidence };
+  },
+
+  // Mock hypothesisUpdater (Stage 2b). Synthesises typed hypotheses from the
+  // validated evidence ledger. Heuristic:
+  //   ≥2 learner_question entries → "questioning_stance" hypothesis
+  //   ≥2 learner_self_report (and <2 questions) → "low_confidence_signal"
+  //   ≥1 learner_correction → "active_revision"
+  // Mock emits with stable hypothesis_ids so the merge-by-id reducer
+  // exercises revision-on-second-turn, not new-creation-on-every-turn. The
+  // node fills created_at_turn / expires_after_turns / TTL bookkeeping —
+  // mock stays focused on the LLM-shape output the real backend also emits.
+  hypothesisUpdater: ({ validatedEvidence }) => {
+    if (!Array.isArray(validatedEvidence) || validatedEvidence.length === 0) {
+      return { hypotheses: [] };
+    }
+    const byType = validatedEvidence.reduce((acc, e) => {
+      if (!acc[e.type]) acc[e.type] = [];
+      acc[e.type].push(e.obs_id);
+      return acc;
+    }, {});
+    const hypotheses = [];
+    const qIds = byType.learner_question || [];
+    const sIds = byType.learner_self_report || [];
+    const cIds = byType.learner_correction || [];
+    if (qIds.length >= 2) {
+      hypotheses.push({
+        hypothesis_id: 'hyp_questioning_stance',
+        claim: 'The learner is in a questioning, probing stance toward the material.',
+        confidence: Math.min(0.9, 0.4 + 0.15 * qIds.length),
+        supporting_evidence: qIds,
+        contradicting_evidence: [],
+        status: qIds.length >= 4 ? 'validated' : 'tentative',
+        next_validation_action: 'mirror_and_extend',
+      });
+    }
+    if (sIds.length >= 2 && qIds.length < 2) {
+      hypotheses.push({
+        hypothesis_id: 'hyp_low_confidence_signal',
+        claim: 'The learner is self-reporting confusion or low confidence.',
+        confidence: Math.min(0.8, 0.4 + 0.1 * sIds.length),
+        supporting_evidence: sIds,
+        contradicting_evidence: [],
+        status: 'tentative',
+        next_validation_action: 'lower_cognitive_load',
+      });
+    }
+    if (cIds.length >= 1) {
+      hypotheses.push({
+        hypothesis_id: 'hyp_active_revision',
+        claim: 'The learner is actively revising or pushing back on tutor framing.',
+        confidence: Math.min(0.85, 0.5 + 0.2 * cIds.length),
+        supporting_evidence: cIds,
+        contradicting_evidence: [],
+        status: 'tentative',
+        next_validation_action: 'scope_test',
+      });
+    }
+    return { hypotheses };
+  },
+
+  // A14 Stage 3: groundingValidator mock. Deterministic retain/retire rule
+  // exercises both promotion and retirement branches:
+  //   - ≥3 supporting obs_ids and no contradicting evidence → promote to
+  //     `validated` (a tentative claim has accumulated enough corroboration)
+  //   - ≥1 contradicting obs_id AND confidence < 0.4 → retire to
+  //     `contradicted` (new evidence undermines a weak claim)
+  //   - else leave as-is (emit no decision; the merge-by-id reducer keeps
+  //     the existing entry)
+  // The thresholds match the conservative gate the real-LLM prompt asks for;
+  // unit tests in services/__tests__/ pin the exact transition points. Mock
+  // keeps determinism so cell_127's mock smoke produces the same trace on
+  // every run.
+  groundingValidator: ({ hypotheses }) => {
+    const decisions = [];
+    for (const h of hypotheses) {
+      const supportCount = (h.supporting_evidence || []).length;
+      const contradictCount = (h.contradicting_evidence || []).length;
+      const conf = typeof h.confidence === 'number' ? h.confidence : 0.5;
+      if (contradictCount >= 1 && conf < 0.4) {
+        decisions.push({
+          hypothesis_id: h.hypothesis_id,
+          new_status: 'contradicted',
+          reasoning: `mock: ${contradictCount} contradicting obs_ids with confidence ${conf.toFixed(2)} < 0.4`,
+        });
+      } else if (supportCount >= 3 && contradictCount === 0) {
+        decisions.push({
+          hypothesis_id: h.hypothesis_id,
+          new_status: 'validated',
+          reasoning: `mock: ${supportCount} supporting obs_ids, no contradiction`,
+        });
+      }
+    }
+    return { decisions };
+  },
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => {
     if (turn === hidden.triggerTurn) return hidden.triggerSignal || 'I have a different read on that.';
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';
