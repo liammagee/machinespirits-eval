@@ -31,7 +31,11 @@ build/
 .idea/
 .vscode/
 .claude/*
+# Shared Claude Code config (team + CI). settings.local.json and
+# scheduled_tasks.lock stay ignored — they hold machine-local secrets/state.
 !.claude/skills/
+!.claude/settings.json
+!.claude/agents/
 *.code-workspace
 *.swp
 *.swo
