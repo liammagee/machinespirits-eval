@@ -5638,3 +5638,47 @@ profiles:
         max_tokens: 1500
       counterfactual:
         enabled: true
+
+  # ===========================================================================
+  # A14 — Evidence-Bound Adaptive Controller (cell 128, Stage 5 DIAGNOSTIC)
+  # ===========================================================================
+  # The full audit chain (evidenceExtractor + hypothesisUpdater +
+  # groundingValidator) — identical topology to cell_127 — but the LLM sees
+  # only cell_118's MINIMAL {confidence, lastEvidence} profile projection
+  # instead of cell_127's full 5-field profile. The decisive Stage 5
+  # diagnostic for the trust-vs-load question (§6.8.6 state-richness reversal,
+  # §6.9.5 asymmetric attribution):
+  #   - cell_128 vs cell_118 (68.8% strict_shift, §6.8.6): holds the lean
+  #     profile fixed, adds only the evidence-bound discipline — does grounding
+  #     lift the profile that already wins, or is its headroom already spent?
+  #   - cell_128 vs cell_127: holds the audit chain fixed, varies profile
+  #     width — separates trust/grounding from capacity/load.
+  # Behaviourally a clone of cell_127 except the one PROFILE_PROJECTIONS entry
+  # (services/adaptiveTutor/graph.js). Same provider, model, hyperparameters,
+  # scenarios, and counterfactual setting as cell_126/cell_127 so every
+  # comparison is on the single intended variable. Origin: TODO.md A14 Stage 5.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_128_state_policy_minimal_profile_evidence_bound_validated
+  cell_128_state_policy_minimal_profile_evidence_bound_validated:
+    description: "A14 Stage 5 diagnostic: full evidence-bound audit chain (extractor + updater + groundingValidator, cell_127's topology) on cell_118's minimal {confidence, lastEvidence} profile projection. Isolates the grounding effect from the rich-state load confound — cell_128 vs cell_118 (grounding added to the lean profile) and cell_128 vs cell_127 (profile width varied, audit chain fixed). Origin: TODO.md A14 Stage 5."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_minimal_profile_evidence_bound_validated
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_minimal_profile_evidence_bound_validated
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true

@@ -105,6 +105,17 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // hypotheses were marked `validated`, only `tentative`/`contradicted`).
   // cell_126 vs cell_127 contrast = validator off vs on, same scenarios.
   'state_policy_evidence_bound_validated',
+  // A14 Stage 5 diagnostic (cell 128): the full audit chain
+  // (evidenceExtractor + hypothesisUpdater + groundingValidator) on the
+  // MINIMAL {confidence, lastEvidence} profile (cell_118's projection)
+  // instead of cell_127's full 5-field profile. Same topology as
+  // state_policy_evidence_bound_validated; the only difference is the
+  // PROFILE_PROJECTIONS entry below. Isolates the grounding effect from the
+  // rich-state load confound (§6.8.6 state-richness reversal): cell_128 vs
+  // cell_118 holds the lean profile fixed and adds only the evidence-bound
+  // discipline; cell_128 vs cell_127 holds the audit chain fixed and varies
+  // profile width — separating trust/grounding from capacity/load.
+  'state_policy_minimal_profile_evidence_bound_validated',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 
@@ -126,6 +137,11 @@ const PROFILE_PROJECTIONS = Object.freeze({
   // floor shared by cells 110/119/120, or whether profile field-count is the
   // operative variable. See §6.8.6.
   state_policy_minimal_plus_zpd: ['confidence', 'lastEvidence', 'zpdEstimate'],
+  // A14 Stage 5 diagnostic (cell_128): cell_118's minimal projection paired
+  // with the full evidence-bound audit chain (see SUPPORTED_ARCHITECTURES).
+  // Same two fields as state_policy_minimal_profile — what differs is the
+  // graph topology (extractor + updater + validator), not the projection.
+  state_policy_minimal_profile_evidence_bound_validated: ['confidence', 'lastEvidence'],
 });
 
 function projectProfileForArchitecture(profile, architecture) {
@@ -317,8 +333,7 @@ async function constraintCheck(state) {
   }
   // Strategy 3: if learner is resistant, tutor must not pick a pure-explanation action.
   const explanationActions = new Set(['give_worked_example', 'lower_cognitive_load']);
-  if (state.learnerProfile.agencySignal === 'resistant'
-      && explanationActions.has(state.tutorInternal.policyAction)) {
+  if (state.learnerProfile.agencySignal === 'resistant' && explanationActions.has(state.tutorInternal.policyAction)) {
     violations.push(`policy ${state.tutorInternal.policyAction} contraindicated for resistant learner`);
   }
   return { constraintViolations: violations };
@@ -416,8 +431,7 @@ async function hypothesisUpdater(state) {
   const currentHypotheses = state.hypotheses || [];
 
   const expiredUpdates = currentHypotheses
-    .filter((h) => h.status === 'tentative'
-                   && turn > h.created_at_turn + h.expires_after_turns)
+    .filter((h) => h.status === 'tentative' && turn > h.created_at_turn + h.expires_after_turns)
     .map((h) => ({ ...h, status: 'expired' }));
 
   if (validatedEvidence.length === 0) {
@@ -438,31 +452,30 @@ async function hypothesisUpdater(state) {
   const validObsIds = new Set(validatedEvidence.map((e) => e.obs_id));
   const existingById = new Map(currentHypotheses.map((h) => [h.hypothesis_id, h]));
 
-  const synthesised = (proposed?.hypotheses || []).map((h) => {
-    const claim = String(h.claim || '').trim();
-    if (!claim) return null;
-    const declaredId = typeof h.hypothesis_id === 'string' && h.hypothesis_id.trim().length > 0
-      ? h.hypothesis_id.trim()
-      : null;
-    const derivedId = `hyp_${createHash('sha1').update(claim).digest('hex').slice(0, 8)}`;
-    const id = declaredId || derivedId;
-    const existing = existingById.get(id);
-    const support = Array.isArray(h.supporting_evidence) ? h.supporting_evidence : [];
-    const contradict = Array.isArray(h.contradicting_evidence) ? h.contradicting_evidence : [];
-    return {
-      hypothesis_id: id,
-      claim,
-      confidence: typeof h.confidence === 'number'
-        ? Math.max(0, Math.min(1, h.confidence))
-        : 0.5,
-      supporting_evidence: support.filter((oid) => validObsIds.has(oid)),
-      contradicting_evidence: contradict.filter((oid) => validObsIds.has(oid)),
-      status: h.status || 'tentative',
-      created_at_turn: existing ? existing.created_at_turn : turn,
-      expires_after_turns: existing ? existing.expires_after_turns : 2,
-      next_validation_action: h.next_validation_action || '',
-    };
-  }).filter(Boolean);
+  const synthesised = (proposed?.hypotheses || [])
+    .map((h) => {
+      const claim = String(h.claim || '').trim();
+      if (!claim) return null;
+      const declaredId =
+        typeof h.hypothesis_id === 'string' && h.hypothesis_id.trim().length > 0 ? h.hypothesis_id.trim() : null;
+      const derivedId = `hyp_${createHash('sha1').update(claim).digest('hex').slice(0, 8)}`;
+      const id = declaredId || derivedId;
+      const existing = existingById.get(id);
+      const support = Array.isArray(h.supporting_evidence) ? h.supporting_evidence : [];
+      const contradict = Array.isArray(h.contradicting_evidence) ? h.contradicting_evidence : [];
+      return {
+        hypothesis_id: id,
+        claim,
+        confidence: typeof h.confidence === 'number' ? Math.max(0, Math.min(1, h.confidence)) : 0.5,
+        supporting_evidence: support.filter((oid) => validObsIds.has(oid)),
+        contradicting_evidence: contradict.filter((oid) => validObsIds.has(oid)),
+        status: h.status || 'tentative',
+        created_at_turn: existing ? existing.created_at_turn : turn,
+        expires_after_turns: existing ? existing.expires_after_turns : 2,
+        next_validation_action: h.next_validation_action || '',
+      };
+    })
+    .filter(Boolean);
 
   // Order matters for the merge-by-id reducer: synthesised entries come
   // after expiredUpdates, so a hypothesis revived by fresh evidence overrides
@@ -501,12 +514,14 @@ async function groundingValidator(state) {
   });
 
   const tentativeById = new Map(tentative.map((h) => [h.hypothesis_id, h]));
-  const updates = (proposed?.decisions || []).map((d) => {
-    const h = tentativeById.get(d?.hypothesis_id);
-    if (!h) return null;
-    if (d.new_status !== 'validated' && d.new_status !== 'contradicted') return null;
-    return { ...h, status: d.new_status };
-  }).filter(Boolean);
+  const updates = (proposed?.decisions || [])
+    .map((d) => {
+      const h = tentativeById.get(d?.hypothesis_id);
+      if (!h) return null;
+      if (d.new_status !== 'validated' && d.new_status !== 'contradicted') return null;
+      return { ...h, status: d.new_status };
+    })
+    .filter(Boolean);
 
   return updates.length > 0 ? { hypotheses: updates } : {};
 }
@@ -522,18 +537,18 @@ async function learnerTurn(state) {
 }
 
 const routeAfterConstraint = (state) => {
-  const violationsThisTurn = state.constraintViolations.length > 0
-    && state.tutorInternal.egoRevision === '';
+  const violationsThisTurn = state.constraintViolations.length > 0 && state.tutorInternal.egoRevision === '';
   return violationsThisTurn ? 'tutorEgoRevision' : 'tutorEmit';
 };
 
-const routeAfterLearner = (loopBackNode) => (state) =>
-  (state.turn >= state.maxTurns ? END : loopBackNode);
+const routeAfterLearner = (loopBackNode) => (state) => (state.turn >= state.maxTurns ? END : loopBackNode);
 
 export function buildGraph(options = {}) {
   const architecture = options.architecture ?? 'state_policy';
   if (!SUPPORTED_ARCHITECTURES.includes(architecture)) {
-    throw new Error(`buildGraph: unsupported architecture "${architecture}". Expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')}`);
+    throw new Error(
+      `buildGraph: unsupported architecture "${architecture}". Expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')}`,
+    );
   }
 
   if (architecture === 'recognition_only') {
@@ -609,9 +624,10 @@ export function buildGraph(options = {}) {
   // the state_policy topology unchanged but project the LLM-emitted
   // profile to a subset of fields via PROFILE_PROJECTIONS.
   const includeValidator = architecture === 'state_policy_with_validator';
-  const includeTomTracker = architecture === 'bilateral_tom'
-    || architecture === 'bilateral_tom_named_patterns'
-    || architecture === 'bilateral_tom_id_director_v2';
+  const includeTomTracker =
+    architecture === 'bilateral_tom' ||
+    architecture === 'bilateral_tom_named_patterns' ||
+    architecture === 'bilateral_tom_id_director_v2';
   const includeIdAuthor = architecture === 'bilateral_tom_id_director_v2';
   // A14 Stage 2a: evidence extractor inserts at the loop head so it fires
   // once per turn including turn 0 (where the opening learner message is
@@ -619,12 +635,14 @@ export function buildGraph(options = {}) {
   // edge below switches from learnerProfileUpdate to evidenceExtractor.
   // Stage 3 adds the groundingValidator between updater and profileUpdate
   // when the architecture flag carries the `_validated` suffix.
-  const includeExtractor = architecture === 'state_policy_evidence_bound'
-    || architecture === 'state_policy_evidence_bound_validated';
-  const includeGroundingValidator = architecture === 'state_policy_evidence_bound_validated';
-  const egoInitialFn = architecture === 'bilateral_tom_named_patterns'
-    ? tutorEgoInitialNamedPatterns
-    : tutorEgoInitial;
+  const includeExtractor =
+    architecture === 'state_policy_evidence_bound' ||
+    architecture === 'state_policy_evidence_bound_validated' ||
+    architecture === 'state_policy_minimal_profile_evidence_bound_validated';
+  const includeGroundingValidator =
+    architecture === 'state_policy_evidence_bound_validated' ||
+    architecture === 'state_policy_minimal_profile_evidence_bound_validated';
+  const egoInitialFn = architecture === 'bilateral_tom_named_patterns' ? tutorEgoInitialNamedPatterns : tutorEgoInitial;
   const learnerProfileUpdate = makeLearnerProfileUpdate(architecture);
   const loopHeadNode = includeExtractor ? 'evidenceExtractor' : 'learnerProfileUpdate';
 
@@ -661,8 +679,7 @@ export function buildGraph(options = {}) {
   }
 
   if (includeTomTracker) {
-    g.addNode('tutorTomTracker', tutorTomTracker)
-      .addEdge('learnerProfileUpdate', 'tutorTomTracker');
+    g.addNode('tutorTomTracker', tutorTomTracker).addEdge('learnerProfileUpdate', 'tutorTomTracker');
     if (includeIdAuthor) {
       g.addNode('idAuthorPersona', idAuthorPersona)
         .addEdge('tutorTomTracker', 'idAuthorPersona')

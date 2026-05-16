@@ -25,9 +25,7 @@ import {
 // and fall back to a no-op when the function isn't present — if a
 // future tutor-core re-exports it, this resolver picks it up.
 import * as _tutorCore from '@machinespirits/tutor-core';
-const setQuietMode = typeof _tutorCore.setQuietMode === 'function'
-  ? _tutorCore.setQuietMode
-  : () => {};
+const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
 import * as rubricEvaluator from './rubricEvaluator.js';
 import {
   buildLearnerEvaluationPrompt,
@@ -243,6 +241,8 @@ export const EVAL_ONLY_PROFILES = [
   'cell_126_state_policy_evidence_bound',
   // A14 Stage 3 (validator on)
   'cell_127_state_policy_evidence_bound_validated',
+  // A14 Stage 5 diagnostic (full audit chain on cell_118's minimal profile)
+  'cell_128_state_policy_minimal_profile_evidence_bound_validated',
 ];
 
 /**
@@ -2580,7 +2580,10 @@ async function runSingleTest(scenario, config, options = {}) {
       });
       const consolidated = maint?.tasks?.consolidation?.consolidated ?? 0;
       if (consolidated > 0) {
-        log(`[evaluationRunner] Consolidated ${consolidated} recognition moment(s) to unconscious for ${learnerId}`, 'info');
+        log(
+          `[evaluationRunner] Consolidated ${consolidated} recognition moment(s) to unconscious for ${learnerId}`,
+          'info',
+        );
       }
     } catch (err) {
       log(`[evaluationRunner] Pad consolidation failed for ${learnerId}: ${err.message}`, 'warn');
@@ -2817,7 +2820,9 @@ function _bridge3CouplingCosine(reasoning, message) {
   const fb = Object.create(null);
   for (const t of ta) fa[t] = (fa[t] || 0) + 1;
   for (const t of tb) fb[t] = (fb[t] || 0) + 1;
-  let dot = 0, mA = 0, mB = 0;
+  let dot = 0,
+    mA = 0,
+    mB = 0;
   const keys = new Set([...Object.keys(fa), ...Object.keys(fb)]);
   for (const k of keys) {
     const va = fa[k] || 0;
@@ -2851,7 +2856,8 @@ async function generatePhase1Reflection({ contextStr, learnerMessage, modelAlias
     return null;
   }
 
-  const userMessage = `### Learner Context\n\n${contextStr || '(no context)'}\n\n` +
+  const userMessage =
+    `### Learner Context\n\n${contextStr || '(no context)'}\n\n` +
     (learnerMessage ? `### Learner Just Said\n\n"${learnerMessage}"\n\n` : '') +
     `Produce your noticing now (2–4 sentences, plain prose, first-person).`;
 
@@ -2952,9 +2958,9 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
   // across runs — A7 Longitudinal). Precedence: checkpoint > explicit (--learner-id)
   // > synthetic per-dialogue ID.
   const learnerId =
-    checkpointState?.learnerId
-    || explicitLearnerId
-    || `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
+    checkpointState?.learnerId ||
+    explicitLearnerId ||
+    `eval-learner-${dialogueId}-${scenario.id.replace(/[^a-zA-Z0-9]/g, '')}`;
   if (checkpointState) {
     log(
       `[evaluationRunner] Resuming from checkpoint: turn ${checkpointState.lastCompletedTurn + 1} (dialogueId=${dialogueId})`,
@@ -3344,9 +3350,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
     // abstract meta-instructions; if so, message↔reflection coupling rises.
     let _phase1ReflectionApplied = false;
     if (rawProfile?.two_pass_reflection) {
-      const learnerMessageForReflection = isInitialTurn
-        ? null
-        : turnDef?.action_details?.message || null;
+      const learnerMessageForReflection = isInitialTurn ? null : turnDef?.action_details?.message || null;
       const reflection = await generatePhase1Reflection({
         contextStr,
         learnerMessage: learnerMessageForReflection,
@@ -3356,9 +3360,7 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
       if (reflection) {
         // Prepend as a structured block. Goes BEFORE the existing context
         // so the model encounters it first when reading top-down.
-        contextStr =
-          `### Tutor's Prior Reflection On This Turn\n\n${reflection}\n\n---\n\n` +
-          (contextStr || '');
+        contextStr = `### Tutor's Prior Reflection On This Turn\n\n${reflection}\n\n---\n\n` + (contextStr || '');
         _phase1ReflectionApplied = true;
       }
     }
@@ -3475,7 +3477,10 @@ async function runMultiTurnTest(scenario, config, fullScenario, options = {}) {
         ({ genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = candidates[0]);
       } else {
         ({ genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = winner);
-        log(`[bridge3] selected k=${winner.k + 1} with coupling=${winner.couplingScore.toFixed(3)} (range: ${candidates[candidates.length - 1].couplingScore.toFixed(3)} – ${candidates[0].couplingScore.toFixed(3)})`, 'info');
+        log(
+          `[bridge3] selected k=${winner.k + 1} with coupling=${winner.couplingScore.toFixed(3)} (range: ${candidates[candidates.length - 1].couplingScore.toFixed(3)} – ${candidates[0].couplingScore.toFixed(3)})`,
+          'info',
+        );
       }
     } else {
       ({ genResult, suggestion, validation, rubricResult, turnScore, scoringMethod } = await generateAndEvaluateTurn(

@@ -4,8 +4,9 @@
 // (services/adaptiveTutor/runner.js) into evaluation_results rows the
 // existing analysis pipeline can read.
 //
-// The deliberation trace — per-turn learnerProfile, tutorInternal, and
-// constraint-violation snapshots — is written to logs/tutor-dialogues/
+// The deliberation trace — per-turn learnerProfile, tutorInternal,
+// constraint-violation, and (for evidence-bound architectures) hypotheses
+// + evidenceLog snapshots — is written to logs/tutor-dialogues/
 // using the content-addressable convention the rest of the project uses.
 // The row carries dialogueId so analyzers can rehydrate it.
 
@@ -58,12 +59,17 @@ function extractTurnTrace(history) {
       learnerProfile: null,
       tutorInternal: null,
       constraintViolations: [],
+      hypotheses: [],
+      evidenceLog: [],
       dialogueLength: 0,
     };
     if (v.learnerProfile && v.learnerProfile.updatedAtTurn === turn) {
       existing.learnerProfile = v.learnerProfile;
     }
-    if (v.tutorInternal && (v.tutorInternal.policyAction || v.tutorInternal.egoDraft || v.tutorInternal.idConstruction)) {
+    if (
+      v.tutorInternal &&
+      (v.tutorInternal.policyAction || v.tutorInternal.egoDraft || v.tutorInternal.idConstruction)
+    ) {
       // Keep the latest tutorInternal seen for this turn — node order means
       // the post-revision values will overwrite the initial draft fields.
       // The idAuthorPersona node (cells 121/122) writes idConstruction +
@@ -75,18 +81,48 @@ function extractTurnTrace(history) {
     if (Array.isArray(v.constraintViolations) && v.constraintViolations.length) {
       existing.constraintViolations = [...new Set([...existing.constraintViolations, ...v.constraintViolations])];
     }
+    // hypotheses (merge-by-id reducer) and evidenceLog (append-only) are
+    // cumulative monotonic channels: every checkpoint's snap.values carries
+    // the full merged array, so the latest snap for this turn — last in
+    // forward iteration over the reversed history — is the end-of-turn
+    // cumulative state. Unlike learnerProfile (replaced per turn, hence the
+    // updatedAtTurn guard above) these grow only, so plain latest-wins is
+    // correct and needs no per-turn stamp. We store the full cumulative
+    // array per turn rather than a delta so a Stage-5 analyzer can diff
+    // adjacent turns to derive added / id-revised / TTL-retired without
+    // extra per-entry bookkeeping — closing the §6.9.3 limitation that
+    // revision rate was only a terminal-state distinct-survivor proxy.
+    // Architectures without the evidence-bound nodes leave these undefined,
+    // so the [] default stands and the trace stays backward-compatible.
+    if (Array.isArray(v.hypotheses)) {
+      existing.hypotheses = v.hypotheses;
+    }
+    if (Array.isArray(v.evidenceLog)) {
+      existing.evidenceLog = v.evidenceLog;
+    }
     existing.dialogueLength = Array.isArray(v.dialogue) ? v.dialogue.length : existing.dialogueLength;
     byTurn.set(turn, existing);
   }
   return [...byTurn.values()].sort((a, b) => a.turn - b.turn);
 }
 
-function buildTraceJson({ scenario, scenarioConfig, runResult, counterfactualResult, perturbation, llmMode, profileName }) {
+function buildTraceJson({
+  scenario,
+  scenarioConfig,
+  runResult,
+  counterfactualResult,
+  perturbation,
+  llmMode,
+  profileName,
+}) {
   const trace = {
     // schemaVersion 2 (A14 Stage 1) adds finalEvidenceLog + finalHypotheses to
-    // each branch. Older trace files without these fields stay readable —
-    // analyzers default them to [] when absent.
-    schemaVersion: 2,
+    // each branch. schemaVersion 3 (A14 Stage 5 prep) adds per-turn
+    // hypotheses + evidenceLog to each branch's perTurn[] records. Nothing
+    // branches on this number (it is informational); older trace files
+    // without these fields stay readable — analyzers default them to []
+    // when absent.
+    schemaVersion: 3,
     profileName,
     scenario: {
       id: scenario.id,
@@ -146,7 +182,18 @@ function policyActionTrace(history) {
 }
 
 // Build the row to feed evaluationStore.storeResult().
-function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agentConfig, dialogueId, contentHash, llmMode, traceJson, usage }) {
+function buildResultRow({
+  scenario,
+  scenarioConfig,
+  runResult,
+  profileName,
+  agentConfig,
+  dialogueId,
+  contentHash,
+  llmMode,
+  traceJson,
+  usage,
+}) {
   const tutorTexts = tutorMessages(runResult.final);
   const policies = policyActionTrace(runResult.history);
   const summary = {
@@ -156,11 +203,13 @@ function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agen
     policyActions: policies,
     finalLearnerProfile: runResult.final.learnerProfile,
     constraintViolations: runResult.final.constraintViolations,
-    counterfactual: traceJson.counterfactual ? {
-      policyActions: (traceJson.counterfactual.perTurn || [])
-        .map((t) => t.tutorInternal?.policyAction)
-        .filter(Boolean),
-    } : null,
+    counterfactual: traceJson.counterfactual
+      ? {
+          policyActions: (traceJson.counterfactual.perTurn || [])
+            .map((t) => t.tutorInternal?.policyAction)
+            .filter(Boolean),
+        }
+      : null,
   };
 
   return {
@@ -193,11 +242,31 @@ function buildResultRow({ scenario, scenarioConfig, runResult, profileName, agen
 }
 
 // Public: persist a single (non-counterfactual) scenario run.
-export function persistScenarioRun({ runId, scenario, scenarioConfig, runResult, profileName, agentConfig, llmMode, usage }) {
+export function persistScenarioRun({
+  runId,
+  scenario,
+  scenarioConfig,
+  runResult,
+  profileName,
+  agentConfig,
+  llmMode,
+  usage,
+}) {
   const dialogueId = makeDialogueId(scenario.id);
   const traceJson = buildTraceJson({ scenario, scenarioConfig, runResult, llmMode, profileName });
   const { contentHash } = writeTraceFile(dialogueId, traceJson);
-  const row = buildResultRow({ scenario, scenarioConfig, runResult, profileName, agentConfig, dialogueId, contentHash, llmMode, traceJson, usage });
+  const row = buildResultRow({
+    scenario,
+    scenarioConfig,
+    runResult,
+    profileName,
+    agentConfig,
+    dialogueId,
+    contentHash,
+    llmMode,
+    traceJson,
+    usage,
+  });
   const rowId = evaluationStore.storeResult(runId, row);
   return { rowId, dialogueId, contentHash };
 }
@@ -207,7 +276,14 @@ export function persistScenarioRun({ runId, scenario, scenarioConfig, runResult,
 // without an extra join. Counterfactual is the diagnostic — recording it as
 // a sibling row would double-count under conventional aggregations.
 export function persistScenarioWithCounterfactual({
-  runId, scenario, scenarioConfig, result, profileName, agentConfig, llmMode, usage,
+  runId,
+  scenario,
+  scenarioConfig,
+  result,
+  profileName,
+  agentConfig,
+  llmMode,
+  usage,
 }) {
   const dialogueId = makeDialogueId(scenario.id);
   const traceJson = buildTraceJson({
@@ -215,7 +291,7 @@ export function persistScenarioWithCounterfactual({
     scenarioConfig,
     runResult: result.original,
     counterfactualResult: result.counterfactual,
-    perturbation: result.counterfactual ? result.counterfactual.perturbation ?? null : null,
+    perturbation: result.counterfactual ? (result.counterfactual.perturbation ?? null) : null,
     llmMode,
     profileName,
   });

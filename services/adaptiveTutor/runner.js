@@ -26,6 +26,7 @@ const ARCHITECTURES_WITH_PROFILE_UPDATE = new Set([
   'state_policy_with_validator',
   'state_policy_evidence_bound', // A14 Stage 1: falls through to state_policy topology in buildGraph, so the learnerProfileUpdate node is present and the fork point exists.
   'state_policy_evidence_bound_validated', // A14 Stage 3: adds groundingValidator after hypothesisUpdater but keeps the same learnerProfileUpdate fork point.
+  'state_policy_minimal_profile_evidence_bound_validated', // A14 Stage 5 diagnostic (cell_128): same topology as _validated on cell_118's minimal profile projection; learnerProfileUpdate node present, so the counterfactual fork point exists.
   'bilateral_tom',
   'bilateral_tom_named_patterns',
 ]);
@@ -70,13 +71,19 @@ export async function runScenarioWithCounterfactual(scenario, perturbation, grap
 
   const architecture = graphOptions.architecture ?? 'state_policy';
   if (!ARCHITECTURES_WITH_PROFILE_UPDATE.has(architecture)) {
-    return { original, counterfactual: null, reason: `architecture ${architecture} has no learnerProfileUpdate node; counterfactual not applicable` };
+    return {
+      original,
+      counterfactual: null,
+      reason: `architecture ${architecture} has no learnerProfileUpdate node; counterfactual not applicable`,
+    };
   }
 
   // Find the earliest checkpoint after the trigger turn fired.
-  const fork = original.history.find((s) =>
-    s.values?.turn === (perturbation.forkAtTurn ?? scenario.hidden.triggerTurn)
-    && s.next?.includes('learnerProfileUpdate'));
+  const fork = original.history.find(
+    (s) =>
+      s.values?.turn === (perturbation.forkAtTurn ?? scenario.hidden.triggerTurn) &&
+      s.next?.includes('learnerProfileUpdate'),
+  );
 
   if (!fork) {
     return { original, counterfactual: null, reason: 'no checkpoint matched fork criteria' };
@@ -109,18 +116,21 @@ export async function runScenarioWithCounterfactual(scenario, perturbation, grap
 export function divergenceReport(original, counterfactual) {
   if (!counterfactual) return { divergent: false, note: 'no counterfactual run' };
 
-  const policyTrace = (history) => history
-    .map((s) => s.values?.tutorInternal?.policyAction)
-    .filter((p) => p && p !== '');
-  const profileTrace = (history) => history
-    .map((s) => s.values?.learnerProfile)
-    .filter(Boolean)
-    .map((p) => `${p.agencySignal}/${p.confidence.toFixed(2)}`);
+  const policyTrace = (history) =>
+    history.map((s) => s.values?.tutorInternal?.policyAction).filter((p) => p && p !== '');
+  const profileTrace = (history) =>
+    history
+      .map((s) => s.values?.learnerProfile)
+      .filter(Boolean)
+      .map((p) => `${p.agencySignal}/${p.confidence.toFixed(2)}`);
   const tutorTexts = (state) => state.dialogue.filter((m) => m.role === 'tutor').map((m) => m.content);
 
   return {
     policyActions: { original: policyTrace(original.history), counterfactual: policyTrace(counterfactual.history) },
-    profileEvolution: { original: profileTrace(original.history), counterfactual: profileTrace(counterfactual.history) },
+    profileEvolution: {
+      original: profileTrace(original.history),
+      counterfactual: profileTrace(counterfactual.history),
+    },
     tutorTexts: { original: tutorTexts(original.final), counterfactual: tutorTexts(counterfactual.final) },
   };
 }
@@ -133,8 +143,9 @@ export function summariseDivergence(report) {
     policyDivergence: !eq(report.policyActions.original, report.policyActions.counterfactual),
     profileDivergence: !eq(report.profileEvolution.original, report.profileEvolution.counterfactual),
     textDivergence: !eq(report.tutorTexts.original, report.tutorTexts.counterfactual),
-    anyDivergence: !eq(report.policyActions.original, report.policyActions.counterfactual)
-      || !eq(report.profileEvolution.original, report.profileEvolution.counterfactual)
-      || !eq(report.tutorTexts.original, report.tutorTexts.counterfactual),
+    anyDivergence:
+      !eq(report.policyActions.original, report.policyActions.counterfactual) ||
+      !eq(report.profileEvolution.original, report.profileEvolution.counterfactual) ||
+      !eq(report.tutorTexts.original, report.tutorTexts.counterfactual),
   };
 }
