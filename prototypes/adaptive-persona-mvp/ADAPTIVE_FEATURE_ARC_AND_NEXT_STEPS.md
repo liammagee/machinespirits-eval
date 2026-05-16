@@ -588,3 +588,58 @@ to repair the two remaining unstable action families:
 After those targeted repairs, rerun the four-trap replicated LLM sweep and keep
 the same dual verdict: adaptive-primary robustness plus parent-rubric
 compatibility.
+
+## Action-Family Transition Update
+
+The first targeted repair pass found that several apparent failures were not
+global tutor failures. They were action-family recognition failures:
+
+- debugging transfer used valid LLM wording such as `price`, `qty`,
+  `lineTotal`, `invoice bug`, and `reject or handle`, while the checker only
+  recognized narrower `amount` and `cart total` forms;
+- measurement transfer used `course belonging`, `single belonging item`,
+  `multi-item`, `cognitive interview`, and `can't prove`, while the checker
+  expected hyphenated or narrower phrases.
+
+The patch keeps the hard trap structure but models these as action-family
+transitions rather than exact phrase matches:
+
+- debugging transfer now recognizes price/quantity line-total bugs, invoice or
+  cart bugs, and rejection/validation before the risky calculation, while still
+  rejecting average-only repeats and valid-zero confusions;
+- measurement transfer now requires a genuinely different single-item case plus
+  a boundary claim, but accepts common variants such as course belonging,
+  engagement, safety, and "can't prove" language;
+- partial learner responses after a failed transfer prompt now stay in
+  `transfer_repair` instead of falling back to a generic hint.
+
+Revalidating the replicated four-trap LLM artifact with the action-family model
+changed `6` outcomes and produced:
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+10.906` | `2.905..18.906` | `0.023` | pass |
+| Parent dialogue | `+0.078` | `-4.766..4.453` | `1.000` | fail |
+| Trap outcome | `+100` | `100..100` | `0.000` | pass |
+
+Artifacts:
+
+- `outputs/transfer-repair-full-traps-action-family-revalidated-v3/variant-sweep-revalidated-2026-05-16T22-15-39-731Z.html`
+- `outputs/robustness-transfer-repair-full-traps-action-family-v3/robustness-evaluation-2026-05-16T22-15-45-211Z.html`
+
+A focused live LLM slice on the two repaired action families also moved in the
+right direction after deterministic revalidation:
+
+- `n=4` paired branches;
+- MVP `+13`;
+- parent dialogue `+1.563`;
+- trap outcome `+100`;
+- not significant because the slice is too small.
+
+Artifacts:
+
+- `outputs/action-family-repair-focused-live-revalidated-v2/variant-sweep-revalidated-2026-05-16T22-49-55-194Z.html`
+
+This is now strong enough to justify the next expensive step: rerun the full
+four-trap replicated LLM sweep with the repaired action-family transition model,
+not just revalidate the older artifact.

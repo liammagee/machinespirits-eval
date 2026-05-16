@@ -384,6 +384,92 @@ test('programming transfer gate rejects average/rate repeats and valid-zero conf
     },
   });
   assert.equal(validBadTotal.observed, true);
+
+  const cartWithUndefinedAmount = detectTransferObservation({
+    scenario,
+    previous: {
+      ...initialTransferState(scenario),
+      lastPromptTurnIndex: 1,
+      lastPromptPolicy: 'transfer_repair',
+    },
+    turnIndex: 2,
+    evidence: {
+      quote: 'For a cart with one item where amount is undefined, the first bad step is total = total + amount, so 0 + undefined becomes NaN. I would reject missing amounts before adding and keep a regression distinct from valid zero.',
+      outcome: 'correct',
+      stance: 'collaborative',
+      kcCandidates: [kc],
+    },
+  });
+  assert.equal(cartWithUndefinedAmount.observed, true);
+
+  const cartOutcomeWording = validateOutcomeTask({
+    scenario,
+    transcript: [
+      {
+        role: 'learner',
+        content: 'Repro would be a cart with one normal line item and one item whose amount is undefined, so total = total + amount is the first invalid intermediate and turns the accumulator into NaN. I reject coercing NaN to 0 because it masks the symptom; I would reject or handle invalid amounts before adding them, add a regression test, and still allow 0 as a real amount.',
+      },
+    ],
+    outcome: {
+      success: true,
+      learner_answer: 'The same rule transfers to a cart total where total += item.amount first becomes NaN from an undefined amount: reject or handle the invalid amount before adding it while testing that invalid data is distinct from a legitimate zero total.',
+    },
+  });
+  assert.equal(cartOutcomeWording.success, true);
+});
+
+test('measurement transfer recognizes non-hyphenated course belonging cases', () => {
+  const scenario = {
+    id: 'trap_social_measurement_false_mastery_closed_loop',
+    challenge_profile: { hidden_state_trap: true },
+  };
+  const observedCourseBelonging = detectTransferObservation({
+    scenario,
+    previous: {
+      ...initialTransferState(scenario),
+      lastPromptTurnIndex: 1,
+      lastPromptPolicy: 'transfer_challenge',
+    },
+    turnIndex: 2,
+    evidence: {
+      quote: 'The construct is real course belonging, while the item is one self-report question. The item can support higher reported agreement, but not that the program caused broader belonging without validity checks and a control comparison.',
+      outcome: 'correct',
+      stance: 'collaborative',
+      kcCandidates: ['construct_measurement_validity'],
+    },
+  });
+  assert.equal(observedCourseBelonging.observed, true);
+
+  const newSingleItemOutcome = validateOutcomeTask({
+    scenario,
+    transcript: [
+      {
+        role: 'learner',
+        content: 'The construct is real course belonging, while the item is a single item. One item is not enough, so I would check reliability and response bias, compare with a control group, and treat it as a clue rather than proof that the program caused broader belonging.',
+      },
+    ],
+    outcome: {
+      success: true,
+      learner_answer: 'The same rule applies to a single "I feel safe at school" item: it is only a clue about safety climate, not proof without measurement checks and comparison.',
+    },
+  });
+  assert.equal(newSingleItemOutcome.success, true);
+
+  const originalCaseOnly = validateOutcomeTask({
+    scenario,
+    transcript: [
+      {
+        role: 'learner',
+        content: 'Wellbeing is the construct and one happiness item is only one measure, so I would use reliability and a control group before claiming impact.',
+      },
+    ],
+    outcome: {
+      success: true,
+      learner_answer: 'The happiness item alone is not enough to prove the wellbeing program worked.',
+    },
+  });
+  assert.equal(originalCaseOnly.success, false);
+  assert.equal(originalCaseOnly.checks.transcriptTransfer, false);
 });
 
 test('programming trap elicits transfer before the final consolidation turn', async () => {
@@ -457,6 +543,19 @@ test('transfer repair follows failed or delayed learner-owned transfer evidence'
       successMarkers: ['construct', 'comparison'],
     },
   };
+  const partialAfterTransferPrompt = selectPolicy({
+    scenario,
+    evidence: partialEvidence,
+    mastery,
+    relationState: 'scaffolded_practice',
+    validationNeed: 'none',
+    transferState: afterBroadTransfer,
+    turnIndex: 2,
+    maxTutorTurns: 4,
+  });
+  assert.equal(partialAfterTransferPrompt.selectedPolicy, 'transfer_repair');
+  assert.match(partialAfterTransferPrompt.reason, /prior transfer prompt/i);
+
   const lastChancePolicy = selectPolicy({
     scenario,
     evidence: partialEvidence,

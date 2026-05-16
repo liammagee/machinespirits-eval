@@ -855,6 +855,110 @@ node --test prototypes/adaptive-persona-mvp/tests/robustness.test.js
 
 Passed with `4` tests.
 
+## 2026-05-16 Action-Family Transition Repair
+
+### Implemented
+
+The remaining trap failures were concentrated in two action families rather
+than the whole adaptation loop:
+
+- programming/debugging transfer;
+- social-measurement validity transfer.
+
+Implemented repairs:
+
+- partial learner responses after an attempted transfer now route back to
+  `transfer_repair` instead of dropping into a generic hint;
+- debugging transfer recognition now accepts price/quantity line-total bugs,
+  invoice/cart/order bug wording, `lineTotal`, and `reject or handle`/guard
+  language, while still rejecting average-only repeats and valid-zero
+  confusions;
+- measurement transfer recognition now accepts non-hyphenated `course
+  belonging`, `single belonging item`, engagement/safety single-item variants,
+  `multi-item`, `cognitive interview`, `test-retest`, and `can't prove`
+  language;
+- measurement prompts now ask for the course belonging single-item case and the
+  explicit can/cannot-prove boundary.
+
+Focused tests were added for:
+
+- cart-with-undefined-amount transfer wording;
+- non-hyphenated course belonging transfer wording;
+- original wellbeing-only measurement answers still failing transfer.
+
+### Replicated Artifact Revalidation
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/revalidate-trap-report.js \
+  --input prototypes/adaptive-persona-mvp/outputs/transfer-repair-full-traps-replicated-live-strict-debug/variant-sweep-2026-05-16T20-48-18-255Z.json \
+  --out prototypes/adaptive-persona-mvp/outputs/transfer-repair-full-traps-action-family-revalidated-v3
+```
+
+Artifacts:
+
+- `outputs/transfer-repair-full-traps-action-family-revalidated-v3/variant-sweep-revalidated-2026-05-16T22-15-39-731Z.html`
+- `outputs/transfer-repair-full-traps-action-family-revalidated-v3/variant-sweep-revalidated-2026-05-16T22-15-39-731Z.json`
+
+Changed outcomes: `6`.
+
+Result, `n=16` paired branches:
+
+- MVP mean diff: `+10.906`, `p=0.0227`;
+- parent dialogue mean diff: `+0.078`, `p=1`;
+- trap outcome mean diff: `+100`, `p=0`.
+
+Robustness:
+
+- `outputs/robustness-transfer-repair-full-traps-action-family-v3/robustness-evaluation-2026-05-16T22-15-45-211Z.html`
+- adaptive-primary robust positive effect: `true`;
+- strict all-public-metric confirmation: `false`.
+
+### Focused Live LLM Slice
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --scenarios trap_programming_debugging_false_mastery_closed_loop,trap_social_measurement_false_mastery_closed_loop \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 1 \
+  --out prototypes/adaptive-persona-mvp/outputs/action-family-repair-focused-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Raw artifact:
+
+- `outputs/action-family-repair-focused-live/variant-sweep-2026-05-16T22-48-04-255Z.html`
+
+Revalidated artifact:
+
+- `outputs/action-family-repair-focused-live-revalidated-v2/variant-sweep-revalidated-2026-05-16T22-49-55-194Z.html`
+
+Changed outcomes after revalidation: `3`.
+
+Focused result, `n=4` paired branches:
+
+- MVP mean diff: `+13`;
+- parent dialogue mean diff: `+1.563`;
+- trap outcome mean diff: `+100`;
+- not significant because the focused slice is too small.
+
+Interpretation: the repaired action-family model is now behaving correctly on
+the two previously unstable families. The next expensive validation step is a
+fresh replicated four-trap LLM sweep using this patched policy/recognition
+model.
+
+### Verification
+
+```bash
+node --test prototypes/adaptive-persona-mvp/tests/*.test.js
+npx eslint prototypes/adaptive-persona-mvp/**/*.js
+```
+
 ## 2026-05-16 Transfer-Repair Live Gate Pass
 
 ### Implemented

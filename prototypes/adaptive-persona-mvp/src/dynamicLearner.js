@@ -775,7 +775,7 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
       return event({
         id,
         kc,
-        learner: 'The same construct rule transfers: one direct item can be one indicator, but it is not the whole construct or proof of impact. For a different survey claim I would ask for multiple indicators, bias checks, and a comparison group.',
+        learner: 'For the course belonging case, the construct is real belonging and the one belonging item is only one self-report measure. One item is not enough by itself, so I would check validity, reliability or response bias, and compare with a baseline or control group; the item can support a clue, not prove the program caused broader belonging.',
         outcome: 'correct',
         affect: 'engaged',
         stance: 'collaborative',
@@ -808,6 +808,17 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
   }
 
   if (hiddenState.type === 'trap_measurement_validity_ready_impatient') {
+    if (move === 'transfer') {
+      return event({
+        id,
+        kc,
+        learner: 'For the course belonging case, the construct is real course belonging and the single belonging item is only one measure. I would check reliability, response bias, and other belonging indicators, then compare against a control or baseline; the item can support a clue, not prove the program caused broader belonging.',
+        outcome: 'correct',
+        affect: 'engaged',
+        stance: 'collaborative',
+        expectedPolicy: 'summarize_and_check',
+      });
+    }
     if (move === 'targeted_repair' && turnIndex > 0) {
       return event({
         id,
@@ -1186,9 +1197,32 @@ function evaluateDebuggingOutcome({ scenario, learnerText, answerText, parsedSuc
   const transcriptTotalTransfer = programmingDebuggingTransferObserved(learnerText);
   const checks = {
     parsedSuccess: Boolean(parsedSuccess),
-    reproduce: includesAny(combined, ['reproduce', 'failing input', 'smallest input']),
+    reproduce: includesAny(combined, ['reproduce', 'repro', 'failing input', 'smallest input']),
     trace: includesAny(combined, ['root cause', 'trace', 'first invalid', 'intermediate value']),
-    fix: includesAny(combined, ['minimal fix', 'fix that cause', 'fix upstream', 'upstream rule', 'skip empty rows', 'no-data', 'validate', 'parse', 'reject invalid']),
+    fix: includesAny(combined, [
+      'minimal fix',
+      'minimal root-cause fix',
+      'minimally fix',
+      'fix that cause',
+      'fix the missing amount',
+      'fix upstream',
+      'upstream rule',
+      'skip empty rows',
+      'no-data',
+      'validate',
+      'validate each',
+      'parse',
+      'reject invalid',
+      'reject or handle',
+      'reject missing',
+      'handle invalid',
+      'branch before',
+      'guard before',
+      'before adding',
+      'before the division',
+      'empty-state',
+      'fallback before',
+    ]),
     regression: includesAny(combined, ['regression test', 'regression assertion', 'regression that', 'regression tests', 'test for']),
     rejectsMask: includesAny(combined, ['coercing nan to 0', 'coerce nan to 0', 'coercion', 'mask', 'masks the symptom', 'bad output']),
     transfer: scenario.challenge_profile?.hidden_state_trap
@@ -1216,13 +1250,27 @@ function programmingDebuggingTransferObserved(text) {
     'invoice total',
     'cart total',
     'payment total',
+    'invoice bug',
+    'cart bug',
+    'order bug',
+    'line total',
+    'linetotal',
+    'price',
+    'qty',
     'total field',
     'total-returning function',
     'function returning nan for a total',
     'amount list',
     'amounts [',
+    'amount undefined',
+    'amount is undefined',
+    'cart with',
+    'cart item',
+    'line item',
     'running total',
     'total +=',
+    'total = total + amount',
+    '0 + undefined',
     'accumulator',
   ]);
   const invalidInputContext = includesAny(text, [
@@ -1242,7 +1290,29 @@ function programmingDebuggingTransferObserved(text) {
     'validate or reject',
   ]);
   const averageOnly = includesAny(text, ['average', 'scores array', 'calculateaveragescore'])
-    && !includesAny(text, ['order total', 'invoice total', 'cart total', 'payment total', 'amount list', 'amounts [']);
+    && !includesAny(text, [
+      'order total',
+      'invoice total',
+      'cart total',
+      'payment total',
+      'invoice bug',
+      'cart bug',
+      'order bug',
+      'amount list',
+      'amounts [',
+      'line total',
+      'linetotal',
+      'price',
+      'qty',
+      'amount undefined',
+      'amount is undefined',
+      'cart with',
+      'cart item',
+      'line item',
+      'total +=',
+      'total = total + amount',
+      '0 + undefined',
+    ]);
   const validZeroAsInvalid = includesAny(text, [
     'zero total is the first invalid',
     'total = 0 is the first invalid',
@@ -1255,17 +1325,19 @@ function programmingDebuggingTransferObserved(text) {
 
 function evaluateMeasurementOutcome({ scenario, learnerText, answerText, parsedSuccess }) {
   const combined = `${learnerText}\n${answerText}`;
+  const transfer = measurementValidityTransferObserved(combined);
+  const transcriptTransfer = measurementValidityTransferObserved(learnerText);
   const checks = {
     parsedSuccess: Boolean(parsedSuccess),
     construct: includesAny(combined, ['construct', 'wellbeing']),
-    checks: includesAny(combined, ['multiple indicators', 'validity', 'valid or reliable', 'reliability', 'response bias']),
+    checks: includesAny(combined, ['multiple indicators', 'multi-item', 'validated multi-item', 'other measure', 'validity', 'valid or reliable', 'reliability', 'response bias', 'anonymous', 'triangulation', 'cognitive-interview', 'cognitive interview', 'test-retest', 'repeated responses']),
     comparison: includesAny(combined, ['control group', 'baseline', 'comparison', 'pre/post']),
     rejectsSingleItem: includesAny(combined, ['one direct item is enough', 'one item is not enough', 'single item', 'only one measure', 'not the whole construct', 'not treat the item']),
     transfer: scenario.challenge_profile?.hidden_state_trap
-      ? includesAny(combined, ['different single-item', 'new single-item', 'new survey', 'course-belonging', 'belonging item', 'belong in the course', 'belonging construct', 'wellbeing-program case', 'wellbeing program case', 'program group', 'same construct rule', 'transfer'])
+      ? transfer
       : true,
     transcriptTransfer: scenario.challenge_profile?.hidden_state_trap
-      ? includesAny(learnerText, ['different single-item', 'new single-item', 'new survey', 'course-belonging', 'belonging item', 'belong in the course', 'belonging construct', 'wellbeing-program case', 'wellbeing program case', 'program group', 'same construct rule', 'transfer'])
+      ? transcriptTransfer
       : true,
   };
   return outcomeValidation(checks, [
@@ -1276,6 +1348,56 @@ function evaluateMeasurementOutcome({ scenario, learnerText, answerText, parsedS
     'transfer',
     'transcriptTransfer',
   ]);
+}
+
+function measurementValidityTransferObserved(text) {
+  const differentCase = includesAny(text, [
+    'different single-item',
+    'different survey',
+    'new single-item',
+    'new survey',
+    'course-belonging',
+    'course belonging',
+    'belonging item',
+    'belonging question',
+    'engagement program',
+    'engagement item',
+    'safe at school',
+    'safety item',
+    'school safety',
+    'program group',
+    'single "i feel safe',
+  ]);
+  const singleItemBoundary = includesAny(text, [
+    'single item',
+    'one item',
+    'one question',
+    'one survey question',
+    'one self-report',
+    'one belonging item',
+    'single belonging item',
+    'one engagement item',
+    'one direct item',
+    'single "i feel safe',
+  ]);
+  const cannotProve = includesAny(text, [
+    'not proof',
+    'not prove',
+    "can't prove",
+    'cant prove',
+    'cannot prove',
+    'cannot support',
+    'not enough',
+    'not by itself',
+    'not yet a causal claim',
+    'not that the program caused',
+    'not the whole construct',
+    'not the whole construct or proof',
+    'not proof of impact',
+    'not proof without',
+    'only a clue',
+  ]);
+  return differentCase && singleItemBoundary && cannotProve;
 }
 
 function outcomeValidation(checks, required) {

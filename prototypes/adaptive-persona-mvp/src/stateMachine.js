@@ -161,7 +161,7 @@ export function selectPolicy({
   const transferRepairDue = transferGate.required
     && !transferGate.observed
     && transferPromptCount > 0
-    && evidence.outcome === 'correct';
+    && ['correct', 'partial'].includes(evidence.outcome);
   const lastChanceTransferProbe = transferGate.required
     && !transferGate.observed
     && transferPromptCount === 0
@@ -401,6 +401,12 @@ export function detectTransferObservation({
       markers: markers.length ? markers : programmingDebuggingTransferMarkers(text),
     };
   }
+  if (kcId === 'construct_measurement_validity' || String(scenario.id).includes('social_measurement')) {
+    return {
+      observed: evidence.outcome === 'correct' && measurementValidityTransferObserved(text),
+      markers: markers.length ? markers : measurementValidityTransferMarkers(text),
+    };
+  }
   const postTransferPrompt = previous?.lastPromptTurnIndex === turnIndex - 1
     && ['transfer_challenge', 'transfer_repair'].includes(previous?.lastPromptPolicy);
   const generic = includesAny(text, [
@@ -461,7 +467,7 @@ function transferMarkerCandidates(kcId, scenarioId) {
     return ['future bug', 'bad-total bug', 'order total', 'invoice total', 'cart total', 'payment total', 'amount list', 'missing amount', 'invalid amount', 'undefined', 'null amount', 'same trace-first rule'];
   }
   if (kcId === 'construct_measurement_validity' || String(scenarioId).includes('social_measurement')) {
-    return ['different survey', 'different single-item', 'new single-item', 'new survey', 'course-belonging', 'belonging item', 'belong in the course', 'belonging construct', 'wellbeing program', 'program group', 'same construct rule'];
+    return ['different survey', 'different single-item', 'new single-item', 'new survey', 'course-belonging', 'course belonging', 'belonging item', 'belonging question', 'belong in the course', 'belonging construct', 'engagement program', 'engagement item', 'safe at school', 'safety item', 'school safety', 'program group', 'same construct rule'];
   }
   return [];
 }
@@ -473,13 +479,27 @@ function programmingDebuggingTransferObserved(text) {
     'invoice total',
     'cart total',
     'payment total',
+    'invoice bug',
+    'cart bug',
+    'order bug',
+    'line total',
+    'linetotal',
+    'price',
+    'qty',
     'total field',
     'total-returning function',
     'function returning nan for a total',
     'amount list',
     'amounts [',
+    'amount undefined',
+    'amount is undefined',
+    'cart with',
+    'cart item',
+    'line item',
     'running total',
     'total +=',
+    'total = total + amount',
+    '0 + undefined',
     'accumulator',
   ]);
   const invalidInputContext = includesAny(text, [
@@ -499,7 +519,29 @@ function programmingDebuggingTransferObserved(text) {
     'validate or reject',
   ]);
   const averageOnly = includesAny(text, ['average', 'scores array', 'calculateaveragescore'])
-    && !includesAny(text, ['order total', 'invoice total', 'cart total', 'payment total', 'amount list', 'amounts [']);
+    && !includesAny(text, [
+      'order total',
+      'invoice total',
+      'cart total',
+      'payment total',
+      'invoice bug',
+      'cart bug',
+      'order bug',
+      'amount list',
+      'amounts [',
+      'line total',
+      'linetotal',
+      'price',
+      'qty',
+      'amount undefined',
+      'amount is undefined',
+      'cart with',
+      'cart item',
+      'line item',
+      'total +=',
+      'total = total + amount',
+      '0 + undefined',
+    ]);
   const validZeroAsInvalid = includesAny(text, [
     'zero total is the first invalid',
     'total = 0 is the first invalid',
@@ -515,11 +557,73 @@ function programmingDebuggingTransferMarkers(text) {
   if (includesAny(text, ['order total', 'invoice total', 'cart total', 'payment total', 'bad-total bug'])) {
     markers.push('bad_total_field');
   }
+  if (includesAny(text, ['cart with', 'cart item', 'line item', 'amount undefined', 'amount is undefined'])) {
+    markers.push('bad_total_field');
+  }
   if (includesAny(text, ['undefined', 'null amount', 'empty string', 'missing amount', 'invalid amount', 'invalid data', 'bad data'])) {
     markers.push('invalid_amount_data');
   }
   if (includesAny(text, ['total +=', 'accumulator', 'running total', 'number(amount)'])) {
     markers.push('first_invalid_total_intermediate');
+  }
+  return markers;
+}
+
+function measurementValidityTransferObserved(text) {
+  const differentCase = includesAny(text, [
+    'different single-item',
+    'new single-item',
+    'new survey',
+    'course-belonging',
+    'course belonging',
+    'belonging item',
+    'belonging question',
+    'engagement program',
+    'engagement item',
+    'safe at school',
+    'safety item',
+    'school safety',
+  ]);
+  const singleItemBoundary = includesAny(text, [
+    'single item',
+    'one item',
+    'one question',
+    'one survey question',
+    'one self-report',
+    'one belonging item',
+    'single belonging item',
+    'one engagement item',
+    'one direct item',
+  ]);
+  const cannotProve = includesAny(text, [
+    'not proof',
+    'not prove',
+    "can't prove",
+    'cant prove',
+    'cannot prove',
+    'cannot support',
+    'not enough',
+    'not by itself',
+    'not yet a causal claim',
+    'not that the program caused',
+    'not the whole construct',
+    'not the whole construct or proof',
+    'not proof of impact',
+    'only a clue',
+  ]);
+  return differentCase && singleItemBoundary && cannotProve;
+}
+
+function measurementValidityTransferMarkers(text) {
+  const markers = [];
+  if (includesAny(text, ['course-belonging', 'course belonging', 'belonging item', 'belonging question'])) {
+    markers.push('course_belonging_single_item');
+  }
+  if (includesAny(text, ['engagement program', 'engagement item', 'safe at school', 'safety item', 'school safety'])) {
+    markers.push('new_single_item_case');
+  }
+  if (includesAny(text, ['not proof', 'not prove', "can't prove", 'cant prove', 'cannot prove', 'not enough', 'not by itself', 'not the whole construct', 'only a clue'])) {
+    markers.push('single_item_boundary');
   }
   return markers;
 }

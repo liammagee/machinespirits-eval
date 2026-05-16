@@ -352,7 +352,7 @@ const DOMAIN_MODELS = Object.freeze({
           'Do not accept construct naming without two measurement checks.',
           'Do not summarize before the learner applies the rule to the different single-item case.',
         ],
-        messageFrame: 'Transfer to a different single-item survey claim: a course-belonging program says it worked because one belonging item rose. Require construct, why one item is insufficient, two measurement checks, and one comparison.',
+        messageFrame: 'Transfer to a different single-item survey claim. Use the course belonging single-item case: a program says it worked because one belonging item rose. Require construct, why one item is insufficient, two measurement checks, one comparison, and the boundary of what the item can and cannot prove.',
         successCheck: 'Learner evaluates a different single-item survey claim with construct, measurement checks, comparison, and cannot-prove boundary.',
       },
       transfer_repair: {
@@ -367,9 +367,9 @@ const DOMAIN_MODELS = Object.freeze({
           'Do not accept construct naming without validity or reliability checks.',
           'Do not summarize before the learner rejects the single-item impact claim.',
         ],
-        messageFrame: 'Narrow transfer repair for a different single-item survey claim: a course-belonging program says it worked because one belonging item rose. Separate construct from item, require two measurement checks, a comparison, and the cannot-prove boundary.',
+        messageFrame: 'Narrow transfer repair for a different single-item survey claim. Use the course belonging single-item case: a program says it worked because one belonging item rose. Separate construct from item, require two measurement checks, a comparison, and the cannot-prove boundary.',
         successCheck: 'Learner distinguishes construct from measure in a different single-item survey case, rejects the single-item proof, names two measurement checks, and asks for a comparison.',
-        fallbackMessage: 'Transfer repair, one different single-item survey case: a course-belonging program says it worked because one belonging item rose. Answer in four labels: 1. construct vs single belonging item; 2. why one item is not enough; 3. two checks such as validity, reliability, multiple indicators, or response bias; 4. the comparison needed before claiming the program worked.',
+        fallbackMessage: 'Transfer repair, one different single-item survey case: a course belonging program says it worked because one belonging item rose. Answer in four labels: 1. construct vs single belonging item; 2. why one item is not enough; 3. two checks such as validity, reliability, multiple indicators, or response bias; 4. the comparison needed before claiming the program worked. End with what the item can support and what it cannot prove.',
       },
       summarize_and_check: {
         name: 'measurement_validity_agency_restore',

@@ -312,9 +312,9 @@ function renderDomainTutorMessage({ kcId, policy }) {
       case 'faded_example':
         return 'A single happiness item is a measure, not the whole construct. What construct is it trying to measure, and what check would show whether the measure is valid?';
       case 'transfer_challenge':
-        return 'Now transfer the measurement rule to a different single-item survey claim: a course-belonging program says it worked because one belonging item rose. Name the construct, why one item is not enough, two measurement checks, and the comparison needed before claiming impact.';
+        return 'Now transfer the measurement rule to a different single-item survey claim: a course belonging program says it worked because one belonging item rose. Name the construct, why one item is not enough, two measurement checks, the comparison needed before claiming impact, and what the one item can and cannot prove.';
       case 'transfer_repair':
-        return 'Transfer repair, one different single-item survey case: a course-belonging program says it worked because one belonging item rose. Label the construct versus item, why one item is not enough, two checks, and the comparison needed before claiming impact.';
+        return 'Transfer repair, one different single-item survey case: a course belonging program says it worked because one belonging item rose. Label the construct versus item, why one item is not enough, two checks, the comparison needed before claiming impact, and the cannot-prove boundary.';
       case 'summarize_and_check':
         return 'You now have the measurement rule: separate construct from item, check indicators and bias or reliability, and require a comparison before treating a survey change as program impact.';
       default:
