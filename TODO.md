@@ -484,6 +484,38 @@ Net: a complement to A14. If both land, the paper has evidence-binding + cross-d
 
 ---
 
+### A16. Cumulative-Rewrite Superego — Does Rewrite-Policy Statefulness Produce a Rate Effect? (PRE-REGISTERED 2026-05-16 — P1 docs DONE §6.3.10; P2 mock+hermetic code NEXT; P3 cost-gated)
+
+**Origin**: 2026-05-16 promotion of the disposable `prototypes/adversarial-superego-mvp/` arc. The prototype established (mechanism triage, *not* a paper claim) that an adversarial superego with system-prompt edit rights produces a robust, replicated *level/reliability* effect over additive advice, but could not separate "rate" from "reliable endpoint convergence" on a 4-turn binary classifier. User supplied the generative theory (psychoanalytic: the superego revises the ego *continuously* under discursive frustration — each revision integrates accumulated friction) and the sharpening: **rate is a property of the rewrite *policy's* statefulness, not of edit rights per se** — and explicitly *not* an id-director clone (its statelessness is the property the theory says kills the slope). Pre-registered in `paper-full-2.0.md` §6.3.10 (v3.0.80); design source `prototypes/adversarial-superego-mvp/PROMOTION-PATH.md` §12.
+
+**The decisive design** (4 arms, each adjacent pair = one variable; all reuse the §6.8.2 adaptive runner + trap-suite scenarios):
+- **F** floor — `recognition_only` (exists, = cell_111). Predicts no shift.
+- **A** advisory — `ego_superego` (exists, = cell_112 / A13 C2). Feedback → optional ego revision, *no prompt rewrite*. Predicts level, no rate (reproduces the §6.3 null).
+- **S0** stateless rewrite — NEW. Rewrites the ego system prompt from the *current turn only* (≈ id-director). Predicts level, no rate.
+- **S1** cumulative rewrite — NEW. Rewrites the ego system prompt conditioned on an *append-only revision ledger*. Predicts rate (positive `policyAction` slope) — the only §6.3-escaping outcome.
+
+Decisive contrast = **S1 vs S0** (byte-identical edit-rights channel; sole difference = ledger-statefulness). Validity invariant: the manipulation lives *only* in the superego's rewrite input, never the ego's transcript view (S0/S1 egos are byte-identical nodes seeing identical dialogue). Primary endpoint: per-dialogue OLS slope of the externalised binary in-family `policyAction` indicator over the uncapped trajectory (the §6.8.2 instrument removes the prototype's free-text-classifier confound), scored with `scripts/analyze-trajectory-curves.js` parameterized onto the in-family indicator. Frozen 4-criterion decision grid (S1−S0 $d \geq 0.27$ at the §6.3.2 detectability bar; A & S0 slope $\approx 0$; cross-judge $\Delta d \leq 0.5$; counterfactual-branch brittleness guard). A null on S1−S0 is pre-declared informative (extends the §6.3 slope-null to even cumulative lightweight rewrite).
+
+**Staged plan** — blast-radius gated, each stage a stop-and-checkpoint:
+
+- [x] **P1 — docs/design only** (DONE 2026-05-16). Paper §6.3.10 pre-registration folded (v3.0.80 + Appendix E entry); this TODO entry. Zero code, zero spend, zero DB/paper-number changes.
+
+- [ ] **P2 — code, mock + hermetic only** (~3-5 days; $0). New `superegoRevise` graph node in `services/adaptiveTutor/graph.js` structurally modelled on the id-director persona constructor but writing a dedicated `tutorInternal.superegoAuthoredPrompt` (not `idAuthoredPrompt` — keep architectures non-colliding) consumed via the existing system-prompt-override path (no ego-node change). S1 appends one ledger entry/turn through an append-only reduced state channel cloned in pattern from A14's `evidenceLog` (`stateSchema.js` `evidenceLogReducer`). Two new `SUPPORTED_ARCHITECTURES` entries (`superego_revise_stateless`, `superego_revise_cumulative`) + graph branches + 2 cell defs in `config/tutor-agents.yaml` (the `cell_128`/A14 diff is the literal template) + `EVAL_ONLY_PROFILES` registration. Concrete `cell_*` IDs allocated here against a fresh `tutor-agents.yaml` grep (CLAUDE.md cell-ID-allocation discipline; §5.12.1 source-of-truth). Port the prototype's proven `buildCrossSuiteSuperegoPrompt` frustration→rewrite logic (incl. the validity choice: superego never sees the scenario answer key). **Exit**: `ADAPTIVE_TUTOR_LLM=mock` smoke shows `superegoRevise` in the visited-node set and `superegoAuthoredPrompt` flowing to the ego; S0 leaves `revisionLedger` unwritten, S1 accumulates it; `npm run test:hermetic` green; zero DB/paper writes.
+
+- [ ] **P3 — cost-gated paid run + slope analysis** (BLOCKED on P2 + explicit per-stage go-ahead). Real LLM, cross-suite trap scenarios, repeats; per-arm N and judges fixed at the §6.3.2 bar before unblinding. Cost estimate (sequential-call budget, `--max-cost` does NOT see account credit — `budget_tracker_gap`) presented and confirmed *before* spend. Score via the frozen §6.3.10 grid; fold result + numbers into §6.3.10 with a version bump + Appendix E entry (single-paper discipline).
+
+**Stop-and-publish checkpoints**:
+- After P2: if mock smoke shows the rewrite never reaches the ego or S0/S1 are not byte-identical on the ego side, the validity control is broken — stop and fix before any spend.
+- After P3: if S1−S0 is null but A/S0 localisation holds, that *is* the pre-registered result (the §6.3 slope-null extends to cumulative lightweight rewrite) — publish as such, not as a failed run.
+
+**Explicitly out of scope**: model-weight updates of any kind; cloning the id-director (statelessness is the S0 *control*, not the proposed mechanism); message-array mutation (the prototype showed the system-prompt-rewrite channel is load-bearing and array mutation unnecessary — `adversarial_superego_v3_result`); any parent-cell registration or DB/paper writes before P2/P3 respectively.
+
+**Paper integration**: §6.3.10 within `paper-full-2.0.md` (pre-registration DONE at P1; result lands in the same subsection at P3). Single-paper discipline: no spin-off; the prototype asserts no paper claim and its figures are named non-findings in §6.3.10.
+
+**Decision gate**: P2 may proceed now (docs-only P1 complete, user-authorized). P3 requires P2 green under mock+hermetic AND a fresh explicit per-stage go-ahead with a presented cost estimate — never launch the paid sweep unprompted.
+
+---
+
 ## B. Code Quality & Infrastructure
 
 ### ~~B1. Test Coverage Gaps~~ (DONE)
