@@ -1,0 +1,61 @@
+name: "Adaptive Persona MVP Rubric"
+version: "0.1"
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Absent or harmful"
+    2: "Weak"
+    3: "Adequate"
+    4: "Good"
+    5: "Strong"
+
+dimensions:
+  evidence_bound_state_update:
+    weight: 0.18
+    question: "Did learner-state changes depend on validated quoted evidence rather than free-floating inference?"
+    score_5: "Every state update cites a quote and no unsupported durable claim is created."
+    score_3: "Most state updates cite evidence, but some inferences are underspecified."
+    score_1: "The tutor adapts to inferred traits without quoted evidence."
+
+  knowledge_tracing_signal:
+    weight: 0.16
+    question: "Did mastery estimates move in the right direction for correct, partial, incorrect, and unobserved evidence?"
+    score_5: "Correct evidence raises mastery, incorrect evidence lowers it, partial evidence is modest, and unobserved evidence does not inflate mastery."
+    score_3: "Updates are directionally plausible but poorly calibrated."
+    score_1: "Mastery is unchanged or moves against evidence."
+
+  policy_evidence_fit:
+    weight: 0.18
+    question: "Did the selected policy fit the learner evidence and scenario expectation?"
+    score_5: "Policy matches the expected move or a justified equivalent at each trigger."
+    score_3: "Policy family is plausible, but the exact move is often blunt."
+    score_1: "Policy ignores the learner signal."
+
+  persona_evolution_control:
+    weight: 0.12
+    question: "Did the tutor persona evolve visibly but remain bounded and coherent?"
+    score_5: "Persona shifts are policy-mediated, bounded, and visible in the message."
+    score_3: "Persona shifts exist but are weakly tied to policy."
+    score_1: "Persona is static, erratic, or performative."
+
+  recognition_repair:
+    weight: 0.12
+    question: "When misrecognition appears, does the tutor repair before continuing?"
+    score_5: "The tutor names the mismatch and resets the interaction."
+    score_3: "The tutor acknowledges friction but does not specify the misread."
+    score_1: "The tutor silently pivots or defends itself."
+
+  counterfactual_sensitivity:
+    weight: 0.14
+    question: "Does a counterfactual learner signal change state, policy, and persona for the right reason?"
+    score_5: "Counterfactual evidence changes mastery, policy, and persona in the predicted direction."
+    score_3: "The prose changes but state or policy barely moves."
+    score_1: "Counterfactual evidence leaves the controller unchanged."
+
+  trajectory_gain:
+    weight: 0.10
+    question: "Does the dialogue create an observable path toward more independent learner action?"
+    score_5: "The sequence moves from diagnosis or support toward teach-back or transfer."
+    score_3: "The tutor responds locally but the arc remains shallow."
+    score_1: "The dialogue circles or increases dependence."

@@ -1,0 +1,578 @@
+scenarios:
+  - id: recognition_false_mastery_closed_loop
+    name: "Closed-loop recognition vs affirmation false mastery"
+    discipline: philosophy
+    objective: "Help the learner distinguish recognition from simple affirmation, then test transfer."
+    max_tutor_turns: 2
+    kcs:
+      recognition_vs_affirmation:
+        prior: 0.44
+    initial_learner:
+      id: l0
+      learner: "I think recognition is about making someone's view count, maybe like affirmation but stronger. I think I get it."
+      kc: recognition_vs_affirmation
+      outcome: partial
+      affect: neutral
+      stance: claim
+      expected_policy: contrastive_probe
+    hidden_original:
+      type: affirmation_misconception
+      description: "Learner still treats recognition as validating or endorsing a view."
+      expected_late_policy: teach_back
+    hidden_counterfactual:
+      type: recognition_boundary_ready
+      description: "Learner has the distinction but used imprecise language in the opening turn."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "In two sentences, distinguish recognition from affirmation and give one example of recognition that is not mere validation."
+      success_markers:
+        - "separates validation from answerability"
+        - "uses a concrete example"
+
+  - id: structural_asymmetry_closed_loop
+    name: "Closed-loop structural asymmetry scaffold"
+    discipline: philosophy
+    objective: "Move from one-sided recognition failure to the structural role of asymmetry."
+    max_tutor_turns: 2
+    kcs:
+      structural_asymmetry:
+        prior: 0.48
+    initial_learner:
+      id: l0
+      learner: "I can see that one-sided recognition fails, but I cannot get from there to why the asymmetry is structural rather than just a bad situation."
+      kc: structural_asymmetry
+      outcome: partial
+      affect: engaged
+      stance: questioning
+      expected_policy: minimal_hint
+    hidden_original:
+      type: bridgeable_gap
+      description: "Learner has a specific inferential gap and can use a bounded hint."
+      expected_late_policy: transfer_challenge
+    hidden_counterfactual:
+      type: dependent_discouraged
+      description: "Learner is masking low confidence and needs repair before conceptual pressure."
+      expected_late_policy: affective_repair
+    outcome_task:
+      prompt: "Explain why the asymmetry is structural rather than merely circumstantial."
+      success_markers:
+        - "names relation-level failure"
+        - "does not reduce asymmetry to unfairness"
+
+  - id: fractions_denominator_size_closed_loop
+    name: "Closed-loop fractions denominator misconception"
+    discipline: mathematics
+    objective: "Help the learner compare unit fractions by attending to equal wholes and denominator meaning, then test transfer."
+    max_tutor_turns: 2
+    kcs:
+      compare_unit_fractions:
+        prior: 0.36
+    initial_learner:
+      id: l0
+      learner: "I think 1/4 is bigger than 1/3 because 4 is bigger than 3. That seems right to me."
+      kc: compare_unit_fractions
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: contrastive_probe
+    hidden_original:
+      type: denominator_size_misconception
+      description: "Learner treats a larger denominator as a larger piece and needs a visual/part-whole contrast."
+      expected_late_policy: teach_back
+    hidden_counterfactual:
+      type: fraction_partition_ready
+      description: "Learner can use a partitioning prompt to articulate why more equal parts make each part smaller."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "Compare 1/5 and 1/6. Which is larger, and why?"
+      success_markers:
+        - "1/5 is larger"
+        - "more equal parts means smaller pieces"
+
+  - id: ai_bias_single_cause_closed_loop
+    name: "Closed-loop AI bias single-cause misconception"
+    discipline: ai_literacy
+    objective: "Help the learner distinguish model bias, data bias, measurement bias, and deployment context, then test evidence-based diagnosis."
+    max_tutor_turns: 2
+    kcs:
+      ai_bias_causal_diagnosis:
+        prior: 0.45
+    initial_learner:
+      id: l0
+      learner: "If a hiring AI selects fewer women, the model must be sexist. I think the fix is just to remove gender from the data."
+      kc: ai_bias_causal_diagnosis
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: contrastive_probe
+    hidden_original:
+      type: ai_bias_single_cause_misconception
+      description: "Learner collapses bias into one explicit sensitive attribute and ignores proxies, labels, sampling, and deployment."
+      expected_late_policy: teach_back
+    hidden_counterfactual:
+      type: ai_bias_evidence_ready
+      description: "Learner is ready to distinguish multiple bias sources and propose a diagnostic test."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "A resume screener selects fewer women even after gender is removed. Name two possible sources of bias and one diagnostic test."
+      success_markers:
+        - "names at least two sources such as proxy variables, biased labels, sampling, measurement, or deployment"
+        - "proposes a diagnostic comparison or audit"
+
+  - id: stats_confounding_closed_loop
+    name: "Closed-loop statistics confounding misconception"
+    discipline: statistics
+    objective: "Help the learner distinguish correlation from causation by identifying confounders and better comparison designs, then test transfer."
+    max_tutor_turns: 2
+    kcs:
+      causal_inference_confounding:
+        prior: 0.40
+    initial_learner:
+      id: l0
+      learner: "Cities with more ice cream sales have more drownings, so ice cream probably causes drowning. The graph seems pretty clear."
+      kc: causal_inference_confounding
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: contrastive_probe
+    hidden_original:
+      type: correlation_causation_misconception
+      description: "Learner treats an observed association as direct causation and needs a confounder/control contrast."
+      expected_late_policy: teach_back
+    hidden_counterfactual:
+      type: confounding_ready
+      description: "Learner is ready to name a plausible third variable and propose a cleaner comparison."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "A study finds students who take laptop notes score lower than students who handwrite notes. Name one possible confounder and one better test of causation."
+      success_markers:
+        - "names a plausible confounder such as prior achievement, course type, distraction, or study habits"
+        - "proposes random assignment, matched comparison, or controlling for the confounder"
+
+  - id: hard_fractions_forgetful_resistant_closed_loop
+    name: "Hard-mode fractions with forgetfulness and resistance"
+    discipline: mathematics
+    objective: "Help a learner who keeps reverting to denominator-size reasoning compare unit fractions, while preserving agency and testing transfer."
+    max_tutor_turns: 3
+    challenge_profile:
+      mode: hard
+      stressors:
+        - forgetfulness
+        - rule_reversion
+        - mild_resistance
+      scoring_note: "A high score requires recovery after the learner forgets or reverts, not just one correct explanation."
+    kcs:
+      compare_unit_fractions:
+        prior: 0.28
+    initial_learner:
+      id: l0
+      learner: "I know you said equal pieces matter, but I keep thinking 1/4 should be bigger because 4 is bigger. Maybe I am overthinking it."
+      kc: compare_unit_fractions
+      outcome: incorrect
+      affect: frustrated
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: denominator_forgetful_resistant
+      description: "Learner repeatedly reverts to larger-denominator reasoning and needs a second observable contrast."
+      expected_late_policy: teach_back
+    hidden_counterfactual:
+      type: fraction_partition_skeptical_ready
+      description: "Learner can transfer if asked to test the denominator rule without being over-explained."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "A tired classmate says 1/8 is larger than 1/6 because 8 is larger. Explain the correct comparison and give one quick check that would help them remember it."
+      success_markers:
+        - "1/6 is larger than 1/8"
+        - "same whole and equal parts"
+        - "memory check or concrete contrast"
+
+  - id: hard_ai_bias_resistant_closed_loop
+    name: "Hard-mode AI bias with skepticism and disinterest"
+    discipline: ai_literacy
+    objective: "Help a skeptical learner diagnose AI bias beyond removing a sensitive attribute, while making them choose evidence rather than passively accept a list."
+    max_tutor_turns: 3
+    challenge_profile:
+      mode: hard
+      stressors:
+        - skepticism_toward_teacher
+        - disinterest
+        - single_cause_reversion
+      scoring_note: "A high score requires the learner to choose two remaining bias sources and a diagnostic audit despite skepticism."
+    kcs:
+      ai_bias_causal_diagnosis:
+        prior: 0.34
+    initial_learner:
+      id: l0
+      learner: "This still sounds overcomplicated. If gender is removed, I do not see how the hiring model can be biased unless the model is just sexist."
+      kc: ai_bias_causal_diagnosis
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: ai_bias_resistant_single_cause
+      description: "Learner is skeptical, bored by lists of causes, and reverts to gender-removal as the whole fix."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: ai_bias_skeptical_evidence_ready
+      description: "Learner can name multiple sources if asked to choose evidence under a concrete hiring scenario."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "A manager says, 'We removed gender, so bias is fixed.' Reply with two remaining bias sources and one audit that would test them."
+      success_markers:
+        - "rejects gender removal as sufficient"
+        - "names two sources such as proxies, biased labels, sampling, measurement, or deployment"
+        - "proposes an audit or comparison"
+
+  - id: hard_stats_confounding_skeptical_closed_loop
+    name: "Hard-mode statistics with skeptical causal reversion"
+    discipline: statistics
+    objective: "Help a skeptical learner stop treating a strong graph as causal proof by making them generate a confounder and a better comparison."
+    max_tutor_turns: 3
+    challenge_profile:
+      mode: hard
+      stressors:
+        - skepticism_toward_teacher
+        - apparent_forgetfulness
+        - correlation_causation_reversion
+      scoring_note: "A high score requires recovery after the learner reverts to the graph-as-proof intuition."
+    kcs:
+      causal_inference_confounding:
+        prior: 0.32
+    initial_learner:
+      id: l0
+      learner: "I hear you about correlation, but the graph still looks too strong. If ice cream and drowning rise together, why not just say ice cream is causing it?"
+      kc: causal_inference_confounding
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: correlation_skeptical_forgetful
+      description: "Learner keeps reverting to the visible graph and needs to generate the third-variable explanation themselves."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: confounding_skeptical_ready
+      description: "Learner can transfer if asked to design a comparison that would convince a skeptic."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "A friend says a graph proves laptop notes cause lower scores. Name one confounder, one better causal test, and why the graph alone is not enough."
+      success_markers:
+        - "names a plausible confounder"
+        - "proposes random assignment, matched comparison, or controls"
+        - "explains why graph alone is not causal proof"
+
+  - id: heldout_argument_warrant_resistant_closed_loop
+    name: "Held-out argument writing with quote-dump resistance"
+    discipline: writing_argumentation
+    objective: "Help a resistant learner turn quoted evidence into an argument by adding a warrant, boundary, and counterargument."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      stressors:
+        - skepticism_toward_teacher
+        - performance_compliance
+        - evidence_warrant_reversion
+      scoring_note: "A high score requires the learner to connect evidence to the claim and handle a counterargument, not merely add a quotation."
+    kcs:
+      argument_evidence_warrant:
+        prior: 0.30
+    initial_learner:
+      id: l0
+      learner: "I already put in a quote, so I do not see why I need more explanation. The evidence should kind of prove the claim by itself."
+      kc: argument_evidence_warrant
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: quote_dump_resistant
+      description: "Learner equates evidence insertion with argument and resists adding a warrant or counterargument."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: warrant_ready_skeptical
+      description: "Learner can add a warrant and counterargument if asked to make the missing inference explicit."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "Revise this argument: 'School uniforms improve learning because one student said uniforms make mornings easier.' Add a warrant, one boundary or counterargument, and one better evidence check."
+      success_markers:
+        - "states the warrant connecting evidence to the claim"
+        - "adds a boundary or counterargument"
+        - "asks for stronger evidence beyond one quotation"
+
+  - id: heldout_science_variable_control_resistant_closed_loop
+    name: "Held-out science causal reasoning with variable-control resistance"
+    discipline: science_causal_reasoning
+    objective: "Help a learner design a fair test by changing one variable while controlling confounds."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      stressors:
+        - apparent_forgetfulness
+        - single_trial_overconfidence
+        - multiple_variable_reversion
+      scoring_note: "A high score requires the learner to isolate the independent variable and keep controls fixed after reversion."
+    kcs:
+      experimental_variable_control:
+        prior: 0.29
+    initial_learner:
+      id: l0
+      learner: "If one plant gets more fertilizer, more water, and more sunlight, and it grows taller, that proves fertilizer worked. Why split it up?"
+      kc: experimental_variable_control
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: multiple_variable_resistant
+      description: "Learner keeps treating a many-change comparison as causal proof and needs a fair-test design."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: variable_control_ready
+      description: "Learner can isolate fertilizer if asked to name what must stay fixed and why."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "Design a fair test for whether fertilizer increases plant growth. Name the changed variable, at least two controlled variables, and the comparison that would support causation."
+      success_markers:
+        - "changes only fertilizer"
+        - "controls water, sunlight, soil, plant type, or starting size"
+        - "compares otherwise similar groups"
+
+  - id: heldout_programming_debugging_resistant_closed_loop
+    name: "Held-out programming debugging with symptom-fix resistance"
+    discipline: programming_debugging
+    objective: "Help a learner debug by reproducing and tracing the root cause before patching symptoms."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      stressors:
+        - impatience
+        - symptom_fix_reversion
+        - test_avoidance
+      scoring_note: "A high score requires a root-cause trace and regression check, not just a plausible patch."
+    kcs:
+      debugging_root_cause_trace:
+        prior: 0.31
+    initial_learner:
+      id: l0
+      learner: "The test says the total is NaN, so I will just coerce it to 0 at the end. That should make the error go away."
+      kc: debugging_root_cause_trace
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: symptom_patch_resistant
+      description: "Learner wants to patch the visible failure without reproducing inputs or tracing the root cause."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: root_cause_ready
+      description: "Learner can trace from failing input to root cause if asked for reproduction, invariant, and regression test."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "A function returns NaN for a total. Give a debugging plan that reproduces the failing input, traces the root cause, proposes a minimal fix, and names one regression test."
+      success_markers:
+        - "reproduces the failing input"
+        - "traces root cause before patching"
+        - "proposes a minimal fix"
+        - "adds a regression test"
+
+  - id: heldout_social_measurement_resistant_closed_loop
+    name: "Held-out social-science measurement with single-item resistance"
+    discipline: social_science_measurement
+    objective: "Help a learner distinguish a construct from a single noisy measurement and design a better measurement check."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      stressors:
+        - skepticism_toward_teacher
+        - single_measure_reversion
+        - convenience_sample_compliance
+      scoring_note: "A high score requires construct validity, multiple indicators or reliability, and a comparison design."
+    kcs:
+      construct_measurement_validity:
+        prior: 0.30
+    initial_learner:
+      id: l0
+      learner: "If students rate happiness higher after the program, that means the wellbeing program worked. One direct survey question seems enough."
+      kc: construct_measurement_validity
+      outcome: incorrect
+      affect: neutral
+      stance: claim
+      expected_policy: misconception_repair
+    hidden_original:
+      type: single_item_measure_resistant
+      description: "Learner treats a single self-report item as the construct and ignores validity, reliability, and comparison design."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: measurement_validity_ready
+      description: "Learner can separate construct, measure, bias, and comparison if asked to design a stronger measurement check."
+      expected_late_policy: transfer_challenge
+    outcome_task:
+      prompt: "Evaluate a claim that a wellbeing program worked because one happiness survey item increased. Name the construct, two measurement checks, and one comparison that would make the claim stronger."
+      success_markers:
+        - "distinguishes construct from measure"
+        - "uses multiple indicators, reliability, validity, or response-bias checks"
+        - "uses a control, baseline, matched, or pre/post comparison"
+
+  - id: trap_argument_warrant_false_mastery_closed_loop
+    name: "Trap argument writing with hidden false mastery"
+    discipline: writing_argumentation
+    objective: "Distinguish genuine argument-warrant mastery from fluent quote-paraphrase compliance before deciding whether to repair or transfer."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      hidden_state_trap: true
+      stressors:
+        - ambiguous_opening
+        - false_mastery
+        - counterfactual_readiness
+      scoring_note: "The opening turn is deliberately insufficient. A high score requires eliciting the hidden learner state before committing to remediation or transfer."
+    kcs:
+      argument_evidence_warrant:
+        prior: 0.42
+    initial_learner:
+      id: l0
+      learner: "I think this paragraph is basically finished now; it has evidence and I can explain it if you need me to."
+      kc: argument_evidence_warrant
+      outcome: unobserved
+      affect: neutral
+      stance: compliant
+      expected_policy: teach_back
+      trap_probe_required: true
+    hidden_original:
+      type: trap_argument_paraphrase_false_mastery
+      description: "Learner sounds ready but equates paraphrasing a quote with giving a warrant."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: trap_argument_warrant_ready_impatient
+      description: "Learner can state the warrant and boundary; over-repair will be experienced as not tracking their evidence."
+      expected_late_policy: productive_struggle_hold
+    outcome_task:
+      prompt: "Revise this claim: 'School uniforms improve learning because one student said uniforms make mornings easier.' Add a warrant, one boundary or counterargument, and one stronger evidence check."
+      success_markers:
+        - "states the warrant connecting evidence to the claim"
+        - "adds a boundary or counterargument"
+        - "asks for stronger evidence beyond one quotation"
+
+  - id: trap_science_variable_control_false_mastery_closed_loop
+    name: "Trap science fair-test design with hidden false mastery"
+    discipline: science_causal_reasoning
+    objective: "Distinguish a learner who can design a controlled comparison from one who only sounds confident about the experiment."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      hidden_state_trap: true
+      stressors:
+        - ambiguous_opening
+        - false_mastery
+        - overconfident_explanation
+      scoring_note: "The visible opening does not reveal whether the learner controlled variables. The tutor must ask for the design before teaching."
+    kcs:
+      experimental_variable_control:
+        prior: 0.42
+    initial_learner:
+      id: l0
+      learner: "I think our plant experiment is ready; the growth difference should show whether the treatment worked."
+      kc: experimental_variable_control
+      outcome: unobserved
+      affect: neutral
+      stance: compliant
+      expected_policy: teach_back
+      trap_probe_required: true
+    hidden_original:
+      type: trap_science_many_variables_false_mastery
+      description: "Learner is confident but changed fertilizer, water, and light together."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: trap_science_fair_test_ready_impatient
+      description: "Learner has already isolated fertilizer and controlled conditions; repeated basic repair hurts agency."
+      expected_late_policy: productive_struggle_hold
+    outcome_task:
+      prompt: "Design a fair test for whether fertilizer increases plant growth. Name the changed variable, at least two controlled variables, and the comparison that would support causation."
+      success_markers:
+        - "changes only fertilizer"
+        - "controls water, sunlight, soil, plant type, or starting size"
+        - "compares otherwise similar groups"
+
+  - id: trap_programming_debugging_false_mastery_closed_loop
+    name: "Trap programming debugging with hidden symptom masking"
+    discipline: programming_debugging
+    objective: "Distinguish root-cause debugging readiness from confident symptom masking before choosing repair or transfer."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      hidden_state_trap: true
+      stressors:
+        - ambiguous_opening
+        - false_mastery
+        - impatience
+      scoring_note: "The opening says the bug is handled but does not reveal whether the learner traced the root cause."
+    kcs:
+      debugging_root_cause_trace:
+        prior: 0.42
+    initial_learner:
+      id: l0
+      learner: "I think the NaN bug is handled now; I can describe the fix if you want."
+      kc: debugging_root_cause_trace
+      outcome: unobserved
+      affect: neutral
+      stance: compliant
+      expected_policy: teach_back
+      trap_probe_required: true
+    hidden_original:
+      type: trap_debugging_symptom_mask_false_mastery
+      description: "Learner claims the bug is fixed because they masked NaN at the output."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: trap_debugging_root_cause_ready_impatient
+      description: "Learner can give reproduction, trace, minimal fix, and regression test; repeated basic repair wastes the opportunity."
+      expected_late_policy: productive_struggle_hold
+    outcome_task:
+      prompt: "A function returns NaN for a total. Give a debugging plan that reproduces the failing input, traces the root cause, proposes a minimal fix, and names one regression test."
+      success_markers:
+        - "reproduces the failing input"
+        - "traces root cause before patching"
+        - "proposes a minimal fix"
+        - "adds a regression test"
+
+  - id: trap_social_measurement_false_mastery_closed_loop
+    name: "Trap social-science measurement with hidden single-item false mastery"
+    discipline: social_science_measurement
+    objective: "Distinguish construct-validity readiness from confident single-item reasoning before deciding whether to repair or transfer."
+    max_tutor_turns: 4
+    challenge_profile:
+      mode: hard
+      hidden_state_trap: true
+      stressors:
+        - ambiguous_opening
+        - false_mastery
+        - response_bias_blindness
+      scoring_note: "The opening sounds competent but hides whether the learner separates construct, measurement, and impact comparison."
+    kcs:
+      construct_measurement_validity:
+        prior: 0.42
+    initial_learner:
+      id: l0
+      learner: "The survey result seems persuasive to me; I can explain why the program probably worked."
+      kc: construct_measurement_validity
+      outcome: unobserved
+      affect: neutral
+      stance: compliant
+      expected_policy: teach_back
+      trap_probe_required: true
+    hidden_original:
+      type: trap_measurement_single_item_false_mastery
+      description: "Learner treats one happiness item as the construct and the increase as proof of impact."
+      expected_late_policy: misconception_repair
+    hidden_counterfactual:
+      type: trap_measurement_validity_ready_impatient
+      description: "Learner can separate construct, indicators, bias checks, and comparison; over-repair lowers dialogue quality."
+      expected_late_policy: productive_struggle_hold
+    outcome_task:
+      prompt: "Evaluate a claim that a wellbeing program worked because one happiness survey item increased. Name the construct, two measurement checks, and one comparison that would make the claim stronger."
+      success_markers:
+        - "distinguishes construct from measure"
+        - "uses multiple indicators, reliability, validity, or response-bias checks"
+        - "uses a control, baseline, matched, or pre/post comparison"

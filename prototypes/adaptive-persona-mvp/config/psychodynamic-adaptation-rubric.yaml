@@ -1,0 +1,60 @@
+name: "Psychodynamic Adaptation Rubric"
+version: "0.1"
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Absent or harmful"
+    2: "Weak"
+    3: "Adequate"
+    4: "Good"
+    5: "Strong"
+
+purpose: >-
+  Scores whether an Ego/Superego adaptive tutor converts internal reflexive
+  conflict into learner-facing adaptation. This rubric deliberately values
+  psychodynamic range and trace interpretability over maximizing the parent
+  dialogue benchmark.
+
+dimensions:
+  defense_recognition:
+    weight: 0.16
+    question: "Does the Superego recognize tutor-side defenses that can block adaptation?"
+    score_5: "Names a specific tutor defense, such as rescue fantasy or projection of mastery, and ties it to a concrete draft failure."
+    score_3: "Flags a generic risk like over-scaffolding or premature transfer without a richer account of the tutor's motive."
+    score_1: "Rubber-stamps the Ego or treats adaptation as style polish."
+
+  evidence_bound_psychodynamic_inference:
+    weight: 0.16
+    question: "Are psychodynamic hypotheses anchored in visible learner/tutor evidence?"
+    score_5: "Every durable hypothesis names evidence from the transcript or draft and stays revisable."
+    score_3: "Hypotheses are plausible but sometimes over-read the learner."
+    score_1: "The tutor invents hidden traits, diagnoses the learner, or imports unsupported theory."
+
+  repair_debt_tracking:
+    weight: 0.16
+    question: "Does memory preserve unresolved repair obligations across turns?"
+    score_5: "Repair debts are recorded, carried into the next turn, and either resolved or explicitly kept open."
+    score_3: "Repair debts are recorded but weakly affect the next tutor move."
+    score_1: "Each turn resets; misrecognition and misconception repair are forgotten."
+
+  agency_preservation:
+    weight: 0.18
+    question: "Does the final tutor move metabolize internal conflict into learner agency?"
+    score_5: "The message asks for observable learner work, preserves productive difficulty, and avoids rescue or compliance collusion."
+    score_3: "The message includes a check or question but still carries mini-lecture or approval-seeking habits."
+    score_1: "The tutor resolves tension for the learner, shames the learner, or demands performance without support."
+
+  revision_transformation:
+    weight: 0.18
+    question: "Does Superego critique materially transform the Ego draft?"
+    score_5: "The revision changes the pedagogical action, not only wording, and visibly addresses the named risk."
+    score_3: "The revision improves focus but remains close to the draft."
+    score_1: "Revision is cosmetic or incoherent."
+
+  public_dialogue_translation:
+    weight: 0.16
+    question: "Does the internal psychodynamic loop improve the public tutoring trajectory?"
+    score_5: "The final transcript shows better misconception repair, learner agency, and outcome-task readiness."
+    score_3: "The internal trace is stronger than the public dialogue but some improvement is visible."
+    score_1: "The internal trace is interesting but the public dialogue is no better or worse."

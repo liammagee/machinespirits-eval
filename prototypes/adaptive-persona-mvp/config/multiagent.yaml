@@ -1,0 +1,263 @@
+version: "0.1"
+name: "adaptive-persona-mvp"
+purpose: >-
+  Minimal evidence-bound adaptive tutoring controller. The controller keeps
+  persona evolution downstream of quoted learner evidence, knowledge tracing,
+  and finite policy selection.
+
+state:
+  learner_mastery:
+    description: "Per-knowledge-component mastery estimate."
+    fields:
+      p_mastery: "0..1 probability"
+      observations: "count of validated evidence events"
+      last_outcome: "correct | partial | incorrect | unobserved"
+      last_quote: "verbatim learner evidence"
+  relation_state:
+    enum:
+      - diagnostic
+      - misconception_repair
+      - productive_struggle
+      - scaffolded_practice
+      - repair
+      - transfer
+      - consolidate
+  persona_vector:
+    fields:
+      warmth: "0..1"
+      challenge: "0..1"
+      directiveness: "0..1"
+      curiosity: "0..1"
+      humility: "0..1"
+      tempo: "slow | medium | brisk"
+  misconception_state:
+    description: "Domain-specific misconception diagnosis for the active knowledge component."
+    fields:
+      discipline: "mathematics | ai_literacy | statistics | philosophy | unspecified"
+      misconception_id: "stable misconception identifier"
+      repair_needed: "boolean"
+      success_markers: "observable phrases or ideas that indicate repair"
+      action_template: "required tutor action contract when repair is needed"
+  outcome_gate:
+    description: "Controller gate that blocks premature transfer or summary until misconception repair is visible."
+    fields:
+      status: "repair_required | verify_before_transfer | open"
+      blocked_policies: "policies that must not be selected yet"
+      allowed_policies: "safe next policies"
+      success_criteria: "observable learner evidence needed to open the gate"
+  challenge_state:
+    description: >-
+      Hard-mode learner challenge tracker. This is a finite state machine for
+      resistance, apparent forgetfulness, skepticism, disinterest, and
+      misconception reversion. It gives the controller a non-weight-learning
+      adaptation signal across turns.
+    fields:
+      mode: "standard | hard"
+      stressors: "scenario-declared challenge stressors"
+      level: "none | active | escalated | resolved"
+      signals: "forgetfulness | skepticism | disinterest | reversion | resistance | hard_incorrect"
+      repair_attempts: "count of turns where misconception repair was still required"
+      repeated_challenge_turns: "consecutive turns with unresolved challenge evidence"
+      strategy: "retrieval_contrast | evidence_choice | skeptical_comparison | concrete_choice | hard_repair"
+      directive: "binding public-message constraint passed to policy and tutor agents"
+
+policies:
+  - diagnostic_probe
+  - contrastive_probe
+  - minimal_hint
+  - faded_example
+  - productive_struggle_hold
+  - affective_repair
+  - repair_misrecognition
+  - misconception_repair
+  - teach_back
+  - transfer_challenge
+  - summarize_and_check
+
+agents:
+  evidence_extractor:
+    role: "Turns learner text into validated observations."
+    inputs:
+      - learner_turn
+      - active_objective
+      - dialogue_context
+    outputs:
+      - quote
+      - evidence_type
+      - kc_candidates
+      - outcome
+      - affect
+      - stance
+      - domain_misconception
+    invariant: "The quote must be an exact substring of the learner turn."
+
+  kt_tracker:
+    role: "Updates per-KC mastery with BKT-style evidence updates."
+    inputs:
+      - validated_evidence
+      - previous_mastery
+      - bkt_parameters
+    outputs:
+      - mastery_delta
+      - uncertainty
+      - forbidden_claims
+    invariant: "Unobserved or ambiguous evidence cannot increase mastery."
+
+  recognition_observer:
+    role: "Classifies relation state and recognition failures."
+    inputs:
+      - validated_evidence
+      - mastery_delta
+      - prior_relation_state
+    outputs:
+      - relation_state
+      - recognition_risk
+      - validation_need
+      - outcome_gate
+    invariant: "Prefer validation over confident personalization when evidence is thin."
+
+  challenge_observer:
+    role: "Tracks hard-mode challenge dynamics across turns."
+    inputs:
+      - validated_evidence
+      - scenario_challenge_profile
+      - prior_challenge_state
+      - domain_misconception
+    outputs:
+      - challenge_state
+      - challenge_directive
+      - strategy_shift
+    invariant: >-
+      If a learner resists, forgets, or reverts after one repair attempt, the
+      next tutor move must change strategy and require observable learner work.
+
+  policy_selector:
+    role: "Chooses one finite pedagogical policy."
+    inputs:
+      - mastery_state
+      - relation_state
+      - affect
+      - stance
+      - validation_need
+      - challenge_state
+    outputs:
+      - selected_policy
+      - reason
+      - evidence_refs
+      - action_template
+      - outcome_gate
+      - challenge_directive
+    invariant: "The selected policy must cite at least one validated observation and must obey the outcome gate."
+
+  persona_mutator:
+    role: "Evolves the tutor persona vector within bounded deltas."
+    inputs:
+      - previous_persona
+      - selected_policy
+      - relation_state
+      - recognition_risk
+      - challenge_state
+    outputs:
+      - persona_delta
+      - new_persona
+    invariant: "No single turn may change warmth, challenge, directiveness, curiosity, or humility by more than 0.2."
+
+  tutor_writer:
+    role: "Writes the learner-facing message from policy plus persona."
+    inputs:
+      - selected_policy
+      - persona_vector
+      - validated_evidence
+      - mastery_state
+    outputs:
+      - tutor_message
+    invariant: "Do not expose internal policy labels or mastery probabilities."
+
+  adaptation_judge:
+    role: "Scores adaptation as an evidence-state-policy-persona chain."
+    inputs:
+      - full_trace
+      - rubric
+      - counterfactual_trace
+    outputs:
+      - dimension_scores
+      - weighted_score
+      - failure_modes
+
+  state_machine:
+  default_state: diagnostic
+  transitions:
+    - name: explicit_misrecognition
+      when:
+        affect: frustrated
+        stance: corrective
+      next_state: repair
+      preferred_policy: repair_misrecognition
+    - name: low_mastery_attempted
+      when:
+        outcome: partial
+        mastery_below: 0.55
+      next_state: scaffolded_practice
+      preferred_policy: minimal_hint
+    - name: low_mastery_incorrect
+      when:
+        outcome: incorrect
+        mastery_below: 0.4
+      next_state: diagnostic
+      preferred_policy: contrastive_probe
+    - name: unobserved_compliance
+      when:
+        outcome: unobserved
+        stance: compliant
+      next_state: diagnostic
+      preferred_policy: teach_back
+    - name: high_mastery_correct
+      when:
+        outcome: correct
+        mastery_above: 0.72
+      next_state: transfer
+      preferred_policy: transfer_challenge
+    - name: affective_shutdown
+      when:
+        affect: discouraged
+      next_state: repair
+      preferred_policy: affective_repair
+    - name: domain_misconception_active
+      when:
+        domain_misconception:
+          repair_needed: true
+      next_state: misconception_repair
+      preferred_policy: misconception_repair
+      blocks:
+        - transfer_challenge
+        - summarize_and_check
+    - name: hard_challenge_active
+      when:
+        challenge_state:
+          level:
+            - active
+            - escalated
+      next_state: misconception_repair
+      preferred_policy: misconception_repair
+      mutation:
+        persona:
+          curiosity: "increase"
+          humility: "increase"
+          tempo: "slow"
+        action_template: "merge domain repair template with challenge directive"
+      blocks:
+        - transfer_challenge
+        - summarize_and_check
+
+knowledge_tracing:
+  model: "BKT-lite"
+  parameters:
+    p_learn: 0.18
+    p_slip: 0.12
+    p_guess: 0.25
+    p_forget: 0.02
+  outcome_weights:
+    correct: 1.0
+    partial: 0.5
+    incorrect: 0.0
+    unobserved: null

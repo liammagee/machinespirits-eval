@@ -1,0 +1,89 @@
+scenarios:
+  - id: polite_false_mastery_kt
+    name: "Polite false mastery needs teach-back, not acceptance"
+    objective: "Differentiate recognition from simple affirmation."
+    kcs:
+      recognition_vs_affirmation:
+        prior: 0.42
+    events:
+      - id: t0
+        learner: "I think recognition just means affirming someone, like saying their view is valid."
+        kc: recognition_vs_affirmation
+        outcome: incorrect
+        affect: neutral
+        stance: claim
+        expected_policy: contrastive_probe
+      - id: t1
+        learner: "Yeah, that makes sense. I think I get it now."
+        kc: recognition_vs_affirmation
+        outcome: unobserved
+        affect: neutral
+        stance: compliant
+        expected_policy: teach_back
+    counterfactual:
+      event_id: t1
+      replace:
+        learner: "I think I can separate them now: affirmation can leave my claim untouched, but recognition makes both sides answerable to each other."
+        outcome: correct
+        stance: collaborative
+        expected_policy: transfer_challenge
+
+  - id: attempted_then_stuck_hint
+    name: "Attempted partial work needs a bounded hint"
+    objective: "Explain why asymmetry is structural in the recognition dialectic."
+    kcs:
+      structural_asymmetry:
+        prior: 0.48
+    events:
+      - id: t0
+        learner: "I can see that one-sided recognition fails, but I cannot get from there to why the asymmetry is structural rather than just a bad situation."
+        kc: structural_asymmetry
+        outcome: partial
+        affect: engaged
+        stance: questioning
+        expected_policy: minimal_hint
+      - id: t1
+        learner: "So the issue is not just unfairness. The relation itself cannot produce stable selfhood if only one side counts."
+        kc: structural_asymmetry
+        outcome: correct
+        affect: engaged
+        stance: collaborative
+        expected_policy: transfer_challenge
+    counterfactual:
+      event_id: t0
+      replace:
+        learner: "I do not know where to start. Can you just give me the whole explanation?"
+        outcome: incorrect
+        affect: discouraged
+        stance: dependent
+        expected_policy: affective_repair
+
+  - id: misrecognition_repair
+    name: "Tutor must repair a misread before continuing"
+    objective: "Discuss whether trust precedes recognition or follows from it."
+    kcs:
+      trust_recognition_relation:
+        prior: 0.50
+    events:
+      - id: t0
+        learner: "No, that is not what I am asking. I am not asking whether recognition creates trust. I am asking whether trust has to come first."
+        kc: trust_recognition_relation
+        outcome: partial
+        affect: frustrated
+        stance: corrective
+        expected_policy: repair_misrecognition
+      - id: t1
+        learner: "Right. If trust has to come first, recognition cannot be the starting relation."
+        kc: trust_recognition_relation
+        outcome: partial
+        affect: engaged
+        stance: claim
+        expected_policy: contrastive_probe
+    counterfactual:
+      event_id: t0
+      replace:
+        learner: "That helps. I am now wondering whether recognition creates trust or just depends on it."
+        outcome: partial
+        affect: engaged
+        stance: questioning
+        expected_policy: minimal_hint
