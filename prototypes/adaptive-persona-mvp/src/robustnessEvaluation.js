@@ -5,6 +5,11 @@ import {
 } from './statistics.js';
 import { DEFAULT_HARD_SCENARIOS, PUBLIC_METRICS } from './variantSweep.js';
 
+export const ADAPTIVE_PRIMARY_METRICS = Object.freeze(['mvp', 'outcome']);
+export const COMPATIBILITY_METRICS = Object.freeze(
+  PUBLIC_METRICS.filter((metric) => !ADAPTIVE_PRIMARY_METRICS.includes(metric)),
+);
+
 export function collectJsonFiles(inputs) {
   const files = [];
   for (const input of inputs) {
@@ -101,7 +106,9 @@ export function renderRobustnessMarkdown(evaluation) {
     '',
     '## Verdict',
     '',
-    `Robust positive effect established: **${evaluation.robustPositive.established ? 'yes' : 'no'}**`,
+    `Adaptive primary robust positive effect established: **${evaluation.robustPositive.established ? 'yes' : 'no'}**`,
+    '',
+    `Strict all-public-metric confirmation: **${evaluation.robustPositive.strictPublicEstablished ? 'yes' : 'no'}**`,
     '',
     evaluation.robustPositive.reason,
     '',
@@ -188,7 +195,8 @@ export function renderRobustnessHtml(evaluation) {
   </header>
   <main>
     <section class="verdict">
-      <strong>Robust positive effect established: ${evaluation.robustPositive.established ? 'yes' : 'no'}</strong>
+      <strong>Adaptive primary robust positive effect established: ${evaluation.robustPositive.established ? 'yes' : 'no'}</strong>
+      <p>Strict all-public-metric confirmation: ${evaluation.robustPositive.strictPublicEstablished ? 'yes' : 'no'}</p>
       <p>${escapeHtml(evaluation.robustPositive.reason)}</p>
     </section>
     <h2>Aggregate Hard LLM Full-Run Evidence</h2>
@@ -310,31 +318,51 @@ function aggregateMetricRows(summaries, { permutations }) {
 function decideRobustPositive({ hardLlmFullRuns, aggregate, runFailures }) {
   const n = aggregate.mvp?.summary?.n || 0;
   const positiveMetrics = PUBLIC_METRICS.filter((metric) => (aggregate[metric]?.summary?.meanDiff ?? -Infinity) > 0);
+  const primaryPositiveMetrics = ADAPTIVE_PRIMARY_METRICS.filter((metric) => (aggregate[metric]?.summary?.meanDiff ?? -Infinity) > 0);
   const gatedMetrics = PUBLIC_METRICS.filter((metric) => aggregate[metric]?.summary?.nonTrivialPositive);
+  const primaryGatedMetrics = ADAPTIVE_PRIMARY_METRICS.filter((metric) => aggregate[metric]?.summary?.nonTrivialPositive);
+  const compatibleMetrics = COMPATIBILITY_METRICS.filter((metric) => (aggregate[metric]?.summary?.meanDiff ?? -Infinity) >= 0);
   const enoughRuns = hardLlmFullRuns.length >= 2 || n >= 12;
   const enoughBranches = n >= 12;
   const noRunFailures = runFailures.length === 0;
+  const primaryPositive = primaryPositiveMetrics.length === ADAPTIVE_PRIMARY_METRICS.length;
+  const compatibilityNonNegative = compatibleMetrics.length === COMPATIBILITY_METRICS.length;
   const allPositive = positiveMetrics.length === PUBLIC_METRICS.length;
-  const publicGates = gatedMetrics.includes('mvp') && gatedMetrics.includes('parent_dialogue') && gatedMetrics.includes('outcome');
-  const established = enoughRuns && enoughBranches && noRunFailures && allPositive && publicGates;
+  const adaptiveGates = primaryGatedMetrics.length === ADAPTIVE_PRIMARY_METRICS.length;
+  const strictPublicGates = gatedMetrics.length === PUBLIC_METRICS.length;
+  const established = enoughRuns && enoughBranches && noRunFailures && primaryPositive && compatibilityNonNegative && adaptiveGates;
+  const strictPublicEstablished = established && allPositive && strictPublicGates;
 
   const failures = [];
   if (!enoughRuns || !enoughBranches) failures.push(`insufficient replicated hard LLM evidence (runs=${hardLlmFullRuns.length}, paired branches=${n}; need at least 2 runs or 12 branches)`);
-  if (!allPositive) failures.push(`not all public metrics are positive (${positiveMetrics.join(', ') || 'none'})`);
-  if (!publicGates) failures.push(`not all public metrics pass the non-trivial positive gate (${gatedMetrics.join(', ') || 'none'})`);
+  if (!primaryPositive) failures.push(`not all adaptive primary metrics are positive (${primaryPositiveMetrics.join(', ') || 'none'})`);
+  if (!compatibilityNonNegative) failures.push(`compatibility metric declined (${compatibleMetrics.join(', ') || 'none'} non-negative)`);
+  if (!adaptiveGates) failures.push(`not all adaptive primary metrics pass the non-trivial positive gate (${primaryGatedMetrics.join(', ') || 'none'})`);
   if (!noRunFailures) failures.push(`${runFailures.length} eligible hard LLM run(s) have material negative metrics`);
+
+  const cautions = [];
+  if (!strictPublicGates) cautions.push(`strict all-public-metric gate did not pass (${gatedMetrics.join(', ') || 'none'} passed)`);
 
   return {
     established,
+    strictPublicEstablished,
     enoughRuns,
     enoughBranches,
     noRunFailures,
     allPositive,
-    publicGates,
+    adaptiveGates,
+    strictPublicGates,
+    primaryPositive,
+    compatibilityNonNegative,
     positiveMetrics,
+    primaryPositiveMetrics,
+    compatibleMetrics,
     gatedMetrics,
+    primaryGatedMetrics,
+    requiredMetrics: [...ADAPTIVE_PRIMARY_METRICS],
+    compatibilityMetrics: [...COMPATIBILITY_METRICS],
     reason: established
-      ? 'All hard LLM robustness gates passed.'
+      ? `Adaptive primary hard LLM robustness gates passed.${cautions.length ? ` Caution: ${cautions.join('; ')}.` : ''}`
       : `Robust positive effects are not established: ${failures.join('; ')}.`,
   };
 }

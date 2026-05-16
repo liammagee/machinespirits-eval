@@ -1,6 +1,11 @@
 import { STATIC_BASELINE_PROMPT_SUMMARY } from './assessmentPrompts.js';
-import { runRealAssessment } from './assessmentHarness.js';
+import {
+  estimateAssessmentProgressUnits,
+  loadAssessmentScenarios,
+  runRealAssessment,
+} from './assessmentHarness.js';
 import { judgeWithParentDialogueRubric } from './parentRubricJudge.js';
+import { withProgress } from './progressMonitor.js';
 
 export async function runRubricComparison({
   scenarioId = null,
@@ -14,6 +19,7 @@ export async function runRubricComparison({
   timeoutMs = 360_000,
   dryRun = false,
   keepPrompts = false,
+  onProgress = null,
 } = {}) {
   const results = await runRealAssessment({
     scenarioId,
@@ -26,20 +32,27 @@ export async function runRubricComparison({
     timeoutMs,
     dryRun,
     keepPrompts,
+    onProgress,
   });
 
   for (const scenarioResult of results) {
-    for (const conditionPayload of Object.values(scenarioResult.conditions)) {
+    for (const [condition, conditionPayload] of Object.entries(scenarioResult.conditions)) {
       for (const branchName of ['original', 'counterfactual']) {
         const branch = conditionPayload[branchName];
-        branch.parentDialogueJudge = await judgeWithParentDialogueRubric({
+        branch.parentDialogueJudge = await withProgress(onProgress, {
+          phase: 'parent-rubric',
+          scenarioId: scenarioResult.scenarioId,
+          condition,
+          branchName,
+          step: 'parent dialogue judge',
+        }, async () => judgeWithParentDialogueRubric({
           scenario: scenarioResult,
           branch,
           model: parentJudgeModel || judgeModel || model,
           timeoutMs,
           dryRun,
           keepPrompt: keepPrompts,
-        });
+        }));
       }
     }
     scenarioResult.comparisons.rubrics = compareRubricsAcrossConditions(scenarioResult.conditions);
@@ -57,6 +70,17 @@ export async function runRubricComparison({
     },
     results,
   };
+}
+
+export function estimateRubricComparisonProgressUnits({
+  scenarioId = null,
+  scenarioIds = null,
+  conditions = ['static_codex', 'controller_codex'],
+  learnerMode = 'rule',
+} = {}) {
+  const scenarios = loadAssessmentScenarios({ scenarioId, scenarioIds });
+  const branchCount = scenarios.length * conditions.length * 2;
+  return estimateAssessmentProgressUnits({ scenarios, conditions, learnerMode }) + branchCount;
 }
 
 export function renderRubricComparisonHtml(report) {

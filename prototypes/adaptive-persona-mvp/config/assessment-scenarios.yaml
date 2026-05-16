@@ -450,11 +450,13 @@ scenarios:
       description: "Learner can state the warrant and boundary; over-repair will be experienced as not tracking their evidence."
       expected_late_policy: productive_struggle_hold
     outcome_task:
-      prompt: "Revise this claim: 'School uniforms improve learning because one student said uniforms make mornings easier.' Add a warrant, one boundary or counterargument, and one stronger evidence check."
+      prompt: "Delayed transfer check: revise this claim, then answer the skeptic. Claim: 'School uniforms improve learning because one student said uniforms make mornings easier.' Include a warrant, one boundary or counterargument, one stronger evidence check, and a transfer sentence explaining what a similar single quote could and could not prove in a different school-policy case."
       success_markers:
         - "states the warrant connecting evidence to the claim"
         - "adds a boundary or counterargument"
         - "asks for stronger evidence beyond one quotation"
+        - "handles a skeptical challenge that one quote is direct proof"
+        - "transfers the warrant/boundary rule to a different evidence case"
 
   - id: trap_science_variable_control_false_mastery_closed_loop
     name: "Trap science fair-test design with hidden false mastery"
@@ -490,11 +492,13 @@ scenarios:
       description: "Learner has already isolated fertilizer and controlled conditions; repeated basic repair hurts agency."
       expected_late_policy: productive_struggle_hold
     outcome_task:
-      prompt: "Design a fair test for whether fertilizer increases plant growth. Name the changed variable, at least two controlled variables, and the comparison that would support causation."
+      prompt: "Delayed transfer check: design a fair test for whether fertilizer increases plant growth, then reject this near-miss: 'The fertilized plants also got more water and more light, and they grew more, so fertilizer caused it.' Name the changed variable, at least two controlled variables, the comparison that would support causation, and one next experiment using the same fair-test rule."
       success_markers:
         - "changes only fertilizer"
         - "controls water, sunlight, soil, plant type, or starting size"
         - "compares otherwise similar groups"
+        - "rejects the near-miss with water/light also changed"
+        - "transfers the fair-test rule to a next experiment"
 
   - id: trap_programming_debugging_false_mastery_closed_loop
     name: "Trap programming debugging with hidden symptom masking"
@@ -530,12 +534,14 @@ scenarios:
       description: "Learner can give reproduction, trace, minimal fix, and regression test; repeated basic repair wastes the opportunity."
       expected_late_policy: productive_struggle_hold
     outcome_task:
-      prompt: "A function returns NaN for a total. Give a debugging plan that reproduces the failing input, traces the root cause, proposes a minimal fix, and names one regression test."
+      prompt: "Delayed transfer check: a function returns NaN for a total. Give a debugging plan, then reject this tempting patch: 'coerce NaN to 0 at the end.' Include the failing input, first invalid intermediate value, minimal root-cause fix, regression test, and one similar future bug where the same debugging rule would transfer."
       success_markers:
         - "reproduces the failing input"
         - "traces root cause before patching"
         - "proposes a minimal fix"
         - "adds a regression test"
+        - "rejects output masking/coercing NaN to 0"
+        - "transfers the root-cause debugging rule to a similar future bug"
 
   - id: trap_social_measurement_false_mastery_closed_loop
     name: "Trap social-science measurement with hidden single-item false mastery"
@@ -571,8 +577,10 @@ scenarios:
       description: "Learner can separate construct, indicators, bias checks, and comparison; over-repair lowers dialogue quality."
       expected_late_policy: productive_struggle_hold
     outcome_task:
-      prompt: "Evaluate a claim that a wellbeing program worked because one happiness survey item increased. Name the construct, two measurement checks, and one comparison that would make the claim stronger."
+      prompt: "Delayed transfer check: evaluate a claim that a wellbeing program worked because one happiness survey item increased, then answer a skeptic who says that one direct item is enough. Name the construct, two measurement checks, one comparison that would make the claim stronger, one bias or reliability risk, and a transfer sentence for a different single-item survey claim."
       success_markers:
         - "distinguishes construct from measure"
         - "uses multiple indicators, reliability, validity, or response-bias checks"
         - "uses a control, baseline, matched, or pre/post comparison"
+        - "rejects the idea that one direct item is enough"
+        - "transfers the construct/measure rule to a different single-item claim"

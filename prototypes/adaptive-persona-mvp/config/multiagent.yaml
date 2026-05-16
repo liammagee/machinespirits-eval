@@ -72,6 +72,7 @@ policies:
   - misconception_repair
   - teach_back
   - transfer_challenge
+  - transfer_repair
   - summarize_and_check
 
 agents:
@@ -230,6 +231,7 @@ agents:
       preferred_policy: misconception_repair
       blocks:
         - transfer_challenge
+        - transfer_repair
         - summarize_and_check
     - name: hard_challenge_active
       when:
@@ -247,6 +249,7 @@ agents:
         action_template: "merge domain repair template with challenge directive"
       blocks:
         - transfer_challenge
+        - transfer_repair
         - summarize_and_check
 
 knowledge_tracing:

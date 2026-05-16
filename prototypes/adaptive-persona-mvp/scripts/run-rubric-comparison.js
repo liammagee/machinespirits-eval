@@ -3,9 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  estimateRubricComparisonProgressUnits,
   renderRubricComparisonHtml,
   runRubricComparison,
 } from '../src/rubricComparison.js';
+import { createPercentageMonitor } from '../src/progressMonitor.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -41,8 +43,20 @@ const conditions = conditionArg
 const timeoutMs = Number(argValue('timeout-ms') || 360_000);
 const dryRun = hasFlag('dry-run');
 const keepPrompts = hasFlag('keep-prompts') || dryRun;
+const progressEnabled = !hasFlag('no-progress');
 
 fs.mkdirSync(outDir, { recursive: true });
+
+const progress = createPercentageMonitor({
+  label: 'rubric-comparison',
+  total: estimateRubricComparisonProgressUnits({
+    scenarioId,
+    scenarioIds,
+    conditions: conditions || ['static_codex', 'controller_codex'],
+    learnerMode,
+  }),
+  enabled: progressEnabled,
+});
 
 const report = await runRubricComparison({
   scenarioId,
@@ -56,6 +70,7 @@ const report = await runRubricComparison({
   timeoutMs,
   dryRun,
   keepPrompts,
+  onProgress: progress.event,
 });
 
 if (report.results.length === 0) {

@@ -493,3 +493,98 @@ parent-compatible state/action layer, then run the trap set live with the LLM
 learner. If the trap live run remains flat, parent replay becomes the more
 important path because it tests the mechanism against richer already-collected
 adaptive traces rather than more synthetic prompt tuning.
+
+## Transfer-Repair Update
+
+The trap live work has shifted the evidence profile. A full four-trap LLM
+learner run with strict semantic revalidation now shows a strong outcome signal
+but not a robust all-metric effect:
+
+- MVP `+8.375`;
+- parent dialogue `-2.969`;
+- trap outcome `+87.5`;
+- robustness verdict: false because the run is unreplicated and parent dialogue
+  remains negative.
+
+Two mechanism fixes are important:
+
+- trap outcomes are now scored from deterministic delayed-transfer evidence,
+  with the LLM learner's raw `success` flag retained only for audit;
+- programming transfer now requires a genuinely new bad-total case with
+  missing or invalid amount data, plus a valid-zero distinction, instead of
+  accepting average/rate repeats.
+
+The focused programming v3 slice shows that the stricter prompt can elicit the
+desired transfer from the LLM learner, but that result is only `n=2`.
+
+Immediate next step: run a replicated full four-trap live sweep with the current
+strict-debug configuration. Medium-term next step remains a parent-compatible
+state/action layer, because public dialogue quality still lags even when trap
+outcomes improve.
+
+## Replicated Transfer-Repair Update
+
+The replicated full four-trap live sweep has now run with the LLM learner and
+strict-debug trap revalidation.
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --traps \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 2 \
+  --out prototypes/adaptive-persona-mvp/outputs/transfer-repair-full-traps-replicated-live-strict-debug
+```
+
+Artifacts:
+
+- `outputs/transfer-repair-full-traps-replicated-live-strict-debug/variant-sweep-2026-05-16T20-48-18-255Z.html`
+- `outputs/transfer-repair-full-traps-replicated-live-strict-debug-revalidated/variant-sweep-revalidated-2026-05-16T20-48-24-507Z.html`
+- `outputs/robustness-transfer-repair-full-traps-replicated-live-strict-debug-v2/robustness-evaluation-2026-05-16T20-50-48-530Z.html`
+
+Revalidation changed `0` outcomes, so the LLM learner's outcome flags matched
+the deterministic delayed-transfer trap checks.
+
+Aggregate result, `n=16` paired branches:
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+10.906` | `3.063..19.219` | `0.023` | pass |
+| Parent dialogue | `+0.078` | `-4.844..4.453` | `1.000` | fail |
+| Trap outcome | `+62.5` | `31.25..87.5` | `0.006` | pass |
+
+The robustness gate was refined to separate two claims:
+
+- adaptive-primary robustness: MVP plus deterministic outcome must pass, with
+  no material parent-dialogue decline;
+- strict all-public-metric confirmation: MVP, parent dialogue, and outcome must
+  all pass.
+
+Under that distinction, the current result establishes an adaptive-primary
+effect but not strict parent-rubric confirmation. This is a better reading of
+the evidence than treating the parent rubric as a required adaptation metric:
+the parent rubric is useful as a compatibility check, but it is not sensitive
+to hidden-state transfer failure when the static tutor remains fluent.
+
+Branch-level diagnosis:
+
+- argument and science traps now pass on both original and counterfactual
+  branches across both repeats;
+- programming transfer remains unstable under the stricter bad-total case;
+- social-measurement counterfactual branches still miss final transfer;
+- static tutoring remains capable of high parent-rubric scores even when it
+  fails the deterministic hidden-state trap outcome.
+
+The next engineering target is therefore not another global prompt sweep. It is
+to repair the two remaining unstable action families:
+
+1. debugging transfer should force a final learner-authored bad-total fix with
+   missing/invalid amount handling and valid-zero preservation;
+2. measurement validity transfer should force a final learner-authored new
+   validity/comparison case instead of repeated repair talk.
+
+After those targeted repairs, rerun the four-trap replicated LLM sweep and keep
+the same dual verdict: adaptive-primary robustness plus parent-rubric
+compatibility.

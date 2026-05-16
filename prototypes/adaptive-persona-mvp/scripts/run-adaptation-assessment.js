@@ -3,9 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  estimateAssessmentProgressUnits,
+  loadAssessmentScenarios,
   renderAssessmentMarkdown,
   runRealAssessment,
 } from '../src/assessmentHarness.js';
+import { createPercentageMonitor } from '../src/progressMonitor.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -35,8 +38,20 @@ const dryRun = hasFlag('dry-run');
 const keepPrompts = hasFlag('keep-prompts') || dryRun;
 const conditionArg = argValue('conditions');
 const conditions = conditionArg ? conditionArg.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+const progressEnabled = !hasFlag('no-progress');
 
 fs.mkdirSync(outDir, { recursive: true });
+
+const selectedScenarios = loadAssessmentScenarios({ scenarioId });
+const progress = createPercentageMonitor({
+  label: 'adaptation-assessment',
+  total: estimateAssessmentProgressUnits({
+    scenarios: selectedScenarios,
+    conditions: conditions || ['static_codex', 'controller_codex'],
+    learnerMode,
+  }),
+  enabled: progressEnabled,
+});
 
 const results = await runRealAssessment({
   scenarioId,
@@ -48,6 +63,7 @@ const results = await runRealAssessment({
   timeoutMs,
   dryRun,
   keepPrompts,
+  onProgress: progress.event,
 });
 
 if (results.length === 0) {

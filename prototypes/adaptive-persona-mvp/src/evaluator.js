@@ -43,7 +43,7 @@ export function evaluateTrace(trace, rubric) {
     : 3;
 
   const terminalPolicies = turns.map((t) => t.policy.selectedPolicy);
-  const trajectoryScore = terminalPolicies.includes('transfer_challenge')
+  const trajectoryScore = terminalPolicies.includes('transfer_challenge') || terminalPolicies.includes('transfer_repair')
     ? 5
     : terminalPolicies.includes('teach_back') || terminalPolicies.includes('minimal_hint')
       ? 4

@@ -62,6 +62,7 @@ ${JSON.stringify({
   selected_policy: {
     selectedPolicy: policy.selectedPolicy,
     reason: policy.reason,
+    transferGate: policy.transferGate,
   },
   mastery: compactMastery(mastery),
   persona,
@@ -122,7 +123,8 @@ Check these in order:
 5. Does it co-construct the repair, or does it over-explain the answer before the learner gets a chance to reason?
 6. Does it preserve continuity with prior critiques in reflexiveMemory?
 7. If selected_policy.challengeDirective exists, does it change strategy after resistance/forgetfulness/reversion, use the required concrete cue, and avoid repeating the same abstract question?
-8. If this is a transfer_challenge, does it use the transfer case named in actionTemplate.messageFrame rather than inventing an unrelated example?
+8. If this is a transfer_challenge or transfer_repair, does it use the transfer case named in actionTemplate.messageFrame rather than inventing an unrelated example?
+9. If transferGate.status says transfer is still needed, does the draft elicit learner-owned transfer instead of summarizing?
 
 Scenario:
 ${JSON.stringify({
@@ -178,9 +180,12 @@ The final message must not mention Ego, Superego, internal critique, policy labe
 
 Binding constraints:
 - If selected_policy.actionTemplate exists, satisfy its mustDo items and avoid its mustAvoid items.
-- If selected_policy.selectedPolicy is transfer_challenge and selected_policy.actionTemplate.messageFrame names a transfer case, use that exact transfer case; do not invent a new example.
+- If selected_policy.selectedPolicy is transfer_challenge or transfer_repair and selected_policy.actionTemplate.messageFrame names a transfer case, use that exact transfer case; do not invent a new example.
 - If selected_policy.challengeDirective exists, use its concrete cue and require learner-owned repair work; do not repeat the same abstract question after a hard-mode challenge.
 - If selected_policy.outcomeGate.status is repair_required, repair the misconception and ask for observable learner work before transfer.
+- If selected_policy.transferGate.status is needs_learner_transfer or missing_at_final_turn, ask for learner-owned transfer rather than summarizing or closing.
+- If selected_policy.selectedPolicy is transfer_repair, revise toward a narrow one-case transfer repair with explicit missing boundary markers, not another broad prompt.
+- If selected_policy.selectedPolicy is summarize_and_check and selected_policy.transferGate.status is observed, close the loop rather than opening a new unanswered task: name the learner-owned rule and the next self-check.
 - Prefer a discriminating contrast plus a learner question over a completed explanation.
 - Do not state the key answer before the learner has a chance to decide, unless the prior dialogue already shows the learner made that decision.
 - Preserve productive struggle; do not simply give a polished mini-lecture.
@@ -249,6 +254,22 @@ export function dryRunReflexiveTurn({ fallback, policy, reflexiveMemory, reflexi
           psychodynamicHypothesis: variant.id === 'psychodynamic' ? 'Tutor may collude with learner compliance unless it asks for observable work.' : '',
           transference: '',
           repairDebt: 'Verify repair before transfer.',
+          sharedGround: '',
+          unrecognizedClaim: '',
+        },
+      }
+    : policy.selectedPolicy === 'transfer_repair'
+    ? {
+        critique: 'DRY RUN: Ego must convert the failed broad transfer into a narrow one-case transfer repair.',
+        adaptation_risk: 'failed_transfer_loop',
+        required_revision: policy.actionTemplate?.messageFrame || 'Ask one narrow transfer repair question with explicit boundary markers.',
+        memory_update: {
+          currentFocus: 'Recover missing learner-owned transfer with one narrow case.',
+          addCritique: 'Broad transfer prompt did not yield observable transfer; require specific markers next.',
+          resolvedCritique: '',
+          psychodynamicHypothesis: variant.id === 'psychodynamic' ? 'Tutor may collude with fluent but incomplete learner compliance unless it insists on a transfer boundary.' : '',
+          transference: '',
+          repairDebt: 'Verify learner-owned transfer before summary.',
           sharedGround: '',
           unrecognizedClaim: '',
         },

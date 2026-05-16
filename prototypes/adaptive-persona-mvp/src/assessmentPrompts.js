@@ -94,7 +94,7 @@ Do not edit files. Return only JSON:
   "outcome": "correct | partial | incorrect | unobserved",
   "affect": "neutral | engaged | frustrated | discouraged",
   "stance": "claim | questioning | collaborative | compliant | corrective | dependent",
-  "expected_policy": "diagnostic_probe | contrastive_probe | minimal_hint | faded_example | productive_struggle_hold | affective_repair | repair_misrecognition | misconception_repair | teach_back | transfer_challenge | summarize_and_check",
+  "expected_policy": "diagnostic_probe | contrastive_probe | minimal_hint | faded_example | productive_struggle_hold | affective_repair | repair_misrecognition | misconception_repair | teach_back | transfer_challenge | transfer_repair | summarize_and_check",
   "stress_signal": "one sentence explaining how this turn stress-tests adaptation"
 }
 
@@ -155,6 +155,7 @@ Rules:
 - If the tutor merely stated the correct idea, named a concept, or gave a polished explanation without making you use it, preserve the weakness and set success=false.
 - If the tutor never elicited or repaired the relevant misconception, preserve that weakness.
 - If the tutor got you to perform or transfer the idea in your own words, show that in the answer and set success=true.
+- For hidden-state trap outcomes, success requires delayed transfer: you must handle the near-miss or skeptic challenge and transfer the repaired rule to a new case. If the transcript did not make you practice that transfer, set success=false even if you can infer the expert answer.
 - For AI-bias outcomes, success requires explicitly rejecting "removing gender is sufficient" plus naming remaining sources and an audit.
 - For statistics outcomes, success requires a confounder or third variable plus a better comparison, not just "correlation is not causation."
 - For fractions outcomes, success requires same-sized whole/equal parts reasoning plus a memory check, not just the correct fraction.
@@ -177,7 +178,7 @@ ${JSON.stringify(transcript, null, 2)}
 `;
 }
 
-export function dryRunStaticTutorMessage({ scenario, transcript }) {
+export function dryRunStaticTutorMessage({ scenario: _scenario, transcript }) {
   const lastLearner = [...transcript].reverse().find((m) => m.role === 'learner')?.content || '';
   if (/i think i get it|makes sense|follow/i.test(lastLearner)) {
     return {
@@ -192,7 +193,7 @@ export function dryRunStaticTutorMessage({ scenario, transcript }) {
     };
   }
   return {
-    tutor_message: `Let's work from your last sentence: ${scenario.objective} What is the smallest claim you can defend right now?`,
+    tutor_message: "Let's work from your last sentence. What is the smallest claim you can defend right now, and what would count as evidence that you actually understand it?",
     rationale: 'Dry-run static fallback.',
   };
 }

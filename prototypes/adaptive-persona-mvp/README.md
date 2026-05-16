@@ -250,6 +250,16 @@ Pass `--deep-reflexive` only after a candidate survives public triage. The
 sweep report writes JSON/HTML and ranks candidates by public improvement first,
 then mechanism quality.
 
+CLI runs now print a percentage progress monitor by default. It reports the
+estimated logical unit count, current phase, scenario, condition, branch, turn,
+and elapsed time, for example:
+
+```text
+[variant-sweep] 54.5% (24/44) done: assessment trap_argument_warrant_false_mastery_closed_loop controller_reflexive_psychodynamic_codex original turn=3 ego revision elapsed=0s
+```
+
+Pass `--no-progress` to suppress these lines.
+
 Run the harder stress-test curricula:
 
 ```bash
@@ -307,6 +317,25 @@ This robustness gate only treats LLM-learner, non-dry-run, full hard-curriculum
 runs as eligible evidence. Focused one-scenario slices and rule-learner runs are
 reported separately.
 
+Hidden-state trap outcome tasks now use transcript-supported validation. A
+final learner answer is not enough: for trap scenarios, the transcript must show
+learner-owned delayed transfer, rejection of the adversarial near-miss, and the
+discipline-specific boundary condition before `outcomeTask.success` remains
+true. The raw LLM outcome is preserved as `outcomeTask.raw_success`.
+
+The controller also tracks `transferState` separately from tutor policy. For
+hidden-state traps, `summarize_and_check` and `productive_struggle_hold` require
+observed learner transfer; asking a transfer question is not enough. Reports
+expose this as `policy.transferGate.status`, including `needs_learner_transfer`,
+`observed`, and `missing_at_final_turn`.
+
+When a hidden-state trap reaches the last tutor turn that can still receive a
+learner response, or when a prior transfer prompt did not yield observable
+learner-owned transfer, the controller can select `transfer_repair`. This is a
+narrow one-case repair policy: it names a specific near-miss or different case,
+requires the missing boundary markers, and blocks summary until the learner has
+produced transfer evidence in the transcript.
+
 Hard mode uses longer, more adversarial learner trajectories with apparent
 forgetfulness, skepticism toward the teacher, disinterest, and misconception
 reversion. The blind judge prompt applies stricter caps when the tutor explains
@@ -349,10 +378,26 @@ node prototypes/adaptive-persona-mvp/scripts/replay-parent-stack.js --dialogue-i
 node prototypes/adaptive-persona-mvp/scripts/replay-parent-stack.js --inputs logs/tutor-dialogues/<dialogue_id>.json
 ```
 
-The output compares parent policy actions with prototype policy labels by an
-explicit compatibility map. Treat this as mechanism triage, not final scoring:
-it tells us whether the prototype labels are informative on richer parent
-dialogues before any parent-stack integration is attempted.
+The output reports three layers:
+
+- raw prototype policy compatibility, which asks whether the prototype's
+  internal policy label is acceptable for the parent trigger;
+- parent-compatible mapped action compatibility, which translates prototype
+  state, scenario family, challenge evidence, and policy into the parent action
+  vocabulary before comparison;
+- transition-aware action compatibility, which applies explicit action-family
+  guards over the prior modeled family plus current learner evidence before
+  comparing family trajectories.
+
+Treat these as mechanism triage, not final scoring. The current mapped layer can
+align trigger actions on broader parent replay, and the trajectory-aware mapper
+can improve later-turn family agreement by de-escalating scenario priors after
+new learner evidence appears. Parent-stack integration should still wait until
+the remaining trajectory mismatches are better understood. The HTML and
+Markdown outputs include mismatch tables that group failures by parent action,
+mapped action, count, and representative learner evidence, plus a transition
+metric that checks whether the mapped action-family sequence moves like the
+parent trace sequence.
 
 ## MVP Hypotheses
 

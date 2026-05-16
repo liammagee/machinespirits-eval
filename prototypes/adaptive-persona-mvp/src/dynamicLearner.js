@@ -8,7 +8,7 @@ export function detectTutorMove(message) {
   const text = String(message || '').toLowerCase();
   if (includesAny(text, ['misread', 'missed what', 'reset', 'start over'])) return 'repair';
   if (includesAny(text, ['in your own words', 'teach-back', 'teach back', 'difference between'])) return 'teach_back';
-  if (includesAny(text, ['teacher-student', 'different case', 'transfer', 'apply it', 'another context'])) return 'transfer';
+  if (includesAny(text, ['teacher-student', 'different case', 'transfer', 'apply it', 'another context', 'future bug', 'future output', 'next experiment', 'new survey'])) return 'transfer';
   if (includesAny(text, [
     'same-sized whole',
     'same whole',
@@ -35,8 +35,12 @@ export function detectTutorMove(message) {
     'controlled variables',
     'reproduce',
     'failing input',
+    'smallest input',
+    'first invalid',
     'root cause',
+    'minimal fix',
     'regression test',
+    'test would stop',
     'construct',
     'validity',
     'reliability',
@@ -587,6 +591,17 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
   }
 
   if (hiddenState.type === 'trap_argument_paraphrase_false_mastery') {
+    if (move === 'transfer') {
+      return event({
+        id,
+        kc,
+        learner: "For a different policy quote, I would ask what claim the quote can actually support and what it cannot prove. A single quote can support a perception claim, but not a broad learning-gain claim without stronger data.",
+        outcome: 'correct',
+        affect: 'engaged',
+        stance: 'collaborative',
+        expectedPolicy: 'summarize_and_check',
+      });
+    }
     if (move === 'targeted_repair' || move === 'contrast' || move === 'teach_back') {
       const repaired = move === 'targeted_repair' || turnIndex > 0;
       return event({
@@ -627,7 +642,7 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
     return event({
       id,
       kc,
-      learner: "The warrant is that easier mornings could reduce stress or lateness, which might support learning, but one quote is not enough; a skeptic could ask for class-wide attendance, focus, or grade evidence.",
+      learner: "The warrant is that easier mornings could reduce stress or lateness, which might support learning, but one quote is not enough; a skeptic could ask for class-wide attendance, focus, or grade evidence. In a new policy case I would separate what the quote proves from what stronger data must still show.",
       outcome: 'correct',
       affect: 'engaged',
       stance: 'collaborative',
@@ -636,6 +651,17 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
   }
 
   if (hiddenState.type === 'trap_science_many_variables_false_mastery') {
+    if (move === 'transfer') {
+      return event({
+        id,
+        kc,
+        learner: 'The same fair-test rule transfers: if water or light also changed, I cannot credit fertilizer. In the next experiment I would change only one variable and keep the other conditions fixed.',
+        outcome: 'correct',
+        affect: 'engaged',
+        stance: 'collaborative',
+        expectedPolicy: 'summarize_and_check',
+      });
+    }
     if (move === 'targeted_repair' || move === 'contrast' || move === 'teach_back') {
       const repaired = move === 'targeted_repair' || turnIndex > 0;
       return event({
@@ -676,7 +702,7 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
     return event({
       id,
       kc,
-      learner: 'The changed variable is fertilizer. Water, sunlight, soil, plant type, and starting size stay fixed, and we compare otherwise similar plants with and without fertilizer.',
+      learner: 'The changed variable is fertilizer. Water, sunlight, soil, plant type, and starting size stay fixed, and we compare otherwise similar plants with and without fertilizer. If a future experiment changes light too, the same fair-test rule says we cannot isolate fertilizer.',
       outcome: 'correct',
       affect: 'engaged',
       stance: 'collaborative',
@@ -685,6 +711,17 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
   }
 
   if (hiddenState.type === 'trap_debugging_symptom_mask_false_mastery') {
+    if (move === 'transfer') {
+      return event({
+        id,
+        kc,
+        learner: 'That rule transfers to a future invoice-total bug: for an amount list like [12, undefined, 5], I should reproduce the input, find the first invalid amount or accumulator step, reject or validate invalid amounts before adding, and add a regression that distinguishes invalid data from a real zero total.',
+        outcome: 'correct',
+        affect: 'engaged',
+        stance: 'collaborative',
+        expectedPolicy: 'summarize_and_check',
+      });
+    }
     if (move === 'targeted_repair' || move === 'contrast' || move === 'teach_back') {
       const repaired = move === 'targeted_repair' || turnIndex > 0;
       return event({
@@ -725,7 +762,7 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
     return event({
       id,
       kc,
-      learner: 'The failing input has a missing numeric field, which makes the subtotal NaN before the final total. The minimal fix is to validate or parse that field at input, then add a regression test for the missing-field case.',
+      learner: 'The failing input has a missing numeric field, which makes the subtotal NaN before the final total. The minimal fix is to validate or reject that amount before adding it, then add a regression test for the missing-amount case. If a future invoice total looks fixed only by coercion, I would still trace the first invalid amount or accumulator value.',
       outcome: 'correct',
       affect: 'engaged',
       stance: 'collaborative',
@@ -734,6 +771,17 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
   }
 
   if (hiddenState.type === 'trap_measurement_single_item_false_mastery') {
+    if (move === 'transfer') {
+      return event({
+        id,
+        kc,
+        learner: 'The same construct rule transfers: one direct item can be one indicator, but it is not the whole construct or proof of impact. For a different survey claim I would ask for multiple indicators, bias checks, and a comparison group.',
+        outcome: 'correct',
+        affect: 'engaged',
+        stance: 'collaborative',
+        expectedPolicy: 'summarize_and_check',
+      });
+    }
     if (move === 'targeted_repair' || move === 'contrast' || move === 'teach_back') {
       const repaired = move === 'targeted_repair' || turnIndex > 0;
       return event({
@@ -774,7 +822,7 @@ export function nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turn
     return event({
       id,
       kc,
-      learner: 'Wellbeing is the construct; the happiness item is only one measure. I would add multiple indicators, check reliability or response bias, and compare to a baseline or control group before saying the program caused the improvement.',
+      learner: 'Wellbeing is the construct; the happiness item is only one measure. I would add multiple indicators, check reliability or response bias, and compare to a baseline or control group before saying the program caused the improvement. In a new single-item survey claim I would not treat the item as the whole construct.',
       outcome: 'correct',
       affect: 'engaged',
       stance: 'collaborative',
@@ -920,16 +968,19 @@ export function performOutcomeTask({ scenario, hiddenState, transcript }) {
     scenario.id === 'heldout_argument_warrant_resistant_closed_loop'
     || scenario.id === 'trap_argument_warrant_false_mastery_closed_loop'
   ) {
-    const warrant = includesAny(learnerText, ['warrant', 'because', 'connects', 'support']);
-    const boundary = includesAny(learnerText, ['counterargument', 'boundary', 'skeptic', 'weak evidence', 'not enough']);
-    const evidenceCheck = includesAny(learnerText, ['stronger evidence', 'broader', 'attendance', 'focus', 'grade', 'generalizing']);
-    const supported = warrant && boundary && evidenceCheck;
+    const outcome = evaluateArgumentOutcome({
+      scenario,
+      learnerText,
+      answerText: '',
+      parsedSuccess: true,
+    });
     return {
       prompt: scenario.outcome_task.prompt,
-      learner_answer: supported
-        ? 'The warrant is that easier mornings might reduce stress or lateness, which could support learning. But one student quote is not enough, so I would add a counterargument and check broader attendance, focus, or performance evidence.'
+      learner_answer: outcome.success
+        ? 'The warrant is that easier mornings might reduce stress or lateness, which could support learning. But one student quote is not direct proof, so I would answer the skeptic with a boundary, check broader attendance/focus/performance data, and transfer the rule to any new single-quote policy claim.'
         : 'The quote supports the claim because it says uniforms make mornings easier.',
-      success: supported,
+      success: outcome.success,
+      validation: outcome,
       hidden_type: hiddenState.type,
     };
   }
@@ -938,16 +989,19 @@ export function performOutcomeTask({ scenario, hiddenState, transcript }) {
     scenario.id === 'heldout_science_variable_control_resistant_closed_loop'
     || scenario.id === 'trap_science_variable_control_false_mastery_closed_loop'
   ) {
-    const changed = includesAny(learnerText, ['change only fertilizer', 'changed variable is fertilizer', 'one variable', 'only fertilizer']);
-    const controls = includesAny(learnerText, ['water', 'sunlight', 'soil', 'plant type', 'starting size']);
-    const comparison = includesAny(learnerText, ['otherwise similar', 'with and without', 'compare']);
-    const supported = changed && controls && comparison;
+    const outcome = evaluateScienceOutcome({
+      scenario,
+      learnerText,
+      answerText: '',
+      parsedSuccess: true,
+    });
     return {
       prompt: scenario.outcome_task.prompt,
-      learner_answer: supported
-        ? 'Change only fertilizer, while water, sunlight, soil, plant type, and starting size stay fixed. Compare otherwise similar plants with and without fertilizer to test causation.'
+      learner_answer: outcome.success
+        ? 'Change only fertilizer while water, sunlight, soil, plant type, and starting size stay fixed. The water/light near-miss cannot isolate fertilizer, so I would compare otherwise similar plants with and without fertilizer and transfer that fair-test rule to the next experiment.'
         : 'Give one plant fertilizer, more water, and more sunlight, then see whether it grows more.',
-      success: supported,
+      success: outcome.success,
+      validation: outcome,
       hidden_type: hiddenState.type,
     };
   }
@@ -956,17 +1010,19 @@ export function performOutcomeTask({ scenario, hiddenState, transcript }) {
     scenario.id === 'heldout_programming_debugging_resistant_closed_loop'
     || scenario.id === 'trap_programming_debugging_false_mastery_closed_loop'
   ) {
-    const reproduce = includesAny(learnerText, ['reproduce', 'failing input', 'smallest input']);
-    const trace = includesAny(learnerText, ['root cause', 'trace', 'first invalid', 'intermediate value']);
-    const fix = includesAny(learnerText, ['minimal fix', 'fix that cause', 'validate', 'parse']);
-    const regression = includesAny(learnerText, ['regression test', 'test for']);
-    const supported = reproduce && trace && fix && regression;
+    const outcome = evaluateDebuggingOutcome({
+      scenario,
+      learnerText,
+      answerText: '',
+      parsedSuccess: true,
+    });
     return {
       prompt: scenario.outcome_task.prompt,
-      learner_answer: supported
-        ? 'First reproduce the smallest failing input, then trace where the first invalid intermediate value appears. Fix that root cause directly and add a regression test for that input.'
+      learner_answer: outcome.success
+        ? 'First reproduce the smallest failing input, then trace the first invalid intermediate value. Coercing NaN to 0 only masks the symptom, so I would fix the root cause directly, add a regression test, and transfer the same trace-first rule to future bad-total bugs.'
         : 'I would coerce NaN to 0 at the end so the output is numeric.',
-      success: supported,
+      success: outcome.success,
+      validation: outcome,
       hidden_type: hiddenState.type,
     };
   }
@@ -975,16 +1031,19 @@ export function performOutcomeTask({ scenario, hiddenState, transcript }) {
     scenario.id === 'heldout_social_measurement_resistant_closed_loop'
     || scenario.id === 'trap_social_measurement_false_mastery_closed_loop'
   ) {
-    const construct = includesAny(learnerText, ['construct', 'wellbeing']);
-    const checks = includesAny(learnerText, ['multiple indicators', 'validity', 'reliability', 'response bias']);
-    const comparison = includesAny(learnerText, ['control group', 'baseline', 'comparison', 'pre/post']);
-    const supported = construct && checks && comparison;
+    const outcome = evaluateMeasurementOutcome({
+      scenario,
+      learnerText,
+      answerText: '',
+      parsedSuccess: true,
+    });
     return {
       prompt: scenario.outcome_task.prompt,
-      learner_answer: supported
-        ? 'Wellbeing is the construct, and one happiness item is only one measure. I would use multiple indicators plus validity, reliability, or response-bias checks, then compare with a baseline or control group before claiming impact.'
+      learner_answer: outcome.success
+        ? 'Wellbeing is the construct, and one happiness item is only one measure. I would reject the claim that the direct item is enough, check multiple indicators plus validity/reliability/response bias, compare with a baseline or control group, and transfer that construct/measure rule to a new single-item claim.'
         : 'The program worked because the happiness survey score went up.',
-      success: supported,
+      success: outcome.success,
+      validation: outcome,
       hidden_type: hiddenState.type,
     };
   }
@@ -994,6 +1053,243 @@ export function performOutcomeTask({ scenario, hiddenState, transcript }) {
     learner_answer: 'No outcome task simulator configured.',
     success: false,
     hidden_type: hiddenState.type,
+  };
+}
+
+export function validateOutcomeTask({ scenario, transcript, outcome }) {
+  if (!scenario?.challenge_profile?.hidden_state_trap) {
+    return {
+      applicable: false,
+      success: Boolean(outcome?.success),
+      checks: {},
+      reason: 'No trap-specific validator applied.',
+    };
+  }
+  const learnerText = transcript
+    .filter((m) => m.role === 'learner')
+    .map((m) => m.content)
+    .join('\n')
+    .toLowerCase();
+  const answerText = String(outcome?.learner_answer || '').toLowerCase();
+  if (scenario.id === 'trap_argument_warrant_false_mastery_closed_loop') {
+    return evaluateArgumentOutcome({ scenario, learnerText, answerText, parsedSuccess: outcome?.success });
+  }
+  if (scenario.id === 'trap_science_variable_control_false_mastery_closed_loop') {
+    return evaluateScienceOutcome({ scenario, learnerText, answerText, parsedSuccess: outcome?.success });
+  }
+  if (scenario.id === 'trap_programming_debugging_false_mastery_closed_loop') {
+    return evaluateDebuggingOutcome({ scenario, learnerText, answerText, parsedSuccess: outcome?.success });
+  }
+  if (scenario.id === 'trap_social_measurement_false_mastery_closed_loop') {
+    return evaluateMeasurementOutcome({ scenario, learnerText, answerText, parsedSuccess: outcome?.success });
+  }
+  return {
+    applicable: false,
+    success: Boolean(outcome?.success),
+    checks: {},
+    reason: 'No matching trap validator.',
+  };
+}
+
+function evaluateArgumentOutcome({ scenario, learnerText, answerText, parsedSuccess }) {
+  const combined = `${learnerText}\n${answerText}`;
+  const checks = {
+    parsedSuccess: Boolean(parsedSuccess),
+    warrant: includesAny(combined, ['warrant', 'because', 'connects', 'support']),
+    boundary: includesAny(combined, ['counterargument', 'boundary', 'skeptic', 'weak evidence', 'not enough', 'cannot prove', 'could not prove']),
+    strongerEvidence: includesAny(combined, ['stronger evidence', 'broader', 'attendance', 'focus', 'grade', 'performance', 'generalizing']),
+    skepticHandled: includesAny(combined, ['skeptic', 'not direct proof', 'not enough', 'one quote is not', 'cannot prove']),
+    transfer: scenario.challenge_profile?.hidden_state_trap
+      ? includesAny(combined, ['different policy', 'new policy', 'school-uniform', 'school uniform', 'uniform', 'single quote', 'different school-policy', 'transfer'])
+      : true,
+    transcriptTransfer: scenario.challenge_profile?.hidden_state_trap
+      ? includesAny(learnerText, ['different policy', 'new policy', 'school-uniform', 'school uniform', 'uniform', 'single quote', 'different school-policy', 'transfer'])
+      : true,
+  };
+  return outcomeValidation(checks, [
+    'warrant',
+    'boundary',
+    'strongerEvidence',
+    'skepticHandled',
+    'transfer',
+    'transcriptTransfer',
+  ]);
+}
+
+function evaluateScienceOutcome({ scenario, learnerText, answerText, parsedSuccess }) {
+  const combined = `${learnerText}\n${answerText}`;
+  const transferDenied = includesAny(combined, [
+    'not sure how to transfer',
+    "don't know how to transfer",
+    'do not know how to transfer',
+    'cannot transfer',
+    'beyond repeating the same setup',
+  ]);
+  const changed = includesAny(combined, [
+    'change only fertilizer',
+    'change only the fertilizer',
+    'change only whether',
+    'changed variable is fertilizer',
+    'independent variable is fertilizer',
+    'fertilizer type',
+    'independent variable should just be whether',
+    'only difference is fertilizer',
+    'one variable',
+    'only fertilizer',
+    'test just the fertilizer',
+  ]);
+  const transferredInTranscript = includesAny(learnerText, [
+    'next experiment',
+    'future experiment',
+    'team a',
+    'team b',
+    'fertilizer type',
+    'battery',
+    'brighter bulb',
+    'room temperature',
+    'same fair-test rule',
+    'transfers',
+    'independent variable should just be whether',
+    'not extra water too',
+    'otherwise similar conditions',
+    'different soil',
+    'flawed setup',
+    'fertilizer group',
+    'different watering schedule',
+  ]);
+  const checks = {
+    parsedSuccess: Boolean(parsedSuccess),
+    changed,
+    controls: includesAny(combined, ['water', 'sunlight', 'soil', 'plant type', 'starting size']),
+    comparison: includesAny(combined, ['otherwise similar', 'with and without', 'compare']),
+    nearMissRejected: includesAny(combined, ['water or light also changed', 'water/light', 'cannot isolate', 'also changed', 'near-miss']),
+    transfer: scenario.challenge_profile?.hidden_state_trap
+      ? !transferDenied && includesAny(combined, ['next experiment', 'future experiment', 'team a', 'team b', 'fertilizer type', 'battery', 'brighter bulb', 'room temperature', 'same fair-test rule', 'transfers', 'different soil', 'flawed setup', 'different watering schedule'])
+      : true,
+    transcriptTransfer: scenario.challenge_profile?.hidden_state_trap
+      ? transferredInTranscript
+      : true,
+  };
+  return outcomeValidation(checks, [
+    'changed',
+    'controls',
+    'comparison',
+    'nearMissRejected',
+    'transfer',
+    'transcriptTransfer',
+  ]);
+}
+
+function evaluateDebuggingOutcome({ scenario, learnerText, answerText, parsedSuccess }) {
+  const combined = `${learnerText}\n${answerText}`;
+  const totalTransfer = programmingDebuggingTransferObserved(combined);
+  const transcriptTotalTransfer = programmingDebuggingTransferObserved(learnerText);
+  const checks = {
+    parsedSuccess: Boolean(parsedSuccess),
+    reproduce: includesAny(combined, ['reproduce', 'failing input', 'smallest input']),
+    trace: includesAny(combined, ['root cause', 'trace', 'first invalid', 'intermediate value']),
+    fix: includesAny(combined, ['minimal fix', 'fix that cause', 'fix upstream', 'upstream rule', 'skip empty rows', 'no-data', 'validate', 'parse', 'reject invalid']),
+    regression: includesAny(combined, ['regression test', 'regression assertion', 'regression that', 'regression tests', 'test for']),
+    rejectsMask: includesAny(combined, ['coercing nan to 0', 'coerce nan to 0', 'coercion', 'mask', 'masks the symptom', 'bad output']),
+    transfer: scenario.challenge_profile?.hidden_state_trap
+      ? totalTransfer
+      : true,
+    transcriptTransfer: scenario.challenge_profile?.hidden_state_trap
+      ? transcriptTotalTransfer
+      : true,
+  };
+  return outcomeValidation(checks, [
+    'reproduce',
+    'trace',
+    'fix',
+    'regression',
+    'rejectsMask',
+    'transfer',
+    'transcriptTransfer',
+  ]);
+}
+
+function programmingDebuggingTransferObserved(text) {
+  const totalContext = includesAny(text, [
+    'bad-total bug',
+    'order total',
+    'invoice total',
+    'cart total',
+    'payment total',
+    'total field',
+    'total-returning function',
+    'function returning nan for a total',
+    'amount list',
+    'amounts [',
+    'running total',
+    'total +=',
+    'accumulator',
+  ]);
+  const invalidInputContext = includesAny(text, [
+    'undefined',
+    'null amount',
+    'null value',
+    'empty string',
+    'missing amount',
+    'missing numeric',
+    'invalid amount',
+    'invalid amounts',
+    'invalid data',
+    'bad data',
+    'parsed empty',
+    'number(amount)',
+    'reject invalid',
+    'validate or reject',
+  ]);
+  const averageOnly = includesAny(text, ['average', 'scores array', 'calculateaveragescore'])
+    && !includesAny(text, ['order total', 'invoice total', 'cart total', 'payment total', 'amount list', 'amounts [']);
+  const validZeroAsInvalid = includesAny(text, [
+    'zero total is the first invalid',
+    'total = 0 is the first invalid',
+    'first invalid intermediate = `total = 0`',
+    'first invalid intermediate = total = 0',
+    'first invalid step: total = 0',
+  ]);
+  return totalContext && invalidInputContext && !averageOnly && !validZeroAsInvalid;
+}
+
+function evaluateMeasurementOutcome({ scenario, learnerText, answerText, parsedSuccess }) {
+  const combined = `${learnerText}\n${answerText}`;
+  const checks = {
+    parsedSuccess: Boolean(parsedSuccess),
+    construct: includesAny(combined, ['construct', 'wellbeing']),
+    checks: includesAny(combined, ['multiple indicators', 'validity', 'valid or reliable', 'reliability', 'response bias']),
+    comparison: includesAny(combined, ['control group', 'baseline', 'comparison', 'pre/post']),
+    rejectsSingleItem: includesAny(combined, ['one direct item is enough', 'one item is not enough', 'single item', 'only one measure', 'not the whole construct', 'not treat the item']),
+    transfer: scenario.challenge_profile?.hidden_state_trap
+      ? includesAny(combined, ['different single-item', 'new single-item', 'new survey', 'course-belonging', 'belonging item', 'belong in the course', 'belonging construct', 'wellbeing-program case', 'wellbeing program case', 'program group', 'same construct rule', 'transfer'])
+      : true,
+    transcriptTransfer: scenario.challenge_profile?.hidden_state_trap
+      ? includesAny(learnerText, ['different single-item', 'new single-item', 'new survey', 'course-belonging', 'belonging item', 'belong in the course', 'belonging construct', 'wellbeing-program case', 'wellbeing program case', 'program group', 'same construct rule', 'transfer'])
+      : true,
+  };
+  return outcomeValidation(checks, [
+    'construct',
+    'checks',
+    'comparison',
+    'rejectsSingleItem',
+    'transfer',
+    'transcriptTransfer',
+  ]);
+}
+
+function outcomeValidation(checks, required) {
+  // `parsedSuccess` is diagnostic only: live LLM learner proxies can mis-set
+  // their raw success flag even when the delayed-transfer evidence is present.
+  const missing = required.filter((name) => !checks[name]);
+  return {
+    applicable: true,
+    success: missing.length === 0,
+    checks,
+    missing,
+    reason: missing.length === 0
+      ? 'Trap outcome passed all delayed-transfer checks.'
+      : `Trap outcome missing: ${missing.join(', ')}`,
   };
 }
 

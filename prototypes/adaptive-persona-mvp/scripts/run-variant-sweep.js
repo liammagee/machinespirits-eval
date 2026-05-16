@@ -2,8 +2,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { annotateReflexiveBranches } from '../src/deepReflexiveScoring.js';
-import { runRubricComparison } from '../src/rubricComparison.js';
+import { loadAssessmentScenarios } from '../src/assessmentHarness.js';
+import {
+  annotateReflexiveBranches,
+  estimateDeepReflexiveProgressUnits,
+} from '../src/deepReflexiveScoring.js';
+import {
+  estimateRubricComparisonProgressUnits,
+  runRubricComparison,
+} from '../src/rubricComparison.js';
+import { createPercentageMonitor } from '../src/progressMonitor.js';
 import {
   buildVariantSweepReport,
   DEFAULT_DISCIPLINARY_SCENARIOS,
@@ -55,8 +63,26 @@ const dryRun = hasFlag('dry-run');
 const keepPrompts = hasFlag('keep-prompts') || dryRun;
 const permutations = Number(argValue('permutations') || 10_000);
 const deepReflexive = hasFlag('deep-reflexive');
+const progressEnabled = !hasFlag('no-progress');
 
 fs.mkdirSync(outDir, { recursive: true });
+
+const selectedScenarios = loadAssessmentScenarios({ scenarioIds });
+const unitsPerRepeat = estimateRubricComparisonProgressUnits({
+  scenarioIds,
+  conditions,
+  learnerMode,
+}) + (deepReflexive
+  ? estimateDeepReflexiveProgressUnits({
+      scenarioCount: selectedScenarios.length,
+      conditions,
+    })
+  : 0);
+const progress = createPercentageMonitor({
+  label: 'variant-sweep',
+  total: repeats * unitsPerRepeat,
+  enabled: progressEnabled,
+});
 
 const reports = [];
 for (let repeat = 0; repeat < repeats; repeat++) {
@@ -71,6 +97,7 @@ for (let repeat = 0; repeat < repeats; repeat++) {
     timeoutMs,
     dryRun,
     keepPrompts,
+    onProgress: progress.event,
   });
   if (deepReflexive) {
     await annotateReflexiveBranches(report, {
@@ -78,6 +105,7 @@ for (let repeat = 0; repeat < repeats; repeat++) {
       timeoutMs,
       dryRun,
       keepPrompts,
+      onProgress: progress.event,
     });
   }
   report.repeat = repeat;

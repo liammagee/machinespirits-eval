@@ -4,56 +4,20 @@ import {
   initialChallengeState,
   updateChallengeState,
 } from './challengeState.js';
+import {
+  expectedParentActionMatch,
+  expectedPrototypePolicyMatch,
+  mapPrototypeTurnToParentAction,
+  normalizeExpected,
+  parentActionFamilyAgreement,
+  prototypePolicyFamilyAgreement,
+} from './parentActionMapping.js';
+import {
+  applyParentActionTransitionModel,
+  transitionFamily,
+} from './parentTransitionModel.js';
 
 const DEFAULT_PARENT_KC = 'parent_adaptive_trap';
-
-const PARENT_TO_PROTOTYPE_ACCEPTABLE = Object.freeze({
-  ask_diagnostic_question: ['diagnostic_probe', 'teach_back', 'contrastive_probe'],
-  mirror_and_extend: ['minimal_hint', 'contrastive_probe', 'transfer_challenge'],
-  scope_test: ['contrastive_probe', 'minimal_hint', 'transfer_challenge'],
-  repair_misrecognition: ['repair_misrecognition'],
-  give_worked_example: ['faded_example'],
-  lower_cognitive_load: ['affective_repair', 'minimal_hint', 'faded_example'],
-  provide_hint: ['minimal_hint', 'faded_example'],
-  request_elaboration: ['diagnostic_probe', 'teach_back', 'contrastive_probe'],
-  acknowledge_and_redirect: ['affective_repair', 'minimal_hint'],
-  name_the_disagreement: ['contrastive_probe', 'minimal_hint'],
-  withhold_answer: ['productive_struggle_hold', 'diagnostic_probe', 'teach_back'],
-  summarize_and_check: ['summarize_and_check', 'productive_struggle_hold'],
-  pose_counterexample: ['contrastive_probe', 'minimal_hint'],
-  invite_objection: ['diagnostic_probe', 'contrastive_probe'],
-});
-
-const PARENT_POLICY_FAMILY = Object.freeze({
-  ask_diagnostic_question: 'diagnostic',
-  request_elaboration: 'diagnostic',
-  invite_objection: 'diagnostic',
-  mirror_and_extend: 'substantive',
-  scope_test: 'substantive',
-  name_the_disagreement: 'substantive',
-  pose_counterexample: 'substantive',
-  repair_misrecognition: 'repair',
-  acknowledge_and_redirect: 'repair',
-  lower_cognitive_load: 'scaffold',
-  provide_hint: 'scaffold',
-  give_worked_example: 'scaffold',
-  withhold_answer: 'productive_struggle',
-  summarize_and_check: 'consolidate',
-});
-
-const PROTOTYPE_POLICY_FAMILY = Object.freeze({
-  diagnostic_probe: 'diagnostic',
-  teach_back: 'diagnostic',
-  contrastive_probe: 'substantive',
-  minimal_hint: 'scaffold',
-  faded_example: 'scaffold',
-  repair_misrecognition: 'repair',
-  affective_repair: 'repair',
-  misconception_repair: 'repair',
-  transfer_challenge: 'transfer',
-  summarize_and_check: 'consolidate',
-  productive_struggle_hold: 'productive_struggle',
-});
 
 export function replayParentTrace({
   trace,
@@ -107,12 +71,32 @@ export function buildParentReplayReport({
   const triggerRows = branchSummaries
     .map(({ branch }) => branch.triggerAlignment)
     .filter(Boolean);
-  const familyAgreementRows = branchSummaries
-    .flatMap(({ branch }) => branch.stateTrace)
-    .filter((turn) => turn.parentPolicyAction);
+  const labelledTurnRows = branchSummaries
+    .flatMap(({ replay, branch }) => branch.stateTrace.map((turn) => ({
+      replay,
+      branch,
+      turn,
+    })))
+    .filter(({ turn }) => turn.parentPolicyAction);
+  const familyAgreementRows = labelledTurnRows.map(({ turn }) => turn);
+  const mappedFamilyAgreementRows = familyAgreementRows
+    .filter((turn) => turn.parentCompatibleAction?.action);
+  const mappedFamilyAgreementTurnRows = labelledTurnRows
+    .filter(({ turn }) => turn.parentCompatibleAction?.action);
+  const transitionFamilyAgreementRows = familyAgreementRows
+    .filter((turn) => turn.parentTransitionAction?.action);
+  const transitionFamilyAgreementTurnRows = labelledTurnRows
+    .filter(({ turn }) => turn.parentTransitionAction?.action);
+  const nonTriggerFamilyAgreementTurnRows = labelledTurnRows
+    .filter(({ branch, turn }) => branch.triggerAlignment?.triggerTurn !== turn.turnIndex);
+  const nonTriggerMappedFamilyAgreementTurnRows = mappedFamilyAgreementTurnRows
+    .filter(({ branch, turn }) => branch.triggerAlignment?.triggerTurn !== turn.turnIndex);
+  const nonTriggerTransitionFamilyAgreementTurnRows = transitionFamilyAgreementTurnRows
+    .filter(({ branch, turn }) => branch.triggerAlignment?.triggerTurn !== turn.turnIndex);
   const challengeTurns = branchSummaries
     .flatMap(({ branch }) => branch.stateTrace)
     .filter((turn) => turn.challengeState?.level && turn.challengeState.level !== 'none');
+  const actionTransitions = summarizeActionTransitions(branchSummaries);
 
   return {
     generatedAt: new Date().toISOString(),
@@ -123,10 +107,27 @@ export function buildParentReplayReport({
       count: triggerRows.length,
       parentExactRate: rate(triggerRows, (row) => row.parentExactMatch),
       prototypeAcceptableRate: rate(triggerRows, (row) => row.prototypeAcceptableMatch),
+      parentCompatibleRate: rate(triggerRows, (row) => row.parentCompatibleExpectedMatch),
       bothAlignedRate: rate(triggerRows, (row) => row.parentExactMatch && row.prototypeAcceptableMatch),
     },
     familyAgreement: {
       count: familyAgreementRows.length,
+      nonTriggerCount: nonTriggerFamilyAgreementTurnRows.length,
+      prototypeRate: rate(familyAgreementRows, (row) => row.policyFamilyAgreement),
+      parentCompatibleRate: rate(mappedFamilyAgreementRows, (row) => row.parentCompatibleFamilyAgreement),
+      transitionAwareRate: rate(transitionFamilyAgreementRows, (row) => row.parentTransitionFamilyAgreement),
+      nonTriggerPrototypeRate: rate(
+        nonTriggerFamilyAgreementTurnRows,
+        ({ turn }) => turn.policyFamilyAgreement,
+      ),
+      nonTriggerParentCompatibleRate: rate(
+        nonTriggerMappedFamilyAgreementTurnRows,
+        ({ turn }) => turn.parentCompatibleFamilyAgreement,
+      ),
+      nonTriggerTransitionAwareRate: rate(
+        nonTriggerTransitionFamilyAgreementTurnRows,
+        ({ turn }) => turn.parentTransitionFamilyAgreement,
+      ),
       rate: rate(familyAgreementRows, (row) => row.policyFamilyAgreement),
     },
     challengeState: {
@@ -138,6 +139,12 @@ export function buildParentReplayReport({
         branch.stateTrace.some((turn) => turn.challengeState?.level === 'escalated')).length,
       resolvedBranches: branchSummaries.filter(({ branch }) =>
         branch.stateTrace.some((turn) => turn.challengeState?.level === 'resolved')).length,
+    },
+    actionTransitions,
+    mismatchSummary: {
+      triggerMismatches: summarizeTriggerMismatches(branchSummaries),
+      parentCompatibleFamilyMismatches: summarizeActionPairMismatches(mappedFamilyAgreementTurnRows),
+      transitionFamilyMismatches: summarizeTransitionActionMismatches(transitionFamilyAgreementTurnRows),
     },
     replays: rows,
   };
@@ -157,19 +164,70 @@ export function renderParentReplayMarkdown(report) {
     '|---|---:|---:|',
     `| Parent exact trigger match | ${report.triggerAlignment.count} | ${formatRate(report.triggerAlignment.parentExactRate)} |`,
     `| Prototype acceptable trigger match | ${report.triggerAlignment.count} | ${formatRate(report.triggerAlignment.prototypeAcceptableRate)} |`,
-    `| Parent/prototype family agreement | ${report.familyAgreement.count} | ${formatRate(report.familyAgreement.rate)} |`,
+    `| Parent-compatible trigger match | ${report.triggerAlignment.count} | ${formatRate(report.triggerAlignment.parentCompatibleRate)} |`,
+    `| Raw prototype/parent family agreement | ${report.familyAgreement.count} | ${formatRate(report.familyAgreement.prototypeRate ?? report.familyAgreement.rate)} |`,
+    `| Parent-compatible family agreement | ${report.familyAgreement.count} | ${formatRate(report.familyAgreement.parentCompatibleRate)} |`,
+    `| Transition-aware family agreement | ${report.familyAgreement.count} | ${formatRate(report.familyAgreement.transitionAwareRate)} |`,
+    `| Raw non-trigger family agreement | ${report.familyAgreement.nonTriggerCount} | ${formatRate(report.familyAgreement.nonTriggerPrototypeRate)} |`,
+    `| Parent-compatible non-trigger family agreement | ${report.familyAgreement.nonTriggerCount} | ${formatRate(report.familyAgreement.nonTriggerParentCompatibleRate)} |`,
+    `| Transition-aware non-trigger family agreement | ${report.familyAgreement.nonTriggerCount} | ${formatRate(report.familyAgreement.nonTriggerTransitionAwareRate)} |`,
+    `| Parent-compatible family transition agreement | ${report.actionTransitions.count} | ${formatRate(report.actionTransitions.parentCompatibleRate)} |`,
+    `| Transition-aware family transition agreement | ${report.actionTransitions.count} | ${formatRate(report.actionTransitions.transitionAwareRate)} |`,
     `| Challenge turns | ${report.challengeState.challengeTurnCount} | ${formatRate(report.challengeState.activeOrEscalatedRate)} |`,
     '',
     '## Replay Rows',
     '',
-    '| Scenario | Branch | Expected | Parent Action | Prototype Policy | Match | Challenge Levels |',
-    '|---|---|---|---|---|---|---|',
+    '| Scenario | Branch | Expected | Parent Action | Prototype Policy | Mapped Action | Transition Action | Match | Challenge Levels |',
+    '|---|---|---|---|---|---|---|---|---|',
   ];
   for (const replay of report.replays) {
     for (const branch of [replay.original, replay.counterfactual].filter(Boolean)) {
       const align = branch.triggerAlignment || {};
-      lines.push(`| ${escapePipe(replay.scenario.id)} | ${branch.branchName} | ${escapePipe(formatExpected(align.expected))} | ${escapePipe(align.parentPolicyAction || '')} | ${escapePipe(align.prototypePolicy || '')} | ${align.prototypeAcceptableMatch ? 'prototype' : align.parentExactMatch ? 'parent-only' : 'no'} | ${escapePipe(branch.challengeLevels.join(' -> '))} |`);
+      const match = align.parentCompatibleExpectedMatch
+        ? 'mapped'
+        : align.prototypeAcceptableMatch
+          ? 'prototype'
+          : align.parentExactMatch
+            ? 'parent-only'
+            : 'no';
+      lines.push(`| ${escapePipe(replay.scenario.id)} | ${branch.branchName} | ${escapePipe(formatExpected(align.expected))} | ${escapePipe(align.parentPolicyAction || '')} | ${escapePipe(align.prototypePolicy || '')} | ${escapePipe(align.parentCompatibleAction || '')} | ${escapePipe(align.parentTransitionAction || '')} | ${match} | ${escapePipe(branch.challengeLevels.join(' -> '))} |`);
     }
+  }
+  lines.push('');
+  lines.push('## Parent-Compatible Family Mismatches');
+  lines.push('');
+  lines.push('| Parent Action | Mapped Action | Count | Example |');
+  lines.push('|---|---|---:|---|');
+  for (const mismatch of report.mismatchSummary.parentCompatibleFamilyMismatches) {
+    const example = mismatch.examples[0];
+    lines.push(`| ${escapePipe(mismatch.parentAction)} | ${escapePipe(mismatch.mappedAction)} | ${mismatch.count} | ${escapePipe(formatMismatchExample(example))} |`);
+  }
+  if (report.mismatchSummary.parentCompatibleFamilyMismatches.length === 0) {
+    lines.push('| none | none | 0 |  |');
+  }
+  lines.push('');
+  lines.push('## Trigger Mismatches');
+  lines.push('');
+  lines.push('| Expected | Mapped Action | Count | Example |');
+  lines.push('|---|---|---:|---|');
+  for (const mismatch of report.mismatchSummary.triggerMismatches) {
+    const example = mismatch.examples[0];
+    lines.push(`| ${escapePipe(formatExpected(mismatch.expected))} | ${escapePipe(mismatch.mappedAction)} | ${mismatch.count} | ${escapePipe(formatMismatchExample(example))} |`);
+  }
+  if (report.mismatchSummary.triggerMismatches.length === 0) {
+    lines.push('| none | none | 0 |  |');
+  }
+  lines.push('');
+  lines.push('## Transition-Aware Family Mismatches');
+  lines.push('');
+  lines.push('| Parent Action | Transition Action | Count | Example |');
+  lines.push('|---|---|---:|---|');
+  for (const mismatch of report.mismatchSummary.transitionFamilyMismatches) {
+    const example = mismatch.examples[0];
+    lines.push(`| ${escapePipe(mismatch.parentAction)} | ${escapePipe(mismatch.transitionAction)} | ${mismatch.count} | ${escapePipe(formatMismatchExample(example))} |`);
+  }
+  if (report.mismatchSummary.transitionFamilyMismatches.length === 0) {
+    lines.push('| none | none | 0 |  |');
   }
   lines.push('');
   return `${lines.join('\n')}\n`;
@@ -216,8 +274,16 @@ export function renderParentReplayHtml(report) {
       <tbody>
         <tr><td>Parent exact trigger match</td><td>${report.triggerAlignment.count}</td><td>${formatRate(report.triggerAlignment.parentExactRate)}</td></tr>
         <tr><td>Prototype acceptable trigger match</td><td>${report.triggerAlignment.count}</td><td>${formatRate(report.triggerAlignment.prototypeAcceptableRate)}</td></tr>
+        <tr><td>Parent-compatible trigger match</td><td>${report.triggerAlignment.count}</td><td>${formatRate(report.triggerAlignment.parentCompatibleRate)}</td></tr>
         <tr><td>Both aligned at trigger</td><td>${report.triggerAlignment.count}</td><td>${formatRate(report.triggerAlignment.bothAlignedRate)}</td></tr>
-        <tr><td>Parent/prototype family agreement</td><td>${report.familyAgreement.count}</td><td>${formatRate(report.familyAgreement.rate)}</td></tr>
+        <tr><td>Raw prototype/parent family agreement</td><td>${report.familyAgreement.count}</td><td>${formatRate(report.familyAgreement.prototypeRate ?? report.familyAgreement.rate)}</td></tr>
+        <tr><td>Parent-compatible family agreement</td><td>${report.familyAgreement.count}</td><td>${formatRate(report.familyAgreement.parentCompatibleRate)}</td></tr>
+        <tr><td>Transition-aware family agreement</td><td>${report.familyAgreement.count}</td><td>${formatRate(report.familyAgreement.transitionAwareRate)}</td></tr>
+        <tr><td>Raw non-trigger family agreement</td><td>${report.familyAgreement.nonTriggerCount}</td><td>${formatRate(report.familyAgreement.nonTriggerPrototypeRate)}</td></tr>
+        <tr><td>Parent-compatible non-trigger family agreement</td><td>${report.familyAgreement.nonTriggerCount}</td><td>${formatRate(report.familyAgreement.nonTriggerParentCompatibleRate)}</td></tr>
+        <tr><td>Transition-aware non-trigger family agreement</td><td>${report.familyAgreement.nonTriggerCount}</td><td>${formatRate(report.familyAgreement.nonTriggerTransitionAwareRate)}</td></tr>
+        <tr><td>Parent-compatible family transition agreement</td><td>${report.actionTransitions.count}</td><td>${formatRate(report.actionTransitions.parentCompatibleRate)}</td></tr>
+        <tr><td>Transition-aware family transition agreement</td><td>${report.actionTransitions.count}</td><td>${formatRate(report.actionTransitions.transitionAwareRate)}</td></tr>
         <tr><td>Challenge turn density</td><td>${report.challengeState.challengeTurnCount}</td><td>${formatRate(report.challengeState.activeOrEscalatedRate)}</td></tr>
       </tbody>
     </table>
@@ -232,6 +298,8 @@ export function renderParentReplayHtml(report) {
           <th>Expected</th>
           <th>Parent Trigger Action</th>
           <th>Prototype Trigger Policy</th>
+          <th>Parent-Compatible Action</th>
+          <th>Transition-Aware Action</th>
           <th>Alignment</th>
           <th>Challenge Levels</th>
         </tr>
@@ -246,10 +314,51 @@ export function renderParentReplayHtml(report) {
             <td>${escapeHtml(formatExpected(align.expected))}</td>
             <td><code>${escapeHtml(align.parentPolicyAction || '')}</code></td>
             <td><code>${escapeHtml(align.prototypePolicy || '')}</code></td>
-            <td class="${align.prototypeAcceptableMatch ? 'good' : 'bad'}">${align.prototypeAcceptableMatch ? 'prototype match' : align.parentExactMatch ? 'parent only' : 'no match'}</td>
+            <td><code>${escapeHtml(align.parentCompatibleAction || '')}</code></td>
+            <td><code>${escapeHtml(align.parentTransitionAction || '')}</code></td>
+            <td class="${align.parentCompatibleExpectedMatch ? 'good' : 'bad'}">${align.parentCompatibleExpectedMatch ? 'mapped match' : align.prototypeAcceptableMatch ? 'prototype match' : align.parentExactMatch ? 'parent only' : 'no match'}</td>
             <td>${escapeHtml(branch.challengeLevels.join(' -> '))}</td>
           </tr>`;
         })).join('')}
+      </tbody>
+    </table>
+
+    <h2>Parent-Compatible Family Mismatches</h2>
+    <table>
+      <thead><tr><th>Parent Action</th><th>Mapped Action</th><th>Count</th><th>Example</th></tr></thead>
+      <tbody>
+        ${renderMismatchRows(report.mismatchSummary.parentCompatibleFamilyMismatches, (mismatch) => `
+          <td><code>${escapeHtml(mismatch.parentAction)}</code></td>
+          <td><code>${escapeHtml(mismatch.mappedAction)}</code></td>
+          <td>${mismatch.count}</td>
+          <td>${escapeHtml(formatMismatchExample(mismatch.examples[0]))}</td>
+        `)}
+      </tbody>
+    </table>
+
+    <h2>Trigger Mismatches</h2>
+    <table>
+      <thead><tr><th>Expected</th><th>Mapped Action</th><th>Count</th><th>Example</th></tr></thead>
+      <tbody>
+        ${renderMismatchRows(report.mismatchSummary.triggerMismatches, (mismatch) => `
+          <td><code>${escapeHtml(formatExpected(mismatch.expected))}</code></td>
+          <td><code>${escapeHtml(mismatch.mappedAction)}</code></td>
+          <td>${mismatch.count}</td>
+          <td>${escapeHtml(formatMismatchExample(mismatch.examples[0]))}</td>
+        `)}
+      </tbody>
+    </table>
+
+    <h2>Transition-Aware Family Mismatches</h2>
+    <table>
+      <thead><tr><th>Parent Action</th><th>Transition Action</th><th>Count</th><th>Example</th></tr></thead>
+      <tbody>
+        ${renderMismatchRows(report.mismatchSummary.transitionFamilyMismatches, (mismatch) => `
+          <td><code>${escapeHtml(mismatch.parentAction)}</code></td>
+          <td><code>${escapeHtml(mismatch.transitionAction)}</code></td>
+          <td>${mismatch.count}</td>
+          <td>${escapeHtml(formatMismatchExample(mismatch.examples[0]))}</td>
+        `)}
       </tbody>
     </table>
   </main>
@@ -262,7 +371,7 @@ function replayBranch({ branchName, branch, scenario, parentScenario }) {
   const parentTurns = Array.isArray(branch?.perTurn) ? branch.perTurn : [];
   let mastery = initializeMastery(scenario.kcs);
   let challengeState = initialChallengeState(scenario);
-  const stateTrace = [];
+  let stateTrace = [];
   let learnerTurnIndex = 0;
   for (let transcriptIndex = 0; transcriptIndex < dialogue.length; transcriptIndex++) {
     const message = dialogue[transcriptIndex];
@@ -291,7 +400,7 @@ function replayBranch({ branchName, branch, scenario, parentScenario }) {
       challengeState,
     });
     const parentPolicyAction = parentTurn?.tutorInternal?.policyAction || '';
-    stateTrace.push({
+    const stateTurn = {
       turnIndex: learnerTurnIndex,
       transcriptIndex,
       learner: message.content,
@@ -304,10 +413,23 @@ function replayBranch({ branchName, branch, scenario, parentScenario }) {
       masteryAfter: structuredClone(mastery),
       parentPolicyAction,
       parentLearnerProfile: parentTurn?.learnerProfile || null,
-      policyFamilyAgreement: policyFamilyAgreement(parentPolicyAction, policy.selectedPolicy),
+      policyFamilyAgreement: prototypePolicyFamilyAgreement(parentPolicyAction, policy.selectedPolicy),
+    };
+    const parentCompatibleAction = mapPrototypeTurnToParentAction({
+      turn: stateTurn,
+      scenario,
+    });
+    stateTrace.push({
+      ...stateTurn,
+      parentCompatibleAction,
+      parentCompatibleFamilyAgreement: parentActionFamilyAgreement(
+        parentPolicyAction,
+        parentCompatibleAction.action,
+      ),
     });
     learnerTurnIndex += 1;
   }
+  stateTrace = applyParentActionTransitionModel({ stateTrace, scenario });
   const triggerTurn = Number.isInteger(parentScenario.hidden?.triggerTurn)
     ? parentScenario.hidden.triggerTurn
     : Number.isInteger(parentScenario.hidden?.trigger_turn)
@@ -321,8 +443,20 @@ function replayBranch({ branchName, branch, scenario, parentScenario }) {
     expected: parentScenario.expectedStrategyShift ?? null,
     parentPolicyAction: triggerTrace.parentPolicyAction || null,
     prototypePolicy: triggerTrace.policy.selectedPolicy,
-    parentExactMatch: expectedParentMatch(triggerTrace.parentPolicyAction, parentScenario.expectedStrategyShift),
-    prototypeAcceptableMatch: expectedPrototypeMatch(triggerTrace.policy.selectedPolicy, parentScenario.expectedStrategyShift),
+    parentCompatibleAction: triggerTrace.parentCompatibleAction?.action || null,
+    parentCompatibleReason: triggerTrace.parentCompatibleAction?.reason || '',
+    parentTransitionAction: triggerTrace.parentTransitionAction?.action || null,
+    parentTransitionReason: triggerTrace.parentTransitionAction?.reason || '',
+    parentExactMatch: expectedParentActionMatch(triggerTrace.parentPolicyAction, parentScenario.expectedStrategyShift),
+    prototypeAcceptableMatch: expectedPrototypePolicyMatch(triggerTrace.policy.selectedPolicy, parentScenario.expectedStrategyShift),
+    parentCompatibleExpectedMatch: expectedParentActionMatch(
+      triggerTrace.parentCompatibleAction?.action,
+      parentScenario.expectedStrategyShift,
+    ),
+    parentTransitionExpectedMatch: expectedParentActionMatch(
+      triggerTrace.parentTransitionAction?.action,
+      parentScenario.expectedStrategyShift,
+    ),
   } : null;
   return {
     branchName,
@@ -338,6 +472,11 @@ function replayBranch({ branchName, branch, scenario, parentScenario }) {
 function buildReplayScenario({ trace, row }) {
   const parentScenario = trace.scenario || {};
   const scenarioType = row.scenarioType || row.scenario_type || parentScenario.scenarioType || parentScenario.scenario_type || 'adaptive_trap';
+  const parentTriggerTurn = Number.isInteger(parentScenario.hidden?.triggerTurn)
+    ? parentScenario.hidden.triggerTurn
+    : Number.isInteger(parentScenario.hidden?.trigger_turn)
+      ? parentScenario.hidden.trigger_turn
+      : null;
   return {
     id: row.scenarioId || row.scenario_id || parentScenario.id || 'parent_dialogue',
     name: row.scenarioName || row.scenario_name || parentScenario.id || 'Parent dialogue replay',
@@ -347,6 +486,7 @@ function buildReplayScenario({ trace, row }) {
       mode: 'hard',
       source: 'parent_stack_replay',
       scenario_type: scenarioType,
+      parent_trigger_turn: parentTriggerTurn,
       stressors: stressorsForScenarioType(scenarioType),
       scoring_note: 'Read-only replay of existing parent transcript; labels are heuristic and do not modify parent scoring.',
     },
@@ -426,35 +566,51 @@ function stressorsForScenarioType(scenarioType) {
   return [...new Set(stressors)];
 }
 
-function expectedParentMatch(parentPolicyAction, expected) {
-  const expectedList = normalizeExpected(expected);
-  return Boolean(parentPolicyAction) && expectedList.includes(parentPolicyAction);
-}
-
-function expectedPrototypeMatch(prototypePolicy, expected) {
-  const expectedList = normalizeExpected(expected);
-  if (!prototypePolicy || expectedList.length === 0) return false;
-  return expectedList.some((parentExpected) =>
-    (PARENT_TO_PROTOTYPE_ACCEPTABLE[parentExpected] || []).includes(prototypePolicy));
-}
-
-function normalizeExpected(expected) {
-  if (!expected) return [];
-  if (Array.isArray(expected)) return expected.flatMap(normalizeExpected);
-  if (typeof expected === 'string') return [expected];
-  if (typeof expected === 'object') {
-    return Object.values(expected).flatMap(normalizeExpected);
+function summarizeActionTransitions(branchSummaries) {
+  const transitions = [];
+  for (const { replay, branch } of branchSummaries) {
+    const labelledTurns = branch.stateTrace
+      .filter((turn) => turn.parentPolicyAction && turn.parentCompatibleAction?.action);
+    for (let index = 1; index < labelledTurns.length; index += 1) {
+      const previous = labelledTurns[index - 1];
+      const current = labelledTurns[index];
+      const parentTransition = [
+        transitionFamily(previous.parentPolicyAction),
+        transitionFamily(current.parentPolicyAction),
+      ];
+      const mappedTransition = [
+        previous.parentCompatibleAction.family,
+        current.parentCompatibleAction.family,
+      ];
+      const transitionAwareTransition = [
+        previous.parentTransitionAction.family,
+        current.parentTransitionAction.family,
+      ];
+      transitions.push({
+        scenario: replay.scenario.id,
+        branch: branch.branchName,
+        turnIndex: current.turnIndex,
+        parentTransition,
+        mappedTransition,
+        transitionAwareTransition,
+        parentCompatibleMatch: parentTransition[0] === mappedTransition[0]
+          && parentTransition[1] === mappedTransition[1],
+        transitionAwareMatch: parentTransition[0] === transitionAwareTransition[0]
+          && parentTransition[1] === transitionAwareTransition[1],
+      });
+    }
   }
-  return [];
-}
-
-function policyFamilyAgreement(parentPolicyAction, prototypePolicy) {
-  if (!parentPolicyAction || !prototypePolicy) return false;
-  const parentFamily = PARENT_POLICY_FAMILY[parentPolicyAction] || parentPolicyAction;
-  const prototypeFamily = PROTOTYPE_POLICY_FAMILY[prototypePolicy] || prototypePolicy;
-  if (parentFamily === prototypeFamily) return true;
-  const acceptable = PARENT_TO_PROTOTYPE_ACCEPTABLE[parentPolicyAction] || [];
-  return acceptable.includes(prototypePolicy);
+  return {
+    count: transitions.length,
+    parentCompatibleRate: rate(transitions, (transition) => transition.parentCompatibleMatch),
+    transitionAwareRate: rate(transitions, (transition) => transition.transitionAwareMatch),
+    mismatches: transitions
+      .filter((transition) => !transition.parentCompatibleMatch)
+      .slice(0, 10),
+    transitionAwareMismatches: transitions
+      .filter((transition) => !transition.transitionAwareMatch)
+      .slice(0, 10),
+  };
 }
 
 function summarizeReplay({ original, counterfactual }) {
@@ -465,8 +621,139 @@ function summarizeReplay({ original, counterfactual }) {
     turns: turns.length,
     challengeTurns: turns.filter((turn) => turn.challengeState?.level !== 'none').length,
     familyAgreementRate: rate(turns.filter((turn) => turn.parentPolicyAction), (turn) => turn.policyFamilyAgreement),
+    parentCompatibleFamilyAgreementRate: rate(
+      turns.filter((turn) => turn.parentPolicyAction && turn.parentCompatibleAction?.action),
+      (turn) => turn.parentCompatibleFamilyAgreement,
+    ),
     triggerPrototypeMatches: branches.filter((branch) => branch.triggerAlignment?.prototypeAcceptableMatch).length,
+    triggerParentCompatibleMatches: branches.filter((branch) =>
+      branch.triggerAlignment?.parentCompatibleExpectedMatch).length,
   };
+}
+
+function summarizeActionPairMismatches(rows) {
+  const mismatches = rows.filter(({ turn }) => !turn.parentCompatibleFamilyAgreement);
+  const grouped = new Map();
+  for (const { replay, branch, turn } of mismatches) {
+    const parentAction = turn.parentPolicyAction || 'none';
+    const mappedAction = turn.parentCompatibleAction?.action || 'none';
+    const key = `${parentAction}\u0000${mappedAction}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        parentAction,
+        mappedAction,
+        count: 0,
+        examples: [],
+      });
+    }
+    const row = grouped.get(key);
+    row.count += 1;
+    pushExample(row, {
+      scenario: replay.scenario.id,
+      branch: branch.branchName,
+      turnIndex: turn.turnIndex,
+      prototypePolicy: turn.policy.selectedPolicy,
+      learner: turn.learner,
+      reason: turn.parentCompatibleAction?.reason || '',
+    });
+  }
+  return [...grouped.values()]
+    .sort((a, b) => b.count - a.count || a.parentAction.localeCompare(b.parentAction))
+    .slice(0, 10);
+}
+
+function summarizeTransitionActionMismatches(rows) {
+  const mismatches = rows.filter(({ turn }) => !turn.parentTransitionFamilyAgreement);
+  const grouped = new Map();
+  for (const { replay, branch, turn } of mismatches) {
+    const parentAction = turn.parentPolicyAction || 'none';
+    const transitionAction = turn.parentTransitionAction?.action || 'none';
+    const key = `${parentAction}\u0000${transitionAction}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        parentAction,
+        transitionAction,
+        count: 0,
+        examples: [],
+      });
+    }
+    const row = grouped.get(key);
+    row.count += 1;
+    pushExample(row, {
+      scenario: replay.scenario.id,
+      branch: branch.branchName,
+      turnIndex: turn.turnIndex,
+      prototypePolicy: turn.policy.selectedPolicy,
+      learner: turn.learner,
+      reason: turn.parentTransitionAction?.reason || '',
+    });
+  }
+  return [...grouped.values()]
+    .sort((a, b) => b.count - a.count || a.parentAction.localeCompare(b.parentAction))
+    .slice(0, 10);
+}
+
+function summarizeTriggerMismatches(branchSummaries) {
+  const grouped = new Map();
+  for (const { replay, branch } of branchSummaries) {
+    const align = branch.triggerAlignment;
+    if (!align || align.parentCompatibleExpectedMatch) continue;
+    const expected = normalizeExpected(align.expected);
+    const mappedAction = align.parentCompatibleAction || 'none';
+    const key = `${expected.join(',')}\u0000${mappedAction}`;
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        expected,
+        mappedAction,
+        count: 0,
+        examples: [],
+      });
+    }
+    const row = grouped.get(key);
+    row.count += 1;
+    pushExample(row, {
+      scenario: replay.scenario.id,
+      branch: branch.branchName,
+      turnIndex: align.triggerTurn,
+      prototypePolicy: align.prototypePolicy,
+      learner: findLearnerAtTurn(branch, align.triggerTurn),
+      reason: align.parentCompatibleReason || '',
+    });
+  }
+  return [...grouped.values()]
+    .sort((a, b) => b.count - a.count || formatExpected(a.expected).localeCompare(formatExpected(b.expected)))
+    .slice(0, 10);
+}
+
+function pushExample(row, example) {
+  if (row.examples.length >= 3) return;
+  row.examples.push({
+    ...example,
+    learner: clip(example.learner, 120),
+  });
+}
+
+function findLearnerAtTurn(branch, turnIndex) {
+  return branch.stateTrace.find((turn) => turn.turnIndex === turnIndex)?.learner || '';
+}
+
+function formatMismatchExample(example = {}) {
+  const bits = [
+    example.scenario,
+    example.branch,
+    Number.isInteger(example.turnIndex) ? `t${example.turnIndex}` : '',
+    example.prototypePolicy ? `prototype=${example.prototypePolicy}` : '',
+    example.reason ? `reason=${example.reason}` : '',
+    example.learner ? `learner="${example.learner}"` : '',
+  ].filter(Boolean);
+  return bits.join('; ');
+}
+
+function renderMismatchRows(rows, renderCells) {
+  if (!rows.length) {
+    return '<tr><td><code>none</code></td><td><code>none</code></td><td>0</td><td></td></tr>';
+  }
+  return rows.map((row) => `<tr>${renderCells(row)}</tr>`).join('');
 }
 
 function rate(rows, predicate) {
@@ -502,4 +789,10 @@ function escapeHtml(value) {
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;');
+}
+
+function clip(value, maxLength) {
+  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 3)}...`;
 }

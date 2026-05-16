@@ -68,5 +68,6 @@ fs.writeFileSync(htmlPath, renderRobustnessHtml(evaluation));
 console.log(`Wrote ${jsonPath}`);
 console.log(`Wrote ${mdPath}`);
 console.log(`Wrote ${htmlPath}`);
-console.log(`Robust positive effect established: ${evaluation.robustPositive.established}`);
+console.log(`Adaptive primary robust positive effect established: ${evaluation.robustPositive.established}`);
+console.log(`Strict all-public-metric confirmation: ${evaluation.robustPositive.strictPublicEstablished}`);
 console.log(evaluation.robustPositive.reason);

@@ -1,5 +1,12 @@
 import { initializeMastery, updateMasteryForEvidence } from './knowledgeTracing.js';
-import { extractEvidence, selectPolicy, transitionRelationState } from './stateMachine.js';
+import {
+  extractEvidence,
+  initialTransferState,
+  recordTransferPrompt,
+  selectPolicy,
+  transitionRelationState,
+  updateTransferState,
+} from './stateMachine.js';
 import { evolvePersona, initialPersona, renderTutorMessage } from './personaEngine.js';
 import { callCodexJson } from './codexCli.js';
 import { buildTutorPrompt } from './codexPrompts.js';
@@ -18,6 +25,7 @@ import {
   initialLearnerEvent,
   nextLearnerEvent,
   performOutcomeTask,
+  validateOutcomeTask,
 } from './dynamicLearner.js';
 import {
   buildReflexiveEgoDraftPrompt,
@@ -37,6 +45,7 @@ import {
 } from './challengeState.js';
 import { conditionFeatures } from './conditionFeatures.js';
 import { jaccardDistance } from './textMetrics.js';
+import { withProgress } from './progressMonitor.js';
 
 const DEFAULT_CONDITIONS = Object.freeze(['static_codex', 'controller_codex']);
 
@@ -52,14 +61,9 @@ export async function runRealAssessment({
   dryRun = false,
   keepPrompts = false,
   reflexiveVariant = null,
+  onProgress = null,
 } = {}) {
-  const scenarioConfig = loadYaml('config/assessment-scenarios.yaml');
-  const selectedIds = new Set([
-    ...(Array.isArray(scenarioIds) ? scenarioIds : []),
-    ...(scenarioId ? [scenarioId] : []),
-  ]);
-  const scenarios = scenarioConfig.scenarios
-    .filter((scenario) => selectedIds.size === 0 || selectedIds.has(scenario.id));
+  const scenarios = loadAssessmentScenarios({ scenarioId, scenarioIds });
 
   const results = [];
   for (const scenario of scenarios) {
@@ -86,6 +90,7 @@ export async function runRealAssessment({
         dryRun,
         keepPrompts,
         reflexiveVariant,
+        onProgress,
       });
       const counterfactual = await runAssessmentBranch({
         scenario,
@@ -100,6 +105,7 @@ export async function runRealAssessment({
         dryRun,
         keepPrompts,
         reflexiveVariant,
+        onProgress,
       });
       scenarioResult.conditions[condition] = {
         original,
@@ -111,6 +117,37 @@ export async function runRealAssessment({
     results.push(scenarioResult);
   }
   return results;
+}
+
+export function loadAssessmentScenarios({ scenarioId = null, scenarioIds = null } = {}) {
+  const scenarioConfig = loadYaml('config/assessment-scenarios.yaml');
+  const selectedIds = new Set([
+    ...(Array.isArray(scenarioIds) ? scenarioIds : []),
+    ...(scenarioId ? [scenarioId] : []),
+  ]);
+  return scenarioConfig.scenarios
+    .filter((scenario) => selectedIds.size === 0 || selectedIds.has(scenario.id));
+}
+
+export function estimateAssessmentProgressUnits({
+  scenarios,
+  conditions = DEFAULT_CONDITIONS,
+  learnerMode = 'rule',
+} = {}) {
+  return (scenarios || []).reduce((scenarioSum, scenario) =>
+    scenarioSum + conditions.reduce((conditionSum, condition) =>
+      conditionSum + (2 * estimateBranchProgressUnits({ scenario, condition, learnerMode })), 0), 0);
+}
+
+export function estimateBranchProgressUnits({ scenario, condition, learnerMode = 'rule' }) {
+  const turns = Number(scenario?.max_tutor_turns || 0);
+  const features = conditionFeatures(condition);
+  const tutorUnitsPerTurn = features.reflexive
+    ? (features.superego ? 3 : 1)
+    : 1;
+  const tutorUnits = turns * tutorUnitsPerTurn;
+  const learnerUnits = learnerMode === 'codex' ? Math.max(0, turns - 1) : 0;
+  return tutorUnits + learnerUnits + 2; // outcome task and blind judge.
 }
 
 async function runAssessmentBranch({
@@ -126,6 +163,7 @@ async function runAssessmentBranch({
   dryRun,
   keepPrompts,
   reflexiveVariant,
+  onProgress,
 }) {
   const transcript = [];
   const stateTrace = [];
@@ -133,6 +171,7 @@ async function runAssessmentBranch({
   let mastery = initializeMastery(scenario.kcs || {});
   let persona = initialPersona();
   let challengeState = initialChallengeState(scenario);
+  let transferState = initialTransferState(scenario);
   const branchReflexiveVariant = reflexiveVariantForCondition(condition, reflexiveVariant);
   let reflexiveMemory = buildInitialReflexiveMemory(branchReflexiveVariant);
   let learnerEvent = initialLearnerEvent(scenario);
@@ -145,6 +184,12 @@ async function runAssessmentBranch({
       const before = structuredClone(mastery);
       const evidence = extractEvidence(learnerEvent);
       mastery = updateMasteryForEvidence(mastery, evidence);
+      transferState = updateTransferState({
+        scenario,
+        previous: transferState,
+        evidence,
+        turnIndex,
+      });
       challengeState = features.challengeState
         ? updateChallengeState({
             scenario,
@@ -158,23 +203,34 @@ async function runAssessmentBranch({
       const masteryDelta = ktState && priorState ? ktState.pMastery - priorState.pMastery : 0;
       const relation = transitionRelationState({ evidence, mastery, challengeState });
       const policy = selectPolicy({
+        scenario,
         evidence,
         mastery,
         ...relation,
         challengeState,
+        transferState,
+        turnIndex,
+        maxTutorTurns: scenario.max_tutor_turns,
         useOutcomeGate: features.outcomeGate,
+      });
+      const transferStateAfterPolicy = recordTransferPrompt({
+        previous: transferState,
+        policy,
+        turnIndex,
       });
       const evolved = evolvePersona(persona, policy, relation.relationState, challengeState);
       persona = evolved.persona;
 
       const stateTurn = {
         condition,
+        turnIndex,
         eventId: learnerEvent.id,
         learner: learnerEvent.learner,
         evidence,
         relation,
         policy,
         challengeState: challengeState ? structuredClone(challengeState) : null,
+        transferState: structuredClone(transferStateAfterPolicy),
         expectedPolicy: learnerEvent.expected_policy || null,
         mastery: structuredClone(mastery),
         masteryDelta: Number(masteryDelta.toFixed(4)),
@@ -213,6 +269,7 @@ async function runAssessmentBranch({
           branchName,
           turnIndex,
           reflexiveVariant: branchReflexiveVariant,
+          onProgress,
         });
         tutorResult = reflexiveResult.tutorResult;
         reflexiveTrace = reflexiveResult.reflexiveTrace;
@@ -224,13 +281,20 @@ async function runAssessmentBranch({
             )
           : buildInitialReflexiveMemory(branchReflexiveVariant);
       } else {
-        tutorResult = dryRun
+        tutorResult = await withProgress(onProgress, {
+          phase: 'assessment',
+          scenarioId: scenario.id,
+          condition,
+          branchName,
+          turnIndex,
+          step: 'controller tutor',
+        }, async () => (dryRun
           ? { tutor_message: fallback, policy_alignment: 'DRY RUN controller fallback.', adaptation_observation: 'DRY RUN.' }
           : (await callCodexJson(prompt, {
               model,
               timeoutMs,
               label: `assessment-controller-tutor:${scenario.id}:${branchName}:${turnIndex}`,
-            })).parsed;
+            })).parsed));
       }
       const tutorMessage = cleanTutorMessage(tutorResult, fallback);
       stateTrace.push({
@@ -242,16 +306,24 @@ async function runAssessmentBranch({
         reflexiveVariant: isReflexiveCondition(condition) ? branchReflexiveVariant : undefined,
         reflexiveMemory: isReflexiveCondition(condition) ? structuredClone(reflexiveMemory) : undefined,
       });
+      transferState = transferStateAfterPolicy;
       transcript.push({ role: 'tutor', content: tutorMessage });
     } else if (condition === 'static_codex') {
       const prompt = buildStaticTutorPrompt({ scenario, transcript });
-      tutorResult = dryRun
+      tutorResult = await withProgress(onProgress, {
+        phase: 'assessment',
+        scenarioId: scenario.id,
+        condition,
+        branchName,
+        turnIndex,
+        step: 'static tutor',
+      }, async () => (dryRun
         ? dryRunStaticTutorMessage({ scenario, transcript })
         : (await callCodexJson(prompt, {
             model,
             timeoutMs,
             label: `assessment-static-tutor:${scenario.id}:${branchName}:${turnIndex}`,
-          })).parsed;
+          })).parsed));
       const tutorMessage = cleanTutorMessage(tutorResult, tutorResult.tutor_message);
       stateTrace.push({
         eventId: learnerEvent.id,
@@ -280,6 +352,7 @@ async function runAssessmentBranch({
         timeoutMs,
         dryRun,
         keepPrompts,
+        onProgress,
       });
       transcript.push({ role: 'learner', content: learnerEvent.learner });
     }
@@ -294,6 +367,7 @@ async function runAssessmentBranch({
     timeoutMs,
     dryRun,
     keepPrompts,
+    onProgress,
   });
   const branch = {
     branchName,
@@ -307,13 +381,19 @@ async function runAssessmentBranch({
     challengeProfile: scenario.challenge_profile || null,
   };
   const judgePrompt = buildBlindJudgePrompt({ scenario, branch });
-  const rawBlindJudge = dryRun
+  const rawBlindJudge = await withProgress(onProgress, {
+    phase: 'assessment',
+    scenarioId: scenario.id,
+    condition,
+    branchName,
+    step: 'blind judge',
+  }, async () => (dryRun
     ? dryRunBlindJudge({ branch })
     : (await callCodexJson(judgePrompt, {
         model: judgeModel || model,
         timeoutMs,
         label: `assessment-blind-judge:${scenario.id}:${condition}:${branchName}`,
-      })).parsed;
+      })).parsed));
   branch.blindJudge = normalizeBlindJudge(rawBlindJudge);
   if (keepPrompts || dryRun) branch.blindJudgePrompt = judgePrompt;
   return branch;
@@ -337,6 +417,7 @@ async function runReflexiveTutorPass({
   branchName,
   turnIndex,
   reflexiveVariant,
+  onProgress,
 }) {
   const features = conditionFeatures(turn?.condition || '');
   const memoryForTurn = features.memory
@@ -360,13 +441,20 @@ async function runReflexiveTutorPass({
     reflexiveMemory: memoryForTurn,
     reflexiveVariant,
   });
-  const egoDraft = dryRun
+  const egoDraft = await withProgress(onProgress, {
+    phase: 'assessment',
+    scenarioId: scenario.id,
+    condition: turn?.condition || '',
+    branchName,
+    turnIndex,
+    step: 'ego draft',
+  }, async () => (dryRun
     ? dry.egoDraft
     : (await callCodexJson(egoDraftPrompt, {
         model,
         timeoutMs,
         label: `assessment-reflexive-ego-draft:${scenario.id}:${branchName}:${turnIndex}`,
-      })).parsed;
+      })).parsed));
 
   if (!features.superego) {
     const tutorMessage = typeof egoDraft?.draft_message === 'string' && egoDraft.draft_message.trim()
@@ -414,13 +502,20 @@ async function runReflexiveTutorPass({
     egoDraft,
     reflexiveVariant,
   });
-  const superegoCritique = dryRun
+  const superegoCritique = await withProgress(onProgress, {
+    phase: 'assessment',
+    scenarioId: scenario.id,
+    condition: turn?.condition || '',
+    branchName,
+    turnIndex,
+    step: 'superego critique',
+  }, async () => (dryRun
     ? dry.superegoCritique
     : (await callCodexJson(superegoPrompt, {
         model,
         timeoutMs,
         label: `assessment-reflexive-superego:${scenario.id}:${branchName}:${turnIndex}`,
-      })).parsed;
+      })).parsed));
 
   const egoRevisionPrompt = buildReflexiveEgoRevisionPrompt({
     scenario,
@@ -436,13 +531,20 @@ async function runReflexiveTutorPass({
     superegoCritique,
     reflexiveVariant,
   });
-  const egoRevision = dryRun
+  const egoRevision = await withProgress(onProgress, {
+    phase: 'assessment',
+    scenarioId: scenario.id,
+    condition: turn?.condition || '',
+    branchName,
+    turnIndex,
+    step: 'ego revision',
+  }, async () => (dryRun
     ? dry.egoRevision
     : (await callCodexJson(egoRevisionPrompt, {
         model,
         timeoutMs,
         label: `assessment-reflexive-ego-revision:${scenario.id}:${branchName}:${turnIndex}`,
-      })).parsed;
+      })).parsed));
 
   return {
     tutorResult: {
@@ -476,6 +578,7 @@ async function getNextLearnerEvent({
   timeoutMs,
   dryRun,
   keepPrompts,
+  onProgress,
 }) {
   if (learnerMode === 'rule') {
     return nextLearnerEvent({ scenario, hiddenState, lastTutorMessage, turnIndex });
@@ -490,13 +593,20 @@ async function getNextLearnerEvent({
     transcript,
     turnIndex,
   });
-  const parsed = dryRun
+  const parsed = await withProgress(onProgress, {
+    phase: 'assessment',
+    scenarioId: scenario.id,
+    condition: 'learner',
+    branchName: hiddenState.type,
+    turnIndex,
+    step: 'learner proxy',
+  }, async () => (dryRun
     ? dryRunLearnerProxyEvent({ scenario, hiddenState, lastTutorMessage, turnIndex })
     : (await callCodexJson(prompt, {
         model: learnerModel,
         timeoutMs,
         label: `assessment-learner-proxy:${scenario.id}:${hiddenState.type}:${turnIndex}`,
-      })).parsed;
+      })).parsed));
   const event = normalizeLearnerProxyEvent(parsed, scenario, turnIndex);
   learnerTrace.push({
     mode: 'codex',
@@ -516,18 +626,31 @@ async function getOutcomeTask({
   timeoutMs,
   dryRun,
   keepPrompts,
+  onProgress,
 }) {
   if (learnerMode === 'rule') {
-    return performOutcomeTask({ scenario, hiddenState, transcript });
+    return withProgress(onProgress, {
+      phase: 'assessment',
+      scenarioId: scenario.id,
+      condition: 'learner',
+      branchName: hiddenState.type,
+      step: 'rule outcome',
+    }, async () => performOutcomeTask({ scenario, hiddenState, transcript }));
   }
   const prompt = buildLearnerOutcomePrompt({ scenario, hiddenState, transcript });
-  const parsed = dryRun
+  const parsed = await withProgress(onProgress, {
+    phase: 'assessment',
+    scenarioId: scenario.id,
+    condition: 'learner',
+    branchName: hiddenState.type,
+    step: 'learner outcome',
+  }, async () => (dryRun
     ? dryRunLearnerOutcome({ scenario, hiddenState, transcript })
     : (await callCodexJson(prompt, {
         model: learnerModel,
         timeoutMs,
         label: `assessment-learner-outcome:${scenario.id}:${hiddenState.type}`,
-      })).parsed;
+      })).parsed));
   const out = {
     prompt: typeof parsed.prompt === 'string' ? parsed.prompt : scenario.outcome_task.prompt,
     learner_answer: typeof parsed.learner_answer === 'string' ? parsed.learner_answer : '',
@@ -535,6 +658,12 @@ async function getOutcomeTask({
     self_assessment: typeof parsed.self_assessment === 'string' ? parsed.self_assessment : '',
     hidden_type: hiddenState.type,
   };
+  const validation = validateOutcomeTask({ scenario, transcript, outcome: out });
+  if (validation.applicable) {
+    out.raw_success = out.success;
+    out.success = validation.success;
+    out.validation = validation;
+  }
   if (keepPrompts || dryRun) out.learnerOutcomePrompt = prompt;
   return out;
 }
@@ -561,6 +690,7 @@ function normalizeLearnerProxyEvent(parsed, scenario, turnIndex) {
       'misconception_repair',
       'teach_back',
       'transfer_challenge',
+      'transfer_repair',
       'summarize_and_check',
     ], 'diagnostic_probe'),
   };

@@ -53,6 +53,13 @@ export function evolvePersona(previous, policy, relationState, challengeState = 
       delta.directiveness = -0.04;
       delta.tempo = 'brisk';
       break;
+    case 'transfer_repair':
+      delta.challenge = 0.12;
+      delta.curiosity = 0.08;
+      delta.directiveness = 0.02;
+      delta.humility = 0.04;
+      delta.tempo = 'brisk';
+      break;
     case 'summarize_and_check':
       delta.curiosity = 0.08;
       delta.humility = 0.04;
@@ -254,9 +261,11 @@ function renderDomainTutorMessage({ kcId, policy }) {
       case 'faded_example':
         return 'A quote can support a claim only after you make the missing inference visible. What warrant connects the quote to your claim, and what boundary might a skeptical reader raise?';
       case 'transfer_challenge':
-        return 'Now transfer the idea to school uniforms: add the warrant, one boundary or counterargument, and one stronger evidence check.';
+        return 'Now transfer the idea to school uniforms: add the warrant, one boundary or counterargument, one stronger evidence check, and say what a similar single quote could and could not prove in a different policy case.';
+      case 'transfer_repair':
+        return 'Transfer repair, one narrow school-uniform case: write three labels, warrant, what the single quote cannot prove, and stronger evidence that would test the focus or learning claim.';
       case 'summarize_and_check':
-        return 'State your revision rule: quote, warrant, boundary or counterargument, and stronger evidence check.';
+        return 'You now have the revision rule: a quote becomes argument evidence only when you name the warrant, mark the boundary or counterargument, and identify what stronger evidence would test the claim.';
       default:
         return null;
     }
@@ -269,9 +278,11 @@ function renderDomainTutorMessage({ kcId, policy }) {
       case 'faded_example':
         return 'If fertilizer is the cause we want to test, only fertilizer should change. What must stay fixed so the comparison is fair?';
       case 'transfer_challenge':
-        return 'Now design the fertilizer test: name the changed variable, at least two controls, and the comparison that would support causation.';
+        return 'Now transfer the fair-test rule: design the fertilizer test, reject the near-miss where water or light also changed, and name one next experiment where the same one-variable rule applies.';
+      case 'transfer_repair':
+        return 'Transfer repair, one near-miss: Team A gets new fertilizer plus the sunny window, Team B gets old fertilizer on a back shelf. Name the independent variable, two controls, the otherwise-similar comparison, and why this cannot isolate fertilizer unless only fertilizer changes.';
       case 'summarize_and_check':
-        return 'State the fair-test rule: one changed variable, fixed conditions, comparable groups, causal decision.';
+        return 'You now have the fair-test rule: change one variable, keep the other conditions fixed, compare otherwise similar groups, and make the causal decision only after checking whether another cause changed too.';
       default:
         return null;
     }
@@ -284,9 +295,11 @@ function renderDomainTutorMessage({ kcId, policy }) {
       case 'faded_example':
         return 'Before changing the output, reproduce the bug. What input makes NaN appear, and where is the first invalid value in the trace?';
       case 'transfer_challenge':
-        return 'Now transfer the debugging process: reproduce the failing input, trace the root cause, propose a minimal fix, and add one regression test.';
+        return 'Now transfer the debugging process to an order, cart, invoice, or payment total with a missing or invalid amount. Name the failing input, the first invalid amount or accumulator step, the minimal validation or rejection before adding, and the regression that distinguishes bad data from a legitimate zero total.';
+      case 'transfer_repair':
+        return 'Transfer repair, one future bad-total bug in an order, cart, invoice, or payment total: name the smallest input with a missing or invalid amount, the first invalid amount or accumulator step, why a final NaN-to-0 mask fails, one regression test, and how that differs from a legitimate zero total like [5, -5].';
       case 'summarize_and_check':
-        return 'State your debugging rule: reproduce, trace first invalid value, minimal fix, regression test.';
+        return 'You now have the debugging rule: reproduce the smallest failing input, trace the first invalid value, make the minimal upstream fix, and keep the regression that prevents a final NaN mask from hiding the cause.';
       default:
         return null;
     }
@@ -299,9 +312,11 @@ function renderDomainTutorMessage({ kcId, policy }) {
       case 'faded_example':
         return 'A single happiness item is a measure, not the whole construct. What construct is it trying to measure, and what check would show whether the measure is valid?';
       case 'transfer_challenge':
-        return 'Now evaluate the wellbeing-program claim: name the construct, two measurement checks, and one comparison that would strengthen the impact claim.';
+        return 'Now transfer the measurement rule to a different single-item survey claim: a course-belonging program says it worked because one belonging item rose. Name the construct, why one item is not enough, two measurement checks, and the comparison needed before claiming impact.';
+      case 'transfer_repair':
+        return 'Transfer repair, one different single-item survey case: a course-belonging program says it worked because one belonging item rose. Label the construct versus item, why one item is not enough, two checks, and the comparison needed before claiming impact.';
       case 'summarize_and_check':
-        return 'State your measurement rule: construct, indicators, bias or reliability check, comparison before impact.';
+        return 'You now have the measurement rule: separate construct from item, check indicators and bias or reliability, and require a comparison before treating a survey change as program impact.';
       default:
         return null;
     }

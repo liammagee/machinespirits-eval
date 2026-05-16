@@ -204,8 +204,87 @@ Current smoke evidence:
   prototype trigger compatibility on `33.3%` of trigger branches and
   parent/prototype family agreement on `33.7%` of labelled turns.
 
-Interpretation: the prototype now has harder trap inputs and a bridge into the
-parent trace corpus. The next live step is to run the trap set with the LLM
-learner, then use replay mismatches to decide whether the prototype policy
-vocabulary needs a parent-compatible state/action layer before any production
-cell is registered.
+Follow-up parent-compatible mapping evidence:
+
+- a twenty-four-row replay through the first mapped action layer wrote
+  `outputs/parent-stack-replay-mapped/`, with raw prototype trigger
+  compatibility on `25.0%` of trigger branches, parent-compatible trigger
+  compatibility on `62.5%`, raw parent/prototype family agreement on `28.1%`,
+  and mapped family agreement on `37.0%`;
+- a scenario-prioritized mapping pass wrote
+  `outputs/parent-stack-replay-mapped-v2/`, with parent-compatible trigger
+  compatibility on `100.0%` of `48` trigger branches, but mapped
+  whole-dialogue family agreement still only `37.5%` across `192` labelled
+  turns.
+- a diagnostic replay wrote `outputs/parent-stack-replay-mapped-diagnostics/`
+  with mismatch tables. Trigger mismatches are empty; remaining disagreement is
+  trajectory-level, especially scenario priors persisting after learner evidence
+  has changed.
+- a trajectory-aware mapping pass wrote
+  `outputs/parent-stack-replay-trajectory-diagnostics/`. It preserved
+  parent-compatible trigger compatibility at `100.0%`, raised mapped
+  whole-dialogue family agreement to `54.7%`, and raised mapped non-trigger
+  family agreement to `62.5%`.
+- a transition diagnostic wrote
+  `outputs/parent-stack-replay-transition-diagnostics/`. The harder
+  transition metric is only `31.3%`, showing that the remaining problem is the
+  sequence of action-family moves, not just single-turn label translation.
+- the live LLM hidden-state trap sweep wrote `outputs/trap-scenarios-llm-live/`.
+  It passed public triage on MVP and parent-dialogue deltas, but did not pass
+  significance or robustness: MVP `+0.625`, parent dialogue `+0.625`, outcome
+  `0`, one eligible run, eight paired branches.
+- the trap robustness gate wrote `outputs/robustness-evaluation-traps/` and
+  rejected robust positive effects because evidence is under-replicated, outcome
+  is flat, and no public metric passes the non-trivial positive gate.
+
+Interpretation: the prototype now has harder trap inputs, transcript-supported
+trap outcomes, a transfer-observed gate, a read-only bridge into the parent
+trace corpus, and a parent-compatible trigger-action adapter. The
+trajectory-aware adapter now partially solves later-turn alignment too, and the
+transition-aware adapter adds direct action-family sequence guards. The full
+live trap rerun shows the harder gates are working: static original branches no
+longer pass at ceiling. The adaptive target only clearly recovers programming,
+however, and loses parent-dialogue ground overall. The next step is to improve
+target transfer elicitation under these harder gates rather than relax the
+gates.
+
+Next non-integration replay work:
+
+1. add decay/de-escalation to parent-compatible action mapping, so scenario
+   family dominates the trigger turn but yields after learner-owned repair;
+   **initial trajectory-aware pass done**
+2. distinguish local clarification from substantive disagreement, especially
+   `repair_misrecognition` vs `name_the_disagreement`;
+3. separate overload from affective shutdown instead of collapsing both into
+   the strongest repair family;
+4. add trajectory-level checks that compare action-family transitions, not only
+   individual-turn labels; **initial transition metric and transition-aware
+   adapter done**
+5. learn or hand-specify transition guards for scaffold -> substantive,
+   substantive -> repair, and repair -> consolidation rhythms before any parent
+   production adapter; **initial overload scaffold/substantive/repair guard
+   done**
+6. harden trap outcome tasks so baseline transcripts that repair once at
+   surface level do not automatically pass; require delayed transfer,
+   learner-owned boundary conditions, and resistance after apparent success;
+   **transcript-supported trap validation done**
+7. model transfer observation directly instead of treating a tutor transfer
+   question as evidence of adaptation; **transfer-observed gate done**
+
+Current non-integration targets:
+
+1. rewrite transfer prompts/action templates so argument, science, and social
+   measurement elicit learner-owned transfer by turn 2 instead of repeating a
+   final transfer question; **initial `transfer_repair` pass done**
+2. add an earlier "one-turn transfer repair" policy when `transferGate.status`
+   remains `needs_learner_transfer` after a prior transfer prompt; **done for
+   failed prompt attempts and last-response-turn hidden traps**
+3. rerun the full live trap suite only after those target-behavior changes,
+   because the latest full live run established no robust positive effect;
+   **focused live science/social revalidation is positive, but full replicated
+   trap evidence is still pending**
+4. stabilize parent-dialogue losses by making transfer repair less checklist-like
+   while preserving explicit learner-owned transfer markers;
+5. add a reusable post-run revalidation script for expensive live transcript
+   artifacts, so validator-marker updates are reproducible without reissuing
+   LLM calls; **done as `scripts/revalidate-trap-report.js`**

@@ -251,3 +251,197 @@ move is what the prototype's own §1 already asks for, plus task (1) from §5
 of `ADAPTIVE_FEATURE_ARC_AND_NEXT_STEPS.md`: rerun the confirmed variant
 against the LLM learner proxy on the main-line scoring stack, then decide
 whether §6.8.8 exists.
+
+---
+
+# Second Pass — 2026-05-15 (evening), after the validation sequence ran
+
+The first pass (above, 14:52) demanded one load-bearing test: rerun the
+confirmed variant against an LLM learner that does not share the rule
+learner's phrase table. That test, plus the held-out gate, the focused
+ablations, and the parent-stack replay, all ran in the same day. This
+section records what the evidence did to the critique. The first pass is
+left intact above because "what has been addressed" is only answerable
+against a fixed baseline — a critique that is rewritten each pass is
+unfalsifiable in exactly the way the prototype's closed loop is.
+
+## What the prior critique predicted, and what happened
+
+The first pass said: *"If the effect collapses, the +17 was vocabulary
+alignment."* It collapsed.
+
+- **Hard LLM full-run aggregate** (`outputs/robustness-evaluation/`,
+  n=12 paired branches): MVP `-0.417` (p=1.000), parent dialogue `-0.875`
+  (p=0.825), outcome `0.000`. Verdict, in the project's own gate:
+  **"Robust positive effect established: no."** Win/tie/loss on MVP is
+  `0.167/0.750/0.083` — the rule-learner's `+17.188 / p=0.001` does not
+  survive contact with a learner the controller cannot script.
+- **Held-out hard LLM** (`outputs/robustness-evaluation-heldout/`, n=8,
+  one run): MVP `+5.625` (p=0.253, NS), parent `-0.156` (p=1.000),
+  outcome `+25` (p=0.502). Logged as "triage pass on mvp, outcome" but
+  the gate still returns **no** (insufficient replication; no metric
+  clears the non-trivial-positive threshold).
+- **The only large win is the closed-loop scenario itself.** The focused
+  `hard_ai_bias_resistant_closed_loop` slice shows `+35 MVP / +100
+  outcome` — but on the *same* scenario the hardened and outcome-gate
+  variants flip to `-7.5 / -22.5` and `-2.5 / -18.75`. That is the
+  bimodal `[0,100,0,100]` signature the first pass named, now reproduced
+  under the LLM learner. A mean over that is not a measurement.
+
+So the central empirical claim of the first pass is not merely accepted —
+it is **confirmed by the project's own instrumentation**. The correct
+response was taken: `ITERATION_RESULTS.md` and `NEAR_MEDIUM_TERM_ROADMAP.md`
+now state the rule-learner result is a regression harness, not an empirical
+claim, and the roadmap's Decision Rule says to stop tuning MVP prompts if
+the held-out LLM signal stays flat. The critique was absorbed, not
+deflected. That is the strongest thing I can say in the prototype's favour:
+it ran the experiment that could have killed its headline, and reported
+that it did.
+
+## Scorecard against the accepted critiques
+
+| Accepted critique (integration plan) | Status | Evidence |
+|---|---|---|
+| a) Closed-circuit gameability | **Confirmed & contained** | LLM-learner effect = `-0.417`, p=1.0; result downgraded to regression harness |
+| b) Effective n ≈ 6, pseudo-replication | **Addressed in discipline** | Reporting rules now mandate per-cell win/tie/loss + pseudo-replicate disclosure; not design-fixed, but no longer claimed |
+| c) Baseline at ceiling | **Recognised, partially mitigated** | Now the roadmap's top "Current Constraint"; held-out curricula added — but the focused programming slice was *still* at ceiling |
+| d) Value is architectural, not the MVP score | **Accepted & in progress** | Read-only parent-replay adapter built; integration explicitly gated behind a held-out signal that has not appeared |
+| §3 verification: rerun under LLM learner | **Done** | The load-bearing test ran; outcome above |
+| Deep-mechanism scoring (was n=0) | **Deferred, defensibly** | Gated: "if the public held-out signal is flat, ablations are lower priority because there is no effect to attribute" |
+
+Nothing on this list was ignored. Most of it was tested within hours of
+the critique landing, which is the right tempo.
+
+## New finding: the closed loop reappeared one level up
+
+The first pass found a *three-side* closed loop (tutor template, rule
+learner, outcome scorer). The evening's parent-replay work introduced a
+**fourth** hand-authored table — `src/parentActionMapping.js` — and the
+loop re-formed around it.
+
+Read `chooseParentCompatibleAction()`. Its first branch:
+
+```js
+if (atParentTriggerTurn && SCENARIO_EXPECTED_DEFAULTS[scenarioType]) {
+  return mapped(SCENARIO_EXPECTED_DEFAULTS[scenarioType], 0.94,
+    'parent replay trigger turn preserves the expected scenario-level action');
+}
+```
+
+`SCENARIO_EXPECTED_DEFAULTS` is a hard-coded `scenario_type → expected
+action` table. At the trigger turn the mapper returns the expected action
+**regardless of what the prototype policy selected.** This is why
+"Parent-compatible trigger match" reports `100.0%`: it is true by
+construction, not by behaviour. Every replay row shows `Mapped Action ==
+Expected`, never `== Parent Action`; the mismatch table's own reason
+string says so verbatim. The lift from `37.5% → 54.7%` whole-dialogue
+agreement (mapped → trajectory-mapped) came from adding ~20 more
+hand-authored conditionals to the same function. This is the original
+pathology's structure exactly: when the number won't move, author another
+phrase list until it does.
+
+To the project's credit, this is **contained, not concealed**. The roadmap
+calls the adapter "useful immediately as a mismatch finder," not evidence;
+it forbids registering a parent-project agent "until the held-out
+prototype check is interpretable"; and the 100%-by-construction figure is
+reported next to the 28.1% raw figure, not instead of it. The artifact is
+honestly labelled. But the `54.7%` should not be read as convergence
+toward the parent stack — it is the agreement a hand-tuned translation
+table reaches with itself. The only non-authored number in that whole
+pipeline is the `28.1%` raw family agreement, and that is the one that
+matters.
+
+## Where this leaves "adaptation," philosophically
+
+Decompose the question into three problems that are not the same kind of
+problem.
+
+**1. The closure problem (epistemic — solved in method, at a price).**
+When the learner is a table you author, "adaptation" is unfalsifiable: the
+controller, learner, and scorer are three views of one artifact. An
+independent LLM learner + independent judge breaks the loop. The project
+did this. The price was the effect: it went to zero. That is not a failure
+of the experiment — it *is* the result. The closure problem is solved the
+moment you stop authoring the learner; it just turns out there was little
+underneath.
+
+**2. The ceiling problem (empirical — surmountable, but it narrows the
+claim almost to nothing).** A frontier LLM given a strong fixed prompt is
+*already adapting* inside its forward pass — it reads the last learner turn
+and adjusts. The hand-built FSM is not competing against a static tutor; it
+is competing against implicit adaptation that is broader and cheaper than
+any rule table. Adaptation can only show value in the residual regime where
+the hidden learner state is **not legible from the visible transcript** —
+which is precisely why the trap suite (ambiguous openings, `trap_probe_
+required`) was designed. That regime is real but small, and the claim that
+survives there is correspondingly small: not "adaptation beats static
+tutoring," but "explicit state externalisation helps *specifically when the
+learner's state cannot be read off the surface.*"
+
+**3. The "is this adaptation at all?" problem (conceptual — not surmountable
+in this framework's own terms).** Nothing in the prototype learns. Every
+signal detector, every state transition, every mapping branch is a
+human-authored rule. The mapping layer made this unmissable: the fix for
+low agreement was *write more conditionals*. This is not an adaptive system
+in the sense the word implies (it never updates a policy from evidence); it
+is a **reactive system whose reactions are a curriculum designer's
+pedagogical theory, externalised and made inspectable.** That is genuinely
+valuable — but the value is interpretability and control, not performance,
+and the experiments keep being framed as performance.
+
+### Is robust adaptation impossible here?
+
+As "a hand-authored state machine that beats a strong static LLM tutor in
+general": on the present evidence, **yes, effectively dead.** Three
+independent signals (rule-learner regression, hard LLM aggregate p≈1.0,
+held-out gate NO) point the same way, and the only wins are inside the
+scenario the first pass flagged as circular. No amount of additional
+mapping conditionals changes this; that is closure creep, and the
+roadmap's own Decision Rule already says to stop.
+
+As "an inspectable state layer that beats implicit LLM adaptation
+*specifically on transcript-illegible hidden-state traps*": **not
+impossible, but unproven** — the one experiment that could establish it
+(the trap suite under the LLM learner) has only been run dry / shape-only.
+That is the single remaining live empirical question. Everything else has
+been answered, mostly in the negative.
+
+### Avenues that remain — ranked by what they can actually establish
+
+1. **The trap-suite LLM run (do this; nothing else is diagnostic).**
+   Scenarios where the hidden state is provably absent from the visible
+   prompt. If the controller wins *here and only here*, that is a clean,
+   narrow, true claim worth a §6.8.8: externalised state helps exactly
+   where surface inference cannot. If it does not win here, the mechanism
+   has no regime and the prototype is a tooling contribution only.
+2. **Reframe the parent-replay adapter as an interpretability product,
+   not a horse race.** Its real output is not `54.7%`; it is a labelling
+   layer that annotates existing parent transcripts with inspectable
+   challenge-state trajectories. That has scientific value even if it
+   never beats a baseline — it makes the parent stack's implicit
+   adaptation auditable. Score it as "does the label predict the judge's
+   independent rubric movement?", never as self-agreement.
+3. **The avenue not taken: adaptation as learning.** Fit even a minimal
+   policy (a logistic over state features → action) to outcomes across
+   many dialogues, instead of hand-authoring conditionals. This is the
+   only path on which "adaptation" would mean what it says. It is also the
+   most expensive to falsify and the least aligned with the inspectability
+   goal — so it should be entered deliberately, as a distinct research
+   question, not drifted into.
+4. **Closed avenues:** more mapping-table branches past 54.7%; any rerun
+   of the rule-learner sweep for a larger n. Both are the closure
+   pathology. The project's own Decision Rule already retires them.
+
+## Bottom line
+
+The first pass said the prototype's value was architectural, not
+empirical, and that the +17 would not survive an honest learner. Both held.
+The project responded by running the killing experiment itself and
+labelling the result correctly — which is the behaviour you want from a
+research prototype, and is worth more than the headline would have been.
+The remaining work is to stop measuring performance and start measuring
+either (1) the one narrow regime where externalised state is provably
+necessary, or (2) interpretability against an independent signal. The
+honest one-line status: *adaptation as a performance claim is closed under
+this design; adaptation as an inspectable, regime-bounded mechanism is the
+only thing still open, and exactly one unrun experiment decides it.*
