@@ -287,6 +287,43 @@ test('science transfer repair prompt asks for delayed next-experiment transfer',
   assert.match(tutorMessage, /same one-variable fair-test rule|same one-variable rule/i);
 });
 
+test('ready trap evidence moves to transfer instead of over-repair', () => {
+  const scenario = {
+    id: 'trap_science_variable_control_false_mastery_closed_loop',
+    challenge_profile: { hidden_state_trap: true },
+  };
+  const policy = selectPolicy({
+    scenario,
+    evidence: {
+      obsId: 'l1',
+      quote: 'Only fertilizer changes, and water, light, soil, plant type, and starting size stay fixed.',
+      kcCandidates: ['experimental_variable_control'],
+      outcome: 'correct',
+      stance: 'compliant',
+      domainDiagnosis: {
+        repairNeeded: false,
+        repaired: true,
+        successMarkers: ['change only', 'same sunlight', 'fair test'],
+      },
+    },
+    mastery: {
+      experimental_variable_control: { pMastery: 0.74 },
+    },
+    relationState: 'repair',
+    validationNeed: 'repair_first',
+    challengeState: {
+      mode: 'hard',
+      level: 'resolved',
+      resolvedTurns: 1,
+    },
+    transferState: initialTransferState(scenario),
+    turnIndex: 1,
+    maxTutorTurns: 4,
+  });
+  assert.equal(policy.selectedPolicy, 'transfer_challenge');
+  assert.match(policy.reason, /ready-branch evidence/i);
+});
+
 test('trap validators use semantic delayed-transfer evidence over raw LLM self-success', () => {
   const argumentScenario = {
     id: 'trap_argument_warrant_false_mastery_closed_loop',
@@ -435,6 +472,22 @@ test('programming transfer gate rejects average/rate repeats and valid-zero conf
     },
   });
   assert.equal(cartOutcomeWording.success, true);
+
+  const finalCoercionWording = validateOutcomeTask({
+    scenario,
+    transcript: [
+      {
+        role: 'learner',
+        content: 'For a cart total with one valid item and one amount undefined, total + undefined is the first invalid accumulator step. I reject coercing the final NaN to 0 because that only hides the broken accumulator; the fix is to validate each amount before adding and add a regression test that still allows 0 as a real value.',
+      },
+    ],
+    outcome: {
+      success: true,
+      learner_answer: 'I would reproduce it with [{ amount: 10 }, { amount: undefined }], reject coercing the final NaN to 0, validate before adding, add a regression test for invalid amounts, and transfer the same rule to the next total bug.',
+    },
+  });
+  assert.equal(finalCoercionWording.success, true);
+  assert.equal(finalCoercionWording.checks.rejectsMask, true);
 });
 
 test('measurement transfer recognizes non-hyphenated course belonging cases', () => {

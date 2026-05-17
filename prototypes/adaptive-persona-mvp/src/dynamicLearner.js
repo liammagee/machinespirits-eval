@@ -1224,7 +1224,21 @@ function evaluateDebuggingOutcome({ scenario, learnerText, answerText, parsedSuc
       'fallback before',
     ]),
     regression: includesAny(combined, ['regression test', 'regression assertion', 'regression that', 'regression tests', 'test for']),
-    rejectsMask: includesAny(combined, ['coercing nan to 0', 'coerce nan to 0', 'coercion', 'mask', 'masks the symptom', 'bad output']),
+    rejectsMask: includesAny(combined, [
+      'coercing nan to 0',
+      'coercing the final',
+      'coerce nan to 0',
+      'coerce final nan',
+      'not coerce nan to 0',
+      'final nan to 0',
+      'coercion',
+      'mask',
+      'masks the symptom',
+      'hides the symptom',
+      'hides the broken',
+      'only hides',
+      'bad output',
+    ]),
     transfer: scenario.challenge_profile?.hidden_state_trap
       ? totalTransfer
       : true,

@@ -279,6 +279,185 @@ node --test prototypes/adaptive-persona-mvp/tests/*.test.js
 npx eslint prototypes/adaptive-persona-mvp/**/*.js
 ```
 
+## 2026-05-17 Ready-Branch Calibration And Ablation
+
+This pass followed the current prototype TODO without parent integration. The
+branch was pushed first so the post-science-repair replication was preserved
+remotely:
+
+```bash
+git push origin experiment/adversarial-superego-promotion
+```
+
+### Counterfactual Miss Inspection
+
+The two remaining adapted misses in
+`outputs/action-family-full-traps-replicated-live-post-science-repair-revalidated/variant-sweep-revalidated-2026-05-17T04-10-17-452Z.json`
+were different failure classes:
+
+- science counterfactual readiness: the learner supplied fair-test evidence,
+  but the controller continued repair pressure and elicited delayed transfer
+  too late;
+- programming counterfactual readiness: the learner said to reject coercing the
+  final `NaN` to `0`, but the validator did not recognize that action-family
+  wording as rejecting the masking fix.
+
+The patch therefore calibrated readiness rather than making repair stronger:
+
+- `stateMachine.js` sends ready hidden-state branches to `transfer_challenge`
+  when challenge state is resolved, the transfer gate is ready, and the learner
+  has supplied correct evidence;
+- `dynamicLearner.js` accepts broader debugging action-family phrasing for
+  rejecting a final-NaN coercion mask;
+- `assessment.test.js` adds regression coverage for both cases.
+
+### Focused Calibration Checks
+
+First focused run:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --scenarios trap_science_variable_control_false_mastery_closed_loop,trap_programming_debugging_false_mastery_closed_loop \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 1 \
+  --out prototypes/adaptive-persona-mvp/outputs/calibration-repair-focused-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/calibration-repair-focused-live/variant-sweep-2026-05-17T06-00-04-157Z.html`
+- `outputs/calibration-repair-focused-live-revalidated/variant-sweep-revalidated-2026-05-17T06-00-17-226Z.html`
+
+The programming counterfactual passed after revalidation, but science still
+failed delayed transcript transfer because the LLM learner classified the ready
+evidence as `compliant`. The readiness guard was widened to include compliant
+evidence when the other readiness conditions are already met.
+
+Science-only focused run after widening:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --scenarios trap_science_variable_control_false_mastery_closed_loop \
+  --conditions controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 1 \
+  --out prototypes/adaptive-persona-mvp/outputs/science-calibration-ready-branch-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/science-calibration-ready-branch-live/variant-sweep-2026-05-17T06-11-32-007Z.html`
+- `outputs/science-calibration-ready-branch-live-revalidated/variant-sweep-revalidated-2026-05-17T06-11-42-942Z.html`
+
+Revalidation changed `0` outcomes. Both science branches passed, and the
+counterfactual policy sequence became:
+
+```text
+teach_back -> transfer_challenge -> transfer_repair -> productive_struggle_hold
+```
+
+The transcript now contains learner-owned delayed transfer before outcome: the
+learner gives a new fertilizer experiment where fertilizer type is the only
+changed variable while water, light, pots, soil, and plants remain fixed.
+
+### Compact Causal Ablation
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --scenarios trap_science_variable_control_false_mastery_closed_loop,trap_programming_debugging_false_mastery_closed_loop \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex,controller_reflexive_psychodynamic_ego_only_codex,controller_reflexive_psychodynamic_no_superego_codex,controller_reflexive_psychodynamic_no_memory_codex,controller_reflexive_psychodynamic_no_challenge_codex \
+  --learner codex \
+  --repeats 1 \
+  --out prototypes/adaptive-persona-mvp/outputs/calibration-ablation-focused-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/calibration-ablation-focused-live/variant-sweep-2026-05-17T07-45-47-611Z.html`
+- `outputs/calibration-ablation-focused-live-revalidated/variant-sweep-revalidated-2026-05-17T07-46-00-241Z.html`
+
+Revalidation changed `0` outcomes. Focused `n=4` branch results versus static:
+
+| Variant | MVP Diff | Parent Diff | Outcome Diff | Target Outcomes |
+|---|---:|---:|---:|---:|
+| full ego/superego/memory/challenge | `+22.5` | `+8.75` | `+100` | `4/4` |
+| ego-only | `+6` | `+5` | `0` | `0/4` |
+| no-superego | `+7.5` | `+1.25` | `+25` | `1/4` |
+| no-memory | `+16.25` | `+2.188` | `+50` | `2/4` |
+| no-challenge | `+19.5` | `+6.25` | `+75` | `3/4` |
+
+Interpretation: this is a small focused slice, but it is a clean causal
+diagnostic. The full controller is strongest. Ego-only is not sufficient, and
+removing superego, memory, or challenge state produces graded degradation in
+target outcome success.
+
+### Larger Replication
+
+A larger `--traps --repeats 3` LLM replication was run against the calibrated
+controller:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --traps \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 3 \
+  --out prototypes/adaptive-persona-mvp/outputs/post-calibration-full-traps-replicated-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/post-calibration-full-traps-replicated-live/variant-sweep-2026-05-17T10-53-26-908Z.html`
+- `outputs/post-calibration-full-traps-replicated-live-revalidated/variant-sweep-revalidated-2026-05-17T10-53-36-582Z.html`
+- `outputs/robustness-post-calibration-full-traps-replicated-live/robustness-evaluation-2026-05-17T10-53-43-600Z.html`
+
+Revalidation changed `0` outcomes. The adapted condition passed `9/12`
+original false-mastery outcome branches and `8/12` counterfactual readiness
+branches. Static tutoring passed `0/12` original branches and `1/12`
+counterfactual branches.
+
+Aggregate result, `n=24` paired branches:
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+10.760` | `5.177..16.375` | `0.002` | pass |
+| Parent dialogue | `+1.417` | `-3.219..6.157` | `0.569` | fail |
+| Trap outcome | `+66.667` | `45.833..83.333` | `0.000` | pass |
+
+Robustness verdict:
+
+- adaptive-primary robust positive effect established: **yes**;
+- strict all-public-metric confirmation: **no**.
+
+Interpretation: the calibration patch preserves robust adaptive-primary
+effects at the larger scale, but it does not preserve the smaller run's strict
+all-public-metric confirmation. The parent dialogue rubric is slightly
+positive, yet too noisy and too often negative on individual cells to pass the
+strict public gate.
+
+Residual target failures concentrate in two action families:
+
+- programming original/counterfactual branches where the learner names root
+  cause but does not always produce transcript-supported regression or transfer
+  evidence;
+- social-measurement ready branches where the learner does not always
+  explicitly reject the single-item validity shortcut.
+
+The next engineering target is therefore not more global prompt tuning. It is
+to repair these two remaining action-family transfer contracts and stabilize
+parent-dialogue quality while preserving the adaptive-primary gains.
+
 ## 2026-05-16 Trap Outcome Hardening And Transition Model
 
 Implemented these non-integration changes:

@@ -5,6 +5,32 @@ not to benchmax a single rubric; it is to find tutor configurations that show
 public adaptive improvement and then inspect whether the improvement plausibly
 comes from reflexive learner-state and memory mechanisms.
 
+## Current Prototype TODO
+
+Status started 2026-05-17 after the post-science-repair full rerun established
+strict all-public-metric confirmation.
+
+- [x] Push `5adeb9c` / the post-repair replicated result branch.
+- [x] Inspect the two remaining adapted counterfactual misses for over-repair
+  versus validator strictness.
+- [x] Patch calibration so already-ready learners are certified and transferred
+  rather than over-challenged.
+- [x] Run compact causal ablations: full ego/superego/memory controller versus
+  ego-only, no-memory, no-superego, no-challenge/escalation, and static
+  baseline.
+- [x] Replicate at a larger scale after the calibration patch, then add new
+  disciplinary traps only after this benchmark remains stable.
+
+Follow-up from the larger replication:
+
+- [ ] Repair residual programming transfer failures where the learner can name
+  the root cause but does not produce transcript-supported regression/transfer
+  evidence.
+- [ ] Repair residual social-measurement ready-branch failures where the learner
+  does not explicitly reject the single-item validity shortcut.
+- [ ] Improve parent-dialogue stability before claiming strict all-public-metric
+  confirmation beyond the smaller post-science-repair run.
+
 ## Stage 1. Variant Sweep
 
 Compare the static baseline, the non-reflexive controller, and all reflexive

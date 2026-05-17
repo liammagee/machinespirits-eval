@@ -208,6 +208,25 @@ export function selectPolicy({
   }
 
   if (
+    transferGate.required
+    && !transferGate.observed
+    && transferPromptCount === 0
+    && transferGate.status === 'needs_learner_transfer'
+    && evidence.outcome === 'correct'
+    && ['corrective', 'collaborative', 'claim', 'compliant'].includes(evidence.stance)
+    && challengeState?.level === 'resolved'
+  ) {
+    return policy(
+      'transfer_challenge',
+      evidence,
+      'Learner supplied ready-branch evidence; test transfer now instead of treating the correction as another repair demand.',
+      outcomeGate,
+      challengeState,
+      transferGate,
+    );
+  }
+
+  if (
     challengeState?.mode === 'hard'
     && challengeState?.level === 'resolved'
     && evidence.outcome === 'correct'

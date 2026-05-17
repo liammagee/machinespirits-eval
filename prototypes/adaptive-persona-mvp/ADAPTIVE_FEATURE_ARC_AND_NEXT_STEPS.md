@@ -755,3 +755,58 @@ Next steps from here:
 3. keep parent integration deferred until the parent-compatible state/action
    mapping is stable, because the prototype adaptation signal is now stronger
    than the parent-rubric alignment signal.
+
+## Ready-Branch Calibration Follow-Up
+
+Those three steps have now been executed, plus a larger LLM replication.
+
+What changed:
+
+- the post-repair branch was pushed to preserve the prior strict result;
+- the two remaining adapted misses were inspected as calibration failures, not
+  evidence that stronger repair pressure was needed;
+- ready hidden-state branches now move to `transfer_challenge` when learner
+  evidence is correct, challenge state is resolved, and transfer is still
+  required;
+- the debugging validator now recognizes broader action-family language for
+  rejecting final-`NaN` coercion as a masking fix.
+
+Focused ablation on the science/programming calibration slice (`n=4`) showed a
+graded mechanism pattern:
+
+| Variant | MVP Diff | Parent Diff | Outcome Diff | Target Outcomes |
+|---|---:|---:|---:|---:|
+| full ego/superego/memory/challenge | `+22.5` | `+8.75` | `+100` | `4/4` |
+| ego-only | `+6` | `+5` | `0` | `0/4` |
+| no-superego | `+7.5` | `+1.25` | `+25` | `1/4` |
+| no-memory | `+16.25` | `+2.188` | `+50` | `2/4` |
+| no-challenge | `+19.5` | `+6.25` | `+75` | `3/4` |
+
+The larger post-calibration four-trap LLM replication is:
+
+- `outputs/post-calibration-full-traps-replicated-live-revalidated/variant-sweep-revalidated-2026-05-17T10-53-36-582Z.html`
+- `outputs/robustness-post-calibration-full-traps-replicated-live/robustness-evaluation-2026-05-17T10-53-43-600Z.html`
+
+Aggregate result, `n=24` paired branches:
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+10.760` | `5.177..16.375` | `0.002` | pass |
+| Parent dialogue | `+1.417` | `-3.219..6.157` | `0.569` | fail |
+| Trap outcome | `+66.667` | `45.833..83.333` | `0.000` | pass |
+
+Updated claim:
+
+- adaptive-primary robust positive effect is established on this larger
+  four-trap LLM run;
+- strict all-public-metric confirmation is not established at this scale,
+  because parent dialogue is positive but statistically unstable.
+
+Next direction:
+
+1. repair the residual programming transfer contract so root-cause debugging
+   reliably produces transcript-supported regression and transfer evidence;
+2. repair the residual social-measurement ready-branch contract so the learner
+   explicitly rejects the single-item validity shortcut;
+3. stabilize parent-dialogue quality in counterfactual ready branches without
+   weakening the hard hidden-state outcome gates.
