@@ -61,6 +61,7 @@ function extractTurnTrace(history) {
       constraintViolations: [],
       hypotheses: [],
       evidenceLog: [],
+      revisionLedger: [],
       dialogueLength: 0,
     };
     if (v.learnerProfile && v.learnerProfile.updatedAtTurn === turn) {
@@ -100,6 +101,15 @@ function extractTurnTrace(history) {
     if (Array.isArray(v.evidenceLog)) {
       existing.evidenceLog = v.evidenceLog;
     }
+    // A16 (P2): revisionLedger is the same cumulative monotonic append-only
+    // channel as evidenceLog (shares evidenceLogReducer) — latest snap for
+    // the turn carries the full cumulative array, so plain latest-wins is
+    // correct. Only superego_revise_cumulative (S1) writes it; S0 and every
+    // other architecture leave it undefined, so the [] default stands and
+    // the per-turn ledger length stays 0 (the analysable S0/S1 contrast).
+    if (Array.isArray(v.revisionLedger)) {
+      existing.revisionLedger = v.revisionLedger;
+    }
     existing.dialogueLength = Array.isArray(v.dialogue) ? v.dialogue.length : existing.dialogueLength;
     byTurn.set(turn, existing);
   }
@@ -118,11 +128,13 @@ function buildTraceJson({
   const trace = {
     // schemaVersion 2 (A14 Stage 1) adds finalEvidenceLog + finalHypotheses to
     // each branch. schemaVersion 3 (A14 Stage 5 prep) adds per-turn
-    // hypotheses + evidenceLog to each branch's perTurn[] records. Nothing
-    // branches on this number (it is informational); older trace files
-    // without these fields stay readable — analyzers default them to []
-    // when absent.
-    schemaVersion: 3,
+    // hypotheses + evidenceLog to each branch's perTurn[] records.
+    // schemaVersion 4 (A16 P2 §6.3.10) adds finalRevisionLedger + per-turn
+    // revisionLedger so the S1-vs-S0 slope analysis can read the
+    // superego-rewrite ledger growth directly. Nothing branches on this
+    // number (it is informational); older trace files without these fields
+    // stay readable — analyzers default them to [] when absent.
+    schemaVersion: 4,
     profileName,
     scenario: {
       id: scenario.id,
@@ -139,6 +151,7 @@ function buildTraceJson({
       finalTutorInternal: runResult.final.tutorInternal,
       finalEvidenceLog: runResult.final.evidenceLog ?? [],
       finalHypotheses: runResult.final.hypotheses ?? [],
+      finalRevisionLedger: runResult.final.revisionLedger ?? [],
       constraintViolations: runResult.final.constraintViolations,
       perTurn: extractTurnTrace(runResult.history),
     },
@@ -152,6 +165,7 @@ function buildTraceJson({
       finalTutorInternal: counterfactualResult.final.tutorInternal,
       finalEvidenceLog: counterfactualResult.final.evidenceLog ?? [],
       finalHypotheses: counterfactualResult.final.hypotheses ?? [],
+      finalRevisionLedger: counterfactualResult.final.revisionLedger ?? [],
       constraintViolations: counterfactualResult.final.constraintViolations,
       perTurn: extractTurnTrace(counterfactualResult.history),
     };

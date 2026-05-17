@@ -243,6 +243,13 @@ export const EVAL_ONLY_PROFILES = [
   'cell_127_state_policy_evidence_bound_validated',
   // A14 Stage 5 diagnostic (full audit chain on cell_118's minimal profile)
   'cell_128_state_policy_minimal_profile_evidence_bound_validated',
+  // A16 (P2) §6.3.10 — superego-authored ego-prompt rewrite (S0/S1 decisive contrast)
+  'cell_129_superego_revise_stateless',
+  'cell_130_superego_revise_cumulative',
+  // A16 (P3) §6.3.10 — A (advisory) arm: model-aligned ego_superego (new cell, NOT cell_112; named deviation, Appendix E v3.0.81)
+  'cell_131_a16_A_egosuperego',
+  // A16 (P3) §6.3.10 — F (floor) arm: recognition_only, byte-identical to cell_111 (new cell, NOT cell_111; protects A13 C1 provenance; named deviation, Appendix E)
+  'cell_132_a16_F_recognition_only',
 ];
 
 /**

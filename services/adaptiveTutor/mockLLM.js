@@ -5,26 +5,56 @@
 // behind a single interface (`callRole`) means the graph nodes don't change.
 
 const fixtures = {
-  tutorEgoInitial: ({ learnerLastMessage, learnerProfile }) => {
+  tutorEgoInitial: ({ learnerProfile }) => {
     const c = learnerProfile.confidence;
     const sig = learnerProfile.agencySignal;
-    if (sig === 'resistant') return { policyAction: 'scope_test', text: 'Your objection is doing real work. Try this case: imagine the same setup but with X negated — what would your answer be?' };
-    if (sig === 'compliant' && c < 0.5) return { policyAction: 'lower_cognitive_load', text: `Let's slow this down. What part is hardest to hold in mind right now?` };
-    if (sig === 'questioning') return { policyAction: 'mirror_and_extend', text: 'Good question — let me push it one step further. If we accept the premise, what does it commit us to?' };
-    return { policyAction: 'ask_diagnostic_question', text: 'What would change in your answer if the input were different?' };
+    if (sig === 'resistant')
+      return {
+        policyAction: 'scope_test',
+        text: 'Your objection is doing real work. Try this case: imagine the same setup but with X negated — what would your answer be?',
+      };
+    if (sig === 'compliant' && c < 0.5)
+      return {
+        policyAction: 'lower_cognitive_load',
+        text: `Let's slow this down. What part is hardest to hold in mind right now?`,
+      };
+    if (sig === 'questioning')
+      return {
+        policyAction: 'mirror_and_extend',
+        text: 'Good question — let me push it one step further. If we accept the premise, what does it commit us to?',
+      };
+    return {
+      policyAction: 'ask_diagnostic_question',
+      text: 'What would change in your answer if the input were different?',
+    };
   },
 
   // Mock for cell_116. Same heuristic as tutorEgoInitial — under mock there
   // is no actual prompt in play, so the named-patterns variant is
   // distinguishable only at real-LLM time. The mock delegates so smoke
   // tests stay deterministic.
-  tutorEgoInitialNamedPatterns: ({ learnerLastMessage, learnerProfile }) => {
+  tutorEgoInitialNamedPatterns: ({ learnerProfile }) => {
     const c = learnerProfile.confidence;
     const sig = learnerProfile.agencySignal;
-    if (sig === 'resistant') return { policyAction: 'scope_test', text: 'Your objection is doing real work. Try this case: imagine the same setup but with X negated — what would your answer be?' };
-    if (sig === 'compliant' && c < 0.5) return { policyAction: 'lower_cognitive_load', text: `Let's slow this down. What part is hardest to hold in mind right now?` };
-    if (sig === 'questioning') return { policyAction: 'mirror_and_extend', text: 'Good question — let me push it one step further. If we accept the premise, what does it commit us to?' };
-    return { policyAction: 'ask_diagnostic_question', text: 'What would change in your answer if the input were different?' };
+    if (sig === 'resistant')
+      return {
+        policyAction: 'scope_test',
+        text: 'Your objection is doing real work. Try this case: imagine the same setup but with X negated — what would your answer be?',
+      };
+    if (sig === 'compliant' && c < 0.5)
+      return {
+        policyAction: 'lower_cognitive_load',
+        text: `Let's slow this down. What part is hardest to hold in mind right now?`,
+      };
+    if (sig === 'questioning')
+      return {
+        policyAction: 'mirror_and_extend',
+        text: 'Good question — let me push it one step further. If we accept the premise, what does it commit us to?',
+      };
+    return {
+      policyAction: 'ask_diagnostic_question',
+      text: 'What would change in your answer if the input were different?',
+    };
   },
 
   tutorSuperego: ({ tutorInternal, learnerProfile }) => {
@@ -41,7 +71,10 @@ const fixtures = {
 
   tutorEgoRevision: ({ tutorInternal }) => {
     const previous = tutorInternal.egoDraft;
-    return { text: previous.replace(/let me explain/i, 'let me ask you something instead'), policyAction: 'scope_test' };
+    return {
+      text: previous.replace(/let me explain/i, 'let me ask you something instead'),
+      policyAction: 'scope_test',
+    };
   },
 
   // Stricter second-pass than the superego: re-checks the just-picked
@@ -52,8 +85,7 @@ const fixtures = {
   tutorValidator: ({ policyAction, tutorDraft, learnerProfile }) => {
     const sig = learnerProfile?.agencySignal;
     const conf = learnerProfile?.confidence ?? 0.5;
-    if ((policyAction === 'give_worked_example' || policyAction === 'lower_cognitive_load')
-        && sig === 'resistant') {
+    if ((policyAction === 'give_worked_example' || policyAction === 'lower_cognitive_load') && sig === 'resistant') {
       return { needsRevision: true, feedback: `policy ${policyAction} contraindicated for resistant learner` };
     }
     if (policyAction === 'withhold_answer' && /the answer is/i.test(tutorDraft || '')) {
@@ -70,27 +102,30 @@ const fixtures = {
   // FANToM-style probes. Heuristic — derives from the current learnerProfile
   // (so the field actually moves turn-over-turn under mock) and the dialogue
   // length (for the answerability/infoaccess turn-index lists).
-  tutorTomTracker: ({ learnerProfile, dialogue, turn }) => {
+  tutorTomTracker: ({ learnerProfile, dialogue }) => {
     const sig = learnerProfile?.agencySignal || 'unknown';
     const conf = typeof learnerProfile?.confidence === 'number' ? learnerProfile.confidence : 0.5;
     const misconception = learnerProfile?.misconceptions?.[0] || '';
-    const perceivedRole = sig === 'resistant' ? 'adversary'
-      : sig === 'compliant' ? 'authority'
-      : sig === 'questioning' ? 'thinking-partner'
-      : 'unknown';
-    const tutorTurnsSeen = Array.isArray(dialogue)
-      ? dialogue.filter((m) => m.role === 'tutor').length
-      : 0;
+    const perceivedRole =
+      sig === 'resistant'
+        ? 'adversary'
+        : sig === 'compliant'
+          ? 'authority'
+          : sig === 'questioning'
+            ? 'thinking-partner'
+            : 'unknown';
+    const tutorTurnsSeen = Array.isArray(dialogue) ? dialogue.filter((m) => m.role === 'tutor').length : 0;
     return {
       summaryText: `Tutor's current belief: learner is ${sig} (confidence ~${conf.toFixed(2)})${misconception ? `, suspected misconception: "${misconception}"` : ''}.`,
       hypothesizedLearnerPerceptionOfTutor: {
-        summaryText: sig === 'resistant'
-          ? 'Learner likely sees the tutor as pushing them toward an answer they disagree with.'
-          : sig === 'compliant'
-            ? 'Learner likely defers to the tutor as the authority on the topic.'
-            : sig === 'questioning'
-              ? 'Learner likely sees the tutor as a thinking partner exploring the question with them.'
-              : 'Learner has not yet formed a stable read of the tutor.',
+        summaryText:
+          sig === 'resistant'
+            ? 'Learner likely sees the tutor as pushing them toward an answer they disagree with.'
+            : sig === 'compliant'
+              ? 'Learner likely defers to the tutor as the authority on the topic.'
+              : sig === 'questioning'
+                ? 'Learner likely sees the tutor as a thinking partner exploring the question with them.'
+                : 'Learner has not yet formed a stable read of the tutor.',
         jsonState: { perceivedRole, tutorTurnsSeen },
       },
       tomProbes: {
@@ -111,13 +146,14 @@ const fixtures = {
   // learnerProfile so the mock exercises the both-arms-of-the-graph path.
   idAuthorPersona: ({ learnerProfile, previousPersona, turn }) => {
     const sig = learnerProfile?.agencySignal || 'unknown';
-    const persona = sig === 'resistant'
-      ? 'patient interlocutor; surface the disagreement, do not push'
-      : sig === 'compliant'
-        ? 'attentive but unsatisfied; probe whether agreement is real'
-        : sig === 'questioning'
-          ? 'collaborator; extend the question, do not collapse to an answer'
-          : 'curious witness; ask one clarifying probe';
+    const persona =
+      sig === 'resistant'
+        ? 'patient interlocutor; surface the disagreement, do not push'
+        : sig === 'compliant'
+          ? 'attentive but unsatisfied; probe whether agreement is real'
+          : sig === 'questioning'
+            ? 'collaborator; extend the question, do not collapse to an answer'
+            : 'curious witness; ask one clarifying probe';
     const generated_prompt = [
       `You are a tutor. The learner's current stance reads as "${sig}". Adopt this voice for this turn: ${persona}.`,
       'Speak briefly. Do not lecture. End with a probe that the learner can answer in one or two sentences.',
@@ -139,10 +175,25 @@ const fixtures = {
   tutorEgoExecute: ({ learnerProfile }) => {
     const sig = learnerProfile?.agencySignal || 'unknown';
     const c = typeof learnerProfile?.confidence === 'number' ? learnerProfile.confidence : 0.5;
-    if (sig === 'resistant') return { policyAction: 'scope_test', text: '(id-authored) Your pushback is doing real work — let me test the edge of it. If we accepted the opposite, what would change?' };
-    if (sig === 'compliant' && c < 0.5) return { policyAction: 'lower_cognitive_load', text: '(id-authored) Slow it down. What part of the setup is hardest to hold in mind right now?' };
-    if (sig === 'questioning') return { policyAction: 'mirror_and_extend', text: '(id-authored) Good question — push it one step. If the premise holds, what does it commit us to?' };
-    return { policyAction: 'ask_diagnostic_question', text: '(id-authored) What would change in your answer if the input were different?' };
+    if (sig === 'resistant')
+      return {
+        policyAction: 'scope_test',
+        text: '(id-authored) Your pushback is doing real work — let me test the edge of it. If we accepted the opposite, what would change?',
+      };
+    if (sig === 'compliant' && c < 0.5)
+      return {
+        policyAction: 'lower_cognitive_load',
+        text: '(id-authored) Slow it down. What part of the setup is hardest to hold in mind right now?',
+      };
+    if (sig === 'questioning')
+      return {
+        policyAction: 'mirror_and_extend',
+        text: '(id-authored) Good question — push it one step. If the premise holds, what does it commit us to?',
+      };
+    return {
+      policyAction: 'ask_diagnostic_question',
+      text: '(id-authored) What would change in your answer if the input were different?',
+    };
   },
 
   learnerProfileUpdate: ({ learnerLastMessage, hidden, currentProfile, turn }) => {
@@ -184,9 +235,7 @@ const fixtures = {
     const msg = (learnerLastMessage || '').trim();
     if (!msg) return { evidence: [] };
     const head = msg.slice(0, Math.min(60, msg.length));
-    const evidence = [
-      { quote: head, type: 'learner_self_report', kc_candidates: [] },
-    ];
+    const evidence = [{ quote: head, type: 'learner_self_report', kc_candidates: [] }];
     // Inject a clearly hallucinated quote (prefix with a sentinel character
     // that won't appear elsewhere in the dialogue) so the substring-match
     // gate flips validated=false on every turn where this fires. This
@@ -293,10 +342,49 @@ const fixtures = {
     return { decisions };
   },
 
+  // A16 (P2): deterministic adversarial-rewrite superego mock (§6.3.10).
+  // Detects a frustration signal by string-matching the real dialogue —
+  // mirrors the prototype's branch-blind triggerState heuristic, and never
+  // consults a scenario answer key (the validity choice). The S0/S1
+  // difference — the entire pre-registered decisive contrast — is visible
+  // HERE and is provable under mock without any paid call: the stateless arm
+  // (cumulative=false) re-derives the SAME flat directive every turn (no
+  // memory); the cumulative arm escalates, explicitly chaining onto its
+  // prior ledger depth. Under mock the ego ignores the rewritten prompt (no
+  // real prompt in play — same posture as the id-director mock), so this
+  // fixture proves WIRING + ledger statefulness, not behavioural conversion
+  // (that needs the real-LLM P3 run).
+  superegoRevise: ({ dialogue, turn, priorLedger, cumulative }) => {
+    const blob = (dialogue || [])
+      .map((m) => m.content || '')
+      .join('\n')
+      .toLowerCase();
+    const frustrated =
+      /\b(but|however|don'?t get|confused|lost|disagree|why should|i still|not following|stuck)\b/.test(blob);
+    const signal = frustrated ? `learner pushback/confusion detected at turn ${turn}` : '';
+    const priorCount = Array.isArray(priorLedger) ? priorLedger.length : 0;
+    const directive =
+      cumulative && priorCount > 0
+        ? `escalate: building on ${priorCount} prior rewrite(s), sharpen the adaptation (cumulative step ${priorCount + 1})`
+        : frustrated
+          ? 'adapt: stop explaining, surface and address the learner objection directly'
+          : 'hold: no frustration evident — keep the responsive baseline';
+    const newSystemPrompt = [
+      'You are a patient one-on-one tutor. Keep replies to 1-5 sentences and',
+      'stay responsive to what the learner actually says.',
+      `[[SUPEREGO_DIRECTIVE@t${turn}]] ${directive}`,
+      cumulative && priorCount > 0
+        ? `[[LEDGER_DEPTH]] ${priorCount}`
+        : '[[STATELESS_REWRITE]] re-derived from scratch this turn',
+    ].join('\n');
+    return { newSystemPrompt, detectedFrustrationSignal: signal, correctiveDirective: directive };
+  },
+
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => {
     if (turn === hidden.triggerTurn) return hidden.triggerSignal || 'I have a different read on that.';
     if (/ask you something/i.test(tutorLastMessage || '')) return 'OK, let me try.';
-    if (hidden.actualSophistication === 'advanced') return 'But that only works if we assume X — what about the case where not-X?';
+    if (hidden.actualSophistication === 'advanced')
+      return 'But that only works if we assume X — what about the case where not-X?';
     return 'Hmm, can you explain more?';
   },
 };

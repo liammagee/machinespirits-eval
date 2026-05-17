@@ -69,6 +69,12 @@ const tutorInternalSchema = z.object({
   policyAction: z.string().default(''),
   idConstruction: idConstructionSchema.optional(),
   idAuthoredPrompt: z.string().default(''),
+  // A16 (P2): the superego-authored ego system prompt for the
+  // superego_revise_* architectures (§6.3.10 pre-registration). Kept a
+  // separate channel from idAuthoredPrompt so the id-director and
+  // superego-rewrite crossovers never collide; tutorEgoInitial prefers this
+  // when present and otherwise falls back to idAuthoredPrompt.
+  superegoAuthoredPrompt: z.string().default(''),
 });
 
 // A14 evidence-bound adaptive controller — Stage 1 schema.
@@ -107,12 +113,7 @@ const evidenceEntrySchema = z.object({
   validated: z.boolean().default(false),
 });
 
-const hypothesisStatusSchema = z.enum([
-  'tentative',
-  'validated',
-  'contradicted',
-  'expired',
-]);
+const hypothesisStatusSchema = z.enum(['tentative', 'validated', 'contradicted', 'expired']);
 
 const hypothesisSchema = z.object({
   hypothesis_id: z.string(),
@@ -146,12 +147,24 @@ const hypothesesReducer = (prev, next) => {
   return [...byId.values()];
 };
 
-export {
-  evidenceTypeSchema,
-  evidenceEntrySchema,
-  hypothesisStatusSchema,
-  hypothesisSchema,
-};
+// A16 (P2): cumulative-rewrite superego ledger entry (§6.3.10
+// pre-registration). One append-only entry per turn, written ONLY by the
+// superego_revise_cumulative (S1) architecture, recording what frustration
+// the superego read off the dialogue, the corrective directive it issued,
+// and the head of the rewritten ego prompt. The stateless arm (S0,
+// ≈ id-director) never writes here — the empty-vs-growing ledger is the
+// operationalisation of the pre-registered rewrite-policy-statefulness
+// contrast, and the only S0/S1 difference. Reuses evidenceLogReducer:
+// append-only, content-stable under counterfactual replay — identical
+// channel discipline to evidenceLog.
+const revisionLedgerEntrySchema = z.object({
+  turn: z.number().int(),
+  detectedFrustrationSignal: z.string().default(''),
+  correctiveDirective: z.string().default(''),
+  promptDiffHead: z.string().default(''),
+});
+
+export { evidenceTypeSchema, evidenceEntrySchema, hypothesisStatusSchema, hypothesisSchema, revisionLedgerEntrySchema };
 
 export const initialLearnerProfile = () => learnerProfileSchema.parse({});
 export const initialTutorInternal = () => tutorInternalSchema.parse({});
@@ -207,5 +220,18 @@ export const AdaptiveTutorState = new StateSchema({
   hypotheses: new ReducedValue(
     z.array(hypothesisSchema).default(() => []),
     { reducer: hypothesesReducer },
+  ),
+
+  // A16 (P2): append-only superego-rewrite ledger (§6.3.10). ONLY the
+  // superego_revise_cumulative (S1) architecture writes here — one entry
+  // per turn via the superegoRevise node. The stateless arm (S0) never
+  // returns the key, so the [] default stands and the channel stays empty.
+  // The empty-vs-growing distinction is the entire pre-registered S0/S1
+  // contrast. Shares evidenceLogReducer (append-only) — same channel
+  // discipline as evidenceLog; architectures that never write it remain
+  // backward-compatible (default []).
+  revisionLedger: new ReducedValue(
+    z.array(revisionLedgerEntrySchema).default(() => []),
+    { reducer: evidenceLogReducer },
   ),
 });

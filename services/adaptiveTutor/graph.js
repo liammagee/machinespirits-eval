@@ -60,6 +60,18 @@
 //     on a different scenario family (115 stronger on false_confusion;
 //     116 stronger on polite_false_mastery), so additivity is plausible
 //     but not guaranteed.
+//
+//   superego_revise_stateless / superego_revise_cumulative
+//                              (A16 §6.3.10 pre-registration — P2)
+//     learnerTurn ↔ superegoRevise → tutorEgoInitial → tutorEmit
+//     The F-floor topology (= recognition_only) with a superegoRevise node
+//     inserted before the ego. The superego reads the full real dialogue
+//     and rewrites the ego's entire system prompt for the turn (ported from
+//     prototypes/adversarial-superego-mvp; scenario answer key never shown).
+//     The two arms are byte-identical except for rewrite-policy
+//     statefulness: _stateless (S0 ≈ id-director — no memory of prior
+//     rewrites) vs _cumulative (S1 — threads + appends its own
+//     revisionLedger). S1-vs-S0 is the pre-registered decisive contrast.
 
 import { createHash } from 'crypto';
 import { StateGraph, START, END } from '@langchain/langgraph';
@@ -116,6 +128,20 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // discipline; cell_128 vs cell_127 holds the audit chain fixed and varies
   // profile width — separating trust/grounding from capacity/load.
   'state_policy_minimal_profile_evidence_bound_validated',
+  // A16 (P2): adversarial-rewrite superego, promoted from
+  // prototypes/adversarial-superego-mvp under the §6.3.10 pre-registration.
+  // The superego sees the full tutor↔learner dialogue and REWRITES the ego's
+  // entire system prompt for its next turn (the prototype's proven channel;
+  // message-array mutation was shown non-load-bearing — the v3 finding).
+  // Two arms differing ONLY in rewrite-policy statefulness (the pre-registered
+  // decisive S1-vs-S0 contrast): superego_revise_stateless (S0 ≈ id-director —
+  // every rewrite re-derived from scratch, no memory of prior corrections)
+  // vs superego_revise_cumulative (S1 — the superego threads its own prior
+  // revisionLedger into each rewrite and appends to it; the psychoanalytic
+  // continuous-revision analogue). The superegoRevise role prompt and the
+  // ego node are byte-identical across the two arms (validity control).
+  'superego_revise_stateless',
+  'superego_revise_cumulative',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 
@@ -210,7 +236,14 @@ async function tutorTomTracker(state) {
 
 async function tutorEgoInitial(state) {
   const learnerLastMessage = lastTextOf(state.dialogue, 'learner');
-  const systemPromptOverride = state.tutorInternal?.idAuthoredPrompt || undefined;
+  // A16 (P2): the superego_revise_* superegoRevise node writes a dedicated
+  // superegoAuthoredPrompt; prefer it, falling back to the id-director's
+  // idAuthoredPrompt (cells 121/122). No architecture writes both, so the
+  // precedence is unambiguous and the ego node stays byte-identical across
+  // the S0/S1 arms (the §6.3.10 validity control) while reusing the proven
+  // id-director system-prompt-override channel — no new ego machinery.
+  const systemPromptOverride =
+    state.tutorInternal?.superegoAuthoredPrompt || state.tutorInternal?.idAuthoredPrompt || undefined;
   const out = await callRole('tutorEgoInitial', {
     learnerLastMessage,
     learnerProfile: state.learnerProfile,
@@ -275,6 +308,62 @@ async function tutorEgoExecute(state) {
       superegoFeedback: '',
       egoRevision: '',
     },
+  };
+}
+
+// A16 (P2): adversarial-rewrite superego node, promoted from
+// prototypes/adversarial-superego-mvp under the §6.3.10 pre-registration.
+// Structurally modelled on idAuthorPersona (the id-director persona
+// constructor) but writes a DEDICATED tutorInternal.superegoAuthoredPrompt
+// — consumed by tutorEgoInitial via the existing system-prompt-override
+// path, so no ego-node change and the ego stays byte-identical across the
+// S0/S1 arms (the pre-registered validity control).
+//
+// Ported from the prototype's buildCrossSuiteSuperegoPrompt
+// (adversarial_prompt_only shape): the role sees ONLY the real dialogue —
+// never the scenario's expected-strategy-shift answer key — preserving the
+// prototype's stated validity choice (handing the target would make the
+// arm win trivially).
+//
+// The factory's `cumulative` flag is the ENTIRE operationalisation of the
+// pre-registered decisive S1-vs-S0 contrast and the only thing that differs
+// between the two arms:
+//   S0 (stateless, ≈ id-director): passes no prior ledger and appends
+//     nothing — each rewrite is re-derived from scratch.
+//   S1 (cumulative): threads its own prior revisionLedger into the rewrite
+//     context and appends exactly one ledger entry per turn through the
+//     append-only channel (evidenceLogReducer) — the psychoanalytic
+//     continuous-revision analogue. The role prompt is byte-identical to S0.
+function makeSuperegoRevise(architecture) {
+  const cumulative = architecture === 'superego_revise_cumulative';
+  return async function superegoRevise(state) {
+    const priorLedger = cumulative ? state.revisionLedger || [] : [];
+    const out = await callRole('superegoRevise', {
+      dialogue: state.dialogue,
+      turn: state.turn,
+      priorLedger,
+      cumulative,
+    });
+    const newPrompt = String(out?.newSystemPrompt || '');
+    const update = {
+      tutorInternal: {
+        ...state.tutorInternal,
+        superegoAuthoredPrompt: newPrompt,
+      },
+    };
+    if (cumulative) {
+      // Exactly one append per turn — same single-entry-per-turn discipline
+      // as A14's evidenceExtractor on the shared append-only reducer.
+      update.revisionLedger = [
+        {
+          turn: state.turn,
+          detectedFrustrationSignal: String(out?.detectedFrustrationSignal || ''),
+          correctiveDirective: String(out?.correctiveDirective || ''),
+          promptDiffHead: newPrompt.slice(0, 240),
+        },
+      ];
+    }
+    return update;
   };
 }
 
@@ -611,6 +700,32 @@ export function buildGraph(options = {}) {
       .addEdge('tutorEgoRevision', 'tutorEmit')
       .addEdge('tutorEmit', 'learnerTurn')
       .addConditionalEdges('learnerTurn', routeAfterLearner('tutorEgoInitial'), ['tutorEgoInitial', END]);
+  }
+
+  if (architecture === 'superego_revise_stateless' || architecture === 'superego_revise_cumulative') {
+    // A16 (P2): the F-floor topology (= recognition_only — ego → emit →
+    // learner, with NO learnerProfileUpdate / constraintCheck /
+    // tutorEgoRevision) with a single superegoRevise node inserted BEFORE
+    // the ego, so the rewritten system prompt is in force for the ego's one
+    // call this turn. Holding the topology identical to the F floor
+    // (cell_111 / recognition_only) makes the inserted superego-rewrite node
+    // the sole architectural difference vs F; S0 vs S1 then differ only in
+    // the revisionLedger statefulness inside that node — the two nested
+    // contrasts the §6.3.10 pre-registration scores. Counterfactual replay
+    // is a deliberate no-op here (no learnerProfileUpdate fork point — same
+    // as recognition_only / ego_superego; runner.js gates on
+    // ARCHITECTURES_WITH_PROFILE_UPDATE, which excludes these by design).
+    const superegoRevise = makeSuperegoRevise(architecture);
+    return new StateGraph(AdaptiveTutorState)
+      .addNode('superegoRevise', superegoRevise)
+      .addNode('tutorEgoInitial', tutorEgoInitial)
+      .addNode('tutorEmit', tutorEmit)
+      .addNode('learnerTurn', learnerTurn)
+      .addEdge(START, 'superegoRevise')
+      .addEdge('superegoRevise', 'tutorEgoInitial')
+      .addEdge('tutorEgoInitial', 'tutorEmit')
+      .addEdge('tutorEmit', 'learnerTurn')
+      .addConditionalEdges('learnerTurn', routeAfterLearner('superegoRevise'), ['superegoRevise', END]);
   }
 
   // state_policy, state_policy_with_validator, bilateral_tom,

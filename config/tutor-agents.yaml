@@ -5682,3 +5682,181 @@ profiles:
         max_tokens: 1500
       counterfactual:
         enabled: true
+
+  # ===========================================================================
+  # A16 (P2) — Superego-Authored Ego-Prompt Rewrite (cells 129-130, §6.3.10)
+  # ===========================================================================
+  # The decisive S0/S1 contrast in the pre-registered 4-arm F/A/S0/S1 design
+  # (paper-full-2.0.md §6.3.10). A superego agent reads the full tutor-ego ↔
+  # learner transcript and REWRITES the ego's entire system prompt each turn
+  # (the nearest no-retraining analogue to psychoanalytic ego-revision under
+  # discursive frustration). Topology mirrors cell_111 (recognition_only, the
+  # F floor) with one superegoRevise node inserted BEFORE the ego, so S0/S1 are
+  # maximally comparable to F. Both arms share a byte-identical ego node and a
+  # byte-identical superegoRevise role prompt; the ONLY difference is rewrite-
+  # policy statefulness:
+  #   - cell_129 (S0, stateless): superego sees only the current transcript.
+  #     Functionally ≈ id-director — each rewrite is independent. Empty
+  #     revisionLedger by construction (the graph never returns the channel).
+  #   - cell_130 (S1, cumulative): superego additionally threads its OWN prior
+  #     per-turn rewrite ledger, so corrective directives can build on prior
+  #     ones (continuous-learning analogue). Appends one revisionLedger entry
+  #     per turn via the A14 evidenceLogReducer (append-only, replay-stable).
+  # Pre-registered prediction: cumulative S1 shows a steeper across-turn
+  # adaptation slope than stateless S0; F < {S0,S1} on adaptation. Validity
+  # control (ported from prototypes/adversarial-superego-mvp): the superego is
+  # NEVER shown the scenario's accepted strategy-shift answer key.
+  # claude-code/sonnet to match the F floor (cell_111) — S0 and S1 MUST share
+  # provider/model since their contrast is the experiment. counterfactual
+  # disabled: like recognition_only there is no learnerProfileUpdate fork point
+  # (a deliberate, documented no-op — see services/adaptiveTutor/graph.js).
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_129_superego_revise_stateless
+  cell_129_superego_revise_stateless:
+    description: "A16 (P2) arm S0: superego rewrites the ego's entire system prompt each turn from the current transcript only (stateless rewrite policy, functionally ≈ id-director). recognition_only topology (cell_111 F floor) + one superegoRevise node before the ego. Decisive contrast is vs cell_130 (S1, cumulative ledger) — byte-identical ego and superego role prompt; only rewrite-policy statefulness differs. Empty revisionLedger by construction. Superego never sees the scenario answer key. Pre-registration: paper-full-2.0.md §6.3.10; origin TODO.md A16."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_superego_revise_stateless
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: superego_revise_stateless
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # A16 (P2) arm S1 — cumulative rewrite policy. Identical to cell_129 in every
+  # respect (topology, ego node, superegoRevise role prompt, provider, model,
+  # hyperparameters, scenarios) EXCEPT the superego additionally threads its own
+  # accumulated per-turn rewrite ledger into each rewrite, and appends one
+  # ledger entry/turn. The empty-vs-growing revisionLedger is the entire
+  # operationalisation of the pre-registered rewrite-policy-statefulness
+  # contrast (S1 vs S0). Reachable via: node scripts/eval-cli.js run --profiles cell_130_superego_revise_cumulative
+  cell_130_superego_revise_cumulative:
+    description: "A16 (P2) arm S1: superego rewrites the ego's entire system prompt each turn, additionally threading its OWN accumulated prior rewrite ledger (cumulative/stateful rewrite policy — the continuous-learning analogue). Byte-identical to cell_129 (S0) except the cumulative ledger threading + per-turn revisionLedger append (A14 evidenceLogReducer). The empty-vs-growing ledger is the decisive S1-vs-S0 contrast. Superego never sees the scenario answer key. Pre-registration: paper-full-2.0.md §6.3.10; origin TODO.md A16."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_superego_revise_cumulative
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: superego_revise_cumulative
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # ===========================================================================
+  # A16 (P3) — A (advisory) arm: model-aligned ego_superego (cell 131, §6.3.10)
+  # ===========================================================================
+  # The pre-registered A (advisory) arm of the §6.3.10 four-arm F/A/S0/S1
+  # design. §6.3.10 identified A with the EXISTING cell_112 (A13 C2,
+  # ego_superego). But cell_112 carries paper-cited A13 C2 data on
+  # openrouter/nemotron (§6.8.4, "cell_112 ... 30.4% (7/23)"); reusing it in
+  # place would either contaminate that provenance (claude-code/sonnet rows
+  # under the same profile_name as cited nemotron data — the cross-provider
+  # contamination CLAUDE.md prohibits) or leave A off-model versus F
+  # (cell_111), S0 (cell_129), S1 (cell_130) — all claude-code/sonnet. A is
+  # therefore realised as this NEW dedicated cell, architecture ego_superego
+  # on claude-code/sonnet, holding cell_112 frozen. This aligns all four arms
+  # on one model (the clean 4-way) and is a NAMED pre-registration deviation
+  # recorded in §6.3.10's implementation note + Appendix E v3.0.81 —
+  # consistent with §6.3.10's own statement that concrete cell_* IDs are
+  # fixed in P2/P3 against a fresh allocation check per the §5.12.1
+  # cell-registry convention, not pre-allocated. ego_superego has no
+  # learnerProfileUpdate fork point, so counterfactual is a deliberate no-op
+  # (same as recognition_only / cell_112; runner.js
+  # ARCHITECTURES_WITH_PROFILE_UPDATE excludes it by design).
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_131_a16_A_egosuperego
+  cell_131_a16_A_egosuperego:
+    description: "A16 (§6.3.10) arm A (advisory): ego/superego two-pass tutor (feedback → optional ego revision; NO prompt rewrite) on claude-code/sonnet. NEW dedicated cell, NOT cell_112 — realised model-aligned with F=cell_111 / S0=cell_129 / S1=cell_130 (all claude-code/sonnet) for a clean 4-way, holding cell_112's paper-cited A13 C2 nemotron provenance frozen. Named pre-registration deviation: §6.3.10 implementation note + Appendix E v3.0.81. Same trap scenarios as the other A16 arms so the per-dialogue policyAction slope contrasts cleanly."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_ego_superego
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: ego_superego
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false
+
+  # A16 (§6.3.10) arm F (floor): recognition-only single-call ego, the F-floor
+  # topology shared with cell_110/cell_111. §6.3.10 identified F with the
+  # EXISTING cell_111_a13_C1_recognition_only. But cell_111 carries paper-cited
+  # A13 C1 data on BOTH providers (claude-code/sonnet: 29 rows/3 runs; and
+  # openrouter/nemotron: 42 rows/5 runs — §6.8.x). Reusing that profile_name
+  # for A16's F arm would pool 48 new A16-F rows into a paper-cited cell
+  # separable only by run_id — a naive `WHERE profile_name=... AND
+  # provider='claude-code'` query would silently contaminate the A13 C1
+  # headline. F is therefore realised as this NEW dedicated cell, architecture
+  # BYTE-IDENTICAL to cell_111_a13_C1_recognition_only (adaptive /
+  # recognition_only / claude-code / sonnet / counterfactual off), holding
+  # cell_111's A13 provenance frozen. This is the exact symmetric move already
+  # applied to A=cell_131 (vs frozen cell_112): all four A16 arms get pristine,
+  # self-documenting profile_names (F=cell_132 / A=cell_131 / S0=cell_129 /
+  # S1=cell_130, all claude-code/sonnet → clean 4-way). NAMED pre-registration
+  # deviation recorded in §6.3.10's implementation note + Appendix E —
+  # consistent with §6.3.10 fixing concrete cell_* IDs in P2/P3 against a fresh
+  # §5.12.1 allocation check, not pre-allocating them. recognition_only has no
+  # learnerProfileUpdate fork point, so counterfactual is a deliberate no-op
+  # (identical to cell_111).
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_132_a16_F_recognition_only
+  cell_132_a16_F_recognition_only:
+    description: "A16 (§6.3.10) arm F (floor): recognition-only single-call ego (no superego, no profile update, no constraint check) on claude-code/sonnet. NEW dedicated cell, architecture byte-identical to cell_111_a13_C1_recognition_only — realised model-aligned with A=cell_131 / S0=cell_129 / S1=cell_130 (all claude-code/sonnet) for a clean 4-way, holding cell_111's paper-cited A13 C1 provenance (both providers) frozen. Named pre-registration deviation: §6.3.10 implementation note + Appendix E. Same trap scenarios as the other A16 arms so the per-dialogue policyAction slope contrasts cleanly."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_recognition_only
+      multi_agent_tutor: false
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: recognition_only
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: false

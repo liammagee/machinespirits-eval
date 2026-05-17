@@ -55,7 +55,7 @@ const RETRYABLE_ERROR_PATTERNS = [
   /socket hang up/i,
   /network error/i,
   /\b5\d\d\b/, // 500-series upstream errors
-  /\b429\b/,   // rate limit — back off, don't bail
+  /\b429\b/, // rate limit — back off, don't bail
   /rate.?limit/i,
 ];
 const NON_RETRYABLE_ERROR_PATTERNS = [
@@ -103,7 +103,9 @@ const CLI_TRACE = process.env.ADAPTIVE_TUTOR_CLI_TRACE === '1';
 async function callClaudeCli(systemPrompt, userPrompt, model, role) {
   const start = Date.now();
   if (CLI_TRACE) {
-    console.error(`[claude-cli] start role=${role} sys=${systemPrompt.length}ch usr=${userPrompt.length}ch model=${model || 'default'}`);
+    console.error(
+      `[claude-cli] start role=${role} sys=${systemPrompt.length}ch usr=${userPrompt.length}ch model=${model || 'default'}`,
+    );
   }
   return await new Promise((resolve, reject) => {
     // Pass the system prompt via --system-prompt rather than concatenating
@@ -115,11 +117,7 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
     //      and either fails or jsonrepair coerces the prose into JSON.
     //   2. Cleanly separates system from user — stdin carries just the user
     //      prompt, mirroring the (system, messages[]) shape of the API.
-    const args = [
-      '-p', '-',
-      '--output-format', 'text',
-      '--system-prompt', systemPrompt,
-    ];
+    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
     if (model) args.push('--model', model);
     const env = { ...process.env };
     delete env.CLAUDE_CODE;
@@ -138,16 +136,31 @@ async function callClaudeCli(systemPrompt, userPrompt, model, role) {
       // mid-stream" — the former points at CLI/network init issues, the
       // latter at server-side stream completion.
       const sawAny = firstByteAt != null;
-      console.error(`[claude-cli] TIMEOUT role=${role} elapsed=${elapsed}ms outBytes=${out.length} firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'}`);
-      try { child.kill('SIGKILL'); } catch (_) { /* already gone */ }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length}, firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'})`));
+      console.error(
+        `[claude-cli] TIMEOUT role=${role} elapsed=${elapsed}ms outBytes=${out.length} firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'}`,
+      );
+      try {
+        child.kill('SIGKILL');
+      } catch (_) {
+        /* already gone */
+      }
+      reject(
+        new Error(
+          `claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length}, firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'})`,
+        ),
+      );
     }, CLAUDE_CLI_TIMEOUT_MS);
     child.stdout.on('data', (d) => {
       if (firstByteAt == null) firstByteAt = Date.now();
       out += d;
     });
-    child.stderr.on('data', (d) => { err += d; });
-    child.on('error', (e) => { clearTimeout(cliTimeout); reject(e); });
+    child.stderr.on('data', (d) => {
+      err += d;
+    });
+    child.on('error', (e) => {
+      clearTimeout(cliTimeout);
+      reject(e);
+    });
     child.on('close', (code) => {
       clearTimeout(cliTimeout);
       if (code !== 0) {
@@ -180,19 +193,21 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   // Branch the per-call function on provider: claude-code goes through a local
   // CLI subprocess and skips tutor-core entirely; everything else keeps the
   // existing unifiedAIProvider path. Retry/backoff applies uniformly.
-  const callOnce = (provider === 'claude-code')
-    ? () => callClaudeCli(systemPrompt, userPrompt, model, role)
-    : () => unifiedAIProvider.call({
-        provider,
-        model,
-        systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-        preset: 'direct',
-        config: {
-          temperature: hyperparameters?.temperature,
-          maxTokens: hyperparameters?.max_tokens,
-        },
-      });
+  const callOnce =
+    provider === 'claude-code'
+      ? () => callClaudeCli(systemPrompt, userPrompt, model, role)
+      : () =>
+          unifiedAIProvider.call({
+            provider,
+            model,
+            systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+            preset: 'direct',
+            config: {
+              temperature: hyperparameters?.temperature,
+              maxTokens: hyperparameters?.max_tokens,
+            },
+          });
 
   const maxAttempts = 3;
   const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
@@ -209,7 +224,9 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
       const baseDelay = backoffsMs[attempt - 1];
       const jitter = Math.floor(Math.random() * baseDelay * 0.2);
       const delay = baseDelay + jitter;
-      console.warn(`[adaptive.realLLM] retry ${attempt}/${maxAttempts - 1} for ${role || 'call'} after ${delay}ms: ${(err?.message || String(err)).slice(0, 160)}`);
+      console.warn(
+        `[adaptive.realLLM] retry ${attempt}/${maxAttempts - 1} for ${role || 'call'} after ${delay}ms: ${(err?.message || String(err)).slice(0, 160)}`,
+      );
       await new Promise((r) => setTimeout(r, delay));
     }
   }
@@ -274,9 +291,8 @@ export function getActiveBudgetTracker() {
 let _activeCellConfig = null;
 
 export function setActiveCellConfig(cfg) {
-  _activeCellConfig = (cfg && (cfg.provider || cfg.modelAlias || cfg.temperature != null || cfg.maxTokens != null))
-    ? { ...cfg }
-    : null;
+  _activeCellConfig =
+    cfg && (cfg.provider || cfg.modelAlias || cfg.temperature != null || cfg.maxTokens != null) ? { ...cfg } : null;
 }
 
 export function clearActiveCellConfig() {
@@ -291,10 +307,25 @@ function envFor(role) {
   const upper = role.replace(/[A-Z]/g, (c) => `_${c}`).toUpperCase();
   const cell = _activeCellConfig || {};
   return {
-    provider: process.env[`ADAPTIVE_TUTOR_${upper}_PROVIDER`] || process.env.ADAPTIVE_TUTOR_PROVIDER || cell.provider || DEFAULT_PROVIDER,
-    modelAlias: process.env[`ADAPTIVE_TUTOR_${upper}_MODEL`] || process.env.ADAPTIVE_TUTOR_MODEL || cell.modelAlias || DEFAULT_MODEL_ALIAS,
-    temperature: Number(process.env[`ADAPTIVE_TUTOR_${upper}_TEMP`] || process.env.ADAPTIVE_TUTOR_TEMP || cell.temperature || 0.6),
-    maxTokens: Number(process.env[`ADAPTIVE_TUTOR_${upper}_MAX_TOKENS`] || process.env.ADAPTIVE_TUTOR_MAX_TOKENS || cell.maxTokens || 1500),
+    provider:
+      process.env[`ADAPTIVE_TUTOR_${upper}_PROVIDER`] ||
+      process.env.ADAPTIVE_TUTOR_PROVIDER ||
+      cell.provider ||
+      DEFAULT_PROVIDER,
+    modelAlias:
+      process.env[`ADAPTIVE_TUTOR_${upper}_MODEL`] ||
+      process.env.ADAPTIVE_TUTOR_MODEL ||
+      cell.modelAlias ||
+      DEFAULT_MODEL_ALIAS,
+    temperature: Number(
+      process.env[`ADAPTIVE_TUTOR_${upper}_TEMP`] || process.env.ADAPTIVE_TUTOR_TEMP || cell.temperature || 0.6,
+    ),
+    maxTokens: Number(
+      process.env[`ADAPTIVE_TUTOR_${upper}_MAX_TOKENS`] ||
+        process.env.ADAPTIVE_TUTOR_MAX_TOKENS ||
+        cell.maxTokens ||
+        1500,
+    ),
   };
 }
 
@@ -334,7 +365,10 @@ function buildAgentConfig(role) {
 export function parseJsonLoose(text) {
   if (text == null) throw new Error('empty response');
   let s = String(text).trim();
-  s = s.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  s = s
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```\s*$/i, '')
+    .trim();
   const firstBrace = s.indexOf('{');
   const firstBracket = s.indexOf('[');
   const start = [firstBrace, firstBracket].filter((i) => i >= 0).sort((a, b) => a - b)[0];
@@ -350,7 +384,11 @@ export function parseJsonLoose(text) {
   ];
   let lastErr;
   for (const attempt of attempts) {
-    try { return attempt(); } catch (err) { lastErr = err; }
+    try {
+      return attempt();
+    } catch (err) {
+      lastErr = err;
+    }
   }
   throw lastErr;
 }
@@ -368,10 +406,25 @@ export function escapeEmbeddedQuotes(s) {
   let escape = false;
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
-    if (escape) { out += c; escape = false; continue; }
-    if (c === '\\') { out += c; escape = true; continue; }
-    if (c !== '"') { out += c; continue; }
-    if (!inString) { inString = true; out += c; continue; }
+    if (escape) {
+      out += c;
+      escape = false;
+      continue;
+    }
+    if (c === '\\') {
+      out += c;
+      escape = true;
+      continue;
+    }
+    if (c !== '"') {
+      out += c;
+      continue;
+    }
+    if (!inString) {
+      inString = true;
+      out += c;
+      continue;
+    }
     let j = i + 1;
     while (j < s.length && (s[j] === ' ' || s[j] === '\t' || s[j] === '\n' || s[j] === '\r')) j++;
     const next = j < s.length ? s[j] : '';
@@ -398,9 +451,18 @@ function findJsonEnd(s) {
   let escape = false;
   for (let i = 0; i < s.length; i++) {
     const c = s[i];
-    if (escape) { escape = false; continue; }
-    if (c === '\\' && inString) { escape = true; continue; }
-    if (c === '"') { inString = !inString; continue; }
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (c === '\\' && inString) {
+      escape = true;
+      continue;
+    }
+    if (c === '"') {
+      inString = !inString;
+      continue;
+    }
     if (inString) continue;
     if (c === open) depth++;
     else if (c === close) {
@@ -453,12 +515,34 @@ const learnerProfileUpdateOut = z.object({
 // MIN length matches the existing engine's minimum (anything shorter is a
 // fallback). Parse failures are coerced into a fallback construction inside
 // callRole rather than throwing — same posture as the engine's runner.
+//
+// Deliberately NOT wired into responseSchemas (idAuthorPersona is `null`
+// there so the canonical parseIdConstruction runs, not Zod). Retained as the
+// authoritative contract documentation for the id-author envelope; wiring it
+// would silently switch cells 121/122 off their canonical parser. eslint
+// allows it to stay as documentation rather than forcing deletion of a spec.
+// eslint-disable-next-line no-unused-vars
 const idAuthorPersonaOut = z.object({
   generated_prompt: z.string().min(1),
   persona_delta: z.string().default('UNKNOWN'),
   stage_directions: z.string().default(''),
   reasoning: z.string().default(''),
   parse_status: z.string().default('ok'),
+});
+
+// A16 (P2): adversarial-rewrite superego output (§6.3.10). Shape ported from
+// prototypes/adversarial-superego-mvp buildCrossSuiteSuperegoPrompt's
+// adversarial_prompt_only contract ({"newSystemPrompt": ...}) — the v3-proven
+// channel — extended with two structured audit fields the parent harness
+// records on the revisionLedger so the §6.3.10 slope analysis can read what
+// the superego detected and directed per turn without re-parsing prompt text.
+// newSystemPrompt is min(1) (an empty rewrite is never useful and would leave
+// the ego with no system prompt). The two audit strings default to '' so a
+// model that omits them still validates — the rewrite itself is the contract.
+const superegoReviseOut = z.object({
+  newSystemPrompt: z.string().min(1),
+  detectedFrustrationSignal: z.string().default(''),
+  correctiveDirective: z.string().default(''),
 });
 
 // Variant A's tutorEgoExecute reuses the tutorEgoInitial output shape exactly.
@@ -484,11 +568,21 @@ const idAuthorPersonaOut = z.object({
 // downstream-handled correctly. (Issue exposed by cell_126 run of
 // sophistication_upgrade_v1, 2026-05-13.)
 const evidenceExtractorOut = z.object({
-  evidence: z.array(z.object({
-    quote: z.string().nullable(),
-    type: z.enum(['learner_self_report', 'learner_action', 'learner_question', 'learner_correction', 'tutor_inference']),
-    kc_candidates: z.array(z.string()).default([]),
-  })).default([]),
+  evidence: z
+    .array(
+      z.object({
+        quote: z.string().nullable(),
+        type: z.enum([
+          'learner_self_report',
+          'learner_action',
+          'learner_question',
+          'learner_correction',
+          'tutor_inference',
+        ]),
+        kc_candidates: z.array(z.string()).default([]),
+      }),
+    )
+    .default([]),
 });
 
 // A14 Stage 2b: hypothesisUpdater output. The node, not the LLM, owns
@@ -501,15 +595,19 @@ const evidenceExtractorOut = z.object({
 // model's output (used when revising an existing hypothesis) but is
 // optional — the node falls back to the content-derived id when omitted.
 const hypothesisUpdaterOut = z.object({
-  hypotheses: z.array(z.object({
-    hypothesis_id: z.string().optional(),
-    claim: z.string().min(1),
-    confidence: z.number().min(0).max(1).default(0.5),
-    supporting_evidence: z.array(z.string()).default([]),
-    contradicting_evidence: z.array(z.string()).default([]),
-    status: z.enum(['tentative', 'validated', 'contradicted']).default('tentative'),
-    next_validation_action: z.string().default(''),
-  })).default([]),
+  hypotheses: z
+    .array(
+      z.object({
+        hypothesis_id: z.string().optional(),
+        claim: z.string().min(1),
+        confidence: z.number().min(0).max(1).default(0.5),
+        supporting_evidence: z.array(z.string()).default([]),
+        contradicting_evidence: z.array(z.string()).default([]),
+        status: z.enum(['tentative', 'validated', 'contradicted']).default('tentative'),
+        next_validation_action: z.string().default(''),
+      }),
+    )
+    .default([]),
 });
 
 // A14 Stage 3: groundingValidator output. Tight contract — verdict only, never
@@ -522,11 +620,15 @@ const hypothesisUpdaterOut = z.object({
 // required (min 1 char) so the audit trail has a defensible record for each
 // state transition — silent retain/retire would degrade trace quality.
 const groundingValidatorOut = z.object({
-  decisions: z.array(z.object({
-    hypothesis_id: z.string().min(1),
-    new_status: z.enum(['validated', 'contradicted']),
-    reasoning: z.string().min(1),
-  })).default([]),
+  decisions: z
+    .array(
+      z.object({
+        hypothesis_id: z.string().min(1),
+        new_status: z.enum(['validated', 'contradicted']),
+        reasoning: z.string().min(1),
+      }),
+    )
+    .default([]),
 });
 
 // Bilateral-ToM tracker output. Paired LBM bottleneck (summaryText) lives
@@ -552,9 +654,7 @@ const tutorTomTrackerOut = z.object({
 // Per-role prompts
 // ---------------------------------------------------------------------------
 
-const policyMenuStr = POLICY_ACTIONS
-  .map((a) => `- ${a}: ${POLICY_ACTION_DESCRIPTIONS[a]}`)
-  .join('\n');
+const policyMenuStr = POLICY_ACTIONS.map((a) => `- ${a}: ${POLICY_ACTION_DESCRIPTIONS[a]}`).join('\n');
 
 // Richer menu used by the ego prompts: pulls trigger conditions, contraindications,
 // and the expected next learner signal from POLICY_ACTION_DETAILS (YAML-loaded
@@ -603,6 +703,16 @@ Respond as a single JSON object with exactly these keys:
 - rationale: one short sentence saying why this action fits this learner profile, citing a trigger condition, contraindication, or second-order belief gap when relevant (optional)
 
 Output JSON only, no surrounding prose, no code fences.`;
+
+// The policy-action instrument frame: the menu of valid policyAction labels
+// plus the {policyAction,text} JSON envelope contract. This is measurement
+// scaffolding for the §6.8.2 policyAction endpoint — NOT pedagogical content
+// a superego/id rewrite has authority over. Derived by slicing the canonical
+// prompt so it is byte-identical to what F/A's (non-override) ego sees: any
+// cross-arm drift in the label set or envelope would make the §6.3.10
+// in-family policyAction slope incommensurable across F/A/S0/S1. `slice`
+// (not a duplicated literal) guarantees it can never drift from the source.
+const EGO_POLICY_INSTRUMENT_TAIL = TUTOR_EGO_INITIAL_SYSTEM.slice(TUTOR_EGO_INITIAL_SYSTEM.indexOf('Policy menu:'));
 
 // Variant used by cell_116_recognition_named_patterns. Identical to
 // TUTOR_EGO_INITIAL_SYSTEM except for one paragraph ("Beyond the local
@@ -937,16 +1047,38 @@ Output JSON only.`;
 // as the standard id-director cells (101-109). The bilateral_tom-specific
 // learner context is threaded in via the user-message builder, not a forked
 // system prompt — keeps the prompt as a single source of truth.
-const ID_AUTHOR_SYSTEM = fs.readFileSync(
-  path.join(PROMPTS_DIR, 'tutor-id-director.md'),
-  'utf-8',
-);
+const ID_AUTHOR_SYSTEM = fs.readFileSync(path.join(PROMPTS_DIR, 'tutor-id-director.md'), 'utf-8');
 
 // tutorEgoExecute (Variant A) has no canonical system prompt — the id-author
 // writes one each turn and the graph passes it via systemPromptOverride. This
 // constant is a sentinel: callRole rejects an ego-execute call where the
 // override is missing or empty.
 const TUTOR_EGO_EXECUTE_FALLBACK_SYSTEM = `(no id-authored prompt supplied; this is a fallback so the role table has a non-empty entry — callRole rejects ego-execute calls without systemPromptOverride.)`;
+
+// A16 (P2): adversarial-rewrite superego system prompt. Ported from
+// prototypes/adversarial-superego-mvp buildCrossSuiteSuperegoPrompt's
+// header + adversarial_prompt_only instruction. Byte-identical across the
+// S0/S1 arms (the §6.3.10 validity control — only the user payload differs:
+// S1 threads the prior revisionLedger, S0 does not). The prototype's stated
+// validity choice is preserved structurally: this prompt never receives the
+// scenario's expected-strategy-shift accepted set — the graph node passes
+// only the real dialogue (+ for S1, the superego's own prior ledger), so
+// the role must INFER the right move exactly as the prototype's superego did.
+const SUPEREGO_REVISE_SYSTEM = `You are an adversarial pedagogical Superego supervising a tutor Ego in a one-on-one tutoring dialogue.
+
+You see the FULL real dialogue between the tutor (Ego) and the learner. Your job: read the dialogue for signs that the learner is frustrated, stuck, resisting, or that the tutor's current approach is not working — and REWRITE the Ego's entire system prompt for its next turn so the tutor adapts.
+
+CRITICAL — validity constraints (read carefully):
+- Act ONLY on evidence in the real dialogue. You are NOT told the "correct" pedagogical move; infer it from what the learner is actually doing.
+- If the learner does NOT actually need an intervention (no frustration/resistance has surfaced), you must NOT manufacture one — return a minimal, responsive prompt. Forcing a scripted pivot when the dialogue does not call for it is a failure, not a success.
+- The rewritten prompt must be a complete, self-contained tutor system prompt. The Ego sees ONLY what you write — it does not retain its previous prompt.
+
+Respond as a single JSON object with these keys:
+- newSystemPrompt: string — the FULL replacement system prompt for the Ego's next turn
+- detectedFrustrationSignal: short string — what in the dialogue (if anything) indicates the learner is frustrated/stuck/resisting; empty string if none
+- correctiveDirective: short string — the one concrete change you are forcing into the Ego's behaviour this turn
+
+Output JSON only, no surrounding prose, no code fences.`;
 
 const LEARNER_TURN_SYSTEM = `You are the synthetic learner in a dialogue with a tutor. Generate the learner's next message in plain text (no JSON, no preamble).
 
@@ -969,11 +1101,12 @@ const userPromptBuilders = {
   tutorEgoInitialNamedPatterns: ({ learnerLastMessage, learnerProfile, dialogue }) =>
     ub({ learnerLastMessage, learnerProfile, dialogue }),
 
-  tutorSuperego: ({ tutorInternal, learnerProfile }) => ub({
-    draft: tutorInternal.egoDraft,
-    policyAction: tutorInternal.policyAction,
-    learnerProfile,
-  }),
+  tutorSuperego: ({ tutorInternal, learnerProfile }) =>
+    ub({
+      draft: tutorInternal.egoDraft,
+      policyAction: tutorInternal.policyAction,
+      learnerProfile,
+    }),
 
   // Validator gets the picked action's full detail block (trigger conditions
   // + contraindications + expected next signal) inline in the user prompt so
@@ -989,35 +1122,42 @@ const userPromptBuilders = {
             contraindications: detail.contraindications,
             expected_next_learner_signal: detail.expected_next_learner_signal,
           }
-        : { description: POLICY_ACTION_DESCRIPTIONS[policyAction] || '', trigger_conditions: [], contraindications: [] },
+        : {
+            description: POLICY_ACTION_DESCRIPTIONS[policyAction] || '',
+            trigger_conditions: [],
+            contraindications: [],
+          },
       tutorDraft,
       learnerProfile,
     });
   },
 
-  tutorEgoRevision: ({ tutorInternal, learnerProfile }) => ub({
-    previousDraft: tutorInternal.egoDraft,
-    previousPolicy: tutorInternal.policyAction,
-    superegoFeedback: tutorInternal.superegoFeedback,
-    learnerProfile,
-  }),
+  tutorEgoRevision: ({ tutorInternal, learnerProfile }) =>
+    ub({
+      previousDraft: tutorInternal.egoDraft,
+      previousPolicy: tutorInternal.policyAction,
+      superegoFeedback: tutorInternal.superegoFeedback,
+      learnerProfile,
+    }),
 
-  learnerProfileUpdate: ({ learnerLastMessage, hidden, currentProfile, turn }) => ub({
-    learnerLastMessage,
-    hiddenGroundTruth: hidden,
-    currentProfile,
-    turn,
-  }),
+  learnerProfileUpdate: ({ learnerLastMessage, hidden, currentProfile, turn }) =>
+    ub({
+      learnerLastMessage,
+      hiddenGroundTruth: hidden,
+      currentProfile,
+      turn,
+    }),
 
   // ToM tracker takes the dialogue so far, the just-updated learnerProfile,
   // and the current turn index. Hidden state is intentionally NOT passed —
   // the whole point of the probes is that the tutor predicts blind, then we
   // score against ground truth in post-hoc analysis.
-  tutorTomTracker: ({ learnerProfile, dialogue, turn }) => ub({
-    learnerProfile,
-    dialogue,
-    turn,
-  }),
+  tutorTomTracker: ({ learnerProfile, dialogue, turn }) =>
+    ub({
+      learnerProfile,
+      dialogue,
+      turn,
+    }),
 
   // Id-author user message. Mirrors the XML-tagged shape the
   // tutor-id-director.md prompt expects (services/idDirectorEngine.js
@@ -1025,9 +1165,7 @@ const userPromptBuilders = {
   // as a `<bilateral_tom_context>` block so the id can author against the
   // tutor's view of the learner + second-order belief + ToM probes.
   idAuthorPersona: ({ dialogue, learnerLastMessage, learnerProfile, previousPersona, turn }) => {
-    const history = (dialogue || [])
-      .map((m) => `${m.role}: ${m.content}`)
-      .join('\n');
+    const history = (dialogue || []).map((m) => `${m.role}: ${m.content}`).join('\n');
     return [
       '<dialogue_history>',
       history || '(no prior turns)',
@@ -1055,12 +1193,16 @@ const userPromptBuilders = {
       '</recognition_mode>',
       '',
       '<bilateral_tom_context>',
-      JSON.stringify({
-        learnerProfile,
-        hypothesizedLearnerPerceptionOfTutor: learnerProfile?.hypothesizedLearnerPerceptionOfTutor || null,
-        tomProbes: learnerProfile?.tomProbes || null,
-        turn,
-      }, null, 2),
+      JSON.stringify(
+        {
+          learnerProfile,
+          hypothesizedLearnerPerceptionOfTutor: learnerProfile?.hypothesizedLearnerPerceptionOfTutor || null,
+          tomProbes: learnerProfile?.tomProbes || null,
+          turn,
+        },
+        null,
+        2,
+      ),
       '</bilateral_tom_context>',
     ].join('\n');
   },
@@ -1069,26 +1211,27 @@ const userPromptBuilders = {
   // (passed via systemPromptOverride at call time). User message carries the
   // policy-action emission instructions inline so the id-authored prompt
   // doesn't need to know about the policyAction envelope.
-  tutorEgoExecute: ({ learnerLastMessage, learnerProfile }) => [
-    'Latest learner message:',
-    learnerLastMessage || '(none)',
-    '',
-    'Current learner profile (for grounding):',
-    JSON.stringify(learnerProfile || {}, null, 2),
-    '',
-    'Policy-action emission contract (REQUIRED — do not omit):',
-    'After authoring your tutor message, append a fenced JSON envelope that',
-    'wraps the message and names the pedagogical action it enacts. Format:',
-    '',
-    '```json',
-    '{"policyAction": "<one of the menu labels below>", "text": "<your tutor message>"}',
-    '```',
-    '',
-    'Policy menu (pick exactly one — your draft must enact this label):',
-    policyMenuStr,
-    '',
-    'Output the JSON envelope ONLY (no surrounding prose, no preamble).',
-  ].join('\n'),
+  tutorEgoExecute: ({ learnerLastMessage, learnerProfile }) =>
+    [
+      'Latest learner message:',
+      learnerLastMessage || '(none)',
+      '',
+      'Current learner profile (for grounding):',
+      JSON.stringify(learnerProfile || {}, null, 2),
+      '',
+      'Policy-action emission contract (REQUIRED — do not omit):',
+      'After authoring your tutor message, append a fenced JSON envelope that',
+      'wraps the message and names the pedagogical action it enacts. Format:',
+      '',
+      '```json',
+      '{"policyAction": "<one of the menu labels below>", "text": "<your tutor message>"}',
+      '```',
+      '',
+      'Policy menu (pick exactly one — your draft must enact this label):',
+      policyMenuStr,
+      '',
+      'Output the JSON envelope ONLY (no surrounding prose, no preamble).',
+    ].join('\n'),
 
   // A14 Stage 2a: evidence extractor user message. Carries the learner's
   // most recent message (the span to extract from), a compact dialogue
@@ -1115,26 +1258,27 @@ const userPromptBuilders = {
   // them. ground-truth hiddenLearnerState is intentionally NOT passed: the
   // hypothesis ledger is supposed to be derivable from observable evidence,
   // not the hidden truth.
-  hypothesisUpdater: ({ validatedEvidence, currentHypotheses, turn }) => ub({
-    turn,
-    evidenceLedger: (validatedEvidence || []).map((e) => ({
-      obs_id: e.obs_id,
-      turn: e.turn,
-      quote: e.quote,
-      type: e.type,
-      kc_candidates: e.kc_candidates || [],
-    })),
-    currentHypotheses: (currentHypotheses || []).map((h) => ({
-      hypothesis_id: h.hypothesis_id,
-      claim: h.claim,
-      confidence: h.confidence,
-      supporting_evidence: h.supporting_evidence,
-      contradicting_evidence: h.contradicting_evidence,
-      status: h.status,
-      created_at_turn: h.created_at_turn,
-      expires_after_turns: h.expires_after_turns,
-    })),
-  }),
+  hypothesisUpdater: ({ validatedEvidence, currentHypotheses, turn }) =>
+    ub({
+      turn,
+      evidenceLedger: (validatedEvidence || []).map((e) => ({
+        obs_id: e.obs_id,
+        turn: e.turn,
+        quote: e.quote,
+        type: e.type,
+        kc_candidates: e.kc_candidates || [],
+      })),
+      currentHypotheses: (currentHypotheses || []).map((h) => ({
+        hypothesis_id: h.hypothesis_id,
+        claim: h.claim,
+        confidence: h.confidence,
+        supporting_evidence: h.supporting_evidence,
+        contradicting_evidence: h.contradicting_evidence,
+        status: h.status,
+        created_at_turn: h.created_at_turn,
+        expires_after_turns: h.expires_after_turns,
+      })),
+    }),
 
   // A14 Stage 3: groundingValidator user payload. The validator only sees
   // tentative hypotheses (the node filters `validated`/`contradicted`/`expired`
@@ -1142,23 +1286,57 @@ const userPromptBuilders = {
   // supporting/contradicting obs_ids), and the turn index. Hidden ground truth
   // is intentionally NOT passed — same posture as the updater. The validator's
   // job is to commit on observable evidence, not on access to the ground truth.
-  groundingValidator: ({ hypotheses, evidenceLedger, turn }) => ub({
-    turn,
-    tentativeHypotheses: (hypotheses || []).map((h) => ({
-      hypothesis_id: h.hypothesis_id,
-      claim: h.claim,
-      confidence: h.confidence,
-      supporting_evidence: h.supporting_evidence,
-      contradicting_evidence: h.contradicting_evidence,
-      created_at_turn: h.created_at_turn,
-    })),
-    evidenceLedger: (evidenceLedger || []).map((e) => ({
-      obs_id: e.obs_id,
-      turn: e.turn,
-      quote: e.quote,
-      type: e.type,
-    })),
-  }),
+  groundingValidator: ({ hypotheses, evidenceLedger, turn }) =>
+    ub({
+      turn,
+      tentativeHypotheses: (hypotheses || []).map((h) => ({
+        hypothesis_id: h.hypothesis_id,
+        claim: h.claim,
+        confidence: h.confidence,
+        supporting_evidence: h.supporting_evidence,
+        contradicting_evidence: h.contradicting_evidence,
+        created_at_turn: h.created_at_turn,
+      })),
+      evidenceLedger: (evidenceLedger || []).map((e) => ({
+        obs_id: e.obs_id,
+        turn: e.turn,
+        quote: e.quote,
+        type: e.type,
+      })),
+    }),
+
+  // A16 (P2): adversarial-rewrite superego user message. Carries ONLY the
+  // full real dialogue (the validity choice — never the scenario answer key)
+  // and, for the cumulative arm (S1), the superego's own prior revisionLedger
+  // so each rewrite builds on the last (the psychoanalytic continuous-revision
+  // analogue and the sole S0/S1 difference). The graph node passes an empty
+  // priorLedger for the stateless arm (S0), so the ledger block is omitted
+  // entirely — the system prompt is byte-identical across arms; only this
+  // payload differs.
+  superegoRevise: ({ dialogue, turn, priorLedger, cumulative }) => {
+    const transcript = (dialogue || [])
+      .map((m) => `${m.role === 'learner' ? 'LEARNER' : 'TUTOR'}: ${m.content}`)
+      .join('\n');
+    const blocks = ['Turn: ' + turn, '', 'FULL REAL DIALOGUE so far:', transcript || '(no turns yet)'];
+    if (cumulative && Array.isArray(priorLedger) && priorLedger.length > 0) {
+      blocks.push(
+        '',
+        'YOUR OWN PRIOR REWRITE LEDGER (you authored these on earlier turns —',
+        'build on them; do not contradict or forget your earlier corrections):',
+        JSON.stringify(
+          priorLedger.map((e) => ({
+            turn: e.turn,
+            detectedFrustrationSignal: e.detectedFrustrationSignal,
+            correctiveDirective: e.correctiveDirective,
+          })),
+          null,
+          2,
+        ),
+      );
+    }
+    blocks.push('', "Rewrite the Ego's entire system prompt now. Output the JSON object only.");
+    return blocks.join('\n');
+  },
 
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
 };
@@ -1176,6 +1354,7 @@ const systemPrompts = {
   evidenceExtractor: EVIDENCE_EXTRACTOR_SYSTEM,
   hypothesisUpdater: HYPOTHESIS_UPDATER_SYSTEM,
   groundingValidator: GROUNDING_VALIDATOR_SYSTEM,
+  superegoRevise: SUPEREGO_REVISE_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
 };
 
@@ -1194,6 +1373,7 @@ const responseSchemas = {
   evidenceExtractor: evidenceExtractorOut,
   hypothesisUpdater: hypothesisUpdaterOut,
   groundingValidator: groundingValidatorOut,
+  superegoRevise: superegoReviseOut,
   learnerTurn: null, // plain text
 };
 
@@ -1213,13 +1393,33 @@ export async function callRole(role, payload) {
   // the graph. Other roles ignore it. tutorEgoExecute is the only role that
   // *requires* it — calling without an override would route the canonical
   // ego prompt for that role, which is the wrong thing for the crossover.
-  const override = (typeof payload?.systemPromptOverride === 'string' && payload.systemPromptOverride.length > 0)
-    ? payload.systemPromptOverride
-    : null;
+  const override =
+    typeof payload?.systemPromptOverride === 'string' && payload.systemPromptOverride.length > 0
+      ? payload.systemPromptOverride
+      : null;
   if (role === 'tutorEgoExecute' && !override) {
-    throw new Error(`adaptiveTutor.realLLM[tutorEgoExecute]: systemPromptOverride is required (id-authored prompt missing).`);
+    throw new Error(
+      `adaptiveTutor.realLLM[tutorEgoExecute]: systemPromptOverride is required (id-authored prompt missing).`,
+    );
   }
-  const systemPrompt = override || baseSystemPrompt;
+  let systemPrompt = override || baseSystemPrompt;
+  // A16 (P3 preflight fix): a superego/id rewrite delivered via
+  // systemPromptOverride wholly replaces the ego system prompt. For
+  // tutorEgoInitial that prompt is the ONLY carrier of the policy-action
+  // instrument (valid policyAction menu + {policyAction,text} JSON envelope),
+  // so a full override silently deletes it — the real-LLM preflight failed
+  // exactly here (ego emitted Hegelian prose, zero parseable policyAction),
+  // and even surviving JSON would carry an out-of-family/incommensurable
+  // policyAction across arms. Preserve the instrument verbatim as an
+  // invariant frame *around* the superego's pedagogical rewrite: the S1−S0
+  // manipulation lives entirely in the rewrite input (the superego's prompt
+  // body), which is untouched, so the §6.3.10 validity control holds. Scoped
+  // to tutorEgoInitial (the A16 superego_revise_* path); tutorEgoExecute
+  // (id-director, cells 121/122) is unaffected — it already carries the
+  // envelope in its user message and is outside A16's scope.
+  if (override && role === 'tutorEgoInitial') {
+    systemPrompt = `${override}\n\n${EGO_POLICY_INSTRUMENT_TAIL}`;
+  }
 
   const agentConfig = buildAgentConfig(role);
   const userPrompt = buildUser(payload);
@@ -1263,25 +1463,93 @@ export async function callRole(role, payload) {
     return text.trim();
   }
 
-  let parsed;
-  try {
-    parsed = parseJsonLoose(text);
-  } catch (err) {
-    throw new Error(`adaptiveTutor.realLLM[${role}]: failed to parse JSON: ${err.message}\n--- raw ---\n${text}`);
+  // Parse + schema-validate the model text. Factored into a closure so the
+  // superegoRevise role can make exactly one corrective re-call on failure
+  // (below) without duplicating the parse/merge/validate logic or diverging
+  // the error messages other roles' callers depend on. For every role other
+  // than superegoRevise the first call's failure is thrown immediately, so
+  // behaviour is byte-identical to the prior straight-line code.
+  const parseAndValidate = (rawText) => {
+    let parsedLocal;
+    try {
+      parsedLocal = parseJsonLoose(rawText);
+    } catch (err) {
+      return {
+        ok: false,
+        error: new Error(
+          `adaptiveTutor.realLLM[${role}]: failed to parse JSON: ${err.message}\n--- raw ---\n${rawText}`,
+        ),
+      };
+    }
+    // learnerProfileUpdate gets the turn merged in by the graph node, but we
+    // also fold the supplied `currentProfile.misconceptions` baseline through
+    // so models that drop the field don't wipe history.
+    if (role === 'learnerProfileUpdate' && parsedLocal && payload?.currentProfile) {
+      parsedLocal.misconceptions = parsedLocal.misconceptions ?? payload.currentProfile.misconceptions ?? [];
+    }
+    const validatedLocal = schema.safeParse(parsedLocal);
+    if (!validatedLocal.success) {
+      return {
+        ok: false,
+        error: new Error(
+          `adaptiveTutor.realLLM[${role}]: schema validation failed: ${validatedLocal.error.message}\n--- raw ---\n${JSON.stringify(parsedLocal, null, 2)}`,
+        ),
+      };
+    }
+    return { ok: true, value: validatedLocal.data };
+  };
+
+  let result = parseAndValidate(text);
+
+  // A16 (P3 preflight fix — Bug #2): on context-rich turns the superegoRevise
+  // model sometimes answers in markdown prose (`**Why this rewrite:**\n...`)
+  // with no JSON object at all, so parseJsonLoose has nothing to extract.
+  // This failure is NON-random: S1 (superego_revise_cumulative) feeds a
+  // growing revisionLedger into the superegoRevise user prompt, so S1's calls
+  // are longer / more context-laden than S0's and trip the prose modality
+  // MORE often. Left unhandled the runner drops the dialogue (index.js:179)
+  // — differential attrition correlated with the very manipulation the
+  // §6.3.10 S1−S0 slope measures, and with the outcome (longer dialogues are
+  // exactly the ones dropped). Fix: exactly ONE corrective re-call with a
+  // format-only reminder appended to the USER prompt. The pre-registered
+  // manipulation surface (SUPEREGO_REVISE_SYSTEM) is left byte-identical and
+  // the suffix is identical for S0/S1 (no ledger/cumulative wording), so it
+  // corrects output modality without altering what the arms manipulate. If
+  // the retry still fails we throw as before: the dialogue is dropped AND
+  // recorded (never silently patched with a substitute prompt — that would
+  // change what the arm IS mid-dialogue). P3.4 reads per-arm drop counts from
+  // the run logs to confirm residual attrition is small and balanced. Scoped
+  // to superegoRevise only; every other role (incl. paper-cited cell_111's
+  // nodes) keeps byte-identical behaviour.
+  if (!result.ok && role === 'superegoRevise') {
+    console.warn(
+      `[adaptive.realLLM] superegoRevise parse/validate failed; one corrective re-call: ${result.error.message.slice(0, 160)}`,
+    );
+    const correctiveUserPrompt =
+      `${userPrompt}\n\n---\nFORMAT CORRECTION: Your previous reply was prose, not JSON, and could not be parsed. ` +
+      'Reply with ONLY a single JSON object and nothing else. The first character of your reply must be `{`. ' +
+      'Do not write any heading, explanation, or markdown (no `**Why this rewrite:**`, no prose preamble, no ' +
+      'code fences) before or after the JSON. Required keys: "newSystemPrompt" (string — the complete, ' +
+      'self-contained rewritten tutor system prompt), "detectedFrustrationSignal" (string), ' +
+      '"correctiveDirective" (string).';
+    const rawRetry = await callAI(agentConfig, systemPrompt, correctiveUserPrompt, role);
+    if (_activeBudgetTracker) {
+      _activeBudgetTracker.record({
+        inputTokens: rawRetry?.inputTokens || 0,
+        outputTokens: rawRetry?.outputTokens || 0,
+        cost: rawRetry?.cost || 0,
+      });
+    }
+    result = parseAndValidate(rawRetry?.text ?? '');
+    if (!result.ok) {
+      console.warn(
+        '[adaptive.realLLM] superegoRevise corrective re-call ALSO failed; dropping this dialogue (recorded as attrition, not patched)',
+      );
+    }
   }
 
-  // learnerProfileUpdate gets the turn merged in by the graph node, but we
-  // also fold the supplied `currentProfile.misconceptions` baseline through
-  // so models that drop the field don't wipe history.
-  if (role === 'learnerProfileUpdate' && parsed && payload?.currentProfile) {
-    parsed.misconceptions = parsed.misconceptions ?? payload.currentProfile.misconceptions ?? [];
-  }
-
-  const validated = schema.safeParse(parsed);
-  if (!validated.success) {
-    throw new Error(`adaptiveTutor.realLLM[${role}]: schema validation failed: ${validated.error.message}\n--- raw ---\n${JSON.stringify(parsed, null, 2)}`);
-  }
-  const out = validated.data;
+  if (!result.ok) throw result.error;
+  const out = result.value;
 
   // The graph expects learnerProfileUpdate to also carry updatedAtTurn
   // (set by the node, since the model shouldn't be trusted with bookkeeping).
