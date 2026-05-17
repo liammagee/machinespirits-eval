@@ -60,6 +60,10 @@ results/
 *.csv
 *.xlsx
 
+# Adaptive-persona prototype generated outputs (regenerable from scripts;
+# mirrors the exports/ convention — keep the dir, don't track its contents)
+prototypes/adaptive-persona-mvp/outputs/
+
 # Scratchpad
 scratchpad/
 
