@@ -703,12 +703,55 @@ counterfactual branch passed all delayed-transfer checks. Because it is only a
 focused `n=2` paired slice, it is a regression check, not a new significance
 claim.
 
+The full post-repair sweep has now been rerun against the current prompts and
+validators, including the science next-experiment transfer repair and the
+HTML learner-evidence table.
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --traps \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 2 \
+  --out prototypes/adaptive-persona-mvp/outputs/action-family-full-traps-replicated-live-post-science-repair \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/action-family-full-traps-replicated-live-post-science-repair/variant-sweep-2026-05-17T04-10-10-534Z.html`
+- `outputs/action-family-full-traps-replicated-live-post-science-repair-revalidated/variant-sweep-revalidated-2026-05-17T04-10-17-452Z.html`
+- `outputs/robustness-action-family-full-traps-replicated-live-post-science-repair/robustness-evaluation-2026-05-17T04-10-29-300Z.html`
+
+Revalidation again changed `0` outcomes. The adapted condition passed `8/8`
+original false-mastery outcome branches and `6/8` counterfactual readiness
+branches. Static tutoring passed `0/8` original branches and `1/8`
+counterfactual branches.
+
+Aggregate result, `n=16` paired branches:
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+18.234` | `12.373..24.033` | `0.0002` | pass |
+| Parent dialogue | `+7.031` | `3.359..10.000` | `0.004` | pass |
+| Trap outcome | `+81.25` | `50..100` | `0.001` | pass |
+
+This upgrades the evidence claim: under the current patched prototype, the
+ego/superego controller now establishes both adaptive-primary robustness and
+strict all-public-metric confirmation on this four-trap LLM benchmark. The
+remaining adapted misses are counterfactual readiness branches, not original
+false-mastery branches, so the next refinement target is calibration on already
+ready learners rather than stronger repair pressure.
+
 Next steps from here:
 
-1. rerun the full replicated four-trap LLM sweep once after the science
-   next-experiment repair if we need a clean all-current artifact;
-2. add a transcript evidence table to the HTML that quotes the learner-owned
-   transfer markers behind each deterministic outcome pass;
+1. inspect the two adapted counterfactual misses for over-repair versus
+   validator strictness;
+2. add a compact ablation rerun against ego-only/no-memory/no-challenge variants
+   if we want causal attribution for the multiagent mechanism;
 3. keep parent integration deferred until the parent-compatible state/action
    mapping is stable, because the prototype adaptation signal is now stronger
    than the parent-rubric alignment signal.

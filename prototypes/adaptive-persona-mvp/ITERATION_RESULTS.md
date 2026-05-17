@@ -827,6 +827,53 @@ node --test prototypes/adaptive-persona-mvp/tests/*.test.js
 npx eslint prototypes/adaptive-persona-mvp/**/*.js
 ```
 
+### Full Post-Science-Repair Replication
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --traps \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 2 \
+  --out prototypes/adaptive-persona-mvp/outputs/action-family-full-traps-replicated-live-post-science-repair \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/action-family-full-traps-replicated-live-post-science-repair/variant-sweep-2026-05-17T04-10-10-534Z.html`
+- `outputs/action-family-full-traps-replicated-live-post-science-repair-revalidated/variant-sweep-revalidated-2026-05-17T04-10-17-452Z.html`
+- `outputs/robustness-action-family-full-traps-replicated-live-post-science-repair/robustness-evaluation-2026-05-17T04-10-29-300Z.html`
+
+Revalidation changed `0` outcomes. Both robustness claims now pass:
+
+- adaptive-primary robust positive effect: true;
+- strict all-public-metric confirmation: true.
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+18.234` | `12.373..24.033` | `0.0002` | pass |
+| Parent dialogue | `+7.031` | `3.359..10.000` | `0.004` | pass |
+| Trap outcome | `+81.25` | `50..100` | `0.001` | pass |
+
+Outcome counts:
+
+- static original: `0/8`;
+- static counterfactual: `1/8`;
+- adapted original: `8/8`;
+- adapted counterfactual: `6/8`.
+
+Interpretation: this is the clean all-current artifact that was missing after
+the science next-experiment patch. The current prototype establishes a robust
+positive effect over static tutoring on the adaptation rubric, parent dialogue
+rubric, and deterministic hidden-state outcomes. The two remaining adapted
+failures are counterfactual readiness branches, so the next improvement target
+is calibration for already-ready learners rather than stronger misconception
+repair.
+
 ## 2026-05-16 Replicated Four-Trap LLM Transfer-Repair Sweep
 
 ### Full Live Sweep
