@@ -47,17 +47,31 @@ test('variant sweep report ranks targets and renders html', () => {
         {
           scenarioId: 's1',
           discipline: 'math',
-          challengeProfile: { mode: 'hard' },
+          challengeProfile: { mode: 'hard', hidden_state_trap: true },
           conditions: {
             static_codex: {
               original: {
                 blindJudge: { weighted_score: 60 },
                 parentDialogueJudge: { weighted_score: 60 },
-                outcomeTask: { success: false },
+                transcript: [
+                  {
+                    role: 'learner',
+                    content: 'I stayed with the same example and did not transfer it yet.',
+                  },
+                ],
+                outcomeTask: {
+                  success: false,
+                  learner_answer: 'I did not transfer the rule.',
+                  validation: {
+                    applicable: true,
+                    missing: ['transfer'],
+                  },
+                },
               },
               counterfactual: {
                 blindJudge: { weighted_score: 60 },
                 parentDialogueJudge: { weighted_score: 60 },
+                transcript: [],
                 outcomeTask: { success: false },
               },
             },
@@ -65,7 +79,20 @@ test('variant sweep report ranks targets and renders html', () => {
               original: {
                 blindJudge: { weighted_score: 80 },
                 parentDialogueJudge: { weighted_score: 70 },
-                outcomeTask: { success: true },
+                transcript: [
+                  {
+                    role: 'learner',
+                    content: 'For the next experiment I would transfer the same rule to a different case.',
+                  },
+                ],
+                outcomeTask: {
+                  success: true,
+                  learner_answer: 'I can transfer the rule.',
+                  validation: {
+                    applicable: true,
+                    missing: [],
+                  },
+                },
                 stateTrace: [
                   {
                     challengeState: { level: 'active' },
@@ -82,6 +109,7 @@ test('variant sweep report ranks targets and renders html', () => {
               counterfactual: {
                 blindJudge: { weighted_score: 75 },
                 parentDialogueJudge: { weighted_score: 65 },
+                transcript: [],
                 outcomeTask: { success: false },
                 stateTrace: [
                   {
@@ -111,4 +139,6 @@ test('variant sweep report ranks targets and renders html', () => {
   const html = renderVariantSweepHtml(report);
   assert.match(html, /Adaptive Tutor Variant Sweep/);
   assert.match(html, /Challenge-State Mechanism Checks/);
+  assert.match(html, /Learner-Owned Transfer Evidence/);
+  assert.match(html, /For the next experiment/);
 });

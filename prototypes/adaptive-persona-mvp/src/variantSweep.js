@@ -199,6 +199,8 @@ export function renderVariantSweepHtml(report) {
     .good { color: #087443; }
     .bad { color: #b42318; }
     .muted { color: #5e6b78; }
+    .evidence { max-width: 420px; }
+    .quote { color: #344054; }
     code { background: #eef3f7; padding: 1px 4px; border-radius: 4px; }
   </style>
 </head>
@@ -314,6 +316,8 @@ export function renderVariantSweepHtml(report) {
         </tr>`).join('')}
       </tbody>
     </table>
+
+    ${renderLearnerEvidenceTable(report)}
   </main>
 </body>
 </html>`;
@@ -331,6 +335,100 @@ function mechanismCells(stat) {
   return `
     <td class="score ${mechanismClass(summary.mean)}">${format(summary.mean)}</td>
     <td>${format(summary.bootstrap95Ci?.[0])} to ${format(summary.bootstrap95Ci?.[1])}</td>`;
+}
+
+function renderLearnerEvidenceTable(report) {
+  const rows = learnerEvidenceRows(report);
+  if (rows.length === 0) return '';
+  return `
+    <h2>Learner-Owned Transfer Evidence</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Repeat</th>
+          <th>Scenario</th>
+          <th>Condition</th>
+          <th>Branch</th>
+          <th>Outcome</th>
+          <th>Missing Checks</th>
+          <th>Learner Transcript Evidence</th>
+          <th>Outcome Answer</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => `
+        <tr>
+          <td>${row.repeat}</td>
+          <td><code>${escapeHtml(row.scenarioId)}</code></td>
+          <td><code>${escapeHtml(row.condition)}</code></td>
+          <td>${escapeHtml(row.branchName)}</td>
+          <td class="score ${row.success ? 'good' : 'bad'}">${row.success ? 'pass' : 'fail'}</td>
+          <td>${escapeHtml(row.missingChecks || 'none')}</td>
+          <td class="evidence quote">${escapeHtml(row.transcriptEvidence || 'No learner transfer marker found.')}</td>
+          <td class="evidence quote">${escapeHtml(row.outcomeAnswer || 'n/a')}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function learnerEvidenceRows(report) {
+  const rows = [];
+  for (const sourceReport of report.reports || []) {
+    for (const scenario of sourceReport.results || []) {
+      if (!scenario.challengeProfile?.hidden_state_trap) continue;
+      for (const condition of report.conditions || []) {
+        const conditionResult = scenario.conditions?.[condition];
+        if (!conditionResult) continue;
+        for (const branchName of ['original', 'counterfactual']) {
+          const branch = conditionResult[branchName];
+          if (!branch?.outcomeTask?.validation?.applicable) continue;
+          rows.push({
+            repeat: sourceReport.repeat ?? 0,
+            scenarioId: scenario.scenarioId,
+            condition,
+            branchName,
+            success: Boolean(branch.outcomeTask.success),
+            missingChecks: (branch.outcomeTask.validation.missing || []).join(', '),
+            transcriptEvidence: extractLearnerTransferEvidence(branch, scenario.scenarioId),
+            outcomeAnswer: compactText(branch.outcomeTask.learner_answer),
+          });
+        }
+      }
+    }
+  }
+  return rows;
+}
+
+function extractLearnerTransferEvidence(branch, scenarioId) {
+  const learnerMessages = (branch.transcript || [])
+    .filter((turn) => turn.role === 'learner')
+    .map((turn) => String(turn.content || ''));
+  const marker = transferMarkerPattern(scenarioId);
+  const evidence = learnerMessages.filter((message) => marker.test(message));
+  const selected = evidence.length > 0 ? evidence.at(-1) : learnerMessages.at(-1);
+  return compactText(selected);
+}
+
+function transferMarkerPattern(scenarioId) {
+  if (String(scenarioId).includes('argument_warrant')) {
+    return /school[- ]uniform|uniform|single quote|cannot prove|stronger evidence|different policy|new policy/i;
+  }
+  if (String(scenarioId).includes('science_variable_control')) {
+    return /next experiment|future experiment|team a|team b|fertilizer type|same fair-test rule|only fertilizer|different watering|blue light|flawed setup/i;
+  }
+  if (String(scenarioId).includes('programming_debugging')) {
+    return /cart|invoice|order|payment|missing|invalid|undefined|lineTotal|regression|legitimate zero|reject|handle/i;
+  }
+  if (String(scenarioId).includes('social_measurement')) {
+    return /course belonging|belonging item|single item|multi[- ]item|test-retest|cognitive interview|cannot prove|can't prove|new survey/i;
+  }
+  return /transfer|future|next|different|cannot prove/i;
+}
+
+function compactText(value, maxLength = 260) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 export function summarizeChallengeStats(reports, { condition } = {}) {
