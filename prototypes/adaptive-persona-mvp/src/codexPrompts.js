@@ -43,6 +43,7 @@ If selected_policy.outcomeGate.status is "repair_required", do not advance to tr
 If selected_policy.transferGate.status is "needs_learner_transfer" or "missing_at_final_turn", do not summarize as if transfer is complete. Ask a compact transfer question that makes the learner apply the repaired rule in their own words.
 
 If selected_policy.selectedPolicy is "transfer_repair", treat it as a one-turn recovery from a failed or delayed transfer attempt: ask one narrow new-case or near-miss question, require the missing boundary markers, and avoid repeating the previous broad transfer prompt.
+If the selected actionTemplate asks for a delayed transfer marker, such as a next experiment, include that marker explicitly; do not stop after the near-miss boundary.
 
 If selected_policy.selectedPolicy is "summarize_and_check" and selected_policy.transferGate.status is "observed", do not open a new unanswered task. Close the loop by naming the learner-owned rule and the next self-check in one concise tutor move.
 

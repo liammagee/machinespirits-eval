@@ -643,3 +643,72 @@ Artifacts:
 This is now strong enough to justify the next expensive step: rerun the full
 four-trap replicated LLM sweep with the repaired action-family transition model,
 not just revalidate the older artifact.
+
+## Full Action-Family Replication
+
+The full replicated four-trap LLM sweep has now been rerun against the repaired
+action-family transition model.
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --traps \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 2 \
+  --out prototypes/adaptive-persona-mvp/outputs/action-family-full-traps-replicated-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/action-family-full-traps-replicated-live/variant-sweep-2026-05-17T00-55-31-375Z.html`
+- `outputs/action-family-full-traps-replicated-live-revalidated/variant-sweep-revalidated-2026-05-17T00-55-44-973Z.html`
+- `outputs/robustness-action-family-full-traps-replicated-live/robustness-evaluation-2026-05-17T00-55-50-295Z.html`
+
+Revalidation changed `0` outcomes. The adapted condition passed all original
+false-mastery outcome branches and `7/8` counterfactual outcome branches.
+Static tutoring passed `0/8` original false-mastery outcome branches and `1/8`
+counterfactual branches.
+
+Aggregate result, `n=16` paired branches:
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+14.922` | `7.811..20.234` | `0.0014` | pass |
+| Parent dialogue | `+3.938` | `-1.485..8.596` | `0.163` | fail |
+| Trap outcome | `+87.5` | `62.5..100` | `0.0005` | pass |
+
+This establishes the current adaptive-primary claim: the ego/superego
+controller with memory and transfer gates shows a robust positive effect on the
+prototype adaptation rubric and hidden-state trap outcomes, without a material
+parent-dialogue decline. It still does not establish strict all-public-metric
+confirmation because the parent dialogue rubric is positive but not
+statistically significant.
+
+The one adapted miss was a science counterfactual branch where the tutor elicited
+the fertilizer fair-test near-miss but did not force the delayed next-experiment
+transfer. The follow-up patch makes science `transfer_repair` ask for both:
+the near-miss boundary and one next experiment using the same one-variable rule.
+
+Focused post-patch live check:
+
+- `outputs/science-next-experiment-repair-focused-live/variant-sweep-2026-05-17T01-15-05-140Z.html`
+- `outputs/science-next-experiment-repair-focused-live-revalidated/variant-sweep-revalidated-2026-05-17T01-15-10-573Z.html`
+
+The focused slice revalidated with `0` outcome changes and the adapted science
+counterfactual branch passed all delayed-transfer checks. Because it is only a
+focused `n=2` paired slice, it is a regression check, not a new significance
+claim.
+
+Next steps from here:
+
+1. rerun the full replicated four-trap LLM sweep once after the science
+   next-experiment repair if we need a clean all-current artifact;
+2. add a transcript evidence table to the HTML that quotes the learner-owned
+   transfer markers behind each deterministic outcome pass;
+3. keep parent integration deferred until the parent-compatible state/action
+   mapping is stable, because the prototype adaptation signal is now stronger
+   than the parent-rubric alignment signal.

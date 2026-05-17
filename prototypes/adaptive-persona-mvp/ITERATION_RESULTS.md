@@ -750,6 +750,83 @@ node --test prototypes/adaptive-persona-mvp/tests/*.test.js
 npx eslint prototypes/adaptive-persona-mvp/**/*.js
 ```
 
+## 2026-05-17: Full Action-Family Live Replication
+
+Command:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --traps \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 2 \
+  --out prototypes/adaptive-persona-mvp/outputs/action-family-full-traps-replicated-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/action-family-full-traps-replicated-live/variant-sweep-2026-05-17T00-55-31-375Z.html`
+- `outputs/action-family-full-traps-replicated-live-revalidated/variant-sweep-revalidated-2026-05-17T00-55-44-973Z.html`
+- `outputs/robustness-action-family-full-traps-replicated-live/robustness-evaluation-2026-05-17T00-55-50-295Z.html`
+
+Revalidation changed `0` outcomes. Adaptive-primary robustness passed; strict
+all-public-metric confirmation still failed because parent dialogue improved
+but did not clear significance.
+
+| Metric | Mean Diff | 95% CI | p | Gate |
+|---|---:|---:|---:|---|
+| MVP adaptation | `+14.922` | `7.811..20.234` | `0.0014` | pass |
+| Parent dialogue | `+3.938` | `-1.485..8.596` | `0.163` | fail |
+| Trap outcome | `+87.5` | `62.5..100` | `0.0005` | pass |
+
+Outcome counts:
+
+- static original: `0/8`;
+- static counterfactual: `1/8`;
+- adapted original: `8/8`;
+- adapted counterfactual: `7/8`.
+
+The remaining adapted miss was science counterfactual repeat `0`: the learner
+designed and rejected the fertilizer near-miss but did not name the requested
+next experiment. This was a tutor prompt omission rather than a validator bug,
+so the repair makes science `transfer_repair` explicitly require both the
+near-miss boundary and a delayed next-experiment transfer.
+
+Focused post-patch regression check:
+
+```bash
+node prototypes/adaptive-persona-mvp/scripts/run-variant-sweep.js \
+  --scenarios trap_science_variable_control_false_mastery_closed_loop \
+  --conditions static_codex,controller_reflexive_psychodynamic_codex \
+  --learner codex \
+  --repeats 1 \
+  --out prototypes/adaptive-persona-mvp/outputs/science-next-experiment-repair-focused-live \
+  --timeout-ms 600000 \
+  --permutations 1000
+```
+
+Artifacts:
+
+- `outputs/science-next-experiment-repair-focused-live/variant-sweep-2026-05-17T01-15-05-140Z.html`
+- `outputs/science-next-experiment-repair-focused-live-revalidated/variant-sweep-revalidated-2026-05-17T01-15-10-573Z.html`
+
+Focused result:
+
+- revalidation changed `0` outcomes;
+- adapted science counterfactual passed all delayed-transfer checks;
+- learner-owned transfer evidence included: "Next I would test blue light by
+  changing only the light type and keeping water, soil, plant type, and starting
+  size matched between groups."
+
+Verification:
+
+```bash
+node --test prototypes/adaptive-persona-mvp/tests/*.test.js
+npx eslint prototypes/adaptive-persona-mvp/**/*.js
+```
+
 ## 2026-05-16 Replicated Four-Trap LLM Transfer-Repair Sweep
 
 ### Full Live Sweep

@@ -228,17 +228,18 @@ const DOMAIN_MODELS = Object.freeze({
         name: 'variable_control_transfer_repair',
         mustDo: [
           'Use the Team A versus Team B fertilizer near-miss as the only transfer case.',
-          'Ask for four labeled parts: independent variable, controls, otherwise-similar comparison, and why the near-miss cannot isolate fertilizer.',
+          'Ask for five labeled parts: independent variable, controls, otherwise-similar comparison, why the near-miss cannot isolate fertilizer, and one next experiment using the same one-variable rule.',
           'Require the phrase that only fertilizer changes or that fertilizer type is the only changed variable.',
         ],
         mustAvoid: [
           'Do not ask a broad fair-test question again.',
           'Do not let the learner leave water, sunlight, or group similarity implicit.',
+          'Do not omit the delayed next-experiment transfer.',
           'Do not summarize before the learner rejects the near-miss.',
         ],
-        messageFrame: 'Narrow transfer repair: Team A gets new fertilizer plus a sunny window; Team B gets old fertilizer on a back shelf. Ask what must change, what must stay fixed, and why that near-miss cannot isolate fertilizer.',
-        successCheck: 'Learner states fertilizer as the only independent variable, controls water/light/etc., compares otherwise similar groups, and rejects the water/light near-miss.',
-        fallbackMessage: 'Transfer repair, one near-miss: Team A gets new fertilizer and the sunny window; Team B gets old fertilizer on a back shelf. In four labels, name the independent variable, two controls, how you would keep groups otherwise similar, and why this setup cannot isolate fertilizer unless only fertilizer changes.',
+        messageFrame: 'Narrow transfer repair: Team A gets new fertilizer plus a sunny window; Team B gets old fertilizer on a back shelf. Ask what must change, what must stay fixed, why that near-miss cannot isolate fertilizer, and one next experiment using the same fair-test rule.',
+        successCheck: 'Learner states fertilizer as the only independent variable, controls water/light/etc., compares otherwise similar groups, rejects the water/light near-miss, and names a next experiment that changes only one variable.',
+        fallbackMessage: 'Transfer repair, one near-miss: Team A gets new fertilizer and the sunny window; Team B gets old fertilizer on a back shelf. In five labels, name the independent variable, two controls, how you would keep groups otherwise similar, why this setup cannot isolate fertilizer unless only fertilizer changes, and one next experiment that uses the same one-variable fair-test rule.',
       },
       summarize_and_check: {
         name: 'variable_control_agency_restore',

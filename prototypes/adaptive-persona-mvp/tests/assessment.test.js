@@ -8,6 +8,7 @@ import {
   recordTransferPrompt,
   selectPolicy,
 } from '../src/stateMachine.js';
+import { renderTutorMessage } from '../src/personaEngine.js';
 import {
   renderRubricComparisonHtml,
   runRubricComparison,
@@ -266,6 +267,24 @@ test('science trap validator requires learner-owned transfer, not only tutor pro
   });
   assert.equal(learnerTransfer.success, true);
   assert.equal(learnerTransfer.checks.transcriptTransfer, true);
+});
+
+test('science transfer repair prompt asks for delayed next-experiment transfer', () => {
+  const tutorMessage = renderTutorMessage({
+    evidence: {
+      kcCandidates: ['experimental_variable_control'],
+      quote: 'I feel like this is the same check again.',
+      domainDiagnosis: null,
+    },
+    policy: { selectedPolicy: 'transfer_repair' },
+    mastery: {
+      experimental_variable_control: { pMastery: 0.72 },
+    },
+  });
+
+  assert.match(tutorMessage, /Team A gets new fertilizer/i);
+  assert.match(tutorMessage, /next experiment/i);
+  assert.match(tutorMessage, /same one-variable fair-test rule|same one-variable rule/i);
 });
 
 test('trap validators use semantic delayed-transfer evidence over raw LLM self-success', () => {

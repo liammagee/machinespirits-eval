@@ -280,7 +280,7 @@ function renderDomainTutorMessage({ kcId, policy }) {
       case 'transfer_challenge':
         return 'Now transfer the fair-test rule: design the fertilizer test, reject the near-miss where water or light also changed, and name one next experiment where the same one-variable rule applies.';
       case 'transfer_repair':
-        return 'Transfer repair, one near-miss: Team A gets new fertilizer plus the sunny window, Team B gets old fertilizer on a back shelf. Name the independent variable, two controls, the otherwise-similar comparison, and why this cannot isolate fertilizer unless only fertilizer changes.';
+        return 'Transfer repair, one near-miss: Team A gets new fertilizer plus the sunny window, Team B gets old fertilizer on a back shelf. Name the independent variable, two controls, the otherwise-similar comparison, why this cannot isolate fertilizer unless only fertilizer changes, and one next experiment using the same one-variable rule.';
       case 'summarize_and_check':
         return 'You now have the fair-test rule: change one variable, keep the other conditions fixed, compare otherwise similar groups, and make the causal decision only after checking whether another cause changed too.';
       default:
