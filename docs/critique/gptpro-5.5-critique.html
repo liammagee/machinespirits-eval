@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content="gptpro-5.5" />
+  <meta name="description" content="GPTPro 5.5 critique of Geist in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring." />
+  <title>GPTPro 5.5 Critique: Geist in the Machine</title>
+  <style>
+    :root {
+      --bg: #f7f5ef;
+      --paper: #fffaf0;
+      --ink: #211f1c;
+      --muted: #65615a;
+      --line: #d8d0c0;
+      --accent: #60452a;
+      --accent-2: #8a6a43;
+      --code-bg: #f0eadc;
+      --good: #315a3a;
+      --warn: #795c17;
+      --bad: #6b2d2d;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 5rem;
+    }
+    article {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      box-shadow: 0 14px 45px rgba(45, 35, 20, 0.12);
+      padding: clamp(1.25rem, 4vw, 3.5rem);
+    }
+    header {
+      border-bottom: 2px solid var(--line);
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+    }
+    .eyebrow {
+      color: var(--accent-2);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0 0 0.75rem;
+    }
+    h1, h2, h3 {
+      color: var(--accent);
+      line-height: 1.15;
+      margin-top: 2rem;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      margin: 0 0 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.45rem, 3vw, 2.05rem);
+      border-top: 1px solid var(--line);
+      padding-top: 1.4rem;
+    }
+    h3 { font-size: 1.16rem; }
+    .dek {
+      color: var(--muted);
+      font-size: 1.1rem;
+      max-width: 760px;
+      margin: 0.5rem 0 0;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      color: var(--muted);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.9rem;
+      margin-top: 1.25rem;
+    }
+    .toc {
+      background: #f4eddd;
+      border: 1px solid var(--line);
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0 2rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .toc h2 {
+      border: 0;
+      padding: 0;
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-family: Arial, Helvetica, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .toc ol { margin: 0; padding-left: 1.2rem; }
+    .toc a { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .thesis {
+      border-left: 5px solid var(--accent-2);
+      background: #f2ead8;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      font-size: 1.08rem;
+    }
+    .callout {
+      background: #f5efe2;
+      border: 1px solid var(--line);
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+    }
+    .callout strong { color: var(--accent); }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .card {
+      border: 1px solid var(--line);
+      background: #fffdf7;
+      padding: 1rem;
+    }
+    .card h3 { margin-top: 0; }
+    .tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      border: 1px solid currentColor;
+    }
+    .supported { color: var(--good); }
+    .qualified { color: var(--warn); }
+    .null { color: var(--bad); }
+    ul, ol { padding-left: 1.35rem; }
+    li + li { margin-top: 0.35rem; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+    }
+    code { padding: 0.1rem 0.25rem; }
+    pre {
+      padding: 1rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    blockquote {
+      margin: 1.2rem 0;
+      padding-left: 1rem;
+      border-left: 4px solid var(--line);
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #eee4d2; color: var(--accent); }
+    footer {
+      margin-top: 2.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.88rem;
+    }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 0; }
+      article { box-shadow: none; border: 0; }
+      .toc a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <article>
+      <header>
+        <p class="eyebrow">gptpro-5.5 critique</p>
+        <h1>Geist in the Machine: critique and adaptation-design agenda</h1>
+        <p class="dek">A critique of <em>Geist in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring</em>, focused on mechanism claims, measurement limits, and designs for externally validated adaptation or learning.</p>
+        <div class="meta">
+          <span>Model label: GPTPro 5.5</span>
+          <span>Generated: 2026-05-18</span>
+          <span>Suggested repository path: <code>docs/critiques/gptpro-5.5-critique.html</code></span>
+        </div>
+      </header>
+
+      <nav class="toc" aria-label="Table of contents">
+        <h2>Contents</h2>
+        <ol>
+          <li><a href="#one-sentence">One-sentence read</a></li>
+          <li><a href="#summary">Summary of the paper</a></li>
+          <li><a href="#issues">Main issues aside from length</a></li>
+          <li><a href="#adaptation-problem">The core adaptation problem</a></li>
+          <li><a href="#mechanisms">Mechanisms and designs for externally validated adaptation</a></li>
+          <li><a href="#study">Concrete study to add</a></li>
+          <li><a href="#reframing">Best reframing</a></li>
+        </ol>
+      </nav>
+
+      <section id="one-sentence">
+        <h2>My read in one sentence</h2>
+        <p class="thesis">The paper is strongest when it claims that <strong>intersubjective prompting improves tutor production</strong> through calibration and critique; it is weakest where it tries to turn that into <strong>genuine adaptation or learning</strong>, because most of the evidence still shows better responses, not externally validated learner change.</p>
+      </section>
+
+      <section id="summary">
+        <h2>Summary of the paper</h2>
+        <p>The paper extends an earlier pilot that found large effects from recognition-enhanced tutoring prompts and an ego/superego multiagent architecture. The central question here is mechanistic: <strong>what causes those effects?</strong> It proposes three candidate mechanisms: prompt-level <strong>calibration</strong>, architecture-level <strong>error correction</strong>, and interaction-level <strong>adaptive responsiveness</strong>.</p>
+
+        <div class="status-grid">
+          <div class="card">
+            <h3>Calibration <span class="tag supported">supported</span></h3>
+            <p>Recognition-oriented prompts narrow the tutor's response distribution. The tutor becomes less generic, less variable across quality dimensions, and better at lifting weak dimensions such as elicitation and productive difficulty. The paper reports within-response dimension variance reductions around <code>d = 0.52-0.64</code>, and the effect appears even without a superego, supporting the claim that calibration is primarily a prompt-level effect.</p>
+          </div>
+          <div class="card">
+            <h3>Error correction <span class="tag qualified">qualified</span></h3>
+            <p>The superego can catch failures, especially under weaker baseline conditions. But under recognition prompts, the superego often becomes redundant because the calibrated ego produces fewer errors in the first place. The paper calls this <strong>universal substitution</strong>: calibration and error correction overlap rather than add cleanly.</p>
+          </div>
+          <div class="card">
+            <h3>Adaptive responsiveness <span class="tag null">null</span></h3>
+            <p>The third mechanism is the stubborn null. The paper tests whether recognition or architecture changes the slope of tutoring quality across turns. It finds that tutors may improve modestly over a dialogue, but not differently by condition. Recognition does not reliably produce steeper adaptation trajectories.</p>
+          </div>
+        </div>
+
+        <p>A major secondary finding is that the active ingredient is probably not specifically <em>Hegelian vocabulary</em>. Matched prompts grounded in constructivist or intersubjective pedagogical traditions perform similarly to the recognition prompts, while behaviorist matched-specificity prompts perform worse. So the effect is best described as an <strong>intersubjective-pedagogy orientation</strong>, with recognition theory serving as the explicit philosophical grammar rather than the unique causal ingredient.</p>
+
+        <p>The paper's methodological contribution is also substantial. It treats the evaluation apparatus - rubrics, process tracing, machine-checked claims, logged ego/superego exchanges - as part of the contribution. Its process-tracing setup is valuable because it records internal critique, revisions, scores, prompt versions, and provenance, making agent-level mechanisms more observable than in ordinary black-box tutoring evaluations.</p>
+      </section>
+
+      <section id="issues">
+        <h2>Main issues, aside from length</h2>
+
+        <h3>1. The strongest evidence is about tutor production, not learning</h3>
+        <p>The paper repeatedly improves tutor output quality, but that is not the same as showing that learners learn more. This matters because recognition is philosophically relational, while the empirical mechanism mostly lives inside the tutor. Calibration changes what the tutor says. Superego critique changes what the tutor emits. Neither directly establishes learner uptake, conceptual change, durable retention, or transfer.</p>
+        <p>The paper should therefore make an explicit distinction between:</p>
+        <pre>better tutor response quality
+vs.
+changed learner state
+vs.
+durable learning gain</pre>
+
+        <h3>2. Adaptive responsiveness is measured too narrowly</h3>
+        <p>The paper's adaptation test mostly asks whether scalar rubric scores rise across turns. That is a weak proxy for genuine adaptation. A tutor can genuinely adapt by changing <em>type</em> of move, not by increasing a scalar score. It can also produce a productive dip: confusion, disequilibrium, or struggle before consolidation.</p>
+        <p>The current null should be framed carefully: the paper does not show that rich adaptation failed. It shows that <strong>condition-dependent positive monotone score slopes</strong> failed.</p>
+
+        <h3>3. The synthetic learner setup limits the strongest pedagogical claims</h3>
+        <p>Synthetic learners are useful for controlled mechanism tracing, but they are a poor endpoint for learning claims. Genuine confusion, resistance, frustration, insight, and appropriation may diverge from simulated versions. If the learner is a scripted or LLM-generated responder, the system can demonstrate responsiveness to textual cues, but not yet recognition of a human learner's evolving understanding.</p>
+
+        <h3>4. LLM-as-judge recursion remains a problem for process mechanisms</h3>
+        <p>The paper uses multiple judges for outcome-level validation, which is good. But the most interesting process-level claims - whether a critique is substantive, whether a revision is genuine rather than cosmetic, whether a superego category is correct - are still largely LLM-assessed. A paper about genuine revision should not rely only on LLMs to decide whether revision was genuine.</p>
+
+        <h3>5. The theoretical language sometimes outruns the causal evidence</h3>
+        <p>The Hegelian framing is productive, but there is a risk of over-reading. The matched-pedagogical control suggests that the causal ingredient is the broader intersubjective/constructivist family, not Hegelian recognition as such. The design-theory claim should be modest: recognition theory is a <strong>useful articulation and generator of design constraints</strong>, not the uniquely confirmed explanation.</p>
+
+        <h3>6. Calibration may partly be better task specification</h3>
+        <p>The recognition prompt tells the tutor to engage the learner's interpretation, ask questions, preserve productive struggle, and avoid answer delivery. That can be philosophically described as recognition, but operationally it is also a strong task specification. The behaviorist control helps because it shows specificity alone is not enough, but the paper should more sharply separate recognition as theory, constructivist pedagogy as design family, prompt specificity as engineering, and rubric alignment as evaluation artifact.</p>
+
+        <h3>7. Multiagent benefits may confound critique with extra compute</h3>
+        <p>The superego architecture does more than provide recognition-like critique. It also gives the system more tokens, more passes, more chances to revise, and more structured attention. Claims about superego-as-error-correction should be careful unless compute-matched alternatives are included: single-agent self-revision with equal token budget, alternative critic prompts, random critique, rubric-only critic, and hidden-state tracker without critic.</p>
+
+        <h3>8. The rubric appears to measure one dominant quality factor</h3>
+        <p>The paper notes that the tutor rubric dimensions are highly correlated and largely collapse into one factor, with PC1 explaining 80.7 percent of variance. That does not invalidate the results, but it weakens fine-grained claims about specific pedagogical subskills. If adaptive responsiveness, elicitation, recognition quality, and productive difficulty are mostly facets of one general tutor-quality factor, then mechanism claims need external behavioral anchors.</p>
+      </section>
+
+      <section id="adaptation-problem">
+        <h2>The core adaptation problem</h2>
+        <p>The current paper is mostly detecting this:</p>
+        <blockquote>Given a learner message, does the tutor produce a better next message?</blockquote>
+        <p>But genuine adaptation or learning requires detecting something closer to this:</p>
+        <blockquote>Does the system update an internal model of the learner, choose a different pedagogical action because of that update, and produce externally measurable improvement in the learner's future understanding or behavior?</blockquote>
+        <p>That requires three things the current design only partly has:</p>
+        <ol>
+          <li>A <strong>learner state</strong> that can be independently measured.</li>
+          <li>A <strong>policy change</strong> caused by the system's estimate of that state.</li>
+          <li>An <strong>external outcome</strong> showing that the change helped.</li>
+        </ol>
+        <p>The paper has rich traces and output scoring. What it needs next is <strong>state-grounded, intervention-tested, externally validated adaptation</strong>.</p>
+      </section>
+
+      <section id="mechanisms">
+        <h2>Mechanisms and designs that could show genuine adaptation or learning</h2>
+
+        <h3>1. Add an explicit learner-state model, then test whether it predicts held-out learner behavior</h3>
+        <p>The tutor should maintain a structured learner model after every turn. Not prose memory, but a state vector such as:</p>
+        <pre>concept mastery:
+  misconception_A: high probability
+  misconception_B: low probability
+  prerequisite_gap: medium probability
+
+epistemic stance:
+  confidence: low
+  resistance: high
+  help-seeking: avoidant
+  metacognitive awareness: emerging
+
+pedagogical need:
+  next best move: diagnostic contrast
+  avoid: direct explanation
+  desired difficulty: medium-high</pre>
+        <p>The mechanism claim would be:</p>
+        <blockquote>Recognition improves tutoring because it improves learner-state estimation, and better state estimation causes better pedagogical action.</blockquote>
+        <p>External validation would require asking whether the state model predicts something outside the tutor's own response: the learner's next answer, misconception category, confidence rating, transfer performance, or human-coded explanation quality.</p>
+        <p>A strong experiment would hide the true learner state from the tutor, reveal it only through learner responses, and score the tutor's inferred state against an external label. Then run ablations: normal state model vs. frozen state model vs. shuffled state model vs. corrupted state model. If performance drops when the state model is frozen or corrupted, then adaptation is not just conversational fluency. It is causal use of a learner model.</p>
+
+        <h3>2. Use knowledge tracing as the adaptation backbone</h3>
+        <p>Knowledge tracing gives the paper a clean way to operationalize learning without abandoning its philosophical commitments. For each learner, define a set of knowledge components:</p>
+        <pre>KC1: identifies relevant principle
+KC2: distinguishes misconception from correct rule
+KC3: applies rule in near-transfer problem
+KC4: explains reasoning in own words
+KC5: transfers to novel context</pre>
+        <p>After each learner response, the system updates a mastery estimate. The tutor's next move must be selected as a function of that estimate.</p>
+        <pre>learner response
+-&gt; mastery posterior update
+-&gt; pedagogical action selection
+-&gt; next learner response
+-&gt; posttest / transfer / retention</pre>
+        <p>That is much stronger than a rubric slope. It lets the paper claim adaptation only when the tutor's next action is demonstrably sensitive to updated mastery estimates and when those estimates predict future performance.</p>
+        <p>Recognition can still matter. The recognition-oriented version should not merely maximize mastery probability. It should also model the learner's stance toward the material: resistance, confidence, ownership, willingness to revise, and ability to articulate the conflict. That would preserve the Hegelian/constructivist orientation while giving it a measurable learning-science substrate.</p>
+
+        <h3>3. Replace scalar slope with a pedagogical state machine</h3>
+        <p>The paper's adaptation null may be partly caused by asking for monotone improvement. A better design is a state machine where adaptation means <strong>appropriate transition</strong>, not higher score.</p>
+        <pre>S0: diagnose learner interpretation
+S1: elicit reasoning
+S2: identify contradiction or productive tension
+S3: scaffold within ZPD
+S4: fade support
+S5: consolidate learner-owned explanation
+S6: test transfer
+S7: repair affective or epistemic rupture</pre>
+        <p>The tutor should move between states based on learner evidence:</p>
+        <pre>confident misconception -&gt; contradiction / contrast case
+low-confidence confusion -&gt; scaffolded diagnostic probe
+correct but shallow answer -&gt; ask for explanation
+breakthrough -&gt; fade and transfer
+frustration without progress -&gt; affective repair plus smaller step
+resistance -&gt; recognize objection before re-problematizing</pre>
+        <p>The external validation is not "did the score rise?" It is: <strong>Did the tutor make the transition an expert tutor would make, given the learner state?</strong> Human educators can label expected transitions on held-out dialogues. The system's state transitions can be compared to those labels. Then learner outcomes can test whether correct transitions produce learning gains.</p>
+        <p>This fits the philosophy better than OLS slopes. Hegelian development is not "line goes up." It is staged transformation through contradiction, breakdown, reorganization, and recognition.</p>
+
+        <h3>4. Use counterfactual learner-signal pairs</h3>
+        <p>A clean adaptation benchmark would use minimal pairs. Same dialogue history, but at turn <code>t</code> the learner gives one of several signals:</p>
+        <pre>A: "I think I get it now: the variable just disappears."
+B: "I think I get it now: the variable represents the unknown quantity."
+C: "This still feels arbitrary."
+D: "I can do the steps, but I don't know why."</pre>
+        <p>A genuinely adaptive tutor should respond differently to A, B, C, and D. More importantly, the differences should be pedagogically justified:</p>
+        <ul>
+          <li>A requires misconception repair.</li>
+          <li>B allows consolidation or transfer.</li>
+          <li>C requires epistemic/affective recognition.</li>
+          <li>D requires conceptual explanation, not procedural practice.</li>
+        </ul>
+        <p>This design directly tests whether the tutor uses the learner's contribution as information. It also avoids the trap where all tutors improve over time because any chat model conditions on prior text.</p>
+        <pre>signal discriminability:
+  Does the tutor choose distinct actions for distinct learner states?
+
+pedagogical appropriateness:
+  Are those actions expert-validated?
+
+outcome effect:
+  Do learners receiving signal-appropriate responses improve more?</pre>
+
+        <h3>5. Add prediction-before-action</h3>
+        <p>Before generating the next tutor response, require the tutor system to predict:</p>
+        <pre>What does the learner currently believe?
+What will the learner likely answer if asked a transfer question?
+What kind of help would be counterproductive right now?
+What evidence would change this model?</pre>
+        <p>Then the tutor acts. After the learner responds, score the prediction against the actual response. This creates an external check on theory of mind. The tutor is not merely being responsive; it is making falsifiable claims about the learner.</p>
+
+        <h3>6. Use dyadic adaptation metrics, not per-agent tutor metrics</h3>
+        <p>Recognition theory should not be evaluated only at the tutor level. The unit should be the dyad.</p>
+        <pre>learner signal at turn t
+-&gt; tutor strategy at turn t+1
+-&gt; learner conceptual move at turn t+2</pre>
+        <p>This can be modeled as cross-lagged influence:</p>
+        <pre>Does learner confusion predict tutor scaffolding?
+Does tutor scaffolding predict learner explanation quality?
+Does learner resistance predict recognition/repair moves?
+Do those repair moves predict re-engagement?</pre>
+        <p>This is closer to mutual recognition because it treats the interaction as a coupled system. The paper's current tutor-learner asymmetry makes sense because the mechanisms are tutor-internal. A dyadic design would test whether the tutor's internal changes actually enter the learner's trajectory.</p>
+
+        <h3>7. Build a productive struggle regulator</h3>
+        <p>One mechanism that fits both the paper and learning science is <strong>difficulty regulation</strong>. The tutor should estimate whether the learner is in one of three zones:</p>
+        <pre>too easy: learner is coasting
+productive struggle: learner is challenged but engaged
+too hard: learner is lost or disengaging</pre>
+        <p>The tutor's job is not to maximize immediate correctness. It is to keep the learner in productive struggle.</p>
+        <pre>if too easy -&gt; increase transfer demand or ask for justification
+if productive -&gt; withhold direct answer and ask targeted probe
+if too hard -&gt; reduce step size or provide scaffold
+if affective rupture -&gt; repair relation before increasing difficulty</pre>
+        <p>External validation should include independent human labels of struggle zone, tutor action appropriateness, learner persistence, posttest transfer, and delayed retention. This would be philosophically coherent: recognition does not mean pleasing the learner. It means preserving the learner as an agent capable of struggle, revision, and ownership.</p>
+
+        <h3>8. Make ceding initiative a formal mechanism, not just a surface feature</h3>
+        <p>The paper finds an interesting mediator: ending with a question appears to function as ceding initiative in single-turn intersubjective contexts, though the relationship reverses in multi-turn contexts. That is promising, but "ends with a question" is too superficial. The deeper mechanism is <strong>initiative transfer</strong>.</p>
+        <pre>tutor-controlled:
+  explains, directs, supplies answer, narrows path
+
+shared-control:
+  offers choices, asks diagnostic contrast, frames productive tension
+
+learner-controlled:
+  asks learner to commit, generate example, choose path, revise claim</pre>
+        <p>Then test whether good tutors dynamically transfer initiative as learner competence rises:</p>
+        <pre>early confusion -&gt; more tutor structure
+emerging competence -&gt; shared control
+demonstrated competence -&gt; learner initiative
+misconception relapse -&gt; temporary re-scaffolding</pre>
+        <p>This would be an adaptation mechanism, externally validated by human coding of initiative control and learner gains on transfer tasks.</p>
+
+        <h3>9. Introduce a memory-bottleneck test</h3>
+        <p>Right now, a model can appear adaptive simply because the entire conversation is in context. To prove stateful adaptation, force the system to use a structured memory bottleneck.</p>
+        <pre>full transcript tutor
+structured learner-state memory only
+randomized memory
+stale memory
+no memory</pre>
+        <p>If the structured memory version performs well and the randomized/stale versions fail, then the system is genuinely using an updated learner model.</p>
+        <p>This is especially useful for multiagent designs. A learner-model agent could produce the state summary; the tutor agent could see only that summary plus the latest learner message. The critic could then ask: "Does this response follow from the learner model?" That makes the adaptation mechanism observable.</p>
+
+        <h3>10. Use micro-randomized human studies</h3>
+        <p>For external validation, a full randomized controlled trial is useful but not enough. The paper needs mechanism-sensitive experiments. A micro-randomized design would randomly vary tutor moves at decision points:</p>
+        <pre>At a misconception:
+  recognition repair vs. direct correction
+
+At frustration:
+  affective acknowledgment + scaffold vs. scaffold only
+
+At partial mastery:
+  fade support vs. continue hints
+
+At resistance:
+  engage objection vs. redirect to task</pre>
+        <p>Then measure immediate and delayed effects:</p>
+        <pre>next-turn explanation quality
+problem correctness
+self-explanation depth
+engagement
+posttest
+delayed transfer</pre>
+        <p>This would identify which adaptive moves actually cause learning. It would also prevent the theory from resting on global tutor-quality scores.</p>
+      </section>
+
+      <section id="study">
+        <h2>A concrete study I would add</h2>
+        <p>I would add a new experiment called something like <strong>State-Validated Recognition Tutoring Study</strong>.</p>
+        <pre>Participants: human learners or high-fidelity simulated learners with hidden ground-truth states
+
+Task domain: one constrained domain with known misconceptions
+  e.g., algebra misconceptions, Newtonian force misconceptions, probability fallacies
+
+Conditions:
+  1. baseline tutor
+  2. recognition prompt only
+  3. learner-state tracker only
+  4. recognition + learner-state tracker
+  5. recognition + tracker + superego critic
+  6. recognition + corrupted tracker control
+
+Each turn:
+  learner answers
+  system predicts learner state
+  system selects pedagogical state-machine action
+  tutor responds
+  learner continues
+
+Outcomes:
+  state-estimation accuracy
+  expert-rated transition appropriateness
+  next-turn learner improvement
+  posttest
+  delayed transfer
+  learner self-report of agency/recognition</pre>
+        <p>Mechanism proof would require all of these:</p>
+        <pre>recognition improves state estimation
+state estimation predicts action choice
+action choice predicts learning
+corrupting/freezing the state model reduces adaptation
+human learners show better transfer or retention</pre>
+        <p>That would move the paper from:</p>
+        <blockquote>Recognition makes tutor outputs better.</blockquote>
+        <p>to:</p>
+        <blockquote>Recognition improves the system's model of the learner; that model changes pedagogical action; those changed actions produce measurable learner gains.</blockquote>
+      </section>
+
+      <section id="reframing">
+        <h2>The best reframing</h2>
+        <p>I would not try to rescue the current adaptive-responsiveness mechanism as written. I would replace it.</p>
+        <p>Current M3:</p>
+        <pre>Adaptive responsiveness = positive slope in tutor quality across turns.</pre>
+        <p>Better M3:</p>
+        <pre>Adaptive learning = externally validated state update that changes future pedagogical action and improves learner outcomes.</pre>
+        <p>Or, in the paper's own philosophical register:</p>
+        <pre>Adaptation is not higher performance along a fixed external scale.
+Adaptation is determinate transformation of the tutor-learner relation in response to the learner's revealed understanding.</pre>
+        <p class="thesis">That gives the paper a way forward that is both more empirically credible and more Hegelian than the slope test.</p>
+      </section>
+
+      <footer>
+        <p><strong>Source note:</strong> This critique responds to the uploaded April 2026 manuscript, <em>Geist in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring</em>, and is intended as a repository-ready HTML review artifact.</p>
+      </footer>
+    </article>
+  </main>
+</body>
+</html>
