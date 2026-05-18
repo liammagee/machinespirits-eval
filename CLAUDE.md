@@ -397,8 +397,9 @@ node scripts/analyze-judge-reliability.js
 # Export results
 node scripts/eval-cli.js export <runId> --format csv
 
-# Build paper PDF
-cd docs/research && ./build.sh full
+# Build paper PDF (canonical Paper 2.0). NOTE: `full` builds the LEGACY
+# Paper 1.0 from paper-full.md — use `paper2` for paper-full-2.0.md.
+cd docs/research && ./build.sh paper2
 
 # Run tests
 npm test
