@@ -14,7 +14,7 @@ Organized by theme, roughly priority-ordered within each section.
 ### A1. Human Learner Validation (CRITICAL — engineering layer complete 2026-04-25)
 All evaluations use simulated learners. The critical open question is whether recognition-enhanced tutoring produces genuine learning gains with real humans. Standing as the single highest-value next step identified in the 2026-04-22 paper critique — everything else is downstream polish.
 
-- **Pilot runbook**: `notes/design-a1-human-learner-pilot.md` — phased N≈60 pilot (2 conditions × ~30 participants), narrow-domain content (course 101 fractions *or* course 201 intro programming, both already authored), pre/post learning + engagement + qualitative interviews, IRB protocol, recruitment, measurement instruments, analysis plan.
+- **Pilot runbook**: `notes/design-a1-human-learner-pilot.md` — **revised 2026-05-18**: phased N≈90 pilot, **3 arms** (base / recognition / behaviorist-matched `cell_96` — the §7.9 between-family $d=1.38$ axis, resolving the old "pending A10" arm deferral) × ~30 participants, narrow-domain fractions, outcome battery = pre/post MCQ **+ immediate transfer + independently-coded free-text explanation (the §7.9 learner-unauthored channel) + 1-week delayed retention**, IRB protocol (now linked two-wave), recruitment, instruments, analysis plan. Sharpened by the dramatic-reversal probe (`exports/dramatic-reversal-probe.md`) + the GPT-5.5 critique exchange.
 - **Why pilot before RCT**: A small pilot validates content, UI, measurement, and recruitment pipeline before committing to an N=200 RCT at \$20K-50K. If the pilot shows a measurable tutor-quality → learning-gains path, expand to an RCT; if flat, interrogate rubric-vs-learning divergence.
 
 **Engineering — DONE** (commits `4cb8e5b` chat UI, `8e513ae` pilot infrastructure):
@@ -25,10 +25,16 @@ All evaluations use simulated learners. The critical open question is whether re
 - Ingestion: `scripts/ingest-pilot-sessions.js` — completed pilot sessions → `evaluation_results` rows + dialogue log files in eval-runner format; idempotent. After ingestion `eval-cli.js evaluate <runId>` scores transcripts under v2.2 rubric, enabling §4.3 mediator analysis without code surgery.
 - Tests: 15 pass across 3 suites (`tests/pilot.test.js`); end-to-end live-LLM smoke confirmed for both cell_1 (terse-instructional) and cell_5 (empathy-first) on 2026-04-25.
 
+**Engineering deltas for the 2026-05-18 revised design** (runbook §3.2, ~3–4 eng-days, not a rebuild):
+- Wire `cell_96_base_behaviorist_single_unified` as the 3rd arm + balanced 3-way randomisation
+- Form C + 3×3 Latin square (replace 2-form UUID parity in `pilotItemBank.js`)
+- `explanation` free-text item type + blind shuffled coding export (bank is currently MCQ-only)
+- Session-2 retention re-contact flow (token linkage, 2nd-consent touch, day-7 gate)
+
 **Still gating recruitment** (content/legal track, not engineering):
-- IRB approval at host institution
-- Real consent text (placeholder flagged in `public/pilot/index.html` consent block)
-- NAEP-derived 10×2 fractions items (placeholder flagged in `config/pilot/fractions-items.yaml` preamble)
+- IRB approval at host institution — now **linked two-wave** minimal-risk (name re-contact, linkage token, destruction schedule)
+- Real consent text (placeholder flagged in `public/pilot/index.html` consent block) — must cover re-contact + Session-1↔2 linkage
+- NAEP-derived 10×**3** fractions items + 3 parallel free-text explanation prompts (placeholder flagged in `config/pilot/fractions-items.yaml` preamble)
 - NASA-TLX validated wording (current labels in HTML are paraphrases; real wording is public domain but specific)
 - OSF pre-registration of §4.1 thresholds before any data collection
 - Internal dogfood N=5 (runbook §7) — feasibility check before opening Prolific

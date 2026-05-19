@@ -2525,13 +2525,20 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 <figcaption>
                   <span class="plate__no" x-text="roman(tutorIndex(i))"></span>
                   <span class="plate__ttl">
-                    Reply from <em x-text="resolved?.name || 'tutor'"></em>
+                    <span x-show="turn.human">You — as teacher</span>
+                    <span x-show="!turn.human">Reply from <em x-text="resolved?.name || 'tutor'"></em></span>
                   </span>
+                  <template x-if="turn.human">
+                    <span class="plate__sub"><em class="sub-ego-only">human-authored</em></span>
+                  </template>
+                  <template x-if="!turn.human">
                   <span class="plate__sub">
                     <template x-if="turn.wasRevised"><em class="sub-revised">revised after superego</em></template>
                     <template x-if="!turn.wasRevised && turn.architecture?.hasSuperego"><em class="sub-approved">approved by superego</em></template>
                     <template x-if="!turn.architecture?.hasSuperego"><em class="sub-ego-only">ego · only</em></template>
                   </span>
+                  </template>
+                  <template x-if="!turn.human">
                   <div class="plate__apparatus">
                     <span class="apparatus__item"><b>coord</b> <span x-text="'§V · pl ' + roman(tutorIndex(i))"></span></span>
                     <span class="apparatus__sep">·</span>
@@ -2554,8 +2561,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                       </template>
                     </span>
                   </div>
+                  </template>
                 </figcaption>
 
+                <template x-if="!turn.human">
                 <details class="trace">
                   <summary>
                     <span class="chev">▸</span>
@@ -2583,6 +2592,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                     </template>
                   </div>
                 </details>
+                </template>
               </figure>
             </template>
 
@@ -2607,13 +2617,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 
         <!-- mode toggle -->
         <div class="mode">
-          <span class="mode__lbl">◦ learner</span>
+          <span class="mode__lbl">◦ <span x-text="humanSeat"></span></span>
           <div class="mode__toggle">
-            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">Human</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">Auto</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">I'm the learner</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">I'm the teacher</button>
+            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">Watch both</button>
           </div>
-          <span class="mode__meta" x-show="mode === 'human'">— you reply as the learner</span>
-          <span class="mode__meta" x-show="mode === 'auto'">— the learner agent replies for you</span>
+          <span class="mode__meta" x-show="mode === 'human'">— you reply as the learner; the resolved cell teaches</span>
+          <span class="mode__meta" x-show="mode === 'teacher'">— you teach; the synthetic learner (persona below) replies</span>
+          <span class="mode__meta" x-show="mode === 'auto'">— both agents converse; you observe</span>
         </div>
 
         <!-- HUMAN MODE -->
@@ -2678,6 +2690,48 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
                 <span x-show="pending && !pendingStage.startsWith('learner') && !pendingStage.startsWith('tutor')">···</span>
               </button>
             </div>
+          </div>
+        </template>
+
+        <!-- TEACHER MODE -->
+        <template x-if="mode === 'teacher'">
+          <div>
+            <p class="composer__pretext">
+              <span class="tag">◦ teaching</span>
+              <span class="rule"></span>
+              <span class="cell" x-show="resolved?.learnerArchitecture?.startsWith('ego_superego')">
+                replies from <em x-text="personaName"></em> · bilateral learner (ego + superego)
+              </span>
+              <span class="cell" x-show="!resolved?.learnerArchitecture?.startsWith('ego_superego')">
+                replies from <em x-text="personaName"></em> · unified learner
+              </span>
+            </p>
+            <div class="persona-strip">
+              <template x-for="p in personas" :key="p.id">
+                <button
+                  class="persona-chip"
+                  :class="{'is-active': personaId === p.id}"
+                  @click="personaId = p.id"
+                >
+                  <span class="name" x-text="p.name"></span>
+                  <span class="hint" x-text="'· ' + p.hint"></span>
+                </button>
+              </template>
+            </div>
+            <form @submit.prevent="sendAsTeacher">
+              <span class="composer__prompt">teacher :~ $</span>
+              <textarea
+                x-model="input"
+                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : sendAsTeacher()"
+                :disabled="pending"
+                rows="2"
+                placeholder="type as the teacher… open with a question, a reframing, a provocation."
+              ></textarea>
+              <button type="submit" :disabled="pending || !input.trim()">
+                <span x-show="!pending">Send →</span>
+                <span x-show="pending">···</span>
+              </button>
+            </form>
           </div>
         </template>
       </div>
@@ -2964,8 +3018,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       },
 
       setMode(m) {
-        if (m !== 'human' && m !== 'auto') return;
+        if (m !== 'human' && m !== 'auto' && m !== 'teacher') return;
         this.mode = m;
+      },
+
+      // Which seat the human occupies, for the composer chrome.
+      get humanSeat() {
+        if (this.mode === 'teacher') return 'teacher';
+        if (this.mode === 'auto') return 'observer';
+        return 'learner';
       },
 
       pickLecture(course, lec) {
@@ -3251,6 +3312,62 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           });
         } catch (err) {
           this.turns.push({ role: 'error', content: err.message });
+        } finally {
+          this.pending = false;
+          this.scrollChatToBottom();
+        }
+      },
+
+      // Human-as-teacher: the human authors the tutor turn; the synthetic
+      // learner (the resolved cell's learner_architecture + chosen persona)
+      // replies. Reuses /api/chat/learner-turn unchanged — it derives the
+      // last tutor message from history.
+      async sendAsTeacher() {
+        const msg = this.input.trim();
+        if (!msg || this.pending || !this.resolved) return;
+        this.turns.push({
+          role: 'tutor',
+          finalMessage: msg,
+          human: true,
+          wasRevised: false,
+          deliberation: [],
+          architecture: { hasSuperego: false },
+          totals: { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
+        });
+        this.input = '';
+        this.pending = true;
+        this.pendingStage = this.resolved.learnerArchitecture?.startsWith('ego_superego')
+          ? 'learner ego → superego → revision'
+          : 'learner drafting';
+        this.scrollChatToBottom();
+
+        const history = this.turns
+          .filter((t) => t.role === 'learner' || t.role === 'tutor')
+          .map((t) => ({ role: t.role, content: t.role === 'tutor' ? t.finalMessage : t.content }));
+
+        try {
+          const lr = await fetch('/api/chat/learner-turn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cellName: this.resolved.name,
+              history,
+              topic: this.topic || 'general conversation',
+              personaId: this.personaId,
+              useClaudeCli: this.useClaudeCli,
+            }),
+          });
+          const ldata = await lr.json();
+          if (!lr.ok) throw new Error(ldata.error || 'learner request failed');
+          this.turns.push({
+            role: 'learner',
+            content: ldata.message,
+            deliberation: ldata.deliberation || [],
+            personaId: ldata.personaId || this.personaId,
+            totals: ldata.totals || { latencyMs: 0, outputTokens: 0 },
+          });
+        } catch (err) {
+          this.turns.push({ role: 'error', content: `learner turn: ${err.message}` });
         } finally {
           this.pending = false;
           this.scrollChatToBottom();

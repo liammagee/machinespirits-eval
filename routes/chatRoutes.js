@@ -26,15 +26,17 @@ const __dirname = path.dirname(__filename);
 
 const router = Router();
 
+// This adapter serves ONLY the interactive /chat UI, never the eval runner.
+// Reasoning models (e.g. kimi-k2.5) spend their token budget on hidden
+// reasoning before emitting any visible content, so the experiment's
+// config-driven cap (config/learner-agents.yaml: max_tokens 500) truncates
+// them to an empty message here. Floor the interactive budget so reasoning
+// models can finish thinking and still speak — without touching the
+// experiment-load-bearing YAML.
+const CHAT_MIN_MAX_TOKENS = 4000;
+
 const LOCAL_PROMPTS_DIR = path.resolve(__dirname, '..', 'prompts');
-const CORE_PROMPTS_DIR = path.resolve(
-  __dirname,
-  '..',
-  'node_modules',
-  '@machinespirits',
-  'tutor-core',
-  'prompts',
-);
+const CORE_PROMPTS_DIR = path.resolve(__dirname, '..', 'node_modules', '@machinespirits', 'tutor-core', 'prompts');
 
 function loadPromptFile(filename) {
   if (!filename) return '';
@@ -57,20 +59,84 @@ function cellSortKey(name) {
 // as such. The chat UI surfaces these via the resolved-cell panel; they are
 // not recomputed at chat time.
 const CHARISMA_PROFILES = {
-  cell_101: { designPoint: 'baseline',            label: 'Baseline id-director',         v22LastTurn: 55.5, charisma: 59.9, n: 79, blurb: 'Inversion alone — no classifier, no exemplars, no tuning.' },
-  cell_102: { designPoint: 'baseline-recog',      label: 'Baseline + recognition',       v22LastTurn: 49.4, charisma: 54.1, n: 54, blurb: 'Recognition vocabulary only — both rubrics drift down.' },
-  cell_103: { designPoint: 'classifier',          label: 'Classifier only',              v22LastTurn: 75.8, charisma: 64.3, n: 81, blurb: 'Register classifier lifts persona-shift floor; no recognition yet.' },
-  cell_104: { designPoint: 'v22-specialist',      label: 'v2.2 specialist',              v22LastTurn: 80.6, charisma: 65.7, n: 81, blurb: 'Classifier + recognition — wins v2.2, mid on charisma.' },
-  cell_105: { designPoint: 'charisma-specialist', label: 'Charisma specialist',          v22LastTurn: 70.0, charisma: 71.0, n: 81, blurb: 'Verbose 800–1500 token id directives — wins charisma, mid on v2.2.' },
-  cell_106: { designPoint: 'failure',             label: 'Shared floor',                 v22LastTurn: 57.0, charisma: 36.4, n: 54, blurb: 'Terse 200–400 token directives under-specify the ego — fails both rubrics.' },
-  cell_107: { designPoint: 'generalist',          label: 'Balanced generalist',          v22LastTurn: 78.5, charisma: 66.3, n: 27, blurb: 'Witness exemplars only — second on both rubrics, best balance.' },
-  cell_108: { designPoint: 'composer-classifier', label: 'Classifier + exemplars',       v22LastTurn: 72.6, charisma: 71.4, n: 27, blurb: 'Pilot lift regressed at full N — non-text levers compose roughly additively, not super-additively.' },
-  cell_109: { designPoint: 'composer-charisma',   label: 'Charisma-tuning + exemplars',  v22LastTurn: 59.6, charisma: 77.7, n:  6, blurb: 'Two text-heavy levers stack — ego instruction-following degrades. Pilot N only.', pilotOnly: true },
+  cell_101: {
+    designPoint: 'baseline',
+    label: 'Baseline id-director',
+    v22LastTurn: 55.5,
+    charisma: 59.9,
+    n: 79,
+    blurb: 'Inversion alone — no classifier, no exemplars, no tuning.',
+  },
+  cell_102: {
+    designPoint: 'baseline-recog',
+    label: 'Baseline + recognition',
+    v22LastTurn: 49.4,
+    charisma: 54.1,
+    n: 54,
+    blurb: 'Recognition vocabulary only — both rubrics drift down.',
+  },
+  cell_103: {
+    designPoint: 'classifier',
+    label: 'Classifier only',
+    v22LastTurn: 75.8,
+    charisma: 64.3,
+    n: 81,
+    blurb: 'Register classifier lifts persona-shift floor; no recognition yet.',
+  },
+  cell_104: {
+    designPoint: 'v22-specialist',
+    label: 'v2.2 specialist',
+    v22LastTurn: 80.6,
+    charisma: 65.7,
+    n: 81,
+    blurb: 'Classifier + recognition — wins v2.2, mid on charisma.',
+  },
+  cell_105: {
+    designPoint: 'charisma-specialist',
+    label: 'Charisma specialist',
+    v22LastTurn: 70.0,
+    charisma: 71.0,
+    n: 81,
+    blurb: 'Verbose 800–1500 token id directives — wins charisma, mid on v2.2.',
+  },
+  cell_106: {
+    designPoint: 'failure',
+    label: 'Shared floor',
+    v22LastTurn: 57.0,
+    charisma: 36.4,
+    n: 54,
+    blurb: 'Terse 200–400 token directives under-specify the ego — fails both rubrics.',
+  },
+  cell_107: {
+    designPoint: 'generalist',
+    label: 'Balanced generalist',
+    v22LastTurn: 78.5,
+    charisma: 66.3,
+    n: 27,
+    blurb: 'Witness exemplars only — second on both rubrics, best balance.',
+  },
+  cell_108: {
+    designPoint: 'composer-classifier',
+    label: 'Classifier + exemplars',
+    v22LastTurn: 72.6,
+    charisma: 71.4,
+    n: 27,
+    blurb: 'Pilot lift regressed at full N — non-text levers compose roughly additively, not super-additively.',
+  },
+  cell_109: {
+    designPoint: 'composer-charisma',
+    label: 'Charisma-tuning + exemplars',
+    v22LastTurn: 59.6,
+    charisma: 77.7,
+    n: 6,
+    blurb: 'Two text-heavy levers stack — ego instruction-following degrades. Pilot N only.',
+    pilotOnly: true,
+  },
 };
 
 function charismaProfileFor(name) {
   const baseName = name?.match(/^cell_\d+/)?.[0] || null;
-  return baseName ? (CHARISMA_PROFILES[baseName] || null) : null;
+  return baseName ? CHARISMA_PROFILES[baseName] || null : null;
 }
 
 function summarizeCell(name, profile, orientations = {}) {
@@ -99,9 +165,7 @@ function summarizeCell(name, profile, orientations = {}) {
   let effectiveSubfamily = orientation?.subfamily || null;
   if (orientation?.family === 'architectural_variant') {
     effectiveFamily = profile.recognition_mode ? 'intersubjective' : 'transmission';
-    effectiveSubfamily = profile.recognition_mode
-      ? 'hegelian_recognition'
-      : (orientation.subfamily || null);
+    effectiveSubfamily = profile.recognition_mode ? 'hegelian_recognition' : orientation.subfamily || null;
   }
   return {
     name,
@@ -238,7 +302,9 @@ const DIMENSION_WEIGHTS = [
 ];
 
 function normalizeFeatures(raw) {
-  const approach = ['standard', 'polished', 'recognition', 'placebo', 'minimalist', 'charismatic'].includes(raw.approach)
+  const approach = ['standard', 'polished', 'recognition', 'placebo', 'minimalist', 'charismatic'].includes(
+    raw.approach,
+  )
     ? raw.approach
     : 'standard';
   const critic = ['none', 'pedagogical', 'dialectical', 'divergent', 'hardwired'].includes(raw.critic)
@@ -296,9 +362,7 @@ function scoreCell(cell, target) {
     match: !!cell.superego === target.criticPresent,
   });
   // learner model (weight 2) — prefix match so ego_superego_authentic etc. collapse to ego_superego
-  const cellLearnerFamily = (cell.learnerArchitecture || '').startsWith('ego_superego')
-    ? 'ego_superego'
-    : 'unified';
+  const cellLearnerFamily = (cell.learnerArchitecture || '').startsWith('ego_superego') ? 'ego_superego' : 'unified';
   matches.push({
     dimension: 'learnerModel',
     want: target.learnerArchitecture,
@@ -331,11 +395,20 @@ function scoreCell(cell, target) {
   // exemplars only), v22-specialist → c104 (classifier + recognition),
   // charisma-specialist → c105 (id_tuning:charisma).
   if (target.idDirector && cell.idDirector) {
-    if (target.charismaVariant === 'generalist' && cell.witnessExemplars && !cell.registerClassifier && cell.idTuning !== 'charisma') {
+    if (
+      target.charismaVariant === 'generalist' &&
+      cell.witnessExemplars &&
+      !cell.registerClassifier &&
+      cell.idTuning !== 'charisma'
+    ) {
       score += 1;
     } else if (target.charismaVariant === 'v22-specialist' && cell.recognitionMode && cell.registerClassifier) {
       score += 1;
-    } else if (target.charismaVariant === 'charisma-specialist' && cell.idTuning === 'charisma' && !cell.witnessExemplars) {
+    } else if (
+      target.charismaVariant === 'charisma-specialist' &&
+      cell.idTuning === 'charisma' &&
+      !cell.witnessExemplars
+    ) {
       score += 1;
     }
   }
@@ -348,12 +421,12 @@ function scoreCell(cell, target) {
 // descriptions). We enrich them with hand-written sketches so the picker
 // shows meaningful choices to humans.
 const PERSONA_SKETCHES = {
-  eager_novice:     { name: 'Eager Novice',       hint: 'enthusiastic · easily overwhelmed' },
-  confused_novice:  { name: 'Confused Novice',    hint: 'lost but curious · asks a lot' },
-  eager_explorer:   { name: 'Eager Explorer',     hint: 'delighted by tangents · open' },
-  focused_achiever: { name: 'Focused Achiever',   hint: 'goal-oriented · wants closure' },
-  struggling_anxious:{name: 'Struggling Anxious', hint: 'easily frustrated · needs reassurance' },
-  adversarial_tester:{name: 'Adversarial Tester', hint: 'challenges the tutor · probes reasoning' },
+  eager_novice: { name: 'Eager Novice', hint: 'enthusiastic · easily overwhelmed' },
+  confused_novice: { name: 'Confused Novice', hint: 'lost but curious · asks a lot' },
+  eager_explorer: { name: 'Eager Explorer', hint: 'delighted by tangents · open' },
+  focused_achiever: { name: 'Focused Achiever', hint: 'goal-oriented · wants closure' },
+  struggling_anxious: { name: 'Struggling Anxious', hint: 'easily frustrated · needs reassurance' },
+  adversarial_tester: { name: 'Adversarial Tester', hint: 'challenges the tutor · probes reasoning' },
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -364,16 +437,16 @@ const PERSONA_SKETCHES = {
 // Each has courses/<id>/course.md (with YAML frontmatter) and lecture-N.md files.
 const REPO_ROOT = path.resolve(__dirname, '..');
 const CONTENT_PACKAGES = [
-  { id: 'main',         dir: 'content',                 label: 'Main' },
-  { id: 'history-tech', dir: 'content-history-tech',    label: 'History of Tech' },
-  { id: 'ethics-ai',    dir: 'content-ethics-ai',       label: 'Ethics of AI' },
-  { id: 'ai-literacy',  dir: 'content-ai-literacy',     label: 'AI Literacy' },
-  { id: 'stats',        dir: 'content-stats-skeptics',  label: 'Statistics' },
-  { id: 'programming',  dir: 'content-test-programming', label: 'Programming' },
-  { id: 'creative',     dir: 'content-test-creative',   label: 'Creative' },
-  { id: 'elementary',   dir: 'content-test-elementary', label: 'Elementary' },
-  { id: 'sel',          dir: 'content-test-sel',        label: 'SEL' },
-  { id: 'support',      dir: 'content-test-support',    label: 'Support' },
+  { id: 'main', dir: 'content', label: 'Main' },
+  { id: 'history-tech', dir: 'content-history-tech', label: 'History of Tech' },
+  { id: 'ethics-ai', dir: 'content-ethics-ai', label: 'Ethics of AI' },
+  { id: 'ai-literacy', dir: 'content-ai-literacy', label: 'AI Literacy' },
+  { id: 'stats', dir: 'content-stats-skeptics', label: 'Statistics' },
+  { id: 'programming', dir: 'content-test-programming', label: 'Programming' },
+  { id: 'creative', dir: 'content-test-creative', label: 'Creative' },
+  { id: 'elementary', dir: 'content-test-elementary', label: 'Elementary' },
+  { id: 'sel', dir: 'content-test-sel', label: 'SEL' },
+  { id: 'support', dir: 'content-test-support', label: 'Support' },
 ];
 
 function parseFrontmatter(raw) {
@@ -417,7 +490,8 @@ function listCurricula() {
     const courses = courseIds.map((id) => {
       const raw = fs.readFileSync(path.join(coursesDir, id, 'course.md'), 'utf-8');
       const meta = parseFrontmatter(raw);
-      const lectureFiles = fs.readdirSync(path.join(coursesDir, id))
+      const lectureFiles = fs
+        .readdirSync(path.join(coursesDir, id))
         .filter((f) => /^lecture-\d+\.md$/.test(f))
         .sort((a, b) => {
           const na = parseInt(a.match(/\d+/)[0], 10);
@@ -476,9 +550,8 @@ function loadCurriculumContext(lectureRef) {
       // Strip speaker notes and cap length
       const cleaned = lectureRaw.replace(/```notes\s*\n[\s\S]*?```/g, '').trim();
       const maxChars = 20000;
-      const truncated = cleaned.length > maxChars
-        ? cleaned.slice(0, maxChars) + '\n\n[… truncated for token budget …]'
-        : cleaned;
+      const truncated =
+        cleaned.length > maxChars ? cleaned.slice(0, maxChars) + '\n\n[… truncated for token budget …]' : cleaned;
       return {
         courseId,
         courseTitle: courseMeta.title || `Course ${courseId}`,
@@ -498,10 +571,7 @@ router.get('/personas', (req, res) => {
     // Surface persona-modifier stubs from YAML too (they're valid persona IDs)
     const yamlModifiers = learnerConfigLoader.loadConfig?.()?.persona_modifiers || {};
     const extraIds = Object.keys(yamlModifiers).filter((id) => !known.has(id));
-    const enriched = [
-      ...base,
-      ...extraIds.map((id) => ({ id, name: null, description: null })),
-    ].map((p) => {
+    const enriched = [...base, ...extraIds.map((id) => ({ id, name: null, description: null }))].map((p) => {
       const sketch = PERSONA_SKETCHES[p.id];
       return {
         id: p.id,
@@ -543,8 +613,7 @@ router.post('/learner-turn', async (req, res) => {
 
   const learnerProfileName = profile.learner_architecture || 'unified';
   const lastTutor = [...history].reverse().find((h) => h.role === 'tutor');
-  const tutorMessage = lastTutor?.content
-    || `Let's begin a conversation about ${topic}. What's on your mind?`;
+  const tutorMessage = lastTutor?.content || `Let's begin a conversation about ${topic}. What's on your mind?`;
 
   // Build an llmCall adapter the engine expects: (modelRef, systemPrompt, messages, options)
   // When useClaudeCli is true, every call is routed through the local `claude` CLI
@@ -579,7 +648,7 @@ router.post('/learner-turn', async (req, res) => {
       body: JSON.stringify({
         model: modelId,
         temperature: options.temperature ?? 0.7,
-        max_tokens: options.maxTokens ?? 1500,
+        max_tokens: Math.max(options.maxTokens ?? CHAT_MIN_MAX_TOKENS, CHAT_MIN_MAX_TOKENS),
         messages: [
           { role: 'system', content: systemPrompt },
           ...(messages || []).map((m) => ({
@@ -866,9 +935,7 @@ router.post('/turn', async (req, res) => {
       // this round); dialogue_content_hash is computed cumulatively inside
       // pilotStore.appendTurn.
       const egoPromptText = loadPromptFile(profile.ego.prompt_file);
-      const superegoPromptText = profile.superego
-        ? loadPromptFile(profile.superego.prompt_file)
-        : '';
+      const superegoPromptText = profile.superego ? loadPromptFile(profile.superego.prompt_file) : '';
       const configHash = pilotStore.computeConfigHash({
         cellName,
         egoConfig: profile.ego,
@@ -947,23 +1014,38 @@ async function callClaudeCli({ system, user }) {
   // text generators, and --no-session-persistence keeps the CLI from polluting
   // the resume history with chat turns.
   const args = [
-    '-p', fullPrompt,
-    '--model', CLAUDE_CLI_MODEL,
-    '--output-format', 'json',
+    '-p',
+    fullPrompt,
+    '--model',
+    CLAUDE_CLI_MODEL,
+    '--output-format',
+    'json',
     '--no-session-persistence',
-    '--disallowedTools', 'Bash,Edit,Write,Read,Grep,Glob,WebFetch,WebSearch,Task,NotebookEdit,AskUserQuestion',
+    '--disallowedTools',
+    'Bash,Edit,Write,Read,Grep,Glob,WebFetch,WebSearch,Task,NotebookEdit,AskUserQuestion',
   ];
   return new Promise((resolve, reject) => {
     const proc = spawn(CLAUDE_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => {
-      try { proc.kill('SIGKILL'); } catch { /* already exited */ }
+      try {
+        proc.kill('SIGKILL');
+      } catch {
+        /* already exited */
+      }
       reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms`));
     }, CLAUDE_CLI_TIMEOUT_MS);
-    proc.stdout.on('data', (d) => { stdout += d.toString(); });
-    proc.stderr.on('data', (d) => { stderr += d.toString(); });
-    proc.on('error', (err) => { clearTimeout(timer); reject(err); });
+    proc.stdout.on('data', (d) => {
+      stdout += d.toString();
+    });
+    proc.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
+    proc.on('error', (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
     proc.on('close', (code) => {
       clearTimeout(timer);
       const latencyMs = Date.now() - start;
@@ -1047,9 +1129,7 @@ async function callModel(apiKey, { modelId, system, user, temperature, maxTokens
 // Multi-agent cells (with superego) intentionally fall through to the
 // non-streaming runTutorTurn — we'd have to buffer the ego output for the
 // superego review anyway, defeating the streaming benefit.
-async function streamSingleAgentTurn({
-  profile, apiKey, history, learnerMessage, topic, curriculum = null, onDelta,
-}) {
+async function streamSingleAgentTurn({ profile, apiKey, history, learnerMessage, topic, curriculum = null, onDelta }) {
   const conversationContext = recentContext(history);
   const egoModelRef = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
@@ -1154,27 +1234,35 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
     inputTokens,
     outputTokens,
     latencyMs,
-    deliberation: [{
-      role: 'ego',
-      label: 'Ego — initial draft',
-      content: accumulated,
-      model: egoModelRef.model,
-      provider: profile.ego.provider,
-      temperature: egoTemp,
-      latencyMs,
-      inputTokens,
-      outputTokens,
-    }],
+    deliberation: [
+      {
+        role: 'ego',
+        label: 'Ego — initial draft',
+        content: accumulated,
+        model: egoModelRef.model,
+        provider: profile.ego.provider,
+        temperature: egoTemp,
+        latencyMs,
+        inputTokens,
+        outputTokens,
+      },
+    ],
   };
 }
 
-async function runTutorTurn({ profile, apiKey, history, learnerMessage, topic, curriculum = null, useClaudeCli = false }) {
+async function runTutorTurn({
+  profile,
+  apiKey,
+  history,
+  learnerMessage,
+  topic,
+  curriculum = null,
+  useClaudeCli = false,
+}) {
   const conversationContext = recentContext(history);
   const deliberation = [];
 
-  const egoModelRef = evalConfigLoader.resolveModel(
-    `${profile.ego.provider}.${profile.ego.model}`,
-  );
+  const egoModelRef = evalConfigLoader.resolveModel(`${profile.ego.provider}.${profile.ego.model}`);
   const egoPromptBody = loadPromptFile(profile.ego.prompt_file);
   const egoTemp = profile.ego.hyperparameters?.temperature ?? 0.6;
   const egoMaxTokens = profile.ego.hyperparameters?.max_tokens ?? 2000;
@@ -1234,9 +1322,7 @@ Draft your initial response as a tutor. Be warm but intellectually challenging. 
   let wasRevised = false;
 
   if (profile.superego) {
-    const superModelRef = evalConfigLoader.resolveModel(
-      `${profile.superego.provider}.${profile.superego.model}`,
-    );
+    const superModelRef = evalConfigLoader.resolveModel(`${profile.superego.provider}.${profile.superego.model}`);
     const superPromptBody = loadPromptFile(profile.superego.prompt_file);
     const superTemp = profile.superego.hyperparameters?.temperature ?? 0.2;
     const superMaxTokens = profile.superego.hyperparameters?.max_tokens ?? 2000;
