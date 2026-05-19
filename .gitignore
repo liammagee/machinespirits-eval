@@ -60,9 +60,12 @@ results/
 *.csv
 *.xlsx
 
-# Adaptive-persona prototype generated outputs (regenerable from scripts;
-# mirrors the exports/ convention — keep the dir, don't track its contents)
-prototypes/adaptive-persona-mvp/outputs/
+# Prototype trees — archived off main 2026-05-17 (tag archive/adaptive-persona-mvp);
+# regenerable from scripts, never tracked on main (mirrors the exports/ convention)
+prototypes/
+
+# Generated comic/explainer image assets — reproducible via `npm run paper:comics`
+public/eval/generated/
 
 # Scratchpad
 scratchpad/
