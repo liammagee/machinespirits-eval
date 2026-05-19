@@ -43,6 +43,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 | Script | Args | API? | Description |
 |--------|------|------|-------------|
 | `browse-transcripts.js` | `[--port N] [--no-open] [--run <id>] [--scenario <id>] [--dialogue <id>] [--theme light\|dark]` | No | Web UI for browsing transcripts with sequence diagrams |
+| `generate-paper-comics.js` | `--pdf <paper.pdf> [--count N] [--out-dir PATH] [--html-template PATH] [--html-placement distributed\|strip] [--html-image-source auto\|svg\|png] [--compose-html-only] [--png-too] [--png-only] [--chatgpt-prompts-only] [--dry-run] [--preview-only]` | Codex CLI / OpenAI Image API | Generate Machine Spirits-style comic-strip image assets, manifest JSON, HTML embed snippets, standalone previews, composed template pages with distributed section-level insertions by default, optional PNG panels via `gpt-image-2`, and paste-ready ChatGPT image prompts |
 
 ## npm shortcuts
 
@@ -57,6 +58,11 @@ npm run analyze:modulation     # analyze-modulation-learning.js
 npm run analyze:stagnation     # analyze-learning-stagnation.js
 npm run analyze:gap            # analyze-insight-action-gap.js (needs <runId>)
 npm run analyze:lexicon        # analyze-recognition-lexicon.js (runs on all scored rows; optional <runId>)
+npm run paper:comics -- docs/research/paper-2.0-v3.0.79.pdf --count 6
+npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --png-only
+npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --chatgpt-prompts-only
+npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --html-template public/eval/geist-explained.html --compose-html-only
+npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v3-0-79 --html-template public/eval/geist-explained.html --compose-html-only --html-image-source png
 ```
 
 Pass args after `--`: `npm run analyze:traces -- <runId>`

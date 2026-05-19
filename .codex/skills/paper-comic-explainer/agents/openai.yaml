@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paper Comic Explainer"
+  short_description: "Compose paper comic panels into explainer HTML."
+  default_prompt: "Create or compose Machine Spirits-style paper comic panels into an explainer HTML page, asking for missing parameters and validating paths."
