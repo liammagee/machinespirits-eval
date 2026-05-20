@@ -29,6 +29,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'node:child_process';
+import os from 'node:os';
 import yaml from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,6 +41,7 @@ const RUBRIC_PATH = path.join(ROOT, 'config/evaluation-rubric-poetics.yaml');
 
 const MODEL_MAP = {
   'claude-code': 'claude-code',
+  codex: 'codex',
   haiku: 'anthropic/claude-haiku-4.5',
   sonnet: 'anthropic/claude-sonnet-4.5',
   gpt: 'openai/gpt-5.2',
@@ -49,6 +51,7 @@ const MODEL_MAP = {
 
 async function callModel(prompt, modelKey) {
   if (modelKey === 'claude-code') return callClaudeCode(prompt);
+  if (modelKey === 'codex') return callCodex(prompt);
   return callOpenRouter(prompt, modelKey);
 }
 
@@ -73,6 +76,53 @@ async function callClaudeCode(prompt) {
     child.stdin.end();
   });
   return stdout.trim();
+}
+
+// codex CLI critic (non-interactive `codex exec`). Uses codex's own stored login
+// (a current OpenAI model), so it needs no OPENROUTER/OPENAI key and is a clean
+// non-Claude critic for the Claude-authored trap items. Each call gets its own
+// temp dir + cwd so concurrent runs never collide on the --output-last-message
+// file. We omit -m to use codex's current default model (gpt-5.2 is stale).
+async function callCodex(prompt) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-codex-'));
+  const outFile = path.join(tmpDir, 'last.txt');
+  try {
+    await new Promise((resolve, reject) => {
+      const child = spawn(
+        'codex',
+        [
+          'exec',
+          '--skip-git-repo-check',
+          '--ephemeral',
+          '-s',
+          'read-only',
+          '-C',
+          tmpDir,
+          '--color',
+          'never',
+          '-o',
+          outFile,
+          '-',
+        ],
+        { stdio: ['pipe', 'pipe', 'pipe'] },
+      );
+      let err = '';
+      child.stderr.on('data', (d) => (err += d));
+      child.stdout.on('data', () => {});
+      child.on('error', (e) => reject(new Error(`Failed to spawn codex: ${e.message}`)));
+      child.on('close', (code) => {
+        if (code !== 0) reject(new Error(err || `codex exited with code ${code}`));
+        else resolve();
+      });
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
+    const content = fs.readFileSync(outFile, 'utf8').trim();
+    if (!content) throw new Error('codex produced no output message');
+    return content;
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 }
 
 async function callOpenRouter(prompt, modelKey) {
