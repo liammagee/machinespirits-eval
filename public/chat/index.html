@@ -1164,6 +1164,7 @@ section.fg::before {
   letter-spacing: 0.02em;
 }
 .cell-row:hover { background: color-mix(in oklab, var(--brick) 5%, transparent); }
+.cell-row:focus-visible { outline: 1px solid var(--brick); outline-offset: 2px; }
 .cell-row.is-active { background: var(--ink); color: var(--paper); padding-inline: 0.4em; }
 .cell-row .n { font-weight: 500; }
 .cell-row .badge {
@@ -1227,6 +1228,255 @@ section.fg::before {
 .onboarding em { font-style: italic; color: var(--brick); }
 .onboarding p { margin: 0 0 0.6em; max-width: 44ch; }
 .onboarding p:last-child { margin-bottom: 0; }
+.setup-wizard {
+  margin: 0 0 1.2rem;
+  padding: 0 0 0.9rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+  font-family: "JetBrains Mono", monospace;
+}
+.setup-wizard__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  margin-bottom: 0.7rem;
+  font-size: var(--s-0);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.setup-wizard__head .sig { color: var(--brick); }
+.setup-wizard__head .tag { color: var(--brick); font-weight: 500; letter-spacing: 0.16em; }
+.setup-wizard__head .rule {
+  flex: 1 1 auto;
+  min-width: 2rem;
+  height: 1px;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 24%, transparent);
+  transform: translateY(-0.3em);
+}
+.setup-wizard__head .folio { color: var(--ink-3); font-feature-settings: "tnum"; }
+.setup-wizard__head .folio em { color: var(--brick); font-style: normal; }
+.setup-wizard__rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid color-mix(in oklab, var(--ink) 28%, transparent);
+  margin-bottom: 0.75rem;
+}
+.setup-wizard__rail button {
+  all: unset;
+  cursor: pointer;
+  min-width: 0;
+  padding: 0.42em 0.55em 0.48em;
+  border-right: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  color: var(--ink-2);
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.45em;
+  align-items: baseline;
+}
+.setup-wizard__rail button:last-child { border-right: 0; }
+.setup-wizard__rail button.is-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.setup-wizard__rail button.is-done:not(.is-active) {
+  background: color-mix(in oklab, var(--moss) 11%, transparent);
+}
+.setup-wizard__rail .num { color: var(--brick); font-weight: 600; }
+.setup-wizard__rail .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.setup-wizard__rail button.is-active .num { color: var(--sun); }
+.setup-wizard__body {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 0.75rem 0 0.8rem;
+}
+.setup-wizard__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  margin-bottom: 0.7rem;
+  font-size: var(--s-0);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brick);
+}
+.setup-wizard__title em {
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  font-variation-settings: "opsz" 28;
+  font-style: italic;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+.setup-wizard__field {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 0.65em;
+}
+.setup-wizard__field label {
+  color: var(--brick);
+  font-size: var(--s-0);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.setup-wizard__field input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px dashed color-mix(in oklab, var(--ink) 30%, transparent);
+  background: transparent;
+  padding: 0.1em 0 0.25em;
+  font-family: "Fraunces", serif;
+  font-size: var(--s-2);
+  color: var(--ink);
+}
+.setup-wizard__field input:focus { outline: none; border-bottom-color: var(--brick); border-bottom-style: solid; }
+.setup-wizard__choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+.setup-wizard__choices.is-compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.setup-choice {
+  all: unset;
+  cursor: pointer;
+  min-width: 0;
+  border: 1px solid color-mix(in oklab, var(--ink) 24%, transparent);
+  padding: 0.45em 0.6em 0.5em;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.42em;
+  align-items: baseline;
+  color: var(--ink-2);
+  background: color-mix(in oklab, var(--paper-2) 34%, transparent);
+}
+.setup-choice:hover { border-color: var(--ink); background: color-mix(in oklab, var(--paper-2) 70%, transparent); }
+.setup-choice.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.setup-choice .key {
+  color: var(--brick);
+  font-size: var(--s-0);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.setup-choice .txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08em;
+}
+.setup-choice .name {
+  font-size: var(--s-0);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: inherit;
+}
+.setup-choice .hint {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-size: var(--s-0);
+  font-variation-settings: "opsz" 14;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-3);
+  line-height: 1.2;
+}
+.setup-choice.is-active .key { color: var(--sun); }
+.setup-choice.is-active .hint { color: color-mix(in oklab, var(--paper) 72%, transparent); }
+.setup-wizard__stance {
+  margin-top: 0.7rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed color-mix(in oklab, var(--ink) 18%, transparent);
+}
+.setup-wizard__stance .setup-wizard__title {
+  margin-bottom: 0.45rem;
+}
+.setup-wizard__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin-top: 0.7rem;
+  font-size: var(--s-0);
+}
+.setup-wizard__summary span {
+  border: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+  padding: 0.1em 0.45em 0.15em;
+  color: var(--ink-2);
+}
+.setup-wizard__summary em {
+  color: var(--brick);
+  font-style: normal;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.06em;
+}
+.setup-wizard__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+.setup-wizard__nav button {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--ink);
+  padding: 0.38em 0.9em 0.43em;
+  color: var(--ink);
+  font-size: var(--s-0);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.setup-wizard__nav button:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--paper);
+}
+.setup-wizard__nav button:disabled {
+  cursor: not-allowed;
+  color: var(--ink-3);
+  border-color: color-mix(in oklab, var(--ink) 18%, transparent);
+}
+.setup-wizard__nav .primary {
+  background: var(--brick);
+  border-color: var(--brick);
+  color: var(--paper);
+}
+.setup-wizard__nav .primary:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.starter-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 1rem;
+  max-width: 48rem;
+}
+.starter-prompts button {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid color-mix(in oklab, var(--ink) 24%, transparent);
+  padding: 0.35em 0.7em 0.4em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: var(--s-0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: color-mix(in oklab, var(--paper-2) 42%, transparent);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.starter-prompts button:hover {
+  border-color: var(--brick);
+  color: var(--brick);
+  background: color-mix(in oklab, var(--brick) 8%, transparent);
+}
 
 /* learner turn — pull quote */
 .learner-quote {
@@ -1852,6 +2102,7 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   align-self: start;
 }
 .composer textarea {
+  width: 100%;
   font-family: "Fraunces", serif;
   font-size: var(--s-2);
   font-variation-settings: "opsz" 20;
@@ -1863,11 +2114,12 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   min-height: 2.2em;
   max-height: 7em;
   padding: 0.25em 0;
+  overflow-y: auto;
 }
 .composer textarea:focus { outline: none; }
 .composer textarea::placeholder { color: var(--ink-3); font-style: italic; }
 
-.composer button {
+.composer form button {
   all: unset;
   align-self: start;
   cursor: pointer;
@@ -1881,8 +2133,8 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
-.composer button:hover { background: var(--brick); border-color: var(--brick); }
-.composer button:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
+.composer form button:hover { background: var(--brick); border-color: var(--brick); }
+.composer form button:disabled { background: transparent; color: var(--ink-3); border-color: color-mix(in oklab, var(--ink) 15%, transparent); cursor: not-allowed; }
 
 /* corner registers */
 .reg {
@@ -1912,6 +2164,443 @@ details.learner-trace .spec-row__lbl em.step-ego_revision { color: var(--ochre);
 button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
   outline: 1px solid var(--brick);
   outline-offset: 2px;
+}
+
+@media (max-width: 920px) {
+  :root {
+    --margin: clamp(14px, 4vw, 22px);
+    --gutter: 4px;
+  }
+
+  html, body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body {
+    font-size: var(--s-1);
+  }
+
+  #field {
+    position: fixed;
+  }
+
+  .app {
+    min-height: 100dvh;
+    height: auto;
+    overflow: visible;
+  }
+
+  .chrome {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    padding-block: 0.55rem 0.35rem;
+  }
+
+  .chrome__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.7rem;
+    align-items: center;
+  }
+
+  .mark,
+  .stamp,
+  .chrome__nav > .cli-btn,
+  .chrome__nav > .xray-btn:not(.cli-btn) {
+    grid-column: auto;
+  }
+
+  .mark {
+    flex: 1 1 auto;
+    min-width: 10rem;
+  }
+
+  .stamp {
+    margin-left: auto;
+  }
+
+  .chapters {
+    order: 5;
+    flex: 1 0 100%;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.15rem;
+    scrollbar-width: none;
+  }
+
+  .chapters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chapters a {
+    white-space: nowrap;
+  }
+
+  .ruler {
+    grid-template-columns: repeat(60, minmax(0, 1fr));
+    overflow: hidden;
+    padding-block: 3px 2px;
+  }
+
+  .ruler .cell {
+    min-width: 0;
+    font-size: 0.9em;
+  }
+
+  .ruler__label {
+    display: none;
+  }
+
+  .cover-pretext {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    row-gap: 0.35rem;
+    align-items: baseline;
+    padding-block: 0.55rem;
+  }
+
+  .cover-pretext__sig,
+  .cover-pretext__tag,
+  .cover-pretext__rule,
+  .cover-pretext__body,
+  .cover-pretext__cta {
+    grid-column: auto;
+  }
+
+  .cover-pretext__body,
+  .cover-pretext__cta {
+    grid-column: 1 / -1;
+    text-align: left;
+    overflow-wrap: anywhere;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .cover-pretext__body em {
+    overflow-wrap: anywhere;
+  }
+
+  main.split {
+    display: block;
+    flex: none;
+    min-height: 0;
+    overflow: visible;
+    padding-bottom: 1.5rem;
+    width: 100%;
+  }
+
+  aside.config {
+    display: block;
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--ink) 18%, transparent);
+    padding-right: 0;
+    padding-bottom: 1rem;
+    overflow: visible;
+  }
+
+  .config__body {
+    overflow: visible;
+    max-height: none;
+  }
+
+  section.dialogue {
+    display: block;
+    padding-left: 0;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .dialogue__head {
+    padding-top: 1rem;
+  }
+
+  .chat-log {
+    overflow: visible;
+    min-height: 0;
+    padding-right: 0;
+    gap: 1.5rem;
+  }
+
+  .reg {
+    display: none;
+  }
+
+  .fg-head {
+    flex-wrap: wrap;
+    gap: 0.35em 0.5em;
+    padding-right: 1.4em;
+  }
+
+  .fg-head__rule {
+    min-width: 3rem;
+  }
+
+  .fg-head__hint {
+    flex: 1 0 100%;
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .chip {
+    min-width: 0;
+  }
+
+  .topic__input {
+    font-size: var(--s-2);
+  }
+
+  .curriculum-drawer > summary {
+    flex-wrap: wrap;
+  }
+
+  .curriculum-drawer > summary .count {
+    flex: 1 0 100%;
+    margin-left: 1.4rem;
+  }
+
+  .charisma__scores,
+  .compare__row {
+    grid-template-columns: 1fr;
+  }
+
+  .compare__row dd.is-r {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .advanced__body {
+    max-height: 320px;
+  }
+
+  .cell-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .cell-row .pt {
+    grid-column: 2 / -1;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .onboarding {
+    padding-block: 1.5rem;
+  }
+
+  .onboarding p {
+    max-width: 34ch;
+  }
+
+  .starter-prompts {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .starter-prompts button {
+    text-align: left;
+  }
+
+  .setup-wizard__rail {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .setup-wizard__rail button:nth-child(2) {
+    border-right: 0;
+  }
+
+  .setup-wizard__rail button:nth-child(-n + 2) {
+    border-bottom: 1px solid color-mix(in oklab, var(--ink) 22%, transparent);
+  }
+
+  .setup-wizard__body {
+    padding-block: 0.65rem 0.75rem;
+  }
+
+  .setup-wizard__field {
+    grid-template-columns: 1fr;
+    gap: 0.25em;
+  }
+
+  .setup-wizard__choices,
+  .setup-wizard__choices.is-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-wizard__nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .setup-wizard__nav button {
+    text-align: center;
+  }
+
+  .learner-quote,
+  .learner-body {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .plate--tutor figcaption {
+    grid-template-columns: auto 1fr;
+    gap: 0.45em 0.7em;
+  }
+
+  .plate--tutor .plate__sub {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .spec-row {
+    grid-template-columns: 1fr;
+    gap: 0.45em;
+  }
+
+  .composer {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    margin-inline: calc(var(--margin) * -1);
+    padding: 0.55rem var(--margin) max(0.7rem, env(safe-area-inset-bottom));
+    background: color-mix(in oklab, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.15) blur(8px);
+    -webkit-backdrop-filter: saturate(1.15) blur(8px);
+  }
+
+  .mode {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .mode__toggle {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    background: transparent;
+  }
+
+  .mode__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.45em 0.35em 0.5em;
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+    min-height: 2.55rem;
+    min-width: 0;
+  }
+
+  .mode__meta {
+    display: block;
+    line-height: 1.25;
+  }
+
+  .persona-strip {
+    margin-bottom: 0.45rem;
+  }
+
+  .step-control {
+    grid-template-columns: 1fr;
+    row-gap: 0.45rem;
+  }
+
+  .step-control__btn {
+    min-width: 0;
+    text-align: center;
+  }
+
+  .composer form {
+    grid-template-columns: 1fr;
+    row-gap: 0.35rem;
+    padding-inline: 0;
+  }
+
+  .composer__prompt {
+    padding-top: 0;
+  }
+
+  .composer textarea {
+    min-height: 4.2em;
+  }
+
+  .composer form button {
+    justify-self: stretch;
+    text-align: center;
+    padding-block: 0.6em;
+  }
+}
+
+@media (max-width: 520px) {
+  .chrome__nav {
+    font-size: 0.92em;
+  }
+
+  .mark {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+
+  .chrome__nav > .cli-btn,
+  .chrome__nav > .xray-btn:not(.cli-btn) {
+    order: 2;
+  }
+
+  .chapters {
+    order: 3;
+  }
+
+  .stamp {
+    display: none;
+  }
+
+  .xray-btn {
+    padding-inline: 0.45em;
+  }
+
+  .chips {
+    grid-template-columns: 1fr;
+  }
+
+  .pigments {
+    flex-direction: column;
+  }
+
+  .manifest__head,
+  .composer__pretext,
+  details.trace > summary,
+  .learner-quote__meta,
+  .learner-body__head,
+  .plate--tutor .plate__apparatus {
+    align-items: flex-start;
+  }
+
+  .manifest__head,
+  .composer__pretext,
+  details.trace > summary,
+  .learner-quote__meta,
+  .learner-body__head {
+    flex-wrap: wrap;
+  }
+
+  .composer__pretext .rule,
+  details.trace > summary .rule {
+    flex-basis: 100%;
+  }
 }
 
 /* reduced motion */
@@ -1949,10 +2638,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <li><a @click.prevent="scrollTo('fg-04')"><em>§04</em> Learner</a></li>
         <li><a @click.prevent="scrollTo('dialogue')"><em>§V</em> Dialogue</a></li>
       </ol>
-      <button class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" :title="useClaudeCli ? 'routing all tutor calls through local claude CLI · click to disable' : 'use local claude CLI (opus 4.7) instead of cell YAML models'">
+      <button type="button" class="xray-btn cli-btn" @click="toggleCli" :aria-pressed="useClaudeCli" aria-label="Toggle local Claude CLI routing" :title="useClaudeCli ? 'routing all tutor calls through local claude CLI · click to disable' : 'use local claude CLI (opus 4.7) instead of cell YAML models'">
         <span aria-hidden="true">◇</span><span x-text="useClaudeCli ? 'opus 4.7' : 'cli off'"></span>
       </button>
-      <button class="xray-btn" @click="toggleXray" :aria-pressed="xray">
+      <button type="button" class="xray-btn" @click="toggleXray" :aria-pressed="xray" aria-label="Toggle grid overlay">
         <span aria-hidden="true">⌗</span><span>grid</span>
       </button>
       <span class="stamp">
@@ -2200,7 +2889,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           <div class="advanced__body">
             <input type="text" class="advanced__search" x-model="cellFilter" placeholder="filter by name, prompt-type, or description…" />
             <template x-for="cell in filteredCells" :key="cell.name">
-              <div class="cell-row" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)"
+              <div class="cell-row" role="button" tabindex="0" :aria-pressed="resolved?.name === cell.name" :class="{'is-active': resolved?.name === cell.name}" @click="pickCellDirectly(cell)" @keydown.enter.prevent="pickCellDirectly(cell)" @keydown.space.prevent="pickCellDirectly(cell)"
                    :title="orientationTooltip(cell.orientation) + (cell.description ? '\n\n' + cell.description : '')">
                 <span class="n" x-text="cell.name.replace('cell_','c')"></span>
                 <span>
@@ -2438,8 +3127,208 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <!-- onboarding -->
         <template x-if="turns.length === 0 && resolved">
           <div class="onboarding">
-            <p>A dialogue begins with a <em>prompt</em>. Type a question or a provocation below, as the learner would, and the tutor will answer from the configuration you've composed.</p>
-            <p>Each tutor turn is decomposed into its steps — <em>ego draft</em>, <em>superego critique</em>, <em>ego revision</em> — so the architecture at work is visible, not hidden.</p>
+            <section class="setup-wizard" data-testid="guided-setup" :data-step="wizardCurrent.key">
+              <div class="setup-wizard__head">
+                <span class="sig">✦</span>
+                <span class="tag">guided setup</span>
+                <span class="rule"></span>
+                <span class="folio"><em x-text="String(wizardStep + 1).padStart(2, '0')"></em>/<span x-text="String(wizardSteps.length).padStart(2, '0')"></span></span>
+              </div>
+
+              <nav class="setup-wizard__rail" aria-label="Guided setup steps">
+                <template x-for="(step, index) in wizardSteps" :key="step.key">
+                  <button
+                    type="button"
+                    :class="{'is-active': wizardStep === index, 'is-done': wizardStep > index}"
+                    :aria-current="wizardStep === index ? 'step' : 'false'"
+                    :data-testid="'wizard-step-' + step.key"
+                    @click="wizardStep = index"
+                  >
+                    <span class="num" x-text="String(index + 1).padStart(2, '0')"></span>
+                    <span class="lbl" x-text="step.label"></span>
+                  </button>
+                </template>
+              </nav>
+
+              <div class="setup-wizard__body">
+                <template x-if="wizardCurrent.key === 'topic'">
+                  <div>
+                    <div class="setup-wizard__title">
+                      <span>topic</span>
+                      <em>what is on the table?</em>
+                    </div>
+                    <div class="setup-wizard__field">
+                      <label for="wizard-topic">subject</label>
+                      <input id="wizard-topic" data-testid="wizard-topic-input" type="text" x-model="topic" />
+                    </div>
+                    <div class="setup-wizard__choices is-compact" style="margin-top: 0.65rem;">
+                      <template x-for="choice in wizardTopicPresets" :key="choice.id">
+                        <button
+                          type="button"
+                          class="setup-choice"
+                          :class="{'is-active': topic === choice.value}"
+                          :aria-pressed="topic === choice.value"
+                          :data-testid="'wizard-topic-' + choice.id"
+                          @click="setWizardTopic(choice.value)"
+                        >
+                          <span class="key" x-text="choice.key"></span>
+                          <span class="txt">
+                            <span class="name" x-text="choice.label"></span>
+                            <span class="hint" x-text="choice.hint"></span>
+                          </span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="wizardCurrent.key === 'tutor'">
+                  <div>
+                    <div class="setup-wizard__title">
+                      <span>tutor</span>
+                      <em>choose the first voice</em>
+                    </div>
+                    <div class="setup-wizard__choices">
+                      <template x-for="choice in wizardApproachChoices" :key="choice.value">
+                        <button
+                          type="button"
+                          class="setup-choice"
+                          :class="{'is-active': features.approach === choice.value}"
+                          :aria-pressed="features.approach === choice.value"
+                          :data-testid="'wizard-choice-approach-' + choice.value"
+                          @click="setApproach(choice.value)"
+                        >
+                          <span class="key" x-text="choice.key"></span>
+                          <span class="txt">
+                            <span class="name" x-text="choice.label"></span>
+                            <span class="hint" x-text="choice.hint"></span>
+                          </span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="wizardCurrent.key === 'critic'">
+                  <div>
+                    <div class="setup-wizard__title">
+                      <span>critic</span>
+                      <em>choose the second voice</em>
+                    </div>
+                    <div class="setup-wizard__choices">
+                      <template x-for="choice in wizardCriticChoices" :key="choice.value">
+                        <button
+                          type="button"
+                          class="setup-choice"
+                          :class="{'is-active': features.critic === choice.value}"
+                          :aria-pressed="features.critic === choice.value"
+                          :data-testid="'wizard-choice-critic-' + choice.value"
+                          @click="setCritic(choice.value)"
+                        >
+                          <span class="key" x-text="choice.key"></span>
+                          <span class="txt">
+                            <span class="name" x-text="choice.label"></span>
+                            <span class="hint" x-text="choice.hint"></span>
+                          </span>
+                        </button>
+                      </template>
+                    </div>
+                    <div class="setup-wizard__stance" data-testid="wizard-stance-options" x-show="stanceVisible" x-transition.opacity>
+                      <div class="setup-wizard__title">
+                        <span>stance</span>
+                        <em>tune the critic</em>
+                      </div>
+                      <div class="setup-wizard__choices is-compact">
+                        <template x-for="choice in wizardStanceChoices" :key="choice.value">
+                          <button
+                            type="button"
+                            class="setup-choice"
+                            :class="{'is-active': features.stance === choice.value}"
+                            :aria-pressed="features.stance === choice.value"
+                            :data-testid="'wizard-choice-stance-' + choice.value"
+                            @click="setStance(choice.value)"
+                          >
+                            <span class="key" x-text="choice.key"></span>
+                            <span class="txt">
+                              <span class="name" x-text="choice.label"></span>
+                              <span class="hint" x-text="choice.hint"></span>
+                            </span>
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="wizardCurrent.key === 'seat'">
+                  <div>
+                    <div class="setup-wizard__title">
+                      <span>seat</span>
+                      <em>choose who speaks next</em>
+                    </div>
+                    <div class="setup-wizard__choices is-compact">
+                      <template x-for="choice in wizardModeChoices" :key="choice.value">
+                        <button
+                          type="button"
+                          class="setup-choice"
+                          :class="{'is-active': mode === choice.value}"
+                          :aria-pressed="mode === choice.value"
+                          :data-testid="'wizard-choice-mode-' + choice.value"
+                          @click="setMode(choice.value, false)"
+                        >
+                          <span class="key" x-text="choice.key"></span>
+                          <span class="txt">
+                            <span class="name" x-text="choice.label"></span>
+                            <span class="hint" x-text="choice.hint"></span>
+                          </span>
+                        </button>
+                      </template>
+                    </div>
+                    <div class="setup-wizard__stance">
+                      <div class="setup-wizard__title">
+                        <span>learner</span>
+                        <em>choose the counterpart</em>
+                      </div>
+                      <div class="setup-wizard__choices is-compact">
+                        <template x-for="choice in wizardLearnerChoices" :key="choice.value">
+                          <button
+                            type="button"
+                            class="setup-choice"
+                            :class="{'is-active': features.learnerModel === choice.value}"
+                            :aria-pressed="features.learnerModel === choice.value"
+                            :data-testid="'wizard-choice-learner-' + choice.value"
+                            @click="setLearner(choice.value)"
+                          >
+                            <span class="key" x-text="choice.key"></span>
+                            <span class="txt">
+                              <span class="name" x-text="choice.label"></span>
+                              <span class="hint" x-text="choice.hint"></span>
+                            </span>
+                          </button>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+                <div class="setup-wizard__summary">
+                  <span><em>cell</em> <span x-text="resolved?.name || 'resolving'"></span></span>
+                  <span><em>match</em> <span x-text="matchQuality || '...'"></span></span>
+                  <span><em>seat</em> <span x-text="humanSeat"></span></span>
+                </div>
+              </div>
+
+              <div class="setup-wizard__nav">
+                <button type="button" data-testid="wizard-back" @click="wizardBack()" :disabled="wizardStep === 0">Back</button>
+                <button type="button" data-testid="wizard-next" x-show="wizardStep < wizardSteps.length - 1" @click="wizardNext()">Next</button>
+                <button type="button" class="primary" data-testid="wizard-finish" x-show="wizardStep === wizardSteps.length - 1" @click="finishWizard()">Start dialogue</button>
+              </div>
+            </section>
+            <div class="starter-prompts" aria-label="Starter prompts">
+              <button type="button" @click="useStarter('Can you explain recognition in a way that connects to everyday student experience?')">Explain recognition</button>
+              <button type="button" @click="useStarter('I think I understand the term, but I am not sure what would count as misrecognition. Can you test me?')">Test my understanding</button>
+              <button type="button" @click="useStarter('Give me a concrete example, then ask me one question that makes me revise my first answer.')">Use an example</button>
+            </div>
           </div>
         </template>
 
@@ -2619,9 +3508,9 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         <div class="mode">
           <span class="mode__lbl">◦ <span x-text="humanSeat"></span></span>
           <div class="mode__toggle">
-            <button class="mode__btn" :class="{'is-active': mode === 'human'}" @click="setMode('human')">I'm the learner</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">I'm the teacher</button>
-            <button class="mode__btn" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">Watch both</button>
+            <button type="button" class="mode__btn" :aria-pressed="mode === 'human'" :class="{'is-active': mode === 'human'}" @click="setMode('human')">I'm the learner</button>
+            <button type="button" class="mode__btn" :aria-pressed="mode === 'teacher'" :class="{'is-active': mode === 'teacher'}" @click="setMode('teacher')">I'm the teacher</button>
+            <button type="button" class="mode__btn" :aria-pressed="mode === 'auto'" :class="{'is-active': mode === 'auto'}" @click="setMode('auto')">Watch both</button>
           </div>
           <span class="mode__meta" x-show="mode === 'human'">— you reply as the learner; the resolved cell teaches</span>
           <span class="mode__meta" x-show="mode === 'teacher'">— you teach; the synthetic learner (persona below) replies</span>
@@ -2639,9 +3528,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <form @submit.prevent="send">
               <span class="composer__prompt">learner :~ $</span>
               <textarea
+                x-ref="composerInput"
                 x-model="input"
-                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : send()"
+                @input="autosize($event.target)"
+                @keydown.enter.prevent="handleComposerEnter($event, 'learner')"
                 :disabled="pending"
+                aria-label="Learner message"
                 rows="2"
                 placeholder="type as the learner… a line is a dot that went for a walk."
               ></textarea>
@@ -2721,9 +3613,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
             <form @submit.prevent="sendAsTeacher">
               <span class="composer__prompt">teacher :~ $</span>
               <textarea
+                x-ref="composerInput"
                 x-model="input"
-                @keydown.enter.prevent="$event.shiftKey ? input += '\n' : sendAsTeacher()"
+                @input="autosize($event.target)"
+                @keydown.enter.prevent="handleComposerEnter($event, 'teacher')"
                 :disabled="pending"
+                aria-label="Teacher message"
                 rows="2"
                 placeholder="type as the teacher… open with a question, a reframing, a provocation."
               ></textarea>
@@ -2853,6 +3748,44 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
       cells: [],
       cellFilter: '',
       xray: false,
+      wizardStep: 0,
+      wizardSteps: [
+        { key: 'topic', label: 'Topic' },
+        { key: 'tutor', label: 'Tutor' },
+        { key: 'critic', label: 'Critic' },
+        { key: 'seat', label: 'Seat' },
+      ],
+      wizardTopicPresets: [
+        { id: 'recognition', key: 'a', label: 'Recognition', hint: 'Hegel', value: "Hegel's concept of recognition" },
+        { id: 'ai-literacy', key: 'b', label: 'AI literacy', hint: 'course 901', value: 'AI literacy — how models answer questions' },
+        { id: 'ethics', key: 'c', label: 'Ethics', hint: 'course 701', value: 'Ethics of AI decision-making' },
+      ],
+      wizardApproachChoices: [
+        { value: 'standard', key: 'a', label: 'Standard', hint: 'direct tutor' },
+        { value: 'recognition', key: 'b', label: 'Recognition', hint: 'mutual-recognition' },
+        { value: 'polished', key: 'c', label: 'Polished', hint: 'best-practice' },
+        { value: 'charismatic', key: 'd', label: 'Charismatic', hint: 'id-director' },
+      ],
+      wizardCriticChoices: [
+        { value: 'none', key: 'a', label: 'None', hint: 'single voice' },
+        { value: 'pedagogical', key: 'b', label: 'Pedagogical', hint: 'standard critic' },
+        { value: 'dialectical', key: 'c', label: 'Dialectical', hint: 'engages draft' },
+        { value: 'divergent', key: 'd', label: 'Divergent', hint: 'alternate stance' },
+      ],
+      wizardStanceChoices: [
+        { value: 'suspicious', key: 'a', label: 'Suspicious', hint: 'questions' },
+        { value: 'adversary', key: 'b', label: 'Adversary', hint: 'challenges' },
+        { value: 'advocate', key: 'c', label: 'Advocate', hint: 'supports' },
+      ],
+      wizardModeChoices: [
+        { value: 'human', key: 'a', label: "I'm learner", hint: 'cell teaches' },
+        { value: 'teacher', key: 'b', label: "I'm teacher", hint: 'learner replies' },
+        { value: 'auto', key: 'c', label: 'Watch both', hint: 'observe loop' },
+      ],
+      wizardLearnerChoices: [
+        { value: 'surface', key: 'a', label: 'Surface', hint: 'unified learner' },
+        { value: 'reflective', key: 'b', label: 'Reflective', hint: 'ego + superego' },
+      ],
 
       features: {
         approach: 'standard',
@@ -3017,9 +3950,64 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         );
       },
 
-      setMode(m) {
+      get wizardCurrent() {
+        return this.wizardSteps[this.wizardStep] || this.wizardSteps[0];
+      },
+
+      wizardNext() {
+        this.wizardStep = Math.min(this.wizardSteps.length - 1, this.wizardStep + 1);
+      },
+
+      wizardBack() {
+        this.wizardStep = Math.max(0, this.wizardStep - 1);
+      },
+
+      finishWizard() {
+        this.wizardStep = this.wizardSteps.length - 1;
+        this.$nextTick(() => {
+          this.scrollTo('dialogue');
+          this.focusComposer();
+        });
+      },
+
+      setWizardTopic(value) {
+        this.topic = value;
+      },
+
+      setMode(m, focus = true) {
         if (m !== 'human' && m !== 'auto' && m !== 'teacher') return;
         this.mode = m;
+        if (focus) this.focusComposer();
+      },
+
+      focusComposer() {
+        this.$nextTick(() => {
+          const el = this.$refs.composerInput;
+          if (!el || el.disabled) return;
+          el.focus();
+          this.autosize(el);
+        });
+      },
+
+      autosize(el) {
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+      },
+
+      handleComposerEnter(event, seat) {
+        if (event.shiftKey) {
+          this.input += '\n';
+          this.$nextTick(() => this.autosize(event.target));
+          return;
+        }
+        if (seat === 'teacher') this.sendAsTeacher();
+        else this.send();
+      },
+
+      useStarter(text) {
+        this.input = text;
+        this.focusComposer();
       },
 
       // Which seat the human occupies, for the composer chrome.
@@ -3147,6 +4135,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         this.relaxedDimensions = [];
         this.turns = [];
         this.input = '';
+        this.focusComposer();
       },
 
       toggleXray() {
@@ -3277,6 +4266,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         if (!msg || this.pending || !this.resolved) return;
         this.turns.push({ role: 'learner', content: msg });
         this.input = '';
+        this.$nextTick(() => this.autosize(this.$refs.composerInput));
         this.pending = true;
         this.pendingStage = this.resolved.superego
           ? 'ego drafting → superego critiquing'
@@ -3315,6 +4305,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         } finally {
           this.pending = false;
           this.scrollChatToBottom();
+          this.focusComposer();
         }
       },
 
@@ -3335,6 +4326,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
           totals: { latencyMs: 0, inputTokens: 0, outputTokens: 0 },
         });
         this.input = '';
+        this.$nextTick(() => this.autosize(this.$refs.composerInput));
         this.pending = true;
         this.pendingStage = this.resolved.learnerArchitecture?.startsWith('ego_superego')
           ? 'learner ego → superego → revision'
@@ -3371,6 +4363,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
         } finally {
           this.pending = false;
           this.scrollChatToBottom();
+          this.focusComposer();
         }
       },
     };

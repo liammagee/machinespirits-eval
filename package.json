@@ -79,6 +79,7 @@
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
     "test:hermetic": "EVAL_DB_PATH=$(mktemp -d)/test.db EVAL_LOGS_DIR=$(mktemp -d) node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",
+    "test:chat-ui": "node --test tests/chat-ui-user-flow.test.js",
     "content:validate": "node scripts/validate-content.js",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
