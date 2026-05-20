@@ -1,8 +1,8 @@
 # Phase-2 design seed — tutoring-drama form, on real transcripts
 
-**Status:** DESIGN SEED / pre-registration draft. SEPARATE PATH (not in
-`docs/research/paper-full-2.0.md`). Written *before* any Phase-2 draw, so the
-construct and gate are pinned in advance.
+**Status:** PRE-REGISTERED (thresholds pinned 2026-05-20 by user sign-off).
+SEPARATE PATH (not in `docs/research/paper-full-2.0.md`). Written *before* any
+Phase-2 draw, so the construct and gate are pinned in advance.
 **Arc:** `DRAMATIC-RECOGNITION-PLAN.md` §6 (transposition to pedagogy); §78 (no
 silent softening); §83 (phasing).
 **Predecessors:** `PHASE0-FINDINGS.md` (instrument gate, PASS) →
@@ -106,21 +106,39 @@ is cheap by design (a small blinded set, a 3-way rubric), but it is the gate.
 
 ### 4.1 Sample frame (pre-register before drawing)
 
-- **Dynamic-learner cells only.** Recohering must be anchored to *generated* learner
-  turns, so transcripts must come from cells whose learner is a real LLM agent
-  (`learner_architecture: ego_superego`), not scripted/unified learners that replay
-  scenario YAML. (CLAUDE.md: even cells 2/4/6/8, plus the 60–79 dynamic-learner
-  family.)
-- **Stratify on the contrast that matters:** recognition-prompt vs base-prompt
-  families (the paper's central factor). Architecture-effect (do recognition cells
-  produce more well-formed learning-dramas?) is the eventual payoff but is
-  **secondary/exploratory** for the pilot and needs scale — flagged, not chased
-  (anti-creep).
-- **Pilot N ≈ 36 transcripts**, drawn ~evenly across recognition vs base. Sampling
-  rule pre-registered: **random within strata** (not cherry-picked for "aha"
-  moments — that would bias toward stated-insight).
-- **Exact cells + transcript counts to be confirmed by a quick `evaluations-db`
-  query before the draw** (which dynamic-learner cells have ≥ enough transcripts).
+- **Dynamic-learner transcripts only.** Recohering must be anchored to *generated*
+  learner turns, so transcripts come only from cells whose learner is a real LLM
+  agent. CONFIRMED selection (by DB field, not cell number — robust to the legacy
+  cell-name drift): `learner_architecture ∈ {ego_superego, ego_superego_recognition}`
+  AND `conversation_mode = 'messages'` AND `dialogue_rounds ≥ 3`. This is the
+  messages-mode dynamic-learner family (the 80–92 cells).
+- **Stratify on the recognition *condition* (the paper's central factor):** base =
+  `ego_superego`; recognition = `ego_superego_recognition` (a clean, null-robust
+  proxy for `factor_recognition`, verified by cross-tab). **Pre-registered confound:**
+  in this corpus the tutor's recognition prompt and the learner's recognition
+  architecture are *perfectly confounded* — every recognition transcript turns both
+  knobs on, every base transcript turns both off, and there is no
+  recognition-tutor+base-learner transcript (or vice versa). **(1)** A "stratum" is
+  therefore a bundled *condition* (prompt + learner architecture), **not** an isolated
+  prompt contrast, and any stratum difference is attributable to the bundle, not to
+  the prompt alone. **(3)** The architecture-*decomposition* question — does a
+  recognition cell's extra recohering come from the tutor prompt, the learner, or
+  both? — is **not identifiable from this corpus** and stays deferred to H3 (it would
+  need a new de-confounding cell; see §7).
+- **Pilot N = 36 transcripts**, 18 per stratum, **seed 20260520**. Sampling rule
+  pre-registered: **random within strata** (seeded Fisher–Yates over
+  dialogue_id-sorted candidates; first N with ≥2 external learner turns) — not
+  cherry-picked for "aha" moments (that would bias toward stated-insight).
+- **Data-quality filter (pre-registered, set before any scores existed):** exclude
+  any dialogue with ≥1 *truncated* learner turn (a generation-time max_tokens clip;
+  last non-space char not in `.?!…"')`]`). A clipped fragment cannot be judged for
+  recohering, and truncation ran **37% of base vs 14% of recognition** candidates — a
+  stratum confound this filter removes. It is orthogonal to stated-insight, so it does
+  not bias toward "aha" turns. **Supply after the filter: 119 base / 187 recognition**
+  candidates, against 18 needed per stratum.
+- **Confirmed supply (pre-filter):** 190 base / 218 recognition candidate dialogues
+  (`evaluations-db`, 2026-05-20). Loader: `scripts/load-poetics-phase2-sample.js`
+  (emits `phase2-sample/T*.txt` + held-out `phase2-key.yaml`).
 
 ### 4.2 Blinding
 
@@ -143,7 +161,10 @@ as a same-family cross-check, as in Phase 1).
   high-stated-insight turns score recon ≥ 75, the on-distribution-trap hypothesis is
   *wrong* (a surprising positive — LLM tutoring "aha"s are often structurally real).
 - **H1 (descriptive):** report the full recon distribution + class prevalence across
-  strata. (Conditional on the §3 transfer gate passing.)
+  strata. **(2)** Describe any stratum difference as a recognition-*condition* effect
+  (the bundled prompt + learner architecture — §4.1), never as a recognition-*prompt*
+  effect, which this corpus cannot isolate. (Conditional on the §3 transfer gate
+  passing.)
 
 ### 4.4 Localization
 
@@ -170,17 +191,18 @@ turn). Its Phase-1 weakness (critic-dependent, non-gating) is accepted; §4b
 
 ---
 
-## 6. Pre-registered gate summary (sign-off needed before first draw)
+## 6. Pre-registered gate summary (PINNED 2026-05-20 — sign-off recorded)
 
-| Gate | Criterion | Proposed threshold |
+| Gate | Criterion | Pinned threshold |
 |---|---|---|
 | **Transfer (primary, §3)** | instrument vs human 3-way FORM label, weighted κ | **≥ 0.60** |
 | H2 trap-decoupling (§4.3) | share of high-stated-insight turns with recon ≥ 75 | **< 50%** (else hypothesis disconfirmed) |
 | Evidence gate (carry-over) | any axis > 3 cites verbatim; recon cites pre-pivot only | unchanged from Phase 1 |
 
-These exact numbers are **proposed, not yet pinned** — they need explicit user
-sign-off before the first draw (mirroring the Phase-0 trap-ceiling decision). Per
-plan §78 they must not be softened after data is seen.
+These numbers are **PINNED as of 2026-05-20 by explicit user sign-off** (mirroring
+the Phase-0 trap-ceiling decision; user accepted the proposed bars noting no prior
+reference point for comparison). Per plan §78 they must NOT be softened after data
+is seen — a fail at these bars is a reportable negative, not a trigger to re-spec.
 
 ---
 
@@ -201,7 +223,20 @@ plan §78 they must not be softened after data is seen.
   is the thing H2 measures, not a confound to remove.
 - **Scale for the architecture contrast (H3, deferred):** the recognition-vs-base
   effect is the eventual paper payoff but needs more than the pilot N; flagged as
-  future, not run now.
+  future, not run now. Note it is also *confounded* (§4.1) — even at scale it measures
+  the bundled condition, not the prompt; the de-confounding cell below is what would
+  isolate the knobs.
+- **De-confounding the recognition condition (future cell, theory-motivated):** the
+  §4.1 confound could be broken by a new generative cell that turns on *exactly one*
+  knob — recognition-tutor + base-learner, or base-tutor + recognition-learner (the
+  one-sided-recognition conditions: neither zero nor two parties recognizing).
+  **Pre-registered hunch (Hegelian):** one-sided recognition should default toward the
+  **base condition's** drama-form, because recognition is constitutively reciprocal —
+  it takes two to tango; a single recognizing party facing an unrecognizing other
+  cannot complete the mutual movement, so no well-formed recognition-drama should
+  emerge. This is a *future* generative experiment (a new factorial cell, not a
+  sampling change), out of scope for the pilot and **not needed for the §3 transfer
+  gate** — recorded here so the prediction is on file before any data is seen.
 - **Folding into the paper:** if transfer holds and a prevalence/contrast claim
   emerges, it lands in `docs/research/paper-full-2.0.md` first (single-paper
   discipline); any spin-off inherits from there.

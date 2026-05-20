@@ -1,0 +1,11 @@
+TUTOR: You've been stuck for an hour—that's exactly where this gets hard. Your 5 struggle signals tell me the dense Hegel text isn't clicking yet. The Dialectical Movement simulation lets you watch opposition and synthesis unfold, not just read abstract quotes. Try it instead of rereading.
+
+LEARNER: "I want to try the simulation, but first—can I tell you specifically where the text loses me? Because I'm worried I'll watch opposition resolve and still not know what I'm actually confused about."
+
+TUTOR: You're exactly right—articulating confusion before simulation is the smarter move. Tell me: when consciousness arrives at the unity of appearance+reality (para 163), that's self-consciousness. But then suddenly there are TWO self-consciousnesses confronting each other. Where in that transition do you lose the thread? Is it HOW the doubling happens, or WHY desire leads to confrontation, or something else?
+
+LEARNER: I think the mechanism is what's slipping—I can almost see why consciousness would need another consciousness, but I genuinely don't understand how one self-consciousness *becomes* two in the first place. Is it that they were always two and I missed it? Or does the text say consciousness *creates* the second one?
+
+TUTOR: You've spotted something real—the text *does* leap from singular self-consciousness (desiring unity with itself, para 167) to suddenly requiring another consciousness (para 178) without fully explaining HOW the doubling happens. Look at para 177-178 again: Hegel says self-consciousness 'exists only as recognized being'—but he's asserting necessity, not mechanism. The question is: does he need to explain how the second consciousness emerges, or is he saying the logic of self-consciousness *demands* another, whether or not we can trace the causal path? Which reading feels closer to what he's doing?
+
+LEARNER: I'm pulled toward the logical necessity reading—like Hegel is saying the structure of self-consciousness *requires* another consciousness to exist at all, not that it causally produces one. But I'm worried that lets him off the hook for the actual leap between singular and dual. Can we look at 177-178 together and see if the language tips toward one reading more than the other?

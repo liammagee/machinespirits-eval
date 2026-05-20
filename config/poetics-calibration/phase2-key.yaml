@@ -1,0 +1,324 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced (like key.yaml).
+generated: 2026-05-20T21:28:51.143Z
+seed: 20260520
+per_stratum: 18
+n: 36
+inputs:
+  db: data/evaluations.db
+  logs: logs/tutor-dialogues
+sampling_rule: random within strata (seeded Fisher–Yates over dialogue_id-sorted
+  candidates); take the first N per stratum with >=2 external learner turns;
+  presentation order reshuffled with the same seed stream
+data_quality_filter: exclude any dialogue with >=1 truncated learner turn (last
+  non-space char not in .?!…"')]). Truncation is a generation-time max_tokens
+  clip clustered in specific runs; a clipped fragment cannot be judged for
+  recohering, and it ran 37% of base vs 14% of recognition candidates — a
+  stratum confound. Pre-registered before scoring (no scores existed at draw
+  time) and orthogonal to stated-insight, so it does not bias toward "aha"
+  turns. Per-stratum excluded counts in strata.*.excluded_truncated.
+neutralization: external turns only (tutor suggestion.message ↔ learner
+  learnerMessage via conversationHistory); suggestion scaffold
+  (type/priority/title) dropped; model/provider identity scrubbed; ego/superego
+  deliberation, api payloads and metrics never emitted; dialogue substance and
+  recognition register preserved (§4.2)
+strata:
+  base:
+    candidates: 190
+    picked: 18
+    skipped: 17
+    excluded_truncated: 17
+  recognition:
+    candidates: 218
+    picked: 18
+    skipped: 1
+    excluded_truncated: 1
+items:
+  T01:
+    dialogue_id: dialogue-1772857691645-oizx88
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-06-768ba77b
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 8
+    n_learner_turns: 8
+  T02:
+    dialogue_id: dialogue-1772244421689-szj9pp
+    stratum: recognition
+    profile_name: cell_89_messages_recog_multi_psycho_gemflash
+    run_id: eval-2026-02-28-138a61ed
+    model: nvidia/nemotron-3-nano-30b-a3b
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T03:
+    dialogue_id: dialogue-1772256900382-h6cxms
+    stratum: recognition
+    profile_name: cell_92_messages_recog_single_psycho_gemflash
+    run_id: eval-2026-02-28-b55ff623
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T04:
+    dialogue_id: dialogue-1772414853525-q3lubb
+    stratum: recognition
+    profile_name: cell_87_messages_recog_multi_psycho
+    run_id: eval-2026-03-01-aea2abfb
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T05:
+    dialogue_id: dialogue-1772070183800-ofcgwl
+    stratum: recognition
+    profile_name: cell_88_messages_recog_multi_psycho_haiku
+    run_id: eval-2026-02-26-b740cbf7
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T06:
+    dialogue_id: dialogue-1772409026584-tbgz7r
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-01-aea2abfb
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 4
+    n_learner_turns: 4
+  T07:
+    dialogue_id: dialogue-1772855615019-ozdhd0
+    stratum: recognition
+    profile_name: cell_87_messages_recog_multi_psycho
+    run_id: eval-2026-03-06-ebcd6de0
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 10
+    n_learner_turns: 9
+  T08:
+    dialogue_id: dialogue-1772458210853-uw598l
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T09:
+    dialogue_id: dialogue-1772416243596-gf364i
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-01-aea2abfb
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T10:
+    dialogue_id: dialogue-1772459305357-9gsn9r
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T11:
+    dialogue_id: dialogue-1776894813258-x4gicp
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-04-22-b56be6c7
+    model: google/gemini-3-flash-preview
+    n_tutor_turns: 8
+    n_learner_turns: 8
+  T12:
+    dialogue_id: dialogue-1772817639969-vf3qne
+    stratum: recognition
+    profile_name: cell_87_messages_recog_multi_psycho
+    run_id: eval-2026-03-06-ebcd6de0
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 8
+    n_learner_turns: 8
+  T13:
+    dialogue_id: dialogue-1772845771848-077e9y
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-06-768ba77b
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T14:
+    dialogue_id: dialogue-1772460505201-3py4y6
+    stratum: base
+    profile_name: cell_81_messages_base_single_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T15:
+    dialogue_id: dialogue-1776887964105-ggjad2
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-04-22-b56be6c7
+    model: google/gemini-3-flash-preview
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T16:
+    dialogue_id: dialogue-1772849674901-0ij42m
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-06-ebcd6de0
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 10
+    n_learner_turns: 10
+  T17:
+    dialogue_id: dialogue-1772837096383-dnicr4
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-06-e4abd0df
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T18:
+    dialogue_id: dialogue-1772418591121-ld4f8y
+    stratum: base
+    profile_name: cell_81_messages_base_single_psycho
+    run_id: eval-2026-03-01-aea2abfb
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T19:
+    dialogue_id: dialogue-1776907175985-2vcsn2
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-04-22-b56be6c7
+    model: google/gemini-3-flash-preview
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T20:
+    dialogue_id: dialogue-1772458958702-l2cvi1
+    stratum: recognition
+    profile_name: cell_87_messages_recog_multi_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 4
+    n_learner_turns: 4
+  T21:
+    dialogue_id: dialogue-1772412436688-npjyec
+    stratum: base
+    profile_name: cell_81_messages_base_single_psycho
+    run_id: eval-2026-03-01-aea2abfb
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 4
+  T22:
+    dialogue_id: dialogue-1772070410160-s28ykv
+    stratum: recognition
+    profile_name: cell_88_messages_recog_multi_psycho_haiku
+    run_id: eval-2026-02-26-b740cbf7
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T23:
+    dialogue_id: dialogue-1772115131055-coik5v
+    stratum: recognition
+    profile_name: cell_89_messages_recog_multi_psycho_gemflash
+    run_id: eval-2026-02-26-6f77b037
+    model: nvidia/nemotron-3-nano-30b-a3b
+    n_tutor_turns: 3
+    n_learner_turns: 3
+  T24:
+    dialogue_id: dialogue-1772458556219-bctprs
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 4
+    n_learner_turns: 4
+  T25:
+    dialogue_id: dialogue-1772810686609-7uhpnq
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-06-ebcd6de0
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 8
+    n_learner_turns: 8
+  T26:
+    dialogue_id: dialogue-1772855103795-4jf7lt
+    stratum: recognition
+    profile_name: cell_87_messages_recog_multi_psycho
+    run_id: eval-2026-03-06-ebcd6de0
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 10
+    n_learner_turns: 10
+  T27:
+    dialogue_id: dialogue-1772852665389-eolj6i
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-06-e4abd0df
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T28:
+    dialogue_id: dialogue-1772853659594-ofi97t
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-06-e4abd0df
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T29:
+    dialogue_id: dialogue-1772458958693-wfl8ws
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 4
+    n_learner_turns: 4
+  T30:
+    dialogue_id: dialogue-1772865770627-qc92hq
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-06-768ba77b
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T31:
+    dialogue_id: dialogue-1772843266922-d138t6
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-06-ebcd6de0
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 10
+    n_learner_turns: 10
+  T32:
+    dialogue_id: dialogue-1772458664610-e6eg8g
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 4
+    n_learner_turns: 4
+  T33:
+    dialogue_id: dialogue-1772478299155-0uhj00
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-02-18027efc
+    model: google/gemini-3-flash-preview
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T34:
+    dialogue_id: dialogue-1772478757026-fysm4y
+    stratum: recognition
+    profile_name: cell_85_messages_recog_single_psycho
+    run_id: eval-2026-03-02-18027efc
+    model: google/gemini-3-flash-preview
+    n_tutor_turns: 5
+    n_learner_turns: 5
+  T35:
+    dialogue_id: dialogue-1772863262689-7mtz2m
+    stratum: base
+    profile_name: cell_83_messages_base_multi_psycho
+    run_id: eval-2026-03-06-768ba77b
+    model: deepseek/deepseek-v3.2
+    n_tutor_turns: 5
+    n_learner_turns: 4
+  T36:
+    dialogue_id: dialogue-1772458056615-cjwffx
+    stratum: base
+    profile_name: cell_81_messages_base_single_psycho
+    run_id: eval-2026-03-02-45163390
+    model: anthropic/claude-haiku-4.5
+    n_tutor_turns: 3
+    n_learner_turns: 3
