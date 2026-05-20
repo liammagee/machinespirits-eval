@@ -507,3 +507,6 @@ if (invokedDirectly) {
 }
 
 export { evaluateGate, normalizeForMatch, applyEvidenceGate, computeOverall, loadRubric, buildCriticPrompt };
+// Shared, behaviour-neutral plumbing reused by the Phase-1 scorer (no scoring
+// logic — exporting these does not change any Phase-0 computed value).
+export { callModel, parseJsonResponse, runWithConcurrency, MODEL_MAP };

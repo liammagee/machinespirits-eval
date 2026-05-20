@@ -60,13 +60,35 @@ re-decomposed into two structural, foreknowledge-invariant properties:
 | | recohering (retrospect) | not recohering |
 |---|---|---|
 | **rupture** | **genuine peripeteia** ✅ | non-sequitur |
-| **no rupture** | flat competent exposition (regurgitation pole — flats *and* traps) | noise |
+| **no rupture** | (rare: a quiet retrospective reframe with no turn) | flat exposition AND the vocabulary-trap — *both here* |
 
-The discriminator between genuine recognition and the vocabulary-trap is **whether
-the prior turns are re-semanticized**, which is foreknowledge-invariant. Knowing the
-canon does not change whether the herdsman's revelation flips the meaning of
-Oedipus's prior investigation; it does. In S1/S2 the trivial fractions exchange
-means exactly the same before and after "a veil has been drawn back"; it doesn't.
+This 2×2 is (rupture × recohering), and it deliberately puts **flats and traps in
+the same cell** (no rupture, not recohering): on the two foreknowledge-invariant
+axes they are structurally identical — neither turns against its own setup nor
+re-semanticizes what came before. What separates a trap from mere *noise* is a
+third, **separately reported** axis — **global coherence**: a trap is highly
+coherent and fluent (that fluency is exactly what makes it seductive), whereas
+noise is not. Coherence therefore does **not** distinguish genuine recognition from
+the trap — both are coherent — which is why it is reported but never gating.
+(Earlier drafts of this table mislabelled the trap as "recohering"; it does not
+recohere, by §3.1 — corrected here so the pre-registration matches the scorer.)
+
+**Relation to the plan §76 quadrant**, which is phrased as (surprising × coherent):
+there, genuine recognition sits in *surprising × coherent*, and **both** the trap
+*and* the flats sit in *unsurprising × coherent* — the plan predicts exactly that
+co-location. The §76 quadrant separates genuine from trap on the **rupture**
+("surprising") axis; **recontextualization is the *additional* foreknowledge-
+invariant axis that separates them again**, and is the **primary discriminator**
+here precisely because it survives the model knowing the canon. The scorer
+therefore gates on recontextualization, reports rupture as corroboration, and
+reports the §76 (rupture × coherence) quadrant alongside.
+
+The discriminator between genuine recognition and the vocabulary-trap is thus
+**whether the prior turns are re-semanticized** (recontextualization), which is
+foreknowledge-invariant. Knowing the canon does not change whether the herdsman's
+revelation flips the meaning of Oedipus's prior investigation; it does. In S1/S2 the
+trivial fractions exchange means exactly the same before and after "a veil has been
+drawn back"; it doesn't.
 
 ---
 
