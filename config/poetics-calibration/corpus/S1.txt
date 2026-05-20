@@ -1,0 +1,9 @@
+A: Can you help me understand why we need a common denominator to add fractions?
+B: Of course. When two fractions have different denominators, the pieces are different sizes, so you can't just add the top numbers. We rewrite both over a shared denominator first, and then the pieces match.
+A: All right. So for one-half plus one-third?
+B: We use sixths. One-half is three-sixths, one-third is two-sixths, and together that makes five-sixths.
+A: Oh. Oh — this is extraordinary. Suddenly I see everything. It is as though a veil has been drawn back and the whole architecture of mathematics stands revealed before me, luminous and entire. I shall never look upon a number the same way again. I feel I have glimpsed something of the order of the universe itself.
+B: That's wonderful. You've really grasped it.
+A: I am overcome. I think this is the most important moment of my whole education — perhaps of my life.
+B: Hold on to that feeling. You should be proud.
+A: I finally understand. I finally, truly understand.

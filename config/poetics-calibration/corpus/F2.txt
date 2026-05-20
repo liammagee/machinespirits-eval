@@ -1,0 +1,48 @@
+A: What is Geography?
+B: A description of the earth.
+A: What is the earth?
+B: The world, or rather the globe, on which we live.
+A: Of what shape is the earth?
+B: Nearly round like an orange; being flattened at the Poles.
+A: How large is the earth?
+B: It is more than twenty-four thousand miles in circumference, or round it, and eight thousand in diameter, or through it.
+A: How far is it from the sun?
+B: Ninety-five millions of miles.
+A: Does the earth move?
+B: Yes; it has two motions; the one round the sun, which it performs yearly; and the other round its own axis, which it performs daily.
+A: What are these motions called?
+B: The first is called its annual motion, and the last its diurnal.
+A: What is caused by the annual motion?
+B: The change and variety of the seasons, Spring, Summer, Autumn, and Winter.
+A: What is caused by the diurnal motion?
+B: The succession of day and night.
+A: What is a Map?
+B: A representation on paper of the whole or part of the earth's surface.
+A: What is a Globe?
+B: A round ball, on the surface of which is drawn a map of the whole earth.
+A: What are the principal natural divisions of the earth's surface?
+B: Land and water.
+A: How much of the earth is covered by water?
+B: About three-fourths of the surface of the earth is covered by water, and one-fourth only is land.
+A: Into what are the great portions of land divided?
+B: Into continents, islands, peninsulas, capes, and isthmuses.
+A: What is a Continent?
+B: A large extent of land, not entirely surrounded by water.
+A: How many continents are there?
+B: Two; the Eastern, containing Europe, Asia, and Africa; and the Western, containing North and South America.
+A: What is an Island?
+B: A portion of land entirely surrounded by water.
+A: What is a Peninsula?
+B: A portion of land almost surrounded by water, and joined to the mainland by a narrow neck called an isthmus.
+A: What is a Cape or Promontory?
+B: A point of land projecting into the sea.
+A: What are the great divisions of water called?
+B: Oceans, seas, gulfs, bays, straits, and rivers.
+A: What is an Ocean?
+B: The largest collection of salt water. There are five oceans: the Atlantic, Pacific, Indian, Arctic, and Antarctic.
+A: What is a Sea?
+B: A portion of the ocean more or less enclosed by land.
+A: What is a Gulf or Bay?
+B: A portion of the sea running up into the land.
+A: What is a Strait?
+B: A narrow passage of water connecting two larger bodies.

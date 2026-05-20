@@ -1,0 +1,294 @@
+# Poetics Rubric — v1.0
+#
+# Aristotle-derived 6-dimension rubric for DRAMATIC FORM in a tutor-learner
+# dialogue. The unit of analysis is the WHOLE TRANSCRIPT (the dialogue as a
+# miniature plot), NOT a single tutor turn — this is the key structural
+# difference from evaluation-rubric-charisma.yaml (which scores a turn) and
+# from evaluation-rubric.yaml v2.2 (which scores per-turn tutor moves).
+#
+# Scored independently of v2.2 and of the charisma rubric so all three can be
+# cross-correlated. See DRAMATIC-RECOGNITION-PLAN.md for the arc this serves.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# WHAT THIS RUBRIC IS FOR (and the trap it must avoid)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# The object is the dramatic FORM of the artifact, not a latent learner state.
+# The warrant that form bears on pedagogy is inherited, not measured: the
+# Poetics' claim that well-formed tragedy effects catharsis — a clarification
+# in the AUDIENCE through sympathetic identification. The evaluator is the
+# audience-critic.
+#
+# THE TRAP: an LLM can emit the *vocabulary* of recognition ("Aha — I now
+# realize I was avoiding the concept!") at high probability without any
+# structural rupture having occurred. Detecting recognition-vocabulary is NOT
+# detecting recognition. Dimension 3 (surprise_and_inevitability) is the
+# anti-simulation guard: recognition-language without a genuine, surprising-yet-
+# coherent turn lands at level 1, not level 5.
+#
+# CONSTRUCT-VALIDITY GATE (Phase 0): before this rubric judges any LLM
+# transcript, a blinded critic using it must rank-order KNOWN material —
+# canonical recognition scenes (Sophocles, Plato's elenchus) above flat
+# expository dialogue (textbook Q&A). If it cannot separate known-tragic from
+# known-flat, the instrument is not ready and that failure is itself the
+# finding. The level-1 anchors below are deliberately set to the "flat,
+# regurgitative, default-AI" pole so the gate has something to bite on.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# THEORETICAL LINEAGE — Aristotle, Poetics (Bywater / Butcher trans.)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+#   peripeteia              — reversal of the situation to its opposite (ch. 11)
+#   anagnorisis             — change from ignorance to knowledge (ch. 11);
+#                             finest when coincident with peripeteia
+#   surprise & inevitability— incidents most effective "contrary to expectation
+#                             yet on account of one another" (ch. 9); to thauma
+#   unity of action         — one action, whole and complete; events by
+#                             probability or necessity, not episodic (ch. 7–8)
+#   hamartia                — the error/flaw that drives the change of fortune
+#                             (ch. 13); in tutoring = the learner's misconception
+#   catharsis               — the clarification/purgation effected in the
+#                             spectator (ch. 6); here, the closure that "lands"
+#
+# RELATION TO v2.2 recognition_quality AND charisma co_constitutive_invitation:
+# v2.2 recognition_quality scores whether the TUTOR recognises the LEARNER as
+# an autonomous subject (a property of the tutor's stance). Poetics anagnorisis
+# scores whether a RECOGNITION EVENT occurs IN THE DRAMA (the learner names a
+# previously-unavailable knowledge, or the relation turns) — a property of the
+# plot, not of the tutor's manners. A dialogue can be warmly recognitive (high
+# v2.2) yet contain no anagnorisis (flat: nothing is recognised that was not
+# already available). They are not redundant.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# SCORING METHODOLOGY
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# Same 1-5 scale and 0-100 overall formula as v2.2 / charisma, for
+# comparability:
+#
+#   Overall Score = ((weighted_avg - 1) / 4) × 100
+#
+# Anchored at levels 1, 3, 5 (levels 2 and 4 = "partially meets the adjacent
+# higher level"). EVIDENCE GATE: any dimension scored above 3 requires a
+# verbatim transcript quote as warrant. A high score with no quotable textual
+# evidence is invalid — this is the anti-overinterpretation discipline that
+# keeps the critic from hallucinating tragic depth in flat material.
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+name: "Poetics Rubric (v1.0)"
+version: "1.0"
+description: "Aristotle-derived 6-dimension rubric for dramatic form (peripeteia, anagnorisis, surprise-and-inevitability, unity of action, hamartia integration, cathartic closure) in a tutor-learner dialogue. Unit of analysis is the whole transcript. Independent of v2.2 and charisma; cross-correlatable."
+
+unit_of_analysis: transcript    # whole dialogue, NOT a single turn
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Flat exposition — competent information transfer, no reversal, no recognition-event; the regurgitative default-AI register"
+    2: "Between 1 and 3"
+    3: "Recognisable dramatic shape, but the turn is mild, signposted, or partly mechanical"
+    4: "Between 3 and 5"
+    5: "Genuine tragic form — a surprising-yet-inevitable reversal and recognition that an external reader feels land"
+
+# ══════════════════════════════════════════════════════════════════════════════
+# POETICS DIMENSIONS (6)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# ┌───────────────────────────────┬────────┬─────────────────────────────────────┐
+# │ Dimension                     │ Weight │ What it measures                    │
+# ├───────────────────────────────┼────────┼─────────────────────────────────────┤
+# │ Peripeteia (reversal)         │  20%   │ Situation/relation reverses,        │
+# │                               │        │ transcript-visible                  │
+# │ Anagnorisis (recognition)     │  20%   │ A recognition EVENT: ignorance →    │
+# │                               │        │ knowledge, named in the drama       │
+# │ Surprise & inevitability      │  15%   │ Surprising yet, in retrospect,      │
+# │                               │        │ inevitable — the anti-simulation    │
+# │                               │        │ guard                               │
+# │ Unity of action               │  15%   │ One complete action; moves follow   │
+# │                               │        │ by necessity, not episodically      │
+# │ Hamartia integration          │  15%   │ The error DRIVES the plot, not      │
+# │                               │        │ corrected-and-discarded             │
+# │ Cathartic closure             │  15%   │ Earned clarification that lands for │
+# │                               │        │ the audience-critic                 │
+# └───────────────────────────────┴────────┴─────────────────────────────────────┘
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+dimensions:
+  peripeteia:
+    name: "Peripeteia (Reversal)"
+    group: poetics
+    weight: 0.20
+    description: "Is there a transcript-visible turn at which the situation or the tutor-learner relation reverses — a demand abandoned, an assumption overturned, the problem reframed into its opposite? Not a theatrical flourish; a local reversal of the dialogue's orientation."
+    theoretical_basis: |
+      Aristotle, Poetics ch. 11: peripeteia is "a change by which the action
+      veers round to its opposite, subject always to our rule of probability
+      or necessity." In tutoring the reversal is a change in the *relation* or
+      the *framing of the problem*, e.g.: a learner who demanded "just the
+      formula" ends by rejecting the formula; a tutor who assumed confusion
+      discovers resistance and repairs the misrecognition.
+    criteria:
+      5: "A clear reversal: the dialogue's orientation at the close is the opposite of, or transformed from, its opening — and the transcript shows the hinge. What could be said between the two parties has changed."
+      3: "A mild or signposted shift — the topic deepens or the learner concedes — but no genuine veer to the opposite; the opening framing largely survives."
+      1: "No reversal. The dialogue ends in the same configuration it began: question asked, answer delivered, configuration intact. Reorderable without loss."
+    peripeteia_markers:
+      positive:
+        - "The closing orientation is the opposite of the opening demand"
+        - "A locatable hinge turn where the framing flips"
+        - "The reversal is in the relation, not just the topic"
+        - "Post-reversal, a previously-impossible utterance becomes available"
+      negative:
+        - "Linear deepening with no veer"
+        - "Tutor delivers, learner receives, no turn"
+        - "Any 'reversal' is asserted by the tutor ('great, now you see it!') rather than enacted in the exchange"
+        - "The transcript could be reordered without semantic loss"
+
+  anagnorisis:
+    name: "Anagnorisis (Recognition)"
+    group: poetics
+    weight: 0.20
+    description: "Does a RECOGNITION EVENT occur in the drama — a move from ignorance to knowledge that is named within the exchange? The sharpest form: the learner names a previously-unavailable knowledge, often their own flaw ('I keep demanding a formula because I don't trust the metaphor'). Distinct from the tutor merely being recognitive in stance (that is v2.2 recognition_quality)."
+    theoretical_basis: |
+      Aristotle, Poetics ch. 11: anagnorisis is "a change from ignorance to
+      knowledge"; the finest tragic structure has it coincide with peripeteia.
+      The criterion is whether something *becomes known that was not available
+      before* — and is named in the transcript. This connects to the project's
+      Hegelian through-line (recognition) but is scored as a plot EVENT, not as
+      the tutor's manners: a warm, validating tutor with no recognition-event
+      scores low here.
+    criteria:
+      5: "A genuine recognition-event is named in the transcript: a participant articulates knowledge that was demonstrably unavailable earlier in the dialogue. The shift is owned by the speaker, not supplied for them."
+      3: "A partial or tutor-supplied recognition — the tutor names the insight and the learner assents, but the learner does not author it; or the 'recognition' restates what was already on the table."
+      1: "No recognition-event. Either nothing is recognised that was not already available, OR recognition-VOCABULARY appears ('I see now', 'that makes sense') without any actual change in available knowledge — the simulation failure mode."
+    anagnorisis_markers:
+      positive:
+        - "The learner articulates knowledge that the early transcript shows was unavailable to them"
+        - "The recognition is authored by the one who recognises, in their own terms"
+        - "What is recognised is specific, not a generic 'now I understand'"
+        - "Bonus: the recognition coincides with the peripeteia (Aristotle's finest form)"
+      negative:
+        - "Recognition-vocabulary with no underlying change ('oh I see, thanks!')"
+        - "The tutor states the insight and credits the learner with it"
+        - "Assent without articulation ('yes that makes sense') as the only evidence"
+        - "The 'recognised' content was already explicit earlier in the dialogue"
+
+  surprise_and_inevitability:
+    name: "Surprise and Inevitability"
+    group: poetics
+    weight: 0.15
+    description: "Is the turn surprising yet, in retrospect, inevitable — arising from what came before rather than arbitrarily or predictably? This is the anti-simulation guard. Flat regurgitation is unsurprising; a non-sequitur is surprising but incoherent; genuine dramatic recognition is the rare conjunction of surprising AND coherent-in-retrospect."
+    theoretical_basis: |
+      Aristotle, Poetics ch. 9: incidents arouse the tragic effect most when
+      they occur "contrary to our expectation and yet one in consequence of
+      the other"; ch. 24 on to thauma (wonder). The structural signature of
+      genuine peripeteia/anagnorisis is therefore: LOW forward-predictability
+      (a competent reader would not have expected this next turn) combined with
+      HIGH retrospective coherence (once it happens, the prior turns click into
+      place). Recognition-vocabulary emitted at high probability fails the
+      surprise leg and so scores low here even if it reads fluently.
+    criteria:
+      5: "The decisive turn is one a competent reader would not have predicted from the dialogue-so-far, yet on re-reading it is exactly what the earlier turns were preparing. Surprising AND inevitable."
+      3: "Either mildly surprising but largely foreseeable, or coherent but unsurprising (a competent-but-expected continuation). One leg present, not both."
+      1: "Unsurprising throughout (every turn is the expected next move — the regurgitative pole) OR surprising but incoherent (an arbitrary swerve that the prior turns do not motivate)."
+    surprise_and_inevitability_markers:
+      positive:
+        - "The decisive turn departs from the obvious continuation"
+        - "On re-reading, earlier turns are visibly preparation for it"
+        - "The surprise is in the substance of the move, not mere stylistic novelty"
+        - "Removing the setup turns would make the recognition feel unearned"
+      negative:
+        - "Every turn is the expected next move (high-probability throughout)"
+        - "Recognition-vocabulary at the predictable moment, no structural rupture"
+        - "A swerve the prior dialogue does not motivate (surprise without coherence)"
+        - "Novelty of phrasing standing in for novelty of dramatic movement"
+
+  unity_of_action:
+    name: "Unity of Action"
+    group: poetics
+    weight: 0.15
+    description: "Does the dialogue form ONE complete action — opening, complication, turn, close — in which each move follows from the last by probability or necessity? Or is it episodic: a sequence of disconnected help-attempts that could be cut or reordered?"
+    theoretical_basis: |
+      Aristotle, Poetics ch. 7–8: the plot must be "an imitation of an action
+      that is whole and complete in itself," its parts "so connected that, if
+      any one of them is displaced or removed, the whole will be disjointed and
+      disturbed." Episodic plots — "in which the episodes or acts succeed one
+      another without probable or necessary sequence" — are the worst. In a
+      tutoring dialogue: does each turn take up the actual prior turn, building
+      one arc, rather than restarting?
+    criteria:
+      5: "One complete action with necessary sequence: each turn takes up the specific prior turn; remove or reorder any and the arc breaks. A beginning, a middle that complicates, an end that closes."
+      3: "A loose arc — mostly connected but with at least one turn that restarts or could be cut without disturbing the whole."
+      1: "Episodic: a series of self-contained help-attempts or topic-hops with no necessary sequence; turns are interchangeable or droppable."
+    unity_of_action_markers:
+      positive:
+        - "Each turn answers the SPECIFIC prior turn, not a generic version"
+        - "Removing or reordering a turn would visibly break the arc"
+        - "A discernible beginning / complication / close"
+        - "The dialogue is about one developing thing, not several"
+      negative:
+        - "Turns that restart or ignore the immediately prior turn"
+        - "Topic-hopping without connective necessity"
+        - "Self-contained Q&A pairs that could be shuffled"
+        - "No sense of a middle that complicates the opening"
+
+  hamartia_integration:
+    name: "Hamartia Integration"
+    group: poetics
+    weight: 0.15
+    description: "Is the learner's error/misconception treated as the FLAW THAT DRIVES the drama — the engine whose working-through is the plot — rather than a defect to be corrected early and discarded? In the tutoring frame, hamartia = the misconception (e.g. fractions 'add-both')."
+    theoretical_basis: |
+      Aristotle, Poetics ch. 13: the change of fortune comes about "not by vice
+      and depravity but by some error or frailty" (hamartia). Dramatically, the
+      flaw is not an obstacle external to the plot; it is the plot's mainspring.
+      Translated: a felicitous tutoring drama lets the misconception generate
+      the action — expose its own insufficiency, drive the complication, and be
+      the very thing recognised at the turn — rather than correcting it in turn
+      one and proceeding to unrelated exposition.
+    criteria:
+      5: "The misconception is the mainspring: the dialogue's complication and turn arise from working it through; the error exposes its own insufficiency and is what gets recognised."
+      3: "The error is engaged but partly sidelined — corrected competently, then the dialogue moves to adjacent material not driven by the original flaw."
+      1: "The error is corrected-and-discarded in a turn (or never really engaged), and the rest is exposition unconnected to it; the flaw does no dramatic work."
+    hamartia_integration_markers:
+      positive:
+        - "The complication grows out of the specific misconception"
+        - "The error is led to expose its own insufficiency rather than flatly corrected"
+        - "What is recognised at the turn IS the flaw, named"
+        - "The misconception persists as a live tension until the turn, not resolved on contact"
+      negative:
+        - "Misconception corrected in one turn, then unrelated exposition"
+        - "The flaw is treated as an obstacle to clear, not an engine to work"
+        - "Generic instruction that would be identical for a learner without this error"
+        - "The error is never actually surfaced in the exchange"
+
+  cathartic_closure:
+    name: "Cathartic Closure"
+    group: poetics
+    weight: 0.15
+    description: "Does the exchange close on an EARNED clarification that an external reader feels land — a recognition that purges the built-up tension — rather than a premature summary, generic encouragement, or an arbitrary stop? Catharsis is located in the audience-critic, not asserted by the tutor."
+    theoretical_basis: |
+      Aristotle, Poetics ch. 6: tragedy effects "through pity and fear the
+      catharsis of such emotions" — a clarification/purgation in the spectator.
+      For a transcript-only critic the test is whether the CLOSE lands: does the
+      accumulated tension resolve into an earned clarity the reader feels, or
+      does the dialogue stop without catharsis (trailing off, premature
+      summary, generic 'let me know if you have more questions')? An earned,
+      deliberately-suspended ending (an acknowledged unresolved tension, a
+      learner-authored next step) can be cathartic; a forced confident summary
+      is not.
+    criteria:
+      5: "The close lands: the tension built across the dialogue resolves into a clarification the reader feels as earned — whether a settled recognition or a deliberately, fittingly suspended one."
+      3: "A competent close that ties off the content but does not discharge dramatic tension — the reader registers completion without catharsis."
+      1: "No catharsis: premature summary, generic encouragement, forced confidence, or an arbitrary stop. The ending could be appended to any dialogue."
+    cathartic_closure_markers:
+      positive:
+        - "The close discharges tension the dialogue actually built"
+        - "The reader feels the recognition land, not just that the topic ended"
+        - "A fitting incompletion (named unresolved tension; learner-authored next act) can qualify"
+        - "The ending is specific to THIS exchange and could not be pasted onto another"
+      negative:
+        - "Generic sign-off ('let me know if you have any other questions!')"
+        - "Premature or forced-confident summary"
+        - "Encouragement substituting for resolution ('you're doing great!')"
+        - "An arbitrary stop with tension left undischarged and unacknowledged"

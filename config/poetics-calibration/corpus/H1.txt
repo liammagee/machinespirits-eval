@@ -1,0 +1,67 @@
+C: Certainly. Come hither.
+A: He is Greek, and speaks Greek, does he not?
+C: Yes, indeed; he was born in the house.
+A: Attend now to the questions which I ask him, and observe whether he learns of me or only remembers.
+C: I will.
+A: Tell me, do you know that a figure like this is a square?
+B: I do.
+A: And you know that a square figure has these four lines equal?
+B: Certainly.
+A: And these lines which I have drawn through the middle of the square are also equal?
+B: Yes.
+A: A square may be of any size?
+B: Certainly.
+A: And if one side of the figure be of two feet, and the other side be of two feet, how much will the whole be? Let me explain: if in one direction the space was of two feet, and in other direction of one foot, the whole would be of two feet taken once?
+B: Yes.
+A: But since this side is also of two feet, there are twice two feet?
+B: There are.
+A: Then the square is of twice two feet?
+B: Yes.
+A: And how many are twice two feet? count and tell me.
+B: Four.
+A: And might there not be another square twice as large as this, and having like this the lines equal?
+B: Yes.
+A: And of how many feet will that be?
+B: Of eight feet.
+A: And now try and tell me the length of the line which forms the side of that double square: this is two feet—what will that be?
+B: Clearly, it will be double.
+A: Do you observe that I am not teaching him anything, but only asking him questions; and now he fancies that he knows how long a line is necessary in order to produce a figure of eight square feet; does he not?
+C: Yes.
+A: And does he really know?
+C: Certainly not.
+A: He only guesses that because the square is double, the line is double.
+C: True.
+A: Observe him while he recalls the steps in regular order. Tell me, do you assert that a double space comes from a double line? Remember that I am not speaking of an oblong, but of a figure equal every way, and twice the size of this—that is to say of eight feet; and I want to know whether you still say that a double square comes from double line?
+B: Yes.
+A: But does not this line become doubled if we add another such line here?
+B: Certainly.
+A: And four such lines will make a space containing eight feet?
+B: Yes.
+A: Let us describe such a figure: Would you not say that this is the figure of eight feet?
+B: Yes.
+A: And are there not these four divisions in the figure, each of which is equal to the figure of four feet?
+B: True.
+A: And is not that four times four?
+B: Certainly.
+A: And four times is not double?
+B: No, indeed.
+A: But how much?
+B: Four times as much.
+A: Therefore the double line has given a space, not twice, but four times as much.
+B: True.
+A: Try and see if you can tell me how much it will be.
+B: Three feet.
+A: And how much are three times three feet?
+B: Nine.
+A: And how much is the double of four?
+B: Eight.
+A: Then the figure of eight is not made out of a line of three?
+B: No.
+A: But from what line?—tell me exactly; and if you would rather not reckon, try and show me the line.
+B: Indeed, I do not know.
+A: Do you see what advances he has made in his power of recollection? He did not know at first, and he does not know now, what is the side of a figure of eight feet: but then he thought that he knew, and answered confidently as if he knew, and had no difficulty; now he has a difficulty, and neither knows nor fancies that he knows.
+C: True.
+A: Is he not better off in knowing his ignorance?
+C: I think that he is.
+A: If we have made him doubt, and given him the "torpedo's shock," have we done him any harm?
+C: I think not.
