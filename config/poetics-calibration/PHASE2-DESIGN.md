@@ -180,8 +180,15 @@ turn). Its Phase-1 weakness (critic-dependent, non-gating) is accepted; §4b
   plumbing (`callModel`→`callCodex`/`callClaudeCode`, evidence gate,
   `evaluateGate`-style reporting) and the Phase-1 prompt structure + the new
   stated-insight axis.
-- New transcript loader: pull dialogues from `data/evaluations.db` / dialogue logs,
-  neutralize, emit the same numbered `A:/B:` format the scorer already consumes.
+- Transcript loader (`scripts/load-poetics-phase2-sample.js`, built): pulls dialogues
+  from `data/evaluations.db` / dialogue logs, neutralizes, and emits role-tagged
+  `TUTOR:`/`LEARNER:` turns. (The earlier "`A:/B:`" note is superseded: the FORM
+  rubric is defined on *learner* turns re-reading *their own* earlier turns, so the
+  learner must be identifiable — identity-neutralization strips model/cell, **not**
+  the tutor/learner roles, consistent with §4.2. Both the scorer
+  `score-poetics-phase2.js` and the human labeller `label-poetics-phase2.js` consume
+  this same `TUTOR:/LEARNER:` format, so the two FORM channels reference turns
+  identically.)
 - New `phase2-key.yaml`: sample manifest + held-out human FORM labels for the
   transfer-gate subset (joined only after scoring, exactly like `key.yaml`).
 - Agreement: extend / reuse `compare-poetics-critics.js` for instrument-vs-human
@@ -203,6 +210,35 @@ These numbers are **PINNED as of 2026-05-20 by explicit user sign-off** (mirrori
 the Phase-0 trap-ceiling decision; user accepted the proposed bars noting no prior
 reference point for comparison). Per plan §78 they must NOT be softened after data
 is seen — a fail at these bars is a reportable negative, not a trigger to re-spec.
+
+### 6.1 Metric operationalizations (PINNED 2026-05-20 — sign-off recorded)
+
+Building `score-poetics-phase2.js` surfaced two parameters of the §6 gate that were
+not yet pinned. Both are recorded here **before any instrument scores or human
+labels exist** (the labeller is built but unrun), so pinning them now is completing
+the pre-registration, not softening after data. Both were **PINNED as of 2026-05-20
+by explicit user sign-off**, the same act that pinned the §6 bars.
+
+- **Weighted-κ ordinal order = `[recognition, flat, trap]`.** Quadratic-weighted κ
+  needs the three nominal categories placed on a line; the order decides which
+  confusion is penalised most. This order puts `flat` (the honest null) **between**
+  `recognition` and `trap`, on a *recognition-authenticity* axis (genuine → absent →
+  counterfeit). Consequence: the `recognition`↔`trap` confusion — the instrument
+  being fooled by insight-costume, i.e. the anti-simulation core of the whole arc —
+  is the maximally-penalised disagreement (distance 2), while the two non-recohering
+  classes (`flat`↔`trap`) are adjacent (distance 1). The alternatives are rejected
+  on theory: `recognition` in the middle would make `flat`↔`trap` (the least
+  consequential confusion) the worst error; `trap` in the middle would treat the
+  counterfeit-confusion as a mere near-miss. Nominal (unweighted) κ is also reported
+  as a stricter, ordering-free secondary.
+- **Stated-insight "high" cut = ≥ 75 (raw 4-5).** §4.3 defines the trap as
+  "stated-insight HIGH + recon < 75" and H2 over "high-stated-insight" turns, but did
+  not pin the HIGH threshold. Set it to the same raw-4-5 ⇒ ≥75 band as the recon hit
+  cut, for symmetry across the two axes that jointly define the FORM category.
+- **Transfer-gate PASS rule (clarification):** weighted κ ≥ 0.60 for **every**
+  labeller (conservative min-over-labellers), not an average — the strictest,
+  least-gameable reading of the §6 bar. Inter-labeller κ is reported separately for
+  reliability (§7); the §6 bar gates instrument-vs-human, not human-vs-human.
 
 ---
 

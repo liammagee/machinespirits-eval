@@ -69,6 +69,26 @@ function spearman(x, y) {
   return pearson(rankify(x), rankify(y));
 }
 
+// unweighted Cohen's kappa on integer categories [lo..hi] (nominal agreement —
+// every disagreement counts equally; no ordering assumption)
+function cohenKappa(a, b, lo = 1, hi = 5) {
+  const k = hi - lo + 1;
+  const n = a.length;
+  if (!n) return NaN;
+  const O = Array.from({ length: k }, () => new Array(k).fill(0));
+  for (let i = 0; i < n; i++) O[a[i] - lo][b[i] - lo]++;
+  const rowSum = O.map((r) => r.reduce((s, v) => s + v, 0));
+  const colSum = new Array(k).fill(0);
+  for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) colSum[j] += O[i][j];
+  let po = 0;
+  let pe = 0;
+  for (let i = 0; i < k; i++) {
+    po += O[i][i] / n;
+    pe += (rowSum[i] / n) * (colSum[i] / n);
+  }
+  return pe === 1 ? NaN : (po - pe) / (1 - pe);
+}
+
 // quadratic-weighted Cohen's kappa on integer categories [lo..hi]
 function quadraticWeightedKappa(a, b, lo = 1, hi = 5) {
   const k = hi - lo + 1;
@@ -242,4 +262,9 @@ function main() {
   report(critics);
 }
 
-main();
+const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+if (invokedDirectly) main();
+
+// Reusable stats — the Phase-2 transfer gate imports the same kappa math so the
+// gate statistic has a single source of truth (no divergent re-implementation).
+export { quadraticWeightedKappa, cohenKappa, spearman, pearson, rankify, mean };
