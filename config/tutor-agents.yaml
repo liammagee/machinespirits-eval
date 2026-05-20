@@ -5860,3 +5860,33 @@ profiles:
         max_tokens: 1500
       counterfactual:
         enabled: false
+
+  # ── A17 speech-act-lock prototype — PROVENANCE-ONLY cells ──────────────
+  # notes/design-a17-speech-act-lock-prototype.md §6 (LOCKED 2026-05-19).
+  #
+  # These three cells are NOT eval-cli-runnable and have NO `runner:`/`adaptive:`
+  # block on purpose. The A17 lock-puzzle graph is driven EXCLUSIVELY by the
+  # dedicated runners:
+  #   scripts/run-lock-puzzle-smoke.js   (mock, hermetic, free — task #2)
+  #   scripts/run-lock-puzzle-paid.js    (claude-code/sonnet, two-stage — task #4)
+  # which thread state.lock {arm, probeItems, oracleKey, misconceptionFamily,
+  # …} directly into buildGraph({architecture:'lock_puzzle'}). The adaptive
+  # runner (services/adaptiveTutor/runner.js#baseInitialState) never seeds the
+  # lock channel, so graph.js#movePolicySelect FAIL-LOUD-rejects an unseeded
+  # lock — an accidental `eval-cli run --profiles cell_133…` aborts with a
+  # clear message instead of silently writing all-zero rows to the prod DB
+  # (eval-cli --dry-run on adaptive cells writes the prod DB; see project
+  # memory). The arm is a RUNNER PARAMETER (A1_no_memory / A2_persistent /
+  # A3_oracle), not a cell factor — these IDs exist solely for the §6
+  # traceability mandate and paper Appendix D run-ID provenance. The single
+  # generation model is claude-code/sonnet (D6); arms differ ONLY in the
+  # cross-session move-efficacy memory channel (§6), not in any cell config.
+  cell_133_a17_lock_A1_no_memory:
+    description: "A17 (§6) arm A1 — no-memory control (locator floor). PROVENANCE ONLY: driven by scripts/run-lock-puzzle-paid.js (arm=A1_no_memory), NOT eval-cli. Move-efficacy table wiped every session (cold start); predicted held-out unlock-rate flat across the stream. Judge-free outcome (out-of-band misconception-keyed MCQ panel, deterministic exact-match scoring). claude-code/sonnet (D6). LOCKED 2026-05-19."
+    provenance_only: true
+  cell_134_a17_lock_A2_persistent:
+    description: "A17 (§6) arm A2 — persistent-memory (THE construct / the test). PROVENANCE ONLY: driven by scripts/run-lock-puzzle-paid.js (arm=A2_persistent), NOT eval-cli. Move-efficacy table persists across sessions and conditions move selection; predicted held-out unlock-rate rises across the stream (tutor-side cross-session learning, judge-free). claude-code/sonnet (D6). LOCKED 2026-05-19."
+    provenance_only: true
+  cell_135_a17_lock_A3_oracle:
+    description: "A17 (§6) arm A3 — key-injected oracle (solvability ceiling). PROVENANCE ONLY: driven by scripts/run-lock-puzzle-paid.js (arm=A3_oracle), NOT eval-cli. Tutor plays the scenario-supplied oracleKey (bypasses the move-efficacy store); predicted held-out unlock-rate at ceiling — interprets the A1/A2 magnitudes. claude-code/sonnet (D6). LOCKED 2026-05-19."
+    provenance_only: true

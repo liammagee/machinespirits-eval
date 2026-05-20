@@ -250,6 +250,16 @@ export const EVAL_ONLY_PROFILES = [
   'cell_131_a16_A_egosuperego',
   // A16 (P3) §6.3.10 — F (floor) arm: recognition_only, byte-identical to cell_111 (new cell, NOT cell_111; protects A13 C1 provenance; named deviation, Appendix E)
   'cell_132_a16_F_recognition_only',
+  // A17 speech-act-lock (notes/design-a17-speech-act-lock-prototype.md §6,
+  // LOCKED 2026-05-19). PROVENANCE ONLY — these three cells are NOT
+  // eval-cli-runnable: the lock channel (arm/probeItems/oracleKey) is seeded
+  // exclusively by scripts/run-lock-puzzle-{smoke,paid}.js (graph.js's
+  // movePolicySelect fail-loud-rejects an unseeded lock so an accidental
+  // `eval-cli run` cannot write all-zero rows to the prod DB). Registered for
+  // the §6 traceability mandate + paper Appendix D run-ID provenance.
+  'cell_133_a17_lock_A1_no_memory',
+  'cell_134_a17_lock_A2_persistent',
+  'cell_135_a17_lock_A3_oracle',
 ];
 
 /**

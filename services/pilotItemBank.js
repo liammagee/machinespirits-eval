@@ -18,8 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 
-const ITEMS_PATH = process.env.PILOT_ITEMS_PATH
-  || path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
+const ITEMS_PATH = process.env.PILOT_ITEMS_PATH || path.join(ROOT_DIR, 'config', 'pilot', 'fractions-items.yaml');
 
 let cache = null;
 
@@ -79,23 +78,32 @@ export function getItemsForSession(sessionId, phase) {
   };
 }
 
-// Server-side scoring: for each submitted response, look up the item in the
-// session's form and check value === correct. Returns the responses array
-// shaped for pilotStore.recordTestResponses (with is_correct populated).
-export function scoreResponses(sessionId, phase, responses) {
+// The judge-free predicate, decoupled from the human-pilot form machinery.
+// Given an explicit items array (each at least {id, correct}) and a responses
+// array, return the is_correct shape — deterministic case-insensitive
+// exact-match of chosen value vs `correct`, NO LLM, no session, no forms.A/B.
+//
+// This is the single audited scoring predicate. scoreResponses() (the human
+// pilot path) layers form-counterbalancing on top and delegates here; A17's
+// lock-probe harness scores its freshly-authored misconception-keyed panel
+// through here directly (notes/design-a17-speech-act-lock-prototype.md §3.3).
+// One predicate, two callers — so "judge-free" stays verifiable by reading
+// one function (the §2 anti-closed-loop requirement).
+export function scoreResponsesRaw(items, responses) {
+  if (!Array.isArray(items)) {
+    throw new Error('items must be an array');
+  }
   if (!Array.isArray(responses)) {
     throw new Error('responses must be an array');
   }
-  const items = loadItems();
-  const form = getFormForPhase(sessionId, phase);
-  const list = items.forms[form];
-  const byId = new Map(list.map((it) => [it.id, it]));
+  const byId = new Map(items.map((it) => [it.id, it]));
 
   return responses.map((r, idx) => {
     const item = byId.get(r.item_id);
-    const isCorrect = item && r.response_value !== undefined && r.response_value !== null
-      ? String(r.response_value).toLowerCase() === String(item.correct).toLowerCase()
-      : null;
+    const isCorrect =
+      item && r.response_value !== undefined && r.response_value !== null
+        ? String(r.response_value).toLowerCase() === String(item.correct).toLowerCase()
+        : null;
     return {
       item_id: r.item_id,
       item_position: r.item_position ?? idx,
@@ -106,6 +114,19 @@ export function scoreResponses(sessionId, phase, responses) {
   });
 }
 
+// Server-side scoring: for each submitted response, look up the item in the
+// session's form and check value === correct. Returns the responses array
+// shaped for pilotStore.recordTestResponses (with is_correct populated).
+export function scoreResponses(sessionId, phase, responses) {
+  if (!Array.isArray(responses)) {
+    throw new Error('responses must be an array');
+  }
+  const items = loadItems();
+  const form = getFormForPhase(sessionId, phase);
+  const list = items.forms[form];
+  return scoreResponsesRaw(list, responses);
+}
+
 export default {
   loadItems,
   clearCache,
@@ -113,4 +134,5 @@ export default {
   getFormForPhase,
   getItemsForSession,
   scoreResponses,
+  scoreResponsesRaw,
 };

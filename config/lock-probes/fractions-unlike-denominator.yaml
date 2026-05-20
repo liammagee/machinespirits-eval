@@ -1,0 +1,137 @@
+# Lock probe — fractions, unlike-denominator "add-both" misconception
+# A17 speech-act-lock prototype · notes/design-a17-speech-act-lock-prototype.md §3.1/§3.3
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# This is NOT config/pilot/fractions-items.yaml (that bank is flagged
+# "placeholder, NOT FOR DATA COLLECTION" and awaits NAEP items for the human
+# pilot's IRB). This file is a FRESHLY AUTHORED, synthetic-only probe: the
+# learner is an LLM, so no human-subjects inference rides on item psychometrics
+# — the probe only needs to be a JUDGE-FREE discriminator of whether the
+# unlike-denominator "add numerators AND denominators" misconception is resolved.
+#
+# Scoring contract: the deterministic exact-match predicate of
+# services/pilotItemBank.js#scoreResponses — string-equality of the learner's
+# chosen value vs `correct`. No LLM in the scoring path, by construction. The
+# A/B session-parity form machinery in pilotItemBank is human-pilot-specific and
+# is NOT used here; task #2 wiring reuses only the pure (id, correct) match.
+#
+# Misconception-keyed distractor (defeats the guessing floor): every item
+# carries `misconception_distractor` = the value the misconception itself
+# produces, i.e. (n1+n2)/(d1+d2). A learner still holding the misconception is
+# SYSTEMATICALLY wrong (selects that value), not randomly wrong — so unlock
+# measures "stopped selecting the misconception answer," and the §3.3 criterion
+# (3-item panel, all correct, k=2 consecutive turns) closes the residual luck
+# window. The analyzer (task #5) may weight distance-to-unlock by whether a
+# wrong answer is the keyed distractor (still-misconceived) vs an "other" slip.
+#
+# Probe is posed OUT-OF-BAND by the harness each turn (never enters
+# tutor-visible dialogue context). Authored before the tutor sees any scenario.
+# ─────────────────────────────────────────────────────────────────────────────
+
+meta:
+  probe_set: fractions-unlike-denominator
+  misconception: "unlike-denominator addition computed as (n1+n2)/(d1+d2)"
+  panel_size: 3                # §3.3: 3 items sampled per probe panel
+  authored_before_tutor: true
+  visible_to_tutor: false
+  scoring: deterministic-exact-match   # services/pilotItemBank.js#scoreResponses contract; NOT llm
+
+items:
+  - id: fr-ud-001
+    type: conceptual
+    stem: "What is 1/2 + 1/3?"
+    choices:
+      - { value: a, label: "2/5" }
+      - { value: b, label: "5/6" }
+      - { value: c, label: "2/6" }
+      - { value: d, label: "1/6" }
+    correct: b
+    misconception_distractor: a   # (1+1)/(2+3) = 2/5
+
+  - id: fr-ud-002
+    type: conceptual
+    stem: "What is 1/3 + 1/4?"
+    choices:
+      - { value: a, label: "7/12" }
+      - { value: b, label: "2/7" }
+      - { value: c, label: "2/12" }
+      - { value: d, label: "1/7" }
+    correct: a
+    misconception_distractor: b   # (1+1)/(3+4) = 2/7
+
+  - id: fr-ud-003
+    type: conceptual
+    stem: "What is 2/3 + 1/4?"
+    choices:
+      - { value: a, label: "3/7" }
+      - { value: b, label: "3/12" }
+      - { value: c, label: "11/12" }
+      - { value: d, label: "2/12" }
+    correct: c
+    misconception_distractor: a   # (2+1)/(3+4) = 3/7
+
+  - id: fr-ud-004
+    type: conceptual
+    stem: "What is 1/2 + 1/5?"
+    choices:
+      - { value: a, label: "2/7" }
+      - { value: b, label: "2/10" }
+      - { value: c, label: "1/7" }
+      - { value: d, label: "7/10" }
+    correct: d
+    misconception_distractor: a   # (1+1)/(2+5) = 2/7
+
+  - id: fr-ud-005
+    type: conceptual
+    stem: "What is 3/4 + 1/6?"
+    choices:
+      - { value: a, label: "11/12" }
+      - { value: b, label: "4/10" }
+      - { value: c, label: "4/24" }
+      - { value: d, label: "3/24" }
+    correct: a
+    misconception_distractor: b   # (3+1)/(4+6) = 4/10
+
+  - id: fr-ud-006
+    type: conceptual
+    stem: "What is 1/3 + 2/5?"
+    choices:
+      - { value: a, label: "3/8" }
+      - { value: b, label: "11/15" }
+      - { value: c, label: "3/15" }
+      - { value: d, label: "2/15" }
+    correct: b
+    misconception_distractor: a   # (1+2)/(3+5) = 3/8
+
+  - id: fr-ud-007
+    type: conceptual
+    stem: "What is 2/5 + 1/2?"
+    choices:
+      - { value: a, label: "9/10" }
+      - { value: b, label: "3/7" }
+      - { value: c, label: "3/10" }
+      - { value: d, label: "2/10" }
+    correct: a
+    misconception_distractor: b   # (2+1)/(5+2) = 3/7
+
+  - id: fr-ud-008
+    type: conceptual
+    stem: "What is 1/4 + 2/3?"
+    choices:
+      - { value: a, label: "3/12" }
+      - { value: b, label: "11/12" }
+      - { value: c, label: "3/7" }
+      - { value: d, label: "2/12" }
+    correct: b
+    misconception_distractor: c   # (1+2)/(4+3) = 3/7
+
+  - id: fr-ud-009
+    type: conceptual
+    stem: "What is 3/5 + 1/4?"
+    choices:
+      - { value: a, label: "4/9" }
+      - { value: b, label: "4/20" }
+      - { value: c, label: "17/20" }
+      - { value: d, label: "3/20" }
+    correct: c
+    misconception_distractor: a   # (3+1)/(5+4) = 4/9

@@ -77,6 +77,9 @@ import { createHash } from 'crypto';
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AdaptiveTutorState } from './stateSchema.js';
 import { callRole } from './llm.js';
+import { LOCK_PUZZLE_MOVES } from './lockPuzzleMoves.js';
+import { selectMove as efficacySelectMove, recordOutcome as efficacyRecordOutcome } from './moveEfficacyStore.js';
+import { scoreResponsesRaw } from '../pilotItemBank.js';
 
 const SUPPORTED_ARCHITECTURES = Object.freeze([
   'recognition_only',
@@ -142,6 +145,21 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   // ego node are byte-identical across the two arms (validity control).
   'superego_revise_stateless',
   'superego_revise_cumulative',
+  // A17 speech-act-lock prototype (notes/design-a17-speech-act-lock-prototype.md).
+  // A judge-free successor construct, NOT a rescue of the §6.9/§6.10 nulls.
+  //   movePolicySelect → tutorMoveRealise → tutorEmit → probeHarness → learnerTurn
+  // movePolicySelect picks a §4 speech-act move: A3_oracle forces the
+  // scenario-supplied oracleKey; A1/A2 consult the persisted move-efficacy
+  // bandit (moveEfficacyStore). tutorMoveRealise renders the move as NL (the
+  // move label is internal — never the outcome channel). probeHarness poses
+  // the misconception-keyed MCQ panel OUT OF BAND (never appended to
+  // `dialogue`, so the tutor is structurally blind to its own gate — §2/§3.3)
+  // and server-scores it via pilotItemBank.scoreResponsesRaw. The arms differ
+  // ONLY in the cross-session move table channel (A1 wiped per session, A2
+  // persistent, A3 bypasses it) — that channel difference IS the pre-
+  // registered contrast (§6). Excluded from ARCHITECTURES_WITH_PROFILE_UPDATE
+  // (no learnerProfileUpdate node — counterfactual replay is N/A by design).
+  'lock_puzzle',
 ]);
 export { SUPPORTED_ARCHITECTURES };
 
@@ -447,6 +465,205 @@ async function tutorEmit(state) {
   return { dialogue: [{ role: 'tutor', content: finalText }] };
 }
 
+// ── A17 lock-puzzle nodes ────────────────────────────────────────────────
+//
+// Deterministic-yet-stochastic RNG: mulberry32 seeded off a string hash of
+// (salt, arm, sessionIndex, turn). The ε-greedy bandit and the probe-panel
+// sampler are GENUINELY stochastic (exploration is the mechanism), but the
+// hermetic smoke must be byte-reproducible (§7). A per-(arm,session,turn)
+// seed gives both: a fixed but random-looking draw sequence that differs
+// across turns/sessions/arms and repeats exactly on re-run. Distinct salts
+// keep the move draw and the panel draw independent.
+function mulberry32(seedInt) {
+  let a = seedInt >>> 0;
+  return function next() {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededRng(salt, lock, turn) {
+  const key = `${salt}|${lock?.arm || ''}|${lock?.sessionIndex ?? 0}|${turn}`;
+  const h = parseInt(createHash('sha1').update(key).digest('hex').slice(0, 8), 16);
+  return mulberry32(h);
+}
+
+// Learner-state bucket (§5): the count of probe sub-skills passed on the most
+// recent panel (0 before any probe). Pre-resolution this is 0; once the
+// misconception resolves it jumps to panelSize. Keying the bandit cell on it
+// keeps "which move opens the lock FROM the unresolved state" the learned
+// quantity — not an average smeared across already-solved turns.
+function lockStateBucket(state) {
+  const log = state.probeLog || [];
+  if (log.length === 0) return 0;
+  return Math.max(0, log[log.length - 1].passed | 0);
+}
+
+// movePolicySelect — the ONLY place the three arms differ.
+//
+// A3_oracle: bypasses the move-efficacy store entirely and plays the
+//   scenario-supplied oracleKey (clamped to its last element once exhausted).
+//   The key comes from the SCENARIO config threaded onto state.lock — NOT
+//   from MISCONCEPTION_KEYS (that map is the mock LEARNER's resolve rule; the
+//   tutor/graph must never read the answer key — §3.1/§3.2).
+// A1_no_memory / A2_persistent: ε-greedy over the frozen §4 vocabulary via
+//   moveEfficacyStore.selectMove, conditioned on the learner-state bucket.
+//   The store is identical for both; the SMOKE wipes it between sessions for
+//   A1 and never for A2 — that wipe-vs-persist is the entire pre-registered
+//   memory-channel contrast (§6). recordOutcome is deferred to probeHarness
+//   (the reward Δ(passed) is only knowable after the panel is scored).
+async function movePolicySelect(state) {
+  const lock = state.lock || {};
+  // Fail-loud guard against accidental eval-cli/runner.js dispatch. The
+  // lock-puzzle channel (arm, probeItems, oracleKey, misconceptionFamily) is
+  // seeded ONLY by the dedicated runners (scripts/run-lock-puzzle-{smoke,paid}.js),
+  // which always set lock.enabled:true. runner.js#baseInitialState never sets
+  // it, so a cell_133/134/135 invoked via `eval-cli run` would otherwise run
+  // this graph with an empty lock and silently write all-zero rows to the
+  // PROD evaluations.db (eval-cli --dry-run on adaptive cells writes the prod
+  // DB — see project memory). Cells 133-135 are registered for provenance
+  // only; they are NOT eval-cli-runnable by construction. Refuse loudly here.
+  if (lock.enabled !== true) {
+    throw new Error(
+      'lock_puzzle: state.lock.enabled is not true. This architecture is driven ONLY by ' +
+        'scripts/run-lock-puzzle-{smoke,paid}.js (which seed the lock channel). It is NOT ' +
+        'runnable via eval-cli / the adaptive runner (runner.js does not seed state.lock). ' +
+        'Cells cell_133/134/135 exist for paper provenance only — use the dedicated runner.',
+    );
+  }
+  const turn = state.turn;
+  const bucket = lockStateBucket(state);
+  let move;
+
+  if (lock.arm === 'A3_oracle') {
+    const key = Array.isArray(lock.oracleKey) ? lock.oracleKey : [];
+    if (key.length === 0) {
+      throw new Error('lock_puzzle A3_oracle: scenario supplied no oracleKey to play');
+    }
+    move = key[Math.min(turn, key.length - 1)];
+  } else {
+    const rng = seededRng('move', lock, turn);
+    move = efficacySelectMove({
+      family: lock.misconceptionFamily || 'unknown',
+      recentNgram: '', // MVP unigram (§5); the n>1 column exists for forward-compat
+      stateBucket: bucket,
+      candidateMoves: LOCK_PUZZLE_MOVES,
+      epsilon: typeof lock.epsilon === 'number' ? lock.epsilon : 0.1,
+      rng,
+    });
+  }
+
+  return {
+    tutorInternal: { ...state.tutorInternal, selectedMove: move, egoDraft: '', egoRevision: '' },
+    moveLog: [{ turn, move, stateBucket: bucket }],
+  };
+}
+
+// tutorMoveRealise — render the chosen move as a tutor utterance. Under mock
+// this is a deterministic per-move template (mockLLM.tutorMoveRealise); at
+// the real paid run it is a live LLM prompt that MUST NOT leak the move
+// label. Either way the move label travels in moveLog, never in `dialogue`
+// or the probe path, so the deterministic learner keys on the move, never on
+// realised prose (§3.3 — performance-resistant by construction).
+async function tutorMoveRealise(state) {
+  const out = await callRole('tutorMoveRealise', {
+    selectedMove: state.tutorInternal.selectedMove,
+    dialogue: state.dialogue,
+    turn: state.turn,
+  });
+  // Mock backend returns { text }; the real backend (schema null) returns a
+  // bare trimmed string. Accept both — the same "consumers accept both
+  // shapes" symmetry the tutor/learner trace labels use (CLAUDE.md). The move
+  // label is NOT in `out` (mock's [mock:…] tag is trace-only and the real
+  // prompt is forbidden from naming the move); it stays in moveLog.
+  const draft = typeof out === 'string' ? out : (out?.text ?? '');
+  return { tutorInternal: { ...state.tutorInternal, egoDraft: draft } };
+}
+
+// Sample `panelSize` items without replacement from the probe set, seeded so
+// the panel is reproducible per (arm, session, turn) but varies turn-to-turn
+// (a fixed panel would let a lucky single guess ride forever; rotating it is
+// part of the §3.3 luck-window close, alongside k consecutive).
+function samplePanel(probeItems, panelSize, rng) {
+  const items = Array.isArray(probeItems) ? probeItems.slice() : [];
+  if (items.length <= panelSize) return items;
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items.slice(0, panelSize);
+}
+
+// probeHarness — the judge-free outcome channel. Runs AFTER tutorEmit, BEFORE
+// learnerTurn. The tutor never sees this node's input or output: it writes
+// only `probeLog` (never `dialogue`), so blindness is graph topology, not a
+// convention. Scoring is the single audited deterministic predicate
+// pilotItemBank.scoreResponsesRaw — no LLM in the scoring path (§2).
+//
+// Reward = Δ(panel sub-skills passed) attributed to THIS turn's move (read
+// off moveLog's tail, which movePolicySelect appended this turn). Recorded
+// to the move-efficacy store for A1/A2 only — A3 bypasses the store (§6).
+async function probeHarness(state) {
+  const lock = state.lock || {};
+  const turn = state.turn;
+  const panelSize = lock.panelSize || 3;
+  const rng = seededRng('probe', lock, turn);
+  const panel = samplePanel(lock.probeItems, panelSize, rng);
+
+  // Superset payload: the mock builder reads { probeItems, lock, moveLog }
+  // (its deterministic resolve rule keys on the played moves); the real
+  // builder reads { probeItems, dialogue, hidden, turn } and strips the
+  // scoring keys, IGNORING lock/moveLog so the real learner never sees the
+  // move sequence/arm/oracleKey — it answers from the dialogue's effect on
+  // understanding only (§3.3). One payload, two backends, no shape branching.
+  const out = await callRole('learnerProbe', {
+    probeItems: panel,
+    lock,
+    moveLog: state.moveLog || [],
+    turn,
+    dialogue: state.dialogue,
+    hidden: state.hiddenLearnerState,
+  });
+  const scored = scoreResponsesRaw(panel, out?.responses || []);
+  const passed = scored.filter((s) => s.is_correct === true).length;
+  const allCorrect = panel.length > 0 && passed === panel.length;
+
+  const prevLog = state.probeLog || [];
+  const prevPassed = prevLog.length ? prevLog[prevLog.length - 1].passed | 0 : 0;
+  const reward = passed - prevPassed;
+
+  const moveLog = state.moveLog || [];
+  const played = moveLog.length ? moveLog[moveLog.length - 1] : null;
+  if (played && lock.arm !== 'A3_oracle') {
+    efficacyRecordOutcome({
+      family: lock.misconceptionFamily || 'unknown',
+      recentNgram: '',
+      candidateMove: played.move,
+      stateBucket: played.stateBucket | 0,
+      reward,
+    });
+  }
+
+  return {
+    probeLog: [
+      {
+        turn,
+        stream: lock.stream || '',
+        panelItemIds: panel.map((it) => it.id),
+        responses: out?.responses || [],
+        scored,
+        passed,
+        panelSize: panel.length,
+        allCorrect,
+        reward,
+      },
+    ],
+  };
+}
+
 // A14 Stage 2a: evidence extractor node. Reads the most recent learner
 // message from state.dialogue, calls the extractor role for typed
 // observations, then runs each one through the quote-validation gate
@@ -638,6 +855,28 @@ export function buildGraph(options = {}) {
     throw new Error(
       `buildGraph: unsupported architecture "${architecture}". Expected one of: ${SUPPORTED_ARCHITECTURES.join(', ')}`,
     );
+  }
+
+  if (architecture === 'lock_puzzle') {
+    // A17: linear per-turn chain, looped until maxTurns. No superego, no
+    // constraint check, no learnerProfileUpdate (so no counterfactual fork
+    // point — by design; runner.js's ARCHITECTURES_WITH_PROFILE_UPDATE
+    // excludes this). The probe runs AFTER tutorEmit so the panel scores the
+    // turn the tutor just took; learnerTurn keeps the dialogue advancing so
+    // the realised move has something to answer (its prose is irrelevant to
+    // the outcome — only the OUT-OF-BAND probe is, §3.3).
+    return new StateGraph(AdaptiveTutorState)
+      .addNode('movePolicySelect', movePolicySelect)
+      .addNode('tutorMoveRealise', tutorMoveRealise)
+      .addNode('tutorEmit', tutorEmit)
+      .addNode('probeHarness', probeHarness)
+      .addNode('learnerTurn', learnerTurn)
+      .addEdge(START, 'movePolicySelect')
+      .addEdge('movePolicySelect', 'tutorMoveRealise')
+      .addEdge('tutorMoveRealise', 'tutorEmit')
+      .addEdge('tutorEmit', 'probeHarness')
+      .addEdge('probeHarness', 'learnerTurn')
+      .addConditionalEdges('learnerTurn', routeAfterLearner('movePolicySelect'), ['movePolicySelect', END]);
   }
 
   if (architecture === 'recognition_only') {

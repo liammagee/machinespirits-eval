@@ -510,6 +510,30 @@ const learnerProfileUpdateOut = z.object({
   lastEvidence: z.string().default(''),
 });
 
+// A17 lock-puzzle: the synthetic learner's answers to the out-of-band
+// misconception-keyed MCQ panel (notes/design-a17-speech-act-lock-prototype.md
+// §3.3). This is the judge-free outcome channel's ONLY LLM call — the scoring
+// itself is the deterministic exact-match predicate pilotItemBank.scoreResponsesRaw
+// (no LLM in the scoring path, §2/§3.3). The mock analogue (mockLLM.learnerProbe)
+// returns the same { responses: [{ item_id, response_value }] } shape; the real
+// learner must produce it from its induced understanding of the dialogue, never
+// from a scoring key (the builder strips `correct`/`misconception_distractor`
+// before the items reach the model — see userPromptBuilders.learnerProbe). The
+// graph reads `out.responses` identically for both backends (graph.js
+// probeHarness), so no graph-side shape branching is needed on the probe path.
+// response_value is the chosen option's `value` (e.g. "a".."d"); scoreResponsesRaw
+// lower-cases both sides before comparing, so casing here is not load-bearing.
+const learnerProbeOut = z.object({
+  responses: z
+    .array(
+      z.object({
+        item_id: z.string().min(1),
+        response_value: z.string().min(1),
+      }),
+    )
+    .default([]),
+});
+
 // Id-author output. Reuses the id-director construction envelope shape so
 // services/idDirectorEngine.js parseIdConstruction stays the canonical parser.
 // MIN length matches the existing engine's minimum (anything shorter is a
@@ -1086,6 +1110,82 @@ You are given the tutor's most recent message and a hidden state describing your
 
 Output the learner's message text directly, no surrounding markup.`;
 
+// A17 lock-puzzle (notes/design-a17-speech-act-lock-prototype.md §3.1/§3.2,
+// §4). Realises the move the bandit/oracle picked as a natural tutor turn.
+// Construct-critical invariants encoded here:
+//  - The move LABEL must never appear in the output. It travels in moveLog,
+//    never in `dialogue` (graph topology), so the out-of-band learner-probe
+//    keys on comprehension, not on a leaked tag — performance-resistant by
+//    construction (§3.3). No "I'll use a counterexample…" meta-narration.
+//  - Tutor blindness: this role is given the dialogue + the chosen move only.
+//    It is NOT given the learner's hidden misconception/sophistication, the
+//    probe panel, or any answer key (§3.1/§3.2) — the graph node passes none
+//    of them.
+//  - Domain-agnostic: the misconception domain (fractions now; signed numbers
+//    is the scheduled D9 second domain) is whatever the dialogue is about.
+//    The directives describe each move as a speech act, not a fractions
+//    script — so the same frozen vocabulary realises on either domain without
+//    edits (the §4 freeze holds across D9).
+// The arms differ ONLY in which move is selected (the cross-session memory
+// channel, §6); realisation quality is held identical across arms by using
+// one fixed prompt — so this prompt instructs "enact the chosen move as well
+// as a skilled tutor would," equally for every move.
+const TUTOR_MOVE_REALISE_SYSTEM = `You are a one-on-one tutor. You have already decided, internally, which single pedagogical move to make this turn. Your only job now is to SAY it: produce the actual tutor utterance that enacts that move, responding to what the learner just said in the dialogue.
+
+You will be given the dialogue so far and the name of the move to enact. Enact exactly that move — concretely, specifically, and as effectively as a skilled tutor would, grounded in the learner's most recent message and the topic the dialogue is actually about.
+
+The eleven moves (enact only the one you are given):
+- elicit — Ask the learner to produce or commit to an answer or a step.
+- revoice — Restate the learner's contribution back to them, sharpened.
+- counterexample — Present a concrete case where the learner's rule visibly fails.
+- analogy — Map the problem onto a familiar structure.
+- decompose — Break the task into one smaller sub-step and ask only that.
+- name-the-confusion — State the suspected misconception explicitly and plainly.
+- destabilise — Productively challenge a certainty the learner has stated.
+- concede — Grant a partial point to lower the learner's defensiveness.
+- raise-stakes — Add a consequence or a why-it-matters frame.
+- hand-back — Return agency: give them the next one to try themselves.
+- probe-belief — Ask WHY the learner thinks their answer holds.
+
+Hard constraints:
+- Never name the move, number it, or narrate your pedagogical intent ("Let's try a counterexample", "Now I'll…"). Just speak as the tutor.
+- One short tutor turn (1–4 sentences). No lists, no headings, no JSON, no preamble.
+- You do not know the learner's hidden state and you are not shown any answer key. Work only from the dialogue.
+Output the tutor's message text directly, nothing else.`;
+
+// A17 lock-puzzle (notes/design-a17-speech-act-lock-prototype.md §3.3). THE
+// judge-free outcome channel's only LLM call. This is the SAME synthetic
+// learner persona as learnerTurn, now answering an out-of-band multiple-choice
+// panel about the underlying skill. The closed-loop confound the entire A17
+// design exists to escape would silently return if this role could see the
+// scoring key — so:
+//  - The user builder strips `correct` and `misconception_distractor` from
+//    every item before it reaches the model (userPromptBuilders.learnerProbe).
+//    The learner sees only { id, stem, choices:[{value,label}] }.
+//  - It is NOT shown moveLog or the lock channel (no leaked move sequence,
+//    arm, oracleKey, or misconception family) — answers must come from the
+//    dialogue's effect on understanding, never from the procedure that
+//    produced it. The graph node does not pass them to the real builder.
+//  - It IS shown the hidden state, because it is the same novice persona: an
+//    untaught novice authentically computes the misconception's answer and
+//    selects that option because that is what their method yields — not
+//    because they were told it is the "wrong" one.
+// Scoring is downstream and deterministic (pilotItemBank.scoreResponsesRaw);
+// this role does not grade and is never told what counts as correct.
+const LEARNER_PROBE_SYSTEM = `You are the same learner from the tutoring dialogue. The dialogue has paused and someone is asking you a few quick multiple-choice questions on the underlying skill. Answer each one exactly the way YOU would right now — not the way you think is "expected".
+
+You will be given: the dialogue so far, your hidden state (the method you actually use for these problems and your sophistication level), and a list of questions. Each question has a stem and labelled choices.
+
+How to answer:
+- Use whatever method you currently believe is correct to work out each question, then pick the choice that matches the value your method produces. If no choice matches exactly, pick the closest.
+- Your method changes ONLY if the dialogue genuinely changed it: the tutor's messages must have actually made you see why your old method was wrong AND shown you a method you now understand well enough to use. A confusing hint, a question you never resolved, a counterexample you didn't actually follow, or just saying "ok" without real understanding does NOT change your method — keep applying your original method honestly in that case, even if the answer it gives "looks off". You do not know it is wrong; that is the whole point of holding it.
+- The hidden state describes how you actually do these problems right now. It is not a hint about which choice to pick — never invert it or pick "the other one" because it is labelled a misconception. Just apply your current method.
+- You are not being graded and there is no answer key in front of you. Do not reverse-engineer an intended answer.
+
+Output STRICT JSON only, no prose, no code fences:
+{"responses":[{"item_id":"<the item's id>","response_value":"<the value of your chosen choice>"}]}
+Include exactly one entry per question, using the choice's value (e.g. "a"), not its label.`;
+
 // ---------------------------------------------------------------------------
 // User-prompt builders (compact JSON payloads — easier for models to parse)
 // ---------------------------------------------------------------------------
@@ -1339,6 +1439,41 @@ const userPromptBuilders = {
   },
 
   learnerTurn: ({ tutorLastMessage, hidden, turn }) => ub({ tutorLastMessage, hidden, turn }),
+
+  // A17 lock-puzzle: realise the chosen §4 move. Gets the dialogue (for a
+  // responsive utterance) + the move + turn. Deliberately NOT given `hidden`,
+  // the probe panel, or any answer key — tutor blindness is enforced here by
+  // simply not threading them (the graph node passes only these three). The
+  // dialogue is compacted to role/content so a long history is cheap and the
+  // model is not tempted to parse incidental fields.
+  tutorMoveRealise: ({ selectedMove, dialogue, turn }) =>
+    ub({
+      move: selectedMove,
+      turn,
+      dialogue: (dialogue || []).map((m) => ({ role: m.role, content: m.content })),
+    }),
+
+  // A17 lock-puzzle: the synthetic learner answering the out-of-band MCQ
+  // panel. CONSTRUCT-CRITICAL: strip `correct` and `misconception_distractor`
+  // from every item — the learner must answer from induced understanding, and
+  // seeing the key would silently reinstate the closed-loop confound the whole
+  // design escapes (§3.3). `lock` and `moveLog` are intentionally not read
+  // even though the graph node passes them (the mock builder needs them; the
+  // real learner must not see the move sequence/arm/oracleKey — answers from
+  // the dialogue's effect only). `hidden` IS passed: this is the same novice
+  // persona as learnerTurn, and an untaught novice authentically selects the
+  // misconception's own answer because that is what its method yields.
+  learnerProbe: ({ probeItems, dialogue, hidden, turn }) =>
+    ub({
+      turn,
+      hiddenSelf: hidden,
+      dialogue: (dialogue || []).map((m) => ({ role: m.role, content: m.content })),
+      questions: (probeItems || []).map((it) => ({
+        id: it.id,
+        stem: it.stem,
+        choices: (it.choices || []).map((c) => ({ value: c.value, label: c.label })),
+      })),
+    }),
 };
 
 const systemPrompts = {
@@ -1356,6 +1491,8 @@ const systemPrompts = {
   groundingValidator: GROUNDING_VALIDATOR_SYSTEM,
   superegoRevise: SUPEREGO_REVISE_SYSTEM,
   learnerTurn: LEARNER_TURN_SYSTEM,
+  tutorMoveRealise: TUTOR_MOVE_REALISE_SYSTEM,
+  learnerProbe: LEARNER_PROBE_SYSTEM,
 };
 
 const responseSchemas = {
@@ -1375,6 +1512,12 @@ const responseSchemas = {
   groundingValidator: groundingValidatorOut,
   superegoRevise: superegoReviseOut,
   learnerTurn: null, // plain text
+  // tutorMoveRealise: schema null ⇒ callRole returns the bare trimmed string
+  // (the realised tutor utterance). graph.js#tutorMoveRealise normalises
+  // string|{text} so the mock ({text}) and real (string) backends are
+  // interchangeable.
+  tutorMoveRealise: null,
+  learnerProbe: learnerProbeOut,
 };
 
 // ---------------------------------------------------------------------------

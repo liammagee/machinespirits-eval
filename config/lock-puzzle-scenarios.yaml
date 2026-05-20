@@ -1,0 +1,305 @@
+# A17 speech-act-lock scenarios — notes/design-a17-speech-act-lock-prototype.md
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# Authored on the config/adaptive-trap-scenarios.yaml schema so the existing
+# loadScenarios() (services/adaptiveTutor/index.js) reads this file unchanged.
+# The A17-specific fields below — `stream`, `misconception_family`,
+# `oracle_key`, `unlock` — are NOT mapped by toRunnerScenario() (it
+# intentionally maps only id / hidden.* / opening_turns / max_turns and
+# silently drops the rest, §3.2). They are threaded onto state.lock by the
+# lock-puzzle harness (scripts/run-lock-puzzle-smoke.js at task #2; the paid
+# runner at task #4), reading them off the RAW yamlScenario in the outer loop.
+#
+# Two streams over the SAME misconception (fractions, unlike-denominator
+# "add-both"), different surface scenarios:
+#   - training  — memory accumulates here (A2 only); the smoke may warm A2 on
+#                  these before measuring held-out (a secondary transfer
+#                  diagnostic; the PRIMARY §8 outcome is held-out end-rate).
+#   - held_out  — the primary outcome is measured here. Transfer to UNSEEN
+#                  surface, SAME misconception is what distinguishes learning
+#                  from memorisation (the A1-doc held-out / transfer logic).
+#
+# `oracle_key` is the move sequence handed to A3 ONLY (the solvability
+# ceiling). It is a SCENARIO field — the tutor graph plays state.lock.oracleKey
+# and never consults MISCONCEPTION_KEYS (that map is the mock LEARNER's
+# resolve rule; the tutor must never read the answer key — §3.1/§3.2). The
+# canonical sharp key for this family is `counterexample` (1/2 + 1/2 = 1, not
+# 2/4), optionally reinforced by `name-the-confusion` (§3.1).
+#
+# `unlock` mirrors the §3.3 pre-registered predicate verbatim for provenance;
+# the operative copy the harness enforces is deriveUnlock() in
+# services/adaptiveTutor/lockPuzzleOutcome.js (panel all-correct for k
+# consecutive turns, k = D4 = 2). probe_set points at the freshly authored
+# misconception-keyed bank, NOT the placeholder human-pilot bank.
+# ─────────────────────────────────────────────────────────────────────────────
+
+meta:
+  suite: a17-speech-act-lock
+  misconception_family: fractions-unlike-denominator
+  probe_set: lock-probes/fractions-unlike-denominator
+  scoring: services/pilotItemBank.js#scoreResponsesRaw   # deterministic exact-match, NOT llm
+  authored_before_tutor: true
+  visible_to_tutor: false
+  unlock:
+    criterion:
+      panel_size: 3                          # §3.3
+      consecutive_turns_all_correct: 2        # k = D4
+
+scenarios:
+
+  # ── Training stream ─────────────────────────────────────────────────────
+  # Memory accumulates here for A2. Surfaces differ from held_out; the
+  # misconception (add numerators AND denominators) is identical.
+
+  - id: lp_train_recipe_v1
+    name: "Lock — recipe scaling (training)"
+    scenario_type: lock_puzzle
+    stream: training
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "So 1/2 cup plus 1/3 cup is 2/5 of a cup, right? Add the tops, add the bottoms."
+    opening_turns:
+      - role: learner
+        content: "I'm halving a recipe — it needs 1/2 cup oats and 1/3 cup flour. Combined that's 2/5 of a cup of dry stuff, isn't it?"
+    max_turns: 6
+
+  - id: lp_train_ribbon_v1
+    name: "Lock — ribbon lengths (training)"
+    scenario_type: lock_puzzle
+    stream: training
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "1/4 metre and 2/3 metre of ribbon is 3/7 of a metre total — numerator plus numerator, denominator plus denominator."
+    opening_turns:
+      - role: learner
+        content: "I have a 1/4 m piece of ribbon and a 2/3 m piece. Tied end to end that's 3/7 m, right?"
+    max_turns: 6
+
+  - id: lp_train_pizza_v1
+    name: "Lock — pizza shares (training)"
+    scenario_type: lock_puzzle
+    stream: training
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "I ate 1/3 of a pizza and you ate 1/4, so together we ate 2/7 of it."
+    opening_turns:
+      - role: learner
+        content: "I ate 1/3 of the pizza and you ate 1/4. Between us that's 2/7 of the pizza gone, yeah?"
+    max_turns: 6
+
+  # ── Held-out stream ─────────────────────────────────────────────────────
+  # The §8 primary outcome is measured here. Unseen surfaces; same
+  # misconception. Transfer to these — not memorisation of the training
+  # surfaces — is the construct's claim.
+
+  - id: lp_holdout_paint_v1
+    name: "Lock — paint mixing (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "1/2 litre of blue and 1/5 litre of white makes 2/7 litre of paint."
+    opening_turns:
+      - role: learner
+        content: "I'm mixing 1/2 L of blue with 1/5 L of white. That's 2/7 L of paint total, right?"
+    max_turns: 6
+
+  - id: lp_holdout_walk_v1
+    name: "Lock — walking distance (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "I walked 3/4 km then 1/6 km, so 4/10 km altogether."
+    opening_turns:
+      - role: learner
+        content: "I walked 3/4 km to the shop and 1/6 km back to the corner. That's 4/10 km in total, isn't it?"
+    max_turns: 6
+
+  - id: lp_holdout_battery_v1
+    name: "Lock — battery charge (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "The phone charged 1/3 then 2/5 more, so it's at 3/8 now."
+    opening_turns:
+      - role: learner
+        content: "My phone charged 1/3 of the way, then another 2/5. So it's at 3/8 charge now, right?"
+    max_turns: 6
+
+  - id: lp_holdout_garden_v1
+    name: "Lock — garden beds (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "1/2 the bed is carrots and 1/3 is beans, so 2/5 of it is planted."
+    opening_turns:
+      - role: learner
+        content: "Half the garden bed is carrots and a third is beans. So 2/5 of the bed is planted, yeah?"
+    max_turns: 6
+
+  # ── Held-out stream (continued) — +8 surfaces ──────────────────────────
+  # Task #4 step 4a: brings held-out 4 → 12 so the instrument matches the
+  # LOCKED D3 power model (12 puzzles × 8 runs ⇒ 96/arm; clusterDesignEffect
+  # m=8, 12 clusters) and the §8 D2 cluster-bootstrap has 12 (not 4) clusters.
+  # Implementing the registered design, NOT a §9 deviation. Same misconception
+  # (add numerators AND denominators); each surface a distinct everyday frame
+  # with a distinct unlike-denominator pair and its (n1+n2)/(d1+d2) wrong sum.
+
+  - id: lp_holdout_fueltank_v1
+    name: "Lock — fuel tank (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "Tank was 1/4 full, I added 3/5 of a tank, so it's 4/9 full now."
+    opening_turns:
+      - role: learner
+        content: "The tank was 1/4 full and I added 3/5 of a tank. That puts it at 4/9 full, right?"
+    max_turns: 6
+
+  - id: lp_holdout_rope_v1
+    name: "Lock — rope lengths (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "2/5 m of rope and 1/2 m of rope knotted together is 3/7 m."
+    opening_turns:
+      - role: learner
+        content: "I knotted a 2/5 m rope to a 1/2 m rope. End to end that's 3/7 m, isn't it?"
+    max_turns: 6
+
+  - id: lp_holdout_juice_v1
+    name: "Lock — juice mixing (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "1/2 L of juice and 2/7 L of water makes 3/9 L of drink."
+    opening_turns:
+      - role: learner
+        content: "I'm mixing 1/2 L of juice with 2/7 L of water. That's 3/9 L of drink total, right?"
+    max_turns: 6
+
+  - id: lp_holdout_fence_v1
+    name: "Lock — fence painting (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "Painted 5/6 of the front fence and 1/4 of the back, so 6/10 done overall."
+    opening_turns:
+      - role: learner
+        content: "I painted 5/6 of the front fence and 1/4 of the back one. That's 6/10 of the fencing done, yeah?"
+    max_turns: 6
+
+  - id: lp_holdout_book_v1
+    name: "Lock — book reading (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "Read 1/3 of the book Monday and 3/8 Tuesday, so 4/11 of it is read."
+    opening_turns:
+      - role: learner
+        content: "I read 1/3 of the book on Monday and 3/8 on Tuesday. So 4/11 of it is done, right?"
+    max_turns: 6
+
+  - id: lp_holdout_pond_v1
+    name: "Lock — pond filling (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "Pond filled 2/3 from the hose and 1/5 from rain, so it's at 3/8."
+    opening_turns:
+      - role: learner
+        content: "The pond filled 2/3 from the hose and another 1/5 from rain. So it's at 3/8 full, isn't it?"
+    max_turns: 6
+
+  - id: lp_holdout_cakebatter_v1
+    name: "Lock — cake batter (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "3/4 cup of flour and 2/5 cup of sugar is 5/9 cup of dry mix."
+    opening_turns:
+      - role: learner
+        content: "The batter needs 3/4 cup flour and 2/5 cup sugar. That's 5/9 cup of dry mix combined, right?"
+    max_turns: 6
+
+  - id: lp_holdout_cable_v1
+    name: "Lock — cable lengths (held-out)"
+    scenario_type: lock_puzzle
+    stream: held_out
+    misconception_family: fractions-unlike-denominator
+    oracle_key: [counterexample, name-the-confusion]
+    hidden:
+      actual_misconception: "adds unlike-denominator fractions as (n1+n2)/(d1+d2)"
+      actual_sophistication: novice
+      trigger_turn: 0
+      trigger_signal: "A 3/8 m cable joined to a 1/5 m cable is 4/13 m."
+    opening_turns:
+      - role: learner
+        content: "I joined a 3/8 m cable to a 1/5 m cable. That makes 4/13 m total, doesn't it?"
+    max_turns: 6

@@ -67,6 +67,13 @@ const tutorInternalSchema = z.object({
   superegoFeedback: z.string().default(''),
   egoRevision: z.string().default(''),
   policyAction: z.string().default(''),
+  // A17 lock-puzzle (architecture 'lock_puzzle'): the §4 speech-act move the
+  // movePolicySelect node chose this turn; tutorMoveRealise renders it as NL.
+  // A separate channel from policyAction (the trap-suite control label) so the
+  // two vocabularies never collide — lock_puzzle leaves policyAction '' and
+  // every other architecture leaves selectedMove '' (CLAUDE.md: never reuse a
+  // foreign/asymmetric label; add a parallel one).
+  selectedMove: z.string().default(''),
   idConstruction: idConstructionSchema.optional(),
   idAuthoredPrompt: z.string().default(''),
   // A16 (P2): the superego-authored ego system prompt for the
@@ -164,7 +171,79 @@ const revisionLedgerEntrySchema = z.object({
   promptDiffHead: z.string().default(''),
 });
 
-export { evidenceTypeSchema, evidenceEntrySchema, hypothesisStatusSchema, hypothesisSchema, revisionLedgerEntrySchema };
+// A17 lock-puzzle schemas (architecture 'lock_puzzle' only; every other
+// architecture leaves these channels at their defaults so they stay
+// schema-valid — same backward-compat posture as evidenceLog/revisionLedger).
+//
+// probeLog is the JUDGE-FREE outcome ledger: after each tutor turn the
+// probeHarness node poses the misconception-keyed MCQ panel to the learner
+// OUT OF BAND (never appended to `dialogue`, so the tutor is structurally
+// blind to it — §2/§3.3) and server-scores it via
+// services/pilotItemBank.js#scoreResponsesRaw. deriveUnlock()
+// (lockPuzzleOutcome.js) reads ONLY this. moveLog records the §4 move chosen
+// per turn so the deterministic mock learner and the analyzer see the move
+// history without parsing prose. lock carries the per-session config the
+// harness threads off the raw yamlScenario (the A17 fields toRunnerScenario
+// drops — §3.2).
+const probeLogEntrySchema = z.object({
+  turn: z.number().int(),
+  stream: z.string().default(''),
+  panelItemIds: z.array(z.string()).default(() => []),
+  responses: z.array(z.record(z.string(), z.unknown())).default(() => []),
+  scored: z.array(z.record(z.string(), z.unknown())).default(() => []),
+  passed: z.number().int().default(0),
+  panelSize: z.number().int().default(0),
+  allCorrect: z.boolean().default(false),
+  reward: z.number().default(0),
+});
+
+const moveLogEntrySchema = z.object({
+  turn: z.number().int(),
+  move: z.string(),
+  stateBucket: z.number().int().default(0),
+});
+
+const lockSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    arm: z.string().default(''), // A1_no_memory | A2_persistent | A3_oracle
+    misconceptionFamily: z.string().default(''),
+    stream: z.string().default(''), // training | held_out
+    // sessionIndex: this session's position in its stream. Used both to tag
+    // the unlock-rate trajectory (lockPuzzleOutcome.unlockRateTrajectory) and
+    // to seed the bandit/probe RNG deterministically per (arm, session, turn)
+    // — so the ε-greedy exploration is genuinely stochastic yet the hermetic
+    // smoke is byte-reproducible (§7: deterministic mock, floor/ceiling probe).
+    sessionIndex: z.number().int().default(0),
+    oracleKey: z.array(z.string()).default(() => []), // move sequence handed to A3 only
+    panelSize: z.number().int().default(3), // §3.3 criterion.panel_size
+    consecutiveK: z.number().int().default(2), // decision D4
+    epsilon: z.number().default(0.1),
+    probeItems: z.array(z.record(z.string(), z.unknown())).default(() => []),
+  })
+  .default(() => ({
+    enabled: false,
+    arm: '',
+    misconceptionFamily: '',
+    stream: '',
+    sessionIndex: 0,
+    oracleKey: [],
+    panelSize: 3,
+    consecutiveK: 2,
+    epsilon: 0.1,
+    probeItems: [],
+  }));
+
+export {
+  evidenceTypeSchema,
+  evidenceEntrySchema,
+  hypothesisStatusSchema,
+  hypothesisSchema,
+  revisionLedgerEntrySchema,
+  probeLogEntrySchema,
+  moveLogEntrySchema,
+  lockSchema,
+};
 
 export const initialLearnerProfile = () => learnerProfileSchema.parse({});
 export const initialTutorInternal = () => tutorInternalSchema.parse({});
@@ -232,6 +311,24 @@ export const AdaptiveTutorState = new StateSchema({
   // backward-compatible (default []).
   revisionLedger: new ReducedValue(
     z.array(revisionLedgerEntrySchema).default(() => []),
+    { reducer: evidenceLogReducer },
+  ),
+
+  // A17 lock-puzzle (architecture 'lock_puzzle'). lock = per-session config
+  // the harness threads off the raw yamlScenario; last-write-wins (the smoke
+  // seeds it in the initial state, nodes only read it). probeLog/moveLog =
+  // append-only per-turn ledgers (shared evidenceLogReducer — identical
+  // channel discipline to evidenceLog). All three sit at their defaults for
+  // every non-lock_puzzle architecture, so cells 110-132 stay schema-valid.
+  lock: new ReducedValue(lockSchema, { reducer: (prev, next) => (next === undefined ? prev : next) }),
+
+  probeLog: new ReducedValue(
+    z.array(probeLogEntrySchema).default(() => []),
+    { reducer: evidenceLogReducer },
+  ),
+
+  moveLog: new ReducedValue(
+    z.array(moveLogEntrySchema).default(() => []),
     { reducer: evidenceLogReducer },
   ),
 });

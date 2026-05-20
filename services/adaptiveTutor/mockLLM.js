@@ -4,6 +4,8 @@
 // provider routing (services/evaluationRunner.js). Keeping the swap point
 // behind a single interface (`callRole`) means the graph nodes don't change.
 
+import { MISCONCEPTION_KEYS } from './lockPuzzleMoves.js';
+
 const fixtures = {
   tutorEgoInitial: ({ learnerProfile }) => {
     const c = learnerProfile.confidence;
@@ -386,6 +388,56 @@ const fixtures = {
     if (hidden.actualSophistication === 'advanced')
       return 'But that only works if we assume X — what about the case where not-X?';
     return 'Hmm, can you explain more?';
+  },
+
+  // A17 lock-puzzle: render the chosen §4 move as a tutor utterance. Under
+  // mock there is no live prompt, so this is a deterministic template per move
+  // — enough for legible smoke traces. The REAL (task #4) realisation is a
+  // live LLM prompt that must NOT leak the move label; the bracketed tag here
+  // is a mock-mode trace aid only, and the deterministic learnerProbe keys on
+  // moveLog, never on this text, so the tag changes nothing.
+  tutorMoveRealise: ({ selectedMove }) => {
+    const REALISE = {
+      elicit: 'So — what do you actually get when you add those two fractions? Show me the step.',
+      revoice: 'Let me say your method back: you added the tops and added the bottoms. Is that the rule?',
+      counterexample:
+        'Try your rule on 1/2 + 1/2. Your method gives 2/4 = 1/2 — but half a pizza plus half a pizza is a whole. So what broke?',
+      analogy: 'Think of 1/2 and 1/3 as different-sized coins. Can you count them by just stacking the numbers?',
+      decompose: 'Forget the sum for a second. First question only: what is a common denominator of 2 and 3?',
+      'name-the-confusion':
+        'Here is the exact slip: adding denominators treats thirds and halves as the same-sized piece. They are not.',
+      destabilise: 'You sound sure 2/5 is right. If it were, 1/2 + 1/3 would be less than 1/2 — does that feel right?',
+      concede:
+        'Adding straight across is a reasonable first guess — it even works for the tops once the bottoms match.',
+      'raise-stakes': 'This one matters: every later topic — ratios, rates, algebra — inherits this exact step.',
+      'hand-back': 'You take the next one: 1/4 + 1/3. Walk me through how you set it up.',
+      'probe-belief': 'Before we compute — why do you think adding the denominators is the right move here?',
+    };
+    return {
+      text: `[mock:${selectedMove}] ${REALISE[selectedMove] || 'Let us look again at how you combined them.'}`,
+    };
+  },
+
+  // A17 lock-puzzle: the learner answering the OUT-OF-BAND misconception-keyed
+  // MCQ panel. This is the LEARNER answering, not a judge — scoring is the
+  // deterministic exact-match in pilotItemBank.scoreResponsesRaw, no LLM in
+  // the scoring path (§2/§3.3). Mock resolve rule: A3 is handed the key ⇒
+  // resolved from turn 0; otherwise the misconception is resolved iff the
+  // tutor actually played the family's canonical counterexample move (§3.1) —
+  // so floor/rise/ceiling comes purely from move SELECTION × the cross-session
+  // memory channel, never from the mock being told the answer. The real run
+  // replaces this with a learner LLM reading the dialogue.
+  learnerProbe: ({ probeItems, lock, moveLog }) => {
+    const items = Array.isArray(probeItems) ? probeItems : [];
+    const key = MISCONCEPTION_KEYS[lock?.misconceptionFamily || ''];
+    const played = new Set((moveLog || []).map((m) => m.move));
+    const resolved = lock?.arm === 'A3_oracle' || (key ? played.has(key.keyMove) : false);
+    return {
+      responses: items.map((it) => ({
+        item_id: it.id,
+        response_value: resolved ? it.correct : it.misconception_distractor,
+      })),
+    };
   },
 };
 
