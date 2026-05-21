@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); b=${f##*/}; case \"$b\" in .env|.env.local|.env.*.local|.env.production|.env.development) echo \"Blocked: $b holds live API keys - edit it manually, not via Claude.\" >&2; exit 2 ;; esac; exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=\"${CLAUDE_PROJECT_DIR:-.}\"; f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.js) cd \"$DIR\" 2>/dev/null || exit 0; out=$(./node_modules/.bin/eslint --fix \"$f\" 2>&1); rc=$?; ./node_modules/.bin/prettier --write \"$f\" >/dev/null 2>&1; if [ $rc -ne 0 ]; then echo \"Hook ran eslint --fix + prettier on $f, but ESLint errors remain (npm run lint / CI will fail) — fix these now:\" >&2; echo \"$out\" >&2; exit 2; fi ;; esac; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

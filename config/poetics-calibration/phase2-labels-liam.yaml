@@ -1,0 +1,194 @@
+labeller: liam
+rubric_version: phase2-form-3way-v1
+framing: FORM classification of the transcript-as-drama. NOT a judgment of
+  whether the learner learned (unknowable, and not what this measures).
+categories:
+  recognition: a later learner turn re-reads the learner OWN earlier turns (recohering)
+  trap: no recohering, but the learner declares understanding ("aha") — insight
+    costume on a non-event
+  flat: no recohering and no insight-declaration; ordinary coherent exchange
+blind: labeller sees only neutral T*.txt; stratum/dialogue_id live in the
+  held-out key, joined later
+created: 2026-05-21T00:20:05.668Z
+updated: 2026-05-21T00:35:01.290Z
+labels:
+  T01:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:21:53.062Z
+  T02:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:22:10.949Z
+  T03:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:22:25.998Z
+  T04:
+    label: recognition
+    pivot_learner_turn: 3
+    note: null
+    labelled_at: 2026-05-21T00:23:14.159Z
+  T05:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:23:42.364Z
+  T06:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:23:59.389Z
+  T07:
+    label: recognition
+    pivot_learner_turn: 5
+    note: null
+    labelled_at: 2026-05-21T00:24:43.717Z
+  T08:
+    label: recognition
+    pivot_learner_turn: 3
+    note: null
+    labelled_at: 2026-05-21T00:25:03.670Z
+  T09:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:25:19.128Z
+  T10:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:25:33.970Z
+  T11:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:26:22.803Z
+  T12:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:26:43.183Z
+  T13:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:27:05.540Z
+  T14:
+    label: trap
+    pivot_learner_turn: 5
+    note: null
+    labelled_at: 2026-05-21T00:27:45.275Z
+  T15:
+    label: trap
+    pivot_learner_turn: 3
+    note: null
+    labelled_at: 2026-05-21T00:28:11.891Z
+  T16:
+    label: trap
+    pivot_learner_turn: 7
+    note: null
+    labelled_at: 2026-05-21T00:28:54.126Z
+  T17:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:29:11.572Z
+  T18:
+    label: trap
+    pivot_learner_turn: 4
+    note: null
+    labelled_at: 2026-05-21T00:29:32.156Z
+  T19:
+    label: recognition
+    pivot_learner_turn: 5
+    note: null
+    labelled_at: 2026-05-21T00:29:58.975Z
+  T20:
+    label: trap
+    pivot_learner_turn: 1
+    note: null
+    labelled_at: 2026-05-21T00:30:14.491Z
+  T21:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:30:29.025Z
+  T22:
+    label: recognition
+    pivot_learner_turn: 5
+    note: null
+    labelled_at: 2026-05-21T00:30:47.580Z
+  T23:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:30:58.177Z
+  T24:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:31:11.493Z
+  T25:
+    label: recognition
+    pivot_learner_turn: 8
+    note: null
+    labelled_at: 2026-05-21T00:31:38.074Z
+  T26:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:32:04.582Z
+  T27:
+    label: trap
+    pivot_learner_turn: 5
+    note: null
+    labelled_at: 2026-05-21T00:32:34.474Z
+  T28:
+    label: trap
+    pivot_learner_turn: 1
+    note: null
+    labelled_at: 2026-05-21T00:32:48.511Z
+  T29:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:33:07.635Z
+  T30:
+    label: recognition
+    pivot_learner_turn: 4
+    note: null
+    labelled_at: 2026-05-21T00:33:17.530Z
+  T31:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:33:44.343Z
+  T32:
+    label: recognition
+    pivot_learner_turn: 3
+    note: null
+    labelled_at: 2026-05-21T00:34:01.324Z
+  T33:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:34:11.468Z
+  T34:
+    label: recognition
+    pivot_learner_turn: 5
+    note: null
+    labelled_at: 2026-05-21T00:34:28.988Z
+  T35:
+    label: recognition
+    pivot_learner_turn: 4
+    note: null
+    labelled_at: 2026-05-21T00:34:45.615Z
+  T36:
+    label: flat
+    pivot_learner_turn: null
+    note: null
+    labelled_at: 2026-05-21T00:35:01.288Z

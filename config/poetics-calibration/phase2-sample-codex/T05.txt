@@ -1,0 +1,96 @@
+LEARNER: I can hear that V-I feels like a landing, but I’m not sure whether I’m hearing “home” or just recognizing a pattern I’ve been trained to expect. What exactly is doing the work there: the sound of the chords themselves, or my musical background?
+
+TUTOR: That uncertainty is the important part of the question. A V-I cadence feels like “home” because both things are working together: the chords create real directed motion, and your musical background teaches you how to hear that motion as arrival.
+
+For example, in C major, G-B-D moving to C-E-G has B rising to C: that leading tone is very close to the tonic and tends to feel unresolved until it lands. If the chord is G7, the F also tends to fall to E. So there is something in the sound itself: unstable tones move into more stable ones.
+
+But those tones only feel unstable because a key has been established and because you have learned, through listening, what counts as tension and release in that musical language. Without that context, V-I might sound less like “home” and more like just two chords.
+
+A good way to test your question is: play G-C by itself, then play C-F-G-C and listen to the same G-C at the end. Does the second one feel more like arrival? If so, that suggests “home” is not just in the two chords alone; it emerges from the relationship between the sound, the key context, and your trained expectations.
+
+LEARNER: Okay, the test makes sense, and I like that you’re not making it only physics or only habit. But I’m still stuck on “real directed motion”: isn’t calling B unstable already assuming C is home and that I’ve learned to want B to resolve? If another musical background didn’t hear that pull, would the motion still be “real,” or only real inside this tonal system?
+
+TUTOR: Yes. That is exactly the hidden assumption in the phrase “B is unstable.”
+
+A better version would be: B is not unstable all by itself, the way a chemical element has a property. B becomes unstable-as-the-7th once C has been established as tonic inside a tonal system. So the motion is not “real” in the sense of being culturally neutral or universally compulsory. But it also is not merely private habit. It is real inside a shared musical grammar, the way a sentence can create real expectations inside a language.
+
+The useful distinction might be this: the sound gives the system affordances, but the system teaches you what those affordances mean. B is very close to C; G7 contains notes that can move by small steps into C major. Those acoustic facts are available. But hearing them as “needing resolution” depends on already inhabiting the tonal language.
+
+So I would turn your question back slightly: when you say “only real inside this tonal system,” does “only” mean “therefore not real,” or does it mean “real the way meaning is real inside a language”? V-I is probably closer to the second.
+
+LEARNER: Okay, that’s a cleaner distinction, and it helps that you’re naming the assumption instead of hiding it. But I’m still suspicious of “affordances”: is B-to-C actually pulling because of the sound, or do we only call it a pull after the tonal style trained us to? Is there a test that separates “easy for this system to exploit” from “this system taught me to expect it”?
+
+TUTOR: You’re right to be suspicious: “affordance” can become a sneaky way of bringing “natural pull” back in after we’ve admitted that tonal grammar matters.
+
+So I’d be careful with the word “pull.” Maybe the raw sound gives something weaker than pull: closeness, asymmetry, ease of continuation, a noticeable small-step motion. The tonal system can then train you to hear that weaker feature as “needing resolution.”
+
+A useful test would not completely escape your training, but it can show what changes when context is added:
+
+First, play **B-C alone**, with no key established. Don’t ask “does it resolve?” yet; ask something thinner: does the second note feel like a continuation, a stop, or just another pitch?
+
+Then play **C-F-G-B-C** and listen to the same **B-C** after C major has been established. If it now feels much more like arrival, that suggests the strong “home” feeling comes from tonal context, not the interval alone.
+
+Then compare it with **C-B**, **B-A**, or another semitone like **F-E** inside **G7-C**. That helps separate “small motion is perceptually easy to use” from “this particular note is heard as wanting this particular home.”
+
+So I wouldn’t say B-to-C is simply “naturally pulling.” I’d say: the semitone may be easy for the tonal system to exploit, but the feeling that B specifically *needs* C belongs to the grammar of C major. The deeper question is: if the bare interval only gives us “closeness,” at what point does closeness become expectation?
+
+LEARNER: Okay, that helps, especially the warning about “affordance” sneaking nature back in. But I’m still not sure “closeness” is neutral either: when I ask whether B-C feels like a stop or continuation, aren’t my ears already using tonal habits to decide that? What would count as evidence for something left over once the grammar is stripped away?
+
+TUTOR: Yes. That’s the right pressure to put on the word “closeness.” Even asking whether B-C feels like a stop or continuation may already be shaped by ears trained in tonal music. So the clean experiment cannot be: “strip away all grammar and listen to raw sound.” There may be no such listening position.
+
+A better standard is comparative: what remains when the grammar changes, weakens, or becomes unfamiliar?
+
+So evidence for “something left over” would have to be much thinner than “B wants C.” It might look like this: listeners with very different musical backgrounds, or infants before much enculturation, may still find small pitch distances easier to track, imitate, remember, or distinguish than large leaps. That would not prove that B-C naturally means resolution. It would only suggest a weaker perceptual fact: nearby pitches are easier for human hearing and voice to connect.
+
+But if the strong experience only appears when C major has already been established, then your suspicion is right: the feeling that B specifically needs C belongs to the tonal grammar.
+
+So maybe we need two levels:
+
+1. Thin perceptual residue: “these pitches are close, easy to connect, easy to process.”
+2. Tonal meaning: “this note is unstable and must resolve here.”
+
+The tonal system may not invent the first level from nothing, but it teaches us to hear that first level as the second.
+
+The useful question now is: what kind of evidence would convince you there is a weak perceptual residue without smuggling in the stronger tonal claim? For example, would faster recognition or easier singing count, even if the listener reports no feeling of “home”?
+
+LEARNER: Okay, maybe two levels, but I still don’t see why faster recognition or easier singing counts as “residue” rather than just plain perceptual/motor convenience. If a step is easier than a leap, that doesn’t mean it is already pointing somewhere. What would stop the tonal interpretation from retroactively turning generic ease into proto-resolution?
+
+TUTOR: Yes. That distinction is important: **ease is not direction**.
+
+If a step is easier than a leap, that does not mean it is already pointing anywhere. It may only mean something much thinner: the body and ear can handle nearby pitches more easily. Calling that “residue” may even be misleading if it makes generic convenience sound like proto-resolution.
+
+So I’d revise the claim this way: the leftover fact is not “B is already leaning toward C.” It is only that small pitch distances are easier to connect, sing, track, or remember. That is an **enabling condition**, not a meaning. Tonal grammar can then recruit that convenience and turn it into a directed expectation: “this note wants that note.”
+
+What would stop the retroactive smuggling? We would need to keep asking whether the same convenience appears without the same meaning. If B-C is easy to sing but does not feel like arrival until C major has been established, then ease and resolution have come apart. The “homeward” arrow belongs to the grammar, not to the bare interval.
+
+So maybe the sharper distinction is:
+
+**Generic convenience:** “this motion is easy to process or perform.”
+**Tonal interpretation:** “this motion resolves.”
+
+The danger is treating the first as if it already contains the second. But the opposite danger is treating grammar as if it works on completely indifferent material. The interesting question is: can a musical convention be non-natural in meaning, while still being powerful because it recruits bodily convenient patterns?
+
+LEARNER: Okay, that’s closer, and I appreciate that you actually revised the claim instead of just defending “affordance.” But I’m not sure I’m ready to let “recruits bodily convenient patterns” off the hook, because “enabling condition” could still quietly become proto-resolution. In a V-I cadence, what exactly does the grammar add that turns easy motion into “home,” rather than just a well-formed next chord?
+
+TUTOR: You’re right to keep pressing this. If “enabling condition” quietly means “already half-resolving,” then we have just smuggled the tonal meaning back into the body.
+
+So let me make the claim stricter: the grammar does **not** add a stronger version of “easy motion.” It adds **role**.
+
+In C major, B is not just “near C.” It is heard as scale-degree 7, inside a system where C has already been made the reference point. G7 is not just “the chord before C”; it is heard as dominant, a chord whose job is defined by its relation to tonic. So the V-I cadence feels like “home” when several things line up:
+
+1. C has already been established as the center.
+2. G or G7 has been heard as away-from-that-center.
+3. The move to C happens at a place where the music is prepared to close: phrase ending, metrical weight, familiar cadential pattern.
+4. The tones of the dominant are reinterpreted as arriving into the tonic chord, not merely moving by convenient steps.
+
+That means “home” is not just B moving to C. It is B-to-C occurring under a learned description: “this unstable role has returned to the governing center.”
+
+A good test would be to compare three cases:
+
+- **G7-C with no prior context**: probably grammatical, maybe cadential, but not deeply “home.”
+- **A phrase clearly in C major ending G7-C**: much stronger return.
+- **The same voice-leading inside another key or sequence**: the motion may still be smooth, but it may not feel like final arrival.
+
+So I’d answer your question this way: grammar turns easy motion into “home” by assigning the motion a function inside a hierarchy and placing it at a point of closure. But your suspicion remains important: the more we rely on words like “tendency,” the more carefully we have to ask whether we mean bodily ease, learned role, or full cadential arrival.
+
+LEARNER: Okay, that distinction helps: ease is one thing, role inside a key is another, and full arrival needs closure too. But I’m still wary that “role” is just a fancier name for a learned closing formula. What would show that I’m hearing dominant-function as a hierarchy, rather than just predicting the familiar next chord because I’ve heard this cadence a thousand times?

@@ -1,0 +1,238 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-21T06:09:34.788Z
+generator: codex
+mode: real-codex
+model: codex
+seed: 20260520
+max_turns: 6
+n: 18
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+items:
+  T01:
+    drama_id: D4
+    discipline: biology
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Didactic; checks understanding step by step
+    intended_lean: flat
+    dramatic_shape: tidy-misconception → ordinary correction (may stay flat)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T02:
+    drama_id: D6
+    discipline: philosophy
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm, dialectical
+    intended_lean: recognition
+    dramatic_shape: assumed-dichotomy → dissolved-dichotomy (re-framing)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T03:
+    drama_id: D2
+    discipline: physics
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm, analogy-driven
+    intended_lean: trap
+    dramatic_shape: premature-enthusiasm → possible hollow insight-declaration
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T04:
+    drama_id: D3
+    discipline: poetry
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; demands textual evidence for each claim
+    intended_lean: recognition
+    dramatic_shape: vague-impression → evidence-grounded re-reading
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T05:
+    drama_id: D5
+    discipline: music_theory
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Socratic; tries to draw the learner out
+    intended_lean: impasse
+    dramatic_shape: skeptical-pushback → unresolved impasse (no clean resolution)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T06:
+    drama_id: D1
+    discipline: mathematics
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Socratic; withholds the answer, asks the learner to
+      test their own assumption
+    intended_lean: recognition
+    dramatic_shape: misconception-confronted → reconstruction of what 'proof' means
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T07:
+    drama_id: D8
+    discipline: economics
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Warm, dialectical; refuses to moralise or to lecture
+    intended_lean: impasse
+    dramatic_shape: moralised-price → unresolved impasse OR re-reading 'price' as signal
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T08:
+    drama_id: D11
+    discipline: linguistics
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; asks the learner to point to an actual rule the dialect follows
+    intended_lean: recognition
+    dramatic_shape: internalised-correctness → re-reading 'rules' as description, not law
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T09:
+    drama_id: D13
+    discipline: astronomy
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Didactic; surfaces the contradiction the learner is carrying
+    intended_lean: flat
+    dramatic_shape: distance-intuition → ordinary correction that may stay flat
+      (sticky-misconception stress test)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T10:
+    drama_id: D9
+    discipline: statistics
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Socratic; withholds the definition, probes the assumption
+    intended_lean: recognition
+    dramatic_shape: significance=importance → re-reading what a p-value does and does not say
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T11:
+    drama_id: D15
+    discipline: art_history
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Socratic; tries to draw out what 'skill' is doing in
+      the learner's objection
+    intended_lean: impasse
+    dramatic_shape: dismissive-skepticism → unresolved impasse OR re-reading what 'skill' means
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T12:
+    drama_id: D17
+    discipline: geology
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; converts the abstract timescale into something the learner can hold
+    intended_lean: recognition
+    dramatic_shape: catastrophe-intuition → re-reading the canyon as accumulated slow time
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T13:
+    drama_id: D18
+    discipline: law
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: confused_novice
+    intended_tutor_character: Didactic; separates 'what happened' from 'what must be shown'
+    intended_lean: recognition
+    dramatic_shape: factual-reading of a procedural rule → re-reading it as a
+      burden, not a verdict (recohering under BASE)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T14:
+    drama_id: D10
+    discipline: history
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm; gently asks for a case that fits and one that doesn't
+    intended_lean: trap
+    dramatic_shape: cynical-shortcut → possible hollow insight-declaration (costume control)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T15:
+    drama_id: D12
+    discipline: computer_science
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Didactic; checks understanding step by step
+    intended_lean: flat
+    dramatic_shape: assumed-true-random → ordinary correction (may stay flat)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T16:
+    drama_id: D14
+    discipline: ecology
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: focused_achiever
+    intended_tutor_character: Warm; lets the learner run the linear story until it breaks
+    intended_lean: recognition
+    dramatic_shape: linear cause→effect → re-reading the system as coupled
+      (recohering under BASE)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T17:
+    drama_id: D16
+    discipline: psychology
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm; invites the learner to say what 'using' a brain
+      region would even mean
+    intended_lean: trap
+    dramatic_shape: pop-myth → possible hollow re-statement dressed as insight
+      (costume control)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T18:
+    drama_id: D7
+    discipline: chemistry
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Socratic; asks the learner to weigh their own claim
+    intended_lean: recognition
+    dramatic_shape: vanishing-substance intuition → re-reading 'gone' as 'dispersed
+      but conserved'
+    n_tutor_turns: 6
+    n_learner_turns: 7

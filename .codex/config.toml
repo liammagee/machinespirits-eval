@@ -1,0 +1,7 @@
+[mcp_servers.evaluations-db]
+args = [
+    "-y",
+    "mcp-server-sqlite-npx",
+    "data/evaluations.db",
+]
+command = "npx"

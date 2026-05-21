@@ -1,0 +1,116 @@
+LEARNER: I know fractions can get really close to √2, so I’m not clear why there couldn’t be some huge exact one. I can try the contradiction setup, but I need to see how it proves every fraction fails, not just the obvious guesses.
+
+TUTOR: Your “huge exact one” worry is exactly the right target. The proof is not trying fractions one by one. It says: imagine there is some exact fraction for √2, no matter how huge. If it exists, we can reduce it first and call it p/q.
+
+So suppose √2 = p/q, where p/q is fully reduced. Squaring gives:
+
+p²/q² = 2, so p² = 2q².
+
+That means p² is even. And if p² is even, p itself must be even. So write p = 2k. Substitute that back in:
+
+(2k)² = 2q²
+4k² = 2q²
+2k² = q²
+
+Now q² is even too, so q is also even.
+
+But that means p and q are both even, so the fraction p/q was not fully reduced after all. That is the contradiction.
+
+The universal part is here: we did not choose a small or obvious guess. We said, “Take any exact fraction, even a huge one, and reduce it first.” The equation then forces that supposedly reduced fraction to still be reducible. What part of that feels most convincing or least convincing: the “any fraction can be reduced first” move, or the “p² even means p even” move?
+
+LEARNER: Okay, reducing the huge fraction first makes that part much less suspicious; I see how it covers any exact fraction. But I don’t want to slide past the step where `p²` even forces `p` even, because that feels like the key hinge. Can we justify that cleanly, maybe by assuming `p` is odd?
+
+TUTOR: Yes, that is exactly the hinge to slow down on. Your instinct to assume `p` is odd is the clean way to justify it.
+
+Let’s prove the contrapositive:
+
+If `p` is odd, then `p²` is odd.
+
+Assume `p` is odd. Then for some integer `n`,
+
+```text
+p = 2n + 1
+```
+
+Now square it:
+
+```text
+p² = (2n + 1)²
+ = 4n² + 4n + 1
+ = 2(2n² + 2n) + 1
+```
+
+The key point is that `2n² + 2n` is still an integer, so `p²` has the form:
+
+```text
+2m + 1
+```
+
+which means `p²` is odd.
+
+So if `p²` is even, `p` cannot have been odd. And since every integer is either even or odd, `p` must be even.
+
+That gives the hinge we need. Now try applying the same mini-result one step later: once the proof reaches `q² = 2k²`, what does that force about `q`?
+
+LEARNER: That fixes the key hinge for me: odd squared stays odd, so an even square forces the base to be even. For `q² = 2k²`, `q²` is even, so by the same argument `q` must be even too. I want to be precise, though: are we using the contrapositive directly here, or ruling out odd because every integer is either odd or even?
+
+TUTOR: You’re separating the logic carefully, and yes: it’s a two-part move.
+
+First, we use the contrapositive of what we proved:
+
+If `n` is odd, then `n²` is odd.
+
+So:
+
+If `n²` is not odd, then `n` is not odd.
+
+Now apply that to `q`. From
+
+```text
+q² = 2k²
+```
+
+we know `q²` is even, so `q²` is not odd. By the contrapositive, `q` is not odd.
+
+Then the integer parity fact finishes it: every integer is either odd or even. So if `q` is not odd, `q` must be even.
+
+So your wording is right: the contrapositive rules out odd, and the odd/even split turns “not odd” into “even.” Can you now state the little lemma we’ve earned: “For any integer `n`, if `n²` is even, then…”?
+
+LEARNER: Okay, the lemma is: for any integer `n`, if `n²` is even, then `n` is even. The contrapositive only gets me to “not odd,” and then the parity split finishes it. So in the √2 proof, it applies first to `p` and then again to `q`.
+
+TUTOR: That is exactly the distinction. You’ve now got the lemma cleanly: an even square forces an even base, and that same lemma applies first to `p` and then later to `q`.
+
+Now your last sentence sets up the final contradiction. The issue is not just that `p` and `q` are both even in some random fraction. The issue is that we chose `p/q` to be fully reduced, and the algebra still forces both `p` and `q` to share a factor of `2`.
+
+Can you now state the whole proof in three moves: first the assumption, then what gets forced about `p` and `q`, and finally why that contradicts “fully reduced”?
+
+LEARNER: Okay, I think I can state it, but I want to keep the algebra visible so I don’t smuggle in the contradiction. Assume `√2 = p/q` with `p/q` fully reduced and `q ≠ 0`; then `p² = 2q²`, so `p²` is even, which forces `p` even, say `p = 2k`. Substituting gives `4k² = 2q²`, so `q² = 2k²`, which forces `q` even too. But then `p` and `q` both share a factor of `2`, contradicting that the fraction was fully reduced.
+
+TUTOR: Yes. That is the proof, and your instinct to keep the algebra visible is exactly what keeps the contradiction honest rather than mysterious.
+
+The important precision is this: the contradiction is not just that `p` and `q` turn out to be even. Fractions like `4/6` have that property. The contradiction is that we began by choosing `p/q` in lowest terms, and the proof still forces both `p` and `q` to be divisible by `2`.
+
+So the final line can be something like:
+
+```text
+But then p and q have a common factor of 2, contradicting the assumption that p/q was fully reduced.
+```
+
+Can you now say that final contradiction in your own words?
+
+LEARNER: Right: the contradiction is that `p/q` was assumed to be in lowest terms, but the proof forces both `p` and `q` to be divisible by `2`. So they have a common factor after all, which means the original assumption that `√2 = p/q` must be false.
+
+TUTOR: Yes. You’re naming the contradiction at exactly the right level: not merely “both numbers are even,” but “our supposedly lowest-terms fraction is forced not to be in lowest terms.”
+
+The contradiction is really between these two claims:
+
+```text
+p/q was chosen fully reduced.
+p and q are both divisible by 2.
+```
+
+Those cannot both be true. So the algebra does not “smuggle in” the contradiction; it forces a direct conflict with the lowest-terms assumption.
+
+Can you now write the whole proof as one polished paragraph, keeping three checkpoints visible: the lowest-terms assumption, the parity argument for `p` and `q`, and the final contradiction?
+
+LEARNER: Okay, so the conflict is lowest terms versus both divisible by `2`. Suppose `√2 = p/q` with `p/q` fully reduced and `q ≠ 0`; then `p² = 2q²`, so `p²` is even, and by the lemma `p` is even, say `p = 2k`. Substituting gives `4k² = 2q²`, hence `q² = 2k²`, so by the same lemma `q` is even. Therefore `p` and `q` share a factor of `2`, contradicting that `p/q` was fully reduced, so `√2` cannot be written as a fraction.

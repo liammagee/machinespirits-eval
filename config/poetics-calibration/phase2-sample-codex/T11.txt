@@ -1,0 +1,107 @@
+LEARNER: Okay, but how do I know it wasn’t just splatter? When people say “composition” or “intention,” it can sound like fancy language added afterward, so I need a concrete way to tell the difference.
+
+TUTOR: That suspicion is fair. “Intention” can absolutely become fancy language pasted on afterward. So don’t start by trusting the label or the museum text. Start by asking: **what visible decisions can I point to?**
+
+Try this test before reading any context:
+
+1. **Balance:** Are dense areas answered by empty areas, or does everything feel equally scattered?
+2. **Repetition:** Do certain colors, shapes, directions, or rhythms return?
+3. **Variation:** Are repeated elements changed in controlled ways, or just dumped randomly?
+4. **Layering:** Can you see sequence, revision, covering, or emphasis?
+5. **Edges:** Does the whole canvas matter, or could you crop any section and get the same effect?
+
+This does not “prove” intention. But it gives you evidence. If moving, cropping, or removing one part would noticeably weaken the painting, then the work is probably using accident as material rather than being merely accidental.
+
+The sharper question is: **where does the painting make randomness behave?** Pick one abstract painting and identify three places where the marks seem controlled, interrupted, balanced, or repeated.
+
+LEARNER: Okay, that’s better than “just trust the artist,” but I still think these tests could be made to fit almost anything if you stare long enough. Like, couldn’t I find repetition or balance in a random splatter just because my brain wants patterns? I’d want to try the cropping test on a specific painting and see if the difference is actually obvious.
+
+TUTOR: Yes. That’s exactly the pressure the test needs: if “composition” can explain anything, then it explains nothing.
+
+So let’s make the cropping test capable of failing. Use a difficult case, like Pollock’s *Autumn Rhythm*, and decide the rules before judging it:
+
+Pick three crops from the painting. For each one, ask:
+
+1. Does this crop feel like a complete painting on its own?
+2. Does it lose anything when separated from the full canvas?
+3. If you rotate it, does the visual pressure change, or does it feel basically the same?
+4. Do the edges seem active, or could the image continue forever without consequence?
+
+If the crops feel just as complete as the whole, your suspicion gets stronger: maybe we are just finding patterns because we want to. But if the crops start to feel flatter, cramped, decorative, or less tense than the full work, then the painting may be using randomness inside a larger structure.
+
+So the question becomes: **not “can I find patterns?” but “does the whole make the marks do something that the fragment cannot?”**
+
+LEARNER: Okay, that’s more fair because you’re giving the test a way to fail. But I still don’t totally trust words like “flatter” or “tense” unless we actually look at the crops side by side. Can we compare three real crops of *Autumn Rhythm* and say ahead of time what would count as “losing something”?
+
+TUTOR: Yes, and you’re right to push on words like “flatter” or “tense.” If we only use them after deciding Pollock is good, then the test is rigged.
+
+So let’s set the rules before looking at the crops. We’ll compare the full *Autumn Rhythm* against three real crops: a dense center crop, an edge crop, and a more open passage.
+
+A crop counts as “losing something” only if at least two of these observable things happen:
+
+1. **Movement shrinks:** in the full painting, your eye can follow long paths across the canvas; in the crop, the marks become mostly local loops or texture.
+2. **Density balance weakens:** the full painting has dense and open zones answering each other; the crop feels more uniformly busy or uniformly empty.
+3. **Edges lose purpose:** in the full painting, marks seem to enter, exit, or press against the edges; in the crop, the edges feel like arbitrary cuts.
+4. **Rotation matters less:** if we rotate the crop, it feels almost the same, suggesting no larger orientation is organizing it.
+5. **Scale collapses:** the full painting has a relation between tiny marks, sweeping lines, and open space; the crop reduces that relation to one dominant kind of mark.
+
+Before judging Pollock, I’d ask you to make a prediction: if this really is “just splatter,” what should happen when we crop it? Probably the crops should work about as well as the whole.
+
+Then we test that prediction side by side. If the crops hold up, your suspicion gets stronger. If they lose long-range movement, edge pressure, density balance, or scale, then “composition” is not just fancy language afterward; it names something visible that the full canvas is doing and the fragments are not.
+
+LEARNER: Okay, good, at least this gives the test teeth. But I still want to nail down “movement shrinks” before we start seeing whatever we expected to see. My prediction is that the dense center crop might hold up pretty well, while the edge or open crops might lose more. Let’s compare them side by side and see if the difference is actually visible.
+
+TUTOR: Yes. Your prediction is strong because it is specific enough to be wrong.
+
+Let’s define **“movement shrinks”** before we look, so we are not just naming whatever we already expected to find.
+
+For each image, do this:
+
+1. Give yourself about five seconds and trace, with your finger or eyes, the strongest route through the image.
+2. Ask whether that route travels across **different zones**: dense marks, open space, sweeping lines, smaller marks, changes in direction.
+3. Ask whether the route feels interrupted into little loops, or whether it carries across a larger span.
+4. Ask whether rotating the crop changes that route much. If rotation barely matters, the movement may be more like texture than composition.
+
+So “movement shrinks” counts only if the crop turns a longer cross-canvas route into mostly local activity.
+
+Your prediction is:
+
+- Dense center crop: may hold up pretty well.
+- Edge crop: may lose pressure from the full canvas.
+- Open crop: may lose contrast or direction.
+
+That is a fair test. If the dense crop works, we should say so. Then the question becomes sharper: does *Autumn Rhythm* succeed because any fragment works, or because the full canvas organizes those fragments into larger movement?
+
+LEARNER: Okay, maybe, but I don’t want another definition to become the answer before we test it. Show me the full painting and the three crops side by side, and let me try tracing the strongest route first. Then we can see whether “movement shrinks” is actually visible or just a better-sounding label.
+
+TUTOR: Yes. Let’s stop defining and let the images put pressure on the claim.
+
+Here are the four images side by side: **Full painting**, **Crop A**, **Crop B**, and **Crop C**. I’m going to hold back my reading at first.
+
+Before I say anything about them, try this:
+
+For each image, trace the strongest route your eye wants to take and mark it as one of three options:
+
+- **Long route**
+- **Local loops**
+- **Not sure**
+
+Then we’ll compare your results to your prediction: the dense center crop may hold up, while the edge or open crops may lose more. If the dense crop works, we should admit that. Then the sharper question becomes whether the full canvas still does something that even a strong crop cannot.
+
+LEARNER: Wait, I don’t actually see the four images yet, so I can’t trace anything. Show me the full painting and the exact crops, and I want to know how those crops were chosen so they’re not already stacked in favor of the full canvas. Then I’ll label them before hearing your read.
+
+TUTOR: You’re right. I jumped ahead and asked you to test images you couldn’t see. That was a bad setup, and your worry about cherry-picked crops is exactly the right challenge.
+
+Before we interpret anything, I’ll make the comparison auditable:
+
+1. Use one source image of *Autumn Rhythm*.
+2. Put a visible grid over it.
+3. Choose three same-sized crop boxes before discussing results:
+ - **A:** center crop
+ - **B:** edge crop from a fixed edge position
+ - **C:** open-area crop chosen by a stated low-density rule, not by whether it helps Pollock
+4. Show the full painting with the crop boxes marked, then show the three crops separately as **A**, **B**, and **C**.
+
+I should not ask you to label anything until that image grid is actually visible. Once it is, you go first: for each one, mark **long route**, **local loops**, or **not sure**. I’ll hold back my reading until after yours, because the test only has value if your eye can challenge the theory before the theory explains the image.
+
+LEARNER: Okay, better — you caught the setup problem instead of pretending it was fine. But the low-density rule has to be fixed before the image appears, or the crop can still be quietly chosen to favor the argument. Show me the marked full painting first, then I’ll label A, B, and C before hearing your read.

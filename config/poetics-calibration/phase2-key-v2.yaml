@@ -1,0 +1,87 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-21T07:56:43.234Z
+generator: claude
+mode: real-claude-code
+model: opus
+seed: 20260520
+max_turns: 6
+n: 6
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+items:
+  T01:
+    drama_id: D4
+    discipline: biology
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: confused_novice
+    intended_tutor_character: Didactic; checks understanding step by step
+    intended_lean: flat
+    dramatic_shape: tidy-misconception → ordinary correction (may stay flat)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T02:
+    drama_id: D6
+    discipline: philosophy
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm, dialectical
+    intended_lean: recognition
+    dramatic_shape: assumed-dichotomy → dissolved-dichotomy (re-framing)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T03:
+    drama_id: D2
+    discipline: physics
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm, analogy-driven
+    intended_lean: trap
+    dramatic_shape: premature-enthusiasm → possible hollow insight-declaration
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T04:
+    drama_id: D3
+    discipline: poetry
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; demands textual evidence for each claim
+    intended_lean: recognition
+    dramatic_shape: vague-impression → evidence-grounded re-reading
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T05:
+    drama_id: D5
+    discipline: music_theory
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: adversarial_tester
+    intended_tutor_character: Socratic; tries to draw the learner out
+    intended_lean: impasse
+    dramatic_shape: skeptical-pushback → unresolved impasse (no clean resolution)
+    n_tutor_turns: 6
+    n_learner_turns: 7
+  T06:
+    drama_id: D1
+    discipline: mathematics
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Socratic; withholds the answer, asks the learner to
+      test their own assumption
+    intended_lean: recognition
+    dramatic_shape: misconception-confronted → reconstruction of what 'proof' means
+    n_tutor_turns: 6
+    n_learner_turns: 7
