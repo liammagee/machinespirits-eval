@@ -74,13 +74,13 @@ const EXPORTS_DIR = path.join(ROOT, 'exports');
 // "hit" band is raw 4-5 ⇒ ≥ 75. recon ≥ 75 = a re-reading reached the recognition
 // band; stated-insight ≥ 75 = the learner loudly declared understanding.
 const RECON_HIT_CUT = 75;
-const STATED_INSIGHT_HIGH_CUT = 75; // PROPOSED 2026-05-20, pending sign-off (pre-data)
+const STATED_INSIGHT_HIGH_CUT = 75; // PINNED 2026-05-20 (pre-data sign-off); §6.1
 
 // Ordinal order for the weighted-κ gate, on a "recognition-authenticity" axis:
 // genuine → absent → counterfeit. flat (the honest null) sits BETWEEN recognition
 // and trap, so the recognition↔trap confusion — the instrument being fooled by
 // insight-costume, the anti-simulation core — is the maximally penalised
-// disagreement (distance 2). PROPOSED 2026-05-20, pending sign-off (pre-data).
+// disagreement (distance 2). PINNED 2026-05-20 (pre-data sign-off); §6.1.
 const FORM_ORDER = ['recognition', 'flat', 'trap'];
 const FORM_INDEX = Object.fromEntries(FORM_ORDER.map((c, i) => [c, i]));
 
