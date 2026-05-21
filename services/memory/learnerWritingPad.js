@@ -10,19 +10,28 @@
  */
 
 import Database from 'better-sqlite3';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, '..', '..', 'data');
+const DATA_DIR = process.env.EVAL_WRITING_PAD_DIR
+  ? path.resolve(process.env.EVAL_WRITING_PAD_DIR)
+  : path.join(__dirname, '..', '..', 'data');
+const DB_PATH = path.join(DATA_DIR, 'learner-writing-pad.db');
 
 // Initialize database
 let db;
 try {
-  db = new Database(path.join(DATA_DIR, 'learner-writing-pad.db'));
+  if (process.env.EVAL_WRITING_PAD_DISABLED === '1') {
+    db = null;
+  } else {
+    if (process.env.EVAL_WRITING_PAD_DIR) fs.mkdirSync(DATA_DIR, { recursive: true });
+    db = new Database(DB_PATH);
+  }
 
-  db.exec(`
+  db?.exec(`
     CREATE TABLE IF NOT EXISTS conscious_layer (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       learner_id TEXT NOT NULL,
@@ -105,6 +114,14 @@ try {
   `);
 } catch (e) {
   console.warn('[LearnerWritingPad] Could not initialize database:', e.message);
+}
+
+export function isAvailable() {
+  return Boolean(db);
+}
+
+export function getStoragePath() {
+  return DB_PATH;
 }
 
 // ============================================================================

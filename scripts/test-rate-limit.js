@@ -10,14 +10,18 @@ import { resolveModel } from '../services/evalConfigLoader.js';
 
 const alias = process.argv[2] || 'nemotron';
 // Resolve through providers.yaml — "nemotron" → "openrouter.nemotron" → full ID
-const ref = alias.includes('.') ? alias : `openrouter.${alias}`;
 let model;
 try {
-  const resolved = resolveModel(ref);
+  const resolved = resolveModel(`openrouter.${alias}`);
   model = resolved.model;
 } catch {
-  // Pass through as-is if not a known alias (e.g. a full model ID)
-  model = alias;
+  try {
+    const resolved = resolveModel(alias);
+    model = resolved.model;
+  } catch {
+    // Pass through as-is if not a known alias (e.g. a full model ID)
+    model = alias;
+  }
 }
 const apiKey = process.env.OPENROUTER_API_KEY;
 

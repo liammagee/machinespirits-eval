@@ -46,7 +46,8 @@
  *
  * Usage:
  *   node scripts/score-poetics-phase2.js [--model codex|claude-code|gpt|sonnet|haiku]
- *        [--concurrency 3] [--mock] [--sample-dir DIR] [--out FILE]
+ *        [--concurrency 3] [--mock] [--sample-dir DIR] [--key FILE] [--out FILE]
+ *        [--allow-quality-warnings]
  *   node scripts/score-poetics-phase2.js --gate [--artifact FILE]
  *        [--labels FILE]... [--key FILE] [--threshold 0.60]
  *
@@ -387,11 +388,26 @@ function printScoreReport(scored, h2, counts, critic) {
 
 // ── transfer gate (--gate): instrument FORM vs INDEPENDENT human FORM ────────────
 
-function loadInstrumentArtifact(p) {
+function remapInstrumentIdForBlindKey(id, key) {
+  if (!key?.items) return id;
+  if (key.items[id]) return id;
+  const matches = Object.entries(key.items).filter(([, v]) => v?.source_tid === id);
+  if (matches.length === 1) return matches[0][0];
+  return id;
+}
+
+function loadInstrumentArtifact(p, key = null) {
   const d = JSON.parse(fs.readFileSync(p, 'utf8'));
   const byId = {};
-  for (const s of d.scored || []) if (!s.error && s.formClass) byId[s.id] = s.formClass;
-  return { critic: d.critic || path.basename(p), byId, file: p };
+  const sourceById = {};
+  for (const s of d.scored || []) {
+    if (!s.error && s.formClass) {
+      const id = remapInstrumentIdForBlindKey(s.id, key);
+      byId[id] = s.formClass;
+      sourceById[id] = s.id;
+    }
+  }
+  return { critic: d.critic || path.basename(p), byId, sourceById, file: p };
 }
 
 function loadHumanLabels(p) {
@@ -488,7 +504,7 @@ function runTransferGate(instrument, labellers, key, threshold) {
     console.log('── per-stratum raw agreement (with held-out key; reported, conditional on gate) ──');
     for (const stratum of ['base', 'recognition']) {
       const sids = Object.entries(key.items || {})
-        .filter(([, v]) => v.stratum === stratum)
+        .filter(([, v]) => (v.stratum ?? v.condition) === stratum)
         .map(([id]) => id);
       for (const l of labellers) {
         const common = sids.filter((id) => instrument.byId[id] != null && l.byId[id] != null);
@@ -529,6 +545,7 @@ function parseArgs() {
     artifact: null,
     labels: [],
     key: null,
+    allowQualityWarnings: false,
     threshold: TRANSFER_THRESHOLD,
   };
   for (let i = 0; i < args.length; i++) {
@@ -560,6 +577,9 @@ function parseArgs() {
       case '--key':
         o.key = path.resolve(args[++i]);
         break;
+      case '--allow-quality-warnings':
+        o.allowQualityWarnings = true;
+        break;
       case '--threshold':
         o.threshold = parseFloat(args[++i]);
         break;
@@ -570,14 +590,42 @@ function parseArgs() {
   return o;
 }
 
-function loadSample(dir) {
+function loadQualityKey(p) {
+  if (!p) return null;
+  if (!fs.existsSync(p)) throw new Error(`quality/key file not found: ${p}`);
+  return yaml.parse(fs.readFileSync(p, 'utf8')) || {};
+}
+
+function loadSample(dir, { key = null, allowQualityWarnings = false } = {}) {
   if (!fs.existsSync(dir))
     throw new Error(`No sample dir: ${dir}\n  → run scripts/load-poetics-phase2-sample.js first`);
-  return fs
+  const skipped = [];
+  const sample = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.txt'))
     .sort((a, b) => a.localeCompare(b))
-    .map((f) => ({ id: path.basename(f, '.txt'), text: fs.readFileSync(path.join(dir, f), 'utf8').trim() }));
+    .flatMap((f) => {
+      const id = path.basename(f, '.txt');
+      const item = key?.items?.[id] || null;
+      const qualityWarnings = Array.isArray(item?.quality_warnings) ? item.quality_warnings : [];
+      const qualityStatus =
+        item?.quality_status || (qualityWarnings.length ? 'review_before_scoring' : 'legacy_unmarked');
+      const blockingWarnings = qualityWarnings.filter((warning) => warning.severity !== 'info');
+      const legacyBlockingStatus = qualityStatus === 'review_before_scoring' && qualityWarnings.length === 0;
+      if (!allowQualityWarnings && (legacyBlockingStatus || blockingWarnings.length > 0)) {
+        skipped.push({ id, qualityStatus, qualityWarnings });
+        return [];
+      }
+      return [
+        {
+          id,
+          text: fs.readFileSync(path.join(dir, f), 'utf8').trim(),
+          qualityStatus,
+          qualityWarnings,
+        },
+      ];
+    });
+  return { sample, skipped };
 }
 
 function newestArtifact() {
@@ -608,17 +656,34 @@ async function mainGate(o) {
     throw new Error(
       'no human label files (config/poetics-calibration/phase2-labels-*.yaml); run label-poetics-phase2.js first or pass --labels',
     );
-  const instrument = loadInstrumentArtifact(artifactPath);
-  const labellers = labelFiles.map(loadHumanLabels);
   const key = o.key ? yaml.parse(fs.readFileSync(o.key, 'utf8')) : null;
+  const instrument = loadInstrumentArtifact(artifactPath, key);
+  const labellers = labelFiles.map(loadHumanLabels);
   const { gatePass } = runTransferGate(instrument, labellers, key, o.threshold);
   if (!gatePass) process.exitCode = 1;
 }
 
 async function mainScore(o) {
-  if (!o.mock && !MODEL_MAP[o.model])
+  if (!o.mock && !MODEL_MAP[o.model] && !String(o.model).includes('/'))
     console.warn(`WARN: unknown --model "${o.model}"; known: ${Object.keys(MODEL_MAP).join(', ')}`);
-  const sample = loadSample(o.sampleDir);
+  const qualityKey = loadQualityKey(o.key);
+  const { sample, skipped } = loadSample(o.sampleDir, {
+    key: qualityKey,
+    allowQualityWarnings: o.allowQualityWarnings,
+  });
+  if (skipped.length) {
+    console.warn(
+      `Skipping ${skipped.length} transcript(s) with quality warnings from ${path.relative(ROOT, o.key)} ` +
+        '(pass --allow-quality-warnings to score anyway):',
+    );
+    for (const item of skipped) {
+      console.warn(
+        `  - ${item.id}: ${item.qualityStatus}` +
+          (item.qualityWarnings.length ? ` (${item.qualityWarnings.map((w) => w.code).join(',')})` : ''),
+      );
+    }
+  }
+  if (!sample.length) throw new Error('no scoreable transcripts after quality filtering');
   console.log(
     `Scoring ${sample.length} transcripts with ${o.mock ? 'MOCK' : o.model} (concurrency ${o.concurrency})...`,
   );
@@ -644,6 +709,11 @@ async function mainScore(o) {
         ordinal_order: FORM_ORDER,
         formCounts: counts,
         h2,
+        qualityPolicy: {
+          key: o.key ? path.relative(ROOT, o.key) : null,
+          allowQualityWarnings: o.allowQualityWarnings,
+          skipped,
+        },
         scored,
       },
       null,

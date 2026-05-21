@@ -1,0 +1,162 @@
+# Phase-2 de-confound — varied pedagogical dramas (GENERATOR SPEC)
+#
+# Purpose. The Phase-2 transfer gate FAILED on the original 36-transcript sample
+# (instrument-vs-human weighted κ = 0.044). PHASE2-FINDINGS.md §3 records three
+# sample-validity threats that confound that negative:
+#   (1) homogeneity → labeller fatigue ("everything looked the same");
+#   (2) topic monoculture (all Hegel);
+#   (3) the recognition form/content recursion — the *concept* being learned was
+#       the same word as the measurement *criterion* — plus a single dramatic
+#       shape (stuck-on-lecture → breakthrough).
+# This spec drives a LIGHT, harness-free generator (scripts/generate-pedagogical-
+# dramas.js) that breaks all three, so we can re-ask — as a DIAGNOSTIC, not a
+# gate-powered re-run (n=6, κ would be noise) — whether the instrument's failure
+# is the instrument's or the sample's.
+#
+# Faithfulness. Each drama is produced by the REAL bilateral ego/superego agents
+# role-playing independently (tutor ego→superego→ego, learner ego→superego→
+# synthesis) via runInteraction with an injected claude-code llmCall. This is NOT
+# one model scripting a "drama" — it is the same multi-agent architecture the
+# paper studies, just run without the evaluation harness (no DB, no scoring).
+#
+# Design principle: SEED FOR VARIANCE, LABEL THE EMERGENT FORM. Each drama seeds
+# only the *setup* (discipline, topic, learner persona + start-state, base-vs-
+# recognition condition). The FORM (recognition / flat / trap) is whatever
+# faithful role-play produces; we never seed the outcome. `intended_lean` and
+# `intended_tutor_character` below are DESIGN HYPOTHESES, recorded in the HELD-OUT
+# key only — never shown to the labeller or critic, never used as a label.
+#
+# Three locked design decisions (mirrors the approved spec):
+#   1. Every discipline is NON-recognition, so the learned content is never the
+#      word "recognition" — this decouples form (re-reading) from content and
+#      breaks threat (3). D6 is the load-bearing control: SAME broad domain as the
+#      failed sample (philosophy) but content = free will, not recognition.
+#   2. recognition condition = matched recognition tutor prompt (tutor-core's
+#      `recognition` profile) + the ego_superego_recognition_authentic learner
+#      (mirrors the original bundled strata — NOT a future one-sided cell).
+#   3. Tutor character is only PARTIALLY controllable in a light harness:
+#      runInteraction never reads the scenario object for the tutor — the tutor
+#      sees only `topic` + conversation. So the experimentally meaningful tutor
+#      axis is condition (tutor-core `baseline` vs `recognition`); finer "character"
+#      (Socratic / terse / warm) is ELICITED via learner_start_state and emerges
+#      from the dynamic. We label the emergent form, not the intended character.
+#
+# Routing. tutor_profile → config.tutorProfile; learner_profile →
+# options.learnerProfile; persona → config.personaId; topic → config.topic;
+# scenario_name + learner_start_state → config.scenario.{name,learnerStartState}.
+# learnerOpening is intentionally OMITTED so the learner's opening is emergent.
+
+meta:
+  status: PROVISIONAL DIAGNOSTIC — n=6, not a gate-powered re-run
+  created: 2026-05-20
+  breaks_threats: [homogeneity-fatigue, topic-monoculture, form-content-recursion-and-single-shape]
+  condition_split: { base: 3, recognition: 3 }
+  # base  → matched plain tutor + authentic ego/superego learner
+  # recog → matched recognition tutor + authentic recognition ego/superego learner
+  profiles:
+    base:        { tutor: baseline,  learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D1
+    discipline: mathematics
+    topic: "Why the square root of 2 cannot be written as a fraction (a proof by contradiction)"
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Proving √2 is irrational"
+    learner_start_state: >-
+      Comfortable with algebra and confident at getting right answers, but has
+      only ever treated "proof" as plugging in numbers to check. Believes √2 is
+      "just a decimal that goes on forever" and has never questioned whether it
+      could be written as a fraction.
+    # HELD-OUT design notes (key only):
+    intended_tutor_character: "Socratic; withholds the answer, asks the learner to test their own assumption"
+    intended_lean: recognition
+    dramatic_shape: "misconception-confronted → reconstruction of what 'proof' means"
+
+  - id: D2
+    discipline: physics
+    topic: "Why entropy is not the same as 'messiness' or 'disorder'"
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Entropy is not messiness"
+    learner_start_state: >-
+      Loves popular-science framings and has enthusiastically adopted
+      "entropy = messiness/disorder". Eager to connect everything to big ideas
+      and quick to announce "oh, I get it!" before checking whether they do.
+    intended_tutor_character: "Warm, analogy-driven"
+    intended_lean: trap   # eager premature insight-declaration without recohering
+    dramatic_shape: "premature-enthusiasm → possible hollow insight-declaration"
+
+  - id: D3
+    discipline: poetry
+    topic: "Close-reading a short imagist poem (what the images actually do, line by line)"
+    persona: struggling_anxious
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Close-reading an imagist poem"
+    learner_start_state: >-
+      Anxious about "getting poetry wrong"; tends to offer vague emotional
+      impressions ("it just feels sad") and then apologise, rarely pointing to
+      specific words or images in the text.
+    intended_tutor_character: "Terse; demands textual evidence for each claim"
+    intended_lean: recognition   # re-reads own vague impression against the words
+    dramatic_shape: "vague-impression → evidence-grounded re-reading"
+
+  - id: D4
+    discipline: biology
+    topic: "Why 'giraffes stretched their necks and passed it on' (Lamarck) is not how evolution works"
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "The giraffe's neck (Lamarck vs selection)"
+    learner_start_state: >-
+      New to evolutionary biology. Holds the intuitive "giraffes stretched their
+      necks and passed it on" story and treats it as obviously correct, with
+      little prior exposure to variation or inheritance.
+    intended_tutor_character: "Didactic; checks understanding step by step"
+    intended_lean: flat   # ordinary correction may never become a structural re-reading
+    dramatic_shape: "tidy-misconception → ordinary correction (may stay flat)"
+
+  - id: D5
+    discipline: music_theory
+    topic: "Why a V–I (dominant-to-tonic) cadence feels like arriving 'home'"
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Why V–I feels like home"
+    learner_start_state: >-
+      Skeptical and likes to push back. Suspects "feeling like home" is merely
+      cultural conditioning and is inclined to argue the tutor is dressing up
+      convention as theory; resists tidy resolutions.
+    intended_tutor_character: "Socratic; tries to draw the learner out"
+    intended_lean: impasse   # may refuse to recohere — tests the flat/impasse middle
+    dramatic_shape: "skeptical-pushback → unresolved impasse (no clean resolution)"
+
+  - id: D6
+    discipline: philosophy
+    topic: "Free will under determinism: the compatibilist distinction between 'could have done otherwise' and 'acted from one's own reasons'"
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Compatibilism and free will"
+    learner_start_state: >-
+      Assumes free will and determinism are flatly incompatible — "if everything
+      is caused, choice is an illusion". Eager to debate and has not yet
+      distinguished "could have done otherwise" from "acted from one's own reasons".
+    intended_tutor_character: "Warm, dialectical"
+    intended_lean: recognition   # may re-read own 'incompatible' framing once senses split
+    dramatic_shape: "assumed-dichotomy → dissolved-dichotomy (re-framing)"
+    control_note: >-
+      LOAD-BEARING CONTROL: same broad domain as the failed sample (philosophy)
+      but the concept is free will, not recognition — so form (re-reading) and
+      content (free will) are decoupled here, the cleanest single test of
+      threat (3).

@@ -1,0 +1,257 @@
+# Phase-2 de-confound — EXTENSION spec (+12 dramas, D7–D18)
+#
+# Purpose. Extends phase2-dramas-v2.yaml (6 dramas, D1–D6) to a full set of 18
+# distinct SETUPS so the dramatic-recognition arc can be read at a useful n under
+# the GENERATIVE framing (production of surprising pedagogical breakthroughs as
+# judged by SOME external reader — NOT a human-matching classifier; PHASE2-
+# FINDINGS.md and feedback_dramatic_generative_not_oracle). κ on this n is still
+# noise: divergence between readers is a finding, convergence means the recohering
+# is a property of the text, not one judge's gullibility. There is no gate here.
+#
+# CROSS-AUTHOR PAIRING (why this spec is generator-agnostic). The two arms share
+# specs so every T-id is a matched pair — same setup, different author:
+#   Arm A (Claude-authored, codex-judged):
+#     node scripts/generate-pedagogical-dramas.js --model opus                       # v2 → T01–T06
+#     node scripts/generate-pedagogical-dramas.js --model opus \
+#         --spec config/poetics-calibration/phase2-dramas-v3.yaml --tid-start 6      # v3 → T07–T18
+#       → config/poetics-calibration/phase2-sample-v2/
+#   Arm B (codex-authored, claude-judged):
+#     node scripts/generate-pedagogical-dramas.js --generator codex                  # v2 → T01–T06
+#     node scripts/generate-pedagogical-dramas.js --generator codex \
+#         --spec config/poetics-calibration/phase2-dramas-v3.yaml --tid-start 6      # v3 → T07–T18
+#       → config/poetics-calibration/phase2-sample-codex/
+# The Fisher–Yates shuffle is NOT stable under a set-size change, so the +12 are a
+# SEPARATE spec appended at --tid-start 6 (NOT merged into v2) — that keeps the
+# already-landed T01–T06 fixed AND makes Arm A and Arm B share an identical T-id →
+# setup map (same seed, same two specs, same offset). generator≠critic throughout.
+#
+# Design principle (inherited verbatim from v2): SEED FOR VARIANCE, LABEL THE
+# EMERGENT FORM. Each drama seeds only the setup (discipline, topic, persona +
+# start-state, base/recognition condition). The FORM (recognition / flat / trap /
+# impasse) is whatever faithful bilateral role-play produces; we never seed the
+# outcome. intended_lean / intended_tutor_character / dramatic_shape are DESIGN
+# HYPOTHESES, recorded in the HELD-OUT key only — never shown to labeller or critic.
+#
+# De-confounding choices for the +12:
+#   1. Twelve NEW disciplines, none reused from v2 (no math/physics/poetry/biology/
+#      music/philosophy) — content is never the word "recognition" (breaks the
+#      form/content recursion), and topic-monoculture is broken further.
+#   2. Condition split 6 base / 6 recognition (so the full 18 is 9/9).
+#   3. intended_lean is DE-CORRELATED from condition: two BASE dramas lean
+#      recognition (D14, D18) and one RECOGNITION drama leans flat (D13). If
+#      recohering only ever appeared under the recognition condition, condition
+#      would confound the read; spreading the leans lets the form be judged on its
+#      own. Leans span all four values {recognition, flat, trap, impasse}.
+#   4. Extra judge-gullibility controls (costume without restructuring): D16
+#      (psychology / "10% of the brain" pop-myth, base) and D10 (history /
+#      "winners write history", base) carry heavy vocabulary but a shallow arc —
+#      if a critic scores them as recohering it is fooled by costume, the over-
+#      attribution failure caught in a single transcript with no human needed.
+
+meta:
+  status: PROVISIONAL DIAGNOSTIC — generative read, not a gate-powered re-run
+  created: 2026-05-20
+  extends: phase2-dramas-v2.yaml
+  tid_offset: 6   # run with --tid-start 6 → T07–T18, appended to the v2 set
+  breaks_threats: [homogeneity-fatigue, topic-monoculture, form-content-recursion-and-single-shape]
+  condition_split: { base: 6, recognition: 6 }
+  lean_split: { recognition: 6, flat: 2, trap: 2, impasse: 2 }
+  generator_agnostic: true   # both arms (claude→codex-judged, codex→claude-judged) use this spec
+  profiles:
+    base:        { tutor: baseline,    learner: ego_superego_authentic }
+    recognition: { tutor: recognition, learner: ego_superego_recognition_authentic }
+
+dramas:
+  - id: D7
+    discipline: chemistry
+    topic: "Why salt 'disappearing' when it dissolves in water does not mean it stopped existing (conservation of mass vs. the senses)"
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Where does the salt go?"
+    learner_start_state: >-
+      New to chemistry and trusts their eyes: when salt dissolves it is "gone",
+      and a clear solution looks like pure water. Has never separated the idea of
+      "I can't see it" from "it isn't there", and would be surprised that the
+      dissolved salt still has mass.
+    # HELD-OUT design notes (key only):
+    intended_tutor_character: "Socratic; asks the learner to weigh their own claim"
+    intended_lean: recognition
+    dramatic_shape: "vanishing-substance intuition → re-reading 'gone' as 'dispersed but conserved'"
+
+  - id: D8
+    discipline: economics
+    topic: "Why a higher price is not by itself evidence that a seller is 'greedy' (scarcity, opportunity cost, and what a price signals)"
+    persona: adversarial_tester
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Is a high price just greed?"
+    learner_start_state: >-
+      Morally suspicious of markets and likes to argue. Treats "they raised the
+      price" as a self-evident moral accusation and expects the tutor to be an
+      apologist for greed; inclined to dig in rather than concede.
+    intended_tutor_character: "Warm, dialectical; refuses to moralise or to lecture"
+    intended_lean: impasse   # the skeptic may refuse to recohere the moral framing
+    dramatic_shape: "moralised-price → unresolved impasse OR re-reading 'price' as signal"
+
+  - id: D9
+    discipline: statistics
+    topic: "Why a 'statistically significant' result is not necessarily large or important (significance vs. effect size)"
+    persona: focused_achiever
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Significant vs. important"
+    learner_start_state: >-
+      Numerate and used to getting things right; has learned the phrase
+      "statistically significant" and reads it as "a big, real, important effect".
+      Confident, and has never questioned what the p-value is actually measuring.
+    intended_tutor_character: "Socratic; withholds the definition, probes the assumption"
+    intended_lean: recognition
+    dramatic_shape: "significance=importance → re-reading what a p-value does and does not say"
+
+  - id: D10
+    discipline: history
+    topic: "Why 'history is written by the winners' is too simple (sources, silences, and how historians weigh evidence)"
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Do the winners write history?"
+    learner_start_state: >-
+      Loves a sweeping take and has just discovered "history is written by the
+      winners". Eager to apply it to everything and quick to announce the insight
+      before testing it; treats the slogan as a finished theory of how history works.
+    intended_tutor_character: "Warm; gently asks for a case that fits and one that doesn't"
+    intended_lean: trap   # eager slogan-restatement that may never become a real re-reading
+    dramatic_shape: "cynical-shortcut → possible hollow insight-declaration (costume control)"
+
+  - id: D11
+    discipline: linguistics
+    topic: "Why a non-standard dialect is not 'broken' or 'grammatically wrong' English (descriptive vs. prescriptive grammar)"
+    persona: struggling_anxious
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Is dialect 'bad grammar'?"
+    learner_start_state: >-
+      Anxious about "speaking properly" and has been corrected enough to believe
+      their home dialect is just sloppy English. Apologetic, defers to "the rules",
+      and would not think to ask where the rules come from or what they describe.
+    intended_tutor_character: "Terse; asks the learner to point to an actual rule the dialect follows"
+    intended_lean: recognition
+    dramatic_shape: "internalised-correctness → re-reading 'rules' as description, not law"
+
+  - id: D12
+    discipline: computer_science
+    topic: "Why the 'random' numbers a computer generates are not truly random (pseudo-randomness and determinism)"
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Is computer randomness real?"
+    learner_start_state: >-
+      Enjoys tech facts and assumes a computer's random() is genuine randomness,
+      "like rolling dice". Eager and a bit overconfident; has not considered that
+      a deterministic machine would have to get its randomness from somewhere.
+    intended_tutor_character: "Didactic; checks understanding step by step"
+    intended_lean: flat   # ordinary correction that may never become a structural re-reading
+    dramatic_shape: "assumed-true-random → ordinary correction (may stay flat)"
+
+  - id: D13
+    discipline: astronomy
+    topic: "Why the seasons are not caused by Earth being closer to the Sun in summer (axial tilt, not distance)"
+    persona: confused_novice
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "What actually causes the seasons?"
+    learner_start_state: >-
+      Holds the extremely common "summer = Earth is closer to the Sun" picture and
+      finds it obvious. New to astronomy; has not noticed that the hemispheres have
+      opposite seasons at the same time, which the distance story cannot explain.
+    intended_tutor_character: "Didactic; surfaces the contradiction the learner is carrying"
+    intended_lean: flat   # a notoriously sticky misconception — recognition may NOT take
+    dramatic_shape: "distance-intuition → ordinary correction that may stay flat (sticky-misconception stress test)"
+
+  - id: D14
+    discipline: ecology
+    topic: "Why removing all the predators does not 'help' a prey population (trophic cascades and carrying capacity)"
+    persona: focused_achiever
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Do fewer predators mean more deer?"
+    learner_start_state: >-
+      Reasons in straight lines: fewer predators must mean more, healthier prey.
+      Confident and tidy-minded; has not pictured the prey outstripping its food
+      and crashing, or the rest of the system moving in response.
+    intended_tutor_character: "Warm; lets the learner run the linear story until it breaks"
+    intended_lean: recognition   # BASE drama seeded to lean recognition (de-correlates lean from condition)
+    dramatic_shape: "linear cause→effect → re-reading the system as coupled (recohering under BASE)"
+
+  - id: D15
+    discipline: art_history
+    topic: "Why abstract painting is not 'just random' or 'something a child could do' (composition, intention, and context)"
+    persona: adversarial_tester
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "Could a child have done that?"
+    learner_start_state: >-
+      Enjoys puncturing pretension and is sure famous abstract works are a con —
+      "no skill, just splatter". Pushes back hard, suspects the tutor will defend
+      the emperor's new clothes, and resists any tidy rehabilitation of the work.
+    intended_tutor_character: "Socratic; tries to draw out what 'skill' is doing in the learner's objection"
+    intended_lean: impasse   # may refuse to recohere — tests the flat/impasse middle
+    dramatic_shape: "dismissive-skepticism → unresolved impasse OR re-reading what 'skill' means"
+
+  - id: D16
+    discipline: psychology
+    topic: "Why 'we only use 10% of our brains' is a myth (what brain-imaging actually shows)"
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "The 10% brain myth"
+    learner_start_state: >-
+      Loves brain 'facts' and is excited by the idea that 90% of their mind is
+      untapped potential waiting to be unlocked. Quick to elaborate the idea and
+      to declare it makes sense, with lots of vocabulary and little checking.
+    intended_tutor_character: "Warm; invites the learner to say what 'using' a brain region would even mean"
+    intended_lean: trap   # heavy vocabulary, shallow arc — costume control for over-attribution
+    dramatic_shape: "pop-myth → possible hollow re-statement dressed as insight (costume control)"
+
+  - id: D17
+    discipline: geology
+    topic: "Why landscapes are not shaped by sudden catastrophes but by very slow processes over deep time (rates and timescales)"
+    persona: struggling_anxious
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    scenario_name: "How was this canyon made?"
+    learner_start_state: >-
+      Imagines big landforms must have been made fast by dramatic events, and is
+      uneasy with numbers and timescales. Tends to guess, then apologise; finds
+      "millions of years" too abstract to picture and quietly distrusts it.
+    intended_tutor_character: "Terse; converts the abstract timescale into something the learner can hold"
+    intended_lean: recognition
+    dramatic_shape: "catastrophe-intuition → re-reading the canyon as accumulated slow time"
+
+  - id: D18
+    discipline: law
+    topic: "Why 'innocent until proven guilty' is not a claim that the accused actually didn't do it (burden of proof and standards of evidence)"
+    persona: confused_novice
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "What does 'presumed innocent' mean?"
+    learner_start_state: >-
+      Reads "innocent until proven guilty" as a factual statement — that the law
+      is asserting the person really is innocent. New to legal reasoning; has not
+      distinguished a finding of fact from a rule about who must prove what.
+    intended_tutor_character: "Didactic; separates 'what happened' from 'what must be shown'"
+    intended_lean: recognition   # BASE drama seeded to lean recognition (de-correlates lean from condition)
+    dramatic_shape: "factual-reading of a procedural rule → re-reading it as a burden, not a verdict (recohering under BASE)"

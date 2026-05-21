@@ -23,6 +23,8 @@ import {
   detectEmotionalState,
   detectUnderstandingLevel,
   detectTutorStrategy,
+  extractAdjudicatedExternalMessage,
+  extractSuperegoImprovedMessage,
   extractTutorMessage,
   extractExternalSection,
   generateLearnerResponse,
@@ -49,6 +51,86 @@ describe('INTERACTION_OUTCOMES', () => {
 
   it('has exactly 8 outcomes', () => {
     assert.strictEqual(Object.keys(INTERACTION_OUTCOMES).length, 8);
+  });
+});
+
+// ============================================================================
+// extractSuperegoImprovedMessage
+// ============================================================================
+
+describe('extractSuperegoImprovedMessage', () => {
+  it('keeps the ego draft when the superego approves with elaboration', () => {
+    const content = `CRITIQUE: Strong draft.
+IMPROVED: APPROVED. Ship it as written, but remember the learner needs space.`;
+
+    assert.strictEqual(extractSuperegoImprovedMessage(content), null);
+  });
+
+  it('extracts only the quoted revised tutor message from a verbose superego review', () => {
+    const content = `CRITIQUE:
+The draft is close, but it over-explains.
+
+IMPROVED: The draft is largely approvable. One targeted revision improves it:
+
+> "Your instinct is exactly right — the salt is still there.
+>
+> What do you think the water molecules are doing to each piece?"
+
+The change: convert the mechanism into a question.
+
+\`\`\`json
+{"approved": false, "interventionType": "revise"}
+\`\`\``;
+
+    assert.strictEqual(
+      extractSuperegoImprovedMessage(content),
+      'Your instinct is exactly right — the salt is still there.\n\nWhat do you think the water molecules are doing to each piece?',
+    );
+  });
+
+  it('rejects unquoted meta-review scaffolding instead of making it public dialogue', () => {
+    const content = `CRITIQUE: ok
+IMPROVED: The draft is largely approvable. One targeted revision improves it without restructuring.
+
+\`\`\`json
+{"suggestedChanges": ["ask one more question"]}
+\`\`\``;
+
+    assert.strictEqual(extractSuperegoImprovedMessage(content), null);
+  });
+});
+
+// ============================================================================
+// extractAdjudicatedExternalMessage
+// ============================================================================
+
+describe('extractAdjudicatedExternalMessage', () => {
+  it('extracts the FINAL section from an ego adjudication response', () => {
+    const raw = `DECISION: Revise lightly because the review is right.
+FINAL:
+"I weren't really sure what to put" — from the introduction.
+
+What rule does that sentence break?`;
+
+    assert.strictEqual(
+      extractAdjudicatedExternalMessage(raw),
+      '"I weren\'t really sure what to put" — from the introduction.\n\nWhat rule does that sentence break?',
+    );
+  });
+
+  it('drops private adjudication prose before a horizontal-rule delimiter', () => {
+    const raw = `The Superego's critique is correct. The draft over-explains.
+
+---
+
+Subject-verb agreement — right.
+
+What rule is it actually following?`;
+
+    assert.strictEqual(
+      extractAdjudicatedExternalMessage(raw),
+      'Subject-verb agreement — right.\n\nWhat rule is it actually following?',
+    );
   });
 });
 
@@ -308,8 +390,8 @@ describe('learner output sanitization', () => {
 
     assert.strictEqual(result.externalMessage, 'Could you give me a concrete example?');
 
-    const egoInitial = result.internalDeliberation.find((entry) => entry.role === 'ego_initial');
-    const egoRevision = result.internalDeliberation.find((entry) => entry.role === 'ego_revision');
+    const egoInitial = result.internalDeliberation.find((entry) => entry.role === 'ego' && entry.stage === 'initial');
+    const egoRevision = result.internalDeliberation.find((entry) => entry.role === 'ego' && entry.stage === 'adjudication');
 
     assert.ok(egoInitial?.inputMessages, 'ego initial should capture the sanitized external history');
     assert.ok(egoRevision?.inputMessages, 'ego revision should capture the sanitized reuse chain');

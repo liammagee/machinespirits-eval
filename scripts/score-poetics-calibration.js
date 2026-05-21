@@ -45,7 +45,14 @@ const MODEL_MAP = {
   haiku: 'anthropic/claude-haiku-4.5',
   sonnet: 'anthropic/claude-sonnet-4.5',
   gpt: 'openai/gpt-5.2',
+  'gemini-flash': 'google/gemini-3-flash-preview',
+  'gemini-flash-3.1': 'google/gemini-3.1-flash-lite-preview',
+  'gemini-pro': 'google/gemini-3-pro-preview',
+  'gemini-pro-3.1': 'google/gemini-3.1-pro-preview',
+  'gemini-3.5-flash': 'google/gemini-3.5-flash',
+  'google/gemini-3.5-flash': 'google/gemini-3.5-flash',
 };
+const OPENROUTER_SCORER_MAX_TOKENS = Number(process.env.OPENROUTER_SCORER_MAX_TOKENS || 4096);
 
 // ── Model calls (mirrors scripts/assess-transcripts.js) ─────────────────────
 
@@ -82,30 +89,32 @@ async function callClaudeCode(prompt) {
 // (a current OpenAI model), so it needs no OPENROUTER/OPENAI key and is a clean
 // non-Claude critic for the Claude-authored trap items. Each call gets its own
 // temp dir + cwd so concurrent runs never collide on the --output-last-message
-// file. We omit -m to use codex's current default model (gpt-5.2 is stale).
+// file. Reasoning tier is pinned EXPLICITLY (not inherited from
+// ~/.codex/config.toml) so a scoring run records its own settings; override with
+// CODEX_REASONING_EFFORT / CODEX_MODEL. CODEX_MODEL defaults to null (codex picks
+// its configured default) — we still avoid hardcoding a model name that goes stale.
+const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || 'xhigh';
+const CODEX_MODEL = process.env.CODEX_MODEL || null;
 async function callCodex(prompt) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-codex-'));
   const outFile = path.join(tmpDir, 'last.txt');
   try {
     await new Promise((resolve, reject) => {
-      const child = spawn(
-        'codex',
-        [
-          'exec',
-          '--skip-git-repo-check',
-          '--ephemeral',
-          '-s',
-          'read-only',
-          '-C',
-          tmpDir,
-          '--color',
-          'never',
-          '-o',
-          outFile,
-          '-',
-        ],
-        { stdio: ['pipe', 'pipe', 'pipe'] },
-      );
+      const codexArgs = [
+        'exec',
+        '--skip-git-repo-check',
+        '--ephemeral',
+        '-s',
+        'read-only',
+        '-C',
+        tmpDir,
+        '--color',
+        'never',
+      ];
+      if (CODEX_MODEL) codexArgs.push('-m', CODEX_MODEL);
+      if (CODEX_REASONING_EFFORT) codexArgs.push('-c', `model_reasoning_effort="${CODEX_REASONING_EFFORT}"`);
+      codexArgs.push('-o', outFile, '-');
+      const child = spawn('codex', codexArgs, { stdio: ['pipe', 'pipe', 'pipe'] });
       let err = '';
       child.stderr.on('data', (d) => (err += d));
       child.stdout.on('data', () => {});
@@ -128,7 +137,7 @@ async function callCodex(prompt) {
 async function callOpenRouter(prompt, modelKey) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY not set');
-  const model = MODEL_MAP[modelKey];
+  const model = MODEL_MAP[modelKey] || (String(modelKey).includes('/') ? modelKey : null);
   if (!model) throw new Error(`Unknown model: ${modelKey}`);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 180000);
@@ -138,7 +147,7 @@ async function callOpenRouter(prompt, modelKey) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        max_tokens: 2000,
+        max_tokens: OPENROUTER_SCORER_MAX_TOKENS,
         temperature: 0.2,
         include_reasoning: false,
         response_format: { type: 'json_object' },

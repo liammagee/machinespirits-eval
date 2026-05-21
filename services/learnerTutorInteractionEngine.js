@@ -58,9 +58,11 @@ function truncatePayload(value, limit = API_PAYLOAD_MAX_CHARS) {
   return out;
 }
 
-function makeDeliberationEntry(role, response, agentConfig = null) {
+function makeDeliberationEntry(role, response, agentConfig = null, metadata = {}) {
   return {
     role,
+    stage: metadata.stage || null,
+    decision: metadata.decision || null,
     content: response?.content || '',
     metrics: {
       model: response?.model || agentConfig?.model || null,
@@ -70,13 +72,143 @@ function makeDeliberationEntry(role, response, agentConfig = null) {
       outputTokens: response?.usage?.outputTokens ?? 0,
       generationId: response?.generationId || null,
     },
+    provenance: response?.provenance || response?.apiPayload?.provenance || null,
     apiPayload: response?.apiPayload || null,
   };
+}
+
+function normalizeDirectorPlan(plan) {
+  if (!plan || typeof plan !== 'object') return null;
+  const opening = String(plan.opening_speaker || plan.openingSpeaker || 'learner').toLowerCase();
+  const ending = String(plan.ending_speaker || plan.endingSpeaker || '').toLowerCase();
+  return {
+    ...plan,
+    opening_speaker: ['learner', 'tutor', 'director'].includes(opening) ? opening : 'learner',
+    ending_speaker: ['learner', 'tutor', 'director'].includes(ending) ? ending : null,
+    interventions: Array.isArray(plan.interventions) ? plan.interventions : [],
+  };
+}
+
+function buildDirectorContext(plan, cue = null, side = null) {
+  if (!plan && !cue) return '';
+  const lines = ['Director scene constraints for this teaching drama:'];
+  if (plan?.scene_setting) lines.push(`- Setting: ${plan.scene_setting}`);
+  if (plan?.relationship) lines.push(`- Relationship: ${plan.relationship}`);
+  if (plan?.stakes) lines.push(`- Stakes: ${plan.stakes}`);
+  if (plan?.locale || plan?.register) {
+    lines.push(`- Voice/register: ${[plan.locale, plan.register].filter(Boolean).join('; ')}`);
+  }
+  if (plan?.voice_constraints) lines.push(`- Voice constraints: ${plan.voice_constraints}`);
+  if (plan?.person_policy) lines.push(`- Person policy: ${plan.person_policy}`);
+  if (plan?.direct_address_budget) lines.push(`- Direct address budget: ${plan.direct_address_budget}`);
+  if (side && plan?.side_constraints?.[side]) lines.push(`- ${side} constraint: ${plan.side_constraints[side]}`);
+  if (cue?.instruction) lines.push(`- Current director cue: ${cue.instruction}`);
+  lines.push(
+    'Treat these as performance constraints. Do not mention the director, scene card, role labels, or hidden review process in public speech.',
+  );
+  return lines.join('\n');
+}
+
+function directorCueFor(plan, turnNumber, timing) {
+  if (!plan?.interventions?.length) return null;
+  return (
+    plan.interventions.find((cue) => {
+      const afterTurn = cue.after_turn ?? cue.afterTurn ?? cue.turn ?? null;
+      const cueTiming = cue.timing || 'before_tutor';
+      return Number(afterTurn) === Number(turnNumber) && cueTiming === timing;
+    }) || null
+  );
+}
+
+function recordDirectorCue(trace, turnNumber, cue) {
+  if (!cue) return;
+  trace.turns.push({
+    turnNumber,
+    phase: 'director',
+    externalMessage: cue.instruction || cue.stage_direction || cue.note || '',
+    internalDeliberation: [
+      {
+        role: 'director',
+        stage: cue.timing || null,
+        content: cue.reasoning || cue.instruction || '',
+        metrics: {},
+        provenance: cue.provenance || null,
+        apiPayload: null,
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    visibleToPublic: false,
+  });
+}
+
+function buildOpeningContextMessage(directorPlan, scenario, topic) {
+  const parts = [
+    directorPlan?.scene_setting ? `Scene setting: ${directorPlan.scene_setting}` : null,
+    scenario?.learnerStartState ? `Learner starting state: ${scenario.learnerStartState}` : null,
+    directorPlan?.stakes ? `Stakes: ${directorPlan.stakes}` : null,
+    `Topic: ${topic}`,
+  ].filter(Boolean);
+  return parts.join('\n');
+}
+
+export function extractSuperegoImprovedMessage(superegoContent) {
+  const improvedMatch = String(superegoContent || '').match(/IMPROVED:\s*([\s\S]*?)(?:$)/i);
+  if (!improvedMatch?.[1]) return null;
+
+  const raw = improvedMatch[1].trim();
+  if (!raw || /^approved\b/i.test(raw)) return null;
+
+  const lines = raw.split(/\r?\n/);
+  const quoteStart = lines.findIndex((line) => /^\s*>/.test(line));
+  if (quoteStart >= 0) {
+    const quoteLines = [];
+    for (let i = quoteStart; i < lines.length; i++) {
+      if (!/^\s*>/.test(lines[i])) break;
+      quoteLines.push(lines[i].replace(/^\s*>\s?/, ''));
+    }
+    const quoted = stripWrappingQuotes(quoteLines.join('\n').trim());
+    if (quoted.length > 20) return quoted;
+  }
+
+  const candidate = raw
+    .replace(/```[\s\S]*?```/g, '')
+    .split(/\n-{3,}\n|\nThe change:|\nChange:|\nExplanation:|\n```/i)[0]
+    .trim();
+  if (
+    /^(?:the )?draft\b/i.test(candidate) ||
+    /\b(interventionType|suggestedChanges|recognitionAssessment)\b/.test(candidate)
+  ) {
+    return null;
+  }
+
+  const cleaned = stripWrappingQuotes(candidate);
+  return cleaned.length > 20 ? cleaned : null;
+}
+
+function stripWrappingQuotes(text) {
+  let out = String(text || '').trim();
+  if ((out.startsWith('"') && out.endsWith('"')) || (out.startsWith('“') && out.endsWith('”'))) {
+    out = out.slice(1, -1).trim();
+  }
+  return out;
 }
 
 function sanitizeLearnerReusableText(text) {
   if (!text) return '';
   return stripThinkBlocks(text).trim();
+}
+
+export function extractAdjudicatedExternalMessage(text, fallback = '') {
+  const sanitized = stripThinkBlocks(text || '').trim();
+  if (!sanitized) return fallback || '';
+
+  const finalMatch = sanitized.match(/\bFINAL:\s*([\s\S]*)/i);
+  if (finalMatch?.[1]?.trim()) return finalMatch[1].trim();
+
+  const parts = sanitized.split(/\n\s*-{3,}\s*\n/g).map((p) => p.trim()).filter(Boolean);
+  if (parts.length > 1) return parts[parts.length - 1];
+
+  return sanitized;
 }
 
 // Interaction outcomes for tracking
@@ -117,7 +249,8 @@ export async function runInteraction(config, llmCall, options = {}) {
     sessionId = `session-${Date.now()}`,
   } = config;
 
-  const { maxTurns = DEFAULT_MAX_TURNS, _trace = true, observeInternals = true } = options;
+  const { maxTurns = DEFAULT_MAX_TURNS, _trace = true, observeInternals = true, forceMaxTurns = false } = options;
+  const directorPlan = normalizeDirectorPlan(options.directorPlan || scenario?.directorPlan || null);
 
   const startTime = Date.now();
 
@@ -143,6 +276,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       learner: { before: null, after: null },
       tutor: { before: null, after: null },
     },
+    directorPlan,
   };
 
   // Get persona and profile configuration
@@ -157,34 +291,51 @@ export async function runInteraction(config, llmCall, options = {}) {
   // Initialize conversation history
   const conversationHistory = [];
 
-  // Generate initial learner message based on scenario
-  let currentLearnerMessage = await generateInitialLearnerMessage(
-    learnerPersona,
-    learnerArchitecture,
-    learnerProfile,
-    scenario,
-    topic,
-    llmCall,
-    interactionTrace,
-  );
+  let currentLearnerMessage;
+  const openingSpeaker = directorPlan?.opening_speaker || 'learner';
+  if (openingSpeaker === 'learner') {
+    // Generate initial learner message based on scenario
+    currentLearnerMessage = await generateInitialLearnerMessage(
+      learnerPersona,
+      learnerArchitecture,
+      learnerProfile,
+      scenario,
+      topic,
+      llmCall,
+      interactionTrace,
+      directorPlan,
+    );
 
-  conversationHistory.push({
-    role: 'learner',
-    content: currentLearnerMessage.externalMessage,
-    internalDeliberation: observeInternals ? currentLearnerMessage.internalDeliberation : null,
-  });
+    conversationHistory.push({
+      role: 'learner',
+      content: currentLearnerMessage.externalMessage,
+      internalDeliberation: observeInternals ? currentLearnerMessage.internalDeliberation : null,
+    });
 
-  // Record the INITIAL learner message in the trace (Turn 0)
-  // This ensures the learner is shown as initiating the conversation
-  interactionTrace.turns.push({
-    turnNumber: 0,
-    phase: 'learner',
-    externalMessage: currentLearnerMessage.externalMessage,
-    internalDeliberation: currentLearnerMessage.internalDeliberation,
-    emotionalState: currentLearnerMessage.emotionalState,
-    understandingLevel: currentLearnerMessage.understandingLevel,
-    timestamp: new Date().toISOString(),
-  });
+    interactionTrace.turns.push({
+      turnNumber: 0,
+      phase: 'learner',
+      externalMessage: currentLearnerMessage.externalMessage,
+      internalDeliberation: currentLearnerMessage.internalDeliberation,
+      emotionalState: currentLearnerMessage.emotionalState,
+      understandingLevel: currentLearnerMessage.understandingLevel,
+      timestamp: new Date().toISOString(),
+    });
+  } else {
+    if (openingSpeaker === 'director') {
+      recordDirectorCue(interactionTrace, 0, {
+        timing: 'scene_opening',
+        instruction: directorPlan?.scene_opening || directorPlan?.scene_setting || 'The director sets the scene.',
+        reasoning: directorPlan?.director_note || '',
+      });
+    }
+    currentLearnerMessage = {
+      externalMessage: buildOpeningContextMessage(directorPlan, scenario, topic),
+      internalDeliberation: [],
+      emotionalState: 'scene_context',
+      understandingLevel: 'initial',
+    };
+  }
 
   // Main interaction loop
   let turnCount = 0;
@@ -194,6 +345,8 @@ export async function runInteraction(config, llmCall, options = {}) {
     turnCount++;
 
     // ================ TUTOR TURN ================
+    const tutorDirectorCue = directorCueFor(directorPlan, turnCount, 'before_tutor');
+    recordDirectorCue(interactionTrace, turnCount, tutorDirectorCue);
     const tutorResponse = await runTutorTurn(
       learnerId,
       sessionId,
@@ -203,6 +356,8 @@ export async function runInteraction(config, llmCall, options = {}) {
       topic,
       llmCall,
       interactionTrace,
+      directorPlan,
+      tutorDirectorCue,
     );
 
     conversationHistory.push({
@@ -223,13 +378,16 @@ export async function runInteraction(config, llmCall, options = {}) {
     // Update tutor writing pad
     await updateTutorWritingPad(learnerId, sessionId, tutorResponse, currentLearnerMessage);
 
-    // Check for natural ending
-    if (tutorResponse.suggestsEnding) {
+    // Check for natural ending (suppressed during drama generation, where we
+    // always want the full maxTurns arc — see forceMaxTurns).
+    if (tutorResponse.suggestsEnding && !forceMaxTurns) {
       interactionContinues = false;
       break;
     }
 
     // ================ LEARNER TURN ================
+    const learnerDirectorCue = directorCueFor(directorPlan, turnCount, 'before_learner');
+    recordDirectorCue(interactionTrace, turnCount, learnerDirectorCue);
     const learnerResponse = await generateLearnerResponse({
       tutorMessage: tutorResponse.externalMessage,
       topic,
@@ -239,6 +397,7 @@ export async function runInteraction(config, llmCall, options = {}) {
       llmCall,
       memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
       trace: interactionTrace,
+      profileContext: buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
     });
 
     conversationHistory.push({
@@ -264,13 +423,57 @@ export async function runInteraction(config, llmCall, options = {}) {
     const turnOutcomes = detectTurnOutcomes(learnerResponse, tutorResponse);
     interactionTrace.outcomes.push(...turnOutcomes);
 
-    // Check for natural ending
-    if (learnerResponse.suggestsEnding || learnerResponse.emotionalState === 'disengaged') {
+    // Check for natural ending (suppressed during drama generation — forceMaxTurns).
+    if (!forceMaxTurns && (learnerResponse.suggestsEnding || learnerResponse.emotionalState === 'disengaged')) {
       interactionContinues = false;
       break;
     }
 
     currentLearnerMessage = learnerResponse;
+  }
+
+  if (directorPlan?.ending_speaker === 'tutor' && interactionTrace.turns.at(-1)?.phase === 'learner') {
+    const closingCue = {
+      timing: 'before_tutor',
+      instruction:
+        directorPlan.closing_move ||
+        'End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.',
+      reasoning: 'Director requested a tutor closing beat.',
+    };
+    recordDirectorCue(interactionTrace, turnCount + 1, closingCue);
+    const tutorResponse = await runTutorTurn(
+      learnerId,
+      sessionId,
+      currentLearnerMessage.externalMessage,
+      conversationHistory,
+      tutorProfile,
+      topic,
+      llmCall,
+      interactionTrace,
+      directorPlan,
+      closingCue,
+    );
+    conversationHistory.push({
+      role: 'tutor',
+      content: tutorResponse.externalMessage,
+      internalDeliberation: observeInternals ? tutorResponse.internalDeliberation : null,
+    });
+    interactionTrace.turns.push({
+      turnNumber: turnCount + 1,
+      phase: 'tutor',
+      externalMessage: tutorResponse.externalMessage,
+      internalDeliberation: tutorResponse.internalDeliberation,
+      strategy: tutorResponse.strategy,
+      timestamp: new Date().toISOString(),
+      directorClosing: true,
+    });
+  } else if (directorPlan?.ending_speaker === 'director' && interactionTrace.turns.at(-1)?.phase !== 'director') {
+    recordDirectorCue(interactionTrace, turnCount + 1, {
+      timing: 'scene_close',
+      instruction: directorPlan.closing_move || directorPlan.director_closing || 'The director closes the scene.',
+      reasoning: 'Director requested the last word as a stage cue.',
+      provenance: directorPlan.provenance || null,
+    });
   }
 
   // Take "after" snapshots
@@ -292,7 +495,16 @@ export async function runInteraction(config, llmCall, options = {}) {
 /**
  * Generate initial learner message based on scenario
  */
-async function generateInitialLearnerMessage(persona, architecture, profile, scenario, topic, llmCall, trace) {
+async function generateInitialLearnerMessage(
+  persona,
+  architecture,
+  profile,
+  scenario,
+  topic,
+  llmCall,
+  trace,
+  directorPlan = null,
+) {
   // Get agent roles from profile (not architecture)
   const agentRoles = learnerConfig.getProfileAgentRoles(profile.name);
   const internalDeliberation = [];
@@ -308,6 +520,10 @@ async function generateInitialLearnerMessage(persona, architecture, profile, sce
 Topic: ${topic}
 Scenario: ${scenario?.name || 'General learning'}
 Initial state: ${scenario?.learnerStartState || 'Beginning new topic'}`;
+    const directorContext = buildDirectorContext(directorPlan, null, 'learner');
+    if (directorContext) {
+      roleContext += `\n\n${directorContext}`;
+    }
 
     // If this is superego and we have prior deliberation (ego), include it for critique
     if (role === 'superego' && internalDeliberation.length > 0) {
@@ -344,10 +560,15 @@ ${
       {
         temperature: getRequiredTemperature(agentConfig, role),
         maxTokens: getRequiredMaxTokens(agentConfig, role),
+        agentRole: role === 'ego' ? 'learner_ego' : role === 'superego' ? 'learner_superego' : `learner_${role}`,
       },
     );
 
-    internalDeliberation.push(makeDeliberationEntry(role, response, agentConfig));
+    internalDeliberation.push(
+      makeDeliberationEntry(role, response, agentConfig, {
+        stage: role === 'ego' ? 'initial' : role === 'superego' ? 'critique' : null,
+      }),
+    );
 
     trace.metrics.learnerInputTokens += response.usage?.inputTokens || 0;
     trace.metrics.learnerOutputTokens += response.usage?.outputTokens || 0;
@@ -373,7 +594,11 @@ Your initial reaction was:
 Internal review feedback:
 "${sanitizeLearnerReusableText(superegoFeedback?.content || '')}"
 
-Consider this feedback. You have final authority — accept, reject, or modify as you see fit.`;
+Consider this feedback as the same Ego that made the initial suggestion. You have final authority: keep your initial response, revise it, or reject part of the review if the review would make the learner less authentic.`;
+    const directorContext = buildDirectorContext(directorPlan, null, 'learner');
+    if (directorContext) {
+      revisionContext += `\n\n${directorContext}`;
+    }
 
     if (hasOpeningMessage) {
       revisionContext += `
@@ -398,10 +623,11 @@ Keep it 1-3 sentences. Do NOT include internal thoughts or meta-commentary.`;
       {
         temperature: getRequiredTemperature(egoConfig, 'ego'),
         maxTokens: getRequiredMaxTokens(egoConfig, 'ego'),
+        agentRole: 'learner_ego',
       },
     );
 
-    internalDeliberation.push(makeDeliberationEntry('ego_revision', externalResponse, egoConfig));
+    internalDeliberation.push(makeDeliberationEntry('ego', externalResponse, egoConfig, { stage: 'adjudication' }));
     trace.metrics.learnerInputTokens += externalResponse.usage?.inputTokens || 0;
     trace.metrics.learnerOutputTokens += externalResponse.usage?.outputTokens || 0;
 
@@ -434,6 +660,7 @@ Do NOT include internal thoughts or meta-commentary.`;
       {
         temperature: getRequiredTemperature(lastConfig, 'unified_learner'),
         maxTokens: getRequiredMaxTokens(lastConfig, 'unified_learner'),
+        agentRole: 'learner_unified',
       },
     );
 
@@ -484,7 +711,18 @@ function buildLearnerPrompt(agentConfig, persona, additionalContext) {
 /**
  * Run a tutor turn in response to learner
  */
-async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutorProfileName, topic, llmCall, trace) {
+async function runTutorTurn(
+  learnerId,
+  sessionId,
+  learnerMessage,
+  history,
+  tutorProfileName,
+  topic,
+  llmCall,
+  trace,
+  directorPlan = null,
+  directorCue = null,
+) {
   // Get tutor configuration from profile
   const _profile = tutorConfig.getActiveProfile(tutorProfileName);
   const egoConfig = tutorConfig.getAgentConfig('ego', tutorProfileName);
@@ -526,6 +764,7 @@ async function runTutorTurn(learnerId, sessionId, learnerMessage, history, tutor
     .slice(-6)
     .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
     .join('\n\n');
+  const directorContext = buildDirectorContext(directorPlan, directorCue, 'tutor');
 
   // Tutor internal deliberation
   const internalDeliberation = [];
@@ -540,6 +779,8 @@ Topic: ${topic}
 
 Recent conversation:
 ${conversationContext}
+
+${directorContext ? `${directorContext}\n` : ''}
 
 The learner just said:
 "${learnerMessage}"
@@ -566,10 +807,10 @@ Provide ONLY your draft response text (it will be reviewed by your pedagogical c
 
   const egoDraft = egoResponse.content || '';
   internalDeliberation.push(
-    makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }),
+    makeDeliberationEntry('ego', egoResponse, { model: tutorModel, provider: egoConfig?.provider }, { stage: 'initial' }),
   );
 
-  // ===== T.SUPEREGO: Critique and refine (skip when superego is null) =====
+  // ===== T.SUPEREGO: Critique only (skip when superego is null) =====
   let externalMessage = egoDraft;
 
   if (superegoConfig) {
@@ -583,6 +824,8 @@ Topic: ${topic}
 Recent conversation:
 ${conversationContext}
 
+${directorContext ? `${directorContext}\n` : ''}
+
 The learner said:
 "${learnerMessage}"
 
@@ -595,10 +838,13 @@ CRITIQUE this draft. Consider:
 3. Socratic method: Does it ask generative questions or just lecture?
 4. ZPD awareness: Is the scaffolding appropriate for their level?
 
-After your critique, provide an IMPROVED version if needed. Format:
+Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
+Comment on the Ego's suggestion and name what should be kept, questioned, or changed.
 
-CRITIQUE: [your analysis]
-IMPROVED: [refined response, or "APPROVED" if draft is good]`;
+Format:
+
+FEEDBACK: [your critique of the draft, including what is working and what risks flattening the scene]
+KEEP_OR_CHANGE: [keep as-is | revise lightly | revise substantially, with reasons]`;
 
     const superegoModel = superegoConfig.model || tutorModel;
 
@@ -613,17 +859,64 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
 
     const superegoContent = superegoResponse.content || '';
     internalDeliberation.push(
-      makeDeliberationEntry('superego', superegoResponse, { model: superegoModel, provider: superegoConfig.provider }),
+      makeDeliberationEntry(
+        'superego',
+        superegoResponse,
+        { model: superegoModel, provider: superegoConfig.provider },
+        { stage: 'critique' },
+      ),
     );
 
-    // Parse superego response for improved version
-    const improvedMatch = superegoContent.match(/IMPROVED:\s*([\s\S]*?)(?:$)/i);
-    if (improvedMatch && improvedMatch[1]) {
-      const improved = improvedMatch[1].trim();
-      if (improved.toUpperCase() !== 'APPROVED' && improved.length > 20) {
-        externalMessage = improved;
-      }
-    }
+    const egoAdjudicationPrompt = `${egoConfig?.prompt || 'You are a thoughtful AI tutor.'}
+
+Your accumulated knowledge about this learner:
+${tutorMemory || 'This is a new learner - no prior history.'}
+
+Topic: ${topic}
+
+Recent conversation:
+${conversationContext}
+
+${directorContext ? `${directorContext}\n` : ''}
+
+The learner just said:
+"${learnerMessage}"
+
+Your initial tutor response was:
+"${egoDraft}"
+
+The Superego's advisory feedback was:
+"${superegoContent}"
+
+You are the SAME Ego who wrote the initial response. The Superego does not draft public speech; it only comments on your suggestion.
+Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
+
+Return exactly:
+DECISION: [one short private sentence naming keep/revise and why]
+FINAL:
+[the final tutor message to the learner]
+
+The FINAL section must contain only public tutor speech. Do not mention the Ego, Superego, director, scene card, critique, draft, or review process in FINAL.`;
+
+    const egoFinalResponse = await llmCall(tutorModel, egoAdjudicationPrompt, [{ role: 'user', content: egoDraft }], {
+      temperature: getRequiredTemperature(egoConfig, 'tutor_ego'),
+      maxTokens: getRequiredMaxTokens(egoConfig, 'tutor_ego'),
+      agentRole: 'tutor_ego',
+    });
+
+    trace.metrics.tutorInputTokens += egoFinalResponse.usage?.inputTokens || 0;
+    trace.metrics.tutorOutputTokens += egoFinalResponse.usage?.outputTokens || 0;
+
+    internalDeliberation.push(
+      makeDeliberationEntry(
+        'ego',
+        egoFinalResponse,
+        { model: tutorModel, provider: egoConfig?.provider },
+        { stage: 'adjudication' },
+      ),
+    );
+
+    externalMessage = extractAdjudicatedExternalMessage(egoFinalResponse.content || '', egoDraft);
   }
 
   // Log if response is empty (helps debug API issues)
@@ -663,6 +956,9 @@ IMPROVED: [refined response, or "APPROVED" if draft is good]`;
 function extractExternalSection(text) {
   const sanitized = sanitizeLearnerReusableText(text);
   if (!sanitized) return '';
+
+  const finalMatch = sanitized.match(/\bFINAL:\s*([\s\S]*)/i);
+  if (finalMatch?.[1]?.trim()) return finalMatch[1].trim();
 
   const externalMatch = sanitized.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
   if (externalMatch) return externalMatch[1].trim();
@@ -927,7 +1223,7 @@ function calculateMemoryDelta(before, after) {
  * @param {Object} agentConfig - From learnerConfig.getAgentConfig()
  * @param {string} systemPrompt - Static system/persona prompt (cacheable)
  * @param {string} userPrompt - Dynamic per-call user content
- * @param {string} agentRole - For logging (e.g. 'ego', 'superego', 'synthesis')
+ * @param {string} agentRole - For logging (e.g. 'ego', 'superego')
  * @returns {Promise<Object>} Learner result shape
  */
 async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 'learner', messageHistory = null) {
@@ -977,7 +1273,7 @@ async function callLearnerAI(agentConfig, systemPrompt, userPrompt, agentRole = 
 
 /**
  * Generate a single learner response for use by the evaluation pipeline.
- * Runs ego→superego→synthesis if profile is multi-agent, or single call if unified.
+ * Runs ego→superego→ego adjudication if profile is multi-agent, or single call if unified.
  *
  * Uses callLearnerAI internally — the same raw fetch layer as the tutor's
  * tutorDialogueEngine.callAI — so learner and tutor LLM calls go through
@@ -1091,9 +1387,8 @@ export async function generateLearnerResponse(options) {
     .join('\n\n');
   const visibleTutorMessage = extractExternalSection(tutorMessage);
 
-  // Psychodynamic flow: Ego (initial) → Superego (critique) → Ego (revision/final)
-  // This mirrors the tutor architecture where the ego has final authority over output,
-  // accepting, rejecting, or modifying the superego's suggestions.
+  // Psychodynamic flow: Ego proposes → Superego comments → the same Ego adjudicates.
+  // The superego is advisory only; it never drafts public learner speech.
 
   const hasMultiAgent = agentRoles.includes('ego') && agentRoles.includes('superego');
 
@@ -1115,10 +1410,10 @@ export async function generateLearnerResponse(options) {
       egoConfig,
       egoSystemPrompt,
       "React to the tutor's message.",
-      'learner_ego_initial',
+      'learner_ego',
       useMessageChains ? learnerExternalHistory : null,
     );
-    const egoInitialEntry = makeDeliberationEntry('ego_initial', egoInitialResponse, egoConfig);
+    const egoInitialEntry = makeDeliberationEntry('ego', egoInitialResponse, egoConfig, { stage: 'initial' });
     egoInitialEntry.inputMessages =
       useMessageChains && learnerExternalHistory
         ? [...learnerExternalHistory, { role: 'user', content: "React to the tutor's message." }]
@@ -1150,7 +1445,7 @@ export async function generateLearnerResponse(options) {
     if (profileContext) {
       superegoContext += `\n\n${profileContext}`;
     }
-    superegoContext += `\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?`;
+    superegoContext += `\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the Ego's suggestion only.`;
     const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
 
     const superegoResponse = await callLLM(
@@ -1159,7 +1454,7 @@ export async function generateLearnerResponse(options) {
       "Critique the EGO's reaction.",
       'learner_superego',
     );
-    const superegoEntry = makeDeliberationEntry('superego', superegoResponse, superegoConfig);
+    const superegoEntry = makeDeliberationEntry('superego', superegoResponse, superegoConfig, { stage: 'critique' });
     superegoEntry.inputMessages = null; // superego uses single-prompt, not message chains
     internalDeliberation.push(superegoEntry);
     tokenUsage.inputTokens += superegoResponse.usage?.inputTokens || 0;
@@ -1170,14 +1465,14 @@ export async function generateLearnerResponse(options) {
       trace.metrics.learnerOutputTokens += superegoResponse.usage?.outputTokens || 0;
     }
 
-    // === STEP 3: Ego revision (final authority) ===
-    // The ego considers the superego's feedback and decides what to actually say.
-    // It may accept, reject, or modify the superego's suggestions.
+    // === STEP 3: Ego adjudication (final authority) ===
+    // The same ego considers the superego's feedback and decides what to actually say.
+    // It may keep, reject, or modify the initial suggestion.
     let egoRevisionContext = `Topic: ${topic}`;
     if (memoryContext) {
       egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"\n\nConsider this feedback. You have final authority — accept, reject, or modify as you see fit.\n\nRespond with ONLY what the learner would say out loud to the tutor (1-4 sentences). Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks.`;
+    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"\n\nYou are the SAME Ego who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nDECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
     // Build combined history for ego revision: external + ego internal + superego feedback
@@ -1197,10 +1492,10 @@ export async function generateLearnerResponse(options) {
       egoConfig,
       egoRevisionSystemPrompt,
       'Produce your final response to the tutor.',
-      'learner_ego_revision',
+      'learner_ego',
       egoRevisionMsgHistory,
     );
-    const egoRevisionEntry = makeDeliberationEntry('ego_revision', egoFinalResponse, egoConfig);
+    const egoRevisionEntry = makeDeliberationEntry('ego', egoFinalResponse, egoConfig, { stage: 'adjudication' });
     egoRevisionEntry.inputMessages = egoRevisionMsgHistory
       ? [...egoRevisionMsgHistory, { role: 'user', content: 'Produce your final response to the tutor.' }]
       : null;
@@ -1216,7 +1511,7 @@ export async function generateLearnerResponse(options) {
     // Log deliberation for debugging/analysis
     if (process.env.LEARNER_DEBUG) {
       console.log('\n┌─────────────────────────────────────────────────────────────');
-      console.log('│ LEARNER DELIBERATION (ego→superego→ego_revision)');
+      console.log('│ LEARNER DELIBERATION (ego→superego→ego adjudication)');
       console.log('├─────────────────────────────────────────────────────────────');
       console.log(`│ EGO INITIAL: ${egoInitialResponse.content.substring(0, 200)}...`);
       console.log('├─────────────────────────────────────────────────────────────');
@@ -1259,7 +1554,7 @@ export async function generateLearnerResponse(options) {
   }
 
   // Get final message from the last deliberation step
-  // For multi-agent: ego_revision. For unified: the single agent's output.
+  // For multi-agent: ego adjudication. For unified: the single agent's output.
   const finalDeliberation = internalDeliberation[internalDeliberation.length - 1];
   const emotionalState = detectEmotionalState(internalDeliberation);
 
