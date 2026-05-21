@@ -118,6 +118,17 @@ What rule does that sentence break?`;
     );
   });
 
+  it('extracts FINAL when adjudication uses a private decision marker', () => {
+    const raw = `PRIVATE_DECISION: Revise lightly after internal review.
+FINAL:
+Look at the gas chamber first. Which state has more microscopic arrangements?`;
+
+    assert.strictEqual(
+      extractAdjudicatedExternalMessage(raw),
+      'Look at the gas chamber first. Which state has more microscopic arrangements?',
+    );
+  });
+
   it('drops private adjudication prose before a horizontal-rule delimiter', () => {
     const raw = `The Superego's critique is correct. The draft over-explains.
 
@@ -588,5 +599,24 @@ describe('learner prompt leakage prevention', () => {
       'REGRESSION: ego revision prompt should use neutral labels like ' +
         '"Your initial reaction was" and "Internal review feedback" instead of architecture terms.',
     );
+  });
+});
+
+describe('tutor adjudication prompt leakage prevention', () => {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const sourcePath = resolve(__dirname, '..', 'learnerTutorInteractionEngine.js');
+  const source = readFileSync(sourcePath, 'utf-8');
+
+  it('does not expose Superego as the tutor revision prompt label', () => {
+    assert.ok(
+      !source.includes("The Superego's advisory feedback was:"),
+      'REGRESSION: tutor adjudication prompt should use a neutral internal-review label.',
+    );
+    assert.ok(source.includes('Internal teaching review feedback:'), 'expected neutral tutor review label');
+  });
+
+  it('asks for private decisions rather than public rumination markers', () => {
+    assert.ok(source.includes('PRIVATE_DECISION:'), 'expected explicit private decision marker');
   });
 });

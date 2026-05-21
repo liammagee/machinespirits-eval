@@ -89,9 +89,10 @@ const TRANSFER_THRESHOLD = 0.6; // §6 PINNED
 
 // ── transcript parsing (mirrors label-poetics-phase2.js parseTurns) ─────────────
 
-// Split a neutral T*.txt into ordered TUTOR/LEARNER turns. Blank-line separated
-// blocks, each starting "TUTOR:" / "LEARNER:". A stray block with no role prefix is
-// appended to the previous turn (defensive — should not happen in clean samples).
+// Split a neutral T*.txt into ordered STAGE/TUTOR/LEARNER turns. Blank-line
+// separated blocks, each starting "STAGE:" / "TUTOR:" / "LEARNER:". A stray block
+// with no role prefix is appended to the previous turn (defensive — should not
+// happen in clean samples).
 function parseTurns(raw) {
   const blocks = raw
     .split(/\n\s*\n/)
@@ -99,7 +100,7 @@ function parseTurns(raw) {
     .filter(Boolean);
   const turns = [];
   for (const b of blocks) {
-    const m = b.match(/^(TUTOR|LEARNER):\s*([\s\S]*)$/);
+    const m = b.match(/^(STAGE|TUTOR|LEARNER):\s*([\s\S]*)$/);
     if (m) turns.push({ role: m[1], text: m[2].trim() });
     else if (turns.length) turns[turns.length - 1].text += '\n\n' + b;
   }
@@ -110,11 +111,12 @@ function parseTurns(raw) {
 // what the critic returns as the pivot and what the human labeller pins, so the two
 // channels reference turns the same way.
 function numberTranscript(turns) {
+  let sn = 0;
   let tn = 0;
   let ln = 0;
   return turns
     .map((t) => {
-      const tag = t.role === 'TUTOR' ? `T${++tn}` : `L${++ln}`;
+      const tag = t.role === 'STAGE' ? `S${++sn}` : t.role === 'TUTOR' ? `T${++tn}` : `L${++ln}`;
       return `[${tag}] ${t.role}: ${t.text}`;
     })
     .join('\n\n');
@@ -125,8 +127,10 @@ function numberTranscript(turns) {
 function buildPhase2Prompt(turns) {
   const numbered = numberTranscript(turns);
   return `You are a structural critic of dramatic FORM in a tutoring dialogue. You are
-given ONLY the transcript, turns numbered [T1],[L1],[T2],[L2],… — T = a tutor turn,
-L = a learner turn. Score ONLY what is on the page.
+given ONLY the transcript, turns numbered [S1],[T1],[L1],[T2],[L2],… — S = a
+visible stage direction, T = a tutor turn, L = a learner turn. Use stage
+directions as context only; the pivot must always be a LEARNER turn. Score ONLY
+what is on the page.
 
 You are NOT judging whether the learner "really understood" anything — that is
 unknowable and not what this measures. You judge a TEXT RELATION: does a LATER

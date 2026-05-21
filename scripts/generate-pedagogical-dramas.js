@@ -34,12 +34,13 @@
  * learner_superego. The ego role is stable; "initial" vs "adjudication" is a
  * stage on the same role, not a separate actor.
  *
- * Blinding (mirrors load-poetics-phase2-sample.js): only EXTERNAL turns are
- * emitted to the sample. Internal ego/superego deliberation is written to a
- * SEPARATE held-out dir and never reaches the critic or labeller — the unit of
- * analysis is the transcript-as-drama, not an agent's interior (the arc's
- * "no concealed-interior signal" rule). The held-out key (discipline / condition
- * / intended-lean / dramatic-shape) joins to scores + labels only AFTER both.
+ * Blinding (mirrors load-poetics-phase2-sample.js): only EXTERNAL turns and
+ * visible STAGE directions are emitted to the sample. Internal ego/superego
+ * deliberation is written to a SEPARATE held-out dir and never reaches the critic
+ * or labeller — the unit of analysis is the transcript-as-drama, not an agent's
+ * interior (the arc's "no concealed-interior signal" rule). The held-out key
+ * (discipline / condition / intended-lean / dramatic-shape) joins to scores +
+ * labels only AFTER both.
  *
  * Cost posture: these 6 dramas share ONE Max-plan quota window AND feed a
  * between-condition contrast, so they run SEQUENTIALLY (concurrent → N× drain +
@@ -243,6 +244,17 @@ function renderTranscript(turns, removedSink) {
   );
 }
 
+function publicStageDirectionText(text) {
+  return String(text || '')
+    .trim()
+    .replace(/^The director places the tutor\b/i, 'The tutor stands')
+    .replace(/^The director places the learner\b/i, 'The learner stands')
+    .replace(/^The director (?:sets|opens) (?:the )?scene:?\s*/i, '')
+    .replace(/^The director\s+/i, '')
+    .replace(/\bscene card\b/gi, 'scene')
+    .trim();
+}
+
 // A learner turn is "truncated" (generation-time max_tokens clip) if it does not
 // end in sentence-final punctuation — a clipped fragment cannot be judged for
 // recohering. We don't auto-exclude at n=6; we WARN so the drama can be regenerated.
@@ -258,17 +270,33 @@ function isTruncated(text) {
 // turn. The fixed engine keeps the ego draft whenever the superego's IMPROVED
 // block opens with "approved"; this re-derives that same choice offline from the
 // held-out trace, reclaiming the correct turn without re-calling any LLM.
-function externalTurns(trace, { restoreLeakedEgo = false } = {}) {
-  return (trace.turns || [])
-    .filter((t) => (t.phase === 'tutor' || t.phase === 'learner') && t.externalMessage && String(t.externalMessage).trim())
-    .map((t) => {
+function externalTurns(trace, { restoreLeakedEgo = false, includeStageDirections = true } = {}) {
+  const out = [];
+  const seenOpening = (trace.turns || []).some(
+    (t) => t.phase === 'director' && Number(t.turnNumber) === 0 && String(t.externalMessage || '').trim(),
+  );
+  const pushStage = (text, turnNumber = null) => {
+    const stageText = publicStageDirectionText(text);
+    if (stageText) out.push({ role: 'STAGE', text: stageText, turnNumber });
+  };
+  if (includeStageDirections && trace.directorPlan?.scene_opening && !seenOpening) {
+    pushStage(trace.directorPlan.scene_opening, 0);
+  }
+  for (const t of trace.turns || []) {
+    if (includeStageDirections && t.phase === 'director' && t.externalMessage && String(t.externalMessage).trim()) {
+      pushStage(t.externalMessage, t.turnNumber);
+      continue;
+    }
+    if ((t.phase === 'tutor' || t.phase === 'learner') && t.externalMessage && String(t.externalMessage).trim()) {
       let text = String(t.externalMessage).trim();
       if (restoreLeakedEgo && t.phase === 'tutor' && /^\s*approved\b/i.test(text)) {
         const ego = (t.internalDeliberation || []).find((d) => d.role === 'ego');
         if (ego && String(ego.content).trim()) text = String(ego.content).trim();
       }
-      return { role: t.phase === 'tutor' ? 'TUTOR' : 'LEARNER', text, turnNumber: t.turnNumber };
-    });
+      out.push({ role: t.phase === 'tutor' ? 'TUTOR' : 'LEARNER', text, turnNumber: t.turnNumber });
+    }
+  }
+  return out;
 }
 
 // One held-out key entry. Single source so the generate path and the resume-skip
@@ -815,6 +843,7 @@ function buildDirectorSystemPrompt() {
 Create a hidden scene card that will guide separate tutor and learner agents. Your job is to break routine: vary setting, relation, voice, speaker order, and occasional external intervention while preserving the learning topic.
 
 Do not stereotype dialect, nationality, class, or region. Locale/register constraints should affect rhythm, idiom density, directness, and situation, not caricatured spelling.
+Write visible stage directions as play text. Do not start them with "The director..." and do not explain your intention inside them.
 
 Return exactly one JSON object with:
 {
@@ -963,6 +992,22 @@ function formatProvenance(entry) {
   return parts.join(' | ');
 }
 
+function formatHeldOutEntryContent(entry) {
+  const raw = String(entry?.content || '').trim();
+  if (!raw || entry?.stage !== 'adjudication') return raw;
+
+  const finalMatch = raw.match(/\bFINAL:\s*([\s\S]*)/i);
+  if (!finalMatch?.[1]?.trim()) return raw;
+
+  const decisionMatch = raw.match(/\b(?:PRIVATE_)?DECISION:\s*([^\n]*)/i);
+  const lines = [];
+  if (decisionMatch?.[1]?.trim()) {
+    lines.push(`_private decision: ${decisionMatch[1].trim()}_`, '');
+  }
+  lines.push('**Final public speech:**', '', finalMatch[1].trim());
+  return lines.join('\n');
+}
+
 function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
   const includeTurn = (turn) => mode === 'full' || mode === 'stage' || turn.phase === mode;
   const title =
@@ -988,7 +1033,7 @@ function renderHeldOutTranscript(trace, { tid, dramaId, mode }) {
     for (const entry of turn.internalDeliberation || []) {
       lines.push(`### ${formatRoleLabel(turn.phase, entry.role, entry.stage)}`);
       lines.push(`_provenance: ${formatProvenance(entry)}_`, '');
-      lines.push(String(entry.content || '').trim() || '(empty)');
+      lines.push(formatHeldOutEntryContent(entry) || '(empty)');
       lines.push('');
     }
     if (turn.phase === 'tutor' || turn.phase === 'learner') {

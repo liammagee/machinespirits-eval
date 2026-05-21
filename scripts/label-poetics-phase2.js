@@ -121,9 +121,10 @@ function parseArgs(argv) {
 
 // ── sample I/O ────────────────────────────────────────────────────────────────
 
-// Split a neutral T*.txt back into ordered TUTOR/LEARNER turns. Blank-line
-// separated blocks, each starting "TUTOR:" / "LEARNER:"; a stray block with no
-// role prefix is appended to the previous turn (defensive — should not happen).
+// Split a neutral T*.txt back into ordered STAGE/TUTOR/LEARNER turns. Blank-line
+// separated blocks, each starting "STAGE:" / "TUTOR:" / "LEARNER:"; a stray block
+// with no role prefix is appended to the previous turn (defensive — should not
+// happen).
 function parseTurns(raw) {
   const blocks = raw
     .split(/\n\s*\n/)
@@ -131,7 +132,7 @@ function parseTurns(raw) {
     .filter(Boolean);
   const turns = [];
   for (const b of blocks) {
-    const m = b.match(/^(TUTOR|LEARNER):\s*([\s\S]*)$/);
+    const m = b.match(/^(STAGE|TUTOR|LEARNER):\s*([\s\S]*)$/);
     if (m) turns.push({ role: m[1], text: m[2].trim() });
     else if (turns.length) turns[turns.length - 1].text += '\n\n' + b;
   }
@@ -188,10 +189,11 @@ function displayItem(item, store, total) {
     `  Sample ${item.id}     (${done}/${total} labelled)${existing ? `     [current: ${existing.label}]` : ''}`,
   );
   console.log('─'.repeat(72) + '\n');
+  let sn = 0;
   let tn = 0;
   let ln = 0;
   for (const t of item.turns) {
-    const tag = t.role === 'TUTOR' ? `T${++tn}` : `L${++ln}`;
+    const tag = t.role === 'STAGE' ? `S${++sn}` : t.role === 'TUTOR' ? `T${++tn}` : `L${++ln}`;
     console.log(`[${tag}] ${t.role}: ${t.text}\n`);
   }
   console.log(RUBRIC_COMPACT);

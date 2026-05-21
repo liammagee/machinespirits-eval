@@ -102,6 +102,8 @@ describe('generate-pedagogical-dramas', () => {
     for (const suffix of ['public.txt', 'full.md', 'stage.md', 'tutor.md', 'learner.md']) {
       assert.ok(fs.existsSync(path.join(transcriptsDir, `${tid}.${suffix}`)), `missing ${suffix} transcript`);
     }
+    const publicSample = fs.readFileSync(path.join(sampleDir, `${tid}.txt`), 'utf8');
+    assert.match(publicSample, /^STAGE:/m, 'public drama sample should expose visible stage directions');
     const fullTranscript = fs.readFileSync(path.join(transcriptsDir, `${tid}.full.md`), 'utf8');
     assert.match(fullTranscript, /Director Scene Card/);
     assert.match(fullTranscript, /Tutor Ego \(adjudication\/final authority\)/);

@@ -104,7 +104,7 @@ function buildDirectorContext(plan, cue = null, side = null) {
   if (side && plan?.side_constraints?.[side]) lines.push(`- ${side} constraint: ${plan.side_constraints[side]}`);
   if (cue?.instruction) lines.push(`- Current director cue: ${cue.instruction}`);
   lines.push(
-    'Treat these as performance constraints. Do not mention the director, scene card, role labels, or hidden review process in public speech.',
+    'Treat these as performance constraints. Public speech may acknowledge visible objects, timing, interruptions, and shared scene facts, but must not mention the director, scene card, role labels, or hidden review process.',
   );
   return lines.join('\n');
 }
@@ -137,7 +137,7 @@ function recordDirectorCue(trace, turnNumber, cue) {
       },
     ],
     timestamp: new Date().toISOString(),
-    visibleToPublic: false,
+    visibleToPublic: true,
   });
 }
 
@@ -839,7 +839,7 @@ CRITIQUE this draft. Consider:
 4. ZPD awareness: Is the scaffolding appropriate for their level?
 
 Do NOT write the tutor's replacement response. You are advisory, not the public speaker.
-Comment on the Ego's suggestion and name what should be kept, questioned, or changed.
+Comment on the draft and name what should be kept, questioned, or changed.
 
 Format:
 
@@ -885,14 +885,14 @@ The learner just said:
 Your initial tutor response was:
 "${egoDraft}"
 
-The Superego's advisory feedback was:
+Internal teaching review feedback:
 "${superegoContent}"
 
-You are the SAME Ego who wrote the initial response. The Superego does not draft public speech; it only comments on your suggestion.
+You are the same tutor persona who wrote the initial response. The internal review does not draft public speech; it only comments on your suggestion.
 Adjudicate the feedback: keep the initial response if it is better, revise lightly if needed, or revise substantially if the critique reveals a real problem.
 
 Return exactly:
-DECISION: [one short private sentence naming keep/revise and why]
+PRIVATE_DECISION: [one short private sentence naming keep/revise and why]
 FINAL:
 [the final tutor message to the learner]
 
@@ -1441,11 +1441,11 @@ export async function generateLearnerResponse(options) {
     if (memoryContext) {
       superegoContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nThe EGO's initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"`;
+    superegoContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nThe learner's initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"`;
     if (profileContext) {
       superegoContext += `\n\n${profileContext}`;
     }
-    superegoContext += `\n\nReview the EGO's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the Ego's suggestion only.`;
+    superegoContext += `\n\nReview the learner's response. Is it accurate? What's being missed? What should be reconsidered?\n\nDo NOT draft the learner's replacement message. Comment on the initial response only.`;
     const superegoSystemPrompt = buildLearnerPrompt(superegoConfig, persona, superegoContext);
 
     const superegoResponse = await callLLM(
@@ -1472,7 +1472,7 @@ export async function generateLearnerResponse(options) {
     if (memoryContext) {
       egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"\n\nYou are the SAME Ego who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nDECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL.`;
+    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
     // Build combined history for ego revision: external + ego internal + superego feedback
