@@ -107,6 +107,20 @@ describe('buildAnchoredRevisitCue', () => {
     assert.match(cue.instruction, /replace it with a new framing/i);
   });
 
+  it('lets the reconsider policy publicly keep, narrow, or replace the anchor', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reconsider',
+        instruction: 'A prior learner line is played back.',
+      },
+      [{ role: 'learner', content: 'I think the threat is just another cause.' }],
+    );
+
+    assert.match(cue.instruction, /must revoice that wording first/i);
+    assert.match(cue.instruction, /still stands, needs narrowing, or needs replacing/i);
+  });
+
   it('can anchor revoice on the opening learner framing', () => {
     const cue = buildAnchoredRevisitCue(
       {

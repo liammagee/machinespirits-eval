@@ -109,6 +109,10 @@ function buildDirectorContext(plan, cue = null, side = null) {
       lines.push(
         '- Reframe-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, name the earlier framing problem out loud, then replace it with a new framing that changes how that earlier line should be read. Internal review may tune the voice but must not delete those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
       );
+    } else if (revisitPolicy === 'reconsider') {
+      lines.push(
+        '- Reconsider-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, then judge in public whether it still stands, needs narrowing, or needs replacing. Keeping or qualifying the earlier wording can be the honest answer; do not force a breakthrough.',
+      );
     } else if (revisitPolicy === 'revoice') {
       lines.push(
         '- Revoice-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, then say one concrete thing it now misses, keeps, or changes. The learner may still resist or stay uncertain; do not fake a breakthrough.',
@@ -189,6 +193,8 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
       `A prior learner line is played back: "${anchor}" ` +
       (policy === 'reframe'
         ? 'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.'
+        : policy === 'reconsider'
+          ? 'The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.'
         : policy === 'revoice'
           ? 'The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.'
           : 'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.'),

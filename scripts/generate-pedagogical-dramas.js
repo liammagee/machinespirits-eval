@@ -58,7 +58,7 @@
  *        --model <alias> (claude CLI --model, default sonnet) · --out-dir / --key
  *        --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
- *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reframe
+ *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
@@ -135,8 +135,8 @@ function parseArgs(argv) {
     throw new Error(`--generator must be claude|codex (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
-  if (!['none', 'anchor', 'revoice', 'reframe'].includes(a.directorRevisitPolicy))
-    throw new Error('--director-revisit-policy must be none|anchor|revoice|reframe');
+  if (!['none', 'anchor', 'revoice', 'reconsider', 'reframe'].includes(a.directorRevisitPolicy))
+    throw new Error('--director-revisit-policy must be none|anchor|revoice|reconsider|reframe');
   if (!['latest', 'opening', 'misframing-candidate'].includes(a.directorRevisitAnchor))
     throw new Error('--director-revisit-anchor must be latest|opening|misframing-candidate');
   a.spec = a.spec || DRAMAS_SPEC;
@@ -384,18 +384,23 @@ function revoiceComplianceFailures(turns) {
 function namesEarlierFramingProblem(text) {
   const learnerText = String(text || '');
   const explicitProblem =
-    /\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b[\s\S]{0,80}\b(?:problem|trouble|issue|miss(?:es|ed)?|wrong|off|too narrow|too quick|premature|skips?|flattens?|erases?)\b/i;
+    /\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b[\s\S]{0,80}\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|too\s+\w+|premature|skips?|flattens?|erases?)\b/i;
   const explicitReverse =
-    /\b(?:problem|trouble|issue|miss(?:es|ed)?|wrong|off|too narrow|too quick|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b/i;
+    /\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|too\s+\w+|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b/i;
   const selfCorrection =
     /\b(?:I|that)\s+(?:jumped|rushed|mistook|reduced|flattened|skipped)\b[\s\S]{0,80}\b(?:before|into|to|the)\b/i;
   const earlierFramingCorrection =
     /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:made it sound|sounded|treated|put|reduced|jumped|mistook|too)\b/i;
+  const ordinarySelfCorrection = [
+    /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
+    /\bI\s+(?:was still|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again)\b/i,
+  ].some((pattern) => pattern.test(learnerText));
   return (
     explicitProblem.test(learnerText) ||
     explicitReverse.test(learnerText) ||
     selfCorrection.test(learnerText) ||
-    earlierFramingCorrection.test(learnerText)
+    earlierFramingCorrection.test(learnerText) ||
+    ordinarySelfCorrection
   );
 }
 
@@ -406,7 +411,10 @@ function replacesEarlierFraming(text) {
     /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
     /\bI\s+(?:would|should|need to|can)\s+(?:frame|read|say|put|treat|write|claim)\b/i,
-    /\b(?:line|claim|proof|equation|image|word|step)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
+    /\b(?:line|claim|proof|equation|step)\s+(?:now\s+)?(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
+    /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
+    /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
+    /\b(?:more like|better as|read from|looking back)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }
 
@@ -1059,12 +1067,16 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   const cueText =
     policy === 'reframe'
       ? 'A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.'
+      : policy === 'reconsider'
+        ? 'A prior learner line is played back. The learner must revoice that earlier wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.'
       : policy === 'revoice'
         ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
         : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.';
   const cueReasoning =
     policy === 'reframe'
       ? 'Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.'
+      : policy === 'reconsider'
+        ? 'Opt-in reconsideration mirror: the learner must make a public judgment about earlier wording without being forced to replace it.'
       : policy === 'revoice'
         ? 'Opt-in revoice mirror: the learner must make the earlier wording and the change to it legible in public speech.'
         : 'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.';

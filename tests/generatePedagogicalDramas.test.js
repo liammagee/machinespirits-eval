@@ -200,6 +200,60 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a self-correction that says the earlier wording made the claim sound wrong', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T92',
+      dramaId: 'D92',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "The stretching part stays with one giraffe." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'The stretching part stays with one giraffe, but I was still making it sound like stretching starts the neck change. Looking back at the diagram, maybe it means the young giraffes already have small differences first.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts a terse mood-first correction with an object-led replacement', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T91',
+      dramaId: 'D91',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "Sorry, I went straight to the stark feeling again." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'Sorry, I went straight to the stark feeling again. That was mood first; this line is the image on the page first.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('routes tutor and learner roles to different backends and persists held-out role transcripts', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-test-'));
     const sampleDir = path.join(tmp, 'sample');
