@@ -1,0 +1,29 @@
+STAGE: A laptop repeats the same glittering scatterplot after each reset while a stack of blank showcase labels waits beside it.
+
+TUTOR: Set the demo seed to `42`, run it twice, and the same “random” pattern appears twice. A die does not usually do that.
+
+Same seed. Same procedure. Same sequence.
+
+So before the showcase, one distinction matters: the pattern can look unpredictable while still being determined by its starting state. Does that repeated run still behave like a dice roll, or like a machine replaying a rule?
+
+LEARNER: Oh, wait. Seed `42` again and the same pattern returns, so that is not a die roll in the usual sense. It still looks random on the screen, but the reset makes me hesitate. Is this the pseudo-random part: a fixed start replaying a sequence that only seems unpredictable?
+
+TUTOR: Seed `42` is the clue. A pseudo-random generator starts from that seed, then follows a deterministic rule to produce a sequence that can look irregular.
+
+The reset exposes the boundary: same seed, same rule, same sequence. Useful for this demo, but not identical to a fresh die roll.
+
+Change the seed and the pattern changes. What stays fixed when seed `42` is used again?
+
+STAGE: A showcase coordinator leans in to ask whether the label is ready; the learner must answer in a short, provisional line before returning to the randomness claim.
+
+LEARNER: “Label it pseudo-random for now.” Seed `42` comes back, and the pattern comes back too. Oh, so the reset is the giveaway: it looks like a dice roll, but the same start is replaying the machine rule.
+
+TUTOR: That reset is the evidence. Seed `42` fixes the starting state; the generator follows the same deterministic steps, so the irregular pattern returns.
+
+A different seed can change the pattern. The machine rule remains. For the showcase, which label fits this demo more precisely: a fresh dice roll, or a pseudo-random sequence from a seed?
+
+LEARNER: Pseudo-random sequence from a seed, yes. Resetting `42` is like putting the same machine setup back on the table, so the pattern returns. New seed, new pattern, but still not quite a fresh die roll.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Seed `42` repeats the evidence: irregular output, deterministic machine sequence.

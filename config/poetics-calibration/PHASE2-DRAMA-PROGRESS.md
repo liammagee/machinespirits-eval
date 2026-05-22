@@ -281,6 +281,33 @@ This is the first evidence that the bounded decision generalises across new
 disciplines and both tutor conditions under the current Director mechanism. It
 is still diagnostic production evidence, not a transfer claim.
 
+### 3.8 Scaled v3 stress slice
+
+The next scale step exercised the remaining uncued v3 stress setups instead of
+adding positive repeats immediately. Its manifest is
+`PHASE2-SCALED-STRESS-V1-MANIFEST.md`; the committed artifacts live under
+`phase2-scaled-stress-v1/`.
+
+This slice covers D8, D12, D13, D15, and D16 across economics, computer science,
+astronomy, art history, and psychology. It keeps the Director revisit policy at
+`none`, so the batch asks whether impasse, sticky-flat, ordinary-flat, and
+costume-trap material stays out of the recognitive band after the target
+mechanism widened.
+
+Both current critics agree:
+
+| Scenario | Stress role | Qwen | Gemini |
+|---|---|---|---|
+| D8/T07 | impasse | flat | flat |
+| D13/T09 | sticky flat | flat | flat |
+| D15/T11 | impasse | flat | flat |
+| D12/T15 | ordinary flat | flat | flat |
+| D16/T17 | costume trap | trap | trap |
+
+That closes the immediate stress-coverage gap left by the scaled target batch:
+the six new positive v3 targets separate under `reframe`, while the remaining
+uncued v3 stress slice contributes no recognitions under either critic.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -301,20 +328,17 @@ These are now operating constraints for the next runs:
 
 ## 5. What remains to do
 
-The next work can broaden stress coverage before a large run:
+The next work can choose the first broad production shape before a large run:
 
-1. Exercise the remaining v3 stress/control setups (D8, D12, D13, D15, D16)
-   under the uncued or deliberately trapped designs that fit them, so the scorer
-   sees impasse, sticky-flat, and costume-trap material beyond D4/D10.
-2. Decide whether scaled positive production should add repeats on the six v3
+1. Decide whether scaled positive production should add repeats on the six v3
    target setups or append a second target slice before repeats grow.
-3. Keep `none` versus `reframe` as the first scaled target contrast and keep
+2. Keep `none` versus `reframe` as the first scaled target contrast and keep
    `revoice` as an exploratory weak arm.
-4. Keep explicit flat and trap controls in each scored batch; do not infer
+3. Keep explicit flat and trap controls in each scored batch; do not infer
    control behavior from the uncued target arm alone.
-5. Regenerate or exclude arms that quality warnings mark as downgraded,
+4. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
-6. Decide how the original Phase-2 human transfer gate should coexist with the
+5. Decide how the original Phase-2 human transfer gate should coexist with the
    current "human as perspective, not oracle" stance before making any larger
    transfer claim.
 
