@@ -327,6 +327,35 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('flags a requested reframe cue that the anchor gate downgraded', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T90',
+      dramaId: 'D90',
+      turns: [
+        { role: 'LEARNER', turnNumber: 1, text: 'I am not sure the first framing still stands.' },
+        { role: 'LEARNER', turnNumber: 2, text: 'The later line keeps the exchange long enough to score.' },
+      ],
+      traceTurns: [
+        {
+          phase: 'director',
+          turnNumber: 2,
+          directorCue: {
+            requestedRevisitPolicy: 'reframe',
+            revisitPolicy: 'reconsider',
+            revisitAnchor: 'misframing-candidate',
+            reframeAnchorGate: 'downgraded_to_reconsider_ineligible_anchor',
+          },
+        },
+      ],
+    });
+
+    const warning = warnings.find((entry) => entry.code === 'reframe_cue_downgraded');
+    assert.equal(warning.count, 1);
+    assert.equal(warning.failures[0].requested_policy, 'reframe');
+    assert.equal(warning.failures[0].applied_policy, 'reconsider');
+    assert.equal(warning.turn_numbers[0], 2);
+  });
+
   it('routes tutor and learner roles to different backends and persists held-out role transcripts', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-test-'));
     const sampleDir = path.join(tmp, 'sample');

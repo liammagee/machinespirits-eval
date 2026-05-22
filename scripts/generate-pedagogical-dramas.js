@@ -584,7 +584,30 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
   };
 }
 
-function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [] }) {
+function reframeDowngradeFailures(traceTurns = []) {
+  return traceTurns.flatMap((turn, idx) => {
+    const cue = turn?.directorCue;
+    if (
+      turn?.phase !== 'director' ||
+      cue?.requestedRevisitPolicy !== 'reframe' ||
+      cue?.revisitPolicy === 'reframe'
+    ) {
+      return [];
+    }
+    return [
+      {
+        stage_turn_number: turn.turnNumber ?? idx + 1,
+        requested_policy: cue.requestedRevisitPolicy,
+        applied_policy: cue.revisitPolicy || null,
+        anchor_gate: cue.reframeAnchorGate || null,
+        revisit_anchor: cue.revisitAnchor || null,
+        anchor_quote: cue.anchorQuote || null,
+      },
+    ];
+  });
+}
+
+function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [], traceTurns = [] }) {
   const warnings = [];
   const internalLeakPattern = /\b(?:Superego|same Ego|the Ego|Director Scene Card|scene card|review process|internal review)\b/i;
   const leakedTurns = turns
@@ -643,6 +666,17 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [] }) {
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
+  const downgradedReframes = reframeDowngradeFailures(traceTurns);
+  if (downgradedReframes.length) {
+    warnings.push({
+      code: 'reframe_cue_downgraded',
+      severity: 'warning',
+      count: downgradedReframes.length,
+      failures: downgradedReframes,
+      turn_numbers: downgradedReframes.map((failure) => failure.stage_turn_number),
+      recommended_action: 'regenerate_with_eligible_reframe_anchor_or_exclude_before_scoring',
+    });
+  }
   if (removedNotes.length) {
     warnings.push({
       code: 'stage_direction_leak_stripped',
@@ -673,6 +707,9 @@ function formatQualityWarning(warning) {
   }
   if (warning.code === 'reframe_cue_not_reframed') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} reframe cue(s) did not expose the public reframing consequence — regenerate or exclude before scoring`;
+  }
+  if (warning.code === 'reframe_cue_downgraded') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} requested reframe cue(s) were downgraded by the anchor gate — regenerate or exclude before scoring`;
   }
   return `${warning.tid} (${warning.drama_id}): ${warning.code}`;
 }
@@ -1695,7 +1732,13 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
       const removedNotes = [];
       const publicTranscript = renderTranscript(turns, removedNotes);
       fs.writeFileSync(outTxt, publicTranscript, 'utf8');
-      const qualityWarnings = qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns, removedNotes });
+      const qualityWarnings = qualityWarningsFor({
+        tid: d._tid,
+        dramaId: d.id,
+        turns,
+        removedNotes,
+        traceTurns: trace.turns,
+      });
       warnings.push(...qualityWarnings.map(formatQualityWarning));
       if (removedNotes.length) {
         fs.writeFileSync(path.join(dirs.delibDir, `${d._tid}.stripped.json`), JSON.stringify(removedNotes, null, 2), 'utf8');
@@ -1912,7 +1955,8 @@ async function main() {
             },
             t.filter((x) => x.role === 'TUTOR').length,
             t.filter((x) => x.role === 'LEARNER').length,
-            traceJson.quality_warnings || qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns: t }),
+            traceJson.quality_warnings ||
+              qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns: t, traceTurns: traceJson.turns }),
           );
         } catch (_) {
           /* fall back to prior-key merge */
@@ -1958,7 +2002,13 @@ async function main() {
     const removedNotes = [];
     const publicTranscript = renderTranscript(turns, removedNotes);
     fs.writeFileSync(outTxt, publicTranscript, 'utf8');
-    const qualityWarnings = qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns, removedNotes });
+    const qualityWarnings = qualityWarningsFor({
+      tid: d._tid,
+      dramaId: d.id,
+      turns,
+      removedNotes,
+      traceTurns: trace.turns,
+    });
     warnings.push(...qualityWarnings.map(formatQualityWarning));
     if (removedNotes.length) {
       fs.writeFileSync(
