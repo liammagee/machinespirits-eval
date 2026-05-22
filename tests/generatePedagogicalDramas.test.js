@@ -24,15 +24,16 @@ describe('generate-pedagogical-dramas', () => {
         'scripts/generate-pedagogical-dramas.js',
         '--mock',
         '--max-turns',
-        '1',
+        '2',
         '--spec',
         'config/poetics-calibration/phase2-dramas-v3.yaml',
         '--tid-start',
         '6',
         '--only',
-        'D7',
+        'D8',
         '--role-map',
         'tutor=claude,learner=codex',
+        '--director-revisit-cue',
         '--out-dir',
         sampleDir,
         '--delib-dir',
@@ -52,6 +53,8 @@ describe('generate-pedagogical-dramas', () => {
 
     assert.equal(trace.run.generator, 'mixed');
     assert.deepEqual(trace.run.role_map, { tutor: 'claude', learner: 'codex' });
+    assert.equal(trace.run.director_revisit_cue, true);
+    assert.equal(trace.directorPlan.revisit_cue, 'learner_revisit_earlier_wording');
     assert.equal(trace.run.writing_pad.mode, 'isolated');
     assert.ok(['ok', 'review_before_scoring'].includes(trace.quality_status));
     assert.ok(Array.isArray(trace.quality_warnings), 'quality warnings should always be machine-readable');
@@ -104,6 +107,7 @@ describe('generate-pedagogical-dramas', () => {
     }
     const publicSample = fs.readFileSync(path.join(sampleDir, `${tid}.txt`), 'utf8');
     assert.match(publicSample, /^STAGE:/m, 'public drama sample should expose visible stage directions');
+    assert.match(publicSample, /prior learner line is played back: "/i, 'public sample should quote a revisit anchor');
     const fullTranscript = fs.readFileSync(path.join(transcriptsDir, `${tid}.full.md`), 'utf8');
     assert.match(fullTranscript, /Director Scene Card/);
     assert.match(fullTranscript, /Tutor Ego \(adjudication\/final authority\)/);
@@ -115,8 +119,10 @@ describe('generate-pedagogical-dramas', () => {
 
     const key = yaml.parse(fs.readFileSync(keyPath, 'utf8'));
     assert.equal(key.writing_pad.mode, 'isolated');
+    assert.equal(key.director_revisit_cue, true);
     assert.equal(key.transcripts_dir, path.relative(ROOT, transcriptsDir));
     assert.equal(key.items[tid].quality_status, trace.quality_status);
+    assert.equal(key.items[tid].director_revisit_cue, true);
     assert.equal(key.quality_warning_count, key.items[tid].quality_warnings.length);
 
     const scorePath = path.join(tmp, 'score.json');

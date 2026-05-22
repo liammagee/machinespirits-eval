@@ -58,6 +58,7 @@
  *        --model <alias> (claude CLI --model, default sonnet) · --out-dir / --key
  *        --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
+ *        --director-revisit-cue (visible learner look-back cue after turn 2)
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
 
@@ -99,6 +100,7 @@ function parseArgs(argv) {
     writingPadDir: null,
     roleMap: null,
     directorMode: 'scene',
+    directorRevisitCue: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -120,6 +122,7 @@ function parseArgs(argv) {
     else if (t === '--writing-pad-dir') a.writingPadDir = path.resolve(argv[++i]);
     else if (t === '--role-map') a.roleMap = parseRoleMap(argv[++i]);
     else if (t === '--director-mode') a.directorMode = argv[++i];
+    else if (t === '--director-revisit-cue') a.directorRevisitCue = true;
     else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
@@ -320,6 +323,7 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     n_tutor_turns: nTutor,
     n_learner_turns: nLearner,
     director_mode: d._directorMode || null,
+    director_revisit_cue: Boolean(d._directorRevisitCue),
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
     quality_status: blocked ? 'review_before_scoring' : 'ok',
@@ -828,6 +832,27 @@ function withDirectorCueProvenance(plan) {
   };
 }
 
+function withDirectorRevisitCue(plan, enabled) {
+  if (!plan || !enabled) return plan;
+  const cue = {
+    after_turn: 2,
+    timing: 'before_learner',
+    instruction:
+      'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.',
+    reasoning:
+      'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.',
+    provenance: plan.provenance || null,
+    cue_kind: 'learner_revisit_earlier_wording',
+  };
+  const interventions = Array.isArray(plan.interventions) ? plan.interventions : [];
+  if (interventions.some((entry) => entry.cue_kind === cue.cue_kind)) return plan;
+  return {
+    ...plan,
+    revisit_cue: cue.cue_kind,
+    interventions: [...interventions, cue],
+  };
+}
+
 function extractJsonObject(text) {
   const raw = String(text || '').trim();
   if (!raw) return null;
@@ -883,6 +908,9 @@ async function buildDirectorPlan(d, llmCall, args) {
       'scenario only begins in medias res as a direct learner question',
       'superego drafts public speech',
     ],
+    opt_in_revisit_cue:
+      args.directorRevisitCue &&
+      'The generator will inject one visible learner look-back cue after turn 2. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.',
     fallback_variation_seed: fallback,
   });
   const response = await llmCall(
@@ -898,19 +926,30 @@ async function buildDirectorPlan(d, llmCall, args) {
   try {
     const parsed = extractJsonObject(response.content);
     if (!parsed) throw new Error('no JSON object');
-    return withDirectorCueProvenance({
-      ...fallback,
-      ...parsed,
-      interventions: Array.isArray(parsed.interventions) && parsed.interventions.length ? parsed.interventions : fallback.interventions,
-      parse_status: 'ok',
-      provenance: response.provenance || response.apiPayload?.provenance || null,
-    });
+    return withDirectorCueProvenance(
+      withDirectorRevisitCue(
+        {
+          ...fallback,
+          ...parsed,
+          interventions:
+            Array.isArray(parsed.interventions) && parsed.interventions.length ? parsed.interventions : fallback.interventions,
+          parse_status: 'ok',
+          provenance: response.provenance || response.apiPayload?.provenance || null,
+        },
+        args.directorRevisitCue,
+      ),
+    );
   } catch (error) {
-    return withDirectorCueProvenance({
-      ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`),
-      raw_director_response: String(response.content || '').slice(0, 2000),
-      provenance: response.provenance || response.apiPayload?.provenance || null,
-    });
+    return withDirectorCueProvenance(
+      withDirectorRevisitCue(
+        {
+          ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`),
+          raw_director_response: String(response.content || '').slice(0, 2000),
+          provenance: response.provenance || response.apiPayload?.provenance || null,
+        },
+        args.directorRevisitCue,
+      ),
+    );
   }
 }
 
@@ -1155,7 +1194,8 @@ async function main() {
   console.log(`\n══ Phase-2 de-confound generator — ${genLabel} ══`);
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
-      `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}`,
+      `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
+      `${args.directorRevisitCue ? ' + revisit-cue' : ''}`,
   );
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
@@ -1226,7 +1266,12 @@ async function main() {
             publicTranscript: renderTranscript(t),
           });
           keyItems[d._tid] = keyItemFor(
-            { ...d, _directorMode: traceJson.run?.director_mode || null, _directorPlan: traceJson.directorPlan || null },
+            {
+              ...d,
+              _directorMode: traceJson.run?.director_mode || null,
+              _directorRevisitCue: Boolean(traceJson.run?.director_revisit_cue),
+              _directorPlan: traceJson.directorPlan || null,
+            },
             t.filter((x) => x.role === 'TUTOR').length,
             t.filter((x) => x.role === 'LEARNER').length,
             traceJson.quality_warnings || qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns: t }),
@@ -1242,6 +1287,7 @@ async function main() {
     const t0 = Date.now();
     const directorPlan = await buildDirectorPlan(d, llmCall, args);
     d._directorMode = args.directorMode;
+    d._directorRevisitCue = args.directorRevisitCue;
     d._directorPlan = directorPlan;
     if (directorPlan) {
       console.log(
@@ -1302,6 +1348,7 @@ async function main() {
             generator: args.roleMap ? 'mixed' : args.generator,
             role_map: args.roleMap || null,
             director_mode: args.directorMode,
+            director_revisit_cue: args.directorRevisitCue,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
             codex_reasoning_effort: CODEX_REASONING_EFFORT,
             writing_pad: runtime.writingPad,
@@ -1348,6 +1395,7 @@ async function main() {
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
+    director_revisit_cue: args.directorRevisitCue,
     transcripts_dir: path.relative(WORKTREE_ROOT, args.transcriptsDir),
     seed: args.seed,
     max_turns: args.maxTurns,

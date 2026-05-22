@@ -29,6 +29,7 @@ import {
   extractExternalSection,
   generateLearnerResponse,
   sanitizeLearnerReusableText,
+  buildAnchoredRevisitCue,
   calculateMemoryDelta,
   INTERACTION_OUTCOMES,
 } from '../learnerTutorInteractionEngine.js';
@@ -51,6 +52,30 @@ describe('INTERACTION_OUTCOMES', () => {
 
   it('has exactly 8 outcomes', () => {
     assert.strictEqual(Object.keys(INTERACTION_OUTCOMES).length, 8);
+  });
+});
+
+// ============================================================================
+// buildAnchoredRevisitCue
+// ============================================================================
+
+describe('buildAnchoredRevisitCue', () => {
+  it('quotes the latest earlier learner wording in the visible revisit cue', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        instruction: 'A prior learner line is played back.',
+        reasoning: 'Rehearsal mirror.',
+      },
+      [
+        { role: 'learner', content: 'I thought the poem just felt sad before checking the images.' },
+        { role: 'tutor', content: 'Stay with that wording.' },
+        { role: 'learner', content: 'Maybe the emptiness is in the doorway image, not just my mood.' },
+      ],
+    );
+
+    assert.match(cue.instruction, /"Maybe the emptiness is in the doorway image, not just my mood\."/);
+    assert.equal(cue.anchor_quote, 'Maybe the emptiness is in the doorway image, not just my mood.');
   });
 });
 

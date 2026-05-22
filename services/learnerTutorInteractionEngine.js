@@ -103,20 +103,79 @@ function buildDirectorContext(plan, cue = null, side = null) {
   if (plan?.direct_address_budget) lines.push(`- Direct address budget: ${plan.direct_address_budget}`);
   if (side && plan?.side_constraints?.[side]) lines.push(`- ${side} constraint: ${plan.side_constraints[side]}`);
   if (cue?.instruction) lines.push(`- Current director cue: ${cue.instruction}`);
+  if (side === 'learner' && plan?.revisit_cue) {
+    lines.push(
+      '- Revisit-cue rule: if the current cue quotes earlier learner wording, the learner must visibly repeat or close-paraphrase that wording and say what it now misses, keeps, or changes. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+    );
+  }
   lines.push(
     'Treat these as performance constraints. Public speech may acknowledge visible objects, timing, interruptions, and shared scene facts, but must not mention the director, scene card, role labels, or hidden review process.',
   );
   return lines.join('\n');
 }
 
-function directorCueFor(plan, turnNumber, timing) {
+function clipDirectorAnchor(text, maxLength = 180) {
+  const normalized = String(text || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^["'`]+|["'`]+$/g, '');
+  if (normalized.length <= maxLength) return normalized;
+
+  const sentenceEnd = normalized.slice(0, maxLength).match(/^.*?[.!?](?=\s|$)/)?.[0];
+  if (sentenceEnd && sentenceEnd.length >= Math.floor(maxLength / 2)) return sentenceEnd.trim();
+
+  const clipped = normalized.slice(0, maxLength - 3);
+  const lastSpace = clipped.lastIndexOf(' ');
+  return `${clipped.slice(0, lastSpace > Math.floor(maxLength / 2) ? lastSpace : clipped.length).trim()}...`;
+}
+
+function learnerRevisitAnchor(conversationHistory) {
+  const earlierLearner = [...(conversationHistory || [])]
+    .reverse()
+    .find((message) => message?.role === 'learner' && String(message.content || '').trim());
+  return earlierLearner ? clipDirectorAnchor(earlierLearner.content) : '';
+}
+
+function buildAnchoredRevisitCue(cue, conversationHistory) {
+  if (!cue || cue.cue_kind !== 'learner_revisit_earlier_wording') return cue;
+  const anchor = learnerRevisitAnchor(conversationHistory);
+  if (!anchor) return cue;
+  return {
+    ...cue,
+    instruction:
+      `A prior learner line is played back: "${anchor}" ` +
+      'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.',
+    reasoning:
+      `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line so the look-back is visible.`,
+    anchor_quote: anchor,
+  };
+}
+
+function combineDirectorCues(matches, timing) {
+  if (!matches.length) return null;
+  if (matches.length === 1) return matches[0];
+
+  const cueText = (cue) => cue.instruction || cue.stage_direction || cue.note || '';
+  return {
+    timing,
+    instruction: matches.map(cueText).filter(Boolean).join('\n'),
+    reasoning: matches.map((cue) => cue.reasoning || cueText(cue)).filter(Boolean).join('\n'),
+    provenance: matches.find((cue) => cue.provenance)?.provenance || null,
+    cue_kind: matches.map((cue) => cue.cue_kind).filter(Boolean).join('+') || 'combined',
+    combined_cues: matches,
+  };
+}
+
+function directorCueFor(plan, turnNumber, timing, conversationHistory = []) {
   if (!plan?.interventions?.length) return null;
-  return (
-    plan.interventions.find((cue) => {
-      const afterTurn = cue.after_turn ?? cue.afterTurn ?? cue.turn ?? null;
-      const cueTiming = cue.timing || 'before_tutor';
-      return Number(afterTurn) === Number(turnNumber) && cueTiming === timing;
-    }) || null
+  const matches = plan.interventions.filter((cue) => {
+    const afterTurn = cue.after_turn ?? cue.afterTurn ?? cue.turn ?? null;
+    const cueTiming = cue.timing || 'before_tutor';
+    return Number(afterTurn) === Number(turnNumber) && cueTiming === timing;
+  });
+  return combineDirectorCues(
+    matches.map((cue) => buildAnchoredRevisitCue(cue, conversationHistory)),
+    timing,
   );
 }
 
@@ -386,7 +445,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     }
 
     // ================ LEARNER TURN ================
-    const learnerDirectorCue = directorCueFor(directorPlan, turnCount, 'before_learner');
+    const learnerDirectorCue = directorCueFor(directorPlan, turnCount, 'before_learner', conversationHistory);
     recordDirectorCue(interactionTrace, turnCount, learnerDirectorCue);
     const learnerResponse = await generateLearnerResponse({
       tutorMessage: tutorResponse.externalMessage,
@@ -1586,6 +1645,7 @@ export {
   extractTutorMessage,
   extractExternalSection,
   sanitizeLearnerReusableText,
+  buildAnchoredRevisitCue,
   calculateMemoryDelta,
   callLearnerAI,
   INTERACTION_OUTCOMES,
