@@ -91,6 +91,57 @@ describe('buildAnchoredRevisitCue', () => {
     assert.match(cue.instruction, /"I kept treating the decimal as the proof\."/);
     assert.match(cue.instruction, /must revoice that wording first/i);
   });
+
+  it('makes the reframe policy demand a visible replacement framing', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        instruction: 'A prior learner line is played back.',
+      },
+      [{ role: 'learner', content: 'I kept treating the decimal as the proof.' }],
+    );
+
+    assert.match(cue.instruction, /"I kept treating the decimal as the proof\."/);
+    assert.match(cue.instruction, /name the earlier framing problem/i);
+    assert.match(cue.instruction, /replace it with a new framing/i);
+  });
+
+  it('can anchor revoice on the opening learner framing', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'revoice',
+        revisit_anchor: 'opening',
+      },
+      [
+        { role: 'learner', content: 'I thought an endless decimal was the proof.' },
+        { role: 'tutor', content: 'Try the fraction assumption.' },
+        { role: 'learner', content: 'Now I have the parity equation.' },
+      ],
+    );
+
+    assert.equal(cue.anchor_policy, 'opening');
+    assert.equal(cue.anchor_quote, 'I thought an endless decimal was the proof.');
+  });
+
+  it('selects a misframing candidate over a later procedural learner step', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'revoice',
+        revisit_anchor: 'misframing-candidate',
+      },
+      [
+        { role: 'learner', content: 'I kept treating sad as the whole close reading before naming an image.' },
+        { role: 'tutor', content: 'Point at the word first.' },
+        { role: 'learner', content: 'The next step is to name the noun and then the detail.' },
+      ],
+    );
+
+    assert.equal(cue.anchor_policy, 'misframing-candidate');
+    assert.equal(cue.anchor_quote, 'I kept treating sad as the whole close reading before naming an image.');
+  });
 });
 
 // ============================================================================
@@ -467,6 +518,30 @@ describe('learner output sanitization', () => {
     assert.ok(!serializedPrompts.includes('old tutor chain'));
     assert.ok(!serializedPrompts.includes('private opener'));
     assert.ok(!serializedPrompts.includes('private critique'));
+  });
+
+  it('keeps director context in the learner ego adjudication prompt', async () => {
+    const llmCalls = [];
+    const replies = [
+      { content: 'I said the decimal settled it.' },
+      { content: 'Keep the learner public and concrete.' },
+      { content: 'FINAL:\nI said the decimal settled it. The framing problem is that I made evidence do proof work. Instead I would frame the equation as the proof pressure.' },
+    ];
+    let callIndex = 0;
+
+    await generateLearnerResponse({
+      tutorMessage: 'Square the fraction.',
+      topic: 'Irrationality of sqrt(2)',
+      learnerProfile: 'ego_superego',
+      personaId: 'eager_novice',
+      profileContext: 'Current director cue: keep the public reframe sequence visible.',
+      llmCall: async (model, systemPrompt, messages, opts) => {
+        llmCalls.push({ model, systemPrompt, messages, opts });
+        return { ...replies[callIndex++], usage: { inputTokens: 10, outputTokens: 5 } };
+      },
+    });
+
+    assert.match(llmCalls[2].systemPrompt, /Current director cue: keep the public reframe sequence visible\./);
   });
 });
 

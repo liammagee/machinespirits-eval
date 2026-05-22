@@ -104,7 +104,12 @@ function buildDirectorContext(plan, cue = null, side = null) {
   if (side && plan?.side_constraints?.[side]) lines.push(`- ${side} constraint: ${plan.side_constraints[side]}`);
   if (cue?.instruction) lines.push(`- Current director cue: ${cue.instruction}`);
   if (side === 'learner' && plan?.revisit_cue) {
-    if ((cue?.revisit_policy || plan.revisit_cue_policy) === 'revoice') {
+    const revisitPolicy = cue?.revisit_policy || plan.revisit_cue_policy;
+    if (revisitPolicy === 'reframe') {
+      lines.push(
+        '- Reframe-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, name the earlier framing problem out loud, then replace it with a new framing that changes how that earlier line should be read. Internal review may tune the voice but must not delete those three public parts. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+      );
+    } else if (revisitPolicy === 'revoice') {
       lines.push(
         '- Revoice-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, then say one concrete thing it now misses, keeps, or changes. The learner may still resist or stay uncertain; do not fake a breakthrough.',
       );
@@ -135,28 +140,62 @@ function clipDirectorAnchor(text, maxLength = 180) {
   return `${clipped.slice(0, lastSpace > Math.floor(maxLength / 2) ? lastSpace : clipped.length).trim()}...`;
 }
 
-function learnerRevisitAnchor(conversationHistory) {
-  const earlierLearner = [...(conversationHistory || [])]
-    .reverse()
-    .find((message) => message?.role === 'learner' && String(message.content || '').trim());
-  return earlierLearner ? clipDirectorAnchor(earlierLearner.content) : '';
+const MISFRAMING_ANCHOR_PATTERNS = [
+  /\bI (?:thought|assumed|figured|kept|was treating|was thinking)\b/i,
+  /\b(?:first instinct|jumped|rushed|mixed up|mistook|only|just)\b/i,
+  /\b(?:does that mean|so maybe|I think)\b/i,
+];
+
+function priorLearnerMessages(conversationHistory) {
+  return (conversationHistory || []).filter(
+    (message) => message?.role === 'learner' && String(message.content || '').trim(),
+  );
+}
+
+function misframingAnchorScore(message, index) {
+  const text = String(message?.content || '');
+  const markerScore = MISFRAMING_ANCHOR_PATTERNS.reduce((score, pattern) => score + (pattern.test(text) ? 2 : 0), 0);
+  const questionScore = /\?/.test(text) ? 1 : 0;
+  const openingBonus = index === 0 ? 1 : 0;
+  return markerScore + questionScore + openingBonus;
+}
+
+function learnerRevisitAnchor(conversationHistory, policy = 'latest') {
+  const learnerMessages = priorLearnerMessages(conversationHistory);
+  if (!learnerMessages.length) return '';
+  if (policy === 'opening') return clipDirectorAnchor(learnerMessages[0].content);
+  if (policy === 'misframing-candidate') {
+    const selected = learnerMessages.reduce(
+      (best, message, index) => {
+        const score = misframingAnchorScore(message, index);
+        return score > best.score ? { message, score } : best;
+      },
+      { message: learnerMessages[0], score: -1 },
+    );
+    return clipDirectorAnchor(selected.message.content);
+  }
+  return clipDirectorAnchor(learnerMessages.at(-1).content);
 }
 
 function buildAnchoredRevisitCue(cue, conversationHistory) {
   if (!cue || cue.cue_kind !== 'learner_revisit_earlier_wording') return cue;
-  const anchor = learnerRevisitAnchor(conversationHistory);
+  const anchorPolicy = cue.revisit_anchor || 'latest';
+  const anchor = learnerRevisitAnchor(conversationHistory, anchorPolicy);
   if (!anchor) return cue;
   const policy = cue.revisit_policy || 'anchor';
   return {
     ...cue,
     instruction:
       `A prior learner line is played back: "${anchor}" ` +
-      (policy === 'revoice'
-        ? 'The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.'
-        : 'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.'),
+      (policy === 'reframe'
+        ? 'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.'
+        : policy === 'revoice'
+          ? 'The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.'
+          : 'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.'),
     reasoning:
-      `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line so the look-back is visible.`,
+      `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line selected by ${anchorPolicy} so the look-back is visible.`,
     anchor_quote: anchor,
+    anchor_policy: anchorPolicy,
   };
 }
 
@@ -172,6 +211,7 @@ function combineDirectorCues(matches, timing) {
     provenance: matches.find((cue) => cue.provenance)?.provenance || null,
     cue_kind: matches.map((cue) => cue.cue_kind).filter(Boolean).join('+') || 'combined',
     revisit_policy: matches.find((cue) => cue.revisit_policy)?.revisit_policy || null,
+    revisit_anchor: matches.find((cue) => cue.revisit_anchor)?.revisit_anchor || null,
     combined_cues: matches,
   };
 }
@@ -1541,7 +1581,11 @@ export async function generateLearnerResponse(options) {
     if (memoryContext) {
       egoRevisionContext += `\n\nYour memory and state:\n${memoryContext}`;
     }
-    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL.`;
+    egoRevisionContext += `\n\nRecent conversation:\n${conversationContext}\n\nThe tutor just said:\n"${visibleTutorMessage}"\n\nYour initial reaction was:\n"${sanitizeLearnerReusableText(egoInitialResponse.content)}"\n\nInternal review feedback:\n"${sanitizeLearnerReusableText(superegoResponse.content)}"`;
+    if (profileContext) {
+      egoRevisionContext += `\n\n${profileContext}`;
+    }
+    egoRevisionContext += `\n\nYou are the same learner persona who made the initial suggestion. Adjudicate the feedback: keep your initial response if it is better, revise lightly if needed, or revise substantially if the review reveals a real problem.\n\nReturn exactly:\nPRIVATE_DECISION: [one short private sentence naming keep/revise and why]\nFINAL:\n[what the learner would say out loud to the tutor, 1-4 sentences]\n\nThe FINAL section must contain only public learner speech. Do NOT include internal thoughts, meta-commentary, references to any review process, or <think> blocks in FINAL.`;
     const egoRevisionSystemPrompt = buildLearnerPrompt(egoConfig, persona, egoRevisionContext);
 
     // Build combined history for ego revision: external + ego internal + superego feedback

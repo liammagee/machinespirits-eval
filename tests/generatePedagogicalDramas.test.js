@@ -6,11 +6,200 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
+import { qualityWarningsFor } from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
 
 describe('generate-pedagogical-dramas', () => {
+  it('flags a revoice cue when the next learner line does not visibly reuse the anchor', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T99',
+      dramaId: 'D99',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I kept treating the decimal as the proof, not a clue." ' +
+            'The learner must revoice that wording first, then say what changes.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'If the numerator is even, the denominator is going to be under pressure too.',
+        },
+      ],
+    });
+
+    const warning = warnings.find((entry) => entry.code === 'revoice_cue_not_revoiced');
+    assert.equal(warning?.severity, 'warning');
+    assert.equal(warning?.failures[0].reason, 'low_anchor_overlap');
+  });
+
+  it('accepts a visible revoice paraphrase without treating it as a recognition verdict', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T98',
+      dramaId: 'D98',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I rushed to sad before naming the image in the first line." ' +
+            'The learner must revoice that wording first, then say what changes.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'I did rush to sad before naming the first-line image. That keeps the feeling, but misses the word on the page.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'revoice_cue_not_revoiced'),
+      false,
+    );
+  });
+
+  it('does not accept later overlap after the learner skips the opening revoice', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T97',
+      dramaId: 'D97',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My decimal check was not enough; the even-square step is the one I need to justify." ' +
+            'The learner must revoice that wording first, then say what changes.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'If an odd integer is squared, it stays odd. That means the even-square step works, and the decimal check was not enough after all.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'revoice_cue_not_revoiced'),
+      true,
+    );
+  });
+
+  it('flags a reframe cue when the learner echoes the anchor without exposing the consequence', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T96',
+      dramaId: 'D96',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I kept treating sad as the whole close reading." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text: 'I kept treating sad as the whole close reading. The image is still there on the page.',
+        },
+      ],
+    });
+
+    const warning = warnings.find((entry) => entry.code === 'reframe_cue_not_reframed');
+    assert.equal(warning?.severity, 'warning');
+    assert.deepEqual(warning?.failures[0].missing, ['framing_problem', 'replacement_framing']);
+    assert.equal(
+      warnings.some((entry) => entry.code === 'revoice_cue_not_revoiced'),
+      false,
+    );
+  });
+
+  it('accepts a public reframe sequence when it revoices, names the problem, and replaces it', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T95',
+      dramaId: 'D95',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I rushed to sad before naming the image in the first line." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I rushed to sad before naming the first-line image. The framing problem is that I skipped the word on the page. Instead I would read the image first and let the feeling answer to it.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts an object-led replacement framing after the problem is named', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T94',
+      dramaId: 'D94',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I called it sad first, and that skipped the image." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I called it sad first, and that skipped the image. That was the framing problem: mood before the word. The line starts with a visible image first.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts an earlier-framing correction that names the problem in ordinary speech', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T93',
+      dramaId: 'D93',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "The decimal check was only evidence." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'The decimal check was only evidence. The earlier framing made it sound as though checked cases could settle it; read from the reduced-fraction assumption instead.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('routes tutor and learner roles to different backends and persists held-out role transcripts', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-test-'));
     const sampleDir = path.join(tmp, 'sample');
@@ -55,8 +244,10 @@ describe('generate-pedagogical-dramas', () => {
     assert.deepEqual(trace.run.role_map, { tutor: 'claude', learner: 'codex' });
     assert.equal(trace.run.director_revisit_cue, true);
     assert.equal(trace.run.director_revisit_policy, 'anchor');
+    assert.equal(trace.run.director_revisit_anchor, 'latest');
     assert.equal(trace.directorPlan.revisit_cue, 'learner_revisit_earlier_wording');
     assert.equal(trace.directorPlan.revisit_cue_policy, 'anchor');
+    assert.equal(trace.directorPlan.revisit_cue_anchor, 'latest');
     assert.equal(trace.run.writing_pad.mode, 'isolated');
     assert.ok(['ok', 'review_before_scoring'].includes(trace.quality_status));
     assert.ok(Array.isArray(trace.quality_warnings), 'quality warnings should always be machine-readable');
@@ -123,10 +314,12 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(key.writing_pad.mode, 'isolated');
     assert.equal(key.director_revisit_cue, true);
     assert.equal(key.director_revisit_policy, 'anchor');
+    assert.equal(key.director_revisit_anchor, 'latest');
     assert.equal(key.transcripts_dir, path.relative(ROOT, transcriptsDir));
     assert.equal(key.items[tid].quality_status, trace.quality_status);
     assert.equal(key.items[tid].director_revisit_cue, true);
     assert.equal(key.items[tid].director_revisit_policy, 'anchor');
+    assert.equal(key.items[tid].director_revisit_anchor, 'latest');
     assert.equal(key.quality_warning_count, key.items[tid].quality_warnings.length);
 
     const scorePath = path.join(tmp, 'score.json');

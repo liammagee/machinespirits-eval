@@ -58,7 +58,8 @@
  *        --model <alias> (claude CLI --model, default sonnet) · --out-dir / --key
  *        --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
- *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice
+ *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reframe
+ *        --director-revisit-anchor latest|opening|misframing-candidate
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
 
@@ -101,6 +102,7 @@ function parseArgs(argv) {
     roleMap: null,
     directorMode: 'scene',
     directorRevisitPolicy: 'none',
+    directorRevisitAnchor: 'latest',
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -124,6 +126,7 @@ function parseArgs(argv) {
     else if (t === '--director-mode') a.directorMode = argv[++i];
     else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
+    else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
     else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
@@ -132,8 +135,10 @@ function parseArgs(argv) {
     throw new Error(`--generator must be claude|codex (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
-  if (!['none', 'anchor', 'revoice'].includes(a.directorRevisitPolicy))
-    throw new Error('--director-revisit-policy must be none|anchor|revoice');
+  if (!['none', 'anchor', 'revoice', 'reframe'].includes(a.directorRevisitPolicy))
+    throw new Error('--director-revisit-policy must be none|anchor|revoice|reframe');
+  if (!['latest', 'opening', 'misframing-candidate'].includes(a.directorRevisitAnchor))
+    throw new Error('--director-revisit-anchor must be latest|opening|misframing-candidate');
   a.spec = a.spec || DRAMAS_SPEC;
   // Default output locations are GENERATOR-AWARE so the arms never collide:
   //   claude → phase2-sample-v2 (the running Arm-A set); codex → phase2-sample-codex;
@@ -268,6 +273,189 @@ function isTruncated(text) {
   return !/[.?!…"')\]]$/.test(text.trim());
 }
 
+const REVOICE_STOPWORDS = new Set([
+  'about',
+  'after',
+  'again',
+  'also',
+  'and',
+  'are',
+  'before',
+  'but',
+  'can',
+  'could',
+  'does',
+  'for',
+  'from',
+  'had',
+  'has',
+  'have',
+  'here',
+  'how',
+  'into',
+  'its',
+  'just',
+  'like',
+  'must',
+  'not',
+  'now',
+  'one',
+  'out',
+  'that',
+  'the',
+  'then',
+  'there',
+  'this',
+  'too',
+  'was',
+  'what',
+  'when',
+  'where',
+  'which',
+  'while',
+  'with',
+  'would',
+  'you',
+  'your',
+]);
+
+function revoiceTerms(text) {
+  return [
+    ...new Set(
+      String(text || '')
+        .toLowerCase()
+        .match(/[a-z0-9]+(?:['’][a-z0-9]+)?/g)
+        ?.filter((term) => (term.length > 2 || /\d/.test(term)) && !REVOICE_STOPWORDS.has(term)) || [],
+    ),
+  ];
+}
+
+function extractRevisitAnchor(text) {
+  return (
+    String(text || '').match(
+      /A prior learner line is played back:\s*"([\s\S]*?)"\s*The learner must/i,
+    )?.[1] || ''
+  );
+}
+
+function revoiceMatchStats(anchor, learnerText) {
+  const anchorTerms = revoiceTerms(anchor);
+  const normalizedLearner = String(learnerText || '').replace(/\s+/g, ' ').trim();
+  const learnerOpening =
+    normalizedLearner.match(/^.*?[.!?](?=\s|$)/)?.[0] || normalizedLearner.slice(0, 220);
+  const learnerTerms = new Set(revoiceTerms(learnerOpening));
+  const sharedTerms = anchorTerms.filter((term) => learnerTerms.has(term));
+  const overlapRatio = anchorTerms.length ? sharedTerms.length / anchorTerms.length : 0;
+  const minimumSharedTerms = Math.min(3, anchorTerms.length);
+  return {
+    anchor_terms: anchorTerms.length,
+    learner_opening_terms: learnerTerms.size,
+    shared_terms: sharedTerms.length,
+    overlap_ratio: Number(overlapRatio.toFixed(3)),
+    compliant: minimumSharedTerms > 0 && sharedTerms.length >= minimumSharedTerms && overlapRatio >= 0.2,
+  };
+}
+
+function revoiceComplianceFailures(turns) {
+  const failures = [];
+  for (let i = 0; i < turns.length; i++) {
+    const cue = turns[i];
+    if (
+      cue.role !== 'STAGE' ||
+      !/The learner must revoice that wording first/i.test(cue.text) ||
+      /name the earlier framing problem/i.test(cue.text)
+    ) {
+      continue;
+    }
+    const anchor = extractRevisitAnchor(cue.text);
+    const learner = turns.slice(i + 1).find((turn) => turn.role !== 'STAGE');
+    const stats = revoiceMatchStats(anchor, learner?.role === 'LEARNER' ? learner.text : '');
+    if (anchor && learner?.role === 'LEARNER' && stats.compliant) continue;
+    failures.push({
+      stage_turn_number: cue.turnNumber ?? i + 1,
+      learner_turn_number: learner?.turnNumber ?? null,
+      reason: !anchor ? 'missing_anchor' : learner?.role !== 'LEARNER' ? 'missing_followup_learner' : 'low_anchor_overlap',
+      ...stats,
+    });
+  }
+  return failures;
+}
+
+function namesEarlierFramingProblem(text) {
+  const learnerText = String(text || '');
+  const explicitProblem =
+    /\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b[\s\S]{0,80}\b(?:problem|trouble|issue|miss(?:es|ed)?|wrong|off|too narrow|too quick|premature|skips?|flattens?|erases?)\b/i;
+  const explicitReverse =
+    /\b(?:problem|trouble|issue|miss(?:es|ed)?|wrong|off|too narrow|too quick|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b/i;
+  const selfCorrection =
+    /\b(?:I|that)\s+(?:jumped|rushed|mistook|reduced|flattened|skipped)\b[\s\S]{0,80}\b(?:before|into|to|the)\b/i;
+  const earlierFramingCorrection =
+    /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:made it sound|sounded|treated|put|reduced|jumped|mistook|too)\b/i;
+  return (
+    explicitProblem.test(learnerText) ||
+    explicitReverse.test(learnerText) ||
+    selfCorrection.test(learnerText) ||
+    earlierFramingCorrection.test(learnerText)
+  );
+}
+
+function replacesEarlierFraming(text) {
+  const learnerText = String(text || '');
+  return [
+    /\b(?:instead|rather|now)\b[\s\S]{0,100}\b(?:frame|read|say|put|treat|write|claim)\b/i,
+    /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
+    /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
+    /\bI\s+(?:would|should|need to|can)\s+(?:frame|read|say|put|treat|write|claim)\b/i,
+    /\b(?:line|claim|proof|equation|image|word|step)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
+  ].some((pattern) => pattern.test(learnerText));
+}
+
+function reframeMatchStats(anchor, learnerText) {
+  const revoice = revoiceMatchStats(anchor, learnerText);
+  const problemNamed = namesEarlierFramingProblem(learnerText);
+  const replacementNamed = replacesEarlierFraming(learnerText);
+  return {
+    ...revoice,
+    revoice_compliant: revoice.compliant,
+    problem_named: problemNamed,
+    replacement_named: replacementNamed,
+    compliant: revoice.compliant && problemNamed && replacementNamed,
+  };
+}
+
+function reframeComplianceFailures(turns) {
+  const failures = [];
+  for (let i = 0; i < turns.length; i++) {
+    const cue = turns[i];
+    if (
+      cue.role !== 'STAGE' ||
+      !/The learner must revoice that wording first,\s*name the earlier framing problem/i.test(cue.text)
+    ) {
+      continue;
+    }
+    const anchor = extractRevisitAnchor(cue.text);
+    const learner = turns.slice(i + 1).find((turn) => turn.role !== 'STAGE');
+    const stats = reframeMatchStats(anchor, learner?.role === 'LEARNER' ? learner.text : '');
+    if (anchor && learner?.role === 'LEARNER' && stats.compliant) continue;
+    const missing = [];
+    if (!stats.revoice_compliant) missing.push('revoice');
+    if (!stats.problem_named) missing.push('framing_problem');
+    if (!stats.replacement_named) missing.push('replacement_framing');
+    failures.push({
+      stage_turn_number: cue.turnNumber ?? i + 1,
+      learner_turn_number: learner?.turnNumber ?? null,
+      reason: !anchor
+        ? 'missing_anchor'
+        : learner?.role !== 'LEARNER'
+          ? 'missing_followup_learner'
+          : 'missing_reframe_consequence',
+      missing,
+      ...stats,
+    });
+  }
+  return failures;
+}
+
 // External drama only: each trace turn (phase tutor|learner) → ROLE: text, in
 // conversational order. internalDeliberation is dropped here (held out separately).
 //
@@ -328,6 +516,8 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     director_mode: d._directorMode || null,
     director_revisit_cue: Boolean(d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none'),
     director_revisit_policy: d._directorRevisitPolicy || 'none',
+    director_revisit_anchor:
+      d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none' ? d._directorRevisitAnchor || 'latest' : null,
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
     quality_status: blocked ? 'review_before_scoring' : 'ok',
@@ -372,6 +562,28 @@ function qualityWarningsFor({ tid, dramaId, turns, removedNotes = [] }) {
       recommended_action: 'regenerate_or_exclude_before_scoring',
     });
   }
+  const revoiceFailures = revoiceComplianceFailures(turns);
+  if (revoiceFailures.length) {
+    warnings.push({
+      code: 'revoice_cue_not_revoiced',
+      severity: 'warning',
+      count: revoiceFailures.length,
+      failures: revoiceFailures,
+      turn_numbers: revoiceFailures.map((failure) => failure.learner_turn_number || failure.stage_turn_number),
+      recommended_action: 'regenerate_or_exclude_before_scoring',
+    });
+  }
+  const reframeFailures = reframeComplianceFailures(turns);
+  if (reframeFailures.length) {
+    warnings.push({
+      code: 'reframe_cue_not_reframed',
+      severity: 'warning',
+      count: reframeFailures.length,
+      failures: reframeFailures,
+      turn_numbers: reframeFailures.map((failure) => failure.learner_turn_number || failure.stage_turn_number),
+      recommended_action: 'regenerate_or_exclude_before_scoring',
+    });
+  }
   if (removedNotes.length) {
     warnings.push({
       code: 'stage_direction_leak_stripped',
@@ -396,6 +608,12 @@ function formatQualityWarning(warning) {
   }
   if (warning.code === 'possible_internal_process_leak') {
     return `${warning.tid} (${warning.drama_id}): ${warning.count} public turn(s) may leak internal process — inspect/regenerate before scoring`;
+  }
+  if (warning.code === 'revoice_cue_not_revoiced') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} revoice cue(s) were not visibly revoiced — regenerate or exclude before scoring`;
+  }
+  if (warning.code === 'reframe_cue_not_reframed') {
+    return `${warning.tid} (${warning.drama_id}): ${warning.count} reframe cue(s) did not expose the public reframing consequence — regenerate or exclude before scoring`;
   }
   return `${warning.tid} (${warning.drama_id}): ${warning.code}`;
 }
@@ -836,22 +1054,29 @@ function withDirectorCueProvenance(plan) {
   };
 }
 
-function withDirectorRevisitCue(plan, policy) {
+function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   if (!plan || !policy || policy === 'none') return plan;
+  const cueText =
+    policy === 'reframe'
+      ? 'A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.'
+      : policy === 'revoice'
+        ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
+        : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.';
+  const cueReasoning =
+    policy === 'reframe'
+      ? 'Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.'
+      : policy === 'revoice'
+        ? 'Opt-in revoice mirror: the learner must make the earlier wording and the change to it legible in public speech.'
+        : 'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.';
   const cue = {
     after_turn: 2,
     timing: 'before_learner',
-    instruction:
-      policy === 'revoice'
-        ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
-        : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.',
-    reasoning:
-      policy === 'revoice'
-        ? 'Opt-in revoice mirror: the learner must make the earlier wording and the change to it legible in public speech.'
-        : 'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.',
+    instruction: cueText,
+    reasoning: cueReasoning,
     provenance: plan.provenance || null,
     cue_kind: 'learner_revisit_earlier_wording',
     revisit_policy: policy,
+    revisit_anchor: anchorPolicy || 'latest',
   };
   const interventions = Array.isArray(plan.interventions) ? plan.interventions : [];
   if (interventions.some((entry) => entry.cue_kind === cue.cue_kind)) return plan;
@@ -859,6 +1084,7 @@ function withDirectorRevisitCue(plan, policy) {
     ...plan,
     revisit_cue: cue.cue_kind,
     revisit_cue_policy: policy,
+    revisit_cue_anchor: cue.revisit_anchor,
     interventions: [...interventions, cue],
   };
 }
@@ -920,7 +1146,7 @@ async function buildDirectorPlan(d, llmCall, args) {
     ],
     opt_in_revisit_cue:
       args.directorRevisitPolicy !== 'none' &&
-      `The generator will inject one visible learner look-back cue after turn 2 using the ${args.directorRevisitPolicy} policy. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
+      `The generator will inject one visible learner look-back cue after turn 2 using the ${args.directorRevisitPolicy} policy and the ${args.directorRevisitAnchor} anchor selector. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
     fallback_variation_seed: fallback,
   });
   const response = await llmCall(
@@ -947,6 +1173,7 @@ async function buildDirectorPlan(d, llmCall, args) {
           provenance: response.provenance || response.apiPayload?.provenance || null,
         },
         args.directorRevisitPolicy,
+        args.directorRevisitAnchor,
       ),
     );
   } catch (error) {
@@ -958,6 +1185,7 @@ async function buildDirectorPlan(d, llmCall, args) {
           provenance: response.provenance || response.apiPayload?.provenance || null,
         },
         args.directorRevisitPolicy,
+        args.directorRevisitAnchor,
       ),
     );
   }
@@ -1205,7 +1433,7 @@ async function main() {
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
-      `${args.directorRevisitPolicy !== 'none' ? ` + revisit-${args.directorRevisitPolicy}` : ''}`,
+      `${args.directorRevisitPolicy !== 'none' ? ` + revisit-${args.directorRevisitPolicy}/${args.directorRevisitAnchor}` : ''}`,
   );
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
@@ -1282,6 +1510,7 @@ async function main() {
               _directorRevisitPolicy:
                 traceJson.run?.director_revisit_policy ||
                 (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
+              _directorRevisitAnchor: traceJson.run?.director_revisit_anchor || 'latest',
               _directorPlan: traceJson.directorPlan || null,
             },
             t.filter((x) => x.role === 'TUTOR').length,
@@ -1300,6 +1529,7 @@ async function main() {
     const directorPlan = await buildDirectorPlan(d, llmCall, args);
     d._directorMode = args.directorMode;
     d._directorRevisitPolicy = args.directorRevisitPolicy;
+    d._directorRevisitAnchor = args.directorRevisitAnchor;
     d._directorPlan = directorPlan;
     if (directorPlan) {
       console.log(
@@ -1362,6 +1592,7 @@ async function main() {
             director_mode: args.directorMode,
             director_revisit_cue: args.directorRevisitPolicy !== 'none',
             director_revisit_policy: args.directorRevisitPolicy,
+            director_revisit_anchor: args.directorRevisitPolicy !== 'none' ? args.directorRevisitAnchor : null,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
             codex_reasoning_effort: CODEX_REASONING_EFFORT,
             writing_pad: runtime.writingPad,
@@ -1410,6 +1641,7 @@ async function main() {
     director_mode: args.directorMode,
     director_revisit_cue: args.directorRevisitPolicy !== 'none',
     director_revisit_policy: args.directorRevisitPolicy,
+    director_revisit_anchor: args.directorRevisitPolicy !== 'none' ? args.directorRevisitAnchor : null,
     transcripts_dir: path.relative(WORKTREE_ROOT, args.transcriptsDir),
     seed: args.seed,
     max_turns: args.maxTurns,
@@ -1481,7 +1713,17 @@ async function main() {
   );
 }
 
-main().catch((e) => {
-  console.error(e?.stack || String(e));
-  process.exit(1);
-});
+if (path.resolve(process.argv[1] || '') === __filename) {
+  main().catch((e) => {
+    console.error(e?.stack || String(e));
+    process.exit(1);
+  });
+}
+
+export {
+  qualityWarningsFor,
+  reframeComplianceFailures,
+  reframeMatchStats,
+  revoiceComplianceFailures,
+  revoiceMatchStats,
+};
