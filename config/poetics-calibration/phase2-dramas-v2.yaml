@@ -76,12 +76,18 @@ dramas:
     learner_profile: ego_superego_recognition_authentic
     director_revisit_policy: reframe
     director_revisit_anchor: misframing-candidate
+    opening_speaker: learner
     scenario_name: "Proving √2 is irrational"
     learner_start_state: >-
       Comfortable with algebra and confident at getting right answers, but has
-      only ever treated "proof" as plugging in numbers to check. Believes √2 is
-      "just a decimal that goes on forever" and has never questioned whether it
-      could be written as a fraction.
+      only ever treated "proof" as plugging in numbers to check. Arrives ready
+      to say out loud that decimal checks make √2 look irrational because it is
+      "just a decimal that goes on forever", before the tutor has supplied the
+      proof structure or fraction assumption.
+    learner_voice_constraint: >-
+      The learner's opening public line must own the decimal-check misconception
+      in learner speech before the tutor corrects it; do not let the tutor
+      introduce that framing first.
     # HELD-OUT design notes (key only):
     intended_tutor_character: "Socratic; withholds the answer, asks the learner to test their own assumption"
     intended_lean: recognition

@@ -522,6 +522,44 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(key.items[tid].director_revisit_anchor, 'opening');
   });
 
+  it('preserves explicit drama opening and learner voice constraints in the director plan', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-director-override-'));
+    const sampleDir = path.join(tmp, 'sample');
+    const delibDir = path.join(tmp, 'delib');
+    const transcriptsDir = path.join(tmp, 'transcripts');
+    const keyPath = path.join(tmp, 'key.yaml');
+
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/generate-pedagogical-dramas.js',
+        '--mock',
+        '--spec',
+        'config/poetics-calibration/phase2-dramas-v2.yaml',
+        '--only',
+        'D1',
+        '--max-turns',
+        '2',
+        '--out-dir',
+        sampleDir,
+        '--delib-dir',
+        delibDir,
+        '--transcripts-dir',
+        transcriptsDir,
+        '--key',
+        keyPath,
+        '--force',
+      ],
+      { cwd: ROOT, stdio: 'pipe', env: { ...process.env, GEN_DRAMAS_CLI_TRACE: '0' } },
+    );
+
+    const traceFile = fs.readdirSync(delibDir).find((file) => /^T\d+\.json$/.test(file));
+    const trace = JSON.parse(fs.readFileSync(path.join(delibDir, traceFile), 'utf8'));
+
+    assert.equal(trace.directorPlan.opening_speaker, 'learner');
+    assert.match(trace.directorPlan.side_constraints.learner, /opening public line must own the decimal-check misconception/i);
+  });
+
   it('forks paired continuation arms from one fixed prefix', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-paired-continuation-'));
     const sourceSpec = yaml.parse(

@@ -107,6 +107,30 @@ describe('buildAnchoredRevisitCue', () => {
     assert.match(cue.instruction, /replace it with a new framing/i);
   });
 
+  it('downgrades reframe to reconsider when the selected learner anchor is only procedural', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'reframe',
+        revisit_anchor: 'misframing-candidate',
+        instruction: 'A prior learner line is played back.',
+      },
+      [
+        {
+          role: 'learner',
+          content: 'If the square is even, then a should be even too. I think the odd-case algebra checks that.',
+        },
+      ],
+    );
+
+    assert.equal(cue.revisit_policy, 'reconsider');
+    assert.equal(cue.requested_revisit_policy, 'reframe');
+    assert.equal(cue.anchor_strong_misframing, false);
+    assert.equal(cue.reframe_anchor_gate, 'downgraded_to_reconsider_ineligible_anchor');
+    assert.match(cue.instruction, /still stands, needs narrowing, or needs replacing/i);
+    assert.doesNotMatch(cue.instruction, /name the earlier framing problem/i);
+  });
+
   it('lets the reconsider policy publicly keep, narrow, or replace the anchor', () => {
     const cue = buildAnchoredRevisitCue(
       {

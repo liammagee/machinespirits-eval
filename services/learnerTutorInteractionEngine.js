@@ -144,10 +144,15 @@ function clipDirectorAnchor(text, maxLength = 180) {
   return `${clipped.slice(0, lastSpace > Math.floor(maxLength / 2) ? lastSpace : clipped.length).trim()}...`;
 }
 
-const MISFRAMING_ANCHOR_PATTERNS = [
+const STRONG_MISFRAMING_ANCHOR_PATTERNS = [
   /\bI (?:thought|assumed|figured|kept|was treating|was thinking)\b/i,
   /\b(?:first instinct|jumped|rushed|mixed up|mistook|only|just)\b/i,
-  /\b(?:does that mean|so maybe|I think)\b/i,
+  /\b(?:does that mean|so maybe)\b/i,
+];
+
+const MISFRAMING_ANCHOR_PATTERNS = [
+  ...STRONG_MISFRAMING_ANCHOR_PATTERNS,
+  /\bI think\b/i,
 ];
 
 function priorLearnerMessages(conversationHistory) {
@@ -164,10 +169,19 @@ function misframingAnchorScore(message, index) {
   return markerScore + questionScore + openingBonus;
 }
 
+function hasStrongMisframingAnchor(text) {
+  return STRONG_MISFRAMING_ANCHOR_PATTERNS.some((pattern) => pattern.test(String(text || '')));
+}
+
 function learnerRevisitAnchor(conversationHistory, policy = 'latest') {
   const learnerMessages = priorLearnerMessages(conversationHistory);
-  if (!learnerMessages.length) return '';
-  if (policy === 'opening') return clipDirectorAnchor(learnerMessages[0].content);
+  if (!learnerMessages.length) return null;
+  if (policy === 'opening') {
+    return {
+      text: clipDirectorAnchor(learnerMessages[0].content),
+      strongMisframing: hasStrongMisframingAnchor(learnerMessages[0].content),
+    };
+  }
   if (policy === 'misframing-candidate') {
     const selected = learnerMessages.reduce(
       (best, message, index) => {
@@ -176,21 +190,32 @@ function learnerRevisitAnchor(conversationHistory, policy = 'latest') {
       },
       { message: learnerMessages[0], score: -1 },
     );
-    return clipDirectorAnchor(selected.message.content);
+    return {
+      text: clipDirectorAnchor(selected.message.content),
+      strongMisframing: hasStrongMisframingAnchor(selected.message.content),
+    };
   }
-  return clipDirectorAnchor(learnerMessages.at(-1).content);
+  return {
+    text: clipDirectorAnchor(learnerMessages.at(-1).content),
+    strongMisframing: hasStrongMisframingAnchor(learnerMessages.at(-1).content),
+  };
 }
 
 function buildAnchoredRevisitCue(cue, conversationHistory) {
   if (!cue || cue.cue_kind !== 'learner_revisit_earlier_wording') return cue;
   const anchorPolicy = cue.revisit_anchor || 'latest';
   const anchor = learnerRevisitAnchor(conversationHistory, anchorPolicy);
-  if (!anchor) return cue;
-  const policy = cue.revisit_policy || 'anchor';
+  if (!anchor?.text) return cue;
+  const requestedPolicy = cue.revisit_policy || 'anchor';
+  const reframeIneligible = requestedPolicy === 'reframe' && !anchor.strongMisframing;
+  const policy = reframeIneligible ? 'reconsider' : requestedPolicy;
   return {
     ...cue,
+    revisit_policy: policy,
+    requested_revisit_policy: reframeIneligible ? requestedPolicy : cue.requested_revisit_policy || null,
+    reframe_anchor_gate: reframeIneligible ? 'downgraded_to_reconsider_ineligible_anchor' : 'eligible',
     instruction:
-      `A prior learner line is played back: "${anchor}" ` +
+      `A prior learner line is played back: "${anchor.text}" ` +
       (policy === 'reframe'
         ? 'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.'
         : policy === 'reconsider'
@@ -199,9 +224,11 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
           ? 'The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.'
           : 'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.'),
     reasoning:
-      `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line selected by ${anchorPolicy} so the look-back is visible.`,
-    anchor_quote: anchor,
+      `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line selected by ${anchorPolicy} so the look-back is visible.` +
+      (reframeIneligible ? ' Strong reframe was downgraded because that selected anchor did not show a misframing marker.' : ''),
+    anchor_quote: anchor.text,
     anchor_policy: anchorPolicy,
+    anchor_strong_misframing: anchor.strongMisframing,
   };
 }
 
@@ -253,6 +280,15 @@ function recordDirectorCue(trace, turnNumber, cue) {
     ],
     timestamp: new Date().toISOString(),
     visibleToPublic: true,
+    directorCue: {
+      cueKind: cue.cue_kind || null,
+      revisitPolicy: cue.revisit_policy || null,
+      requestedRevisitPolicy: cue.requested_revisit_policy || cue.revisit_policy || null,
+      revisitAnchor: cue.revisit_anchor || cue.anchor_policy || null,
+      anchorQuote: cue.anchor_quote || null,
+      anchorStrongMisframing: cue.anchor_strong_misframing ?? null,
+      reframeAnchorGate: cue.reframe_anchor_gate || null,
+    },
   });
 }
 

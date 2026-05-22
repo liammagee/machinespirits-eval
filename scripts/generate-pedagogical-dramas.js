@@ -1102,6 +1102,19 @@ function fallbackDirectorPlan(d, reason = 'fallback') {
   };
 }
 
+function applySpecDirectorOverrides(d, plan) {
+  if (!plan) return plan;
+  const sideConstraints = { ...(plan.side_constraints || {}) };
+  if (d.tutor_voice_constraint) sideConstraints.tutor = d.tutor_voice_constraint;
+  if (d.learner_voice_constraint) sideConstraints.learner = d.learner_voice_constraint;
+  return {
+    ...plan,
+    ...(d.opening_speaker ? { opening_speaker: d.opening_speaker } : {}),
+    ...(d.ending_speaker ? { ending_speaker: d.ending_speaker } : {}),
+    side_constraints: sideConstraints,
+  };
+}
+
 function withDirectorCueProvenance(plan) {
   if (!plan?.provenance || !Array.isArray(plan.interventions)) return plan;
   return {
@@ -1229,14 +1242,14 @@ async function buildDirectorPlan(d, llmCall, args) {
     if (!parsed) throw new Error('no JSON object');
     return withDirectorCueProvenance(
       withDirectorRevisitCue(
-        {
+        applySpecDirectorOverrides(d, {
           ...fallback,
           ...parsed,
           interventions:
             Array.isArray(parsed.interventions) && parsed.interventions.length ? parsed.interventions : fallback.interventions,
           parse_status: 'ok',
           provenance: response.provenance || response.apiPayload?.provenance || null,
-        },
+        }),
         revisitPolicy,
         revisitAnchor,
       ),
@@ -1244,11 +1257,11 @@ async function buildDirectorPlan(d, llmCall, args) {
   } catch (error) {
     return withDirectorCueProvenance(
       withDirectorRevisitCue(
-        {
+        applySpecDirectorOverrides(d, {
           ...fallbackDirectorPlan(d, `fallback-parse-failed:${error.message}`),
           raw_director_response: String(response.content || '').slice(0, 2000),
           provenance: response.provenance || response.apiPayload?.provenance || null,
-        },
+        }),
         revisitPolicy,
         revisitAnchor,
       ),
