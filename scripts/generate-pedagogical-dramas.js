@@ -444,6 +444,8 @@ function namesEarlierFramingProblem(text) {
   const ordinarySelfCorrection = [
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
     /\bI\s+(?:was still|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again)\b/i,
+    /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
+    /\btreat(?:ed|ing)\b[\s\S]{0,90}\bas if\b/i,
   ].some((pattern) => pattern.test(learnerText));
   return (
     explicitProblem.test(learnerText) ||
@@ -465,6 +467,7 @@ function replacesEarlierFraming(text) {
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
     /\b(?:not just|not only)\b[\s\S]{0,120}\bbut\b/i,
+    /\b(?:better|instead)\s+to\s+(?:suppose|start|frame|read|treat|ask|follow)\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }

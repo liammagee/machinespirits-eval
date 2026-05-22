@@ -86,8 +86,9 @@ dramas:
       proof structure or fraction assumption.
     learner_voice_constraint: >-
       The learner's opening public line must own the decimal-check misconception
-      in learner speech before the tutor corrects it; do not let the tutor
-      introduce that framing first.
+      in learner speech before the tutor corrects it. Mark it as the learner's
+      assumption, hunch, or first instinct in ordinary wording so that framing is
+      publicly available to revisit; do not let the tutor introduce it first.
     # HELD-OUT design notes (key only):
     intended_tutor_character: "Socratic; withholds the answer, asks the learner to test their own assumption"
     intended_lean: recognition

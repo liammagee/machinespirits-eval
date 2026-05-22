@@ -327,6 +327,60 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a reframe that names the earlier line as only a check, not a proof', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T911',
+      dramaId: 'D911',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is that the decimal never settles." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is that the decimal never settles was only a check on how it looks, not a proof against every fraction. The better framing is the lowest-terms assumption.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T912',
+      dramaId: 'D912',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is that the decimal just keeps going." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is that the decimal just keeps going, but that was treating a pattern as if it were already a proof. Better to suppose a fraction in lowest terms and follow what the equation forces.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('flags a requested reframe cue that the anchor gate downgraded', () => {
     const warnings = qualityWarningsFor({
       tid: 'T90',
