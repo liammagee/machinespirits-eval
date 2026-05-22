@@ -107,7 +107,10 @@ de-confounding change the picture?), not a gate-powered re-run — κ on n=6 is 
 and must not be over-read. If the pilot is promising, scale the generator to a
 gate-powered N.
 
-(Full plan tracked separately; not yet built.)
+The generator, paired-continuation probes, and current diagnostic run history are
+now tracked in `PHASE2-DRAMA-PROGRESS.md`. That note is an engineering and
+experiment log for the de-confounding path; this findings note keeps the original
+negative and the reason for attempting the retest.
 
 ## 5. Pre-registration integrity
 
