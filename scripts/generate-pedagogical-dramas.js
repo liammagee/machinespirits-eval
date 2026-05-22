@@ -1165,6 +1165,28 @@ function withDirectorRevisitCue(plan, policy, anchorPolicy) {
   };
 }
 
+function withoutDirectorRevisitCue(plan) {
+  if (!plan) return plan;
+  const {
+    revisit_cue: _revisitCue,
+    revisit_cue_policy: _revisitCuePolicy,
+    revisit_cue_anchor: _revisitCueAnchor,
+    ...rest
+  } = plan;
+  const interventions = Array.isArray(plan.interventions)
+    ? plan.interventions.filter((cue) => cue.cue_kind !== 'learner_revisit_earlier_wording')
+    : [];
+  return {
+    ...rest,
+    interventions,
+  };
+}
+
+function withPairedDirectorRevisitCue(plan, policy, anchorPolicy) {
+  const cueFreePlan = withoutDirectorRevisitCue(plan);
+  return policy === 'none' ? cueFreePlan : withDirectorRevisitCue(cueFreePlan, policy, anchorPolicy);
+}
+
 function extractJsonObject(text) {
   const raw = String(text || '').trim();
   if (!raw) return null;
@@ -1640,7 +1662,7 @@ async function generatePairedContinuations({ args, order, runtime, llmCall }) {
         throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
       }
       const branchDirectorPlan = withDirectorCueProvenance(
-        withDirectorRevisitCue(directorPlan, policy, args.directorRevisitAnchor),
+        withPairedDirectorRevisitCue(directorPlan, policy, args.directorRevisitAnchor),
       );
       const branchDrama = {
         ...d,
@@ -2063,4 +2085,5 @@ export {
   reframeMatchStats,
   revoiceComplianceFailures,
   revoiceMatchStats,
+  withPairedDirectorRevisitCue,
 };

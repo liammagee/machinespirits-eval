@@ -6,7 +6,7 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
-import { qualityWarningsFor } from '../scripts/generate-pedagogical-dramas.js';
+import { qualityWarningsFor, withPairedDirectorRevisitCue } from '../scripts/generate-pedagogical-dramas.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -558,6 +558,44 @@ describe('generate-pedagogical-dramas', () => {
 
     assert.equal(trace.directorPlan.opening_speaker, 'learner');
     assert.match(trace.directorPlan.side_constraints.learner, /opening public line must own the decimal-check misconception/i);
+  });
+
+  it('replaces shared revisit cues with the paired branch policy', () => {
+    const sharedPlan = {
+      revisit_cue: 'learner_revisit_earlier_wording',
+      revisit_cue_policy: 'reconsider',
+      revisit_cue_anchor: 'opening',
+      interventions: [
+        {
+          after_turn: 2,
+          timing: 'before_learner',
+          instruction: 'A prior learner line is played back.',
+          cue_kind: 'learner_revisit_earlier_wording',
+          revisit_policy: 'reconsider',
+          revisit_anchor: 'opening',
+        },
+        {
+          after_turn: 2,
+          timing: 'before_tutor',
+          instruction: 'Keep the tutor brief.',
+          cue_kind: 'tutor_stage_pressure',
+        },
+      ],
+    };
+
+    const nonePlan = withPairedDirectorRevisitCue(sharedPlan, 'none', 'misframing-candidate');
+    assert.equal(nonePlan.revisit_cue, undefined);
+    assert.equal(
+      nonePlan.interventions.some((cue) => cue.cue_kind === 'learner_revisit_earlier_wording'),
+      false,
+    );
+    assert.equal(nonePlan.interventions[0].cue_kind, 'tutor_stage_pressure');
+
+    const reframePlan = withPairedDirectorRevisitCue(sharedPlan, 'reframe', 'misframing-candidate');
+    const revisitCues = reframePlan.interventions.filter((cue) => cue.cue_kind === 'learner_revisit_earlier_wording');
+    assert.equal(revisitCues.length, 1);
+    assert.equal(revisitCues[0].revisit_policy, 'reframe');
+    assert.equal(revisitCues[0].revisit_anchor, 'misframing-candidate');
   });
 
   it('forks paired continuation arms from one fixed prefix', () => {
