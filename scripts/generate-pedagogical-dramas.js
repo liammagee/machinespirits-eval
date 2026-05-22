@@ -60,6 +60,7 @@
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
  *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice|reconsider|reframe
  *        --director-revisit-anchor latest|opening|misframing-candidate
+ *        --paired-continuation-policies none,revoice,reconsider,reframe
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
 
@@ -105,6 +106,7 @@ function parseArgs(argv) {
     directorMode: 'scene',
     directorRevisitPolicy: 'none',
     directorRevisitAnchor: 'latest',
+    pairedContinuationPolicies: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -129,6 +131,12 @@ function parseArgs(argv) {
     else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
     else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else if (t === '--director-revisit-anchor') a.directorRevisitAnchor = argv[++i];
+    else if (t === '--paired-continuation-policies') {
+      a.pairedContinuationPolicies = String(argv[++i] || '')
+        .split(',')
+        .map((policy) => policy.trim())
+        .filter(Boolean);
+    }
     else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
@@ -141,6 +149,14 @@ function parseArgs(argv) {
     throw new Error('--director-revisit-policy must be none|anchor|revoice|reconsider|reframe');
   if (!DIRECTOR_REVISIT_ANCHORS.has(a.directorRevisitAnchor))
     throw new Error('--director-revisit-anchor must be latest|opening|misframing-candidate');
+  if (a.pairedContinuationPolicies) {
+    if (!a.pairedContinuationPolicies.length) throw new Error('--paired-continuation-policies needs at least one policy');
+    for (const policy of a.pairedContinuationPolicies) {
+      if (!DIRECTOR_REVISIT_POLICIES.has(policy)) {
+        throw new Error('--paired-continuation-policies must use none|anchor|revoice|reconsider|reframe');
+      }
+    }
+  }
   a.spec = a.spec || DRAMAS_SPEC;
   // Default output locations are GENERATOR-AWARE so the arms never collide:
   //   claude → phase2-sample-v2 (the running Arm-A set); codex → phase2-sample-codex;
@@ -418,9 +434,9 @@ function revoiceComplianceFailures(turns) {
 function namesEarlierFramingProblem(text) {
   const learnerText = String(text || '');
   const explicitProblem =
-    /\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b[\s\S]{0,80}\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|too\s+\w+|premature|skips?|flattens?|erases?)\b/i;
+    /\b(?:fram(?:e|ed|ing)|reading|read|assumption|assumed|treat(?:ed|ing))\b[\s\S]{0,80}\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|bad(?:ly)?|too\s+\w+|premature|skips?|flattens?|erases?)\b/i;
   const explicitReverse =
-    /\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|too\s+\w+|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:framing|frame|reading|read|assumption|assumed|treat(?:ed|ing))\b/i;
+    /\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|bad(?:ly)?|too\s+\w+|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:fram(?:e|ed|ing)|reading|read|assumption|assumed|treat(?:ed|ing))\b/i;
   const selfCorrection =
     /\b(?:I|that)\s+(?:jumped|rushed|mistook|reduced|flattened|skipped)\b[\s\S]{0,80}\b(?:before|into|to|the)\b/i;
   const earlierFramingCorrection =
@@ -448,6 +464,7 @@ function replacesEarlierFraming(text) {
     /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
+    /\b(?:not just|not only)\b[\s\S]{0,120}\bbut\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }
@@ -1406,6 +1423,293 @@ function prepareWritingPad(args) {
   };
 }
 
+function tracePrefixThroughTutorTurn(trace, turnNumber = 2) {
+  const turns = [];
+  let found = false;
+  for (const turn of trace?.turns || []) {
+    turns.push(turn);
+    if (turn.phase === 'tutor' && Number(turn.turnNumber) === Number(turnNumber)) {
+      found = true;
+      break;
+    }
+  }
+  if (!found) throw new Error(`paired continuation prefix needs tutor turn ${turnNumber}`);
+  return {
+    ...trace,
+    turns,
+    outcomes: [],
+    writingPadSnapshots: null,
+    summary: null,
+  };
+}
+
+function policyKeyPath(keyPath, policy) {
+  const ext = path.extname(keyPath) || '.yaml';
+  const basename = path.basename(keyPath, ext);
+  return path.join(path.dirname(keyPath), `${basename}-${policy}${ext}`);
+}
+
+function policyArtifactDirs(args, policy) {
+  return {
+    outDir: path.join(args.outDir, policy),
+    delibDir: path.join(args.delibDir, policy),
+    transcriptsDir: path.join(args.transcriptsDir, policy),
+    keyPath: policyKeyPath(args.keyPath, policy),
+  };
+}
+
+function branchId(kind, dramaId, policy) {
+  return `drama-${kind}-${dramaId}-${policy}-${Date.now()}`;
+}
+
+function writeGeneratedDramaArtifacts({
+  args,
+  dirs,
+  d,
+  trace,
+  directorPlan,
+  runtime,
+  publicTranscript,
+  qualityWarnings,
+  transcriptArtifacts,
+  pairedContinuation = null,
+}) {
+  fs.writeFileSync(
+    path.join(dirs.delibDir, `${d._tid}.json`),
+    JSON.stringify(
+      {
+        tid: d._tid,
+        drama_id: d.id,
+        run: {
+          generator: args.roleMap ? 'mixed' : args.generator,
+          role_map: args.roleMap || null,
+          director_mode: args.directorMode,
+          director_revisit_cue: d._directorRevisitPolicy !== 'none',
+          director_revisit_policy: d._directorRevisitPolicy,
+          director_revisit_anchor: d._directorRevisitAnchor,
+          model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
+          codex_reasoning_effort: CODEX_REASONING_EFFORT,
+          writing_pad: runtime.writingPad,
+          transcript_artifacts: transcriptArtifacts,
+          ...(pairedContinuation ? { paired_continuation: pairedContinuation } : {}),
+        },
+        directorPlan,
+        turns: trace.turns,
+        metrics: trace.metrics,
+        writingPadSnapshots: trace.writingPadSnapshots,
+        quality_status: hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok',
+        quality_warnings: qualityWarnings,
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  );
+}
+
+function baseKeyObject({ args, runtime, directorPolicy, directorAnchor, transcriptsDir, order, paired = null }) {
+  return {
+    _comment:
+      'HELD OUT — do not read while labelling. Joins to instrument scores + human labels only AFTER both are produced. intended_lean / intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.',
+    generated: new Date().toISOString(),
+    generator: args.roleMap ? 'mixed' : args.generator,
+    role_map: args.roleMap || null,
+    mode: args.mock
+      ? 'mock'
+      : args.roleMap
+        ? 'real-mixed'
+        : args.generator === 'codex'
+          ? 'real-codex'
+          : 'real-claude-code',
+    model: args.mock
+      ? null
+      : args.roleMap
+        ? `mixed (claude=${args.model}, codex=config-default@${CODEX_REASONING_EFFORT})`
+        : args.generator === 'codex'
+          ? `codex@${CODEX_REASONING_EFFORT}`
+          : args.model,
+    codex_reasoning_effort: CODEX_REASONING_EFFORT,
+    writing_pad: runtime.writingPad,
+    director_mode: args.directorMode,
+    director_revisit_cue: directorPolicy !== 'none',
+    director_revisit_policy: directorPolicy,
+    director_revisit_anchor: directorPolicy === 'none' ? null : directorAnchor,
+    transcripts_dir: path.relative(WORKTREE_ROOT, transcriptsDir),
+    seed: args.seed,
+    max_turns: args.maxTurns,
+    n: order.length,
+    diagnostic_only:
+      'diagnostic / generative read — κ on small n is noise (PHASE2-FINDINGS.md §4); the aim is ' +
+      'surprising-element production judged by an external reader, NOT a human-matching classifier',
+    ...(paired ? { paired_continuation: paired } : {}),
+    items: {},
+  };
+}
+
+function finalizeKeyObject(keyObj) {
+  keyObj.n = Object.keys(keyObj.items).length;
+  keyObj.quality_warning_count = Object.values(keyObj.items).reduce(
+    (sum, item) => sum + (item.quality_warnings?.length || 0),
+    0,
+  );
+  keyObj.quality_blocking_warning_count = Object.values(keyObj.items).reduce(
+    (sum, item) => sum + (hasBlockingQualityWarnings(item.quality_warnings || []) ? 1 : 0),
+    0,
+  );
+  return keyObj;
+}
+
+async function generatePairedContinuations({ args, order, runtime, llmCall }) {
+  const policies = [...new Set(args.pairedContinuationPolicies)];
+  const armDirs = Object.fromEntries(policies.map((policy) => [policy, policyArtifactDirs(args, policy)]));
+  const armKeys = Object.fromEntries(
+    policies.map((policy) => [
+      policy,
+      baseKeyObject({
+        args,
+        runtime,
+        directorPolicy: policy,
+        directorAnchor: args.directorRevisitAnchor,
+        transcriptsDir: armDirs[policy].transcriptsDir,
+        order,
+        paired: {
+          mode: 'fixed_prefix_continuation',
+          prefix_through: 'tutor_turn_2',
+          branch_policies: policies,
+        },
+      }),
+    ]),
+  );
+  const warnings = [];
+
+  for (const dirs of Object.values(armDirs)) {
+    fs.mkdirSync(dirs.outDir, { recursive: true });
+    fs.mkdirSync(dirs.delibDir, { recursive: true });
+    fs.mkdirSync(dirs.transcriptsDir, { recursive: true });
+    fs.mkdirSync(path.dirname(dirs.keyPath), { recursive: true });
+  }
+
+  console.log(`\n── paired continuations: fixed prefix through tutor turn 2 · policies=${policies.join(',')} ──`);
+  for (const d of order) {
+    console.log(`\n  ${d._tid} (${d.id}) — generating shared prefix …`);
+    const prefixDrama = {
+      ...d,
+      _directorRevisitPolicy: 'none',
+      _directorRevisitAnchor: null,
+    };
+    const directorPlan = await buildDirectorPlan(prefixDrama, llmCall, args);
+    const prefixTrace = await runtime.runInteraction(
+      {
+        learnerId: branchId('prefix', d.id, 'none'),
+        personaId: d.persona,
+        tutorProfile: d.tutor_profile,
+        topic: d.topic,
+        scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan },
+        sessionId: branchId('prefix-session', d.id, 'none'),
+      },
+      llmCall,
+      {
+        maxTurns: 2,
+        observeInternals: true,
+        learnerProfile: d.learner_profile,
+        forceMaxTurns: true,
+        directorPlan,
+      },
+    );
+    const resumeTrace = tracePrefixThroughTutorTurn(prefixTrace, 2);
+    const prefixTurns = externalTurns(resumeTrace);
+    const prefixHash = sha256Short(renderTranscript(prefixTurns));
+
+    for (const policy of policies) {
+      const dirs = armDirs[policy];
+      const outTxt = path.join(dirs.outDir, `${d._tid}.txt`);
+      if (fs.existsSync(outTxt) && !args.force) {
+        throw new Error(`paired continuation output exists: ${outTxt} (pass --force to overwrite)`);
+      }
+      const branchDirectorPlan = withDirectorCueProvenance(
+        withDirectorRevisitCue(directorPlan, policy, args.directorRevisitAnchor),
+      );
+      const branchDrama = {
+        ...d,
+        _directorMode: args.directorMode,
+        _directorPlan: branchDirectorPlan,
+        _directorRevisitPolicy: policy,
+        _directorRevisitAnchor: policy === 'none' ? null : args.directorRevisitAnchor,
+      };
+      console.log(`    ${policy} → continuing from prefix ${prefixHash} …`);
+      const trace = await runtime.runInteraction(
+        {
+          learnerId: branchId('branch', d.id, policy),
+          personaId: d.persona,
+          tutorProfile: d.tutor_profile,
+          topic: d.topic,
+          scenario: { name: d.scenario_name, learnerStartState: d.learner_start_state, directorPlan: branchDirectorPlan },
+          sessionId: branchId('branch-session', d.id, policy),
+        },
+        llmCall,
+        {
+          maxTurns: args.maxTurns,
+          observeInternals: true,
+          learnerProfile: d.learner_profile,
+          forceMaxTurns: true,
+          directorPlan: branchDirectorPlan,
+          resumeTrace,
+        },
+      );
+      const turns = externalTurns(trace);
+      const removedNotes = [];
+      const publicTranscript = renderTranscript(turns, removedNotes);
+      fs.writeFileSync(outTxt, publicTranscript, 'utf8');
+      const qualityWarnings = qualityWarningsFor({ tid: d._tid, dramaId: d.id, turns, removedNotes });
+      warnings.push(...qualityWarnings.map(formatQualityWarning));
+      if (removedNotes.length) {
+        fs.writeFileSync(path.join(dirs.delibDir, `${d._tid}.stripped.json`), JSON.stringify(removedNotes, null, 2), 'utf8');
+      }
+      const transcriptArtifacts = writeHeldOutTranscripts({
+        args: { ...args, transcriptsDir: dirs.transcriptsDir },
+        tid: d._tid,
+        dramaId: d.id,
+        trace,
+        publicTranscript,
+      });
+      const pairedContinuation = {
+        mode: 'fixed_prefix_continuation',
+        prefix_through: 'tutor_turn_2',
+        shared_prefix_hash: prefixHash,
+        branch_policy: policy,
+      };
+      writeGeneratedDramaArtifacts({
+        args,
+        dirs,
+        d: branchDrama,
+        trace,
+        directorPlan: branchDirectorPlan,
+        runtime,
+        publicTranscript,
+        qualityWarnings,
+        transcriptArtifacts,
+        pairedContinuation,
+      });
+      armKeys[policy].items[d._tid] = {
+        ...keyItemFor(branchDrama, turns.filter((turn) => turn.role === 'TUTOR').length, turns.filter((turn) => turn.role === 'LEARNER').length, qualityWarnings),
+        paired_continuation: pairedContinuation,
+      };
+    }
+  }
+
+  for (const policy of policies) {
+    const dirs = armDirs[policy];
+    fs.writeFileSync(dirs.keyPath, yaml.stringify(finalizeKeyObject(armKeys[policy])), 'utf8');
+    console.log(`\n${policy}:`);
+    console.log(`  samples → ${path.relative(WORKTREE_ROOT, dirs.outDir)}`);
+    console.log(`  key     → ${path.relative(WORKTREE_ROOT, dirs.keyPath)}`);
+  }
+  if (warnings.length) {
+    console.log('\n⚠ warnings:');
+    for (const warning of warnings) console.log(`  - ${warning}`);
+  }
+}
+
 async function loadInteractionRuntime(args) {
   const writingPad = prepareWritingPad(args);
   const [{ runInteraction }, learnerWritingPad, tutorWritingPad] = await Promise.all([
@@ -1533,6 +1837,10 @@ async function main() {
       : args.generator === 'codex'
         ? makeCodexLlmCall()
         : makeClaudeLlmCall(args.model);
+  if (args.pairedContinuationPolicies) {
+    await generatePairedContinuations({ args, order, runtime, llmCall });
+    return;
+  }
   const keyItems = {};
   const warnings = [];
 
@@ -1668,41 +1976,14 @@ async function main() {
   }
 
   // Held-out key (merge with any prior key on resume so skipped dramas survive).
-  let keyObj = {
-    _comment:
-      'HELD OUT — do not read while labelling. Joins to instrument scores + human labels only AFTER both are produced. intended_lean / intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.',
-    generated: new Date().toISOString(),
-    generator: args.roleMap ? 'mixed' : args.generator,
-    role_map: args.roleMap || null,
-    mode: args.mock
-      ? 'mock'
-      : args.roleMap
-        ? 'real-mixed'
-        : args.generator === 'codex'
-          ? 'real-codex'
-          : 'real-claude-code',
-    model: args.mock
-      ? null
-      : args.roleMap
-        ? `mixed (claude=${args.model}, codex=config-default@${CODEX_REASONING_EFFORT})`
-        : args.generator === 'codex'
-          ? `codex@${CODEX_REASONING_EFFORT}`
-          : args.model,
-    codex_reasoning_effort: CODEX_REASONING_EFFORT,
-    writing_pad: runtime.writingPad,
-    director_mode: args.directorMode,
-    director_revisit_cue: revisitSummary.cue,
-    director_revisit_policy: revisitSummary.policy,
-    director_revisit_anchor: revisitSummary.anchor,
-    transcripts_dir: path.relative(WORKTREE_ROOT, args.transcriptsDir),
-    seed: args.seed,
-    max_turns: args.maxTurns,
-    n: order.length,
-    diagnostic_only:
-      'diagnostic / generative read — κ on small n is noise (PHASE2-FINDINGS.md §4); the aim is ' +
-      'surprising-element production judged by an external reader, NOT a human-matching classifier',
-    items: {},
-  };
+  let keyObj = baseKeyObject({
+    args,
+    runtime,
+    directorPolicy: revisitSummary.policy,
+    directorAnchor: revisitSummary.anchor,
+    transcriptsDir: args.transcriptsDir,
+    order,
+  });
   // Merge prior key on resume/append/targeted-regen so untouched dramas survive.
   // A clean --force run (without --only) is the one case that starts fresh.
   if (fs.existsSync(args.keyPath) && (!args.force || args.only)) {
@@ -1714,16 +1995,7 @@ async function main() {
     }
   }
   Object.assign(keyObj.items, keyItems);
-  keyObj.n = Object.keys(keyObj.items).length; // total after append/merge, not just this run
-  keyObj.quality_warning_count = Object.values(keyObj.items).reduce(
-    (sum, item) => sum + (item.quality_warnings?.length || 0),
-    0,
-  );
-  keyObj.quality_blocking_warning_count = Object.values(keyObj.items).reduce(
-    (sum, item) => sum + (hasBlockingQualityWarnings(item.quality_warnings || []) ? 1 : 0),
-    0,
-  );
-  fs.writeFileSync(args.keyPath, yaml.stringify(keyObj), 'utf8');
+  fs.writeFileSync(args.keyPath, yaml.stringify(finalizeKeyObject(keyObj)), 'utf8');
 
   console.log(`\nwrote transcripts → ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`wrote held-out deliberation → ${path.relative(WORKTREE_ROOT, args.delibDir)}`);

@@ -219,6 +219,33 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a contrastive replacement after the learner says it framed the issue badly', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T89',
+      dramaId: 'D89',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "Oh, I get why the shove matters, but that feels too convenient." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'Oh, I get why the shove matters, but that feels too convenient. I framed that badly: the pressure is not just shove versus freedom, but whether reasons-guided action differs from being moved like furniture.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts an earlier-framing correction that names the problem in ordinary speech', () => {
     const warnings = qualityWarningsFor({
       tid: 'T93',
@@ -493,5 +520,90 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(key.director_revisit_anchor, 'opening');
     assert.equal(key.items[tid].director_revisit_policy, 'reconsider');
     assert.equal(key.items[tid].director_revisit_anchor, 'opening');
+  });
+
+  it('forks paired continuation arms from one fixed prefix', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-paired-continuation-'));
+    const sourceSpec = yaml.parse(
+      fs.readFileSync(path.join(ROOT, 'config', 'poetics-calibration', 'phase2-dramas-v2.yaml'), 'utf8'),
+    );
+    const specPath = path.join(tmp, 'paired-continuation.yaml');
+    const sampleDir = path.join(tmp, 'sample');
+    const delibDir = path.join(tmp, 'delib');
+    const transcriptsDir = path.join(tmp, 'transcripts');
+    const keyPath = path.join(tmp, 'key.yaml');
+    fs.writeFileSync(
+      specPath,
+      yaml.stringify({
+        ...sourceSpec,
+        dramas: [sourceSpec.dramas.find((drama) => drama.id === 'D3')],
+      }),
+      'utf8',
+    );
+
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/generate-pedagogical-dramas.js',
+        '--mock',
+        '--spec',
+        specPath,
+        '--max-turns',
+        '3',
+        '--paired-continuation-policies',
+        'none,reframe',
+        '--director-revisit-anchor',
+        'opening',
+        '--out-dir',
+        sampleDir,
+        '--delib-dir',
+        delibDir,
+        '--transcripts-dir',
+        transcriptsDir,
+        '--key',
+        keyPath,
+        '--force',
+      ],
+      { cwd: ROOT, stdio: 'pipe', env: { ...process.env, GEN_DRAMAS_CLI_TRACE: '0' } },
+    );
+
+    const noneTraceFile = fs.readdirSync(path.join(delibDir, 'none')).find((file) => /^T\d+\.json$/.test(file));
+    const reframeTraceFile = fs
+      .readdirSync(path.join(delibDir, 'reframe'))
+      .find((file) => /^T\d+\.json$/.test(file));
+    const noneTrace = JSON.parse(fs.readFileSync(path.join(delibDir, 'none', noneTraceFile), 'utf8'));
+    const reframeTrace = JSON.parse(fs.readFileSync(path.join(delibDir, 'reframe', reframeTraceFile), 'utf8'));
+    const prefixTurns = (trace) => {
+      const turns = [];
+      for (const turn of trace.turns) {
+        turns.push({
+          phase: turn.phase,
+          turnNumber: turn.turnNumber,
+          externalMessage: turn.externalMessage,
+        });
+        if (turn.phase === 'tutor' && turn.turnNumber === 2) break;
+      }
+      return turns;
+    };
+
+    assert.equal(noneTraceFile, reframeTraceFile);
+    assert.deepEqual(prefixTurns(noneTrace), prefixTurns(reframeTrace));
+    assert.equal(noneTrace.run.paired_continuation.shared_prefix_hash, reframeTrace.run.paired_continuation.shared_prefix_hash);
+    assert.equal(noneTrace.run.paired_continuation.branch_policy, 'none');
+    assert.equal(reframeTrace.run.paired_continuation.branch_policy, 'reframe');
+    assert.equal(noneTrace.run.director_revisit_policy, 'none');
+    assert.equal(reframeTrace.run.director_revisit_policy, 'reframe');
+
+    const tid = noneTraceFile.replace(/\.json$/, '');
+    const noneSample = fs.readFileSync(path.join(sampleDir, 'none', `${tid}.txt`), 'utf8');
+    const reframeSample = fs.readFileSync(path.join(sampleDir, 'reframe', `${tid}.txt`), 'utf8');
+    assert.doesNotMatch(noneSample, /prior learner line is played back:/i);
+    assert.match(reframeSample, /prior learner line is played back:/i);
+
+    const noneKey = yaml.parse(fs.readFileSync(path.join(tmp, 'key-none.yaml'), 'utf8'));
+    const reframeKey = yaml.parse(fs.readFileSync(path.join(tmp, 'key-reframe.yaml'), 'utf8'));
+    assert.equal(noneKey.paired_continuation.mode, 'fixed_prefix_continuation');
+    assert.deepEqual(reframeKey.paired_continuation.branch_policies, ['none', 'reframe']);
+    assert.equal(noneKey.items[tid].paired_continuation.shared_prefix_hash, reframeKey.items[tid].paired_continuation.shared_prefix_hash);
   });
 });

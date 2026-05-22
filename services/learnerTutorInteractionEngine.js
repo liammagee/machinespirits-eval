@@ -266,6 +266,83 @@ function buildOpeningContextMessage(directorPlan, scenario, topic) {
   return parts.join('\n');
 }
 
+function cloneTraceTurns(turns = []) {
+  return turns.map((turn) => ({
+    ...turn,
+    internalDeliberation: Array.isArray(turn.internalDeliberation)
+      ? turn.internalDeliberation.map((entry) => ({ ...entry }))
+      : [],
+  }));
+}
+
+function responseFromTraceTurn(turn) {
+  if (!turn) return null;
+  return {
+    externalMessage: turn.externalMessage || '',
+    internalDeliberation: Array.isArray(turn.internalDeliberation) ? turn.internalDeliberation : [],
+    emotionalState: turn.emotionalState || 'neutral',
+    understandingLevel: turn.understandingLevel || 'developing',
+    strategy: turn.strategy || null,
+    suggestsEnding: false,
+  };
+}
+
+function resumeStateFromTrace(trace, directorPlan, scenario, topic) {
+  const turns = cloneTraceTurns(trace?.turns || []);
+  const speechTurns = turns.filter(
+    (turn) => (turn.phase === 'tutor' || turn.phase === 'learner') && String(turn.externalMessage || '').trim(),
+  );
+  const latestSpeechTurn = speechTurns.at(-1);
+  if (!latestSpeechTurn) return null;
+
+  const latestLearnerTurn = speechTurns.findLast((turn) => turn.phase === 'learner');
+  const latestTutorTurn = speechTurns.findLast((turn) => turn.phase === 'tutor');
+  return {
+    turns,
+    conversationHistory: speechTurns.map((turn) => ({
+      role: turn.phase,
+      content: turn.externalMessage,
+      internalDeliberation: Array.isArray(turn.internalDeliberation) ? turn.internalDeliberation : null,
+    })),
+    currentLearnerMessage:
+      responseFromTraceTurn(latestLearnerTurn) || {
+        externalMessage: buildOpeningContextMessage(directorPlan, scenario, topic),
+        internalDeliberation: [],
+        emotionalState: 'scene_context',
+        understandingLevel: 'initial',
+      },
+    latestTutorResponse: responseFromTraceTurn(latestTutorTurn),
+    nextPhase: latestSpeechTurn.phase === 'tutor' ? 'learner' : 'tutor',
+    turnCount: Number(latestSpeechTurn.turnNumber) || 0,
+  };
+}
+
+async function replayWritingPadsFromTrace(turns, learnerId, sessionId, topic, directorPlan, scenario) {
+  let latestLearnerMessage = {
+    externalMessage: buildOpeningContextMessage(directorPlan, scenario, topic),
+    internalDeliberation: [],
+    emotionalState: 'scene_context',
+    understandingLevel: 'initial',
+  };
+  let latestTutorResponse = null;
+
+  for (const turn of turns || []) {
+    if (turn.phase === 'learner') {
+      const learnerResponse = responseFromTraceTurn(turn);
+      if (latestTutorResponse) {
+        await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, latestTutorResponse, topic);
+      }
+      latestLearnerMessage = learnerResponse;
+      continue;
+    }
+    if (turn.phase === 'tutor') {
+      const tutorResponse = responseFromTraceTurn(turn);
+      await updateTutorWritingPad(learnerId, sessionId, tutorResponse, latestLearnerMessage);
+      latestTutorResponse = tutorResponse;
+    }
+  }
+}
+
 export function extractSuperegoImprovedMessage(superegoContent) {
   const improvedMatch = String(superegoContent || '').match(/IMPROVED:\s*([\s\S]*?)(?:$)/i);
   if (!improvedMatch?.[1]) return null;
@@ -366,6 +443,7 @@ export async function runInteraction(config, llmCall, options = {}) {
 
   const { maxTurns = DEFAULT_MAX_TURNS, _trace = true, observeInternals = true, forceMaxTurns = false } = options;
   const directorPlan = normalizeDirectorPlan(options.directorPlan || scenario?.directorPlan || null);
+  const resumed = resumeStateFromTrace(options.resumeTrace, directorPlan, scenario, topic);
 
   const startTime = Date.now();
 
@@ -377,8 +455,8 @@ export async function runInteraction(config, llmCall, options = {}) {
     tutorProfile,
     topic,
     sessionId,
-    turns: [],
-    outcomes: [],
+    turns: resumed?.turns || [],
+    outcomes: Array.isArray(options.resumeTrace?.outcomes) ? [...options.resumeTrace.outcomes] : [],
     metrics: {
       totalInputTokens: 0,
       totalOutputTokens: 0,
@@ -404,11 +482,14 @@ export async function runInteraction(config, llmCall, options = {}) {
   interactionTrace.writingPadSnapshots.tutor.before = tutorWritingPad.createSnapshot(learnerId);
 
   // Initialize conversation history
-  const conversationHistory = [];
+  const conversationHistory = resumed?.conversationHistory || [];
 
   let currentLearnerMessage;
   const openingSpeaker = directorPlan?.opening_speaker || 'learner';
-  if (openingSpeaker === 'learner') {
+  if (resumed) {
+    currentLearnerMessage = resumed.currentLearnerMessage;
+    await replayWritingPadsFromTrace(resumed.turns, learnerId, sessionId, topic, directorPlan, scenario);
+  } else if (openingSpeaker === 'learner') {
     // Generate initial learner message based on scenario
     currentLearnerMessage = await generateInitialLearnerMessage(
       learnerPersona,
@@ -453,8 +534,52 @@ export async function runInteraction(config, llmCall, options = {}) {
   }
 
   // Main interaction loop
-  let turnCount = 0;
+  let turnCount = resumed?.turnCount || 0;
   let interactionContinues = true;
+
+  const runLearnerPhase = async (phaseTurnCount, tutorResponse) => {
+    const learnerDirectorCue = directorCueFor(directorPlan, phaseTurnCount, 'before_learner', conversationHistory);
+    recordDirectorCue(interactionTrace, phaseTurnCount, learnerDirectorCue);
+    const learnerResponse = await generateLearnerResponse({
+      tutorMessage: tutorResponse.externalMessage,
+      topic,
+      conversationHistory: conversationHistory.map((m) => ({ role: m.role, content: m.content })),
+      learnerProfile: learnerProfile.name,
+      personaId,
+      llmCall,
+      memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
+      trace: interactionTrace,
+      profileContext: buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
+    });
+
+    conversationHistory.push({
+      role: 'learner',
+      content: learnerResponse.externalMessage,
+      internalDeliberation: observeInternals ? learnerResponse.internalDeliberation : null,
+    });
+
+    interactionTrace.turns.push({
+      turnNumber: phaseTurnCount,
+      phase: 'learner',
+      externalMessage: learnerResponse.externalMessage,
+      internalDeliberation: learnerResponse.internalDeliberation,
+      emotionalState: learnerResponse.emotionalState,
+      understandingLevel: learnerResponse.understandingLevel,
+      timestamp: new Date().toISOString(),
+    });
+
+    await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tutorResponse, topic);
+    interactionTrace.outcomes.push(...detectTurnOutcomes(learnerResponse, tutorResponse));
+    currentLearnerMessage = learnerResponse;
+    return learnerResponse;
+  };
+
+  if (resumed?.nextPhase === 'learner' && resumed.latestTutorResponse) {
+    const learnerResponse = await runLearnerPhase(turnCount, resumed.latestTutorResponse);
+    if (!forceMaxTurns && (learnerResponse.suggestsEnding || learnerResponse.emotionalState === 'disengaged')) {
+      interactionContinues = false;
+    }
+  }
 
   while (turnCount < maxTurns && interactionContinues) {
     turnCount++;
@@ -501,42 +626,7 @@ export async function runInteraction(config, llmCall, options = {}) {
     }
 
     // ================ LEARNER TURN ================
-    const learnerDirectorCue = directorCueFor(directorPlan, turnCount, 'before_learner', conversationHistory);
-    recordDirectorCue(interactionTrace, turnCount, learnerDirectorCue);
-    const learnerResponse = await generateLearnerResponse({
-      tutorMessage: tutorResponse.externalMessage,
-      topic,
-      conversationHistory: conversationHistory.map((m) => ({ role: m.role, content: m.content })),
-      learnerProfile: learnerProfile.name,
-      personaId,
-      llmCall,
-      memoryContext: learnerWritingPad.buildNarrativeSummary(learnerId, sessionId),
-      trace: interactionTrace,
-      profileContext: buildDirectorContext(directorPlan, learnerDirectorCue, 'learner'),
-    });
-
-    conversationHistory.push({
-      role: 'learner',
-      content: learnerResponse.externalMessage,
-      internalDeliberation: observeInternals ? learnerResponse.internalDeliberation : null,
-    });
-
-    interactionTrace.turns.push({
-      turnNumber: turnCount,
-      phase: 'learner',
-      externalMessage: learnerResponse.externalMessage,
-      internalDeliberation: learnerResponse.internalDeliberation,
-      emotionalState: learnerResponse.emotionalState,
-      understandingLevel: learnerResponse.understandingLevel,
-      timestamp: new Date().toISOString(),
-    });
-
-    // Update learner writing pad
-    await updateLearnerWritingPad(learnerId, sessionId, learnerResponse, tutorResponse, topic);
-
-    // Detect outcomes
-    const turnOutcomes = detectTurnOutcomes(learnerResponse, tutorResponse);
-    interactionTrace.outcomes.push(...turnOutcomes);
+    const learnerResponse = await runLearnerPhase(turnCount, tutorResponse);
 
     // Check for natural ending (suppressed during drama generation — forceMaxTurns).
     if (!forceMaxTurns && (learnerResponse.suggestsEnding || learnerResponse.emotionalState === 'disengaged')) {
@@ -544,7 +634,6 @@ export async function runInteraction(config, llmCall, options = {}) {
       break;
     }
 
-    currentLearnerMessage = learnerResponse;
   }
 
   if (directorPlan?.ending_speaker === 'tutor' && interactionTrace.turns.at(-1)?.phase === 'learner') {
