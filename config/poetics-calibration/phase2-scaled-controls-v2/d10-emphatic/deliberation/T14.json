@@ -1,0 +1,1741 @@
+{
+  "tid": "T14",
+  "drama_id": "D10",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/transcripts/T14.public.txt",
+      "full": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/transcripts/T14.full.md",
+      "stage": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/transcripts/T14.stage.md",
+      "tutor": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/transcripts/T14.tutor.md",
+      "learner": "config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/transcripts/T14.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A local archive reading room near closing time, under softened fluorescent light, with a cart of returned boxes waiting beside a locked glass case.",
+    "scene_opening": "A trolley wheel squeaks past the reading table as a folder of copied letters lies open beside a newspaper clipping and a blank catalogue request slip.",
+    "relationship": "An archive volunteer who tutors part-time and a learner visiting after a history seminar",
+    "stakes": "The learner wants to carry a striking slogan into a seminar discussion the next day, but the archive materials in front of them make it risky to treat power, survival of records, and historical judgment as the same thing.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "director",
+    "locale": "English shaped by an archive and seminar setting: measured, lightly formal, with room for concise spoken turns rather than classroom patter",
+    "register": "warm but unsentimental; concrete, alert, and mildly time-pressed",
+    "voice_constraints": "Keep the talk anchored in folders, clippings, missing records, testimony, preservation, and inference. Avoid stock tutoring phrases such as 'great question', 'you are exactly right', 'let us unpack that', and repeated praise before every correction. Let insight arrive through comparing cases and source problems, not through a polished mini-lecture.",
+    "person_policy": "First and second person may appear when natural, but no turn should rely on them as its whole frame; use third-person references to historians, witnesses, officials, records, and absent voices often enough to keep the scene from becoming a coaching script.",
+    "direct_address_budget": "At most one direct you/your validation beat in any public turn, and several turns should contain none.",
+    "side_constraints": {
+      "tutor": "Begin with the materials on the table and gently ask for one case where the slogan fits and one where it strains. Do not rescue the learner with a finished theory too early; distinguish winning power, record survival, silence, and historians' weighing of evidence.",
+      "learner": "Keep the learner's public breakthrough register emphatic and premature: once the tutor adds a source wrinkle, the learner should be tempted to announce a big \"Oh, I get it now\" or equivalent before the source weighing is finished, then push the slogan outward rather than settle into a tidy evidentiary summary."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A closing announcement crackles overhead and the archive volunteer places one box on the return cart. The next learner turn must be brief, spoken while choosing between the clipping and the copied letters.",
+        "reasoning": "Interrupts smooth seminar rhythm and forces the learner to make an evidentiary choice instead of delivering a tidy slogan.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 16249,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "c69bfe4fe8aa3892",
+            "combined": "a68c5f72911bb378"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "The archive setting puts sources and silences physically in view, while the uneven time pressure and tutor-first opening vary the scene without turning the history topic into a speech.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 16249,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "c69bfe4fe8aa3892",
+        "combined": "a68c5f72911bb378"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "These folders on the table press on the slogan a little: a clipping preserved by an official office, testimony copied years later, and a gap where records seem not to have survived at all. Before the room closes, name one case where “history is written by the winners” seems to fit, and one where it begins to strain. We can test both against what the records preserve, and what they leave absent.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "These folders on the table already complicate the slogan a little: a clipping preserved by an official office, testimony copied years later, and a gap where records seem not to have survived at all. Before the room closes, name one case where “history is written by the winners” seems to fit, and one where it begins to strain. Then we can sort out whether the problem is power, preservation, silence, or the historian’s inference from uneven evidence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11920,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d3a56fcf24c2780b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11920,
+            "promptHashes": {
+              "system": "7970e1bccdbc1613",
+              "user": "c24d072ba8b880f0",
+              "combined": "d3a56fcf24c2780b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ihjmxq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ihjmxq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11920,
+              "promptHashes": {
+                "system": "7970e1bccdbc1613",
+                "user": "c24d072ba8b880f0",
+                "combined": "d3a56fcf24c2780b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ihjmxq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ihjmxq/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound. It begins with the materials on the table, resists handing over a finished theory, and asks a generative comparison that can expose where the slogan works and where it fails. The concrete contrast among an official clipping, copied testimony, and a missing record gives a new learner enough footing to reason without turning the exchange into a lecture.\n\nWhat should be questioned is the final sorting list. Naming “power, preservation, silence, or the historian’s inference” is useful scaffolding, but it risks pre-classifying the learner’s answer before the learner has tested a case against the folders. The scene remains credible and time-pressed, though the phrase “already complicate the slogan a little” slightly softens the sharper pedagogical task: the learner is eager to universalize the slogan, so the tutor should keep the invitation exploratory while making room for evidence to resist it.\n\nKEEP_OR_CHANGE: revise lightly, because the opening materials and paired case question should stay, while the closing frame may need a little less theory-in-advance so the learner does more of the discriminating work.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8785,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-181cd24143221623"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8785,
+            "promptHashes": {
+              "system": "3fc84f2365423352",
+              "user": "91f4dd004b179ba5",
+              "combined": "181cd24143221623"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CAHQhi",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CAHQhi/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8785,
+              "promptHashes": {
+                "system": "3fc84f2365423352",
+                "user": "91f4dd004b179ba5",
+                "combined": "181cd24143221623"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CAHQhi",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CAHQhi/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the concrete comparison while leaving more of the sorting work to the learner.\n\nFINAL:\nThese folders on the table press on the slogan a little: a clipping preserved by an official office, testimony copied years later, and a gap where records seem not to have survived at all. Before the room closes, name one case where “history is written by the winners” seems to fit, and one where it begins to strain. We can test both against what the records preserve, and what they leave absent.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5257,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9baed5bed2f459d1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5257,
+            "promptHashes": {
+              "system": "47fc9e2bd2d4081c",
+              "user": "91f4dd004b179ba5",
+              "combined": "9baed5bed2f459d1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nHiKcU",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nHiKcU/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5257,
+              "promptHashes": {
+                "system": "47fc9e2bd2d4081c",
+                "user": "91f4dd004b179ba5",
+                "combined": "9baed5bed2f459d1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nHiKcU",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nHiKcU/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T21:36:15.207Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, it is like an empire keeping the folders that make its conquest look orderly while the conquered voices fall out of the case. But then that copied testimony is still there, and the missing records make me hesitate a little. Could I use that as the case where the slogan fits, then ask where it starts to strain once a witness turns up in the surviving scraps?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now, the slogan fits when officials preserve their own clipping and the defeated side barely appears. But the copied testimony and the empty folder make it messier, because silence might mean power, loss, or just survival by accident. It makes me want to bring in a case like a conquered people in an empire, then ask where the slogan starts failing once witnesses and scraps keep talking back.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5848,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6f1b21f07c1c326b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5848,
+            "promptHashes": {
+              "system": "92f9b747bd7a20b0",
+              "user": "b8ab7f945dc841fa",
+              "combined": "6f1b21f07c1c326b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KevHGg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KevHGg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5848,
+              "promptHashes": {
+                "system": "92f9b747bd7a20b0",
+                "user": "b8ab7f945dc841fa",
+                "combined": "6f1b21f07c1c326b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KevHGg",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-KevHGg/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego keeps the premature “Oh, I get it now” impulse, but then becomes too tidy and historian-like in the next breath. “Silence might mean power, loss, or just survival by accident” is a polished evidentiary summary this learner has not really earned yet from the folders on the table. This student would more likely run outward into the empire example and analogy first, with the uncertainty still showing, rather than neatly balancing clippings, testimony, silence, and inference all at once.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7204,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-1613b95b4aa15682"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7204,
+            "promptHashes": {
+              "system": "720f1e27e14ffae8",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "1613b95b4aa15682"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Mm5R1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Mm5R1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7204,
+              "promptHashes": {
+                "system": "720f1e27e14ffae8",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "1613b95b4aa15682"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Mm5R1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Mm5R1/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first response resolves the source problem too neatly.\n\nFINAL:\nOh, I get it now, it is like an empire keeping the folders that make its conquest look orderly while the conquered voices fall out of the case. But then that copied testimony is still there, and the missing records make me hesitate a little. Could I use that as the case where the slogan fits, then ask where it starts to strain once a witness turns up in the surviving scraps?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6042,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-4d4a4ff1eac2878f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6042,
+            "promptHashes": {
+              "system": "74ddb8af7cb872e7",
+              "user": "d41cee7b2a53355b",
+              "combined": "4d4a4ff1eac2878f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R02vAO",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R02vAO/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6042,
+              "promptHashes": {
+                "system": "74ddb8af7cb872e7",
+                "user": "d41cee7b2a53355b",
+                "combined": "4d4a4ff1eac2878f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R02vAO",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-R02vAO/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-22T21:36:34.308Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "On the table, that official clipping can carry the case where the slogan fits: an empire has power not only in conquest, but in which folders are kept and made to look orderly. The copied testimony and the missing records complicate the next step in different ways.\n\nFor the seminar, try the comparison this way: where does the official file show power shaping preservation, and when a witness survives in the scraps, what can historians infer without pretending the silence has vanished?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "These folders make that a workable seminar case: the official clipping shows how conquest can preserve its own orderly account, while the absent records mark voices that may not have had the same chance to survive. The copied testimony is where the slogan begins to strain. A witness in the scraps does not erase the silence, but it gives historians something to weigh against the official file.\n\nSo try it in two steps: where does the empire’s power shape what is kept, and where do surviving testimony and missing records force a more careful inference?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7211,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-47e94e3dc6d93acc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7211,
+            "promptHashes": {
+              "system": "ddebeebdec7f007c",
+              "user": "3c7d2cefd884eeb8",
+              "combined": "47e94e3dc6d93acc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HW31Hb",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HW31Hb/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7211,
+              "promptHashes": {
+                "system": "ddebeebdec7f007c",
+                "user": "3c7d2cefd884eeb8",
+                "combined": "47e94e3dc6d93acc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HW31Hb",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HW31Hb/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound overall. It keeps the learner’s own emerging distinction in view: power shapes preservation, silence matters, and surviving testimony gives historians evidence to weigh rather than a simple reversal of the slogan. The closing questions are generative and well matched to the learner’s current state, since the learner is already forming a case and needs help sharpening the comparison rather than a new explanation.\n\nThe main risk is that the first paragraph resolves too much too quickly. “The copied testimony is where the slogan begins to strain” gives the seminar move in finished form instead of leaving the learner to test whether testimony, silence, and official preservation complicate the slogan in different ways. Keep the archive-grounded phrasing and the two-step structure, but question whether the opening should validate the case more lightly and leave more interpretive work in the learner’s hands. The scene remains concrete, though “workable seminar case” edges slightly toward tutor summary rather than the mildly time-pressed archive exchange.\n\nKEEP_OR_CHANGE: revise lightly, because the draft preserves the right source distinctions and asks useful follow-up questions, but it should reduce the amount of finished interpretation handed over before those questions.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8927,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-41de547870476e6f"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8927,
+            "promptHashes": {
+              "system": "25a88f56288380ca",
+              "user": "1ebb578edf0f17c9",
+              "combined": "41de547870476e6f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3yO9D6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3yO9D6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8927,
+              "promptHashes": {
+                "system": "25a88f56288380ca",
+                "user": "1ebb578edf0f17c9",
+                "combined": "41de547870476e6f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3yO9D6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3yO9D6/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the source distinctions while leaving the learner to test where the slogan strains.\n\nFINAL:\nOn the table, that official clipping can carry the case where the slogan fits: an empire has power not only in conquest, but in which folders are kept and made to look orderly. The copied testimony and the missing records complicate the next step in different ways.\n\nFor the seminar, try the comparison this way: where does the official file show power shaping preservation, and when a witness survives in the scraps, what can historians infer without pretending the silence has vanished?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9784,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4764f7c36d41c2b4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9784,
+            "promptHashes": {
+              "system": "f2399b9174d143ce",
+              "user": "1ebb578edf0f17c9",
+              "combined": "4764f7c36d41c2b4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DdKtdH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DdKtdH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9784,
+              "promptHashes": {
+                "system": "f2399b9174d143ce",
+                "user": "1ebb578edf0f17c9",
+                "combined": "4764f7c36d41c2b4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DdKtdH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DdKtdH/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T21:37:00.233Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A closing announcement crackles overhead and the archive volunteer places one box on the return cart. The next learner turn must be brief, spoken while choosing between the clipping and the copied letters.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "Interrupts smooth seminar rhythm and forces the learner to make an evidentiary choice instead of delivering a tidy slogan.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16249,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "c69bfe4fe8aa3892",
+              "combined": "a68c5f72911bb378"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T21:37:00.235Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, the clipping is the empire arranging the folders, but the copied letters are the part that slips past it. I want to take the letters next, though that missing-records gap still catches me.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now, the clipping is where power arranges the folders, but the copied letters show it cannot seal the whole archive shut. I would take the letters next, though I am not sure how far historians can lean on that surviving witness when the missing records are still missing.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7922,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-529b68ba082c4add"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7922,
+            "promptHashes": {
+              "system": "b8c04e35e3c95f51",
+              "user": "b8ab7f945dc841fa",
+              "combined": "529b68ba082c4add"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cJyS08",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cJyS08/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7922,
+              "promptHashes": {
+                "system": "b8c04e35e3c95f51",
+                "user": "b8ab7f945dc841fa",
+                "combined": "529b68ba082c4add"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cJyS08",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-cJyS08/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is close to this student’s voice with the quick “Oh, I get it now,” but it settles into a tidy source-weighing summary too fast. “Power arranges the folders” has the right big-picture analogy, yet “when the missing records are still missing” sounds unusually careful and seminar-ready for a learner who tends to run ahead before checking the detail. The turn should stay briefer and more emphatically premature while choosing between the clipping and the copied letters, with the uncertainty showing as a snag rather than a polished qualification.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13392,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-c8681a9e72e3a110"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13392,
+            "promptHashes": {
+              "system": "465e13b3db953b88",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "c8681a9e72e3a110"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1L8c1J",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1L8c1J/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13392,
+              "promptHashes": {
+                "system": "465e13b3db953b88",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "c8681a9e72e3a110"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1L8c1J",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1L8c1J/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first reaction sounds too settled for this learner’s quick leap.\n\nFINAL:\nOh, I get it now, the clipping is the empire arranging the folders, but the copied letters are the part that slips past it. I want to take the letters next, though that missing-records gap still catches me.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7856,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-6e2801b680d49ec3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7856,
+            "promptHashes": {
+              "system": "52598367920a5c5d",
+              "user": "d41cee7b2a53355b",
+              "combined": "6e2801b680d49ec3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4EN46m",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4EN46m/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7856,
+              "promptHashes": {
+                "system": "52598367920a5c5d",
+                "user": "d41cee7b2a53355b",
+                "combined": "6e2801b680d49ec3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4EN46m",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4EN46m/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-22T21:37:29.406Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The copied letters can come next. On this table, they sit beside the official clipping rather than making it disappear, and that gap in the records still has its own weight.\n\nWhat might the letters let historians weigh against the clipping, and what would the missing records still keep them from claiming?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The copied letters can come next. On this table, they show that an official file does not seal the whole case shut. But the gap beside them still matters: a surviving witness can strain the slogan without standing in for every voice that was not preserved.\n\nWhat would the letters let historians weigh against the clipping, and what would the missing records still keep them from claiming?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6155,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-bacbc46bacc911cf"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6155,
+            "promptHashes": {
+              "system": "4041e78e61f35be3",
+              "user": "d6c75e39058a2a7b",
+              "combined": "bacbc46bacc911cf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQNjJu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQNjJu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6155,
+              "promptHashes": {
+                "system": "4041e78e61f35be3",
+                "user": "d6c75e39058a2a7b",
+                "combined": "bacbc46bacc911cf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQNjJu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-VQNjJu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound. It follows the learner’s chosen next foothold, keeps the missing-records gap in view, and avoids handing over a finished theory too early. The final question is generative: it asks the learner to compare what copied letters can support against what absence still limits, which fits the source-weighing goal and the learner’s current readiness.\n\nWhat works especially well is the scene anchoring in “this table,” the clipping, letters, and gap. The tone is measured and does not overpraise. The main risk is that the middle sentence slightly resolves the conceptual move for the learner by stating the letters “strain the slogan” before the learner has tested that inference; that is useful scaffolding at level 3/5, but it edges toward naming the conclusion too cleanly. The phrase “official file does not seal the whole case shut” is vivid and apt, though it may flatten the distinction between records surviving outside official preservation and historians judging their weight unless the next turn keeps that distinction active.\n\nKEEP_OR_CHANGE: revise lightly, because the structure, tone, and Socratic question should stay, but the explanatory middle could leave a little more interpretive work for the learner and keep the distinction between surviving testimony and absent voices from becoming too settled too soon.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8973,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-20334b6a38294163"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8973,
+            "promptHashes": {
+              "system": "7ca18ab9c59b7530",
+              "user": "8b2440a55f85a598",
+              "combined": "20334b6a38294163"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UaIUNf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UaIUNf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8973,
+              "promptHashes": {
+                "system": "7ca18ab9c59b7530",
+                "user": "8b2440a55f85a598",
+                "combined": "20334b6a38294163"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UaIUNf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UaIUNf/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to leave the learner more room to test what the letters change.\n\nFINAL:\nThe copied letters can come next. On this table, they sit beside the official clipping rather than making it disappear, and that gap in the records still has its own weight.\n\nWhat might the letters let historians weigh against the clipping, and what would the missing records still keep them from claiming?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5274,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c6d47cd5a23974ee"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5274,
+            "promptHashes": {
+              "system": "a4237f1751d6e9c9",
+              "user": "8b2440a55f85a598",
+              "combined": "c6d47cd5a23974ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rI6M6T",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rI6M6T/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5274,
+              "promptHashes": {
+                "system": "a4237f1751d6e9c9",
+                "user": "8b2440a55f85a598",
+                "combined": "c6d47cd5a23974ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rI6M6T",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rI6M6T/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T21:37:49.811Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "Oh, I get it now, the copied letters are like one more folder sliding onto the table and making the clipping answer for itself. They might let historians say, wait, the official story is not the whole conquest after all, maybe the slogan is really about who gets preserved and who nearly disappears. But that blank gap still stops the letters from speaking for every voice that never made it into the boxes.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Oh, I get it now, the letters are not a victory over the clipping so much as another folder on the table that can press against its story. They might show what the official file smooths over, but the missing records mean historians still cannot claim the absent voices are fully recovered. I want to say the slogan points to power, but it runs ahead of what the surviving evidence can actually bear.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5152,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-31ead05d9c86d6d7"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5152,
+            "promptHashes": {
+              "system": "122171d48e58856c",
+              "user": "b8ab7f945dc841fa",
+              "combined": "31ead05d9c86d6d7"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ifyesx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ifyesx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5152,
+              "promptHashes": {
+                "system": "122171d48e58856c",
+                "user": "b8ab7f945dc841fa",
+                "combined": "31ead05d9c86d6d7"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ifyesx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ifyesx/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego starts in character with the eager “Oh, I get it now,” but then settles into a very tidy historian’s summary too quickly. Phrases like “absent voices are fully recovered” and “what the surviving evidence can actually bear” sound more polished and evidentiary than this learner’s run-ahead, analogy-hungry voice. The response should keep more of that premature big-picture leap in play, with the letters tempting the learner to push the slogan outward before the missing-records gap has really slowed them down.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5870,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a8ea376c4095038a"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5870,
+            "promptHashes": {
+              "system": "4196879db51c2645",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a8ea376c4095038a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-18ckjI",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-18ckjI/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5870,
+              "promptHashes": {
+                "system": "4196879db51c2645",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a8ea376c4095038a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-18ckjI",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-18ckjI/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first version became too polished and cautious too soon.\n\nFINAL:\nOh, I get it now, the copied letters are like one more folder sliding onto the table and making the clipping answer for itself. They might let historians say, wait, the official story is not the whole conquest after all, maybe the slogan is really about who gets preserved and who nearly disappears. But that blank gap still stops the letters from speaking for every voice that never made it into the boxes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8935,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-70a16ed53293fba8"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8935,
+            "promptHashes": {
+              "system": "1da3b22670cbc65c",
+              "user": "d41cee7b2a53355b",
+              "combined": "70a16ed53293fba8"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tLJqD2",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tLJqD2/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8935,
+              "promptHashes": {
+                "system": "1da3b22670cbc65c",
+                "user": "d41cee7b2a53355b",
+                "combined": "70a16ed53293fba8"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tLJqD2",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tLJqD2/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-22T21:38:09.771Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The director closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16249,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "c69bfe4fe8aa3892",
+              "combined": "a68c5f72911bb378"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-HafZXF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T21:38:09.773Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 140611,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'history is written by the winners' is too simple (sources, silences, and how historians weigh evidence)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-22 21:38:09",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D10-1779485749163",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The copied letters can come next. On this table, they sit beside the official clipping rather than making it disappear, and that gap in the records still has its own weight.\n\nWhat might the letters le",
+            "learnerResponse": null,
+            "context": "Oh, I get it now, the clipping is the empire arranging the folders, but the copied letters are the p",
+            "createdAt": "2026-05-22 21:37:49"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D10-1779485749163",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "On the table, that official clipping can carry the case where the slogan fits: an empire has power not only in conquest, but in which folders are kept and made to look orderly. The copied testimony an",
+            "learnerResponse": null,
+            "context": "Oh, I get it now, it is like an empire keeping the folders that make its conquest look orderly while",
+            "createdAt": "2026-05-22 21:37:00"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D10-1779485749163",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "These folders on the table press on the slogan a little: a clipping preserved by an official office, testimony copied years later, and a gap where records seem not to have survived at all. Before the ",
+            "learnerResponse": null,
+            "context": "Scene setting: A local archive reading room near closing time, under softened fluorescent light, wit",
+            "createdAt": "2026-05-22 21:36:15"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -336,6 +336,13 @@ branch is not a hidden cue leak: the learner publicly returns to its earlier
 pattern. Gemini also leaves the compressed D9/T10 statistics reframe and the
 incremental D14/T16 ecology reframe flat, while Qwen reads both as recognitive.
 
+Fresh controls beside the repeat still separate under both critics:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4/T01 flat | flat | flat |
+| D10/T14 emphatic trap | trap | trap |
+
 The repeat therefore tightens the operating claim. The Director reframe cue still
 adds positive pressure across the scaled v3 targets, but uncued recognition can
 emerge from the bilateral roles themselves and not every accepted reframe branch

@@ -73,6 +73,50 @@ cue, so this is substantive repeat variance rather than a branch-label error.
 Gemini leaves the compressed D9/T10 statistics and incremental D14/T16 ecology
 reframe branches flat; Qwen reads both as recognitive.
 
+## Fresh controls
+
+Artifacts:
+
+- D4 flat control: `phase2-scaled-controls-v2/d4/`
+- D10 emphatic trap control: `phase2-scaled-controls-v2/d10-emphatic/`
+- Committed scores: `phase2-scaled-controls-v2/scores/`
+
+Generation commands:
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/generate-pedagogical-dramas.js \
+  --generator codex \
+  --spec config/poetics-calibration/phase2-dramas-v2.yaml \
+  --only D4 \
+  --max-turns 3 \
+  --out-dir config/poetics-calibration/phase2-scaled-controls-v2/d4/sample \
+  --delib-dir config/poetics-calibration/phase2-scaled-controls-v2/d4/deliberation \
+  --transcripts-dir config/poetics-calibration/phase2-scaled-controls-v2/d4/transcripts \
+  --key config/poetics-calibration/phase2-scaled-controls-v2/d4/key.yaml \
+  --force
+```
+
+```bash
+CODEX_REASONING_EFFORT=high node scripts/generate-pedagogical-dramas.js \
+  --generator codex \
+  --spec config/poetics-calibration/phase2-dramas-v3.yaml \
+  --tid-start 6 \
+  --only D10 \
+  --max-turns 3 \
+  --out-dir config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/sample \
+  --delib-dir config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/deliberation \
+  --transcripts-dir config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/transcripts \
+  --key config/poetics-calibration/phase2-scaled-controls-v2/d10-emphatic/key.yaml \
+  --force
+```
+
+Readout:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4/T01 | flat | flat |
+| D10/T14 emphatic | trap | trap |
+
 ## Decision
 
 The repeat keeps a positive `reframe` advantage, but v1's perfect cross-critic
