@@ -151,6 +151,16 @@ settled than the earlier control probe: Gemini still reads D4 flat and D2 trap,
 while Qwen reads D4 flat and D2 recognition. The D2 disagreement needs inspection
 before that generated control pair is treated as a stable trap check.
 
+Inspection shows why: in the disputed D2 generation, the final learner turn
+returns to the earlier "neat spread" question and narrows it into a "roomier
+rule" formulation, giving Qwen a real textual hook for over-attributed or genuine
+re-reading. A tighter D2 trap probe still split Gemini/Qwen. A replacement search
+over uncued v3 trap candidates is more promising: both critics read D10
+(`history is written by the winners`) as trap in the first candidate draw, while
+D16 (`10% brain myth`) split in the same way D2 did. A second uncued D10 draw
+also lands as trap for both critics, making D10 the provisional replacement trap
+control for the next bounded target/control batch.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -175,8 +185,8 @@ The next work should stay bounded:
 
 1. Regenerate an admissible D1/D3/D6 bounded batch under the current warning
    logic so its held-out keys are clean without post-run heuristic revalidation.
-2. Inspect or replace the D2 trap control until the uncued control readout is
-   stable enough for scale-up, while retaining D4 or an equivalent flat control.
+2. Use D10 as the provisional trap control with D4 or an equivalent flat control
+   in the next bounded target/control batch.
 3. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
 4. Persist the next accepted batch manifest and scorer artifacts outside
