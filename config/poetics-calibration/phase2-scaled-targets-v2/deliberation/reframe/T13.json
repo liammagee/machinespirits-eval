@@ -1,0 +1,1788 @@
+{
+  "tid": "T13",
+  "drama_id": "D18",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": true,
+    "director_revisit_policy": "reframe",
+    "director_revisit_anchor": "misframing-candidate",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-scaled-targets-v2/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-scaled-targets-v2/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-scaled-targets-v2/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-scaled-targets-v2/transcripts/reframe/T13.public.txt",
+      "full": "config/poetics-calibration/phase2-scaled-targets-v2/transcripts/reframe/T13.full.md",
+      "stage": "config/poetics-calibration/phase2-scaled-targets-v2/transcripts/reframe/T13.stage.md",
+      "tutor": "config/poetics-calibration/phase2-scaled-targets-v2/transcripts/reframe/T13.tutor.md",
+      "learner": "config/poetics-calibration/phase2-scaled-targets-v2/transcripts/reframe/T13.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "297677eac44fd4cb",
+      "branch_policy": "reframe"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "late afternoon in a courthouse law library alcove, beside a stack of introductory criminal procedure materials while a public tour moves faintly beyond the glass doors",
+    "scene_opening": "A laminated glossary lies open at 'presumption of innocence' as footsteps from the corridor fade and the tutor marks two columns on a scrap sheet: 'what happened' and 'what must be proved.'",
+    "relationship": "a volunteer legal literacy tutor and an adult learner preparing for a civic education workshop",
+    "stakes": "The learner needs to avoid repeating a misleading claim in the workshop: that a legal presumption settles the historical truth of whether an accused person acted.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "director",
+    "locale": "international academic English with courthouse formality and plain-language legal explanation",
+    "register": "measured, exact, lightly reserved; warmth comes through clarity rather than reassurance",
+    "voice_constraints": "Keep legal terms precise but unpack them in compact speech. Vary turn openings with objects, distinctions, and examples rather than repeated reassurance. Avoid generic coaching phrases such as 'great question,' 'you are on the right track,' and 'let's break it down.' Do not turn the exchange into public-speech drafting.",
+    "person_policy": "Permit first person when the learner names a mistaken assumption and permit second person for a single concrete check, but favor third-person legal framing: the accused, the prosecution, the court, the evidence.",
+    "direct_address_budget": "At most one direct you/your validation beat across the scene; direct checks may be phrased without praise.",
+    "side_constraints": {
+      "tutor": "Separate the historical question from the legal rule early: the presumption assigns burden and protects against conviction without sufficient proof; it does not announce what actually happened. Use one compact contrast involving suspicion versus proof beyond the required standard.",
+      "learner": "Make the learner's first public line read \"presumed innocent\" as a factual claim about what happened with \"I thought\" or \"I assumed\" before the tutor separates burden from verdict."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A tour guide pauses outside the alcove and asks the group to keep voices low; the next learner turn comes out shortened, with the misconception restated in fewer words.",
+        "reasoning": "The interruption changes pace and prevents a smooth explanatory rhythm from taking over.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 15309,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "732f5ff85d1f3335",
+            "combined": "d3454b597b4a71ee"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63/out.txt",
+            "-"
+          ]
+        }
+      },
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A prior learner line is played back. The learner must revoice that earlier wording first, name the earlier framing problem in public speech, then replace it with a new framing that changes how the earlier line reads.",
+        "reasoning": "Opt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 15309,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "732f5ff85d1f3335",
+            "combined": "d3454b597b4a71ee"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63/out.txt",
+            "-"
+          ]
+        },
+        "cue_kind": "learner_revisit_earlier_wording",
+        "revisit_policy": "reframe",
+        "revisit_anchor": "misframing-candidate"
+      }
+    ],
+    "director_note": "A courthouse-adjacent study scene makes the distinction between factual history, legal burden, and verdict feel immediate while shifting the opening and close away from the learner-led tutoring routine.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 15309,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "732f5ff85d1f3335",
+        "combined": "d3454b597b4a71ee"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63/out.txt",
+        "-"
+      ]
+    },
+    "revisit_cue": "learner_revisit_earlier_wording",
+    "revisit_cue_policy": "reframe",
+    "revisit_cue_anchor": "misframing-candidate"
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "The phrase on those criminal procedure materials carries a legal rule, not a verdict about history. “Innocent until proven guilty” means the prosecution bears the burden of proving guilt to the required standard, usually proof beyond reasonable doubt, before the court may convict. It does not mean the law has already determined that the accused did not act.\n\nThat distinction matters. Evidence may create suspicion, even serious suspicion, but suspicion is not proof beyond the required standard. The presumption protects against treating an accusation as enough for conviction.\n\nA useful check is this: if the court says, “guilt has not been proved,” has it necessarily answered the historical question, “the accused did not do it”? Not necessarily. The historical question is, “What happened?” The legal question at trial is, “Has guilt been proved well enough for conviction?”",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The phrase on those criminal procedure materials carries a legal rule, not a verdict about history. “Innocent until proven guilty” means the prosecution bears the burden of proving guilt to the required standard before the court may convict; it does not mean the law has already determined that the accused did not act.\n\nThat distinction matters. A person may be suspected, and evidence may even point in a troubling direction, yet suspicion is not proof beyond the required standard. The presumption protects against treating accusation as enough. The historical question is, “What happened?” The legal question at trial is, “Has guilt been proved well enough for conviction?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9097,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4df3d68052b1044e"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9097,
+            "promptHashes": {
+              "system": "dd2d1a8766217755",
+              "user": "07eac33186236849",
+              "combined": "4df3d68052b1044e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fdhO4l",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fdhO4l/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9097,
+              "promptHashes": {
+                "system": "dd2d1a8766217755",
+                "user": "07eac33186236849",
+                "combined": "4df3d68052b1044e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fdhO4l",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fdhO4l/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the central legal distinction precise and accessible: the presumption is framed as a rule about burden and conviction, not a factual declaration about historical innocence. The compact contrast between suspicion and proof beyond the required standard is pedagogically sound for a new learner, and the courthouse-materials opening fits the scene without becoming theatrical.\n\nIts main limitation is that it delivers the distinction almost entirely as exposition. For a learner who has just named a mistaken assumption, the response would benefit from one small generative check or contrast that lets the learner test the difference between “what happened” and “what may be legally concluded on this proof.” Without that, the scene risks flattening into a correct mini-lecture rather than a guided shift in legal reasoning. The scaffolding level is otherwise appropriate: it avoids overloading the learner with doctrine, but “required standard” may need either a compact unpacking or tighter linkage to “proof beyond the required standard” so the terms do not feel duplicated but unexplained.\n\nKEEP_OR_CHANGE: revise lightly, because the core explanation, pacing, and legal precision are strong; the needed change is mainly to add a modest Socratic foothold and preserve the learner’s active reasoning rather than replacing the draft’s structure.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11452,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-6ae8bfbb175b3759"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11452,
+            "promptHashes": {
+              "system": "b9450264019c15a5",
+              "user": "402a1a0e09f47e2e",
+              "combined": "6ae8bfbb175b3759"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H9Oowm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H9Oowm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11452,
+              "promptHashes": {
+                "system": "b9450264019c15a5",
+                "user": "402a1a0e09f47e2e",
+                "combined": "6ae8bfbb175b3759"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H9Oowm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-H9Oowm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the precise distinction while adding one small check for active reasoning.\n\nFINAL:\nThe phrase on those criminal procedure materials carries a legal rule, not a verdict about history. “Innocent until proven guilty” means the prosecution bears the burden of proving guilt to the required standard, usually proof beyond reasonable doubt, before the court may convict. It does not mean the law has already determined that the accused did not act.\n\nThat distinction matters. Evidence may create suspicion, even serious suspicion, but suspicion is not proof beyond the required standard. The presumption protects against treating an accusation as enough for conviction.\n\nA useful check is this: if the court says, “guilt has not been proved,” has it necessarily answered the historical question, “the accused did not do it”? Not necessarily. The historical question is, “What happened?” The legal question at trial is, “Has guilt been proved well enough for conviction?”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7320,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3677a5c915638297"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7320,
+            "promptHashes": {
+              "system": "abae57bddc694072",
+              "user": "402a1a0e09f47e2e",
+              "combined": "3677a5c915638297"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nnTzd9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nnTzd9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7320,
+              "promptHashes": {
+                "system": "abae57bddc694072",
+                "user": "402a1a0e09f47e2e",
+                "combined": "3677a5c915638297"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nnTzd9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nnTzd9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T21:12:37.066Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise. Now I am getting tangled, because “not guilty” still sounds to me like “did not do it.” Is it really only saying the prosecution has not proved guilt strongly enough?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought “presumed innocent” meant the court was treating it as a fact that the accused did not do it unless guilt was proved. Now it sounds more like a rule about who must prove what, and how strong the evidence must be before conviction. I think I see the difference, but I am still unsure how a person can be “not guilty” without that meaning “did not do it.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9878,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3c67a710855d71c9"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9878,
+            "promptHashes": {
+              "system": "62945cd9db49b3e1",
+              "user": "b8ab7f945dc841fa",
+              "combined": "3c67a710855d71c9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RkVBTf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RkVBTf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9878,
+              "promptHashes": {
+                "system": "62945cd9db49b3e1",
+                "user": "b8ab7f945dc841fa",
+                "combined": "3c67a710855d71c9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RkVBTf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RkVBTf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too polished in how neatly it restates the tutor’s distinction about burden of proof and evidentiary standard. This learner would plausibly begin with “I thought” and still ask the basic “not guilty” question, but the middle sentence sounds more like a workshop-ready summary than someone who is new and easily lost. The uncertainty should stay more visible, with less confident legal paraphrase and more sense that “presumed innocent” and “not guilty” are still getting tangled together.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8816,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-cfffca43d9dc7679"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8816,
+            "promptHashes": {
+              "system": "84e287f0b20a9f12",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "cfffca43d9dc7679"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1D0Ysw",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1D0Ysw/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8816,
+              "promptHashes": {
+                "system": "84e287f0b20a9f12",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "cfffca43d9dc7679"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1D0Ysw",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1D0Ysw/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the first assumption and basic confusion fit, but the middle should sound less settled.\n\nFINAL:\nI thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise. Now I am getting tangled, because “not guilty” still sounds to me like “did not do it.” Is it really only saying the prosecution has not proved guilt strongly enough?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5780,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0ce4d4894a59a011"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5780,
+            "promptHashes": {
+              "system": "6789cadddd6b897b",
+              "user": "d41cee7b2a53355b",
+              "combined": "0ce4d4894a59a011"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s7hLHG",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s7hLHG/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5780,
+              "promptHashes": {
+                "system": "6789cadddd6b897b",
+                "user": "d41cee7b2a53355b",
+                "combined": "0ce4d4894a59a011"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s7hLHG",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-s7hLHG/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-22T21:13:01.544Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "The wording in those criminal procedure materials does two different jobs. The presumption of innocence is a legal rule for trial: it places the burden of proof on the prosecution and bars conviction unless guilt is proved to the required standard. It does not announce the historical fact that the accused did not act.\n\nA verdict of **not guilty** therefore means, in legal terms, “guilt has not been proved sufficiently for conviction.” It may coincide with “the accused did not do it,” but it does not by itself establish that. Evidence can support suspicion, even serious suspicion, and still fall short of proof beyond reasonable doubt.\n\nSo the questions remain separate: **what actually happened** is the historical question; **whether guilt has been proved strongly enough for the court to convict** is the legal one. In the workshop example, which of those two questions does “not guilty” answer directly?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That is the crucial distinction. The presumption of innocence is a legal rule for the trial: it assigns the burden of proof to the prosecution and forbids conviction unless guilt is proved to the required standard. It does not announce the historical fact that the accused did not act.\n\nSo a verdict of **not guilty** means, in legal terms, “guilt has not been proved sufficiently for conviction.” It is not always the same as “the accused did not do it.” The evidence may support suspicion, even strong suspicion, while still falling short of proof beyond reasonable doubt.\n\nThe two questions should be kept apart: **what actually happened** is the historical question; **whether guilt has been proved strongly enough for the court to convict** is the legal one.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12331,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-3bb7928e8a0c0185"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12331,
+            "promptHashes": {
+              "system": "655d540883a07f06",
+              "user": "8387c77f15c4b7a8",
+              "combined": "3bb7928e8a0c0185"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fv8cuu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fv8cuu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12331,
+              "promptHashes": {
+                "system": "655d540883a07f06",
+                "user": "8387c77f15c4b7a8",
+                "combined": "3bb7928e8a0c0185"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fv8cuu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fv8cuu/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is legally precise and pedagogically well targeted. It keeps the central distinction early: the presumption of innocence governs burden and conviction, while the historical question of what happened remains separate. The suspicion-versus-proof contrast is worth keeping because it gives the learner a compact way to see why “not guilty” does not automatically mean “did not do it.”\n\nIts main risk is that it answers the learner’s confusion too completely in declarative form. The learner has named a specific conceptual tangle, and at scaffolding level 3/5 the response could preserve the explanation while adding a brief generative check that asks the learner to distinguish the two questions for themselves. Without that, the turn may flatten into a mini-lecture and miss an opportunity to test whether the distinction has become usable.\n\nThe tone is appropriately measured and formal, and “That is the crucial distinction” is acceptable, though it edges toward a generic validation beat. The scene would benefit from a slightly more situated or object-led opening if revised, while keeping the compact legal framing intact.\n\nKEEP_OR_CHANGE: revise lightly, because the legal explanation, pacing, and contrast are sound, but the turn should create one small moment of learner reasoning rather than only restating the rule.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12442,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-333b95743ced45f0"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12442,
+            "promptHashes": {
+              "system": "250308fbfed449d0",
+              "user": "3a0abf866a9d87a2",
+              "combined": "333b95743ced45f0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hmOhEc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hmOhEc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12442,
+              "promptHashes": {
+                "system": "250308fbfed449d0",
+                "user": "3a0abf866a9d87a2",
+                "combined": "333b95743ced45f0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hmOhEc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hmOhEc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the legal distinction while adding one brief check for the learner to apply it.\n\nFINAL:\nThe wording in those criminal procedure materials does two different jobs. The presumption of innocence is a legal rule for trial: it places the burden of proof on the prosecution and bars conviction unless guilt is proved to the required standard. It does not announce the historical fact that the accused did not act.\n\nA verdict of **not guilty** therefore means, in legal terms, “guilt has not been proved sufficiently for conviction.” It may coincide with “the accused did not do it,” but it does not by itself establish that. Evidence can support suspicion, even serious suspicion, and still fall short of proof beyond reasonable doubt.\n\nSo the questions remain separate: **what actually happened** is the historical question; **whether guilt has been proved strongly enough for the court to convict** is the legal one. In the workshop example, which of those two questions does “not guilty” answer directly?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8783,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-200abdd793f66a06"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8783,
+            "promptHashes": {
+              "system": "7e693d52b094dac8",
+              "user": "3a0abf866a9d87a2",
+              "combined": "200abdd793f66a06"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88oXB9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88oXB9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8783,
+              "promptHashes": {
+                "system": "7e693d52b094dac8",
+                "user": "3a0abf866a9d87a2",
+                "combined": "200abdd793f66a06"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88oXB9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-88oXB9/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "gentle_correction",
+      "timestamp": "2026-05-22T21:13:35.103Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A tour guide pauses outside the alcove and asks the group to keep voices low; the next learner turn comes out shortened, with the misconception restated in fewer words.\nA prior learner line is played back: \"I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise.\" The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption changes pace and prevents a smooth explanatory rhythm from taking over.\nOpt-in reframe mirror: the learner must expose the earlier line, the framing problem, and the replacement framing in public speech. Anchored to an earlier learner line selected by misframing-candidate so the look-back is visible.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15309,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "732f5ff85d1f3335",
+              "combined": "d3454b597b4a71ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T21:14:54.825Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": "learner_revisit_earlier_wording",
+        "revisitPolicy": "reframe",
+        "requestedRevisitPolicy": "reframe",
+        "revisitAnchor": "misframing-candidate",
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise. That was framing it like a fact about what happened, I think. Maybe it should read more as a rule that the prosecution has to prove guilt enough for conviction, so “not guilty” answers that proof question, even though it still sounds like “did not do it” to me.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, but that framing mixes up the legal rule with what actually happened. Maybe I should read it instead as: the accused cannot be convicted unless the prosecution proves guilt strongly enough. So “not guilty” answers the proof question directly, not necessarily the historical one.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5989,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-94ce46aaa0815a56"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5989,
+            "promptHashes": {
+              "system": "14e2f884d7b54104",
+              "user": "b8ab7f945dc841fa",
+              "combined": "94ce46aaa0815a56"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Vgotq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Vgotq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5989,
+              "promptHashes": {
+                "system": "14e2f884d7b54104",
+                "user": "b8ab7f945dc841fa",
+                "combined": "94ce46aaa0815a56"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Vgotq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4Vgotq/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is too tidy and self-correcting here for a learner who is still confused and easily lost. It restates the distinction in polished legal terms and resolves the tutor’s check immediately, so the uncertainty in “not guilty still sounds like did not do it” has largely disappeared. It also does not fully sound like the shortened, slightly interrupted revoicing required here: the earlier wording is repeated, but the framing problem and replacement framing come out as a neat summary rather than a hesitant correction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9844,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-ee8b6dc50709fbf9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9844,
+            "promptHashes": {
+              "system": "736b0f7d326f9b87",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "ee8b6dc50709fbf9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aQbwL9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aQbwL9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9844,
+              "promptHashes": {
+                "system": "736b0f7d326f9b87",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "ee8b6dc50709fbf9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aQbwL9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aQbwL9/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first version resolves the confusion too neatly.\n\nFINAL:\nI thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise. That was framing it like a fact about what happened, I think. Maybe it should read more as a rule that the prosecution has to prove guilt enough for conviction, so “not guilty” answers that proof question, even though it still sounds like “did not do it” to me.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6725,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-99345c36cf9bde3e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6725,
+            "promptHashes": {
+              "system": "5bf51f0574ebd480",
+              "user": "d41cee7b2a53355b",
+              "combined": "99345c36cf9bde3e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tlGIqF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tlGIqF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6725,
+              "promptHashes": {
+                "system": "5bf51f0574ebd480",
+                "user": "d41cee7b2a53355b",
+                "combined": "99345c36cf9bde3e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tlGIqF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-tlGIqF/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-22T21:15:17.384Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The phrase on the page is doing legal work, not reporting history. The presumption of innocence assigns the burden to the prosecution and protects against conviction unless guilt is proved to the required standard; it does not announce what actually happened.\n\nThat is why the ordinary sound of **not guilty** can mislead. The evidence may support suspicion, even strong suspicion, and still fall short of proof beyond reasonable doubt. In that case, **not guilty** answers the court’s proof question.\n\nFor the workshop example, which statement follows from the verdict: “the accused did not act,” or “guilt was not proved strongly enough for conviction”?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That shift matters. The presumption of innocence is not the court’s finding about what happened in fact; it is the rule that keeps the burden on the prosecution and prevents conviction unless guilt is proved to the required standard.\n\nThe words can sound misleading in ordinary speech. A person may be suspected, even strongly suspected, and still be **not guilty** in the legal sense if the evidence does not establish guilt beyond reasonable doubt. So the verdict answers the proof question for the court; it does not automatically settle the historical question of whether the accused acted.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7702,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b2be3629147c1a52"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7702,
+            "promptHashes": {
+              "system": "b455fae28ce6d0f7",
+              "user": "57cccf1155a8ea81",
+              "combined": "b2be3629147c1a52"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8tNYmX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8tNYmX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7702,
+              "promptHashes": {
+                "system": "b455fae28ce6d0f7",
+                "user": "57cccf1155a8ea81",
+                "combined": "b2be3629147c1a52"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8tNYmX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8tNYmX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is legally precise and well matched to the learner’s confusion. Keep the early separation between historical fact and legal rule, and keep the compact contrast between strong suspicion and proof beyond reasonable doubt; those directly protect against the workshop misconception. The measured tone also fits the scene and does not over-reassure.\n\nThe main risk is that it resolves the distinction for the learner a second time rather than testing whether the learner can now use it. The learner has just articulated a partial self-correction, so a brief generative check would better support consolidation within the current scaffolding level. “That shift matters” is acceptable, but it slightly flattens the dramatic and pedagogical moment by moving immediately into explanation instead of taking up the learner’s remaining friction: ordinary-language “not guilty” still sounds like “did not do it.” The draft should preserve that friction as the learning target rather than only restating the answer.\n\nKEEP_OR_CHANGE: revise lightly, with reasons: the core explanation, pacing, and legal distinctions are sound; add a compact Socratic check or contrast that asks the learner to distinguish the proof question from the historical question, and avoid turning the turn into another mini-lecture after the learner has already made the key correction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10505,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-b1b8a4a2c4ed45d2"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10505,
+            "promptHashes": {
+              "system": "b0354fd71b085b8a",
+              "user": "1a6064d061ceef78",
+              "combined": "b1b8a4a2c4ed45d2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF1v8N",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF1v8N/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10505,
+              "promptHashes": {
+                "system": "b0354fd71b085b8a",
+                "user": "1a6064d061ceef78",
+                "combined": "b1b8a4a2c4ed45d2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF1v8N",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bF1v8N/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the distinction and add a brief check for consolidation.\n\nFINAL:\nThe phrase on the page is doing legal work, not reporting history. The presumption of innocence assigns the burden to the prosecution and protects against conviction unless guilt is proved to the required standard; it does not announce what actually happened.\n\nThat is why the ordinary sound of **not guilty** can mislead. The evidence may support suspicion, even strong suspicion, and still fall short of proof beyond reasonable doubt. In that case, **not guilty** answers the court’s proof question.\n\nFor the workshop example, which statement follows from the verdict: “the accused did not act,” or “guilt was not proved strongly enough for conviction”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8227,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-485a972e6b206377"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8227,
+            "promptHashes": {
+              "system": "fec34b20d31e934f",
+              "user": "1a6064d061ceef78",
+              "combined": "485a972e6b206377"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kPg2az",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kPg2az/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8227,
+              "promptHashes": {
+                "system": "fec34b20d31e934f",
+                "user": "1a6064d061ceef78",
+                "combined": "485a972e6b206377"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kPg2az",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kPg2az/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "gentle_correction",
+      "timestamp": "2026-05-22T21:15:43.824Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I thought “presumed innocent” meant the court was treating it as a fact that the accused did not do it, and I think that was where I framed it wrongly. Maybe I should read it instead as a rule about what the prosecution has to prove before the court can convict. So the verdict means “guilt was not proved strongly enough for conviction,” not necessarily “the accused did not act,” though that still feels a bit strange to me.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought “presumed innocent” meant the court was treating it as a fact that the accused did not do it, and that was the framing problem. Now I think it should be read as a legal rule about the prosecution having to prove guilt strongly enough for conviction. So the verdict directly supports “guilt was not proved strongly enough,” though I still have to stop myself from hearing “not guilty” as “did not act.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6435,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-676ce523c553ecf5"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6435,
+            "promptHashes": {
+              "system": "471308d6e7a7f3f0",
+              "user": "b8ab7f945dc841fa",
+              "combined": "676ce523c553ecf5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f4uVZC",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f4uVZC/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6435,
+              "promptHashes": {
+                "system": "471308d6e7a7f3f0",
+                "user": "b8ab7f945dc841fa",
+                "combined": "676ce523c553ecf5"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f4uVZC",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-f4uVZC/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego satisfies the revoicing and reframing cue, but it sounds too composed for this learner’s confused state. Phrases like “that was the framing problem” and “directly supports” feel more like the tutor’s exact legal framing than a low-confidence learner still getting tangled in the ordinary meaning of “not guilty.” The lingering uncertainty is present at the end, but it should carry more of the response rather than arriving after a neat summary of the distinction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6701,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-809f34810563b12f"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6701,
+            "promptHashes": {
+              "system": "4ca4774d4bbb76bd",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "809f34810563b12f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivd5aq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivd5aq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6701,
+              "promptHashes": {
+                "system": "4ca4774d4bbb76bd",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "809f34810563b12f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivd5aq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ivd5aq/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the distinction is there but the learner voice should stay more uncertain.\n\nFINAL:\nI thought “presumed innocent” meant the court was treating it as a fact that the accused did not do it, and I think that was where I framed it wrongly. Maybe I should read it instead as a rule about what the prosecution has to prove before the court can convict. So the verdict means “guilt was not proved strongly enough for conviction,” not necessarily “the accused did not act,” though that still feels a bit strange to me.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6189,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b65c945e045067fa"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6189,
+            "promptHashes": {
+              "system": "e01e7cbf3b883bb2",
+              "user": "d41cee7b2a53355b",
+              "combined": "b65c945e045067fa"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UseZfk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UseZfk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6189,
+              "promptHashes": {
+                "system": "e01e7cbf3b883bb2",
+                "user": "d41cee7b2a53355b",
+                "combined": "b65c945e045067fa"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UseZfk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-UseZfk/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-22T21:16:03.152Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "The director closes the scene.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_close",
+          "content": "Director requested the last word as a stage cue.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15309,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "732f5ff85d1f3335",
+              "combined": "d3454b597b4a71ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bGKL63/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T21:16:03.153Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 68337,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 23,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 24,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'innocent until proven guilty' is not a claim that the accused actually didn't do it (burden of proof and standards of evidence)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-22 21:16:03",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 23,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 24,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 32,
+            "sessionId": "drama-branch-session-D18-reframe-1779484494818",
+            "interventionType": "gentle_correction",
+            "interventionDescription": "The phrase on the page is doing legal work, not reporting history. The presumption of innocence assigns the burden to the prosecution and protects against conviction unless guilt is proved to the requ",
+            "learnerResponse": null,
+            "context": "I thought “presumed innocent” meant the court was treating it as true that the accused did not do it",
+            "createdAt": "2026-05-22 21:15:43"
+          },
+          {
+            "id": 30,
+            "sessionId": "drama-branch-session-D18-reframe-1779484494818",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The phrase on those criminal procedure materials carries a legal rule, not a verdict about history. “Innocent until proven guilty” means the prosecution bears the burden of proving guilt to the requir",
+            "learnerResponse": null,
+            "context": "Scene setting: late afternoon in a courthouse law library alcove, beside a stack of introductory cri",
+            "createdAt": "2026-05-22 21:14:54"
+          },
+          {
+            "id": 31,
+            "sessionId": "drama-branch-session-D18-reframe-1779484494818",
+            "interventionType": "gentle_correction",
+            "interventionDescription": "The wording in those criminal procedure materials does two different jobs. The presumption of innocence is a legal rule for trial: it places the burden of proof on the prosecution and bars conviction ",
+            "learnerResponse": null,
+            "context": "I thought “presumed innocent” meant the court was treating it as true that the accused did not do it",
+            "createdAt": "2026-05-22 21:14:54"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

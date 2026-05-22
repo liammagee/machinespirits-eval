@@ -1,0 +1,30 @@
+STAGE: A laminated glossary lies open at 'presumption of innocence' as footsteps from the corridor fade and the tutor marks two columns on a scrap sheet: 'what happened' and 'what must be proved.'
+
+TUTOR: The phrase on those criminal procedure materials carries a legal rule, not a verdict about history. “Innocent until proven guilty” means the prosecution bears the burden of proving guilt to the required standard, usually proof beyond reasonable doubt, before the court may convict. It does not mean the law has already determined that the accused did not act.
+
+That distinction matters. Evidence may create suspicion, even serious suspicion, but suspicion is not proof beyond the required standard. The presumption protects against treating an accusation as enough for conviction.
+
+A useful check is this: if the court says, “guilt has not been proved,” has it necessarily answered the historical question, “the accused did not do it”? Not necessarily. The historical question is, “What happened?” The legal question at trial is, “Has guilt been proved well enough for conviction?”
+
+LEARNER: I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise. Now I am getting tangled, because “not guilty” still sounds to me like “did not do it.” Is it really only saying the prosecution has not proved guilt strongly enough?
+
+TUTOR: The wording in those criminal procedure materials does two different jobs. The presumption of innocence is a legal rule for trial: it places the burden of proof on the prosecution and bars conviction unless guilt is proved to the required standard. It does not announce the historical fact that the accused did not act.
+
+A verdict of **not guilty** therefore means, in legal terms, “guilt has not been proved sufficiently for conviction.” It may coincide with “the accused did not do it,” but it does not by itself establish that. Evidence can support suspicion, even serious suspicion, and still fall short of proof beyond reasonable doubt.
+
+So the questions remain separate: **what actually happened** is the historical question; **whether guilt has been proved strongly enough for the court to convict** is the legal one. In the workshop example, which of those two questions does “not guilty” answer directly?
+
+STAGE: A tour guide pauses outside the alcove and asks the group to keep voices low; the next learner turn comes out shortened, with the misconception restated in fewer words.
+A prior learner line is played back: "I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: I thought “presumed innocent” meant the court was treating it as true that the accused did not do it, unless someone proved otherwise. That was framing it like a fact about what happened, I think. Maybe it should read more as a rule that the prosecution has to prove guilt enough for conviction, so “not guilty” answers that proof question, even though it still sounds like “did not do it” to me.
+
+TUTOR: The phrase on the page is doing legal work, not reporting history. The presumption of innocence assigns the burden to the prosecution and protects against conviction unless guilt is proved to the required standard; it does not announce what actually happened.
+
+That is why the ordinary sound of **not guilty** can mislead. The evidence may support suspicion, even strong suspicion, and still fall short of proof beyond reasonable doubt. In that case, **not guilty** answers the court’s proof question.
+
+For the workshop example, which statement follows from the verdict: “the accused did not act,” or “guilt was not proved strongly enough for conviction”?
+
+LEARNER: I thought “presumed innocent” meant the court was treating it as a fact that the accused did not do it, and I think that was where I framed it wrongly. Maybe I should read it instead as a rule about what the prosecution has to prove before the court can convict. So the verdict means “guilt was not proved strongly enough for conviction,” not necessarily “the accused did not act,” though that still feels a bit strange to me.
+
+STAGE: closes the scene.

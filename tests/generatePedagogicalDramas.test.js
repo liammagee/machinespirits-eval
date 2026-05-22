@@ -543,6 +543,168 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts corrections counting as rules before replacing a dialect pattern frame', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T857',
+      dramaId: 'D857',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought she be working late was outside the rules because people correct it." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought she be working late was outside the rules because people correct it. I made the corrections count as the rules there. Maybe in that line be is the pattern because it marks what happens regularly.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts sudden-event-first language before the learner replaces the canyon frame', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T858',
+      dramaId: 'D858',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought the label should say a canyon came from one huge flood." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought the label should say a canyon came from one huge flood, but that puts the sudden event first. Maybe it should start with the river wearing and carrying by repeated small changes over long time.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts a fact-like legal frame before a proof-rule replacement', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T859',
+      dramaId: 'D859',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought presumed innocent meant the court said the accused did not do it." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought presumed innocent meant the court said the accused did not do it. That was framing it like a fact about what happened. Maybe it should read more as a rule that the prosecution has to prove guilt enough for conviction.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts an ecology frame that stops at deer counts before naming the coupled replacement', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T860',
+      dramaId: 'D860',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I assumed fewer predators would simply help the deer population." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I assumed fewer predators would simply help the deer population. That first framing stops at deer counts; with browse lines up and winter food tightening, more deer may mean the habitat is no longer keeping the herd healthy.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts an eye-led visibility frame before the balance replacement', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T861',
+      dramaId: 'D861',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct was that once the beaker looks clear the salt has gone." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct was that once the beaker looks clear the salt has gone. That was me going by what the eye can still pick out. With the beaker and salt on the balance before and after, the reading stays put.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts an effect-size replacement after a significance claim is called too quick', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T862',
+      dramaId: 'D862',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought significance was enough to call it an important improvement." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought significance was enough to call it an important improvement; that was too quick. The effect size with its interval has to show whether the shift matters or is still tiny.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
     const warnings = qualityWarningsFor({
       tid: 'T912',

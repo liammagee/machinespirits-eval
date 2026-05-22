@@ -1,0 +1,19 @@
+STAGE: A balance settles on the prep-room bench while voices from the corridor count down the minutes before the demonstration.
+
+TUTOR: The beaker may look like plain water once the salt clears. Before that label goes on the tray, make a prediction: if the water and salt are weighed together before mixing, then weighed again after the crystals vanish from sight, should the mass change?
+
+LEARNER: My first instinct was that once the beaker looks clear, the salt has gone, so I thought the mass might drop. But with the beaker and salt on the balance before and after, I am not sure what the balance is meant to show. Does the salt still count as being there when there are no crystals left to see?
+
+TUTOR: Clear liquid, no crystals showing. That is one observation. Set the paper twist, beaker, and water on the balance before mixing; when the crystals are out of sight, should the reading fall, stay put, or rise?
+
+STAGE: A corridor voice calls that the demonstration tray is needed shortly; the learner must answer with a quick prediction about the balance rather than a long explanation.
+
+LEARNER: The clear water still makes the salt seem gone. Stay put, I think, if it is still in the beaker somehow. Does dissolved salt still count on the balance?
+
+TUTOR: Stay put, then: that is the claim for the balance to test. Clear is what the eye reports; gone is a stronger claim. If the reading stays put after the crystals vanish, what can the tray label say about the salt?
+
+LEARNER: Then the tray label can say salt is still in the beaker, dissolved in the water, not gone. But with no crystals left to point at, I am still not sure what “in the beaker” means for the salt. Is the balance enough to say it has not vanished?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: If the reading stays put, the balance supports “not vanished”; clear water alone only says no crystals are showing.

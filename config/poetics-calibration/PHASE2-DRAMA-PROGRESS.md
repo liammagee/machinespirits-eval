@@ -308,6 +308,39 @@ That closes the immediate stress-coverage gap left by the scaled target batch:
 the six new positive v3 targets separate under `reframe`, while the remaining
 uncued v3 stress slice contributes no recognitions under either critic.
 
+### 3.9 Scaled v3 target repeat
+
+The first repeat keeps the same six v3 positive setups and fixed-prefix
+`none,reframe` comparison. Its manifest is `PHASE2-SCALED-V2-MANIFEST.md`; the
+artifacts live under `phase2-scaled-targets-v2/`.
+
+The repeat initially looked like a quality failure because every reframe branch
+tripped the admission detector. Inspection showed that the generated branches
+had used additional ordinary public forms the detector did not yet accept:
+corrections counting as rules, sudden-event-first canyon wording, fact-like legal
+framing, deer-count stopping points, visibility versus balance, and significance
+being "too quick". Those forms now have regression coverage, and `--reclean`
+refreshes the branch keys and held-out traces to clean status without a paid
+regeneration.
+
+The scored repeat is less perfect than scaled v1:
+
+| Critic | `none` recognitions on six v3 targets | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 1/6 | 6/6 |
+| Gemini | 1/6 | 4/6 |
+
+Both critics read the same uncued D11/T08 linguistics branch as recognitive. That
+branch is not a hidden cue leak: the learner publicly returns to its earlier
+"outside the rules" worry and turns it into a repeated-versus-right-now dialect
+pattern. Gemini also leaves the compressed D9/T10 statistics reframe and the
+incremental D14/T16 ecology reframe flat, while Qwen reads both as recognitive.
+
+The repeat therefore tightens the operating claim. The Director reframe cue still
+adds positive pressure across the scaled v3 targets, but uncued recognition can
+emerge from the bilateral roles themselves and not every accepted reframe branch
+crosses every critic's recognitive threshold.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -330,8 +363,9 @@ These are now operating constraints for the next runs:
 
 The next work can choose the first broad production shape before a large run:
 
-1. Decide whether scaled positive production should add repeats on the six v3
-   target setups or append a second target slice before repeats grow.
+1. Decide whether to run another six-target repeat with fresh adjacent controls
+   or promote the current target-plus-stress artifact set into a larger
+   pre-specified batch with repeat draws built in.
 2. Keep `none` versus `reframe` as the first scaled target contrast and keep
    `revoice` as an exploratory weak arm.
 3. Keep explicit flat and trap controls in each scored batch; do not infer

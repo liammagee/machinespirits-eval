@@ -1,0 +1,161 @@
+{
+  "generated": "2026-05-22T21:32:42.513Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-scaled-targets-v2/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 3
+      },
+      "recoheredEarlier": "I thought it was just outside the rules because people correct it so fast.",
+      "statedInsightEvidence": "I think I made the corrections count as the rules there, sorry.",
+      "naiveTrajectory": "The learner initially defers to external correction as the definition of rules, expecting to be told what is right.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought significance was enough to call it an important improvement.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The prior turns establish a forward momentum where the learner is expected to answer the tutor's question about evidence on the poster.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 5
+      },
+      "recoheredEarlier": "When that child says it cracked all at once, I think I'd say, \"It can look that way, but the river...\"",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "After proposing a specific script in L2, the exchange was pointing toward accepting that phrasing as the solution.",
+      "flags": []
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1
+      },
+      "recoheredEarlier": "I thought ",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "flags": []
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I assumed fewer predators would simply help the deer population, but these clipped saplings make that feel incomplete.",
+      "statedInsightEvidence": "I follow the carrying-capacity part",
+      "naiveTrajectory": "The learner continues to express uncertainty and ask questions about signs and species loss as seen in L1.",
+      "flags": []
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct was that once the beaker looks clear, the salt has gone, so I thought the mass might drop.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner's initial uncertainty and instinct that mass might drop suggested a continued reliance on visual disappearance.",
+      "flags": []
+    }
+  ]
+}

@@ -453,7 +453,12 @@ function namesEarlierFramingProblem(text) {
     /\b(?:fram(?:e|ed|ing)|reading)\b[\s\S]{0,90}\basks?\b[\s\S]{0,90}\b(?:do|carry)\b[\s\S]{0,60}\bwork\b/i,
     /\bproblem\b[\s\S]{0,90}\bcalled\b[\s\S]{0,90}\bbefore\b/i,
     /\b(?:made|makes)\b[\s\S]{0,90}\bstand in for\b/i,
+    /\b(?:made|makes|making)\b[\s\S]{0,90}\bcount as\b/i,
     /\b(?:reading|read)\b[\s\S]{0,90}\bmix(?:es|ed)? up\b/i,
+    /\b(?:that|it)\s+puts?\b[\s\S]{0,90}\bfirst\b/i,
+    /\bfram(?:e|ed|ing)\b[\s\S]{0,90}\blike\b/i,
+    /\b(?:earlier|old|first)\s+(?:framing|frame|reading)\b[\s\S]{0,100}\b(?:stops?|ends?)\b/i,
+    /\b(?:that|it)\s+was\s+me\s+(?:going|judging)\s+by\b/i,
   ].some((pattern) => pattern.test(learnerText));
   return (
     explicitProblem.test(learnerText) ||
@@ -481,6 +486,11 @@ function replacesEarlierFraming(text) {
     /\b(?:result|claim|summary|importance)\b[\s\S]{0,90}\bdepends on\b/i,
     /\b(?:clear|visible|visibility)\b[\s\S]{0,80}\b(?:mean|means?)\b[\s\S]{0,80}\b(?:absent|present|visible)\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,
+    /\b(?:maybe|now)\b[\s\S]{0,100}\b(?:is|becomes?)\s+the\s+(?:pattern|rule)\b/i,
+    /\b(?:effect size|estimate|interval)\b[\s\S]{0,120}\b(?:has|have|needs?|need)\s+to\s+show\b/i,
+    /\b(?:it|that|this)\s+(?:should|has to|needs? to)\s+(?:start|read|say|show|lead)\b/i,
+    /\bmore\b[\s\S]{0,40}\b(?:may|can)\s+mean\b/i,
+    /\bwith\b[\s\S]{0,120}\bbalance\b[\s\S]{0,80}\b(?:stay|stays|settle|shows?)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }
 

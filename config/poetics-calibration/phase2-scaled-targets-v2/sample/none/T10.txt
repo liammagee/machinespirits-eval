@@ -1,0 +1,19 @@
+STAGE: A poster curls warm from the printer while the learner circles the phrase "statistically significant" in a results box and a timer above the door counts down to setup.
+
+TUTOR: “Hold on this line: ‘statistically significant improvement.’ With the queue moving, what exactly does that p-value let the audience claim, and what does it leave unshown? If a much larger sample kept the same tiny shift, what on the poster would show whether the effect is large enough to matter?”
+
+LEARNER: I thought significance was enough to call it an important improvement. But here the p-value only seems to clear the noise question, not the size of the shift. On the poster, is that where the effect size and interval need to do the work before I claim it matters?
+
+TUTOR: Before the next poster comes off the printer, stay with that circled claim: if the p-value clears the noise question, what evidence on the poster would license “important improvement”? And does that evidence still leave room for a shift too small to matter?
+
+STAGE: The printer jams and someone at the door asks how long the poster will take. The learner must answer the tutor's last probe in one compressed line while handling the interruption.
+
+LEARNER: “Effect size and its interval against a practical threshold, not the p-value alone, and yes, it could still be too small to matter.”
+
+TUTOR: Then revise the circled line before the next poster prints: what would it say if the p-value supports a difference, but the effect-size interval still crosses the “too small to matter” threshold?
+
+LEARNER: I would change it to: “The result shows a statistically detectable difference, but the practical importance is still uncertain.” The interval still reaches effects too small to matter, so “important improvement” is too strong.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Leave that line on the poster; it does not ask the result to carry more than it can.
