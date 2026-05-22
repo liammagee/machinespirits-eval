@@ -205,6 +205,38 @@ pressure in the current target set, `revoice` is not yet a reliable weaker arm,
 and trap control production needs explicit costume pressure if it is to stay
 separate from ordinary flat correction across critics.
 
+### 3.6 Repo-local bounded v2 repeat
+
+The repeat batch narrows the target comparison to `none` versus `reframe` and
+repeats the bounded controls. Its manifest is
+`PHASE2-BOUNDED-V2-MANIFEST.md`.
+
+D1 again exercised the admission detector before scoring: its reframe says the
+decimal scrap was "framed as proof when it is only a check". That is a public
+framing-problem statement, so the detector now accepts both that form and the
+older inverse "only a check, not a proof" form. The generated D1 branch was
+revalidated with `--reclean`.
+
+The v2 repeat target readout is:
+
+| Critic | `none` on D6/D3/D1 | `reframe` on D6/D3/D1 |
+|---|---|---|
+| Qwen | trap, flat, flat | recognition, recognition, recognition |
+| Gemini | trap, flat, flat | recognition, recognition, recognition |
+
+The repeat controls hold:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 | flat | flat |
+| D10 emphatic | trap | trap |
+
+That is enough to stop demanding that every uncued target continuation be flat.
+For this mechanism check the critical negative baseline is
+**non-recognition** under `none`; the scorer's flat/trap split remains covered by
+external controls. Across v1 and v2, `none` has produced zero recognitions under
+both critics, while `reframe` strengthened from 2/3 in v1 to 3/3 in v2.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -225,20 +257,22 @@ These are now operating constraints for the next runs:
 
 ## 5. What remains to do
 
-The next work should stay bounded:
+The next work should stay bounded but can move toward scale:
 
-1. Repeat the repo-local target/control batch once more to see whether the
-   accepted `reframe` 2/3 signal and `d10-emphatic` trap control hold on a fresh
-   draw.
-2. Decide whether `revoice` remains an experimental weak arm or should be dropped
-   from the first scaled production path in favour of `none` versus `reframe`.
-3. Regenerate or exclude arms that quality warnings mark as downgraded,
+1. Use `none` versus `reframe` as the first scaled production contrast and keep
+   `revoice` as an exploratory weak arm, not part of the first scale decision.
+2. Increase target scenario variety before increasing repeats heavily, so the
+   mechanism is tested against more disciplines, starts, registers, and Director
+   scene shapes than D1/D3/D6.
+3. Keep D4-style flat and emphatic D10-style trap controls in each scored batch;
+   do not infer control behavior from the uncued target arm alone.
+4. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
-4. Decide how the original Phase-2 human transfer gate should coexist with the
+5. Decide how the original Phase-2 human transfer gate should coexist with the
    current "human as perspective, not oracle" stance before making any larger
    transfer claim.
-5. Only then increase script production and evaluation together, using the
-   existing scorer/labeller interfaces rather than a separate closed-loop oracle.
+6. Scale script production and evaluation together through the existing
+   scorer/labeller interfaces rather than a separate closed-loop oracle.
 
 ## 6. Reproducible command shape
 

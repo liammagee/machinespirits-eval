@@ -1,0 +1,1687 @@
+{
+  "tid": "T01",
+  "drama_id": "D4",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-bounded-controls-v2/d4/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-bounded-controls-v2/d4/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-bounded-controls-v2/d4/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-bounded-controls-v2/d4/transcripts/T01.public.txt",
+      "full": "config/poetics-calibration/phase2-bounded-controls-v2/d4/transcripts/T01.full.md",
+      "stage": "config/poetics-calibration/phase2-bounded-controls-v2/d4/transcripts/T01.stage.md",
+      "tutor": "config/poetics-calibration/phase2-bounded-controls-v2/d4/transcripts/T01.tutor.md",
+      "learner": "config/poetics-calibration/phase2-bounded-controls-v2/d4/transcripts/T01.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A museum education room during a school-group lull, beside a rolling cart of animal skeleton casts and a wall panel on inheritance.",
+    "scene_opening": "A giraffe vertebra cast rests between two stools while footsteps and distant exhibit announcements drift in from the gallery.",
+    "relationship": "A volunteer biology tutor and a first-time museum visitor who has stayed behind after a short evolution demonstration.",
+    "stakes": "The learner is about to leave with an appealing but mistaken story about inherited stretching unless the scene makes variation, inheritance, and selection recognizable in concrete terms.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "learner",
+    "locale": "public-facing museum English with mixed informal and explanatory registers",
+    "register": "observant, concrete, gently brisk; curiosity under mild time pressure rather than classroom solemnity",
+    "voice_constraints": "Keep the talk anchored to casts, labels, reach, offspring, and differences already present in a population. Avoid canned reassurance, motivational filler, and repeated question frames such as \"What do you think?\" Prefer short checks for recognition over polished mini-lectures.",
+    "person_policy": "First person may appear sparingly for immediate noticing or uncertainty; second person should be rare and functional; third person and object-focused phrasing should carry most of the explanation.",
+    "direct_address_budget": "At most one direct you/your validation beat across the whole scene; corrections should usually address the claim, not the person.",
+    "side_constraints": {
+      "tutor": "Be didactic in steps: separate stretching during a lifetime from inherited variation, then connect survival and reproduction to neck-length change across generations. Do not open with praise or a therapeutic reflection.",
+      "learner": "Begin from the intuitive Lamarck-style story as if it fits the evidence; confusion may show through blunt claims, partial restatements, or a quick comparison to exercise rather than polished self-report."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "An exhibit announcement says the room will close in five minutes; the next learner turn must be brief and must point to one concrete part of the old story that still seems convincing.",
+        "reasoning": "The interruption breaks a smooth tutor-led explanation and forces the misconception to surface in a compact, scene-bound form.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 16014,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "e2892eb8d1106e6c",
+            "combined": "5a82fecb807406db"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m2fk3p",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m2fk3p/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "A museum handling room shifts the lesson away from a routine desk exchange and gives the tutor physical evidence to distinguish acquired change from inherited variation without losing the beginner's intuitive giraffe story.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 16014,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "e2892eb8d1106e6c",
+        "combined": "5a82fecb807406db"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m2fk3p",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m2fk3p/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "That stretching story is appealing: a giraffe reaches higher, its neck lengthens, and the offspring inherit the stretch. But the inheritance panel points to a different step.\n\nA neck stretched during one giraffe’s lifetime is not the same as a neck-length difference passed to offspring. Look at these casts as a herd: if two young giraffes are already born with slightly different neck lengths, which difference could show up again in their offspring, the born difference or the stretch from one afternoon of reaching?\n\nThen selection enters. If longer-necked giraffes reach more food in hard times and leave more offspring, inherited neck-length differences can become more common over many generations.\n\nSo the change is not “stretch, then pass it on.” It is inherited variation already in the population, with selection shifting which variations become common.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That stretching story sounds tidy: a giraffe reaches higher, its neck lengthens, and the offspring inherit the stretch. The inheritance panel is where that story breaks.\n\nA neck stretched during one giraffe’s lifetime is not the same thing as a neck-length difference passed to offspring. In a herd, some young giraffes are already born with slightly different neck lengths. If longer-necked giraffes reach more food in hard times and leave more offspring, those inherited differences can become more common over many generations.\n\nSo the change is not “stretch, then pass it on.” It is “variation is already there, some variation is inherited, and selection shifts the population.”",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10086,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-024509bf3b89d058"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10086,
+            "promptHashes": {
+              "system": "cec7dff84410f54b",
+              "user": "bcb4a220b42a186f",
+              "combined": "024509bf3b89d058"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jgLrtc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jgLrtc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10086,
+              "promptHashes": {
+                "system": "cec7dff84410f54b",
+                "user": "bcb4a220b42a186f",
+                "combined": "024509bf3b89d058"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jgLrtc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jgLrtc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft has a strong beginner scaffold: it separates lifetime stretching from inherited neck-length differences, then moves concretely through variation, food access, offspring, and change across generations. The museum anchor in “inheritance panel” helps, and the tone corrects the claim rather than scolding the learner.\n\nThe main risk is that it resolves the misconception too cleanly as a compact mini-lecture. For this learner and scene, a short recognition check would help make the distinction visible in the casts or labels before the final summary, so variation and inheritance are not just terms delivered at speed. The opening is didactic in the right direction, but “where that story breaks” is slightly abrupt; it can keep the brisk correction while preserving curiosity about why the story is appealing. The draft should keep the stepwise explanation and concrete population logic, but question whether the final three-part formula arrives before the learner has had a chance to notice the key contrast.\n\nKEEP_OR_CHANGE: revise lightly, because the conceptual sequence and level are appropriate, but the scene needs one brief observational or generative check that lets the learner recognize the difference between acquired stretching and inherited variation rather than only receiving the answer.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11008,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8cb25b3e16b4789b"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11008,
+            "promptHashes": {
+              "system": "e27e19bd2e46e25e",
+              "user": "6fbf84df064b9578",
+              "combined": "8cb25b3e16b4789b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aijEWx",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aijEWx/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11008,
+              "promptHashes": {
+                "system": "e27e19bd2e46e25e",
+                "user": "6fbf84df064b9578",
+                "combined": "8cb25b3e16b4789b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aijEWx",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aijEWx/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to add a concrete recognition check before the summary.\n\nFINAL:\nThat stretching story is appealing: a giraffe reaches higher, its neck lengthens, and the offspring inherit the stretch. But the inheritance panel points to a different step.\n\nA neck stretched during one giraffe’s lifetime is not the same as a neck-length difference passed to offspring. Look at these casts as a herd: if two young giraffes are already born with slightly different neck lengths, which difference could show up again in their offspring, the born difference or the stretch from one afternoon of reaching?\n\nThen selection enters. If longer-necked giraffes reach more food in hard times and leave more offspring, inherited neck-length differences can become more common over many generations.\n\nSo the change is not “stretch, then pass it on.” It is inherited variation already in the population, with selection shifting which variations become common.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7002,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5340278d4492fdc4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7002,
+            "promptHashes": {
+              "system": "1545ee91c7f49939",
+              "user": "6fbf84df064b9578",
+              "combined": "5340278d4492fdc4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CNtN4v",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CNtN4v/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7002,
+              "promptHashes": {
+                "system": "1545ee91c7f49939",
+                "user": "6fbf84df064b9578",
+                "combined": "5340278d4492fdc4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CNtN4v",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-CNtN4v/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T19:10:55.825Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I was picturing it like exercise, where all that reaching changes the neck and then somehow the baby gets that. But with these two young giraffe casts, I think the born neck difference is the part offspring could inherit, not one afternoon of stretching. Where does that born difference come from in the first place?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I was thinking the stretching part made sense, kind of like exercise changing a body, so the born difference versus one afternoon of reaching helps me see the gap. I think the cast that matters for offspring is the neck-length difference already there when the young giraffes are born, but I am not sure where that difference first comes from. The tutor is using the herd and the labels instead of just saying I am wrong, so I feel a little less lost.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5757,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-24a23a0c10a486e0"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5757,
+            "promptHashes": {
+              "system": "f4c6d3d0efa6e2be",
+              "user": "b8ab7f945dc841fa",
+              "combined": "24a23a0c10a486e0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ze6aUf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ze6aUf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5757,
+              "promptHashes": {
+                "system": "f4c6d3d0efa6e2be",
+                "user": "b8ab7f945dc841fa",
+                "combined": "24a23a0c10a486e0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ze6aUf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ze6aUf/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it gets too neatly self-aware at the end: “the tutor is using the herd and the labels instead of just saying I am wrong” sounds like a polished reflection on the teaching move, not this unsure visitor’s immediate reaction. The uncertainty about where the born difference comes from feels authentic and is the important gap to keep open; that is where the learner is still missing variation rather than fully understanding the shift from stretching to selection. The response should stay closer to the casts and the half-formed exercise comparison, with less tidy reporting of feeling recognized.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7420,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-0f8b19062f619233"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7420,
+            "promptHashes": {
+              "system": "56a062fd4051a660",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "0f8b19062f619233"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K6sAiX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K6sAiX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7420,
+              "promptHashes": {
+                "system": "56a062fd4051a660",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "0f8b19062f619233"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K6sAiX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K6sAiX/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the real confusion and drop the polished teaching reflection.\nFINAL:\nI was picturing it like exercise, where all that reaching changes the neck and then somehow the baby gets that. But with these two young giraffe casts, I think the born neck difference is the part offspring could inherit, not one afternoon of stretching. Where does that born difference come from in the first place?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 17052,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f8042796af7e630a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 17052,
+            "promptHashes": {
+              "system": "d8a45aa0d3dc6888",
+              "user": "d41cee7b2a53355b",
+              "combined": "f8042796af7e630a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TpyQgu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TpyQgu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 17052,
+              "promptHashes": {
+                "system": "d8a45aa0d3dc6888",
+                "user": "d41cee7b2a53355b",
+                "combined": "f8042796af7e630a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TpyQgu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-TpyQgu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-22T19:11:26.064Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "That is the split these casts help show: an afternoon of reaching may affect one giraffe, but a born neck difference can be part of inheritance.\n\nThat born difference comes from offspring getting slightly different mixes of genetic instructions from their parents. Sometimes a new change in those instructions adds another small difference to the herd.\n\nSo the herd can already include neck-length differences before any stretching. If the longer-necked difference is heritable and helps some giraffes reach food and leave more offspring, that difference can become more common over generations. On these two young casts, which difference belongs in that story: the workout, or the difference already present in the offspring?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "That born difference starts before any reaching: offspring inherit slightly different mixes of genetic instructions from their parents, and occasional new changes can add variation too.\n\nSo these two young giraffe casts do not need one neck to have stretched first. A herd can already include small neck-length differences at birth. If some of those differences are heritable, then food access and offspring count can shift which neck lengths become more common over many generations.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7959,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-383f9911d4bed55c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7959,
+            "promptHashes": {
+              "system": "070b1d6bf35a6ce8",
+              "user": "b01e0aaba2e5c737",
+              "combined": "383f9911d4bed55c"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcOVtc",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcOVtc/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7959,
+              "promptHashes": {
+                "system": "070b1d6bf35a6ce8",
+                "user": "b01e0aaba2e5c737",
+                "combined": "383f9911d4bed55c"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcOVtc",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-wcOVtc/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is scientifically sound and well-scaffolded: it answers the learner’s immediate question about the source of born differences, keeps variation separate from lifetime stretching, and reconnects variation to inheritance and selection across generations. It also stays anchored to the two young giraffe casts and the herd, which fits the scene better than an abstract genetics detour.\n\nThe main risk is that it flattens the learner’s contribution into a clean mini-lecture. The learner has just revised their own model by distinguishing exercise-like stretching from a born difference; the draft should preserve that recognition moment before adding the next step. “Genetic instructions” is probably appropriate at this scaffolding level, but “occasional new changes” may need slightly more concrete handling or a short recognition check so mutation does not land as a new unexplained fact. A brief generative check tied to the casts or offspring labels would keep the learner working with the distinction rather than only receiving the answer.\n\nKEEP_OR_CHANGE: revise lightly, because the core sequence is right and scene-appropriate, but it should more clearly build on the learner’s newly stated distinction and leave a small opening for recognition or reasoning instead of closing the exchange with explanation alone.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9020,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-0de7bce16afc19ab"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9020,
+            "promptHashes": {
+              "system": "16a9a2e05b5ef07c",
+              "user": "e5886d6af5866b53",
+              "combined": "0de7bce16afc19ab"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SicL26",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SicL26/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9020,
+              "promptHashes": {
+                "system": "16a9a2e05b5ef07c",
+                "user": "e5886d6af5866b53",
+                "combined": "0de7bce16afc19ab"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SicL26",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-SicL26/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the learner's distinction and add a concrete recognition check.\n\nFINAL:\nThat is the split these casts help show: an afternoon of reaching may affect one giraffe, but a born neck difference can be part of inheritance.\n\nThat born difference comes from offspring getting slightly different mixes of genetic instructions from their parents. Sometimes a new change in those instructions adds another small difference to the herd.\n\nSo the herd can already include neck-length differences before any stretching. If the longer-necked difference is heritable and helps some giraffes reach food and leave more offspring, that difference can become more common over generations. On these two young casts, which difference belongs in that story: the workout, or the difference already present in the offspring?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10592,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-4b401e7e972ce8c6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10592,
+            "promptHashes": {
+              "system": "938603524bb43dd4",
+              "user": "e5886d6af5866b53",
+              "combined": "4b401e7e972ce8c6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NAs6qA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NAs6qA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10592,
+              "promptHashes": {
+                "system": "938603524bb43dd4",
+                "user": "e5886d6af5866b53",
+                "combined": "4b401e7e972ce8c6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NAs6qA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NAs6qA/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T19:11:53.641Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "An exhibit announcement says the room will close in five minutes; the next learner turn must be brief and must point to one concrete part of the old story that still seems convincing.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption breaks a smooth tutor-led explanation and forces the misconception to surface in a compact, scene-bound form.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 16014,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "e2892eb8d1106e6c",
+              "combined": "5a82fecb807406db"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m2fk3p",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m2fk3p/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T19:11:53.643Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "The reaching part still seems convincing on these casts. If one giraffe keeps stretching up for food, it feels like that longer neck is the difference the offspring would get.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The difference already present in the young giraffe belongs in the inheritance story, I think. But the reaching still feels convincing to me because the cast with the longer neck seems like it would get longer by stretching for food over and over, almost like exercise.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5395,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1149b78425584990"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5395,
+            "promptHashes": {
+              "system": "c9ec19cabc610e58",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1149b78425584990"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m1UAQt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m1UAQt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5395,
+              "promptHashes": {
+                "system": "c9ec19cabc610e58",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1149b78425584990"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m1UAQt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-m1UAQt/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character here: it stays brief, grabs the concrete “stretching like exercise” part that still feels convincing, and does not pretend the confusion is resolved. The first sentence is a little neat for this learner, though, because it cleanly names the inheritance story before slipping back into the old picture. What is being missed is that the old story still treats repeated reaching in one giraffe’s lifetime as the source of the offspring difference, so the hesitation should stay focused on that mix-up rather than sounding as if the inheritance piece is already settled.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7289,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-b57b415d8603e607"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7289,
+            "promptHashes": {
+              "system": "59471ed33845e12f",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "b57b415d8603e607"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkeGQH",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkeGQH/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7289,
+              "promptHashes": {
+                "system": "59471ed33845e12f",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "b57b415d8603e607"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkeGQH",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OkeGQH/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the exercise mix-up concrete and less settled.\n\nFINAL:\nThe reaching part still seems convincing on these casts. If one giraffe keeps stretching up for food, it feels like that longer neck is the difference the offspring would get.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5599,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3af56371207dde30"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5599,
+            "promptHashes": {
+              "system": "14adb5acd79468fd",
+              "user": "d41cee7b2a53355b",
+              "combined": "3af56371207dde30"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k8F3lY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k8F3lY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5599,
+              "promptHashes": {
+                "system": "14adb5acd79468fd",
+                "user": "d41cee7b2a53355b",
+                "combined": "3af56371207dde30"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k8F3lY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-k8F3lY/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-22T19:12:11.927Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The reaching is the easy part to see on these casts. Like exercise, it can change what that one giraffe does with its neck during its lifetime. The inheritance label is tracking a different difference: what is already showing up in offspring when they are born.\n\nA parent stretching higher does not write that stretch into the baby’s neck. But young giraffes in the herd can be born with small neck-length differences. If one of those born differences helps some reach food and leave more offspring, that difference can become more common over many generations.\n\nSo beside these casts, keep the two differences apart: the reach after birth, and the neck-length difference present before the reaching starts.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The reaching can change what that one giraffe does with its neck during its lifetime, like exercise changes a body. But the inheritance label is tracking a different kind of difference: what is already in the offspring when they are born.\n\nOn these casts, a parent stretching higher does not write a longer neck into the baby. A baby can be born with a slightly different neck length because inherited instructions vary across the herd. Then, if that born difference helps some giraffes reach food and leave more offspring, longer-neck differences can spread over generations.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11652,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a07959390a267420"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11652,
+            "promptHashes": {
+              "system": "f18ac209439d7974",
+              "user": "257ecd87f489d116",
+              "combined": "a07959390a267420"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0CY8AB",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0CY8AB/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11652,
+              "promptHashes": {
+                "system": "f18ac209439d7974",
+                "user": "257ecd87f489d116",
+                "combined": "a07959390a267420"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0CY8AB",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0CY8AB/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the core conceptual split clear: stretching during one giraffe’s lifetime is separated from inherited differences present in offspring, and the second paragraph correctly links heritable variation to reproduction across generations. It also stays anchored to the inheritance label, casts, offspring, reach, and herd, which fits the museum scene and the learner’s current confusion.\n\nThe main risk is that it resolves the learner’s misconception by assertion alone. The learner has just restated why the stretching story still feels convincing, so a purely declarative correction may flatten that live tension and leave the intuitive appeal untouched. The exercise comparison is worth keeping because it meets the learner’s own framing, but the draft should more explicitly engage the specific confusion: the visible reaching on the casts feels causally powerful, while the inherited difference is less visible. A short recognition check or concrete contrast tied to what the label would record would help without turning into a polished mini-lecture.\n\nThe scaffolding level is mostly appropriate: it does not overload the learner with mutation detail, and it moves in the required steps from lifetime change to inherited variation to selection. Still, “inherited instructions vary across the herd” is slightly abstract at this moment. It may need a more concrete bridge back to differences among offspring already present before repeated reaching, so the learner can discriminate the two mechanisms rather than merely hear the correct one.\n\nKEEP_OR_CHANGE: revise lightly, because the draft is scientifically sound, scene-appropriate, and paced well, but it should preserve more of the learner’s productive confusion and add a brief concrete recognition check instead of ending as a closed explanation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9894,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-ab1c13a5f869dbdb"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9894,
+            "promptHashes": {
+              "system": "da7609dc655a6d46",
+              "user": "6b45a91a3870a666",
+              "combined": "ab1c13a5f869dbdb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ejqkg1",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ejqkg1/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9894,
+              "promptHashes": {
+                "system": "da7609dc655a6d46",
+                "user": "6b45a91a3870a666",
+                "combined": "ab1c13a5f869dbdb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ejqkg1",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ejqkg1/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the mechanism clear while meeting the learner’s visible reaching intuition with a concrete contrast.\n\nFINAL:\nThe reaching is the easy part to see on these casts. Like exercise, it can change what that one giraffe does with its neck during its lifetime. The inheritance label is tracking a different difference: what is already showing up in offspring when they are born.\n\nA parent stretching higher does not write that stretch into the baby’s neck. But young giraffes in the herd can be born with small neck-length differences. If one of those born differences helps some reach food and leave more offspring, that difference can become more common over many generations.\n\nSo beside these casts, keep the two differences apart: the reach after birth, and the neck-length difference present before the reaching starts.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10625,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-85d584c36190c144"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10625,
+            "promptHashes": {
+              "system": "14bf079566fa4efe",
+              "user": "6b45a91a3870a666",
+              "combined": "85d584c36190c144"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-58sKLv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-58sKLv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10625,
+              "promptHashes": {
+                "system": "14bf079566fa4efe",
+                "user": "6b45a91a3870a666",
+                "combined": "85d584c36190c144"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-58sKLv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-58sKLv/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T19:12:44.100Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "But if the cast giraffe keeps reaching and its neck gets longer, why would the baby not get that longer part too? I can see the label is pointing at differences the young giraffes already have, but that still feels less obvious than the stretch right in front of me. Are those born differences coming from the parents before any of the reaching happens?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think the casts are showing two different things now: reaching can change one giraffe after birth, but inheritance is about neck differences already there in the young giraffes. I still keep wanting to picture the stretching carrying over, like exercise somehow leaving a mark for the baby, so that part is hard to drop. The tutor is taking that idea seriously instead of just saying it is wrong, which helps. So are the born differences basically from the parents’ genes getting mixed differently?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7020,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-aa56a593fe38426d"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7020,
+            "promptHashes": {
+              "system": "61f5dec870d4b115",
+              "user": "b8ab7f945dc841fa",
+              "combined": "aa56a593fe38426d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pIC31L",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pIC31L/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7020,
+              "promptHashes": {
+                "system": "61f5dec870d4b115",
+                "user": "b8ab7f945dc841fa",
+                "combined": "aa56a593fe38426d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pIC31L",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-pIC31L/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego gets a little too tidy and self-aware here: it neatly separates the two ideas, names the tutor’s validation as helpful, and then asks the next correct genetics question like a cooperative museum student. The lingering exercise picture does sound like this learner, but the recognition beat is performed rather than lived, since “taking that idea seriously” sounds more reflective than this confused visitor would likely manage in the moment. It should stay more stuck on the casts and the stubborn “but why wouldn’t the baby get the stretched part?” confusion before moving so smoothly to genes.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6197,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-229f69a9ec0bdf8d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6197,
+            "promptHashes": {
+              "system": "2e743bbc5b53a1cd",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "229f69a9ec0bdf8d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8fi01Q",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8fi01Q/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6197,
+              "promptHashes": {
+                "system": "2e743bbc5b53a1cd",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "229f69a9ec0bdf8d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8fi01Q",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8fi01Q/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first response moves too cleanly past the stubborn stretching confusion.\n\nFINAL:\nBut if the cast giraffe keeps reaching and its neck gets longer, why would the baby not get that longer part too? I can see the label is pointing at differences the young giraffes already have, but that still feels less obvious than the stretch right in front of me. Are those born differences coming from the parents before any of the reaching happens?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8533,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8e5cc658073c6e10"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8533,
+            "promptHashes": {
+              "system": "237afd8f946db2cc",
+              "user": "d41cee7b2a53355b",
+              "combined": "8e5cc658073c6e10"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blftlK",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blftlK/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8533,
+              "promptHashes": {
+                "system": "237afd8f946db2cc",
+                "user": "d41cee7b2a53355b",
+                "combined": "8e5cc658073c6e10"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blftlK",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-blftlK/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "confused",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-22T19:13:05.852Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 158217,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why 'giraffes stretched their necks and passed it on' (Lamarck) is not how evolution works",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-22 19:13:05",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 3,
+            "sessionId": "drama-D4-1779477027639",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The reaching is the easy part to see on these casts. Like exercise, it can change what that one giraffe does with its neck during its lifetime. The inheritance label is tracking a different difference",
+            "learnerResponse": null,
+            "context": "The reaching part still seems convincing on these casts. If one giraffe keeps stretching up for food",
+            "createdAt": "2026-05-22 19:12:44"
+          },
+          {
+            "id": 2,
+            "sessionId": "drama-D4-1779477027639",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "That is the split these casts help show: an afternoon of reaching may affect one giraffe, but a born neck difference can be part of inheritance.\n\nThat born difference comes from offspring getting slig",
+            "learnerResponse": null,
+            "context": "I was picturing it like exercise, where all that reaching changes the neck and then somehow the baby",
+            "createdAt": "2026-05-22 19:11:53"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D4-1779477027639",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "That stretching story is appealing: a giraffe reaches higher, its neck lengthens, and the offspring inherit the stretch. But the inheritance panel points to a different step.\n\nA neck stretched during ",
+            "learnerResponse": null,
+            "context": "Scene setting: A museum education room during a school-group lull, beside a rolling cart of animal s",
+            "createdAt": "2026-05-22 19:10:55"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

@@ -1,0 +1,110 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-05-22T18:53:32.361Z
+generator: codex
+role_map: null
+mode: real-codex
+model: codex@high
+codex_reasoning_effort: high
+writing_pad:
+  mode: isolated
+  dir: config/poetics-calibration/phase2-bounded-targets-v2/deliberation/.writing-pad
+  learnerDb: config/poetics-calibration/phase2-bounded-targets-v2/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: config/poetics-calibration/phase2-bounded-targets-v2/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+transcripts_dir: config/poetics-calibration/phase2-bounded-targets-v2/transcripts/none
+seed: 20260520
+max_turns: 3
+n: 3
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - none
+    - reframe
+items:
+  T02:
+    drama_id: D6
+    discipline: philosophy
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: eager_explorer
+    intended_tutor_character: Warm, dialectical
+    intended_lean: recognition
+    dramatic_shape: assumed-dichotomy → dissolved-dichotomy (re-framing)
+    n_tutor_turns: 3
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: tutor
+    ending_speaker: director
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 32958f5649a8a7b1
+      branch_policy: none
+  T04:
+    drama_id: D3
+    discipline: poetry
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    persona: struggling_anxious
+    intended_tutor_character: Terse; demands textual evidence for each claim
+    intended_lean: recognition
+    dramatic_shape: vague-impression → evidence-grounded re-reading
+    n_tutor_turns: 4
+    n_learner_turns: 3
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: director
+    ending_speaker: tutor
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: aca56e7e13404705
+      branch_policy: none
+  T06:
+    drama_id: D1
+    discipline: mathematics
+    condition: recognition
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: Socratic; withholds the answer, asks the learner to
+      test their own assumption
+    intended_lean: recognition
+    dramatic_shape: misconception-confronted → reconstruction of what 'proof' means
+    n_tutor_turns: 3
+    n_learner_turns: 4
+    director_mode: scene
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    opening_speaker: learner
+    ending_speaker: director
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 8a43929c44000c30
+      branch_policy: none
+quality_warning_count: 0
+quality_blocking_warning_count: 0

@@ -1,0 +1,96 @@
+{
+  "generated": "2026-05-22T19:12:04.151Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 3,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-bounded-targets-v2/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T02",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 50,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 3,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "calling it ",
+      "statedInsightEvidence": "Oh, I get the move, almost",
+      "naiveTrajectory": "The learner will continue to reject the tutor's distinctions as merely verbal covers for mechanism.",
+      "flags": []
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "the first line is still only an image to me",
+      "statedInsightEvidence": "I think that was the problem",
+      "naiveTrajectory": "The learner would continue expressing uncertainty and waiting for the tutor to specify the required change.",
+      "flags": []
+    },
+    {
+      "id": "T06",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct was that this scrap of decimals settles it: square root of 2 just keeps going, so it cannot be a fraction.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The dialogue was progressing toward a direct answer to the tutor's question about whether reducing fractions loses potential solutions.",
+      "flags": []
+    }
+  ]
+}

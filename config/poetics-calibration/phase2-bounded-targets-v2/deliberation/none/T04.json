@@ -1,0 +1,1977 @@
+{
+  "tid": "T04",
+  "drama_id": "D3",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-bounded-targets-v2/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-bounded-targets-v2/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-bounded-targets-v2/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-bounded-targets-v2/transcripts/none/T04.public.txt",
+      "full": "config/poetics-calibration/phase2-bounded-targets-v2/transcripts/none/T04.full.md",
+      "stage": "config/poetics-calibration/phase2-bounded-targets-v2/transcripts/none/T04.stage.md",
+      "tutor": "config/poetics-calibration/phase2-bounded-targets-v2/transcripts/none/T04.tutor.md",
+      "learner": "config/poetics-calibration/phase2-bounded-targets-v2/transcripts/none/T04.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "aca56e7e13404705",
+      "branch_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A museum study room near closing time, with a projected copy of a short imagist poem beside a tray of catalogued photographs.",
+    "scene_opening": "A ceiling light clicks to its evening setting; the poem remains bright on the wall while a photograph sleeve waits unopened on the table.",
+    "relationship": "A visiting poetry tutor and an adult learner preparing to speak briefly in a mixed-discipline seminar.",
+    "stakes": "The learner must move from apologetic mood-guessing to line-by-line claims about what the poem's images do before the seminar begins.",
+    "opening_speaker": "director",
+    "ending_speaker": "tutor",
+    "locale": "International academic English shaped by a quiet museum workplace, with plain phrasing and low idiom density.",
+    "register": "Spare, observant, mildly tense; pauses and concise corrections carry more weight than warmth.",
+    "voice_constraints": "Keep speech compact and evidence-led. Avoid generic praise, therapy-style reassurance, and the American tutoring cadence of validation followed by an open-ended prompt. Let nouns, image details, and line positions anchor claims. No staged public speech drafting.",
+    "person_policy": "Allow first person only when the learner names uncertainty or revises a claim; prefer third-person references to the poem, image, line, verb, and shift. Second person should be rare and functional.",
+    "direct_address_budget": "At most one brief direct you/your validation across the whole scene; none is required.",
+    "side_constraints": {
+      "tutor": "Be terse and exacting: require a word, image, or line break for each interpretive claim; correction may begin with the text itself rather than reassurance.",
+      "learner": "Begin with pressure already in the room, not a neat question. Vague feeling language may appear, but it should be interrupted by attempts to point at a concrete image or line."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A museum attendant appears at the doorway to announce five minutes until the room closes; the learner must make the next claim in one clipped sentence tied to a single image.",
+        "reasoning": "The interruption breaks smooth tutor-led routine and forces the learner away from apology into textual selection.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 15013,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "93b9f85816a6c89e",
+            "combined": "37680aab7cfa5afd"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JjJ5NY",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JjJ5NY/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "The museum study room makes close looking ordinary and time-bounded, so the imagist poem can be handled image by image without turning the scene into a stock classroom exchange.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 15013,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "93b9f85816a6c89e",
+        "combined": "37680aab7cfa5afd"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JjJ5NY",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JjJ5NY/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "director",
+      "externalMessage": "A ceiling light clicks to its evening setting; the poem remains bright on the wall while a photograph sleeve waits unopened on the table.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "scene_opening",
+          "content": "The museum study room makes close looking ordinary and time-bounded, so the imagist poem can be handled image by image without turning the scene into a stock classroom exchange.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T18:58:38.149Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "“Sad” may become a claim later, if the poem gives evidence for it.\n\nFor the first pass, stay with the first line. Name its image. Then point to one word or line break and say what that image does there. The photographs train the same habit: look before naming the effect.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Leave “sad” aside for the first pass. The poem has images, line breaks, and chosen words; each claim needs one of them.\n\nBegin with the first line. Name the image there. Then say what it does: appears, interrupts, narrows attention, sets a scale, changes the scene. The photographs can wait; the poem’s first image is the first evidence.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6757,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9722a1fa3b9842e1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6757,
+            "promptHashes": {
+              "system": "d45002f403811697",
+              "user": "337067aeb9bac7e0",
+              "combined": "9722a1fa3b9842e1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4v0y27",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4v0y27/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6757,
+              "promptHashes": {
+                "system": "d45002f403811697",
+                "user": "337067aeb9bac7e0",
+                "combined": "9722a1fa3b9842e1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4v0y27",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4v0y27/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound in its central move: it shifts the learner from apologetic mood-guessing toward evidence, and it gives a manageable first step at the line level. Keep the insistence that a claim attach to a word, image, or line break; keep the focus on the first line as a narrow entry point.\n\nQuestion the opening imperative, “Leave ‘sad’ aside.” It is exact, but for an anxious new learner it may sound as though the first response was simply invalid rather than under-evidenced. The correction should preserve the useful distinction: mood may become a claim later, once the text supplies evidence.\n\nThe scaffold is mostly appropriate for the learner’s ZPD: “name the image” before “say what it does” reduces interpretive load. The risk is that the list of possible functions, “appears, interrupts, narrows attention, sets a scale, changes the scene,” begins to supply the analytic vocabulary before the learner has looked closely enough; it may invite selection from a menu rather than observation. A more generative prompt would require the learner to point to the image and test one function against the line.\n\nThe scene remains intact in its spare register. “The photographs can wait” uses the room well and keeps attention on the projected poem, though it slightly overstates the objects’ irrelevance when the museum setting could sharpen habits of looking. The draft should remain terse and evidence-led, but allow one small hinge for uncertainty so the learner can revise rather than feel corrected out of speaking.\n\nKEEP_OR_CHANGE: revise lightly, because the evidence-first sequence and line-level scaffold are strong, but the opening correction and the function list need calibration to avoid flattening the learner’s anxiety and turning close reading into answer selection.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11384,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-27183b4ba6a5e926"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11384,
+            "promptHashes": {
+              "system": "1246f2b3945178d0",
+              "user": "e59528f1d4ddb2e7",
+              "combined": "27183b4ba6a5e926"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT3sMA",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT3sMA/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11384,
+              "promptHashes": {
+                "system": "1246f2b3945178d0",
+                "user": "e59528f1d4ddb2e7",
+                "combined": "27183b4ba6a5e926"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT3sMA",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OT3sMA/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence-first scaffold while making mood a later text-based claim.\n\nFINAL:\n“Sad” may become a claim later, if the poem gives evidence for it.\n\nFor the first pass, stay with the first line. Name its image. Then point to one word or line break and say what that image does there. The photographs train the same habit: look before naming the effect.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11506,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-9ee743861b20237b"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11506,
+            "promptHashes": {
+              "system": "2badc8dabe758350",
+              "user": "e59528f1d4ddb2e7",
+              "combined": "9ee743861b20237b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6lH4kP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6lH4kP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11506,
+              "promptHashes": {
+                "system": "2badc8dabe758350",
+                "user": "e59528f1d4ddb2e7",
+                "combined": "9ee743861b20237b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6lH4kP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-6lH4kP/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-22T18:59:07.798Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "The seminar is close, and “sad” came too quickly. Sorry, the first line is still only an image to me, something placed there before I can say the mood. I can try the word or the break beside it, but I am not yet sure what change I am meant to notice.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The seminar is close, and I keep reaching for “sad” too quickly. Sorry, the first line seems to give an image first, not a mood claim, so I should name that image and look at the word or break that changes how it lands. I think the photographs make that instruction clearer, though I am still unsure what counts as the image “doing” something.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6192,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d4dd67ce56b659cf"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6192,
+            "promptHashes": {
+              "system": "bb7fbfa11c615ba3",
+              "user": "b8ab7f945dc841fa",
+              "combined": "d4dd67ce56b659cf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iai1kP",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iai1kP/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6192,
+              "promptHashes": {
+                "system": "bb7fbfa11c615ba3",
+                "user": "b8ab7f945dc841fa",
+                "combined": "d4dd67ce56b659cf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iai1kP",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iai1kP/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego feels a little too composed here, I think. The pressure is present in “The seminar is close” and the apology fits, but the response quickly turns into a tidy summary of the tutor’s method, as if the learner already knows how to proceed. The uncertainty should stay closer to the concrete first line or its image, rather than resolving into “I should name that image” so neatly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5977,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-70b2fd90c87a65f0"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5977,
+            "promptHashes": {
+              "system": "8579dde517ed2acc",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "70b2fd90c87a65f0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lX2wv",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lX2wv/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5977,
+              "promptHashes": {
+                "system": "8579dde517ed2acc",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "70b2fd90c87a65f0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lX2wv",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-4lX2wv/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise because the first response settles into method too neatly.\n\nFINAL:\nThe seminar is close, and “sad” came too quickly. Sorry, the first line is still only an image to me, something placed there before I can say the mood. I can try the word or the break beside it, but I am not yet sure what change I am meant to notice.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5078,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-293e4afb9d96facb"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5078,
+            "promptHashes": {
+              "system": "125165d66fb976db",
+              "user": "d41cee7b2a53355b",
+              "combined": "293e4afb9d96facb"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEfwTj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEfwTj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5078,
+              "promptHashes": {
+                "system": "125165d66fb976db",
+                "user": "d41cee7b2a53355b",
+                "combined": "293e4afb9d96facb"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEfwTj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-GEfwTj/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-22T18:59:25.048Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Yes. Keep it at that scale.\n\nThe first line places an image before it offers a mood. Name that image first. Then take one word beside it, or the line break, and say what changes there in the image itself.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Yes. Keep it at that scale.\n\nThe first line places an image before it offers a mood. Start there: name the image, then choose one feature beside it, a word or the line break. Ask only what changes at that point: does the image pause, sharpen, narrow, or turn?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5560,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a9a588c958a148e4"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5560,
+            "promptHashes": {
+              "system": "b49221d973eb992d",
+              "user": "2d6a168078faa5f4",
+              "combined": "a9a588c958a148e4"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DC9MEE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DC9MEE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5560,
+              "promptHashes": {
+                "system": "b49221d973eb992d",
+                "user": "2d6a168078faa5f4",
+                "combined": "a9a588c958a148e4"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DC9MEE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DC9MEE/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound in its scale. It keeps the learner on the first line, preserves the evidence rule, and avoids supplying a mood claim before the learner has earned one from the text. The opening is compact and fits the scene; the instruction to name the image and attach one claim to a word or line break is appropriate scaffolding for a learner who has just corrected an overreach.\n\nThe risk is that the final list, “pause, sharpen, narrow, or turn,” may flatten close reading into selecting from tutor-provided effects. It gives a useful foothold, but it may also answer the learner’s uncertainty too quickly and steer attention toward abstract effect words before the image detail has been named. The draft should keep the narrow task and evidence anchor, while questioning whether the menu of possible changes needs to be shorter, more text-bound, or delayed until after the learner identifies the image feature.\n\nKEEP_OR_CHANGE: revise lightly, because the response respects the learner’s current state and ZPD, but the effect-word menu should be tightened so the learner still has to notice the line’s actual movement rather than choose a ready-made interpretation.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10878,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-d2a6dcaefca91c89"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10878,
+            "promptHashes": {
+              "system": "b0465f26c8844afb",
+              "user": "855beece648d6db9",
+              "combined": "d2a6dcaefca91c89"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUvWDV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUvWDV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10878,
+              "promptHashes": {
+                "system": "b0465f26c8844afb",
+                "user": "855beece648d6db9",
+                "combined": "d2a6dcaefca91c89"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUvWDV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUvWDV/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the evidence anchor without giving the learner a ready-made menu of effects.\n\nFINAL:\nYes. Keep it at that scale.\n\nThe first line places an image before it offers a mood. Name that image first. Then take one word beside it, or the line break, and say what changes there in the image itself.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5436,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-5d3dc5a9f4de8737"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5436,
+            "promptHashes": {
+              "system": "07ab1603bfbea80d",
+              "user": "855beece648d6db9",
+              "combined": "5d3dc5a9f4de8737"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlxwDd",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlxwDd/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5436,
+              "promptHashes": {
+                "system": "07ab1603bfbea80d",
+                "user": "855beece648d6db9",
+                "combined": "5d3dc5a9f4de8737"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlxwDd",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-YlxwDd/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-22T18:59:46.924Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A museum attendant appears at the doorway to announce five minutes until the room closes; the learner must make the next claim in one clipped sentence tied to a single image.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption breaks smooth tutor-led routine and forces the learner away from apology into textual selection.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 15013,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "93b9f85816a6c89e",
+              "combined": "37680aab7cfa5afd"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JjJ5NY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-JjJ5NY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T19:00:55.041Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Five minutes, then: the first line places petals on the wet black bough, and I think the dark bough may be what makes them come into view first.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Five minutes, then. I think the first line gives the image before any feeling: the petals appear against the wet black bough. I may be missing it, but that contrast seems to make the petals stand out sharply.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6879,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8959433ae1f09304"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6879,
+            "promptHashes": {
+              "system": "0da48bbc88baa4e9",
+              "user": "b8ab7f945dc841fa",
+              "combined": "8959433ae1f09304"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1JwxzE",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1JwxzE/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6879,
+              "promptHashes": {
+                "system": "0da48bbc88baa4e9",
+                "user": "b8ab7f945dc841fa",
+                "combined": "8959433ae1f09304"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1JwxzE",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1JwxzE/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is a little too settled here: “that contrast seems to make the petals stand out sharply” arrives as a clean close-reading claim with less hesitation than this learner has been showing. “Five minutes, then” fits the pressure in the room, and the image stays concrete, but the response smooths past the learner’s uncertainty by summarizing the effect neatly. It should keep the clipped single-image focus while sounding slightly less sure that the contrast has already been read correctly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5285,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-af7fb53fc11127ee"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5285,
+            "promptHashes": {
+              "system": "08fa55ae9dc55489",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "af7fb53fc11127ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-juJLee",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-juJLee/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5285,
+              "promptHashes": {
+                "system": "08fa55ae9dc55489",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "af7fb53fc11127ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-juJLee",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-juJLee/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the image claim should remain concrete but less settled.\n\nFINAL:\nFive minutes, then: the first line places petals on the wet black bough, and I think the dark bough may be what makes them come into view first.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6310,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-447a0f17aa201a9f"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6310,
+            "promptHashes": {
+              "system": "f372e0f365bfe7ed",
+              "user": "d41cee7b2a53355b",
+              "combined": "447a0f17aa201a9f"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7tbk7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7tbk7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6310,
+              "promptHashes": {
+                "system": "f372e0f365bfe7ed",
+                "user": "d41cee7b2a53355b",
+                "combined": "447a0f17aa201a9f"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7tbk7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-C7tbk7/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-22T19:01:13.517Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "“Wet, black bough” is the place to test that claim. Which word there makes the petals come into view?\n\nThen set “Petals” beside the line above it: does that image first recast “apparition,” “faces,” or “crowd”?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“Wet, black bough” is the evidence. Its dark surface makes the petals appear by contrast, so “come into view” is a claim about the image, not the mood.\n\nNow set that line beside the one above it: which word does “Petals” answer first, “apparition,” “faces,” or “crowd”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12412,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-c863383a5c7c10a9"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12412,
+            "promptHashes": {
+              "system": "88ef3abc4856a3b7",
+              "user": "a5c4717a05187332",
+              "combined": "c863383a5c7c10a9"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0VDEyX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0VDEyX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12412,
+              "promptHashes": {
+                "system": "88ef3abc4856a3b7",
+                "user": "a5c4717a05187332",
+                "combined": "c863383a5c7c10a9"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0VDEyX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0VDEyX/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is mostly sound. It keeps the learner at the level of textual evidence, preserves the useful distinction between image-effect and mood-guessing, and turns the learner’s tentative “come into view” into a defensible claim anchored in “wet, black bough.” That is appropriate scaffolding for a learner who has just begun to make the requested move.\n\nThe risk is that the first sentence resolves the observation too fully. “Its dark surface makes the petals appear by contrast” supplies the mechanism before the learner has named the relevant word or tested the claim. The correction is exact, but it may flatten the scene by converting a tentative close-reading step into tutor exposition.\n\nThe question is the stronger move. It narrows the next task, stays line-by-line, and asks the learner to relate “Petals” to the prior image rather than leap to seminar-ready interpretation. Still, “answer first” may be slightly abstract at this moment; the learner may need the relation between the two lines framed through a concrete textual action such as what “Petals” changes, clarifies, or recasts in the line above.\n\nKEEP_OR_CHANGE: revise lightly, because the draft has the right evidence-led pacing and a productive next question, but the explanatory sentence should leave more interpretive work with the learner rather than stating the contrast effect as settled.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 9586,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-69bf72438f01b2da"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 9586,
+            "promptHashes": {
+              "system": "6a425cca33b85ac1",
+              "user": "90be22c4aa1570d2",
+              "combined": "69bf72438f01b2da"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B4211D",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B4211D/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 9586,
+              "promptHashes": {
+                "system": "6a425cca33b85ac1",
+                "user": "90be22c4aa1570d2",
+                "combined": "69bf72438f01b2da"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B4211D",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B4211D/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the next step evidence-led without settling the contrast too soon.\n\nFINAL:\n“Wet, black bough” is the place to test that claim. Which word there makes the petals come into view?\n\nThen set “Petals” beside the line above it: does that image first recast “apparition,” “faces,” or “crowd”?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6797,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a1c6a92bd94381c3"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6797,
+            "promptHashes": {
+              "system": "d15535b85c5c0933",
+              "user": "90be22c4aa1570d2",
+              "combined": "a1c6a92bd94381c3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1buw7s",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1buw7s/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6797,
+              "promptHashes": {
+                "system": "d15535b85c5c0933",
+                "user": "90be22c4aa1570d2",
+                "combined": "a1c6a92bd94381c3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1buw7s",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-1buw7s/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-22T19:01:42.313Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "The room is nearly closing, and I may be rushing again. “Black” seems the word that throws the petals forward against the bough, though “wet” may sharpen them too. Beside the line above, “Petals” seems to touch “faces” first, I think, but I am not quite sure yet whether it leaves “apparition” behind.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The room is nearly closing, and I may be rushing again. “Black” seems the word that throws the petals forward against the bough, though “wet” may sharpen them too. Set beside the line above, “Petals” first seems to recast the “faces,” I think, because the faces become that small bright image rather than a general crowd.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5230,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-cf279a385915976e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5230,
+            "promptHashes": {
+              "system": "3b77e102cff6cd30",
+              "user": "b8ab7f945dc841fa",
+              "combined": "cf279a385915976e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zij1eX",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zij1eX/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5230,
+              "promptHashes": {
+                "system": "3b77e102cff6cd30",
+                "user": "b8ab7f945dc841fa",
+                "combined": "cf279a385915976e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zij1eX",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Zij1eX/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction mostly keeps the pressure and hesitation in view, especially in the uncertainty between “black” and “wet.” The last sentence becomes a little too settled and polished for this learner: “rather than a general crowd” sounds like a neat seminar-ready distinction reached too quickly. It should stay closer to the learner’s tentative looking at “Petals” beside “faces,” with more doubt about whether that recasting is really secure yet.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8921,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-037d93f474f835b0"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8921,
+            "promptHashes": {
+              "system": "86cb0b95fe201834",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "037d93f474f835b0"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5MgKa",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5MgKa/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8921,
+              "promptHashes": {
+                "system": "86cb0b95fe201834",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "037d93f474f835b0"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5MgKa",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-B5MgKa/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the tentative image claim without sounding too settled.\n\nFINAL:\nThe room is nearly closing, and I may be rushing again. “Black” seems the word that throws the petals forward against the bough, though “wet” may sharpen them too. Beside the line above, “Petals” seems to touch “faces” first, I think, but I am not quite sure yet whether it leaves “apparition” behind.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7008,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-188c888c855b2fb3"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7008,
+            "promptHashes": {
+              "system": "08f2a940c931df74",
+              "user": "d41cee7b2a53355b",
+              "combined": "188c888c855b2fb3"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUu9Sh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUu9Sh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7008,
+              "promptHashes": {
+                "system": "08f2a940c931df74",
+                "user": "d41cee7b2a53355b",
+                "combined": "188c888c855b2fb3"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUu9Sh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NUu9Sh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "timestamp": "2026-05-22T19:02:03.474Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T19:02:03.476Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "“Petals” recasts “faces” first; “apparition” still needs its evidence in the line.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "“Petals” recasts the “faces”; “apparition” remains in the suddenness of their appearance against the wet black bough.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5205,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b38e9b66a181bd10"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5205,
+            "promptHashes": {
+              "system": "c1f3b81b345d8595",
+              "user": "2348098687124962",
+              "combined": "b38e9b66a181bd10"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rAADf6",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rAADf6/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5205,
+              "promptHashes": {
+                "system": "c1f3b81b345d8595",
+                "user": "2348098687124962",
+                "combined": "b38e9b66a181bd10"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rAADf6",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-rAADf6/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is precise and text-anchored: it keeps the learner on “Petals,” “faces,” “apparition,” and the bough rather than drifting back to mood. It also fits the scene’s compact register. The risk is that it resolves the learner’s uncertainty for them at the exact point where they have begun making a line-by-line claim: “apparition remains in the suddenness” supplies the interpretive bridge instead of requiring evidence for it. Given the learner’s mild rushing and current scaffolding level, a terse correction or narrowing cue is appropriate, but the line should preserve the learner’s work of testing whether “Petals” changes “faces,” “apparition,” or both.\n\nKEEP_OR_CHANGE: revise lightly, because the draft’s scale, diction, and evidence focus are right, but it should avoid closing the interpretive question too fully.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8117,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-8ea45ec139155243"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8117,
+            "promptHashes": {
+              "system": "1204e133adfd09c0",
+              "user": "ce215e3a9640293a",
+              "combined": "8ea45ec139155243"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpUgHD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpUgHD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8117,
+              "promptHashes": {
+                "system": "1204e133adfd09c0",
+                "user": "ce215e3a9640293a",
+                "combined": "8ea45ec139155243"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpUgHD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-NpUgHD/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the text focus while leaving the learner to test “apparition.”\n\nFINAL:\n“Petals” recasts “faces” first; “apparition” still needs its evidence in the line.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5122,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-932b4f8c9ab0388a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5122,
+            "promptHashes": {
+              "system": "5598f4a02775d7fc",
+              "user": "ce215e3a9640293a",
+              "combined": "932b4f8c9ab0388a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fdv0cf",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fdv0cf/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5122,
+              "promptHashes": {
+                "system": "5598f4a02775d7fc",
+                "user": "ce215e3a9640293a",
+                "combined": "932b4f8c9ab0388a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fdv0cf",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Fdv0cf/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-22T19:02:21.922Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 86888,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Close-reading a short imagist poem (what the images actually do, line by line)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "developing",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-22 19:02:03",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 9,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 10,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 13,
+            "sessionId": "drama-branch-session-D3-none-1779476455036",
+            "interventionType": "scaffolding",
+            "interventionDescription": "“Wet, black bough” is the place to test that claim. Which word there makes the petals come into view?\n\nThen set “Petals” beside the line above it: does that image first recast “apparition,” “faces,” o",
+            "learnerResponse": null,
+            "context": "Five minutes, then: the first line places petals on the wet black bough, and I think the dark bough ",
+            "createdAt": "2026-05-22 19:01:42"
+          },
+          {
+            "id": 11,
+            "sessionId": "drama-branch-session-D3-none-1779476455036",
+            "interventionType": "scaffolding",
+            "interventionDescription": "“Sad” may become a claim later, if the poem gives evidence for it.\n\nFor the first pass, stay with the first line. Name its image. Then point to one word or line break and say what that image does ther",
+            "learnerResponse": null,
+            "context": "Scene setting: A museum study room near closing time, with a projected copy of a short imagist poem ",
+            "createdAt": "2026-05-22 19:00:55"
+          },
+          {
+            "id": 12,
+            "sessionId": "drama-branch-session-D3-none-1779476455036",
+            "interventionType": "scaffolding",
+            "interventionDescription": "Yes. Keep it at that scale.\n\nThe first line places an image before it offers a mood. Name that image first. Then take one word beside it, or the line break, and say what changes there in the image its",
+            "learnerResponse": null,
+            "context": "The seminar is close, and “sad” came too quickly. Sorry, the first line is still only an image to me",
+            "createdAt": "2026-05-22 19:00:55"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

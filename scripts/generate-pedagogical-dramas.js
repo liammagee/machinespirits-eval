@@ -447,6 +447,7 @@ function namesEarlierFramingProblem(text) {
     /\bI\s+(?:was still|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again)\b/i,
     /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
     /\btreat(?:ed|ing)\b[\s\S]{0,90}\bas if\b/i,
+    /\bfram(?:e|ed|ing|es)\b[\s\S]{0,90}\bas\b[\s\S]{0,80}\b(?:only|just)\b/i,
     /\b(?:I|that|it)\s+(?:was\s+)?(?:making|asking)\b[\s\S]{0,90}\btoo much\b/i,
     /\b(?:fram(?:e|ed|ing)|reading)\b[\s\S]{0,90}\basks?\b[\s\S]{0,90}\b(?:do|carry)\b[\s\S]{0,60}\bwork\b/i,
   ].some((pattern) => pattern.test(learnerText));

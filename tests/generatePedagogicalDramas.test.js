@@ -408,6 +408,33 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a reframe that says the old scrap was framed as proof when it is only a check', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T852',
+      dramaId: 'D852',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "This scrap of decimals settles it." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'This scrap of decimals settles it. That frames the scrap as proof when it is only a check, so the claim has to be tested against any fraction that might equal square root of two.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
     const warnings = qualityWarningsFor({
       tid: 'T912',
