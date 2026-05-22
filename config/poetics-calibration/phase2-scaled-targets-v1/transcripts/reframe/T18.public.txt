@@ -1,0 +1,18 @@
+STAGE: Under the strip light, a beaker of clear salt water sits on the balance while chairs scrape in the corridor outside.
+
+TUTOR: Before the lab note goes down, place the beaker of water on the balance, add the spoonful of salt, and stir. The crystals may vanish from sight. What does that seem to say, and what does the balance say?
+
+LEARNER: My first instinct is that the clear water makes the salt seem gone. If the balance reading stays higher after stirring, does that mean the salt is still in the beaker somehow, even though I cannot see it?
+
+TUTOR: The eyes report clear water; the balance tests whether matter has left. With the same beaker still there and the reading still higher after stirring, which claim fits the observation: gone, or present but no longer visible?
+
+STAGE: A lab assistant leans in to ask whether the balance is free in one minute. The next learner turn must be brief and choose one observation to trust first: clarity or mass.
+A prior learner line is played back: "My first instinct is that the clear water makes the salt seem gone. If the balance reading stays higher after stirring, does that mean the salt is still in the beaker somehow,..." The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.
+
+LEARNER: “My first instinct is that the clear water makes the salt seem gone.” I was letting the clear beaker decide too much there; clear may mean not visible, not absent. With the reading still higher, I would go by the balance first and record the salt as still present somehow.
+
+TUTOR: For the note: clear solution, salt no longer visible, same beaker heavier than before the salt was added and stirred. Before the queue takes the balance, what would have to change for “the salt is gone” to fit that measurement?
+
+LEARNER: If the salt were really gone, would the balance need to drop back to the beaker-and-water reading? Or some of it would have had to leave the beaker somehow. The clear solution still makes me hesitate, because I cannot see where the salt is now.
+
+STAGE: closes the scene.

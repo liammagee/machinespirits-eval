@@ -435,6 +435,114 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a reframe that calls the earlier line sloppiness before checking a rule', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T853',
+      dramaId: 'D853',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought the home form was sloppy." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought the home form was sloppy. The problem there is that I called it sloppiness before checking the speaker rule; the earlier line reads as part of a pattern instead of a broken sentence.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts significance standing in for importance when the claim is replaced by a benchmark', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T854',
+      dramaId: 'D854',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought the small p-value made the result important." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought the small p-value made the result important, but that made significance stand in for importance. The claim depends on the estimate and a meaningful benchmark.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts reading language that mixes up proof and event framing', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T855',
+      dramaId: 'D855',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "I thought presumed innocent said what happened." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'I thought presumed innocent said what happened. That way of reading it mixes up the event with what the evidence has proved. Now the claim is about what proof can place on the verdict form.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts clear meaning not-visible rather than absent as a replacement frame', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T856',
+      dramaId: 'D856',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is that clear water means the salt is gone." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is that clear water means the salt is gone. I was letting clarity decide too much; clear may mean not visible, not absent.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('accepts a reframe that treats the old line as if it were proof before replacing it', () => {
     const warnings = qualityWarningsFor({
       tid: 'T912',

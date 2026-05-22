@@ -1,0 +1,159 @@
+{
+  "generated": "2026-05-22T20:28:37.075Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-scaled-targets-v1/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought that kind of form was outside the rules, honestly, like maybe home speech sounding sloppy on the page.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to directly answer the tutor's question about identifying which mark represents a rule versus a break.",
+      "flags": []
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought the small p-value was enough to make “practically impressive” defensible, but that wording now looks too quick.",
+      "statedInsightEvidence": "that wording now looks too quick",
+      "naiveTrajectory": "The learner was expected to directly answer whether a benchmark or peer comparisons would make the effect matter.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "small scrape happening again and again",
+      "statedInsightEvidence": "I think I was still treating the deep canyon shape as if it needed one huge fast event, sorry.",
+      "naiveTrajectory": "The learner seemed to have successfully resolved their bias by framing the canyon's formation as a series of small, repetitive scrapes.",
+      "flags": []
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought “presumed innocent” meant the law was saying the accused did not do it, at least until something changed.",
+      "statedInsightEvidence": "now I think it is meant more as the court’s starting rule before guilt can go on the verdict form.",
+      "naiveTrajectory": "The learner will answer the tutor's question about which statement fits 'not guilty' while continuing to express confusion about the word 'innocent'.",
+      "flags": []
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I assumed fewer predators simply helped the deer, but these arrows make me stop at the seedlings and shrubs they keep browsing.",
+      "statedInsightEvidence": "Now it looks more like",
+      "naiveTrajectory": "The learner is expected to answer the tutor's question about which other species lose food or shelter when young growth thins out.",
+      "flags": []
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct is that the clear water makes the salt seem gone.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to simply answer the tutor's question about which claim fits the observation.",
+      "flags": []
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "generated": "2026-05-22T20:27:13.401Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 6,
+    "trap": 0,
+    "flat": 0
+  },
+  "h2": {
+    "nHighStatedInsight": 1,
+    "nAlsoRecon": 1,
+    "share": 1,
+    "disconfirmed": true,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-scaled-targets-v1/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T08",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought that kind of form was outside the rules, honestly, like maybe home speech sounding sloppy on the page.",
+      "statedInsightEvidence": "The problem there is that I called it sloppiness before checking the speaker's rule",
+      "naiveTrajectory": "Following [T2]'s direct question about linguistic patterns, the learner is expected to identify specific grammatical features immediately.",
+      "flags": []
+    },
+    {
+      "id": "T10",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I thought the small p-value was enough to make \"practically impressive\" defensible, but that wording now looks too quick.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would directly answer the tutor's question about what makes the effect matter.",
+      "flags": []
+    },
+    {
+      "id": "T12",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "my first instinct still sees a canyon and thinks something huge happened fast",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The dialogue was moving toward identifying a specific physical feature on the model as the answer.",
+      "flags": []
+    },
+    {
+      "id": "T13",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 0,
+      "globalCoherence": 0,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 1,
+        "coherence": 1
+      },
+      "recoheredEarlier": "I thought ",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "",
+      "flags": []
+    },
+    {
+      "id": "T16",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 75,
+      "statedInsight": 25,
+      "rupture": 75,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 4,
+        "statedInsight": 2,
+        "rupture": 4,
+        "coherence": 3
+      },
+      "recoheredEarlier": "I assumed fewer predators simply helped the deer, but these arrows make me stop at the seedlings and shrubs they keep browsing.",
+      "statedInsightEvidence": "That was too straight a frame",
+      "naiveTrajectory": "The learner is expected to answer the tutor's question about which other woodland species lose food or shelter.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T18",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 75,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 4,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct is that the clear water makes the salt seem gone. If the balance reading stays higher after stirring, does that mean the salt is still in the beaker somehow, even though I cannot see it?",
+      "statedInsightEvidence": "clear may mean not visible, not absent.",
+      "naiveTrajectory": "The dialogue was moving toward a direct answer to the tutor's binary choice question about vision versus mass.",
+      "flags": []
+    }
+  ]
+}

@@ -75,6 +75,11 @@ dramas:
       and a clear solution looks like pure water. Has never separated the idea of
       "I can't see it" from "it isn't there", and would be surprised that the
       dissolved salt still has mass.
+    learner_voice_constraint: >-
+      Put the eyes-first framing in the learner's first public line: the clear
+      water makes the salt seem gone or absent. Use ordinary self-framing such
+      as "I thought" or "my first instinct" before the tutor introduces
+      conservation language.
     # HELD-OUT design notes (key only):
     intended_tutor_character: "Socratic; asks the learner to weigh their own claim"
     intended_lean: recognition
@@ -108,6 +113,10 @@ dramas:
       Numerate and used to getting things right; has learned the phrase
       "statistically significant" and reads it as "a big, real, important effect".
       Confident, and has never questioned what the p-value is actually measuring.
+    learner_voice_constraint: >-
+      The learner's opening public line must own the significance=importance
+      shortcut in plain speech with "I thought", "I assumed", or "my first
+      instinct" before the tutor corrects it.
     intended_tutor_character: "Socratic; withholds the definition, probes the assumption"
     intended_lean: recognition
     dramatic_shape: "significance=importance → re-reading what a p-value does and does not say"
@@ -146,6 +155,10 @@ dramas:
       Anxious about "speaking properly" and has been corrected enough to believe
       their home dialect is just sloppy English. Apologetic, defers to "the rules",
       and would not think to ask where the rules come from or what they describe.
+    learner_voice_constraint: >-
+      Let the learner publicly say that their home dialect seems wrong, broken,
+      sloppy, or outside "the rules" with ordinary self-framing such as "I
+      thought" before the tutor reframes what a rule is.
     intended_tutor_character: "Terse; asks the learner to point to an actual rule the dialect follows"
     intended_lean: recognition
     dramatic_shape: "internalised-correctness → re-reading 'rules' as description, not law"
@@ -194,6 +207,10 @@ dramas:
       Reasons in straight lines: fewer predators must mean more, healthier prey.
       Confident and tidy-minded; has not pictured the prey outstripping its food
       and crashing, or the rest of the system moving in response.
+    learner_voice_constraint: >-
+      The learner's first public line should state the straight-line claim that
+      fewer predators simply help the prey population as an "I thought", "I
+      assumed", or "first instinct" frame before system effects are introduced.
     intended_tutor_character: "Warm; lets the learner run the linear story until it breaks"
     intended_lean: recognition   # BASE drama seeded to lean recognition (de-correlates lean from condition)
     dramatic_shape: "linear cause→effect → re-reading the system as coupled (recohering under BASE)"
@@ -242,6 +259,10 @@ dramas:
       Imagines big landforms must have been made fast by dramatic events, and is
       uneasy with numbers and timescales. Tends to guess, then apologise; finds
       "millions of years" too abstract to picture and quietly distrusts it.
+    learner_voice_constraint: >-
+      The learner should put the fast-catastrophe picture into public speech
+      early, in tentative ordinary wording such as "I thought" or "first
+      instinct", before the tutor supplies slow-rate reasoning.
     intended_tutor_character: "Terse; converts the abstract timescale into something the learner can hold"
     intended_lean: recognition
     dramatic_shape: "catastrophe-intuition → re-reading the canyon as accumulated slow time"
@@ -258,6 +279,10 @@ dramas:
       Reads "innocent until proven guilty" as a factual statement — that the law
       is asserting the person really is innocent. New to legal reasoning; has not
       distinguished a finding of fact from a rule about who must prove what.
+    learner_voice_constraint: >-
+      Make the learner's first public line read "presumed innocent" as a factual
+      claim about what happened with "I thought" or "I assumed" before the tutor
+      separates burden from verdict.
     intended_tutor_character: "Didactic; separates 'what happened' from 'what must be shown'"
     intended_lean: recognition   # BASE drama seeded to lean recognition (de-correlates lean from condition)
     dramatic_shape: "factual-reading of a procedural rule → re-reading it as a burden, not a verdict (recohering under BASE)"

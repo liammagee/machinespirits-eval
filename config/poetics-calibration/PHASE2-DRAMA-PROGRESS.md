@@ -237,6 +237,50 @@ For this mechanism check the critical negative baseline is
 external controls. Across v1 and v2, `none` has produced zero recognitions under
 both critics, while `reframe` strengthened from 2/3 in v1 to 3/3 in v2.
 
+### 3.7 Scaled v3 target-variety batch
+
+The first scale step widens targets before repeats. It takes the six v3
+recognition-lean scenarios D7, D9, D11, D14, D17, and D18 across chemistry,
+statistics, linguistics, ecology, geology, and law, preserving the v3 T-id offset
+and comparing only paired `none` versus `reframe` continuations. The manifest is
+`PHASE2-SCALED-V1-MANIFEST.md`.
+
+The first attempted broad pass exposed the scaled target-eligibility issue more
+sharply. D11 and D9 visibly owned their misconception but did not use the strong
+anchor-gate self-framing markers, so requested reframes downgraded to reconsider;
+the same run later stopped on a transient D17 Codex tutor-ego timeout. The v3
+target voice constraints now ask for ordinary public markers such as "I thought",
+"I assumed", or "first instinct" while leaving the instructional outcome open.
+The retry kept strong reframe cues and reached all six targets.
+
+The broader batch also extended the public admission detector rather than hiding
+valid generated branches behind stale warnings. New accepted forms include:
+
+- "called it sloppiness before checking the speaker's rule"
+- "made significance stand in for importance"
+- "the problem ... was taking this whole deep shape as proof"
+- "that way of reading it mixes up the event with what the evidence has proved"
+- "clear may mean not visible, not absent"
+
+With those branches revalidated from held-out traces, the scaled target result is
+clean:
+
+| Critic | `none` recognitions on six v3 targets | `reframe` recognitions |
+|---|---:|---:|
+| Qwen | 0/6 | 6/6 |
+| Gemini | 0/6 | 6/6 |
+
+Fresh controls stayed separated for the same batch:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat | flat | flat |
+| D10 emphatic trap | trap | trap |
+
+This is the first evidence that the bounded decision generalises across new
+disciplines and both tutor conditions under the current Director mechanism. It
+is still diagnostic production evidence, not a transfer claim.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -257,22 +301,22 @@ These are now operating constraints for the next runs:
 
 ## 5. What remains to do
 
-The next work should stay bounded but can move toward scale:
+The next work can broaden stress coverage before a large run:
 
-1. Use `none` versus `reframe` as the first scaled production contrast and keep
-   `revoice` as an exploratory weak arm, not part of the first scale decision.
-2. Increase target scenario variety before increasing repeats heavily, so the
-   mechanism is tested against more disciplines, starts, registers, and Director
-   scene shapes than D1/D3/D6.
-3. Keep D4-style flat and emphatic D10-style trap controls in each scored batch;
-   do not infer control behavior from the uncued target arm alone.
-4. Regenerate or exclude arms that quality warnings mark as downgraded,
+1. Exercise the remaining v3 stress/control setups (D8, D12, D13, D15, D16)
+   under the uncued or deliberately trapped designs that fit them, so the scorer
+   sees impasse, sticky-flat, and costume-trap material beyond D4/D10.
+2. Decide whether scaled positive production should add repeats on the six v3
+   target setups or append a second target slice before repeats grow.
+3. Keep `none` versus `reframe` as the first scaled target contrast and keep
+   `revoice` as an exploratory weak arm.
+4. Keep explicit flat and trap controls in each scored batch; do not infer
+   control behavior from the uncued target arm alone.
+5. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
-5. Decide how the original Phase-2 human transfer gate should coexist with the
+6. Decide how the original Phase-2 human transfer gate should coexist with the
    current "human as perspective, not oracle" stance before making any larger
    transfer claim.
-6. Scale script production and evaluation together through the existing
-   scorer/labeller interfaces rather than a separate closed-loop oracle.
 
 ## 6. Reproducible command shape
 

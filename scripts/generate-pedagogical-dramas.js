@@ -437,7 +437,7 @@ function namesEarlierFramingProblem(text) {
   const explicitProblem =
     /\b(?:fram(?:e|ed|ing)|reading|read|assumption|assumed|treat(?:ed|ing))\b[\s\S]{0,80}\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|bad(?:ly)?|too\s+\w+|premature|skips?|flattens?|erases?)\b/i;
   const explicitReverse =
-    /\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|bad(?:ly)?|too\s+\w+|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:fram(?:e|ed|ing)|reading|read|assumption|assumed|treat(?:ed|ing))\b/i;
+    /\b(?:problem|trouble|issue|mistake|trap|miss(?:es|ed)?|wrong|off|bad(?:ly)?|too\s+\w+|premature|skips?|flattens?|erases?)\b[\s\S]{0,80}\b(?:fram(?:e|ed|ing)|reading|read|assumption|assumed|treat(?:ed|ing)|tak(?:e|ing))\b/i;
   const selfCorrection =
     /\b(?:I|that)\s+(?:jumped|rushed|mistook|reduced|flattened|skipped)\b[\s\S]{0,80}\b(?:before|into|to|the)\b/i;
   const earlierFramingCorrection =
@@ -445,11 +445,15 @@ function namesEarlierFramingProblem(text) {
   const ordinarySelfCorrection = [
     /\b(?:that|it)\s+(?:was|put|made)\b[\s\S]{0,90}\b(?:too\s+\w+|mood first|sound like|ahead|early)\b/i,
     /\bI\s+(?:was still|kept|went straight|made|put)\b[\s\S]{0,90}\b(?:sound like|too\s+\w+|mood first|before|ahead|again)\b/i,
+    /\bI\s+was\s+letting\b[\s\S]{0,90}\btoo much\b/i,
     /\b(?:was|is)\s+(?:only|just)\b[\s\S]{0,90}\b(?:not|rather than)\b/i,
     /\btreat(?:ed|ing)\b[\s\S]{0,90}\bas if\b/i,
     /\bfram(?:e|ed|ing|es)\b[\s\S]{0,90}\bas\b[\s\S]{0,80}\b(?:only|just)\b/i,
     /\b(?:I|that|it)\s+(?:was\s+)?(?:making|asking)\b[\s\S]{0,90}\btoo much\b/i,
     /\b(?:fram(?:e|ed|ing)|reading)\b[\s\S]{0,90}\basks?\b[\s\S]{0,90}\b(?:do|carry)\b[\s\S]{0,60}\bwork\b/i,
+    /\bproblem\b[\s\S]{0,90}\bcalled\b[\s\S]{0,90}\bbefore\b/i,
+    /\b(?:made|makes)\b[\s\S]{0,90}\bstand in for\b/i,
+    /\b(?:reading|read)\b[\s\S]{0,90}\bmix(?:es|ed)? up\b/i,
   ].some((pattern) => pattern.test(learnerText));
   return (
     explicitProblem.test(learnerText) ||
@@ -474,6 +478,8 @@ function replacesEarlierFraming(text) {
     /\b(?:better|instead)\s+to\s+(?:suppose|start|frame|read|treat|ask|follow)\b/i,
     /\b(?:better|stronger|sharper)\s+(?:start|starting point)\s+(?:is|uses?)\b/i,
     /\b(?:better|sharper)\s+(?:split|test|question|frame|framing|reading)\s+(?:is|asks?)\b/i,
+    /\b(?:result|claim|summary|importance)\b[\s\S]{0,90}\bdepends on\b/i,
+    /\b(?:clear|visible|visibility)\b[\s\S]{0,80}\b(?:mean|means?)\b[\s\S]{0,80}\b(?:absent|present|visible)\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,
   ].some((pattern) => pattern.test(learnerText));
 }

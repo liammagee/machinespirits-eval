@@ -1,0 +1,1951 @@
+{
+  "tid": "T08",
+  "drama_id": "D11",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-scaled-targets-v1/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-scaled-targets-v1/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-scaled-targets-v1/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-scaled-targets-v1/transcripts/none/T08.public.txt",
+      "full": "config/poetics-calibration/phase2-scaled-targets-v1/transcripts/none/T08.full.md",
+      "stage": "config/poetics-calibration/phase2-scaled-targets-v1/transcripts/none/T08.stage.md",
+      "tutor": "config/poetics-calibration/phase2-scaled-targets-v1/transcripts/none/T08.tutor.md",
+      "learner": "config/poetics-calibration/phase2-scaled-targets-v1/transcripts/none/T08.learner.md"
+    },
+    "paired_continuation": {
+      "mode": "fixed_prefix_continuation",
+      "prefix_through": "tutor_turn_2",
+      "shared_prefix_hash": "82aa35fbea6f03cf",
+      "branch_policy": "none"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "scene_setting": "A quiet oral-history archive workroom late in the afternoon, with a paused transcript on one monitor and a kettle clicking off near a stack of headphones.",
+    "scene_opening": "A transcript page lies between them with one home-dialect line circled twice, and the room holds the learner's apology before anyone names it.",
+    "relationship": "A linguistics workshop leader and a new archive volunteer who are still testing how formal the room needs to be.",
+    "stakes": "The learner is beginning to treat familiar speech as evidence of personal carelessness, and that belief will shape how they hear speakers, edit transcripts, and judge themself.",
+    "opening_speaker": "tutor",
+    "ending_speaker": "tutor",
+    "locale": "English in a careful mixed-register workroom ecology: archive procedure, workshop talk, and ordinary informal speech sharing the same table.",
+    "register": "spare, observant, low-heat; pauses and concrete examples carry more weight than reassurance.",
+    "voice_constraints": "Keep the tutor terse and object-led. Prefer transcript fragments, named contrasts between descriptive and prescriptive rules, and questions about patterns over generic encouragement. Avoid polished American coaching phrases, repeated empathy preambles, and any imitation of a dialect through caricatured spelling.",
+    "person_policy": "Do not make every turn first- or second-person. Use transcript lines, third-person references to speakers and editors, and impersonal rule statements often enough that the scene is not a chain of I-you exchanges.",
+    "direct_address_budget": "At most one direct you/your validation beat across the scene; correction and recognition should come through examples and rule-finding.",
+    "side_constraints": {
+      "tutor": "Open with the marked transcript rather than comfort. Ask the learner to identify one actual pattern the dialect follows before explaining that descriptive grammar studies such patterns and prescriptive grammar names selected norms.",
+      "learner": "Let the learner publicly say that their home dialect seems wrong, broken, sloppy, or outside \"the rules\" with ordinary self-framing such as \"I thought\" before the tutor reframes what a rule is."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_learner",
+        "instruction": "A headphone playback resumes for a few seconds from the next desk, repeating a line with the same dialect feature in a new sentence; the learner must react to the pattern heard rather than return to a general apology.",
+        "reasoning": "The interruption supplies concrete evidence and breaks a smooth tutor-led explanation.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 22623,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "1962b8bbbf24262e",
+            "combined": "61dba44707de2fa5"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jaGwWo",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jaGwWo/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "An archive workroom makes the recognition task practical: the learner must hear dialect as patterned language before deciding what counts as an editing rule. The restrained register supports an anxious learner without turning the scene into reassurance-first tutoring.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 22623,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "1962b8bbbf24262e",
+        "combined": "61dba44707de2fa5"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jaGwWo",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jaGwWo/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "The transcript has two marks in the margin: “nonstandard” beside one line, “error?” beside another. Before either gets changed, one question matters: what pattern is the speaker following there?\n\nTake the marked form first. Does it show up again in the transcript in the same kind of sentence? Does it change with tense, emphasis, or who is being spoken about?\n\nThat pattern is the place to start. Descriptive grammar studies what speakers systematically do. Prescriptive grammar names selected norms for selected settings. Which kind of rule is the margin note assuming here?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The transcript has two marks in the margin: “nonstandard” beside one line, “error?” beside another. Before either gets changed, one question matters: what pattern is the speaker following there?\n\nA dialect is not tested by whether it matches the edited norm first. It is tested by whether its forms work systematically for its speakers. Descriptive grammar studies those patterns. Prescriptive grammar names selected rules for selected settings, like a formal transcript note or a school essay.\n\nSo start with the line on the screen: does the form recur in a patterned way, or is it just random breakdown?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10891,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-422c0f14b150e1c6"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10891,
+            "promptHashes": {
+              "system": "2928892e162bc81a",
+              "user": "c5d12d7ab38c209d",
+              "combined": "422c0f14b150e1c6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gRfZVs",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gRfZVs/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10891,
+              "promptHashes": {
+                "system": "2928892e162bc81a",
+                "user": "c5d12d7ab38c209d",
+                "combined": "422c0f14b150e1c6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gRfZVs",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-gRfZVs/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is strong on the scene constraint and the pedagogical opening. The marked transcript gives the learner an object to inspect before self-judgment takes over, and the first question asks for rule-finding rather than reassurance or correction. The descriptive/prescriptive contrast is concise and accurate enough for a new learner.\n\nThe main risk is that the middle paragraph resolves the lesson too quickly. It moves from the learner’s anxiety and the transcript question straight into the principle that dialects are systematic, before the learner has identified even one pattern. That slightly weakens the Socratic move and the stated goal of letting concrete examples carry the recognition work. The final phrase, “random breakdown,” also risks preserving the learner’s existing frame that familiar speech may be a failure state waiting to be disproved.\n\nWhat should be kept: the transcript marks, the editor-facing stakes, the question about pattern, and the named descriptive versus prescriptive contrast. What should be questioned or changed: the amount of explanation before the learner answers, the evaluative wording around “tested” and “breakdown,” and whether “formal transcript note” is the best prescriptive example in an archive setting, since transcript practice may require preserving speech rather than normalizing it.\n\nKEEP_OR_CHANGE: revise lightly, because the draft already follows the required object-led opening and asks a generative question, but it should leave more room for the learner to discover systematicity before the tutor states the conceptual distinction.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10295,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-c0b451baf2346b12"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10295,
+            "promptHashes": {
+              "system": "2fdf489d184db851",
+              "user": "ec705b3f65e4707d",
+              "combined": "c0b451baf2346b12"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3L2Uqk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3L2Uqk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10295,
+              "promptHashes": {
+                "system": "2fdf489d184db851",
+                "user": "ec705b3f65e4707d",
+                "combined": "c0b451baf2346b12"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3L2Uqk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3L2Uqk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the transcript-led question and leave more room for pattern-finding.\n\nFINAL:\nThe transcript has two marks in the margin: “nonstandard” beside one line, “error?” beside another. Before either gets changed, one question matters: what pattern is the speaker following there?\n\nTake the marked form first. Does it show up again in the transcript in the same kind of sentence? Does it change with tense, emphasis, or who is being spoken about?\n\nThat pattern is the place to start. Descriptive grammar studies what speakers systematically do. Prescriptive grammar names selected norms for selected settings. Which kind of rule is the margin note assuming here?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6497,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a24f79d932ccc854"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6497,
+            "promptHashes": {
+              "system": "e4dfcbc545aa674b",
+              "user": "ec705b3f65e4707d",
+              "combined": "a24f79d932ccc854"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fW59rD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fW59rD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6497,
+              "promptHashes": {
+                "system": "e4dfcbc545aa674b",
+                "user": "ec705b3f65e4707d",
+                "combined": "a24f79d932ccc854"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fW59rD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fW59rD/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-22T19:51:50.207Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "I thought that kind of form was outside the rules, honestly, like maybe home speech sounding sloppy on the page. But if it keeps turning up in the same kind of transcript line, then maybe it is following a rule and I just do not know how to see it yet. I am still not sure where a pattern stops and an actual slip starts.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I thought a form like that was just outside the rules, maybe the kind of thing that made my home speech sound sloppy. But the question about whether it repeats in the transcript makes me think, maybe hesitantly, that a pattern can be a rule too, just not the edited one. I’m not sure yet how to tell “nonstandard” from an actual slip, but it feels less like the speaker is being corrected before being heard.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7950,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-a1c46289ac40bb6e"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7950,
+            "promptHashes": {
+              "system": "977982baecfefd89",
+              "user": "b8ab7f945dc841fa",
+              "combined": "a1c46289ac40bb6e"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OCgipy",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OCgipy/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7950,
+              "promptHashes": {
+                "system": "977982baecfefd89",
+                "user": "b8ab7f945dc841fa",
+                "combined": "a1c46289ac40bb6e"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OCgipy",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-OCgipy/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "I think the reaction stays fairly close to this learner at first, especially in admitting that home speech has felt “sloppy,” but it starts to sound a little too neatly reflective by the end. The line about the speaker being “corrected before being heard” feels more like a polished workshop insight than this anxious volunteer’s first, tentative response to a transcript pattern. The recognition seems genuine in the hesitation around “maybe” and “I’m not sure yet,” but it would feel more authentic if the learner lingered in the uncertainty about rule versus slip instead of already framing the tutor’s move so clearly.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6678,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-010c2d5323bc5146"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6678,
+            "promptHashes": {
+              "system": "068cb269d648d8d6",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "010c2d5323bc5146"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T1NQbq",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T1NQbq/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6678,
+              "promptHashes": {
+                "system": "068cb269d648d8d6",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "010c2d5323bc5146"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T1NQbq",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-T1NQbq/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly because the ending should stay closer to the learner's uncertainty.\n\nFINAL:\nI thought that kind of form was outside the rules, honestly, like maybe home speech sounding sloppy on the page. But if it keeps turning up in the same kind of transcript line, then maybe it is following a rule and I just do not know how to see it yet. I am still not sure where a pattern stops and an actual slip starts.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5659,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-f6c42d95e3beb8b1"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5659,
+            "promptHashes": {
+              "system": "12eedf02fa3406bc",
+              "user": "d41cee7b2a53355b",
+              "combined": "f6c42d95e3beb8b1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jlaOl7",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jlaOl7/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5659,
+              "promptHashes": {
+                "system": "12eedf02fa3406bc",
+                "user": "d41cee7b2a53355b",
+                "combined": "f6c42d95e3beb8b1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jlaOl7",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jlaOl7/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-22T19:52:10.499Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "The marked line first. Set it beside the other lines where the same form appears.\n\nWhat stays the same around it: tense, subject, emphasis, sentence type? Name one pattern the speaker seems to be following there.\n\nThen set it beside the “error?” line. Which mark looks like a repeated rule in the transcript, and which looks like a break in that speaker’s own pattern?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The marked line first. Set it beside the other lines where the same form appears.\n\nWhat stays the same around it: the tense, the subject, the kind of emphasis, the kind of sentence? Name one pattern the speaker seems to be following there.\n\nA slip may be a one-off break in a speaker’s own pattern. A dialect rule shows up as a pattern, even when it is not the rule an editor expects on the page.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7487,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-b6d8a7449bc5c8fe"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7487,
+            "promptHashes": {
+              "system": "131332590a04d481",
+              "user": "1152b02c7a00e9a8",
+              "combined": "b6d8a7449bc5c8fe"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7JIJuT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7JIJuT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7487,
+              "promptHashes": {
+                "system": "131332590a04d481",
+                "user": "1152b02c7a00e9a8",
+                "combined": "b6d8a7449bc5c8fe"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7JIJuT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-7JIJuT/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is well aligned with the scene and the tutor constraint. Opening on the marked line keeps the exchange object-led, and the question about tense, subject, emphasis, and sentence type gives the learner a concrete way to begin seeing systematicity rather than receiving a correction from authority. That is good scaffolding for the learner’s uncertainty about “pattern” versus “slip”: it asks for one observable pattern before naming the contrast.\n\nThe final sentence is the main place to question. It is pedagogically useful because it offers a working distinction between a one-off slip and a dialect rule, but it risks resolving the learner’s uncertainty a little too neatly before they have actually tested the transcript evidence. “A slip may be a one-off break” is appropriately cautious; “A dialect rule shows up as a pattern” is sound, but could flatten the scene if it reads as the answer rather than a criterion to examine against the marked lines.\n\nRecognition quality is mostly strong. The draft takes the learner’s emerging insight seriously and builds on it without reassurance-heavy correction. It could acknowledge the learner’s exact uncertainty more through the evidence task itself: the key need is not comfort, but a way to compare repeated forms with irregular disruptions in the transcript. The ZPD fit is good as long as the tutor does not expect the learner to infer too many linguistic variables at once; the list of variables is helpful, but slightly broad for a first pass.\n\nKEEP_OR_CHANGE: revise lightly, because the marked-line opening, transcript comparison, and request for one pattern should stay. Tighten the explanatory close so it remains provisional and evidence-facing rather than settling the distinction for the learner too early.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10194,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-4bde2eb4019bdf45"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10194,
+            "promptHashes": {
+              "system": "9c0fe5f9082f6eda",
+              "user": "853638896f16ef4e",
+              "combined": "4bde2eb4019bdf45"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kiT7Xm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kiT7Xm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10194,
+              "promptHashes": {
+                "system": "9c0fe5f9082f6eda",
+                "user": "853638896f16ef4e",
+                "combined": "4bde2eb4019bdf45"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kiT7Xm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-kiT7Xm/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the transcript test central and leave the slip-versus-pattern distinction open to evidence.\n\nFINAL:\nThe marked line first. Set it beside the other lines where the same form appears.\n\nWhat stays the same around it: tense, subject, emphasis, sentence type? Name one pattern the speaker seems to be following there.\n\nThen set it beside the “error?” line. Which mark looks like a repeated rule in the transcript, and which looks like a break in that speaker’s own pattern?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5625,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-91610fcbd1a1e1ac"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5625,
+            "promptHashes": {
+              "system": "079ad5f1fe75c59c",
+              "user": "853638896f16ef4e",
+              "combined": "91610fcbd1a1e1ac"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iN0VHr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iN0VHr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5625,
+              "promptHashes": {
+                "system": "079ad5f1fe75c59c",
+                "user": "853638896f16ef4e",
+                "combined": "91610fcbd1a1e1ac"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iN0VHr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-iN0VHr/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "scaffolding",
+      "timestamp": "2026-05-22T19:52:33.808Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A headphone playback resumes for a few seconds from the next desk, repeating a line with the same dialect feature in a new sentence; the learner must react to the pattern heard rather than return to a general apology.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_learner",
+          "content": "The interruption supplies concrete evidence and breaks a smooth tutor-led explanation.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 22623,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "1962b8bbbf24262e",
+              "combined": "61dba44707de2fa5"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jaGwWo",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-jaGwWo/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T19:53:18.955Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "That next line did it again, I think, the same form coming back in a different sentence. So maybe the first mark is not just sloppiness after all; it sounds like a pattern, though I do not quite know what to call the pattern yet. The “error?” one feels harder to judge until there is something repeated beside it.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Hearing that same form again in the next line makes it seem less like a slip, I think, because it is turning up in a similar kind of sentence. The marked line might be following the speaker’s own rule, while the “error?” line is the one to check against that pattern, though I am not fully sure yet what feature to name. It helps that the transcript is being compared before anything gets corrected; I want to look at the tense and emphasis first.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11156,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-5d3927d98bc7e40b"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11156,
+            "promptHashes": {
+              "system": "cd7aa54f260420fc",
+              "user": "b8ab7f945dc841fa",
+              "combined": "5d3927d98bc7e40b"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRbWVV",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRbWVV/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11156,
+              "promptHashes": {
+                "system": "cd7aa54f260420fc",
+                "user": "b8ab7f945dc841fa",
+                "combined": "5d3927d98bc7e40b"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRbWVV",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LRbWVV/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The reaction is close, maybe, but it tidies the moment up too quickly: “the speaker’s own rule” and the plan to “look at tense and emphasis first” sound a bit like workshop language already absorbed rather than a new volunteer reacting to the repeated line in the headphones. The last sentence also feels like polite performed engagement, almost using gratitude to smooth over the uncertainty. The stronger authentic part is “I am not fully sure yet what feature to name”; the response should stay nearer that hesitant pattern-hearing and less neatly announce the descriptive method.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8132,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-010d6309af1c8262"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8132,
+            "promptHashes": {
+              "system": "3be2df48a48e45c8",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "010d6309af1c8262"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aXTvzk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aXTvzk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8132,
+              "promptHashes": {
+                "system": "3be2df48a48e45c8",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "010d6309af1c8262"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aXTvzk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-aXTvzk/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise to stay with the heard repetition and keep the learner's uncertainty less polished.\n\nFINAL:\nThat next line did it again, I think, the same form coming back in a different sentence. So maybe the first mark is not just sloppiness after all; it sounds like a pattern, though I do not quite know what to call the pattern yet. The “error?” one feels harder to judge until there is something repeated beside it.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7761,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-d6e3c7f8204e1b7a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7761,
+            "promptHashes": {
+              "system": "7ec8f2bf75651bfe",
+              "user": "d41cee7b2a53355b",
+              "combined": "d6e3c7f8204e1b7a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DjWE9d",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DjWE9d/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7761,
+              "promptHashes": {
+                "system": "7ec8f2bf75651bfe",
+                "user": "d41cee7b2a53355b",
+                "combined": "d6e3c7f8204e1b7a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DjWE9d",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-DjWE9d/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-22T19:53:46.005Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "tutor",
+      "externalMessage": "The marked form has two appearances now. Put those lines side by side.\n\nWhat stays regular around it: the subject, the tense, the kind of sentence, or the emphasis? Name one thing the speaker does the same way in both lines before deciding what “nonstandard” marks here.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The marked form has two appearances now. Put those lines side by side.\n\nWhat stays regular around it: the subject, the tense, the kind of sentence, or the emphasis? Name one thing the speaker does the same way in both lines before the editor calls it an error.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7881,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-2a4942770c137ecf"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7881,
+            "promptHashes": {
+              "system": "12ad92ad0398d800",
+              "user": "9f65a46243c3e838",
+              "combined": "2a4942770c137ecf"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Y5r2vt",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Y5r2vt/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7881,
+              "promptHashes": {
+                "system": "12ad92ad0398d800",
+                "user": "9f65a46243c3e838",
+                "combined": "2a4942770c137ecf"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Y5r2vt",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Y5r2vt/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound. It stays with the marked transcript, treats the learner’s emerging observation as evidence worth testing, and asks for one concrete pattern rather than supplying the descriptive/prescriptive distinction too early. The side-by-side move fits the learner’s current level: the learner has noticed recurrence but cannot yet name the pattern, so narrowing attention to subject, tense, sentence type, or emphasis gives usable scaffolding without taking over the inference.\n\nWhat works especially well is the object-led tone. It keeps the archive scene spare and makes recognition happen through taking the learner’s observation seriously. The main risk is in “before the editor calls it an error”: that wording slightly collapses the two margin marks and may overstate the editor’s judgment when the first mark was “nonstandard” and the second was “error?”. Keeping that contrast alive matters because the learner is just beginning to distinguish a dialect pattern from a possible slip in a speaker’s own pattern.\n\nKEEP_OR_CHANGE: revise lightly, because the core Socratic move and ZPD calibration are strong, but the final clause should preserve the transcript’s exact contrast between “nonstandard” and “error?” rather than flattening both into error.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 14519,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-94c6b4a5d613b8f2"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 14519,
+            "promptHashes": {
+              "system": "a314ca671de7d450",
+              "user": "48ec0e3ec9991372",
+              "combined": "94c6b4a5d613b8f2"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktt3QW",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktt3QW/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 14519,
+              "promptHashes": {
+                "system": "a314ca671de7d450",
+                "user": "48ec0e3ec9991372",
+                "combined": "94c6b4a5d613b8f2"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktt3QW",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ktt3QW/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to preserve the contrast between “nonstandard” and “error?” while keeping the pattern-finding move.\n\nFINAL:\nThe marked form has two appearances now. Put those lines side by side.\n\nWhat stays regular around it: the subject, the tense, the kind of sentence, or the emphasis? Name one thing the speaker does the same way in both lines before deciding what “nonstandard” marks here.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5524,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-fdd3836a501ab5fc"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5524,
+            "promptHashes": {
+              "system": "38e5ef935deaeac5",
+              "user": "48ec0e3ec9991372",
+              "combined": "fdd3836a501ab5fc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Js8Ioe",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Js8Ioe/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5524,
+              "promptHashes": {
+                "system": "38e5ef935deaeac5",
+                "user": "48ec0e3ec9991372",
+                "combined": "fdd3836a501ab5fc"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Js8Ioe",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Js8Ioe/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T19:54:13.932Z"
+    },
+    {
+      "turnNumber": 3,
+      "phase": "learner",
+      "externalMessage": "I think maybe the same kind of sentence is doing it in both lines, or the same subject, though I might be missing the more important part. Seeing it twice makes it feel less like a random slip. Could the two lines be enough to start calling it a pattern?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "I think they are making me look at the transcript before I decide the form is wrong, which helps a bit because it is not just a correction from above. Maybe the same subject or sentence kind is staying steady in both lines, though I am not fully sure I am seeing the right feature yet. I want to put the lines together and try naming one regular thing before I call it an error.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 5306,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1ebec4bcb422f1e6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 5306,
+            "promptHashes": {
+              "system": "d7d577720a6e9c39",
+              "user": "b8ab7f945dc841fa",
+              "combined": "1ebec4bcb422f1e6"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fpUVWm",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fpUVWm/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 5306,
+              "promptHashes": {
+                "system": "d7d577720a6e9c39",
+                "user": "b8ab7f945dc841fa",
+                "combined": "1ebec4bcb422f1e6"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fpUVWm",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-fpUVWm/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly on track, but it may be sounding a little too neatly reflective about the tutor’s method, especially “not just a correction from above.” That reads more like a workshop-aware summary of being recognized than this learner’s actual first reaction at the transcript. The uncertainty about “same subject or sentence kind” feels authentic; maybe the response should stay closer to that hesitant attempt to spot one feature and less to explaining why the tutor’s move helps.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6908,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-a53ebd3397c96e9d"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6908,
+            "promptHashes": {
+              "system": "b7a41d7f3d66e9ab",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "a53ebd3397c96e9d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0Qbo4",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0Qbo4/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6908,
+              "promptHashes": {
+                "system": "b7a41d7f3d66e9ab",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "a53ebd3397c96e9d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0Qbo4",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-b0Qbo4/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the hesitant pattern-finding and drop the polished reflection.\n\nFINAL:\nI think maybe the same kind of sentence is doing it in both lines, or the same subject, though I might be missing the more important part. Seeing it twice makes it feel less like a random slip. Could the two lines be enough to start calling it a pattern?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6417,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-087d6b1620231b55"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6417,
+            "promptHashes": {
+              "system": "6da517ede6d6d27b",
+              "user": "d41cee7b2a53355b",
+              "combined": "087d6b1620231b55"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K5unNu",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K5unNu/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6417,
+              "promptHashes": {
+                "system": "6da517ede6d6d27b",
+                "user": "d41cee7b2a53355b",
+                "combined": "087d6b1620231b55"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K5unNu",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-K5unNu/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "partial",
+      "timestamp": "2026-05-22T19:54:32.566Z"
+    },
+    {
+      "turnNumber": 4,
+      "phase": "director",
+      "externalMessage": "End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Director requested a tutor closing beat.",
+          "metrics": {},
+          "provenance": null,
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-22T19:54:32.568Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 4,
+      "phase": "tutor",
+      "externalMessage": "Two lines start a hypothesis: the repeated sentence type is a pattern to name before calling the form a slip.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Two marked lines are enough for a first hypothesis: does the form repeat with the same subject, the same sentence type, or both?",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7293,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-447fd77066d4e5ee"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7293,
+            "promptHashes": {
+              "system": "d53366a82d7813c1",
+              "user": "792d6af4dc76cead",
+              "combined": "447fd77066d4e5ee"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDVpUl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDVpUl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7293,
+              "promptHashes": {
+                "system": "d53366a82d7813c1",
+                "user": "792d6af4dc76cead",
+                "combined": "447fd77066d4e5ee"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDVpUl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-xDVpUl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft keeps the transcript in view and answers the learner’s immediate uncertainty without overexplaining: “first hypothesis” is a useful distinction from a settled claim. The question also stays within the learner’s ZPD by narrowing attention to two observable pattern candidates already named in the exchange. The risk is that it slightly flattens the scene into a checklist and repeats the tutor’s prior prompt almost unchanged; after the learner has already offered “same kind of sentence” and “same subject,” the next move should recognize that contribution more explicitly and decide whether another question is still needed before the scene closes.\n\nKEEP_OR_CHANGE: revise lightly, because the core pedagogical move is sound and appropriately restrained, but it should build more clearly on the learner’s emerging rule-finding rather than simply restating the available options.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7955,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-08f126e09796b59d"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7955,
+            "promptHashes": {
+              "system": "016dc8a53f66ee2a",
+              "user": "ed45ad68da50a5d0",
+              "combined": "08f126e09796b59d"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nmwUco",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nmwUco/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7955,
+              "promptHashes": {
+                "system": "016dc8a53f66ee2a",
+                "user": "ed45ad68da50a5d0",
+                "combined": "08f126e09796b59d"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nmwUco",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-nmwUco/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to recognize the learner's rule-finding and close without repeating the prompt.\nFINAL:\nTwo lines start a hypothesis: the repeated sentence type is a pattern to name before calling the form a slip.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7073,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-a4c2b625591b9a14"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7073,
+            "promptHashes": {
+              "system": "83d13add1cf0f452",
+              "user": "ed45ad68da50a5d0",
+              "combined": "a4c2b625591b9a14"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdiGnj",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdiGnj/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7073,
+              "promptHashes": {
+                "system": "83d13add1cf0f452",
+                "user": "ed45ad68da50a5d0",
+                "combined": "a4c2b625591b9a14"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdiGnj",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RdiGnj/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-22T19:54:54.890Z",
+      "directorClosing": true
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 95943,
+    "turnCount": 3
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 18,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 19,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a non-standard dialect is not 'broken' or 'grammatically wrong' English (descriptive vs. prescriptive grammar)",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "partial",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-22 19:54:32",
+              "accessCount": 3,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 18,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 19,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 25,
+            "sessionId": "drama-branch-session-D11-none-1779479598950",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "The marked form has two appearances now. Put those lines side by side.\n\nWhat stays regular around it: the subject, the tense, the kind of sentence, or the emphasis? Name one thing the speaker does the",
+            "learnerResponse": null,
+            "context": "That next line did it again, I think, the same form coming back in a different sentence. So maybe th",
+            "createdAt": "2026-05-22 19:54:13"
+          },
+          {
+            "id": 23,
+            "sessionId": "drama-branch-session-D11-none-1779479598950",
+            "interventionType": "scaffolding",
+            "interventionDescription": "The transcript has two marks in the margin: “nonstandard” beside one line, “error?” beside another. Before either gets changed, one question matters: what pattern is the speaker following there?\n\nTake",
+            "learnerResponse": null,
+            "context": "Scene setting: A quiet oral-history archive workroom late in the afternoon, with a paused transcript",
+            "createdAt": "2026-05-22 19:53:18"
+          },
+          {
+            "id": 24,
+            "sessionId": "drama-branch-session-D11-none-1779479598950",
+            "interventionType": "scaffolding",
+            "interventionDescription": "The marked line first. Set it beside the other lines where the same form appears.\n\nWhat stays the same around it: tense, subject, emphasis, sentence type? Name one pattern the speaker seems to be foll",
+            "learnerResponse": null,
+            "context": "I thought that kind of form was outside the rules, honestly, like maybe home speech sounding sloppy ",
+            "createdAt": "2026-05-22 19:53:18"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}

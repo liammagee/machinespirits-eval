@@ -1,0 +1,42 @@
+STAGE: A clerk wheels a cart past the alcove as a marked handout lies open at the phrase 'presumed innocent.'
+
+TUTOR: That reading is understandable, but the handout is doing something more precise. “Innocent until proven guilty” does not settle the event in advance; it sets the legal posture before proof is tested.
+
+The accused may have done the act, or may not have done it. At the outset, suspicion does not fill the evidence box. The prosecution must offer evidence and must persuade the court beyond the criminal standard. If the evidence leaves the required level of doubt, what should the verdict form record: that the accused certainly did not do it, or that guilt was not proved?
+
+That is why a criminal verdict may say “not guilty” while uncertainty remains. It means the charge was not proved to the required standard; it is not, by itself, a factual declaration of innocence.
+
+So the distinction to keep beside these notes is this: **what happened** is one question; **what has been proved well enough for the law to condemn** is another.
+
+LEARNER: I thought “presumed innocent” meant the law was saying the accused did not do it, at least until something changed. Now I am getting a bit lost between the event and the proof on the handout: does “not guilty” only mean the verdict form cannot say guilt was proved? Then why call it “innocent” at all if uncertainty can still remain?
+
+TUTOR: That is the pressure point in the handout: **“innocent” names a legal posture, not a factual claim about the event.**
+
+The event and the proof are different questions. The accused may have done the act, or may not have done it. But before the prosecution establishes its case, the court cannot treat suspicion as proof or place the burden on the accused to disprove the charge.
+
+Consider a witness account that creates serious suspicion but remains too uncertain to meet the criminal standard. The court need not write on the verdict form, “the accused certainly did not do it.” It must record, in effect, “guilt was not proved to the required standard.” That is the work done by **not guilty**.
+
+So **presumed innocent** means the law starts from a posture that protects against condemnation without sufficient proof. It keeps **claim** separate from **proved guilt**.
+
+Beside the handout, which statement fits **not guilty** more precisely: “the event did not happen,” or “guilt was not proved strongly enough”?
+
+STAGE: A library announcement gives five minutes until closing; the next line comes quickly, as if the learner must choose the one distinction worth writing down.
+
+LEARNER: Then I should write “guilt was not proved strongly enough,” not “the event did not happen.” I think I see the event and proof split on the handout now, but the word “innocent” still pulls me toward thinking it says what really happened.
+
+TUTOR: That pull is understandable. In ordinary speech, “innocent” sounds like a claim about the event. On this handout, it does different legal work: it marks the starting posture before the evidence box has been filled and tested.
+
+Suppose a charge rests on a single uncertain identification. The event may have occurred exactly as alleged, or it may not have. But if that evidence does not meet the criminal standard, the verdict form records **not guilty** because proved guilt is missing, not because the court has declared factual innocence.
+
+So the note can keep two lines apart:
+
+**Event:** what actually happened.
+**Legal posture and verdict:** guilt cannot be imposed unless the prosecution proves it to the required standard.
+
+On the handout, then, should **presumed innocent** sit beside **what really happened**, or beside **the burden of proving guilt**?
+
+LEARNER: So “presumed innocent” goes with the burden of proving guilt, I think, rather than with what really happened? The empty evidence box on the handout helps, but the word “innocent” still makes me want to read it as a fact about the event. Is that why the verdict form can say “not guilty” even when the court is not saying the accused certainly did not do it?
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: Yes: here **innocent** names the legal posture while the evidence box is tested, so if a single uncertain identification leaves the prosecution short of the required standard, the verdict form says **not guilty** because guilt was not proved, not because factual innocence was declared.
