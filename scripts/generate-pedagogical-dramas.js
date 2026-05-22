@@ -304,7 +304,7 @@ function publicStageDirectionText(text) {
 // end in sentence-final punctuation — a clipped fragment cannot be judged for
 // recohering. We don't auto-exclude at n=6; we WARN so the drama can be regenerated.
 function isTruncated(text) {
-  return !/[.?!…"')\]]$/.test(text.trim());
+  return !/[.?!…"”'’)\]]$/.test(text.trim());
 }
 
 const REVOICE_STOPWORDS = new Set([
@@ -445,7 +445,7 @@ function replacesEarlierFraming(text) {
     /\b(?:frame|read|say|put|treat|write|claim)\b[\s\S]{0,80}\b(?:instead|rather|now)\b/i,
     /\b(?:new|better|revised|replacement)\s+(?:frame|framing|reading)\b/i,
     /\bI\s+(?:would|should|need to|can)\s+(?:frame|read|say|put|treat|write|claim)\b/i,
-    /\b(?:line|claim|proof|equation|step)\s+(?:now\s+)?(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
+    /\b(?:line|claim|proof|equation|step)\b[\s\S]{0,40}\b(?:is|starts?|reads?|works?|shows?|means?|puts?|becomes?|tests?)\b/i,
     /\b(?:image|word)\s+(?:now\s+)?(?:starts?|reads?|works?|shows?|means?|puts?|becomes?)\b/i,
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,

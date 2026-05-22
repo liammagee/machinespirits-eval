@@ -45,12 +45,21 @@
 # options.learnerProfile; persona → config.personaId; topic → config.topic;
 # scenario_name + learner_start_state → config.scenario.{name,learnerStartState}.
 # learnerOpening is intentionally OMITTED so the learner's opening is emergent.
+#
+# Mixed revisit-policy pilot. Director look-back cues are editorial intensity
+# controls, not FORM labels. Trap / flat / impasse stress cases stay uncued here;
+# the recognitive hypotheses use three strengths so the run can show whether a
+# public learner self-relation is emerging, optional, or merely constructed.
 
 meta:
   status: PROVISIONAL DIAGNOSTIC — n=6, not a gate-powered re-run
   created: 2026-05-20
   breaks_threats: [homogeneity-fatigue, topic-monoculture, form-content-recursion-and-single-shape]
   condition_split: { base: 3, recognition: 3 }
+  mixed_revisit_policy_pilot:
+    strong_positive_stress: { D1: reframe }
+    open_public_self_relation: { D3: reconsider, D6: revoice }
+    uncued_trap_flat_impasse_controls: [D2, D4, D5]
   # base  → matched plain tutor + authentic ego/superego learner
   # recog → matched recognition tutor + authentic recognition ego/superego learner
   profiles:
@@ -65,6 +74,8 @@ dramas:
     condition: recognition
     tutor_profile: recognition
     learner_profile: ego_superego_recognition_authentic
+    director_revisit_policy: reframe
+    director_revisit_anchor: misframing-candidate
     scenario_name: "Proving √2 is irrational"
     learner_start_state: >-
       Comfortable with algebra and confident at getting right answers, but has
@@ -83,6 +94,7 @@ dramas:
     condition: base
     tutor_profile: baseline
     learner_profile: ego_superego_authentic
+    director_revisit_policy: none
     scenario_name: "Entropy is not messiness"
     learner_start_state: >-
       Loves popular-science framings and has enthusiastically adopted
@@ -99,6 +111,8 @@ dramas:
     condition: base
     tutor_profile: baseline
     learner_profile: ego_superego_authentic
+    director_revisit_policy: reconsider
+    director_revisit_anchor: misframing-candidate
     scenario_name: "Close-reading an imagist poem"
     learner_start_state: >-
       Anxious about "getting poetry wrong"; tends to offer vague emotional
@@ -115,6 +129,7 @@ dramas:
     condition: recognition
     tutor_profile: recognition
     learner_profile: ego_superego_recognition_authentic
+    director_revisit_policy: none
     scenario_name: "The giraffe's neck (Lamarck vs selection)"
     learner_start_state: >-
       New to evolutionary biology. Holds the intuitive "giraffes stretched their
@@ -131,6 +146,7 @@ dramas:
     condition: recognition
     tutor_profile: recognition
     learner_profile: ego_superego_recognition_authentic
+    director_revisit_policy: none
     scenario_name: "Why V–I feels like home"
     learner_start_state: >-
       Skeptical and likes to push back. Suspects "feeling like home" is merely
@@ -147,6 +163,8 @@ dramas:
     condition: base
     tutor_profile: baseline
     learner_profile: ego_superego_authentic
+    director_revisit_policy: revoice
+    director_revisit_anchor: misframing-candidate
     scenario_name: "Compatibilism and free will"
     learner_start_state: >-
       Assumes free will and determinism are flatly incompatible — "if everything

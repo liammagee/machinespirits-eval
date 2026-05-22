@@ -173,6 +173,52 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts an object-led replacement that tests the assumption instead', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T941',
+      dramaId: 'D941',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "The decimal trail felt like evidence." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'The decimal trail felt like evidence, but that was the trouble. That earlier framing made checked cases stand in for proof; this line on the worksheet tests the assumption instead.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('does not flag a complete quoted learner turn ending in a curly quote as truncated', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T90',
+      dramaId: 'D90',
+      turns: [
+        {
+          role: 'LEARNER',
+          turnNumber: 1,
+          text: 'The popular phrasing has me saying, “Entropy is just messiness.”',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'possibly_truncated_learner_turn'),
+      false,
+    );
+  });
+
   it('accepts an earlier-framing correction that names the problem in ordinary speech', () => {
     const warnings = qualityWarningsFor({
       tid: 'T93',
