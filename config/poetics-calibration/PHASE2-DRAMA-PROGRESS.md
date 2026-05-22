@@ -368,11 +368,12 @@ These are now operating constraints for the next runs:
 
 ## 5. What remains to do
 
-The next work can choose the first broad production shape before a large run:
+The next work now has a pre-specified production shape in
+`PHASE2-PRODUCTION-V1-PLAN.md` and `scripts/run-poetics-production-batch.js`.
+The broad run should use that runner rather than hand-assembling another probe:
 
-1. Decide whether to run another six-target repeat with fresh adjacent controls
-   or promote the current target-plus-stress artifact set into a larger
-   pre-specified batch with repeat draws built in.
+1. Run `phase2-production-v1`, or run `--only target-r01` first if quota/runtime
+   needs an attended checkpoint.
 2. Keep `none` versus `reframe` as the first scaled target contrast and keep
    `revoice` as an exploratory weak arm.
 3. Keep explicit flat and trap controls in each scored batch; do not infer
