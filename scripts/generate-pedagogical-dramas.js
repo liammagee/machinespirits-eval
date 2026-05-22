@@ -78,6 +78,8 @@ const __dirname = path.dirname(__filename);
 const WORKTREE_ROOT = path.resolve(__dirname, '..');
 const CAL_DIR = path.join(WORKTREE_ROOT, 'config', 'poetics-calibration');
 const DRAMAS_SPEC = path.join(CAL_DIR, 'phase2-dramas-v2.yaml');
+const DIRECTOR_REVISIT_POLICIES = new Set(['none', 'anchor', 'revoice', 'reconsider', 'reframe']);
+const DIRECTOR_REVISIT_ANCHORS = new Set(['latest', 'opening', 'misframing-candidate']);
 
 // ── args ─────────────────────────────────────────────────────────────────────
 
@@ -135,9 +137,9 @@ function parseArgs(argv) {
     throw new Error(`--generator must be claude|codex (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
-  if (!['none', 'anchor', 'revoice', 'reconsider', 'reframe'].includes(a.directorRevisitPolicy))
+  if (!DIRECTOR_REVISIT_POLICIES.has(a.directorRevisitPolicy))
     throw new Error('--director-revisit-policy must be none|anchor|revoice|reconsider|reframe');
-  if (!['latest', 'opening', 'misframing-candidate'].includes(a.directorRevisitAnchor))
+  if (!DIRECTOR_REVISIT_ANCHORS.has(a.directorRevisitAnchor))
     throw new Error('--director-revisit-anchor must be latest|opening|misframing-candidate');
   a.spec = a.spec || DRAMAS_SPEC;
   // Default output locations are GENERATOR-AWARE so the arms never collide:
@@ -153,6 +155,38 @@ function parseArgs(argv) {
   a.keyPath = a.keyPath || path.join(CAL_DIR, `phase2-key-${base}${suffix}.yaml`);
   a.writingPadDir = a.writingPadDir || path.join(a.delibDir, '.writing-pad');
   return a;
+}
+
+function resolveDirectorRevisitOptions(d, args) {
+  const policy = d.director_revisit_policy ?? args.directorRevisitPolicy;
+  const anchor = d.director_revisit_anchor ?? args.directorRevisitAnchor;
+  if (!DIRECTOR_REVISIT_POLICIES.has(policy)) {
+    throw new Error(
+      `drama ${d.id || '<unknown>'} director_revisit_policy must be none|anchor|revoice|reconsider|reframe`,
+    );
+  }
+  if (!DIRECTOR_REVISIT_ANCHORS.has(anchor)) {
+    throw new Error(
+      `drama ${d.id || '<unknown>'} director_revisit_anchor must be latest|opening|misframing-candidate`,
+    );
+  }
+  return { policy, anchor: policy === 'none' ? null : anchor };
+}
+
+function summarizeDirectorRevisitOptions(dramas) {
+  const policies = [...new Set(dramas.map((d) => d._directorRevisitPolicy || 'none'))];
+  const anchors = [
+    ...new Set(
+      dramas
+        .filter((d) => d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none')
+        .map((d) => d._directorRevisitAnchor || 'latest'),
+    ),
+  ];
+  return {
+    cue: policies.some((policy) => policy !== 'none'),
+    policy: policies.length === 1 ? policies[0] : 'mixed',
+    anchor: anchors.length === 0 ? null : anchors.length === 1 ? anchors[0] : 'mixed',
+  };
 }
 
 // ── seeded PRNG (mulberry32) + Fisher–Yates  (lifted from load-poetics) ───────
@@ -1139,6 +1173,8 @@ Return exactly one JSON object with:
 
 async function buildDirectorPlan(d, llmCall, args) {
   if (args.directorMode === 'off') return null;
+  const revisitPolicy = d._directorRevisitPolicy ?? args.directorRevisitPolicy;
+  const revisitAnchor = d._directorRevisitAnchor ?? args.directorRevisitAnchor;
   const fallback = fallbackDirectorPlan(d, 'fallback-not-called');
   const userPrompt = yaml.stringify({
     drama_id: d.id,
@@ -1157,8 +1193,8 @@ async function buildDirectorPlan(d, llmCall, args) {
       'superego drafts public speech',
     ],
     opt_in_revisit_cue:
-      args.directorRevisitPolicy !== 'none' &&
-      `The generator will inject one visible learner look-back cue after turn 2 using the ${args.directorRevisitPolicy} policy and the ${args.directorRevisitAnchor} anchor selector. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
+      revisitPolicy !== 'none' &&
+      `The generator will inject one visible learner look-back cue after turn 2 using the ${revisitPolicy} policy and the ${revisitAnchor} anchor selector. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
     fallback_variation_seed: fallback,
   });
   const response = await llmCall(
@@ -1184,8 +1220,8 @@ async function buildDirectorPlan(d, llmCall, args) {
           parse_status: 'ok',
           provenance: response.provenance || response.apiPayload?.provenance || null,
         },
-        args.directorRevisitPolicy,
-        args.directorRevisitAnchor,
+        revisitPolicy,
+        revisitAnchor,
       ),
     );
   } catch (error) {
@@ -1196,8 +1232,8 @@ async function buildDirectorPlan(d, llmCall, args) {
           raw_director_response: String(response.content || '').slice(0, 2000),
           provenance: response.provenance || response.apiPayload?.provenance || null,
         },
-        args.directorRevisitPolicy,
-        args.directorRevisitAnchor,
+        revisitPolicy,
+        revisitAnchor,
       ),
     );
   }
@@ -1426,6 +1462,12 @@ async function main() {
     order = order.filter((d) => want.has(d.id) || want.has(d._tid));
     if (order.length === 0) throw new Error(`--only matched no dramas: ${args.only}`);
   }
+  for (const d of order) {
+    const revisit = resolveDirectorRevisitOptions(d, args);
+    d._directorRevisitPolicy = revisit.policy;
+    d._directorRevisitAnchor = revisit.anchor;
+  }
+  const revisitSummary = summarizeDirectorRevisitOptions(order);
 
   const roleMapLabel = args.roleMap
     ? Object.entries(args.roleMap)
@@ -1445,7 +1487,7 @@ async function main() {
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
-      `${args.directorRevisitPolicy !== 'none' ? ` + revisit-${args.directorRevisitPolicy}/${args.directorRevisitAnchor}` : ''}`,
+      `${revisitSummary.cue ? ` + revisit-${revisitSummary.policy}/${revisitSummary.anchor}` : ''}`,
   );
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
@@ -1540,8 +1582,6 @@ async function main() {
     const t0 = Date.now();
     const directorPlan = await buildDirectorPlan(d, llmCall, args);
     d._directorMode = args.directorMode;
-    d._directorRevisitPolicy = args.directorRevisitPolicy;
-    d._directorRevisitAnchor = args.directorRevisitAnchor;
     d._directorPlan = directorPlan;
     if (directorPlan) {
       console.log(
@@ -1602,9 +1642,9 @@ async function main() {
             generator: args.roleMap ? 'mixed' : args.generator,
             role_map: args.roleMap || null,
             director_mode: args.directorMode,
-            director_revisit_cue: args.directorRevisitPolicy !== 'none',
-            director_revisit_policy: args.directorRevisitPolicy,
-            director_revisit_anchor: args.directorRevisitPolicy !== 'none' ? args.directorRevisitAnchor : null,
+            director_revisit_cue: d._directorRevisitPolicy !== 'none',
+            director_revisit_policy: d._directorRevisitPolicy,
+            director_revisit_anchor: d._directorRevisitAnchor,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
             codex_reasoning_effort: CODEX_REASONING_EFFORT,
             writing_pad: runtime.writingPad,
@@ -1651,9 +1691,9 @@ async function main() {
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
-    director_revisit_cue: args.directorRevisitPolicy !== 'none',
-    director_revisit_policy: args.directorRevisitPolicy,
-    director_revisit_anchor: args.directorRevisitPolicy !== 'none' ? args.directorRevisitAnchor : null,
+    director_revisit_cue: revisitSummary.cue,
+    director_revisit_policy: revisitSummary.policy,
+    director_revisit_anchor: revisitSummary.anchor,
     transcripts_dir: path.relative(WORKTREE_ROOT, args.transcriptsDir),
     seed: args.seed,
     max_turns: args.maxTurns,

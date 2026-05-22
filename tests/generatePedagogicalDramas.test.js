@@ -386,4 +386,66 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(score.scored[0].id, tid);
     assert.deepEqual(score.qualityPolicy.skipped, []);
   });
+
+  it('lets a drama spec override the CLI revisit policy for mixed editorial runs', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'drama-gen-mixed-policy-'));
+    const sourceSpec = yaml.parse(
+      fs.readFileSync(path.join(ROOT, 'config', 'poetics-calibration', 'phase2-dramas-v2.yaml'), 'utf8'),
+    );
+    const specPath = path.join(tmp, 'mixed-policy.yaml');
+    const sampleDir = path.join(tmp, 'sample');
+    const delibDir = path.join(tmp, 'delib');
+    const transcriptsDir = path.join(tmp, 'transcripts');
+    const keyPath = path.join(tmp, 'key.yaml');
+    fs.writeFileSync(
+      specPath,
+      yaml.stringify({
+        ...sourceSpec,
+        dramas: [
+          {
+            ...sourceSpec.dramas.find((drama) => drama.id === 'D3'),
+            director_revisit_policy: 'reconsider',
+            director_revisit_anchor: 'opening',
+          },
+        ],
+      }),
+      'utf8',
+    );
+
+    execFileSync(
+      process.execPath,
+      [
+        'scripts/generate-pedagogical-dramas.js',
+        '--mock',
+        '--spec',
+        specPath,
+        '--max-turns',
+        '2',
+        '--director-revisit-policy',
+        'none',
+        '--out-dir',
+        sampleDir,
+        '--delib-dir',
+        delibDir,
+        '--transcripts-dir',
+        transcriptsDir,
+        '--key',
+        keyPath,
+        '--force',
+      ],
+      { cwd: ROOT, stdio: 'pipe', env: { ...process.env, GEN_DRAMAS_CLI_TRACE: '0' } },
+    );
+
+    const traceFile = fs.readdirSync(delibDir).find((file) => /^T\d+\.json$/.test(file));
+    const trace = JSON.parse(fs.readFileSync(path.join(delibDir, traceFile), 'utf8'));
+    const key = yaml.parse(fs.readFileSync(keyPath, 'utf8'));
+    const tid = traceFile.replace(/\.json$/, '');
+
+    assert.equal(trace.run.director_revisit_policy, 'reconsider');
+    assert.equal(trace.run.director_revisit_anchor, 'opening');
+    assert.equal(key.director_revisit_policy, 'reconsider');
+    assert.equal(key.director_revisit_anchor, 'opening');
+    assert.equal(key.items[tid].director_revisit_policy, 'reconsider');
+    assert.equal(key.items[tid].director_revisit_anchor, 'opening');
+  });
 });
