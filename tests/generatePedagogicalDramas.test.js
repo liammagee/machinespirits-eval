@@ -54,7 +54,9 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(trace.run.generator, 'mixed');
     assert.deepEqual(trace.run.role_map, { tutor: 'claude', learner: 'codex' });
     assert.equal(trace.run.director_revisit_cue, true);
+    assert.equal(trace.run.director_revisit_policy, 'anchor');
     assert.equal(trace.directorPlan.revisit_cue, 'learner_revisit_earlier_wording');
+    assert.equal(trace.directorPlan.revisit_cue_policy, 'anchor');
     assert.equal(trace.run.writing_pad.mode, 'isolated');
     assert.ok(['ok', 'review_before_scoring'].includes(trace.quality_status));
     assert.ok(Array.isArray(trace.quality_warnings), 'quality warnings should always be machine-readable');
@@ -120,9 +122,11 @@ describe('generate-pedagogical-dramas', () => {
     const key = yaml.parse(fs.readFileSync(keyPath, 'utf8'));
     assert.equal(key.writing_pad.mode, 'isolated');
     assert.equal(key.director_revisit_cue, true);
+    assert.equal(key.director_revisit_policy, 'anchor');
     assert.equal(key.transcripts_dir, path.relative(ROOT, transcriptsDir));
     assert.equal(key.items[tid].quality_status, trace.quality_status);
     assert.equal(key.items[tid].director_revisit_cue, true);
+    assert.equal(key.items[tid].director_revisit_policy, 'anchor');
     assert.equal(key.quality_warning_count, key.items[tid].quality_warnings.length);
 
     const scorePath = path.join(tmp, 'score.json');

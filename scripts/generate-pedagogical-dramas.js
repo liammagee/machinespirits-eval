@@ -58,7 +58,7 @@
  *        --model <alias> (claude CLI --model, default sonnet) · --out-dir / --key
  *        --delib-dir / --transcripts-dir / --writing-pad-dir
  *        --generator claude|codex · --role-map "tutor=codex,learner=claude" (mixed)
- *        --director-revisit-cue (visible learner look-back cue after turn 2)
+ *        --director-revisit-cue (anchor shorthand) · --director-revisit-policy none|anchor|revoice
  * Env:   CODEX_REASONING_EFFORT (default xhigh) · CODEX_MODEL (default: codex config)
  */
 
@@ -100,7 +100,7 @@ function parseArgs(argv) {
     writingPadDir: null,
     roleMap: null,
     directorMode: 'scene',
-    directorRevisitCue: false,
+    directorRevisitPolicy: 'none',
   };
   for (let i = 0; i < argv.length; i++) {
     const t = argv[i];
@@ -122,7 +122,8 @@ function parseArgs(argv) {
     else if (t === '--writing-pad-dir') a.writingPadDir = path.resolve(argv[++i]);
     else if (t === '--role-map') a.roleMap = parseRoleMap(argv[++i]);
     else if (t === '--director-mode') a.directorMode = argv[++i];
-    else if (t === '--director-revisit-cue') a.directorRevisitCue = true;
+    else if (t === '--director-revisit-cue') a.directorRevisitPolicy = 'anchor';
+    else if (t === '--director-revisit-policy') a.directorRevisitPolicy = argv[++i];
     else throw new Error(`unknown arg: ${t}`);
   }
   if (!Number.isInteger(a.seed)) throw new Error('--seed must be an integer');
@@ -131,6 +132,8 @@ function parseArgs(argv) {
     throw new Error(`--generator must be claude|codex (got ${a.generator})`);
   if (!Number.isInteger(a.tidStart) || a.tidStart < 0) throw new Error('--tid-start must be a non-negative integer');
   if (!['off', 'scene'].includes(a.directorMode)) throw new Error('--director-mode must be off|scene');
+  if (!['none', 'anchor', 'revoice'].includes(a.directorRevisitPolicy))
+    throw new Error('--director-revisit-policy must be none|anchor|revoice');
   a.spec = a.spec || DRAMAS_SPEC;
   // Default output locations are GENERATOR-AWARE so the arms never collide:
   //   claude → phase2-sample-v2 (the running Arm-A set); codex → phase2-sample-codex;
@@ -323,7 +326,8 @@ function keyItemFor(d, nTutor, nLearner, qualityWarnings = []) {
     n_tutor_turns: nTutor,
     n_learner_turns: nLearner,
     director_mode: d._directorMode || null,
-    director_revisit_cue: Boolean(d._directorRevisitCue),
+    director_revisit_cue: Boolean(d._directorRevisitPolicy && d._directorRevisitPolicy !== 'none'),
+    director_revisit_policy: d._directorRevisitPolicy || 'none',
     opening_speaker: d._directorPlan?.opening_speaker || null,
     ending_speaker: d._directorPlan?.ending_speaker || null,
     quality_status: blocked ? 'review_before_scoring' : 'ok',
@@ -832,23 +836,29 @@ function withDirectorCueProvenance(plan) {
   };
 }
 
-function withDirectorRevisitCue(plan, enabled) {
-  if (!plan || !enabled) return plan;
+function withDirectorRevisitCue(plan, policy) {
+  if (!plan || !policy || policy === 'none') return plan;
   const cue = {
     after_turn: 2,
     timing: 'before_learner',
     instruction:
-      'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.',
+      policy === 'revoice'
+        ? 'A prior learner line is played back. The learner must revoice that earlier wording before moving on, then say exactly what it now misses, keeps, or changes.'
+        : 'A prior learner line is played back or pointed to. The next learner line must repeat or close-paraphrase one earlier phrase they used, then say what that phrase now misses, keeps, or changes.',
     reasoning:
-      'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.',
+      policy === 'revoice'
+        ? 'Opt-in revoice mirror: the learner must make the earlier wording and the change to it legible in public speech.'
+        : 'Opt-in rehearsal mirror: the learner must visibly revisit earlier wording instead of only accepting the latest correction.',
     provenance: plan.provenance || null,
     cue_kind: 'learner_revisit_earlier_wording',
+    revisit_policy: policy,
   };
   const interventions = Array.isArray(plan.interventions) ? plan.interventions : [];
   if (interventions.some((entry) => entry.cue_kind === cue.cue_kind)) return plan;
   return {
     ...plan,
     revisit_cue: cue.cue_kind,
+    revisit_cue_policy: policy,
     interventions: [...interventions, cue],
   };
 }
@@ -909,8 +919,8 @@ async function buildDirectorPlan(d, llmCall, args) {
       'superego drafts public speech',
     ],
     opt_in_revisit_cue:
-      args.directorRevisitCue &&
-      'The generator will inject one visible learner look-back cue after turn 2. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.',
+      args.directorRevisitPolicy !== 'none' &&
+      `The generator will inject one visible learner look-back cue after turn 2 using the ${args.directorRevisitPolicy} policy. Let the scene make that cue plausible without naming recognition or guaranteeing a breakthrough.`,
     fallback_variation_seed: fallback,
   });
   const response = await llmCall(
@@ -936,7 +946,7 @@ async function buildDirectorPlan(d, llmCall, args) {
           parse_status: 'ok',
           provenance: response.provenance || response.apiPayload?.provenance || null,
         },
-        args.directorRevisitCue,
+        args.directorRevisitPolicy,
       ),
     );
   } catch (error) {
@@ -947,7 +957,7 @@ async function buildDirectorPlan(d, llmCall, args) {
           raw_director_response: String(response.content || '').slice(0, 2000),
           provenance: response.provenance || response.apiPayload?.provenance || null,
         },
-        args.directorRevisitCue,
+        args.directorRevisitPolicy,
       ),
     );
   }
@@ -1195,7 +1205,7 @@ async function main() {
   console.log(
     `  generator: ${args.roleMap ? 'mixed' : args.generator} · dramas: ${order.length} · maxTurns: ${args.maxTurns} · ` +
       `seed: ${args.seed}${args.tidStart ? ` · tid-start: ${args.tidStart}` : ''} · director: ${args.directorMode}` +
-      `${args.directorRevisitCue ? ' + revisit-cue' : ''}`,
+      `${args.directorRevisitPolicy !== 'none' ? ` + revisit-${args.directorRevisitPolicy}` : ''}`,
   );
   console.log(`  out: ${path.relative(WORKTREE_ROOT, args.outDir)}`);
   console.log(`  held-out transcripts: ${path.relative(WORKTREE_ROOT, args.transcriptsDir)}`);
@@ -1269,7 +1279,9 @@ async function main() {
             {
               ...d,
               _directorMode: traceJson.run?.director_mode || null,
-              _directorRevisitCue: Boolean(traceJson.run?.director_revisit_cue),
+              _directorRevisitPolicy:
+                traceJson.run?.director_revisit_policy ||
+                (traceJson.run?.director_revisit_cue ? 'anchor' : 'none'),
               _directorPlan: traceJson.directorPlan || null,
             },
             t.filter((x) => x.role === 'TUTOR').length,
@@ -1287,7 +1299,7 @@ async function main() {
     const t0 = Date.now();
     const directorPlan = await buildDirectorPlan(d, llmCall, args);
     d._directorMode = args.directorMode;
-    d._directorRevisitCue = args.directorRevisitCue;
+    d._directorRevisitPolicy = args.directorRevisitPolicy;
     d._directorPlan = directorPlan;
     if (directorPlan) {
       console.log(
@@ -1348,7 +1360,8 @@ async function main() {
             generator: args.roleMap ? 'mixed' : args.generator,
             role_map: args.roleMap || null,
             director_mode: args.directorMode,
-            director_revisit_cue: args.directorRevisitCue,
+            director_revisit_cue: args.directorRevisitPolicy !== 'none',
+            director_revisit_policy: args.directorRevisitPolicy,
             model: args.generator === 'codex' ? `codex@${CODEX_REASONING_EFFORT}` : args.model,
             codex_reasoning_effort: CODEX_REASONING_EFFORT,
             writing_pad: runtime.writingPad,
@@ -1395,7 +1408,8 @@ async function main() {
     codex_reasoning_effort: CODEX_REASONING_EFFORT,
     writing_pad: runtime.writingPad,
     director_mode: args.directorMode,
-    director_revisit_cue: args.directorRevisitCue,
+    director_revisit_cue: args.directorRevisitPolicy !== 'none',
+    director_revisit_policy: args.directorRevisitPolicy,
     transcripts_dir: path.relative(WORKTREE_ROOT, args.transcriptsDir),
     seed: args.seed,
     max_turns: args.maxTurns,

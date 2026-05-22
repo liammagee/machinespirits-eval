@@ -77,6 +77,20 @@ describe('buildAnchoredRevisitCue', () => {
     assert.match(cue.instruction, /"Maybe the emptiness is in the doorway image, not just my mood\."/);
     assert.equal(cue.anchor_quote, 'Maybe the emptiness is in the doorway image, not just my mood.');
   });
+
+  it('makes the revoice policy demand a visible restatement of the anchor', () => {
+    const cue = buildAnchoredRevisitCue(
+      {
+        cue_kind: 'learner_revisit_earlier_wording',
+        revisit_policy: 'revoice',
+        instruction: 'A prior learner line is played back.',
+      },
+      [{ role: 'learner', content: 'I kept treating the decimal as the proof.' }],
+    );
+
+    assert.match(cue.instruction, /"I kept treating the decimal as the proof\."/);
+    assert.match(cue.instruction, /must revoice that wording first/i);
+  });
 });
 
 // ============================================================================

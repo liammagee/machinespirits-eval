@@ -104,9 +104,15 @@ function buildDirectorContext(plan, cue = null, side = null) {
   if (side && plan?.side_constraints?.[side]) lines.push(`- ${side} constraint: ${plan.side_constraints[side]}`);
   if (cue?.instruction) lines.push(`- Current director cue: ${cue.instruction}`);
   if (side === 'learner' && plan?.revisit_cue) {
-    lines.push(
-      '- Revisit-cue rule: if the current cue quotes earlier learner wording, the learner must visibly repeat or close-paraphrase that wording and say what it now misses, keeps, or changes. The learner may still resist or stay uncertain; do not fake a breakthrough.',
-    );
+    if ((cue?.revisit_policy || plan.revisit_cue_policy) === 'revoice') {
+      lines.push(
+        '- Revoice-cue rule: if the current cue quotes earlier learner wording, begin public speech by revoicing that wording in the learner voice, then say one concrete thing it now misses, keeps, or changes. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+      );
+    } else {
+      lines.push(
+        '- Revisit-cue rule: if the current cue quotes earlier learner wording, the learner must visibly repeat or close-paraphrase that wording and say what it now misses, keeps, or changes. The learner may still resist or stay uncertain; do not fake a breakthrough.',
+      );
+    }
   }
   lines.push(
     'Treat these as performance constraints. Public speech may acknowledge visible objects, timing, interruptions, and shared scene facts, but must not mention the director, scene card, role labels, or hidden review process.',
@@ -140,11 +146,14 @@ function buildAnchoredRevisitCue(cue, conversationHistory) {
   if (!cue || cue.cue_kind !== 'learner_revisit_earlier_wording') return cue;
   const anchor = learnerRevisitAnchor(conversationHistory);
   if (!anchor) return cue;
+  const policy = cue.revisit_policy || 'anchor';
   return {
     ...cue,
     instruction:
       `A prior learner line is played back: "${anchor}" ` +
-      'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.',
+      (policy === 'revoice'
+        ? 'The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.'
+        : 'The learner must answer that wording before moving on, saying what it now misses, keeps, or changes.'),
     reasoning:
       `${cue.reasoning || 'Opt-in rehearsal mirror.'} Anchored to an earlier learner line so the look-back is visible.`,
     anchor_quote: anchor,
@@ -162,6 +171,7 @@ function combineDirectorCues(matches, timing) {
     reasoning: matches.map((cue) => cue.reasoning || cueText(cue)).filter(Boolean).join('\n'),
     provenance: matches.find((cue) => cue.provenance)?.provenance || null,
     cue_kind: matches.map((cue) => cue.cue_kind).filter(Boolean).join('+') || 'combined',
+    revisit_policy: matches.find((cue) => cue.revisit_policy)?.revisit_policy || null,
     combined_cues: matches,
   };
 }
