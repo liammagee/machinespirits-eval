@@ -381,6 +381,60 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a reframe that says the old frame asks the wrong evidence to do the work', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T913',
+      dramaId: 'D913',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is that the decimal just keeps going." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is that the decimal just keeps going. That framing asks the decimal check to do the proof work; the new framing is a lowest-terms fraction tested until it fails.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts a reframe that says the old case does too much and names a sharper test', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T914',
+      dramaId: 'D914',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "The clock can trap both cases." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'The clock can trap both cases. I was making the clock do too much there, as if any cause already counts as control; the sharper test is whether judgement carries the act or gets bypassed.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
   it('flags a requested reframe cue that the anchor gate downgraded', () => {
     const warnings = qualityWarningsFor({
       tid: 'T90',

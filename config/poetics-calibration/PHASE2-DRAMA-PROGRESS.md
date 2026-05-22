@@ -121,6 +121,36 @@ The inference is modest but useful: when the public learner transcript contains
 an eligible misframing anchor, a visible revisit intervention can create the form
 the poetics instrument is looking for without relying on a stated "aha".
 
+### 3.4 Bounded D1/D3/D6 scale-up after the progress note
+
+The next bounded target run kept D1/D3/D6 on paired
+`none,revoice,reframe` continuations and generated a fresh uncued D2/D4 control
+pair. It exposed two more ordinary public reframe forms that the admission
+heuristic needed to accept:
+
+- "I was making the clock do too much ... the sharper test is ..."
+- "That framing asks the decimal check to do the proof work ..."
+
+Those now have regression coverage. Revalidating the generated D6/D3/D1 reframe
+samples against the updated warning logic returns no admission warnings.
+
+The target scorer readout is:
+
+| Critic | Policy | Recognition count on D6/D3/D1 |
+|---|---|---|
+| Qwen | `none` | 0/3 |
+| Qwen | `revoice` | 2/3 scored; D3 parse failed twice |
+| Qwen | `reframe` | 3/3 |
+| Gemini | `none` | 0/3 |
+| Gemini | `revoice` | 1/3 |
+| Gemini | `reframe` | 3/3 |
+
+The bounded target signal is therefore stronger for `reframe` than for
+`revoice`, with `none` still flat across both critics. The fresh controls are less
+settled than the earlier control probe: Gemini still reads D4 flat and D2 trap,
+while Qwen reads D4 flat and D2 recognition. The D2 disagreement needs inspection
+before that generated control pair is treated as a stable trap check.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -141,16 +171,16 @@ These are now operating constraints for the next runs:
 
 ## 5. What remains to do
 
-The next work should scale only one notch:
+The next work should stay bounded:
 
-1. Run a bounded target set with paired `none,revoice,reframe` continuations on
-   D1 plus additional targets whose opening learner speech can supply eligible
-   misframing anchors.
-2. Keep D2/D4 or equivalent uncued flat/trap controls in the scoring readout.
+1. Regenerate an admissible D1/D3/D6 bounded batch under the current warning
+   logic so its held-out keys are clean without post-run heuristic revalidation.
+2. Inspect or replace the D2 trap control until the uncued control readout is
+   stable enough for scale-up, while retaining D4 or an equivalent flat control.
 3. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
-4. Persist an admissible batch manifest and scorer artifacts outside ephemeral
-   temp paths once the small target set survives the gates.
+4. Persist the next accepted batch manifest and scorer artifacts outside
+   ephemeral temp paths once that small target/control set survives the gates.
 5. Reassess whether `revoice` is already sufficient for the form probe or whether
    the stronger `reframe` branch adds useful discriminatory pressure.
 6. Decide how the original Phase-2 human transfer gate should coexist with the
