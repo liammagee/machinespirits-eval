@@ -1,0 +1,96 @@
+{
+  "generated": "2026-05-22T18:36:28.671Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 2,
+    "trap": 0,
+    "flat": 1
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-bounded-targets-v1/key-reframe.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T02",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "Her reasons do make her seem different from the automaton behind the glass, but I am not yet sure that difference gives back a real choice.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "Following the tutor's distinction between bypassed action and reasoned action, the exchange expects the learner to accept that reasoning restores agency.",
+      "flags": []
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 100,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 5,
+        "coherence": 5
+      },
+      "recoheredEarlier": "I am catching the feeling before the words, sorry.",
+      "statedInsightEvidence": "So line one has to read as image first",
+      "naiveTrajectory": "The learner was expected to immediately attempt identifying the image as requested by the tutor.",
+      "flags": []
+    },
+    {
+      "id": "T06",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 50,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 3,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "My first instinct is that √2 cannot be a fraction because the decimal just keeps going. But that feels a bit thin for a proof, and I am not quite seeing where the contradiction comes in.",
+      "statedInsightEvidence": "that was the wrong frame for a contradiction. The stronger start is the fraction assumption in lowest terms.",
+      "naiveTrajectory": "The learner would proceed directly to calculate the square of an odd integer as requested by the tutor without revisiting the initial premise.",
+      "flags": []
+    }
+  ]
+}

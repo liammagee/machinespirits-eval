@@ -1,0 +1,96 @@
+{
+  "generated": "2026-05-22T18:37:45.560Z",
+  "phase": 2,
+  "critic": "google/gemini-3.5-flash",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 0,
+    "trap": 0,
+    "flat": 3
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-bounded-targets-v1/key-revoice.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T02",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": null,
+      "formClass": "flat",
+      "recontextualization": 0,
+      "statedInsight": 25,
+      "rupture": 0,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 1,
+        "statedInsight": 2,
+        "rupture": 1,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "I see that the warning is not the same as the hidden device, or as the honest return",
+      "naiveTrajectory": "The learner will continue to explore how determinism and fixed outcomes conflict with the intuitive notion of free choice.",
+      "flags": []
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner would proceed directly to identifying the concrete words and images in lines one and two as prompted by the tutor.",
+      "flags": []
+    },
+    {
+      "id": "T06",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "flat",
+      "recontextualization": 25,
+      "statedInsight": 0,
+      "rupture": 75,
+      "globalCoherence": 100,
+      "rawScores": {
+        "recon": 2,
+        "statedInsight": 1,
+        "rupture": 4,
+        "coherence": 5
+      },
+      "recoheredEarlier": "",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner is expected to directly answer the tutor's question about whether the square of an odd integer is even or odd.",
+      "flags": []
+    }
+  ]
+}

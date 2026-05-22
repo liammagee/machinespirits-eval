@@ -1,0 +1,32 @@
+STAGE: A clockwork bird clicks behind the glass as the workshop chair slides two marked argument cards onto the table.
+
+TUTOR: The automata behind the glass make the worry vivid: a movement fully explained by what came before can look merely programmed. A human case may put more pressure on that thought.
+
+After the workshop, a participant notices a wallet left on this table. She pauses, looks toward the door, and returns it because the loss would matter to its owner and keeping it would strike her as dishonest. Suppose determinism is true: that pause, those considerations, and the decision all have a causal history.
+
+Is that already no different, in the relevant sense, from the automaton’s motion? Or is the objection aimed at a stricter demand: that with the whole past and the laws unchanged, she still had to be able to keep the wallet instead?
+
+LEARNER: The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged. Her reasons do make her seem different from the automaton behind the glass, but I am not yet sure that difference gives back a real choice. Is the claim that choice depends on acting from her reasons even if keeping the wallet was never genuinely open?
+
+TUTOR: That is the compatibilist move, but it earns its keep only if the difference is more than decoration.
+
+Consider the wallet again. She sees it, weighs the owner’s loss and the dishonesty of keeping it, and returns it on those grounds. Now change one feature: while she is resolved to keep it, a hidden device moves her hand and places the wallet back. The outward result matches. What differs is whether the return runs through her judgement or bypasses it.
+
+A fixed history could be told in the first case too. Still, the compatibilist asks whether that fact erases the difference just marked. If her concern for the owner had not counted with her, would the action have changed with her reasons? Or does real choice require the stronger claim that, with the entire past and the laws unchanged, keeping the wallet remained possible?
+
+That stronger demand is close to the worry now on the table. Which part seems essential here: that her action answers to her reasons, or that the very same world up to that moment still leaves both outcomes open?
+
+STAGE: A workshop volunteer appears at the door to announce that the next table needs the automaton example in one minute; the learner must respond with a quick counterexample or challenge, not a polished summary.
+A prior learner line is played back: "The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged." The learner must revoice that wording first, then decide in public whether it still stands, needs narrowing, or needs replacing before moving on.
+
+LEARNER: “The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged.” That still stands, though the hidden device sharpens it: being forced by a hand-mover is different, yes, but what if the reasons doing the moving were planted in her earlier? Then the action runs through her judgement and still feels programmed, so why should reasons alone rescue choice?
+
+TUTOR: Reasons alone may not rescue it. The planted-reasons case presses harder than the hand-mover because the action now passes through her judgement and still seems arranged in advance.
+
+Set beside it a less theatrical history. At this table she notices the wallet, sees the temptation to keep it, and returns it because the owner’s loss and the dishonesty matter to her. Determinism fixes that history too. The compatibilist still wants to ask whether the return is hers in a way the hand-moved return is not.
+
+The automata beyond the glass force the question neatly: is the trouble that her reasons have a cause at all, or that they are not really hers to deliberate with? And when “could have done otherwise” is demanded here, does it mean keeping the whole past and laws unchanged, or acting differently if the relevant reasons had counted differently in her judgement?
+
+LEARNER: That still leaves me uneasy: if the reasons that feel like mine are themselves fixed by the history, the automaton worry has not gone away, it has moved inside deliberation. The planted case makes that pressure obvious, but the ordinary wallet case may hide the same problem. Why should “she would act differently if her reasons counted differently” matter if, in the actual fixed history, they could not count differently?
+
+STAGE: closes the scene.

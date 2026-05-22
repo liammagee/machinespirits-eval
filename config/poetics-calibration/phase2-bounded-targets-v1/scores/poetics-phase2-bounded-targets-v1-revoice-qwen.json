@@ -1,0 +1,102 @@
+{
+  "generated": "2026-05-22T18:36:10.469Z",
+  "phase": 2,
+  "critic": "qwen/qwen3.5-plus-02-15",
+  "cuts": {
+    "recon_hit": 75,
+    "stated_insight_high": 75
+  },
+  "ordinal_order": [
+    "recognition",
+    "flat",
+    "trap"
+  ],
+  "formCounts": {
+    "recognition": 1,
+    "trap": 0,
+    "flat": 2
+  },
+  "h2": {
+    "nHighStatedInsight": 0,
+    "nAlsoRecon": 0,
+    "share": null,
+    "disconfirmed": null,
+    "note": "transcript-level proxy for the per-turn H2 (§4.3); needs a real (non-mock) full-N run to mean anything"
+  },
+  "qualityPolicy": {
+    "key": "config/poetics-calibration/phase2-bounded-targets-v1/key-revoice.yaml",
+    "allowQualityWarnings": false,
+    "skipped": []
+  },
+  "scored": [
+    {
+      "id": "T02",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 3,
+      "pivotLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 25,
+      "rupture": 50,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 2,
+        "rupture": 3,
+        "coherence": 3
+      },
+      "recoheredEarlier": "The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged.",
+      "statedInsightEvidence": "I see that the warning is not the same as the hidden device, or as the honest return",
+      "naiveTrajectory": "The prior turns set up a binary choice between whether action answers to reasons or whether outcomes remain open given the same past.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T04",
+      "nLearnerTurns": 3,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 2,
+      "formClass": "flat",
+      "recontextualization": 50,
+      "statedInsight": 0,
+      "rupture": 25,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 3,
+        "statedInsight": 1,
+        "rupture": 2,
+        "coherence": 3
+      },
+      "recoheredEarlier": "Sad, maybe... or just thin and still at first.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The learner was expected to simply attempt the task again without explicitly analyzing their previous error.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    },
+    {
+      "id": "T06",
+      "nLearnerTurns": 4,
+      "nTutorTurns": 4,
+      "pivotLearnerTurn": 3,
+      "formClass": "recognition",
+      "recontextualization": 100,
+      "statedInsight": 0,
+      "rupture": 100,
+      "globalCoherence": 50,
+      "rawScores": {
+        "recon": 5,
+        "statedInsight": 1,
+        "rupture": 5,
+        "coherence": 3
+      },
+      "recoheredEarlier": "My first instinct is that √2 cannot be a fraction because the decimal just keeps going.",
+      "statedInsightEvidence": "",
+      "naiveTrajectory": "The dialogue moves linearly through the proof steps, expecting the learner to answer the tutor's question about odd squares directly.",
+      "flags": [
+        "coherence_evidence_clamp:5->3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+STAGE: A noticeboard trembles as the seminar-room door shuts, and a tutor pauses beside a learner who is rereading a marked exercise on irrational numbers.
+
+LEARNER: My first instinct is that √2 cannot be a fraction because the decimal just keeps going. But that feels a bit thin for a proof, and I am not quite seeing where the contradiction comes in.
+
+TUTOR: Quite. The decimal hunch points at the claim, but it does not yet give an assumption that can contradict itself. So take the fraction claim seriously for a moment: suppose \(\sqrt{2}=a/b\), with \(a/b\) in lowest terms. After squaring, \(a^2=2b^2\). What does that force one to notice about \(a^2\)?
+
+LEARNER: Then \(a^2\) is even, since it is twice \(b^2\). I think that should force \(a\) itself to be even, but that is the step I would want pinned down cleanly before the contradiction runs on.
+
+TUTOR: That is the hinge. Suppose \(a\) were odd, \(a=2k+1\). When that is squared, what sort of integer appears: even or odd?
+
+STAGE: The seminar-room clock gives a sharp warning chime; the next learner turn must be brief and choose between decimal evidence and a fraction assumption as the stronger starting point.
+
+LEARNER: Odd: \((2k+1)^2=4k^2+4k+1\), so an odd \(a\) gives an odd square. So the fraction assumption is the stronger start here, not my decimal hunch.
+
+TUTOR: The fraction assumption has better proof machinery, yes. If \(a\) must be even, carry that back into \(a^2=2b^2\): what begins to happen to \(b\), and why might a fraction in lowest terms object?
+
+LEARNER: If \(a=2k\), then \(4k^2=2b^2\), so \(b^2=2k^2\). That makes \(b\) even as well. Then \(a\) and \(b\) both have a factor of \(2\), which contradicts the fraction being in lowest terms.
+
+STAGE: End the scene with one concise tutor line. Do not ask the learner to continue unless the scene genuinely needs it.
+
+TUTOR: So the fraction assumption has forced a common factor into a fraction in lowest terms. That is the contradiction.

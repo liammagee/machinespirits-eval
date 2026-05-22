@@ -161,6 +161,50 @@ D16 (`10% brain myth`) split in the same way D2 did. A second uncued D10 draw
 also lands as trap for both critics, making D10 the provisional replacement trap
 control for the next bounded target/control batch.
 
+### 3.5 Repo-local bounded v1 batch
+
+The next run moved the accepted bounded artifacts out of `/tmp`. The manifest is
+`PHASE2-BOUNDED-V1-MANIFEST.md`; the target artifacts live under
+`phase2-bounded-targets-v1/`, and controls under
+`phase2-bounded-controls-v1/`.
+
+The accepted target draw required two admission fixes before scoring. D3's
+quoted revoice opening contained an ellipsis that made the overlap probe stop too
+early, and D1 used the natural replacement form "the stronger start is the
+fraction assumption". `--reclean` now refreshes current quality warnings in
+held-out traces and existing keys, so those exact generated branches were
+revalidated without a paid regeneration.
+
+The persisted target readout is narrower than the best temp probe but still
+separates cue intensity:
+
+| Critic | `none` recognitions on D6/D3/D1 | `revoice` | `reframe` |
+|---|---:|---:|---:|
+| Qwen | 0/3 | 1/3 | 2/3 |
+| Gemini | 0/3 | 0/3 | 2/3 |
+
+Gemini initially failed to parse D1's math-heavy `none` score twice because raw
+LaTeX backslashes leaked into its JSON evidence. The shared poetics JSON parser
+now uses JSON repair before giving up; the retried artifact scores all three
+`none` continuations as flat.
+
+D4 remains the stable flat control on this accepted draw for both critics. A
+fresh plain D10 draw did not hold as the trap control: Gemini called it trap,
+while Qwen left its repeated "Oh, I get it" language in the flat band. D10 now
+has a bounded voice pressure toward an emphatic premature breakthrough without a
+revisit cue. The fresh `d10-emphatic` draw is trap for both critics:
+
+| Control | Qwen | Gemini |
+|---|---|---|
+| D4 flat control | flat | flat |
+| D10 plain draw | flat | trap |
+| D10 emphatic draw | trap | trap |
+
+The working inference is now more precise: `reframe` adds the strongest positive
+pressure in the current target set, `revoice` is not yet a reliable weaker arm,
+and trap control production needs explicit costume pressure if it is to stay
+separate from ordinary flat correction across critics.
+
 ## 4. Guardrails learned the hard way
 
 These are now operating constraints for the next runs:
@@ -183,20 +227,17 @@ These are now operating constraints for the next runs:
 
 The next work should stay bounded:
 
-1. Regenerate an admissible D1/D3/D6 bounded batch under the current warning
-   logic so its held-out keys are clean without post-run heuristic revalidation.
-2. Use D10 as the provisional trap control with D4 or an equivalent flat control
-   in the next bounded target/control batch.
+1. Repeat the repo-local target/control batch once more to see whether the
+   accepted `reframe` 2/3 signal and `d10-emphatic` trap control hold on a fresh
+   draw.
+2. Decide whether `revoice` remains an experimental weak arm or should be dropped
+   from the first scaled production path in favour of `none` versus `reframe`.
 3. Regenerate or exclude arms that quality warnings mark as downgraded,
    unrevoiced, unreframed, leaked, truncated, or too short.
-4. Persist the next accepted batch manifest and scorer artifacts outside
-   ephemeral temp paths once that small target/control set survives the gates.
-5. Reassess whether `revoice` is already sufficient for the form probe or whether
-   the stronger `reframe` branch adds useful discriminatory pressure.
-6. Decide how the original Phase-2 human transfer gate should coexist with the
+4. Decide how the original Phase-2 human transfer gate should coexist with the
    current "human as perspective, not oracle" stance before making any larger
    transfer claim.
-7. Only then increase script production and evaluation together, using the
+5. Only then increase script production and evaluation together, using the
    existing scorer/labeller interfaces rather than a separate closed-loop oracle.
 
 ## 6. Reproducible command shape

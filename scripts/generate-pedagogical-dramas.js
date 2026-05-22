@@ -391,8 +391,9 @@ function extractRevisitAnchor(text) {
 function revoiceMatchStats(anchor, learnerText) {
   const anchorTerms = revoiceTerms(anchor);
   const normalizedLearner = String(learnerText || '').replace(/\s+/g, ' ').trim();
+  const learnerOpeningProbe = normalizedLearner.replace(/\.{2,}/g, '…');
   const learnerOpening =
-    normalizedLearner.match(/^.*?[.!?](?=\s|$)/)?.[0] || normalizedLearner.slice(0, 220);
+    learnerOpeningProbe.match(/^.*?[.!?](?=\s|$)/)?.[0] || normalizedLearner.slice(0, 220);
   const learnerTerms = new Set(revoiceTerms(learnerOpening));
   const sharedTerms = anchorTerms.filter((term) => learnerTerms.has(term));
   const overlapRatio = anchorTerms.length ? sharedTerms.length / anchorTerms.length : 0;
@@ -470,6 +471,7 @@ function replacesEarlierFraming(text) {
     /\b(?:it|that|this)\s+(?:now\s+)?(?:means?|reads?|becomes?)\b/i,
     /\b(?:not just|not only)\b[\s\S]{0,120}\bbut\b/i,
     /\b(?:better|instead)\s+to\s+(?:suppose|start|frame|read|treat|ask|follow)\b/i,
+    /\b(?:better|stronger|sharper)\s+(?:start|starting point)\s+(?:is|uses?)\b/i,
     /\b(?:better|sharper)\s+(?:split|test|question|frame|framing|reading)\s+(?:is|asks?)\b/i,
     /\b(?:more like|better as|read from|looking back)\b/i,
   ].some((pattern) => pattern.test(learnerText));
@@ -1335,9 +1337,9 @@ async function buildDirectorPlan(d, llmCall, args) {
 }
 
 // --reclean: re-derive the EXTERNAL .txt transcripts from the held-out trace JSON,
-// applying the CURRENT stage-direction strip — without re-calling any LLM. Lets a
-// run that already landed (under an older renderTranscript) be re-cleaned in place,
-// and prints every stripped note so the heuristic can be audited by eye at small n.
+// applying the CURRENT stage-direction strip and quality-warning logic — without
+// re-calling any LLM. Lets a run that already landed be re-cleaned in place and
+// revalidated when admission heuristics improve.
 function reclean(args) {
   if (!fs.existsSync(args.delibDir)) throw new Error(`no held-out dir to reclean from: ${args.delibDir}`);
   const jsons = fs
@@ -1349,7 +1351,16 @@ function reclean(args) {
   console.log('\n══ reclean — re-deriving .txt from held-out trace (no LLM) ══');
   console.log(`  from: ${path.relative(WORKTREE_ROOT, args.delibDir)}`);
   console.log(`  to:   ${path.relative(WORKTREE_ROOT, args.outDir)}`);
+  let keyObj = null;
+  if (fs.existsSync(args.keyPath)) {
+    try {
+      keyObj = yaml.parse(fs.readFileSync(args.keyPath, 'utf8'));
+    } catch (_) {
+      console.warn(`  key:  could not parse ${path.relative(WORKTREE_ROOT, args.keyPath)}; warnings stay trace-only`);
+    }
+  }
   let total = 0;
+  const warnings = [];
   for (const f of jsons) {
     const tid = f.replace(/\.json$/, '');
     const trace = JSON.parse(fs.readFileSync(path.join(args.delibDir, f), 'utf8'));
@@ -1364,6 +1375,21 @@ function reclean(args) {
       trace,
       publicTranscript,
     });
+    const qualityWarnings = qualityWarningsFor({
+      tid,
+      dramaId: trace.drama_id || trace.dramaId || 'unknown',
+      turns,
+      removedNotes: removed,
+      traceTurns: trace.turns,
+    });
+    trace.quality_status = hasBlockingQualityWarnings(qualityWarnings) ? 'review_before_scoring' : 'ok';
+    trace.quality_warnings = qualityWarnings;
+    fs.writeFileSync(path.join(args.delibDir, f), JSON.stringify(trace, null, 2), 'utf8');
+    if (keyObj?.items?.[tid]) {
+      keyObj.items[tid].quality_status = trace.quality_status;
+      keyObj.items[tid].quality_warnings = qualityWarnings;
+    }
+    warnings.push(...qualityWarnings.map(formatQualityWarning));
     if (removed.length) {
       total += removed.length;
       fs.writeFileSync(path.join(args.delibDir, `${tid}.stripped.json`), JSON.stringify(removed, null, 2), 'utf8');
@@ -1373,7 +1399,15 @@ function reclean(args) {
       console.log(`  ${tid}: clean`);
     }
   }
+  if (keyObj?.items) {
+    fs.writeFileSync(args.keyPath, yaml.stringify(finalizeKeyObject(keyObj)), 'utf8');
+    console.log(`  key:  refreshed ${path.relative(WORKTREE_ROOT, args.keyPath)}`);
+  }
   console.log(`\nre-cleaned ${jsons.length} transcript(s) · ${total} stage-direction note(s) stripped`);
+  if (warnings.length) {
+    console.log('\n⚠ warnings:');
+    for (const warning of warnings) console.log(`  - ${warning}`);
+  }
 }
 
 function formatStageSuffix(stage) {

@@ -31,6 +31,7 @@ import { fileURLToPath } from 'url';
 import { spawn } from 'node:child_process';
 import os from 'node:os';
 import yaml from 'yaml';
+import { jsonrepair } from 'jsonrepair';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -171,14 +172,21 @@ async function callOpenRouter(prompt, modelKey) {
 }
 
 function parseJsonResponse(content) {
+  const parseCandidate = (candidate) => {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      return JSON.parse(jsonrepair(candidate));
+    }
+  };
   try {
-    return JSON.parse(content);
+    return parseCandidate(content);
   } catch {
     const match = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (match) return JSON.parse(match[1].trim());
+    if (match) return parseCandidate(match[1].trim());
     const first = content.indexOf('{');
     const last = content.lastIndexOf('}');
-    if (first !== -1 && last > first) return JSON.parse(content.slice(first, last + 1));
+    if (first !== -1 && last > first) return parseCandidate(content.slice(first, last + 1));
     throw new Error(`Failed to parse JSON: ${content.slice(0, 300)}`);
   }
 }

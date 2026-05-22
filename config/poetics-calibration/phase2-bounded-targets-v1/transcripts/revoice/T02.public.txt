@@ -1,0 +1,32 @@
+STAGE: A clockwork bird clicks behind the glass as the workshop chair slides two marked argument cards onto the table.
+
+TUTOR: The automata behind the glass make the worry vivid: a movement fully explained by what came before can look merely programmed. A human case may put more pressure on that thought.
+
+After the workshop, a participant notices a wallet left on this table. She pauses, looks toward the door, and returns it because the loss would matter to its owner and keeping it would strike her as dishonest. Suppose determinism is true: that pause, those considerations, and the decision all have a causal history.
+
+Is that already no different, in the relevant sense, from the automaton’s motion? Or is the objection aimed at a stricter demand: that with the whole past and the laws unchanged, she still had to be able to keep the wallet instead?
+
+LEARNER: The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged. Her reasons do make her seem different from the automaton behind the glass, but I am not yet sure that difference gives back a real choice. Is the claim that choice depends on acting from her reasons even if keeping the wallet was never genuinely open?
+
+TUTOR: That is the compatibilist move, but it earns its keep only if the difference is more than decoration.
+
+Consider the wallet again. She sees it, weighs the owner’s loss and the dishonesty of keeping it, and returns it on those grounds. Now change one feature: while she is resolved to keep it, a hidden device moves her hand and places the wallet back. The outward result matches. What differs is whether the return runs through her judgement or bypasses it.
+
+A fixed history could be told in the first case too. Still, the compatibilist asks whether that fact erases the difference just marked. If her concern for the owner had not counted with her, would the action have changed with her reasons? Or does real choice require the stronger claim that, with the entire past and the laws unchanged, keeping the wallet remained possible?
+
+That stronger demand is close to the worry now on the table. Which part seems essential here: that her action answers to her reasons, or that the very same world up to that moment still leaves both outcomes open?
+
+STAGE: A workshop volunteer appears at the door to announce that the next table needs the automaton example in one minute; the learner must respond with a quick counterexample or challenge, not a polished summary.
+A prior learner line is played back: "The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged." The learner must revoice that wording first, then say one concrete thing it now misses, keeps, or changes before moving on.
+
+LEARNER: The fixed outcome is what still bothers me: if the whole past and the laws already settle that she returns the wallet, the pause starts to look staged. What that misses is that the hidden device does seem to skip over her judgement altogether. But suppose the volunteer at the door returns the wallet only because he is threatened: his reasons still move him, do they not, and yet that hardly feels like free choice.
+
+TUTOR: The threat sharpens the case. A hidden device skips his judgement; a threat may work through it and still make the return look less than free.
+
+Take the volunteer at the door in two versions of the scene. In one, he returns the wallet because keeping it would wrong its owner. In the other, he returns it after a quiet warning: “Return it, or there will be consequences.” Determinism can be assumed in both. The visible act is the same, and in both he has a reason. Yet the threat case presses on whether the reason is really his in the relevant way, or whether the situation has been narrowed around fear.
+
+So coercion may show that “moved by reasons” is not enough by itself. Does it refine the compatibilist point, by separating his own judgement from pressure imposed on it? Or does it return the objection to the stronger demand: unless the same past and laws still left keeping the wallet open, neither case counts as a real choice?
+
+LEARNER: The fixed outcome is what still bothers me, and the threat case keeps it alive: fear can run through deliberation and still make the return feel pushed. I see that the warning is not the same as the hidden device, or as the honest return, but if determinism already fixes which reasons win, why is that not just a more elaborate automaton behind the glass? Perhaps compatibilism is after the right causal route, yet I still want to know where the real choice enters.
+
+STAGE: closes the scene.

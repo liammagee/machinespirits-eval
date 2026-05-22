@@ -63,6 +63,33 @@ describe('generate-pedagogical-dramas', () => {
     );
   });
 
+  it('accepts a quoted revoice opening that contains an ellipsis', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T981',
+      dramaId: 'D981',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "Sad, maybe... or just thin and still at first. On the clipboard, line one seems sharp." ' +
+            'The learner must revoice that wording first, then say what changes.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            '“Sad, maybe... or just thin and still at first.” That keeps line one as a thin, still image, but misses the exact words.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'revoice_cue_not_revoiced'),
+      false,
+    );
+  });
+
   it('does not accept later overlap after the learner skips the opening revoice', () => {
     const warnings = qualityWarningsFor({
       tid: 'T97',
@@ -190,6 +217,33 @@ describe('generate-pedagogical-dramas', () => {
           turnNumber: 2,
           text:
             'The decimal trail felt like evidence, but that was the trouble. That earlier framing made checked cases stand in for proof; this line on the worksheet tests the assumption instead.',
+        },
+      ],
+    });
+
+    assert.equal(
+      warnings.some((entry) => entry.code === 'reframe_cue_not_reframed'),
+      false,
+    );
+  });
+
+  it('accepts a stronger starting point as a replacement framing', () => {
+    const warnings = qualityWarningsFor({
+      tid: 'T942',
+      dramaId: 'D942',
+      turns: [
+        {
+          role: 'STAGE',
+          turnNumber: 2,
+          text:
+            'A prior learner line is played back: "My first instinct is that the decimal just keeps going." ' +
+            'The learner must revoice that wording first, name the earlier framing problem, then replace it with a new framing that changes how the earlier line reads before moving on.',
+        },
+        {
+          role: 'LEARNER',
+          turnNumber: 2,
+          text:
+            'My first instinct is that the decimal just keeps going, but that was the wrong frame for a contradiction. The stronger start is the fraction assumption in lowest terms.',
         },
       ],
     });
