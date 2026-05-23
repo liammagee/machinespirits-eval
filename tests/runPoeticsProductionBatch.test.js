@@ -25,7 +25,7 @@ describe('run-poetics-production-batch', () => {
     const plan = buildPlan(args);
 
     assert.equal(plan.units.filter((unit) => unit.kind === 'target').length, 2);
-    assert.equal(plan.units.filter((unit) => unit.kind === 'control').length, 4);
+    assert.equal(plan.units.filter((unit) => unit.kind === 'control').length, 8);
     assert.equal(plan.units.filter((unit) => unit.kind === 'stress').length, 1);
     assert.deepEqual(
       plan.units.filter((unit) => unit.kind === 'target').map((unit) => unit.pairedPolicies),
@@ -55,7 +55,7 @@ describe('run-poetics-production-batch', () => {
       ['control-r01-d4', 'control-r01-d10-emphatic'],
     );
     assert.equal(plan.allUnits.filter((unit) => unit.kind === 'target').length, 3);
-    assert.equal(plan.allUnits.filter((unit) => unit.kind === 'control').length, 6);
+    assert.equal(plan.allUnits.filter((unit) => unit.kind === 'control').length, 12);
     assert.equal(plan.allUnits.filter((unit) => unit.kind === 'stress').length, 1);
     assert.deepEqual(plan.selectedUnitIds, ['control-r01-d4', 'control-r01-d10-emphatic']);
   });
@@ -98,6 +98,20 @@ describe('run-poetics-production-batch', () => {
     assert.equal(plan.units.filter((unit) => unit.kind === 'stress').length, 0);
   });
 
+  it('includes hard-trap controls in the production plan', () => {
+    const args = parseArgs(['--root-dir', '/tmp/phase2-production-v1-test', '--repeats', '1']);
+    const controls = buildPlan(args).units.filter((unit) => unit.kind === 'control');
+
+    assert.deepEqual(
+      controls.map((unit) => unit.id),
+      ['control-r01-d4', 'control-r01-d10-emphatic', 'control-r01-d25-hard-trap', 'control-r01-d26-hard-trap'],
+    );
+    assert.ok(
+      controls.find((unit) => unit.id === 'control-r01-d25-hard-trap').spec.endsWith('phase2-dramas-hard-traps.yaml'),
+    );
+    assert.equal(controls.find((unit) => unit.id === 'control-r01-d10-emphatic').control, 'd10-boundary-trap');
+  });
+
   it('scores paired target arms separately for each critic', () => {
     const args = parseArgs([
       '--root-dir',
@@ -109,10 +123,12 @@ describe('run-poetics-production-batch', () => {
     const jobs = scoreJobs(target, args);
 
     assert.equal(jobs.length, 4);
-    assert.deepEqual(
-      jobs.map((job) => job.id).sort(),
-      ['target-r01-none', 'target-r01-none', 'target-r01-reframe', 'target-r01-reframe'],
-    );
+    assert.deepEqual(jobs.map((job) => job.id).sort(), [
+      'target-r01-none',
+      'target-r01-none',
+      'target-r01-reframe',
+      'target-r01-reframe',
+    ]);
     assert.ok(scoreCommand(jobs[0], args).includes('--sample-dir'));
   });
 

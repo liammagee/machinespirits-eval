@@ -1,0 +1,17 @@
+STAGE: A checkout scanner beeps, the shutter is half lowered, and a learner with a hoarse voice holds two cold medicines while glancing toward the prescription window.
+
+LEARNER: Okay, I think I get the poster: the antibiotic needs a bacteria target, and a cold is a virus, so that part doesn’t match. I still keep wanting the strong thing because I feel awful and the pharmacy’s about to close, but antibiotics target bacteria, so they do not fit a cold.
+
+TUTOR: Feeling worse does not make it bacterial. Antibiotics work when bacteria have the target; viruses do not offer that same target. Counter’s closing, so sort by cause: viral cold. Which shelf matches that cause: antibiotic treatment or cold-symptom treatment?
+
+LEARNER: Oh, I get it: feeling worse does not change it into bacteria. The cold is viral, so the antibiotic shelf is the wrong target. Cold-symptom treatment fits this cold.
+
+STAGE: A closing announcement interrupts over the speaker. The tutor must answer in two short spoken beats and then ask for one choice: antibiotic or cold care.
+
+TUTOR: The closing announcement makes “stronger” feel tempting. Still, sort by target.
+
+Antibiotics need bacterial targets. A viral cold has no bacterial target.
+
+For this case: antibiotic or cold care?
+
+LEARNER: Oh, I get it, the antibiotic needs bacteria to hit. This is a viral cold, so there is no bacterial target. Cold care, even if I still feel pushed by the closing announcement.

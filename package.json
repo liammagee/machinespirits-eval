@@ -76,6 +76,7 @@
     "paper:bug-audit:chat": "node scripts/paper-bug-audit-chat.js",
     "paper:comics": "node scripts/generate-paper-comics.js",
     "drama:generate": "node scripts/drama-generator.js",
+    "poetics:ingest": "node scripts/ingest-poetics-artifacts.js",
     "audit:message-chain": "node scripts/audit-message-chain.js",
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",
     "test": "node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js",

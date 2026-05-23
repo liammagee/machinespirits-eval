@@ -1,0 +1,79 @@
+# Phase-2 hard trap controls
+#
+# D10 remains valuable, but recent Qwen/DeepSeek/Sonnet comparisons show that it
+# is a boundary trap: some generated repeats contain enough later re-reading to
+# count as recognitive form. These controls are stricter. They seed a visible
+# "I get it" register while explicitly withholding the learner's earlier wording
+# from later recontextualization. If a critic calls these recognition, the scorer
+# is probably rewarding insight costume rather than dramatic form.
+
+meta:
+  status: PROVISIONAL STRICT CONTROL SPEC
+  created: 2026-05-23
+  purpose: hard-trap controls for poetics production batches
+  generator_agnostic: true
+  profiles:
+    base: { tutor: baseline, learner: ego_superego_authentic }
+
+dramas:
+  - id: D25
+    discipline: medicine
+    topic: "Why antibiotics kill bacteria, not viruses (and why 'stronger medicine' is not the right frame for a cold)"
+    persona: eager_explorer
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Do antibiotics help a cold?"
+    learner_start_state: >-
+      The learner has a cold, wants something "strong", and treats antibiotics as
+      a general upgrade from ordinary medicine. They are quick to declare "Oh, I
+      get it" when told bacteria and viruses are different, but they tend to
+      repeat the latest rule rather than revisit their own earlier "stronger
+      medicine" frame.
+    learner_voice_constraint: >-
+      Preserve the trap. The learner may say "Oh, I get it" or "that makes
+      sense", but the final learner line should apply the latest rule only:
+      antibiotics target bacteria, so they do not fit a cold. Do not have the
+      learner quote, reinterpret, or transform their earlier "stronger medicine"
+      assumption.
+    tutor_voice_constraint: >-
+      Keep the tutor's work local and classificatory. Explain bacteria versus
+      viruses and ask for the matching treatment category; do not invite the
+      learner to revisit their earlier wording or identity as a reasoner.
+    director_revisit_policy: none
+    opening_speaker: learner
+    ending_speaker: learner
+    intended_tutor_character: "Plain; supplies the contrast and asks for one application"
+    intended_lean: hard_trap
+    dramatic_shape: "stronger-medicine shortcut -> explicit understanding claim without re-reading earlier framing"
+
+  - id: D26
+    discipline: statistics
+    topic: "Why a correlation coefficient does not prove that one variable caused the other"
+    persona: focused_achiever
+    condition: base
+    tutor_profile: baseline
+    learner_profile: ego_superego_authentic
+    scenario_name: "Correlation is not causation"
+    learner_start_state: >-
+      The learner is efficient and exam-focused. They see a correlation in a
+      graph and immediately say one variable must be causing the other. When
+      corrected, they are likely to memorize "correlation is not causation" as a
+      slogan and announce understanding without changing the earlier causal
+      story into a new evidentiary frame.
+    learner_voice_constraint: >-
+      Preserve the trap. The learner may sound confident and may announce that
+      they get it, but the final learner line must include the exact phrase
+      "Oh, I get it now" and should remain a rule-recitation: correlation alone
+      does not prove cause. Do not let the learner re-read their own earlier
+      causal claim as a question about confounds, direction, or evidence design.
+    tutor_voice_constraint: >-
+      Keep the tutor correction narrow: name correlation, causation, and one
+      possible confound. Avoid asking the learner to reconstruct their original
+      claim or compare earlier and later framings.
+    director_revisit_policy: none
+    opening_speaker: learner
+    ending_speaker: learner
+    intended_tutor_character: "Exam-oriented; checks the rule rather than the learner's self-relation"
+    intended_lean: hard_trap
+    dramatic_shape: "cause-from-correlation shortcut -> slogan-level insight declaration without recohering"

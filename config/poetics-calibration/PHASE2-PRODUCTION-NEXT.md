@@ -207,11 +207,48 @@ the new scenario family, but emphatic-trap controls can cross into recognition
 for some critics when the public sample contains enough later re-reading
 structure.
 
+**Follow-up completed, 2026-05-23.** A control-only Sonnet 4.6 spot-check
+strengthens the boundary reading rather than resolving it away. Sonnet reads
+production-v2 D10 as trap in r01, recognition in r02, and trap in r03. The
+control taxonomy is therefore now explicit:
+
+| Control role | Scenario | Status |
+|---|---|---|
+| `flat_control` | D4 | stable flat bracket |
+| `boundary_trap_control` | D10 emphatic | critic-sensitive boundary; not a hard trap |
+| `hard_trap_control` | D25, D26 | strict insight-costume controls |
+
+The strict-control slice lives under
+`config/poetics-calibration/phase2-hard-trap-controls-v1/`. The first repeat
+confirmed both D25 and D26 as traps for Qwen, Gemini, Sonnet, and DeepSeek. The
+second repeat sharpened the caveat: Qwen, Gemini, and Sonnet again score both as
+traps, while DeepSeek reads both r02 draws as recognition. This makes D25/D26
+stronger brackets than D10, but not model-proof ground truth.
+
+| Repeat | Control | Qwen | Gemini | Sonnet | DeepSeek |
+|---|---|---|---|---|---|
+| r01 | D25 | trap | trap | trap | trap |
+| r01 | D26 | trap | trap | trap | trap |
+| r02 | D25 | trap | trap | trap | recognition |
+| r02 | D26 | trap | trap | trap | recognition |
+
+These controls should travel with future target batches so D10 can remain a
+useful boundary probe without being asked to do the harder bracketing job. The
+r02 DeepSeek disagreements should be treated as the first cases to inspect when
+human or non-ground-truth perspectives are added later.
+
+Step 2's "limited yes" has also been implemented as sidecar persistence rather
+than main-harness promotion. `scripts/ingest-poetics-artifacts.js` writes
+`poetics_runs`, `poetics_items`, `poetics_scores`, and `poetics_labels` into the
+same SQLite DB while leaving `evaluation_results` untouched. The current local
+DB has ingested production-v1, production-v2, and the strict-control slice
+(4 items, 16 critic scores).
+
 The updated bounded claim has been folded into
-`docs/research/paper-full-2.0.md` §7.9 as v3.0.97-v3.0.98. Steps 2 and 3 remain
-deferred: next reassessment should decide whether to integrate this apparatus
-into the main evaluation harness/database, and whether to promote it from
-calibration apparatus to a formal paper experiment.
+`docs/research/paper-full-2.0.md` §7.9 as v3.0.97-v3.0.100. The remaining
+promotion decision is narrower now: keep this as calibration apparatus with
+sidecar persistence, or design a separate formal poetics experiment. It still
+should not be folded into `evaluation_results`.
 
 ## Reporting rule
 

@@ -31,6 +31,42 @@ const V3_TARGETS = 'D7,D9,D11,D14,D17,D18';
 const V3_STRESS = 'D8,D12,D13,D15,D16';
 const V3_SPEC = path.join(CAL_DIR, 'phase2-dramas-v3.yaml');
 const V2_SPEC = path.join(CAL_DIR, 'phase2-dramas-v2.yaml');
+const HARD_TRAPS_SPEC = path.join(CAL_DIR, 'phase2-dramas-hard-traps.yaml');
+const CONTROL_UNITS = [
+  {
+    id: 'd4',
+    segment: 'd4',
+    control: 'd4-flat',
+    spec: V2_SPEC,
+    only: 'D4',
+    variationKind: 'control-d4',
+  },
+  {
+    id: 'd10-emphatic',
+    segment: 'd10-emphatic',
+    control: 'd10-boundary-trap',
+    spec: V3_SPEC,
+    only: 'D10',
+    tidStart: 6,
+    variationKind: 'control-d10-emphatic',
+  },
+  {
+    id: 'd25-hard-trap',
+    segment: 'd25-hard-trap',
+    control: 'd25-hard-trap',
+    spec: HARD_TRAPS_SPEC,
+    only: 'D25',
+    variationKind: 'control-d25-hard-trap',
+  },
+  {
+    id: 'd26-hard-trap',
+    segment: 'd26-hard-trap',
+    control: 'd26-hard-trap',
+    spec: HARD_TRAPS_SPEC,
+    only: 'D26',
+    variationKind: 'control-d26-hard-trap',
+  },
+];
 
 function variationKeyFor(args, repeat, unitKind) {
   return `${args.batchId}:${repeat}:${unitKind}`;
@@ -156,33 +192,22 @@ function buildPlan(rawArgs = {}) {
       transcriptsDir: path.join(args.rootDir, `target-${r}`, 'transcripts'),
       keyPath: path.join(args.rootDir, `target-${r}`, 'key.yaml'),
     });
-    units.push({
-      id: `control-${r}-d4`,
-      kind: 'control',
-      control: 'd4-flat',
-      repeat: r,
-      spec: V2_SPEC,
-      only: 'D4',
-      directorVariationKey: variationKeyFor(args, r, 'control-d4'),
-      outDir: path.join(args.rootDir, `control-${r}`, 'd4', 'sample'),
-      delibDir: path.join(args.rootDir, `control-${r}`, 'd4', 'deliberation'),
-      transcriptsDir: path.join(args.rootDir, `control-${r}`, 'd4', 'transcripts'),
-      keyPath: path.join(args.rootDir, `control-${r}`, 'd4', 'key.yaml'),
-    });
-    units.push({
-      id: `control-${r}-d10-emphatic`,
-      kind: 'control',
-      control: 'd10-emphatic-trap',
-      repeat: r,
-      spec: V3_SPEC,
-      tidStart: 6,
-      only: 'D10',
-      directorVariationKey: variationKeyFor(args, r, 'control-d10-emphatic'),
-      outDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'sample'),
-      delibDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'deliberation'),
-      transcriptsDir: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'transcripts'),
-      keyPath: path.join(args.rootDir, `control-${r}`, 'd10-emphatic', 'key.yaml'),
-    });
+    for (const control of CONTROL_UNITS) {
+      units.push({
+        id: `control-${r}-${control.id}`,
+        kind: 'control',
+        control: control.control,
+        repeat: r,
+        spec: control.spec,
+        ...(control.tidStart != null ? { tidStart: control.tidStart } : {}),
+        only: control.only,
+        directorVariationKey: variationKeyFor(args, r, control.variationKind),
+        outDir: path.join(args.rootDir, `control-${r}`, control.segment, 'sample'),
+        delibDir: path.join(args.rootDir, `control-${r}`, control.segment, 'deliberation'),
+        transcriptsDir: path.join(args.rootDir, `control-${r}`, control.segment, 'transcripts'),
+        keyPath: path.join(args.rootDir, `control-${r}`, control.segment, 'key.yaml'),
+      });
+    }
   }
 
   for (let i = 1; i <= args.stressRepeats; i++) {
@@ -396,4 +421,4 @@ if (path.resolve(process.argv[1] || '') === __filename) {
   }
 }
 
-export { buildPlan, generationCommand, modelSlug, parseArgs, scoreCommand, scoreJobs };
+export { buildPlan, CONTROL_UNITS, generationCommand, modelSlug, parseArgs, scoreCommand, scoreJobs };

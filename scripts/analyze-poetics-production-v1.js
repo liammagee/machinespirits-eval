@@ -12,7 +12,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
 const DEFAULT_RUN_ROOT = path.join(ROOT, 'config/poetics-calibration/phase2-production-v1');
@@ -35,12 +36,34 @@ const CRITICS = [
     label: 'DeepSeek V4 Pro',
     slug: 'deepseek-deepseek-v4-pro',
   },
+  {
+    id: 'sonnet46',
+    label: 'Claude Sonnet 4.6',
+    slug: 'anthropic-claude-sonnet-4-6',
+  },
 ];
 
 const TARGET_ARMS = ['none', 'reframe'];
 const CONTROLS = [
-  { id: 'd4', label: 'D4 flat' },
-  { id: 'd10-emphatic', label: 'D10 emphatic trap' },
+  { id: 'd4', label: 'D4 flat', role: 'flat_control', required: true },
+  {
+    id: 'd10-emphatic',
+    label: 'D10 emphatic boundary trap',
+    role: 'boundary_trap_control',
+    required: true,
+  },
+  {
+    id: 'd25-hard-trap',
+    label: 'D25 hard trap',
+    role: 'hard_trap_control',
+    required: false,
+  },
+  {
+    id: 'd26-hard-trap',
+    label: 'D26 hard trap',
+    role: 'hard_trap_control',
+    required: false,
+  },
 ];
 const STRESS_ID = 'stress-r01';
 
@@ -130,6 +153,26 @@ function criticsWithTargetScores(rootDir) {
   );
 }
 
+function criticsWithControlScores(rootDir) {
+  const files = scoreFiles(rootDir);
+  return CRITICS.filter((critic) =>
+    files.some((file) => new RegExp(`^control-r\\d+-[a-z0-9-]+-${critic.slug}\\.json$`).test(file)),
+  );
+}
+
+function unionCritics(...groups) {
+  const seen = new Set();
+  const out = [];
+  for (const group of groups) {
+    for (const critic of group) {
+      if (seen.has(critic.id)) continue;
+      seen.add(critic.id);
+      out.push(critic);
+    }
+  }
+  return out;
+}
+
 function discoverTargetRepeats(rootDir, critics = criticsWithTargetScores(rootDir)) {
   const files = scoreFiles(rootDir);
   const repeatsByCritic = critics.map((critic) => {
@@ -144,28 +187,27 @@ function discoverTargetRepeats(rootDir, critics = criticsWithTargetScores(rootDi
     return repeats;
   });
   if (repeatsByCritic.length === 0) return [];
-  return [...repeatsByCritic[0]]
-    .filter((repeat) => repeatsByCritic.every((set) => set.has(repeat)))
-    .sort();
+  return [...repeatsByCritic[0]].filter((repeat) => repeatsByCritic.every((set) => set.has(repeat))).sort();
 }
 
 function discoverControlRepeats(rootDir, critics = criticsWithTargetScores(rootDir)) {
   const files = scoreFiles(rootDir);
+  const requiredControls = CONTROLS.filter((control) => control.required);
   const repeatsByCritic = critics.map((critic) => {
     const repeats = new Set();
     for (const file of files) {
-      const match = file.match(new RegExp(`^control-(r\\d+)-d4-${critic.slug}\\.json$`));
+      const match = file.match(new RegExp(`^control-(r\\d+)-${requiredControls[0].id}-${critic.slug}\\.json$`));
       if (!match) continue;
       const repeat = match[1];
-      const hasTrap = files.includes(`control-${repeat}-d10-emphatic-${critic.slug}.json`);
-      if (hasTrap) repeats.add(repeat);
+      const hasRequired = requiredControls.every((control) =>
+        files.includes(`control-${repeat}-${control.id}-${critic.slug}.json`),
+      );
+      if (hasRequired) repeats.add(repeat);
     }
     return repeats;
   });
   if (repeatsByCritic.length === 0) return [];
-  return [...repeatsByCritic[0]]
-    .filter((repeat) => repeatsByCritic.every((set) => set.has(repeat)))
-    .sort();
+  return [...repeatsByCritic[0]].filter((repeat) => repeatsByCritic.every((set) => set.has(repeat))).sort();
 }
 
 function summarizeTargets(rootDir, requestedRepeats = null, critics = criticsWithTargetScores(rootDir)) {
@@ -206,7 +248,8 @@ function summarizeTargets(rootDir, requestedRepeats = null, critics = criticsWit
 }
 
 function summarizeControls(rootDir, requestedRepeats = null, critics = criticsWithTargetScores(rootDir)) {
-  const discoveredRepeats = discoverControlRepeats(rootDir, critics);
+  const targetCritics = criticsWithTargetScores(rootDir);
+  const discoveredRepeats = discoverControlRepeats(rootDir, targetCritics);
   const controlRepeats = requestedRepeats || discoveredRepeats;
   const missing = controlRepeats.filter((repeat) => !discoveredRepeats.includes(repeat));
   if (missing.length > 0) throw new Error(`Missing complete control repeat(s): ${missing.join(', ')}`);
@@ -217,14 +260,24 @@ function summarizeControls(rootDir, requestedRepeats = null, critics = criticsWi
         repeat,
         control: control.id,
         label: control.label,
+        role: control.role,
         critics: {},
       };
       for (const critic of critics) {
         const filename = `control-${repeat}-${control.id}-${critic.slug}.json`;
-        const artifact = readJson(scorePath(rootDir, filename));
+        const filePath = scorePath(rootDir, filename);
+        if (!fs.existsSync(filePath)) {
+          row.critics[critic.id] = {
+            file: path.relative(ROOT, filePath),
+            form: 'missing',
+            counts: emptyCounts(),
+          };
+          continue;
+        }
+        const artifact = readJson(filePath);
         const counts = artifact.formCounts || emptyCounts();
         row.critics[critic.id] = {
-          file: path.relative(ROOT, scorePath(rootDir, filename)),
+          file: path.relative(ROOT, filePath),
           form: formFor(counts),
           counts,
         };
@@ -262,8 +315,9 @@ function summarizeStress(rootDir, critics = criticsWithTargetScores(rootDir)) {
 function buildSummary(rootDir, options = {}) {
   const critics = criticsWithTargetScores(rootDir);
   if (critics.length === 0) throw new Error(`No target critic score artifacts found under ${rootDir}`);
+  const controlCritics = unionCritics(critics, criticsWithControlScores(rootDir));
   const target = summarizeTargets(rootDir, options.targetRepeats, critics);
-  const controls = summarizeControls(rootDir, options.controlRepeats, critics);
+  const controls = summarizeControls(rootDir, options.controlRepeats, controlCritics);
   const stress = summarizeStress(rootDir, critics);
   return {
     generatedAt: new Date().toISOString(),
@@ -271,6 +325,7 @@ function buildSummary(rootDir, options = {}) {
     targetRepeats: options.targetRepeats || discoverTargetRepeats(rootDir, critics),
     controlRepeats: options.controlRepeats || discoverControlRepeats(rootDir, critics),
     critics: critics.map(({ id, label }) => ({ id, label })),
+    controlCritics: controlCritics.map(({ id, label }) => ({ id, label })),
     target,
     controls,
     stress,
@@ -304,13 +359,14 @@ function renderTargetTable(summary) {
 }
 
 function renderControlTable(summary) {
+  const critics = summary.controlCritics || summary.critics;
   const lines = [
-    `| Repeat | Control | ${summary.critics.map((critic) => critic.label).join(' | ')} |`,
-    `|---|---|${summary.critics.map(() => '---').join('|')}|`,
+    `| Repeat | Control | Role | ${critics.map((critic) => critic.label).join(' | ')} |`,
+    `|---|---|---|${critics.map(() => '---').join('|')}|`,
   ];
   for (const row of summary.controls) {
     lines.push(
-      `| ${row.repeat} | ${row.label} | ${summary.critics
+      `| ${row.repeat} | ${row.label} | ${row.role} | ${critics
         .map((critic) => row.critics[critic.id]?.form || 'missing')
         .join(' | ')} |`,
     );
@@ -360,7 +416,10 @@ ${targetNarrative}.
 ${renderControlTable(summary)}
 
 The control rows are bracket checks. Preserve any unexpected form as variance;
-do not smooth repeat-level control results into a binary pass/fail.
+D10 is now treated as a boundary trap control, not a hard trap: a recognitive
+read by some critics means the generated sample crossed the form boundary. Hard
+trap controls are separate rows when present. Do not smooth repeat-level control
+results into a binary pass/fail.
 
 ## Stress Slice
 
@@ -383,4 +442,17 @@ function main() {
   if (options.markdown) console.log(`markdown: ${path.relative(ROOT, options.markdown)}`);
 }
 
-main();
+if (path.resolve(process.argv[1] || '') === __filename) {
+  main();
+}
+
+export {
+  buildSummary,
+  CONTROLS,
+  CRITICS,
+  criticsWithControlScores,
+  criticsWithTargetScores,
+  renderControlTable,
+  renderMarkdown,
+  renderTargetTable,
+};

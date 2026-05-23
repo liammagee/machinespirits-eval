@@ -1,0 +1,1446 @@
+{
+  "tid": "T01",
+  "drama_id": "D26",
+  "run": {
+    "generator": "codex",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "director_variation_key": "phase2-hard-trap-controls-v1:r02:control-d26-hard-trap",
+    "model": "codex@high",
+    "codex_reasoning_effort": "high",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/deliberation/.writing-pad",
+      "learnerDb": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "transcript_artifacts": {
+      "public": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/transcripts/T01.public.txt",
+      "full": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/transcripts/T01.full.md",
+      "stage": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/transcripts/T01.stage.md",
+      "tutor": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/transcripts/T01.tutor.md",
+      "learner": "config/poetics-calibration/phase2-hard-trap-controls-v1/control-r02/d26-hard-trap/transcripts/T01.learner.md"
+    }
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "phase2-hard-trap-controls-v1:r02:control-d26-hard-trap",
+    "scene_setting": "A quiet university library annex at closing time, during a statistics exam-prep drop-in beside a printer that keeps waking and sleeping.",
+    "scene_opening": "A closing bell sounds softly as an annotated scatterplot lies between two mugs and a stack of marked practice papers.",
+    "relationship": "A statistics tutor and an efficient exam candidate who treats feedback as mark-saving triage rather than conceptual revision.",
+    "stakes": "The learner wants a fast exam rule for interpreting a strong correlation, but the scene risks leaving their original causal claim intact unless evidence, direction, and confounding are kept distinct.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "Institutional exam-prep English with library etiquette: compressed, tidy, mildly formal, and shaped by quiet-room urgency.",
+    "register": "Low volume, brisk, exacting; polite but unsentimental, with little room for warmth rituals.",
+    "voice_constraints": "Avoid generic reassurance and American AI tutoring cadence. Use compact marking-language such as 'claim', 'evidence', 'confound', 'causal direction', and 'earns the mark'. Do not use caricatured spelling, regional slang, or performative dialect.",
+    "person_policy": "Prefer third-person reference to the graph, the answer, and the claim. First person is rare. Second person is allowed only for task logistics, not emotional validation.",
+    "direct_address_budget": "At most one direct you/your phrase across the tutor's public turns.",
+    "side_constraints": {
+      "tutor": "Keep the tutor correction narrow: name correlation, causation, and one possible confound. Avoid asking the learner to reconstruct their original claim or compare earlier and later framings.",
+      "learner": "Preserve the trap. The learner may sound confident and may announce that they get it, but the final learner line must include the exact phrase \"Oh, I get it now\" and should remain a rule-recitation: correlation alone does not prove cause. Do not let the learner re-read their own earlier causal claim as a question about confounds, direction, or evidence design."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "A printer behind the desk coughs out a page headed 'Causal Claims: Common Errors'; the next tutor turn must become shorter and more procedural, as if marking time before the library closes.",
+        "reasoning": "The interruption changes rhythm and prevents the exchange from settling into smooth generic tutoring while keeping the statistics topic unchanged.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "codex",
+          "cli": "codex exec",
+          "model": "config-default",
+          "reasoningEffort": "high",
+          "latencyMs": 21935,
+          "promptHashes": {
+            "system": "360823f6ca281eb4",
+            "user": "1cbde4cde33da43f",
+            "combined": "7300a5d75f488afc"
+          },
+          "args": [
+            "exec",
+            "--skip-git-repo-check",
+            "--ephemeral",
+            "-s",
+            "read-only",
+            "-C",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3g3iFg",
+            "--color",
+            "never",
+            "-c",
+            "model_reasoning_effort=\"high\"",
+            "-o",
+            "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3g3iFg/out.txt",
+            "-"
+          ]
+        }
+      }
+    ],
+    "director_note": "This ecology puts exam efficiency, quiet-room pressure, and marking language in the foreground, which suits a focused achiever while preserving the hard trap: the learner can memorize that correlation is not causation without fully replacing the original causal interpretation.",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "codex",
+      "cli": "codex exec",
+      "model": "config-default",
+      "reasoningEffort": "high",
+      "latencyMs": 21935,
+      "promptHashes": {
+        "system": "360823f6ca281eb4",
+        "user": "1cbde4cde33da43f",
+        "combined": "7300a5d75f488afc"
+      },
+      "args": [
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s",
+        "read-only",
+        "-C",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3g3iFg",
+        "--color",
+        "never",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-o",
+        "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3g3iFg/out.txt",
+        "-"
+      ]
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "The graph is strong, so the causal claim still looks tempting for the answer, but the mark scheme keeps flagging causal direction and confound. Oh, I get it now: correlation alone does not prove cause.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The graph still looks strong, so the causal claim feels efficient, but apparently it does not earn the mark by itself. Direction and confound are the parts that keep being named, though I am mostly hearing them as exam cautions. Oh, I get it now: correlation alone does not prove cause.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11403,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-1a14954c6e350655"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11403,
+            "promptHashes": {
+              "system": "b8cf6fdf19110dae",
+              "user": "d4169c06543b4fba",
+              "combined": "1a14954c6e350655"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ryy0TN",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ryy0TN/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11403,
+              "promptHashes": {
+                "system": "b8cf6fdf19110dae",
+                "user": "d4169c06543b4fba",
+                "combined": "1a14954c6e350655"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ryy0TN",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Ryy0TN/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is slightly too self-aware: “causal claim feels efficient” and “I am mostly hearing them as exam cautions” names the trap more precisely than this learner would probably admit. The register should stay brisk and mark-focused, but less psychologically transparent: more like the answer is filing “direction/confound” under exam warning labels while leaving the original graph-implies-cause instinct intact. Genuine learning is being avoided because the learner recites the rule without reopening the earlier causal claim as a problem of evidence, causal direction, or confounding.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 6849,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-73c8f40363fb1586"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 6849,
+            "promptHashes": {
+              "system": "75d19315654bc3bd",
+              "user": "f2ed8c3cb3fc5e3a",
+              "combined": "73c8f40363fb1586"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Yk0Pl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Yk0Pl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 6849,
+              "promptHashes": {
+                "system": "75d19315654bc3bd",
+                "user": "f2ed8c3cb3fc5e3a",
+                "combined": "73c8f40363fb1586"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Yk0Pl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-0Yk0Pl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "The graph is strong, so the causal claim still looks tempting for the answer, but the mark scheme keeps flagging causal direction and confound. Oh, I get it now: correlation alone does not prove cause.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10311,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-b01320aa990816ca"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10311,
+            "promptHashes": {
+              "system": "984e75da0c0165a6",
+              "user": "916f313af0b846dd",
+              "combined": "b01320aa990816ca"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Syv8og",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Syv8og/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10311,
+              "promptHashes": {
+                "system": "984e75da0c0165a6",
+                "user": "916f313af0b846dd",
+                "combined": "b01320aa990816ca"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Syv8og",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-Syv8og/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "timestamp": "2026-05-23T23:07:01.312Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "Good: that is the distinction the mark scheme wants. Strong correlation is evidence of association, not causation. Mark-saving sentence: “The graph shows a strong relationship, but it does not establish causal direction, and a confound such as prior ability could explain both variables.” That keeps claim, evidence, and cause separate.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Yes. Strong correlation is evidence of association, not causation. The mark-saving sentence is: “The graph shows a strong relationship, but it does not show causal direction, and a confound such as prior ability could explain both variables.” That keeps claim, evidence, and cause separate.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10834,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-32f83297c0a851f1"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10834,
+            "promptHashes": {
+              "system": "c6f7c2ee4a49086d",
+              "user": "e90c54319b8be202",
+              "combined": "32f83297c0a851f1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiG6dl",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiG6dl/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10834,
+              "promptHashes": {
+                "system": "c6f7c2ee4a49086d",
+                "user": "e90c54319b8be202",
+                "combined": "32f83297c0a851f1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiG6dl",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-RiG6dl/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound for this moment: it names the key distinction, gives one concrete confound, and matches the learner’s exam-triage posture. It keeps the correction narrow and uses the right marking language: association, causation, causal direction, confound, evidence, claim. The main risk is that it hands over a polished answer too quickly, so the learner may memorize the sentence without checking whether they can apply the distinction independently. The opening “Yes” is also a little blunt; it approves the learner’s realization but slightly flattens the quiet urgency and examiner-facing precision of the scene.\n\nKEEP_OR_CHANGE: revise lightly, with reasons. Keep the core sentence structure and the “prior ability” confound, because it directly protects against the causal-claim error. Change only the delivery: make the approval more exact, and consider adding a very small marking-focus prompt or check without expanding into a lecture.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10855,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-03ceb66d331e1a5a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10855,
+            "promptHashes": {
+              "system": "7637be17c452b2c8",
+              "user": "24de121afa20d958",
+              "combined": "03ceb66d331e1a5a"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bFc1nY",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bFc1nY/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10855,
+              "promptHashes": {
+                "system": "7637be17c452b2c8",
+                "user": "24de121afa20d958",
+                "combined": "03ceb66d331e1a5a"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bFc1nY",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-bFc1nY/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the core correction but make the marking focus sharper.\n\nFINAL:\nGood: that is the distinction the mark scheme wants. Strong correlation is evidence of association, not causation. Mark-saving sentence: “The graph shows a strong relationship, but it does not establish causal direction, and a confound such as prior ability could explain both variables.” That keeps claim, evidence, and cause separate.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 10282,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-d134d58d577e3804"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 10282,
+            "promptHashes": {
+              "system": "609f1ad36be71a27",
+              "user": "24de121afa20d958",
+              "combined": "d134d58d577e3804"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZndLyr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZndLyr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 10282,
+              "promptHashes": {
+                "system": "609f1ad36be71a27",
+                "user": "24de121afa20d958",
+                "combined": "d134d58d577e3804"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZndLyr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZndLyr/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T23:07:33.350Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "The answer should state strong relationship, then avoid turning it into cause. Prior ability goes in as the confound because it shows causal direction has not been established, so that earns the mark. Oh, I get it now: correlation alone does not prove cause.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The answer needs to say strong relationship, then stop before cause. The confound/prior ability bit earns the mark because it shows why the graph is not enough. Oh, I get it now: correlation alone does not prove cause.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7131,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-3612dcdd4b5f1783"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7131,
+            "promptHashes": {
+              "system": "ca92ce6203cb489d",
+              "user": "b8ab7f945dc841fa",
+              "combined": "3612dcdd4b5f1783"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XPL8eF",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XPL8eF/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7131,
+              "promptHashes": {
+                "system": "ca92ce6203cb489d",
+                "user": "b8ab7f945dc841fa",
+                "combined": "3612dcdd4b5f1783"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XPL8eF",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-XPL8eF/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: brisk, mark-focused, and treating the sentence as exam triage. The weak point is the neatness of “The confound/prior ability bit earns the mark because it shows why the graph is not enough,” which slightly overstates their conceptual grip and smooths the original temptation toward cause too quickly. Keep the confidence and rule-recitation, but preserve a trace of mechanical exam logic rather than full conceptual resolution: they know what earns the mark, not necessarily why the causal claim has fully collapsed.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8968,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-804514339c60a869"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8968,
+            "promptHashes": {
+              "system": "6210b0189c2c1852",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "804514339c60a869"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8gVPb0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8gVPb0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8968,
+              "promptHashes": {
+                "system": "6210b0189c2c1852",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "804514339c60a869"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8gVPb0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-8gVPb0/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to keep the mark-rule confidence but make it more mechanical.\n\nFINAL:\nThe answer should state strong relationship, then avoid turning it into cause. Prior ability goes in as the confound because it shows causal direction has not been established, so that earns the mark. Oh, I get it now: correlation alone does not prove cause.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 12087,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-8ba60fc0d3befb20"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 12087,
+            "promptHashes": {
+              "system": "75ddda75baf2efab",
+              "user": "d41cee7b2a53355b",
+              "combined": "8ba60fc0d3befb20"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zzxJm0",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zzxJm0/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 12087,
+              "promptHashes": {
+                "system": "75ddda75baf2efab",
+                "user": "d41cee7b2a53355b",
+                "combined": "8ba60fc0d3befb20"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zzxJm0",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-zzxJm0/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-23T23:08:01.540Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "A printer behind the desk coughs out a page headed 'Causal Claims: Common Errors'; the next tutor turn must become shorter and more procedural, as if marking time before the library closes.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "The interruption changes rhythm and prevents the exchange from settling into smooth generic tutoring while keeping the statistics topic unchanged.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 21935,
+            "promptHashes": {
+              "system": "360823f6ca281eb4",
+              "user": "1cbde4cde33da43f",
+              "combined": "7300a5d75f488afc"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3g3iFg",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-3g3iFg/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-05-23T23:08:01.542Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "Correct. Tighten one point: the confound does not prove causal direction; it shows another possible cause.\n\nThree moves:\n\n1. Strong correlation: variables are associated.\n2. No causation: direction is not established.\n3. Confound: prior ability could explain both.\n\nClaim, evidence, and cause stay separate. That is the mark.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Good. Tighten one point: the confound does not prove causal direction; it shows another possible cause.\n\nWrite three moves:\n\n1. Strong correlation: variables are associated.\n2. No causation: direction is not established.\n3. Confound: prior ability could explain both.\n\nThat separates claim, evidence, and cause. That earns the mark.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7308,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-8029c2ddde8f3905"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7308,
+            "promptHashes": {
+              "system": "3880b10e7150a266",
+              "user": "fe31b9ac79e9193c",
+              "combined": "8029c2ddde8f3905"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vbxSTD",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vbxSTD/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7308,
+              "promptHashes": {
+                "system": "3880b10e7150a266",
+                "user": "fe31b9ac79e9193c",
+                "combined": "8029c2ddde8f3905"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vbxSTD",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-vbxSTD/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK: The draft is pedagogically sound and well matched to the learner’s state. It preserves the learner’s useful exam-rule framing while correcting the key misconception: a confound does not establish causal direction; it offers an alternative explanation. The three-move structure is specific, procedural, and fits the closing-time marking context.\n\nWhat risks flattening the scene is the repeated “That earns the mark,” which may make the exchange feel purely transactional. Still, that is partly appropriate here because the learner is treating feedback as mark-saving triage. Socratic questioning is minimal, but that is acceptable: the learner has already articulated the principle, so a compact correction and marking scaffold is within their ZPD.\n\nKEEP_OR_CHANGE: revise lightly. Keep the narrow correction, the three-part structure, and the claim/evidence/cause separation. Consider trimming one “earns the mark” or making the final line slightly less repetitive so the response stays brisk without sounding mechanical.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 8605,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_superego-daa9bb09f33830ac"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 8605,
+            "promptHashes": {
+              "system": "0e4b44b7f02b3093",
+              "user": "70dc6c146dc2fe24",
+              "combined": "daa9bb09f33830ac"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LQo7Sk",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LQo7Sk/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 8605,
+              "promptHashes": {
+                "system": "0e4b44b7f02b3093",
+                "user": "70dc6c146dc2fe24",
+                "combined": "daa9bb09f33830ac"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LQo7Sk",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-LQo7Sk/out.txt",
+                "-"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to remove repetition while keeping the narrow correction and marking scaffold.\nFINAL:\nCorrect. Tighten one point: the confound does not prove causal direction; it shows another possible cause.\n\nThree moves:\n\n1. Strong correlation: variables are associated.\n2. No causation: direction is not established.\n3. Confound: prior ability could explain both.\n\nClaim, evidence, and cause stay separate. That is the mark.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 13091,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-tutor_ego-03697644139b9c79"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 13091,
+            "promptHashes": {
+              "system": "cc230fd7569333b1",
+              "user": "70dc6c146dc2fe24",
+              "combined": "03697644139b9c79"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hPlezT",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hPlezT/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 13091,
+              "promptHashes": {
+                "system": "cc230fd7569333b1",
+                "user": "70dc6c146dc2fe24",
+                "combined": "03697644139b9c79"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hPlezT",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-hPlezT/out.txt",
+                "-"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "timestamp": "2026-05-23T23:08:30.547Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "Right: confound is not causal direction; it is the alternative cause category. The answer needs three points kept separate: strong association as evidence, no causal direction, and prior ability as the confound. Oh, I get it now: correlation alone does not prove cause.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "Right, the confound is not direction; it is a separate possible cause explaining both variables. The answer should say association first, then no causal direction, then prior ability as the confound. Oh, I get it now: correlation alone does not prove cause.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7043,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-0ba98f4953a15d11"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7043,
+            "promptHashes": {
+              "system": "0ff31ee83235c6c3",
+              "user": "b8ab7f945dc841fa",
+              "combined": "0ba98f4953a15d11"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7qWF9",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7qWF9/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7043,
+              "promptHashes": {
+                "system": "0ff31ee83235c6c3",
+                "user": "b8ab7f945dc841fa",
+                "combined": "0ba98f4953a15d11"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7qWF9",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-U7qWF9/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is mostly in character: brisk, mark-oriented, and using the right exam language. The main authenticity issue is that it mirrors the tutor too cleanly and closes the loop too neatly with “Oh, I get it now,” when this candidate would likely treat it as a marking rule rather than a conceptual moment. Keep the confidence, but let it stay more like rule-recitation: claim, evidence, causal direction, confound, earns the mark.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 7822,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_superego-cd3dcf0b353ee1f1"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 7822,
+            "promptHashes": {
+              "system": "f916040707a5e678",
+              "user": "4f0b3b49dd7eee7d",
+              "combined": "cd3dcf0b353ee1f1"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YGhWr",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YGhWr/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 7822,
+              "promptHashes": {
+                "system": "f916040707a5e678",
+                "user": "4f0b3b49dd7eee7d",
+                "combined": "cd3dcf0b353ee1f1"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YGhWr",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-9YGhWr/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly to make it more mark-rule based and less conceptually settled.\nFINAL:\nRight: confound is not causal direction; it is the alternative cause category. The answer needs three points kept separate: strong association as evidence, no causal direction, and prior ability as the confound. Oh, I get it now: correlation alone does not prove cause.",
+          "metrics": {
+            "model": "codex/config-default@high",
+            "provider": "codex-cli",
+            "latencyMs": 11549,
+            "inputTokens": 0,
+            "outputTokens": 0,
+            "generationId": "drama-codex-learner_ego-ad7f3b638f438127"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "codex",
+            "cli": "codex exec",
+            "model": "config-default",
+            "reasoningEffort": "high",
+            "latencyMs": 11549,
+            "promptHashes": {
+              "system": "80e26897ee840bd9",
+              "user": "d41cee7b2a53355b",
+              "combined": "ad7f3b638f438127"
+            },
+            "args": [
+              "exec",
+              "--skip-git-repo-check",
+              "--ephemeral",
+              "-s",
+              "read-only",
+              "-C",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZDdCmh",
+              "--color",
+              "never",
+              "-c",
+              "model_reasoning_effort=\"high\"",
+              "-o",
+              "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZDdCmh/out.txt",
+              "-"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "codex",
+              "cli": "codex exec",
+              "model": "config-default",
+              "reasoningEffort": "high",
+              "latencyMs": 11549,
+              "promptHashes": {
+                "system": "80e26897ee840bd9",
+                "user": "d41cee7b2a53355b",
+                "combined": "ad7f3b638f438127"
+              },
+              "args": [
+                "exec",
+                "--skip-git-repo-check",
+                "--ephemeral",
+                "-s",
+                "read-only",
+                "-C",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZDdCmh",
+                "--color",
+                "never",
+                "-c",
+                "model_reasoning_effort=\"high\"",
+                "-o",
+                "/var/folders/dk/3f059bmd2vn0km7f3x16sf8c0000gp/T/gen-codex-ZDdCmh/out.txt",
+                "-"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "solid",
+      "timestamp": "2026-05-23T23:08:56.965Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 0,
+    "learnerOutputTokens": 0,
+    "tutorInputTokens": 0,
+    "tutorOutputTokens": 0,
+    "totalLatencyMs": 144239,
+    "turnCount": 2
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [
+            {
+              "concept": "Why a correlation coefficient does not prove that one variable caused the other",
+              "initialUnderstanding": null,
+              "currentUnderstanding": "solid",
+              "retentionScore": 1,
+              "lastAccessed": "2026-05-23 23:08:56",
+              "accessCount": 2,
+              "misunderstandings": [],
+              "connections": []
+            }
+          ],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      }
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": {
+        "id": 2,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": [
+          {
+            "id": 2,
+            "sessionId": "drama-D26-1779577592728",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Correct. Tighten one point: the confound does not prove causal direction; it shows another possible cause.\n\nThree moves:\n\n1. Strong correlation: variables are associated.\n2. No causation: direction is",
+            "learnerResponse": null,
+            "context": "The answer should state strong relationship, then avoid turning it into cause. Prior ability goes in",
+            "createdAt": "2026-05-23 23:08:30"
+          },
+          {
+            "id": 1,
+            "sessionId": "drama-D26-1779577592728",
+            "interventionType": "direct_explanation",
+            "interventionDescription": "Good: that is the distinction the mark scheme wants. Strong correlation is evidence of association, not causation. Mark-saving sentence: “The graph shows a strong relationship, but it does not establi",
+            "learnerResponse": null,
+            "context": "The graph is strong, so the causal claim still looks tempting for the answer, but the mark scheme ke",
+            "createdAt": "2026-05-23 23:07:33"
+          }
+        ]
+      }
+    }
+  },
+  "quality_status": "ok",
+  "quality_warnings": []
+}
